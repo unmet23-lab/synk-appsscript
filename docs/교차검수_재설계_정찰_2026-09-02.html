@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>교차검수 재설계 정찰</title>
+<!-- 조립 규약: 색은 docs/디자인_토큰.json(2027 킷 「내일 꾸러미」) · 율은 tools/lib/loom.js --css 문서 의 9단 그대로 · 서체는 docs/브랜드_폰트_정본.md 3종.
+     아티팩트로 낼 때는 이 <head> 껍데기를 벗기고 <title>·<style> 부터 싣는다(사본이 아니라 렌더링). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* 낫표 「 」 교정 — 스택보다 «먼저» 선다(유호 확정 08-31 · 토큰 「서체.낫표교정」). */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+  :root{
+    /* 낮 — 양모 종이 */
+    --paper:#FBF7F0; --ink:#2B2320; --card:#FBF7F0; --note:#EDE7DC; --line:#F0E3C8; --line2:#C7BFB2;
+    /* 보조 글자는 Deep Wool — Ash Wool(#8D857A)은 Paper 위 3.41 이라 작은 글자 기준(4.5)에 못 미친다(렌더린트 실측) */
+    --sub:#575046; --sub2:#575046;
+    --coral:#F96859; --coral-text:#AE322A; --coral-face:#FEF0E9; --wash:#FEF0E9;
+    --lapis-text:#24448C; --lapis-face:#C5D6F5;
+    --meadow-text:#3F6B2E; --meadow-face:#D3E8BE;
+    --butter-text:#7E5A10; --butter-face:#FFEBB0;
+    --pop-text:#99295D; --pop-face:#F8C7DE;
+    --font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,'Malgun Gothic','Apple SD Gothic Neo',monospace;
+    /* 율 9단 — 이름 없는 px 을 지면에 적지 않는다 */
+    --실:2px; --숨:4px; --틈:8px; --참:12px; --칸:16px; --단:24px; --켜:40px; --장:64px; --막:104px;
+  }
+  /* 밤 — 양모 밤(조항 ⓚ): 낮의 글자가 밤의 면이 된다. 면=Deep · 글자=Soft */
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#080605; --ink:#FBF7F0; --card:#2B2320; --note:rgba(251,247,240,.07); --line:rgba(240,227,200,.28); --line2:rgba(240,227,200,.48);
+      --sub:#C7BFB2; --sub2:#EDE7DC;
+      --coral:#F96859; --coral-text:#FBB7A3; --coral-face:rgba(249,104,89,.18); --wash:rgba(249,104,89,.14);
+      --lapis-text:#C5D6F5; --lapis-face:#24448C;
+      --meadow-text:#D3E8BE; --meadow-face:#3F6B2E;
+      --butter-text:#FFEBB0; --butter-face:#7E5A10;
+      --pop-text:#F8C7DE; --pop-face:#99295D;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#080605; --ink:#FBF7F0; --card:#2B2320; --note:rgba(251,247,240,.07); --line:rgba(240,227,200,.28); --line2:rgba(240,227,200,.48);
+    --sub:#C7BFB2; --sub2:#EDE7DC;
+    --coral:#F96859; --coral-text:#FBB7A3; --coral-face:#AE322A; --wash:rgba(249,104,89,.14);
+    --lapis-text:#C5D6F5; --lapis-face:#24448C;
+    --meadow-text:#D3E8BE; --meadow-face:#3F6B2E;
+    --butter-text:#FFEBB0; --butter-face:#7E5A10;
+    --pop-text:#F8C7DE; --pop-face:#99295D;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light dark}
+  body{margin:0;padding:var(--켜) var(--단) var(--막);background:var(--paper);color:var(--ink);
+       font-family:var(--font);font-weight:500;font-size:15.5px;line-height:1.72;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto}
+  header{border-bottom:var(--실) solid var(--line);padding-bottom:var(--칸)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--sub);margin:0 0 var(--틈)}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.24;margin:0 0 var(--틈);text-wrap:balance}
+  .sub{color:var(--sub);font-size:14px;margin:0;max-width:66ch}
+  .lead{background:var(--wash);border-left:var(--숨) solid var(--coral);padding:var(--칸) var(--단);margin:var(--단) 0 var(--켜);border-radius:0 8px 8px 0}
+  .lead p{margin:0 0 var(--틈)} .lead p:last-child{margin:0}
+  .lead b{font-weight:800}
+  h2{font-size:21px;font-weight:800;line-height:1.24;margin:var(--장) 0 var(--틈);padding-bottom:var(--틈);border-bottom:1px solid var(--line);text-wrap:balance}
+  h2 .n{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--sub);margin-right:var(--틈)}
+  h3{font-size:16.5px;font-weight:800;line-height:1.3;margin:var(--단) 0 var(--숨)}
+  p{margin:0 0 var(--참);max-width:72ch}
+  ul,ol{margin:0 0 var(--참);padding-left:1.3em} li{margin:0 0 var(--숨)} li>ul{margin-top:var(--숨)}
+  .hint{color:var(--sub);font-size:13.5px;margin:var(--숨) 0 var(--칸)}
+  .card{border:1px solid var(--line);border-radius:8px;padding:var(--칸) var(--단);margin-bottom:var(--참);background:var(--card)}
+  .card.top{border-color:var(--coral);border-left-width:var(--숨)}
+  .card.dead{border-style:dashed}
+  .card h3{margin-top:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--틈)}
+  .card p{margin-bottom:var(--틈)}
+  .row{display:grid;grid-template-columns:104px 1fr;gap:var(--숨) var(--참);font-size:14.5px;margin-top:var(--틈)}
+  .k{color:var(--sub);font-weight:700;font-size:13px;padding-top:2px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11.5px;font-weight:500;padding:1px 8px;border-radius:999px;white-space:nowrap;vertical-align:middle;line-height:1.6}
+  .pill.sub{background:var(--meadow-face);color:var(--meadow-text)}
+  .pill.api{background:var(--butter-face);color:var(--butter-text)}
+  .pill.win{background:var(--lapis-face);color:var(--lapis-text)}
+  .pill.no{background:var(--coral-face);color:var(--coral-text)}
+  .pill.grey{background:var(--note);color:var(--sub2)}
+  .pill.pop{background:var(--pop-face);color:var(--pop-text)}
+  .v{font-weight:800;white-space:nowrap} .v.pass{color:var(--meadow-text)} .v.cond{color:var(--lapis-text)} .v.fail{color:var(--coral-text)}
+  .note{background:var(--note);border-radius:6px;padding:var(--참) var(--칸);margin:var(--참) 0;font-size:14px}
+  .note p:last-child{margin-bottom:0}
+  .quote{border-left:3px solid var(--line2);padding:2px 0 2px var(--칸);margin:var(--참) 0;color:var(--sub2);font-size:14px}
+  .tbl{overflow-x:auto;margin:var(--참) 0 var(--숨)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:var(--틈) var(--참);border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--sub);font-size:12.5px;font-weight:700;white-space:nowrap}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  code{font-family:var(--mono);background:var(--note);padding:1px 6px;border-radius:4px;font-size:12.5px;color:var(--sub2);word-break:break-all}
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.6;background:var(--note);padding:var(--참) var(--칸);border-radius:6px;overflow-x:auto;margin:var(--참) 0}
+  pre code{background:none;padding:0;color:var(--ink)}
+  a{color:var(--lapis-text);text-decoration-thickness:1px;text-underline-offset:2px}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+  figure{margin:var(--칸) 0 var(--단)} figcaption{font-size:13px;color:var(--sub);margin-top:var(--틈)}
+  .flow{width:100%;height:auto;display:block;font-family:var(--font)}
+  .flow text{fill:var(--ink);font-size:13px;font-weight:700}
+  .flow text.s{fill:var(--sub);font-size:11px;font-weight:500;font-family:var(--mono)}
+  .flow rect.n{fill:var(--card);stroke:var(--line2);stroke-width:1.2}
+  .flow rect.hub{stroke:var(--coral);stroke-width:2}
+  .flow rect.dead{stroke-dasharray:5 4;fill:none;stroke:var(--line2)}
+  .flow path.l{fill:none;stroke:var(--line2);stroke-width:1.6}
+  .flow path.l.hand{stroke-dasharray:4 5}
+  .flow path.l.hot{stroke:var(--coral)}
+  .flow circle.tip{fill:var(--paper);stroke:var(--line2);stroke-width:1.6}
+  .flow circle.tip.hot{stroke:var(--coral)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--참)}
+  .terms{display:grid;grid-template-columns:1fr 1fr;gap:var(--숨) var(--단);font-size:13.5px;margin:var(--칸) 0}
+  .terms dt{font-weight:800;color:var(--sub2)} .terms dd{margin:0 0 var(--틈)}
+  .toc{display:flex;flex-wrap:wrap;gap:var(--틈);margin:var(--칸) 0 0;padding:0;list-style:none;font-size:13.5px}
+  .toc a{display:inline-block;padding:2px 10px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--sub2)}
+  footer{margin-top:var(--장);padding-top:var(--칸);border-top:1px solid var(--line);font-size:13px;color:var(--sub)}
+  @media (max-width:640px){.row{grid-template-columns:1fr;gap:2px}.grid2,.terms{grid-template-columns:1fr}body{padding:var(--단) var(--칸) var(--장)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">SYNK · 정찰 지면 · 2026-09-02</p>
+  <h1>교차검수 재설계 정찰</h1>
+  <p class="sub">클로드 · 제미나이 · GPT 를 엮은 «자동 검수·검토» 워크플로를 다시 짜기 전에, 이 기계에서 직접 잰 것과 GitHub·공식 문서에서 확인한 최신 사실을 한 장에 모았다.</p>
+  <ul class="toc">
+    <li><a href="#결론">결론</a></li><li><a href="#지금">지금 사슬</a></li><li><a href="#실측">오늘 잰 것</a></li>
+    <li><a href="#벤더">벤더별 최신</a></li><li><a href="#브리지">브리지·오케스트레이터</a></li><li><a href="#깃허브">깃허브에서 저절로</a></li>
+    <li><a href="#사람들">사람들이 쓰는 것</a></li><li><a href="#게이트">게이트 3 통과표</a></li><li><a href="#설계">재설계 안</a></li>
+    <li><a href="#충돌">옛 확정과 부딪히는 자리</a></li><li><a href="#픽">유호님 픽</a></li><li><a href="#못잰것">못 잰 것</a></li>
+  </ul>
+</header>
+
+<!-- §0 결론 — 정찰이 끝난 뒤 채운다 -->
+<div class="lead" id="결론">
+  <p><b>① 셋째 벤더를 꽂을 자리는 있다 — 자리는 「CLI」다.</b> 「꽂을 자리가 없다」는 옛 판정은 MCP 를 자리로 봤기 때문이고, 2026년 지형에서는 벤더마다 «구독 로그인 그대로 헤드리스로 도는 명령» 이 하나씩 섰다: GPT = <code>codex exec review --json</code>(+ OpenAI 공식 Claude Code 플러그인) · 제미나이 = Antigravity CLI <code>agy -p</code>(Gemini CLI 는 6월 18일부로 개인 계정이 닫혀 API 키 레인만 남았다) · 클로드 = <code>claude -p "/code-review"</code>. 오늘 이 기계에서 Codex 와 Gemini CLI 두 통로가 실제로 답했다.</p>
+  <p><b>② 구조는 갈아엎지 않고 «접합점 하나»를 연다.</b> 검수 러너의 <code>codex()</code> 함수를 「검수자 인터페이스」로 열어 벤더를 나란히 세우고, 장부·배포 게이트·실패 6형 방어는 그대로 둔다. 그 위에 「독립 검수 → 합성 → 이견 표면화」 한 층을 얹는다. 덤으로 두 빈 칸이 닫힌다 — <b>밖의 사실 반박</b>(Codex 는 읽기 전용 울타리 안에서도 라이브 웹 검색이 된다 · 오늘 실측)과 <b>구조화 2단계 호출</b>(<code>--output-schema</code> 한 번으로 끝난다).</p>
+  <p><b>③ 유호님 자리 셋.</b> ㉮ 제미나이를 «구독 통로»(<code>agy</code>)로 넣을지 — 약관 §6 회색지대와 «그 구글 계정 = 학생 음성 원본 2TB» 가 같은 정지선이라 내가 못 정한다(권고 = 위험 0 인 API 키 레인 먼저). ㉯ 노트북이 꺼져도 도는 검수(GitHub)를 켤지 — 셋 다 추가 결제 0 으로 서지만 Max 한도를 갉는다. ㉰ 제미나이 API 키 종류 확인 1분 — 9월부터 옛 «Standard» 키는 거부된다고 구글이 예고했다(몽골어 검문이 함께 멈춘다).</p>
+</div>
+
+<dl class="terms">
+  <dt>MCP</dt><dd>AI 에 도구를 꽂는 공용 소켓 규격. 클로드가 「Codex 를 도구처럼」 부를 때 쓰는 연결 방식.</dd>
+  <dt>헤드리스</dt><dd>화면 없이 명령 한 줄로 돌려 결과만 파일·JSON 으로 받는 모드. 자동화의 전제.</dd>
+  <dt>읽기 전용 울타리(샌드박스)</dt><dd>검수자가 저장소를 «읽기만» 하고 고치지 못하게 가두는 것. 지금 Codex 검수가 이 안에서 돈다.</dd>
+  <dt>구독 로그인 vs API 키</dt><dd>구독 로그인 = 이미 내는 Max·Plus·AI Pro 로 도는 것(추가 지출 0). API 키 = 쓴 만큼 따로 결제.</dd>
+  <dt>GitHub Actions</dt><dd>깃허브가 빌려주는 컴퓨터에서 «저절로» 도는 작업. 공개 저장소는 시간 요금이 없다.</dd>
+  <dt>훅</dt><dd>「무슨 일이 일어나면 자동으로 이걸 돌려라」를 기계에 박는 자리. 우리 안전 4종이 여기 산다.</dd>
+  <dt>Antigravity CLI (<code>agy</code>)</dt><dd>구글이 Gemini CLI 의 «구독 로그인» 몫을 옮겨 놓은 새 터미널 도구. 구글 계정으로 한 번 로그인하면 헤드리스로 돈다.</dd>
+  <dt>플러그인</dt><dd>클로드 코드에 명령·훅·에이전트를 한 묶음으로 꽂는 것. 설치·제거가 한 줄이라 되돌리기가 싸다.</dd>
+</dl>
+
+<h2 id="지금"><span class="n">§1</span>지금 사슬 — 축이 하나다</h2>
+<p>「교차 검수」라고 부르지만 실제로 도는 것은 <b>클로드가 쓰고 → Codex CLI 가 본다</b> 한 축이다. 제미나이는 검사층에 이름만 걸려 있고 실제로는 몽골어 문안 검문이라는 <b>별도 HTTP 통로</b>로만 돈다. 두 벤더가 코드에서 만나는 지점은 <code>tools/모델정책.js</code> 하나뿐이고, 검수 러너 <code>tools/codex-review.js</code> 에는 셋째 벤더를 꽂을 자리가 없다(실행 대상이 <code>codex.cmd</code> 한 값으로 박혀 있다 · 유일한 후보 접합점 = <code>codex()</code> 함수 하나).</p>
+
+<figure>
+<svg class="flow" viewBox="0 0 880 330" role="img" aria-label="지금 사슬: 클로드 허브에서 Codex 검수 한 축만 자동으로 돌고, 제미나이 API 는 몽골어 검문 별 통로, 딥리서치 둘은 손 통로, 깃허브 액션은 구문검사만">
+  <!-- hub -->
+  <rect class="n hub" x="16" y="120" width="136" height="50" rx="12"/>
+  <text x="84" y="141" text-anchor="middle">클로드 · 허브</text>
+  <text class="s" x="84" y="158" text-anchor="middle">Max ×2 · 기억이 사는 곳</text>
+  <!-- lane 1: codex -->
+  <path class="l hot" d="M152 145 C 180 145, 176 46, 204 46"/>
+  <circle class="tip hot" cx="152" cy="145" r="4"/><circle class="tip hot" cx="204" cy="46" r="4"/>
+  <rect class="n" x="208" y="22" width="150" height="48" rx="10"/>
+  <text x="283" y="42" text-anchor="middle">codex-review.js</text>
+  <text class="s" x="283" y="59" text-anchor="middle">execFileSync · 1800초</text>
+  <path class="l hot" d="M358 46 L 398 46"/><circle class="tip hot" cx="398" cy="46" r="4"/>
+  <rect class="n" x="402" y="22" width="196" height="48" rx="10"/>
+  <text x="500" y="42" text-anchor="middle">Codex CLI (GPT)</text>
+  <text class="s" x="500" y="59" text-anchor="middle">read-only 울타리 · ChatGPT 로그인</text>
+  <path class="l hot" d="M598 46 L 638 46"/><circle class="tip hot" cx="638" cy="46" r="4"/>
+  <rect class="n" x="642" y="22" width="112" height="48" rx="10"/>
+  <text x="698" y="42" text-anchor="middle">검수기록</text>
+  <text class="s" x="698" y="59" text-anchor="middle">.jsonl · 86줄</text>
+  <path class="l hot" d="M754 46 L 782 46"/><circle class="tip hot" cx="782" cy="46" r="4"/>
+  <rect class="n" x="786" y="22" width="84" height="48" rx="10"/>
+  <text x="828" y="42" text-anchor="middle">배포 게이트</text>
+  <text class="s" x="828" y="59" text-anchor="middle">clasp-guard</text>
+  <!-- lane 2: gemini -->
+  <path class="l" d="M152 145 L 204 145"/><circle class="tip" cx="204" cy="145" r="4"/>
+  <rect class="n" x="208" y="121" width="150" height="48" rx="10"/>
+  <text x="283" y="141" text-anchor="middle">몽골어대조.js</text>
+  <text class="s" x="283" y="158" text-anchor="middle">문안 검문 5층</text>
+  <path class="l" d="M358 145 L 398 145"/><circle class="tip" cx="398" cy="145" r="4"/>
+  <rect class="n" x="402" y="121" width="196" height="48" rx="10"/>
+  <text x="500" y="141" text-anchor="middle">Gemini API (HTTP)</text>
+  <text class="s" x="500" y="158" text-anchor="middle">API 키 무료 등급 · 3.7-flash/high</text>
+  <path class="l" d="M598 145 L 638 145"/><circle class="tip" cx="638" cy="145" r="4"/>
+  <rect class="n" x="642" y="121" width="112" height="48" rx="10"/>
+  <text x="698" y="141" text-anchor="middle">몽골어검문</text>
+  <text class="s" x="698" y="158" text-anchor="middle">.jsonl · 43줄</text>
+  <!-- lane 3: deep research (hand) -->
+  <path class="l hand" d="M152 145 C 180 145, 176 244, 204 244"/>
+  <circle class="tip" cx="204" cy="244" r="4"/>
+  <rect class="n" x="208" y="220" width="150" height="48" rx="10"/>
+  <text x="283" y="240" text-anchor="middle">유호님 손</text>
+  <text class="s" x="283" y="257" text-anchor="middle">Claude in Chrome 대행 · 세션 중 1회</text>
+  <path class="l hand" d="M358 244 L 398 244"/><circle class="tip" cx="398" cy="244" r="4"/>
+  <rect class="n" x="402" y="220" width="196" height="48" rx="10"/>
+  <text x="500" y="240" text-anchor="middle">딥리서치 ×2</text>
+  <text class="s" x="500" y="257" text-anchor="middle">ChatGPT DR · Gemini DR</text>
+  <path class="l hand" d="M598 244 L 638 244"/><circle class="tip" cx="638" cy="244" r="4"/>
+  <rect class="n" x="642" y="220" width="112" height="48" rx="10"/>
+  <text x="698" y="240" text-anchor="middle">밖의사실</text>
+  <text class="s" x="698" y="257" text-anchor="middle">.jsonl · 0줄</text>
+  <!-- lane 4: github -->
+  <rect class="n dead" x="208" y="292" width="390" height="30" rx="8"/>
+  <text class="s" x="403" y="311" text-anchor="middle">GitHub Actions — syntax-check 하나뿐 · 검수 0 · 노트북이 꺼지면 아무것도 안 본다</text>
+</svg>
+<figcaption>실선 = 기계가 부르는 통로 · 점선 = 사람 손이 드는 통로 · 코랄 = 배포를 실제로 막는 축. 장부 줄 수는 2026-09-02 실측.</figcaption>
+</figure>
+
+<div class="tbl"><table>
+<tr><th>역할</th><th>지금 누가</th><th>어떻게 불리나</th><th>09-02 계기판(<code>ai스택점검.js</code>)</th></tr>
+<tr><td>① 배포 검수</td><td>Codex · <span class="num">gpt-5.6-luna / xhigh ×1</span></td><td><code>/deploy</code> 가 자동 · 읽기 전용 플래그 셋 + 도구 8종 차단</td><td>검수기록 <span class="num">86줄</span> · 기각 <span class="num">513줄</span> · 제안 <span class="num">9줄</span></td></tr>
+<tr><td>② 설계 심문</td><td>Codex · 같은 픽</td><td>사람이 <code>--심문 &lt;문서&gt;</code> 로 던진다 · 드리프트는 <code>review-runs.js</code> 훅이 잰다</td><td>선언 <span class="num">10</span> · 면제 <span class="num">3</span> · 미심문 <span class="num">0</span> · 장부 <span class="num">28줄</span></td></tr>
+<tr><td>③ 몽골어 검문</td><td>Gemini API · <span class="num">3.7-flash / high</span></td><td>사람이 「검문 돌려줘」 · 부르는 훅 없음</td><td>장부 <span class="num">43줄</span> · 선언 <span class="num">4</span> · 안받음 <span class="num">1</span> · 후보 <span class="num">38</span> · 검문 뒤 바뀜 <span class="num">3</span></td></tr>
+<tr><td>㉠ 밖의 사실 반박</td><td>딥리서치 둘(구독)</td><td>유호님 손 또는 Chrome 대행 · 자동화 안 함(유호 확정 08-31)</td><td>장부 <span class="num">0줄</span> — 법령·상표·시세에 반박 패스 0건</td></tr>
+<tr><td>CI</td><td>GitHub Actions</td><td><code>syntax-check.yml</code> — 공개 저장소면 <code>ubuntu-latest</code>, 스위치 켜면 WSL 셀프호스티드</td><td>검수 단계 없음</td></tr>
+</table></div>
+
+<div class="note">
+<p><b>이 사슬이 가르쳐 준 것 넷</b>(기억 정본 요약) — 재설계가 이 넷을 잃으면 후퇴다.</p>
+<ul>
+  <li><b>「켜짐」은 «돌고 있다»가 아니다.</b> 심문 레인이 9일 동안 즉사한 채 초록이었다. 자동으로 도는 층만 자기 죽음을 알린다.</li>
+  <li><b>실패의 여섯 모양</b> — 셋은 프로세스가 죽고, 넷째는 살아서 「지적 0건」이라는 거짓 초록, 다섯째는 46칸을 채우고도 가장 무거운 변경을 안 봄, 여섯째는 <code>git push</code> 침묵사와 같은 뿌리. 종료코드로도 게이트로도 못 잡고 <b>사람이 본문을 읽어야</b> 잡혔다.</li>
+  <li><b>읽기 전용은 플래그 셋이 한 벌일 때만 사실</b>(<code>--ignore-user-config</code> + <code>sandbox_mode="read-only"</code> + <code>approval_policy="never"</code>). 하나만 빼면 에이전트가 우회해 실제로 쓴다.</li>
+  <li><b>같은 벤더끼리는 사각이 겹친다.</b> 리그 폐지 회귀 넷을 전부 codex 가 잡았다 — 이종이 값을 낸 실물.</li>
+</ul>
+</div>
+
+<h2 id="실측"><span class="n">§2</span>오늘 이 기계에서 직접 잰 것</h2>
+<p class="hint">전부 2026-09-02 · 유호님 노트북(Windows 11 · node v24.18.0) · 로그인은 건드리지 않았다(로그인·인증은 유호님 자리).</p>
+
+<div class="card top">
+<h3>Codex CLI <span class="pill grey">0.151.0 설치 · 0.152.0 나옴</span> <span class="pill sub">ChatGPT 로그인</span> <span class="pill win">Windows 네이티브</span></h3>
+<div class="row">
+  <div class="k">MCP 서버 모드</div><div><b>돈다, 그러나 시한부다.</b> <code>codex mcp-server</code> 를 표준입출력으로 띄워 물었더니 서버 <code>codex-mcp-server 0.151.0</code> 이 응답했고 도구 <b>2개</b>를 냈다 — <code>codex</code>(인자: prompt · cwd · sandbox · approval-policy · model · config · base-instructions · developer-instructions · compact-prompt) · <code>codex-reply</code>(threadId 로 이어 묻기). 첫 줄에 <b>「deprecated — 앞으로 제거된다」</b>를 찍는다. 공식 체인지로그 2026-08-24 문면: 「<code>codex mcp-server</code> 는 폐기. Codex app server 를 쓰라 … Claude Code 에서 Codex 를 쓰려면 Codex plugin for Claude Code 를 쓰라」(§3). 즉 «Codex 를 MCP 로 붙이는 길»은 OpenAI 가 스스로 닫고 «플러그인»으로 옮겼다.</div>
+  <div class="k">검수 명령</div><div><code>codex review</code> 가 정식 서브커맨드다: <code>--uncommitted</code> · <code>--base &lt;branch&gt;</code> · <code>--commit &lt;sha&gt;</code> · 커스텀 지시(인자 또는 stdin · 넷은 상호배타). 지금 러너가 부르는 <code>codex exec review</code> 에는 여기에 <code>--json</code> · <code>-o</code> · <b><code>--output-schema</code></b> · <code>-m</code> · <code>--ephemeral</code> · <code>--ignore-user-config</code> 가 더 붙는다(오늘 <code>--help</code> 실측). ⇒ 지금 «구조화 2단계»로 luna 를 한 번 더 부르는 자리를 <code>--output-schema</code> 한 번으로 접을 수 있다.</div>
+  <div class="k">헤드리스</div><div><code>codex exec</code>: <code>--json</code>(JSONL 이벤트) · <code>-o</code>(마지막 답 파일) · <code>--output-schema</code>(JSON 스키마 강제) · <code>-s read-only</code> · <code>--ephemeral</code> · <code>--add-dir</code> · <code>--ignore-user-config</code>(설정만 무시 · 로그인은 그대로) · <code>--approve-for-me</code>(승인을 심사 에이전트가 대신 · Guardian). <code>--full-auto</code> 는 폐기 예고.</div>
+  <div class="k">🔴 라이브 검색</div><div><b>읽기 전용 울타리 안에서도 웹 검색이 된다 — 오늘 실측.</b> 검색 «플래그»들(<code>search_tool</code> removed · <code>web_search_request</code> deprecated · <code>standalone_web_search</code> 개발중)은 옛 스위치이고, 지금 검색은 설정값 <code>web_search = "cached" | "live"</code> 로 켜는 <b>호스팅 도구</b>다. 옆 조사 세션이 오늘 돌린 것: <code>codex exec --ephemeral --ignore-user-config -c sandbox_mode="read-only" -c approval_policy="never" -c web_search="live" --json "…"</code> → JSONL 에 <code>web_search</code> 항목(질의 채워짐) 뒤 답이 왔다(입력 35,095 토큰 · Plus 로그인). 공식 문면: 「Web search is a hosted tool, separate from sandboxed local command networking … it can remain available when command network access is disabled.」 ⇒ 기억의 「read-only 엔 네트워크가 없다」는 <b>«울타리 안 셸 명령»에만 참</b>이었다. 08-31 에 비었다고 적은 「㉠ 밖의 사실 적대 반박」 자리를 <b>새 도구·새 결제 없이 Codex 로</b> 채울 수 있다.</div>
+  <div class="k">Windows 울타리</div><div><code>codex sandbox</code> = 「Windows restricted token sandbox」로 내장됐다(옛 <code>elevated_windows_sandbox</code>·<code>experimental_windows_sandbox</code> 플래그는 removed). 옆 세션 실측(elevated · 09-02): <code>-P :read-only</code> 로 파일 쓰기 → <b>WRITE_DENIED</b> · 웹 요청 → <b>NET_DENIED</b> · <code>:workspace</code> 쓰기 → OK. <b>WSL 없이 read-only 가 실제로 걸린다.</b> ⚠ 에이전트가 «검수 중에» 띄우는 셸까지 같은 울타리인지는 헬퍼로만 쟀다(안 재봤다). <code>codex doctor</code> 는 Defender 예외 미등록·Dev Drive 아님을 경고한다(성능 축).</div>
+  <div class="k">기능 플래그</div><div><code>codex features list</code> — <b>stable·켜짐</b>: <code>hooks</code> · <code>multi_agent</code> · <code>guardian_approval</code> · <code>goals</code> · <code>plugins</code> · <code>skill_search</code> · <code>apps</code> · <code>computer_use</code> · <code>browser_use</code>. 신뢰 목록: <code>~/.codex/config.toml</code> 이 홈 폴더 전체를 <code>trusted</code> 로 두고 있어 이 저장소도 «신뢰됨»이다(0.150.0 부터 미신뢰 프로젝트는 AGENTS.md 를 안 읽는다).</div>
+  <div class="k">저장소 설정</div><div><code>.codex/config.toml</code> 에 <code>[mcp_servers.exa]</code> 가 있다 — 그러나 검수는 <code>--ignore-user-config</code> 로 돈다. 이 프로젝트 파일을 codex 가 읽는지는 <b>안 재봤다</b>(라이브 검색이 서면 exa 는 필요 없어진다).</div>
+</div>
+</div>
+
+<div class="card top">
+<h3>Gemini CLI <span class="pill grey">0.58.0 · 오늘 설치</span> <span class="pill win">Windows 네이티브</span> <span class="pill api">API 키만 — 개인 로그인은 06-18 종료</span></h3>
+<div class="row">
+  <div class="k">설치</div><div><code>npm install -g @google/gemini-cli</code> 6초 · 되돌리기 = <code>npm uninstall -g @google/gemini-cli</code>. 구글 로그인은 시도하지 않았다 — 조사 결과 개인 계정(무료·AI Pro·Ultra)은 2026-06-18 부로 이 CLI 를 못 쓰고(§3), <b>남은 통로는 API 키</b>다.</div>
+  <div class="k">🔴 실측(API 키)</div><div>몽골어 검문에 쓰는 그 키(<code>SYNK_보안/제미나이.txt</code> · 길이 53 · 앞머리 <code>AQ.</code>)로 <code>gemini -p "…" -o json --approval-mode plan --skip-trust -m gemini-3.7-flash</code> → 답 「OK」 · 1,968ms · 입력 13,859 토큰(시스템 프롬프트 몫). <b>그런데 <code>stats.models</code> 가 <code>gemini-3.5-flash</code> 다</b> — 3.7 을 시켰는데 3.5 가 답했다(공개 이슈 #28859 그대로 · 수정 PR 미병합). 이 통로에 검수 픽을 걸면 «무슨 모델이 봤나»를 <code>stats.models</code> 로 매번 검산해야 한다. 키는 통과했으니 최소 「unrestricted standard」는 아니지만, Standard 인지 auth 인지는 AI Studio 「Key Type」 칸이 안다(§3 · 9월부터 Standard 거부 예고).</div>
+  <div class="k">헤드리스</div><div><code>gemini -p "…" -o json|stream-json</code> · stdin 이어붙이기 · <code>--approval-mode plan</code>(<b>read-only 모드</b> · ⚠미신뢰 폴더면 «조용히» default 로 내려가고 헤드리스는 거절한다 → <code>--skip-trust</code> 또는 <code>GEMINI_CLI_TRUST_WORKSPACE=true</code>) · <code>--policy</code>(정책 엔진) · <code>--sandbox</code> · <code>-w</code>(새 git 워크트리) · <code>--acp</code>(에이전트 프로토콜 모드). PowerShell 첫 실행 진행 메시지가 CLIXML 로 stderr 에 샌다(무해 · 파서는 stdout JSON 만 읽을 것).</div>
+  <div class="k">MCP</div><div><code>gemini mcp add/list/enable/disable</code> — <b>클라이언트만</b>이다. 클로드가 Gemini CLI 를 도구로 부를 「서버 모드」는 명령 목록에 없다(§3 에서 공식 문서로 재확인).</div>
+  <div class="k">훅·스킬</div><div><code>gemini hooks migrate --from-claude</code> — <b>클로드 코드 훅을 제미나이 훅으로 옮기는 명령이 들어 있다.</b> <code>gemini skills list --all</code> 은 <code>~/.agents/skills/</code>(Orca 가 둔 computer-use·orchestration·find-skills)와 내장 둘을 찾았다 — 즉 <b>SKILL.md 규격을 제미나이가 읽는다</b>. 이 저장소 <code>.claude/skills</code> 는 「폴더 미신뢰」로 건너뛰었다(신뢰 등록 뒤 재측정 필요).</div>
+  <div class="k">확장</div><div><code>gemini extensions list</code> → 없음(설치 직후).</div>
+</div>
+</div>
+
+<div class="card">
+<h3>Claude Code <span class="pill grey">2.1.257</span> <span class="pill sub">Max 로그인</span></h3>
+<div class="row">
+  <div class="k">헤드리스</div><div><code>claude -p --output-format json|stream-json</code> · <code>--json-schema</code>(구조화 출력) · <code>--agents &lt;json&gt;</code> · <code>--mcp-config</code> + <code>--strict-mcp-config</code> · <code>--bg</code>(백그라운드 세션) · <code>--cloud</code>(클라우드 세션 생성).</div>
+  <div class="k">MCP</div><div><code>claude mcp serve</code> — <b>클로드 코드 자신이 MCP 서버가 된다</b>(다른 에이전트가 클로드를 도구로 부를 수 있는 방향). <code>claude mcp login</code> 으로 OAuth 서버 인증. 지금 붙은 서버 = canva · supabase(docs) · exa.</div>
+  <div class="k">훅</div><div>우리가 쓰는 이벤트 = PreToolUse(가드 4) · UserPromptSubmit · Stop · SessionEnd · SessionStart(기억·결정·검수런·부패·모델정찰·스택점검). 09-01 판정에서 「여섯은 안 짓는다」로 닫힘.</div>
+</div>
+</div>
+
+<h2 id="벤더"><span class="n">§3</span>벤더별 최신 — 2026년 7~9월에 무엇이 바뀌었나</h2>
+<p class="hint">전부 2026-09-02 에 공식 문서·릴리스 노트·체인지로그를 직접 읽었다. 숫자는 «날짜와 함께»만 믿는다.</p>
+
+<div class="card top">
+<h3>OpenAI Codex <span class="pill grey">0.152.0 · 09-01</span> <span class="pill sub">ChatGPT Plus 로그인</span> <span class="pill win">Windows 네이티브</span></h3>
+<div class="row">
+  <div class="k">검수 통로</div><div><code>codex review</code> 정식화 · <code>codex exec review --json -o --output-schema --ephemeral --ignore-user-config</code>(§2 실측) · <code>--full-auto</code> 폐기 예고. 문서 정본이 <code>developers.openai.com/codex</code> → <code>learn.chatgpt.com/docs</code> 로 옮겨졌다.</div>
+  <div class="k">MCP → 플러그인</div><div>체인지로그 2026-08-24: <code>codex mcp-server</code> 폐기 · 대체 = <b>app server</b>(JSON-RPC · <code>review/start</code> 메서드 · «development and debugging» 용) + SDK(<code>@openai/codex-sdk</code>) + <b><code>openai/codex-plugin-cc</code></b>(OpenAI 공식 Claude Code 플러그인 · v1.0.6 07-08 · ★32.6k). 플러그인 명령: <code>/codex:review</code>(읽기 전용) · <code>/codex:adversarial-review</code>(조준 가능한 적대 검수) · <code>/codex:rescue</code> · <code>/codex:transfer</code> · <code>/codex:setup --enable-review-gate</code>(<code>Stop</code> 훅에서 Codex 가 클로드 답을 검토해 문제면 멈춤). 인증 원문: 「ChatGPT subscription (incl. Free) or OpenAI API key … If you are already signed into Codex on this machine, that account should work immediately here too.」 경고 원문: 「The review gate can create a long-running Claude/Codex loop and may drain usage limits quickly.」 Node 18.18+ · v1.0.1~1.0.3 이 Windows ENOENT·<code>.cmd</code> 수정 릴리스.</div>
+  <div class="k">라이브 검색</div><div>§2 실측 그대로 — 호스팅 도구라 read-only 울타리와 무관. <code>web_search = "disabled"|"cached"(기본)|"indexed"|"live"</code>.</div>
+  <div class="k">Windows</div><div>0.145.0(07-21) 「native exec-server sandboxing, network-proxy enforcement」 · 0.148.0 「fail closed for denied or unreadable paths」 · 0.150.0 유니코드 경로 수정 · 0.152.0 스토어 PowerShell 수정. 공식 문서: <code>[windows] sandbox = "elevated"|"unelevated"</code>(전자 = 전용 저권한 사용자 + 방화벽 · 우리 설정이 이것).</div>
+  <div class="k">에이전트 층</div><div>멀티에이전트 v2 안정(0.145.0) · 훅 async·MCP 호출·<code>Interrupt</code>(0.148~0.150) · 서브에이전트 <code>.codex/agents/*.toml</code>(문서 예시 = <code>reviewer.toml</code> read-only) · Guardian 자동 승인 <code>--approve-for-me</code>(0.147.0). <b>0.150.0 부터 미신뢰 프로젝트는 AGENTS.md 를 안 읽는다</b>(우리는 홈 전체 trusted).</div>
+  <div class="k">GitHub</div><div><code>@codex review</code>(Codex cloud · 「flags only P0 and P1」 · <code>AGENTS.md</code> 의 <code>## Code Review Rules</code> 절을 읽음 · 자동 리뷰 토글) — 플랜표: <b>Plus ✓</b> · Free·Go ✗ · API 키 ✗. <code>openai/codex-action</code>(v1.12 08-20)은 <b>API 키만</b> · Windows 러너는 <code>unsafe</code> 만. ChatGPT 계정을 CI 에 심는 «advanced» 통로는 공식 문면 「<b>Do not use this workflow for public or open-source repositories.</b>」 — 우리 저장소는 PUBLIC 이라 문면상 금지.</div>
+  <div class="k">한도·모델</div><div>Plus 5시간 창(문서 · 날짜 미표기 · 09-02 열람): Sol 10~100 · Terra 25~200 · Luna 250~2,000 «local messages» · 주간 상한 「may apply」(수치 미공개) · 5시간 창 08-25 복원. 모델: <code>gpt-5.6-sol</code>(low~ultra) · <code>gpt-5.6-terra</code> · <code>gpt-5.6-luna</code>(~max) · <code>gpt-5.4-mini</code> 08-31 은퇴(→ luna · 우리 표는 이미 반영). ⚠모델 픽은 이 문서 밖.</div>
+  <div class="k">출처</div><div><a href="https://github.com/openai/codex/releases">codex releases</a> · <a href="https://learn.chatgpt.com/docs/changelog">changelog</a> · <a href="https://learn.chatgpt.com/docs/web-search">web-search</a> · <a href="https://learn.chatgpt.com/docs/windows/windows-sandbox">windows-sandbox</a> · <a href="https://github.com/openai/codex-plugin-cc">codex-plugin-cc</a> · <a href="https://learn.chatgpt.com/docs/third-party/github">GitHub 연동</a> · <a href="https://learn.chatgpt.com/docs/pricing">pricing</a> · <a href="https://learn.chatgpt.com/docs/non-interactive-mode">non-interactive</a></div>
+</div>
+</div>
+
+<div class="card top">
+<h3>Google — Gemini CLI 는 닫히고 Antigravity CLI 가 열렸다 <span class="pill grey">agy 1.1.23 · 09-01</span> <span class="pill sub">Google AI Pro 로그인</span> <span class="pill api">Gemini CLI = API 키만</span></h3>
+<div class="row">
+  <div class="k">🔴 6월 18일</div><div>구글 공식 블로그(2026-05-19) 원문: 「On June 18, 2026, Gemini CLI and Gemini Code Assist IDE extensions will stop serving requests for Google AI Pro and Ultra, as well as those using it free of charge」 · 「Gemini CLI will remain accessible via paid Gemini and Gemini Enterprise Agent Platform API keys.」 후속 = 「Antigravity CLI」. ⇒ 유호님 AI Pro 구독으로 도는 터미널은 이제 <code>agy</code> 하나.</div>
+  <div class="k"><code>agy</code> 스펙</div><div>Go 단일 바이너리 · Windows 설치 <code>irm https://antigravity.google/cli/install.ps1 | iex</code> · 인증 = OS 키링(Windows Credential Manager) → 없으면 브라우저 구글 로그인 · 헤드리스 <code>agy -p "…" --output-format json|stream-json --json-schema … --model gemini-3.7-flash-high --effort high --sandbox</code> · 「Headless mode uses your cached credentials. Authenticate once with an interactive agy session first.」 · 읽기 전용 = <code>permissions.deny: ["write_file(*)","command(*)"]</code> · 커스텀 에이전트(<code>.agents/agents/&lt;name&gt;/agent.md</code> · 문서 예시가 곧 «code-auditor») · 훅 5종 · MCP 클라이언트(서버 모드·ACP 없음) · <code>GEMINI.md</code>·<code>AGENTS.md</code> 읽음 · 플러그인(<code>agy plugin import gemini</code>). Pro 한도 원문 「High, generous quota, refreshed every five hours until weekly limit reached」 — <b>숫자 미공개</b> · BYO 키 불가.</div>
+  <div class="k">🔴 약관 §6</div><div>원문: 「Using third party software, tools, or services to access the Service (e.g. using OpenClaw with Antigravity OAuth) is a breach of this Agreement.」 위반은 「suspension or termination of your account」. «공식 <code>agy</code> 바이너리를 내 스크립트가 부르는 것»이 여기 걸리는지 구글이 답한 문면은 없다(gemini-cli 토론 #20632 · 02-27 · 무응답). 실제 벤 사례가 보고돼 있다. <b>그 구글 계정 = 학생 음성 원본 2TB + 제미나이LM + 드라이브</b> — 08-31 딥리서치 자동화를 기각한 그 정지선과 같은 자리다.</div>
+  <div class="k">🔴 Windows 행</div><div>이슈 #318(06-06 · open): <code>agy -p … &gt; out.txt</code> 처럼 비-TTY(파이프·Node 자식 프로세스)에서 무한 대기. 1.1.23 노트 「fixed … hanging on unclosed stdin pipes」 — 현 판 재현 여부 <b>안 재봤다</b>. 브리지들은 stdin 을 끊거나 PTY 로 우회한다.</div>
+  <div class="k">Gemini CLI 0.58.0</div><div>API 키 레인은 그대로 살아 있고 더 성숙하다: 훅 11종 · 정책 엔진(TOML) · <code>--approval-mode plan</code>(read-only) · 서브에이전트(<code>.gemini/agents/*.md</code>) · AGENTS.md 지원 · Windows 네이티브 샌드박스 문서(07-17) · 확장 <code>code-review</code>(★519) · <code>security</code>(★790) · <code>conductor</code>(★3.7k · 클로드 플러그인 겸). 무료 등급 = 250요청/일 · Flash 만 · 「입력이 제품 개선에 쓰임: Yes」. ⚠버그 #28859(§2 재현): 3.7/3.6 을 시켜도 3.5 가 답한다.</div>
+  <div class="k">🔴 API 키 종류</div><div>공식(08-26 갱신) 원문: 「September 2026: The Gemini API will reject requests from Standard keys. You must migrate to auth keys before this date」 · 확인 자리 = AI Studio API Keys 페이지의 「Key Type」 칸 · 「All new keys created in AI Studio are automatically created as auth keys.」 우리 키는 오늘 통과했으나(§2) 종류는 <b>안 봤다</b>.</div>
+  <div class="k">GitHub · 기타</div><div>Gemini Code Assist GitHub 앱 소비자판 <b>2026-07-17 종료</b>(기업판만 · Google Cloud 설치). <code>google-github-actions/run-gemini-cli</code> v0.1.22(04-24 · ★2.1k) = API 키/Vertex/WIF · 구글 로그인 경로 없음. Jules: 무료 15작업/일(AI Pro 100/일) · 공식 MCP <code>@google/jules-mcp</code> v0.2.0 · 키는 결제 없이 웹에서 발급 · changelog 03-09 에서 멈춤 · «남의 diff 를 검수»하는 모드는 없다.</div>
+  <div class="k">모델 줄</div><div><code>gemini-3.7-flash</code> GA 08-13(<code>thinking_level</code> low/medium/high · <code>minimal</code> 은 400) · <code>gemini-3.6-flash</code> GA 07 · <code>gemini-3.1-pro-preview</code> 무료 등급 ✗ · 3.x 는 <code>temperature</code> 등 무시. 무료 RPM/RPD 표는 문서에서 사라져 AI Studio 대시보드에서만 본다(안 봤다).</div>
+  <div class="k">출처</div><div><a href="https://developers.googleblog.com/an-important-update-transitioning-gemini-cli-to-antigravity-cli/">전환 공지</a> · <a href="https://antigravity.google/docs/cli/headless/">agy headless</a> · <a href="https://antigravity.google/docs/cli/permissions">permissions</a> · <a href="https://antigravity.google/docs/subagents/">subagents</a> · <a href="https://antigravity.google/docs/plans/">plans</a> · <a href="https://antigravity.google/terms">terms</a> · <a href="https://github.com/google-antigravity/antigravity-cli/issues/318">#318</a> · <a href="https://geminicli.com/docs/cli/headless/">gemini headless</a> · <a href="https://github.com/google-gemini/gemini-cli/issues/28859">#28859</a> · <a href="https://ai.google.dev/gemini-api/docs/api-key">api-key</a> · <a href="https://developers.google.com/gemini-code-assist/docs/deprecations/consumer-code-review">Code Assist 종료</a> · <a href="https://jules.google/docs/usage-limits/">Jules 한도</a></div>
+</div>
+</div>
+
+<div class="card">
+<h3>Anthropic Claude Code <span class="pill grey">2.1.257 · 09-01 · 7월 이후 53판</span> <span class="pill sub">Max 로그인</span></h3>
+<div class="row">
+  <div class="k">리뷰</div><div><code>/code-review</code> 가 백그라운드 서브에이전트로(2.1.218) · 헤드리스 <code>-p</code> 에서는 findings 를 응답에 담아 준다(ultra 만 링크) · <code>--comment</code>(GitLab MR 도 2.1.257) · <code>/review</code> = 별칭. ultrareview: Pro/Max 각 <b>3회 무료(1회성)</b> → 이후 usage credits 「보통 $5~25/회」 · 크레딧 꺼져 있으면 실행 차단. 관리형 Code Review(GitHub 앱) = <b>Team/Enterprise 만</b> · 리뷰당 $15~25.</div>
+  <div class="k">외부 모델</div><div>공식 입장 그대로: 「doesn't support routing Claude Code to non-Claude models」 · 「To involve a different tool, expose it to Claude as an MCP server」 ⇒ 자리 = MCP·훅·플러그인. <b>OpenAI 가 그 자리에 공식 플러그인을 냈다</b>(위 Codex 칸).</div>
+  <div class="k">훅·에이전트</div><div>훅 이벤트 33종(공식 목록 · <code>PreModelSwitch</code>/<code>PostModelSwitch</code> 2.1.251 · <code>DirectoryAdded</code> 2.1.219). 서브에이전트 fork 기본(2.1.232) · 동시 20 · 프론트매터 <code>experimental.cacheTtl</code>. 에이전트 팀은 「experimental and disabled by default」 · Windows Terminal 은 in-process 만. Workflow 도구 = 모든 유료 플랜 · 문서 문면 「independent agents adversarially review each other's findings before they're reported」.</div>
+  <div class="k">헤드리스·무인</div><div><code>claude -p --output-format json --json-schema</code> · <b><code>--bare</code></b>(훅·MCP·CLAUDE.md 자동 로드 생략 · 「recommended mode for scripted and SDK calls, and will become the default」) · <code>--bg</code>(로컬 백그라운드 세션 · 끝나면 commit+push) · <code>--cloud</code>(클라우드 세션 · Auto-fix PR) · Routines(연구 프리뷰 · Pro/Max · GitHub 이벤트 트리거 <code>pull_request.opened</code> · <b>로컬 MCP 서버는 못 붙는다</b> → 우리 Node+codex 사슬은 못 실음).</div>
+  <div class="k">GitHub 액션</div><div><code>anthropics/claude-code-action@v1</code>(v1.0.212 · 09-01 · 매판 동기화) — 공식 문면: 「<code>CLAUDE_CODE_OAUTH_TOKEN</code>: an OAuth token that authenticates with your Claude subscription, available on Pro, Max, Team, and Enterprise plans. Generate one by running <code>claude setup-token</code> locally.」 · 「If you authenticate with an OAuth token, runs use your Claude subscription instead of API billing.」 · 「generate a one-year OAuth token」 · 토큰은 「tied to the subscription of the person who ran <code>claude setup-token</code>」. ⚠이슈 #727(2025-12 · open)은 «하루 만에 만료» 보고 — 실측 안 함. 법무 문면: OAuth 는 구독자의 「ordinary use」용 · 「Advertised usage limits … assume ordinary, individual usage」.</div>
+  <div class="k">보안 층</div><div><code>security-guidance</code> 플러그인(훅만 · <code>PostToolUse</code> 패턴 + <code>Stop</code> 턴 끝 diff 리뷰 + 커밋 리뷰) · Claude Security 플러그인(유료 플랜 · 「Linux, macOS, or Windows」 · python3) · 관리형 Claude Security 는 Enterprise 만. <code>/security-review</code> 는 번들이라 판마다 따라온다(우리 <code>/deploy</code> 가 이미 씀).</div>
+  <div class="k">과금</div><div>Agent SDK·<code>-p</code>·GH Actions OAuth 는 «구독 차감»으로 현행 유지(05-14 발표한 월 크레딧 분리안을 06-15 에 보류). 제3자 제품이 claude.ai 로그인을 중개하는 것은 금지 — 본인 사용은 해당 없음.</div>
+  <div class="k">출처</div><div><a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md">CHANGELOG</a> · <a href="https://code.claude.com/docs/en/code-review">code-review</a> · <a href="https://code.claude.com/docs/en/ultrareview">ultrareview</a> · <a href="https://code.claude.com/docs/en/github-actions">github-actions</a> · <a href="https://code.claude.com/docs/en/hooks">hooks</a> · <a href="https://code.claude.com/docs/en/headless">headless</a> · <a href="https://code.claude.com/docs/en/routines">routines</a> · <a href="https://code.claude.com/docs/en/workflows">workflows</a> · <a href="https://code.claude.com/docs/en/security-guidance">security-guidance</a> · <a href="https://code.claude.com/docs/en/legal-and-compliance">legal</a></div>
+</div>
+</div>
+
+<h2 id="브리지"><span class="n">§4</span>브리지·오케스트레이터 — GitHub 에 실재하는 것</h2>
+<p class="hint">별(★)·판·날짜는 09-02 열람 값. 「구독」= 그 CLI 의 로그인을 그대로 빌린다 · 「API 키」= 따로 결제.</p>
+<div class="tbl"><table>
+<tr><th>이름</th><th>무엇</th><th>인증</th><th>플랫폼</th><th>유지 신호</th><th>판정</th></tr>
+<tr><td><a href="https://github.com/openai/codex-plugin-cc">openai/codex-plugin-cc</a></td><td>OpenAI 공식 · Claude Code 안에서 <code>/codex:review</code>·<code>/codex:adversarial-review</code>·Stop 게이트</td><td><span class="pill sub">구독</span></td><td><span class="pill win">Win 수정 3회</span></td><td class="num">★32.6k · v1.0.6 · 07-08</td><td><span class="v pass">채택</span> — GPT 다리의 정본</td></tr>
+<tr><td><a href="https://github.com/BeehiveInnovations/pal-mcp-server">pal-mcp-server</a>(구 zen)</td><td>codereview·precommit·consensus·<code>clink</code>(다른 CLI 호출)</td><td><span class="pill api">API 키</span>(clink 만 구독)</td><td><span class="pill grey">WSL 안내뿐</span></td><td class="num">★11.7k · v9.8.2 · 2025-12-15 · 2026 태그 0</td><td><span class="v fail">기각</span> — 정지 · Gemini 다리 사망</td></tr>
+<tr><td><a href="https://github.com/jamubc/gemini-mcp-tool">jamubc/gemini-mcp-tool</a></td><td>agy 를 MCP 로(<code>ask-gemini</code>·<code>sandbox-test</code>) — 검수 명령 없음</td><td><span class="pill sub">구독(agy)</span></td><td><span class="pill win">npx</span></td><td class="num">★2.3k · v1.1.8 · 06-18</td><td><span class="v cond">참고</span> — 큰 문서 질의용</td></tr>
+<tr><td><a href="https://github.com/yuting0624/antigravity-for-claude-code">yuting0624/antigravity-for-claude-code</a></td><td>클로드 플러그인 · <code>/antigravity:review</code>·delegate·research</td><td><span class="pill sub">구독(agy)</span></td><td><span class="pill no">「Native Windows not recommended」</span></td><td class="num">★296 · v0.25.2 · 08-27</td><td><span class="v cond">보류</span> — #318 닫히면</td></tr>
+<tr><td><a href="https://github.com/AmirShayegh/codex-claude-bridge">AmirShayegh/codex-claude-bridge</a></td><td>검수 전용 MCP(review_plan·review_code·review_precommit)</td><td><span class="pill sub">구독(auth.json)</span></td><td><span class="pill grey">미기재</span></td><td class="num">★23 · v1.6.0 · 07-09</td><td><span class="v cond">참고</span> — 공식 플러그인이 덮는다</td></tr>
+<tr><td><a href="https://github.com/musistudio/claude-code-router">claude-code-router</a></td><td>클로드 코드의 «백엔드»를 다른 모델로 바꿈</td><td><span class="pill api">API 키</span></td><td><span class="pill win">앱</span></td><td class="num">★37k · v3.0.22 · 08-24</td><td><span class="v fail">부적합</span> — 독립 검수자가 못 된다</td></tr>
+<tr><td><a href="https://github.com/Yeachan-Heo/oh-my-claudecode">oh-my-claudecode</a></td><td><code>omc ask codex</code>·<code>omc ask antigravity</code>(세 모델 합성)·verify 단계</td><td><span class="pill sub">구독 CLI 셋</span></td><td><span class="pill win">psmux</span></td><td class="num">★38.9k · v5.1.0 · 08-31</td><td><span class="v cond">패턴만</span> — 32 전문가 프레임워크는 무겁다</td></tr>
+<tr><td><a href="https://github.com/ruvnet/claude-flow">claude-flow(Ruflo)</a></td><td>다벤더 스웜(API 키 라우팅)</td><td><span class="pill api">API 키</span></td><td><span class="pill win">PS 설치</span></td><td class="num">★70.1k · v3.38.20 · 08-24</td><td><span class="v fail">기각</span> — 구독 CLI 구동 아님</td></tr>
+<tr><td>vibe-kanban · Conductor</td><td>여러 코딩 CLI 병렬 보드</td><td><span class="pill sub">구독</span></td><td><span class="pill no">Bloop 04-10 폐업 · Conductor 는 Mac</span></td><td class="num">★28k · —</td><td><span class="v fail">기각</span></td></tr>
+<tr><td><a href="https://github.com/yeameen/claude-code-review-council">claude-code-review-council</a></td><td><code>codex review</code> + <code>agy --print</code> + 클로드 서브에이전트 5 → 합성 · <b>이견 표면화</b></td><td><span class="pill sub">구독 셋</span></td><td><span class="pill grey">미기재</span></td><td class="num">★17 · 07-16</td><td><span class="v pass">참조 구현</span> — 방식만 옮긴다</td></tr>
+<tr><td><a href="https://github.com/StGarca/consensus-mcp">consensus-mcp</a></td><td>패널 ≥2 합의 게이트(「ships only on agreement」)</td><td><span class="pill sub">구독 CLI</span></td><td><span class="pill win">「Linux + Windows」 명시</span></td><td class="num">★3 · v2.4.3 · 07-16</td><td><span class="v cond">후보</span> — 작다</td></tr>
+<tr><td><a href="https://github.com/AltimateAI/claude-consensus">claude-consensus</a> · <a href="https://github.com/karpathy/llm-council">llm-council</a></td><td>합의·심판 패턴</td><td><span class="pill api">OpenRouter 권장</span></td><td>—</td><td class="num">★32 08-25 · ★24.5k</td><td><span class="v cond">참고</span></td></tr>
+<tr><td><a href="https://github.com/Vinix24/vnx-orchestration">vnx-orchestration</a> · <a href="https://github.com/bfly123/claude_code_bridge">claude_code_bridge</a></td><td>서브프로세스 워커 · 「codex+gemini 적대 검수」 / 17 CLI 브리지(Windows beta)</td><td><span class="pill sub">구독</span></td><td><span class="pill grey">beta</span></td><td class="num">★57 08-12 · ★3.5k 08-27</td><td><span class="v cond">참고</span></td></tr>
+</table></div>
+<div class="note">
+<p><b>공유 표준 — «한 벌의 규칙을 셋이 읽게» 하는 자리</b></p>
+<ul>
+  <li><b>AGENTS.md</b>(agents.md · 「Used by over 60k open-source projects」 · Linux Foundation 산하): Codex·Gemini CLI·agy·Copilot·Jules 가 읽는다. <b>클로드 코드는 CLAUDE.md 만 읽는다</b> — 공식 처방은 CLAUDE.md 안 <code>@AGENTS.md</code> 임포트(Windows 는 심링크 대신 이것). SYNK-talk 의 <code>AGENTS.md</code> 는 이미 «포인터» 구조라 그대로 맞는다.</li>
+  <li><b>Agent Skills(SKILL.md)</b>: Codex 는 <code>~/.agents/skills</code>·<code>.agents/skills</code>, Gemini CLI 는 <code>.agents/skills</code> 별칭, agy 도 유지 — <b>클로드 코드 문서만 <code>.claude/skills</code> 를 적는다</b>. §2 실측대로 Gemini 가 <code>~/.agents/skills</code> 를 실제로 읽었다. ⇒ 공유하려면 <code>.agents/skills</code> 를 정본으로 두고 <code>.claude/skills</code> 는 정션·복사 규칙이 필요하다(한 값 두 곳 함정).</li>
+  <li>MCP 레지스트리는 아직 preview · A2A 는 08-17~20 AAIF 로 이관 — CLI 셋 사슬엔 아직 무관.</li>
+</ul>
+</div>
+
+<h2 id="깃허브"><span class="n">§5</span>깃허브에서 «저절로» 도는 검수 — 노트북이 꺼져도</h2>
+<p>우리 저장소 둘은 PUBLIC 이라 GitHub 가 빌려주는 컴퓨터 시간이 무료다(공식: 「free … for public repositories that use standard GitHub-hosted runners」). 지금 CI 는 구문검사 하나뿐이고 검수 단계는 없다.</p>
+<div class="tbl"><table>
+<tr><th>통로</th><th>인증</th><th>공개 저장소 비용</th><th>요점</th><th>판정</th></tr>
+<tr><td><a href="https://github.com/anthropics/claude-code-action">claude-code-action</a> v1.0.212</td><td><span class="pill sub">Max 1년 토큰</span></td><td>0 + Max 한도</td><td>진짜 클로드 코드(CLAUDE.md·MCP 포함)가 PR 열릴 때 검수 · 최소 YAML = <code>on: pull_request</code> + <code>claude_code_oauth_token</code> + <code>prompt: "/code-review …"</code> · 포크 PR 엔 시크릿이 안 나간다(우리는 포크 안 받음)</td><td><span class="v cond">유호님 픽 ㉯</span></td></tr>
+<tr><td><code>@codex review</code>(Codex cloud)</td><td><span class="pill sub">Plus</span></td><td>0 + Plus 한도</td><td>OpenAI 클라우드에서 돈다(Actions 아님) · P0/P1 만 · <code>AGENTS.md</code> 규칙 · 저장소 연결은 GitHub 앱 승인(유호님 손)</td><td><span class="v cond">유호님 픽 ㉯</span></td></tr>
+<tr><td><a href="https://github.com/google-github-actions/run-gemini-cli">run-gemini-cli</a> v0.1.22</td><td><span class="pill api">무료 API 키</span></td><td>0(무료 등급 안)</td><td>PR 리뷰 템플릿 동봉 · 무료 등급은 입력이 학습에 쓰임(공개 코드라 실손 작음 · 학생 데이터 금지선은 그대로)</td><td><span class="v cond">유호님 픽 ㉯</span></td></tr>
+<tr><td><a href="https://www.coderabbit.ai/pricing">CodeRabbit</a></td><td><span class="pill grey">GitHub 앱</span></td><td>「free reviews forever for public repositories」</td><td>키 관리 0 · 다른 회사 눈 · 모델 선택 불가 · «텍스트 벽» 불평 많음(§7)</td><td><span class="v cond">선택지</span></td></tr>
+<tr><td><a href="https://github.github.com/gh-aw/">GitHub Agentic Workflows</a> v0.87.10</td><td><span class="pill api">Claude·Codex·Gemini 전부 API 키</span></td><td>0 + 종량</td><td>마크다운 한 파일 · <code>engine:</code> 한 줄로 벤더 교체 · 안전장치 최강(read-only 잡 + safe-outputs + 방화벽 + <code>max-ai-credits</code>) · 공식 문면 「<code>CLAUDE_CODE_OAUTH_TOKEN</code> is not supported」</td><td><span class="v fail">지금 기각</span> — API 결제를 여는 날의 최선</td></tr>
+<tr><td><a href="https://github.com/openai/codex-action">codex-action</a> v1.12</td><td><span class="pill api">API 키만</span></td><td>종량</td><td>Windows 러너는 <code>unsafe</code> 만 · ChatGPT 계정 경로는 공개 저장소 금지 문면</td><td><span class="v fail">기각</span></td></tr>
+<tr><td>Copilot code review</td><td><span class="pill api">유료 Copilot 플랜</span></td><td>Pro $10~</td><td>Free 플랜 미포함 · 도구 실행 없음 · OSS 유지자 무료 심사제(기준 미공개)</td><td><span class="v fail">기각</span> — 🚫 Copilot 축 그대로</td></tr>
+<tr><td>Gemini Code Assist GitHub 앱</td><td>—</td><td>—</td><td>소비자판 07-17 종료</td><td><span class="v fail">사라짐</span></td></tr>
+<tr><td>Anthropic 관리형 Code Review</td><td><span class="pill api">Team/Enterprise + 크레딧</span></td><td>$15~25/리뷰</td><td>Max 불가</td><td><span class="v fail">기각</span></td></tr>
+<tr><td><a href="https://github.com/The-PR-Agent/pr-agent">pr-agent</a> v0.44.0 · Sourcery · Greptile · kodus · reviewdog</td><td><span class="pill api">API 키</span> / 앱</td><td>모델 토큰만 / OSS 무료 / 50 credits</td><td>pr-agent 는 아무 모델(LiteLLM) · reviewdog 는 «심판 결과를 인라인 코멘트로 배달»하는 부품</td><td><span class="v cond">보류</span></td></tr>
+</table></div>
+<div class="note">
+<p><b>가장 값싼 «노트북 없는» 조합</b>(조사 판정): ① claude-code-action(Max 토큰) + <code>@codex review</code>(Plus) + run-gemini-cli(무료 키) → 작은 집계 잡(<code>actions/github-script</code>)이 세 코멘트를 읽어 <b>required status check 하나</b>로. 추가 결제 0. ② ①에 CodeRabbit 을 더하거나 대신. ③ gh-aw 는 API 를 여는 날. 셋(Claude+Codex+Gemini) 공식 액션 + 심판까지 붙인 <b>공개 완성본은 못 찾았다</b>(검색 2회) — 조각 패턴만 있다(virtua 튜토리얼의 집계 잡 · <code>keithah/multi-provider-code-review</code> 의 「둘 이상 동의해야 인라인」 · 02-18 이후 정지).</p>
+<p><b>배포는 GitHub 로 옮기지 않는다.</b> clasp CI 공식 예제(<code>CLASPRC_JSON</code> 시크릿 → merge 때 <code>clasp push --force</code>)는 우리 「라이브 배포는 <code>/deploy</code> 하나」와 정면 충돌한다. 첫 단계는 «리뷰 게이트만 GitHub, 배포는 노트북».</p>
+<p><b>무인 검수의 함정(2026 실제 사고)</b> — Clinejection(2025-12~2026-02 · <code>claude-code-action</code> 이슈 트리아지에 Bash/Write 권한 + 아무나 트리거 → 이슈 제목 한 줄로 npm 토큰 탈취 · 8일 뒤 악성 CLI 가 npm 에) · PromptPwnd(2025-12-04 · 벤더 넷 공통 무늬) · Comment and Control(04-15 · PR 제목으로 <code>ANTHROPIC_API_KEY</code> 유출) · CVE-2026-44246(04-28) · GitLost(gh-aw · 07-08) · arXiv 2605.07135(05-08): 13,392 에이전틱 워크플로 중 <b>496 실증 취약 · 343 제로데이</b>. 완화 = 쓰기 권한자만 트리거 · 봇 액터 기본 거부 · 미신뢰 ref 체크아웃 금지 · <code>--allowedTools</code>·<code>--max-turns</code>·timeout·concurrency · 「한 번 리뷰 · 한 번 수정 · 자동 승인 없음」.</p>
+</div>
+
+<h2 id="사람들"><span class="n">§6</span>지난 30일 사람들이 실제로 쓰고 불평한 것</h2>
+<p class="hint"><code>/last30days</code> 실측 · 2026-09-02 · 무키 3소스(Reddit · HN · GitHub) · <code>--plan --no-browser-cookies</code> · 원본 = <code>~/Documents/Last30Days/…-0902a·0902b</code>. 분모: 주제① 64건 = Reddit 19 + HN 23 + GitHub 22 · 주제② 85건 = 31 + 21 + 33. Reddit 은 두 번 다 429 로 부분 수집이라 Reddit 쪽 «없다»는 못 말한다.</p>
+<div class="grid2">
+<div class="card">
+<h3>① 다중 모델 검수·오케스트레이션</h3>
+<ul>
+  <li><b>zen-mcp · clink 직접 언급 0건</b>(GitHub 쿼리 0 · HN 은 「Zen」 오탐) — 표에서 기각한 판정과 맞는다. gh-aw 는 GitHub 자사 저장소가 매 PR 에 리뷰어 레인 셋(스킬·테스트품질·코드품질)을 돌리는 도그푸딩으로만 보인다.</li>
+  <li>가장 많이 본 것: 「Claude Code 채택 78% · 매일 씀 50%」(r/vibecoding 119pts) · 「팀 표준 스킬팩을 Claude Code 와 Codex 가 같이 읽게」(tikalk/adlc-team-skills · HN 75pts — 댓글은 «토큰 태운다» 우세).</li>
+  <li><b>불평</b>: 한도·과금이 사슬을 끊는다(Bugbot·CodeRabbit 한도 · GitHub Codex 리뷰가 «paywalled» 라 로컬 <code>codex exec review --base origin/main</code> 로 회귀한 PR) · MCP 서버 여럿 = 컨텍스트 비대 · 같은 모델도 하네스에 따라 토큰 70배 · Codex 리뷰가 엉뚱한 브랜치를 봄 · 병렬 에이전트가 서로를 못 봄.</li>
+  <li><b>추천</b>: 「Claude 로 구현 · 터미널에서 Codex 로 리뷰」(로컬) · 회사 스킬 저장소를 <code>~/.codex</code> 와 클로드에 동기화 · MCP 는 게이트웨이 하나로 · 리뷰어 레인 분리.</li>
+</ul>
+</div>
+<div class="card">
+<h3>② PR 리뷰 봇</h3>
+<ul>
+  <li>표본 PR 에 실제로 붙어 있던 봇: CodeRabbit 8 · CodeAnt 5 · Gemini Code Assist 4(7-17 전) · Codex 3 · Sourcery 2 · Qodo·Greptile·Bugbot 1 — 한 PR 에 <code>@coderabbitai review</code> + <code>@codex review</code> + <code>@gemini-code-assist /review</code> 를 겹쳐 부르는 저장소가 있다.</li>
+  <li><b>불평</b>: 「You have reached your Codex usage limits for security reviews」(199cmt PR) · 「Every PR is born red from quota-dead tooling」(46cmt) · 「the walls of text it adds is exhausting」 · Copilot 라이선스 거부가 오분류돼 Gemini 폴백 불발 · 사람 리뷰 병목(r/ExperiencedDevs 344pts · Oracle 의 AI 코드 금지 536pts).</li>
+  <li><b>추천</b>: 봇 지적은 검증 뒤 수용 — 검증했더니 「All nine were real」(pxx #81) · Bugbot medium/high 는 거의 안 틀린다 + 클로드 아키텍처 리뷰어 병행 · 리뷰 단위는 diff 가 아니라 «결정 흔적»(plan·assumptions).</li>
+  <li>우리에게 닿는 한 줄: <b>봇 하나가 한도에 걸리면 사슬 전체가 «조용히 빨강/초록»이 된다</b> — 우리 실패 6형과 같은 무늬라 어느 조합이든 「한도 도달 = 확인 불가(종료 2)」 얼굴을 먼저 세운다.</li>
+</ul>
+</div>
+</div>
+
+<h2 id="게이트"><span class="n">§7</span>게이트 3 통과표 — ㉠빈 칸·대체 / ㉡원격으로 되나 / ㉢대가</h2>
+<p class="hint">정찰 게이트(08-14 유호 확정): ㉠ 우리 스택의 빈 칸이거나 «확실히 나은 대체»(대체는 걷어낼 것을 이름으로) · ㉡ AI 가 원격으로 짓고 고치고 검증할 수 있나 · ㉢ 틀릴 때의 모습 + 닫을 것 하나. 정지선 넷(돈·모델픽·소급불가·확정충돌)은 기각 사유가 아니라 «요청» 자리다.</p>
+<div class="tbl"><table>
+<tr><th>후보</th><th>㉠ 자리</th><th>㉡</th><th>㉢ 대가 · 닫을 것</th><th>판정</th></tr>
+<tr><td><code>codex exec review --json --output-schema</code> + <code>web_search="live"</code></td><td>대체(구조화 2단계 호출을 걷는다) + 빈 칸(밖의 사실 반박 패스)</td><td>로컬(Codex 로그인이 노트북에만)</td><td>검색이 든 답은 «자료지 판정 아님» — 출처 URL 을 행에 남긴다 · 토큰↑ · 닫을 것 = 2단계 구조화 호출</td><td><span class="v pass">통과 · 내 권한</span>(모델 픽 제외)</td></tr>
+<tr><td>codex-plugin-cc</td><td>빈 칸(세션 안 즉석 적대 검수 · 심문을 자유 텍스트로 조준)</td><td>로컬</td><td>review gate 는 루프로 한도 소진 → <b>끄고</b> 설치 · 장부에 안 적히는 검수라 «배포 근거»로는 안 쓴다</td><td><span class="v pass">통과 · 내 권한</span></td></tr>
+<tr><td>Gemini CLI(API 키 무료 등급) 셋째 검수자</td><td>빈 칸(셋째 벤더 · 사각 편차) — <b>08-06 확정 「제미나이는 코드 검수 안 함(보안 한정)」과 부딪힘</b></td><td>로컬(키 파일)</td><td>250/일 · 학습 사용(공개 코드만) · 모델 검산 필수(#28859) · 9월 키 종류 · 닫을 것 = 없음(추가)</td><td><span class="v cond">조건부 — 알림 뒤 착수</span></td></tr>
+<tr><td>Antigravity <code>agy</code>(구독)</td><td>빈 칸(셋째 벤더 · 구독 · 3.1 Pro 까지)</td><td>로컬(키링)</td><td>약관 §6 회색 · <b>계정 = 2TB 원본</b> · Windows 행 #318 · 주간 상한 미공개 · 닫을 것 = 없음</td><td><span class="v cond">유호님 픽 ㉮</span></td></tr>
+<tr><td><code>claude -p "/code-review" --bare</code> 를 검수자로</td><td>같은 벤더라 사각이 겹친다(기억 정본)</td><td>✓</td><td>Max 차감 · 값이 작다</td><td><span class="v cond">보류</span> — 클로드는 «합성» 역할</td></tr>
+<tr><td>claude-code-action(Max 토큰)</td><td>빈 칸(노트북 없는 검수)</td><td>✓</td><td>Max 한도 · 토큰 1년(#727 미실측) · «ordinary use» 문면 · 닫을 것 = 없음</td><td><span class="v cond">유호님 픽 ㉯</span></td></tr>
+<tr><td><code>@codex review</code>(Codex cloud · Plus)</td><td>빈 칸(노트북 없는 GPT 검수) — 「라이브 repo 에 Codex 안 들임」 문면 갱신 필요(읽기만이라 실질 충돌 없음)</td><td>✓</td><td>Plus 한도 · P0/P1 만 · 비동기</td><td><span class="v cond">유호님 픽 ㉯</span></td></tr>
+<tr><td>run-gemini-cli(무료 키) · CodeRabbit</td><td>빈 칸(노트북 없는 셋째·넷째 눈)</td><td>✓</td><td>학습 사용 · 인젝션 이력(수정됨) / 모델 불명 · 잡음</td><td><span class="v cond">유호님 픽 ㉯</span></td></tr>
+<tr><td>gh-aw · codex-action · Copilot review · 관리형 Code Review · ultrareview</td><td>대체·빈 칸이나 돈·플랜 게이트</td><td>✓</td><td>API 키 종량 / 유료 플랜 / Team 전용 / $5~25</td><td><span class="v fail">기각·보류</span> — 가오픈 때 일괄(다시 여는 조건 = API 결제·OAuth 지원)</td></tr>
+<tr><td>pal-mcp · Ruflo · CCR · vibe-kanban · Conductor · omc</td><td>자리 겹침 · 정지 · API 키 · 폐업 · Mac · 무거움</td><td>—</td><td>—</td><td><span class="v fail">기각</span>(omc 의 <code>ask codex/antigravity</code> 패턴만)</td></tr>
+<tr><td>review-council · consensus-mcp</td><td>«독립 → 합성 → 이견 표면화» 방식</td><td>—</td><td>설치 말고 방식만 러너에 옮긴다</td><td><span class="v pass">참조 구현</span></td></tr>
+<tr><td>Jules MCP</td><td>3자 클라우드 검토(무료 15/일)</td><td>✓(GitHub 저장소 전제)</td><td>검수 모드 없음 · changelog 03-09 정지</td><td><span class="v cond">보류</span></td></tr>
+<tr><td>security-guidance 플러그인 · Claude Security 플러그인</td><td>빈 칸(«쓰면서» 검수 층)</td><td>✓</td><td>턴마다 리뷰 = 사용량·잔소리 · 09-01 「훅 여섯은 안 짓는다」 정신</td><td><span class="v cond">유호님 픽(선택)</span></td></tr>
+<tr><td><code>.agents/skills</code> 정본 + <code>AGENTS.md</code> <code>## Code Review Rules</code></td><td>빈 칸(한 벌 규칙을 셋이 읽음)</td><td>✓</td><td>정본 두 곳 위험 → 정션·복사 규칙 하나 · talk 의 포인터 구조 재사용</td><td><span class="v pass">통과 · 내 권한</span></td></tr>
+</table></div>
+
+<h2 id="설계"><span class="n">§8</span>재설계 안 — 접합점 하나를 열고, 그 위에 심판 한 층</h2>
+<figure>
+<svg class="flow" viewBox="0 0 880 430" role="img" aria-label="안 A: 클로드 허브가 검수자 접합점을 통해 Codex·Gemini·클로드 셋을 독립으로 부르고 장부에 벤더 스탬프로 적은 뒤 합성과 게이트로 간다. 안 B: 깃허브에서 PR 이 열리면 세 액션이 각자 검수하고 집계 잡이 status check 하나로 모은다. 배포는 노트북에 남는다.">
+  <text class="s" x="16" y="16">안 A — 노트북에서(지금 착수 가능 · 유호님 픽은 제미나이 통로 하나)</text>
+  <rect class="n hub" x="16" y="96" width="120" height="50" rx="12"/>
+  <text x="76" y="117" text-anchor="middle">클로드 · 허브</text>
+  <text class="s" x="76" y="134" text-anchor="middle">기억 · 조준 · 처분</text>
+  <path class="l hot" d="M136 121 L 166 121"/><circle class="tip hot" cx="166" cy="121" r="4"/>
+  <rect class="n" x="170" y="96" width="130" height="50" rx="10"/>
+  <text x="235" y="117" text-anchor="middle">검수자() 접합점</text>
+  <text class="s" x="235" y="134" text-anchor="middle">codex-review.js 안</text>
+  <path class="l hot" d="M300 121 C 320 121, 316 46, 336 46"/><circle class="tip hot" cx="336" cy="46" r="4"/>
+  <path class="l" d="M300 121 L 336 121"/><circle class="tip" cx="336" cy="121" r="4"/>
+  <path class="l" d="M300 121 C 320 121, 316 196, 336 196"/><circle class="tip" cx="336" cy="196" r="4"/>
+  <rect class="n" x="340" y="24" width="210" height="44" rx="10"/>
+  <text x="445" y="42" text-anchor="middle">Codex · exec review --json</text>
+  <text class="s" x="445" y="59" text-anchor="middle">Plus 로그인 · read-only · 라이브 검색</text>
+  <rect class="n" x="340" y="99" width="210" height="44" rx="10"/>
+  <text x="445" y="117" text-anchor="middle">Gemini CLI · -p (API 키)</text>
+  <text class="s" x="445" y="134" text-anchor="middle">plan 모드 · 또는 agy(유호님 픽 ㉮)</text>
+  <rect class="n dead" x="340" y="174" width="210" height="44" rx="10"/>
+  <text x="445" y="192" text-anchor="middle">클로드 · -p /code-review --bare</text>
+  <text class="s" x="445" y="209" text-anchor="middle">보류 — 같은 벤더는 사각이 겹친다</text>
+  <path class="l hot" d="M550 46 C 570 46, 566 121, 586 121"/>
+  <path class="l" d="M550 121 L 586 121"/>
+  <path class="l" d="M550 196 C 570 196, 566 121, 586 121"/><circle class="tip hot" cx="586" cy="121" r="4"/>
+  <rect class="n" x="590" y="96" width="110" height="50" rx="10"/>
+  <text x="645" y="117" text-anchor="middle">장부</text>
+  <text class="s" x="645" y="134" text-anchor="middle">행마다 벤더 스탬프</text>
+  <path class="l hot" d="M700 121 L 726 121"/><circle class="tip hot" cx="726" cy="121" r="4"/>
+  <rect class="n" x="730" y="96" width="140" height="50" rx="10"/>
+  <text x="800" y="117" text-anchor="middle">합성 · 게이트</text>
+  <text class="s" x="800" y="134" text-anchor="middle">이견 표면화 · clasp-guard</text>
+  <rect class="n dead" x="16" y="250" width="854" height="164" rx="12"/>
+  <text class="s" x="30" y="270">안 B — 노트북 없이(GitHub · 유호님 픽 ㉯) · 안 A 위에 얹는다</text>
+  <rect class="n" x="30" y="308" width="110" height="48" rx="10"/>
+  <text x="85" y="328" text-anchor="middle">PR 열림</text>
+  <text class="s" x="85" y="345" text-anchor="middle">공개 저장소 · 분 무료</text>
+  <path class="l" d="M140 332 C 160 332, 156 298, 176 298"/><circle class="tip" cx="176" cy="298" r="4"/>
+  <path class="l" d="M140 332 L 176 332"/><circle class="tip" cx="176" cy="332" r="4"/>
+  <path class="l" d="M140 332 C 160 332, 156 366, 176 366"/><circle class="tip" cx="176" cy="366" r="4"/>
+  <rect class="n" x="180" y="280" width="200" height="36" rx="8"/>
+  <text x="280" y="296" text-anchor="middle">claude-code-action</text>
+  <text class="s" x="280" y="310" text-anchor="middle">Max 1년 토큰 · 구독 차감</text>
+  <rect class="n" x="180" y="314" width="200" height="36" rx="8"/>
+  <text x="280" y="330" text-anchor="middle">@codex review</text>
+  <text class="s" x="280" y="344" text-anchor="middle">Codex cloud · Plus ✓</text>
+  <rect class="n" x="180" y="348" width="200" height="36" rx="8"/>
+  <text x="280" y="364" text-anchor="middle">run-gemini-cli / CodeRabbit</text>
+  <text class="s" x="280" y="378" text-anchor="middle">무료 키 / 공개 저장소 무료</text>
+  <path class="l" d="M380 298 C 400 298, 396 332, 416 332"/>
+  <path class="l" d="M380 332 L 416 332"/>
+  <path class="l" d="M380 366 C 400 366, 396 332, 416 332"/><circle class="tip" cx="416" cy="332" r="4"/>
+  <rect class="n" x="420" y="308" width="150" height="48" rx="10"/>
+  <text x="495" y="328" text-anchor="middle">집계 잡</text>
+  <text class="s" x="495" y="345" text-anchor="middle">github-script · 둘 이상 동의</text>
+  <path class="l" d="M570 332 L 606 332"/><circle class="tip" cx="606" cy="332" r="4"/>
+  <rect class="n" x="610" y="308" width="120" height="48" rx="10"/>
+  <text x="670" y="328" text-anchor="middle">status check</text>
+  <text class="s" x="670" y="345" text-anchor="middle">merge 게이트 하나</text>
+  <rect class="n dead" x="750" y="308" width="115" height="48" rx="10"/>
+  <text x="807" y="328" text-anchor="middle">배포는 노트북</text>
+  <text class="s" x="807" y="345" text-anchor="middle">/deploy 그대로</text>
+</svg>
+<figcaption>실선 = 기계가 부른다 · 코랄 = 배포를 막는 축 · 점선 상자 = 아직 안 켠 것. 안 A 의 검수자 셋은 서로 결과를 못 본다(독립) — 합성만 클로드가 한다.</figcaption>
+</figure>
+
+<h3>안 A — 「접합점 하나」 (최소 변경 · 노트북 · 지금 착수 가능)</h3>
+<ul>
+  <li><b>여는 것</b>: <code>codex-review.js</code> 의 <code>codex()</code> 한 함수를 <code>검수자(벤더, 조준, 범위)</code> 인터페이스로 열고, 구현을 셋 둔다 — <code>codex</code>(<code>exec review --json --output-schema -c web_search="live"</code> · 읽기 전용 3플래그 + 도구 8종 차단 그대로) · <code>gemini</code>(<code>gemini -p … -o json --approval-mode plan --skip-trust</code> · 키 파일 · <code>stats.models</code> 검산) · <code>agy</code>(유호님 픽 ㉮ 뒤 · 같은 모양). 장부 행에 <code>벤더</code>·<code>모델(실제 서빙)</code> 칸을 더한다.</li>
+  <li><b>얹는 것</b>: 합성 단계 — 벤더별 지적을 나란히 놓고 «둘 이상이 짚은 것 / 하나만 짚은 것»을 갈라 적는다(review-council 방식). 2회차일 때만 붙던 «합의 스탬프»가 «벤더 합의»로 되살아난다. 심판은 클로드(기억이 있는 쪽)이고 지적 자체는 이종이 낸다 — 「이종은 비교가 아니라 검사」 원칙 그대로.</li>
+  <li><b>걷는 것</b>: 구조화 2단계 호출(<code>--output-schema</code> 가 대신) · 밖의 사실 «손 통로» 중 «코드에 닿는 사실»(Codex 라이브 검색 반박 패스가 <code>밖의사실.jsonl</code> 에 행을 적는다 — 딥리서치 손 통로는 남긴다).</li>
+  <li><b>안 건드리는 것</b>: 배포 게이트의 내용 지문 · 종료코드 3분기(0/1/2) · 넷째 모양 방어(「못 봤다 징후 → 종료 2 · 장부에 안 적음」) · 안전 4종 · <code>/deploy</code>.</li>
+  <li><b>첫 걸음(측정)</b>: ① 같은 커밋을 codex 와 gemini 로 각각 1런 → 고유 지적 수·겹침 수를 센다(사각 편차의 첫 실측 · 분모 = 그 커밋의 지적 합) ② <code>--output-schema</code> 1런이 옛 2단계 산출과 같은 모양인지 대조 ③ 라이브 검색 반박 1건을 <code>밖의사실.jsonl</code> 첫 줄로.</li>
+  <li><b>틀릴 때의 모습</b>: 벤더가 늘면 «지적 총량»이 늘어 처분 손이 는다(codex 미처분이 이미 31) — 그래서 합성이 «둘 이상 동의»를 앞에 세운다. 그리고 Gemini 무료 등급 250/일은 매 배포마다 쓰면 한 달에 닿을 수 있다(배포 81건/12일 실측) → 한도 도달을 «확인 불가»로 세운다.</li>
+</ul>
+<h3>안 B — 「노트북 없이」 (GitHub · 유호님 픽 ㉯)</h3>
+<ul>
+  <li>PR 열림 → claude-code-action(Max 토큰 · <code>/code-review --comment</code>) + <code>@codex review</code> 자동 + run-gemini-cli 또는 CodeRabbit → 집계 잡이 «둘 이상 동의한 P0» 만 required status check 로. 배포는 여전히 노트북. 추가 결제 0.</li>
+  <li>유호님 손이 드는 자리 셋(전부 로그인·인증): <code>claude setup-token</code>(어느 Max 계정에 묶을지) · Codex cloud ↔ GitHub 저장소 연결 승인 · AI Studio 키를 GitHub 시크릿에(또는 CodeRabbit 앱 설치).</li>
+  <li>틀릴 때의 모습: Max 한도가 «자동 리뷰»에 갉힌다(법무 문면 「ordinary, individual usage」) · 봇 한도 도달이 «빨강»으로 모든 PR 을 덮는다(§6 사례) → 집계 잡은 «봇 침묵 = 미확인» 얼굴을 가진다.</li>
+</ul>
+<h3>안 C = A + B</h3>
+<p>배포 게이트는 안 A(노트북 · 장부 · 내용 지문)가 지고, PR 흐름은 안 B 가 «둘째 눈»으로 선다. 순서는 A → B. 이것이 권고 종착점이고, A 는 내 권한 안이다(모델 픽·제미나이 통로만 유호님).</p>
+
+<h2 id="충돌"><span class="n">§9</span>옛 확정과 부딪히는 자리 — 「전에 이렇게 정하셨습니다」</h2>
+<ul>
+  <li><b>08-06 「제미나이는 코드 검수자로 안 쓴다(보안 취약점 리뷰 한정 · 3.5 Flash Cyber 미개통)」</b> — 안 A 의 셋째 검수자는 이 확정을 «넓히는» 것이다. 근거는 그때와 다른 사실 둘: Gemini CLI 에 read-only 모드·정책 엔진이 섰고, «같은 벤더끼리 사각이 겹친다»가 리그 폐지 회귀 넷에서 실물로 증명됐다.</li>
+  <li><b>08-31 「밖의 사실 = 자동화 안 함(손 통로 · 딥리서치 둘)」</b> — 그 판정의 근거 셋(화면 자동화의 조용한 죽음 · 구글 계정 약관 · 브라우저 로그인 부재)은 <b>Codex 라이브 검색에는 하나도 안 걸린다</b>(다른 벤더 · 다른 계정 · API 호출). 「손 통로」는 남기고 «코드에 닿는 사실»만 기계 반박 패스를 더하는 것 — 재판정 자리.</li>
+  <li><b>「Codex·Kimi·DeepSeek 를 라이브 repo 에 들이지 않는다」</b> — 문면은 «쓰기»를 막는 것이었고 read-only 검수는 이미 예외로 돌고 있다. <code>@codex review</code> 도 읽기만. 문면 갱신만 필요.</li>
+  <li><b>Muse 기각 사유 「꽂을 자리가 없다」</b> — 사유가 소멸했다(자리는 CLI). Muse 자체를 다시 올리는 건 아니다(공짜인 쪽이 유료화되거나 라우터를 깔았을 때라는 조건도 그대로).</li>
+  <li><b>「MCP 는 결제를 건너뛰는 문이 아니라 포장지」</b> — 그대로 참. 이번 재설계는 MCP 를 안 쓴다(플러그인·CLI).</li>
+  <li><b>08-31 「검수·심문 = luna/xhigh ×1」</b> — 이 문서는 모델을 안 정한다. 다만 벤더가 늘면 «회차 2 에만 붙던 합의 스탬프»의 자리가 «벤더 합의»로 바뀐다는 것만 적어 둔다.</li>
+  <li><b>09-01 「훅 여섯은 안 짓는다」</b> — security-guidance 플러그인은 «훅 셋»을 들이는 것이라 같은 정신에 걸린다. 그래서 유호님 픽(선택)으로 뒀다.</li>
+  <li><b>🚫 Copilot · Cursor 축</b> — 그대로. Copilot code review 는 유료 플랜이라 기각.</li>
+  <li><b>🔒 학생 식별 데이터 반출 금지</b> — Gemini 무료 등급은 입력이 학습에 쓰인다. 검수 대상은 공개 저장소 코드·공개 카피뿐이라 같은 선 위에 있지만, 시트·학생 데이터가 든 diff 는 제미나이 검수자에서 <b>빼는 필터</b>가 필요하다(닫을 것 하나).</li>
+</ul>
+
+<h2 id="픽"><span class="n">§10</span>유호님 픽 — 완성형으로</h2>
+<div class="card top">
+<h3>㉮ 제미나이를 어느 통로로 넣나</h3>
+<div class="row">
+  <div class="k">A</div><div><b>API 키 레인(Gemini CLI · 무료 등급)</b> — 위험 0 · 오늘 이미 답했다 · 250/일 · 모델 검산 필수. <span class="v pass">권고 — 먼저 이것</span></div>
+  <div class="k">B</div><div><b>구독 레인(<code>agy</code>)</b> — 3.1 Pro 까지 · 한도 넉넉(숫자 미공개) · 로그인 1회(유호님) · 대가 = 약관 §6 회색지대 + <b>계정(2TB 원본)</b> + Windows 행 #318. 하려면 새 구글 계정 분리는 안 된다(AI Pro 가 그 계정이다).</div>
+  <div class="k">C</div><div>둘 다 안 넣고 Codex 만 — 셋째 벤더의 사각 편차를 포기.</div>
+  <div class="k">내 판정</div><div>A 로 시작하고 B 는 «구글이 §6 를 공식 CLI 헤드리스에 안 건다고 답하는 날» 또는 «A 의 한도가 실제로 막히는 날» 다시 연다.</div>
+</div>
+</div>
+<div class="card top">
+<h3>㉯ 노트북이 꺼져도 도는 검수(GitHub)를 켜나</h3>
+<div class="row">
+  <div class="k">A</div><div>켠다 — 셋 다(Max 토큰 + <code>@codex review</code> + Gemini 무료 키) · 집계 잡 하나. 손이 드는 자리 = 로그인 셋(§8 안 B).</div>
+  <div class="k">B</div><div>Max 한도를 안 건드리는 둘만 — <code>@codex review</code> + Gemini/CodeRabbit.</div>
+  <div class="k">C</div><div>안 켠다 — 지금처럼 노트북 사슬만.</div>
+  <div class="k">내 판정</div><div>B 부터. 이유 = Max 한도는 이미 «너무 막힌다»(08-04 진술)고 확정하신 병목이고, 자동 리뷰는 그 한도를 «ordinary use» 문면 밖에서 갉는다. A 는 개원 뒤 «노트북 없이 운영하는 첫 날»(개원전 큐 Q4 트리거)에 다시.</div>
+</div>
+</div>
+<div class="card top">
+<h3>㉰ 제미나이 API 키 종류 — 1분 · 픽이 아니라 확인</h3>
+<div class="row">
+  <div class="k">어디</div><div>브라우저 → <a href="https://aistudio.google.com/apikey">aistudio.google.com/apikey</a> → 표의 「<b>Key Type</b>」 칸을 본다.</div>
+  <div class="k">Standard 면</div><div>같은 화면 「Create API key」 한 번(새 키는 자동으로 auth key) → 새 값을 <code>C:\Users\q1212\SYNK_보안\제미나이.txt</code> 에 «덮어쓰기» → 저장 뒤 저에게 「키 바꿨어」 한 마디(제가 <code>node tools/모델정책.js --제미나이확인</code> 으로 살았는지 재고, 옛 키는 그 화면에서 삭제하시면 끝). 값은 채팅에 붙이지 않는다.</div>
+  <div class="k">Auth 면</div><div>할 일 없음.</div>
+  <div class="k">왜 지금</div><div>구글 문면 「September 2026: The Gemini API will reject requests from Standard keys」 — 걸리면 몽골어 검문 5층이 그날부터 «확인 불가»로 멈춘다.</div>
+</div>
+</div>
+<div class="card">
+<h3>㉱ 선택 — 「쓰면서 검수」 훅 층 · 돈 층</h3>
+<div class="row">
+  <div class="k">훅 층</div><div><code>security-guidance</code> 플러그인(훅 셋 · 모델 호출은 턴 끝·커밋 때만) — 09-01 「훅 여섯은 안 짓는다」 정신에 걸려 제가 안 켭니다. 켜라 하시면 한 줄.</div>
+  <div class="k">돈 층</div><div>ultrareview(3회 무료 뒤 $5~25) · gh-aw(API 키) · Copilot review — 가오픈 때 일괄(상시 지시 그대로). 지금은 안 엽니다.</div>
+</div>
+</div>
+<div class="note">
+<p><b>제 권한으로 바로 되는 것</b>(지시 한 마디면 그 자리에서): ① <code>codex-plugin-cc</code> 설치(게이트 off) ② 러너에 <code>검수자()</code> 접합점 + <code>--output-schema</code> + 라이브 검색 반박 행 ③ Gemini CLI 를 둘째 검수자로(㉮ A) + <code>stats.models</code> 검산 + 학생 데이터 필터 ④ <code>.agents/skills</code> 정본 규칙 ⑤ 첫 측정 셋(§8 안 A). 모델·효력 값은 안 건드립니다.</p>
+</div>
+
+<h2 id="못잰것"><span class="n">§11</span>못 잰 것 · 분모</h2>
+<ul>
+  <li><b>자</b>: 조사 에이전트 6(웹 5 · last30days 1) · 웹 열람 495회(52+116+91+114+122) · 이 기계 실측 = Codex(MCP 서버 · 라이브 검색 · Windows 울타리 · 플래그) · Gemini CLI(설치 · 헤드리스 · 모델 검산) · Claude Code 플래그.</li>
+  <li><b>안 잰 것</b>: <code>agy</code> 를 이 기계에 설치·로그인(유호님 자리라 안 했다 — Windows 행 #318 재현 여부 모름) · <code>claude setup-token</code> 실제 만료(문서 1년 vs 이슈 #727) · codex-plugin-cc 의 Windows 실동작 · <code>codex exec</code> «안의» 셸이 Windows 울타리에 드는지(헬퍼로만) · Plus 주간 상한 수치 · Gemini 무료 등급 RPM/RPD(대시보드만) · 우리 키의 종류 · 공개 저장소에서 <code>@codex review</code> 실동작 · Codex 가 프로젝트 <code>.codex/config.toml</code> 을 읽는지.</li>
+  <li><b>못 찾은 것</b>: 세 공식 액션 + 심판을 붙인 공개 완성본(검색 2회 · 0건) · zen-mcp/clink 의 최근 30일 언급(0건) · 「AI 가 승인해서 버그가 나갔다」 개별 사고 보고(검색 1회 · 0건).</li>
+  <li><b>되돌리기</b>: 오늘 이 기계에 남긴 것은 Gemini CLI 전역 설치 하나 — <code>npm uninstall -g @google/gemini-cli</code>. 저장소 파일은 이 지면 하나만 새로 생겼다.</li>
+</ul>
+<!-- §끝 -->
+
+<footer>
+  <p>자 = 이 기계 실측(명령 출력 원문) · GitHub README/릴리스 노트 · 각 벤더 공식 문서(확인 날짜를 항목마다 적었다). 벤더 숫자(가격·한도·버전)는 가장 빨리 썩는 층이라 «날짜와 함께»만 믿는다. 모델 픽은 이 문서가 정하지 않는다(유호님 몫 · 정본 = <code>tools/모델정책.js</code>).</p>
+  <p>정본 = <code>docs/교차검수_재설계_정찰_2026-09-02.html</code> · 바탕화면 「SYNK 방향」 바로가기 · 앞선 판정 = <code>docs/_ops/하네스재판정_0901.md</code> · <code>docs/AI_스택_가이드.md</code>.</p>
+</footer>
+
+</div>
+</body>
+</html>
