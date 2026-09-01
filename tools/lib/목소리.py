@@ -15,8 +15,11 @@ def 굽기_qwen(글, 언어, 목소리, 톤, 출력, 모델):
     from qwen_tts import Qwen3TTSModel
 
     장치 = "xpu" if (hasattr(torch, "xpu") and torch.xpu.is_available()) else "cpu"
-    dtype = torch.float16 if 장치 == "xpu" else torch.float32
-    print("[엔진] qwen / 장치 %s" % 장치, flush=True)
+    # 🔴 Arc(XPU)에서는 **float32 만 된다**(2026-09-01 실측). float16·bfloat16 은 둘 다
+    #    `TensorCompareKernels.cpp:180` assertion 으로 죽는다 — XPU 커널 쪽 한계다.
+    #    (OmniVoice 는 같은 GPU 에서 float16 이 멀쩡하다 — 엔진마다 다르니 함께 바꾸지 말 것.)
+    dtype = torch.float32
+    print("[엔진] qwen / 장치 %s / dtype %s" % (장치, dtype), flush=True)
 
     t = time.time()
     model = Qwen3TTSModel.from_pretrained(모델, device_map=장치, dtype=dtype)
