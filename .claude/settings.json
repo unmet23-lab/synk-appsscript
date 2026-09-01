@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/turn-end-ledger.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then printf %s \"$IN\" | node \"$H\"; fi; exit 0",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/turn-end-ledger.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then printf %s \"$IN\" | node \"$H\"; exit $?; fi; exit 0",
             "shell": "bash",
             "timeout": 25,
             "statusMessage": "공용 원장 미커밋 검사"
