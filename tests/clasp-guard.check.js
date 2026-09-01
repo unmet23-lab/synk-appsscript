@@ -55,6 +55,17 @@ function denyReason(r) {
   } catch (_) { return ''; }
 }
 
+/* (c) 통과 + 안내 — 막지 않았고(permissionDecision 없음) 안내(additionalContext)는 붙어 있다.
+ *    09-02 실측: 원격 CI 가 그 HEAD 를 초록으로 통과시키면 게이트는 로컬 스위트를 건너뛰고 이 얼굴로
+ *    통과한다. 검사 4 는 알았는데 6·8 은 (a)무출력·(b)deny 둘만 알아 거짓 적색 2건을 냈다 —
+ *    얼굴 판정은 이 한 함수만 안다(같은 판정을 두 자로 재면 갈린다). */
+function 통과안내(r) {
+  try {
+    const hso = JSON.parse(r.out).hookSpecificOutput;
+    return !!hso && !hso.permissionDecision && !!hso.additionalContext;
+  } catch (_) { return false; }
+}
+
 let fails = 0;
 function check(name, cond) {
   console.log((cond ? 'ok   ' : 'FAIL ') + name);
@@ -97,10 +108,7 @@ if (r.out === '') {
     console.log('  ' + 사유.split(String.fromCharCode(10)).join(String.fromCharCode(10) + '  '));
   } else {
     // (c) 통과 + 안내 — 막지 않았으므로 `permissionDecision` 이 없어야 하고, 안내는 붙어 있어야 한다.
-    check(
-      'push 게이트: 통과+안내 JSON 형식',
-      r.code === 0 && !!hso && !hso.permissionDecision && !!hso.additionalContext,
-    );
+    check('push 게이트: 통과+안내 JSON 형식', r.code === 0 && 통과안내(r));
     const 첫줄 = String((hso && hso.additionalContext) || '').split(String.fromCharCode(10))[0];
     console.log('  (막지 않았다 · 붙은 안내 첫 줄) ' + 첫줄);
   }
@@ -138,7 +146,7 @@ if (r.out === '') {
   const r = feed(PUSH, main);
   const reason = denyReason(r);
   check('메인 cwd는 워크트리로 오판하지 않음', !/워크트리에서는 clasp push/.test(reason));
-  check('메인 cwd 응답 형식 유지', r.code === 0 && (r.out === '' || reason !== ''));
+  check('메인 cwd 응답 형식 유지', r.code === 0 && (r.out === '' || reason !== '' || 통과안내(r)));
 }
 
 /* 7) [2026-08-01 감사] **배포되는 파일 전부**가 미커밋 검사에 걸리는가.
@@ -213,7 +221,7 @@ if (워크트리인가) {
   const real = "git commit -F - <<'EOF'\n메시지\nEOF\n\"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd\" push --force";
   const r8 = feed(real, path.resolve(__dirname, '..'));
   check('heredoc 뒤에 실제 clasp push가 오면 게이트가 가동된다', r8.out !== '' || r8.code === 0);
-  check('  └ 가동 시 형식은 deny JSON', r8.out === '' ? true : /\[clasp-guard\]/.test(denyReason(r8)));
+  check('  └ 가동 시 형식은 deny JSON 또는 통과+안내 JSON', r8.out === '' ? true : (/\[clasp-guard\]/.test(denyReason(r8)) || 통과안내(r8)));
 }
 
 process.exit(fails ? 1 : 0);
