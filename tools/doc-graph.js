@@ -209,12 +209,26 @@ function canonVersion(text) {
  *
  * 그래서 파생이 `<!-- 파생: … -->` 로 선언하듯 정본은 `<!-- 정본: v1.0 -->` 로 선언한다.
  * ⚠ maskCode 를 반드시 거친다 — 이 표기법을 **설명하는** 문서가 자기 예시 때문에 정본이
- * 되는 함정은 doc-graph 가 엣지 쪽에서 이미 한 번 밟았다(위 maskCode 주석). */
+ * 되는 함정은 doc-graph 가 엣지 쪽에서 이미 한 번 밟았다(위 maskCode 주석).
+ *
+ * [2026-09-01] **판을 안 적는 선언 `<!-- 정본 -->` 도 받는다** — 지위만 말하고 판은 문서 본문에서
+ * 읽게 하는 통로다. 까닭: 판을 선언에 박으면 그 값이 **문서 머리말과 선언 두 곳에** 살고,
+ * 이 저장소가 반복해 데인 자리가 바로 그것이다([[constant-known-in-two-places]]).
+ * 같은 날 판 읽기를 «줄머리» 규칙으로 고쳐 본문에서 정확히 읽을 수 있게 됐으므로,
+ * 이제 선언은 **「나는 정본이다」만** 말하는 편이 낫다. 판까지 적은 옛 선언은 그대로 이긴다
+ * — 명시한 값이 주워 온 값보다 정확한 자리가 아직 있다(제목만 있고 이력이 없는 문서). */
 const SELF_CANON_RE = /<!--\s*정본:\s*(v\d+(?:\.\d+)*)\s*-->/i;
+const SELF_CANON_BARE_RE = /<!--\s*정본\s*-->/i;
+function canonHead(text) {
+  return maskCode(String(text)).split('\n').slice(0, VERSION_SCAN_LINES).join('\n');
+}
 function selfDeclaredCanon(text) {
-  const head = maskCode(String(text)).split('\n').slice(0, VERSION_SCAN_LINES).join('\n');
-  const m = head.match(SELF_CANON_RE);
+  const m = canonHead(text).match(SELF_CANON_RE);
   return m ? m[1].toLowerCase() : null;
+}
+/** 판 없는 정본 선언 — 지위만 참으로 만들고 판은 canonVersion 이 읽는다. */
+function selfDeclaredCanonBare(text) {
+  return SELF_CANON_BARE_RE.test(canonHead(text));
 }
 
 const sameVersion = (a, b) =>
@@ -277,10 +291,11 @@ function build() {
     const r = rel(full);
     let text = '';
     try { text = fs.readFileSync(full, 'utf8'); } catch (_) { continue; }
-    // 정본 지위는 경로 규칙 **또는** 자기 선언. 선언이 있으면 버전도 그쪽이 이긴다 —
+    // 정본 지위는 경로 규칙 **또는** 자기 선언. 판까지 적은 선언이면 버전도 그쪽이 이긴다 —
     // 명시한 값이 머리말에서 주워 온 값보다 정확하다.
+    // 판 없는 선언(`<!-- 정본 -->`)은 지위만 세우고 판은 canonVersion 이 본문에서 읽는다.
     const 선언 = selfDeclaredCanon(text);
-    const canon = isCanon(r) || !!선언;
+    const canon = isCanon(r) || !!선언 || selfDeclaredCanonBare(text);
     docs.set(r, {
       rel: r, full, canon,
       edges: parseEdgesFull(text),
