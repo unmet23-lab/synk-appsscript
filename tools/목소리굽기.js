@@ -30,10 +30,16 @@ const ROOT = path.resolve(__dirname, '..');
 // ── 정본: 빌린 것들이 사는 자리 ────────────────────────────────────────────
 const 빌림뿌리 = 'C:\\Users\\q1212\\Documents\\synk-vendor';
 
+// 🔴 **두 엔진은 같은 가상환경에 못 산다**(2026-09-01 실측). qwen-tts 를 omnivoice 옆에 깔면
+//    transformers 가 5.16 → 4.57 로 내려가고 omnivoice 가 즉사한다
+//    (`ImportError: cannot import name 'HiggsAudioV2TokenizerModel'`). 그래서 환경을 갈라 둔다.
+//    둘 다 Intel Arc(XPU) 판 torch 를 쓴다 — `torch==2.12.0+xpu`(CPU 판이 깔려 있으면 조용히 무시되니
+//    반드시 uninstall 뒤 설치한다 · pip 은 이 자리에서 45분간 실패했고 uv 는 4분에 끝냈다).
+
 const 엔진표 = {
   qwen: {
     설명: 'Qwen3-TTS — 모국어 목소리(한국어는 Sohee)',
-    venv: path.join(빌림뿌리, '.venv', 'Scripts', 'python.exe'),
+    venv: path.join(빌림뿌리, '.venv-qwen', 'Scripts', 'python.exe'),
     모델: 'Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice',
     기본목소리: 'Sohee',
   },
