@@ -31,13 +31,23 @@
  *   node tools/ai스택점검.js --훅        # 적색만 · 하루 1회(SessionStart 용)
  *   node tools/ai스택점검.js --훅 --force # 스로틀 무시
  *   node tools/ai스택점검.js --json
+ *   node tools/ai스택점검.js --개명 <옛경로> <새경로> --사유 "왜"   # 심문 장부에 개명 사슬을 잇는다
  * 종료코드: 0=정상(적색이 있어도 0 — 알림이다) · 1=자 자신이 못 돈 것(«확인 불가»이지 「정상」이 아니다)
+ *
+ * ■ 개명 — 왜 «지우기»가 아니라 «얹기»인가 (2026-09-01)
+ *   장부는 append-only 이력이라 문서를 개명하면 옛 이름이 영원히 남는다. 그러면 자가 둘로 갈려
+ *   틀린다: 여기는 「추적 끊김」으로 **영원히 울고**, `review-runs` 는 파일이 없어 `continue` 로
+ *   **영원히 침묵한다**(한쪽은 소음, 한쪽은 실명). 옛 줄은 그때 참이었으므로 고치지 않고,
+ *   `{종류:'개명', 옛대상, 새대상, 사유}` 한 줄을 얹어 사슬을 잇는다.
+ *   사슬 푸는 코드는 `tools/lib/심문장부.js` **하나**다 — 두 자가 각자 풀면 반드시 어긋난다.
  */
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
+// 개명 사슬 해석은 여기 하나뿐이다(review-runs 도 같은 모듈을 쓴다).
+const 장부해석 = require('./lib/심문장부.js');
 
 /* 뿌리를 env 로 갈아끼울 수 있게 둔다 — **회귀가 픽스처 저장소를 세워 탐지력을 재기 위해서다.**
  * 실저장소에서는 대개 「걸린 것 0」이라 여기서 초록은 「깨끗하다」와 「자가 죽었다」를 못 가른다
@@ -129,11 +139,11 @@ function 코드지운(본문) {
 function 심문커버리지() {
   const 적색 = [], 알림 = [];
   const 행들 = jsonl(심문장부());
-  const 심문됨 = new Set();
-  const 가리킨것 = new Set();
-  if (행들) for (const r of 행들) {
-    if (r && r.종류 === '심문' && r.대상) { 가리킨것.add(r.대상); if (r.상태 === '완료' || !r.상태) 심문됨.add(r.대상); }
-  }
+  /* 개명 사슬은 `tools/lib/심문장부.js` 가 «혼자» 푼다 — review-runs 의 드리프트도 같은 모듈을
+   * 쓴다. 두 자가 각자 풀면 한쪽은 쉬지 않고 울고 한쪽은 눈이 먼다(09-01 실물이 정확히 그것). */
+  const 접힘 = 장부해석.요약(행들 || []);
+  const 심문됨 = 접힘.심문됨;
+  const 가리킨것 = 접힘.가리킨것;
 
   const 선언 = [], 면제 = [], 후보 = [];
   for (const abs of 문서들()) {
@@ -174,7 +184,19 @@ function 심문커버리지() {
   if (끊김.length) {
     적색.push(`🔴 **심문 장부가 가리키는 파일이 없다 ${끊김.length}벌** — 개명이거나 지워졌다. 「드리프트 없음」이 아니라 «추적 끊김»이다:`);
     for (const p of 끊김) 적색.push(`   · ${p} (장부에는 있는데 디스크에 없다)`);
-    적색.push('   개명이면 새 이름으로 다시 심문한다 — 장부는 이력이라 고쳐 쓰지 않는다.');
+    /* 처방을 «우는 자리»에 붙인다 — 09-01 까지 이 자리는 「다시 심문한다」고만 했는데, 그러면
+     * 새 이름으로 줄이 하나 더 늘 뿐 **옛 줄은 그대로 울었다**(장부는 이력이라 안 고친다).
+     * 개명 사건 줄이 그 사슬을 잇는다 — 옛 줄은 참인 채로 남고 자만 최종 이름을 본다. */
+    적색.push('   개명이면 사슬을 잇는다(장부는 고치지 않고 «사건 줄»을 얹는다):');
+    적색.push('     node tools/ai스택점검.js --개명 <옛경로> <새경로> --사유 "왜 바뀌었나"');
+    적색.push('   진짜 지워진 것이면 그 트랙의 일이다 — 여기서 지어내지 않는다.');
+  }
+  /* 순환은 «조용히 한 칸만 가는» 대신 말한다 — 장부는 사람도 쓰는 자리라 A→B→A 가 실제로 가능하다. */
+  const 순환들 = [...접힘.대상들.entries()].filter(([, v]) => v.순환).map(([k]) => k);
+  if (순환들.length) {
+    적색.push(`🔴 **개명 사슬이 돈다 ${순환들.length}벌** — 사슬 끝을 못 정한다(마지막으로 닿은 이름에서 멈췄다):`);
+    for (const p of 순환들) 적색.push(`   · ${p}`);
+    적색.push('   장부에 되돌리는 개명 줄이 들어간 것이다. 지금 이름으로 «앞으로 가는» 줄을 하나 더 얹어 끊는다.');
   }
   if (후보.length) {
     알림.push(`🟠 **표식이 없는 심문 후보 ${후보.length}벌** — 본문이 스스로 「소급 불가」를 말하는 설계·계약·규격 문서다.`);
@@ -184,7 +206,11 @@ function 심문커버리지() {
 
   return {
     적색, 알림,
-    셈: { 선언: 선언.length, 면제: 면제.length, 미심문: 미심문.length, 후보: 후보.length, 끊김: 끊김.length, 장부: 행들 ? 행들.length : null },
+    셈: {
+      선언: 선언.length, 면제: 면제.length, 미심문: 미심문.length, 후보: 후보.length,
+      끊김: 끊김.length, 개명: 접힘.개명수, 순환: 순환들.length,
+      장부: 행들 ? 행들.length : null,
+    },
   };
 }
 
@@ -277,10 +303,65 @@ function 도장쓰기(v) {
   } catch (e) { return e.message; }
 }
 
+/* ── 개명 사건 줄 적기 (2026-09-01 · 유호님 「개명 사건 줄 받게 지어줘」)
+ *
+ * 🔑 **장부를 고쳐 쓰지 않는다.** 옛 줄은 그때 참이었으므로 그대로 두고, 사슬을 잇는 줄을 얹는다.
+ * 🔑 **처방이 우는 자리에 붙어 있다** — 끊김을 보는 자가 곧 그것을 닫는 자다. 처방을 다른 도구에
+ *   두면 「우는 곳」과 「고치는 곳」이 갈리고, 그 사이에서 사람이 잊는다.
+ * ⚠ 거절하는 자리 넷: 값 없음 · 새 파일이 없다(오타) · 옛 파일이 아직 있다(개명이 아니라 사본이다)
+ *   · 그 이름을 가리키는 심문 줄이 장부에 없다(이으면 «아무 데도 안 닿는» 줄이 된다).
+ *   강행 손잡이는 두지 않는다 — 넷 다 「사실이 아니면 적지 않는다」 쪽이다. */
+function 개명적기(argv) {
+  const i = argv.indexOf('--개명');
+  const 값들 = [argv[i + 1], argv[i + 2]];
+  if (값들.some((v) => !v || /^--/.test(v))) {
+    console.error('실행 오류: node tools/ai스택점검.js --개명 <옛경로> <새경로> --사유 "왜 바뀌었나"');
+    return 1;
+  }
+  const 사유i = argv.indexOf('--사유');
+  const 사유 = 사유i >= 0 ? argv[사유i + 1] : null;
+  if (!사유 || /^--/.test(사유)) {
+    console.error('실행 오류: --사유 가 필요하다 — 사유 없는 개명 줄은 다음 사람에게 「알 수 없음」이다');
+    return 1;
+  }
+  const 상대 = (p) => path.relative(ROOT, path.resolve(ROOT, p)).replace(/\\/g, '/');
+  const [옛, 새] = 값들.map(상대);
+
+  if (!fs.existsSync(path.join(ROOT, 새))) {
+    console.error(`실행 오류: 새 경로가 없다 — ${새} (오타이거나 아직 안 옮겼다)`);
+    return 1;
+  }
+  if (fs.existsSync(path.join(ROOT, 옛))) {
+    console.error(`실행 오류: 옛 경로가 아직 있다 — ${옛}. 둘 다 있으면 «개명»이 아니라 사본이다.`);
+    return 1;
+  }
+  const 행들 = jsonl(심문장부()) || [];
+  if (!행들.some((r) => r && r.종류 === '심문' && r.대상 === 옛)) {
+    console.error(`실행 오류: 장부에 «${옛}» 을 가리키는 심문 줄이 없다 — 이으면 아무 데도 안 닿는 줄이 된다.`);
+    console.error('  장부가 가리키는 것: node tools/ai스택점검.js --json');
+    return 1;
+  }
+
+  const 줄 = 장부해석.개명줄(옛, 새, 사유);
+  try {
+    fs.mkdirSync(path.dirname(심문장부()), { recursive: true });
+    fs.appendFileSync(심문장부(), JSON.stringify(줄) + '\n', 'utf8');
+  } catch (e) {
+    console.error(`실행 오류: 장부에 못 적었다 — ${e.message}`);
+    return 1;
+  }
+  console.log(`✅ 개명 줄을 얹었다: ${옛} → ${새}`);
+  console.log(`   사유: ${사유}`);
+  console.log('   이제 자와 review-runs 가 «최종 이름»으로 본다 — 끊김은 닫히고, 심문 뒤 자란 것은 드리프트로 뜬다.');
+  return 0;
+}
+
 function main() {
   const argv = process.argv.slice(2);
   const 훅 = argv.includes('--훅') || argv.includes('--hook');
   const 강제 = argv.includes('--force');
+
+  if (argv.includes('--개명')) return 개명적기(argv);
 
   const 축 = [
     ['②설계 심문 (Codex)', 심문커버리지()],
