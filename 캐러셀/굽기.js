@@ -56,6 +56,22 @@ const 제목 = (머리.match(/^#\s+(.+)$/m) || [, 편이름])[1].trim();
 const 훅 = (머리.match(/^훅:\s*(.+)$/m) || [, ''])[1].trim();
 const 마무리끄기 = /^마무리:\s*끄기/m.test(머리);
 
+// 말 — 자동으로 붙는 문구(표지 넘김·판정 배지·마무리)가 이 표에서 나온다.
+// 까닭: LAB 계정은 «몽골어 · 학생·학부모»이고 개인 계정은 «한국어 · 업계»다(영상_공개선 ㉠ 표).
+// 원고 머리에 `언어: mn` 을 적으면 그 말로 굽는다. 안 적으면 지금까지처럼 한국어다.
+const 말표 = {
+  ko: { 넘김: '밀어서 보기 →', 배지: '내 판정',
+        끝말: 'AI로 교육 회사를 짓고 있습니다.', 끝잔: '저장해 두세요 — 다음 판정과 함께 돌아옵니다.' },
+  mn: { 넘김: 'Гүйлгэж үзнэ үү →', 배지: 'Гол нь',
+        끝말: 'Улаанбаатарт солонгос хэлний сургалтын төв бэлтгэж байна.',
+        끝잔: 'Хадгалж аваарай — дараагийн бичлэгээр уулзъя.' },
+  en: { 넘김: 'Swipe →', 배지: 'The point',
+        끝말: 'We are building a Korean-language school in Ulaanbaatar.',
+        끝잔: 'Save this — we will be back with the next one.' },
+};
+const 언어 = (머리.match(/^언어:\s*(ko|mn|en)/m) || [, 'ko'])[1];
+const 말 = 말표[언어];
+
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const 본문HTML = s => esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
   .split(/\n\s*\n/).map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('\n');
@@ -86,12 +102,12 @@ let 카드들 = [];
   <div class="카드로고">${로고}</div>
   <h1>${esc(제목)}</h1>
   ${훅 ? `<p class="훅">${esc(훅)}</p>` : ''}
-  <div class="넘김">밀어서 보기 →</div>
+  <div class="넘김">${말.넘김}</div>
 </section>`);
 // 본문·판정 장
 장들.forEach((장, i) => {
   카드들.push(`<section class="카드${장.판정 ? ' 판정' : ''}">
-  <div class="카드머리"><span class="잔글">${esc(제목)}</span>${장.판정 ? '<span class="판정배지">내 판정</span>' : ''}</div>
+  <div class="카드머리"><span class="잔글">${esc(제목)}</span>${장.판정 ? `<span class="판정배지">${말.배지}</span>` : ''}</div>
   <h2>${esc(장.장제목)}</h2>
   <div class="본문">${본문HTML(장.본문)}</div>
   ${진행점(i + 1)}
@@ -101,8 +117,8 @@ let 카드들 = [];
 // 마무리
 if (!마무리끄기) 카드들.push(`<section class="카드 마무리">
   <div class="카드로고 큰">${로고}</div>
-  <p class="끝말">AI로 교육 회사를 짓고 있습니다.</p>
-  <p class="끝잔">저장해 두세요 — 다음 판정과 함께 돌아옵니다.</p>
+  <p class="끝말">${말.끝말}</p>
+  <p class="끝잔">${말.끝잔}</p>
 </section>`);
 
 // ── 보충 CSS — Loom 이 침묵하는 «카드 프레임»만. 값은 Loom 변수 소비 ──────
