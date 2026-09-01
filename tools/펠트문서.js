@@ -85,17 +85,14 @@ function 정본읽기() {
   const 토큰 = JSON.parse(fs.readFileSync(토큰길, 'utf8'));
   const 색 = {};
   for (const c of 토큰['색']['킷']) 색[c['이름']] = c['hex'];
-  /* 표지 히어로 = 구운 «합주» 장면(유리·레진·펠트가 한 무대 · 룸굽기 부품표 「표지·히어로 장면」).
-     v0.5(09-01 · 유호 「요소가 부족해 — 훨씬 더 명품」): 부품표가 이 쓰임으로 구워 둔 자산을
-     표지가 처음으로 입는다. 없으면 CSS 로 물러서지 않는다(그 우회가 F498). */
+  /* 표지 히어로 = 구운 실물(두 층). 기본은 «합주»(유리·레진·펠트 한 무대 · 룸굽기 부품표의
+     「표지·히어로 장면」)이고, 원고가 `<!--히어로:이름-->` 으로 자기 얼굴을 고르면 그것이 이긴다.
+     없으면 CSS 로 물러서지 않는다 — 그 우회가 F498 이다. */
   if (!fs.existsSync(구운길)) {
     throw new Error('구운재질이 없다 — node tools/룸굽기.js --전량 → python tools/룸자산화.py : ' + 구운길);
   }
-  const 합주 = (JSON.parse(fs.readFileSync(구운길, 'utf8'))['부품'] || {})['합주'];
-  if (!합주 || !합주['몸'] || !합주['접지']) {
-    throw new Error('구운재질에 「합주」 두 층(몸·접지)이 없다 — node tools/룸굽기.js --굽기 합주 → python tools/룸자산화.py');
-  }
-  return { 천: 천['천'], 규격: 천['_규격'], 색, 서체: 토큰['서체'], 합주 };
+  const 부품들 = JSON.parse(fs.readFileSync(구운길, 'utf8'))['부품'] || {};
+  return { 천: 천['천'], 규격: 천['_규격'], 색, 서체: 토큰['서체'], 부품들 };
 }
 
 const 변수이름 = (이름) => '--' + 이름.toLowerCase().replace(/\s+/g, '');
@@ -200,8 +197,18 @@ function 대비판정() {
 const 채움 = (s, n) => String(s) + ' '.repeat(Math.max(0, n - String(s).length));
 
 /** 스킨 CSS 조립. @param 쓸천 인라인할 펠트 타일 @param 림 '무채'(기본)|'스펙트럼' */
-function 스킨(쓸천, 림 = '무채') {
-  const { 천, 규격, 색, 서체, 합주 } = 정본읽기();
+function 스킨(쓸천, 림 = '무채', 히어로 = null, 쓴클래스 = null) {
+  const { 천, 규격, 색, 서체, 부품들 } = 정본읽기();
+  /* 얼굴 고르기 — 원고 지정이 이기고, 없거나 못 찾으면 합주. 못 찾은 이름은 **조용히 넘기지 않는다**
+     (오타 하나로 7벌이 같은 얼굴로 돌아가는데 아무도 안 운다 — 「새는 방향은 언제나 통과」). */
+  const 얼굴이름 = 히어로 && 부품들[히어로] ? 히어로 : '합주';
+  if (히어로 && !부품들[히어로]) {
+    throw new Error(`원고가 부른 히어로 「${히어로}」 가 구운재질에 없다 — 이름을 고치거나 그 자산을 굽는다`);
+  }
+  const 얼굴 = 부품들[얼굴이름];
+  if (!얼굴 || !얼굴['몸']) throw new Error('구운재질에 「' + 얼굴이름 + '」 이 없다 — node tools/룸굽기.js --전량');
+  const 얼굴층 = 얼굴['접지'] ? `url(${얼굴['몸']}),url(${얼굴['접지']})` : `url(${얼굴['몸']})`;
+  const 얼굴꼴 = 얼굴이름 === '합주' ? '1058/600' : '1/1';    /* 합주만 가로 장면, 나머지는 정사각 물건 */
   const 목록 = (쓸천 && 쓸천.length ? 쓸천 : 기본천);
   const 없는것 = 목록.filter((n) => !천[n]);
   if (없는것.length) throw new Error('구운 적 없는 천: ' + 없는것.join(', '));
@@ -244,7 +251,7 @@ function 스킨(쓸천, 림 = '무채') {
    ⚠순서가 규율이다 — loom 이 «먼저», 골격이 «뒤». 뒤가 이기므로 골격은 고의로 덮을 수 있고,
      덮은 자리는 아래 §② 에 이유가 한 줄씩 붙어 있다(이유 없는 덮기는 중복 정본의 재발이다).
    ══════════════════════════════════════════════════════════════════════════ */
-${loom.css({ 지면: '문서', 림, 천: 천[목록[0]] ? `url(${천[목록[0]].uri})` : null })}
+${loom.css({ 지면: '문서', 림, 천: 천[목록[0]] ? `url(${천[목록[0]].uri})` : null, 쓴클래스 })}
 
 /* ══════════════════════════════════════════════════════════════════════════
    ② 지면 골격 — Loom 부품이 «안 다루는» 층: 판·레일·표지·표·수치·콜아웃·모션.
@@ -284,10 +291,10 @@ ${천줄}
   /* ⚠loom 에도 .오브(펠트 필 흉내 · 112px)가 있어 여기서 «전부» 되짚는다 — height:auto 가 급소다
      (loom 의 height:112px 이 살아 있으면 aspect-ratio 가 조용히 진다). loom 쪽 흉내 소거는 별도 청소 몫. */
   .표지 .오브{
-    width:100%;max-width:660px;height:auto;aspect-ratio:1058/600;justify-self:center;
+    width:100%;max-width:${얼굴이름 === '합주' ? '660px' : '340px'};height:auto;aspect-ratio:${얼굴꼴};justify-self:center;
     position:relative;overflow:visible;border-radius:0;background-color:transparent;box-shadow:none;
-    background-image:url(${합주.몸}),url(${합주.접지});
-    background-size:cover;background-position:center 67%;background-repeat:no-repeat;
+    background-image:${얼굴층};
+    background-size:contain;background-position:center;background-repeat:no-repeat;
     color:transparent;user-select:none;
   }
   /* 스침 키 하나 — 재질이 아니라 «빛»의 층(신호는 빛). 히어로 뒤 무대 조명 웅덩이. */
@@ -296,6 +303,18 @@ ${천줄}
     background:radial-gradient(48% 56% at 50% 44%, rgba(var(--chalk-rgb),.05), transparent 70%);
   }
   .표지 .오브::after{content:none;}
+  /* ── 곁물 — 문단 옆에 놓이는 구운 물건 하나(09-01 · 유호 「요소가 부족해 — 디테일이 생명」) ──
+     🔑 규율 둘. ①**뜻이 맞는 자리에만** — 아무 데나 놓으면 프리즘이 벽지가 됐던 그 자리다
+     (Loom 설계 §3-4 ②). ②**글의 흐름을 안 끊는다** — 글 왼쪽 여백에 떠서 본문 줄맞춤을 안 민다. */
+  .곁물{
+    float:left;width:var(--곁물크기,58px);height:var(--곁물크기,58px);margin:.1em .9em .35em 0;
+    background-size:contain;background-position:center;background-repeat:no-repeat;shape-outside:circle(50%);
+  }
+  .꼬리물{display:inline-block;width:2.2em;height:2.2em;vertical-align:-.75em;margin-right:.4em;
+    background-size:contain;background-position:center;background-repeat:no-repeat;}
+  /* 산수의 맺음 — 히어로수 한 점이 앉는 줄. 숫자가 물건이 되는 지면당 유일한 자리다. */
+  .산수맺음{display:flex;align-items:center;gap:.65em;}
+
   .표지 .꼭지{
     display:inline-flex;align-items:center;gap:.55em;
     font-size:.7rem;font-weight:700;letter-spacing:.2em;color:var(--ash);
@@ -520,10 +539,23 @@ function 스크립트() {
 </script>`;
 }
 
+/* 원고가 «자기 얼굴»을 고른다 — `<!--히어로:요소_녹음중-->` 한 줄(09-01).
+   🔑 왜 원고가 정하나: 이 줄이 없으면 7벌 소개서 표지가 **전부 같은 그림**이 된다.
+      엔진마다 다른 얼굴을 갖는 것이 표지의 일이고, 그 판정(어느 물건이 이 엔진인가)은
+      스킨이 아니라 그 문서가 안다. 없으면 합주(재질 셋 한 무대)로 물러선다. */
+function 히어로이름(원문) {
+  const m = /<!--\s*히어로\s*:\s*([^\s>-]+)\s*-->/.exec(원문);
+  return m ? m[1] : null;
+}
+
 function 굽기(입력, 출력, 쓸천, 림) {
   const 원문 = fs.readFileSync(입력, 'utf8');
   if (!원문.includes(표식)) throw new Error('표식이 없다 — 입력 HTML 에 ' + 표식 + ' 한 줄을 둔다: ' + 입력);
-  const 결과 = 원문.replace(표식, 스킨(쓸천, 림) + '\n' + 스크립트());
+  /* 이 원고가 실제로 부르는 클래스 — 구움층이 «쓰는 것만» 싣는 근거(loom `부르나`).
+     실측 09-01: 안 쓰는 요소까지 실으니 한 지면이 310KB → 611KB 가 됐고 브라우저가 열기를 거부했다. */
+  const 쓴클래스 = new Set(
+    [...원문.matchAll(/class="([^"]+)"/g)].flatMap((m) => m[1].split(/\s+/)).filter(Boolean));
+  const 결과 = 원문.replace(표식, 스킨(쓸천, 림, 히어로이름(원문), 쓴클래스) + '\n' + 스크립트());
   fs.mkdirSync(path.dirname(출력), { recursive: true });
   fs.writeFileSync(출력, 결과, 'utf8');
   return { 바이트: Buffer.byteLength(결과, 'utf8') };
