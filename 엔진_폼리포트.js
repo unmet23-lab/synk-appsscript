@@ -468,6 +468,81 @@ function voiceConsentMap_() {
   } catch (e) { Logger.log('voiceConsentMap_ 실패: ' + e); return null; }
 }
 
+/* [2026-09-02] 🔴 **동의 이력 원장 — 「그때 동의했나」를 재현하는 유일한 자리** (유호 위임 09-02 「최선을 골라줘」)
+ *
+ * ■ 왜 있나 — 소급 불가 축이고, 지금이 유일한 창이다
+ *   동의 문구 v18.8 이 **「학습에 들어간 데이터는 되돌릴 수 없다」**를 명문화했다. 그러면 그 근거는
+ *   **「들어갈 때 동의 상태가 무엇이었나」**인데, 09-02 실측: **시트 층 어느 수집면도 그것을 안 든다**
+ *   (`hw_feedback`·`quiz_log`·`talk_log`·`voice_log`·`teacher_gold` 전부 · 09-01 에 내가 만든 원장 둘도).
+ *   `voiceConsentMap_` 은 **지금 값**만 안다 — 학생이 내년에 철회하면 작년 행이 그때 동의였는지
+ *   영영 못 가른다. **옛 행에 지어 넣을 수 없으므로 학생이 오기 전에만 열 수 있는 자리다.**
+ *   🔑 계약은 이미 요구하고 있었다(`consent_ver`·`consent_id`) — talk 층은 c10 때부터 저장 중이고
+ *      **시트 층만 빠져 있었다.**
+ *
+ * ■ 왜 «칸»이 아니라 «원장»인가 — 이 판정이 이 수리의 전부다
+ *   수집면 여섯에 `동의판` 칸을 붙이는 길도 있었다. 안 골랐다:
+ *     ① **한 값을 여러 곳이 알면 갈린다** — 여섯 벌 복사는 정확히 그 병이다([[constant-known-in-two-places]]).
+ *     ② 동의는 «행의 성질»이 아니라 **«학생의 시계열»**이다. `schema_ver` 는 행마다 다를 수 있어 칸이
+ *        맞지만, 동의는 사람에게 붙고 시간에 따라 바뀐다 — 원장이 그 모양이다.
+ *     ③ 시트 여섯의 **형상을 안 바꾼다** — 계약 판올림(c15→c16)과 형제 저장소 동행을 안 부른다.
+ *   ⇒ 대신 조인이 한 단계 는다: 「이 행의 `created_at` 이전, 그 학생의 마지막 상태」를 본다.
+ *
+ * ■ 이 수리가 여는 것은 «보존»뿐이다 — v9.197 자기선언 이력과 같은 선을 긋는다
+ *   🔴 **소비자는 0이다.** 각 수집면이 이 원장을 «읽어» 판정하는 배선은 안 짓는다 —
+ *   지금 학생 0명이라 읽을 재료가 없고, 안 쓰는 통로를 미리 지으면 그게 또 하나의 낡을 자리다.
+ *   여는 것은 **「그날 무엇이었는지가 남기 시작한다」** 하나뿐이고, 그것만이 소급 불가다.
+ *
+ * ■ 어떻게 잡나 — 「바뀐 것만」(v9.197 selfDeclareDiff_ 와 같은 무늬 · 새 꼴을 안 짓는다)
+ *   상담시트는 사람이 손으로 고치는 셀이라 onEdit 이 못 잡는 경로가 있다. 밤에 한 번 읽어
+ *   **직전 기록과 다른 것만** append 한다. 안 바뀌면 쓰기 0.
+ *   ⚠ 하루 1회 표본이라 같은 날 두 번 바뀌면 마지막 값만 남는다(자기선언 이력과 같은 한계).
+ */
+const CONSENT_LOG_TAB_ = 'consent_log';
+const CONSENT_LOG_HEADERS = ['student_id', '동의판', '상태', '기록일'];
+
+/* 순수 판정 — 「무엇을 새로 적을 것인가」. 시트를 안 만진다(코어=순수·래퍼=시트).
+ *   map  = {sid: 'yes'|'no'|''}   ← voiceConsentMap_ 의 산출 그대로
+ *   last = {sid: '판|상태'}        ← 직전 기록. **제자리에서 갱신된다.**
+ * 🔑 **동의판이 바뀌어도 한 줄이다** — 같은 'yes' 라도 «어느 문구에 동의했나»가 달라지면 다른 사실이다
+ *   (문구가 개정되면 재동의를 받는 것이 원칙이고, 그 사실이 남아야 감사 때 재현된다).
+ * ⚠ 첫 관측이 보류('')면 안 적는다 — 안 그러면 미응답 전원이 의미 없이 깔린다.
+ *   값이 있던 사람이 보류로 «돌아간 것»은 되돌림이 아니라 사실이라 한 줄로 남긴다. */
+function consentDiff_(map, last, today, ver) {
+  const out = [];
+  Object.keys(map || {}).forEach((sid) => {
+    const s = String(map[sid] == null ? '' : map[sid]).trim();
+    const cur = String(ver || '') + '|' + s;
+    const prev = last[sid];
+    if (prev === undefined ? s === '' : prev === cur) return;
+    last[sid] = cur;
+    out.push([sid, String(ver || ''), s, today]);
+  });
+  return out;
+}
+
+function consentLogNightly_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const map = voiceConsentMap_();
+  /* 🔴 map 이 null = 「열이 없어 판정 불가」다(voiceConsentMap_ 의 보류 원칙). **아무것도 안 적는다** —
+   *   여기서 빈 맵으로 접으면 「전원 보류」가 사실처럼 이력에 박히고, 그건 지어낸 값이다. */
+  if (!map) { Logger.log('consentLogNightly_: 동의 열을 못 읽어 이력을 안 적었다(판정 불가 ≠ 보류)'); return 0; }
+  const tz = ss.getSpreadsheetTimeZone();
+  const log = ensureSheet(ss, CONSENT_LOG_TAB_, CONSENT_LOG_HEADERS);
+  const last = {};
+  if (log.getLastRow() >= 2) {
+    log.getRange(2, 1, log.getLastRow() - 1, 3).getValues().forEach((r) => {
+      const sid = String(r[0] || '').trim();
+      if (sid) last[sid] = String(r[1] || '') + '|' + String(r[2] || '');   // 뒤 줄이 이긴다 = 마지막 상태
+    });
+  }
+  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+  const rows = consentDiff_(map, last, today, CONSENT_VERSION);
+  if (!rows.length) return 0;
+  log.getRange(log.getLastRow() + 1, 1, rows.length, CONSENT_LOG_HEADERS.length).setValues(rows);
+  Logger.log('동의 이력 ' + rows.length + '줄 append(' + CONSENT_LOG_TAB_ + ')');
+  return rows.length;
+}
+
 function voiceConsentStat_() {
   const r = { yes: 0, no: 0, blank: 0, total: 0, ok: false };
   try {
