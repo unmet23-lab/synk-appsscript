@@ -477,6 +477,8 @@ section.page{
     margin-top:24px;
     display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
   }
+  /* 색선은 08-07 유호 확정으로 네 칸 네 색인데 «바닥»은 넷 다 같았다 — 짝을 맞춘다.
+     표지는 첫 화면이라 여기서 「명랑한가」가 절반쯤 정해진다(유호 09-02 「이어서 더」). */
   .cov-deliverables .del{
     background:var(--coral-wash);border:1px solid rgba(43,35,32,.08);
     border-radius:12px;padding:14px 14px 12px;
@@ -495,6 +497,10 @@ section.page{
   .cov-deliverables .del:nth-child(2)::before{background:var(--kc-cool)}
   .cov-deliverables .del:nth-child(3)::before{background:var(--lime-2)}
   .cov-deliverables .del:nth-child(4)::before{background:var(--kc-hot)}
+  /* 바닥도 색선 계열의 «여린 면»으로 — 03 Threads 는 구역 제한이 없는 팔레트다. */
+  .cov-deliverables .del:nth-child(2){background:var(--lapis-soft)}
+  .cov-deliverables .del:nth-child(3){background:var(--meadow-soft)}
+  .cov-deliverables .del:nth-child(4){background:var(--pop-soft)}
   .cov-deliverables .idx{
     font-family:var(--mono);font-size:9px;letter-spacing:.14em;
     color:var(--muted);font-weight:600;
@@ -1288,7 +1294,8 @@ section.page{
   }
   .quiz-q .qn{
     flex:0 0 auto;width:22px;height:22px;border-radius:50%;
-    background:var(--navy);color:var(--lime);
+    /* 검은 원 넷이 이 쪽에서 유일하게 어두운 덩어리였다 — 번호는 «닻»이지 «무게»가 아니다. */
+    background:var(--coral);color:var(--ink);
     font-family:var(--mono);font-size:10px;letter-spacing:.02em;
     display:grid;place-items:center;font-weight:700;
   }
@@ -1299,9 +1306,11 @@ section.page{
   .quiz-opts .opt{padding:6px 12px;font-size:12px}
 
   /* Fear/worry list — softer red vibe */
-  .tag.worry{background:var(--coral-wash)}
+  /* 🔴 앞 판에서 일반 .tag 바닥을 Coral Wash 로 올리자 걱정 태그와 «같은 색»이 됐다 —
+     갈라 세우려고 둔 클래스가 구분을 잃었다. 팝(이벤트 칩 바닥)으로 옮긴다. */
+  .tag.worry{background:var(--pop-soft);border-color:rgba(224,92,151,.28)}
   .tag.worry.on{background:var(--coral);border-color:var(--coral);color:var(--ink)}
-  .tag.worry.on::before{content:'✓';color:var(--lime)}
+  .tag.worry.on::before{content:'✓';color:var(--ink)}   /* 코랄 면 위 라임은 안 읽힌다 */
 
   /* Story card — a nice full-width tall input for narrative answers */
   /* 자유서술 — 한 줄이 100자를 넘으면 눈이 줄을 잃는다. 읽고 쓰는 폭을 묶는다. */
@@ -1529,8 +1538,8 @@ section.page{
     display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-top:16px;
   }
   .first-class .card{
-    background:var(--paper);border-radius:12px;padding:14px 16px;
-    border:1px solid rgba(43,35,32,.08);
+    background:var(--butter-soft);border-radius:12px;padding:14px 16px;
+    border:1px solid rgba(245,196,69,.30);
     display:flex;flex-direction:column;gap:8px;
   }
   .first-class .card h6{
