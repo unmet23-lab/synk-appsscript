@@ -532,6 +532,45 @@ function 코덱스캐시() {
   return Object.keys(표).length ? 표 : null;
 }
 
+/* 🔑 키가 «지금» 사는지 한 번 묻는다 — 판정하지 않고 사실만 낸다 (2026-09-03).
+ *
+ * 왜 생겼나: 09-02 저녁 이 키가 429(크레딧 소진)로 죽었는데 **아무 자도 그 사실을 안 들고 나왔다.**
+ *   그 키 하나에 자리 셋이 매달려 있다(몽골어 검문 · 검수 gemini 레인 · 이미지 굽기) — 셋이 한꺼번에
+ *   멈췄는데 다음 날 세션 첫머리는 조용했다. 「장부에 몇 줄 있나」는 세면서 「자가 살아 있나」는
+ *   아무도 안 쟀던 것이다.
+ * 🔑 **셋을 갈라 말한다**: true=답했다 · false=거절당했다(죽었다) · null=**못 물어봤다**(≠살았다).
+ *   null 을 「정상」으로 접으면 그게 zero-is-a-success-face 다.
+ * 여기 하나가 프로브의 유일한 통로다 — `--제미나이확인` 도 아래에서 이걸 부른다. */
+async function 제미나이생존({ timeoutMs = 8000 } = {}) {
+  const key = 제미나이키();
+  if (!key) return { 살았나: null, 종류: '키없음', 사유: `키 파일을 못 읽었다(${제미나이키경로()})` };
+  const 기본 = 제미나이설정();
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${기본.model}:generateContent`, {
+      method: 'POST',
+      headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: '1+1=? 숫자만.' }] }],
+        generationConfig: { thinkingConfig: { thinkingLevel: 기본.thinking_level } },
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const j = await r.json().catch(() => ({}));
+    const 사유 = String((j.error && j.error.message) || '').slice(0, 200);
+    if (r.ok) {
+      const 사고 = j.usageMetadata && j.usageMetadata.thoughtsTokenCount;
+      return { 살았나: true, 모델: 기본.model, 사고토큰: 사고 == null ? null : 사고 };
+    }
+    /* 종류를 가르는 값어치: 「한도·결제」는 유호님 손(충전·결제)이고 「자격」은 키 교체다.
+     * 9월 예고된 Standard 키 거부가 오면 401/403 으로 온다 — 그때 처방이 달라야 한다. */
+    const 종류 = r.status === 429 ? '한도·결제' : (r.status === 401 || r.status === 403) ? '자격' : '기타';
+    return { 살았나: false, 상태: r.status, 종류, 사유, 모델: 기본.model };
+  } catch (e) {
+    // 네트워크·타임아웃은 «키가 죽었다»가 아니다 — 못 물어본 것이다.
+    return { 살았나: null, 종류: '네트워크', 사유: String((e && e.message) || e).slice(0, 200) };
+  }
+}
+
 async function 제미나이확인() {
   const key = 제미나이키();
   if (!key) {
@@ -556,28 +595,18 @@ async function 제미나이확인() {
       (ok ? '' : ' — 이 키로는 안 보인다(모델 ID 가 낡았거나 등급 밖)'));
   }
   // 기본 픽은 존재만이 아니라 **사고 수준까지** 산다 — 목록에 있어도 파라미터가 거절되면 못 쓴다.
+  // 프로브 알맹이는 `제미나이생존()` 하나다(자를 둘로 만들지 않는다 · ai스택점검도 그걸 부른다).
   const 기본 = 제미나이설정();
-  try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${기본.model}:generateContent`, {
-      method: 'POST',
-      headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: '1+1=? 숫자만.' }] }],
-        generationConfig: { thinkingConfig: { thinkingLevel: 기본.thinking_level } },
-      }),
-      signal: AbortSignal.timeout(60000),
-    });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      최악 = 1;
-      console.log(`🔴 프로브 실패: ${기본.model}/${기본.thinking_level} → ${r.status} ${String((j.error && j.error.message) || '').slice(0, 160)}`);
-    } else {
-      const 사고 = j.usageMetadata && j.usageMetadata.thoughtsTokenCount;
-      console.log(`✅ 프로브: ${기본.model}/${기본.thinking_level} 응답 OK · 사고 토큰 ${사고 == null ? '(미보고)' : 사고}`);
-    }
-  } catch (e) {
-    console.error('🔴 프로브 자체가 못 돌았다(네트워크/타임아웃): ' + e.message);
+  const 생존 = await 제미나이생존({ timeoutMs: 60000 });
+  if (생존.살았나 === null && 생존.종류 === '네트워크') {
+    console.error('🔴 프로브 자체가 못 돌았다(네트워크/타임아웃): ' + 생존.사유);
     return 2;
+  }
+  if (생존.살았나 === false) {
+    최악 = 1;
+    console.log(`🔴 프로브 실패: ${기본.model}/${기본.thinking_level} → ${생존.상태} ${String(생존.사유).slice(0, 160)}`);
+  } else {
+    console.log(`✅ 프로브: ${기본.model}/${기본.thinking_level} 응답 OK · 사고 토큰 ${생존.사고토큰 == null ? '(미보고)' : 생존.사고토큰}`);
   }
   if (최악) console.log('\n표가 낡았으면 tools/모델정책.js 의 제미나이 픽을 고친다 — 조용히 다른 모델로 돌지 않는다.');
   return 최악;
@@ -637,7 +666,7 @@ module.exports = {
   효력들, 코덱스효력, 코덱스폐기, 검수선택지, 검수기본, 심문기본, 검수선택, 분석설정, 구조화설정, 코덱스플래그,
   코덱스캐시, 코덱스캐시경로,
   회차기본, 회차상한, 회차설정, 명시픽, 심문편성, 심문런들,
-  제미나이, 제미나이사고, 제미나이설정, 제미나이키, 제미나이키경로,
+  제미나이, 제미나이사고, 제미나이설정, 제미나이키, 제미나이키경로, 제미나이생존,
 };
 
 if (require.main === module) {
