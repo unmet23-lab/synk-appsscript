@@ -39,6 +39,8 @@ const 아는말 = [
   'Pro',     // Google AI Pro · Canva Pro — 구독을 유호님이 관리하신다
   // 계정 핸들 — 유호님이 «직접 고르신» 이름이다(09-01 확정). 실물 이름이라 바꿀 수도 없다.
   'yuhobuilds', 'synkbrief', 'synkkorean', 'synklab', 'synkfm', 'synk',
+  // 유호님 «본인» 이메일 앞부분 — 유호님이 직접 만들고 쓰시는 값이다(09-03)
+  'unmet23', 'unmet25', 'unmet27', '77yuhbs', 'founder',
   // AI 이름
   'AI', 'ChatGPT', 'GPT', 'Claude', 'Gemini', 'Codex',
   // 일상 약어
