@@ -160,6 +160,9 @@ function 심기(원문) {
     [/<link\b[^>]*rel=["']?stylesheet["']?[^>]*>/i, false],
     [/<\/title>/i, true],
     [/<meta\b[^>]*charset[^>]*>/i, true],
+    /* 머리표가 하나도 없는 «조각» 지면 — 첫 <style> 앞에 세운다. @font-face 는 선언 순서를
+       안 타므로 앞에 와도 된다. 이 줄이 없으면 그런 조각에서 던졌다(09-03 픽스처가 잡았다). */
+    [/<style\b/i, false],
   ]) {
     const m = 정규.exec(걷힌);
     if (!m) continue;
