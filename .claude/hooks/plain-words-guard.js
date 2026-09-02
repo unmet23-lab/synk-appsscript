@@ -40,6 +40,12 @@
 const fs = require('fs');
 const path = require('path');
 
+// 🔌 끄기 스위치 — 이 파일이 있으면 훅은 아무 일도 안 한다.
+//    유호님 「잠깐 써 보고 판단할게. 꺼달라면 바로 꺼줄 수 있지?」(09-03)에 대한 답이다.
+//    «바로»를 말이 아니라 물건으로 둔다 — 설정을 안 건드리고, 파일 하나로 켜고 끈다.
+//      끄기: touch .claude/hooks/lib/쉬운말끔      켜기: rm .claude/hooks/lib/쉬운말끔
+if (fs.existsSync(path.join(__dirname, 'lib', '쉬운말끔'))) process.exit(0);
+
 let 아는말집합;
 try {
   ({ 아는말집합 } = require(path.join(__dirname, 'lib', '아는말.js')));
