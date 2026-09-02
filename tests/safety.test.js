@@ -817,6 +817,8 @@ test('[v9.157] 폼 응답의 시트 직기입은 행소독_ 통로를 지난다 
     ['sweepTeacherMemoForm_', 'student_errors(약점 메모폼)'],
     ['sweepAcademicForm_', 'academic_log(학업폼)'],
     ['sweepAbsenceForm_', 'absence_followup(결석 연락폼)'],
+    ['sweepClassAttendanceForm_', 'attendance_batch(반 출석 폼 · 09-02 폼 넷)'],
+    ['sweepTeacherCheckinForm_', 'teacher_checkins(출퇴근 폼 · 09-02 폼 넷)'],
   ];
   sweeps.forEach(([name, label]) => {
     const body = fnOf(name);
@@ -1064,10 +1066,11 @@ test('[v9.61] preflight는 학생 입력 폼 3종 미생성을 경고한다(버�
   // 컴포넌트는 존재해 눈으로 하는 조립 점검을 통과했다 → 기계 경고로 이관.
   const body = section('function preflightGlide()', 'function safeRun(name, fn)');
   // [v9.138] 퀴즈폼 편입 — 수집기의 입구가 없는 것은 "버튼이 안 그려진다"보다 무겁다(그날의 답은 다시 못 받는다)
-  ['출석폼URL틀', '숙제폼URL틀', '약점메모폼URL', '퀴즈폼URL틀'].forEach((k) => {
+  // [09-02 폼 넷] 강사 폼 둘 편입 — 반 출석·출퇴근(대장 「잇는다 — 폼 신설」 · 없으면 수업 시작 출석·근태의 입구가 0이다)
+  ['출석폼URL틀', '숙제폼URL틀', '약점메모폼URL', '퀴즈폼URL틀', '반출석폼URL', '출퇴근폼URL'].forEach((k) => {
     assert.ok(body.includes(`'${k}'`), `preflight가 ${k} 부재를 감시해야 한다`);
   });
-  ['createAttendanceForm', 'createHwForm', 'createTeacherMemoForm', 'createQuizForm'].forEach((fn) => {
+  ['createAttendanceForm', 'createHwForm', 'createTeacherMemoForm', 'createQuizForm', 'createClassAttendanceForm', 'createTeacherCheckinForm'].forEach((fn) => {
     assert.ok(body.includes(fn), `경고문이 처방(${fn} 실행)을 담아야 한다`);
   });
 });

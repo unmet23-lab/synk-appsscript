@@ -750,6 +750,254 @@ function createAttendanceForm() {
   Logger.log('편집용: ' + form.getEditUrl());
 }
 
+/* ── [09-02 폼 넷] 🙋 반 출석 폼 — 강사용 «반 고르고 안 온 학생만 체크» 1탭 ──
+ * 대장(docs/글라이드_이관대장.md) 「attendance_batch — 잇는다(폼 신설 · 개원 전 필수)」: Glide 가 죽으며 수업 시작 출석 1탭의 손이 사라졌다.
+ * 착지 = attendance_batch 한 행(반 명부 − 결석자 = 출석자 sid 목록 · sweepClassAttendanceForm_ · 엔진_콘텐츠AI.js) → 기존 expandAttendanceBatch_
+ *   (parentSweep 바로 다음 자리 · 같은 틱)가 attendance 로 전개한다 — 그 함수는 손대지 않는다(입력 통로만 Glide → 구글 폼).
+ * 구글 폼은 「반에 따라 다른 선택지」를 한 문항에 못 담는다 → ⓐ 반마다 섹션(페이지) + 그 반 명부 체크박스를 두고, 「반」 드롭다운의 선택지가
+ *   제 섹션으로 건너뛴다(createChoice(반, 페이지)). 섹션이 없는 반(폼이 선 «뒤» 늘어난 반)과 「기타」는 맨 끝 «직접 입력» 섹션(ⓑ · 이름 쉼표)으로
+ *   간다 — 새 반의 섹션은 시트 메뉴 「반 섹션 늘리기」(extendClassAttendanceForm)가 더한다. 아침 sync 는 문항을 «안» 늘린다(강사 폼 계보 · 선택지·명부만).
+ * 응답 탭 헤더 = 문항 제목이라 결석자 열이 «반마다 하나씩» 생긴다 → 스위프는 위치가 아니라 헤더 이름으로 읽는다(「결석자」로 시작하는 열 전부).
+ *   그래서 섹션이 늘어 열이 끝에 붙어도 파싱이 안 밀린다(위치 파싱 폼이었다면 증설 금지였다 — migrateInterviewSid 주석의 그 경고). */
+const CLASS_ATT_ABSENT_PREFIX = '결석자';
+const CLASS_ATT_FREE_TITLE = '결석자 (직접 입력)';
+function classAttSectionTitle_(cls) { return CLASS_ATT_ABSENT_PREFIX + ' — ' + cls; }  // 페이지 나눔 제목
+function classAttCheckboxTitle_(cls) { return CLASS_ATT_ABSENT_PREFIX + ' · ' + cls; } // 체크박스 문항 제목 = 응답 열 헤더
+// 체크박스 라벨 — 이름 그대로 · 같은 반에 동명이인이 있을 때만 「이름 (학생ID)」로 갈라 적는다. 스위프가 같은 함수로 라벨→sid 를 되찾는다.
+function classAttLabels_(list) {
+  const cnt = {};
+  list.forEach(s => { cnt[s.n] = (cnt[s.n] || 0) + 1; });
+  return list.map(s => ({ sid: s.sid, n: s.n, label: cnt[s.n] > 1 ? s.n + ' (' + s.sid + ')' : s.n }));
+}
+function classAttendanceSpec_(ss) {
+  const base = teacherMemoSpec_(ss); // 강사·반 로스터 — 다른 강사 폼과 같은 원천(반 목록엔 '기타'가 붙어 있다)
+  const pf = ss.getSheetByName('profiles');
+  const roster = {}; // 반 → [{sid, n}] · role student · 반 있는 학생만(expandAttendanceBatch_ 의 검증과 같은 조건)
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (!r[0] || r[3] !== 'student' || !r[4]) return;
+    const sid = String(r[0]).trim(), cls = String(r[4]).trim();
+    (roster[cls] = roster[cls] || []).push({ sid: sid, n: String(r[1] || '').trim() || sid });
+  });
+  return {
+    title: 'SYNK 반 출석 (강사용 · 수업 시작 1탭)',
+    desc: '수업을 열고 60초 안에 — 반을 고르고 «안 온 학생»만 체크해서 [보내기]. 나머지 전원이 출석으로 기록됩니다. 전원 출석이면 아무것도 체크하지 말고 보내세요.',
+    teachers: base.teachers,
+    classes: base.classes,
+    roster: roster,
+    checkboxHelp: '안 온 학생만 체크 · 전원 출석이면 그대로 [보내기]',
+    help: {
+      '반': '고른 반의 명부가 다음 화면에 나옵니다',
+      [CLASS_ATT_FREE_TITLE]: '목록에 없는 반이거나 명부가 다를 때만 — 안 온 학생 이름을 앱 프로필 그대로, 여러 명이면 쉼표로 (예: 바트자야, 사랑토야). 전원 출석이면 비워두세요'
+    }
+  };
+}
+/* 반 섹션 = 페이지 나눔(제목 「결석자 — 반」) + 체크박스(제목 「결석자 · 반」 · 선택지 = 그 반 명부). 이미 있는 반은 건너뛴다(멱등).
+ * 페이지 나눔의 setGoToPage(SUBMIT) 는 «그 앞 페이지를 마친 뒤»의 이동이다 — 어느 반 섹션이든 마치면 다음 반 화면을 안 거치고 바로 제출된다.
+ * 맨 끝 «직접 입력» 섹션은 섹션 없는 반·「기타」의 착지. 반환 = 섹션을 새로 만든 반 목록. */
+function classAttAddSections_(form, spec, haveTitles) {
+  const added = [];
+  Object.keys(spec.roster).sort().forEach(cls => {
+    if (haveTitles.indexOf(classAttCheckboxTitle_(cls)) !== -1) return;
+    const labels = classAttLabels_(spec.roster[cls]).map(x => x.label);
+    if (!labels.length) return;
+    form.addPageBreakItem().setTitle(classAttSectionTitle_(cls)).setGoToPage(FormApp.PageNavigationType.SUBMIT);
+    form.addCheckboxItem().setTitle(classAttCheckboxTitle_(cls)).setRequired(false).setChoiceValues(labels).setHelpText(spec.checkboxHelp);
+    added.push(cls);
+  });
+  if (haveTitles.indexOf(CLASS_ATT_FREE_TITLE) === -1) {
+    form.addPageBreakItem().setTitle(CLASS_ATT_FREE_TITLE).setGoToPage(FormApp.PageNavigationType.SUBMIT);
+    form.addTextItem().setTitle(CLASS_ATT_FREE_TITLE).setRequired(false).setHelpText(spec.help[CLASS_ATT_FREE_TITLE]);
+  }
+  return added;
+}
+/* 「반」 드롭다운 선택지 → 그 반 섹션으로 건너뛰기(섹션이 없으면 직접 입력 섹션). 바뀐 곳이 있을 때만 다시 쓴다(반환 0/1). */
+function classAttRouteClasses_(form, spec) {
+  const items = form.getItems();
+  const clsIt = items.filter(x => String(x.getTitle()).trim() === '반' && x.getType() === FormApp.ItemType.LIST)[0];
+  if (!clsIt) return 0;
+  const secPrefix = CLASS_ATT_ABSENT_PREFIX + ' — ';
+  const pbOf = {}; let freePb = null;
+  items.forEach(x => {
+    if (x.getType() !== FormApp.ItemType.PAGE_BREAK) return;
+    const t = String(x.getTitle()).trim();
+    if (t === CLASS_ATT_FREE_TITLE) freePb = x.asPageBreakItem();
+    else if (t.indexOf(secPrefix) === 0) pbOf[t.slice(secPrefix.length).trim()] = x.asPageBreakItem();
+  });
+  const targetOf = c => pbOf[String(c).trim()] || freePb;
+  const li = clsIt.asListItem();
+  const sig = (v, pb) => v + '>' + (pb ? pb.getId() : '');
+  const cur = li.getChoices().map(c => { let pb = null; try { pb = c.getGotoPage(); } catch (e) { pb = null; } return sig(c.getValue(), pb); }).join('|');
+  const want = spec.classes.map(c => sig(c, targetOf(c))).join('|');
+  if (cur === want) return 0;
+  li.setChoices(spec.classes.map(c => (targetOf(c) ? li.createChoice(c, targetOf(c)) : li.createChoice(c))));
+  return 1;
+}
+// 실제 폼을 스펙에 제자리 동기화 — 반환 = 바꾼 곳 수, 폼이 아예 없으면 -1(호출부가 생성 경로로). 강사 폼 셋(약점·학업·결석)과 동형 · 문항 수는 안 늘린다.
+function syncClassAttendanceForm_(ss, st) {
+  let formId = '';
+  try { formId = String((getState(st, '반출석폼ID') || {}).val || '').trim(); } catch (eS) {}
+  if (!formId) { // ID 유실 시 응답 시트의 연결 폼에서 복구(v9.62 formAlreadyMade_ 패턴)
+    try {
+      const shR = ss.getSheetByName('반출석폼_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) { const f0 = FormApp.openByUrl(editUrl); formId = f0.getId(); setState(st, '반출석폼ID', formId); setState(st, '반출석폼URL', f0.getPublishedUrl()); }
+    } catch (eR) {}
+  }
+  if (!formId) return -1;
+  const form = FormApp.openById(formId);
+  const spec = classAttendanceSpec_(ss);
+  let changed = 0;
+  if (form.getTitle() !== spec.title) { form.setTitle(spec.title); changed++; }
+  if (form.getDescription() !== spec.desc) { form.setDescription(spec.desc); changed++; }
+  const cbPrefix = CLASS_ATT_ABSENT_PREFIX + ' · ';
+  form.getItems().forEach(it => {
+    const t = String(it.getTitle()).trim();
+    const isCb = it.getType() === FormApp.ItemType.CHECKBOX && t.indexOf(cbPrefix) === 0;
+    const wantHelp = isCb ? spec.checkboxHelp : spec.help[t];
+    if (wantHelp !== undefined && it.getHelpText() !== wantHelp) { it.setHelpText(wantHelp); changed++; }
+    if (it.getType() === FormApp.ItemType.LIST && t === '강사') {
+      const li = it.asListItem();
+      if (li.getChoices().map(c => c.getValue()).join('|') !== spec.teachers.join('|')) { li.setChoiceValues(spec.teachers); changed++; }
+    } else if (isCb) { // 반 명부 체크박스 — 선택지만 갱신(문항 수 불변)
+      const labels = classAttLabels_(spec.roster[t.slice(cbPrefix.length).trim()] || []).map(x => x.label);
+      if (!labels.length) return; // 학생 0명이 된 반 — 빈 선택지는 못 두므로 옛 명부를 둔다(「반」 목록에서 빠져 갈 수 없는 섹션이 된다)
+      const cb = it.asCheckboxItem();
+      if (cb.getChoices().map(c => c.getValue()).join('|') !== labels.join('|')) { cb.setChoiceValues(labels); changed++; }
+    }
+  });
+  changed += classAttRouteClasses_(form, spec); // 「반」 선택지·분기 — 섹션 없는 새 반은 직접 입력 섹션으로(섹션 추가는 extendClassAttendanceForm 몫)
+  const have = form.getItems().map(x => String(x.getTitle()).trim());
+  const noSection = Object.keys(spec.roster).filter(c => have.indexOf(classAttCheckboxTitle_(c)) === -1);
+  if (noSection.length) Logger.log('🙋 반 출석 폼 — 섹션 없는 반 ' + noSection.length + '개(' + noSection.join(', ') + ') → 그 반은 직접 입력 섹션으로 갑니다. 시트 메뉴 「반 섹션 늘리기」를 한 번 누르세요.');
+  if (changed) Logger.log('🙋 반 출석 폼 동기화 — ' + changed + '곳 갱신(URL 불변)');
+  return changed;
+}
+function createClassAttendanceForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const synced = syncClassAttendanceForm_(ss, st); // 이미 있으면 복제 대신 제자리 업그레이드(재실행 안전 · 강사 폼 계보 — formAlreadyMade_ 는 학생ID 미리채움 폼 전용이라 못 쓴다)
+  if (synced >= 0) {
+    const msg = '✅ 반 출석 폼 — 이미 있어 제자리 업그레이드만 했습니다(' + synced + '곳 갱신 · URL 불변): ' + String((getState(st, '반출석폼URL') || {}).val || '');
+    Logger.log(msg);
+    return msg;
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const spec = classAttendanceSpec_(ss);
+  const form = FormApp.create(spec.title).setDescription(spec.desc).setCollectEmail(false);
+  setState(st, '반출석폼ID', form.getId()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 폼을 잃지 않는다
+  if (spec.teachers.length > 1) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(spec.teachers);
+  else form.addTextItem().setTitle('강사').setRequired(true); // 로스터에 강사 0명(재건 직후)이어도 폼은 성립
+  form.addListItem().setTitle('반').setRequired(true).setChoiceValues(spec.classes).setHelpText(spec.help['반']); // 분기는 섹션이 선 뒤 classAttRouteClasses_ 가 건다
+  classAttAddSections_(form, spec, []);
+  classAttRouteClasses_(form, spec);
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '반출석폼_응답');
+  setState(st, '반출석폼ID', form.getId());
+  setState(st, '반출석폼URL', form.getPublishedUrl());
+  ensureSheet(ss, 'attendance_batch', skeletonHeadersOf_('attendance_batch')); // 착지 탭 선보장 — 골격 한 줄이 헤더 정본
+  adminMail('[SYNK] 🙋 반 출석 폼 생성 완료',
+    '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
+    '\n\n쓰는 법: 수업을 열고 60초 안에 반을 고르고 «안 온 학생»만 체크 → [보내기]. 10분 안에 나머지 전원이 출석으로 기록됩니다(결석 감지·등원 보드·레이드가 이 기록을 봅니다).' +
+    '\n반 섹션 ' + Object.keys(spec.roster).length + '개 · 강사 ' + Math.max(spec.teachers.length - 1, 0) + '명.\n편집용: ' + form.getEditUrl() +
+    '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 명부·강사가 바뀌면 다음 날 아침 자동 갱신 · 반이 «늘면» 시트 메뉴 「반 섹션 늘리기」를 한 번.');
+  const done = '✅ 반 출석 폼 생성 완료: ' + form.getPublishedUrl();
+  Logger.log(done);
+  Logger.log('편집용: ' + form.getEditUrl());
+  return done;
+}
+/* 폼이 선 «뒤» 늘어난 반에 섹션을 더한다(멱등 · 있는 반은 건너뜀 · 시트 메뉴 「반 섹션 늘리기」). 아침 sync 가 못 하는 유일한 일 —
+ *   문항이 늘면 응답 탭에 열이 «끝에» 붙는데, 스위프가 헤더 이름으로 읽으므로 안전하다. */
+function extendClassAttendanceForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  if (syncClassAttendanceForm_(ss, st) < 0) { const m = '⚠️ 반출석폼ID 미연결 — 먼저 「🙋 반 출석 폼 만들기」를 누르세요(새 폼은 지금 반 전부의 섹션을 갖고 태어납니다).'; Logger.log(m); return m; }
+  const form = FormApp.openById(String(getState(st, '반출석폼ID').val || ''));
+  const spec = classAttendanceSpec_(ss);
+  const added = classAttAddSections_(form, spec, form.getItems().map(x => String(x.getTitle()).trim()));
+  if (added.length) classAttRouteClasses_(form, spec);
+  const msg = '🙋 반 출석 폼 반 섹션 — ' + (added.length ? '추가 ' + added.join(', ') : '이미 최신(추가 0 — 모든 반에 섹션이 있습니다)') + '\n배포 링크(불변): ' + form.getPublishedUrl();
+  Logger.log(msg);
+  return msg;
+}
+
+/* ── [09-02 폼 넷] ⏱ 출퇴근 폼 — 강사 출근·퇴근 1탭(대장 「teacher_checkins — 폼 대체(작음)」) ──
+ * 착지 = teacher_checkins [이름, 구분, 시각](sweepTeacherCheckinForm_ · 엔진_콘텐츠AI.js) — 읽는 자 넷(todayBoard_ · teacherInOutMap_ · checkoutCheerMail_ ·
+ *   calcTeacherStats)은 그대로다. 이름 키 = profiles 강사 이름(calcTeacherStats 가 그 이름으로 묶는다) → 드롭다운을 profiles 에서 파생한다(손 입력 오타 0).
+ * 수집표식_ 은 붙이지 않는다 — 자기치유가 연타를 지우는 탭이라 표식을 주면 매주 우는 경보가 된다(tests/수집탭워치독 이 일부러 제외). */
+const TEACHER_CHECKIN_TYPES = ['출근', '퇴근']; // todayBoard_·teacherInOutMap_ 의 indexOf('출근'/'퇴근') 판정과 같은 낱말
+function teacherCheckinSpec_(ss) {
+  const base = teacherMemoSpec_(ss);
+  return {
+    title: 'SYNK 출퇴근 (강사용 · 1탭)',
+    desc: '출근하면 「출근」, 퇴근하면 「퇴근」을 고르고 [보내기]. 시각은 보낸 순간으로 기록됩니다 — 오늘의 출결 보드·퇴근 응원 메일·근태 지표가 이 기록을 봅니다.',
+    teachers: base.teachers.filter(t => t !== '기타'), // 근태는 명부의 강사만 — '기타'는 묶일 이름이 없다
+    help: {
+      '강사 이름': '앱 프로필의 이름 그대로 — 근태 지표가 이 이름으로 묶입니다',
+      '구분': '출근·퇴근 하루 한 번씩. 두 번 눌러도 60초 안 연타는 한 건으로 셉니다'
+    }
+  };
+}
+// 실제 폼을 스펙에 제자리 동기화 — 반환 = 바꾼 곳 수, 폼이 아예 없으면 -1(호출부가 생성 경로로). 문항 수는 안 늘린다.
+function syncTeacherCheckinForm_(ss, st) {
+  let formId = '';
+  try { formId = String((getState(st, '출퇴근폼ID') || {}).val || '').trim(); } catch (eS) {}
+  if (!formId) { // ID 유실 시 응답 시트의 연결 폼에서 복구(v9.62 formAlreadyMade_ 패턴)
+    try {
+      const shR = ss.getSheetByName('출퇴근폼_응답');
+      const editUrl = shR && shR.getFormUrl();
+      if (editUrl) { const f0 = FormApp.openByUrl(editUrl); formId = f0.getId(); setState(st, '출퇴근폼ID', formId); setState(st, '출퇴근폼URL', f0.getPublishedUrl()); }
+    } catch (eR) {}
+  }
+  if (!formId) return -1;
+  const form = FormApp.openById(formId);
+  const spec = teacherCheckinSpec_(ss);
+  let changed = 0;
+  if (form.getTitle() !== spec.title) { form.setTitle(spec.title); changed++; }
+  if (form.getDescription() !== spec.desc) { form.setDescription(spec.desc); changed++; }
+  form.getItems().forEach(it => {
+    const t = String(it.getTitle()).trim();
+    const wantHelp = spec.help[t];
+    if (wantHelp !== undefined && it.getHelpText() !== wantHelp) { it.setHelpText(wantHelp); changed++; }
+    if (it.getType() !== FormApp.ItemType.LIST) return;
+    const li = it.asListItem();
+    const cur = li.getChoices().map(c => c.getValue()).join('|');
+    const want = (t === '강사 이름' ? spec.teachers : t === '구분' ? TEACHER_CHECKIN_TYPES : null);
+    if (want && want.length && cur !== want.join('|')) { li.setChoiceValues(want); changed++; }
+  });
+  if (changed) Logger.log('⏱ 출퇴근 폼 동기화 — ' + changed + '곳 갱신(URL 불변)');
+  return changed;
+}
+function createTeacherCheckinForm() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const synced = syncTeacherCheckinForm_(ss, st); // 이미 있으면 복제 대신 제자리 업그레이드(재실행 안전)
+  if (synced >= 0) {
+    const msg = '✅ 출퇴근 폼 — 이미 있어 제자리 업그레이드만 했습니다(' + synced + '곳 갱신 · URL 불변): ' + String((getState(st, '출퇴근폼URL') || {}).val || '');
+    Logger.log(msg);
+    return msg;
+  }
+  const before = ss.getSheets().map(s => s.getName());
+  const spec = teacherCheckinSpec_(ss);
+  const form = FormApp.create(spec.title).setDescription(spec.desc).setCollectEmail(false);
+  setState(st, '출퇴근폼ID', form.getId()); // [v9.94] 생성 즉시 기록
+  if (spec.teachers.length) form.addListItem().setTitle('강사 이름').setRequired(true).setChoiceValues(spec.teachers).setHelpText(spec.help['강사 이름']);
+  else form.addTextItem().setTitle('강사 이름').setRequired(true).setHelpText(spec.help['강사 이름']); // 로스터에 강사 0명(재건 직후)이어도 폼은 성립
+  form.addListItem().setTitle('구분').setRequired(true).setChoiceValues(TEACHER_CHECKIN_TYPES).setHelpText(spec.help['구분']);
+  form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
+  linkFormTab_(ss, before, '출퇴근폼_응답');
+  setState(st, '출퇴근폼ID', form.getId());
+  setState(st, '출퇴근폼URL', form.getPublishedUrl());
+  ensureSheet(ss, 'teacher_checkins', skeletonHeadersOf_('teacher_checkins')); // 착지 탭 선보장 — 골격 한 줄이 헤더 정본
+  adminMail('[SYNK] ⏱ 출퇴근 폼 생성 완료',
+    '강사 단톡·즐겨찾기(홈 화면 바로가기)에 배포할 링크:\n' + form.getPublishedUrl() +
+    '\n\n쓰는 법: 출근하면 「출근」, 퇴근하면 「퇴근」 → [보내기]. 10분 안에 오늘의 출결 보드에 뜨고, 퇴근 5~15분 뒤 응원 메일이 갑니다.\n편집용: ' + form.getEditUrl() +
+    '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.');
+  const done = '✅ 출퇴근 폼 생성 완료: ' + form.getPublishedUrl();
+  Logger.log(done);
+  Logger.log('편집용: ' + form.getEditUrl());
+  return done;
+}
+
 // [v9.49] 숙제 제출 폼 — AI 첨삭의 입력 통로. 앱 제출(행 추가)이 아닌 폼이라 Glide update 0.
 //   응답은 '숙제폼_응답' 탭 → 밤 22시 aiFeedbackBatch_가 Claude API로 첨삭 카드 생성.
 function createHwForm() {
