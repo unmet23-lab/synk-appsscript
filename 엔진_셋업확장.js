@@ -4377,6 +4377,10 @@ function menuRun_(fn) {
   ui.alert(out.length > 1400 ? out.slice(0, 1400) + '\n\n…(이하 생략 — 전체는 실행 로그)' : out);
 }
 function menuSetupVoiceMissions() { menuRun_(setupVoiceMissions); } // [v9.278] 낭독 미션 목록 세우기 — 멱등(재클릭 무해 · 아무것도 안 지운다)
+/* [v9.296] 목소리 지금 걷어오기 — 야간(23시) 안에서만 돌던 `voiceSweep_` 에 «눈으로 재는» 통로를 낸다.
+ *   본체·왜·되돌리기는 `교재연동.js` `voiceSweepNow_` 머리말이 정본이다(여기 사본을 두지 않는다).
+ *   리허설 강제 없음 — 나가는 메일이 원장 자신에게 가는 둘뿐이고 AI 비용 0이다. */
+function menuVoiceSweep() { menuRun_(voiceSweepNow_); }
 // [v9.280] 숙제 뱅크 재반영 — setupHomework 는 bootstrap·preflight(개수 «일치»면 스킵)에서만 돌아서,
 //   문항을 고쳐 배포해도 시트의 «저장된 행 210»은 옛 판 그대로다(menuSetupOnboarding 과 같은 결의 자리).
 //   순서 정본 = 뱅크 머리 주석: 재세움(다른 유형 보존) → 몽골어 큐레이션 재주입(멱등 upsert) → 잔여 초벌 번역(빈칸만).
@@ -4972,6 +4976,7 @@ function onOpen() {
        *   하는지»를 정한다. 둘이 짝이다 — 목록이 없으면 미션ID 는 뜻 없는 문자열이고,
        *   `voice_log.목표발화` 가 영원히 빈 채로 «정상처럼» 쌓인다. */
       .addItem('🎙 낭독 미션 목록 세우기(발음 데이터·멱등)', 'menuSetupVoiceMissions')
+      .addItem('🎙 목소리 지금 걷어오기(밤을 안 기다리고 확인)', 'menuVoiceSweep')
       /* 궤적 연결 고리 — 의도(크루카드 100+문항)와 결과(면접 합·불)가 둘 다 쌓이는데 안 이어져 있었다.
        *   문항이 아니라 **연결**이 소급 불가다: 지금 키를 안 심으면 이미 들어온 기록은 영원히 못 잇는다. */
       .addItem('🔗 면접폼에 학생ID 칸 넣기(궤적 연결·선택 문항)', 'menuMigrateInterviewSid')
