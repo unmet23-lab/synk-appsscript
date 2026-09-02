@@ -31,6 +31,7 @@
  *   node tools/ai스택점검.js --훅        # 적색만 · 하루 1회(SessionStart 용)
  *   node tools/ai스택점검.js --훅 --force # 스로틀 무시
  *   node tools/ai스택점검.js --json
+ *   node tools/ai스택점검.js --재보기   # 제미나이 키 생존을 캐시(6시간) 무시하고 지금 잰다
  *   node tools/ai스택점검.js --개명 <옛경로> <새경로> --사유 "왜"   # 심문 장부에 개명 사슬을 잇는다
  * 종료코드: 0=정상(적색이 있어도 0 — 알림이다) · 1=자 자신이 못 돈 것(«확인 불가»이지 「정상」이 아니다)
  *
@@ -377,6 +378,77 @@ function 밖의사실축() {
   return { 적색, 알림, 셈: { 합: s.목록.length, 열림: s.열림.length, 반박받음: s.반박받음.length, 판정완료: s.판정완료.length } };
 }
 
+/* ── ㉢ 제미나이 «키 생존» — 자가 도는가 앞에 「자가 살아 있는가」가 있다 (2026-09-03) ──
+ *
+ * ■ 왜 붙였나 (유호님 「제미나이가 역할을 잘 하고 있나?」에 세어 보다가 드러난 구멍)
+ *   09-02 저녁 제미나이 키가 429(크레딧 소진)로 죽었다. 그 키 **하나**에 자리 셋이 매달려 있다 —
+ *   몽골어 검문(①역번역 ②문법) · 검수 러너의 gemini 레인 · 이미지 굽기(나노바나나). 셋이 한꺼번에
+ *   멈췄는데 **다음 날 세션 첫머리는 조용했다.** 이 자는 「장부에 몇 줄 있나」를 세는데, 장부는
+ *   «부른 적이 있어야» 자라므로 아무도 안 부르면 조용한 것이 정상 얼굴이다.
+ *   ⇒ 커버리지(도는가)와 생존(살았나)은 **다른 물음**이고, 뒤엣것을 재는 자가 없었다.
+ *
+ * ■ 규율 셋
+ *   1. **셋으로 말한다** — 살았다 / 죽었다 / **못 물어봤다**. 네트워크 실패를 「정상」으로 접지 않는다.
+ *   2. **판정을 캐시한다**(기본 6시간) — 세션 첫머리마다 네트워크를 때리면 그게 모래주머니다.
+ *      캐시 파일은 `.claude/state/` (git 밖). `--재보기` 면 캐시를 무시하고 지금 잰다.
+ *   3. **막지 않는다** — 이 자 전체의 규율 그대로. 알림이다.
+ *   env: SYNK_GEMINI_PROBE=off 면 아예 안 묻는다(회귀가 픽스처로 두 방향을 다 재기 위해서다). */
+const 생존캐시경로 = () => process.env.SYNK_GEMINI_STATE
+  || path.join(ROOT, '.claude', 'state', '제미나이생존.json');
+const 생존캐시수명 = 6 * 60 * 60 * 1000;
+
+/** 캐시가 신선하면 그걸, 아니면 지금 물어본다. @returns {Promise<{때:string, 기록:object, 캐시:boolean}>} */
+async function 키생존기록({ 재보기 = false } = {}) {
+  const 경로 = 생존캐시경로();
+  if (!재보기) {
+    try {
+      const c = JSON.parse(fs.readFileSync(경로, 'utf8'));
+      if (c && c.때 && Date.now() - new Date(c.때).getTime() < 생존캐시수명) return { ...c, 캐시: true };
+    } catch (_) { /* 캐시 없음·깨짐 = 그냥 다시 잰다 */ }
+  }
+  if (process.env.SYNK_GEMINI_PROBE === 'off') {
+    return { 때: null, 기록: { 살았나: null, 종류: '안 재봤다', 사유: 'SYNK_GEMINI_PROBE=off' }, 캐시: false };
+  }
+  let 기록;
+  // 모듈은 «언제나 이 도구 옆»에서 읽는다(ROOT 는 픽스처로 갈릴 수 있다).
+  try { 기록 = await require(path.join(__dirname, '모델정책.js')).제미나이생존(); }
+  catch (e) { 기록 = { 살았나: null, 종류: '자가 못 돌았다', 사유: String((e && e.message) || e).slice(0, 200) }; }
+  const 결과 = { 때: new Date().toISOString(), 기록 };
+  try {
+    fs.mkdirSync(path.dirname(경로), { recursive: true });
+    fs.writeFileSync(경로, JSON.stringify(결과), 'utf8');
+  } catch (_) { /* 캐시를 못 써도 판정은 그대로다 — 다음 번에 한 번 더 물을 뿐 */ }
+  return { ...결과, 캐시: false };
+}
+
+/** 순수 판정 — 기록 하나를 받아 줄로 바꾼다(회귀가 두 방향을 다 잰다). */
+function 키생존축(r) {
+  const 적색 = [], 알림 = [];
+  const g = (r && r.기록) || {};
+  /* 🔑 «몇 분 전»으로 적는다 — 장부는 세계시(UTC)라 그대로 찍으면 방금 잰 것이 «어제»로 읽힌다
+   *   (첫 실물이 그랬다: 09-03 00:20 에 잰 값이 「09-02 15:20」으로 나왔다). 상대시간은 시간대가
+   *   없어 오독할 자리 자체가 없다 — 유호님이 읽는 줄에는 이쪽이 맞다. */
+  const 언제 = (() => {
+    if (!r || !r.때) return '안 재봤다';
+    const 분 = Math.max(0, Math.round((Date.now() - new Date(r.때).getTime()) / 60000));
+    const 말 = 분 < 60 ? `${분}분 전` : `${Math.round(분 / 60)}시간 전`;
+    return `${말} 실측`;
+  })();
+  if (g.살았나 === false) {
+    적색.push(`🔴 **제미나이 키가 죽어 있다** (${언제} · ${g.상태 || ''} ${g.종류 || ''}) — 이 키 하나에 자리 셋이 매달려 있다:`);
+    적색.push('   · 몽골어 검문 ①역번역 ②문법 — 대외로 나갈 몽골어가 **지금 아무 자도 안 지난다**');
+    적색.push('   · 검수 러너 `--벤더 둘` 의 gemini 회차 · 이미지 굽기(나노바나나)');
+    if (g.사유) 적색.push(`   · 구글이 한 말: ${String(g.사유).slice(0, 160)}`);
+    적색.push(g.종류 === '자격'
+      ? '   처방: 키 교체(9월 Standard 키 거부 예고) — AI Studio 「Key Type」 확인 뒤 새 키를 같은 파일에.'
+      : '   처방: 유호님 손 — AI Studio 결제·크레딧. 다시 재기: node tools/모델정책.js --제미나이확인');
+  } else if (g.살았나 !== true) {
+    알림.push(`🟠 제미나이 키를 **못 물어봤다**(${g.종류 || '까닭 미상'}) — 「살았다」가 아니라 «안 재봤다»다.`);
+    if (g.사유) 알림.push(`   · ${String(g.사유).slice(0, 160)}`);
+  }
+  return { 적색, 알림, 셈: { 살았나: g.살았나 === true ? '예' : g.살았나 === false ? '**아니오**' : null, 잰때: 언제 } };
+}
+
 /* ── ㉣ 이미 도는 것들의 「마지막이 언제였나」 — 판정하지 않는다. 사실만. ── */
 function 신선도() {
   const 줄 = [];
@@ -459,7 +531,7 @@ function 개명적기(argv) {
   return 0;
 }
 
-function main() {
+async function main() {
   const argv = process.argv.slice(2);
   const 훅 = argv.includes('--훅') || argv.includes('--hook');
   const 강제 = argv.includes('--force');
@@ -480,6 +552,7 @@ function main() {
 
   const 축 = [
     ['②설계 심문 (Codex)', 심문커버리지()],
+    ['제미나이 키 생존', 키생존축(await 키생존기록({ 재보기: argv.includes('--재보기') }))],
     ['몽골어 검문 (Gemini)', 몽골어검문()],
     ['㉠밖의 사실 (DR 둘)', 밖의사실축()],
   ];
@@ -528,13 +601,12 @@ function main() {
   return 0;
 }
 
-module.exports = { 심문커버리지, 몽골어검문, 밖의사실축, 표식꼴, 도장경로 };
+module.exports = { 심문커버리지, 몽골어검문, 밖의사실축, 키생존축, 키생존기록, 표식꼴, 도장경로, 생존캐시경로 };
 
 if (require.main === module) {
-  try { process.exit(main()); }
-  catch (e) {
+  main().then((c) => process.exit(c)).catch((e) => {
     // 자가 죽은 것은 「정상」이 아니라 «확인 불가»다 — 종료코드로 갈라 말한다.
-    console.error('🔴 AI 스택 점검이 못 돌았다:', e.message);
+    console.error('🔴 AI 스택 점검이 못 돌았다:', (e && e.message) || e);
     process.exit(1);
-  }
+  });
 }

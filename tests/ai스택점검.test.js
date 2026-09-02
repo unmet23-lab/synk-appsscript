@@ -44,6 +44,9 @@ function 돌린다(집) {
       SYNK_MN_LEDGER: path.join(집, 'docs', '_ops', '몽골어검문.jsonl'),
       SYNK_OUTSIDE_LEDGER: path.join(집, 'docs', '_ops', '밖의사실.jsonl'),
       SYNK_AISTACK_STAMP: path.join(집, '도장.json'),
+      // 회귀는 **네트워크를 안 탄다** — 키 생존은 아래 전용 시험이 픽스처로 두 방향을 다 잰다.
+      SYNK_GEMINI_PROBE: 'off',
+      SYNK_GEMINI_STATE: path.join(집, '생존캐시.json'),
     },
   });
   assert.strictEqual(r.status, 0, `자가 못 돌았다(종료 ${r.status}): ${r.stderr}`);
@@ -231,6 +234,8 @@ test('🔴 워크트리에서도 스로틀 도장이 찍힌다 — `.git` 이 **
     SYNK_MN_LEDGER: path.join(집, 'docs', '_ops', '몽골어검문.jsonl'),
     SYNK_OUTSIDE_LEDGER: path.join(집, 'docs', '_ops', '밖의사실.jsonl'),
     SYNK_AISTACK_STAMP: '',                                                 // 기본 경로 결정을 그대로 재게 둔다
+    SYNK_GEMINI_PROBE: 'off',
+    SYNK_GEMINI_STATE: path.join(집, '생존캐시.json'),
   };
   const 훅 = () => spawnSync(process.execPath, [도구, '--훅'], { encoding: 'utf8', env });
 
@@ -254,4 +259,45 @@ test('걸린 것이 하나도 없으면 적색 0 — 다만 그때도 축은 다
   assert.strictEqual(j.적색.length, 0);
   assert.strictEqual(j.축[심문축].후보, 0);
   assert.strictEqual(j.축[밖축].합, 1);
+});
+
+// ───────────────────────────── 제미나이 «키 생존» (2026-09-03)
+//
+// 🔴 이 축이 생긴 까닭이 곧 그 시험이다: 09-02 저녁 키가 429 로 죽었는데 다음 날 세션 첫머리가
+//   **조용했다.** 커버리지 축은 「장부에 몇 줄 있나」를 세는데 장부는 «부른 적이 있어야» 자란다 —
+//   아무도 안 부르면 침묵이 정상 얼굴이다. 그래서 「살았나」를 따로 세고, **세 방향을 다 잰다.**
+
+const { 키생존축 } = require(도구);
+
+test('🔴 키가 죽었으면 적색이고, 그 키에 매달린 자리 셋을 이름으로 부른다', () => {
+  const a = 키생존축({ 때: '2026-09-03T01:00:00.000Z', 캐시: false, 기록: { 살았나: false, 상태: 429, 종류: '한도·결제', 사유: 'prepayment credits are depleted' } });
+  assert.strictEqual(a.적색.length > 0, true, '죽었는데 조용하면 그게 09-02 의 그 사고다');
+  const 전문 = a.적색.join('\n');
+  assert.match(전문, /몽골어 검문/);
+  assert.match(전문, /gemini 회차|이미지 굽기/);
+  assert.match(전문, /prepayment credits/, '구글이 한 말을 그대로 물고 와야 유호님이 어느 화면을 열지 안다');
+  assert.strictEqual(a.셈.살았나, '**아니오**');
+});
+
+test('자격(401·403)이면 처방이 다르다 — 충전이 아니라 키 교체다', () => {
+  const a = 키생존축({ 때: '2026-09-03T01:00:00.000Z', 기록: { 살았나: false, 상태: 403, 종류: '자격', 사유: 'API key not valid' } });
+  assert.match(a.적색.join('\n'), /키 교체/);
+  assert.doesNotMatch(a.적색.join('\n'), /크레딧/);
+});
+
+test('🔴 못 물어본 것은 «살았다»가 아니다 — 알림으로 갈라 말한다(0건이 성공 얼굴이 되는 자리)', () => {
+  const a = 키생존축({ 때: null, 기록: { 살았나: null, 종류: '네트워크', 사유: 'timeout' } });
+  assert.strictEqual(a.적색.length, 0, '못 잰 것을 적색으로 울리면 자가 요란해진다');
+  assert.match(a.알림.join('\n'), /못 물어봤다/);
+  assert.strictEqual(a.셈.살았나, null, 'null 은 «안 재봤다»로 나가야 한다(예/아니오가 아니다)');
+});
+
+test('살아 있으면 조용하다 — 다만 «언제 쟀나»는 남는다', () => {
+  const a = 키생존축({ 때: new Date(Date.now() - 90 * 60000).toISOString(), 캐시: true, 기록: { 살았나: true, 모델: 'gemini-3.7-flash', 사고토큰: 12 } });
+  assert.strictEqual(a.적색.length + a.알림.length, 0);
+  assert.strictEqual(a.셈.살았나, '예');
+  /* 🔑 «몇 분 전»으로 적는다 — 장부는 세계시라 그대로 찍으면 방금 잰 것이 「어제」로 읽힌다.
+   *   첫 실물이 그랬다(09-03 00:20 에 잰 값이 「09-02 15:20 실측」으로 나갔다). */
+  assert.match(a.셈.잰때, /2시간 전 실측/);
+  assert.doesNotMatch(a.셈.잰때, /\d{4}-\d{2}-\d{2}/, '유호님이 읽는 줄에 세계시를 그대로 찍지 않는다');
 });
