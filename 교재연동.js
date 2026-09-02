@@ -698,7 +698,7 @@ function stt동의재확인_(sid) {
 }
 
 /** 🔒 Speech-to-Text 호출 — 이 저장소에서 학생 음성이 밖으로 나가는 유일한 자리.
- *  @param {{token:string, config:Object, content:string, sid:string=}} opt
+ *  @param {{token:string, config:Object, content:string, sid?:string}} opt
  *  @returns {{res:Object}|{err:string, 보류:boolean}}  res 가 없으면 **아무것도 안 나갔다**
  */
 function stt요청_(opt) {
