@@ -250,9 +250,9 @@ test('[v9.40] preflightGlide는 콘텐츠 부족분을 자동 복구하고 진�
   assert.equal(/setupSchedule\(\)/.test(코드만(body)), false);
 });
 
-test('[v9.40] 시트 골격에 월간 산출 5종이 있어 Glide가 조립 시점에 테이블로 잡을 수 있다', () => {
+test('[v9.40] 시트 골격에 월간 산출 4종이 있다(구 Glide 조립의 잔재 · league_pairs 는 09-03 리그 폐지 정리로 빠졌다)', () => {
   const body = section('function sheetSkeleton_()', 'function bootstrapSynk()');
-  ['synk_stories', 'synk_cards', 'world_raid', 'league_pairs', 'academic_log'].forEach((name) => {
+  ['synk_stories', 'synk_cards', 'world_raid', 'academic_log'].forEach((name) => {
     assert.ok(body.includes(`['${name}',`), `SHEET_SKELETON에 ${name} 누락`);
   });
   // teacher_stats 구 3열 스키마가 되살아나면 calcTeacherStats 실사용 8열과 다시 어긋난다

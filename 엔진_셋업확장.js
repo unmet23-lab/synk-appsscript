@@ -155,11 +155,16 @@ function sheetSkeleton_() {
     ['today_board', ['유형','이름','반','시각','퇴근']],
     ['teacher_stats', TEACHER_STATS_HEADERS], // [v9.40] 구 3열(teacher·지급수·편중률)이 실사용 8열과 불일치하던 드리프트 정정 · [v9.87] 정본 상수 공유로 드리프트 재발 자체를 차단(+담당반 9열)
     ['report_cards', ['card_id','student_id','월','image_url','칭호','코멘트','created_at']], // [v9.28] 실사용 7열로 정정(구 3열은 setupV5Triggers·runReportCards_와 불일치하던 결함)
-    /* ⚰ [08-27 유호 지시 A] league_history·league_pairs 는 반 대항 리그 폐지로 «쓰는 코드가 0»이다.
-     *   그런데 골격에서 «빼지는» 않는다 — 골격이 워치독 감시 목록의 정본이라, 여기서 빼면 시트가
-     *   감시 밖으로 조용히 나간다. 그걸 막으려고 회귀가 「옛 손 목록 35종을 하나도 안 흘렸나」를 잰다.
-     *   ⇒ 시트는 라이브에 빈 채로 남고, 골격도 남고, 다만 «아무도 안 쓴다». 지우는 것은 유호님 자리. */
-    ['league_history', ['월','시즌','챔피언반','챔피언포인트','준우승','준우승포인트','MVP_id','MVP이름','MVP포인트','created_at']], ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
+    /* ⚰ [2026-09-03 유호 확정] league_history·league_pairs 를 골격에서 **뺐다**(라이브 탭도 지운다).
+     *   08-27 리그 폐지로 「쓰는 코드가 0」이 된 뒤에도 골격에 남겨 뒀던 까닭은 「여기서 빼면 시트가
+     *   감시 밖으로 조용히 나간다」였다 — 그건 시트를 «안 지울 때»의 이야기다. 09-03 전수조사에서
+     *   유호님이 라이브 탭까지 지우기로 정했으므로 감시할 대상 자체가 없다
+     *   (실측: league_history 데이터 0행 · league_pairs 6행 = 데모 시절 대진표).
+     *   🔑 함께 옮긴 것 — `tests/월키원인차단.test.js` 의 「월·시즌을 둘 다 잡는가」 회귀는 골격에
+     *   league_history 가 «있어서» 성립했다(월+시즌을 둘 다 가진 유일한 시트였다). 그대로 뺐으면
+     *   그 검사는 잴 것을 잃고 조용히 초록이 된다 — 합성 골격으로 함수 자체를 재도록 고쳤다.
+     *   빠진 자리를 세는 곳 = `tests/수집탭워치독.test.js` 의 `의도적퇴역`(옛 손 목록은 역사라 안 건드린다). */
+    ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
     ['raid_story', ['date','class_name','유형','제목','스토리']],
     [KPI_SHEET_NAME, KPI_HEADERS], // [v9.26] 이탈률·전환율 계측 시트
     ['exit_log', EXIT_LOG_HEADERS, 수집표식_], // [v9.28] 퇴소 이벤트 로그 · [v9.244] 이탈 이해의 원본 — 떠난 순간은 소급이 안 된다 · [2026-09-02] 헤더 정본 = 엔진_운영배치.js EXIT_LOG_HEADERS(종료사유·종료일 «끝에» 증분 · append 전용 사건 원장 · 학생ID 종단 ㉡)
@@ -201,7 +206,6 @@ function sheetSkeleton_() {
     ['synk_stories', ['월','호수','제목','챕터','챕터제목','본문','문법포인트','씬프롬프트']],
     ['synk_cards', ['월','student_id','카드HTML']],
     ['world_raid', ['월','보스명','HP','누적데미지','상태']],
-    ['league_pairs', ['week','반A','반B','상태','결과']], // ⚰ [08-27] 리그 폐지 — 쓰는 코드 0. 골격은 위 사유로 남긴다
     ['academic_log', ACADEMIC_LOG_HEADERS, 수집표식_], // [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌) · [v9.244] 학업 사건 원장 — append 전용
     ['jacket_grants', ['student_id','이름','자격도달일','재원개월','누적P','지급상태']], // [v9.83] 🧥 과잠 자격 대장
     // [v9.138] 📊 학습 데이터 축적층 — 「2년 축적 → AI 회화 앱」의 원본. 운영 시트가 아니라 **수집기**다.
@@ -288,7 +292,7 @@ function 수집장부탭_() {
  *     ㉡ **소급이 안 되는 학습·운영 원본인가**(파생·재계산 가능하면 탈락 — 지워도 다시 만든다)
  *   탈락 35종의 사유는 셋뿐이다: 파생·재생성(class_stats·teacher_stats·titles·synk_* 등 15) ·
  *   사람이 고치는 원장(profiles·contents·schedule·lectures·notices 등 13) · 게임 상태(raid·
- *   world_raid·carryover·league_pairs 등 7). 전건표 = `docs/엔진도달_설계.md` §8-1.
+ *   world_raid·carryover·raid_story 등 5 · 09-03 리그 둘 제거 전엔 7). 전건표 = `docs/엔진도달_설계.md` §8-1.
  *   🔑 **넓힌 13종 중 11종은 이미 닿고 있었다** — 빚이 는 게 아니라 «안 보이던 도달»이 보였다.
  *      새 빚은 둘(achievements·exit_log)뿐이라 래칫은 5 → 7 이다.
  *
@@ -1030,7 +1034,6 @@ function clearDemoData() {
   wipe('weekly_topics', r => hasDemoCls(r[0]), 1);
   wipe('class_fuel', r => hasDemoCls(r[0]), 1);
   wipe('raid', r => hasDemoCls(r[1]), 2);
-  wipe('league_pairs', r => hasDemoCls(r[1]) || hasDemoCls(r[2]), 3);
   wipe('raid_story', r => hasDemoCls(r[1]), 2);
   wipe('class_stats', r => hasDemoCls(r[0]), 1);
   // [v9.87] A열이 반명 → 강사명으로 바뀌어 '데모' 접두만으론 못 잡는다(데모 반 담당 강사 행·'(미지정) 데모…' 행 모두).
@@ -1047,7 +1050,6 @@ function clearDemoData() {
     }
   }
   if (!sbPreExisted) wipe('synk_stories', r => String(r[0]) === ymLast, 1); // 데모가 발간시킨 지난달호만 회수(실호 사전존재 시 보존)
-  wipe('league_history', r => hasDemoCls(r[2]) || hasDemoCls(r[4]), 6); // [검증 반영] 월 기준→데모 반명 기준(챔피언·준우승) — 실 월간 기록 오폭 차단
   { // notices — 시드 이후 생성분(발간·리그·시상 공지) 일괄 회수: created_at 헤더 탐색
     const nt = ss.getSheetByName('notices');
     if (nt && nt.getLastRow() >= 2) {
