@@ -1903,11 +1903,13 @@ function sweepAttendanceForm_(ss) {
   const tz = ss.getSpreadsheetTimeZone();
   const rows = src.getRange(from + 1, 1, last - from, 2).getValues(); // 타임스탬프·학생ID
   const valid = new Set();
+  const clsOf = {}; // [2026-09-02 걸음1] sid → profiles.class_name — 폼 출석엔 반 칸이 없으므로 **쓰는 시점**에 읽어 얼려 넣는다(조인 시점의 profiles 참조가 금지된 것이지, 스냅샷을 뜨는 읽기는 이 자리가 정답이다)
   const pf = ss.getSheetByName('profiles');
-  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (r[0] && r[3] === 'student') { valid.add(String(r[0]).trim()); clsOf[String(r[0]).trim()] = String(r[4] || '').trim(); }
   });
-  const at = ensureSheet(ss, 'attendance', ['id', 'student_id', 'timestamp', 'method']);
+  const at = ensureSheet(ss, 'attendance', ATTENDANCE_HEADERS);
+  헤더보정_(at, ATTENDANCE_HEADERS); // [2026-09-02 걸음1] 구 4열 라이브 시트에 class_snapshot 을 끝에
   const seen = {}; // '날짜|sid' — 같은 날 중복 제출·기존 기록 스킵
   if (at.getLastRow() >= 2) at.getRange(2, 2, at.getLastRow() - 1, 2).getValues().forEach(r => { // B·C = sid·timestamp
     if (r[0] && r[1]) seen[dstr(r[1], tz) + '|' + String(r[0]).trim()] = 1;
@@ -1921,9 +1923,9 @@ function sweepAttendanceForm_(ss) {
     const key = dstr(ts, tz) + '|' + sid;
     if (seen[key]) return;
     seen[key] = 1;
-    out.push(['ATF' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid, sid, ts, '출석(폼)']); // method에 '출석' 포함 = 보드·레이드 판정 호환
+    out.push(['ATF' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid, sid, ts, '출석(폼)', clsOf[sid] || '']); // method에 '출석' 포함 = 보드·레이드 판정 호환 · 5열 = 반 스냅샷
   });
-  if (out.length) at.getRange(at.getLastRow() + 1, 1, out.length, 4).setValues(out);
+  if (out.length) at.getRange(at.getLastRow() + 1, 1, out.length, ATTENDANCE_HEADERS.length).setValues(out);
   notifyDroppedSids_('출석폼', badSid); // [v9.67] 하루 1회 dedup 내장 — 빈 배열이면 0초
   props.setProperty('출석폼_포인터', String(last));
 }

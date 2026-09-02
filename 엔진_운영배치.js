@@ -1532,11 +1532,16 @@ function todayBoard_(ss) {
     }
   });
   const arr = {};
+  const weekCls = {}; // [2026-09-02 걸음1] 이번 주 «출석 사건이 있었던» 반(class_snapshot) — 순간 0건 경보의 분모(수업이 없었던 반·개원 전엔 울지 않는다)
+  const mondayMo = (function () { const m = new Date(now); m.setDate(now.getDate() - ((now.getDay() + 6) % 7)); return Utilities.formatDate(m, tz, 'yyyy-MM-dd'); })();
   const at = ss.getSheetByName('attendance');
   if (at && at.getLastRow() >= 2) {
-    at.getRange(2, 1, at.getLastRow() - 1, 4).getValues().forEach(r => {
+    at.getRange(2, 1, at.getLastRow() - 1, ATTENDANCE_HEADERS.length).getValues().forEach(r => { // 5열 = class_snapshot(같은 읽기에 실어 10분 스위프 읽기 수 무증)
       const sid = r[1], d = r[2];
-      if (!sid || !d || !isToday(d) || String(r[3]).indexOf('출석') === -1) return;
+      if (!sid || !d) return;
+      const cls5 = String(r[4] || '').trim();
+      if (cls5 && Utilities.formatDate(asDate_(d), tz, 'yyyy-MM-dd') >= mondayMo) weekCls[cls5] = 1;
+      if (!isToday(d) || String(r[3]).indexOf('출석') === -1) return;
       const t = (d instanceof Date) ? d.getTime() : new Date(d).getTime();
       if (!arr[sid] || t < arr[sid]) arr[sid] = t;
     });
@@ -1560,7 +1565,11 @@ function todayBoard_(ss) {
       ? ['ℹ️ 안내', '오늘은 일요일 — 수업이 없는 날이에요', '', '—', '']
       : ['ℹ️ 안내', '아직 등원·출근 기록이 없어요 (10분마다 자동 갱신)', '', '—', '']);
   }
-  const all = rows.concat(stuRows);
+  /* [2026-09-02 · 가져가는것 걸음1] 📷 원장 오늘판에 얹는 두 줄(설계 §3-b 실패 경로 · 새 화면 0 · 새 판단 0):
+   *   「어제 미분류 목록」(폴더 이름을 고치면 다음 밤에 담긴다) + 「이번 주 순간 0건 반」. 실패는 격리한다 — 순간 줄이 출결 보드를 깨면 안 된다. */
+  let momentRows = [];
+  try { momentRows = momentBoardRows_(ss, tz, schMap, now, weekCls); } catch (eMo) { Logger.log('순간 원장줄 실패(출결 보드는 그대로): ' + eMo); }
+  const all = rows.concat(stuRows).concat(momentRows);
   const last = bd.getLastRow();
   if (last - 1 > all.length) bd.getRange(all.length + 2, 1, Math.max(last - 1 - all.length, 1), 5).clearContent();
   if (all.length) writeIfChanged(bd, 2, 1, all);
@@ -1839,7 +1848,8 @@ function expandAttendanceBatch_(ss) {
   });
   if (!pending.length) return; // 미처리 없으면 attendance·profiles 스캔 없이 종료 (10분 스위프 부담 0)
 
-  const at = ensureSheet(ss, 'attendance', ['id', 'student_id', 'timestamp', 'method']);
+  const at = ensureSheet(ss, 'attendance', ATTENDANCE_HEADERS);
+  헤더보정_(at, ATTENDANCE_HEADERS); // [2026-09-02 걸음1] 구 4열 라이브 시트에 class_snapshot 을 끝에 — ensureSheet 는 있는 시트를 안 늘린다
   const seenToday = new Set(); // 오늘 이미 출석 기록된 학생 (개별 체크 병행 대비)
   if (at.getLastRow() >= 2) {
     at.getRange(2, 1, at.getLastRow() - 1, 3).getValues().forEach(r => {
@@ -1847,24 +1857,28 @@ function expandAttendanceBatch_(ss) {
     });
   }
   const valid = new Set();
+  const clsOf = {}; // [2026-09-02 걸음1] sid → profiles.class_name «지금 값» — 배치 행에 반이 비었을 때의 폴백(쓰는 시점에 얼려 넣는다)
   const pf = ss.getSheetByName('profiles');
   if (pf && pf.getLastRow() >= 2) {
-    pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
-      if (r[0] && r[3] === 'student') valid.add(String(r[0]).trim());
+    pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+      if (r[0] && r[3] === 'student') { valid.add(String(r[0]).trim()); clsOf[String(r[0]).trim()] = String(r[4] || '').trim(); }
     });
   }
   const ymd = Utilities.formatDate(now, tz, 'yyyyMMdd');
   const newRows = [], doneIdx = [];
   pending.forEach(p => {
+    /* [2026-09-02 · 가져가는것 걸음1] class_snapshot = 이 출석 «사건»의 반. 일괄 출석은 강사가 «그 수업»에서 찍으므로 배치 행의
+     *   class_name(p.r[1])이 가장 정확한 스냅샷이다 — 비어 있으면 그 학생의 지금 반(profiles)으로. 둘 다 없으면 빈칸(지어 넣지 않는다). */
+    const clsBatch = String(p.r[1] || '').trim();
     String(p.r[2] || '').split(',').forEach(tok => {
       const sid = String(tok).trim();
       if (!sid || !valid.has(sid) || seenToday.has(sid)) return;
       seenToday.add(sid);
-      newRows.push(['ATB' + ymd + '-' + sid, sid, now, '출석(일괄)']); // method에 '출석' 포함 — 다이제스트 집계 호환
+      newRows.push(['ATB' + ymd + '-' + sid, sid, now, '출석(일괄)', clsBatch || clsOf[sid] || '']); // method에 '출석' 포함 — 다이제스트 집계 호환
     });
     doneIdx.push(p.i);
   });
-  if (newRows.length) at.getRange(at.getLastRow() + 1, 1, newRows.length, 4).setValues(newRows);
+  if (newRows.length) at.getRange(at.getLastRow() + 1, 1, newRows.length, ATTENDANCE_HEADERS.length).setValues(newRows);
   doneIdx.forEach(i => ab.getRange(i + 2, 6).setValue('전개완료')); // 전개 성공 후 마킹
   Logger.log('출석 일괄 전개: +' + newRows.length + '명 / 행 ' + doneIdx.length);
 }
