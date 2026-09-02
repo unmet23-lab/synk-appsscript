@@ -66,6 +66,8 @@ const fs = require('node:fs');
  * 여기서 고르는 것은 프리셋 하나뿐 — `부품만` = 지면이 자기 디자인을 지고 부품만 얹는 판.
  * 🔴 훅이 0 이면 통로가 «안 얹는다». 그래야 「마커만 켜진 초록」이 안 생긴다(F517②). */
 const loom얹기모듈 = require('./lib/loom얹기.js');
+/* 브랜드 서체를 지면 «안»에 싣는 단일 통로 — 바깥 호출은 아티팩트 CSP 가 조용히 막는다. */
+const 브랜드폰트 = require('./lib/브랜드폰트.js');
 function loom태우기(html) {
   const r = loom얹기모듈.얹기(html, { 지면: '부품만' });
   if (!r.얹힘 && r.범위흠) console.error('   ⚠ Loom 미적용 — ' + r.범위흠);
@@ -694,6 +696,9 @@ function 그리기(d, 도장) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SYNK 작동 대장 — 이번 주에 뜯을 것</title>
 <style>
+/* 브랜드 서체 — 지면 «안»에 싣는다(09-03). 바깥에서 부르면 아티팩트 뷰어의 CSP 가 막고
+   인터넷이 없어도 같다. 정본 = tools/lib/브랜드폰트.js */
+${브랜드폰트.면()}
   :root{--paper:${킷.paper};--ink:${킷.ink};--navy:${킷.navy};--navy2:${킷.navy2};
     --cream:${킷.cream};--cream3:${킷.cream3};--slate2:${킷.slate2};
     --coral:${킷.coral};--coral3:${킷.coral3};--wash:${킷.coralWash};--sun:${킷.sun};--em:${킷.emerald}}

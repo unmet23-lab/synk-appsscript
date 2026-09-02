@@ -58,6 +58,9 @@ const 루트 = path.dirname(__dirname);
 /* Loom 부품 통로 — 재질·부품·율의 정본은 여기 하나다(2026-08-16 배선).
    이 파일은 그 위에 «지면 골격»(판·레일·표지·표·수치·모션)만 얹는다. */
 const loom = require('./lib/loom.js');
+/* 브랜드 서체 통로 — SUIT 를 «지면 안»에 심는 자리는 하나다(2026-09-03 배선).
+   바깥에서 부르면 아티팩트 뷰어의 CSP 가 조용히 막아 대체 서체로 내려앉는다(사유는 그 파일 머리). */
+const 브랜드폰트 = require('./lib/브랜드폰트.js');
 /* 표기 접기 정의는 하나다 — `tests/lib/소스검사.js`. 재현 대조(아래 `몸통`)가 손으로 접으면
  * CRLF 축만 막혀, 굽는 기계가 줄끝에 한 칸 흘린 날 «지면이 갈라졌다»가 된다(#Q101 · 14/14 반쪽). */
 const { 표기접기 } = require('../tests/lib/소스검사.js');
@@ -486,6 +489,13 @@ ${천줄}
     .알림.조용::after{background:var(--ash2);}
     footer{border-top:1px solid var(--chalk3);}
   }
+
+  /* ── 브랜드 서체 — 지면 «안»에 싣는다 (2026-09-03) ────────────────────────
+     바깥(cdn.jsdelivr.net)에서 부르면 아티팩트 뷰어의 CSP 가 스타일시트를 막아
+     **에러 없이** 대체 서체로 내려앉는다. 오프라인에서도 같다. 읽는 사람이 받는
+     바이트는 안 늘어난다 — CDN 도 unicode-range 쪼개기 없이 같은 파일을 통째로 줬다.
+     자산·지문·근거는 tools/lib/브랜드폰트.js 하나가 진다. */
+  ${브랜드폰트.면()}
 </style>`;
 }
 
@@ -549,7 +559,10 @@ function 히어로이름(원문) {
 }
 
 function 굽기(입력, 출력, 쓸천, 림) {
-  const 원문 = fs.readFileSync(입력, 'utf8');
+  /* 서체를 «바깥에서 부르는 줄»은 여기서 걷는다 — 스킨이 폰트를 안에 싣기 때문이다.
+     원고에 그 줄이 남아 있어도 되게 둔다(옛 원고 전량을 손대지 않아도 굽기가 알아서 걷는다).
+     원고 자신은 가볍게 둔다 — 832KB 를 원고에도 박으면 diff 가 죽고 재현 대조가 무거워진다. */
+  const 원문 = 브랜드폰트.걷기(fs.readFileSync(입력, 'utf8'));
   if (!원문.includes(표식)) throw new Error('표식이 없다 — 입력 HTML 에 ' + 표식 + ' 한 줄을 둔다: ' + 입력);
   /* 이 원고가 실제로 부르는 클래스 — 구움층이 «쓰는 것만» 싣는 근거(loom `부르나`).
      실측 09-01: 안 쓰는 요소까지 실으니 한 지면이 310KB → 611KB 가 됐고 브라우저가 열기를 거부했다. */
@@ -790,17 +803,25 @@ function 전량({ 림 = '무채', 방 = 지면방, 임시방 } = {}) {
   });
 }
 
-/** 자립성 — 외부에서 끌어오는 «그림»이 하나라도 있으면 첨부 단독일 때 전멸한다. */
+/**
+ * 자립성 — 외부에서 끌어오는 것이 하나라도 있으면 첨부 단독일 때, 그리고 **아티팩트로 발행할 때** 죽는다.
+ *
+ * 🔴 2026-09-03 에 여기가 새는 것을 실물로 봤다 — 구 판은 `SUIT-Variable` 을 **허용 목록에 넣어**
+ *    「폰트는 바깥이어도 괜찮다」로 통과시켰다. 그런데 아티팩트 뷰어의 CSP 는 스타일시트를
+ *    Google Fonts 에서만 받는다. 그래서 발행된 지면은 브랜드 서체 없이 살았고, 이 검사는 초록이었다.
+ * 🔑 그래서 판정을 둘로 갈랐다 — «바깥을 안 부르나»(음성)와 «서체가 안에 있나»(양성).
+ *    음성만 세면 서체 선언이 통째로 사라진 지면도 똑같이 초록이다(0 이 성공 얼굴 · 기억 taxonomy).
+ *    자는 `tools/lib/브랜드폰트.js` 하나가 진다 — 여기 베끼면 두 곳이 서로 다른 말을 한다.
+ */
 function 검사(파일) {
   const 원문 = fs.readFileSync(파일, 'utf8');
   const 흠 = [];
   if (원문.includes(표식)) 흠.push('스킨이 아직 안 구워졌다(표식이 남아 있다)');
   const 상대그림 = [...원문.matchAll(/<img[^>]+src="(?!data:)([^"]+)"/g)].map((m) => m[1]);
   if (상대그림.length) 흠.push('인라인 안 된 그림 ' + 상대그림.length + '개: ' + 상대그림.slice(0, 3).join(', '));
-  const 외부 = [...원문.matchAll(/(?:src|href)="(https?:\/\/[^"]+)"/g)].map((m) => m[1]);
-  const 폰트밖 = 외부.filter((u) => !/fonts\.googleapis|SUIT-Variable/.test(u));
-  if (폰트밖.length) 흠.push('폰트 밖 외부 자원 ' + 폰트밖.length + '개: ' + 폰트밖.slice(0, 3).join(', '));
-  return { 흠, 외부폰트: 외부.length - 폰트밖.length, 바이트: Buffer.byteLength(원문, 'utf8') };
+  const 판 = 브랜드폰트.발행판정(원문);
+  흠.push(...판.흠);
+  return { 흠, 서체안: 판.심겼나, 허용된: 판.허용된, 바이트: Buffer.byteLength(원문, 'utf8') };
 }
 
 if (require.main === module) {
@@ -819,7 +840,8 @@ if (require.main === module) {
         path.relative(루트, 입력), path.relative(루트, 출력), (r.바이트 / 1024).toFixed(1), 림);
       const c = 검사(출력);
       if (c.흠.length) { console.log('   🔴 자립성 흠 %d건:', c.흠.length); c.흠.forEach((h) => console.log('      · ' + h)); process.exit(1); }
-      console.log('   ✅ 자립형 — 인라인 안 된 그림 0 · 외부는 폰트 %d개뿐(없으면 system-ui 로 내려앉는다)', c.외부폰트);
+      console.log('   ✅ 자립형 — 인라인 안 된 그림 0 · SUIT 는 지면 «안» · 남은 바깥 %d곳(%s · 아티팩트가 허용하는 곳)',
+        c.허용된.length, c.허용된.join(' · ') || '없음');
     } else if (모드 === '--원고') {
       const [, 입력, 출력] = 남은;
       if (!입력 || !출력) throw new Error('용법: node tools/펠트문서.js --원고 <옛문서.html> <원고.html>');
@@ -837,7 +859,7 @@ if (require.main === module) {
       const c = 검사(남은[1]);
       console.log('■ %s  %sKB', 남은[1], (c.바이트 / 1024).toFixed(1));
       if (c.흠.length) { c.흠.forEach((h) => console.log('   🔴 ' + h)); process.exit(1); }
-      console.log('   ✅ 자립형 (외부 = 폰트 %d개)', c.외부폰트);
+      console.log('   ✅ 자립형 — SUIT 지면 «안» · 남은 바깥 %d곳(%s)', c.허용된.length, c.허용된.join(' · ') || '없음');
     } else if (모드 === '--대비') {
       const 줄 = 대비판정();
       console.log('■ 지면 대비 — 유리는 «층 합성»으로, 펠트는 «결 p1/p99»로, 종이는 «평면»으로 잰다');
