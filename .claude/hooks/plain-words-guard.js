@@ -39,6 +39,39 @@
 
 const fs = require('fs');
 const path = require('path');
+const cp = require('child_process');
+
+/* ── 문체 자 (2026-09-03 신설) ────────────────────────────────────────────────
+ * 유호 지적: 「지금 니가 구사하는게 이해가 안가거나 애매하게 말하는게 너무 많단말이지」
+ * 위의 «낯선 낱말» 검사는 로마자만 본다. 그런데 유호님이 걸리신 것은 낱말만이 아니라
+ * **문장 모양**이었다 — 긴 줄표로 끝없이 이어 붙이기, 가리킬 것 없는 지시어, 인과 없는 나열.
+ * 그 층을 hanlint(한국어 산문 검사기 · MIT · 딸린 것 0)가 잰다. 자 = .claude/hanlint/내답.toml
+ *
+ * 규율은 위 훅과 같다 — 막지 않고, 판정하지 않고, 0건이면 침묵한다.
+ * 🔴 도구가 없으면 «조용히» 건너뛴다. 매 턴 도는 훅이라 없는 도구를 매번 외치면 그게 소음이다.
+ *    (손으로 잴 때는 `node tools/글검사.js` 가 「못 쟀다」고 분명히 말한다 — 그쪽이 정직할 자리다.)
+ */
+const 문체자 = path.join(__dirname, '..', 'hanlint', '내답.toml');
+const 문체검사기 = path.join(__dirname, '..', '..', 'node_modules', 'hanlint', 'bin', 'hanlint.js');
+
+function 문체검사(글) {
+  if (!글 || 글.length < 80) return [];              // 짧은 답은 안 잰다
+  if (!fs.existsSync(문체검사기) || !fs.existsSync(문체자)) return [];
+  let 낸것 = '';
+  try {
+    낸것 = cp.execFileSync(process.execPath,
+      [문체검사기, '-', '--config', 문체자, '--format', 'json', '--path', '내답.md'],
+      { input: 글, encoding: 'utf8', timeout: 8000, maxBuffer: 1 << 24 });
+  } catch (e) {
+    낸것 = String(e.stdout || '');                    // 지적이 있으면 종료 코드 1 — 실패가 아니다
+    if (!낸것.trim()) return [];
+  }
+  try {
+    const j = JSON.parse(낸것);
+    return (j.files || []).flatMap((f) => f.findings || [])
+      .map((f) => ({ 규칙: f.rule, 말: f.why || '', 글: String(f.quote || '').slice(0, 60) }));
+  } catch { return []; }
+}
 
 // 🔌 끄기 스위치 — 이 파일이 있으면 훅은 아무 일도 안 한다.
 //    유호님 「잠깐 써 보고 판단할게. 꺼달라면 바로 꺼줄 수 있지?」(09-03)에 대한 답이다.
@@ -167,6 +200,7 @@ process.stdin.on('end', () => {
   const 되물음 = 되물음무늬.some((r) => r.test(말));
   const 짚으신것 = 되물음 ? 되물은낱말(말) : [];
   const 한자 = 한자찾기(답);
+  const 문체 = 문체검사(답);
 
   // 🔴 «돌았다»를 남긴다 — 이게 없으면 «0건이라 조용함»과 «훅이 아예 안 돎»을 못 가른다.
   //    0건이 성공의 얼굴을 하는 자리(zero-is-a-success-face-taxonomy)라, 잣대를 먼저 의심할 수 있어야 한다.
@@ -185,14 +219,15 @@ process.stdin.on('end', () => {
     fs.writeFileSync(맥박길, JSON.stringify({
       때: new Date().toISOString(),
       낯선: 낯선.length, 낱말: 낯선.slice(0, 20), 되물음, 짚으신것, 한자,
+      문체: 문체.length, 문체규칙: [...new Set(문체.map((f) => f.규칙))].slice(0, 8),
       돈수: (이전.돈수 || 0) + 1,
-      짖은수: (이전.짖은수 || 0) + (낯선.length || 되물음 || 한자.length ? 1 : 0),
+      짖은수: (이전.짖은수 || 0) + (낯선.length || 되물음 || 한자.length || 문체.length ? 1 : 0),
       한자낸수: (이전.한자낸수 || 0) + (한자.length ? 1 : 0),
       샌날: 이전.샌날 || new Date().toISOString().slice(0, 10),
     }), 'utf8');
   } catch { /* 맥박을 못 남겨도 검사는 계속한다 */ }
 
-  if (!낯선.length && !되물음 && !한자.length) process.exit(0); // 0건이면 완전 침묵
+  if (!낯선.length && !되물음 && !한자.length && !문체.length) process.exit(0); // 0건이면 완전 침묵
 
   const 보일것 = 낯선.slice(0, 12);
   const 더 = 낯선.length > 12 ? ` (외 ${낯선.length - 12})` : '';
@@ -223,6 +258,36 @@ process.stdin.on('end', () => {
     줄.push('→ 이번 답에서는 그 자리에 뜻을 단다(괄호 한 마디면 된다). **바꾸지 말고 붙인다.**');
     줄.push('→ 유호님이 이미 아시는 말이면 `.claude/hooks/lib/아는말.js` 에 넣어 조용히 시킨다.');
     줄.push('⚠ 유호님께 보이는 답에만 걸리는 잣대다 — 커밋 메시지·주석·검수 로그는 대상이 아니다.');
+  }
+
+  /* 문체는 갈래가 또 다르다 — «낱말»이 아니라 «문장 모양»이라 따로 낸다.
+   * 규칙 이름을 그대로 내면 그 자체가 낯선 말이 되므로 우리말 이름으로 바꿔 낸다.
+   * 규칙별로 묶어 한 줄씩, 많아야 넉 줄 — 길면 안 읽고, 안 읽으면 없는 것과 같다. */
+  if (문체.length) {
+    const 우리말 = {
+      dash: '긴 줄표(—)로 이어 붙였다', longSentence: '문장이 길다',
+      danglingDeixis: '가리킬 것 없는 지시어', deixis: '지시어(이것·해당·이러한)',
+      hardWord: '쉬운 말이 있는 어려운 말', translationese: '번역투(~에 의해·~을 통해)',
+      factListParagraph: '인과 없이 사실만 나열', endingRepeat: '같은 어미만 반복',
+      euiChain: '「의」가 겹쳤다', nounPile: '명사를 조사 없이 쌓았다',
+      cliche: '상투어', doublePassive: '이중 피동(되어지다)',
+      doubleNegative: '이중 부정', redundantPair: '겹말', japaneseLoan: '일본어투',
+      paraFragment: '한두 문장 문단이 이어진다', imperativePeriod: '명령·청유 뒤 마침표',
+      noQuestion: '물음표도 부르는 말도 없다', headingSentence: '제목이 본문 문장 복사',
+    };
+    const 묶음 = new Map();
+    for (const f of 문체) {
+      if (!묶음.has(f.규칙)) 묶음.set(f.규칙, { 수: 0, 보기: f.글 });
+      묶음.get(f.규칙).수++;
+    }
+    const 정렬 = [...묶음].sort((a, b) => b[1].수 - a[1].수);
+    줄.push(`✍ **직전 답의 «문장 모양» 지적 ${문체.length}건** — 유호 09-03 「이해가 안 가거나 애매하게 말하는 게 너무 많다」의 그 자리다.`);
+    for (const [규칙, v] of 정렬.slice(0, 4)) {
+      줄.push(`   · ${우리말[규칙] || 규칙}${v.수 > 1 ? ` ×${v.수}` : ''}${v.보기 ? `  「${v.보기}」` : ''}`);
+    }
+    if (정렬.length > 4) 줄.push(`   · 그 밖 ${정렬.length - 4}갈래`);
+    줄.push('→ 이번 답에서 고쳐 쓴다. 긴 줄표는 마침표로 끊고, 나열은 「그래서·때문에」로 잇고, 지시어는 가리킬 것을 앞에 둔다.');
+    줄.push('→ 손으로 재려면 `node tools/글검사.js --답` · 끄려면 `touch .claude/hooks/lib/쉬운말끔`');
   }
 
   console.log(줄.join('\n'));

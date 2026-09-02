@@ -14,6 +14,8 @@
 //   실저장소에서 위반을 찾도록 테스트를 쓰면 「버그가 아직 있을 것을 요구하는 회귀」가 된다.
 'use strict';
 const fs = require('fs');
+const path = require('path');
+const cp = require('child_process');
 
 /* 검사 대상 = 학생·학부모가 읽는 곳만. 화이트리스트인 이유:
  *   `부족`·`실패`·`못 받` 같은 낱말은 코드·테스트·문서에서 정상적으로 쓰인다.
@@ -109,6 +111,42 @@ function 위반찾기(text) {
 }
 
 const 대상인가 = (p) => 대상.some((re) => re.test(p));
+
+/* ── 문장 모양 자 (2026-09-03 신설) ──────────────────────────────────────────
+ * 유호 지시: 말투 도구를 들여 «내 답»과 «대외 문안» 둘 다 재게 한다.
+ * 위 규칙들은 «우리 규칙»(금칙어·결핍 프레임)을 보고, 이 층은 «일반 한국어»를 본다 —
+ * 번역투 · 긴 줄표 · 이중 피동 · 어려운 한자어. 자 = hanlint(MIT · 딸린 것 0).
+ *
+ * 🔴 **막지 않는다.** 09-03 첫 실측에서 대외 문안에 이미 1,336건이 있었고 그 중 802건이 긴 줄표다.
+ *    막으면 그 파일들을 아예 못 고치게 되고, 그러면 다음 사람은 규칙이 아니라 훅을 끈다.
+ * 🔴 **이번에 새로 넣는 줄만** 본다. 파일 전체를 대면 기존 문장이 인질이 된다(위 새텍스트와 같은 판단).
+ * 🔴 조각에 못 믿을 규칙은 걸러낸다 — 앞 문장이 없으니 「가리킬 것이 없다」는 당연히 뜬다.
+ */
+let 문체lib = null;
+try { 문체lib = require(path.join(__dirname, '..', '..', 'tools', 'lib', '대외문안.js')); } catch (_) {}
+const 문체대상인가 = (p) => (문체lib ? 문체lib.대외문안인가(p) : false);
+const 문체검사기 = path.join(__dirname, '..', '..', 'node_modules', 'hanlint', 'bin', 'hanlint.js');
+const 문체자 = path.join(__dirname, '..', 'hanlint', '대외문안.toml');
+
+function 문체찾기(글) {
+  if (!문체lib || !글 || 글.trim().length < 60) return [];
+  if (!fs.existsSync(문체검사기) || !fs.existsSync(문체자)) return [];
+  let 낸것 = '';
+  try {
+    낸것 = cp.execFileSync(process.execPath,
+      [문체검사기, '-', '--config', 문체자, '--format', 'json', '--path', '조각.md'],
+      { input: 글, encoding: 'utf8', timeout: 8000, maxBuffer: 1 << 24 });
+  } catch (e) {
+    낸것 = String(e.stdout || '');
+    if (!낸것.trim()) return [];
+  }
+  try {
+    const j = JSON.parse(낸것);
+    return (j.files || []).flatMap((f) => f.findings || [])
+      .filter((f) => 문체lib.조각에믿을규칙.has(f.rule))
+      .map((f) => ({ id: f.rule, 왜: f.why || '', 문구: String(f.quote || '').slice(0, 60) }));
+  } catch { return []; }
+}
 
 /* ── 경고 층 (2026-09-02 · 유호 확정 「1,2로 하자」) ─────────────────────────
  * 정본 = `docs/정본/SYNK/SYNK 집필 규범.txt` §17 「긍정 프레임 — 손이 하는 동작 다섯」.
@@ -210,7 +248,12 @@ if (!/^(Edit|Write|MultiEdit)$/.test(tool)) process.exit(0);
 
 const ti = input.tool_input || {};
 const filePath = String(ti.file_path || '').replace(/\\/g, '/');
-if (!대상인가(filePath)) process.exit(0);
+/* 자가 둘이고 대상도 다르다 —
+ *   ① 말투 위반(이 파일 위쪽 규칙)  → 학생 접점 좁은 목록. **막는다.**
+ *   ② 문장 모양(hanlint)            → 대외 문안 넓은 목록. **막지 않는다.**
+ * 한쪽만 대상이어도 그쪽은 돌아야 하므로 둘 다 아닐 때만 빠진다. */
+const 문체대상 = 문체대상인가(filePath);
+if (!대상인가(filePath) && !문체대상) process.exit(0);
 
 /* 이번 편집이 새로 넣는 텍스트만 본다 — 파일 전체를 검사하면 기존 문장이 인질이 되어
  * 그 파일을 아예 못 고치게 되고, 그러면 다음 사람은 규칙이 아니라 훅을 끈다
@@ -225,7 +268,7 @@ if (tool === 'Write') {
   for (const e of edits) 새텍스트.push(String(e.new_string || ''));
 }
 
-const 위반 = 새텍스트.flatMap((t) => 위반찾기(t));
+const 위반 = 대상인가(filePath) ? 새텍스트.flatMap((t) => 위반찾기(t)) : [];
 if (위반.length) {
   const 줄 = 위반.map((v) => `  ✖ [${v.id}] "${v.문구}" — ${v.왜}\n     → 이렇게: ${v.대신}`).join('\n');
   process.stdout.write(JSON.stringify({
@@ -245,17 +288,38 @@ if (위반.length) {
 /* 경고 층 — **막지 않는다.** 통과시키면서 눈에만 띄게 한다(집필 규범 §17 동작 5:
  * 부정이 «무기»인 자리가 있어 기계가 판정할 수 없다). `additionalContext` 는 세션에만 보이고
  * 도구 실행을 멈추지 않는다 — 「알림」과 「차단」을 같은 통로로 내면 둘이 같은 무게가 된다. */
-const 경고 = 새텍스트.flatMap((t) => 경고찾기(t));
-if (경고.length) {
-  const 줄 = 경고.map((w) => `  ⚠ [${w.id}] "${w.문구}" — ${w.왜}\n     → 이렇게: ${w.대신}`).join('\n');
+const 경고 = 대상인가(filePath) ? 새텍스트.flatMap((t) => 경고찾기(t)) : [];
+const 문체 = 문체대상 ? 새텍스트.flatMap((t) => 문체찾기(t)) : [];
+
+if (경고.length || 문체.length) {
+  const 토막 = [];
+  if (경고.length) {
+    토막.push(`[voice-guard 경고 ${경고.length}건 · 막지 않았다] ${filePath}`);
+    토막.push(경고.map((w) => `  ⚠ [${w.id}] "${w.문구}" — ${w.왜}\n     → 이렇게: ${w.대신}`).join('\n'));
+    토막.push('→ 부정이 «무기»인 자리면 그대로 둔다(예: 「시험장에는 AI가 같이 들어가지 않으니까요」).');
+    토막.push('→ 자 다섯 = docs/정본/SYNK/SYNK 집필 규범.txt §17 「긍정 프레임 — 손이 하는 동작 다섯」');
+  }
+  if (문체.length) {
+    /* 규칙 이름을 그대로 내면 그 자체가 낯선 말이 된다 — 우리말로 바꿔 낸다. */
+    const 우리말 = {
+      dash: '긴 줄표(—)로 이어 붙였다', hardWord: '쉬운 말이 있는 어려운 말',
+      longSentence: '문장이 길다(30어절 넘음)', translationese: '번역투(~에 의해·~을 통해·~로부터)',
+      doublePassive: '이중 피동(되어지다·보여지다)', doubleNegative: '이중 부정',
+      euiChain: '「의」가 겹쳤다', nounPile: '명사를 조사 없이 쌓았다',
+      cliche: '상투어', japaneseLoan: '일본어투', redundantPair: '겹말',
+      imperativePeriod: '명령·청유 뒤 마침표',
+    };
+    const 묶음 = new Map();
+    for (const f of 문체) { if (!묶음.has(f.id)) 묶음.set(f.id, { 수: 0, 보기: f.문구 }); 묶음.get(f.id).수++; }
+    토막.push(`[문장 모양 ${문체.length}건 · 막지 않았다] ${filePath} — 대외 문안이라 잰다`);
+    for (const [id, v] of [...묶음].sort((a, b) => b[1].수 - a[1].수)) {
+      토막.push(`  ✍ ${우리말[id] || id}${v.수 > 1 ? ` ×${v.수}` : ''}${v.보기 ? `  「${v.보기}」` : ''}`);
+    }
+    토막.push('→ 이번에 «새로 넣는 줄»만 잰 것이다. 기존 문장은 기준선이 잠그고 있다.');
+    토막.push('→ 전량 확인: node tools/글검사.js --전량 · 새 것만: node tools/글검사.js');
+  }
   process.stdout.write(JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: 'PreToolUse',
-      additionalContext:
-        `[voice-guard 경고 ${경고.length}건 · 막지 않았다] ${filePath}\n${줄}\n` +
-        '→ 부정이 «무기»인 자리면 그대로 둔다(예: 「시험장에는 AI가 같이 들어가지 않으니까요」).\n' +
-        '→ 자 다섯 = docs/정본/SYNK/SYNK 집필 규범.txt §17 「긍정 프레임 — 손이 하는 동작 다섯」',
-    },
+    hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 토막.join('\n') },
   }));
   process.exit(0);
 }
