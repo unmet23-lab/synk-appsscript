@@ -3,13 +3,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>yuhobuilds 유튜브 배너 — 세 안</title>
 <style>
-@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
-
+  /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
   :root{--paper:#FBF7F0;--inkdeep:#080605;--coral:#F96859;
     --stone:#C7BFB2;--ash:#8D857A;
     --b1:url("./밤.png");
     --b2:url("./양모.png");
     --b3:url("./밤기호.png");
+    --b4:url("./synkbrief.png");
+    --b5:url("./synklab.png");
+    --b6:url("./synklab커버.png");
   }
   body{margin:0;padding:40px 24px 72px;background:var(--inkdeep);color:var(--paper);
     font-family:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;}
@@ -23,11 +26,11 @@
   .설명{color:var(--stone);font-size:.88rem;margin:0 0 18px;}
   .띠줄{margin:0 0 16px;}
   .라벨{display:block;font-size:.76rem;color:var(--ash);margin:0 0 6px;}
-  .배너{display:block;width:100%;aspect-ratio:2560/1440;border-radius:10px;
+  .배너{display:block;width:100%;aspect-ratio:1640/596;border-radius:10px;
     background-size:cover;background-position:center;}
   /* 안전 영역만 보여 주는 띠 — 배너를 확대해 가운데 1235×338 만 창에 남긴다. */
-  .잘린띠{display:block;width:100%;aspect-ratio:1235/338;border-radius:10px;
-    background-size:207.29% auto;background-position:center;
+  .잘린띠{display:block;width:100%;aspect-ratio:1050/380;border-radius:10px;
+    background-size:156.19% auto;background-position:center;
     box-shadow:inset 0 0 0 2px rgba(249,104,89,.5);}
   .파일{margin:14px 0 0;font-size:.78rem;color:var(--ash);}
   .빨강{color:#FD9C87;} .초록{color:var(--stone);}
@@ -60,12 +63,39 @@
     <span class="초록">✅ 6MB 이하</span></p>
 </section>
 <section class="안">
-  <h2>③ 밤 바탕 · 기호 — ✅ 확정 + 명품화 (08-28)</h2>
+  <h2>③ 밤 바탕 · 기호 — ✅ 확정 + 명품화 (08-28) · @yuhobuilds</h2>
   <p class="설명">톤온톤 잉크 펠트 아플리케 + 양모 천 결 + 이음 손땀 · 업로드본 = yuhobuilds_배너.png</p>
   <div class="띠줄"><span class="라벨">전체 (TV·큰 화면)</span><i class="배너" style="background-image:var(--b3)"></i></div>
   <div class="띠줄"><span class="라벨">안전 영역만 (어디서도 안 잘리는 부분)</span>
     <i class="잘린띠" style="background-image:var(--b3)"></i></div>
-  <p class="파일"><code>docs/SHIFT/배너/밤기호.png</code> · 4.18MB
+  <p class="파일"><code>docs/SHIFT/배너/밤기호.png</code> · 4.17MB
+    <span class="초록">✅ 6MB 이하</span></p>
+</section>
+<section class="안">
+  <h2>④ 밤 바탕 · 코랄 k — @synkbrief (SYNK 브리핑)</h2>
+  <p class="설명">③과 한 벌이다(같은 유호님 축·같은 한국어권). 갈리는 것은 워드마크의 k 한 글자와 문안뿐 · 업로드본 = synkbrief_배너.png</p>
+  <div class="띠줄"><span class="라벨">전체 (TV·큰 화면)</span><i class="배너" style="background-image:var(--b4)"></i></div>
+  <div class="띠줄"><span class="라벨">안전 영역만 (어디서도 안 잘리는 부분)</span>
+    <i class="잘린띠" style="background-image:var(--b4)"></i></div>
+  <p class="파일"><code>docs/SHIFT/배너/synkbrief.png</code> · 4.16MB
+    <span class="초록">✅ 6MB 이하</span></p>
+</section>
+<section class="안">
+  <h2>⑤ 양모 바탕 · 몽글 — @synkkorean (SYNK LAB)</h2>
+  <p class="설명">청중이 다르다(몽골 학생·학부모). 유일하게 밝은 판이고, 얼굴은 로고가 아니라 마스코트다 · 업로드본 = synklab_배너.png</p>
+  <div class="띠줄"><span class="라벨">전체 (TV·큰 화면)</span><i class="배너" style="background-image:var(--b5)"></i></div>
+  <div class="띠줄"><span class="라벨">안전 영역만 (어디서도 안 잘리는 부분)</span>
+    <i class="잘린띠" style="background-image:var(--b5)"></i></div>
+  <p class="파일"><code>docs/SHIFT/배너/synklab.png</code> · 1.55MB
+    <span class="초록">✅ 6MB 이하</span></p>
+</section>
+<section class="안">
+  <h2>⑥ 페이스북 커버 · 양모 바탕 — SYNK LAB 페이지</h2>
+  <p class="설명">⑤ 라디오 배너와 한 벌(같은 천·아플리케·손땀). 로고를 빼고 문안을 키웠다 · 업로드본 = synklab_커버.png</p>
+  <div class="띠줄"><span class="라벨">전체 (TV·큰 화면)</span><i class="배너" style="background-image:var(--b6)"></i></div>
+  <div class="띠줄"><span class="라벨">안전 영역만 (어디서도 안 잘리는 부분)</span>
+    <i class="잘린띠" style="background-image:var(--b6)"></i></div>
+  <p class="파일"><code>docs/SHIFT/배너/synklab커버.png</code> · 0.50MB
     <span class="초록">✅ 6MB 이하</span></p>
 </section>
 <p class="꼬리">
