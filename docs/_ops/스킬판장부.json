@@ -1,0 +1,68 @@
+{
+  "마지막대조": "2026-09-02T21:12:21.198Z",
+  "스킬": {
+    "last30days": {
+      "저장소": "mvanhorn/last30days-skill",
+      "경로": "skills/last30days",
+      "기준선": "56ba5ace27e4697aedc60aa0b1e1bfdcd592ff20",
+      "상류날짜": "2026-09-02",
+      "잰때": "2026-09-02T21:12:21.198Z"
+    },
+    "emil-design-eng": {
+      "저장소": "emilkowalski/skills",
+      "경로": "skills/emil-design-eng",
+      "기준선": "86cf9f7d91c6de0215cbb2e36fccfe6c8127a841",
+      "상류날짜": "2026-07-21",
+      "잰때": "2026-09-02T21:12:21.198Z"
+    },
+    "make-interfaces-feel-better": {
+      "저장소": "jakubkrehel/make-interfaces-feel-better",
+      "경로": "skills/make-interfaces-feel-better",
+      "기준선": "27355fc332ce3dee6af7107b9224152ad3812066",
+      "상류날짜": "2026-07-24",
+      "잰때": "2026-09-02T21:12:21.198Z"
+    },
+    "remotion-markup": {
+      "저장소": "remotion-dev/remotion",
+      "경로": "packages/skills/skills/remotion-markup",
+      "기준선": "af717290f3561232a4597825cbd828e236ed8144",
+      "상류날짜": "2026-09-01",
+      "잰때": "2026-09-02T21:12:21.198Z"
+    },
+    "remotion-captions": {
+      "저장소": "remotion-dev/remotion",
+      "경로": "packages/skills/skills/remotion-captions",
+      "기준선": "af717290f3561232a4597825cbd828e236ed8144",
+      "상류날짜": "2026-09-01",
+      "잰때": "2026-09-02T21:12:21.198Z"
+    },
+    "remotion-create": {
+      "저장소": "remotion-dev/remotion",
+      "경로": "packages/skills/skills/remotion-create",
+      "기준선": "af717290f3561232a4597825cbd828e236ed8144",
+      "상류날짜": "2026-09-01",
+      "잰때": "2026-09-02T21:12:21.198Z"
+    },
+    "remotion-render": {
+      "저장소": "remotion-dev/remotion",
+      "경로": "packages/skills/skills/remotion-render",
+      "기준선": "af717290f3561232a4597825cbd828e236ed8144",
+      "상류날짜": "2026-09-01",
+      "잰때": "2026-09-02T21:12:21.198Z"
+    },
+    "remotion-studio": {
+      "저장소": "remotion-dev/remotion",
+      "경로": "packages/skills/skills/remotion-studio",
+      "기준선": "af717290f3561232a4597825cbd828e236ed8144",
+      "상류날짜": "2026-09-01",
+      "잰때": "2026-09-02T21:12:21.198Z"
+    },
+    "remotion-motion-graphics": {
+      "저장소": "haidrrrry/claude-remotion-skill",
+      "경로": "remotion-motion-graphics",
+      "기준선": "9151a7b2ab770771d9b8ec322112c60c65973651",
+      "상류날짜": "2026-08-12",
+      "잰때": "2026-09-02T21:12:21.198Z"
+    }
+  }
+}

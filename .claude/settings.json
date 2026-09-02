@@ -143,6 +143,13 @@
             "shell": "bash",
             "timeout": 30,
             "statusMessage": "AI 역할 배치 점검"
+          },
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/스킬판점검.js\"; if [ ! -f \"$H\" ]; then echo \"🔄 스킬 판 점검을 못 돌렸다(도구가 없다: $H) — 이건 「밖에서 들여온 스킬이 다 최신」이 아니라 «확인 불가»다. node tools/스킬판점검.js 로 직접 본다\"; elif ! command -v node >/dev/null; then echo \"🔄 스킬 판 점검을 못 돌렸다(node 가 없다) — 이건 「다 최신」이 아니라 «확인 불가»다. node tools/스킬판점검.js 로 직접 본다\"; else exec 3>&1; E=$(node \"$H\" --훅 2>&1 1>&3); C=$?; exec 3>&-; if [ \"$C\" -ne 0 ]; then echo \"🔄 스킬 판 점검이 죽었다(종료 $C) — 이건 「다 최신」이 아니라 «확인 불가»다. node tools/스킬판점검.js 로 직접 본다\"; if [ -n \"$E\" ]; then printf '%s' \"$E\"; echo; fi; fi; fi; exit 0",
+            "shell": "bash",
+            "timeout": 45,
+            "statusMessage": "외부 스킬 판 점검"
           }
         ]
       }
