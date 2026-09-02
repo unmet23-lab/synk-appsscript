@@ -80,6 +80,21 @@ function html을글로(s) {
  * 🔑 줄바꿈은 남긴다 — 줄 수가 달라지면 지적의 행 번호가 밀려 사람이 그 자리를 못 찾는다. */
 const md주석지우기 = (s) => s.replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\r\n]/g, ' '));
 
+/* 몽골어 줄을 «지운다» — 한국어 자를 몽골어에 대면 뜻 없는 수가 나온다.
+ *
+ * 🔴 09-03 실측: docs/홍보_트리오_정본_v1.md 는 한 파일에 한국어 문안과 그 몽골어 짝이 나란히 산다.
+ *   그 몽골어 줄의 줄표·어미가 한국어 규칙에 걸려 지적으로 세어지고 있었다.
+ *   `몽골어인가()` 는 «파일» 단위라 이런 섞인 파일을 못 가른다 ⇒ 줄 단위로 한 번 더 거른다.
+ * 자 = 키릴 글자가 그 줄 «글자의 30% 이상». 낱말 한둘이 섞인 한국어 줄은 그대로 잰다.
+ * 🔑 줄바꿈은 남긴다 — 행 번호가 밀리면 사람이 그 자리를 못 찾는다. */
+const 몽골어줄지우기 = (s) => s.split(/(\r?\n)/).map((줄) => {
+  if (/^\r?\n$/.test(줄) || !줄.trim()) return 줄;
+  const 글자 = 줄.replace(/\s/g, '');
+  if (글자.length < 12) return 줄;
+  const 키릴 = (글자.match(/[Ѐ-ӿ᠀-᢯]/g) || []).length;
+  return 키릴 / 글자.length >= 0.3 ? 줄.replace(/[^\r\n]/g, ' ') : 줄;
+}).join('');
+
 /** 검사기를 한 번 돌린다. 파일이 HTML 이면 글자만 뽑아 stdin 으로 넣는다. */
 function 재기(파일, 설정, 형식 = 'json') {
   const 절대 = path.isAbsolute(파일) ? 파일 : path.join(뿌리, 파일);
@@ -90,7 +105,7 @@ function 재기(파일, 설정, 형식 = 'json') {
   try {
     const 글 = html
       ? html을글로(fs.readFileSync(절대, 'utf8'))
-      : md주석지우기(fs.readFileSync(절대, 'utf8'));
+      : 몽골어줄지우기(md주석지우기(fs.readFileSync(절대, 'utf8')));
     결과 = cp.execFileSync(process.execPath, [검사기, '-', ...인자, '--path', 파일],
       { input: 글, encoding: 'utf8', maxBuffer: 1 << 26 });
   } catch (e) {
