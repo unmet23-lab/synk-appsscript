@@ -194,21 +194,52 @@ test('제미나이 키는 파일에서만 읽고, 모르는 토큰 여럿이면 
   const fs = require('node:fs');
   const os = require('node:os');
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gk-'));
-  const 이전 = process.env.GEMINI_KEY_PATH;
+  const 이전 = process.env.GEMINI_KEY_PATH_FREE;
   try {
     const f = path.join(d, 'k.txt');
     fs.writeFileSync(f, '﻿설명 텍스트\nAQ.abc123\n');
-    process.env.GEMINI_KEY_PATH = f;
+    process.env.GEMINI_KEY_PATH_FREE = f;
     assert.strictEqual(정책.제미나이키(), 'AQ.abc123', '아는 접두어(AQ.)를 못 골랐다');
     fs.writeFileSync(f, 'tok1 tok2\n');
     assert.strictEqual(정책.제미나이키(), null, '모르는 토큰 여럿인데 아무거나 집었다');
     fs.writeFileSync(f, '단일토큰\n');
     assert.strictEqual(정책.제미나이키(), '단일토큰');
-    process.env.GEMINI_KEY_PATH = path.join(d, '없는파일.txt');
+    process.env.GEMINI_KEY_PATH_FREE = path.join(d, '없는파일.txt');
     assert.strictEqual(정책.제미나이키(), null, '없는 파일인데 null 이 아니다');
   } finally {
-    if (이전 === undefined) delete process.env.GEMINI_KEY_PATH;
-    else process.env.GEMINI_KEY_PATH = 이전;
+    if (이전 === undefined) delete process.env.GEMINI_KEY_PATH_FREE;
+    else process.env.GEMINI_KEY_PATH_FREE = 이전;
+  }
+});
+
+/* 🔑 열쇠가 «둘»이다 — 유호 확정 2026-09-03 「글은 공짜, 그림은 유료」.
+ *   까닭은 실물이다: 09-02 저녁 그림 한 번 구운 크레딧 소진(−₩56)이 **글 검문까지** 멈춰 세웠다.
+ *   여기서 지키는 것은 «기본이 싼 쪽인가» — 용도를 안 주면 공짜로 가야 실수의 방향이 「돈이 샌다」가 아니다. */
+test('🔴 용도를 안 주면 «글»(공짜 몫) 열쇠다 · 공짜가 없다고 유료로 넘어가지 않는다(폴백 금지)', () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gk2-'));
+  const 옛글 = process.env.GEMINI_KEY_PATH_FREE;
+  const 옛돈 = process.env.GEMINI_KEY_PATH;
+  try {
+    const 글f = path.join(d, 'free.txt');
+    const 돈f = path.join(d, 'paid.txt');
+    fs.writeFileSync(글f, 'AQ.free\n');
+    fs.writeFileSync(돈f, 'AQ.paid\n');
+    process.env.GEMINI_KEY_PATH_FREE = 글f;
+    process.env.GEMINI_KEY_PATH = 돈f;
+    assert.strictEqual(정책.제미나이키(), 'AQ.free', '기본이 공짜 쪽이 아니다');
+    assert.strictEqual(정책.제미나이키('글'), 'AQ.free');
+    assert.strictEqual(정책.제미나이키('돈'), 'AQ.paid');
+    // 🚫 폴백 금지 — 공짜가 없다고 유료로 넘어가면 「글은 공짜」가 거짓이 되고 아무도 그걸 모른다.
+    process.env.GEMINI_KEY_PATH_FREE = path.join(d, '없다.txt');
+    assert.strictEqual(정책.제미나이키('글'), null, '공짜 열쇠가 없을 때 유료로 넘어갔다');
+    assert.strictEqual(정책.제미나이키('돈'), 'AQ.paid', '돈 열쇠까지 같이 죽으면 안 된다');
+    assert.match(정책.제미나이키안내('글'), /만드는 법/, '없다고만 말하면 사람이 다음 수를 모른다');
+    assert.throws(() => 정책.제미나이키('아무거나'), /용도/, '모르는 용도가 조용히 통과하면 안 된다');
+  } finally {
+    if (옛글 === undefined) delete process.env.GEMINI_KEY_PATH_FREE; else process.env.GEMINI_KEY_PATH_FREE = 옛글;
+    if (옛돈 === undefined) delete process.env.GEMINI_KEY_PATH; else process.env.GEMINI_KEY_PATH = 옛돈;
   }
 });
 

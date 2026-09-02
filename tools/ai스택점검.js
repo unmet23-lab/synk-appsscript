@@ -397,32 +397,62 @@ const 생존캐시경로 = () => process.env.SYNK_GEMINI_STATE
   || path.join(ROOT, '.claude', 'state', '제미나이생존.json');
 const 생존캐시수명 = 6 * 60 * 60 * 1000;
 
-/** 캐시가 신선하면 그걸, 아니면 지금 물어본다. @returns {Promise<{때:string, 기록:object, 캐시:boolean}>} */
+/* 🔑 09-03 부터 **열쇠가 둘**이다(유호 확정 「글은 공짜, 그림은 유료」) — 그래서 둘 다 잰다.
+ *   하나만 재면 다른 하나의 죽음이 안 보인다. 캐시도 용도별로 따로 쥔다. */
+const 용도들 = ['글', '돈'];
+
+/** 캐시가 신선하면 그걸, 아니면 지금 물어본다. @returns {Promise<{[용도]:{때, 기록, 캐시}}>} */
 async function 키생존기록({ 재보기 = false } = {}) {
   const 경로 = 생존캐시경로();
-  if (!재보기) {
+  let 캐시 = {};
+  try { 캐시 = JSON.parse(fs.readFileSync(경로, 'utf8')) || {}; } catch (_) { /* 없음·깨짐 = 다시 잰다 */ }
+  const 끔 = process.env.SYNK_GEMINI_PROBE === 'off';
+  const 결과 = {};
+  let 바뀜 = false;
+  for (const 용도 of 용도들) {
+    const c = 캐시[용도];
+    if (!재보기 && c && c.때 && Date.now() - new Date(c.때).getTime() < 생존캐시수명) { 결과[용도] = { ...c, 캐시: true }; continue; }
+    if (끔) { 결과[용도] = { 때: null, 기록: { 살았나: null, 용도, 종류: '안 재봤다', 사유: 'SYNK_GEMINI_PROBE=off' }, 캐시: false }; continue; }
+    let 기록;
+    // 모듈은 «언제나 이 도구 옆»에서 읽는다(ROOT 는 픽스처로 갈릴 수 있다).
+    try { 기록 = await require(path.join(__dirname, '모델정책.js')).제미나이생존({ 용도 }); }
+    catch (e) { 기록 = { 살았나: null, 용도, 종류: '자가 못 돌았다', 사유: String((e && e.message) || e).slice(0, 200) }; }
+    결과[용도] = { 때: new Date().toISOString(), 기록, 캐시: false };
+    캐시[용도] = { 때: 결과[용도].때, 기록 };
+    바뀜 = true;
+  }
+  if (바뀜) {
     try {
-      const c = JSON.parse(fs.readFileSync(경로, 'utf8'));
-      if (c && c.때 && Date.now() - new Date(c.때).getTime() < 생존캐시수명) return { ...c, 캐시: true };
-    } catch (_) { /* 캐시 없음·깨짐 = 그냥 다시 잰다 */ }
+      fs.mkdirSync(path.dirname(경로), { recursive: true });
+      fs.writeFileSync(경로, JSON.stringify(캐시), 'utf8');
+    } catch (_) { /* 캐시를 못 써도 판정은 그대로다 — 다음 번에 한 번 더 물을 뿐 */ }
   }
-  if (process.env.SYNK_GEMINI_PROBE === 'off') {
-    return { 때: null, 기록: { 살았나: null, 종류: '안 재봤다', 사유: 'SYNK_GEMINI_PROBE=off' }, 캐시: false };
-  }
-  let 기록;
-  // 모듈은 «언제나 이 도구 옆»에서 읽는다(ROOT 는 픽스처로 갈릴 수 있다).
-  try { 기록 = await require(path.join(__dirname, '모델정책.js')).제미나이생존(); }
-  catch (e) { 기록 = { 살았나: null, 종류: '자가 못 돌았다', 사유: String((e && e.message) || e).slice(0, 200) }; }
-  const 결과 = { 때: new Date().toISOString(), 기록 };
-  try {
-    fs.mkdirSync(path.dirname(경로), { recursive: true });
-    fs.writeFileSync(경로, JSON.stringify(결과), 'utf8');
-  } catch (_) { /* 캐시를 못 써도 판정은 그대로다 — 다음 번에 한 번 더 물을 뿐 */ }
-  return { ...결과, 캐시: false };
+  return 결과;
 }
 
-/** 순수 판정 — 기록 하나를 받아 줄로 바꾼다(회귀가 두 방향을 다 잰다). */
-function 키생존축(r) {
+/* 용도마다 «무엇이 매달려 있나»가 다르다 — 죽었을 때 무엇이 멈추는지 그 줄에서 알아야 한다.
+ * (09-03 사용량 화면 실측으로 갈랐다: 돈을 태우는 것은 그림·음악이고, 글은 20% 안이었다.) */
+const 매달린것 = {
+  글: ['몽골어 검문 ①역번역 ②문법 — 대외로 나갈 몽골어가 **지금 아무 자도 안 지난다**',
+      '검수 러너 `--벤더 둘` 의 gemini 회차'],
+  돈: ['그림 굽기(나노바나나 프로) · 음악(Lyria) · 목소리·음성 실측',
+      '이쪽은 공짜 몫이 **원리상 없다**(구글 가격표 「Not available」) — 크레딧이 있어야만 돈다'],
+};
+
+/** 순수 판정 — 용도별 기록 묶음을 받아 줄로 바꾼다(회귀가 두 방향을 다 잰다). */
+function 키생존축(전체) {
+  const 적색 = [], 알림 = [], 셈 = {};
+  /* 열쇠 하나짜리 옛 모양({때,기록})으로 불러도 「글」로 읽는다 — 옛 캐시·옛 호출을 깨지 않는다. */
+  const 묶음 = 전체 && 전체.기록 ? { 글: 전체 } : (전체 || {});
+  for (const 용도 of 용도들) {
+    const a = 한열쇠축(용도, 묶음[용도]);
+    적색.push(...a.적색); 알림.push(...a.알림);
+    Object.assign(셈, a.셈);
+  }
+  return { 적색, 알림, 셈 };
+}
+
+function 한열쇠축(용도, r) {
   const 적색 = [], 알림 = [];
   const g = (r && r.기록) || {};
   /* 🔑 «몇 분 전»으로 적는다 — 장부는 세계시(UTC)라 그대로 찍으면 방금 잰 것이 «어제»로 읽힌다
@@ -435,18 +465,27 @@ function 키생존축(r) {
     return `${말} 실측`;
   })();
   if (g.살았나 === false) {
-    적색.push(`🔴 **제미나이 키가 죽어 있다** (${언제} · ${g.상태 || ''} ${g.종류 || ''}) — 이 키 하나에 자리 셋이 매달려 있다:`);
-    적색.push('   · 몽골어 검문 ①역번역 ②문법 — 대외로 나갈 몽골어가 **지금 아무 자도 안 지난다**');
-    적색.push('   · 검수 러너 `--벤더 둘` 의 gemini 회차 · 이미지 굽기(나노바나나)');
+    적색.push(`🔴 **제미나이 「${용도}」 열쇠가 죽어 있다** (${언제} · ${g.상태 || ''} ${g.종류 || ''}) — 여기 매달린 것:`);
+    for (const 줄 of 매달린것[용도]) 적색.push('   · ' + 줄);
     if (g.사유) 적색.push(`   · 구글이 한 말: ${String(g.사유).slice(0, 160)}`);
     적색.push(g.종류 === '자격'
       ? '   처방: 키 교체(9월 Standard 키 거부 예고) — AI Studio 「Key Type」 확인 뒤 새 키를 같은 파일에.'
-      : '   처방: 유호님 손 — AI Studio 결제·크레딧. 다시 재기: node tools/모델정책.js --제미나이확인');
+      : 용도 === '돈'
+        ? '   처방: 유호님 손 — AI Studio 결제·크레딧 충전. 다시 재기: node tools/모델정책.js --제미나이확인'
+        : '   처방: 공짜 몫 열쇠를 새 칸에서 하나 더 만든다(글은 공짜다). 다시 재기: node tools/모델정책.js --제미나이확인');
   } else if (g.살았나 !== true) {
-    알림.push(`🟠 제미나이 키를 **못 물어봤다**(${g.종류 || '까닭 미상'}) — 「살았다」가 아니라 «안 재봤다»다.`);
-    if (g.사유) 알림.push(`   · ${String(g.사유).slice(0, 160)}`);
+    /* 「키없음」은 «아직 안 만든 것»이라 다음 수가 분명하다 — 그건 적색으로 부르고 만드는 법까지 준다.
+     * 네트워크·타임아웃은 «못 물어본 것»이라 알림이다(우는 검사는 꺼진다). */
+    if (g.종류 === '키없음') {
+      적색.push(`🔴 **제미나이 「${용도}」 열쇠 파일이 없다** — 여기 매달린 것이 통째로 안 돈다:`);
+      for (const 줄 of 매달린것[용도]) 적색.push('   · ' + 줄);
+      for (const 줄 of String(g.안내 || g.사유 || '').split('\n')) if (줄.trim()) 적색.push('   ' + 줄.trim());
+    } else {
+      알림.push(`🟠 제미나이 「${용도}」 열쇠를 **못 물어봤다**(${g.종류 || '까닭 미상'}) — 「살았다」가 아니라 «안 재봤다»다.`);
+      if (g.사유) 알림.push(`   · ${String(g.사유).slice(0, 160)}`);
+    }
   }
-  return { 적색, 알림, 셈: { 살았나: g.살았나 === true ? '예' : g.살았나 === false ? '**아니오**' : null, 잰때: 언제 } };
+  return { 적색, 알림, 셈: { [`${용도}열쇠`]: g.살았나 === true ? '예' : g.살았나 === false ? '**아니오**' : null, [`${용도}잰때`]: 언제 } };
 }
 
 /* ── ㉣ 이미 도는 것들의 「마지막이 언제였나」 — 판정하지 않는다. 사실만. ── */

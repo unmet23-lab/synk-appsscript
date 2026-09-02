@@ -388,10 +388,11 @@ async function main() {
     return i >= 0 && argv[i + 1] ? argv[i + 1] : 기본;
   };
 
-  const key = 정책.제미나이키();
+  /* 🔑 음성은 **「돈」 열쇠**다 — 목소리·오디오는 공짜 몫 밖이다(유호 확정 09-03 「글은 공짜, 그림은 유료」). */
+  const key = 정책.제미나이키('돈');
   if (!key) {
-    console.error(`🔴 키를 못 읽었다(${정책.제미나이키경로()}) — 이건 「실패」가 아니라 **미실행**이다.`);
-    console.error('   키는 파일로만 다룬다. 경로 변경은 env GEMINI_KEY_PATH.');
+    console.error('🔴 키를 못 읽었다 — 이건 「실패」가 아니라 **미실행**이다.');
+    console.error('   ' + 정책.제미나이키안내('돈'));
     return 깨끗이끝내기(1);
   }
 
