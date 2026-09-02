@@ -207,122 +207,182 @@ function voiceMissionTexts_(ss) {
 
 // ── A-1. 폼 응답 → voice_log 전개(+포인트, 파일 공유 전환) ──────────────
 function voiceSweep_(ss) {
-  const src = ss.getSheetByName('목소리폼_응답');
-  if (!src || src.getLastRow() < 2) return;
-  const props = PropertiesService.getScriptProperties();
-  const last = src.getLastRow();
-  const from = Number(props.getProperty('목소리폼_포인터')) || 1;
-  if (from >= last) { if (from > last) props.setProperty('목소리폼_포인터', String(last)); return; }
-  const tz = ss.getSpreadsheetTimeZone();
+  /* [2026-09-03 · 이종 검수 P1 a1ba9ec3127f] 🔒 한 번에 하나만 돈다.
+   *   이 함수는 이제 두 곳에서 불린다 — 23시 야간 배치(`교재연동Nightly`)와 원장이 누르는
+   *   「목소리 지금 걷어오기」 메뉴(v9.296). 둘이 겹치면 **같은 포인터와 같은 새 응답을 함께 읽어**
+   *   voice_log 와 point_logs 에 같은 제출이 두 번 앉는다. 포인터 전진은 그 뒤에 일어나므로
+   *   「포인터가 있으니 중복은 없다」는 순차 실행에서만 참이다.
+   *   편집자가 둘이면 메뉴 동시 클릭만으로도 재현된다.
+   *   ⚠ 못 잡으면 **기다리지 않고 되돌아간다** — 이미 다른 실행이 같은 일을 하고 있으므로
+   *   건너뛰는 것이 옳다(대기는 야간 배치의 6분 상한을 먹는다). 포인터를 안 건드리니 누락도 없다.
+   *   `typeof` 로 감싼 까닭: 시험이 이 함수를 소스에서 꺼내 태운다(tests/발음수집통관.test.js). */
+  const 잠금 = (typeof LockService !== 'undefined' && LockService) ? LockService.getScriptLock() : null;
+  if (잠금 && !잠금.tryLock(1000)) {
+    Logger.log('voiceSweep_: 다른 실행이 이미 걷고 있다 — 이번 호출은 건너뛴다(중복 적재 방지)');
+    return { 결과: '잠김' };
+  }
+  /* 🔴 메일은 **잠금 «밖»에서** 보낸다 — 여기 담아 두고 `finally` 가 해제한 뒤 발송한다.
+   *   까닭: `adminMail`(엔진_콘텐츠AI.js)은 DIGEST_MODE=true 라 자기도 `getScriptLock().waitLock(30000)`
+   *   을 부른다. 같은 실행이 이미 쥔 스크립트 잠금을 «다른 Lock 객체»로 다시 얻을 수 있는지는
+   *   Apps Script 문서가 답하지 않는다(「이미 획득했으면 효과 없음」이 같은 실행을 뜻하는지 불명).
+   *   재진입이 안 되면 30초 뒤 예외가 나 **야간 배치가 통째로 죽는다** — 중복을 막으려다
+   *   더 큰 것을 깨는 자리라, 확인되지 않은 쪽에 걸지 않는다. [[knowing-vs-machine-timing]] */
+  const 알림 = [];
+  try {
+    /* [2026-09-03 · 이종 검수 P2 95aec3956067] 이 함수는 이제 «무슨 일이 있었나»를 돌려준다.
+     *   야간 배치는 반환값을 안 쓴다(그대로다). 쓰는 쪽은 메뉴 화면 `voiceSweepNow_` 하나다 —
+     *   그 화면이 0건일 때 「원인 셋」을 스스로 짐작하고 있었는데, 헤더 누락·판정 불가·잠김은
+     *   그 셋에 없다. 짐작이 아니라 **여기서 일어난 일**을 그대로 받아 말하게 한다.
+     *   [[zero-is-a-success-face-taxonomy]] — 0은 여러 얼굴을 하고, 얼굴마다 처방이 다르다. */
+    const src = ss.getSheetByName('목소리폼_응답');
+    if (!src || src.getLastRow() < 2) return { 결과: '제출없음', 본새제출: 0, 앉힘: 0 };
+    const props = PropertiesService.getScriptProperties();
+    const last = src.getLastRow();
+    const from = Number(props.getProperty('목소리폼_포인터')) || 1;
+    if (from >= last) { if (from > last) props.setProperty('목소리폼_포인터', String(last)); return { 결과: '새제출없음', 본새제출: 0, 앉힘: 0 }; }
+    const tz = ss.getSpreadsheetTimeZone();
 
-  // 응답 열 위치는 헤더로 찾는다(문항 순서를 유호님이 바꿔도 안전)
-  const head = src.getRange(1, 1, 1, src.getLastColumn()).getValues()[0].map(h => String(h || ''));
-  const cSid = head.findIndex(h => h.indexOf('학생ID') > -1);
-  /* [v9.190] ⚠ '미션ID'는 '미션'을 부분문자열로 품는다 — 먼저 집고, '미션'은 **그 열을 뺀 뒤** 찾는다.
-   *   순서를 안 가르면 폼 문항 순서가 바뀌는 순간 ID가 자유문자열 칸에 실린다(예외 없이 조용한 오적재). */
-  const cMissionId = head.findIndex(h => h.replace(/\s/g, '').indexOf('미션ID') > -1);
-  const cMission = head.findIndex((h, i) => i !== cMissionId && h.indexOf('미션') > -1);
-  const cFile = head.findIndex(h => h.indexOf('녹음') > -1 || h.indexOf('파일') > -1);
-  if (cSid < 0 || cFile < 0) { Logger.log('voiceSweep_: 응답 탭에서 학생ID/녹음 열을 못 찾음 — 폼 문항 제목 확인'); return; }
+    // 응답 열 위치는 헤더로 찾는다(문항 순서를 유호님이 바꿔도 안전)
+    const head = src.getRange(1, 1, 1, src.getLastColumn()).getValues()[0].map(h => String(h || ''));
+    const cSid = head.findIndex(h => h.indexOf('학생ID') > -1);
+    /* [v9.190] ⚠ '미션ID'는 '미션'을 부분문자열로 품는다 — 먼저 집고, '미션'은 **그 열을 뺀 뒤** 찾는다.
+     *   순서를 안 가르면 폼 문항 순서가 바뀌는 순간 ID가 자유문자열 칸에 실린다(예외 없이 조용한 오적재). */
+    const cMissionId = head.findIndex(h => h.replace(/\s/g, '').indexOf('미션ID') > -1);
+    const cMission = head.findIndex((h, i) => i !== cMissionId && h.indexOf('미션') > -1);
+    const cFile = head.findIndex(h => h.indexOf('녹음') > -1 || h.indexOf('파일') > -1);
+    if (cSid < 0 || cFile < 0) { Logger.log('voiceSweep_: 응답 탭에서 학생ID/녹음 열을 못 찾음 — 폼 문항 제목 확인'); return { 결과: '헤더없음', 본새제출: last - from, 앉힘: 0, 없는열: (cSid < 0 ? '학생ID' : '') + (cSid < 0 && cFile < 0 ? '·' : '') + (cFile < 0 ? '녹음/파일' : '') }; }
 
-  // [v9.187] 폭 67 — 급수(BO67) 스냅샷 재료(첨삭·대화·퀴즈와 같은 위치 규약 r[66]).
-  //   새 응답이 있을 때만 여기 온다(위 포인터 조기 반환) — 야간 1회라 비용 무시 가능.
-  const valid = new Set(), lvOf = {};
-  const pf = ss.getSheetByName('profiles');
-  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 67).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student') { const k = String(r[0]).trim(); valid.add(k); lvOf[k] = Number(r[66]) || 0; }
-  });
+    // [v9.187] 폭 67 — 급수(BO67) 스냅샷 재료(첨삭·대화·퀴즈와 같은 위치 규약 r[66]).
+    //   새 응답이 있을 때만 여기 온다(위 포인터 조기 반환) — 야간 1회라 비용 무시 가능.
+    const valid = new Set(), lvOf = {};
+    const pf = ss.getSheetByName('profiles');
+    if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 67).getValues().forEach(r => {
+      if (r[0] && r[3] === 'student') { const k = String(r[0]).trim(); valid.add(k); lvOf[k] = Number(r[66]) || 0; }
+    });
 
-  const vl = ensureSheet(ss, 'voice_log', VOICE_LOG_HEADERS);
-  헤더보정_(vl, VOICE_LOG_HEADERS); // [v9.187] 이미 서 있는 9열 시트에 급수 이름표(엔진_수집.js 공용 치유 — 런타임 호출이라 로드 순서 무관)
-  const pl = ensureSheet(ss, 'point_logs', ['id', 'student_id', 'points', 'reason', 'given_by', 'created_at', 'month', '태그']);
-  // 멱등: 이미 지급된 '날짜|sid' (지급→포인터 저장 사이 크래시 재시도 대비)
-  const givenKey = {};
-  if (pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
-    if (r[1] && String(r[3] || '') === TB_VOICE_REASON && r[5]) givenKey[dstr(r[5], tz) + '|' + String(r[1]).trim()] = 1;
-  });
+    const vl = ensureSheet(ss, 'voice_log', VOICE_LOG_HEADERS);
+    헤더보정_(vl, VOICE_LOG_HEADERS); // [v9.187] 이미 서 있는 9열 시트에 급수 이름표(엔진_수집.js 공용 치유 — 런타임 호출이라 로드 순서 무관)
+    const pl = ensureSheet(ss, 'point_logs', ['id', 'student_id', 'points', 'reason', 'given_by', 'created_at', 'month', '태그']);
+    // 멱등: 이미 지급된 '날짜|sid' (지급→포인터 저장 사이 크래시 재시도 대비)
+    const givenKey = {};
+    if (pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+      if (r[1] && String(r[3] || '') === TB_VOICE_REASON && r[5]) givenKey[dstr(r[5], tz) + '|' + String(r[1]).trim()] = 1;
+    });
 
-  /* [v9.104] 🔒 음성 동의 게이트 — v9.90이 '음성동의' 열을 만들며 "후속 녹음 기능이 기계 게이트로 쓴다"고
-   *   선언했는데 정작 이 스위프에는 배선이 없었다(08-01 발견). 동의하지 않은 학생의 녹음이 voice_log에
-   *   쌓이고 포인트까지 지급되던 상태였고, 보관이 무기한이 되면서 그 비용이 "영구 보관"으로 커진다.
-   *   맵이 null(시트·열 접근 실패)이면 **전원 보류** — 판정 불가를 통과로 바꾸면 게이트가 침묵으로 열린다.
-   *   보류분은 적재도, 공유 전환도, 포인트도 하지 않고 원장에게만 알린다. 파일 자동 삭제는 하지 않는다
-   *   (오판이면 복구가 불가능하고, 종이 동의서 학생일 수도 있다 — 사람이 판단할 몫). */
-  const consent = (typeof voiceConsentMap_ === 'function') ? voiceConsentMap_() : null;
-  /* [v9.277] 제출 «시점»에만 알 수 있는 둘을 여기서 박는다 — 규격 = docs/발음데이터_규격.md.
-   *   ㉠ 시즌 — Ⅰ-8 이 눈금을 「그 학생의 지난 시즌 대비」로 못 박았다. 시즌 시작일은 **사람이 정하고 바뀌므로**
-   *     제출일에서 나중에 유도할 수 없다(그 유도는 옛 시즌 행을 새 경계로 다시 갈라 조용히 틀린다).
-   *   ㉡ 목표발화 — 미션 목록은 개정된다. 참조(미션ID)만 남기면 2년 뒤 그 ID 가 무엇이었는지 모른다.
-   *     그래서 **그날의 값을 스냅샷**한다([[constant-known-in-two-places]] 와 같은 축).
-   *     ⚠ 목록 시트가 아직 없으면 빈 칸이다 — 그건 결함이 아니라 «아직 안 쓴 것»이고, 목록이 서는
-   *     날부터 그날 제출분에 붙는다. 이미 쌓인 행에 소급하지 않는다(소급하면 그날 실제로 시킨 것이
-   *     아니라 «지금 목록이 말하는 것»이 박혀, 이 칸의 존재 이유가 사라진다). */
-  const 시즌 = (typeof seasonLabelOf_ === 'function') ? seasonLabelOf_(ss, tz) : '';
-  const 목표문 = voiceMissionTexts_(ss);
-  const rows = src.getRange(from + 1, 1, last - from, src.getLastColumn()).getValues();
-  const vOut = [], pOut = [], badSid = [], held = []; // [v9.67] 무효 sid · [v9.104] 미동의 보류
-  rows.forEach(r => {
-    const ts = r[0] instanceof Date ? r[0] : new Date();
-    const sid = String(r[cSid] || '').trim();
-    if (!sid) return;
-    if (!valid.has(sid)) { badSid.push(sid); return; } // 통보만(Code.js notifyDroppedSids_ — 하루 1회 dedup)
-    const state = consent ? (consent[sid] || '') : null;
-    if (state !== 'yes') { held.push(sid + ' (' + (state === 'no' ? '거부' : state === '' ? '미응답' : '동의 확인 불가') + ')'); return; }
-    const fileUrl = String(r[cFile] || '').trim();
-    if (!fileUrl) return;
-    const mission = cMission >= 0 ? String(r[cMission] || '').trim() : '';
-    const fid = (fileUrl.match(/[?&]id=([-\w]+)/) || fileUrl.match(/\/d\/([-\w]+)/) || [])[1] || '';
-    /* [v9.155] 🔒 공개 전환을 **하지 않는다**(유호님 08-04 「B로 가자」 결정 · 근거 = docs/개인정보처리방침_초안_v1.md §0-B).
-     *   구 설계는 앱 재생을 위해 학생 녹음을 ANYONE_WITH_LINK로 열었다. 그런데 이 파일은 **미성년의 목소리**이고
-     *   코드 스스로 「몽골법상 생체정보 계열로 읽힐 수 있다」고 적어 뒀다(엔진_폼리포트.js VOICE_RETENTION_MONTHS 주석).
-     *   보관이 무기한이라 공개도 무기한이 되고, Drive 공개 링크에는 만료가 없어 한 번 새면 영구다.
-     *   ▣ 대체 경로는 이미 있다 — **전사문**(v9.107). 그때 코드가 적은 판단이 그대로 근거가 된다:
-     *     「링크는 눌러야 비교되고, 두 파일을 번갈아 듣는 사람은 거의 없다. 전사문이 있으면 눈으로 한 번에 대비된다.」
-     *     즉 성장 카드의 값은 재생이 아니라 대비였고, 그 값은 링크 없이도 그대로 산다(buildVoiceGrowthCards_ 참조).
-     *   ▣ 원본은 지우지 않는다 — 학원 내부 자산(피드백·AI 학습)이고 동의 범위 안이다. 다만 **밖에서 열리지 않는다.** */
-    // [v9.187] 전사 3칸은 빈칸으로 두고(야간 STT가 채운다) 맨 끝에 급수 스냅샷 — 헤더 정본과 같은 폭으로 쓴다
-    // [v9.190] 미션ID는 프리필 링크로만 들어온다 — 학생이 손으로 채우는 칸이 아니라 비어도 정상이다
-    const mid = cMissionId >= 0 ? String(r[cMissionId] || '').trim() : '';
-    vOut.push([sid, ts, mission, fileUrl, fid, new Date(), '', '', '', lvOf[sid] || 0,
-      mid,
-      SCHEMA_VER, // [v9.208] 행이 자기 규격을 들고 있게(A-8) — 정의는 엔진_수집.js 하나(사본 금지 · 함수 안 참조라 파일 로드 순서 무관)
-      // [v9.277] 발음 6칸 — 지금 아는 둘만 채우고 나머지 넷은 각자의 채우는 자가 뒤에 붙인다
-      // [2026-09-01] 그날 지정된 낱말 **전량** 스냅샷(`P3:읽었어요 · P9:많았어요`). 하나만 담던 것을
-      // 고쳤다 — 여섯을 지정하면 다섯이 조용히 사라지고 있었다(심문 P0-②). 목록 없으면 빈 칸.
-      (목표문[mid] || []).join(' · '),  // 목표발화 (소급해 채우지 않는다)
-      시즌,               // 시즌     (Ⅰ-8 눈금의 전제)
-      '',                 // 전사신뢰도 ← sttSweep_
-      '',                 // 전사엔진판 ← sttSweep_
-      '',                 // 발음태그   ← 어휘 확정 뒤(규격 §3 의 의도된 유예)
-      '']);               // 돌려준날   ← buildVoiceGrowthCards_
-    const key = dstr(ts, tz) + '|' + sid;
-    if (!givenKey[key]) { // 하루 1회만 지급(여러 번 제출해도 기록은 전부, 포인트는 1회)
-      givenKey[key] = 1;
-      pOut.push(['VC' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid, sid, TB_VOICE_POINTS,
-        TB_VOICE_REASON, '시스템', ts, Utilities.formatDate(ts, tz, 'yyyy-MM'), '']);
+    /* [v9.104] 🔒 음성 동의 게이트 — v9.90이 '음성동의' 열을 만들며 "후속 녹음 기능이 기계 게이트로 쓴다"고
+     *   선언했는데 정작 이 스위프에는 배선이 없었다(08-01 발견). 동의하지 않은 학생의 녹음이 voice_log에
+     *   쌓이고 포인트까지 지급되던 상태였고, 보관이 무기한이 되면서 그 비용이 "영구 보관"으로 커진다.
+     *   맵이 null(시트·열 접근 실패)이면 **전원 보류** — 판정 불가를 통과로 바꾸면 게이트가 침묵으로 열린다.
+     *   보류분은 적재도, 공유 전환도, 포인트도 하지 않고 원장에게만 알린다. 파일 자동 삭제는 하지 않는다
+     *   (오판이면 복구가 불가능하고, 종이 동의서 학생일 수도 있다 — 사람이 판단할 몫). */
+    const consent = (typeof voiceConsentMap_ === 'function') ? voiceConsentMap_() : null;
+    /* [2026-09-03 · 이종 검수 P1 d8ecb6e56c6f] 🔴 판정 불가면 **포인터를 전진시키지 않는다.**
+     *   v9.104 가 「맵이 null 이면 전원 보류」를 세웠는데, 함수 끝의 `props.setProperty('목소리폼_포인터', last)`
+     *   는 그 보류와 무관하게 늘 돌았다. 그래서 상담시트 접근이 한 번만 끊겨도 그 사이의 제출은
+     *   **다음 실행에서 「새 제출」로 보이지 않는다** — 보류가 아니라 «영구 누락»이다.
+     *   학생 녹음은 그날만 존재한다(규격 §「소급 불가는 무엇을 말하게 했느냐」). 재제출을 안내한들
+     *   그날 그 소리는 아니다.
+     *   그래서 여기서 **아무것도 하지 않고 되돌아간다** — 포인터가 제자리에 있으면 권한이 고쳐진 뒤
+     *   다음 실행이 같은 제출을 그대로 집는다. 알림은 매 실행 간다(새 제출이 있을 때만 여기 온다).
+     *   ⚠ 개별 학생의 '미응답'·'거부'는 이 갈래가 아니다 — 그건 판정이 «된» 것이라 포인터가 전진한다. */
+    if (consent === null) {
+      Logger.log('voiceSweep_: 음성 동의 판정 불가 — 포인터를 전진시키지 않고 되돌아간다(영구 누락 방지)');
+      알림.push({ 제목: '[SYNK] 🔒 음성 동의를 확인할 수 없어 걷기를 멈췄습니다', 본문:
+        '새 목소리 제출 ' + (last - from) + '건을 봤지만 「음성동의」를 읽지 못해 **하나도 처리하지 않았습니다.**\n\n' +
+        '중요: 이번에는 표시를 앞으로 옮기지 않았습니다 — 아래를 고치신 뒤 다시 걷으면 **이 제출들이 그대로 처리됩니다.**\n' +
+        '(고치지 않고 두면 알림만 계속 옵니다. 제출이 사라지지는 않습니다.)\n\n' +
+        '왜 못 읽었나 — 둘 중 하나입니다:\n' +
+        '  · 상담 스프레드시트에 「음성동의」 칸이 아직 없다 → 메뉴에서 migrateConsentV186 ▶ 를 한 번 누르세요.\n' +
+        '  · 지금 실행한 계정이 상담 스프레드시트를 열 권한이 없다 → 원장 계정으로 다시 누르세요.' });
+      return { 결과: '동의불가', 본새제출: last - from, 앉힘: 0 };
     }
-  });
-  /* [v9.159] 🛡 수식 인젝션 소독 — [v9.157]이 폼 직기입 7경로를 공용 통로로 막을 때 **이 함수만 남았다**
-   *   (하드닝 세션이 발견·인계 · 보드상 이 구역 편집권이 이 세션이라 넘어왔다).
-   *   위험의 실체: `mission`은 목소리 폼의 **학생·강사 손입력 문자열**이고, voice_log·point_logs는
-   *   `profiles`(학생·보호자 연락처)와 **같은 스프레드시트**다. `=`로 시작하면 시트가 스스로 평가해
-   *   `=IMPORTDATA("...?d="&TEXTJOIN(",",1,profiles!H2:H400))` 한 줄로 개인정보가 밖으로 나간다(클릭 불요).
-   *   pOut은 지금은 상수뿐이지만 함께 통과시킨다 — **같은 방어를 자리마다 판단해 얹으면 다음 자리가 빠진다.**
-   *   `행소독_`(Code.js)은 문자열만 소독하고 Date·number는 타입 보존한다(ts·포인트 숫자 안전). */
-  if (vOut.length) vl.getRange(vl.getLastRow() + 1, 1, vOut.length, VOICE_LOG_HEADERS.length).setValues(행소독_(vOut));
-  if (pOut.length) pl.getRange(pl.getLastRow() + 1, 1, pOut.length, 8).setValues(행소독_(pOut));
-  notifyDroppedSids_('목소리폼', badSid); // [v9.67] 함수 안 런타임 호출 — 톱레벨 크로스파일 금지 규칙과 무관
-  props.setProperty('목소리폼_포인터', String(last));
-  if (vOut.length) adminMail('[SYNK] 🎙 새 목소리 ' + vOut.length + '건',
-    '목소리 미션 제출 ' + vOut.length + '건이 voice_log에 쌓였습니다. 성장 카드는 야간 배치가 자동 갱신합니다.');
-  // [v9.104] 미동의 보류 통지 — 침묵하면 "왜 내 제출이 반영 안 되지"가 학생 쪽 미스터리가 된다
-  if (held.length) adminMail('[SYNK] 🔒 음성 동의 없는 제출 ' + held.length + '건 — 보류',
-    '아래 제출은 「음성동의」가 확인되지 않아 voice_log에 넣지 않았고 포인트도 지급하지 않았습니다.\n' +
-    '(파일은 자동 삭제하지 않았습니다 — 종이 동의서 학생일 수 있어 사람 판단 몫입니다.)\n\n' +
-    held.join('\n') + '\n\n' +
-    '처리: ①동의를 받은 학생이면 상담시트 「음성동의」 칸에 「네, 동의합니다」를 넣고 재제출을 안내하세요.\n' +
-    '②거부한 학생이면 드라이브의 해당 녹음 파일을 삭제하세요.\n' +
-    (consent ? '' : '⚠ 상담시트·음성동의 열을 읽지 못해 전원을 보류했습니다 — migrateConsentV186 ▶ 로 열을 먼저 만드세요.'));
+    /* [v9.277] 제출 «시점»에만 알 수 있는 둘을 여기서 박는다 — 규격 = docs/발음데이터_규격.md.
+     *   ㉠ 시즌 — Ⅰ-8 이 눈금을 「그 학생의 지난 시즌 대비」로 못 박았다. 시즌 시작일은 **사람이 정하고 바뀌므로**
+     *     제출일에서 나중에 유도할 수 없다(그 유도는 옛 시즌 행을 새 경계로 다시 갈라 조용히 틀린다).
+     *   ㉡ 목표발화 — 미션 목록은 개정된다. 참조(미션ID)만 남기면 2년 뒤 그 ID 가 무엇이었는지 모른다.
+     *     그래서 **그날의 값을 스냅샷**한다([[constant-known-in-two-places]] 와 같은 축).
+     *     ⚠ 목록 시트가 아직 없으면 빈 칸이다 — 그건 결함이 아니라 «아직 안 쓴 것»이고, 목록이 서는
+     *     날부터 그날 제출분에 붙는다. 이미 쌓인 행에 소급하지 않는다(소급하면 그날 실제로 시킨 것이
+     *     아니라 «지금 목록이 말하는 것»이 박혀, 이 칸의 존재 이유가 사라진다). */
+    const 시즌 = (typeof seasonLabelOf_ === 'function') ? seasonLabelOf_(ss, tz) : '';
+    const 목표문 = voiceMissionTexts_(ss);
+    const rows = src.getRange(from + 1, 1, last - from, src.getLastColumn()).getValues();
+    // [v9.67] 무효 sid · [v9.104] 미동의 보류 · [2026-09-03 검수 P2] 빈칸 둘도 «센다» —
+    //   세지 않으면 「2건 중 1건만 앉았다」를 화면이 설명할 수 없다(나머지 하나가 어디로 갔는지 모른다).
+    const vOut = [], pOut = [], badSid = [], held = [];
+    let 파일빈칸 = 0, ID빈칸 = 0;
+    rows.forEach(r => {
+      const ts = r[0] instanceof Date ? r[0] : new Date();
+      const sid = String(r[cSid] || '').trim();
+      if (!sid) { ID빈칸++; return; }
+      if (!valid.has(sid)) { badSid.push(sid); return; } // 통보만(Code.js notifyDroppedSids_ — 하루 1회 dedup)
+      const state = consent ? (consent[sid] || '') : null;
+      if (state !== 'yes') { held.push(sid + ' (' + (state === 'no' ? '거부' : state === '' ? '미응답' : '동의 확인 불가') + ')'); return; }
+      const fileUrl = String(r[cFile] || '').trim();
+      if (!fileUrl) { 파일빈칸++; return; }
+      const mission = cMission >= 0 ? String(r[cMission] || '').trim() : '';
+      const fid = (fileUrl.match(/[?&]id=([-\w]+)/) || fileUrl.match(/\/d\/([-\w]+)/) || [])[1] || '';
+      /* [v9.155] 🔒 공개 전환을 **하지 않는다**(유호님 08-04 「B로 가자」 결정 · 근거 = docs/개인정보처리방침_초안_v1.md §0-B).
+       *   구 설계는 앱 재생을 위해 학생 녹음을 ANYONE_WITH_LINK로 열었다. 그런데 이 파일은 **미성년의 목소리**이고
+       *   코드 스스로 「몽골법상 생체정보 계열로 읽힐 수 있다」고 적어 뒀다(엔진_폼리포트.js VOICE_RETENTION_MONTHS 주석).
+       *   보관이 무기한이라 공개도 무기한이 되고, Drive 공개 링크에는 만료가 없어 한 번 새면 영구다.
+       *   ▣ 대체 경로는 이미 있다 — **전사문**(v9.107). 그때 코드가 적은 판단이 그대로 근거가 된다:
+       *     「링크는 눌러야 비교되고, 두 파일을 번갈아 듣는 사람은 거의 없다. 전사문이 있으면 눈으로 한 번에 대비된다.」
+       *     즉 성장 카드의 값은 재생이 아니라 대비였고, 그 값은 링크 없이도 그대로 산다(buildVoiceGrowthCards_ 참조).
+       *   ▣ 원본은 지우지 않는다 — 학원 내부 자산(피드백·AI 학습)이고 동의 범위 안이다. 다만 **밖에서 열리지 않는다.** */
+      // [v9.187] 전사 3칸은 빈칸으로 두고(야간 STT가 채운다) 맨 끝에 급수 스냅샷 — 헤더 정본과 같은 폭으로 쓴다
+      // [v9.190] 미션ID는 프리필 링크로만 들어온다 — 학생이 손으로 채우는 칸이 아니라 비어도 정상이다
+      const mid = cMissionId >= 0 ? String(r[cMissionId] || '').trim() : '';
+      vOut.push([sid, ts, mission, fileUrl, fid, new Date(), '', '', '', lvOf[sid] || 0,
+        mid,
+        SCHEMA_VER, // [v9.208] 행이 자기 규격을 들고 있게(A-8) — 정의는 엔진_수집.js 하나(사본 금지 · 함수 안 참조라 파일 로드 순서 무관)
+        // [v9.277] 발음 6칸 — 지금 아는 둘만 채우고 나머지 넷은 각자의 채우는 자가 뒤에 붙인다
+        // [2026-09-01] 그날 지정된 낱말 **전량** 스냅샷(`P3:읽었어요 · P9:많았어요`). 하나만 담던 것을
+        // 고쳤다 — 여섯을 지정하면 다섯이 조용히 사라지고 있었다(심문 P0-②). 목록 없으면 빈 칸.
+        (목표문[mid] || []).join(' · '),  // 목표발화 (소급해 채우지 않는다)
+        시즌,               // 시즌     (Ⅰ-8 눈금의 전제)
+        '',                 // 전사신뢰도 ← sttSweep_
+        '',                 // 전사엔진판 ← sttSweep_
+        '',                 // 발음태그   ← 어휘 확정 뒤(규격 §3 의 의도된 유예)
+        '']);               // 돌려준날   ← buildVoiceGrowthCards_
+      const key = dstr(ts, tz) + '|' + sid;
+      if (!givenKey[key]) { // 하루 1회만 지급(여러 번 제출해도 기록은 전부, 포인트는 1회)
+        givenKey[key] = 1;
+        pOut.push(['VC' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid, sid, TB_VOICE_POINTS,
+          TB_VOICE_REASON, '시스템', ts, Utilities.formatDate(ts, tz, 'yyyy-MM'), '']);
+      }
+    });
+    /* [v9.159] 🛡 수식 인젝션 소독 — [v9.157]이 폼 직기입 7경로를 공용 통로로 막을 때 **이 함수만 남았다**
+     *   (하드닝 세션이 발견·인계 · 보드상 이 구역 편집권이 이 세션이라 넘어왔다).
+     *   위험의 실체: `mission`은 목소리 폼의 **학생·강사 손입력 문자열**이고, voice_log·point_logs는
+     *   `profiles`(학생·보호자 연락처)와 **같은 스프레드시트**다. `=`로 시작하면 시트가 스스로 평가해
+     *   `=IMPORTDATA("...?d="&TEXTJOIN(",",1,profiles!H2:H400))` 한 줄로 개인정보가 밖으로 나간다(클릭 불요).
+     *   pOut은 지금은 상수뿐이지만 함께 통과시킨다 — **같은 방어를 자리마다 판단해 얹으면 다음 자리가 빠진다.**
+     *   `행소독_`(Code.js)은 문자열만 소독하고 Date·number는 타입 보존한다(ts·포인트 숫자 안전). */
+    if (vOut.length) vl.getRange(vl.getLastRow() + 1, 1, vOut.length, VOICE_LOG_HEADERS.length).setValues(행소독_(vOut));
+    if (pOut.length) pl.getRange(pl.getLastRow() + 1, 1, pOut.length, 8).setValues(행소독_(pOut));
+    notifyDroppedSids_('목소리폼', badSid); // [v9.67] 함수 안 런타임 호출 — 톱레벨 크로스파일 금지 규칙과 무관
+    props.setProperty('목소리폼_포인터', String(last));
+    if (vOut.length) 알림.push({ 제목: '[SYNK] 🎙 새 목소리 ' + vOut.length + '건', 본문:
+      '목소리 미션 제출 ' + vOut.length + '건이 voice_log에 쌓였습니다. 성장 카드는 야간 배치가 자동 갱신합니다.' });
+    // [v9.104] 미동의 보류 통지 — 침묵하면 "왜 내 제출이 반영 안 되지"가 학생 쪽 미스터리가 된다
+    if (held.length) 알림.push({ 제목: '[SYNK] 🔒 음성 동의 없는 제출 ' + held.length + '건 — 보류', 본문:
+      '아래 제출은 「음성동의」가 확인되지 않아 voice_log에 넣지 않았고 포인트도 지급하지 않았습니다.\n' +
+      '(파일은 자동 삭제하지 않았습니다 — 종이 동의서 학생일 수 있어 사람 판단 몫입니다.)\n\n' +
+      held.join('\n') + '\n\n' +
+      '처리: ①동의를 받은 학생이면 상담시트 「음성동의」 칸에 「네, 동의합니다」를 넣고 재제출을 안내하세요.\n' +
+      '②거부한 학생이면 드라이브의 해당 녹음 파일을 삭제하세요.' });
+    /* 갈래별 수를 그대로 돌려준다 — 화면이 「+N」만 말하고 나머지를 삼키지 않게.
+     *   합계 = 앉힘 + 보류 + 무효ID + 파일빈칸 + ID빈칸 이어야 한다([[report-zero-with-denominator]]). */
+    return { 결과: '걷음', 본새제출: last - from, 앉힘: vOut.length,
+      보류: held.length, 무효ID: badSid.length, 파일빈칸: 파일빈칸, ID빈칸: ID빈칸 };
+  } finally {
+    if (잠금) 잠금.releaseLock();
+    // 해제 «뒤에» 보낸다. finally 라 어느 return 경로로 빠져나가도 알림은 나간다.
+    알림.forEach(function (m) {
+      try { adminMail(m.제목, m.본문); } catch (e) { Logger.log('voiceSweep_ 알림 실패: ' + e); }
+    });
+  }
 }
 
 /* ── A-1c. [v9.296] 🎙 목소리 지금 걷어오기 — 「돌았나」를 **눈으로 재는** 통로 ──────────
@@ -343,8 +403,11 @@ function voiceSweep_(ss) {
  * ■ ⚠ 리허설을 강제하지 않는 까닭 (rehearseRun_ 를 안 쓴다)
  *   이 함수가 내는 외부 동작은 **원장 자신에게 가는 메일 둘뿐**이고(새 목소리 알림·미동의 보류 알림)
  *   AI 비용은 0이다(전사는 `voiceTranscribe_` 의 몫 — 이 함수는 안 부른다). 학부모·강사에게는
- *   아무것도 안 나간다. 리허설이 켜져 있으면 그 메일 둘은 `quotaOk` 에서 자동으로 막히고
- *   「리허설 결과」에 적힌다 — 즉 **켜도 되고 안 켜도 되는데, 켜면 더 조용할 뿐**이다.
+ *   아무것도 안 나간다. 리허설이 켜져 있으면 그 메일 둘은 **`adminMail` 첫 줄의 `isRehearsal_()`**
+ *   에서 막히고 「리허설 결과」에 적힌다 — 즉 **켜도 되고 안 켜도 되는데, 켜면 더 조용할 뿐**이다.
+ *   ⚠ [2026-09-03 · 이종 검수 P2] 여기 「`quotaOk` 에서 막힌다」고 적혀 있었다. 결과는 같지만
+ *   **첫 차단 지점이 다르다** — `adminMail` 은 `isRehearsal_()` 이면 quotaOk 를 보기도 «전에»
+ *   되돌아간다(엔진_콘텐츠AI.js). 장애를 쫓는 사람이 엉뚱한 자리를 파게 된다.
  *
  * ■ 되돌리기
  *   멱등이 아니다 — 새 제출이 있으면 누를 때마다 그만큼 앉는다(그게 이 함수의 일이다).
@@ -372,7 +435,10 @@ function voiceSweepNow_() {
   const 세기 = function () { const sh = ss.getSheetByName('voice_log'); return sh ? Math.max(0, sh.getLastRow() - 1) : 0; };
   const 전 = 세기();
 
-  voiceSweep_(ss);
+  /* [2026-09-03 · 이종 검수 P2] 본체가 «무슨 일이 있었나»를 돌려준다 — 화면이 짐작하지 않는다.
+   *   전에는 0건이면 무조건 「원인 셋 중 하나」라고 했는데, 헤더 누락·동의 판정 불가·다른 실행과
+   *   겹침은 그 셋에 없다. 엉뚱한 곳을 고치게 만드는 안내는 침묵보다 나쁘다. */
+  const 결 = voiceSweep_(ss) || {};
 
   const 후 = 세기();
   const 늘어난 = 후 - 전;
@@ -381,19 +447,48 @@ function voiceSweepNow_() {
   let 몸 = '제출 총 ' + 제출 + '건 · 이번에 본 새 제출 ' + 새제출 + '건\n'
     + 'voice_log: ' + 전 + '행 → ' + 후 + '행 (+' + 늘어난 + ')\n\n';
 
-  if (늘어난 > 0) {
+  // 앉지 «못한» 것들을 갈래별로 적는다 — 합계가 안 맞으면 어딘가를 안 센 것이다
+  const 빠진것 = [];
+  if (결.보류) 빠진것.push('음성 동의가 확인되지 않았다 — ' + 결.보류 + '건 (상담시트 「음성동의」 칸)');
+  if (결.무효ID) 빠진것.push('학생ID가 명부(profiles)에 없다 — ' + 결.무효ID + '건');
+  if (결.파일빈칸) 빠진것.push('녹음 파일 칸이 비어 있다 — ' + 결.파일빈칸 + '건');
+  if (결.ID빈칸) 빠진것.push('학생ID 칸이 비어 있다 — ' + 결.ID빈칸 + '건');
+
+  if (결.결과 === '잠김') {
+    몸 += '⏳ 지금은 걷지 않았습니다 — 다른 실행이 이미 걷고 있습니다.\n'
+      + '   (밤 11시 배치와 겹쳤거나, 다른 분이 같은 버튼을 눌렀습니다.)\n'
+      + '   같은 제출을 두 번 앉히지 않으려고 비켜선 것이라 **아무것도 잃지 않았습니다.**\n'
+      + '   1~2분 뒤 다시 누르시면 그쪽이 끝낸 결과가 보입니다.';
+  } else if (결.결과 === '헤더없음') {
+    몸 += '⛔ 응답 탭에 필요한 칸이 없습니다 — 없는 칸: ' + (결.없는열 || '학생ID 또는 녹음/파일') + '\n\n'
+      + '   이건 동의·명부·파일 문제가 «아닙니다». 폼 문항 제목이 바뀌었거나 지워진 것입니다.\n'
+      + '   목소리 폼의 문항 제목에 「학생ID」와 「녹음」(또는 「파일」)이 들어가야 이 코드가 그 칸을 찾습니다.\n'
+      + '   제목을 되돌리신 뒤 다시 누르세요 — 제출은 그대로 남아 있습니다.';
+  } else if (결.결과 === '동의불가') {
+    몸 += '🔒 「음성동의」를 읽지 못해 **걷기를 멈췄습니다** — ' + (결.본새제출 || 새제출) + '건 전부 그대로 둡니다.\n\n'
+      + '   중요: 표시를 앞으로 옮기지 않았으니 **이 제출들은 사라지지 않았습니다.**\n'
+      + '   아래를 고치고 다시 누르시면 그대로 처리됩니다.\n'
+      + '   · 상담 스프레드시트에 「음성동의」 칸이 없다 → 메뉴에서 migrateConsentV186 ▶ 를 한 번 누르세요\n'
+      + '   · 지금 계정이 상담 스프레드시트를 못 연다 → 원장 계정으로 다시 누르세요';
+  } else if (늘어난 > 0) {
     몸 += '✅ ' + 늘어난 + '건이 앉았습니다. voice_log 탭 맨 아래를 열어 보세요.\n'
       + '   전사(옮겨 적기)·성장 카드는 오늘 밤 배치가 이어서 채웁니다.';
+    if (빠진것.length) {
+      몸 += '\n\n⚠ 다만 ' + (결.본새제출 || 새제출) + '건 중 ' + 늘어난 + '건만 앉았습니다. 나머지는:\n'
+        + 빠진것.map(function (s) { return '   · ' + s; }).join('\n');
+    }
   } else if (새제출 === 0) {
     몸 += 'ℹ 새 제출이 없습니다 — 마지막으로 걷어온 뒤 추가된 녹음이 없다는 뜻입니다.\n'
       + '   시험해 보시려면 목소리 폼에 하나 제출하고 이 버튼을 다시 누르세요.\n'
       + '   (이미 걷어온 것은 다시 앉지 않습니다 — 그게 정상입니다.)';
+  } else if (빠진것.length) {
+    몸 += '⚠ 새 제출 ' + (결.본새제출 || 새제출) + '건을 봤는데 하나도 앉지 않았습니다. 까닭은:\n'
+      + 빠진것.map(function (s) { return '   · ' + s; }).join('\n') + '\n\n'
+      + '   → 자세한 명단은 ' + (리허설 ? '「🧪 리허설 결과·종료」에 적혔습니다.' : '원장 메일함으로 알림이 갔습니다.');
   } else {
-    몸 += '⚠ 새 제출 ' + 새제출 + '건을 봤는데 하나도 앉지 않았습니다. 원인은 셋 중 하나입니다:\n'
-      + '   · 음성 동의가 확인되지 않았다 — 상담시트 「음성동의」 칸(가장 흔합니다)\n'
-      + '   · 학생ID가 명부(profiles)에 없다\n'
-      + '   · 녹음 파일 칸이 비어 있다\n\n'
-      + '   → 어느 것인지 ' + (리허설 ? '「🧪 리허설 결과·종료」에 적혔습니다.' : '원장 메일함으로 알림이 갔습니다.');
+    몸 += '⚠ 새 제출 ' + 새제출 + '건을 봤는데 하나도 앉지 않았고, 까닭도 못 짚었습니다.\n'
+      + '   이건 «안 재봤다»가 아니라 «아직 모르는 모양»입니다 — 이 화면을 그대로 알려 주세요.\n'
+      + '   (실행 로그: 확장 프로그램 ▸ Apps Script ▸ 실행 기록)';
   }
 
   if (리허설) 몸 += '\n\n🧪 리허설 중이라 메일은 나가지 않았습니다(시트 기록은 평소대로).';
