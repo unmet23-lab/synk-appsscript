@@ -79,7 +79,7 @@ html,body{
 .hero .lead{ font-size:3.6mm; color:var(--cream-3); margin-top:4.4mm; line-height:1.55; }
 .hero .foot{ display:flex; align-items:flex-end; justify-content:space-between; gap:8mm; }
 .hero .note{ font-size:2.9mm; color:var(--cream-3); line-height:1.5; max-width:110mm; }
-/* ⚠ .symbol 은 정사각이 아니다 — W5 축약 워드마크 가로:세로 = 1.5:1. 주입은 tools/로고주입.js */
+/* ⚠ .symbol 은 정사각이 아니다. W5 축약 워드마크 가로:세로 = 1.5:1. 주입은 tools/로고주입.js */
 .lockup{ display:flex; flex-direction:column; align-items:flex-end; gap:2mm; flex:0 0 auto; }
 .symbol{ width:24mm; height:15.4mm; flex:0 0 auto; }
 .symbol svg{ width:100%; height:100%; display:block; }
@@ -90,7 +90,7 @@ html,body{
      (2026-08-10 실측: 문장이 길어져 18px 넘쳤고, overflow:hidden 이라 화면에선 안 보였다).
      문구를 늘릴 땐 `node tools/발표물린트.js --넘침` 을 같이 돌린다. */
 .blk{ margin-top:6.2mm; }
-/* 🔴 이 지면의 h2 여백은 «이 지면»이 정한다 — 블록 간격을 .blk 가 이미 지고 있어서다.
+/* 🔴 이 지면의 h2 여백은 «이 지면»이 정한다. 블록 간격을 .blk 가 이미 지고 있어서다.
  *   빌드가 얹는 `.룸 h2` 는 --제목위:3.5em(≈18.9mm)을 h2 «마다» 더하는데, 그건 스크롤되는
  *   문서 지면의 사다리다. 면이 고정된 인쇄물에서는 그만큼이 그대로 넘쳐 잘린다
  *   (2026-08-26 실측: 이 벌이 쪽1 176px·쪽2 132px 넘쳐 **마스터 슬로건이 종이에서 사라졌다**).
