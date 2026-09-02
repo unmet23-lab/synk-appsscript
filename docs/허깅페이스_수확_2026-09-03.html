@@ -1,0 +1,353 @@
+<title>허깅페이스 수확표</title>
+<meta name="description" content="허깅페이스에서 SYNK 작업에 바로 쓸 것 열둘 — 값 순으로, 이 노트북에서 도는지까지 재서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+  :root{
+    --paper:#FBF7F0; --ink:#2B2320; --card:#FBF7F0; --note:#EDE7DC; --line:#F0E3C8; --line2:#C7BFB2;
+    --sub:#575046; --sub2:#575046;
+    --coral:#F96859; --coral-text:#AE322A; --coral-face:#FEF0E9; --wash:#FEF0E9;
+    --lapis-text:#24448C; --lapis-face:#C5D6F5;
+    --meadow-text:#3F6B2E; --meadow-face:#D3E8BE;
+    --butter-text:#7E5A10; --butter-face:#FFEBB0;
+    --pop-text:#99295D; --pop-face:#F8C7DE;
+    --font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,'Malgun Gothic','Apple SD Gothic Neo',monospace;
+    --실:2px; --숨:4px; --틈:8px; --참:12px; --칸:16px; --단:24px; --켜:40px; --장:64px; --막:104px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#080605; --ink:#FBF7F0; --card:#2B2320; --note:rgba(251,247,240,.07); --line:rgba(240,227,200,.28); --line2:rgba(240,227,200,.48);
+      --sub:#C7BFB2; --sub2:#EDE7DC;
+      --coral:#F96859; --coral-text:#FBB7A3; --coral-face:rgba(249,104,89,.18); --wash:rgba(249,104,89,.14);
+      --lapis-text:#C5D6F5; --lapis-face:#24448C;
+      --meadow-text:#D3E8BE; --meadow-face:#3F6B2E;
+      --butter-text:#FFEBB0; --butter-face:#7E5A10;
+      --pop-text:#F8C7DE; --pop-face:#99295D;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#080605; --ink:#FBF7F0; --card:#2B2320; --note:rgba(251,247,240,.07); --line:rgba(240,227,200,.28); --line2:rgba(240,227,200,.48);
+    --sub:#C7BFB2; --sub2:#EDE7DC;
+    --coral:#F96859; --coral-text:#FBB7A3; --coral-face:#AE322A; --wash:rgba(249,104,89,.14);
+    --lapis-text:#C5D6F5; --lapis-face:#24448C;
+    --meadow-text:#D3E8BE; --meadow-face:#3F6B2E;
+    --butter-text:#FFEBB0; --butter-face:#7E5A10;
+    --pop-text:#F8C7DE; --pop-face:#99295D;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light dark}
+  body{margin:0;padding:var(--켜) var(--단) var(--막);background:var(--paper);color:var(--ink);
+       font-family:var(--font);font-weight:500;font-size:15.5px;line-height:1.72;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto}
+  header{border-bottom:var(--실) solid var(--line);padding-bottom:var(--칸)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--sub);margin:0 0 var(--틈)}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.24;margin:0 0 var(--틈);text-wrap:balance}
+  .sub{color:var(--sub);font-size:14px;margin:0;max-width:66ch}
+  .lead{background:var(--wash);border-left:var(--숨) solid var(--coral);padding:var(--칸) var(--단);margin:var(--단) 0 var(--켜);border-radius:0 8px 8px 0}
+  .lead p{margin:0 0 var(--참)} .lead p:last-child{margin:0} .lead b{font-weight:800}
+  .lead .no{font-family:var(--mono);font-size:12px;color:var(--coral-text);font-weight:500;letter-spacing:.06em}
+  h2{font-size:21px;font-weight:800;line-height:1.24;margin:var(--장) 0 var(--틈);padding-bottom:var(--틈);border-bottom:1px solid var(--line);text-wrap:balance}
+  h2 .n{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--sub);margin-right:var(--틈)}
+  h3{font-size:16.5px;font-weight:800;line-height:1.3;margin:var(--단) 0 var(--숨)}
+  p{margin:0 0 var(--참);max-width:72ch}
+  ul,ol{margin:0 0 var(--참);padding-left:1.3em} li{margin:0 0 var(--숨)} li>ul{margin-top:var(--숨)}
+  .hint{color:var(--sub);font-size:13.5px;margin:var(--숨) 0 var(--칸)}
+  .card{border:1px solid var(--line);border-radius:8px;padding:var(--칸) var(--단);margin-bottom:var(--참);background:var(--card)}
+  .card.top{border-color:var(--coral);border-left-width:var(--숨)}
+  .card.dead{border-style:dashed}
+  .card h3{margin-top:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--틈)}
+  .card p{margin-bottom:var(--틈)}
+  .row{display:grid;grid-template-columns:104px 1fr;gap:var(--숨) var(--참);font-size:14.5px;margin-top:var(--틈)}
+  .k{color:var(--sub);font-weight:700;font-size:13px;padding-top:2px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11.5px;font-weight:500;padding:1px 8px;border-radius:999px;white-space:nowrap;vertical-align:middle;line-height:1.6}
+  .pill.sub{background:var(--meadow-face);color:var(--meadow-text)}
+  .pill.api{background:var(--butter-face);color:var(--butter-text)}
+  .pill.win{background:var(--lapis-face);color:var(--lapis-text)}
+  .pill.no{background:var(--coral-face);color:var(--coral-text)}
+  .pill.grey{background:var(--note);color:var(--sub2)}
+  .pill.pop{background:var(--pop-face);color:var(--pop-text)}
+  .v{font-weight:800;white-space:nowrap} .v.pass{color:var(--meadow-text)} .v.cond{color:var(--lapis-text)} .v.fail{color:var(--coral-text)}
+  .note{background:var(--note);border-radius:6px;padding:var(--참) var(--칸);margin:var(--참) 0;font-size:14px}
+  .note p:last-child{margin-bottom:0}
+  .tbl{overflow-x:auto;margin:var(--참) 0 var(--숨)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:var(--틈) var(--참);border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--sub);font-size:12.5px;font-weight:700;white-space:nowrap}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  code{font-family:var(--mono);background:var(--note);padding:1px 6px;border-radius:4px;font-size:12.5px;color:var(--sub2);word-break:break-all}
+  pre{font-family:var(--mono);background:var(--note);padding:var(--참) var(--칸);border-radius:6px;font-size:12.5px;color:var(--sub2);overflow-x:auto;margin:var(--틈) 0 var(--참);line-height:1.6}
+  a{color:var(--lapis-text);text-decoration-thickness:1px;text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+  .terms{display:grid;grid-template-columns:1fr 1fr;gap:var(--숨) var(--단);font-size:13.5px;margin:var(--칸) 0}
+  .terms dt{font-weight:800;color:var(--sub2)} .terms dd{margin:0 0 var(--틈)}
+  .toc{display:flex;flex-wrap:wrap;gap:var(--틈);margin:var(--칸) 0 0;padding:0;list-style:none;font-size:13.5px}
+  .toc a{display:inline-block;padding:2px 10px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--sub2)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--참)}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:var(--숨) var(--참);font-size:14px}
+  .kv b{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--sub)}
+  footer{margin-top:var(--장);padding-top:var(--칸);border-top:1px solid var(--line);font-size:13px;color:var(--sub)}
+  @media (max-width:640px){.row{grid-template-columns:1fr;gap:2px}.grid2,.terms{grid-template-columns:1fr}body{padding:var(--단) var(--칸) var(--장)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SYNK · 수확표 · 2026-09-03</p>
+  <h1>허깅페이스 수확표</h1>
+  <p class="sub">어제(09-02)는 「구독료 $9 가 값을 하나」를 물었고 답이 소리 쪽에서만 나왔다. 오늘은 다른 질문이다 — <b>지금 우리 작업 어디에 무엇을 가져다 붙이나.</b> 허깅페이스 창고를 열두 각도로 뒤지고, 나온 것마다 이 노트북에서 도는지까지 붙였다.</p>
+  <ul class="toc">
+    <li><a href="#s1">오늘 잰 것</a></li>
+    <li><a href="#s2">가져올 것 열둘</a></li>
+    <li><a href="#s3">없는 것</a></li>
+    <li><a href="#s4">유호님 픽</a></li>
+    <li><a href="#s5">못 잰 것</a></li>
+    <li><a href="#s6">용어</a></li>
+  </ul>
+</header>
+
+<div class="lead">
+  <p><b>① 오늘 가장 큰 수확은 「모델」이 아니라 「통로」다.</b> 허깅페이스가 여는 <b>직통 창구</b>가 실제로 열렸다 — 유호님 계정 열쇠로 말을 걸었더니 <b>도구 여섯 개</b>가 이름을 대며 응답했다(§1). 이게 붙으면 오늘 제가 손으로 짠 검색을 <b>세션이 스스로</b> 하고, 무엇보다 <b>남의 컴퓨터를 분 단위로 빌려 일을 돌리는 통로</b>가 대화 안으로 들어온다.</p>
+  <p><b>② 그 통로가 겨누는 과녁은 램이다.</b> 지금 이 노트북은 총 <span class="num">15.4GB</span> 중 <span class="num">여유 1.1GB</span>다(오늘 실측). 까몽 몸판 넷을 굽는 밤 사슬 ①이 <span class="num">8.3시간</span>인 이유가 그것이고, 그 8.3시간이 남의 컴퓨터에서는 훨씬 짧다.</p>
+  <p><b>③ 소리 밖에서 새로 선 것 다섯.</b> 한국어↔몽골어를 <b>한 모델이 통째로</b> 하는 번역기 · 교재 사진에서 글자를 뽑는 것 · 학생 녹음에서 말만 골라내는 것 · 라디오24 곡을 짓는 것 · 숙제가 이미 있는 것과 겹치는지 찾는 것.</p>
+  <p><span class="no">그대로다</span> 몽골 학생의 한국어 발음 자료는 <b>여전히 세상에 0건</b>이고, 토픽 자료도 <b>1건</b>뿐이다(§3). 우리가 모으는 것이 세상에 없다는 뜻이다 — 어제 결론이 하루 만에 다시 확인됐다.</p>
+</div>
+
+<h2 id="s1"><span class="n">§1</span>오늘 잰 것 — 창구에 직접 말을 걸었다</h2>
+
+<p>허깅페이스가 <code>https://huggingface.co/mcp</code> 에 창구를 열어 둔다. 여기에 유호님 계정 열쇠를 들고 인사를 보냈더니 <b>서버가 자기 이름과 판 번호를 대며 받았다</b> — <code>huggingface.co/mcp</code> · 판 <code>0.4.15</code>. 이어서 「무슨 일을 할 줄 아나」를 물었고, 여섯이 돌아왔다.</p>
+
+<div class="tbl">
+<table>
+  <thead><tr><th>돌아온 이름</th><th>무엇을 하나</th><th>우리 자리</th></tr></thead>
+  <tbody>
+    <tr><td><code>hub_repo_search</code></td><td>모델·자료·데모를 한 창구에서 찾는다</td><td>오늘 제가 손으로 짠 검색 스크립트를 대체한다</td></tr>
+    <tr><td><code>hub_repo_details</code></td><td>고른 것의 크기·언어·라이선스를 편다</td><td>「이 노트북에서 도나」를 매번 재는 자리</td></tr>
+    <tr><td><code>hf_fs</code></td><td>창고 전체를 폴더처럼 걸어다닌다 · 오늘 뜨는 것, 문서 검색</td><td>정찰이 세션 안에서 끝난다</td></tr>
+    <tr><td><code>dynamic_space</code></td><td>남이 올려둔 <b>도는 데모</b>를 도구처럼 부른다</td><td>어제 손으로 부른 몽골어 낭독기(Orpheus)가 자동이 된다</td></tr>
+    <tr><td><code>gr1_z_image_turbo_generate</code></td><td>그림을 짓는다(Z-Image)</td><td>시안·자리표 그림 — 정본 자산은 아니다</td></tr>
+    <tr><td><code>hf_whoami</code></td><td>계정·잔액을 본다</td><td>돈 쓰기 전 확인</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+  <p>🔑 <b>여기 안 나온 셋이 진짜 값이다.</b> 공식 문서(09-03 조회)는 설정 화면에서 <b>세 가지를 더 켤 수 있다</b>고 적는다 — <b>작업 돌리기·예약</b>(남의 컴퓨터를 분 단위로 빌려 일을 시킨다) · <b>모래상자</b>(격리된 임시 컴퓨터) · <b>저장소 쓰기</b>. 위 여섯에 안 보이는 까닭은 유호님 계정 설정에서 아직 안 켰기 때문으로 <b>보인다</b> — 설정 화면을 제가 못 봐서 단정 못 한다.</p>
+  <p>이 셋 중 <b>작업 돌리기</b>가 §2-② 의 램 우회로다. 어제 지면 §4-⑤ 에서 「값은 있는데 실측 0」으로 남긴 그 항목이, 오늘은 <b>세션 안에서 부를 수 있는 도구</b>로 모양이 바뀌었다.</p>
+</div>
+
+<p class="hint">잰 통로 = <code>POST https://huggingface.co/mcp</code> 에 <code>initialize</code> → <code>tools/list</code>(계정 <code>q121235</code> 열쇠 · 09-03) · 기계 = <code>os.totalmem</code> <span class="num">15.4GB</span> / <code>os.freemem</code> <span class="num">1.1GB</span> · 코어 16 · Intel Core Ultra X7 358H.</p>
+
+<h2 id="s2"><span class="n">§2</span>가져올 것 열둘 — 값 순</h2>
+
+<p>「되는 것」이 아니라 <b>「값 있는 것」</b> 순서다. 각 항목에 <b>이 노트북에서 도는가</b>를 붙였다 — 램 <span class="num">15.4GB</span> 가 자다. 어제 지면에서 이미 선 여덟(자모 인식기·몽골어 인식기 등)은 <b>여기 다시 안 적는다</b>.</p>
+
+<div class="card top">
+  <h3>① 허깅페이스 직통 창구 <span class="pill sub">오늘 실측 ○</span> <span class="pill grey">공짜</span></h3>
+  <p>모델이 아니라 <b>통로</b>다. 붙이면 세션이 창고를 직접 뒤지고, 남의 컴퓨터를 빌려 일을 돌리고, 남이 올린 데모를 도구로 쓴다. <b>오늘 열둘을 뒤진 이 작업 전체가 도구 한 줄이 된다.</b></p>
+  <div class="row">
+    <div class="k">값이 나는 곳</div><div>ⓐ 정찰이 손 스크립트 없이 끝난다 ⓑ <b>밤 굽기를 남의 컴퓨터로</b>(램 병목) ⓒ 몽골어 낭독기 같은 데모를 자동 호출</div>
+    <div class="k">유호님 손</div><div><code>huggingface.co/settings/mcp</code> → 클라이언트 고르기 → 나오는 글귀 복사. <b>화면을 제가 못 봐서 버튼 문구는 안 짚는다</b> — 여시면 같이 봅니다.</div>
+    <div class="k">돈</div><div>붙이는 건 <b>0원</b>(읽기 열쇠면 된다). 남의 컴퓨터를 실제로 돌릴 때만 잔액에서 나간다.</div>
+    <div class="k">안 잰 것</div><div>세 도구(작업·모래상자·쓰기)를 켠 뒤 실제로 무엇이 되는지 · 우리 굽기 스크립트가 남의 컴퓨터에서 도는지</div>
+  </div>
+</div>
+
+<div class="card top">
+  <h3>② 낱말 시각을 찍는 자 — 더 작고 더 검증된 판 <span class="pill win">어제 ③ 대체 후보</span></h3>
+  <p><code>MahmoudAshraf/mms-300m-1130-forced-aligner</code> — 소리와 글을 맞대어 <b>「이 낱말이 몇 초에 있다」</b>를 찍는다. 어제 §4-③ 으로 올린 <code>Qwen3-ForcedAligner-0.6B</code>(1.8GB · 11개 언어)와 같은 일을 하는데, <b>더 작고 검증량이 훨씬 많다.</b></p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>&nbsp;</th><th>어제 ③ Qwen3-ForcedAligner</th><th>오늘 이것 (MMS)</th></tr></thead>
+    <tbody>
+      <tr><td>내려받은 사람</td><td class="num">6,540</td><td class="num v pass">2,442,043</td></tr>
+      <tr><td>크기</td><td class="num">0.6B · 1.8GB</td><td class="num v pass">0.32B</td></tr>
+      <tr><td>언어</td><td>11개 (한국어 ○ · 몽골어 ✗)</td><td class="v pass">157개 (한국어 ○ · <b>몽골어 ○</b>)</td></tr>
+      <tr><td>가벼운 판</td><td>없음</td><td class="v pass">ONNX 판 있다 <span class="hint">(Arc 그래픽에 가볍다)</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="row">
+    <div class="k">왜 필요한가</div><div>발음 미션 낱말 11개가 <b>숙제 문장 안</b>에 들어가는 설계라, 그 낱말만 오려내 자모 인식기에 넣으려면 시각이 먼저다.</div>
+    <div class="k">몽골어까지</div><div>어제 판은 한국어만이라 <b>학생 몽골어 발화</b>에는 못 썼다. 이건 둘 다 된다 — 상담·발화 기록에도 같은 자를 쓴다.</div>
+    <div class="k">안 잰 것</div><div>🔴 <b>한 번도 안 돌려봤다.</b> 한국어 정렬 정확도도, Arc 그래픽에서 도는지도. 첫 실학생 소리 때 자모 인식기와 한 벌로 잰다.</div>
+    <div class="k">돈</div><div>0원 · 내려받아 쓴다</div>
+  </div>
+</div>
+
+<div class="card top">
+  <h3>③ 한국어↔몽골어를 한 모델이 통째로 <span class="pill pop">새로 섰다</span></h3>
+  <p><code>tencent/Hy-MT2-1.8B</code> — 번역 전용 모델. 싣는 <b>36개 언어에 한국어(<code>ko</code>)와 몽골어(<code>mn</code>)가 둘 다</b> 있다(모델 카드 원문에서 확인). 지금 몽골어 문구는 검문 다섯 층을 거치는데, 그 앞에 <b>공짜 초벌기</b>가 하나 생기는 셈이다.</p>
+  <div class="row">
+    <div class="k">크기</div><div class="num">2.04B · 3.83GB — <b class="v pass">램 15.4GB 안에서 돈다</b></div>
+    <div class="k">값</div><div>감수자는 10~11월에 온다. 그때까지 몽골어 문구의 <b>초벌·되번역 대조</b>를 여기서 한다 — 「한국어로 되돌렸을 때 뜻이 남나」가 기계로 잡힌다.</div>
+    <div class="k">지금 것과</div><div>검색에 걸린 다른 후보 <code>facebook/nllb-200-distilled-600M</code>(196개 언어 · 몽골어 ○)도 있으나 <b>2024년 2월 판</b>이다. 이건 <span class="num">2026-05-26</span> 갱신 · 좋아요 <span class="num">1,189</span>.</div>
+    <div class="k">안 잰 것</div><div>🔴 <b>한↔몽 품질을 안 재봤다.</b> 서버 대행(남의 서버가 대신 돌려주는 것)은 <b>안 된다</b>(<code>hf-inference: error</code>) — 내려받아 이 기계에서 돌려야 잰다. 램 여유가 <span class="num">1.1GB</span>인 지금은 굽기와 같이 못 돌린다.</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>④ 교재 사진에서 글자를 뽑는 것 <span class="pill win">교재 트랙</span></h3>
+  <p><code>zai-org/GLM-OCR</code> — 사진·PDF 속 글자를 <b>표·단 구조까지 살려</b> 글로 뽑는다. 한국어를 싣는다(카드에 <code>ko</code> 명시). <span class="num">1.33B · 2.5GB</span> · 라이선스 <code>mit</code> · 내려받은 사람 <span class="num">2,104,188</span>.</p>
+  <div class="row">
+    <div class="k">우리 자리</div><div>재헌이형 교재가 종이로 오면 <b>숙제 뱅크에 넣을 수 있는 글</b>로 바꾸는 첫 관문. 지금은 그 통로가 0개다.</div>
+    <div class="k">더 정확한 판</div><div><code>datalab-to/chandra-ocr-2</code>(<span class="num">5.30B · 9.9GB</span> · 내려받은 사람 <span class="num">2,938,989</span>)가 PDF→마크다운을 더 잘 하지만 <b>램 15.4GB 에 부담</b>이다. 남의 컴퓨터(①)로 돌릴 후보.</div>
+    <div class="k">안 잰 것</div><div>한국어 실제 정확도 · 몽골어 키릴 글자는 <b>카드에 없다</b>(안 싣는 것으로 보인다)</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>⑤ 학생 녹음에서 말만 골라내기 <span class="pill win">발음 트랙 앞단</span></h3>
+  <p>학생이 폰으로 녹음하면 앞뒤에 숨소리·정적·생활 소음이 붙는다. 그대로 인식기에 넣으면 <b>발음이 나쁜 건지 소리가 지저분한 건지 갈리지 않는다.</b></p>
+  <div class="row">
+    <div class="k">말 골라내기</div><div><code>pyannote/voice-activity-detection</code> — 내려받은 사람 <span class="num">4,409,202</span> · 라이선스 <code>mit</code> · 매우 가볍다. 말 있는 구간만 남긴다.</div>
+    <div class="k">잡음 걷기</div><div><code>speechbrain/sepformer-wham16k-enhancement</code> — 배경 소음을 걷는다.</div>
+    <div class="k">값</div><div>어제 세운 자 둘(자모 인식기·몽골어 인식기)의 <b>입력 품질</b>을 올린다. 자가 아니라 <b>자에 넣기 전 손질</b>이다.</div>
+    <div class="k">주의</div><div>가입 승인이 필요하다(<code>gated: auto</code> — 자동 승인이지만 열쇠는 있어야 한다)</div>
+    <div class="k">안 잰 것</div><div>안 돌려봤다 · 학생 녹음이 아직 0개라 잴 재료 자체가 없다</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>⑥ 라디오24 곡과 앱 효과음 <span class="pill api">라디오 트랙</span></h3>
+  <p>지금 곡은 Lyria 로 짓는데 「ambient」 같은 낱말에서 <b>거절</b>이 난다. 대안이 창고에 있다.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>무엇</th><th>크기</th><th>라이선스</th><th>쓸 자리</th></tr></thead>
+    <tbody>
+      <tr><td><code>ACE-Step/Ace-Step1.5</code></td><td class="num">9.4GB</td><td class="num v pass">mit</td><td>라디오 곡 — <b>가장 열린 라이선스</b></td></tr>
+      <tr><td><code>stabilityai/stable-audio-3-small-sfx</code></td><td class="num">0.57B · 3.3GB</td><td class="num">other ⚠</td><td>앱 효과음(<code>사운드킷빌드.js</code>)</td></tr>
+      <tr><td><code>MiniMaxAI/MiniMax-Music3</code></td><td class="num v fail">62.6GB</td><td class="num">?</td><td>가장 좋아요 많으나 <b>이 기계 밖</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="row">
+    <div class="k">🔴 방송 정지</div><div>라디오는 <b>송출이 멈추면 그날이 통째로 빈다.</b> 그래서 여기서는 라이선스를 봐야 한다 — <code>mit</code> 인 ACE-Step 이 그 위험이 가장 낮다. <code>other</code> 인 것은 조건을 열어 읽어야 하고, 아직 <b>안 읽었다</b>.</div>
+    <div class="k">안 잰 것</div><div>곡 품질 · 9.4GB 를 이 램에서 돌리는 것(굽기와 동시엔 불가) · Lyria 와의 우열</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>⑦ 숙제가 이미 있는 것과 겹치는지 찾기 <span class="pill win">뱅크 v6.0</span></h3>
+  <p>글의 뜻을 숫자 줄로 바꾸면(임베딩) <b>「비슷한 문항」을 기계가 찾는다.</b> 뱅크가 커질수록 사람 눈으로는 못 잡는 일이다.</p>
+  <div class="row">
+    <div class="k">가벼운 쪽</div><div><code>google/embeddinggemma-300m</code> — <span class="num">0.30B</span> · 100개 넘는 언어 · <b>남의 서버가 대신 돌려준다</b>(<code>hf-inference: live</code>). 단 <code>gated: manual</code> — <b>사람이 승인해야 열린다</b>.</div>
+    <div class="k">튼튼한 쪽</div><div><code>BAAI/bge-m3</code> — 내려받은 사람 <span class="num">37,079,940</span> · <code>mit</code> · 다국어 표준. 저장 <span class="num">12.8GB</span>(여러 판 합계 · 실제 쓰는 판은 그보다 작다).</div>
+    <div class="k">순위 다듬기</div><div><code>Qwen/Qwen3-Reranker-0.6B</code> 또는 <code>BAAI/bge-reranker-v2-m3</code> — 찾은 뒤 <b>진짜 비슷한 것</b>을 위로 올린다.</div>
+    <div class="k">안 잰 것</div><div>한국어 문항에서의 실제 성적 · 뱅크 규모에서 걸리는 시간</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>⑧ 자산 손질 — 누끼와 그림 고치기 <span class="pill grey">보조</span></h3>
+  <div class="row">
+    <div class="k">누끼</div><div><code>Trendyol/background-removal</code> — <span class="num">0.2GB</span> · ONNX · <code>cc-by-sa-4.0</code>. 배경을 뗀다. 지금 까몽 누끼는 굽기가 내주지만, <b>사진·외주 그림</b>에는 통로가 없다.</div>
+    <div class="k">그림 고치기</div><div><code>Qwen/Qwen-Image-Edit-2511</code> · <code>black-forest-labs/FLUX.2-klein-4B</code>(4B — 이 계열 중 <b>가장 작다</b>)</div>
+    <div class="k">🔴 금지선</div><div><b>정본 자산에는 안 쓴다.</b> 마스코트·로고·펠트는 굽기가 정본이고 CSS·AI 흉내는 이미 기각됐다. 여기 쓸 자리는 <b>시안·자리표·사진 손질</b>뿐이다.</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>⑨ 마스코트가 말하는 영상 <span class="pill no">지금은 아니다</span></h3>
+  <p>입모양을 소리에 맞추는 것(립싱크)을 창고에서 찾았다. <b>쓸 만한 게 사실상 없다</b> — 가장 많이 내려받은 것이 <span class="num">81</span>회다(보통 쓰이는 모델은 수십만~수백만이다). 영상 쪽에서 옆으로 오는 길만 둘 보인다.</p>
+  <div class="row">
+    <div class="k">있는 것</div><div><code>digital-avatar/ditto-talkinghead</code>(ONNX · 좋아요 39) · <code>elix3r/LTX-2.3-22b-AV-LoRA-talking-head</code>(영상 모델의 곁가지)</div>
+    <div class="k">벽</div><div>영상 모델 본체 <code>Lightricks/LTX-2.5</code> 급은 <b>이 램에서 못 돈다.</b> 남의 컴퓨터(①)를 켜야 열리는 문이다.</div>
+    <div class="k">판정</div><div class="v fail">지금 열지 않는다 — 값은 있으나 순서가 ①~⑦ 뒤다</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>⑩ 몽골어 자료 넷 <span class="pill grey">재료 · 지금은 안 쓴다</span></h3>
+  <p>어제 §4-⑦ 에 소리 자료 셋을 적었다. 오늘 <b>소리 아닌 것</b>이 더 나왔다 — 몽골어 인식기가 학생 말에서 흔들릴 때, 또는 몽골어 문항을 만들 때 쓸 재료다.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>자료</th><th>갱신</th><th>무엇</th></tr></thead>
+    <tbody>
+      <tr><td><code>Bokhbat/Mongolian-LLM-Benchmark</code></td><td class="num">2026-05-25</td><td>몽골어 객관식 시험 — <b>번역기·검문 성적을 재는 자</b></td></tr>
+      <tr><td><code>Asakuu/mongolian-mcq-dataset</code></td><td class="num">2026-05-21</td><td>몽골어 객관식 문항</td></tr>
+      <tr><td><code>suwanpan/mongolian-script-text</code></td><td class="num">2026-08-21</td><td>몽골 문자 글 — 간판·전통 표기 쪽</td></tr>
+      <tr><td><code>onlysainaa/common-voice-…-24.0-mongolian</code></td><td class="num">2026-01-21</td><td>몽골어 낭독 소리(Common Voice 24판)</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3>⑪ 오늘 뜨는 큰 모델들 — 참고만 <span class="pill grey">이 기계 밖</span></h3>
+  <p>창고에서 지금 가장 활발한 것들을 훑었다(<code>Qwen3.8</code> · <code>GLM-5.3-Flash</code> · <code>Kimi-K3</code> · <code>DeepSeek-V4</code> 계열). <b>전부 이 노트북 밖</b>이고, 우리는 이런 급을 이미 <b>돈 내는 통로</b>로 쓰고 있다. 여기서 가져올 것은 없다 — <b>「안 가져온다」가 오늘의 답</b>이다.</p>
+  <p class="hint">적어 두는 까닭: 다음에 같은 질문이 왔을 때 다시 뒤지지 않기 위해서다.</p>
+</div>
+
+<div class="card">
+  <h3>⑫ 소리 만드는 것의 새 판들 <span class="pill grey">지켜보기</span></h3>
+  <p>우리 정본 둘(<code>Qwen3-TTS</code> 한국어 · <code>k2-fsa/OmniVoice</code> 몽골어)은 <b>지금도 창고 상위에 있다</b> — 09-01 선택이 하루 만에 낡지 않았다. 곁에 새로 오른 것 셋만 적어 둔다: <code>openbmb/VoxCPM2</code>(좋아요 <span class="num">1,564</span>) · <code>fishaudio/s2-pro</code>(<span class="num">1,321</span>) · <code>ResembleAI/chatterbox</code>(<b>남의 서버가 대신 돌려준다</b> — fal-ai·replicate·deepinfra 셋).</p>
+  <p class="hint">🚫 지금 바꾸지 않는다. 유호님이 09-01 에 「둘 다 너무 좋은데?」로 정본을 세우셨고, 바꿀 근거(더 나은 소리)를 <b>안 재봤다</b>. 감수자가 오는 10~11월에 <b>한 번에</b> 비교한다.</p>
+</div>
+
+<h2 id="s3"><span class="n">§3</span>없는 것 — 다시 안 뒤지게</h2>
+
+<p>창고에 <b>없다</b>고 확인한 것들이다. 「안 찾아봤다」가 아니라 「찾았는데 없다」다.</p>
+
+<div class="tbl">
+<table>
+  <thead><tr><th>찾은 것</th><th>결과</th><th>그래서</th></tr></thead>
+  <tbody>
+    <tr><td><b>한국어 배우는 사람의 발음 자료</b></td><td class="v fail num">0건</td><td>🔴 <b>어제와 같다.</b> 우리가 모으는 몽골 학생 소리가 <b>세상에 없는 자료</b>라는 뜻이다 — 이건 약점이 아니라 <b>해자</b>다</td></tr>
+    <tr><td><b>토픽 자료</b></td><td class="v fail num">1건</td><td><code>JihoEum/topik2</code> 하나 · 2023년 · 내려받은 사람 <span class="num">23</span>. 사실상 없는 것과 같다</td></tr>
+    <tr><td>한국어 문법 고쳐주는 것</td><td class="v fail num">0건</td><td>학생 작문 첨삭은 <b>지금 쓰는 통로</b>가 계속 진다</td></tr>
+    <tr><td>글 난이도를 등급으로 매기는 것</td><td class="v fail">영어 전용</td><td>걸린 것 열 개가 <b>전부 영어</b>. 한국어 급수 판정은 우리 자(급수 커버리지)가 계속 진다</td></tr>
+    <tr><td>입모양 맞추기(립싱크)</td><td class="v fail">사실상 없음</td><td>최고가 <span class="num">81</span>회 내려받기 — §2-⑨</td></tr>
+    <tr><td>한국어 표준발음 자동 변환</td><td class="v cond">창고 밖</td><td>걸린 <code>charsiu/g2p_multilingual…</code> 은 <b>2022년 8월</b> 판이고 카드에 언어 목록이 <b>없다</b>. 한국어는 창고 밖 도구(<code>g2pK</code>)가 정본 — 어제 표의 「표준 발음」 열을 자동으로 채우려면 그쪽이다</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="s4"><span class="n">§4</span>유호님 픽 — 넷</h2>
+
+<div class="card">
+  <h3>㉠ 직통 창구를 붙일까 <span class="pill sub">권함</span></h3>
+  <p>붙이는 값이 크고 <b>돈이 0원</b>이며 되돌리기도 쉽다(설정에서 빼면 끝). 유호님 손은 한 자리 — <code>huggingface.co/settings/mcp</code> 를 열고 클라이언트를 고르면 붙일 글귀가 나온다. <b>화면을 제가 못 봤으니 여실 때 같이 봅니다.</b></p>
+</div>
+<div class="card">
+  <h3>㉡ 남의 컴퓨터로 밤 굽기를 한 번 재볼까 <span class="pill api">돈 든다</span></h3>
+  <p>어제 §4-⑤ 와 같은 항목인데, ㉠ 을 붙이면 <b>세션 안에서</b> 부를 수 있다. 크레딧 $2 안에서 <b>밤 사슬 한 마디만</b> — 「되나」만 본다. 구독을 끊으실 거면 <b>끊기 전</b>에 해야 그 $2 가 값을 한다.</p>
+</div>
+<div class="card">
+  <h3>㉢ 낱말 시각 자를 바꿀까 <span class="pill win">기계 몫</span></h3>
+  <p>어제 올린 <code>Qwen3-ForcedAligner</code> 대신 <b>몽골어까지 되는 MMS 판</b>으로(§2-②). 둘 다 아직 <b>안 돌려봤으니</b> 첫 실학생 소리 때 <b>나란히</b> 재고 그때 고르는 것도 길이다 — 어느 쪽이든 지금 손해가 없다.</p>
+</div>
+<div class="card">
+  <h3>㉣ 한↔몽 번역기를 내려받아 재볼까 <span class="pill win">3.83GB</span></h3>
+  <p>감수자가 오기 전 몽골어 초벌·되번역 대조를 공짜로 만드는 자리(§2-③). 램 여유가 <span class="num">1.1GB</span>인 지금은 <b>굽기와 같이 못 돌린다</b> — 밤 사슬이 쉬는 때를 골라야 한다.</p>
+</div>
+
+<h2 id="s5"><span class="n">§5</span>못 잰 것 — 「없다」가 아니라 「안 재봤다」</h2>
+<ul>
+  <li>열둘 중 <b>실제로 돌려본 것은 0개</b>다. 오늘 잰 것은 ⓐ 창구가 응답하는가 ⓑ 크기·언어·라이선스가 카드에 무엇으로 적혀 있는가 — <b>여기까지다.</b></li>
+  <li>직통 창구의 <b>세 도구</b>(작업·모래상자·쓰기)는 유호님 설정 화면을 못 봐서 <b>켜져 있는지조차 모른다.</b></li>
+  <li>효과음 모델의 <code>other</code> 라이선스 조건 — 열어 읽지 않았다.</li>
+  <li>번역기·OCR 의 실제 품질, 누끼의 펠트 자산에서의 성적.</li>
+  <li>어제 남은 것들은 그대로다 — 몽골 학생 소리에서의 성적(학생 소리 0개) · 발음본보기 「?」 셋(유호님 귀) · 구독 해지 화면 문구.</li>
+</ul>
+
+<h2 id="s6"><span class="n">§6</span>용어</h2>
+<dl class="terms">
+  <dt>직통 창구</dt><dd>세션이 밖의 도구를 직접 부르게 하는 규약(MCP). 붙이면 「검색해줘」가 도구 호출 한 번이 된다.</dd>
+  <dt>모델 카드</dt><dd>모델마다 붙은 설명서. 크기·언어·라이선스가 여기 적힌다 — 오늘 잰 것 대부분이 이 카드다.</dd>
+  <dt>내려받은 사람 수</dt><dd>얼마나 쓰이는지의 자. 수백만이면 검증된 것, 수십이면 아무도 안 쓴 것.</dd>
+  <dt>남의 서버가 대신</dt><dd>내려받지 않고 부르기만 하는 통로. 그 모델을 누가 서빙해야만 된다.</dd>
+  <dt>gated</dt><dd>열쇠나 승인이 있어야 받을 수 있는 상태. <code>auto</code> 는 자동, <code>manual</code> 은 사람이 승인한다.</dd>
+  <dt>ONNX</dt><dd>모델을 가볍게 바꿔 담은 형식. 그래픽 카드에서 덜 무겁게 돈다.</dd>
+  <dt>B (파라미터)</dt><dd>모델 덩치. 1B ≈ 램 2~4GB 를 먹는다고 보면 대체로 맞는다.</dd>
+  <dt>임베딩</dt><dd>글의 뜻을 숫자 줄로 바꾸는 것. 두 글의 숫자가 가까우면 뜻이 비슷하다.</dd>
+</dl>
+
+<footer>
+  자 = 허깅페이스 창구 API(모델·자료·데모 검색 12축 · 모델 카드 원문) · <code>POST huggingface.co/mcp</code> 악수·도구 목록(계정 <code>q121235</code>) · 공식 문서 <code>docs/hub/agents-mcp</code>(09-03 조회) · 이 노트북 실측(램 15.4GB / 여유 1.1GB · Core Ultra X7 358H).
+  앞선 지면 = <code>docs/허깅페이스_정찰_2026-09-02.html</code>(소리 축 · 구독 판정) — <b>겹치는 항목은 여기 다시 안 적었다.</b> 2026-09-03.
+</footer>
+</div>
