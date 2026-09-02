@@ -5,9 +5,13 @@
  *
  * ■ 왜 있나 (유호 지시 2026-09-03)
  *   「지금 니가 구사하는게 이해가 안가거나 애매하게 말하는게 너무 많단말이지」
- *   그래서 hanlint(한국어 산문 검사기 · MIT · 딸린 것 0)를 들이고, 두 자리에 댄다:
- *     ① 내가 유호님께 내는 답      → .claude/hanlint/내답.toml
- *     ② 학부모·학생·강사가 읽는 글  → .claude/hanlint/대외문안.toml
+ *   그래서 hanlint(한국어 산문 검사기 · MIT · 딸린 것 0)를 들이고, 세 자리에 댄다:
+ *     ① 내가 유호님께 내는 답            → .claude/hanlint/내답.toml
+ *     ② 학부모·학생·강사가 «읽는» 산문    → .claude/hanlint/대외문안.toml
+ *     ③ 학부모·학생이 «보는» 홍보물       → .claude/hanlint/홍보물.toml
+ *   ②③ 을 가른 까닭(09-03 실측): 산문 자를 인쇄물·슬라이드에 대니 「짧은 문단」과 「문장형 제목」이
+ *   100건 넘게 걸렸는데 표본이 전부 «의도»였다. 자가 틀린 채 빨간 수를 내면 아무도 안 본다.
+ *   고르는 곳은 tools/lib/대외문안.js 의 `홍보물인가()` 하나다.
  *
  * ■ 이 도구가 «안» 하는 것 — 브랜드 말투 규칙과 겹치지 않는다
  *   금칙어·결핍 프레임·재촉·「주어는 사람인가」는 .claude/hooks/voice-guard.js 가 본다.
@@ -39,13 +43,18 @@ const 뿌리 = path.resolve(__dirname, '..');
 const 검사기 = path.join(뿌리, 'node_modules', 'hanlint', 'bin', 'hanlint.js');
 const 자 = {
   대외문안: path.join(뿌리, '.claude', 'hanlint', '대외문안.toml'),
+  홍보물: path.join(뿌리, '.claude', 'hanlint', '홍보물.toml'),
   내답: path.join(뿌리, '.claude', 'hanlint', '내답.toml'),
 };
 const 기준선파일 = path.join(뿌리, '.claude', 'hanlint', '대외문안.기준선.json');
 
 /* 대외 문안 목록은 tools/lib/대외문안.js 하나가 안다 — voice-guard 훅도 같은 것을 읽는다.
  * 🔴 여기에 목록을 베끼지 않는다(한 값을 두 곳이 알면 갈린다). */
-const { 파일들: 대외문안 } = require('./lib/대외문안.js');
+const { 파일들: 대외문안, 홍보물인가 } = require('./lib/대외문안.js');
+
+/* 파일마다 «맞는 자»를 고른다 — 홍보물과 산문은 다른 판정이다(까닭은 .claude/hanlint/홍보물.toml 머리말).
+ * 🔴 고르는 규칙은 tools/lib/대외문안.js 하나가 안다. 여기에 목록을 베끼지 않는다. */
+const 자고르기 = (파일) => (홍보물인가(파일) ? 자.홍보물 : 자.대외문안);
 
 function 있나() { return fs.existsSync(검사기); }
 
@@ -110,7 +119,7 @@ function 기준선읽기() {
 
 function 기준선뜨기() {
   const 지문들 = [];
-  for (const f of 대외문안) for (const d of 재기(f, 자.대외문안).지적) 지문들.push(지문(f, d));
+  for (const f of 대외문안) for (const d of 재기(f, 자고르기(f)).지적) 지문들.push(지문(f, d));
   fs.mkdirSync(path.dirname(기준선파일), { recursive: true });
   fs.writeFileSync(기준선파일, JSON.stringify({
     뜬날: new Date().toISOString().slice(0, 10),
@@ -126,7 +135,7 @@ function 대외문안검사({ 전량 = false } = {}) {
   let 합 = 0, 잠긴수 = 0;
   const 규칙별 = new Map();
   for (const f of 대외문안) {
-    const r = 재기(f, 자.대외문안);
+    const r = 재기(f, 자고르기(f));
     if (r.없음) { console.log(`   (없다) ${f}`); continue; }
     const 새것 = r.지적.filter(d => { if (잠금 && 잠금.has(지문(f, d))) { 잠긴수++; return false; } return true; });
     if (!새것.length) continue;
@@ -188,7 +197,7 @@ const 파일들 = 인자.filter(a => !a.startsWith('--'));
 if (파일들.length) {
   let 합 = 0;
   for (const f of 파일들) {
-    const r = 재기(f, 자.대외문안);
+    const r = 재기(f, 자고르기(f));
     if (r.없음) { console.log(`(없다) ${f}`); continue; }
     console.log(`\n── ${f}  ${r.지적.length}건`);
     for (const d of r.지적) {
