@@ -2087,11 +2087,26 @@ function matchStudentsByNameClass_(students, name, cls) {
 //   으로 기록 — 소비처 3곳(반 브리핑 errByCls·수업 전 메일 errByClass·aiWeakMap_)이 전부 sid 공란을 스킵하므로
 //   화면·메일 오염 0, 관리자 메일이 복구 경로(H열 '미매칭' 지우고 sid 채우면 다음 계산부터 반영)를 안내한다.
 function sweepTeacherMemoForm_(ss) {
-  const src = ss.getSheetByName('약점메모폼_응답');
+  /* [v9.299] 이름이 아니라 «폼 연결»로 찾는다 — 09-03 라이브에서 이 통로가 끊겨 있었다.
+   *   app_state 약점메모폼ID 가 가리키는 폼은 `약점메모폼_응답_0724_2032` 에 쓰는데 여기서는
+   *   `약점메모폼_응답` 을 열고 있었다(7/24 폼 두 번 만들기의 잔해). 까닭·자는 `폼응답탭_` 머리에. */
+  let 메모폼ID = '';
+  try { 메모폼ID = String((getState(ensureSheet(ss, 'app_state', ['key', 'value']), '약점메모폼ID') || {}).val || '').trim(); } catch (eF) {}
+  const src = 폼응답탭_(ss, 메모폼ID, '약점메모폼_응답');
   if (!src || src.getLastRow() < 2) return;
   const props = PropertiesService.getScriptProperties();
   const last = src.getLastRow();
-  const from = Number(props.getProperty('약점메모폼_포인터')) || 1;
+  /* [v9.299 · codex 배포검수 P1] 포인터는 «어느 탭을 어디까지 읽었나»다 — 탭이 갈리면 그 수가 뜻을 잃는다.
+   *   구 탭에서 5까지 읽어 포인터=5 인 채 새 탭(머리글+1행 · last=2)으로 갈아타면 바로 아래 클램프가
+   *   포인터를 2로 내리고 return 해 **그 1행을 영원히 안 읽는다**(다음 실행은 from>=last 로 또 return).
+   *   위 `폼응답탭_` 이 탭을 갈아탈 수 있게 만든 순간 생긴 자리라 같은 판에서 함께 닫는다.
+   *   ⇒ 읽은 탭 이름을 함께 적고, 갈렸으면 **새 탭을 처음부터** 읽는다(새 탭은 아직 한 줄도 안 읽었다). */
+  const 읽은탭키 = '약점메모폼_포인터탭';
+  const 지금탭 = src.getName();
+  const 이전탭 = props.getProperty(읽은탭키) || '';
+  let from = Number(props.getProperty('약점메모폼_포인터')) || 1;
+  if (이전탭 && 이전탭 !== 지금탭) from = 1;
+  props.setProperty(읽은탭키, 지금탭);
   if (from > last) { props.setProperty('약점메모폼_포인터', String(last)); return; }
   if (from >= last) return;
   const tz = ss.getSpreadsheetTimeZone();

@@ -1421,6 +1421,26 @@ function preflightGlide() {
       : 'ℹ 데모 모드 OFF — 전 화면을 실물로 시연하려면 seedDemoData() 1회(제거는 clearDemoData)');
   }
 
+  /* 7.6) [v9.299] 폼↔응답 탭 대조 — 「폼이 쓰는 탭」과 「코드가 읽는 탭」이 갈라졌나.
+   *   왜 여기 있나: 갈라져도 **고장 소리가 안 난다**(응답이 조용히 안 읽힐 뿐). 09-03 라이브에서
+   *   강사 약점 메모가 그 상태였고, 그건 사람이 폼을 열어 「Sheets에서 보기」를 눌러야만 보였다.
+   *   ⇒ 사람 눈에 기대지 않고 조립 점검이 매번 센다. 읽기 전용이라 눌러서 손해가 없다. */
+  {
+    try {
+      const 대조 = 폼탭대조_(ss);
+      if (대조.갈림.length) {
+        대조.갈림.forEach(function (g) {
+          warn('폼↔탭 갈림 — ' + g.키 + ' 의 폼은 「' + g.실제 + '」에 쓰는데 코드는 「' + g.이름 +
+            '」을 읽습니다(그 통로 응답이 조용히 안 읽힙니다). 처방: 「' + g.실제 + '」의 이름을 「' +
+            g.이름 + '」으로 바꾸거나, 읽는 쪽을 폼응답탭_ 로 옮기세요');
+        });
+      } else {
+        ok('폼↔탭 대조 ' + (대조.정상 + 대조.미생성 + 대조.확인불가) + '짝 = 정상 ' + 대조.정상 +
+          ' + 아직 안 만든 폼 ' + 대조.미생성 + ' + 폼은 있는데 응답 탭 없음 ' + 대조.확인불가);
+      }
+    } catch (eFT) { warn('폼↔탭 대조 실패(안 쟀다 · 「없다」가 아니다): ' + eFT.message); }
+  }
+
   // 8) 실측 매니페스트 갱신 + 요약
   if (ensureBudget('system_manifest 실측')) { try { buildSystemManifest(); ok('system_manifest 실측 갱신'); } catch (e) { warn('manifest 실패: ' + e.message); } }
   if (!pausedP) clearContinue_('preflightGlide'); // [v9.47] 완주 시 잔여 이어하기 트리거 청소
