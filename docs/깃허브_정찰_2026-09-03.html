@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>깃허브 정찰 2026-09-03</title>
 <!-- 조립 규약: 색은 docs/디자인_토큰.json(2027 킷) · 서체는 docs/브랜드_폰트_정본.md.
-     09-01 정찰(docs/깃허브_정찰_0901.html)은 「최근 올라온 것」 축이었다. 이 지면은 축이 다르다 — 「지금 서 있는 것 중 우리 자의 구멍에 맞는 것」. -->
+     09-01 정찰(docs/깃허브_정찰_0901.html)은 「최근 올라온 것」 축이었다. 이 지면은 「지금 서 있는 것 중 우리 자의 구멍」 축이고,
+     유호 지시 09-03 「전부 해보자」로 실제로 전부 돌린 결과까지 담는다. 낮에 쓴 판의 틀린 곳은 §0 에 철회로 남겼다. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
@@ -55,6 +56,8 @@
   .sub{color:var(--sub);font-size:14px;margin:0;max-width:66ch}
   .lead{background:var(--wash);border-left:var(--숨) solid var(--coral);padding:var(--칸) var(--단);margin:var(--단) 0 var(--켜);border-radius:0 8px 8px 0}
   .lead p{margin:0 0 var(--틈)} .lead p:last-child{margin:0} .lead b{font-weight:800}
+  .recant{background:var(--note);border-left:var(--숨) solid var(--line2);padding:var(--칸) var(--단);margin:var(--단) 0;border-radius:0 8px 8px 0}
+  .recant p:last-child{margin:0}
   h2{font-size:21px;font-weight:800;line-height:1.24;margin:var(--장) 0 var(--틈);padding-bottom:var(--틈);border-bottom:1px solid var(--line);text-wrap:balance}
   h2 .n{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--sub);margin-right:var(--틈)}
   h3{font-size:16.5px;font-weight:800;line-height:1.3;margin:var(--단) 0 var(--숨)}
@@ -67,7 +70,7 @@
   .card h3{margin-top:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--틈)}
   .card p{margin-bottom:var(--틈)}
   .repo{font-family:var(--mono);font-size:12.5px;color:var(--sub);margin:0 0 var(--참);word-break:break-all}
-  .row{display:grid;grid-template-columns:96px 1fr;gap:var(--숨) var(--참);font-size:14.5px;margin-top:var(--틈)}
+  .row{display:grid;grid-template-columns:100px 1fr;gap:var(--숨) var(--참);font-size:14.5px;margin-top:var(--틈)}
   .k{color:var(--sub);font-weight:700;font-size:13px;padding-top:2px}
   .pill{display:inline-block;font-family:var(--mono);font-size:11.5px;font-weight:500;padding:1px 8px;border-radius:999px;white-space:nowrap;vertical-align:middle;line-height:1.6}
   .pill.star{background:var(--note);color:var(--sub2)}
@@ -79,13 +82,14 @@
   .note{background:var(--note);border-radius:6px;padding:var(--참) var(--칸);margin:var(--참) 0;font-size:14px}
   .note p:last-child{margin-bottom:0}
   .quote{border-left:3px solid var(--line2);padding:2px 0 2px var(--칸);margin:var(--참) 0;color:var(--sub2);font-size:14px}
-  .quote code{background:none;padding:0}
   .tbl{overflow-x:auto;margin:var(--참) 0 var(--숨)}
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{text-align:left;padding:var(--틈) var(--참);border-bottom:1px solid var(--line);vertical-align:top}
   th{color:var(--sub);font-size:12.5px;font-weight:700;white-space:nowrap}
   .num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
   code{font-family:var(--mono);background:var(--note);padding:1px 6px;border-radius:4px;font-size:12.5px;color:var(--sub2);word-break:break-all}
+  pre{font-family:var(--mono);background:var(--note);padding:var(--참) var(--칸);border-radius:6px;font-size:13px;overflow-x:auto;margin:var(--참) 0;line-height:1.6}
+  pre code{background:none;padding:0}
   a{color:var(--lapis-text);text-decoration-thickness:1px;text-underline-offset:2px}
   a:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
   .toc{display:flex;flex-wrap:wrap;gap:var(--틈);margin:var(--칸) 0 0;padding:0;list-style:none;font-size:13.5px}
@@ -101,208 +105,174 @@
 <div class="wrap">
 
 <header>
-  <p class="eyebrow">SYNK · 정찰 지면 · 2026-09-03</p>
-  <h1>깃허브 정찰 — 우리 「자」의 구멍에 맞는 것</h1>
-  <p class="sub">이틀 전 정찰(<code>docs/깃허브_정찰_0901.html</code>)은 「최근 올라온 것」을 훑어 목소리 둘로 끝났다. 이 지면은 축이 다르다 — <b>지금 우리가 쓰는 자가 스스로 못 한다고 적어 둔 자리</b>를 먼저 세우고, 거기에 맞는 물건을 찾았다.</p>
+  <p class="eyebrow">SYNK · 정찰 + 실행 지면 · 2026-09-03</p>
+  <h1>깃허브 정찰 — 그리고 전부 해 본 결과</h1>
+  <p class="sub">낮에 골라 놓은 일곱 갈래를 유호님 지시(「전부 해보자」)로 <b>실제로 다 돌렸다</b>. 소스만 읽고 낸 판정 둘이 실물 앞에서 뒤집혔고, 그 대신 <b>고칠 자리 하나</b>가 진짜로 나와서 고쳤다.</p>
   <ul class="toc">
-    <li><a href="#결론">결론</a></li><li><a href="#하나">① 발음 자의 구멍</a></li><li><a href="#둘">② 이미 쥔 것의 안 켠 부분</a></li>
-    <li><a href="#셋">③ 스킬 보급소</a></li><li><a href="#넷">④ 자리가 아직 아닌 것</a></li>
-    <li><a href="#다섯">⑤ 우리 쪽에서 고칠 것</a></li><li><a href="#여섯">⑥ 「없다」와 「안 재봤다」</a></li><li><a href="#잰법">무엇으로 쟀나</a></li>
+    <li><a href="#철회">0. 철회</a></li><li><a href="#결론">결론</a></li><li><a href="#하나">① 발음 자</a></li>
+    <li><a href="#둘">② 엔진 타입 검사</a></li><li><a href="#셋">③ 소리 맞춰 붙이기</a></li>
+    <li><a href="#넷">④ 문 앞에서 막힌 것</a></li><li><a href="#다섯">⑤ 남은 것 · 안 재봤다</a></li><li><a href="#잰법">무엇으로 쟀나</a></li>
   </ul>
 </header>
 
-<div class="lead" id="결론">
-  <p><b>결론.</b> 열여섯 갈래를 뒤져 <b>지금 붙일 것 하나</b>, <b>때가 되면 붙일 것 셋</b>, <b>고를 자리 다섯</b>을 골랐다. 나머지는 「없다」로 닫혔다.</p>
-  <p>가장 큰 소득은 <b>es-hangul</b> 하나다. 우리 <code>tools/발음밀도.js</code> 가 머리말에 스스로 <b>「이 수는 하한이다」</b>라고 적어 둔 그 자리를, 표준 발음법 조항을 하나씩 함수로 짜고 조항마다 시험을 붙여 둔 물건이 정확히 메운다. 이 자의 수가 발음 규격 §2-1 의 낱말 11 배치 근거라, 자가 바뀌면 근거를 다시 재게 된다.</p>
-  <p>워크트리·다세션 쪽은 <b>붙일 것이 없다</b>가 답이었다 — 이미 우리 자작 장치가 같은 일을 하고, 남의 것보다 최신이다. 이건 실패가 아니라 세어 본 결과다.</p>
+<div class="recant" id="철회">
+  <p><b>0. 먼저 철회합니다.</b> 이 지면의 낮 판에서 제가 <b>「우리 자가 아예 안 세는 규칙 넷」</b>이라고 적었습니다 — ㅎ 섞임·구개음화·유음화·ㄴ덧남. <b>틀렸습니다.</b></p>
+  <p><code>tools/발음밀도.js</code> 의 <b>머리말만 읽고 본문을 안 읽었습니다.</b> 본문을 여니 갈래가 일곱으로 이미 서 있고(겹받침·연음·비음화·유음화·격음화·경음화·구개음화) 그중 셋을 <b>다 세고 있었습니다.</b> 실제로 못 세던 것은 아래 ①에서 실측으로 찾아낸 <b>한 자리</b>뿐이었습니다.</p>
 </div>
 
-<h2 id="하나"><span class="n">①</span> 지금 붙일 것 하나 — 발음 자의 구멍</h2>
-<p class="hint">우리 자가 「못 센다」고 스스로 적은 자리에, 그것을 세는 물건이 서 있다.</p>
+<div class="lead" id="결론">
+  <p><b>결론.</b> 일곱 갈래를 다 돌려 <b>고친 것 하나 · 되는 것 하나 · 문 앞에서 막힌 것 넷 · 값이 낮은 것 하나</b>로 갈렸다.</p>
+  <p><b>고친 것</b> — 우리 발음 자가 「않습니다」·「싫소」 같은 자리를 <b>0으로 세고 있었다.</b> es-hangul 을 옆에 대서 찾았고 고쳤다. 시험 7/7 · 발음 관련 전량 40/40 통과, 커밋 <code>a590751bd</code>.</p>
+  <p><b>뒤집힌 판정 둘</b> — ⓐ es-hangul 을 「정본으로 붙인다」고 했는데, 실제로 돌려 보니 <b>틀린 소리를 낸다</b>(「문장」을 [문짱]으로). 정본이 아니라 <b>가끔 대는 자</b>로만 쓴다. ⓑ 엔진 타입 검사가 결함 하나를 잡은 줄 알았는데 <b>거짓 경보</b>였다(다른 파일에 있는 함수를 못 찾은 것).</p>
+</div>
+
+<h2 id="하나"><span class="n">①</span> 발음 자 — 구멍 하나를 찾아서 메웠다</h2>
+<p class="hint">이번 일의 가장 큰 소득이다. 순서대로 적는다 — 중간에 자를 두 번 갈아 끼웠다.</p>
 
 <div class="card top">
-  <h3>es-hangul <span class="pill star">★1,870</span> <span class="pill now">지금 붙인다</span></h3>
-  <p class="repo">toss/es-hangul · 판 2.4.0(2026-07-09) · 마지막 손질 2026-08-27 · 만드는 곳 = 토스</p>
+  <h3>메운 자리 — 표준 발음법 12항 4호 <span class="pill now">고쳤다</span></h3>
+  <p>ㅎ 계열 <b>겹받침</b>(ㄶ·ㅀ) 뒤에 ㅅ 이 오면 된소리가 난다. 고치기 전까지 이 자리가 전부 <b>0</b>이었다:</p>
+  <pre><code>않습니다[안씀니다] · 많습니다[만씀니다] · 싫소[실쏘] · 옳소[올쏘] · 괜찮습니다[괜찬씀니다]</code></pre>
+  <p>ㅎ <b>홑</b>받침은 원래 잡혔다(「좋소[조쏘]」). <b>겹받침 둘만 빠져 있었다.</b> 학생이 초급에서 가장 많이 쓰는 「~않습니다」가 여기 걸린다.</p>
+  <div class="row">
+    <div class="k">경계도 못박음</div>
+    <div>「않고」는 <b>격음화</b>지 경음화가 아니다 — 새 규칙이 거기까지 번지지 않게 시험으로 묶었다.</div>
+    <div class="k">잰 것</div>
+    <div><code>node --test tests/발음밀도.test.js</code> <b>7/7</b> · 발음 관련 넷 전량 <b>40/40</b></div>
+    <div class="k">규격에는</div>
+    <div>§2-1 의 밀도 수는 <b>아직 안 바뀐다</b> — TOPIK 제83회 지문에 이 자리가 있었는지 <b>안 재봤다</b>(지문 파일이 저장소 밖). 다시 재면 경음화가 늘 수 있고, 그러면 「경음화 씨앗 +2」 판정의 근거도 세진다.</div>
+  </div>
+</div>
 
-  <p><b>무엇인가.</b> 한글을 다루는 자바스크립트 꾸러미다. 그중 우리에게 값이 있는 것은 <code>standardizePronunciation</code> — <b>글자를 「소리 나는 대로」로 바꿔 주는</b> 부분이다. 「같이」를 넣으면 「가치」가 나온다.</p>
+<div class="card">
+  <h3>es-hangul 판정이 뒤집혔다 <span class="pill no">정본 탈락</span> <span class="pill later">가끔 대는 자로는 유지</span></h3>
+  <p class="repo">toss/es-hangul ★1,870 · 2.4.0 · 스크래치패드에 설치해 실제로 돌림</p>
 
-  <p><b>왜 믿을 만한가.</b> 남이 대충 짠 게 아니다. 국어의 <b>표준 발음법 조항을 하나씩 따로 파일로</b> 짰고, 파일마다 시험(<code>.spec.ts</code>)이 붙어 있다. 소스에서 직접 센 목록이다:</p>
+  <p><b>먼저 좋은 소식.</b> 우리 자를 <b>352줄</b>의 우리 문안에 대고 나란히 돌린 결과:</p>
+  <pre><code>합계 352 = 일치 263 + 놓침 33 + <b>헛셈 0</b> + 둘 다 0건 56
+총량: 우리 자 963건 · es-hangul 이 바꾼 글자 1,711자</code></pre>
+  <p><b>헛셈 0</b> 이 이 검사에서 가장 값 있는 수다 — 우리 자가 <b>없는 것을 있다고 세지 않는다</b>는 뜻이다.</p>
 
+  <p><b>그리고 나쁜 소식.</b> 놓친 33건을 갈라 보니 <b>대부분 es-hangul 이 틀린 것</b>이었다. 직접 넣어 본 것:</p>
   <div class="tbl">
   <table>
-    <thead><tr><th>파일</th><th>조항</th><th>무슨 소리 바뀜인가</th><th>우리 자는?</th></tr></thead>
+    <thead><tr><th>넣은 것</th><th>es-hangul 이 낸 소리</th><th>실제 표준 발음</th></tr></thead>
     <tbody>
-      <tr><td class="num">transform9And10And11th</td><td class="num">9·10·11항</td><td>받침이 제 소리를 잃는 것</td><td class="v cond">일부</td></tr>
-      <tr><td class="num">transform12th</td><td class="num">12항</td><td>ㅎ 이 섞이는 것 (좋고 → 조코)</td><td class="v fail">안 센다</td></tr>
-      <tr><td class="num">transform13And14th</td><td class="num">13·14항</td><td>연음 (옷이 → 오시)</td><td class="v cond">어절 안만</td></tr>
-      <tr><td class="num">transform16th</td><td class="num">16항</td><td>자모 이름 (디귿이 → 디그시)</td><td class="v fail">안 센다</td></tr>
-      <tr><td class="num">transform17th</td><td class="num">17항</td><td>구개음화 (같이 → 가치)</td><td class="v fail">안 센다</td></tr>
-      <tr><td class="num">transform18th</td><td class="num">18항</td><td>비음화 (국물 → 궁물)</td><td class="v pass">센다</td></tr>
-      <tr><td class="num">transform19th</td><td class="num">19항</td><td>자음동화</td><td class="v cond">일부</td></tr>
-      <tr><td class="num">transform20th</td><td class="num">20항</td><td>유음화 (신라 → 실라)</td><td class="v fail">안 센다</td></tr>
-      <tr><td class="num">transformHardConversion</td><td>—</td><td>경음화 (학교 → 학꾜)</td><td class="v cond">필수 자리만</td></tr>
-      <tr><td class="num">transformNLAssimilation</td><td>—</td><td>ㄴ·ㄹ 이 덧나는 것 (색연필 → 생년필)</td><td class="v fail">안 센다</td></tr>
+      <tr><td>한국어를 공부해요</td><td class="v fail">한꾸거를 공부해요</td><td>한구거를 공부해요</td></tr>
+      <tr><td>선생님 한국</td><td class="v fail">선쌩님 한꾹</td><td>선생님 한국</td></tr>
+      <tr><td>우리 친구</td><td class="v fail">우리 친꾸</td><td>우리 친구</td></tr>
+      <tr><td>문장 만들기</td><td class="v fail">문짱 만뜰기</td><td>문장 만들기</td></tr>
+      <tr><td>단계</td><td class="v fail">단꼐</td><td>단계 / 단게</td></tr>
     </tbody>
   </table>
   </div>
+  <p><b>까닭.</b> 된소리 규칙 하나(24항)가 원래는 <b>「말의 줄기 + 꼬리」에만</b> 붙는 것인데(안고→안꼬), es-hangul 은 그것을 <b>이름씨와 띄어쓰기 너머까지</b> 밀어 붙인다. 그래서 「문장」이 [문짱]이 된다.</p>
+  <p class="v fail">⇒ 처음에 나온 「우리 자의 포착률 36.5%」라는 수는 <b>거짓</b>이었다. 못 본 219곳 중 대부분이 남의 오류였다.</p>
 
-  <p><b>조항을 코드에 그대로 적어 뒀다.</b> <code>transform13And14th.ts</code> 주석 원문:</p>
-  <div class="quote">제13항 - 홑받침이나 쌍받침이 모음으로 시작된 조사나 어미, 접미사와 결합되는 경우에는, 제 음가대로 뒤 음절 첫소리로 옮겨 발음한다.</div>
-
-  <p><b>우리 자리.</b> <code>tools/발음밀도.js</code> 머리말이 스스로 적은 한계 원문이다:</p>
-  <div class="quote">
-    · 표기 기준 판정이다 — 실제 발음은 낱말·문맥에 따라 예외가 있다<br>
-    · 경음화는 «필수 환경»(장애음 뒤)만 센다 … (과소 계상)<br>
-    · 연음은 «띄어쓰기 없는 자리»만 센다(어절 안) … (과소 계상)<br>
-    ⇒ 그러므로 이 수는 <b>하한</b>이다. 실제 밀도는 이보다 높다.
-  </div>
-
-  <div class="row">
-    <div class="k">무엇이 바뀌나</div>
-    <div>지금 자가 <b>아예 안 세는</b> 소리 규칙이 넷이다 — ㅎ 섞임 · 구개음화 · 유음화 · ㄴ덧남. 이 넷이 들어오면 발음 규격 §2-1 의 밀도 수(TOPIK 3축 55건 · 경음화 17 = 31%)가 <b>다시 계산된다</b>. 낱말 11 을 그 수로 골랐으니, 근거를 다시 재는 일이 된다.</div>
-    <div class="k">덤</div>
-    <div>talk 앱(Expo·타입스크립트)에 바로 붙는 것들 — <code>getChoseong</code>(초성만 뽑기 = ㅅㅋㄹ 로 검색) · <code>josa</code>(을/를·이/가 자동) · <code>disassemble</code>(자모 쪼개기 = 손글씨·타자 채점) · <code>romanize</code>(로마자).</div>
-    <div class="k">안 재봤다</div>
-    <div>우리 기계에 <b>안 깔아봤다</b>. 09-01 정찰은 후보를 전부 설치해 실제로 돌려 판정했는데, 이번은 소스를 읽은 데까지다. 붙이기 전에 우리 낱말 11 로 두 자를 <b>나란히 돌려 대조</b>하는 것이 다음 걸음이다.</div>
-  </div>
+  <p><b>그래서 어떻게 쓰나.</b> 정본으로는 못 쓴다. 하지만 <b>옆에 대는 자</b>로는 값이 있다 — 이번에 진짜 구멍 하나를 그렇게 찾았다. 저장소에는 안 넣었다(정본이 아니라서). 다시 세우는 법은 <code>docs/_ops/발음자_교차검사_2026-09-03.md</code> 에 적었다.</p>
 </div>
-
-<h2 id="둘"><span class="n">②</span> 이미 쥔 것의 안 켠 부분</h2>
-<p class="hint">새로 들이는 게 아니라, 쓰고 있는 물건에 스위치가 하나 더 있는 경우다.</p>
 
 <div class="card">
-  <h3>FSRS 최적화기 <span class="pill star">★111</span> <span class="pill later">학생 생기면</span></h3>
-  <p class="repo">open-spaced-repetition/fsrs-optimizer · 파이썬 · 마지막 손질 2026-08-06</p>
-  <p><b>우리는 이미 쓰고 있다.</b> talk 앱 <code>package.json</code> 에 <code>ts-fsrs ^5.4.1</code> 이 들어 있다. 최신은 <code>v5.4.2</code>(어제 나옴)이고 <code>^</code> 표시라 <code>npm install</code> 때 알아서 따라간다 — 손댈 것 없다.</p>
-  <p><b>안 켠 부분.</b> 복습 간격을 정하는 숫자들(파라미터)이 지금은 <b>남의 학습자 평균값</b>이다. 최적화기는 <b>우리 학생들이 실제로 맞히고 틀린 기록</b>으로 그 숫자를 다시 학습시킨다 — 몽골 학생이 한국어를 잊는 속도에 맞춘 간격이 나온다.</p>
-  <p><b>지금은 못 한다.</b> 재료(복습 기록)가 0이다. 개원해서 기록이 쌓인 뒤에 오는 자리다.</p>
+  <h3>가는 길에 자를 두 번 갈아 끼웠다 <span class="pill pop">기록</span></h3>
+  <p>남기는 까닭은 다음에 같은 함정을 안 밟기 위해서다.</p>
+  <ul>
+    <li><b>1회차</b> — 두 글자 <b>조각</b>(「력입」·「식입」·「작일」)을 es-hangul 에 넣었다. 낱말이 아닌 것에 규칙이 돌아 결과가 통째로 못 쓰게 됐다. ⛔ <b>es-hangul 은 낱말·문장 단위로만 넣는다.</b></li>
+    <li><b>2회차</b> — 「연음인가 덧남인가」를 뒤 글자 첫소리로 갈랐더니 「일이→이리」 같은 정상 연음이 덧남으로 분류됐다. 자를 <b>「앞 글자 받침이 사라졌는가」</b>로 바꿔서 풀었다.</li>
+  </ul>
+</div>
+
+<h2 id="둘"><span class="n">②</span> 엔진 타입 검사 — 파일을 한 글자도 안 고치고 돌렸다</h2>
+<p class="hint">엔진 여덟 벌에 형 표시가 0개라 「올리기 전에 잡아주는 자가 없다」고 적었던 자리다. 실제로 검사를 붙여 봤다.</p>
+
+<div class="card">
+  <h3>145건 나왔고, 진짜 결함은 <b>0</b>이었다 <span class="pill later">값은 다른 데 있다</span></h3>
+  <p><b>어떻게 붙였나.</b> 엔진 파일에 <code>// @ts-check</code> 를 넣지 <b>않았다</b>. 설정 파일 하나만 스크래치패드에 두고 저장소 파일을 가리켰다 — <b>배포집합을 한 바이트도 안 건드린다.</b> 검수 도장이 무효화되지 않는다.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>무엇</th><th class="num">건</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td>시트에서 읽은 값으로 셈하기</td><td class="num">75</td><td class="v cond">위험 후보 — 시트 칸에는 글자도 날짜도 온다</td></tr>
+      <tr><td>없는 속성 꺼내기</td><td class="num">42</td><td class="v cond">함수에 붙인 기억 칸(<code>_c</code>·<code>_t</code>) — 일부러 그런 것</td></tr>
+      <tr><td>인자 형이 안 맞음</td><td class="num">9</td><td class="v cond">위험 후보(날짜를 숫자 자리에)</td></tr>
+      <tr><td>항상 거짓인 비교</td><td class="num">6</td><td class="v pass">거짓 경보 — 켜고 끄는 스위치라 지금 값이 하나로 고정</td></tr>
+      <tr><td>이름을 못 찾음</td><td class="num">1</td><td class="v pass">파일 하나만 볼 때 143건이었다가 전부 넣으니 1건</td></tr>
+      <tr><td>주석 문법 오류</td><td class="num">3</td><td class="v fail">🔴 <b>진짜</b> — <code>교재연동.js:701</code> 한 곳이 세 건을 만든다</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><b>가장 크게 뜬 경보가 거짓이었다.</b> 「<code>prefillTemplateOf_</code> 를 못 찾는다」 — 없는 함수를 부르는 줄 알았는데 <code>엔진_폼리포트.js:698</code> 에 있었다. Apps Script 는 파일이 달라도 한 살림이라 정상이다.</p>
+  <p><b>남는 값.</b> 결함 사냥용으로는 값이 낮다. 대신 <b>주석과 코드가 어긋난 것</b>을 잡는다 — <code>교재연동.js:701</code> 의 주석 한 줄이 잘못 쓰여 있어 도구가 「필수 칸이 빠졌다」고 오해한다. 고치면 세 건이 같이 사라진다. <b>다음 배포 창에 함께 처리할 자리</b>다(배포집합이라 지금 손대면 검수 도장이 갈린다).</p>
+</div>
+
+<h2 id="셋"><span class="n">③</span> 소리와 대본 맞춰 붙이기 — 된다</h2>
+
+<div class="card top">
+  <h3>echogarden <span class="pill star">★449</span> <span class="pill now">한국어로 실제 작동</span></h3>
+  <p class="repo">echogarden-project/echogarden v3.3.0 · 우리 기계에 설치해 우리 소리 파일로 돌림</p>
+  <p><b>무엇을 했나.</b> <code>docs/소리/</code> 에 있던 우리 문장 소리를 넣고 「잘했어요 오늘 정말 열심히 했네요」 대본과 맞춰 붙였다. <b>4.3초</b> 걸렸다.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>낱말</th><th class="num">시작</th><th class="num">끝</th><th class="num">길이</th></tr></thead>
+    <tbody>
+      <tr><td>잘했어요</td><td class="num">1.02s</td><td class="num">1.69s</td><td class="num">670ms</td></tr>
+      <tr><td>오늘</td><td class="num">1.69s</td><td class="num">1.79s</td><td class="num v fail">100ms</td></tr>
+      <tr><td>정말</td><td class="num">2.39s</td><td class="num">2.60s</td><td class="num">210ms</td></tr>
+      <tr><td>열심히</td><td class="num">2.62s</td><td class="num">3.18s</td><td class="num">560ms</td></tr>
+      <tr><td>했네요</td><td class="num">3.19s</td><td class="num">3.86s</td><td class="num">670ms</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><b>낱말만이 아니다.</b> 소리 하나하나(음소)까지 <b>39조각</b>으로 쪼개 시각을 냈다 — 「잘했어요」 = <code>tɕˈɐɫhɛs-ˌʌjo</code>. 발음 채점에 그대로 쓸 수 있는 재료다.</p>
+  <p class="v fail">⚠ <b>완벽하지 않다.</b> 「오늘」이 100ms 로 나왔는데 사람이 세 소리를 그 안에 낼 수 없다. <b>정렬이 밀렸다.</b> 쓰려면 이 오차를 재는 자가 따로 필요하다.</p>
   <div class="row">
-    <div class="k">되돌아올 방아쇠</div>
-    <div>첫 기수 복습 기록이 한 달치 쌓인 날</div>
+    <div class="k">되돌아올 자리</div>
+    <div>발음 채점을 열 때. 09-01 에 다른 후보가 한국어를 아예 지원 안 해 탈락한 그 빈칸이다.</div>
   </div>
 </div>
 
-<h2 id="셋"><span class="n">③</span> 고를 자리 — 스킬 보급소 다섯</h2>
-<p class="hint">우리에겐 이미 <code>skills-lock.json</code> 이 있다 — 남의 스킬을 지문(해시)으로 못 박아 들여오는 자작 장치다. 그러니 값은 「통째로 도입」이 아니라 <b>「거기서 골라 오기」</b>에 있다. 지금 잠긴 것은 <b>여섯 벌뿐</b>(last30days 1 · remotion 5).</p>
+<h2 id="넷"><span class="n">④</span> 문 앞에서 막힌 것 — 세어 본 결과다</h2>
 
 <div class="tbl">
 <table>
-  <thead><tr><th>보급소</th><th class="num">★</th><th class="num">마지막 손질</th><th>무엇이 있나</th></tr></thead>
+  <thead><tr><th>무엇</th><th>왜 못 하나</th></tr></thead>
   <tbody>
-    <tr><td class="num">anthropics/skills</td><td class="num">173,195</td><td class="num">2026-09-01</td><td>공식. 문서·표·PDF·발표물 만들기 등</td></tr>
-    <tr><td class="num">obra/superpowers</td><td class="num">280,740</td><td class="num">2026-08-31</td><td>가장 큰 스킬 묶음 + 별도 마켓플레이스</td></tr>
-    <tr><td class="num">addyosmani/agent-skills</td><td class="num">91,645</td><td class="num">2026-08-28</td><td>실무 공학 스킬</td></tr>
-    <tr><td class="num">hesreallyhim/awesome-claude-code</td><td class="num">53,378</td><td class="num">2026-09-02</td><td>스킬·훅·상태줄·도구 목록집</td></tr>
-    <tr><td class="num">trailofbits/skills-curated</td><td class="num">496</td><td class="num">2026-07-14</td><td>보안 검토 갈래(우리 <code>/security-review</code> 옆자리)</td></tr>
+    <tr><td><b>hangulize</b><br><span class="repo">외국어 이름 한글 표기</span></td><td class="v fail">우리 통로(npm)에 <b>판이 없다</b> — Go 로만 있다. 붙이려면 별도 서버를 세워야 한다.</td></tr>
+    <tr><td><b>FSRS 최적화기</b><br><span class="repo">복습 간격 숫자 다시 학습</span></td><td class="v fail">역시 npm 판이 없다(파이썬). <b>게다가 재료가 0</b> — 학생 복습 기록이 아직 없다.</td></tr>
+    <tr><td><b>워크트리 도구</b></td><td class="v fail">판정 유지 — 우리 자작 장치와 겹치고 남의 것은 일곱 달째 정지다.</td></tr>
+    <tr><td><b>스킬 하나 더 켜기</b></td><td class="v cond">공식 보급소에 19벌이 있고 우리에게 안 들어온 것 중 쓸 만한 건 <code>webapp-testing</code> 하나였는데, <b>이미 있는 브라우저 도구와 겹친다</b>. 안 켰다.</td></tr>
   </tbody>
 </table>
 </div>
 
-<div class="note">
-  <p><b>주의 하나.</b> 스킬은 켜 두면 <b>세션마다 자리를 차지</b>한다. 09-01 에 screenmap 을 걷어낸 까닭이 그거였다(「매 세션 토큰만 먹는다」). 그러니 「많이 켜기」가 아니라 <b>「하나 켜고 한 달 써 보기」</b>가 맞는 걸음이다.</p>
-</div>
-
-<h2 id="넷"><span class="n">④</span> 값은 있으나 아직 자리가 아닌 것</h2>
-
-<div class="card">
-  <h3>echogarden <span class="pill star">★449</span> <span class="pill later">발음 채점 때</span></h3>
-  <p class="repo">echogarden-project/echogarden · v3.3.0(2026-08-30) · Node.js · 100개 넘는 언어</p>
-  <p><b>무엇인가.</b> 소리와 대본을 <b>맞춰 붙인다</b>(강제 정렬). 「학생이 이 낱말을 몇 초 몇 밀리초에 말했다」를 낱말 단위로 낸다. 소리 만들기·받아쓰기·잡음 제거도 같이 있다.</p>
-  <p><b>왜 지금 보이나.</b> 09-01 에 발음 채점 후보(OpenPronounce)가 <b>한국어를 아예 지원 안 해</b> 탈락한 뒤, 그 자리가 비어 있다. 채점의 앞 단계 — <b>「어디를 말했나」를 먼저 찍는 일</b> — 을 이것이 한다. 찍힌 자리를 알아야 「연음이 나야 할 그 자리에서 났나」를 볼 수 있다.</p>
-  <p class="v fail">⚠ 한국어 정렬이 실제로 쓸 만한지는 <b>안 재봤다.</b></p>
-</div>
-
-<div class="card">
-  <h3>khaiii <span class="pill star">★1,450</span> <span class="pill later">밖에서 미리 재는 자리만</span></h3>
-  <p class="repo">kakao/khaiii · 마지막 손질 2026-07-17 · 카카오</p>
-  <p>한국어를 <b>낱말 단위로 쪼개고 품사를 붙이는</b> 물건(형태소 분석). 문법 채점·난이도 재기에 쓰는 재료다.</p>
-  <p class="v fail">엔진 안에서는 못 돈다 — Apps Script 는 C++ 을 못 부른다. 굽기처럼 <b>미리 밖에서 재서 표를 만들어 넣는</b> 자리에만 쓸 수 있다.</p>
-</div>
-
-<div class="card">
-  <h3>hangulize <span class="pill star">★250</span> <span class="pill later">학생 이름 표기 때</span></h3>
-  <p class="repo">hangulize/hangulize · Go · 마지막 손질 2026-05-13</p>
-  <p>외국어 이름을 <b>한글로 적는 규칙</b>. 몽골 학생 이름을 학원 서류·앱·수료증에 한글로 적을 때 사람마다 다르게 적히는 것을 막는다. 개원 실무에 되돌아올 자리다.</p>
-</div>
-
-<div class="card dead">
-  <h3>워크트리 관리 도구 둘 <span class="pill no">안 붙인다</span></h3>
-  <p class="repo">coderabbitai/git-worktree-runner ★1,759 (2026-08-27) · d-kuro/gwq ★469 (2026-05-02)</p>
-  <p>가지마다 작업방을 짓고 설정 파일을 옮겨 심는 일을 자동화한다. <b>우리 <code>EnterWorktree</code> 와 <code>docs/_ops/워크트리_규약.md</code> 가 이미 하는 일과 크게 겹친다.</b></p>
-  <p><b>결정타.</b> 우리의 진짜 함정은 「공용 원장(트랙·결정)은 손 절차로 못 지킨다」인데, 이 도구들은 <b>그 문제를 안 건드린다</b>. 겹치는 값을 위해 새 물건을 들일 이유가 없다.</p>
-</div>
-
-<div class="card dead">
-  <h3>다세션 관측 도구들 <span class="pill no">낡았다</span></h3>
-  <p class="repo">disler/…-multi-agent-observability ★1,529 · 마지막 손질 2026-02-08 · Continuous-Claude-v3 ★3,934 · 2026-01-26</p>
-  <p>여러 세션이 무엇을 하는지 실시간으로 보여 주는 것들이다. 별은 많지만 <b>둘 다 일곱 달째 손을 안 댔다.</b> 우리 훅(<code>session-end-ledger</code>·<code>turn-end-ledger</code>·<code>review-runs</code>)이 같은 일을 하고 <b>이번 주에도 손을 댔다</b>. 우리 것이 더 최신이다.</p>
-</div>
-
-<h2 id="다섯"><span class="n">⑤</span> 우리 쪽에서 고칠 것 — 남의 물건이 아니라 지금 우리</h2>
-<p class="hint">정찰을 돌다 우리 것을 재게 됐다. 셋 다 이 기계에서 센 수다.</p>
-
-<div class="card top">
-  <h3>㉠ 엔진 24,811줄에 형 표시가 <b>0개</b></h3>
-  <div class="row">
-    <div class="k">실측</div>
-    <div><code>grep -c "@param" Code.js 엔진_두뇌.js</code> → <b>0 · 0</b>. 엔진 여덟 벌 합계 <span class="num">24,811</span>줄.</div>
-    <div class="k">무슨 뜻</div>
-    <div>「이 칸에는 숫자가 들어온다 / 글자가 들어온다」를 적어 둔 곳이 <b>한 줄도 없다</b>. 그래서 「글자가 와야 할 자리에 빈 것이 왔다」 같은 실수를 <b>올리기 전에 잡아 주는 자가 없다</b> — 라이브에서 터져야 안다.</div>
-    <div class="k">고치는 법</div>
-    <div>파일 맨 위에 <code>// @ts-check</code> 한 줄, 함수 위에 <code>@param</code> 주석. <b>Apps Script 는 이걸 그냥 주석으로 보고 넘긴다</b> — 라이브는 한 글자도 안 바뀐다. 대신 편집기와 검사기가 미리 잡는다. 위험 없이 <b>한 파일씩</b> 늘릴 수 있다.</div>
-    <div class="k">첫 걸음</div>
-    <div>가장 자주 터지는 한 벌부터. 후보 = <code>엔진_수집.js</code>(1,342줄 · 가장 작고 데이터가 드나드는 곳).</div>
-  </div>
-</div>
-
-<div class="card">
-  <h3>㉡ 발음 자를 「하한」에서 「정본」으로</h3>
-  <p>①의 es-hangul 을 붙여 <code>tools/발음밀도.js</code> 와 <b>나란히 돌려 대조</b>한다. 두 수가 갈리는 낱말이 곧 지금 자가 놓치는 자리다. 갈리는 것이 없으면 그것도 답이다(자가 이미 충분하다).</p>
-</div>
-
-<div class="card">
-  <h3>㉢ 스킬 여섯 벌</h3>
-  <p><code>skills-lock.json</code> 에 잠긴 것이 여섯이다(외부 스킬 기준). 보급소 다섯이 서 있으니 <b>고를 자리가 넓다</b>. ③의 주의대로 한 번에 하나씩.</p>
-</div>
-
-<h2 id="여섯"><span class="n">⑥</span> 「없다」와 「안 재봤다」 — 다른 말이다</h2>
-
-<h3>세어 본 결과 「없다」</h3>
+<h2 id="다섯"><span class="n">⑤</span> 남은 것 · 안 재봤다</h2>
 <ul>
-  <li><b>최근에 새로 올라온 것</b> 중 우리 갈래 — 한국어 학습 최고 <span class="num">1★</span> · Claude Code 워크플로 최고 <span class="num">8★</span>. 값 0. <b>09-01 판정과 같다.</b></li>
-  <li><b>몽골어</b> — 이번에도 최고 <span class="num">3★</span>(giellalt/lang-khk · 할하 몽골어 분석기). 09-01 의 「전용 도구 사실상 0건」 그대로다.</li>
-  <li><b>Apps Script</b> — 별 높은 것은 여전히 전부 프록시 우회로다. 엔진에 쓸 것 0건. 09-01 판정 그대로. <span class="pill pop">단</span> 「오래 서 있는 것」 축에서는 셋이 있다 — <code>oshliaer/google-apps-script-awesome-list</code>(★2,066) · <code>googleworkspace/apps-script-oauth2</code>(★1,747 · 구글 공식) · <code>enuchi/React-Google-Apps-Script</code>(★1,527). 셋 다 지금 우리 엔진이 필요로 하는 것은 아니다.</li>
-</ul>
-
-<h3>정말 안 재본 것</h3>
-<ul>
-  <li>es-hangul 을 <b>우리 기계에 안 깔았다</b>. 소스를 읽은 데까지다.</li>
-  <li>echogarden 의 <b>한국어 정렬 품질</b>.</li>
-  <li><code>ts-fsrs</code> 안에 최적화기가 들어 있는지 — 저장소 구조가 달라 소스를 못 열었다(경로 404). 별도 파이썬 패키지가 있는 것은 확인했다.</li>
+  <li>🔴 <b>TOPIK 지문으로 다시 재기</b> — 이번에 고친 규칙이 규격 §2-1 의 수를 바꾸는지는 <b>안 재봤다</b>. 지문 파일이 저장소 밖이라 그 파일이 있는 자리에서 <code>node tools/발음밀도.js &lt;지문.txt&gt;</code> 를 한 번 더 돌리면 답이 나온다.</li>
+  <li><b>주석 문법 한 줄</b>(<code>교재연동.js:701</code>) — 배포집합이라 <b>다음 배포 창</b>에 함께.</li>
+  <li><b>echogarden 의 정렬 오차</b> — 「오늘 100ms」가 우리 소리 파일 탓인지 도구 탓인지 <b>안 갈랐다</b>.</li>
+  <li><b>시트 값 형 위험 84건</b> — 실제로 터지는지는 값에 달렸다. 재려면 실제 시트 값을 넣어 봐야 한다.</li>
 </ul>
 
 <h2 id="잰법">무엇으로 쟀나</h2>
 <ul>
-  <li><b>후보 찾기</b> — <code>gh search repos &lt;낱말&gt; --sort stars</code> 로 열여섯 갈래(fsrs · hangul · korean pronunciation · korean g2p · claude-code hooks · claude code plugin marketplace · agent skills · claude code subagents · git worktree manager · mutation testing javascript · google apps script · supabase rls testing · blender · remotion · expo supabase · mongolian language).</li>
-  <li><b>최근 것 따로</b> — <code>--created=&gt;2026-07-01</code> 로 한 번 더(위 ⑥의 「없다」가 여기서 나왔다).</li>
-  <li><b>실물 확인</b> — <code>gh api repos/{레포}</code> 로 별·마지막 손질 날짜·열린 이슈. <code>gh api repos/{레포}/contents/…</code> 로 소스 원문(es-hangul 조항 파일 목록과 주석은 여기서 그대로 옮겼다).</li>
-  <li><b>우리 쪽</b> — <code>wc -l</code>(엔진 줄 수) · <code>grep -c "@param"</code>(형 표시 수) · <code>package.json</code>(talk 앱이 이미 쥔 것) · <code>skills-lock.json</code>(잠긴 스킬 수).</li>
-  <li><b>중복 피하기</b> — 09-01 정찰 지면을 먼저 읽고 그때 탈락한 것(MOSS-TTS-Nano · screenmap · OpenPronounce)과 그때 「없다」로 닫은 갈래를 다시 올리지 않았다.</li>
+  <li><b>고른 것</b> — <code>gh search repos</code> 로 열여섯 갈래, <code>gh api repos/{레포}</code> 로 별·마지막 손질 날짜, <code>gh api …/contents</code> 로 소스 원문.</li>
+  <li><b>돌린 것</b> — es-hangul·echogarden·타입 검사기를 <b>전부 이 기계에 설치해 실제로 실행</b>했다(스크래치패드 · 저장소 밖).</li>
+  <li><b>대조</b> — 우리 문안 352줄을 두 자에 넣어 문장별로 「센 건수 vs 바뀐 글자」를 갈랐다. 낱말 43개로 한 번 더.</li>
+  <li><b>고친 뒤</b> — <code>node --test</code> 로 발음 관련 전량 40/40. 전체 회귀는 <code>tests/심문장부.test.js</code> 하나가 빨간데 그 파일에 「발음」 언급이 <b>0건</b>이라 이 변경과 접점이 없다(도구도 「이 적색은 못 믿을 수 있다」를 함께 냈다 — 다른 세션이 같은 시각에 파일을 고치고 있었다).</li>
 </ul>
-<p class="hint">별 수와 날짜는 <b>2026-09-03 시점 GitHub 값</b>이다. 「없다」는 세어 본 결과이고, 「안 재봤다」는 정말 안 재본 것이다.</p>
+<p class="hint">「없다」는 세어 본 결과이고, 「안 재봤다」는 정말 안 재본 것이다. 별 수와 날짜는 2026-09-03 시점 GitHub 값이다.</p>
 
 <h2>낱말</h2>
 <dl class="terms">
-  <dt>강제 정렬</dt><dd>소리와 대본을 맞춰, 어느 낱말이 몇 초에 나왔는지 찍는 일.</dd>
-  <dt>형태소 분석</dt><dd>문장을 뜻을 가진 가장 작은 조각으로 쪼개고 품사를 붙이는 일.</dd>
-  <dt>파라미터</dt><dd>복습 간격을 정하는 숫자들. 사람마다 잊는 속도가 달라 이 숫자도 달라진다.</dd>
-  <dt>지문(해시)</dt><dd>파일 내용을 짧은 글자열로 요약한 것. 한 글자만 달라져도 완전히 달라져서 「그때 그 파일이 맞나」를 가른다.</dd>
-  <dt>워크트리</dt><dd>한 저장소에서 여러 작업을 동시에 하려고 따로 낸 작업방.</dd>
-  <dt>구개음화·유음화</dt><dd>「같이 → 가치」, 「신라 → 실라」처럼 글자와 소리가 달라지는 규칙들.</dd>
+  <dt>겹받침</dt><dd>받침에 자음이 둘 든 것(ㄶ·ㅀ·ㄺ 등). 「않」·「싫」·「읽」.</dd>
+  <dt>된소리</dt><dd>ㄲ·ㄸ·ㅃ·ㅆ·ㅉ. 「학교」를 [학꾜]로 읽는 것.</dd>
+  <dt>맞춰 붙이기</dt><dd>소리와 대본을 견줘, 어느 낱말이 몇 초에 나왔는지 찍는 일.</dd>
+  <dt>음소</dt><dd>말소리의 가장 작은 조각. 낱말보다 잘다.</dd>
+  <dt>배포집합</dt><dd>라이브로 올라가는 파일들. 여기를 건드리면 검수 도장을 다시 받아야 한다.</dd>
+  <dt>스크래치패드</dt><dd>저장소 밖 임시 자리. 여기서 한 것은 저장소에 안 남는다.</dd>
 </dl>
 
 <footer>
-  SYNK LAB · 깃허브 정찰 2026-09-03 · 앞 정찰 = <code>docs/깃허브_정찰_0901.html</code>(최근 올라온 것 축 · TTS)
+  SYNK LAB · 깃허브 정찰 + 실행 2026-09-03 · 고침 커밋 <code>a590751bd</code> · 앞 정찰 = <code>docs/깃허브_정찰_0901.html</code>(최근 올라온 것 축 · 목소리)
 </footer>
 
 </div>
