@@ -2104,8 +2104,13 @@ function sweepTeacherMemoForm_(ss) {
   const 읽은탭키 = '약점메모폼_포인터탭';
   const 지금탭 = src.getName();
   const 이전탭 = props.getProperty(읽은탭키) || '';
-  let from = Number(props.getProperty('약점메모폼_포인터')) || 1;
-  if (이전탭 && 이전탭 !== 지금탭) from = 1;
+  /* [codex 재검수 P1] 포인터는 **표식이 지금 탭과 정확히 같을 때만** 믿는다.
+   *   첫 판(표식 없음)에 「이전탭 && …」로 가드하면 바로 그 순간을 통과시킨다 — 라이브에는 옛 탭
+   *   기준 숫자가 이미 있을 수 있고(포인터 5 · 새 탭 last 2), 그러면 아래 클램프가 그 행을 영원히
+   *   건너뛴다. 표식이 없으면 «어느 탭의 수인지 모른다» → 모르는 수는 안 쓴다.
+   *   ⚠ 대가 = 표식이 없는 첫 실행에서 그 탭을 처음부터 다시 읽는다(중복 가능). **영구 누락보다
+   *   중복이 낫고**, 09-03 라이브 실측에서 양쪽 응답 탭이 모두 0행이라 지금 무는 손해는 없다. */
+  let from = (이전탭 === 지금탭) ? (Number(props.getProperty('약점메모폼_포인터')) || 1) : 1;
   props.setProperty(읽은탭키, 지금탭);
   if (from > last) { props.setProperty('약점메모폼_포인터', String(last)); return; }
   if (from >= last) return;
