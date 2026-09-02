@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>말투 후보 — 「부리다」를 무엇으로</title>
+<!-- 조립 규약: 색은 docs/디자인_토큰.json(2027 킷) · 서체는 docs/브랜드_폰트_정본.md.
+     유호 지시 09-03 「이 말투 굉장히 별로야 · 싹다고쳐」 → 실제 아홉 자리를 네 안으로 조합해 귀로 고르시게 한다. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+  :root{
+    --paper:#FBF7F0; --ink:#2B2320; --card:#FBF7F0; --note:#EDE7DC; --line:#F0E3C8; --line2:#C7BFB2;
+    --sub:#575046; --sub2:#575046;
+    --coral:#F96859; --coral-text:#AE322A; --coral-face:#FEF0E9; --wash:#FEF0E9;
+    --lapis-text:#24448C; --lapis-face:#C5D6F5;
+    --meadow-text:#3F6B2E; --meadow-face:#D3E8BE;
+    --butter-text:#7E5A10; --butter-face:#FFEBB0;
+    --pop-text:#99295D; --pop-face:#F8C7DE;
+    --font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,'Malgun Gothic','Apple SD Gothic Neo',monospace;
+    --실:2px; --숨:4px; --틈:8px; --참:12px; --칸:16px; --단:24px; --켜:40px; --장:64px; --막:104px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#080605; --ink:#FBF7F0; --card:#2B2320; --note:rgba(251,247,240,.07); --line:rgba(240,227,200,.28); --line2:rgba(240,227,200,.48);
+      --sub:#C7BFB2; --sub2:#EDE7DC;
+      --coral:#F96859; --coral-text:#FBB7A3; --coral-face:rgba(249,104,89,.18); --wash:rgba(249,104,89,.14);
+      --lapis-text:#C5D6F5; --lapis-face:#24448C;
+      --meadow-text:#D3E8BE; --meadow-face:#3F6B2E;
+      --butter-text:#FFEBB0; --butter-face:#7E5A10;
+      --pop-text:#F8C7DE; --pop-face:#99295D;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#080605; --ink:#FBF7F0; --card:#2B2320; --note:rgba(251,247,240,.07); --line:rgba(240,227,200,.28); --line2:rgba(240,227,200,.48);
+    --sub:#C7BFB2; --sub2:#EDE7DC;
+    --coral:#F96859; --coral-text:#FBB7A3; --coral-face:#AE322A; --wash:rgba(249,104,89,.14);
+    --lapis-text:#C5D6F5; --lapis-face:#24448C;
+    --meadow-text:#D3E8BE; --meadow-face:#3F6B2E;
+    --butter-text:#FFEBB0; --butter-face:#7E5A10;
+    --pop-text:#F8C7DE; --pop-face:#99295D;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light dark}
+  body{margin:0;padding:var(--켜) var(--단) var(--막);background:var(--paper);color:var(--ink);
+       font-family:var(--font);font-weight:500;font-size:15.5px;line-height:1.72;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto}
+  header{border-bottom:var(--실) solid var(--line);padding-bottom:var(--칸)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--sub);margin:0 0 var(--틈)}
+  h1{font-size:29px;font-weight:800;letter-spacing:-.02em;line-height:1.24;margin:0 0 var(--틈);text-wrap:balance}
+  .sub{color:var(--sub);font-size:14px;margin:0;max-width:66ch}
+  .lead{background:var(--wash);border-left:var(--숨) solid var(--coral);padding:var(--칸) var(--단);margin:var(--단) 0 var(--켜);border-radius:0 8px 8px 0}
+  .lead p{margin:0 0 var(--틈)} .lead p:last-child{margin:0}
+  h2{font-size:20px;font-weight:800;line-height:1.24;margin:var(--장) 0 var(--틈);padding-bottom:var(--틈);border-bottom:1px solid var(--line);text-wrap:balance}
+  h2 .n{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--sub);margin-right:var(--틈)}
+  h3{font-size:16px;font-weight:800;line-height:1.3;margin:var(--단) 0 var(--숨)}
+  p{margin:0 0 var(--참);max-width:74ch}
+  ul{margin:0 0 var(--참);padding-left:1.3em} li{margin:0 0 var(--숨)}
+  .hint{color:var(--sub);font-size:13.5px;margin:var(--숨) 0 var(--칸)}
+
+  .자리{border:1px solid var(--line);border-radius:8px;padding:var(--칸) var(--단);margin-bottom:var(--칸);background:var(--card)}
+  .자리 h3{margin-top:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--틈)}
+  .어디{font-family:var(--mono);font-size:11.5px;font-weight:500;padding:1px 8px;border-radius:999px;background:var(--note);color:var(--sub2)}
+  .누가{font-size:12.5px;color:var(--sub);font-weight:500}
+  .안{display:grid;grid-template-columns:74px 1fr;gap:var(--숨) var(--참);align-items:start;padding:var(--틈) 0;border-top:1px solid var(--line)}
+  .안:first-of-type{border-top:none}
+  .꼬리표{font-family:var(--mono);font-size:11.5px;font-weight:500;padding:2px 8px;border-radius:999px;text-align:center;white-space:nowrap}
+  .꼬리표.원{background:var(--coral-face);color:var(--coral-text)}
+  .꼬리표.a{background:var(--meadow-face);color:var(--meadow-text)}
+  .꼬리표.b{background:var(--lapis-face);color:var(--lapis-text)}
+  .꼬리표.c{background:var(--note);color:var(--sub2)}
+  .꼬리표.d{background:var(--butter-face);color:var(--butter-text)}
+  .글{font-size:15px;line-height:1.7}
+  .글 b{font-weight:800}
+  .글 .바뀐{background:var(--wash);padding:0 3px;border-radius:3px;font-weight:800}
+  :root:not([data-theme="light"]) .글 .바뀐{background:rgba(249,104,89,.22)}
+  .귀{font-size:13px;color:var(--sub);margin-top:2px}
+  .귀.나쁨{color:var(--coral-text);font-weight:700}
+
+  .note{background:var(--note);border-radius:6px;padding:var(--참) var(--칸);margin:var(--참) 0;font-size:14px}
+  .note p:last-child{margin-bottom:0}
+  .tbl{overflow-x:auto;margin:var(--참) 0 var(--숨)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:var(--틈) var(--참);border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--sub);font-size:12.5px;font-weight:700;white-space:nowrap}
+  code{font-family:var(--mono);background:var(--note);padding:1px 6px;border-radius:4px;font-size:12.5px;color:var(--sub2);word-break:break-all}
+  a{color:var(--lapis-text);text-decoration-thickness:1px;text-underline-offset:2px}
+  .toc{display:flex;flex-wrap:wrap;gap:var(--틈);margin:var(--칸) 0 0;padding:0;list-style:none;font-size:13.5px}
+  .toc a{display:inline-block;padding:2px 10px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--sub2)}
+  footer{margin-top:var(--장);padding-top:var(--칸);border-top:1px solid var(--line);font-size:13px;color:var(--sub)}
+  @media (max-width:640px){.안{grid-template-columns:1fr;gap:2px}.꼬리표{justify-self:start}body{padding:var(--단) var(--칸) var(--장)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">SYNK · 유호님 판정 지면 · 2026-09-03</p>
+  <h1>「부리다」를 무엇으로 바꿀까</h1>
+  <p class="sub">유호님이 「이 말투 굉장히 별로야 · 싹다 고쳐」라고 하셨다. 실제로 그 낱말이 든 <b>아홉 자리</b>를 네 가지 안으로 각각 바꿔 봤다. <b>읽어 보시고 하나만 고르시면 한 번에 전부 바꾼다.</b></p>
+  <ul class="toc">
+    <li><a href="#먼저">먼저 알려드릴 것</a></li><li><a href="#자리">아홉 자리</a></li>
+    <li><a href="#요약">한눈에</a></li><li><a href="#안건드림">안 건드리는 곳</a></li>
+  </ul>
+</header>
+
+<div class="lead" id="먼저">
+  <p><b>먼저 알려드릴 것.</b> 이 낱말은 <b>유호님이 어제(09-02) 직접 정하신 것</b>입니다 — 「AI 선생님이라는 어필보다 AI 를 부리는 선생님으로 어필하자」. 그 확정으로 대외 문안 스물네 벌을 이미 고쳤습니다.</p>
+  <p>그러니 이번에 바꾸는 것은 <b>낱말 하나</b>이고, <b>뜻은 그대로 지킵니다</b> — 「주어는 사람, AI 는 그 뒤」. 어제 정하신 방향을 뒤집는 게 아니라 <b>같은 뜻을 다른 낱말로</b> 옮기는 것입니다.</p>
+  <p>제가 오늘 저장소 첫 화면에 쓴 두 자리(「한 사람이 AI 를 부려 짓는다」)는 <b>이미 걷었습니다.</b> 아래 아홉은 유호님 픽을 기다립니다.</p>
+</div>
+
+<h2 id="자리"><span class="n">1</span> 아홉 자리 — 실제 문장으로</h2>
+<p class="hint">🔴 = 지금 나가 있는 글 · 초록 = 시킨다 · 파랑 = 맡긴다 · 회색 = 쓴다 · 노랑 = 낱말 말고 문장을 다시</p>
+
+<div class="자리">
+  <h3>① 강사 채용 공고 <span class="어디">강사공고_정본_v1.md</span> <span class="누가">읽는 사람 = 지원자</span></h3>
+  <div class="안"><span class="꼬리표 원">지금</span><div class="글">선생님 한 사람이 <span class="바뀐">AI 열여섯을 부려</span> 학생 열여섯 명 각자를 봅니다. 그 손발을 시스템이 합니다 — 출결 집계, 결석한 학생 찾기, 조 편성…</div></div>
+  <div class="안"><span class="꼬리표 a">시킨다</span><div class="글">선생님 한 사람이 <span class="바뀐">AI 열여섯에게 시켜</span> 학생 열여섯 명 각자를 봅니다. 그 손발을 시스템이 합니다 —…</div></div>
+  <div class="안"><span class="꼬리표 b">맡긴다</span><div class="글">선생님 한 사람이 <span class="바뀐">AI 열여섯에게 맡겨</span> 학생 열여섯 명 각자를 봅니다. 그 손발을 시스템이 합니다 —…</div></div>
+  <div class="안"><span class="꼬리표 c">쓴다</span><div class="글">선생님 한 사람이 <span class="바뀐">AI 열여섯을 써서</span> 학생 열여섯 명 각자를 봅니다. 그 손발을 시스템이 합니다 —…</div></div>
+  <div class="안"><span class="꼬리표 d">다시</span><div class="글">선생님 한 사람이 학생 열여섯 명 각자를 봅니다. <span class="바뀐">그 손발을 AI 열여섯이 합니다</span> — 출결 집계, 결석한 학생 찾기, 조 편성…<div class="귀">🔑 이 자리에선 「다시」가 가장 매끄럽다 — 뒤에 이미 「그 손발을 시스템이 합니다」가 있어서 두 문장이 하나로 합쳐진다.</div></div></div>
+</div>
+
+<div class="자리">
+  <h3>② 원장 편지 <span class="어디">SHIFT/원장편지_실행지.md</span> <span class="누가">읽는 사람 = 학부모</span></h3>
+  <div class="안"><span class="꼬리표 원">지금</span><div class="글">한 반은 열여섯 명입니다. 선생님 한 사람이 <span class="바뀐">AI 를 부려</span> 열여섯 명 각자를 봅니다 — 어제 어디서 막혔는지, 오늘 아침 무엇을 먼저 풀어야 하는지…</div></div>
+  <div class="안"><span class="꼬리표 a">시킨다</span><div class="글">한 반은 열여섯 명입니다. 선생님 한 사람이 <span class="바뀐">AI 에게 시켜</span> 열여섯 명 각자를 봅니다 —…</div></div>
+  <div class="안"><span class="꼬리표 b">맡긴다</span><div class="글">한 반은 열여섯 명입니다. 선생님 한 사람이 <span class="바뀐">AI 에게 맡겨</span> 열여섯 명 각자를 봅니다 —…</div></div>
+  <div class="안"><span class="꼬리표 c">쓴다</span><div class="글">한 반은 열여섯 명입니다. 선생님 한 사람이 <span class="바뀐">AI 를 써서</span> 열여섯 명 각자를 봅니다 —…</div></div>
+  <div class="안"><span class="꼬리표 d">다시</span><div class="글">한 반은 열여섯 명입니다. <span class="바뀐">선생님 한 사람이 열여섯 명 각자를 봅니다</span> — 어제 어디서 막혔는지, 오늘 아침 무엇을 먼저 풀어야 하는지. <span class="바뀐">그 기억을 AI 가 대신 붙들어 줍니다.</span></div></div>
+</div>
+
+<div class="자리">
+  <h3>③ 개인 채널 소개 <span class="어디">SHIFT/계정개설_실행지.md</span> <span class="누가">읽는 사람 = 채널 방문자</span></h3>
+  <div class="안"><span class="꼬리표 원">지금</span><div class="글">손으로 만든 몽글, <span class="바뀐">사람이 AI 를 부려</span> 지은 엔진. 판단은 사람이 합니다.</div></div>
+  <div class="안"><span class="꼬리표 a">시킨다</span><div class="글">손으로 만든 몽글, <span class="바뀐">사람이 AI 에게 시켜</span> 지은 엔진. 판단은 사람이 합니다.</div></div>
+  <div class="안"><span class="꼬리표 b">맡긴다</span><div class="글">손으로 만든 몽글, <span class="바뀐">사람이 AI 에게 맡겨</span> 지은 엔진. 판단은 사람이 합니다.</div></div>
+  <div class="안"><span class="꼬리표 c">쓴다</span><div class="글">손으로 만든 몽글, <span class="바뀐">사람이 AI 를 써서</span> 지은 엔진. 판단은 사람이 합니다.</div></div>
+  <div class="안"><span class="꼬리표 d">다시</span><div class="글">손으로 만든 몽글, <span class="바뀐">AI 와 함께 지은</span> 엔진. 판단은 사람이 합니다.<div class="귀">⚠ 여기서만 「다시」가 위험하다 — 「함께」는 AI 를 옆자리에 앉히는 말이라 <b>주어가 흐려진다</b>. 어제 정하신 뜻(사람이 앞)에서 가장 멀다.</div></div></div>
+</div>
+
+<div class="자리">
+  <h3>④ 유튜브 채널 설명 <span class="어디">@synkkorean · 둘째 줄</span> <span class="누가">읽는 사람 = 학부모·학생</span></h3>
+  <div class="안"><span class="꼬리표 원">지금</span><div class="글">선생님이 학생보다 많은 학원. 선생님 한 사람이 <span class="바뀐">AI 열여섯을 부려</span> 아이 열여섯 각자를 봅니다.</div></div>
+  <div class="안"><span class="꼬리표 a">시킨다</span><div class="글">선생님이 학생보다 많은 학원. 선생님 한 사람이 <span class="바뀐">AI 열여섯에게 시켜</span> 아이 열여섯 각자를 봅니다.</div></div>
+  <div class="안"><span class="꼬리표 b">맡긴다</span><div class="글">선생님이 학생보다 많은 학원. 선생님 한 사람이 <span class="바뀐">AI 열여섯에게 맡겨</span> 아이 열여섯 각자를 봅니다.</div></div>
+  <div class="안"><span class="꼬리표 c">쓴다</span><div class="글">선생님이 학생보다 많은 학원. 선생님 한 사람이 <span class="바뀐">AI 열여섯을 써서</span> 아이 열여섯 각자를 봅니다.</div></div>
+  <div class="안"><span class="꼬리표 d">다시</span><div class="글">선생님이 학생보다 많은 학원. 선생님 한 사람이 아이 열여섯 각자를 봅니다 — <span class="바뀐">AI 열여섯이 그 손발입니다.</span></div></div>
+</div>
+
+<div class="자리">
+  <h3>⑤ SYNK 이야기 — 본문 <span class="어디">SYNK_이야기.html</span> <span class="누가">읽는 사람 = 학부모</span></h3>
+  <div class="안"><span class="꼬리표 원">지금</span><div class="글">숙제는 미니게임이고, <span class="바뀐">선생님이 부리는 AI</span> 가 학생마다 무엇을 틀리는지·언제 집중하는지 매일 기록하고…</div></div>
+  <div class="안"><span class="꼬리표 a">시킨다</span><div class="글">숙제는 미니게임이고, <span class="바뀐">선생님이 시키는 AI</span> 가 학생마다 무엇을 틀리는지…<div class="귀 나쁨">⚠ 여기선 어색하다 — 「시키는 AI 가 기록하고」는 말이 겉돈다.</div></div></div>
+  <div class="안"><span class="꼬리표 b">맡긴다</span><div class="글">숙제는 미니게임이고, <span class="바뀐">선생님이 맡긴 AI</span> 가 학생마다 무엇을 틀리는지…<div class="귀">✅ 자연스럽다.</div></div></div>
+  <div class="안"><span class="꼬리표 c">쓴다</span><div class="글">숙제는 미니게임이고, <span class="바뀐">선생님이 쓰는 AI</span> 가 학생마다 무엇을 틀리는지…</div></div>
+  <div class="안"><span class="꼬리표 d">다시</span><div class="글">숙제는 미니게임이고, <span class="바뀐">AI 가 학생마다 무엇을 틀리는지·언제 집중하는지 매일 기록해 선생님에게 올립니다.</span></div></div>
+</div>
+
+<div class="자리">
+  <h3>⑥⑦ 슬로건 각주 <span class="어디">SYNK_이야기.html · SYNK_로드맵.html</span> <span class="누가">읽는 사람 = 전부</span></h3>
+  <div class="안"><span class="꼬리표 원">지금</span><div class="글">「정원은 16명, 선생님은 17명입니다」<br>— 선생님 한 사람 + <span class="바뀐">그가 부리는</span> AI 열여섯</div></div>
+  <div class="안"><span class="꼬리표 a">시킨다</span><div class="글">— 선생님 한 사람 + <span class="바뀐">그가 시키는</span> AI 열여섯</div></div>
+  <div class="안"><span class="꼬리표 b">맡긴다</span><div class="글">— 선생님 한 사람 + <span class="바뀐">그가 맡기는</span> AI 열여섯</div></div>
+  <div class="안"><span class="꼬리표 c">쓴다</span><div class="글">— 선생님 한 사람 + <span class="바뀐">그가 쓰는</span> AI 열여섯</div></div>
+  <div class="안"><span class="꼬리표 d">다시</span><div class="글">— 선생님 한 사람 + <span class="바뀐">그 손발이 되는</span> AI 열여섯</div></div>
+  <div class="note"><p>⚠ <b>슬로건 자체(「정원은 16명, 선생님은 17명입니다」)는 안 건드립니다</b> — 유호님이 09-02 밤에 「이게 훨씬 임팩트 있어」로 되돌리신 자리입니다. 바뀌는 것은 <b>그 아래 설명 줄</b>뿐입니다.</p></div>
+</div>
+
+<div class="자리">
+  <h3>⑧ 강사 훈련 자료 <span class="어디">강사훈련_온라인자료_v1.md</span> <span class="누가">읽는 사람 = 우리 강사</span></h3>
+  <div class="안"><span class="꼬리표 원">지금</span><div class="글">「나만의 선생님」은 <span class="바뀐">선생님(사람)이 AI 를 부려</span> 학생 한 명을 깊이 아는 일의 이름입니다 — 주어는 사람이고 시스템은 그 손발입니다</div></div>
+  <div class="안"><span class="꼬리표 a">시킨다</span><div class="글">「나만의 선생님」은 <span class="바뀐">선생님(사람)이 AI 에게 시켜</span> 학생 한 명을 깊이 아는 일의 이름입니다 —…</div></div>
+  <div class="안"><span class="꼬리표 b">맡긴다</span><div class="글">「나만의 선생님」은 <span class="바뀐">선생님(사람)이 AI 에게 맡겨</span> 학생 한 명을 깊이 아는 일의 이름입니다 —…</div></div>
+  <div class="안"><span class="꼬리표 c">쓴다</span><div class="글">「나만의 선생님」은 <span class="바뀐">선생님(사람)이 AI 를 써서</span> 학생 한 명을 깊이 아는 일의 이름입니다 —…</div></div>
+  <div class="안"><span class="꼬리표 d">다시</span><div class="글">「나만의 선생님」은 <span class="바뀐">선생님(사람)이 학생 한 명을 깊이 아는 일</span>의 이름입니다 — 주어는 사람이고 <span class="바뀐">AI 가</span> 그 손발입니다</div></div>
+</div>
+
+<div class="자리">
+  <h3>⑨ SYNK 이야기 — 학생 장면 <span class="어디">SYNK_이야기.html</span> <span class="누가">읽는 사람 = 학부모</span></h3>
+  <div class="안"><span class="꼬리표 원">지금</span><div class="글">게임처럼 배우고, <span class="바뀐">선생님이 부리는 AI</span> 가 매일 붙습니다.</div></div>
+  <div class="안"><span class="꼬리표 a">시킨다</span><div class="글">게임처럼 배우고, <span class="바뀐">선생님이 시키는 AI</span> 가 매일 붙습니다.</div></div>
+  <div class="안"><span class="꼬리표 b">맡긴다</span><div class="글">게임처럼 배우고, <span class="바뀐">선생님이 맡긴 AI</span> 가 매일 붙습니다.</div></div>
+  <div class="안"><span class="꼬리표 c">쓴다</span><div class="글">게임처럼 배우고, <span class="바뀐">선생님이 쓰는 AI</span> 가 매일 붙습니다.</div></div>
+  <div class="안"><span class="꼬리표 d">다시</span><div class="글">게임처럼 배우고, <span class="바뀐">선생님의 AI</span> 가 매일 붙습니다.<div class="귀">🔑 가장 짧다. 학생 장면이라 짧은 쪽이 읽힌다.</div></div></div>
+</div>
+
+<h2 id="요약"><span class="n">2</span> 한눈에 — 제가 읽어 본 소감</h2>
+<p class="hint">고르시는 것은 유호님 귀입니다. 아래는 제가 아홉 자리에 다 넣어 보고 느낀 것뿐입니다.</p>
+
+<div class="tbl">
+<table>
+  <thead><tr><th>안</th><th>잘 맞는 자리</th><th>걸리는 자리</th><th>한 줄</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>시킨다</b></td>
+      <td>①②③④⑧ (사람이 주체로 나서는 문장)</td>
+      <td>⑤⑨ — 「시키는 AI 가 기록하고」는 겉돈다</td>
+      <td>어제 연재 제목(「선생님이 AI 에게 시키는 열여섯 가지」)과 한 낱말로 묶인다. 다만 <b>「부리다」와 결이 가깝다</b> — 별로라 느끼신 지점이 여기면 이 안도 같은 느낌일 수 있다</td>
+    </tr>
+    <tr>
+      <td><b>맡긴다</b></td>
+      <td>아홉 자리 <b>전부</b> 무리 없다</td>
+      <td>—</td>
+      <td>학생에게 가르치는 네 낱말의 첫째가 이미 「맡기기」다(맡기기·부탁하기·가려보기·책임지기). <b>학원 안팎이 한 낱말로 묶인다.</b> 「부리다」의 거만한 결이 없다</td>
+    </tr>
+    <tr>
+      <td><b>쓴다</b></td>
+      <td>전부 무리 없다</td>
+      <td>—</td>
+      <td>가장 담백하고 가장 안 튄다. 대신 <b>「사람이 주인」이라는 신호도 가장 약하다</b> — 누구나 쓰는 말이라 우리 것이 아니게 된다</td>
+    </tr>
+    <tr>
+      <td><b>문장을 다시</b></td>
+      <td>①④⑨ (짧아지고 매끄러워진다)</td>
+      <td>③ — 「함께」가 주어를 흐린다</td>
+      <td>과시조가 완전히 사라진다. 대신 <b>자리마다 문장을 따로 지어야 해서</b> 나중에 새 글을 쓸 때 기댈 규칙이 없다</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+  <p><b>섞어도 됩니다.</b> 「기본은 맡긴다, ①④⑨ 세 자리만 문장을 다시」처럼 고르셔도 그대로 하겠습니다.</p>
+</div>
+
+<h2 id="안건드림"><span class="n">3</span> 안 건드리는 곳 — 같은 낱말이지만 다른 이야기</h2>
+<p class="hint">저장소에서 「부리는」을 세면 열다섯인데, 그중 여섯은 <b>이 이야기가 아닙니다.</b> 손대지 않습니다.</p>
+
+<div class="tbl">
+<table>
+  <thead><tr><th>어디</th><th>무슨 말인가</th><th>왜 안 건드리나</th></tr></thead>
+  <tbody>
+    <tr><td><code>AI활용_가이드_v2.md</code> · <code>AI활용_교안_v1.md</code> · <code>AI활용문안_몽골어_검수표.md</code></td><td>「학원 AI 는 나를 돕는 쪽, <b>바깥 AI 는 내가 부리는 쪽</b>」</td><td><b>학생에게 가르치는 말</b>이다. 학생이 챗봇을 쓸 때의 태도이지 우리 어필이 아니다</td></tr>
+    <tr><td><code>synk-brand/SKILL.md</code> 108줄</td><td>「마법을 <b>부리는</b> 중!」</td><td>쓰면 안 되는 문구의 <b>보기</b>다. 뜻이 완전히 다른 낱말(마법을 부리다)</td></tr>
+    <tr><td><code>docs/_ops/결정.md</code> 세 줄</td><td>09-02 확정 기록</td><td><b>역사</b>다 — 그때 그렇게 정하셨다는 사실은 안 바뀐다. 새 판정은 새 줄로 얹는다</td></tr>
+    <tr><td><code>docs/_ops/엔진7종_상향_인계/</code></td><td>설계 재료</td><td><b>다른 세션이 지금 만들고 있는 것</b>이라 남의 작업방이다</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>바꿀 자리는 위 <b>아홉</b>과, 규칙을 적어 둔 곳 <b>둘</b>(<code>synk-brand</code> 말투 조항 · <code>9월_발행캘린더</code> 캡션 규칙)입니다 — <b>열하나</b>를 한 번에 바꿉니다.</p>
+
+<footer>
+  SYNK LAB · 말투 후보 지면 2026-09-03 · 유호 지시 「이 말투 굉장히 별로야 · 싹다고쳐」 · 어제 확정 = <code>human-commands-ai-voice</code>(주어는 사람 · 이 뜻은 지킨다)
+</footer>
+
+</div>
+</body>
+</html>
