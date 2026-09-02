@@ -64,11 +64,18 @@ test('[v9.144] 한 번도 처치된 적 없던 시트들도 이제 대상이다 
   }
 });
 
-test('[v9.144] 월 열과 시즌 열을 둘 다 가진 시트는 둘 다 잡는다', () => {
-  // league_history = ['월','시즌',...]. 첫 매치에서 break하면 시즌 열이 영영 안 고쳐진다.
-  const lh = ctx.textKeyCols_().filter(c => c.sheet === 'league_history');
-  assert.equal(lh.length, 2, `league_history에서 ${lh.length}개만 잡았다 — 한 시트당 하나만 본다`);
-  assert.equal(lh.map(c => c.kind).sort().join(','), 'season,ym');
+test('[v9.144] 월 열과 시즌 열을 둘 다 가진 시트는 둘 다 잡는다 — 합성 골격으로 잰다', () => {
+  /* [2026-09-03] 옛 판은 `league_history`(월+시즌을 둘 다 가진 **유일한** 시트)가 골격에 있어서
+   *   성립했다. 리그 폐지 정리로 그 시트가 골격에서 빠지면 이 회귀는 **잴 것을 잃고 조용히 초록**이
+   *   된다 — 대상이 사라진 검사는 언제나 통과한다([[zero-is-a-success-face-taxonomy]] 의 그 얼굴).
+   *   ⇒ 골격을 임시로 갈아끼워 «함수 자체»를 잰다. 이제 어느 시트가 있고 없고와 무관하다. */
+  const 진짜골격 = ctx.sheetSkeleton_;
+  try {
+    ctx.sheetSkeleton_ = () => [['합성탭', ['월', '시즌', '기타']]];
+    const hit = ctx.textKeyCols_().filter(c => c.sheet === '합성탭');
+    assert.equal(hit.length, 2, `${hit.length}개만 잡았다 — 첫 매치에서 break하면 시즌 열이 영영 안 고쳐진다`);
+    assert.equal(hit.map(c => c.kind).sort().join(','), 'season,ym');
+  } finally { ctx.sheetSkeleton_ = 진짜골격; }
 });
 
 test('[v9.144] 키 종류가 정규화 함수를 가른다 — 월=yyyy-MM · 시즌=yyyy-MM-dd', () => {
