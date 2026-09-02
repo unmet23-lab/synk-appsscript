@@ -162,7 +162,7 @@ function sheetSkeleton_() {
     ['league_history', ['월','시즌','챔피언반','챔피언포인트','준우승','준우승포인트','MVP_id','MVP이름','MVP포인트','created_at']], ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
     ['raid_story', ['date','class_name','유형','제목','스토리']],
     [KPI_SHEET_NAME, KPI_HEADERS], // [v9.26] 이탈률·전환율 계측 시트
-    ['exit_log', ['student_id','이름','반','퇴소감지일','재원일수'], 수집표식_], // [v9.28] 퇴소 이벤트 로그 · [v9.244] 이탈 이해의 원본 — 떠난 순간은 소급이 안 된다
+    ['exit_log', EXIT_LOG_HEADERS, 수집표식_], // [v9.28] 퇴소 이벤트 로그 · [v9.244] 이탈 이해의 원본 — 떠난 순간은 소급이 안 된다 · [2026-09-02] 헤더 정본 = 엔진_운영배치.js EXIT_LOG_HEADERS(종료사유·종료일 «끝에» 증분 · append 전용 사건 원장 · 학생ID 종단 ㉡)
     ['absence_notice', ['student_id','반','날짜','사유','등록시각'], 수집표식_], // [v9.28] 학부모 결석 사전신고 · [v9.244] 결석 «사유»는 그날만 적힌다
     ['absence_followup', ABSENCE_FOLLOWUP_HEADERS, 수집표식_], // [v9.89] 결석 추적 — checkNoShow 감지 1건=1행, 연락은 폼, 복귀는 자동 판정. 「결석 복귀율」(등급 심사 20점) 원본
     ['inquiries', ['student_id','이름','문의내용','상태','접수시각']], // [v9.28] 학부모 문의 인바운드
@@ -4511,6 +4511,8 @@ function menuSetupVoiceMissions() { menuRun_(setupVoiceMissions); } // [v9.278] 
  *   본체·왜·되돌리기는 `교재연동.js` `voiceSweepNow_` 머리말이 정본이다(여기 사본을 두지 않는다).
  *   리허설 강제 없음 — 나가는 메일이 원장 자신에게 가는 둘뿐이고 AI 비용 0이다. */
 function menuVoiceSweep() { menuRun_(voiceSweepNow_); }
+function menuStudentIdCounterInit() { menuRun_(학생ID카운터세우기); } // [2026-09-02 · 학생ID 종단 ㉠] 채번 바닥 세우기 — 개원 전 1회 · 멱등(있으면 값만 보여 준다 · 절대 낮추지 않는다)
+function menuStudentIdStatus() { menuRun_(학생ID현황_); }           // [2026-09-02 · 학생ID 종단 §7] 개원 전 첫 작업의 자 — 읽기 전용(상담시트 BH 보유 행 · exit_log 행 · 카운터)
 // [v9.280] 숙제 뱅크 재반영 — setupHomework 는 bootstrap·preflight(개수 «일치»면 스킵)에서만 돌아서,
 //   문항을 고쳐 배포해도 시트의 «저장된 행 210»은 옛 판 그대로다(menuSetupOnboarding 과 같은 결의 자리).
 //   순서 정본 = 뱅크 머리 주석: 재세움(다른 유형 보존) → 몽골어 큐레이션 재주입(멱등 upsert) → 잔여 초벌 번역(빈칸만).
@@ -5087,6 +5089,12 @@ function onOpen() {
       //   setSeasonStart는 인자가 필요해 ▶ 버튼으로 실행할 수 없다 → 날짜를 물어보는 프롬프트로 감싼다.
       .addItem('🗓 시즌 시작일 설정(개원 준비 1)', 'seasonStartPrompt')
       .addItem('🧩 전 반 조 편성(개원 준비 2)', 'menuAssignGroups')
+      /* [2026-09-02 · 학생ID 종단 ㉠] 채번 바닥 — 이 키(app_state 학생ID_최종번호)가 없으면 학생ID 발급이 «일부러» 멈춘다
+       *   (설계 §5㉠ · 자기초기화 금지 — 카운터가 유실된 날 상담시트만 보고 번호가 되돌아가는 사고를 막는다).
+       *   개원 전 1회 · 멱등(이미 있으면 값만 보여 주고 아무것도 안 바꾼다 · 절대 낮추지 않는다) — 잘못 눌러도 손실 0. */
+      .addItem('🔢 학생ID 카운터 세우기(개원 준비 0·1회·멱등)', 'menuStudentIdCounterInit')
+      /* 설계 §7 「개원 전 첫 작업」의 자 — 상담시트에 학생ID 가 붙은 행이 몇인가(0이면 소급할 과거가 없다) · exit_log 행 · 카운터. 읽기 전용. */
+      .addItem('🔎 학생ID 현황 보기(읽기 전용)', 'menuStudentIdStatus')
       /* 평소엔 누를 일이 없다 — 출석이 확정되면 parentSweep 이 자동으로 굽고 링크를 메일로 보낸다.
        *   이 항목은 지각·정정으로 «다시» 뽑아야 하는 날의 손잡이다(자동은 반·날짜당 1회). */
       .addItem('🖨 숙제 서클 종이 다시 인쇄(오늘 수업 반)', 'menuPrintCircleSheets')
