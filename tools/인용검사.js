@@ -395,7 +395,7 @@ function 문서판정(본문, 풀기, 읽기) {
 const 면제 = [
   'docs/_ops/심문결과/', 'docs/_ops/장부/',
   'docs/_archive/', 'docs/노션_대조_', 'docs/_ops/검수결과/',
-  'docs/지침_이력.md', 'docs/_ops/마찰신호.md',
+  'docs/_ops/마찰신호.md',
   'docs/COWORK_지침.md', 'docs/버전_이력.md',
 ];
 /* 항목이 `.md` 로 끝나면 **그 파일 하나**, 아니면 **접두**(폴더·이름 앞머리)로 읽는다. */
