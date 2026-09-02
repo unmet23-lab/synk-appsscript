@@ -1,7 +1,7 @@
 ---
 name: remotion-markup
 description: Remotion 영상 코드(React)를 쓰거나 고칠 때 여는 API 정본 — 시퀀싱·타이밍·전환·오디오·효과·3D·폰트·텍스트 측정 등 주제별 문서 30벌을 품는다. SYNK 에서는 영상/src/ 의 클립·킷·연출을 만지기 전에 그 주제 문서를 먼저 연다. 릴 훅 길이·장면 잇기·소리 얹기가 전부 여기다. Content, animation and effects best practices for Remotion React markup.
-version: 4.0.517
+version: 4.0.520
 ---
 
 This is guidance for writing Remotion React Markup.
@@ -219,7 +219,9 @@ If a component does not support these props, wrap it in`<Sequence>` from `remoti
 
 ## Maps
 
-See [Remotion Maps](./remotion-maps/REFERENCE.md) if wanting to include maps in the video.
+See [Remotion Maps](./remotion-maps/SKILL.md) if wanting to include maps in the video.
+> 🔴 SYNK 는 `remotion-maps/` 를 **일부러 안 받았다**(08-26 · 중복 32파일 578KB). 이 링크는 이 저장소에 없다 —
+> 지도 영상이 실제로 필요해지면 `remotion-dev/remotion` 의 `packages/skills/skills/remotion-markup/remotion-maps/` 에서 그때 받는다.
 
 ## Text highlights and annotations
 
@@ -278,7 +280,7 @@ When needing to visualize audio (spectrum bars, waveforms, bass-reactive effects
 
 ## Maps
 
-For static maps, animated routes and markers, geographic explainers, Mapbox, MapLibre, MapTiler, GeoJSON, or 3D geographic flyovers, load [Remotion Maps](./remotion-maps/REFERENCE.md).
+For static maps, animated routes and markers, geographic explainers, Mapbox, MapLibre, MapTiler, GeoJSON, or 3D geographic flyovers, load [Remotion Maps](./remotion-maps/SKILL.md) — 위 §Maps 참고, SYNK 는 이 문서를 안 받았다.
 
 ## Captions
 
