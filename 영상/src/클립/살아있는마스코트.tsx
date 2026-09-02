@@ -27,6 +27,8 @@ import {
 } from "remotion";
 import type { 가이드, 표정 } from "./타입";
 import { 연출, 그늘, type 경계 } from "./연출";
+/* 하이라이트 — 킷 다리의 Paper 틴트(아래 「빛」 주석). 이 파일의 지역 변수 `빛`(세기)과 이름이 겹쳐 별칭으로 든다 */
+import { 빛 as 빛색 } from "../킷/색";
 import { 몸짓표 } from "./몸짓";
 
 /* ── «늘 도는» 움직임 — 전부 이 표 하나에 있다 ──────────────────────────────
@@ -420,12 +422,11 @@ export const 살아있는마스코트: React.FC<{
       ctx.save();
       ctx.globalCompositeOperation = "source-atop";
       const g = ctx.createLinearGradient(0, 0, S, 0);
-      g.addColorStop(0, `rgba(255,252,246,${Math.max(0, 빛).toFixed(3)})`);
-      g.addColorStop(0.5, "rgba(255,252,246,0)");
-      /* 🔑 그림자 쪽은 킷 다리 `그늘()` 을 지난다 — 여기 하나가 마지막 복제였다(09-01).
-         hex 가 아니라 rgba 표기라 「색은 킷만」을 재는 grep 이 **원리상 못 보던** 자리다.
-         ⚠ 반대편(빛)의 `rgba(255,252,246,…)` 은 **킷에 그 값이 없어** 다리를 안 만든다 —
-           없는 값에 킷 다리를 붙이면 킷 밖 색이 킷처럼 보인다(그게 더 나쁘다). */
+      /* 🔑 빛도 그늘도 킷 다리를 지난다(09-02). 빛은 옛 `rgba(255,252,246,…)` 이 킷에 없어 다리를 안 만들었던
+         자리인데, 발행검사 ③ 이 그것을 «킷 밖 색»으로 잡았다. 이제 킷의 가장 밝은 값(Paper · 철칙① 라이트 하한)
+         틴트로 잇는다 — 알파 상한 0.0135 라 픽셀 차이는 8비트 한 단 아래다(근거·되돌리기 = `킷/색.ts` 「빛과 그늘」). */
+      g.addColorStop(0, 빛색(Number(Math.max(0, 빛).toFixed(3))));
+      g.addColorStop(0.5, 빛색(0));
       g.addColorStop(1, 그늘(Number(Math.max(0, 빛).toFixed(3))));
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, S, S);
