@@ -1952,7 +1952,10 @@ test('[v9.270] 🇲🇳 직장 경험 폼 몽골어 — 안내문 정본 하나 
   });
   // 생성부와 마이그레이션이 «같은 상수»를 본다 — 두 곳에 적으면 「새로 만든 폼」과 「고친 폼」이 갈린다
   assert.ok(/form\.setDescription\(WORK_DESC\)/.test(code), '생성부가 폼 설명 정본(WORK_DESC)을 쓰지 않는다');
-  const mig = section('function migrateWorkFormMn()', '/* ── [v9.89]');
+  /* ⚠ 끝 앵커는 «바로 다음 함수»여야 한다(v9.293) — 구판은 `/* ── [v9.89]` 였는데 그 사이에
+   * migrateFormCopy0901 이 이미 있었고, v9.293 에 migrateWorkFormOutcome 이 하나 더 들어오면서
+   * «남의 함수의 setTitle» 을 이 함수의 것으로 읽어 빨개졌다. 구간은 재는 대상만 덮는다. */
+  const mig = section('function migrateWorkFormMn()', 'function migrateWorkFormOutcome()');
   assert.ok(/form\.setDescription\(WORK_DESC\)/.test(mig) && /it\.setHelpText\(WORK_HELP\[title\]\)/.test(mig),
     '마이그레이션이 안내문 정본을 쓰지 않는다');
   /* 「이미 있으면 스킵」이 아니라 «정본과 다르면 갱신» — v9.103 이 그 구멍이었다(스킵이라 문구 개정이
@@ -1967,6 +1970,51 @@ test('[v9.270] 🇲🇳 직장 경험 폼 몽골어 — 안내문 정본 하나 
   // 발동 조건이 같은 커밋에 있어야 한다(CLAUDE.md) — 시트 메뉴가 없으면 유호님이 부를 길이 없다
   assert.ok(code.includes("function menuMigrateWorkFormMn()") && code.includes("'menuMigrateWorkFormMn'"),
     '몽골어 반영을 부르는 시트 메뉴가 없다 — 라이브 폼에 닿을 길이 없다');
+});
+
+
+test('[v9.293] 🎯 직장 경험 폼 결과 칸 셋 — 선택 유지 · 기존 문항 무손 · 라이브 통로 · 발동 조건', () => {
+  /* 왜 이 회귀가 있나: 이 마이그레이션은 «살아 있는 폼에 문항을 더하는» 유일한 통로다. 여기서
+   * 기존 문항의 제목·선택지를 건드리면 응답 시트 헤더·폼 서명·궤적 조인 키가 한꺼번에 갈린다.
+   * 그리고 결과 칸이 «필수»가 되면 과정 칸(이 폼의 1순위 자산)까지 회수율이 같이 죽는다. */
+  const 생성부 = section('function createWorkLogForm_(', 'function migrateWorkFormMn()');
+  ['얼마나 오래 다녔나요', '왜 그만두게 되었나요', '다시 간다면'].forEach(t => {
+    assert.ok(생성부.includes("mc('" + t + "'"), `생성부에 결과 문항 「${t}」이 없다 — 새로 만드는 폼에 안 들어간다`);
+    const m = 생성부.match(new RegExp("mc\\('" + t + "',[^;]*?;"));
+    assert.ok(m && /,\s*false\s*,/.test(m[0]), `결과 문항 「${t}」이 «선택»이 아니다 — 필수로 걸면 과정 칸까지 회수율이 죽는다`);
+  });
+  // 필수 목록은 다섯 그대로 — 결과 칸이 슬그머니 필수가 되지 않게 못 박는다
+  const req = section('const WORK_REQUIRED_ =', 'function 직장폼서명_');
+  ['얼마나 오래 다녔나요', '왜 그만두게 되었나요', '다시 간다면'].forEach(t => {
+    assert.ok(!req.includes(t), `WORK_REQUIRED_ 에 결과 문항 「${t}」이 들어갔다 — 필수는 다섯 그대로여야 한다`);
+  });
+  // 선택지·안내문이 정본 상수 하나에서만 나온다(두 곳에 적으면 새 폼과 고친 폼이 갈린다)
+  assert.ok(/const WORK_TENURES = \[/.test(code) && /const WORK_EXITS = \[/.test(code), '결과 칸 선택지 정본 상수가 없다');
+  ['얼마나 오래 다녔나요', '왜 그만두게 되었나요', '다시 간다면'].forEach(k => {
+    const seg = section("const WORK_HELP", "const WORK_REQUIRED_").match(new RegExp("'" + k + "':([\\s\\S]{0,600}?)(\\n  '|\\n\\};)"));
+    assert.ok(seg && /[Ѐ-ӿ]/.test(seg[1]), `결과 문항 「${k}」 안내에 몽골어(키릴)가 없다`);
+  });
+  const out = section('function migrateWorkFormOutcome()', 'function migrateFormCopy0901()');
+  // 엉뚱한 폼을 고치지 않는다 — «찾는 자리»와 같은 서명 자
+  assert.ok(/if \(!직장폼서명_\(form\)\)/.test(out), '결과 칸 통로가 서명 자를 안 쓴다 — 동명 복사본에 문항을 붙인다');
+  // 기존 «문항»의 제목·선택지 불변: setTitle 은 섹션 헤더에만 · setChoiceValues 는 새로 만든 항목에만
+  const 제목쓰기 = out.match(/\.setTitle\(/g) || [];
+  const 섹션제목 = out.match(/addSectionHeaderItem\(\)\.setTitle\(/g) || [];
+  const 새문항제목 = out.match(/addMultipleChoiceItem\(\)\.setTitle\(/g) || [];
+  const 섹션번호 = out.match(/it\.setTitle\(p\[1\]\)/g) || [];
+  assert.equal(제목쓰기.length, 섹션제목.length + 새문항제목.length + 섹션번호.length,
+    '결과 칸 통로가 «기존 문항»의 제목을 고친다 — 응답 헤더·서명·조인 키가 갈린다');
+  const 선택지쓰기 = out.match(/\.setChoiceValues\(/g) || [];
+  assert.equal(선택지쓰기.length, (out.match(/addMultipleChoiceItem\(\)\.setTitle\([^)]*\)\.setChoiceValues\(/g) || []).length,
+    '결과 칸 통로가 «기존 문항»의 선택지를 고친다');
+  // 멱등 — 있으면 안 만들고, 안내문만 정본과 대조해 갱신한다
+  assert.ok(/if \(이미\)/.test(out) && /!==\s*WORK_HELP\[q\[0\]\]/.test(out), '결과 칸 통로가 멱등이 아니거나 안내문을 정본과 대조하지 않는다');
+  // 자리 이동은 인덱스·인덱스 오버로드로만(v9.182 라이브 결함) · 못 찾으면 조용히 끝에 두지 않는다
+  assert.ok(/form\.moveItem\([^,]*getIndex\(\), *목표\)/.test(out), '자리 이동이 인덱스 오버로드가 아니다 — 아이템 오버로드는 라이브에서 던진다(v9.182)');
+  assert.ok(/앵커없음\.push/.test(out) && /맨 끝/.test(out), '동의 섹션을 못 찾았을 때 조용히 끝에 붙인다 — 보고에 안 뜬다');
+  // 발동 조건이 같은 커밋에(CLAUDE.md) — 메뉴가 없으면 유호님이 부를 길이 없다
+  assert.ok(code.includes('function menuMigrateWorkFormOutcome()') && code.includes("'menuMigrateWorkFormOutcome'"),
+    '결과 칸을 라이브에 넣는 시트 메뉴가 없다 — 08-27 에 선 폼은 영영 결과 칸을 못 받는다');
 });
 
 
