@@ -4071,3 +4071,380 @@ function addNotice(ss, title, body) {
   sh.getRange(sh.getLastRow() + 1, 1, 1, lastCol).setValues([row]);
 }
 
+/* ===================== [2026-09-02 · 가져가는것 걸음1] 📷 그날의 순간 — 순간 폴더 → portfolio_moments =====================
+ * 설계 정본 = docs/가져가는것_설계_v1.md §2-c·§2-d·§3·§6 걸음1 · 심문 판정 = docs/_ops/심문결과/가져가는것_설계_v1-전건판정.md §7.
+ * 시트 헤더·열 뜻 = Code.js PORTFOLIO_MOMENTS_HEADERS 주석(정본 하나) · 소비자 = Code.js calcAll(걸어온길 BY77 · 오늘의알림 BX76)
+ *   + 원장 오늘판(todayBoard_ 두 줄) + 주간 통합 리포트 섹션(momentWeeklyText_).
+ *
+ * 사람이 누르는 칸은 「폴더 이름 끝의 한 줄」 하나다(§3-b). 폴더는 강사가 만들지 않는다 — 이 배치가 그날 수업 있는 반의
+ * 빈 폴더를 미리 만들어 둔다(ⓐ). 강사는 사진을 넣고 이름 끝에 ` - 종류 - 한 줄` 을 덧붙인다.
+ *
+ *   SYNK_순간/                                      ← 원본 뿌리(강사가 넣는 곳 · 파일 소유자는 올린 사람일 수 있다 · §14-⑨)
+ *     └ 2027-03-14 - A2반 - 12차시 - 작품 - 우리 반 김밥집 간판을 만들었다/
+ *           IMG_0412.jpg  IMG_0418.jpg
+ *   SYNK_순간_사본/                                 ← **정본 뿌리**(배치가 도는 학원 계정 소유 · §14-⑨ ⓑ 임시 소유 규칙 — 훑은 직후 복사)
+ *     └ (같은 이름)/  IMG_0412.jpg(긴 변 2,000px JPEG) …
+ *
+ * 규칙 여섯:
+ *   ① **원본은 절대 지우지 않는다** — 사본이 안 만들어지면 원본을 그대로 두고 상태 꼬리에 적는다.
+ *   ② 멱등 키 = 폴더 ID(moment_id) · 미디어는 원본 file_id 로 센다 ⇒ 같은 폴더를 두 번 훑어도 행 1 · 새 파일만 «추가» 행.
+ *   ③ 파싱 실패는 버리지 않는다 ⇒ 상태 `미분류:<사유>` · 미디어는 그래도 복사한다(소급 불가한 것은 이름이 아니라 사진이다).
+ *      폴더 이름을 고치면 다음 밤에 같은 moment_id 로 `정상` 행이 한 줄 더 붙는다(append-only · 마지막 행이 현행).
+ *   ④ 축소본 = Drive 썸네일 통로(`thumbnail?id=&sz=s2000` + OAuth 토큰) — Apps Script 엔 리사이즈 API 가 없다. 사진이 아니거나
+ *      썸네일이 안 오면 **원본 복사**로 대신하고 꼬리 ` · 축소실패` 를 단다(영상은 규칙 밖 · §3-c — 원본 그대로 복사).
+ *      ⚠ JPEG 품질(q80)은 이 통로가 못 정한다 — Drive 가 내는 그대로다(설계 §3-d 의 q80 은 «목표»로 남는다).
+ *   ⑤ 예산 4.5분 — 넘으면 그 자리에서 멈추고(부분 행은 그대로 적는다) **다음 날 실행이 이어받는다**. 별도 상태 없음(시트가 곧 상태).
+ *   ⑥ 기간키 = app_state 「시즌시작일」 + SEASON_WEEKS 안이면 그 시작일('yyyy-MM-dd' · groups·lesson_close 와 같은 키), 밖이면 `비시즌`
+ *      (체험 2주 02-11~24 는 시즌 밖 · 판정 ⑥ — 파일럿 문서 §A-3-3 ⓑ 리허설 시즌 라벨이 서면 그 시즌 키가 된다). 체험을 따로 이름 짓는
+ *      엔진 정본이 없어 지어내지 않았다.
+ *
+ * 🚫 안 짓는 것(설계·판정): crew_projects 파생(판정 ⑦ — 폴더 문법엔 프로젝트명·참여크루가 없다) · 얼굴 인식·이름 태깅·학생별 폴더(§2-d) ·
+ *   공개 링크·QR(§5-c) · 앱 화면에 사진 띄우기(§4-b). 학생 개인 귀속은 calcAll 이 attendance.class_snapshot 으로만 한다. */
+const MOMENT_ROOT_FOLDER_ = 'SYNK_순간';
+const MOMENT_COPY_FOLDER_ = 'SYNK_순간_사본';
+const MOMENT_SEP_ = ' - ';                 // 폴더 이름 구분자 — 이것 하나. 낫표·밑줄·긴 줄표는 미분류(§3-b)
+const MOMENT_BUDGET_MS_ = 270000;          // 4.5분 — 6분 강제 종료 전에 스스로 멈춘다(preflight·리포트카드와 같은 예산)
+const MOMENT_THUMB_PX_ = 2000;             // 축소본 긴 변(§3-d)
+const MOMENT_COPY_RETRY_MAX_ = 3;          // 같은 파일 복사 재시도 상한 — 넘으면 «추가» 행을 더 안 만든다(원장이 본다)
+const MOMENT_OFFSEASON_ = '비시즌';
+const MOMENT_SCOPE_DEFAULT_ = '반';        // 공개범위 — v1 은 이 값 하나(§2-c)
+const MOMENT_ST_OK_ = '정상', MOMENT_ST_ADD_ = '추가', MOMENT_ST_UNSORTED_ = '미분류';
+const MOMENT_BOARD_TYPE_ = '📷 순간';     // today_board 유형 칸(원장 오늘판)
+
+/* ── 순수 함수 넷 — 시트·Drive 를 모른다(코어=순수 · 래퍼=시트 — consentDiff_ 와 같은 선 · 회귀가 이 넷을 잰다) ── */
+
+/** 폴더 이름 → 칸. `YYYY-MM-DD - 반 - N차시 - 종류 - 한 줄`(§3-b). kinds 를 주면 종류도 검사한다(허용 목록 밖 = 미분류).
+ *  실패도 값이다 — `{ok:false, 사유}` 에 읽어낸 만큼(사건일·반)을 같이 싣는다(원장 오늘판이 반 칸에 쓴다). */
+function momentParseFolderName_(name, kinds) {
+  const s = String(name == null ? '' : name).replace(/\s+/g, ' ').trim();
+  const o = { ok: false, 사유: '', 사건일: '', 반: '', 차시: '', 종류: '', 한줄: '' };
+  const bad = (why) => { o.ok = false; o.사유 = why; return o; };
+  if (!s) return bad('이름없음');
+  if (/[「」『』]/.test(s)) return bad('낫표');          // 몽골어 키보드로 못 치고, 못 치면 그날 규칙이 깨진다(§3-b)
+  if (s.indexOf('_') > -1) return bad('밑줄');           // 한 줄 안의 밑줄이 파싱을 민다(§3-b)
+  if (/[–—‐]/.test(s)) return bad('구분자');            // 긴 줄표(자동 교정이 만드는 꼴) — 구분자는 ` - ` 하나다
+  const dm = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  if (!dm) return bad('날짜없음');
+  const dt = new Date(Number(dm[1]), Number(dm[2]) - 1, Number(dm[3]));
+  if (dt.getFullYear() !== Number(dm[1]) || dt.getMonth() !== Number(dm[2]) - 1 || dt.getDate() !== Number(dm[3])) return bad('날짜');
+  o.사건일 = dm[0];
+  const parts = s.split(MOMENT_SEP_).map(p => p.trim());
+  if (parts[0] !== dm[0]) return bad('구분자');         // 날짜 뒤가 ` - ` 로 안 갈라졌다(`2027-03-14-A2반-…`)
+  if (parts.length < 3) return bad('구분자');
+  o.반 = parts[1];
+  if (!o.반) return bad('반없음');
+  if (parts.length === 3) return bad('한줄없음');        // 배치가 만든 빈 이름 그대로 — 사진은 넣었는데 이름을 안 덧붙였다
+  const nm = /^(\d+)차시$/.exec(parts[2]);
+  if (!nm) return bad('차시');
+  o.차시 = Number(nm[1]);
+  if (parts.length === 4) return bad('종류없음');
+  o.종류 = parts[3];
+  o.한줄 = parts.slice(4).join(MOMENT_SEP_).trim();      // 한 줄 안의 ` - ` 는 한 줄의 일부다
+  if (!o.종류) return bad('종류없음');
+  if (!o.한줄) return bad('한줄없음');
+  if (kinds && kinds.length && kinds.indexOf(o.종류) === -1) return bad('종류:' + o.종류); // 허용 종류 = contents_순간.js 의 키
+  o.ok = true;
+  return o;
+}
+
+/** session_key = `사건일|반|차시` — 같은 날 복수 수업·보강을 가른다(판정 ②). */
+function momentSessionKey_(day, cls, no) {
+  return String(day || '') + '|' + String(cls || '') + '|' + (no === '' || no == null ? '' : String(Number(no)));
+}
+
+/** 기간키 — 시즌 시작일('yyyy-MM-dd')부터 weeks 주 안이면 그 시작일(= 시즌 키), 아니면 `비시즌`. 시작일이 없어도 `비시즌`(지어내지 않는다). */
+function momentPeriodKey_(day, seasonStart, weeks) {
+  const s = String(seasonStart || '').slice(0, 10), d = String(day || '').slice(0, 10);
+  const ymd = /^\d{4}-\d{2}-\d{2}$/;
+  if (!ymd.test(s) || !ymd.test(d)) return MOMENT_OFFSEASON_;
+  const ms = (x) => new Date(Number(x.slice(0, 4)), Number(x.slice(5, 7)) - 1, Number(x.slice(8, 10))).getTime();
+  const days = Math.round((ms(d) - ms(s)) / 86400000);
+  const span = (Number(weeks) || 0) * 7;
+  return (span > 0 && days >= 0 && days < span) ? s : MOMENT_OFFSEASON_;
+}
+
+/** 시트 행들 → 「이미 아는 것」. mid → {사본있음:{원본id:1}, 실패수:{원본id:n}, 상태(마지막 행), 행수}. 미디어 JSON 이 깨진 행은 빈 목록으로 본다. */
+function momentKnownFromRows_(rows) {
+  const known = {};
+  (rows || []).forEach(r => {
+    const mid = String(r[0] || '').trim();
+    if (!mid) return;
+    const k = known[mid] = known[mid] || { 사본있음: {}, 실패수: {}, 상태: '', 행수: 0 };
+    k.행수++;
+    k.상태 = String(r[12] || '').trim();
+    let media = [];
+    try { media = JSON.parse(String(r[8] || '[]')) || []; } catch (e) { media = []; }
+    (Array.isArray(media) ? media : []).forEach(m => {
+      if (!m || !m.원본) return;
+      if (m.사본) k.사본있음[m.원본] = 1;
+      else k.실패수[m.원본] = (k.실패수[m.원본] || 0) + 1;
+    });
+  });
+  return known;
+}
+
+/** 한 폴더에 무엇을 할지 — 멱등의 코어(판정 ⑤). folder = {id, files:[{id,…}]} · parse = momentParseFolderName_ 결과.
+ *  null = 할 일 없음(빈 폴더 · 이미 다 담긴 폴더). '신규' = 첫 행 · '추가' = 새 파일만 · '정정' = 미분류였는데 이름이 이제 읽힌다. */
+function momentPlan_(known, folder, parse) {
+  const k = (known || {})[folder.id];
+  const files = folder.files || [];
+  const fresh = files.filter(f => !k || (!k.사본있음[f.id] && (k.실패수[f.id] || 0) < MOMENT_COPY_RETRY_MAX_));
+  if (!k) return files.length ? { 종류: '신규', 파일: fresh } : null;
+  if (k.상태.indexOf(MOMENT_ST_UNSORTED_) === 0 && parse && parse.ok) return { 종류: '정정', 파일: fresh };
+  if (fresh.length) return { 종류: '추가', 파일: fresh };
+  return null;
+}
+
+/** 행 하나 — 헤더 순서는 Code.js PORTFOLIO_MOMENTS_HEADERS 그대로(14칸). 미분류 행은 한줄 칸에 폴더 이름을 그대로 둔다(원장이 무엇을 고칠지 본다). */
+function momentRow_(o) {
+  const p = o.parse || {}, f = o.folder || {};
+  return [
+    f.id || '',
+    p.ok ? momentSessionKey_(p.사건일, p.반, p.차시) : '',
+    p.사건일 || '',
+    p.반 || '',
+    p.ok ? p.차시 : '',
+    p.종류 || '',
+    p.ok ? p.한줄 : String(f.name || ''),
+    o.periodKey || MOMENT_OFFSEASON_,
+    JSON.stringify(o.media || []),
+    f.id || '',
+    o.copyFolderId || '',
+    o.loadedAt || '',
+    o.status || '',
+    MOMENT_SCOPE_DEFAULT_
+  ];
+}
+
+/* ── Drive·시트 래퍼 ─────────────────────────────────────────────────────────────────────── */
+
+/** 이름으로 폴더 하나(뿌리면 DriveApp 전체 · parent 가 있으면 그 안). 없으면 만든다(noCreate 면 null) — SYNK_인쇄·SYNK_백업과 같은 통로.
+ *  DriveApp.createFolder 는 «제한됨»(링크 공개 아님)으로 태어난다 — §5-c 의 그 문을 안 연다. */
+function momentFolder_(parent, name, noCreate) {
+  const it = parent ? parent.getFoldersByName(name) : DriveApp.getFoldersByName(name);
+  if (it.hasNext()) return it.next();
+  if (noCreate) return null;
+  return parent ? parent.createFolder(name) : DriveApp.createFolder(name);
+}
+function momentListFolders_(root) {
+  const out = [];
+  const it = root.getFolders();
+  while (it.hasNext()) { const f = it.next(); out.push({ id: f.getId(), name: f.getName(), folder: f }); }
+  out.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0); // 날짜가 앞이라 이름순 = 시간순 — 예산에 걸려도 옛것부터 담긴다
+  return out;
+}
+function momentListFiles_(folder) {
+  const out = [];
+  const it = folder.getFiles();
+  while (it.hasNext()) {
+    const f = it.next();
+    const mime = String(f.getMimeType() || '');
+    out.push({ id: f.getId(), name: f.getName(), mime: mime, kind: mime.indexOf('image/') === 0 ? '사진' : mime.indexOf('video/') === 0 ? '영상' : '기타', file: f });
+  }
+  return out;
+}
+/** 허용 종류 = contents_순간.js MOMENT_SAY 의 키('*' 제외). 미배포면 null(검사 안 함 — 미분류를 남발하지 않는다). */
+function momentKinds_() {
+  if (typeof MOMENT_SAY === 'undefined') return null;
+  return Object.keys(MOMENT_SAY).filter(k => k !== '*');
+}
+/** 반 이름 검사자 — 시간표(schedule)에 있는 반만. 시간표가 비어 있으면 null(검사 안 함). */
+function momentClassChecker_(schMap) {
+  const keys = Object.keys(schMap || {}).filter(k => schMap[k] && schMap[k].name === k);
+  if (!keys.length) return null;
+  return (cls) => keys.indexOf(String(cls || '').trim()) > -1 || keys.indexOf(반키_(cls)) > -1;
+}
+
+/** ⓐ 그날 수업 있는 반의 빈 폴더 — 오늘·내일(21시 실행이라 «내일» 수업분을 미리 둔다). 같은 접두(`날짜 - 반 - N차시`)로 시작하는
+ *  폴더가 이미 있으면(강사가 이름을 덧붙였어도) 안 만든다. 차시는 lessonNoOf_(시즌 밖 = 0차시 — 지어내지 않는다). 만든 것 = {id:1}. */
+function momentPrepFolders_(root, folders, schMap, seasonStartDate, now, tz) {
+  const made = {};
+  const names = (folders || []).map(f => f.name);
+  const classes = Object.keys(schMap || {}).filter(k => schMap[k] && schMap[k].name === k);
+  for (let off = 0; off <= 1; off++) {
+    const d = new Date(now.getTime() + off * 86400000);
+    const ymd = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+    classes.forEach(cn => {
+      const e = schMap[cn];
+      if (!classDowOk_(e.type, d.getDay())) return;
+      const no = seasonStartDate ? lessonNoOf_(seasonStartDate, d, e.type) : 0;
+      const prefix = ymd + MOMENT_SEP_ + cn + MOMENT_SEP_ + no + '차시';
+      if (names.some(n => String(n).indexOf(prefix) === 0)) return;
+      const f = root.createFolder(prefix);
+      made[f.getId()] = 1;
+      names.push(prefix);
+    });
+  }
+  return made;
+}
+
+/** ⓒ 파일 하나 → 사본 폴더. 사진이면 썸네일 통로(긴 변 2,000px JPEG), 아니면·못 받으면 원본 복사. 원본은 손대지 않는다.
+ *  반환 {사본: id|'', 축소: true(축소본)|false(사진인데 원본 복사)|null(사진 아님)}. */
+function momentCopyOne_(f, dest) {
+  const base = String(f.name || '').replace(/\.[^.]+$/, '') || 'moment';
+  if (f.kind === '사진') {
+    try {
+      const resp = UrlFetchApp.fetch('https://drive.google.com/thumbnail?id=' + encodeURIComponent(f.id) + '&sz=s' + MOMENT_THUMB_PX_, {
+        headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true, followRedirects: true
+      });
+      if (resp.getResponseCode() === 200) {
+        const blob = resp.getBlob();
+        if (String(blob.getContentType() || '').indexOf('image/') === 0 && blob.getBytes().length > 0) {
+          return { 사본: dest.createFile(blob.setName(base + '.jpg')).getId(), 축소: true };
+        }
+      }
+      Logger.log('순간 축소본 응답 ' + resp.getResponseCode() + ' — 원본 복사로: ' + f.name);
+    } catch (e) { Logger.log('순간 축소본 실패 — 원본 복사로: ' + f.name + ' · ' + e); }
+    try { return { 사본: f.file.makeCopy(f.name, dest).getId(), 축소: false }; }
+    catch (e2) { Logger.log('순간 원본 복사 실패: ' + f.name + ' · ' + e2); return { 사본: '', 축소: false }; }
+  }
+  try { return { 사본: f.file.makeCopy(f.name, dest).getId(), 축소: null }; }
+  catch (e3) { Logger.log('순간 복사 실패: ' + f.name + ' · ' + e3); return { 사본: '', 축소: null }; }
+}
+
+/** 매일 21시(트리거 momentSweepJob · resetAllTriggers) — ⓐ 빈 폴더 선생성 → ⓑ 훑기·파싱 → ⓒ 축소본·사본 → ⓓ 행 append(미분류 포함).
+ *  잠금: 손 실행과 트리거가 겹치면 같은 폴더가 두 번 적힌다 — tryLock 실패면 이번 회차를 건너뛴다(consentLogNightly_ 와 같은 선). */
+function momentSweep_() {
+  const t0 = Date.now();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) { Logger.log('momentSweep_: 다른 실행이 잡고 있다 — 이번 회차 건너뜀(다음 21시에 이어받는다)'); return; }
+  try {
+    const root = momentFolder_(null, MOMENT_ROOT_FOLDER_);
+    const copyRoot = momentFolder_(null, MOMENT_COPY_FOLDER_);
+    const sh = ensureSheet(ss, PORTFOLIO_MOMENTS_TAB_, PORTFOLIO_MOMENTS_HEADERS);
+    헤더보정_(sh, PORTFOLIO_MOMENTS_HEADERS);
+    const schMap = scheduleMap(ss);
+    const seasonStart = seasonLabelOf_(ss, tz); // '' = 시즌 시작일 미설정 → 전부 비시즌
+    const seasonStartDate = seasonStart ? toDate_(seasonStart.replace(/-/g, '')) : null;
+
+    // ⓐ
+    const folders = momentListFolders_(root);
+    const made = momentPrepFolders_(root, folders, schMap, seasonStartDate, now, tz);
+
+    // ⓑ·ⓒ·ⓓ
+    const rows = sh.getLastRow() >= 2 ? sh.getRange(2, 1, sh.getLastRow() - 1, PORTFOLIO_MOMENTS_HEADERS.length).getValues() : [];
+    const known = momentKnownFromRows_(rows);
+    const kinds = momentKinds_();
+    const clsOk = momentClassChecker_(schMap);
+    const loadedAt = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm:ss');
+    const out = [];
+    let copied = 0, shrunk = 0, unsorted = 0, stopped = false;
+    for (let i = 0; i < folders.length; i++) {
+      if (Date.now() - t0 > MOMENT_BUDGET_MS_) { stopped = true; break; }
+      const f = folders[i];
+      if (made[f.id]) continue; // 방금 만든 빈 폴더
+      let parse = momentParseFolderName_(f.name, kinds);
+      if (parse.ok && clsOk && !clsOk(parse.반)) parse = Object.assign({}, parse, { ok: false, 사유: '반:' + parse.반 }); // 시간표에 없는 반 이름
+      const files = momentListFiles_(f.folder);
+      const plan = momentPlan_(known, { id: f.id, files: files }, parse);
+      if (!plan) continue;
+      const dest = plan.파일.length ? momentFolder_(copyRoot, f.name) : momentFolder_(copyRoot, f.name, true);
+      const media = [], tails = {};
+      for (let j = 0; j < plan.파일.length; j++) {
+        if (Date.now() - t0 > MOMENT_BUDGET_MS_) { stopped = true; break; }
+        const r = momentCopyOne_(plan.파일[j], dest);
+        media.push({ 원본: plan.파일[j].id, 사본: r.사본, 종류: plan.파일[j].kind, 이름: plan.파일[j].name });
+        if (r.사본) copied++;
+        if (r.축소 === true) shrunk++;
+        if (r.축소 === false) tails['축소실패'] = 1;
+        if (!r.사본) tails['복사실패'] = 1;
+      }
+      let status = parse.ok ? (plan.종류 === '추가' ? MOMENT_ST_ADD_ : MOMENT_ST_OK_) : MOMENT_ST_UNSORTED_ + ':' + parse.사유;
+      if (!parse.ok) unsorted++;
+      const tailKeys = Object.keys(tails);
+      if (tailKeys.length) status += ' · ' + tailKeys.join(' · ');
+      out.push(momentRow_({ folder: f, parse: parse, media: media, copyFolderId: dest ? dest.getId() : '', loadedAt: loadedAt, status: status,
+        periodKey: momentPeriodKey_(parse.사건일, seasonStart, SEASON_WEEKS) }));
+      if (stopped) break;
+    }
+    if (out.length) sh.getRange(sh.getLastRow() + 1, 1, out.length, PORTFOLIO_MOMENTS_HEADERS.length).setValues(행소독_(out)); // 폴더 이름 = 남의 글 → 소독
+    Logger.log('순간 훑기: 폴더 ' + folders.length + ' · 선생성 ' + Object.keys(made).length + ' · 새 행 ' + out.length + '(미분류 ' + unsorted + ') · 사본 ' + copied + '(축소 ' + shrunk + ')' +
+      (stopped ? ' · ⏱ 예산 도달 — 다음 21시에 이어받는다' : ''));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** 시트 행 → 보기 좋은 값(날짜는 Date 를 삼킨 셀도 'yyyy-MM-dd' 로). 같은 moment_id 는 «마지막 행»이 현행. */
+function momentRowsView_(ss, tz) {
+  const sh = ss.getSheetByName(PORTFOLIO_MOMENTS_TAB_);
+  if (!sh || sh.getLastRow() < 2) return [];
+  const byId = {};
+  sh.getRange(2, 1, sh.getLastRow() - 1, PORTFOLIO_MOMENTS_HEADERS.length).getValues().forEach((r, i) => {
+    const mid = String(r[0] || '').trim();
+    if (!mid) return;
+    byId[mid] = { mid: mid, day: dstr(r[2], tz), cls: String(r[3] || '').trim(), kind: String(r[5] || '').trim(), line: String(r[6] || '').trim(),
+      loaded: dstr(r[11], tz), status: String(r[12] || '').trim(), seq: i };
+  });
+  return Object.keys(byId).map(k => byId[k]);
+}
+/** 이번 주 월요일 'yyyy-MM-dd' (일요일은 지난 월요일). */
+function momentMondayOf_(now, tz) {
+  const m = new Date(now); m.setDate(now.getDate() - ((now.getDay() + 6) % 7)); m.setHours(0, 0, 0, 0);
+  return Utilities.formatDate(m, tz, 'yyyy-MM-dd');
+}
+
+/** 원장 오늘판 두 줄(todayBoard_ 가 부른다 · 새 화면 0 · 새 판단 0 — 설계 §3-b 실패 경로 셋):
+ *  ① 어제 미분류 — 「폴더 이름을 고치면 다음 밤에 담겨요」(행마다 한 줄 · 반 칸엔 읽어낸 반)
+ *  ② 이번 주 순간 0건 반 — **이번 주 출석 사건이 있었던 반**(weekCls = attendance.class_snapshot) 중 수업일이 둘 이상 지난 반만.
+ *     출석 게이트가 없으면 개원 전(학생 0명)에도 시간표 24반이 매일 운다(F103 따를 수 없는 경보). 주말반은 주간 리포트가 진다. */
+function momentBoardRows_(ss, tz, schMap, now, weekCls) {
+  const views = momentRowsView_(ss, tz);
+  if (!views.length && !Object.keys(weekCls || {}).length) return [];
+  const today = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+  const yday = Utilities.formatDate(new Date(now.getTime() - 86400000), tz, 'yyyy-MM-dd');
+  const rows = [];
+  views.filter(v => v.status.indexOf(MOMENT_ST_UNSORTED_) === 0 && v.loaded === yday).forEach(v => {
+    const why = v.status.split(' · ')[0].slice(MOMENT_ST_UNSORTED_.length + 1);
+    rows.push([MOMENT_BOARD_TYPE_, '미분류 「' + v.line + '」 — ' + (why ? why + ' · ' : '') + '폴더 이름을 고치면 다음 밤에 담겨요', v.cls, '—', '']);
+  });
+  const monday = momentMondayOf_(now, tz);
+  const has = {};
+  views.forEach(v => { if (v.status.indexOf(MOMENT_ST_UNSORTED_) !== 0 && v.day >= monday && v.day <= today) has[v.cls] = 1; });
+  const zero = [];
+  Object.keys(weekCls || {}).filter(k => schMap && schMap[k] && schMap[k].name === k).sort().forEach(cn => {
+    if (has[cn]) return;
+    let elapsed = 0;
+    for (let d = new Date(now); Utilities.formatDate(d, tz, 'yyyy-MM-dd') >= monday; d.setDate(d.getDate() - 1)) {
+      if (classDowOk_(schMap[cn].type, d.getDay())) elapsed++;
+    }
+    if (elapsed >= 2) zero.push(cn);
+  });
+  if (zero.length) rows.push([MOMENT_BOARD_TYPE_, '이번 주 순간 0건 — ' + zero.join(' · ') + ' (사진 한 장 + 폴더 이름 한 줄이면 담겨요)', '', '—', '']);
+  return rows;
+}
+
+/** 주간 통합 리포트 섹션(월 07시 · weeklyJobs) — 지난주 「순간 0건 반」 + 미분류. 분모 = 지난주 출석 사건이 있었던 반(개원 전엔 0). 반 이름만 실린다(학생 식별자 0). */
+function momentWeeklyText_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  const thisMon = momentMondayOf_(now, tz);
+  const lastMonD = toDate_(thisMon.replace(/-/g, '')); lastMonD.setDate(lastMonD.getDate() - 7);
+  const lastMon = Utilities.formatDate(lastMonD, tz, 'yyyy-MM-dd');
+  const lastSun = Utilities.formatDate(new Date(lastMonD.getTime() + 6 * 86400000), tz, 'yyyy-MM-dd');
+  const views = momentRowsView_(ss, tz);
+  const met = {}; // 지난주 출석 사건이 있었던 반(class_snapshot) — 수업이 없었던 반은 분모가 아니다
+  const atW = ss.getSheetByName('attendance');
+  if (atW && atW.getLastRow() >= 2) atW.getRange(2, 1, atW.getLastRow() - 1, ATTENDANCE_HEADERS.length).getValues().forEach(r => {
+    const c = String(r[4] || '').trim();
+    if (!c || !r[2]) return;
+    const d = dstr(r[2], tz);
+    if (d >= lastMon && d <= lastSun) met[c] = 1;
+  });
+  const classes = Object.keys(met).sort();
+  const has = {};
+  views.forEach(v => { if (v.status.indexOf(MOMENT_ST_UNSORTED_) !== 0 && v.day >= lastMon && v.day <= lastSun) has[v.cls] = (has[v.cls] || 0) + 1; });
+  const zero = classes.filter(cn => !has[cn]);
+  const unsorted = views.filter(v => v.status.indexOf(MOMENT_ST_UNSORTED_) === 0 && v.loaded >= lastMon && v.loaded <= lastSun);
+  const L = ['지난주(' + lastMon + '~' + lastSun + ') 담긴 반 ' + Object.keys(has).length + ' / 수업한 반 ' + classes.length];
+  L.push('· 순간 0건 반: ' + (zero.length ? zero.join(' · ') : '없음'));
+  L.push('· 미분류 ' + unsorted.length + '건' + (unsorted.length ? ' — ' + unsorted.slice(0, 8).map(v => '「' + v.line + '」(' + v.status.split(' · ')[0] + ')').join(' / ') + ' → 폴더 이름을 고치면 다음 밤에 담깁니다' : ''));
+  const failed = views.filter(v => v.status.indexOf('복사실패') > -1 || v.status.indexOf('축소실패') > -1).length;
+  if (failed) L.push('· 사본이 온전치 않은 순간 ' + failed + '건 — 원본은 그대로 있습니다(SYNK_순간). 다음 밤에 다시 시도합니다(상한 ' + MOMENT_COPY_RETRY_MAX_ + '회)');
+  return L.join('\n');
+}
+

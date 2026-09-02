@@ -139,7 +139,7 @@ function sheetSkeleton_() {
   return [
     ['profiles', ['user_id','이름','이름_몽골','role','class_name','생일','email','연락처','messenger_link','parent_of','tuition','등록일','보호자명','보호자연락처','created_at']],
     ['point_logs', ['id','student_id','points','reason','given_by','created_at','month','태그'], 수집표식_], // [v9.244] 월간 아카이빙이 여기서 행을 옮긴다 — 그 자리(archivePointLogs)가 기준선을 함께 내린다
-    ['attendance', ['id','student_id','timestamp','method'], 수집표식_], // [v9.244] 출석 사건 — 그날 누가 왔는지는 소급이 안 된다
+    ['attendance', ATTENDANCE_HEADERS, 수집표식_], // [v9.244] 출석 사건 — 그날 누가 왔는지는 소급이 안 된다 · [2026-09-02 걸음1] 헤더 정본 = Code.js ATTENDANCE_HEADERS(5 · class_snapshot = 출석 시점 반 스냅샷 · 조인 규칙은 그 주석)
     ['teacher_checkins', ['이름','구분','시각']],
     ['form_responses', ['제출시각']],
     ['raid', ['week','class_name','목표','달성포인트','상태','보상지급']],
@@ -167,7 +167,11 @@ function sheetSkeleton_() {
     ['absence_followup', ABSENCE_FOLLOWUP_HEADERS, 수집표식_], // [v9.89] 결석 추적 — checkNoShow 감지 1건=1행, 연락은 폼, 복귀는 자동 판정. 「결석 복귀율」(등급 심사 20점) 원본
     ['inquiries', ['student_id','이름','문의내용','상태','접수시각']], // [v9.28] 학부모 문의 인바운드
     ['payments', ['student_id','이름','금액(만₮)','납부일','방법','비고','created_at']], // [v9.28] 매출 원장(수동 기입)
-    ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음)
+    ['crew_projects', ['시즌','반','프로젝트명','한줄소개','결과물링크','사진URL','공개일','참여크루','비고']], // [v9.29] 시즌 프로젝트 포트폴리오 — 수동 기입 전용(hall_of_fame 패턴 · 트리거·배치 연동 없음) · ⚠ [2026-09-02] 순간 폴더에서 «파생»되지 않는다(심문 판정 ⑦ — 폴더 문법엔 프로젝트명·참여크루가 없다 · 걸음 3 은 크루 운영 결정 뒤)
+    /* [2026-09-02 · 가져가는것 걸음1] 📷 그날의 순간 — 설계 §2-c 가 새로 파는 «유일한» 그릇. 밤 배치 momentSweep_(엔진_폼리포트.js)가
+     *   Drive `SYNK_순간` 폴더 이름을 읽어 append 한다(사람은 시트를 안 연다). 소급 불가(무대·작품·촬영은 그날 안 담으면 없다) → 수집 표식.
+     *   헤더 정본·열 뜻·읽는 법 = Code.js PORTFOLIO_MOMENTS_HEADERS 주석 · 소비자 = calcAll(걸어온길 BY77·오늘의알림 BX76 · 아래 장부). */
+    [PORTFOLIO_MOMENTS_TAB_, PORTFOLIO_MOMENTS_HEADERS, 수집표식_],
     /* [v9.259 · 엔진검토 Ⅰ-④] 상담AI 두 탭 편입 — ensureSheet 로만 태어나 골격 밖이라 도달·유실
      *   장부의 사각이었다(입학 «전» 학부모·학생의 말이 들어오는 유일한 통로인데 재는 자가 0).
      *   §8-0 두 관문: 상담로그 = ㉠지우는 자리 0(데모 wipe 는 범용이라 자동 보호) ㉡대화 원문 =
@@ -331,6 +335,11 @@ function 수집도달_() {
      *                     세운 그 갈림 그대로다 — 「보이는 것」은 도달이 아니다. */
     'point_logs': { 소비자: 'Code.js:calcAll', 층: '제품' },
     'attendance': { 소비자: 'Code.js:calcAll', 층: '제품' },
+    /* [2026-09-02 · 가져가는것 걸음1] 담긴 순간 → calcAll 이 attendance.class_snapshot 으로 학생에 붙여 걸어온길(BY77) 한 줄 ·
+     *   오늘의알림(BX76) 그날 1건을 «바꾼다» — 학생이 매일 보는 칸의 값이 달라지므로 제품층이다(생산·소비 같은 커밋 · §2-c ⚠).
+     *   ⚠ 심문 판정 ① 그대로: 이것은 «화면» 소비자다. 엔진 소비자(기록장 조판 · 시즌 증서 재료)는 걸음 5 가 세운다 —
+     *   그날 이 칸을 그쪽으로 옮겨 적는다. 지목은 «출력이 바뀌는 자리»(설계 §5)라 calcAll 이다. */
+    [PORTFOLIO_MOMENTS_TAB_]: { 소비자: 'Code.js:calcAll', 층: '제품' },
     'attendance_batch': { 소비자: '엔진_운영배치.js:expandAttendanceBatch_', 층: '제품' },
     'hw_batch': { 소비자: '엔진_운영배치.js:expandHwBatch', 층: '제품' },
     'weekly_topics': { 소비자: '엔진_운영배치.js:expandMasteryLog_', 층: '제품' },
@@ -495,7 +504,9 @@ function 시트도달상한_() {
    *    (v9.197 자기선언 이력이 그은 선 그대로).
    *    ▶ 되갚는 조건: 수집면이 이 원장에 「이 행을 만들 때 동의 상태였나」를 묻기 시작하는 날.
    *    ✅ 이번엔 **재고 올렸다** — 09-01 에 「늘겠지」로 미리 올렸다가 실측 2에 되돌린 자리라,
-   *       장부 등재 → 실측(5) → 상한 순서를 지켰다.) */
+   *       장부 등재 → 실측(5) → 상한 순서를 지켰다.)
+   *   ➡ 5 (2026-09-02 · 분모 확대 27→28 — `portfolio_moments` 신설. 소비자(calcAll 걸어온길·오늘의알림)를
+   *      **같은 커밋**에 세워 도달0 은 그대로다 — 설계 §2-c ⚠ 「세우고 소비자를 미루면 결함」을 그대로 따랐다.) */
   return { 도달0: 5, 손: 1 };
 }
 
@@ -631,7 +642,8 @@ function seedDemoData() {
 
   // ③ attendance — 반유형별 수업일만, 시나리오별 패턴 (지난달 포함 ~5주)
   const atRows = [];
-  const pushAtt = (sid, k) => atRows.push(['ATD' + Utilities.formatDate(day(k), tz, 'yyyyMMdd') + '-' + sid, sid, atTime(k, 11), '출석(데모)']);
+  const demoCls = {}; demo.forEach(d => { demoCls[d[0]] = d[3]; }); // [2026-09-02 걸음1] class_snapshot = 시드 시점의 반(실반과 같은 스키마 — 폭이 갈리면 데모로 검증한 조인이 실전과 어긋난다)
+  const pushAtt = (sid, k) => atRows.push(['ATD' + Utilities.formatDate(day(k), tz, 'yyyyMMdd') + '-' + sid, sid, atTime(k, 11), '출석(데모)', demoCls[sid] || '']);
   for (let k = 35; k >= 0; k--) {
     const wd = day(k).getDay();
     if (wd >= 1 && wd <= 5) { // 평일 — 데모정규반
@@ -647,7 +659,8 @@ function seedDemoData() {
     }
   }
   const at = ss.getSheetByName('attendance');
-  at.getRange(at.getLastRow() + 1, 1, atRows.length, 4).setValues(atRows);
+  헤더보정_(at, ATTENDANCE_HEADERS); // [2026-09-02 걸음1] 라이브 시트가 구 4열이면 폭부터(ensureSheet 는 있는 시트의 헤더를 안 늘린다)
+  at.getRange(at.getLastRow() + 1, 1, atRows.length, ATTENDANCE_HEADERS.length).setValues(atRows);
   L.push('✓ attendance: ' + atRows.length + '행(스트릭·미출석·보드 시나리오)');
 
   // ④ point_logs — 지난달(시상 재료)+이번달(랭킹·도전·성장·레이드 재료). id 'PLD' 접두(PL 채번과 무충돌)
@@ -1522,6 +1535,7 @@ function calcAllJob()             { safeRun('calcAll', calcAll); }              
 function sendMorningDigestJob()   { safeRun('sendMorningDigest', sendMorningDigest); }     // 매일 08시 — 아침 브리핑
 function monthlyReportCardsJob()  { safeRun('monthlyReportCards', monthlyReportCards); }   // 1일 06시 — 리포트카드 배치 진입점
 function monthlyReportJob()       { safeRun('monthlyReport', monthlyReport); }             // 1일 07시 — 월간 리포트
+function momentSweepJob()         { safeRun('momentSweep', momentSweep_); }                 // [2026-09-02 걸음1] 매일 21시 — 순간 폴더 훑기(엔진_폼리포트.js)
 
 function weeklyJobs() {    // 매주 월 07시
   safeRun('raidMonday', raidMonday); // 게임(레이드) 설정 — 시트 쓰기만, 메일 리포트 아님
@@ -1575,7 +1589,9 @@ function weeklyJobs() {    // 매주 월 07시
     // [v9.119] `ss`는 weeklyJobs 스코프에 없다 — 08-01 실행 로그에서 `ReferenceError: ss is not defined`로
     //   이 섹션만 매주 실패하고 있었다(섹션 try/catch가 잡아 리포트는 살지만 이수율은 영구 공백).
     //   다른 섹션과 같은 패턴으로 자체 조회한다.
-    ['🎬 온라인 강의 이수율(주말반)', function () { const ssL = SpreadsheetApp.getActiveSpreadsheet(); return lectureWeeklyText_(ssL); }] // [v9.125] 주석 정정: 섹션 제목은 항상 찍히고 빈 값은 '(내용 없음)'으로 남는다 — 무데이터가 보여야 「원래 그런 주」와 구별된다
+    ['🎬 온라인 강의 이수율(주말반)', function () { const ssL = SpreadsheetApp.getActiveSpreadsheet(); return lectureWeeklyText_(ssL); }], // [v9.125] 주석 정정: 섹션 제목은 항상 찍히고 빈 값은 '(내용 없음)'으로 남는다 — 무데이터가 보여야 「원래 그런 주」와 구별된다
+    // [2026-09-02 · 가져가는것 걸음1] 지난주 「순간 0건 반」 + 미분류 — 설계 §3-b 실패 경로 셋의 주 1회 경보(원장 통로 기존 것 · 반 이름만 실린다 · 학생 식별자 0)
+    ['📷 순간 담기(지난주)', function () { return momentWeeklyText_(); }]
   ];
   let body = '📬 SYNK 주간 통합 리포트 · ' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd') + '\n';
   let aiBody = ''; // [v9.206] AI 해설 입력 — 집계 화이트리스트 섹션만 담는다(위 sections 셋째 칸 주석 참조)
@@ -1736,7 +1752,8 @@ function triggerManifest_(tbOn) {
   const 목록 = [
     'parentSweep', 'dailyBackupJob', 'morningJobs', 'sendMorningDigestJob', 'calcAllJob',
     'nightJobs', 'weeklyJobs', 'monthlyJobs', 'monthlyReportCardsJob', 'monthlyReportJob',
-    'onConsultEdit'                       // [v9.164] 상담시트 학생ID 즉시 발급
+    'onConsultEdit',                      // [v9.164] 상담시트 학생ID 즉시 발급
+    'momentSweepJob'                      // [2026-09-02 · 가져가는것 걸음1] 21시 순간 폴더 훑기 — nightJobs(6분 예산) 밖 제 트리거 · Drive 복사가 길다
   ];
   if (tbOn) 목록.push('교재연동Nightly'); // [v9.67] 개통 발자국 있을 때만 — 미개통 시스템에 오경보 0
   return 목록;
@@ -1769,6 +1786,10 @@ function resetAllTriggers(force) {
   ScriptApp.newTrigger('monthlyJobs').timeBased().onMonthDay(1).atHour(5).create();
   ScriptApp.newTrigger('monthlyReportCardsJob').timeBased().onMonthDay(1).atHour(6).create(); // [v9.25] safeRun 보호 래퍼
   ScriptApp.newTrigger('monthlyReportJob').timeBased().onMonthDay(1).atHour(7).create();       // [v9.25] safeRun 보호 래퍼
+  /* [2026-09-02 · 가져가는것 걸음1] 순간 폴더 훑기 — **21시**: 수업이 끝나고 강사가 사진을 넣은 뒤 · 22시 nightJobs(calcAll)가 같은 밤에
+   *   걸어온길·오늘의알림에 얹을 수 있게 그 «앞». nightJobs 6분 예산 안에 넣지 않는다(Drive 복사·축소본은 파일 수에 비례해 길다 —
+   *   제 예산 4.5분에서 멈추고 다음 날 이어받는다 · 멱등이라 재실행 무해). 그날 21시 뒤에 넣은 사진은 다음 날 21시에 담긴다. */
+  ScriptApp.newTrigger('momentSweepJob').timeBased().atHour(21).everyDays(1).create();
   // [v9.67] 교재연동Nightly(23시 — AI 문법판정·목소리 수거·연습 노트) 재설치 — 위 전체 삭제 루프가
   //   setupTextbookLink(교재연동.js)가 설치한 이 트리거까지 지우고 재설치 목록엔 없어 조용히 실종되던 결함.
   //   개통 발자국(profiles '목소리폼URL' 헤더) 있을 때만 — 미개통 시스템에 유령 트리거를 만들지 않는다.
@@ -1779,7 +1800,7 @@ function resetAllTriggers(force) {
   //   setupConsultTrigger가 만든 트리거까지 지운다. 교재연동Nightly가 같은 이유로 실종됐던 결함([v9.67])의 재발.
   //   시간 기반이 아니라 조용히 안 도는 것으로만 드러나므로(발급이 아침 백스톱까지 밀린다) 목록 누락이 더 위험하다.
   ScriptApp.newTrigger('onConsultEdit').forSpreadsheet(CONSULT_SHEET_ID).onEdit().create();
-  Logger.log('✅ 트리거 통합 재설치 완료: ' + (tbOnR ? '12개' : '11개') + ' (10분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 월 7시 주간 · 1일 5/6/7시 월간 · 상담시트 onEdit' + (tbOnR ? ' · 23시 교재연동' : ' — 교재연동 미개통이라 교재연동Nightly 제외, setupTextbookLink ▶ 시 +1') + ')');
+  Logger.log('✅ 트리거 통합 재설치 완료: ' + triggerManifest_(tbOnR).length + '개 (10분 스위프 · 3시 백업 · 7시 아침작업 · 8시 브리핑 · 14/22시 계산 · 21시 순간 폴더 · 월 7시 주간 · 1일 5/6/7시 월간 · 상담시트 onEdit' + (tbOnR ? ' · 23시 교재연동' : ' — 교재연동 미개통이라 교재연동Nightly 제외, setupTextbookLink ▶ 시 +1') + ')');
 }
 
 /* ===================== [v9.26] 📟 경영계기판 — 6지표 신호등 대시보드 =====================
