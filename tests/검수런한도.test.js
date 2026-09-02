@@ -21,6 +21,15 @@ const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 
+/** 「심문 이력 0」을 만드는 «없는» 경로 — 부를 때마다 다른 이름을 낸다.
+ *  짝 = tests/검수런.test.js 의 같은 이름 함수(값이 아니라 «생성기»라 두 벌이어도 안 갈린다).
+ *  고정 이름을 쓰면 그 자리에 파일이 한 번 남는 순간 전제가 깨져 거짓 적색이 된다.
+ *  (codex 지적 c2c91ec90eb2 · 09-01) */
+function 없는심문장부() {
+  return path.join(os.tmpdir(),
+    `synk-없는심문장부-${process.pid}-${Math.random().toString(36).slice(2, 10)}.jsonl`);
+}
+
 /* 픽스처 방 — env 로 갈아끼워 실저장소 tmpdir 을 안 건드린다(tests/검수런.test.js 와 같은 규약). */
 function 새방() {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-한도-test-'));
@@ -210,7 +219,7 @@ test('훅: 런 0건이어도 살아있는 마커면 알리고, 마커가 지났�
   const env = {
     ...process.env,
     SYNK_REVIEW_RUNS: process.env.SYNK_REVIEW_RUNS,
-    SYNK_INTERROGATION_LEDGER: path.join(require('node:os').tmpdir(), 'synk-없는심문장부.jsonl'),
+    SYNK_INTERROGATION_LEDGER: 없는심문장부(),
   };
   delete env[런.한도무시키];
   const out = execFileSync(process.execPath, [path.join(ROOT, '.claude', 'hooks', 'review-runs.js')],
