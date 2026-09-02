@@ -256,6 +256,16 @@
   .도장{width:2.3em;height:2.3em;border-radius:50%;vertical-align:-.55em;}
   .말풍선{width:2.0em;height:1.62em;border-radius:26%;}
 
+  /*loom부품:와펜*//*loom부품:매듭*//*loom부품:폼폼*//*loom부품:시침핀*//*loom부품:게이지*//*loom부품:소리대기*//*loom부품:소리중*//*loom부품:소리맺음*//*loom부품:바늘*//*loom부품:탭집*//*loom부품:탭책*//*loom부품:탭차트*//*loom부품:탭사람*/
+  /* 🔴 자수 요소 열셋 — 그림은 08월에 구워 뒀는데 «크기»가 없어서 쓰려 해도 0×0 으로 섰다.
+     그래서 어느 지면에서도 안 쓰였고, 「쓰는 것만 싣는다」가 지날 때마다 통째로 쓸려 나갔다
+     (09-03 실측: 홈페이지 자립형에서 26장이 그렇게 빠졌다 · 유호 확정 09-03 「빼지마. 저거 좋은데」).
+     ⇒ 위 별·하트 무리와 «같은 자리»를 준다. 뒤 구움층이 재질만 갈아끼운다.
+     크기가 하나인 근거 = 열셋 다 정사각 그림이다(128~384px · 가로÷세로 1.00 · 09-03 실측).
+     ⚠부품별 크기 차등(도장이 2.3em 인 것 같은)은 «유호님 눈»이 판정 축이라 아직 안 준다. */
+  .와펜,.매듭,.폼폼,.시침핀,.게이지,.소리대기,.소리중,.소리맺음,.바늘,.탭집,.탭책,.탭차트,.탭사람{display:inline-block;vertical-align:-.3em;flex:none;
+    width:1.62em;height:1.62em;border-radius:34%;background:rgba(249,104,89,0.88);}
+
   /*loom부품:히어로수*/
   /* 히어로수 — 지면당 «1점». 가장 센 물성이라 둘이면 서로를 죽인다.
      여기서만 갇힌 빛이 코랄이다 — 면이 아니라 «속의 빛»이라 신호 1점 규율 안에 든다.
@@ -611,7 +621,7 @@
     <h1>Loom</h1>
     <p style="max-width:34ch;font-size:1.1rem">지면의 «작은 것» 전량이 재질을 입는다.
        번호도, 불릿도, 따옴표도 — 텍스트로 두지 않는다.</p>
-    <p class="흐린 작게">부품 18종 · 값 = docs/디자인_토큰.json · 조립 = tools/lib/loom.js --시연</p>
+    <p class="흐린 작게">부품 31종 · 값 = docs/디자인_토큰.json · 조립 = tools/lib/loom.js --시연</p>
   </div>
 </header>
 
@@ -670,7 +680,7 @@
 <li>원형 부품은 사각 부품보다 2~4% 크게 — 같은 크기면 원이 작아 보인다(면적이 π/4 다).</li>
 </ul>
 
-<h2>부품 18종 — 전량</h2>
+<h2>부품 31종 — 전량</h2>
 <p>아래는 <b>토큰 목록에서 자동 조립</b>된다. 부품이 늘면 여기에 저절로 나타나고,
    구현이 없으면 <code>node tools/lib/loom.js --분모</code> 가 이름째 센다.</p>
 <div class="유리 판">
@@ -752,6 +762,71 @@
   <p class="꼭지">유리 · 쪽번호</p>
   <p class="흐린 작게">🖨 낮 지면에서만 산다 — 화면에는 「쪽」이라는 것이 없다. <b>Ctrl+P</b> 로 확인.</p>
   <p class="흐린 작게" style="margin-top:var(--참)">인쇄 전용 — 낮 지면에서만 산다</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 와펜</p>
+  <p><span class="와펜"></span> <span class="흐린">원형 자수 배지 — «통과·인증»의 표식(체크가 이미 수놓여 있다)</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">원형 자수 배지 — «통과·인증»의 표식(체크가 이미 수놓여 있다)</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 매듭</p>
+  <p><span class="매듭"></span> <span class="흐린">실 네 고리가 꿴 꽃 매듭 — «묶는다·맺는다»(절 맺음·꼬리)</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">실 네 고리가 꿴 꽃 매듭 — «묶는다·맺는다»(절 맺음·꼬리)</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 폼폼</p>
+  <p><span class="폼폼"></span> <span class="흐린">털뭉치 — 가볍고 말랑한 강조(설명 주석이 원본에 없어 «그림이 뜻을 진다»)</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">털뭉치 — 가볍고 말랑한 강조(설명 주석이 원본에 없어 «그림이 뜻을 진다»)</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 시침핀</p>
+  <p><span class="시침핀"></span> <span class="흐린">천에 꽂힌 핀 — «임시로 꽂아 둔 것 · 아직 안 정해진 것»</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">천에 꽂힌 핀 — «임시로 꽂아 둔 것 · 아직 안 정해진 것»</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 게이지</p>
+  <p><span class="게이지"></span> <span class="흐린">털 고리 — «차오르는 것»(진척·바퀴)</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">털 고리 — «차오르는 것»(진척·바퀴)</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 소리대기</p>
+  <p><span class="소리대기"></span> <span class="흐린">소리 세 상태 ① 대기 — 굽은 이름은 «녹음»이지만 자리는 소리 일반(라디오·발음·목소리)</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">소리 세 상태 ① 대기 — 굽은 이름은 «녹음»이지만 자리는 소리 일반(라디오·발음·목소리)</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 소리중</p>
+  <p><span class="소리중"></span> <span class="흐린">소리 세 상태 ② 도는 중 — 셋이 한 줄에서 갈린다</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">소리 세 상태 ② 도는 중 — 셋이 한 줄에서 갈린다</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 소리맺음</p>
+  <p><span class="소리맺음"></span> <span class="흐린">소리 세 상태 ③ 맺음 — 셋 다 있을 때만 나간다</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">소리 세 상태 ③ 맺음 — 셋 다 있을 때만 나간다</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 바늘</p>
+  <p><span class="바늘"></span> <span class="흐린">내려놓은 바늘 — «끝난 일·놓아 준 것»(실이 아직 달려 있다)</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">내려놓은 바늘 — «끝난 일·놓아 준 것»(실이 아직 달려 있다)</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 탭집</p>
+  <p><span class="탭집"></span> <span class="흐린">자수 탭 ① 집 — 절 앵커·표 머리처럼 «갈래를 가르는» 자리</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">자수 탭 ① 집 — 절 앵커·표 머리처럼 «갈래를 가르는» 자리</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 탭책</p>
+  <p><span class="탭책"></span> <span class="흐린">자수 탭 ② 책 — 위와 한 벌</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">자수 탭 ② 책 — 위와 한 벌</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 탭차트</p>
+  <p><span class="탭차트"></span> <span class="흐린">자수 탭 ③ 차트 — 위와 한 벌</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">자수 탭 ③ 차트 — 위와 한 벌</p>
+</div>
+<div class="유리 판">
+  <p class="꼭지">펠트 · 탭사람</p>
+  <p><span class="탭사람"></span> <span class="흐린">자수 탭 ④ 사람 — 위와 한 벌</span></p>
+  <p class="흐린 작게" style="margin-top:var(--참)">자수 탭 ④ 사람 — 위와 한 벌</p>
 </div>
 <div class="유리 판">
   <p class="꼭지">없음 · 링크점</p>
