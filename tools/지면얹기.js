@@ -103,14 +103,16 @@ function 본다() {
 
   console.log('■ 지면얹기 — 손 HTML 에 Loom 부품을 입힌다\n');
   for (const [rel, 지면, 사유] of 등록) {
-    const { 원본, html, 훅, 얹힘, 사유: 막힌사유, 범위흠 } = 굽는다(rel, 지면);
+    const { 원본, html, 훅, 얹힘, 같나, 사유: 막힌사유, 범위흠 } = 굽는다(rel, 지면);
     if (!얹힘) {
       못얹음.push([rel, 막힌사유 || '알 수 없음']);
       console.log(`  🔴 ${rel}\n       ${지면} · ${막힌사유}`);
       if (범위흠) console.log(`       ${범위흠}`);
       continue;
     }
-    const 같나 = html === 원본;
+    /* 🔑 「같나」는 `얹기` 가 낸 것을 그대로 쓴다 — 여기서 `html === 원본` 으로 다시 견주면
+       체크아웃이 CRLF 로 내려준 지면이 **내용과 무관하게** 전부 「낡았다」가 된다
+       (09-03 실측: 등록 12 중 8벌 · `git diff` 0줄 · `tools/lib/loom얹기.js` 의 `최신` 머리말). */
     if (같나) { 그대로 += 1; console.log(`  ✅ ${rel}  (${지면} · 훅 ${훅.length})`); continue; }
     const 이미 = 얹기모듈.내가얹음(원본);
     if (이미) 낡음 += 1; else 새로 += 1;
