@@ -26,7 +26,7 @@ const zlib = require('zlib');
 
 const 저장소 = path.join(__dirname, '..');
 const 깊이격자 = require(path.join(저장소, 'tools', 'lib', '깊이격자.js'));
-const { 기본N: N, 뽑기, png읽기, 줄이기 } = 깊이격자;
+const { 기본N: N, 앱용뽑기, png읽기, 줄이기 } = 깊이격자;
 const 마스코트 = require(path.join(저장소, 'tools', 'lib', '마스코트자산.js'));
 
 /* ── 그림을 지면에 «박아 넣는다» ─────────────────────────────────────────────
@@ -98,8 +98,8 @@ const 가이드들 = [
 const 깊이 = {};
 const 그림URI = {};
 for (const g of 가이드들) {
-  const { z, 통계 } = 뽑기(g.절대);
-  깊이[g.이름] = { z, 중심: Math.round(통계.평균 * 1000) / 1000 };
+  const { z, 기준, 눈대몸 } = 앱용뽑기(g.절대);
+  깊이[g.이름] = { z, 기준, 눈대몸: Math.round(눈대몸*100)/100, 눈밀기: Math.round((Math.max(...z)-기준)*1000)/1000 };
   그림URI[g.이름] = 박을그림(g.절대);
 }
 
@@ -188,7 +188,7 @@ const html = `<!doctype html>
       <canvas id="큰판" width="624" height="624" style="width:312px;height:312px"></canvas>
     </div>
     <div class="조절">
-      <div class="줄"><label>시차(입체)</label><input id="시차" type="range" min="0" max="0.40" step="0.01" value="0.16"><span class="값" id="시차값">0.16</span></div>
+      <div class="줄"><label>시차(입체)</label><input id="시차" type="range" min="0" max="0.60" step="0.01" value="0.24"><span class="값" id="시차값">0.24</span></div>
       <div class="줄"><label>가로 진폭</label><input id="가로" type="range" min="0" max="0.60" step="0.01" value="0.27"><span class="값" id="가로값">0.27</span></div>
       <div class="줄"><label>세로 진폭</label><input id="세로" type="range" min="0" max="0.30" step="0.01" value="0.07"><span class="값" id="세로값">0.07</span></div>
       <div class="집" id="4D집"></div>
@@ -274,7 +274,7 @@ function z읽기(z, zN, u, v){
    꼭짓점을 공유하면 틈이 생길 수가 없다. */
 const 가로칸=12, 세로칸=14;
 function 그리기(ctx, 그림, 옵션){
-  const {폭, z, 중심, 시차, 시점x, 시점y, 숨=0, 배율=1} = 옵션;
+  const {폭, z, 기준, 시차, 시점x, 시점y, 숨=0, 배율=1} = 옵션;
   ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
   if(!그림 || !그림.complete || !그림.naturalWidth) return;
   const S = 폭*배율;
@@ -285,8 +285,10 @@ function 그리기(ctx, 그림, 옵션){
       const u=i/가로칸, yr=j/세로칸, v=1-yr;
       let dx=0, dy=0;
       if(z){
-        const zv = z읽기(z, 자료.N, u, v);
-        if(zv>0){ const 편차=zv-중심; dx=시점x*편차*시차*S; dy=시점y*편차*시차*S; }
+        /* 기준보다 얼마나 앞인가만 민다 — 가장자리는 0 이라 못 박히고 안쪽만 흐른다.
+           조건문을 두면 이웃 칸끼리 「한쪽 0, 한쪽 큼」이 되어 격자가 찢긴다(09-02 찌그러짐). */
+        const 밀기 = Math.max(0, z읽기(z, 자료.N, u, v) - 기준);
+        dx=시점x*밀기*시차*S; dy=시점y*밀기*시차*S;
       }
       /* 숨 — 앱과 같은 결(발치가 먼저, 머리가 늦게) */
       const 위상 = 숨*Math.PI*2 - (1-yr)*0.35*Math.PI*2;
@@ -325,7 +327,7 @@ function 삼각형(ctx,img,p0,p1,p2,t0,t1,t2){
 
 /* ── ① 4D ──────────────────────────────────────────────────────────────── */
 let 입체켬 = true, 지금가이드 = '몽글';
-const 세기 = { 시차:0.16, 가로:0.27, 세로:0.07 };
+const 세기 = { 시차:0.24, 가로:0.27, 세로:0.07 };
 const 그림들 = { 몽글: $('원본몽글'), 까몽: $('원본까몽') };
 for(const k of ['시차','가로','세로']){
   $(k).addEventListener('input', (e)=>{ 세기[k]=+e.target.value; $(k+'값').textContent=세기[k].toFixed(2); 집갱신(); });
@@ -338,13 +340,15 @@ $('가이드전환').onclick = ()=>{
 };
 function 집갱신(){
   const d = 자료.깊이[지금가이드];
-  const 눈어긋 = (1.30 - d.중심) * 세기.가로 * 세기.시차 * 84;
+  /* 눈이 몸보다 앞서는 양 — 84px 화면 기준. 눈밀기·눈대몸은 구울 때 재서 실어 둔 값이다. */
+  const 눈어긋 = 세기.가로 * d.눈밀기 * (1 - 1/d.눈대몸) * 세기.시차 * 84;
   $('4D집').innerHTML = '지금 값이면 <b>84px 화면에서 눈이 몸보다 최대 '
     + 눈어긋.toFixed(1) + 'px 앞서</b> 움직입니다. '
     + (눈어긋 < 0.8 ? '<span class="빔">이 정도면 눈에 안 보입니다.</span>'
       : 눈어긋 > 3.5 ? '<span class="빔">너무 큽니다 — 얼굴이 미끄러져 보일 수 있습니다.</span>'
       : '<span class="좋">읽히는 범위입니다.</span>')
-    + '<br>앱에 지금 들어간 값 = 시차 0.16 · 가로 0.27 · 세로 0.07';
+    + '<br>눈 대 몸 대비 ' + d.눈대몸 + '배 · 실루엣 가장자리는 <b>0 이라 제자리에 못 박힙니다</b>(테두리가 안 흔들립니다).'
+    + '<br>앱에 지금 들어간 값 = 시차 0.24 · 가로 0.27 · 세로 0.07';
 }
 집갱신();
 
@@ -415,7 +419,7 @@ function 루프(t){
   const 시점x = 입체켬 ? Math.cos(초/11*Math.PI*2)*세기.가로 : 0;
   const 시점y = 입체켬 ? Math.sin(초/14*Math.PI*2)*세기.세로 : 0;
   const 숨 = 초/3.6;
-  const 공통 = { z:입체켬?d.z:null, 중심:d.중심, 시차:세기.시차, 시점x, 시점y, 숨 };
+  const 공통 = { z:입체켬?d.z:null, 기준:d.기준, 시차:세기.시차, 시점x, 시점y, 숨 };
 
   그리기($('작은판').getContext('2d'), 그림, {폭:168, 배율:1, ...공통});
   그리기($('큰판').getContext('2d'), 그림, {폭:560, 배율:1, ...공통});
@@ -444,4 +448,8 @@ requestAnimationFrame(루프);
 
 fs.writeFileSync(나갈곳, html, 'utf8');
 console.log(`판정 지면 — ${path.relative(저장소, 나갈곳)} (${(fs.statSync(나갈곳).size / 1024).toFixed(0)}KB)`);
-for (const g of 가이드들) console.log(`  ${g.이름}: 깊이 중심 ${깊이[g.이름].중심} · 재회 ${Object.values(재회[g.이름] || {}).flat().length}벌`);
+for (const g of 가이드들) {
+  const d = 깊이[g.이름];
+  console.log(`  ${g.이름}: 기준 ${d.기준} · 눈밀기 ${d.눈밀기} · 눈대몸 ${d.눈대몸}배`
+    + ` · 재회 ${Object.values(재회[g.이름] || {}).flat().length}벌`);
+}
