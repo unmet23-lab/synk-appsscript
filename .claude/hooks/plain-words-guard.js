@@ -146,6 +146,17 @@ process.stdin.on('end', () => {
   const 되물음 = 되물음무늬.some((r) => r.test(말));
   const 짚으신것 = 되물음 ? 되물은낱말(말) : [];
 
+  // 🔴 «돌았다»를 남긴다 — 이게 없으면 «0건이라 조용함»과 «훅이 아예 안 돎»을 못 가른다.
+  //    0건이 성공의 얼굴을 하는 자리(zero-is-a-success-face-taxonomy)라, 잣대를 먼저 의심할 수 있어야 한다.
+  //    저장소가 아니라 임시 폴더에 둔다 — 기록이 아니라 «맥박»이다.
+  try {
+    fs.writeFileSync(
+      path.join(require('os').tmpdir(), 'synk-쉬운말-맥박.json'),
+      JSON.stringify({ 때: new Date().toISOString(), 낯선: 낯선.length, 낱말: 낯선.slice(0, 20), 되물음, 짚으신것 }),
+      'utf8'
+    );
+  } catch { /* 맥박을 못 남겨도 검사는 계속한다 */ }
+
   if (!낯선.length && !되물음) process.exit(0); // 0건이면 완전 침묵
 
   const 보일것 = 낯선.slice(0, 12);

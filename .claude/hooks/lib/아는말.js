@@ -33,6 +33,10 @@ const 아는말 = [
   'Blender', 'Canva', 'Figma', 'Notion', 'Excel', 'Word', 'Windows', 'Chrome',
   'YouTube', 'TikTok', 'Instagram', 'Facebook', 'Gmail', 'Google', 'GitHub',
   'Supabase', 'Expo', 'Glide', 'Remotion', 'Lottie', 'Skia',
+  // 유호님이 «먼저 꺼내신» 이름 — 되물음이 아니라 사용이 증거다
+  'Spark',   // 09-03 유호님 첫마디가 「제미나이 스파크」였다
+  'Meta',    // 페이스북·인스타 운영 주체 · 유호님이 광고 계정을 직접 쓰신다
+  'Pro',     // Google AI Pro · Canva Pro — 구독을 유호님이 관리하신다
   // AI 이름
   'AI', 'ChatGPT', 'GPT', 'Claude', 'Gemini', 'Codex',
   // 일상 약어
@@ -42,6 +46,7 @@ const 아는말 = [
   'GB', 'MB', 'KB', 'TB', 'RAM', 'GPU', 'CPU', 'SSD', 'px', 'cm', 'mm', 'kg', 'ml',
   // 우리 일에서 매일 나오는 말
   'git', 'push', 'PR',
+  'clasp',   // 09-03 유호님이 직접 「아는말에 넣어줘」 — 배포 이야기마다 나온다
 ];
 
 const 아는말집합 = new Set(아는말.map((w) => w.toLowerCase()));
