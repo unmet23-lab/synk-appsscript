@@ -21,6 +21,16 @@ const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 
+/** 「심문 이력 0」을 만드는 «없는» 경로 — 부를 때마다 다른 이름을 낸다.
+ *  고정 이름(`synk-없는심문장부.jsonl`)을 쓰면 그 자리에 파일이 한 번 남는 순간
+ *  전제가 깨져 시험이 거짓 적색이 된다. 지우기로는 못 막는다 — 시험 둘이 같은 이름을
+ *  동시에 쓰면 서로의 전제를 지운다. 만들지 않으니 치울 것도 없다.
+ *  (codex 지적 c2c91ec90eb2 · 09-01 · 짝 = tests/검수런한도.test.js) */
+function 없는심문장부() {
+  return path.join(os.tmpdir(),
+    `synk-없는심문장부-${process.pid}-${Math.random().toString(36).slice(2, 10)}.jsonl`);
+}
+
 /* 픽스처 방 — env 로 갈아끼워 실저장소 tmpdir 을 안 건드린다. 모듈이 경로를 **부를 때마다**
  * env 를 읽으므로(상수로 굳히지 않았다) 테스트마다 다른 방을 줄 수 있다. */
 function 새방() {
@@ -381,7 +391,10 @@ function 훅돌리기(env) {
           env: {
             ...process.env,
             // 없는 경로 = 「심문 이력 0」 = 드리프트 침묵. 덮어쓰려면 호출자가 env 로 준다(뒤가 이긴다).
-            SYNK_INTERROGATION_LEDGER: path.join(require('node:os').tmpdir(), 'synk-없는심문장부.jsonl'),
+            // 🔑 이름을 «런마다» 다르게 짓는다 — 고정 이름이면 누가 그 자리에 파일을 남긴 순간
+            //   「이력 0」 전제가 깨져 이 시험이 거짓 적색이 된다(codex 지적 c2c91ec90eb2 · 09-01).
+            //   지우는 것으로는 못 막는다: 시험 둘이 같은 이름을 동시에 쓰면 서로의 전제를 지운다.
+            SYNK_INTERROGATION_LEDGER: 없는심문장부(),
             ...env,
           },
         }),
