@@ -4450,6 +4450,9 @@ function menuMigrateConsent() { menuRun_(migrateConsentV186); }
 function menuCreateInterviewLogForm() { menuRun_(createInterviewLogForm); }
 function menuCreateWorkLogForm() { menuRun_(createWorkLogForm); }
 function menuMigrateWorkFormMn() { menuRun_(migrateWorkFormMn); }
+/* [v9.293] 결과 칸 셋 — 살아 있는 폼에 문항을 «더하는» 유일한 통로(유호 채택 09-02 · 한 차원 D2).
+ * 생성부(createWorkLogForm)는 라이브 폼을 안 건드리므로 08-27 에 선 폼은 이 메뉴로만 받는다. */
+function menuMigrateWorkFormOutcome() { menuRun_(migrateWorkFormOutcome); }
 /* 같은 자리 3번째라 개별로 안 고치고 회귀로 못박았«었»다(`tests/수집.test.js` 「▶ 표기는 메뉴가 실행 경로다」
    — ⚠삭제됨 08-19 e75fc7fc · **그 못은 지금 없다**. 같은 자리가 네 번째로 어긋날 수 있다):
  *   Code.js 가 `(▶…)` 로 적은 함수는 **정의가 살아 있는 한 전부** 여기 있어야 한다. */
@@ -4956,6 +4959,7 @@ function onOpen() {
       .addItem('🔏 동의 문항 갱신(수집 0단계·문구 바뀔 때마다)', 'menuMigrateConsent')
       .addItem('🎤 면접 기록 회수 폼 만들기(VR 0단계·1회)', 'menuCreateInterviewLogForm')
       .addItem('🧰 직장 경험 회수 폼 만들기(VR 직업체험 0단계·1회)', 'menuCreateWorkLogForm')
+      .addItem('🎯 직장 경험 폼에 «결과 칸» 넣기(1회 · 귀환자 조사)', 'menuMigrateWorkFormOutcome')
       .addItem('🇲🇳 직장 경험 폼에 몽골어 안내 넣기(문구 바뀔 때마다)', 'menuMigrateWorkFormMn')
       .addItem('🗒 강사 메모 폼 만들기(1회)', 'menuCreateTeacherMemoForm')
       .addItem('🧠 퀴즈 응답 폼 만들기(수집 1단계)', 'menuCreateQuizForm')
