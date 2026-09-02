@@ -131,10 +131,13 @@ function 대외문안검사({ 전량 = false } = {}) {
     const 새것 = r.지적.filter(d => { if (잠금 && 잠금.has(지문(f, d))) { 잠긴수++; return false; } return true; });
     if (!새것.length) continue;
     console.log(`\n── ${f}  ${새것.length}건`);
+    /* 🔴 세는 것과 보여주는 것을 갈라 둔다 — 09-03 실측에서 이 둘이 붙어 있어
+     *    «화면에 보인 12건»만 규칙별로 세고 있었다. 합계는 맞는데 갈래별 수가 틀린,
+     *    가장 알아채기 어려운 꼴이다(measurement-needs-its-instrument). */
+    for (const d of 새것) 규칙별.set(d.규칙, (규칙별.get(d.규칙) || 0) + 1);
     for (const d of 새것.slice(0, 12)) {
       console.log(`   ${String(d.줄).padStart(4)}  [${d.규칙}] ${d.말}`);
       if (d.글) console.log(`         ${d.글}`);
-      규칙별.set(d.규칙, (규칙별.get(d.규칙) || 0) + 1);
     }
     if (새것.length > 12) console.log(`   … 그 밖 ${새것.length - 12}건`);
     합 += 새것.length;
