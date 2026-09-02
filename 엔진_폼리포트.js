@@ -1680,16 +1680,23 @@ function migrateWorkFormOutcome_(알림기록) {
     if (목표 === -1) 앵커없음.push(결과머리);
     else form.moveItem(h.getIndex(), 목표);
     넣은것.push('섹션 「' + 결과머리 + '」');
-  } else {
-    /* 있는데 동의 «뒤»에 있으면 옮긴다 — 첫 실행에서 만들기는 됐고 moveItem 만 실패한 모양(v9.182).
-     * ⚠ 이 교정은 문항 반복문 «앞»에 있어야 한다 — 뒤에 두면 머리가 문항들 뒤로 가서 순서가 뒤집힌다. */
-    const 머리it = form.getItems().filter(function (x) { return String(x.getTitle()).trim() === 결과머리; })[0];
-    const 동의at0 = 동의자리();
-    if (머리it && 동의at0 !== -1 && 머리it.getIndex() > 동의at0) {
-      form.moveItem(머리it.getIndex(), 동의at0);
-      넣은것.push('자리 교정 — 섹션 「' + 결과머리 + '」');
-    }
   }
+  /* ⚠ 머리 자리 교정은 «문항을 다 놓은 뒤»에, 그리고 과녁은 동의가 아니라 **첫 결과 문항**이다
+   *   (codex P2 cac3eb180b2d·P3 2aeaea5e5970 채택 · v9.295). v9.294 는 머리를 «동의 앞»으로 옮겼는데,
+   *   문항들이 이미 동의 앞에 있는 부분 실행 상태에서는 그 자리가 곧 «문항들 뒤»라 머리가 제 문항 뒤에
+   *   남았다(문항1·2·3 → 머리 → 동의). 재실행해도 문항은 이미 동의 앞이라 안 움직여 영영 안 수렴한다.
+   *   ⇒ 과녁을 첫 결과 문항으로 바꾸면 세 경우가 모두 한 모양으로 수렴한다(새 폼 · 머리만 실패 · 문항만 실패). */
+  const 머리교정 = () => {
+    const items = form.getItems();
+    const at = (t) => { for (let i = 0; i < items.length; i++) if (String(items[i].getTitle()).trim() === t) return i; return -1; };
+    const 머리at = at(결과머리);
+    if (머리at === -1) return;
+    const 문항자리들 = 결과문항.map((q) => at(q[0])).filter((i) => i !== -1);
+    const 과녁 = 문항자리들.length ? Math.min.apply(null, 문항자리들) : 동의자리();
+    if (과녁 === -1 || 머리at < 과녁) return;          // 이미 앞이면 그대로
+    form.moveItem(머리at, 과녁);
+    넣은것.push('자리 교정 — 섹션 「' + 결과머리 + '」');
+  };
 
   // ② 결과 문항 셋 — 있으면 안 만들고, 안내문만 정본과 대조해 갱신한다
   /* 🔑 «있으면 안 만든다»로 끝내지 않는다(codex P2 e5ca1be011e6 채택) — 첫 실행에서 문항은 붙고
@@ -1702,6 +1709,11 @@ function migrateWorkFormOutcome_(알림기록) {
       /* 유형이 다르면 손대지 않는다 — 응답이 이미 쌓였을 수 있고, 유형을 바꾸면 그 응답이 못 읽히는
        * 열로 남는다. 자동으로 고치는 대신 사람에게 올린다(되돌릴 수 없는 쓰기는 판정이 서야 한다). */
       if (이미.getType() !== FormApp.ItemType.MULTIPLE_CHOICE) { 어긋남.push(q[0] + '(유형이 객관식이 아니다 — 손대지 않았다)'); return; }
+      /* 필수 → 선택으로 되돌린다(codex P2 ea5f2cc4e7cf 채택 · v9.295). 결과 칸은 «선택»이 계약이다 —
+       * 손으로 필수를 켠 폼에 이 통로가 닿으면 계약이 안 서고, 빈 칸으로 못 내는 응답자가 과정 칸까지
+       * 통째로 버린다. 선택으로 «푸는» 쪽은 쌓인 응답을 하나도 안 깨므로 자동으로 고쳐도 안전하다
+       * (반대 방향 — 선택을 필수로 켜는 것 — 은 안 한다). */
+      if (이미.isRequired()) { 이미.setRequired(false); 넣은것.push('필수 해제 — ' + q[0]); }
       if (String(이미.getHelpText() || '') !== WORK_HELP[q[0]]) { 이미.setHelpText(WORK_HELP[q[0]]); 넣은것.push('안내 갱신 — ' + q[0]); }
       /* 선택지는 «비었을 때만» 채운다 — 이미 값이 있으면 응답 문자열이 그 값에 묶여 있어 갈아 끼우면
        * 옛 응답이 미아가 된다(제목·선택지 불변 규율). 다르면 고치지 않고 보고한다. */
@@ -1719,6 +1731,9 @@ function migrateWorkFormOutcome_(알림기록) {
     else form.moveItem(it.getIndex(), 목표);   // ← 인덱스·인덱스 오버로드(v9.182)
     넣은것.push(q[0]);
   });
+
+  // ②-b 머리를 «첫 결과 문항 앞»으로 — 문항을 다 놓은 «뒤»라야 과녁이 참이다(v9.295)
+  머리교정();
 
   // ③ 섹션 번호 두 개를 코드 정본과 맞춘다 — 응답 열이 아니라서 안전하다(위 주석)
   [['6. 끝으로', '7. 끝으로'], ['7. 자료 활용 동의', '8. 자료 활용 동의']].forEach(function (p) {
