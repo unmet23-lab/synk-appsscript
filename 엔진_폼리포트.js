@@ -1241,7 +1241,10 @@ const WORK_STATUSES = ['유학 중 아르바이트(D-2·D-4)', '고용허가제(
  * 재직 기간은 「일한 기간」(§2)과 «다른 칸»이다 — 그쪽은 «그 일»의 길이고, 이쪽은 «마지막 직장»의 길이다.
  * 그만둔 사유는 채점 축 넷과 겹치게 짰다(①되묻기 ②보고 ③안전·규칙 ④관계 언어) — 겹쳐야 가중치가 나온다.
  * ⚠ 사유는 «자기 보고»다. 진짜 이유와 다를 수 있어 단독으로 판정하지 않고 서술 칸(§5·§7)과 같이 읽는다. */
-const WORK_TENURES = ['한 달 못 채움', '1~3개월', '3~6개월', '6개월~1년', '1~2년', '2년 이상', '아직 다니고 있다'];
+/* ⚠ 구간은 «겹치지 않게» 적는다(codex P2 5f735ab55dce 채택) — 첫 판이 「1~3개월 / 3~6개월 / 6개월~1년」이라
+ *   정확히 3개월·6개월·1년인 사람이 두 칸에 걸쳤다. 걸치는 순간 그 사람이 어느 칸을 고르느냐가 «분포»를 흔들고,
+ *   그 분포가 곧 등급 경계의 사전값이다(D2). 달 단위로 끊어 경계를 없앤다. */
+const WORK_TENURES = ['한 달 못 채움', '1~2개월', '3~5개월', '6~11개월', '1~2년', '2년 넘음', '아직 다니고 있다'];
 const WORK_EXITS = ['계약·비자 기간이 끝나서', '한국어가 힘들어서', '일을 못 따라가서', '사람 관계가 힘들어서',
   '몸이 힘들어서·다쳐서', '돈이 안 맞아서', '더 좋은 곳으로 옮겨서', '학업·귀국 때문에', '그만두지 않았다', '기타'];
 /* 학생ID 안내는 «이 폼 전용»이다 — 제목(조인 키)은 면접 폼과 같은 상수를 쓰되 안내만 갈라진다.
@@ -1598,6 +1601,25 @@ function migrateWorkFormMn() {
  * ⚠ 자리 이동은 **인덱스·인덱스 오버로드**로만 부른다(v9.182 라이브 결함 — 아이템 오버로드는 던진다).
  *   한 번 옮길 때마다 뒤 인덱스가 밀리므로 매번 다시 센다. */
 function migrateWorkFormOutcome() {
+  /* 🔒 잠금 — 문항을 «더하는» 통로라 겹치면 중복 문항이 생긴다(codex P1 74f473751ae0 채택).
+   *   migrateWorkFormMn 은 안내문만 갱신해 겹쳐도 결과가 같지만(멱등), 이쪽은 「없으면 만든다」라
+   *   둘이 동시에 「없다」를 읽으면 둘 다 만든다 — 그러면 응답 열이 둘로 갈려 회수가 조용히 섞인다.
+   *   createWorkLogForm 과 같은 tryLock 30초 관례. 알림은 잠금 «해제 뒤»에 보낸다(P1 34a174bc 계보 —
+   *   adminMail 이 DIGEST_MODE 에서 같은 비재진입 ScriptLock 을 다시 잡는다). */
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    const mL = '⚠️ 다른 실행이 직장 폼을 고치고 있어 30초 기다리다 멈췄습니다 — 문항이 두 벌로 붙지 않도록 일부러 멈춥니다. 잠시 뒤 다시 실행하세요.';
+    Logger.log(mL);
+    return mL;
+  }
+  let 지연알림 = null;
+  try { return migrateWorkFormOutcome_(m => { 지연알림 = m; }); }
+  finally {
+    lock.releaseLock();
+    if (지연알림) adminMail(지연알림.제목, 지연알림.본문);
+  }
+}
+function migrateWorkFormOutcome_(알림기록) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   const fid = String(getState(st, '직장폼ID').val || '');
@@ -1610,6 +1632,22 @@ function migrateWorkFormOutcome() {
   /* 남의 폼을 덮지 않는다 — «찾는 자리»와 같은 자를 쓴다(migrateWorkFormMn 과 같은 규율). */
   if (!직장폼서명_(form)) {
     const m = '⚠️ 직장폼ID 가 가리키는 폼이 직장 경험 폼이 아닙니다(제목 「' + form.getTitle() + '」).\n남의 폼에 문항을 붙이지 않으려고 아무것도 고치지 않았습니다.';
+    Logger.log(m);
+    return m;
+  }
+
+  /* 🔴 «응답이 오는 폼»인지까지 본다(codex P1 c1bc92a6a834 채택) — 서명은 「직장 폼처럼 생겼다」까지만
+   *   말한다. 직장폼ID 가 서명은 같지만 응답 탭에 «안 붙은» 폼(복사본·옛 폼)을 가리키면, 새 문항은
+   *   응답이 안 들어오는 폼에 붙고 엔진이 읽는 탭에는 결과 칸이 영영 안 생긴다 — 그런데 보고는 성공이다.
+   *   생성·복구 경로가 이미 같은 자를 쓴다(tabOk) — 여기만 느슨하면 그 문으로 샌다. */
+  const shT = ss.getSheetByName(WORK_TAB);
+  let tabOk = false;
+  if (shT) { try { tabOk = String(shT.getFormUrl() || '').indexOf(form.getId()) !== -1; } catch (eU) { tabOk = false; } }
+  if (!tabOk) {
+    const m = (shT
+      ? '⚠️ 탭 「' + WORK_TAB + '」이 직장폼ID 와 «다른 폼»에 연결돼 있습니다 — 지금 문항을 넣으면 응답이 안 오는 폼에 붙습니다.'
+      : '⚠️ 응답 탭 「' + WORK_TAB + '」이 없습니다 — 폼과 시트 연결이 끊긴 상태라 결과 칸을 넣어도 회수가 안 됩니다.')
+      + '\n먼저 시트 메뉴 「🧰 직장 경험 회수 폼 만들기」를 눌러 라우팅을 되건 뒤 다시 실행하세요. 아무것도 고치지 않았습니다.';
     Logger.log(m);
     return m;
   }
@@ -1642,13 +1680,37 @@ function migrateWorkFormOutcome() {
     if (목표 === -1) 앵커없음.push(결과머리);
     else form.moveItem(h.getIndex(), 목표);
     넣은것.push('섹션 「' + 결과머리 + '」');
+  } else {
+    /* 있는데 동의 «뒤»에 있으면 옮긴다 — 첫 실행에서 만들기는 됐고 moveItem 만 실패한 모양(v9.182).
+     * ⚠ 이 교정은 문항 반복문 «앞»에 있어야 한다 — 뒤에 두면 머리가 문항들 뒤로 가서 순서가 뒤집힌다. */
+    const 머리it = form.getItems().filter(function (x) { return String(x.getTitle()).trim() === 결과머리; })[0];
+    const 동의at0 = 동의자리();
+    if (머리it && 동의at0 !== -1 && 머리it.getIndex() > 동의at0) {
+      form.moveItem(머리it.getIndex(), 동의at0);
+      넣은것.push('자리 교정 — 섹션 「' + 결과머리 + '」');
+    }
   }
 
   // ② 결과 문항 셋 — 있으면 안 만들고, 안내문만 정본과 대조해 갱신한다
+  /* 🔑 «있으면 안 만든다»로 끝내지 않는다(codex P2 e5ca1be011e6 채택) — 첫 실행에서 문항은 붙고
+   *   moveItem 만 실패한 폼(v9.182 가 라이브에서 실제로 만난 모양)은 재실행해도 영영 동의 뒤에 남는다.
+   *   그래서 «있는 것»도 자리와 유형을 다시 재고, 어긋나면 고치거나 — 못 고치는 것(유형)은 멈춘다. */
+  const 어긋남 = [];
   결과문항.forEach(function (q) {
     const 이미 = form.getItems().filter(function (x) { return String(x.getTitle()).trim() === q[0]; })[0];
     if (이미) {
+      /* 유형이 다르면 손대지 않는다 — 응답이 이미 쌓였을 수 있고, 유형을 바꾸면 그 응답이 못 읽히는
+       * 열로 남는다. 자동으로 고치는 대신 사람에게 올린다(되돌릴 수 없는 쓰기는 판정이 서야 한다). */
+      if (이미.getType() !== FormApp.ItemType.MULTIPLE_CHOICE) { 어긋남.push(q[0] + '(유형이 객관식이 아니다 — 손대지 않았다)'); return; }
       if (String(이미.getHelpText() || '') !== WORK_HELP[q[0]]) { 이미.setHelpText(WORK_HELP[q[0]]); 넣은것.push('안내 갱신 — ' + q[0]); }
+      /* 선택지는 «비었을 때만» 채운다 — 이미 값이 있으면 응답 문자열이 그 값에 묶여 있어 갈아 끼우면
+       * 옛 응답이 미아가 된다(제목·선택지 불변 규율). 다르면 고치지 않고 보고한다. */
+      const 지금선택 = 이미.asMultipleChoiceItem().getChoices().map(function (c) { return c.getValue(); });
+      if (!지금선택.length) { 이미.asMultipleChoiceItem().setChoiceValues(q[1]); 넣은것.push('선택지 채움 — ' + q[0]); }
+      else if (지금선택.join('␟') !== q[1].join('␟')) 어긋남.push(q[0] + '(선택지가 정본과 다르다 — 옛 응답 보호로 안 고쳤다)');
+      // 자리 — 동의 섹션 «앞»이어야 한다. 뒤에 있으면(첫 실행의 moveItem 실패) 지금 옮긴다.
+      const 동의at = 동의자리();
+      if (동의at !== -1 && 이미.getIndex() > 동의at) { form.moveItem(이미.getIndex(), 동의at); 넣은것.push('자리 교정 — ' + q[0]); }
       return;
     }
     const it = form.addMultipleChoiceItem().setTitle(q[0]).setChoiceValues(q[1]).setHelpText(WORK_HELP[q[0]]);
@@ -1669,14 +1731,19 @@ function migrateWorkFormOutcome() {
     : '✅ 이미 정본과 같습니다 — 고칠 것이 없었습니다(이 함수는 몇 번 눌러도 안전합니다).')
     + (앵커없음.length ? '\n\n⚠️ 동의 섹션을 못 찾아 «맨 끝»에 붙은 것 ' + 앵커없음.length + '개: ' + 앵커없음.join(' · ')
       + '\n   → 폼을 열어 순서를 손으로 옮기세요(동의는 마지막이어야 합니다).' : '')
+    + (어긋남.length ? '\n\n⚠️ 정본과 어긋나 «손대지 않은» 것 ' + 어긋남.length + '개: ' + 어긋남.join(' · ')
+      + '\n   → 옛 응답이 그 값에 묶여 있어 자동으로 안 고칩니다. 폼을 열어 눈으로 판정하세요.' : '')
     + '\n\n기존 문항의 제목·선택지·응답은 건드리지 않았습니다.\n배포 링크: ' + form.getPublishedUrl();
   Logger.log(요약);
-  adminMail('[SYNK] 🎯 직장 경험 폼 결과 칸 셋 반영', 요약
-    + '\n\n왜 넣었나: 이 폼은 그동안 «과업·방해·감점»(과정)만 물었습니다. 그런데 한국에서 일하고 돌아온 사람은'
-    + '\n결과가 이미 난 사람입니다 — 얼마나 버텼는가 · 왜 그만뒀는가 · 다시 갈 것인가.'
-    + '\n그 셋이 채점 축 넷의 «가중치»와 등급 경계의 사전 분포를 줍니다(docs/SHIFT/한차원_2026-09-02.html D2).'
-    + '\n\n⚠️ 회고형이라 예측 타당도는 못 냅니다. 그리고 그만둔 사람이 더 많이 답하는 편향이 있어 분모와 «함께» 읽습니다.'
-    + '\n⚠️ 새 문항의 몽골어는 기계 검문(node tools/몽골어대조.js) «전»입니다 — 크게 뿌리기 전에 검문과 원어민 눈이 한 번씩.');
+  // 알림은 래퍼가 잠금 «해제 뒤» 보낸다 — adminMail 이 DIGEST_MODE 에서 같은 비재진입 락을 다시 잡는다
+  알림기록({
+    제목: '[SYNK] 🎯 직장 경험 폼 결과 칸 셋 반영',
+    본문: 요약
+      + '\n\n왜 넣었나: 이 폼은 그동안 «과업·방해·감점»(과정)만 물었습니다. 그런데 한국에서 일하고 돌아온 사람은'
+      + '\n결과가 이미 난 사람입니다 — 얼마나 버텼는가 · 왜 그만뒀는가 · 다시 갈 것인가.'
+      + '\n그 셋이 채점 축 넷의 «가중치»와 등급 경계의 사전 분포를 줍니다(docs/SHIFT/한차원_2026-09-02.html D2).'
+      + '\n\n⚠️ 회고형이라 예측 타당도는 못 냅니다. 그리고 그만둔 사람이 더 많이 답하는 편향이 있어 분모와 «함께» 읽습니다.'
+      + '\n⚠️ 새 문항의 몽골어는 기계 검문(node tools/몽골어대조.js) «전»입니다 — 크게 뿌리기 전에 검문과 원어민 눈이 한 번씩.' });
   return 요약;
 }
 
