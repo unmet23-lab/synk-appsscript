@@ -60,6 +60,20 @@ if _미아:
                      + ", ".join(_미아))
 
 BRAND_FONTS = ("intertight", "suit", "dmmono")
+
+# 🔴 킷이 «일부러» 시스템 글꼴에 맡기는 가족 하나 — 그 두 글자에 한해서만 통과시킨다.
+#   유호 확정 2026-08-31 「낫표 그거 킷에 박아줘」 · 정본 = docs/디자인_토큰.json 「서체.낫표교정」:
+#     @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),…;unicode-range:U+300C-300D;}
+#   낫표 「 」 는 Inter Tight 에 글리프가 없고 SUIT 이 그리면 0.396em 이라 옆 글자에 붙어
+#   여는 따옴표로 오독된다(08-31 헤드리스 크롬 34px 실측 · 교정 뒤 0.571em).
+#   ⇒ 이 가족이 그 두 글자를 그리는 것은 «폴백»이 아니라 킷 그대로다.
+# ⚠ 그래서 이름만으로 통과시키지 않는다 — **그린 글자가 「」 안일 때만** 통과다.
+#   이름만 보고 넘기면 이 가족이 다른 글자를 그리는 날(unicode-range 를 잘못 고친 날)
+#   진짜 폴백이 이 문으로 조용히 지나간다.
+# 실측 09-03: 이 칸이 없어 발표물 7벌 «전량»이 08-31 부터 FAIL 이었다 — 종이는 멀쩡한데
+#   판정만 빨간, 주인 없는 적색이다.
+SYSTEM_BY_DESIGN = {"synkbracket": set("「」")}
+
 DELIMS = " \t\r\n\f\x00/[]<>(){}%"
 
 
@@ -421,11 +435,21 @@ def main():
         rec = fonts_used[f]
         ink = {c for c in rec["chars"] if not c.isspace() and c != "�"}
         unknown = "�" in rec["chars"]
-        brand = any(b in f.replace(" ", "").replace("-", "").lower() for b in BRAND_FONTS)
+        평평한이름 = f.replace(" ", "").replace("-", "").lower()
+        brand = any(b in 평평한이름 for b in BRAND_FONTS)
+        # 킷이 일부러 시스템 글꼴에 맡긴 가족 — **그 글자 안일 때만** 통과다(위 SYSTEM_BY_DESIGN).
+        맡긴글자 = next((v for k, v in SYSTEM_BY_DESIGN.items() if k in 평평한이름), None)
+        킷대로 = 맡긴글자 is not None and ink and ink <= 맡긴글자
+        벗어남 = 맡긴글자 is not None and not (ink <= 맡긴글자)
         vector3 = f == "Type3(벡터)"
         # 순서가 판정을 가른다 — 「못 읽었다」가 「무해」로 새지 않게 먼저 거른다.
         if brand:
             note = ""
+        elif 킷대로:
+            note = "← 킷이 시스템 글꼴에 맡긴 자리(낫표) · 토큰 「서체.낫표교정」"
+        elif 벗어남:
+            note = "← 🔴 맡긴 글자 밖까지 그린다"
+            bad.append("%s(%s · 맡긴 것은 %s 뿐)" % (f, "".join(sorted(ink))[:20] or "?", "".join(sorted(맡긴글자))))
         elif vector3:
             note = "← 윤곽선을 패스로 그림 · 자형 보존"
         elif f == "Type3(래스터)":
