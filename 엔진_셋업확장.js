@@ -1363,6 +1363,8 @@ function preflightGlide() {
      ['학업폼URL', 'createAcademicForm', '강사 학업 기록 버튼(수업준비 탭 — 급수·모의 차트 원료)'], // [v9.74]
      ['결석폼URL', 'createAbsenceForm', '강사 결석 연락 기록 버튼(시즌 등급 심사 「결석 복귀율」 원료 — 없으면 지표가 측정 불가)'], // [v9.89]
      ['마감폼URL', 'createLessonCloseForm', '강사 차시 마감 30초(규칙서 §6 강사 입력 2개 중 하나 — 없으면 조 편성 침묵 점수·4주차 명단·이월 경보가 전부 안 열린다)'], // [v9.91]
+     ['반출석폼URL', 'createClassAttendanceForm', '강사 반 출석 1탭(규칙서 §6 강사 입력 2개 중 다른 하나 — 없으면 수업 시작 출석·결석 감지·레이드 판정의 입구가 학생 셀프 출석 폼 하나뿐이다)'], // [09-02 폼 넷]
+     ['출퇴근폼URL', 'createTeacherCheckinForm', '강사 출퇴근 1탭(없으면 오늘의 출결 보드·퇴근 응원·근태 지표에 강사 행이 영영 비어 있다)'], // [09-02 폼 넷]
      ['강의폼URL', 'createLectureForm', '온라인 강의 수강 확인(주말반 승급 판정의 나머지 절반 — 없으면 대면 90분만 보고 채점된다)'], // [v9.106]
      ['설문폼URL틀', 'createSurveyForm', '월간 만족도 설문(하이라이트 메일 동봉·주간 리포트 집계 — 첫 만족도 기준선)'], // [v9.75] v9.73 편입 누락분
      ['퀴즈폼URL틀', 'createQuizForm', '학생 퀴즈 답하기 버튼(quiz_log 유일 입구 — 없으면 매일 던지는 문제의 답이 한 건도 안 쌓인다. 「무엇을 골랐나」는 소급이 안 된다)'], // [v9.138]
@@ -1468,6 +1470,9 @@ function morningJobs() {   // 매일 07시
   safeRun('teacherMemoFormSync', function () { const ssTm = SpreadsheetApp.getActiveSpreadsheet(); syncTeacherMemoForm_(ssTm, ensureSheet(ssTm, 'app_state', ['key', 'value'])); }); // [v9.64] 연습 포인트 폼을 코드 정본에 매일 동기화 — 로스터(강사·반) 변화가 드롭다운에 자동 반영(폼 없으면 즉시 -1 return, 무비용)
   safeRun('academicFormSync', function () { const ssAf = SpreadsheetApp.getActiveSpreadsheet(); syncAcademicForm_(ssAf, ensureSheet(ssAf, 'app_state', ['key', 'value'])); }); // [v9.74] 학업 기록 폼 동기화 — 같은 계보(폼 없으면 -1 return, 무비용)
   safeRun('absenceFormSync', function () { const ssAb = SpreadsheetApp.getActiveSpreadsheet(); syncAbsenceForm_(ssAb, ensureSheet(ssAb, 'app_state', ['key', 'value'])); }); // [v9.89] 결석 연락 폼 동기화 — 같은 계보(폼 없으면 -1 return, 무비용)
+  safeRun('lessonCloseFormSync', function () { const ssLc = SpreadsheetApp.getActiveSpreadsheet(); syncLessonCloseForm_(ssLc, ensureSheet(ssLc, 'app_state', ['key', 'value'])); }); // [09-02 폼 넷] 차시 마감폼 — 생성 메일이 「다음 날 아침 자동 갱신」을 약속했는데 배선이 없었다 · 연료 미션·문법 뱅크 선택지가 여기서 따라온다(폼 없으면 -1 return, 무비용)
+  safeRun('classAttendanceFormSync', function () { const ssCa = SpreadsheetApp.getActiveSpreadsheet(); syncClassAttendanceForm_(ssCa, ensureSheet(ssCa, 'app_state', ['key', 'value'])); }); // [09-02 폼 넷] 반 출석 폼 — 명부·강사·반 분기 갱신(문항 수 불변 · 새 반 섹션은 메뉴 「반 섹션 늘리기」)
+  safeRun('teacherCheckinFormSync', function () { const ssTc = SpreadsheetApp.getActiveSpreadsheet(); syncTeacherCheckinForm_(ssTc, ensureSheet(ssTc, 'app_state', ['key', 'value'])); }); // [09-02 폼 넷] 출퇴근 폼 — 강사 이름 드롭다운 갱신
   safeRun('expiryDaily', function () { MJ_expiryDaily_(); }); // [v9.72] 수강 만료 D-14/D-3 학부모 안내 — enrollments 비어 있으면 무비용(클로저 = 만족도팩 누락에도 morningJobs 생존)
   safeRun('jacketWatch', jacketWatch_); // [v9.83] 🧥 과잠 자격(재원 12개월+누계) 신규 도달자 감지 — 도달 0명이면 시트·메일 모두 무동작
   safeRun('lessonCloseGap', function () { const ssG = SpreadsheetApp.getActiveSpreadsheet(); lessonCloseGapAlert_(ssG, ssG.getSpreadsheetTimeZone()); }); // [v9.92] 어제 마감 미제출 반 → 담당 강사(하루 1통). 어제 출석 0건이면 휴강으로 보고 무동작
@@ -3871,19 +3876,68 @@ function lessonPlanFill_(body, o) {
 const LESSON_PROGRESS = ['완료', '이월', '미실시'];
 const LESSON_CARRY_LIMIT = 4;  // 규칙서 외울것 2 — 시즌 이월 4회 초과 = 강사 문제가 아니라 교안 과적재
 
+/* [09-02 폼 넷] 마감폼 증설 문항 셋(LESSON_CLOSE_EXTRA_COLS · Code.js)의 재료 — 선택지는 전부 정본에서 파생한다(손 목록 0).
+ *   · 문법태그(체크박스) ← GRAMMAR_BANK. 라벨 = 「1급 G201 이/가」(급수→ID 순 · 강사가 제 반 급 언저리만 훑는다).
+ *     전개는 라벨이 아니라 ID 만 집는다(lessonGrammarIdsOf_) — 이름·급수 표기가 바뀌어도 옛 응답의 해석이 안 갈린다.
+ *     expandMasteryLog_ 가 weekly_topics F열을 ID(G3xx) 로 검증하므로 F열엔 ID 쉼표만 싣는다.
+ *   · 연료미션(드롭다운) ← contents 시트 fuel 행(setupFuelMissions 씨앗 · raidFriday/weeklyFuel_ 가 «같은 이름»으로 P 를 맵핑) + 「없음」.
+ *     이름이 바이트까지 같아야 P 가 붙는다 — 그래서 코드에 다시 적지 않고 시트에서 읽는다. */
+function lessonGrammarChoices_() {
+  return GRAMMAR_BANK.slice()
+    .sort((a, b) => (Number(a[3]) - Number(b[3])) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
+    .map(g => g[3] + '급 ' + g[0] + ' ' + g[1]);
+}
+function lessonGrammarIdsOf_(cell) { // 체크박스 응답(라벨을 쉼표로 이음) → 문법 ID 목록(뱅크 형식 검증 · 중복 제거 · 순서 보존)
+  const seen = {};
+  return (String(cell || '').match(/G[2-7]\d{2}/g) || []).filter(id => grammarStageOf_(id) > 0 && !seen[id] && (seen[id] = 1));
+}
+const LESSON_FUEL_NONE = '없음';
+function lessonFuelChoices_(ss) {
+  const out = [];
+  const ct = ss.getSheetByName('contents');
+  if (ct && ct.getLastRow() >= 2) ct.getRange(2, 1, ct.getLastRow() - 1, 3).getValues().forEach(r => { if (r[1] === 'fuel' && r[2]) out.push(String(r[2])); });
+  return [LESSON_FUEL_NONE].concat(out);
+}
+/** 골격(sheetSkeleton_) 한 줄이 그 탭의 헤더 정본이다 — 열 위치는 여기서 파생한다(손 인덱스 금지). 골격에 없는 탭이면 null. */
+function skeletonHeadersOf_(name) {
+  const k = sheetSkeleton_().filter(x => x[0] === name)[0];
+  return k ? k[1].slice() : null;
+}
+
 function lessonCloseSpec_(ss) {
   const base = teacherMemoSpec_(ss); // 강사·반 로스터 재사용 — 아침 동기화도 같은 원천을 본다
   return {
     title: 'SYNK 차시 마감 (강사용 · 30초)',
     desc: '수업 끝나고 30초. 진도 하나 고르고, 오늘 한 번도 말하지 않은 학생이 있으면 이름만 적어주세요. ' +
-      '이 두 가지가 조 편성·4주차 점검·교안 과적재 경보로 이어집니다. 서술형은 없습니다.',
+      '이 두 가지가 조 편성·4주차 점검·교안 과적재 경보로 이어집니다. ' +
+      '아래 세 칸(배운 내용·문법 태그·연료 미션)은 있을 때만 — 학생 앱의 「이번 주 배운 것」·문법 연습 기록·레이드 연료가 됩니다.',
     teachers: base.teachers,
     classes: base.classes,
+    grammarChoices: lessonGrammarChoices_(), // [09-02 폼 넷] 뱅크 파생 — sync 가 매일 아침 이 목록과 맞춘다
+    fuels: lessonFuelChoices_(ss),           // [09-02 폼 넷] contents fuel 행 파생 + 「없음」
     help: {
       '진도': '완료 = 오늘 목표까지 갔다 · 이월 = 남은 것을 다음 차시 ②앞 5분으로 넘긴다 · 미실시 = 휴강·행사로 진행 못 함',
-      '오늘 한 번도 말하지 않은 학생': '없으면 비워두세요 — 전원 말했다는 뜻입니다. 여러 명이면 쉼표로 (예: 바트자야, 사랑토야)'
+      '오늘 한 번도 말하지 않은 학생': '없으면 비워두세요 — 전원 말했다는 뜻입니다. 여러 명이면 쉼표로 (예: 바트자야, 사랑토야)',
+      '배운내용': '오늘 배운 것 한 줄(선택) — 학생 앱 「이번 주 우리 반 배운 것」에 몽골어 번역과 함께 뜹니다. 예: -(으)ㄹ 거예요로 주말 계획 말하기',
+      '문법태그': '오늘 다룬 문법(선택 · 여러 개) — 오늘 출석한 학생의 문법 연습 기록에 남습니다. 급수 순이라 제 반 급 언저리만 보면 됩니다',
+      '연료미션': '오늘 반이 달성한 레이드 연료 미션 하나(선택) — 금요일 레이드 결산에 반 보너스로 붙습니다. 없으면 「없음」'
     }
   };
+}
+
+/* [09-02 폼 넷] 증설 문항 셋을 폼 «끝»에 더한다 — 생성 경로(문항 0일 때)와 라이브 증설(migrateLessonCloseForm0902)이 같은 몸을 쓴다.
+ *   제목·순서 = LESSON_CLOSE_EXTRA_COLS(Code.js) 그대로 → 응답 시트 열 순서가 곧 sweep 의 8열 창이다. 멱등: 같은 제목이 있으면 건너뛴다. */
+function lessonCloseExtraItems_(form, spec, haveTitles) {
+  const added = [];
+  LESSON_CLOSE_EXTRA_COLS.forEach(t => {
+    if (haveTitles.indexOf(t) !== -1) return;
+    if (t === '배운내용') form.addParagraphTextItem().setTitle(t).setRequired(false).setHelpText(spec.help[t]);
+    else if (t === '문법태그') form.addCheckboxItem().setTitle(t).setRequired(false).setChoiceValues(spec.grammarChoices).setHelpText(spec.help[t]);
+    else if (t === '연료미션') form.addListItem().setTitle(t).setRequired(false).setChoiceValues(spec.fuels).setHelpText(spec.help[t]);
+    else return; // 정본에 새 열이 늘면 여기도 한 가지가 는다 — 모르는 제목은 만들지 않는다(빈 열이 조용히 생기지 않게)
+    added.push(t);
+  });
+  return added;
 }
 
 // 실제 폼을 스펙에 제자리 동기화 — 폼이 없으면 -1(호출부가 생성 경로로). 약점 메모 폼(v9.64) 계보 그대로.
@@ -3907,11 +3961,16 @@ function syncLessonCloseForm_(ss, st) {
     const t = it.getTitle();
     const wantHelp = spec.help[t];
     if (wantHelp !== undefined && it.getHelpText() !== wantHelp) { it.setHelpText(wantHelp); changed++; }
-    if (it.getType() !== FormApp.ItemType.LIST) return;
-    const li = it.asListItem();
-    const cur = li.getChoices().map(c => c.getValue()).join('|');
-    const want = (t === '강사' ? spec.teachers : t === '반' ? spec.classes : t === '진도' ? LESSON_PROGRESS : null);
-    if (want && cur !== want.join('|')) { li.setChoiceValues(want); changed++; }
+    const ty = it.getType();
+    if (ty === FormApp.ItemType.LIST) {
+      const li = it.asListItem();
+      const cur = li.getChoices().map(c => c.getValue()).join('|');
+      const want = (t === '강사' ? spec.teachers : t === '반' ? spec.classes : t === '진도' ? LESSON_PROGRESS : t === '연료미션' ? spec.fuels : null); // [09-02 폼 넷] 연료 = contents fuel 행 파생
+      if (want && cur !== want.join('|')) { li.setChoiceValues(want); changed++; }
+    } else if (ty === FormApp.ItemType.CHECKBOX && t === '문법태그') { // [09-02 폼 넷] 뱅크가 자라면 선택지도 자란다 — 문항 수는 불변(증설은 migrateLessonCloseForm0902 몫)
+      const cb = it.asCheckboxItem();
+      if (cb.getChoices().map(c => c.getValue()).join('|') !== spec.grammarChoices.join('|')) { cb.setChoiceValues(spec.grammarChoices); changed++; }
+    }
   });
   if (changed) Logger.log('📋 차시 마감폼 동기화 — ' + changed + '곳 갱신(URL 불변)');
   return changed;
@@ -3961,7 +4020,7 @@ function createLessonCloseForm() {
     setState(st, '마감폼URL', form.getPublishedUrl());
   }
 
-  // ③ 문항 4개 — 이미 있으면 손대지 않는다(응답 시트가 항목별 열이라 지웠다 만들면 sweep 5열 계약이 깨진다)
+  // ③ 문항 4개 + 증설 3개(09-02) — 이미 있으면 손대지 않는다(응답 시트가 항목별 열이라 지웠다 만들면 sweep 8열 계약이 깨진다 · 증설은 migrateLessonCloseForm0902)
   if (!form.getItems().length) {
     if (spec.teachers.length > 1) form.addListItem().setTitle('강사').setRequired(true).setChoiceValues(spec.teachers);
     else form.addTextItem().setTitle('강사').setRequired(true);
@@ -3969,8 +4028,9 @@ function createLessonCloseForm() {
     else form.addTextItem().setTitle('반').setRequired(true);
     form.addListItem().setTitle('진도').setRequired(true).setChoiceValues(LESSON_PROGRESS).setHelpText(spec.help['진도']);
     form.addTextItem().setTitle('오늘 한 번도 말하지 않은 학생').setRequired(false).setHelpText(spec.help['오늘 한 번도 말하지 않은 학생']);
-    step('문항 4개 추가');
-  } else step('문항 이미 있음 — 건너뜀 (' + form.getItems().length + '개)');
+    lessonCloseExtraItems_(form, spec, []); // [09-02 폼 넷] 배운내용·문법태그·연료미션 — 새 폼은 처음부터 8열 창으로 태어난다
+    step('문항 ' + form.getItems().length + '개 추가(정상=' + (LESSON_CLOSE_FORM_COLS.length - 1) + ')');
+  } else step('문항 이미 있음 — 건너뜀 (' + form.getItems().length + '개 · 증설분이 빠졌으면 migrateLessonCloseForm0902 ▶)');
 
   // ④ 응답 시트 연결 — 가장 무거운 단계라 맨 뒤에 둔다(여기서 죽어도 ①~③은 이미 남아 있다)
   let linked = false;
@@ -3991,6 +4051,30 @@ function createLessonCloseForm() {
     '\n※ 차시·주차는 시즌 시작일에서 계산합니다 — app_state "시즌시작일"이 비어 있으면 0으로 적재됩니다.');
   Logger.log('✅ 차시 마감폼 생성 완료: ' + form.getPublishedUrl());
   Logger.log('편집용: ' + form.getEditUrl());
+  return '✅ 차시 마감폼 생성 완료: ' + form.getPublishedUrl(); // [09-02] 시트 메뉴(menuRun_)가 alert 로 보여 준다
+}
+
+/* [09-02 폼 넷] 라이브 차시 마감폼 «증설» — 배운내용·문법태그·연료미션 세 문항을 폼 «끝»에 더한다(대장 「잇는다 — 폼 증설」 ①·③).
+ * 왜 별도 함수인가: createLessonCloseForm 은 문항이 있으면 손대지 않고(응답 열 계약 보호), 아침 sync 는 문항을 늘리지 않는다
+ *   (tests/safety 가 못박은 강사 폼 규칙) — 그래서 이미 선 폼에는 이 함수만이 닿는다(migrateInterviewSid 계보 · 발동 = 시트 메뉴).
+ * 끝에 붙이는 까닭: 응답 시트는 «새 문항 = 새 열(맨 끝)»이라 기존 5열 파싱이 안 밀린다 — sweep 은 8열 창으로 읽되 증설 전 응답 행의
+ *   뒤 3칸은 빈칸이다(그때는 안 물었다 — 그게 정확하다). 멱등: 같은 제목이 있으면 건너뛴다 · 재클릭 무해. */
+function migrateLessonCloseForm0902() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const synced = syncLessonCloseForm_(ss, st); // ID 복구 + 선택지·문구 동기화(증설 «뒤»에 붙은 문항의 선택지는 생성 시점 값 그대로가 최신이다)
+  if (synced < 0) { const m = '⚠️ 마감폼ID 미연결 — 먼저 createLessonCloseForm ▶(시트 메뉴 「📋 차시 마감폼 만들기」). 새 폼은 증설분을 포함해 태어나므로 이 항목은 필요 없습니다.'; Logger.log(m); return m; }
+  const form = FormApp.openById(String(getState(st, '마감폼ID').val || ''));
+  const spec = lessonCloseSpec_(ss);
+  const have = form.getItems().map(x => String(x.getTitle()).trim());
+  const added = lessonCloseExtraItems_(form, spec, have);
+  const n = form.getItems().length, want = LESSON_CLOSE_FORM_COLS.length - 1;
+  const msg = '📋 차시 마감폼 증설(09-02) — ' + (added.length ? '추가 ' + added.join(' · ') : '이미 최신(추가 0)') +
+    ' · 동기화 ' + synced + '곳 · 문항 ' + n + '개(정상=' + want + ')' + (n !== want ? ' ⚠ 수가 다릅니다 — 폼 편집 화면에서 문항 제목을 확인하세요(제목이 바뀌면 열 파싱이 어긋납니다)' : '') +
+    '\n다음 응답부터 배운내용→weekly_topics(몽골어 번역·앱 「이번 주 배운 것」) · 문법태그→문법 연습 기록 · 연료미션→금요 레이드 연료로 흐릅니다(10분 스위프 → 밤 22시 전개).' +
+    '\n배포 링크(불변): ' + form.getPublishedUrl();
+  Logger.log(msg);
+  return msg;
 }
 
 // [v9.93] 마감폼 상태 진단 — 생성이 중간에 끊겼을 때 "지금 어디까지 됐나"를 30초에 본다(무거운 호출 없음).
@@ -4005,7 +4089,7 @@ function lessonCloseFormStatus() {
   if (id) {
     try {
       const f = FormApp.openById(id);
-      L.push('· 폼 제목: ' + f.getTitle() + ' · 문항 ' + f.getItems().length + '개(정상=4)');
+      L.push('· 폼 제목: ' + f.getTitle() + ' · 문항 ' + f.getItems().length + '개(정상=' + (LESSON_CLOSE_FORM_COLS.length - 1) + ' · 4개면 증설 전 — migrateLessonCloseForm0902 ▶)');
       let dest = ''; try { dest = f.getDestinationId() || ''; } catch (e) { dest = ''; }
       L.push('· 응답 시트 연결: ' + (dest ? '✅ 연결됨' : '❌ 미연결 — createLessonCloseForm 재실행하면 이 단계만 이어서 합니다'));
     } catch (e) { L.push('· ⚠ 폼 열기 실패(삭제됐거나 권한 없음): ' + e.message); }
@@ -4028,7 +4112,12 @@ function sweepLessonCloseForm_(ss) {
   const from = Number(props.getProperty('마감폼_포인터')) || 1;
   if (from >= last) { if (from > last) props.setProperty('마감폼_포인터', String(last)); return; }
   const tz = ss.getSpreadsheetTimeZone();
-  const rows = src.getRange(from + 1, 1, last - from, 5).getValues(); // 타임스탬프·강사·반·진도·미발화자이름
+  /* [09-02 폼 넷] 5열 창 → 8열 창(LESSON_CLOSE_FORM_COLS). 증설 «전» 응답 탭은 폭이 5라 8열을 달라면 죽는다 — 시트가 가진 폭만 읽고
+   *   나머지는 빈칸으로 채운다(증설 전 응답 행의 뒤 3칸이 빈 것은 결함이 아니라 「그때는 안 물었다」다). */
+  const W = LESSON_CLOSE_FORM_COLS.length;
+  const width = Math.max(5, Math.min(W, src.getLastColumn()));
+  const rows = src.getRange(from + 1, 1, last - from, width).getValues().map(r => { while (r.length < W) r.push(''); return r; }); // 타임스탬프·강사·반·진도·미발화자이름 (+배운내용·문법태그·연료미션)
+  const C = (name) => LESSON_CLOSE_FORM_COLS.indexOf(name);
   const pf = ss.getSheetByName('profiles');
   const students = [];
   if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
@@ -4037,7 +4126,9 @@ function sweepLessonCloseForm_(ss) {
   const start = seasonStartOf_(ss);
   const schMap = scheduleMap(ss);
   const lc = ensureSheet(ss, 'lesson_close', LESSON_CLOSE_HEADERS);
-  const out = [], miss = [];
+  const wtHdr = skeletonHeadersOf_('weekly_topics'); // [09-02 폼 넷] 착지 열 위치는 골격 헤더에서 파생한다(손 인덱스 금지)
+  const wtCol = (name) => wtHdr.indexOf(name);
+  const out = [], miss = [], wtRows = [];
   rows.forEach(r => {
     const ts = r[0] instanceof Date ? r[0] : new Date();
     const cls = String(r[2] || '').trim();
@@ -4054,8 +4145,26 @@ function sweepLessonCloseForm_(ss) {
     });
     out.push([dstr(ts, tz), cls, lessonNo, week, String(r[3] || ''), sids.join(','), names.join(','),
       String(r[1] || '폼'), dstr(ts, tz, 'yyyy-MM-dd'), bad.length ? '미매칭' : '']);
+    /* [09-02 폼 넷] 수업 «내용» 로그 → weekly_topics 한 행 — 옛 Glide 손이 채우던 F~L 을 이 폼이 잇는다(대장 「잇는다 — 폼 증설」).
+     *   D(created_at) = «응답 시각»: expandLessonLog_(J 연료→class_fuel)·expandMasteryLog_(F 문법태그→mastery_log '연습')·translateTopics_(B→E 몽골어)가
+     *   전부 «그날 행»을 D 로 가른다 — 밤 22시 전개라 당일 응답만 흐른다(자정 넘긴 응답은 옛 Glide 시절과 같은 한계). 셋 다 비면 행을 안 만든다. */
+    const learned = String(r[C('배운내용')] || '').trim();
+    const gids = lessonGrammarIdsOf_(r[C('문법태그')]);
+    const fuelRaw = String(r[C('연료미션')] || '').trim();
+    const fuel = (fuelRaw && fuelRaw !== LESSON_FUEL_NONE) ? fuelRaw : '';
+    if (learned || gids.length || fuel) {
+      const w = wtHdr.map(() => '');
+      w[wtCol('class_name')] = cls; w[wtCol('배운내용')] = learned; w[wtCol('입력자')] = String(r[1] || '폼'); w[wtCol('created_at')] = ts;
+      w[wtCol('문법태그')] = gids.join(','); w[wtCol('연료미션')] = fuel;
+      wtRows.push(w);
+    }
   });
   if (out.length) lc.getRange(lc.getLastRow() + 1, 1, out.length, LESSON_CLOSE_HEADERS.length).setValues(행소독_(out)); // [v9.157] 진도·미발화자 이름은 강사 손입력 — 같은 시트에 profiles가 산다
+  if (wtRows.length) { // [09-02 폼 넷] 내용 로그 착지 — 옛 5열 시트도 ensureLessonCols_ 로 F~L 승격(전개 둘과 같은 통로)
+    const tp = ensureSheet(ss, 'weekly_topics', wtHdr);
+    ensureLessonCols_(tp);
+    tp.getRange(tp.getLastRow() + 1, 1, wtRows.length, wtHdr.length).setValues(행소독_(wtRows)); // 배운내용은 강사 손입력 — 같은 시트에 profiles 가 산다
+  }
   props.setProperty('마감폼_포인터', String(last)); // 적재 직후·메일 전 마감 — 메일 실패가 같은 응답을 재적재하지 않게
   if (miss.length && quotaOk(1)) {
     adminMail('[SYNK] 📋 차시 마감폼 — 이름 매칭 실패 ' + miss.length + '건',
@@ -4482,6 +4591,13 @@ function menuMigrateWorkFormOutcome() { menuRun_(migrateWorkFormOutcome); }
    — ⚠삭제됨 08-19 e75fc7fc · **그 못은 지금 없다**. 같은 자리가 네 번째로 어긋날 수 있다):
  *   Code.js 가 `(▶…)` 로 적은 함수는 **정의가 살아 있는 한 전부** 여기 있어야 한다. */
 function menuCreateTeacherMemoForm() { menuRun_(createTeacherMemoForm); }
+/* [09-02 폼 넷] 개원 전 필수 폼 넷(대장 docs/글라이드_이관대장.md 「잇는다 — 폼 증설·신설」) — 비개발자가 눌러야 하는 함수는 메뉴가 실행 경로다(위 규칙).
+ *   전부 멱등·재클릭 무해: 있으면 제자리 업그레이드, 증설·섹션 추가는 같은 제목이 있으면 건너뛴다. */
+function menuCreateLessonCloseForm() { menuRun_(createLessonCloseForm); }          // 없으면 7문항으로 생성 · 있으면 선택지·문구만
+function menuMigrateLessonCloseForm0902() { menuRun_(migrateLessonCloseForm0902); } // 이미 선 폼에 증설 3문항(배운내용·문법태그·연료미션)
+function menuCreateClassAttendanceForm() { menuRun_(createClassAttendanceForm); }
+function menuExtendClassAttendanceForm() { menuRun_(extendClassAttendanceForm); }   // 반이 늘었을 때 그 반 섹션 추가
+function menuCreateTeacherCheckinForm() { menuRun_(createTeacherCheckinForm); }
 
 /* [v9.131] 🗓 시즌 시작일 — **인자가 필요한 유일한 개원 준비 함수**라 ▶ 버튼으로 실행할 수 없었다.
  *   `setSeasonStart`는 인자 없이 부르면 「▶로는 설정되지 않습니다」라고 거부한다(오늘 날짜가 실수로 박히면
@@ -4987,6 +5103,13 @@ function onOpen() {
       .addItem('🎯 직장 경험 폼에 «결과 칸» 넣기(1회 · 귀환자 조사)', 'menuMigrateWorkFormOutcome')
       .addItem('🇲🇳 직장 경험 폼에 몽골어 안내 넣기(문구 바뀔 때마다)', 'menuMigrateWorkFormMn')
       .addItem('🗒 강사 메모 폼 만들기(1회)', 'menuCreateTeacherMemoForm')
+      /* [09-02 폼 넷] 개원 전 필수 — Glide 가 죽으며 손이 사라진 강사 입력 넷(대장 docs/글라이드_이관대장.md 「잇는다 — 폼 증설·신설」).
+       *   배포 창의 클릭 순서 그대로: ①마감폼(있으면 업그레이드) ②마감폼 증설(1회) ③반 출석 폼(1회) ④출퇴근 폼(1회). 전부 재클릭 무해. */
+      .addItem('📋 차시 마감폼 만들기(있으면 업그레이드)', 'menuCreateLessonCloseForm')
+      .addItem('　└ 증설 — 배운내용·문법태그·연료미션 넣기(1회·멱등)', 'menuMigrateLessonCloseForm0902')
+      .addItem('🙋 반 출석 폼 만들기(수업 시작 1탭·1회)', 'menuCreateClassAttendanceForm')
+      .addItem('　└ 반 섹션 늘리기(반이 늘었을 때·멱등)', 'menuExtendClassAttendanceForm')
+      .addItem('⏱ 출퇴근 폼 만들기(1회)', 'menuCreateTeacherCheckinForm')
       .addItem('🧠 퀴즈 응답 폼 만들기(수집 1단계)', 'menuCreateQuizForm')
       .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
       .addItem('🗣 한국어 대화 폼 만들기(수집 3단계)', 'menuCreateTalkForm')
