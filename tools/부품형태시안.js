@@ -211,7 +211,7 @@ ${실크기줄(판)}`;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>부품 형태 — «구» 탈피 판정</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/variable/woff2/SUIT-Variable.css">
+<!-- 브랜드 서체(SUIT)는 «굽기»가 지면 안에 싣는다 — 바깥에서 부르면 아티팩트 CSP 가 조용히 막는다(정본 tools/lib/브랜드폰트.js) -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
 <!-- 자동 생성: node tools/부품형태시안.js — 손 편집 금지(재생성이 덮는다) -->
 <!-- 후보 렌더 = docs/캐릭터/요소공방_0822/{형태후보,부품형태} · 현행 = docs/Loom_자산/구운재질.json -->
