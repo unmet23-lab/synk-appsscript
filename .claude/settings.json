@@ -54,6 +54,13 @@
             "shell": "bash",
             "timeout": 25,
             "statusMessage": "확정 무늬 잡기"
+          },
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/plain-words-guard.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then printf %s \"$IN\" | node \"$H\"; fi; exit 0",
+            "shell": "bash",
+            "timeout": 25,
+            "statusMessage": "낯선 낱말 세기"
           }
         ]
       }
