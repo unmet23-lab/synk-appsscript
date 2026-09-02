@@ -101,8 +101,15 @@ function 스윕(opt) {
   const 저장소 = { 목소리폼_포인터: o.포인터 === undefined ? undefined : String(o.포인터) };
   const 메일 = [];
   const 버린sid = [];
-  /* [2026-09-03 · 검수 P1] 잠금은 «잡혔나»가 아니라 «놓였나»까지 재야 한다 — 안 놓으면 다음 밤이 통째로 막힌다. */
+  /* [2026-09-03 · 검수 P1] 잠금은 «잡혔나»가 아니라 «놓였나»까지 재야 한다 — 안 놓으면 다음 밤이 통째로 막힌다.
+   * 🔴 그리고 «지금 쥐고 있나»를 따로 센다(48f070b17495 가 잡은 자리). 「해제됐나」만 보면
+   *   잠금을 «잡기 전» 호출과 «쥔 채» 호출이 둘 다 false 라 구분이 안 된다 — 그 눈으로는
+   *   `voiceMissionTexts_` 를 잠금 앞으로 옮긴 것이 통과인지 위반인지 못 가른다. */
   let 잠금해제 = false;
+  let 잠금쥠 = false;
+  /* 메일 한 통을 적을 때 «그 순간 잠금을 쥐고 있었나»를 함께 박는다. 직접 호출(adminMail)이든
+   * 간접(notifyDroppedSids_·voiceMissionTexts_)이든 같은 자로 재야 한 쪽만 고치고 넘어가지 않는다. */
+  const 메일적기 = (제목, 본문) => { 메일.push({ 제목, 본문, 잠금쥔채: 잠금쥠, 잠금놓고보냈나: 잠금해제 }); };
 
   const 의존 = {
     PropertiesService: {
@@ -121,21 +128,32 @@ function 스윕(opt) {
      * `동의맵: null` 을 주면 「시트·열 접근 실패」를 그대로 재현한다(전원 보류가 과녁인 검사에서 쓴다). */
     voiceConsentMap_: () => (o.동의맵 === undefined ? { 'SYNK-001': 'yes' } : o.동의맵),
     seasonLabelOf_: () => (o.시즌 === undefined ? '2027-1' : o.시즌),
-    voiceMissionTexts_: () => o.목표문 || {},
     행소독_,
     dstr,
-    notifyDroppedSids_: (_label, sids) => { (sids || []).forEach((s) => 버린sid.push(s)); },
-    /* `잠금해제` 를 «발송 시점»에 함께 적는다 — 「메일이 갔나」가 아니라 「잠금을 놓고 갔나」가 과녁이다.
+    /* 🔴 진짜처럼 «메일을 부른다». 실물 `notifyDroppedSids_`(엔진_콘텐츠AI.js)는 adminMail 을 부르고
+     *   자기 예외를 catch 로 삼킨다 — 잠금 안에서 부르면 30초 뒤 조용히 실패하고 알림 없이
+     *   포인터만 전진한다. 가짜가 메일을 «안» 부르면 시험은 그 자리를 영원히 못 본다
+     *   (이 세션이 실제로 놓쳤고 이종 검수가 잡았다 · 48f070b17495). */
+    notifyDroppedSids_: (_label, sids) => {
+      (sids || []).forEach((s) => 버린sid.push(s));
+      if ((sids || []).length) 메일적기('[SYNK] 🧩 목소리폼 무효 학생ID ' + sids.length + '건', String(sids));
+    },
+    /* 과녁은 「메일이 갔나」가 아니라 「잠금을 쥔 채 갔나」다 —
      *   adminMail 자신이 같은 스크립트 잠금을 waitLock(30000) 하므로, 쥔 채 부르면 라이브에서 배치가 죽는다. */
-    adminMail: (제목, 본문) => { 메일.push({ 제목, 본문, 잠금놓고보냈나: 잠금해제 }); },
+    adminMail: 메일적기,
     Utilities: 가짜Utilities,
     Logger: { log: () => {} },
     /* `잠금막힘: true` = 다른 실행이 이미 걷고 있는 상황(야간 배치 ∥ 메뉴 클릭)을 그대로 재현한다. */
     LockService: {
       getScriptLock: () => ({
-        tryLock: () => !o.잠금막힘,
-        releaseLock: () => { 잠금해제 = true; }
+        tryLock: () => { if (o.잠금막힘) return false; 잠금쥠 = true; return true; },
+        releaseLock: () => { 잠금쥠 = false; 잠금해제 = true; }
       })
+    },
+    /* 실물은 `voice_missions` 헤더가 어긋나면 스스로 adminMail 을 부른다 — 그것도 같은 자로 잰다. */
+    voiceMissionTexts_: () => {
+      if (o.목표문헤더깨짐) 메일적기('[SYNK] 🎙 낭독 미션 목록의 열 이름이 안 맞습니다', '');
+      return o.목표문 || {};
     }
   };
 
@@ -226,19 +244,29 @@ test('🔴 조기 반환 경로에서도 잠금을 놓는다 — 새 제출 0건
  *   같은 실행이 쥔 스크립트 잠금을 다른 Lock 객체로 다시 얻을 수 있는지 Apps Script 문서는
  *   답하지 않는다 — 안 되면 30초 뒤 예외로 **야간 배치가 통째로 죽는다.** 중복을 막으려다
  *   더 큰 것을 깨는 자리라, 알림을 모아 두었다가 해제 «뒤에» 보낸다. */
-test('🔴 알림은 잠금을 «놓은 뒤» 나간다 — adminMail 도 같은 잠금을 30초 기다린다', () => {
+test('🔴 어떤 메일도 잠금을 «쥔 채» 나가지 않는다 — 직접이든 간접이든', () => {
+  const 검사 = (r, 이름) => r.메일.forEach((m) => assert.equal(m.잠금쥔채, false,
+    `${이름}: 「${m.제목}」을 잠금을 쥔 채 보냈다 — 라이브에서 adminMail 의 waitLock(30000) 과 겹쳐 배치가 죽는다`));
+
   const 성공 = 스윕({ 폼행들: [한줄()], 포인터: 1 });
   assert.ok(성공.메일.length > 0, '적재됐는데 알림이 0통이다');
-  성공.메일.forEach((m) => assert.equal(m.잠금놓고보냈나, true,
-    `「${m.제목}」을 잠금을 쥔 채 보냈다 — 라이브에서 adminMail 의 waitLock 과 겹쳐 배치가 죽는다`));
+  검사(성공, '정상 적재');
+  성공.메일.forEach((m) => assert.equal(m.잠금놓고보냈나, true, `「${m.제목}」이 해제 «전»에 나갔다`));
 
-  const 판정불가 = 스윕({ 폼행들: [한줄()], 동의맵: null, 포인터: 1 });
-  판정불가.메일.forEach((m) => assert.equal(m.잠금놓고보냈나, true,
-    `조기 반환 경로의 「${m.제목}」도 잠금을 쥔 채 나갔다`));
+  검사(스윕({ 폼행들: [한줄()], 동의맵: null, 포인터: 1 }), '동의 판정 불가(조기 반환)');
+  검사(스윕({ 폼행들: [한줄()], 동의맵: { 'SYNK-001': 'no' }, 포인터: 1 }), '동의 보류');
 
-  const 보류 = 스윕({ 폼행들: [한줄()], 동의맵: { 'SYNK-001': 'no' }, 포인터: 1 });
-  보류.메일.forEach((m) => assert.equal(m.잠금놓고보냈나, true,
-    `보류 알림 「${m.제목}」도 잠금을 쥔 채 나갔다`));
+  /* 🔴 아래 둘이 이 세션이 «놓쳤던» 간접 경로다 — 직접 호출만 잠금 밖으로 빼고 넘어갔다가
+   *   이종 검수가 잡았다(48f070b17495). 자가 직접 호출만 보고 있었던 것이 원인이다. */
+  const 무효 = 스윕({ 폼행들: [한줄({ sid: 'SYNK-999' })], 포인터: 1 });
+  assert.ok(무효.메일.some((m) => m.제목.includes('무효 학생ID')),
+    '명부에 없는 ID 통보가 아예 안 나갔다 — notifyDroppedSids_ 를 안 부른다');
+  검사(무효, '무효 학생ID 통보(notifyDroppedSids_ 간접)');
+
+  const 헤더깨짐 = 스윕({ 폼행들: [한줄()], 포인터: 1, 목표문헤더깨짐: true });
+  assert.ok(헤더깨짐.메일.some((m) => m.제목.includes('낭독 미션 목록')),
+    '미션 목록 헤더 경고가 안 나갔다');
+  검사(헤더깨짐, '미션 목록 헤더 경고(voiceMissionTexts_ 간접)');
 });
 
 // ── 소급 불가 칸들 — 그날 안 박으면 나중에 못 만든다 ──────────────────────

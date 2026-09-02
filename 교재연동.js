@@ -207,6 +207,13 @@ function voiceMissionTexts_(ss) {
 
 // ── A-1. 폼 응답 → voice_log 전개(+포인트, 파일 공유 전환) ──────────────
 function voiceSweep_(ss) {
+  /* [2026-09-03 · 이종 검수 P1 48f070b17495] 🔴 **잠금 «전»에 읽는다.**
+   *   `voiceMissionTexts_` 는 `voice_missions` 헤더가 어긋나면 **스스로 `adminMail` 을 부른다.**
+   *   잠금을 쥔 채 부르면 그 안의 `waitLock(30000)` 과 겹쳐 30초 뒤 예외가 나고, 그 예외는
+   *   여기서 안 잡혀 **배치가 통째로 멈춘다.** 읽기 전용이라 잠금 밖이 안전하다.
+   *   ⚠ 비용 = 새 제출이 없어도 시트를 한 번 읽는다(야간 1회 · 무시 가능). 그 대가로
+   *   「잠금 안에서 메일에 닿는 경로 0」이 눈으로 확인된다. */
+  const 목표문 = voiceMissionTexts_(ss);
   /* [2026-09-03 · 이종 검수 P1 a1ba9ec3127f] 🔒 한 번에 하나만 돈다.
    *   이 함수는 이제 두 곳에서 불린다 — 23시 야간 배치(`교재연동Nightly`)와 원장이 누르는
    *   「목소리 지금 걷어오기」 메뉴(v9.296). 둘이 겹치면 **같은 포인터와 같은 새 응답을 함께 읽어**
@@ -228,6 +235,10 @@ function voiceSweep_(ss) {
    *   재진입이 안 되면 30초 뒤 예외가 나 **야간 배치가 통째로 죽는다** — 중복을 막으려다
    *   더 큰 것을 깨는 자리라, 확인되지 않은 쪽에 걸지 않는다. [[knowing-vs-machine-timing]] */
   const 알림 = [];
+  /* 무효 학생ID 통보도 잠금 «밖»이다 — `notifyDroppedSids_` 가 `adminMail` 을 부르는데, 그 함수는
+   *   자기 예외를 `catch` 로 삼킨다. 잠금 안에서 부르면 30초 뒤 조용히 실패하고 **알림 없이
+   *   포인터만 전진**한다(학생이 낸 것이 어디로 갔는지 아무도 모르게 된다). */
+  const badSid = [];
   try {
     /* [2026-09-03 · 이종 검수 P2 95aec3956067] 이 함수는 이제 «무슨 일이 있었나»를 돌려준다.
      *   야간 배치는 반환값을 안 쓴다(그대로다). 쓰는 쪽은 메뉴 화면 `voiceSweepNow_` 하나다 —
@@ -305,11 +316,12 @@ function voiceSweep_(ss) {
      *     날부터 그날 제출분에 붙는다. 이미 쌓인 행에 소급하지 않는다(소급하면 그날 실제로 시킨 것이
      *     아니라 «지금 목록이 말하는 것»이 박혀, 이 칸의 존재 이유가 사라진다). */
     const 시즌 = (typeof seasonLabelOf_ === 'function') ? seasonLabelOf_(ss, tz) : '';
-    const 목표문 = voiceMissionTexts_(ss);
+    // 목표문은 잠금 «전»에 읽어 두었다(위 머리 주석 · 검수 P1 48f070b17495)
     const rows = src.getRange(from + 1, 1, last - from, src.getLastColumn()).getValues();
-    // [v9.67] 무효 sid · [v9.104] 미동의 보류 · [2026-09-03 검수 P2] 빈칸 둘도 «센다» —
+    // [v9.104] 미동의 보류 · [2026-09-03 검수 P2] 빈칸 둘도 «센다» —
     //   세지 않으면 「2건 중 1건만 앉았다」를 화면이 설명할 수 없다(나머지 하나가 어디로 갔는지 모른다).
-    const vOut = [], pOut = [], badSid = [], held = [];
+    //   ⚠ badSid 는 잠금 «밖» 스코프다(위 선언 · 통보가 잠금 안에서 죽던 자리).
+    const vOut = [], pOut = [], held = [];
     let 파일빈칸 = 0, ID빈칸 = 0;
     rows.forEach(r => {
       const ts = r[0] instanceof Date ? r[0] : new Date();
@@ -361,7 +373,7 @@ function voiceSweep_(ss) {
      *   `행소독_`(Code.js)은 문자열만 소독하고 Date·number는 타입 보존한다(ts·포인트 숫자 안전). */
     if (vOut.length) vl.getRange(vl.getLastRow() + 1, 1, vOut.length, VOICE_LOG_HEADERS.length).setValues(행소독_(vOut));
     if (pOut.length) pl.getRange(pl.getLastRow() + 1, 1, pOut.length, 8).setValues(행소독_(pOut));
-    notifyDroppedSids_('목소리폼', badSid); // [v9.67] 함수 안 런타임 호출 — 톱레벨 크로스파일 금지 규칙과 무관
+    // [v9.67] notifyDroppedSids_ 는 잠금 해제 «뒤」 finally 에서 부른다(검수 P1 48f070b17495)
     props.setProperty('목소리폼_포인터', String(last));
     if (vOut.length) 알림.push({ 제목: '[SYNK] 🎙 새 목소리 ' + vOut.length + '건', 본문:
       '목소리 미션 제출 ' + vOut.length + '건이 voice_log에 쌓였습니다. 성장 카드는 야간 배치가 자동 갱신합니다.' });
@@ -378,7 +390,12 @@ function voiceSweep_(ss) {
       보류: held.length, 무효ID: badSid.length, 파일빈칸: 파일빈칸, ID빈칸: ID빈칸 };
   } finally {
     if (잠금) 잠금.releaseLock();
-    // 해제 «뒤에» 보낸다. finally 라 어느 return 경로로 빠져나가도 알림은 나간다.
+    /* 해제 «뒤에» 보낸다. finally 라 어느 return 경로로 빠져나가도 나간다.
+     * 🔴 여기 있는 것이 곧 「잠금 안에서 메일에 닿는 경로 0」의 집행이다 — 새 알림을 더할 때
+     *   본문 안이 아니라 이 큐에 담는다(검수 P1 48f070b17495 가 잡은 자리). */
+    if (badSid.length) {
+      try { notifyDroppedSids_('목소리폼', badSid); } catch (e) { Logger.log('voiceSweep_ 무효ID 통보 실패: ' + e); }
+    }
     알림.forEach(function (m) {
       try { adminMail(m.제목, m.본문); } catch (e) { Logger.log('voiceSweep_ 알림 실패: ' + e); }
     });
