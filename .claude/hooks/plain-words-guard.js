@@ -149,12 +149,24 @@ process.stdin.on('end', () => {
   // 🔴 «돌았다»를 남긴다 — 이게 없으면 «0건이라 조용함»과 «훅이 아예 안 돎»을 못 가른다.
   //    0건이 성공의 얼굴을 하는 자리(zero-is-a-success-face-taxonomy)라, 잣대를 먼저 의심할 수 있어야 한다.
   //    저장소가 아니라 임시 폴더에 둔다 — 기록이 아니라 «맥박»이다.
+  //    🔑 누적도 같이 센다 — 유호님이 「한동안 써 보고 거슬리면 말할게」 하셨다(09-03).
+  //       그 「거슬리나」를 나중에 **느낌이 아니라 숫자로** 답하려면 지금부터 세야 한다:
+  //       돈 횟수 분의 짖은 횟수가 곧 시끄러움이다(report-zero-with-denominator).
+  //    🔴 세션마다 따로 적는다 — 09-03 실측: 파일 하나로 뒀더니 **옆 세션이 덮어썼고**,
+  //       내 세션 것인 줄 알고 읽은 18개가 통째로 남의 답에서 나온 낱말이었다.
+  //       이 기계는 세션 일곱이 동시에 도는 곳이다(peer-identity-and-measurable-gates).
+  const 세션 = String(입력.session_id || 'unknown').slice(0, 12);
+  const 맥박길 = path.join(require('os').tmpdir(), `synk-쉬운말-맥박-${세션}.json`);
+  let 이전 = {};
+  try { 이전 = JSON.parse(fs.readFileSync(맥박길, 'utf8')) || {}; } catch { /* 첫 회 */ }
   try {
-    fs.writeFileSync(
-      path.join(require('os').tmpdir(), 'synk-쉬운말-맥박.json'),
-      JSON.stringify({ 때: new Date().toISOString(), 낯선: 낯선.length, 낱말: 낯선.slice(0, 20), 되물음, 짚으신것 }),
-      'utf8'
-    );
+    fs.writeFileSync(맥박길, JSON.stringify({
+      때: new Date().toISOString(),
+      낯선: 낯선.length, 낱말: 낯선.slice(0, 20), 되물음, 짚으신것,
+      돈수: (이전.돈수 || 0) + 1,
+      짖은수: (이전.짖은수 || 0) + (낯선.length || 되물음 ? 1 : 0),
+      샌날: 이전.샌날 || new Date().toISOString().slice(0, 10),
+    }), 'utf8');
   } catch { /* 맥박을 못 남겨도 검사는 계속한다 */ }
 
   if (!낯선.length && !되물음) process.exit(0); // 0건이면 완전 침묵
