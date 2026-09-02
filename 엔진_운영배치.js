@@ -2749,7 +2749,14 @@ function checkScene() {
       /* D-1 = 「내일 «정말» 새 장면」 — 날(AG33=1)만으로는 부족하다(codex P2 ca2c813e): 말 게이트가 남은
        * 학생은 내일 안 열린다. CD82(다음장면조건)는 같은 calcAll 이 결정론으로 쓴 문구라('내가 맞힌 말 N개'
        * 조각은 toMastered>0 일 때만 실린다) 그 부재가 곧 게이트 통과다 — calcAll 의 clsEvoSoon 과 같은 판정. */
-      if ((Number(r[32]) || 0) === 1 && String(r[81] || '').indexOf('내가 맞힌 말') === -1) (d1ByCls[String(r[4] || '')] = d1ByCls[String(r[4] || '')] || []).push('· ' + sid + ' ' + (r[1] || sid) + ' — 내일 새 장면'); // AG 다음장면까지 × CD 조건
+      /* 🔴 그런데 «부재»에는 두 얼굴이 있다 — 「게이트가 없다」와 「CD82 를 못 읽었다」(codex 지적
+       *   f49d02f5a234 · 08-27). profiles 물리 열이 82개에 못 미치면 r[81] 이 undefined 이고,
+       *   `String(undefined || '')` 는 빈 문자열이라 indexOf 가 -1 을 내 **모두 통과**시킨다:
+       *   신규·부분 실패 설정에서 AG33=1 인 학생 «전원»에게 D-1 알림이 나간다.
+       *   ⇒ 모르면 안 보낸다(fail closed). 가르는 자는 «값»이 아니라 «칸이 있나»다 —
+       *     칸이 있고 비었으면(=게이트 없음) 예전처럼 보낸다. 그 갈림이 `undefined` 검사다. */
+      const cd82있나 = r.length > 81 && typeof r[81] !== 'undefined';
+      if (cd82있나 && (Number(r[32]) || 0) === 1 && String(r[81] || '').indexOf('내가 맞힌 말') === -1) (d1ByCls[String(r[4] || '')] = d1ByCls[String(r[4] || '')] || []).push('· ' + sid + ' ' + (r[1] || sid) + ' — 내일 새 장면'); // AG 다음장면까지 × CD 조건
     }
     newAA.push([aaNext]);
     newAD.push([isStu ? adNext : '']);

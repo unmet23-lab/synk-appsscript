@@ -433,9 +433,13 @@ function 상담시트_업그레이드_() {
     const rng = sh.getRange(CONSULT_HDR_ROW + 1, c, 행수, 1);
     rng.setDataValidation(rule);
     const 색 = { '신규접수': 브랜드_.coral, '검토중': '#F5C445', '상담완료': '#3B82F6', '반배정': '#7C3AED', '앱편입': '#16A34A', '보류': '#9CA3AF', '취소': '#6B7280' };
+    /* 🔑 글자색은 «면마다» 정한다 — 일곱에 흰 글자를 한꺼번에 주면 밝은 면에서 글자가 사라진다.
+     *   검토중의 Butter(#F5C445)가 그 자리였다: 흰 글자가 저대비였고 킷 규칙(Butter 면의 글자는 Ink)도 어겼다.
+     *   (codex 지적 bdacfddecda9·2c6b8fe9ba91 · 08-20) 나머지 여섯은 어두운 면이라 흰 글자가 맞다. */
+    const 글자 = { '검토중': 브랜드_.ink };
     const rules = Object.keys(색).map(function (s) {
       return SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo(s)
-        .setBackground(색[s]).setFontColor('#FFFFFF').setRanges([rng]).build();
+        .setBackground(색[s]).setFontColor(글자[s] || '#FFFFFF').setRanges([rng]).build();
     });
     sh.setConditionalFormatRules(sh.getConditionalFormatRules().filter(function (r) {
       return r.getRanges().every(function (x) { return x.getColumn() !== c; });   // 이 열의 기존 규칙만 교체
