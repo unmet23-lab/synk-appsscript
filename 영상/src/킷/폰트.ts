@@ -23,10 +23,13 @@
 import { loadFont } from "@remotion/fonts";
 import { continueRender, delayRender, staticFile } from "remotion";
 import 토큰 from "../../../docs/디자인_토큰.json";
+/* 🔑 «어느 파일을 어느 가족·웨이트로 무나»는 `폰트벌.json` 하나가 안다(09-02) — 여기(등록) · `자산모으기.js`(복사) ·
+   `발행검사.js` ②(cmap 대조) 셋이 같은 표를 본다. 전엔 여기와 자산모으기가 각자 아홉 줄을 들고 있었다. */
+import 폰트벌 from "./폰트벌.json";
 
-/** 실물 파일에 박힌 family 이름. 지어내지 않는다 — fontTools 로 읽은 값이다. */
-export const 한글체 = "SUIT";
-export const 라틴체 = "Inter Tight";
+/** 실물 파일에 박힌 family 이름. 지어내지 않는다 — fontTools 로 읽은 값이다(폰트벌.json 「가족」). */
+export const 한글체: string = 폰트벌.가족.한글체;
+export const 라틴체: string = 폰트벌.가족.라틴체;
 
 /** 토큰이 정한 스택 순서를 그대로 쓰되, 실존하지 않는 `SUIT Variable` 만 실물 이름으로 바꾼다. */
 export const 본문스택: string = ((토큰 as any)["서체"]["본문스택"] as string).replace(
@@ -46,17 +49,12 @@ export const 트래킹: Record<string, string> = (토큰 as any)["서체"]["트�
  */
 export const 몽골어보정: number = (토큰 as any)["서체"]["몽골어보정"];
 
-const 벌: { family: string; 파일: string; weight: string }[] = [
-  { family: 한글체, 파일: "SUIT-Regular.otf", weight: "400" },
-  { family: 한글체, 파일: "SUIT-Medium.otf", weight: "500" },
-  { family: 한글체, 파일: "SUIT-SemiBold.otf", weight: "600" },
-  { family: 한글체, 파일: "SUIT-ExtraBold.otf", weight: "800" },
-  { family: 한글체, 파일: "SUIT-Heavy.otf", weight: "900" },
-  { family: 라틴체, 파일: "InterTight-Regular.ttf", weight: "400" },
-  { family: 라틴체, 파일: "InterTight-Medium.ttf", weight: "500" },
-  { family: 라틴체, 파일: "InterTight-SemiBold.ttf", weight: "600" },
-  { family: 라틴체, 파일: "InterTight-Bold.ttf", weight: "700" },
-];
+/** 폰트벌.json 의 정본 경로(`SUIT/SUIT-Regular.otf`)에서 파일 이름만 — `자산모으기.js` 가 `public/폰트/` 에 그 이름으로 놓는다. */
+const 벌: { family: string; 파일: string; weight: string }[] = 폰트벌.벌.map((v) => ({
+  family: v.family,
+  파일: v.정본.split("/").pop() as string,
+  weight: v.weight,
+}));
 
 /**
  * 🔑 `delayRender` 로 «기다리게» 만든다. 최상위 await 로 두면 Remotion 이 그걸 안 기다려서

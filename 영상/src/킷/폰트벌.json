@@ -1,0 +1,19 @@
+{
+  "_주": "브랜드 폰트 «실물 파일» 선언 — 킷 다리 `폰트.ts`(등록) · `자산모으기.js`(복사) · `발행검사.js` ②(cmap 대조) 셋이 이 한 표를 본다. 값의 정본은 `docs/브랜드_폰트/` 폴더 자체이고 여기는 «어느 파일을 어느 가족·웨이트로 무나»만 적는다. family 이름은 지어내지 않는다 — fontTools 로 읽은 name ID 1 이다(토큰 서체.본문스택의 'SUIT Variable' 은 실존하지 않는 이름 · 폰트.ts 머리말 ③).",
+  "가족": { "한글체": "SUIT", "라틴체": "Inter Tight" },
+  "벌": [
+    { "family": "SUIT", "정본": "SUIT/SUIT-Regular.otf", "weight": "400" },
+    { "family": "SUIT", "정본": "SUIT/SUIT-Medium.otf", "weight": "500" },
+    { "family": "SUIT", "정본": "SUIT/SUIT-SemiBold.otf", "weight": "600" },
+    { "family": "SUIT", "정본": "SUIT/SUIT-ExtraBold.otf", "weight": "800" },
+    { "family": "SUIT", "정본": "SUIT/SUIT-Heavy.otf", "weight": "900" },
+    { "family": "Inter Tight", "정본": "InterTight/InterTight-Regular.ttf", "weight": "400" },
+    { "family": "Inter Tight", "정본": "InterTight/InterTight-Medium.ttf", "weight": "500" },
+    { "family": "Inter Tight", "정본": "InterTight/InterTight-SemiBold.ttf", "weight": "600" },
+    { "family": "Inter Tight", "정본": "InterTight/InterTight-Bold.ttf", "weight": "700" }
+  ],
+  "선언밖": {
+    "_주": "선언한 아홉 벌 어디에도 없는 글자 갈래를 «알고» 시스템 폴백에 맡기는 자리. 발행검사 ② 는 여기 적힌 갈래를 위반이 아니라 ⚠경고로 센다(어느 글자·어느 컷까지 찍는다). 이 줄을 지우면 그 갈래는 그 자리에서 위반이 된다.",
+    "이모지": "아홉 벌 어디에도 이모지 글리프가 없다(cmap 실측 09-02 · 카운트다운커버.tsx 도 같은 실측을 적어 뒀다). 지금은 렌더 기계(이 노트북)의 시스템 이모지 폰트가 그린다 — 다른 기계에서는 다른 그림·두부가 난다. 어느 폰트로 박을지는 유호 판정 대기(트랙 §2-영상 「이모지(권고 Noto Color Emoji)」). 정하면 그 파일을 위 벌에 넣고 이 줄을 지운다."
+  }
+}
