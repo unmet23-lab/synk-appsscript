@@ -18,7 +18,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const 기본키경로 = process.env.GEMINI_KEY_PATH || 'C:/Users/q1212/SYNK_보안/제미나이.txt';
+/* 🔑 그림은 **「돈」 열쇠**를 쓴다 — 공짜 몫이 원리상 없다(구글 공식 가격표 09-03: Nano Banana Pro
+ * = Free Tier 「Not available」 · 1K/2K 한 장 $0.134 · 4K $0.24). 유호 확정 09-03 「글은 공짜, 그림은 유료」.
+ * 경로 정본은 `tools/모델정책.js` 하나다 — 09-03 전엔 이 파일이 같은 문자열을 따로 박아 두고 있었다. */
+const 기본키경로 = require('../모델정책.js').제미나이키경로('돈');
 const 기본모델 = 'nano-banana-pro-preview';
 
 function 키(키경로 = 기본키경로) {

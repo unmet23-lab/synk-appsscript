@@ -62,7 +62,9 @@ const { 뜻대조 } = require('./lib/뜻대조.js');
  * 재시도·타임아웃·스키마 처리를 여기 다시 적지 않는다(두 곳이 알면 갈린다). */
 const { 제미나이, 재시도가능 } = require('./lib/제미나이호출.js');
 
-const 기본키경로 = 'C:/Users/q1212/SYNK_보안/제미나이.txt';
+/* 🔑 검문은 **「글」 열쇠**(공짜 몫)를 쓴다 — 유호 확정 09-03 「글은 공짜, 그림은 유료」.
+ * 경로는 여기서 안 정한다(정본 = 모델정책.js `제미나이키경로('글')` · 09-03 전엔 이 파일이 따로 알고 있었다). */
+const 열쇠용도 = '글';
 const 제미나이픽 = 정책.제미나이설정(); // 기본 = gemini-3.7-flash / thinking_level=high (유호 지시 08-31)
 const 기본모델 = 제미나이픽.model;
 
@@ -264,9 +266,9 @@ async function main() {
     console.error('        node tools/몽골어대조.js --파일 <경로>   (한국어 / --- / 몽골어)');
     process.exit(1);
   }
-  const keyPath = process.env.GEMINI_KEY_PATH || 기본키경로;
+  const keyPath = 정책.제미나이키경로(열쇠용도);
   if (!fs.existsSync(keyPath)) {
-    console.error(`실행 오류: 키 파일이 없다 → ${keyPath}`);
+    console.error('실행 오류: ' + 정책.제미나이키안내(열쇠용도));
     process.exit(1);
   }
   const key = 키추출(fs.readFileSync(keyPath, 'utf8'));

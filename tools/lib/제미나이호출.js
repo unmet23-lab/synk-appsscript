@@ -118,8 +118,10 @@ async function main() {
     catch (e) { console.error(`실행 오류: 스키마를 못 읽었다 — ${e.message}`); process.exit(1); }
   }
   const 정책 = require(path.join(__dirname, '..', '모델정책.js'));
-  const key = 정책.제미나이키();
-  if (!key) { console.error(`확인 불가: 제미나이 키를 못 읽었다(${정책.제미나이키경로()})`); process.exit(2); }
+  /* 🔑 이 통로는 **글 전용**이다(몽골어 검문 · 검수 러너의 gemini 회차) — 그래서 「글」 열쇠(공짜 몫).
+   * 그림·음악·목소리는 여기를 안 지나간다(각자 「돈」 열쇠를 쓴다 · 유호 확정 09-03). */
+  const key = 정책.제미나이키('글');
+  if (!key) { console.error('확인 불가: ' + 정책.제미나이키안내('글')); process.exit(2); }
   const prompt = fs.readFileSync(0, 'utf8');
   if (!prompt.trim()) { console.error('실행 오류: stdin 프롬프트가 비었다'); process.exit(1); }
   try {

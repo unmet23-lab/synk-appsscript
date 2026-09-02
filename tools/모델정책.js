@@ -475,14 +475,53 @@ const 제미나이 = {
 /* 키는 파일에서만 읽는다 — `$env:GEMINI_API_KEY="<키>"` 식 안내는 리터럴 키를 PSReadLine
  * 기록·트랜스크립트에 남긴다(2026-08-05 이종 검수 P2 지적로 고침). 경로·추출 규칙은
  * 몽골어대조.js 가 먼저 실측으로 깔았다(AQ. 형식 실재) — 여기가 정본이 되고 그쪽이 소비한다. */
-const 제미나이키경로 = () => process.env.GEMINI_KEY_PATH || 'C:/Users/q1212/SYNK_보안/제미나이.txt';
-function 제미나이키() {
-  const p = 제미나이키경로();
+/* ■ 열쇠가 **둘**이다 — 「글」과 「돈」 (유호 확정 2026-09-03 「둘 다 — 글은 공짜, 그림은 유료」)
+ *
+ * 왜 갈랐나 (09-03 AI Studio 화면 실측):
+ *   28일 지출 ₩14.6K 을 모델별로 가르니 **그림(나노바나나 프로) ₩6.68K + 음악(Lyria 3 Pro) ₩4.98K
+ *   = 80%** 였고, 상시 도는 «글»(몽골어 검문·검수 회차)은 나머지 20% 안이었다. 그런데 열쇠가 하나라
+ *   그림 한 번 구우면 **글 검문까지 같이 멈췄다**(09-02 저녁 429 — 크레딧 −₩56).
+ *   공식 가격표상 `gemini-3.7-flash` 는 무료 몫이 있고(「Free of charge」) 그림·음악은 없다
+ *   ⇒ **글은 공짜 열쇠로 영원히 돌리고, 돈은 그림·음악이 쓸 때만 닳게 한다.**
+ *
+ * 🔑 **기본은 «글»(싼 쪽)이다.** 실수로 용도를 안 주면 공짜 쪽으로 가야 안전하다 —
+ *   돈 드는 쪽은 `'돈'` 을 **명시해야만** 열린다(실패 방향이 「돈이 샌다」가 되지 않게).
+ * 🚫 **폴백 없다.** 공짜 열쇠 파일이 없다고 유료 열쇠로 조용히 넘어가지 않는다 — 그 순간
+ *   「글은 공짜」라는 이 판정이 거짓이 되고, 아무도 그걸 모른다(폴백허용 = false 와 같은 정신).
+ * 🔑 경로를 아는 곳은 **여기 하나**다. 09-03 전에는 셋이 각자 알고 있었다
+ *   (`이미지굽기.js`·`몽골어대조.js` 가 같은 문자열을 박아 뒀다 · constant-known-in-two-places).
+ */
+const 열쇠파일 = {
+  글: { env: 'GEMINI_KEY_PATH_FREE', 기본: 'C:/Users/q1212/SYNK_보안/제미나이_무료.txt', 뭐냐: '공짜 몫 열쇠(글 전용 — 검문·검수)' },
+  돈: { env: 'GEMINI_KEY_PATH', 기본: 'C:/Users/q1212/SYNK_보안/제미나이.txt', 뭐냐: '유료 열쇠(그림·음악·목소리 — 크레딧이 닳는다)' },
+};
+function 용도고르기(용도) {
+  const k = 용도 == null || 용도 === '' ? '글' : String(용도);
+  if (!열쇠파일[k]) throw 확인불가(`제미나이 열쇠 용도는 '글'·'돈' 둘뿐이다(받은 것: ${k})`);
+  return k;
+}
+/* 키는 파일에서만 읽는다 — `$env:GEMINI_API_KEY="<키>"` 식 안내는 리터럴 키를 PSReadLine
+ * 기록·트랜스크립트에 남긴다(2026-08-05 이종 검수 P2 지적로 고침). 경로·추출 규칙은
+ * 몽골어대조.js 가 먼저 실측으로 깔았다(AQ. 형식 실재) — 여기가 정본이 되고 그쪽이 소비한다. */
+const 제미나이키경로 = (용도) => {
+  const k = 용도고르기(용도);
+  return process.env[열쇠파일[k].env] || 열쇠파일[k].기본;
+};
+/** 열쇠 값. @param 용도 '글'(기본 · 공짜 몫) | '돈'(그림·음악 — 크레딧이 닳는다) */
+function 제미나이키(용도) {
+  const p = 제미나이키경로(용도);
   if (!fs.existsSync(p)) return null;
   const tokens = String(fs.readFileSync(p, 'utf8')).replace(/^\uFEFF/, '').trim().split(/\s+/).filter(Boolean);
   const known = tokens.find((t) => /^(AIza|AQ\.|sk-)/.test(t));
   if (known) return known;
   return tokens.length === 1 ? tokens[0] : null; // 모르는 토큰 여럿 = 아무거나 집어 조용히 401 내느니 null
+}
+/** 키가 없을 때 **무엇을 어디에 놓아야 하는지**까지 말한다 — 「없다」만 말하면 사람이 다음 수를 모른다. */
+function 제미나이키안내(용도) {
+  const k = 용도고르기(용도);
+  return `${열쇠파일[k].뭐냐} 파일이 없다: ${제미나이키경로(k)}\n`
+    + `   만드는 법: aistudio.google.com/apikey → 「API 키 만들기」 → 열쇠 값을 그 파일에 한 줄로 붙여넣기(값은 유호님 손).\n`
+    + `   경로를 바꾸려면 env ${열쇠파일[k].env}.`;
 }
 
 /* 전송 모양: 부르는 쪽(몽골어대조.js · 향후 라이브시트 층)은 `generateContent` 에
@@ -535,15 +574,15 @@ function 코덱스캐시() {
 /* 🔑 키가 «지금» 사는지 한 번 묻는다 — 판정하지 않고 사실만 낸다 (2026-09-03).
  *
  * 왜 생겼나: 09-02 저녁 이 키가 429(크레딧 소진)로 죽었는데 **아무 자도 그 사실을 안 들고 나왔다.**
- *   그 키 하나에 자리 셋이 매달려 있다(몽골어 검문 · 검수 gemini 레인 · 이미지 굽기) — 셋이 한꺼번에
- *   멈췄는데 다음 날 세션 첫머리는 조용했다. 「장부에 몇 줄 있나」는 세면서 「자가 살아 있나」는
- *   아무도 안 쟀던 것이다.
+ *   그 키 하나에 글·그림·음악·목소리가 다 매달려 있었다(09-03 사용량 화면 실측 — 첫 보고의 「셋」은
+ *   적게 센 것이다). 다 한꺼번에 멈췄는데 다음 날 세션 첫머리는 조용했다 — 「장부에 몇 줄 있나」는 세면서
+ *   「자가 살아 있나」는 아무도 안 쟀던 것이다. 09-03 부터 열쇠가 둘이라 **용도별로 잰다.**
  * 🔑 **셋을 갈라 말한다**: true=답했다 · false=거절당했다(죽었다) · null=**못 물어봤다**(≠살았다).
  *   null 을 「정상」으로 접으면 그게 zero-is-a-success-face 다.
  * 여기 하나가 프로브의 유일한 통로다 — `--제미나이확인` 도 아래에서 이걸 부른다. */
-async function 제미나이생존({ timeoutMs = 8000 } = {}) {
-  const key = 제미나이키();
-  if (!key) return { 살았나: null, 종류: '키없음', 사유: `키 파일을 못 읽었다(${제미나이키경로()})` };
+async function 제미나이생존({ timeoutMs = 8000, 용도 = '글' } = {}) {
+  const key = 제미나이키(용도);
+  if (!key) return { 살았나: null, 종류: '키없음', 용도, 사유: `키 파일을 못 읽었다(${제미나이키경로(용도)})`, 안내: 제미나이키안내(용도) };
   const 기본 = 제미나이설정();
   try {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${기본.model}:generateContent`, {
@@ -559,23 +598,24 @@ async function 제미나이생존({ timeoutMs = 8000 } = {}) {
     const 사유 = String((j.error && j.error.message) || '').slice(0, 200);
     if (r.ok) {
       const 사고 = j.usageMetadata && j.usageMetadata.thoughtsTokenCount;
-      return { 살았나: true, 모델: 기본.model, 사고토큰: 사고 == null ? null : 사고 };
+      return { 살았나: true, 용도, 모델: 기본.model, 사고토큰: 사고 == null ? null : 사고 };
     }
     /* 종류를 가르는 값어치: 「한도·결제」는 유호님 손(충전·결제)이고 「자격」은 키 교체다.
      * 9월 예고된 Standard 키 거부가 오면 401/403 으로 온다 — 그때 처방이 달라야 한다. */
     const 종류 = r.status === 429 ? '한도·결제' : (r.status === 401 || r.status === 403) ? '자격' : '기타';
-    return { 살았나: false, 상태: r.status, 종류, 사유, 모델: 기본.model };
+    return { 살았나: false, 용도, 상태: r.status, 종류, 사유, 모델: 기본.model };
   } catch (e) {
     // 네트워크·타임아웃은 «키가 죽었다»가 아니다 — 못 물어본 것이다.
-    return { 살았나: null, 종류: '네트워크', 사유: String((e && e.message) || e).slice(0, 200) };
+    return { 살았나: null, 용도, 종류: '네트워크', 사유: String((e && e.message) || e).slice(0, 200) };
   }
 }
 
-async function 제미나이확인() {
-  const key = 제미나이키();
+async function 제미나이확인(용도 = '글') {
+  console.log(`■ 열쇠 「${용도}」 — ${열쇠파일[용도].뭐냐}`);
+  const key = 제미나이키(용도);
   if (!key) {
-    console.error(`🔴 키를 못 읽었다(${제미나이키경로()}) — 조회를 **안 돌린 것**이지 「모델이 없다」가 아니다.`);
-    console.error('   키는 파일로만 다룬다(셸에 리터럴로 치면 기록에 남는다) — 경로 변경은 env GEMINI_KEY_PATH.');
+    console.error('🔴 키를 못 읽었다 — 조회를 **안 돌린 것**이지 「모델이 없다」가 아니다.');
+    console.error('   ' + 제미나이키안내(용도));
     return 2;
   }
   const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', {
@@ -597,7 +637,7 @@ async function 제미나이확인() {
   // 기본 픽은 존재만이 아니라 **사고 수준까지** 산다 — 목록에 있어도 파라미터가 거절되면 못 쓴다.
   // 프로브 알맹이는 `제미나이생존()` 하나다(자를 둘로 만들지 않는다 · ai스택점검도 그걸 부른다).
   const 기본 = 제미나이설정();
-  const 생존 = await 제미나이생존({ timeoutMs: 60000 });
+  const 생존 = await 제미나이생존({ timeoutMs: 60000, 용도 });
   if (생존.살았나 === null && 생존.종류 === '네트워크') {
     console.error('🔴 프로브 자체가 못 돌았다(네트워크/타임아웃): ' + 생존.사유);
     return 2;
@@ -666,14 +706,20 @@ module.exports = {
   효력들, 코덱스효력, 코덱스폐기, 검수선택지, 검수기본, 심문기본, 검수선택, 분석설정, 구조화설정, 코덱스플래그,
   코덱스캐시, 코덱스캐시경로,
   회차기본, 회차상한, 회차설정, 명시픽, 심문편성, 심문런들,
-  제미나이, 제미나이사고, 제미나이설정, 제미나이키, 제미나이키경로, 제미나이생존,
+  제미나이, 제미나이사고, 제미나이설정, 제미나이키, 제미나이키경로, 제미나이생존, 제미나이키안내, 열쇠파일,
 };
 
 if (require.main === module) {
   const argv = process.argv.slice(2);
   (async () => {
     try {
-      process.exit(argv.includes('--제미나이확인') ? await 제미나이확인() : 출력());
+      if (!argv.includes('--제미나이확인')) process.exit(출력());
+      /* 열쇠가 둘이라 **둘 다** 잰다 — 하나만 재면 다른 하나의 「죽음」이 안 보인다.
+       * 종료코드는 나쁜 쪽을 따른다(하나라도 못 쓰면 초록이 아니다). */
+      const 글결과 = await 제미나이확인('글');
+      console.log('');
+      const 돈결과 = await 제미나이확인('돈');
+      process.exit(Math.max(글결과, 돈결과));
     } catch (e) {
       console.error('🔴 ' + String((e && e.message) || e));
       process.exit(2);
