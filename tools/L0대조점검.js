@@ -33,7 +33,13 @@ const path = require('path');
 const crypto = require('crypto');
 
 const ROOT = process.env.SYNK_L0_ROOT || path.resolve(__dirname, '..');
-const 형제 = () => process.env.SYNK_TALK_ROOT || path.resolve(ROOT, '..', 'SYNK-talk');
+/* 형제 자리는 «경로 모양»으로 짐작하지 않는다(워크트리 규약 §8-3) — 워크트리 안에서는 `ROOT/..` 가
+ * `.claude/worktrees/` 라 형제가 없고, 그 실패가 「대조표를 못 읽었다」로 빨개졌다(09-02 실측 · 메인에선 초록).
+ * `.claude/hooks/lib/형제저장소.js` 가 주저장소를 풀어 답한다(의존 방향 tools/ → hooks/lib · 그 파일 머리말). env 는 그대로 앞선다.
+ * ⚠ 헬퍼는 **이 도구의 집**(`__dirname/..`)에서 가져온다 — ROOT 는 회귀가 임시 픽스처로 바꿔 끼우는 값이라 거기엔 훅 lib 가 없다.
+ *   픽스처(git 아님)에서는 헬퍼가 root 를 그대로 돌려줘 옛 모양 `<root>/../SYNK-talk` 과 같다(회귀 5벌이 그 위에 선다). */
+const 형제저장소 = require(path.join(__dirname, '..', '.claude', 'hooks', 'lib', '형제저장소.js'));
+const 형제 = () => process.env.SYNK_TALK_ROOT || 형제저장소.형제경로(ROOT);
 const L0경로 = () => path.join(형제(), 'docs', 'L0_데이터계약.md');
 const 도장경로 = () => process.env.SYNK_L0_STAMP || path.join(ROOT, 'docs', '_ops', 'L0대조도장.json');
 
