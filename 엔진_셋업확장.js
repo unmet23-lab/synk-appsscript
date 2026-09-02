@@ -5006,139 +5006,174 @@ function lectureWeeklyText_(ss) {
       : '\n  - 60% 미만 없음');
 }
 
-/* ===================== [v9.110] 시트 메뉴 — 수동 실행 진입점 =====================
- * 이 저장소엔 onOpen이 없어 「SYNK 메뉴」가 존재한 적이 없다. 수동 실행은 Apps Script 편집기에서
- * 함수 138개 중 하나를 드롭다운으로 골라 ▶를 눌러야만 가능했다 — 오선택 위험이 크고(setupSchedule은
- * 라이브 반 편성을 리셋한다), 비개발자에게는 사실상 닫힌 경로였다.
- * → 자주 쓰는 **안전한** 항목만 시트 메뉴로 올린다. 파괴적·일회성 함수(setupSchedule·seedDemoData·
- *   clearDemoData·각종 create*Form)는 의도적으로 넣지 않는다. 메뉴에 올리는 순간 "한 번 잘못 누름"이
- *   그대로 라이브 사고가 되므로, 그런 것들은 편집기에서 의식적으로 고르게 둔다.
- * onOpen은 단순 트리거라 별도 권한 승인이 필요 없다(시트를 열면 자동 설치). */
+/* ===================== [v9.297] 시트 메뉴 — 손으로 누르는 진입점 =====================
+ * 왜 메뉴가 있나: 수동 실행 경로가 Apps Script 편집기의 함수 드롭다운뿐이면 비개발자에게는 닫힌
+ *   길이고, 오선택 위험도 크다(setupSchedule 은 라이브 반 편성을 리셋한다). 그래서 **안전한
+ *   것만** 올린다. 파괴적·일회성(setupSchedule·seedDemoData·clearDemoData)은 의도적으로 안
+ *   올린다 — 메뉴에 올리는 순간 「한 번 잘못 누름」이 그대로 라이브 사고가 된다.
+ *
+ * ■ [v9.297] 평면 53줄 → **갈래 10개**로 접었다 (유호 지시 09-03 · 메뉴·탭 전수조사)
+ *   ㉠ 왜 접나 — 53줄이 한 줄로 늘어서면 「오늘 눌러야 할 것」과 「지난달에 한 번 누른 것」이
+ *      같은 크기로 보인다. 그 대가가 실측으로 잡혔다: 개원 준비 폼 **5종이 안 눌린 채** 묻혀
+ *      있었다(09-03 라이브 app_state 에 반출석·출퇴근·퀴즈·대화·직장 폼ID 가 없다 · 응답 탭도
+ *      0). 코드는 배포돼 있었다 — 「배포했다」와 「눌렀다」가 갈린 자리다.
+ *   ㉡ 무엇을 뺐나 — 「🗑 구 몬스터 씨앗 행 정리」 하나. 라이브에 monster 탭 자체가 없어
+ *      (09-03 실측 · 88탭 전수) 할 일이 사라졌다. 함수 purgeLegacyMonsterRows_ 는 남긴다 —
+ *      편집기에서 부를 수 있고, 지우면 되살릴 근거가 함께 사라진다.
+ *   ㉢ 상태 표시 — 갈래 이름에 «아직 남은 개수», 항목 앞에 ✅(이미 됨)·⬜(아직)을 붙인다.
+ *      자는 app_state 의 폼ID 키다. 그 값은 폼이 **실제로 만들어져야만** 생기므로,
+ *      「코드가 있다」가 아니라 「눌렀다」를 잰다.
+ *      🔴 자를 못 대면 표식을 **안 붙인다**(빈칸). 못 잰 것을 「아직」으로 쓰면 다 한 일을
+ *      다시 누르게 만든다 — 「안 재봤다」와 「없다」는 다르다.
+ *
+ * onOpen 은 단순 트리거라 별도 권한 승인이 필요 없다(시트를 열면 자동 설치). */
+
+/* [v9.297] 메뉴 상태의 자 — app_state 를 **한 번만** 읽어 「이미 눌렸나」를 판정한다.
+ *   값이 빈 키는 없는 것으로 센다(키만 있고 값이 빈 자리가 실제로 있다 · 09-03 실측).
+ *   못 읽으면 null 을 낸다 → 호출 쪽이 표식을 통째로 뺀다(위 ㉢). */
+function menuFlags_() {
+  try {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('app_state');
+    if (!sh || sh.getLastRow() < 2) return null;
+    const v = sh.getRange(1, 1, sh.getLastRow(), 2).getValues();
+    const has = {};
+    for (let i = 0; i < v.length; i++) {
+      const k = String(v[i][0] || '').trim();
+      if (k && String(v[i][1] || '').trim()) has[k] = true;
+    }
+    return has;
+  } catch (e) { return null; } // 권한·시트 부재 — 메뉴는 뜨는 게 우선이다
+}
+/** 항목 라벨 앞의 ✅/⬜ — 자가 없으면 붙이지 않는다(전각 공백으로 줄만 맞춘다). */
+function menuMark_(F, key, label) { return !F ? '　' + label : (F[key] ? '✅ ' : '⬜ ') + label; }
+/** 갈래 이름 뒤의 배지 — 「⬜3」 = 아직 세 개 남았다 · 「✅」 = 다 됐다. */
+function menuLeft_(F, keys) {
+  if (!F) return '';
+  let n = 0;
+  for (let i = 0; i < keys.length; i++) if (!F[keys[i]]) n++;
+  return n ? '  ⬜' + n : '  ✅';
+}
+
 function onOpen() {
   try {
-    SpreadsheetApp.getUi().createMenu('SYNK')
-      .addItem('📊 강사 지표 갱신', 'calcTeacherStats')
-      .addItem('🔄 전체 재계산', 'calcAll')
+    const ui = SpreadsheetApp.getUi();
+    const F = menuFlags_();
+    const 폼키 = ['반출석폼ID', '출퇴근폼ID', '퀴즈폼ID', '대화폼ID', '직장폼ID',
+      '마감폼ID', '면접폼ID', '약점메모폼ID', '강의폼ID'];
+    const 준비키 = ['학생ID_최종번호', '시즌시작일'];
+
+    /* ── 🚀 개원 준비 — 학생이 오기 «전»에만 할 수 있는 것들. 위에서 아래로 누른다.
+     *   카운터·시즌시작일만 상태를 잴 수 있다(나머지는 「눌렸다」를 남기는 키가 없다 —
+     *   없는 자를 지어내지 않고 표식을 뺀다). */
+    const 준비 = ui.createMenu('🚀 개원 준비' + menuLeft_(F, 준비키))
+      .addItem(menuMark_(F, '학생ID_최종번호', '🔢 학생ID 카운터 세우기(0단계·1회·멱등)'), 'menuStudentIdCounterInit')
+      .addItem(menuMark_(F, '시즌시작일', '🗓 시즌 시작일 정하기(1단계)'), 'seasonStartPrompt')
+      .addItem('　🧩 전 반 조 편성(2단계)', 'menuAssignGroups')
       .addSeparator()
+      // 아래 넷은 «코드를 고쳐 배포해도 시트의 저장된 행은 안 바뀌는» 자리다 — 그래서 손이 필요하다.
+      .addItem('　📚 강의 자리 깔기(이수율의 분모)', 'menuSetupLectures')
+      .addItem('　🚪 온보딩 안내 다시 세우기(첫 화면 문구)', 'menuSetupOnboarding')
+      .addItem('　📚 숙제 뱅크 다시 세우기(210행 + 몽골어)', 'menuApplyHomeworkBank')
+      .addItem('　🧶 가이드 셋 다시 세우기(얼굴 그림 포함)', 'menuSetupGuides')
+      .addItem('　🎙 낭독 미션 목록 세우기(발음 데이터)', 'menuSetupVoiceMissions');
+
+    /* ── 📋 폼 만들기 — 각 폼은 «한 번» 만들면 끝이고, 만든 증거가 app_state 폼ID 다.
+     *   ⬜ 가 붙은 것은 아직 폼이 없다는 뜻 = 그 통로로 들어올 데이터가 지금 0이다. */
+    const 폼만들기 = ui.createMenu('📋 폼 만들기' + menuLeft_(F, 폼키))
+      .addItem(menuMark_(F, '반출석폼ID', '🙋 반 출석 폼(수업 시작 1탭)'), 'menuCreateClassAttendanceForm')
+      .addItem(menuMark_(F, '출퇴근폼ID', '⏱ 출퇴근 폼'), 'menuCreateTeacherCheckinForm')
+      .addItem(menuMark_(F, '퀴즈폼ID', '🧠 퀴즈 응답 폼(수집 1단계)'), 'menuCreateQuizForm')
+      .addItem(menuMark_(F, '대화폼ID', '🗣 한국어 대화 폼(수집 3단계)'), 'menuCreateTalkForm')
+      .addItem(menuMark_(F, '직장폼ID', '🧰 직장 경험 회수 폼(VR 직업체험 0단계)'), 'menuCreateWorkLogForm')
+      .addSeparator()
+      .addItem(menuMark_(F, '마감폼ID', '📝 차시 마감폼(있으면 업그레이드)'), 'menuCreateLessonCloseForm')
+      .addItem(menuMark_(F, '면접폼ID', '🎤 면접 기록 회수 폼(VR 0단계)'), 'menuCreateInterviewLogForm')
+      .addItem(menuMark_(F, '약점메모폼ID', '🗒 강사 메모 폼'), 'menuCreateTeacherMemoForm')
+      .addItem(menuMark_(F, '강의폼ID', '🎬 강의 수강 확인 폼'), 'menuCreateLectureForm');
+
+    /* ── 🔧 폼 고치기 — 이미 있는 폼에 «칸을 심거나 문구를 갈아 끼우는» 자리들.
+     *   전부 멱등이라 다시 눌러도 무해하다. 위 셋은 문구가 바뀔 때마다, 아래는 1회. */
+    const 폼고치기 = ui.createMenu('🔧 폼 고치기(문구·칸이 바뀔 때)')
+      .addItem('🔏 동의 문항 갱신(수집 0단계)', 'menuMigrateConsent')
+      .addItem('🇲🇳 직장 경험 폼에 몽골어 안내 넣기', 'menuMigrateWorkFormMn')
+      .addItem('🔄 강의 폼 선택지를 카탈로그와 맞추기(시즌 갱신)', 'menuSyncLectureForm')
+      .addSeparator()
+      .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계·1회)', 'menuMigrateHwForm')
+      .addItem('🎯 직장 경험 폼에 «결과 칸» 넣기(1회)', 'menuMigrateWorkFormOutcome')
+      .addItem('📋 마감폼 증설 — 배운내용·문법태그·연료미션(1회)', 'menuMigrateLessonCloseForm0902')
+      .addItem('🙋 반 출석 폼 섹션 늘리기(반이 늘었을 때)', 'menuExtendClassAttendanceForm')
+      .addSeparator()
+      /* 궤적 연결 고리 — 의도(크루카드)와 결과(면접 합·불)가 둘 다 쌓이는데 안 이어져 있었다.
+       *   문항이 아니라 **연결**이 소급 불가다: 지금 키를 안 심으면 이미 들어온 기록은 영영 못 잇는다. */
+      .addItem('🔗 면접폼에 학생ID 칸 넣기(궤적 연결)', 'menuMigrateInterviewSid')
+      .addItem('🔗 면접폼 개인 링크 만들기(학생ID 미리채움)', 'menuInterviewPersonalLink')
+      // 밤 배치가 매일 자기적용한다 — 밤을 안 기다리고 지금 적용하고 싶을 때의 손잡이.
+      .addItem('🎙 목소리 폼에 미션ID 넣기(자동됨·수동 재시도)', 'menuMigrateVoiceForm');
+
+    /* ── 🩺 점검·진단 — 전부 읽기 전용이거나 스스로 고치는 것뿐. 눌러서 손해 볼 항목이 없다. */
+    const 점검 = ui.createMenu('🩺 점검·진단(눌러도 안전)')
       .addItem('🩺 조립 점검·자동 복구(preflight)', 'preflightGlide')
-      // [v9.117] 언더바 함수 — **편집기 드롭다운에는 안 뜨지만 메뉴에서는 도는가**를 확인하는 첫 사례.
-      //   GAS의 `_` 접미 규약은 "라이브러리로 export하지 않는다 · Run 드롭다운·트리거 UI에 안 보인다"이고,
-      //   addItem의 2번째 인자는 같은 스크립트 안의 전역을 이름으로 부르는 것이라 무관할 것으로 본다(미검증).
-      //   맞다면 배치·스위프(absenceFollowupNightly_·sweepAbsenceForm_·aiFeedbackBatch_ …)를 밤을 기다리지 않고
-      //   수동으로 한 번 돌려볼 수 있게 된다 — 지금은 그게 불가능해 스모크 테스트를 정적 검증으로 때우고 있다.
-      //   검증체로 sheetSelfHeal_을 고른 이유: 인자 없음 · 멱등 · 야간에 이미 도는 자기치유라 눌러도 무해.
-      // [v9.127] 공개 래퍼로 교체 — 결과가 alert로 보이고, 편집기 드롭다운에서도 실행 가능해진다(구 private은 목록에 안 뜸)
       .addItem('🩹 시트 자기치유', 'menuSelfHeal')
       .addSeparator()
-      // [v9.120] 🧪 배치 리허설 — 개원 전에 배치를 "돌려보고" 검증하기 위한 것.
-      //   리허설을 켜면 메일·AI·메신저·STT 호출이 전부 막히고(quotaOk·aiCall_·aiText_·adminMail·MJ_send_·voiceTranscribe_ 게이트 — v9.125 전면 확장),
-      //   무엇이 나갈 뻔했는지만 기록된다. 배치 실행 항목은 리허설 밖에서 누르면 스스로 거부한다.
+      .addItem('🔎 학생ID 현황 보기', 'menuStudentIdStatus')
+      .addItem('📊 수집 커버리지 보기', 'menuDataCoverage')
+      .addItem('🔎 이수율 조인 진단', 'menuLectureJoinDiag')
+      .addItem('🔎 대화 수집 점검(밤 배치 확인·머리글 치유)', 'menuTalkLogCheck');
+
+    /* ── 🧠 AI 봇 — 두뇌(강사용)와 상담 봇(학부모용)은 다른 통로다.
+     *   맨 아래 항목만 «실제로 돈이 나간다» — 이름에 박아 둔다(실수 클릭과 의도한 클릭이
+     *   같은 모양이면 안 된다). */
+    const 봇 = ui.createMenu('🧠 AI 봇')
+      .addItem('🧠 두뇌 지식 만들기(1단계)', 'menuBrainSetup')
+      .addItem('💬 시험 삼아 물어보기', 'menuBrainTry')
+      .addItem('🔎 두뇌 점검', 'menuBrainCheck')
+      .addItem('📋 아직 모르는 질문 보기', 'menuBrainGaps')
+      .addSeparator()
+      .addItem('💳 상담 봇에 실제로 물어보기(API 호출 2회 · 돈이 나감)', 'menuConsultProbe');
+
+    /* ── 🎙 발음·목소리 — 철회는 프롬프트 2단계(ID 입력 → 미리보기 → 「삭제」 타이핑)라
+     *   잘못 눌러도 손실 0이다. */
+    const 목소리 = ui.createMenu('🎙 발음·목소리')
+      .addItem('🎙 목소리 지금 걷어오기(밤을 안 기다리고)', 'menuVoiceSweep')
+      .addItem('🗑 음성 동의 철회(2단계 확인)', 'voiceWithdrawPrompt');
+
+    /* ── 🧪 리허설 — 켜면 메일·AI·메신저·STT 호출이 전부 막히고, 무엇이 나갈 뻔했는지만
+     *   기록된다. 배치 실행 항목은 리허설 밖에서 누르면 스스로 거부한다. */
+    const 리허설 = ui.createMenu('🧪 배치 리허설(개원 전 예행)')
       .addItem('🧪 리허설 시작(' + REHEARSAL_TTL_MIN + '분)', 'rehearsalStart')
       .addItem('　└ 결석 복귀 판정 실행', 'rehearseAbsenceFollowup')
       .addItem('　└ AI 첨삭 배치 실행', 'rehearseAiFeedback')
-      .addItem('🧪 리허설 결과·종료', 'rehearsalReport')
-      .addSeparator()
-      // [v9.111] 온라인 강의 2종 — 순서대로 누르면 된다(자리 깔기 → URL 채우기 → 폼 만들기).
-      //   편집기 드롭다운은 배포 직후 새로고침 전까지 새 함수를 안 보여줘서 "함수가 없다"로 읽힌다.
-      .addItem('📚 강의 자리 깔기(1단계)', 'menuSetupLectures')
-      .addItem('🎬 강의 수강 확인 폼(2단계)', 'menuCreateLectureForm')
-      .addSeparator()
-      // [2026-08-03] 🧠 회사 두뇌 — 확정된 것만 답하고 모르면 원장님께 넘긴다. '모르는 질문'이 곧 채울 목록이다.
-      //   강사용 웹 화면은 배포 직전 보안 검토에서 철회됐다(익명 google.script.run 브릿지 — `_보류_두뇌_웹화면.js` 머리말).
-      //   지금 단계에서 답변 품질은 아래 '시험 삼아 물어보기'로 확인한다.
-      .addItem('🧠 두뇌 지식 만들기(1단계)', 'menuBrainSetup')
-      .addItem('💬 시험 삼아 물어보기', 'menuBrainTry')
-      /* [08-28] 상담 봇(학부모 접점)에 «실제로» 물어본다. 두뇌 봇과 다른 통로다 —
-       *   저쪽은 강사용이고 이쪽은 금칙·지식이 함께 실리는 학부모 프롬프트다.
-       *   🔴 왜 메뉴에 올렸나: 이 점검은 「고쳤다」와 「봇이 그렇게 말한다」를 가르는 **유일한 자**인데
-       *   Logger.log 만 해서 편집기를 열 수 있는 사람만 읽을 수 있었다 — 수강료를 고쳐 놓고도
-       *   답을 못 재던 자리다(08-28 실측). 고쳐 놓고 부를 수 없는 장치는 장치가 아니다.
-       *   ⚠ 이름에 「API 호출」을 박아 둔다 — 누르면 실제로 돈이 든다(질문 2건 · 소액). */
-      .addItem('🧪 상담 봇에 실제로 물어보기(API 호출 2회)', 'menuConsultProbe')
-      .addItem('　└ 두뇌 점검', 'menuBrainCheck')
-      .addItem('　└ 아직 모르는 질문 보기', 'menuBrainGaps')
-      // [v9.123] 레벨 어휘가 바뀌면 구 자리가 유령으로 남는다 — 4중 잠금이라 잘못 눌러도 손실 0(함수 주석 참조).
-      .addItem('🧹 낡은 강의 자리 걷어내기', 'menuPruneStaleLectures')
-      // [함께한날 막7 마감] 구 몬스터 씨앗 7행 삭제 — 확인 1단계 · 멱등(이미 없으면 0) · 이미지 스냅샷은 설계 문서에
-      //   ✅ 08-27 실행 완료(monster 0행 실측) — 멱등이라 남겨 둔다(다시 눌러도 0 삭제).
-      .addItem('🗑 구 몬스터 씨앗 행 정리(함께한 날 전환·1회)', 'menuPurgeMonster')
-      // [함께한날 자산] 가이드 셋의 «얼굴»(E열 그림 URL)을 씨앗 값으로 다시 세운다. 멱등 · 보존 병합이라
-      //   시트에 이미 채워진 URL 은 안 덮는다(그래서 「새 그림을 씨앗에 넣었는데 안 바뀐다」면 시트 값을 비우고 누른다).
-      .addItem('🧶 가이드 셋 다시 세우기(얼굴 그림 포함)', 'menuSetupGuides')
-      // [08-28] 온보딩 안내(역할별 첫 화면)를 코드 정본으로 다시 쓴다. 멱등.
-      //   🔴 왜 메뉴가 필요한가: setupOnboarding 은 bootstrap·preflight 에서만 돌아서, 문구를 고쳐
-      //   배포해도 라이브 시트의 «저장된 행»은 그대로다 — 학생은 옛 문구를 계속 본다(codex P1).
-      .addItem('🚪 온보딩 안내 다시 세우기(첫 화면 문구)', 'menuSetupOnboarding')
-      // [v9.280] 숙제 문항을 고쳐 배포한 날 누른다 — 안 누르면 시트의 «저장된 행 210»이 옛 판 그대로다(온보딩과 같은 자리).
-      .addItem('📚 숙제 뱅크 다시 세우기(210행 + 몽골어)', 'menuApplyHomeworkBank')
-      // [v9.121] 시즌이 바뀌어 1단계를 다시 깔면 폼 선택지가 낡는다 — 2단계는 문항이 있으면 건너뛰므로 따라가지 않는다.
-      .addItem('🔄 폼 선택지 카탈로그와 맞추기(시즌 갱신)', 'menuSyncLectureForm')
-      // [v9.124] 읽기 전용 — 조인이 깨져도 에러가 안 나므로 물어볼 곳이 필요하다.
-      .addItem('🔎 이수율 조인 진단(읽기 전용)', 'menuLectureJoinDiag')
-      .addSeparator()
-      // [v9.125] 철회 진입점 — voiceWithdraw는 인자 필수라 편집기 ▶·메뉴 직접 등재가 불가능했다(약속만 있고 실행 수단 없음).
-      //   프롬프트 2단계(ID 입력 → 미리보기 → 「삭제」 타이핑)라 잘못 눌러도 손실 0 — 메뉴 등재 기준을 충족한다.
-      .addItem('🗑 음성 동의 철회(2단계 확인)', 'voiceWithdrawPrompt')
-      // [v9.138] 과거 프리뷰가 열어둔 공개 링크를 닫는다 — 공유 설정은 파일에 붙어 있어 코드 수정만으론 안 닫힌다.
-      //   PREVIEW_ 접두어만 건드리므로 학부모 성장 리포트 카드는 그대로다. 여러 번 눌러도 결과가 같다(멱등).
+      .addItem('🧪 결과 보기·종료', 'rehearsalReport');
+
+    /* ── 🔒 정리·잠그기 — 공유 설정은 파일에 붙어 있어 코드 수정만으론 안 닫힌다.
+     *   전부 멱등(여러 번 눌러도 결과가 같다). */
+    const 정리 = ui.createMenu('🔒 정리·잠그기')
       .addItem('🔒 리포트카드 프리뷰 공개 링크 닫기', 'menuClosePreviewCardLinks')
-      // [v9.142] 폴더를 잠그면 학부모 카드도 함께 죽는다(공개가 전부 폴더 상속이었다) — 카드마다 자기 링크를 붙여 되살린다.
-      .addItem('🔒 학생 파일 공개 링크 닫기', 'menuCloseStudentFileLinks') // [v9.155] 구 「🩹 복구」(=여는 함수)를 방향 반대로 교체
-      .addSeparator()
-      // [v9.131] 개원 준비 2종 — 이 둘을 안 하면 강사 브리핑의 조 편성표가 영구 공백이다(v9.130에서 화면이 이유를 말하게 했지만, 실행 경로가 없으면 소용없다).
-      //   setSeasonStart는 인자가 필요해 ▶ 버튼으로 실행할 수 없다 → 날짜를 물어보는 프롬프트로 감싼다.
-      .addItem('🗓 시즌 시작일 설정(개원 준비 1)', 'seasonStartPrompt')
-      .addItem('🧩 전 반 조 편성(개원 준비 2)', 'menuAssignGroups')
-      /* [2026-09-02 · 학생ID 종단 ㉠] 채번 바닥 — 이 키(app_state 학생ID_최종번호)가 없으면 학생ID 발급이 «일부러» 멈춘다
-       *   (설계 §5㉠ · 자기초기화 금지 — 카운터가 유실된 날 상담시트만 보고 번호가 되돌아가는 사고를 막는다).
-       *   개원 전 1회 · 멱등(이미 있으면 값만 보여 주고 아무것도 안 바꾼다 · 절대 낮추지 않는다) — 잘못 눌러도 손실 0. */
-      .addItem('🔢 학생ID 카운터 세우기(개원 준비 0·1회·멱등)', 'menuStudentIdCounterInit')
-      /* 설계 §7 「개원 전 첫 작업」의 자 — 상담시트에 학생ID 가 붙은 행이 몇인가(0이면 소급할 과거가 없다) · exit_log 행 · 카운터. 읽기 전용. */
-      .addItem('🔎 학생ID 현황 보기(읽기 전용)', 'menuStudentIdStatus')
-      /* 평소엔 누를 일이 없다 — 출석이 확정되면 parentSweep 이 자동으로 굽고 링크를 메일로 보낸다.
-       *   이 항목은 지각·정정으로 «다시» 뽑아야 하는 날의 손잡이다(자동은 반·날짜당 1회). */
+      .addItem('🔒 학생 파일 공개 링크 닫기', 'menuCloseStudentFileLinks')
+      .addItem('🧹 낡은 강의 자리 걷어내기(레벨 어휘가 바뀌었을 때)', 'menuPruneStaleLectures');
+
+    /* ── 📤 회화 앱으로 — 강사가 손으로 고친 «정답»을 형제 저장소로 넘긴다. */
+    const 내보내기 = ui.createMenu('📤 회화 앱으로 보내기')
+      .addItem('📤 강사 정답 모음 → 픽스처 파일로', 'menuExportGolden')
+      .addItem('🚀 강사 정답 모음 → SYNK-talk 저장소로 바로', 'menuPushGolden');
+
+    ui.createMenu('SYNK')
+      // 첫 화면에는 «오늘 누를 수 있는 것»만 — 나머지는 갈래 안으로 접었다.
+      .addItem('🔄 전체 재계산', 'calcAll')
+      .addItem('📊 강사 지표 갱신', 'calcTeacherStats')
       .addItem('🖨 숙제 서클 종이 다시 인쇄(오늘 수업 반)', 'menuPrintCircleSheets')
       .addSeparator()
-      /* [v9.138] 📊 학습 데이터 수집 — 「2년 축적 → AI 회화 앱」의 입구.
-       *   개원 전에 눌러야 하는 이유: 학생이 그날 무엇을 골랐는지는 **소급이 안 된다.**
-       *   폼이 없으면 매일 퀴즈를 던지면서 답은 한 건도 안 받는 지금 상태가 그대로 이어진다. */
-      /* [2026-08-03] 동의 갱신을 맨 앞에 둔 이유 — 수집의 **법적 전제**이고, 문구를 개정할 때마다
-       *   다시 눌러야 한다(몽골어 검수 후 1회 더). 편집기 드롭다운에서만 돌 수 있어 유호님이
-       *   "어디 있냐"고 물으신 함수다 — 두 번 쓸 것을 메뉴에 올린다. */
-      .addItem('🔏 동의 문항 갱신(수집 0단계·문구 바뀔 때마다)', 'menuMigrateConsent')
-      .addItem('🎤 면접 기록 회수 폼 만들기(VR 0단계·1회)', 'menuCreateInterviewLogForm')
-      .addItem('🧰 직장 경험 회수 폼 만들기(VR 직업체험 0단계·1회)', 'menuCreateWorkLogForm')
-      .addItem('🎯 직장 경험 폼에 «결과 칸» 넣기(1회 · 귀환자 조사)', 'menuMigrateWorkFormOutcome')
-      .addItem('🇲🇳 직장 경험 폼에 몽골어 안내 넣기(문구 바뀔 때마다)', 'menuMigrateWorkFormMn')
-      .addItem('🗒 강사 메모 폼 만들기(1회)', 'menuCreateTeacherMemoForm')
-      /* [09-02 폼 넷] 개원 전 필수 — Glide 가 죽으며 손이 사라진 강사 입력 넷(대장 docs/글라이드_이관대장.md 「잇는다 — 폼 증설·신설」).
-       *   배포 창의 클릭 순서 그대로: ①마감폼(있으면 업그레이드) ②마감폼 증설(1회) ③반 출석 폼(1회) ④출퇴근 폼(1회). 전부 재클릭 무해. */
-      .addItem('📋 차시 마감폼 만들기(있으면 업그레이드)', 'menuCreateLessonCloseForm')
-      .addItem('　└ 증설 — 배운내용·문법태그·연료미션 넣기(1회·멱등)', 'menuMigrateLessonCloseForm0902')
-      .addItem('🙋 반 출석 폼 만들기(수업 시작 1탭·1회)', 'menuCreateClassAttendanceForm')
-      .addItem('　└ 반 섹션 늘리기(반이 늘었을 때·멱등)', 'menuExtendClassAttendanceForm')
-      .addItem('⏱ 출퇴근 폼 만들기(1회)', 'menuCreateTeacherCheckinForm')
-      .addItem('🧠 퀴즈 응답 폼 만들기(수집 1단계)', 'menuCreateQuizForm')
-      .addItem('📝 숙제 폼에 수집 문항 넣기(수집 2단계)', 'menuMigrateHwForm')
-      .addItem('🗣 한국어 대화 폼 만들기(수집 3단계)', 'menuCreateTalkForm')
-      /* [v9.190] 야간 배치가 매일 자기적용하므로 평소엔 누를 일이 없다 — 밤을 기다리지 않고
-       *   지금 적용하고 싶을 때의 손잡이다(자동만 있고 수동이 없으면 재시도 경로가 하루 단위가 된다). */
-      .addItem('🎙 목소리 폼에 미션ID 넣기(자동 적용됨·수동 재시도용)', 'menuMigrateVoiceForm')
-      /* [v9.278] 위 항목이 «어느 미션인지»를 실어 나르는 칸을 심고, 이 항목이 그 미션이 «무엇을 말하게
-       *   하는지»를 정한다. 둘이 짝이다 — 목록이 없으면 미션ID 는 뜻 없는 문자열이고,
-       *   `voice_log.목표발화` 가 영원히 빈 채로 «정상처럼» 쌓인다. */
-      .addItem('🎙 낭독 미션 목록 세우기(발음 데이터·멱등)', 'menuSetupVoiceMissions')
-      .addItem('🎙 목소리 지금 걷어오기(밤을 안 기다리고 확인)', 'menuVoiceSweep')
-      /* 궤적 연결 고리 — 의도(크루카드 100+문항)와 결과(면접 합·불)가 둘 다 쌓이는데 안 이어져 있었다.
-       *   문항이 아니라 **연결**이 소급 불가다: 지금 키를 안 심으면 이미 들어온 기록은 영원히 못 잇는다. */
-      .addItem('🔗 면접폼에 학생ID 칸 넣기(궤적 연결·선택 문항)', 'menuMigrateInterviewSid')
-      /* 위 항목이 칸을 심고, 이 항목이 그 칸을 **실제로 채우는 유일한 경로**다 —
-       *   앱은 학생에게 자기 학생ID를 어디서도 보여주지 않으므로, 개인 링크가 없으면 궤적은 0에 가깝다. */
-      .addItem('🔗 면접폼 개인 링크 만들기(학생ID 미리채움)', 'menuInterviewPersonalLink')
-      .addItem('📊 수집 커버리지 보기(읽기 전용)', 'menuDataCoverage')
-      .addItem('📤 강사 정답 모음 → 회화 앱 픽스처 내보내기', 'menuExportGolden')
-      .addItem('🚀 강사 정답 모음 → SYNK-talk 저장소로 바로 보내기', 'menuPushGolden')
-      .addItem('🔎 대화 수집 점검(밤 배치 확인·머리글 치유)', 'menuTalkLogCheck')
+      .addSubMenu(준비)
+      .addSubMenu(폼만들기)
+      .addSubMenu(폼고치기)
+      .addSeparator()
+      .addSubMenu(점검)
+      .addSubMenu(봇)
+      .addSubMenu(목소리)
+      .addSubMenu(리허설)
+      .addSeparator()
+      .addSubMenu(정리)
+      .addSubMenu(내보내기)
       .addToUi();
   } catch (eMenu) { Logger.log('시트 메뉴 생성 스킵: ' + eMenu); } // UI 없는 컨텍스트(트리거 실행)에서는 조용히 통과
 }
