@@ -37,6 +37,8 @@ const 아는말 = [
   'Spark',   // 09-03 유호님 첫마디가 「제미나이 스파크」였다
   'Meta',    // 페이스북·인스타 운영 주체 · 유호님이 광고 계정을 직접 쓰신다
   'Pro',     // Google AI Pro · Canva Pro — 구독을 유호님이 관리하신다
+  // 계정 핸들 — 유호님이 «직접 고르신» 이름이다(09-01 확정). 실물 이름이라 바꿀 수도 없다.
+  'yuhobuilds', 'synkbrief', 'synkkorean', 'synklab', 'synkfm', 'synk',
   // AI 이름
   'AI', 'ChatGPT', 'GPT', 'Claude', 'Gemini', 'Codex',
   // 일상 약어
