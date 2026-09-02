@@ -1921,6 +1921,109 @@ function sweepAttendanceForm_(ss) {
   props.setProperty('출석폼_포인터', String(last));
 }
 
+/* ── [09-02 폼 넷] 🙋 반 출석 폼 응답 → attendance_batch ──
+ * 한 응답 = 한 행 [날짜, class_name, 출석자 sid 쉼표, 입력자, created_at, 처리상태] — 반 명부(profiles role student · class_name) − 결석자.
+ *   전개는 기존 expandAttendanceBatch_(parentSweep 바로 다음 자리 · 같은 틱)가 그대로 한다 — 그 함수는 손대지 않는다.
+ * 열은 «헤더 이름»으로 읽는다 — 결석자 열이 반마다 하나씩(체크박스 문항 제목 「결석자 · 반」) + 직접 입력 열(「결석자 (직접 입력)」)이라 위치가 고정이
+ *   아니다(섹션이 늘면 열이 끝에 붙는다). 폼 정의·라벨 규칙은 엔진_폼리포트.js(createClassAttendanceForm · classAttLabels_).
+ * 결석자 → sid: ①체크박스 라벨은 명부에서 만든 것이라 라벨→sid 역조회가 먼저 ②「이름 (학생ID)」 꼴이면 그 ID ③그 밖은 이름 매칭(matchStudentsByNameClass_ ·
+ *   다른 강사 폼과 같은 규칙). 매칭 실패는 버리지 않는다 — 동명이인(후보 2+)은 후보 «전부»를 출석에서 뺀다(누군지 모른 채 출석 처리하면 「안 왔어요」
+ *   알림이 조용히 안 나간다 · 보수 쪽으로 틀린다). 명부에 없는 이름은 뺄 사람이 없다 → 행 처리상태에 '미매칭:이름' 표기 + 관리자 메일(그 이름이 오타라면
+ *   그 학생은 출석으로 남는다 — 메일이 고치는 손). ⚠ 처리상태의 '미매칭:…' 은 expandAttendanceBatch_ 가 같은 틱에 '전개완료' 로 덮는다 — 남는 기록은 메일이다. */
+function sweepClassAttendanceForm_(ss) {
+  const src = ss.getSheetByName('반출석폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('반출석폼_포인터')) || 1;
+  if (from > last) { props.setProperty('반출석폼_포인터', String(last)); return; } // 응답 시트 재생성 대비 클램프
+  if (from >= last) return;
+  const tz = ss.getSpreadsheetTimeZone();
+  const width = Math.max(3, src.getLastColumn());
+  const hdr = src.getRange(1, 1, 1, width).getValues()[0].map(h => String(h || '').trim());
+  const rows = src.getRange(from + 1, 1, last - from, width).getValues();
+  const iT = hdr.indexOf('강사'), iC = hdr.indexOf('반');
+  const absCols = hdr.map((h, i) => (h.indexOf(CLASS_ATT_ABSENT_PREFIX) === 0 ? i : -1)).filter(i => i >= 0);
+  const students = [], roster = {};
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(r => {
+    if (!r[0] || r[3] !== 'student') return;
+    const s = { sid: String(r[0]).trim(), n: String(r[1] || '').trim() || String(r[0]).trim(), c: String(r[4] || '').trim() };
+    students.push(s);
+    if (s.c) (roster[s.c] = roster[s.c] || []).push(s);
+  });
+  const labelSid = {}, sidSet = {};
+  Object.keys(roster).forEach(c => classAttLabels_(roster[c]).forEach(x => { labelSid[c + '|' + x.label] = x.sid; }));
+  students.forEach(s => { sidSet[s.sid] = 1; });
+  const hdrA = skeletonHeadersOf_('attendance_batch');
+  const ab = ensureSheet(ss, 'attendance_batch', hdrA);
+  const out = [], miss = [];
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const cls = String(iC >= 0 ? r[iC] : '').trim();
+    if (!cls) return;
+    const list = roster[cls];
+    if (!list) { miss.push('· 반 「' + cls + '」(' + dstr(ts, tz) + ') — 명부에 학생이 없는 반이라 전개하지 않았습니다(profiles class_name 확인 · 「기타」로 낸 응답도 여기로 옵니다)'); return; }
+    const absent = {}, bad = [];
+    absCols.forEach(i => String(r[i] || '').split(/[,·\n]/).map(s => s.trim()).filter(Boolean).forEach(tok => {
+      if (labelSid[cls + '|' + tok]) { absent[labelSid[cls + '|' + tok]] = 1; return; }
+      const m = tok.match(/^(.*?)\s*\(([^()]+)\)$/); // 「이름 (학생ID)」 — 다른 반 라벨을 그대로 적은 경우
+      if (m && sidSet[m[2].trim()]) { absent[m[2].trim()] = 1; return; }
+      const cands = matchStudentsByNameClass_(students, m ? m[1] : tok, cls);
+      if (cands.length === 1) absent[cands[0]] = 1;
+      else if (cands.length > 1) { cands.forEach(s => { absent[s] = 1; }); bad.push(tok + '(동명이인 ' + cands.length + '명 — 전부 결석 처리)'); }
+      else bad.push(tok);
+    }));
+    const present = list.map(s => s.sid).filter(sid => !absent[sid]);
+    out.push([dstr(ts, tz), cls, present.join(','), String(iT >= 0 ? r[iT] : '').trim() || '폼', ts, bad.length ? '미매칭:' + bad.join(',') : '']);
+    if (bad.length) miss.push('· ' + cls + ' ' + dstr(ts, tz) + ' — ' + bad.join(', ') + ' · 명부에서 못 찾은 이름은 «출석»으로 남습니다(오타였다면 attendance 에서 그 학생의 오늘 행을 지우세요)');
+  });
+  if (out.length) ab.getRange(ab.getLastRow() + 1, 1, out.length, hdrA.length).setValues(행소독_(out)); // [v9.157] 반·결석자 이름은 강사 손입력 — 같은 시트에 profiles 가 산다
+  props.setProperty('반출석폼_포인터', String(last)); // 적재 직후·메일 전 마감 — 메일 실패가 같은 응답을 재적재하지 않게
+  if (miss.length && quotaOk(1)) adminMail('[SYNK] 🙋 반 출석 폼 — 확인 필요 ' + miss.length + '건', miss.join('\n') + '\n\n처리상태의 「미매칭」 표기는 10분 안에 전개되며 지워집니다 — 이 메일이 기록입니다.');
+}
+
+/* ── [09-02 폼 넷] ⏱ 출퇴근 폼 응답 → teacher_checkins [이름, 구분, 시각(Date)] ──
+ * 읽는 자 넷(todayBoard_ · teacherInOutMap_ · checkoutCheerMail_ · calcTeacherStats)은 그대로 — 열 위치는 TC_*_COL 하나에서 나온다.
+ * 자기치유(엔진_폼리포트 ⑤ · 같은 이름·유형 60초 이내 연타 삭제)의 자를 적재 «전»에 같은 값으로 지킨다 — 이미 실린 같은 이름·유형과 60초 안이면 안 싣는다.
+ * 폼 정의 = createTeacherCheckinForm(엔진_폼리포트.js) · 구분 값 정본 = TEACHER_CHECKIN_TYPES. */
+function sweepTeacherCheckinForm_(ss) {
+  const src = ss.getSheetByName('출퇴근폼_응답');
+  if (!src || src.getLastRow() < 2) return;
+  const props = PropertiesService.getScriptProperties();
+  const last = src.getLastRow();
+  const from = Number(props.getProperty('출퇴근폼_포인터')) || 1;
+  if (from > last) { props.setProperty('출퇴근폼_포인터', String(last)); return; } // 응답 시트 재생성 대비 클램프
+  if (from >= last) return;
+  const rows = src.getRange(from + 1, 1, last - from, 3).getValues(); // 타임스탬프·강사 이름·구분
+  const width = Math.max(TC_NAME_COL, TC_TYPE_COL, TC_TIME_COL);
+  const tc = ensureSheet(ss, 'teacher_checkins', skeletonHeadersOf_('teacher_checkins'));
+  const recent = {}; // '이름|구분' → [ms] — 연타 자(60초). 꼬리 200행이면 오늘치는 충분하다(강사 1~6인)
+  const tcLast = tc.getLastRow();
+  if (tcLast >= 2) {
+    const tail = Math.max(2, tcLast - 199);
+    tc.getRange(tail, 1, tcLast - tail + 1, width).getValues().forEach(r => {
+      const k = String(r[TC_NAME_COL - 1] || '').trim() + '|' + String(r[TC_TYPE_COL - 1] || '').trim();
+      const d = r[TC_TIME_COL - 1], t = d instanceof Date ? d.getTime() : new Date(d).getTime();
+      if (isFinite(t)) (recent[k] = recent[k] || []).push(t);
+    });
+  }
+  const out = [];
+  rows.forEach(r => {
+    const ts = r[0] instanceof Date ? r[0] : new Date();
+    const nm = String(r[1] || '').trim(), tp = String(r[2] || '').trim();
+    if (!nm || TEACHER_CHECKIN_TYPES.indexOf(tp) === -1) return; // 구분 값은 둘뿐 — 그 밖은 싣지 않는다(indexOf('출근'/'퇴근') 판정을 오염시키지 않게)
+    const k = nm + '|' + tp, t = ts.getTime();
+    if ((recent[k] || []).some(x => Math.abs(x - t) <= 60000)) return; // 60초 이내 연타 = 한 건
+    (recent[k] = recent[k] || []).push(t);
+    const row = new Array(width).fill('');
+    row[TC_NAME_COL - 1] = nm; row[TC_TYPE_COL - 1] = tp; row[TC_TIME_COL - 1] = ts;
+    out.push(row);
+  });
+  if (out.length) tc.getRange(tc.getLastRow() + 1, 1, out.length, width).setValues(행소독_(out)); // [v9.157] 드롭다운 값이지만 폼 유래 직기입은 전부 이 통로다
+  props.setProperty('출퇴근폼_포인터', String(last));
+}
+
 // [v9.49] 첨삭 '확인했어요' 정산 — Glide가 hw_feedback J열(학생확인·스크립트 불가침)에 기록하면 10분 스위프가 1회 +5P. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
 //   멱등 3중: ①K열 마킹 ②당일 point_logs 재조회(지급 후 마킹 전 크래시 대비 — expandHwBatch v9.31 패턴) ③DAILY_LIMIT 1회/일.
 function sweepFeedbackAck_(ss) {
@@ -3637,6 +3740,7 @@ function parentSweep() {
   // [v9.32] 상단 호출도 safeRun 보호 — 여기서 throw하면 아래 폼 편입·수업 브리핑·출결 보드가
   //   함께 중단되고 구글 기본 실패 요약(최대 하루 지연)에만 의존하게 된다.
   safeRun('sweepAttendanceForm', function () { sweepAttendanceForm_(ss); }); // [v9.49] 출석 폼 → attendance 전개 (등원알림·보드·미등원판정 앞 — 앱 출석의 update-0 대체)
+  safeRun('sweepClassAttendanceForm', function () { sweepClassAttendanceForm_(ss); }); // [09-02 폼 넷] 강사 반 출석 폼 → attendance_batch — 바로 아래 전개가 같은 틱에 attendance 로(Glide 1탭의 새 손)
   safeRun('expandAttendanceBatch', function () { expandAttendanceBatch_(ss); }); // [v9.36] 수업 시작 출석 1탭(attendance_batch) → attendance 전개 (등원알림·보드·미등원판정 앞)
   // [v9.230] 숙제 서클 종이 — 위 두 전개가 끝난 «바로 다음» 자리다. 설계 §3 이 「종이는 QR 출석
   //   확정 뒤 인쇄된다」로 못박아 시각 트리거를 못 쓴다(확정 전에 구우면 결석자 칸이 실려 나가고
@@ -3655,7 +3759,8 @@ function parentSweep() {
   safeRun('sweepAbsenceForm', function () { sweepAbsenceForm_(ss); }); // [v9.89] 결석 연락 폼 → absence_followup 마감 — checkNoShow보다 앞(같은 틱에 들어온 연락이 오늘 감지분에 바로 반영)
   safeRun('sweepLectureForm', function () { sweepLectureForm_(ss); }); // [v9.106] 강의폼_응답 → lecture_views
   safeRun('quizSweep', function () { quizSweep_(ss); }); // [v9.138] 퀴즈폼_응답 → quiz_log — 「무엇을 골랐나」는 그 순간이 지나면 영원히 못 얻는다(소급 불가 축)
-  safeRun('sweepLessonCloseForm', function () { sweepLessonCloseForm_(ss); }); // [v9.91] 차시 마감폼 → lesson_close — classPrepMail보다 앞(같은 틱의 마감이 다음 수업 브리핑 조 편성에 반영)
+  safeRun('sweepLessonCloseForm', function () { sweepLessonCloseForm_(ss); }); // [v9.91] 차시 마감폼 → lesson_close — classPrepMail보다 앞(같은 틱의 마감이 다음 수업 브리핑 조 편성에 반영) · [09-02] + weekly_topics(배운내용·문법태그·연료)
+  safeRun('sweepTeacherCheckinForm', function () { sweepTeacherCheckinForm_(ss); }); // [09-02 폼 넷] 출퇴근 폼 → teacher_checkins — 퇴근 응원·출결 보드(아래)보다 앞(같은 틱의 출근이 보드에 뜬다)
   safeRun('classPrepMail', function () { classPrepMail_(ss, ss.getSpreadsheetTimeZone()); }); // [v6.8]
   safeRun('checkoutCheerMail', function () { checkoutCheerMail_(ss); }); // [v6.8]
   safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)

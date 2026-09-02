@@ -1029,6 +1029,13 @@ const KPI_HEADERS = ['월', '기초재원', '신규등록', '이탈', '이탈률
 const GROUPS_HEADERS = ['시즌', 'class_name', 'student_id', '이름', '조', '좌석', '확정', '편성일', '편성근거', '고정'];
 // [v9.91] 차시 마감폼 적재 시트 — 본체는 엔진_셋업확장.js 「차시 마감폼」 섹션(헤더 정본만 여기 유지).
 const LESSON_CLOSE_HEADERS = ['날짜', 'class_name', '차시', '주차', '진도', '미발화자', '미발화자이름', '입력자', 'created_at', '처리상태'];
+/* [09-02 폼 넷] 차시 마감폼 «응답 시트» 열 정본 — 문항 제목이 곧 응답 열 헤더다(0번 = 폼 타임스탬프).
+ *   생성(createLessonCloseForm)·증설(migrateLessonCloseForm0902)·전개(sweepLessonCloseForm_)가 전부 여기서 제목·열 위치를 파생한다 —
+ *   위치를 손으로 두 곳에 적으면 갈린다. 뒤 셋(LESSON_CLOSE_EXTRA_COLS)은 09-02 증설분: 옛 Glide 손이 채우던 weekly_topics F~L 의
+ *   수업 «내용» 로그(대장 docs/글라이드_이관대장.md 「잇는다 — 폼 증설」)를 이 폼이 잇는다 · 착지는 lesson_close 가 아니라 weekly_topics 다.
+ *   ⚠ 순서를 바꾸거나 가운데 끼우지 않는다 — 응답 시트는 «새 문항 = 새 열(맨 끝)»이라 끝에만 는다. */
+const LESSON_CLOSE_EXTRA_COLS = ['배운내용', '문법태그', '연료미션'];
+const LESSON_CLOSE_FORM_COLS = ['타임스탬프', '강사', '반', '진도', '오늘 한 번도 말하지 않은 학생'].concat(LESSON_CLOSE_EXTRA_COLS);
 /* [v9.106] 온라인 녹화 강의 — 주말반 정규 트랙 승격(유호 08-01)의 측정 레일.
  * 주말반은 대면이 주 1회뿐이고 나머지 시수를 녹화 강의로 메운다. 즉 **온라인이 커리큘럼의 정식 일부**다.
  * 그런데 이수 여부를 앱이 모르면 승급 도달제 판정이 대면 90분만 보고 내려진다 — 진도의 대부분을 못 보고
