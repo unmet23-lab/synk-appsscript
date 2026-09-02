@@ -1,6 +1,6 @@
 ---
 name: remotion-markup
-description: Content, animation and effects best practices
+description: Remotion 영상 코드(React)를 쓰거나 고칠 때 여는 API 정본 — 시퀀싱·타이밍·전환·오디오·효과·3D·폰트·텍스트 측정 등 주제별 문서 30벌을 품는다. SYNK 에서는 영상/src/ 의 클립·킷·연출을 만지기 전에 그 주제 문서를 먼저 연다. 릴 훅 길이·장면 잇기·소리 얹기가 전부 여기다. Content, animation and effects best practices for Remotion React markup.
 version: 4.0.517
 ---
 
@@ -8,6 +8,11 @@ This is guidance for writing Remotion React Markup.
 If this is not relevant, see `.claude/skills/synk-design/SKILL.md` — that entry point decides which skill wins.
 > 🔴 SYNK 는 `remotion-best-practices` 를 **일부러 안 받았다**(08-26). 그 스킬 하나가 나머지 11개의
 > 사본 137개를 통째로 끌고 들어와 「정본은 하나」와 정면으로 부딪힌다. 그래서 이 링크는 여기서 끊었다.
+> 🔴 **`description` 은 원본과 갈라져 있다**(09-03 · 유호 픽). 원본은 `Content, animation and effects
+> best practices` 한 줄이라 **「Remotion」도 「영상」도 없어** 영상 작업 중에 이 스킬이 걸리지 않았다.
+> 실측 = 08-26 도입일 10회 읽힘 → 08-27·08-28 영상 커밋 10건 동안 **0회**. 밑에 딸린 주제 문서 30벌
+> (timing·sequencing·transitions·audio·3d …)이 정확히 그 시기 작업에 필요했는데 안 펴졌다.
+> 원본을 판올림할 때 이 줄을 덮어쓰지 말고 **다시 붙인다**.
 
 ## Preserve user changes
 
