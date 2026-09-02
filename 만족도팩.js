@@ -286,7 +286,12 @@ function MJ_messengerDigest_() {
     const d = asDate_(r[5]);
     if (d < monday || d >= weekEnd) return;
     const sid = String(r[1]).trim(), pts = Number(r[2]) || 0, rs = String(r[3] || '');
-    if (pts > 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
+    /* 🔑 정정(음수) 행도 «같이» 더한다 — 아래 crownW 는 정정에서 -1 을 반영하는데 여기만 양수를
+     *   골라 담으면 「왕관은 줄었는데 점수는 그대로」인 부풀린 수가 학부모 메신저로 나간다
+     *   (+10 둘 중 하나가 정정돼도 +20P 로 보고되던 자리 · codex 지적 4d0fe9497b6f · 08-21).
+     *   ⚠ 여기서 0 으로 막지 않는다 — 행 순서가 «정정 먼저»면 그 자리에서 0 으로 잘려 뒤따르는
+     *     양수가 통째로 살아난다(-10 → 0 → +10 = 10, 참값은 0). 막는 것은 읽는 자리 몫이다. */
+    ptsW[sid] = (ptsW[sid] || 0) + pts;
     if (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 || rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1) crownW[sid] = (crownW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0)); // [08-21] 새 사유 편입 + 정정 순계 — 엔진_운영배치 2124행과 같은 규약(초과 지급이 밤에 정정돼도 다이제스트가 옛 횟수를 말하지 않게)
   });
 
@@ -294,7 +299,8 @@ function MJ_messengerDigest_() {
   sids.forEach(sid => {
     const lk = links.map[sid];
     if (!MJ_canSendNow_(lk.lastIn, now, MJ_MSG_TAG)) { skipped++; return; } // 창 밖 — 이메일이 이미 감(유실 아님)
-    const att = attW[sid] || 0, pts = ptsW[sid] || 0, cr = crownW[sid] || 0;
+    /* 음수는 여기서 막는다 — 집계는 날것(정정 포함)으로 하고, 학부모에게 보이는 수만 0 아래로 안 간다. */
+    const att = attW[sid] || 0, pts = Math.max(0, ptsW[sid] || 0), cr = Math.max(0, crownW[sid] || 0);
     const nm = names[sid] || sid;
     const txt = '📮 ' + nm + '\n' +
       'Долоо хоногийн тойм — ирц ' + att + ' · оноо +' + pts + 'P' + (cr > 0 ? ' · 🔥 Сорилт·Өсөлт ' + cr + ' удаа' : '') + ' 🎉\n' +

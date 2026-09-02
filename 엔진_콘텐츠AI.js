@@ -890,7 +890,10 @@ function systemWatchdog(asText) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const out = [];
-  function add(ok, msg) { out.push((ok ? '✅ ' : '⚠️ ') + msg); }
+  /* 상태는 «셋»이다 — 정상 · 경보 · 정보. 셋째가 없으면 「의도된 미개통」이 ✅ 통에 들어가
+   *   기계적으로 정상과 안 갈리고, 제목이 「전부 정상」으로 나간다(codex 지적 9e616375d292 · 08-24).
+   *   ⓘ 를 «메시지 글자»로 붙이는 것으로는 못 푼다 — 눈은 속아 넘어가도 세는 자는 여전히 ✅ 로 센다. */
+  function add(ok, msg) { out.push((ok === 'ⓘ' ? 'ⓘ ' : ok ? '✅ ' : '⚠️ ') + msg); }
 
   // 1) 필수 트리거 생존
   const have = {};
@@ -916,7 +919,7 @@ function systemWatchdog(asText) {
   //   「전부 등록됨」이 됐고, 그 초록 아래에서 mastery 판정관 4종(첨삭·음성·대화·적용)이 실행 0회였다.
   //   미개통 자체는 의도된 상태(유령 트리거 금지)라 적색이 아니다 — 상태를 이름으로 부르기만 한다
   //   (T12 동의격리 «정보 채널»과 같은 가름: 적색도 침묵도 아닌 세 번째 칸).
-  if (!textbookLinkOn_(ss)) add(true, 'ⓘ 교재연동 미개통 — mastery 판정관 4종·야간 트리거 실행 0회(의도된 상태 · 개통 = setupTextbookLink ▶ 1회)');
+  if (!textbookLinkOn_(ss)) add('ⓘ', '교재연동 미개통 — mastery 판정관 4종·야간 트리거 실행 0회(의도된 상태 · 개통 = setupTextbookLink ▶ 1회)');
 
   // [v9.19] 1-b) 백업 실제 생성 여부 — 트리거는 살아있어도 makeCopy가 조용히 실패할 수 있어 최신 백업 나이 점검
   try {
@@ -1241,9 +1244,13 @@ function systemWatchdog(asText) {
   Logger.log(report);
   if (wantText) return out.join('\n'); // [v9.25] 통합 리포트용 본문 — 제목/타임스탬프는 weeklyJobs가 부여
   const warn = out.filter(l => l.indexOf('⚠️') === 0).length;
+  /* 정보 줄은 «따로» 센다 — 경보가 0 이어도 「전부 정상」이 아니다. 의도된 미개통이 몇 건인지
+   *   제목에서 보여야 「아무 일 없음」과 「일부러 꺼 둔 것이 있음」이 갈린다(지적 9e616375d292). */
+  const info = out.filter(l => l.indexOf('ⓘ') === 0).length;
+  const 제목상태 = warn ? '⚠️ ' + warn + '건' + (info ? ' · ⓘ ' + info + '건' : '')
+    : (info ? '✅ 정상 · ⓘ ' + info + '건' : '✅ 전부 정상');
   if (quotaOk(1)) {
-    MailApp.sendEmail(ADMIN_EMAIL,
-      '[SYNK] 🛡️ 주간 워치독 ' + (warn ? '⚠️ ' + warn + '건' : '✅ 전부 정상'), report);
+    MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🛡️ 주간 워치독 ' + 제목상태, report);
   }
 }
 
