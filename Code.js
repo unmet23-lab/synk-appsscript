@@ -1027,6 +1027,35 @@ const KPI_HEADERS = ['월', '기초재원', '신규등록', '이탈', '이탈률
 // [v9.80] 조 편성 헤더 — 본체는 엔진_셋업확장.js 「조 편성·역할 로테이션」 섹션. 시트 골격(sheetSkeleton_)이
 //   [v9.135] 지연 평가로 바뀌어 순서 제약은 없어졌지만, 헤더 정본은 상수 정본 파일(Code.js)에 모아 유지한다.
 const GROUPS_HEADERS = ['시즌', 'class_name', 'student_id', '이름', '조', '좌석', '확정', '편성일', '편성근거', '고정'];
+/* [2026-09-02 · 가져가는것 걸음1] attendance 헤더 정본 — 쓰는 자 넷(일괄 전개·폼 스위프·데모 시드·GPS 백필)과
+ *   골격이 이 배열 하나를 본다(손사본 4벌이 갈라지던 자리 · 정본 하나에서 파생).
+ * 5번째 `class_snapshot` = **출석 확정 시점의 반 이름 복사**(설계 §2-d). 🔴 소급 불가 — 학생 0명인 지금이
+ *   유일한 창이다. 반 이동(승급은 도달제)이 생기면 `profiles.class_name` 은 «현재값»만 남아 옛 순간이 새 반으로
+ *   다시 붙는다.
+ * 🔒 조인 규칙(§2-d): `portfolio_moments` ↔ `attendance` 는 **이 스냅샷 열로만** 잇는다. 🚫 `profiles.class_name`
+ *   은 조인에 쓰지 않는다(쓰는 «시점»에 읽어 얼려 넣는 것만 허용 — 조인 «시점»의 profiles 참조가 금지다).
+ * ⚠ 칸은 **끝에만** 늘린다 — 읽는 쪽 16곳이 열 번호로 집는다. 라이브 헤더 증분은 `헤더보정_`(엔진_수집.js)이
+ *   진다(ensureSheet 는 시트가 없을 때만 헤더를 쓴다). */
+const ATTENDANCE_HEADERS = ['id', 'student_id', 'timestamp', 'method', 'class_snapshot'];
+/* [2026-09-02 · 가져가는것 걸음1] 🔴 `portfolio_moments` — 「그날의 순간」 최소 원본(설계 §2-c v1.2 표 · 심문 판정 §7).
+ *   행이 하나라도 들어가면 못 고치는 스키마다(붙은 뒤엔 누구 것인지 가릴 재료가 없다). 순서 고정 · 끝에만 늘린다.
+ *   moment_id   = 원본 Drive 폴더 ID(멱등 키 — 재실행 시 있으면 건너뛴다 · 판정 ⑤)
+ *   session_key = `사건일|반|차시`(같은 날 복수 수업·보강을 가른다 · 판정 ②)
+ *   사건일      = 폴더 이름의 날짜(적재일과 다르다 · 판정 ③) · 'yyyy-MM-dd' 텍스트
+ *   반·차시·종류·한줄 = 폴더 이름 문법 `YYYY-MM-DD - 반 - N차시 - 종류 - 한 줄`(구분자 ` - ` 하나 · 낫표·밑줄 🚫 · §3-b)
+ *   기간키      = 시즌 키(app_state 「시즌시작일」 'yyyy-MM-dd' = groups·lesson_close 와 같은 키) 또는 `비시즌`
+ *                 (체험 2주는 시즌 밖 · 판정 ⑥ — 리허설 시즌 라벨이 서면 그 시즌 키가 된다)
+ *   미디어      = JSON 배열 `[{원본:file_id, 사본:file_id|'', 종류:'사진'|'영상', 이름}]`(폴더 단위 순간 + 미디어 목록 · 판정 ④)
+ *   원본폴더·사본폴더 = Drive 폴더 ID 둘. **사본이 정본이다**(§14-⑨ 임시 소유 규칙 — 밤 배치가 훑은 직후 학원 계정 폴더로 복사)
+ *   적재일      = 배치가 적은 시각 'yyyy-MM-dd HH:mm:ss'
+ *   상태        = `정상` | `미분류:<사유>`(버리지 않는다 · 다음 아침 원장 오늘판에 뜬다) | `추가`(같은 폴더에 나중에 더 들어온
+ *                 미디어 — 같은 moment_id 로 append) · 뒤에 ` · 축소실패` 꼬리가 붙을 수 있다(원본 복사로 대신했다는 표식)
+ *   공개범위    = `반`(§2-c 기본값 · v1 은 이 값 하나)
+ * 읽는 법(append-only 라 편집이 없다): 같은 moment_id 의 **마지막 행**이 반·차시·종류·한줄·상태의 현행값이고,
+ *   미디어는 모든 행의 **합집합**이다(폴더 이름을 고치면 다음 밤에 `정상` 행이 한 줄 더 붙는다).
+ * 🔒 학생 개인에 붙이는 법 = attendance.class_snapshot ∧ 사건일 (§2-d) — 얼굴·이름 태깅·학생별 폴더 0. */
+const PORTFOLIO_MOMENTS_TAB_ = 'portfolio_moments';
+const PORTFOLIO_MOMENTS_HEADERS = ['moment_id', 'session_key', '사건일', '반', '차시', '종류', '한줄', '기간키', '미디어', '원본폴더', '사본폴더', '적재일', '상태', '공개범위'];
 // [v9.91] 차시 마감폼 적재 시트 — 본체는 엔진_셋업확장.js 「차시 마감폼」 섹션(헤더 정본만 여기 유지).
 const LESSON_CLOSE_HEADERS = ['날짜', 'class_name', '차시', '주차', '진도', '미발화자', '미발화자이름', '입력자', 'created_at', '처리상태'];
 /* [v9.106] 온라인 녹화 강의 — 주말반 정규 트랙 승격(유호 08-01)의 측정 레일.
@@ -2159,11 +2188,29 @@ function buildWalkedRoadHtml_(o) {
   const goalLine = goalTxt ? '<div style="font-size:12px;padding-top:8px;">🧭 나의 한 줄 — 「' + escHtml_(goalTxt) + '」' + (o.pace ? '<div style="font-size:11px;color:#8D857A;">' + escHtml_(o.pace) + '</div>' : '') + '</div>' : '';
   // [v9.56 승계] 추천 현황 — 내 추천으로 온 친구 수(0명이면 줄 자체 생략)
   const refLine = (o.refN || 0) > 0 ? '<div style="font-size:12px;padding-top:6px;color:#8D857A;">🤝 내 추천으로 온 친구 <b style="color:#2B2320;">' + o.refN + '</b>명</div>' : '';
+  /* [2026-09-02 · 가져가는것 걸음1] 📷 가장 최근 담긴 순간 한 줄(설계 §4-a) — 「3월 14일, 우리 반 김밥집 간판을 만들었다」.
+   *   개수·진행률은 안 낸다(§4-b ㉢) · 사진 자체는 화면에 안 띄운다(§5-c — 공개 링크가 필요해진다). 문구 정본 = contents_순간.js. */
+  const momentTxt = o.moment ? momentLine_('걸어온길', o.moment) : '';
+  const momentLine = momentTxt ? '<div style="font-size:12px;padding-top:8px;">' + escHtml_(momentTxt) + '</div>' : '';
   return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:12px 14px;color:#2B2320;line-height:1.8;">' +
     '<div style="font-size:13px;font-weight:800;">' + escHtml_(o.guideName || '몽글') + '와 걸어온 길</div>' +
     '<div style="font-size:12.5px;padding-top:4px;">함께한 날 <b>' + o.days + '</b> · 내가 맞힌 말 <b>' + o.mastered + '</b>' + (o.bank ? ' / ' + o.bank : '') + '</div>' +
     (bars ? '<div style="padding-top:8px;"><div style="font-size:11.5px;color:#8D857A;">달마다 만난 날</div><div style="height:46px;">' + bars + '</div></div>' : '') +
-    growth + dream + goalLine + season + refLine + '</div>';
+    growth + dream + momentLine + goalLine + season + refLine + '</div>';
+}
+
+/* [2026-09-02 · 가져가는것 걸음1] 순간 한 줄 — 학생이 읽는 말은 전부 contents_순간.js(MOMENT_SAY)에서 온다(엔진에 문구 0).
+ *   slot = '걸어온길' | '오늘알림' · m = {d:'yyyy-MM-dd', kind, line}. 종류가 뱅크에 없으면 공통 틀(MOMENT_SAY['*'])로.
+ *   ⚠ contents_순간.js 미배포(반쪽 배포)면 빈 문자열 — calcAll 이 여기서 죽으면 카드 전부가 멈춘다(contents_교안 가드와 같은 계급).
+ *   자리표 {날짜} = 「M월 D일」 · {한줄} = 폴더 이름의 한 줄(사람이 적은 유일한 글자). */
+function momentLine_(slot, m) {
+  if (!m || typeof MOMENT_SAY === 'undefined') return '';
+  const bank = MOMENT_SAY[String(m.kind || '').trim()] || MOMENT_SAY['*'] || {};
+  const tpl = String(bank[slot] || (MOMENT_SAY['*'] || {})[slot] || '');
+  if (!tpl) return '';
+  const d = String(m.d || '');
+  const dateKo = /^\d{4}-\d{2}-\d{2}/.test(d) ? (Number(d.slice(5, 7)) + '월 ' + Number(d.slice(8, 10)) + '일') : d;
+  return tpl.replace(/\{날짜\}/g, dateKo).replace(/\{한줄\}/g, String(m.line || '').trim());
 }
 
 function buildAttCalHtml_(attSet, now, tz, clsType) {
@@ -2227,8 +2274,12 @@ function calcAll() {
   const plData = plLast >= 2 ? pl.getRange(2, 1, plLast - 1, 6).getValues() : [];
   const pfLast = pf.getLastRow();
   const pfData = pfLast >= 2 ? pf.getRange(2, 1, pfLast - 1, 15).getValues() : [];
+  /* [2026-09-02 · 가져가는것 걸음1] 라이브 attendance 헤더를 정본 폭(5 · class_snapshot)으로 — 쓰는 자 둘(일괄 전개·폼 스위프)은
+   *   미처리 행이 0이면 ensureSheet 전에 돌아서므로 학생 0명인 라이브에서는 «여기»가 헤더가 늘어나는 유일한 통로다.
+   *   1행 읽기 + 다르면 1칸 쓰기(멱등). 아래 backfill 이 5열에 쓰므로 폭 보장이 읽기보다 먼저다. */
+  헤더보정_(at, ATTENDANCE_HEADERS);
   const atLast = at.getLastRow();
-  const atData = atLast >= 2 ? at.getRange(2, 1, atLast - 1, 4).getValues() : [];
+  const atData = atLast >= 2 ? at.getRange(2, 1, atLast - 1, ATTENDANCE_HEADERS.length).getValues() : [];
   const ctLast = ct.getLastRow();
   const ctData = ctLast >= 2 ? ct.getRange(2, 1, ctLast - 1, 6).getValues() : [];
   /* [함께한날 막1] 가이드 씨앗 자가 보장 — 배포 직후 첫 계산이 시트 상태와 무관하게 선다(수동 실행 0 · Ⅰ-3③).
@@ -2325,6 +2376,29 @@ function calcAll() {
       const idColA = [];
       for (let i = aFirst; i <= aLast; i++) idColA.push([atData[i][0]]);
       writeIfChanged(at, aFirst + 2, 1, idColA); // A열만 — Glide 소유 행의 다른 열 미접촉
+    }
+    /* [2026-09-02 · 가져가는것 걸음1] E열 class_snapshot 빈칸 backfill — 코드 밖에서 들어온 출석 행(GPS 셀프 출석 · 손 기입)은
+     *   반 스냅샷이 비어 있다. 그 행에 «지금» profiles.class_name 을 얼려 넣는다(쓰는 자 넷 중 넷째).
+     * ⚠ 이 backfill 은 **다음 실행(14시·22시 calcAll)** 에 돈다 — 출석 «시점»이 아니라 «그날 낮·밤»의 반이다.
+     *   그 사이에 반 이동이 끼면 옛 반이 아니라 새 반이 박힌다(틀릴 수 있는 창 = 출석 ~ 다음 calcAll). 앱 출석 통로가
+     *   쓰는 시점에 반을 넣게 되는 날 이 창은 0이 된다. 채워진 값은 다시 안 건드린다(스냅샷은 한 번만 찍힌다). */
+    {
+      const clsNow9 = {};
+      pfData.forEach(r => { if (r[0] && r[3] === 'student') clsNow9[String(r[0]).trim()] = String(r[4] || '').trim(); });
+      let cFirst = -1, cLast = -1;
+      atData.forEach((r, i) => {
+        if (!r[1] || !r[2] || String(r[4] || '').trim()) return;
+        const c9 = clsNow9[String(r[1]).trim()];
+        if (!c9) return; // 반을 모르면 비워 둔다 — 지어 넣지 않는다(빈 스냅샷은 조인에서 그냥 빠진다)
+        r[4] = c9;
+        if (cFirst < 0) cFirst = i;
+        cLast = i;
+      });
+      if (cFirst >= 0) {
+        const clsColA = [];
+        for (let i = cFirst; i <= cLast; i++) clsColA.push([atData[i][4] || '']);
+        writeIfChanged(at, cFirst + 2, 5, clsColA); // E열만
+      }
     }
   }
 
@@ -2839,6 +2913,40 @@ function calcAll() {
         });
       }
     }
+    /* [2026-09-02 · 가져가는것 걸음1] 📷 담긴 순간 — `portfolio_moments`(밤 배치 momentSweep_ 가 쓴다 · 여기가 «읽는 자리»).
+     *   학생 개인에 붙이는 법은 설계 §2-d 하나뿐이다: 그 반의 그날 순간은 **그날 그 반으로 출석한 학생 전원**의 것 —
+     *   조인 키 = attendance.class_snapshot ∧ 사건일. 🚫 profiles.class_name 으로 잇지 않는다(반 이동 뒤 옛 순간이 새 반으로 붙는다).
+     *   스냅샷이 빈 출석 행은 조인에서 그냥 빠진다(지어 넣지 않는다). 같은 moment_id 는 «마지막 행»이 현행(append-only). */
+    const momentOfSid = {};   // sid → {d: 사건일, kind, line, loaded} — 가장 최근 순간(사건일 우선 · 같으면 적재 순)
+    const momentTodayOfSid = {}; // sid → 오늘(적재일 = 오늘) 담긴 순간 — BX 「오늘 하나 담겼어」 재료
+    {
+      const pmH = ss.getSheetByName(PORTFOLIO_MOMENTS_TAB_);
+      if (pmH && pmH.getLastRow() >= 2) {
+        const byId9 = {}; // moment_id → 마지막 행(현행)
+        pmH.getRange(2, 1, pmH.getLastRow() - 1, PORTFOLIO_MOMENTS_HEADERS.length).getValues().forEach((r9, i9) => {
+          const mid9 = String(r9[0] || '').trim();
+          if (!mid9) return;
+          byId9[mid9] = { d: dstr(r9[2], tz), cls: String(r9[3] || '').trim(), kind: String(r9[5] || '').trim(), line: String(r9[6] || '').trim(),
+            loaded: dstr(r9[11], tz), st: String(r9[12] || '').trim(), seq: i9 };
+        });
+        const byDayCls9 = {}; // '사건일|반' → 그날 그 반의 현행 순간(여럿이면 나중 적재)
+        Object.keys(byId9).forEach(k9 => {
+          const m9 = byId9[k9];
+          if (!m9.d || !m9.cls || m9.st.indexOf('미분류') === 0) return; // 미분류는 학생 화면에 안 낸다 — 원장 오늘판 몫
+          const key9 = m9.d + '|' + m9.cls;
+          if (!byDayCls9[key9] || m9.seq > byDayCls9[key9].seq) byDayCls9[key9] = m9;
+        });
+        atData.forEach(r9 => {
+          const sid9 = String(r9[1] || '').trim(), cls9 = String(r9[4] || '').trim();
+          if (!sid9 || !r9[2] || !cls9) return;
+          const m9 = byDayCls9[dstr(r9[2], tz) + '|' + cls9];
+          if (!m9) return;
+          const cur9 = momentOfSid[sid9];
+          if (!cur9 || m9.d > cur9.d || (m9.d === cur9.d && m9.seq > cur9.seq)) momentOfSid[sid9] = m9;
+          if (m9.loaded === todayYmd0) momentTodayOfSid[sid9] = m9;
+        });
+      }
+    }
     const out = pfData.map((r, idx) => {
       const id = r[0], t = total[id] || 0;
       meetOut.push([(r[3] === 'student' && meetMap[String(id)]) || '']); // 행 수 정합 — 비학생·미편성은 공란
@@ -3017,6 +3125,7 @@ function calcAll() {
                 .replace('{g}', gTodayForm ? '\'' + gTodayForm + '\'을 직접 맞히고 ' : '')
                 .replace('{d}', String(daysNow || 0))
             : isBday6 ? '🎂 생일 축하해요! 오늘의 주인공이에요 🎉'
+            : momentTodayOfSid[id] ? momentLine_('오늘알림', momentTodayOfSid[id]) // [가져가는것 걸음1] 순간이 담긴 날 그날 하루만(설계 §4-a) · 문구는 contents_순간.js
             : '']);
         }
         const rec = records[id] || {};
@@ -3099,7 +3208,8 @@ function calcAll() {
         cGoal: String((prevCGoal[idx] && prevCGoal[idx][0]) || '').trim(),
         pace: String((prevPace[idx] && prevPace[idx][0]) || '').trim(),
         refN: refCntByName[String(r[1] || '').trim()] || 0, // [v9.56 승계] 추천 현황
-        seasonT: seasonCfg ? { n: seasonCfg.n, name: seasonCfg.name, week: seasonWeek, a: Object.keys(seasonAtt[id] || {}).length } : null // [v9.56 승계] 시즌 패스(8주 도달제) — 시즌 사이 빈 화면 방지(설계 §2-㉢)
+        seasonT: seasonCfg ? { n: seasonCfg.n, name: seasonCfg.name, week: seasonWeek, a: Object.keys(seasonAtt[id] || {}).length } : null, // [v9.56 승계] 시즌 패스(8주 도달제) — 시즌 사이 빈 화면 방지(설계 §2-㉢)
+        moment: momentOfSid[id] || null // [가져가는것 걸음1] 가장 최근 담긴 순간 한 줄(설계 §4-a) — 개수는 안 센다(㉢ · §4-b)
       }) : '']);
       { // [v9.28] 출석일당포인트 — 반유형 보정(주말반 불리 완화), 랭킹 참고용 별도 열(기존 월간랭킹은 무변경)
         const schSoFar = classTypeOf[id] ? scheduledSoFar_(classTypeOf[id], now) : 0;
