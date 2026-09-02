@@ -441,7 +441,12 @@ function migrateConsentV186() {
  *   포인트까지 지급하고 있었다. 보관이 무기한이 되면서 이 구멍의 비용은 "영구 보관"으로 커진다.
  *   종이 동의서 학생은 상담시트 그 칸에 수기로 '네, 동의합니다'를 넣으면 그대로 통과한다.
  *   실패는 null로 격리 — 시트를 못 읽었을 때 전원 통과시키면 게이트가 침묵으로 열린다(호출부는 보류를 택한다). */
-function voiceConsentMap_() {
+/* [v9.291] 상담시트 동의 열을 «상태 + 그 행에 찍힌 판»으로 읽는다 — {sid: {상태, 판}} | null.
+ *   판 = `음성동의버전`(동의버전스탬프_ 가 응답이 생긴 날 찍고 그 뒤 불변). 열이 없거나 아직 안 찍혔으면 ''(모름).
+ *   🔴 전역 CONSENT_VERSION 을 여기서 대신 넣지 않는다 — 문구 판을 올린 날 재동의 없이 «새 판에 동의»가
+ *   전원에게 찍히던 자리다(09-02 codex P1 e2d9c82fafe6 · 허위 동의). 모르는 것은 모른다고 적는다.
+ *   읽기는 이 한 곳이다 — 옛 호출자용 voiceConsentMap_ 은 여기서 상태만 뽑아 준다. */
+function voiceConsentRead_() {
   try {
     const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
     if (!consult) return null;
@@ -450,6 +455,7 @@ function voiceConsentMap_() {
     const hdr = consult.getRange(2, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
     const ci = hdr.indexOf(CONSENT_EXT_HEADERS[0]);
     const si = hdr.indexOf('학생ID');
+    const vi = hdr.indexOf('음성동의버전');
     if (ci === -1 || si === -1) return null;                 // 열 자체가 없으면 판정 불가 — 통과가 아니라 보류
     const out = {};
     consult.getRange(3, 1, lastRow - 2, w).getValues().forEach(r => {
@@ -459,13 +465,23 @@ function voiceConsentMap_() {
       // [v9.125] 화이트리스트 판정 — 구 코드는 「'아니'로 시작하지 않으면 전부 yes」(fail-open)라
       //   수기 칸의 '거부'·'보류'·'확인중'·'X'가 모두 동의로 통과했다. 무동의 녹음은 영구 보관이라 되돌릴 수 없다.
       //   명시적 긍정만 yes, 명시적 부정만 no, 그 외 전부 ''(보류) — v9.104 원칙(판정 불가는 통과가 아니라 보류).
-      out[sid] = !v ? ''
+      const 상태 = !v ? ''
         : (v.indexOf('아니') === 0 || v.indexOf('거부') === 0 || v.indexOf('미동의') === 0) ? 'no'
         : (v.indexOf('네') === 0 || v.indexOf('동의') === 0) ? 'yes'
         : '';
+      out[sid] = { 상태: 상태, 판: vi === -1 ? '' : String(r[vi] || '').trim() };
     });
     return out;
-  } catch (e) { Logger.log('voiceConsentMap_ 실패: ' + e); return null; }
+  } catch (e) { Logger.log('voiceConsentRead_ 실패: ' + e); return null; }
+}
+
+/* {sid: 'yes'|'no'|''} | null — 옛 호출자들이 쓰는 모양(판정·통계). 읽기는 voiceConsentRead_ 한 곳이다. */
+function voiceConsentMap_() {
+  const rows = voiceConsentRead_();
+  if (!rows) return null;
+  const out = {};
+  Object.keys(rows).forEach((sid) => { out[sid] = rows[sid].상태; });
+  return out;
 }
 
 /* [2026-09-02] 🔴 **동의 이력 원장 — 「그때 동의했나」를 재현하는 유일한 자리** (유호 위임 09-02 「최선을 골라줘」)
@@ -501,46 +517,62 @@ const CONSENT_LOG_TAB_ = 'consent_log';
 const CONSENT_LOG_HEADERS = ['student_id', '동의판', '상태', '기록일'];
 
 /* 순수 판정 — 「무엇을 새로 적을 것인가」. 시트를 안 만진다(코어=순수·래퍼=시트).
- *   map  = {sid: 'yes'|'no'|''}   ← voiceConsentMap_ 의 산출 그대로
+ *   map  = {sid: {상태:'yes'|'no'|'', 판:'v19.0'|'기록전(≤v19.0)'|''}}  ← voiceConsentRead_ 의 산출 그대로
+ *          (옛 꼴 {sid: 'yes'} 도 받는다 — 그때만 ver 를 판으로 쓴다 · 회귀 픽스처 호환)
  *   last = {sid: '판|상태'}        ← 직전 기록. **제자리에서 갱신된다.**
- * 🔑 **동의판이 바뀌어도 한 줄이다** — 같은 'yes' 라도 «어느 문구에 동의했나»가 달라지면 다른 사실이다
- *   (문구가 개정되면 재동의를 받는 것이 원칙이고, 그 사실이 남아야 감사 때 재현된다).
+ * 🔑 **판은 그 학생 행에 찍힌 판이다 — 전역 CONSENT_VERSION 이 아니다**(v9.291 · 09-02 codex P1 e2d9c82fafe6).
+ *   v9.290 은 전역 판을 적어서 문구 판만 올린 날 재동의 없이 «새 판에 yes» 가 전원에게 찍혔다(허위 동의).
+ *   재동의는 행의 판(`음성동의버전`)이 바뀌어야 사건이다 — 같은 'yes' 라도 «어느 문구에 동의했나»가 다르면 한 줄.
+ *   판을 모르면('' · 아직 안 찍힘) 모른다고 적고, 스탬프가 찍히는 밤에 «판을 알게 됐다»가 한 줄 더 남는다.
  * ⚠ 첫 관측이 보류('')면 안 적는다 — 안 그러면 미응답 전원이 의미 없이 깔린다.
  *   값이 있던 사람이 보류로 «돌아간 것»은 되돌림이 아니라 사실이라 한 줄로 남긴다. */
 function consentDiff_(map, last, today, ver) {
   const out = [];
   Object.keys(map || {}).forEach((sid) => {
-    const s = String(map[sid] == null ? '' : map[sid]).trim();
-    const cur = String(ver || '') + '|' + s;
+    const v = map[sid];
+    const obj = !!v && typeof v === 'object';
+    const raw = obj ? v.상태 : v;
+    const s = String(raw == null ? '' : raw).trim();
+    const 판 = obj ? String(v.판 == null ? '' : v.판).trim() : String(ver || '');
+    const cur = 판 + '|' + s;
     const prev = last[sid];
     if (prev === undefined ? s === '' : prev === cur) return;
     last[sid] = cur;
-    out.push([sid, String(ver || ''), s, today]);
+    out.push([sid, 판, s, today]);
   });
   return out;
 }
 
 function consentLogNightly_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const map = voiceConsentMap_();
-  /* 🔴 map 이 null = 「열이 없어 판정 불가」다(voiceConsentMap_ 의 보류 원칙). **아무것도 안 적는다** —
-   *   여기서 빈 맵으로 접으면 「전원 보류」가 사실처럼 이력에 박히고, 그건 지어낸 값이다. */
-  if (!map) { Logger.log('consentLogNightly_: 동의 열을 못 읽어 이력을 안 적었다(판정 불가 ≠ 보류)'); return 0; }
-  const tz = ss.getSpreadsheetTimeZone();
-  const log = ensureSheet(ss, CONSENT_LOG_TAB_, CONSENT_LOG_HEADERS);
-  const last = {};
-  if (log.getLastRow() >= 2) {
-    log.getRange(2, 1, log.getLastRow() - 1, 3).getValues().forEach((r) => {
-      const sid = String(r[0] || '').trim();
-      if (sid) last[sid] = String(r[1] || '') + '|' + String(r[2] || '');   // 뒤 줄이 이긴다 = 마지막 상태
-    });
-  }
-  const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
-  const rows = consentDiff_(map, last, today, CONSENT_VERSION);
-  if (!rows.length) return 0;
-  log.getRange(log.getLastRow() + 1, 1, rows.length, CONSENT_LOG_HEADERS.length).setValues(rows);
-  Logger.log('동의 이력 ' + rows.length + '줄 append(' + CONSENT_LOG_TAB_ + ')');
-  return rows.length;
+  /* 🔒 읽기→차이→append 를 한 실행이 독점한다(v9.291 · 09-02 codex P2 985c1a06b915) — 야간 트리거와 손 실행이
+   *   겹치면 둘 다 같은 «마지막 상태»를 읽고 같은 줄을 두 번 적는다. 못 얻으면 이번 밤은 건너뛴다(다음 밤이 잡는다 —
+   *   상태 원장이라 늦게 적혀도 사실은 같다). createWorkLogForm 과 같은 tryLock 30초 관례. */
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('consentLogNightly_: 다른 실행이 동의 이력을 적는 중이라 이번 밤은 건너뛴다(중복 append 방지)'); return 0; }
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const map = voiceConsentRead_();
+    /* 🔴 map 이 null = 「열이 없어 판정 불가」다(voiceConsentRead_ 의 보류 원칙). **아무것도 안 적는다** —
+     *   여기서 빈 맵으로 접으면 「전원 보류」가 사실처럼 이력에 박히고, 그건 지어낸 값이다. */
+    if (!map) { Logger.log('consentLogNightly_: 동의 열을 못 읽어 이력을 안 적었다(판정 불가 ≠ 보류)'); return 0; }
+    const tz = ss.getSpreadsheetTimeZone();
+    const log = ensureSheet(ss, CONSENT_LOG_TAB_, CONSENT_LOG_HEADERS);
+    const last = {};
+    if (log.getLastRow() >= 2) {
+      log.getRange(2, 1, log.getLastRow() - 1, 3).getValues().forEach((r) => {
+        const sid = String(r[0] || '').trim();
+        if (sid) last[sid] = String(r[1] || '') + '|' + String(r[2] || '');   // 뒤 줄이 이긴다 = 마지막 상태
+      });
+    }
+    /* 기록 «시각»을 초까지 남긴다(09-02 기능체크 4047493e84c6 의 절반) — 같은 날 수집 행의 created_at 과 앞뒤를 가를
+     * 최소 재료. ⚠ 하루 1회 표본 한계는 그대로다: 관측 사이에 두 번 바뀌면 마지막 값만 남는다(설계 · 위 머리말). */
+    const now = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss');
+    const rows = consentDiff_(map, last, now, CONSENT_VERSION);
+    if (!rows.length) return 0;
+    log.getRange(log.getLastRow() + 1, 1, rows.length, CONSENT_LOG_HEADERS.length).setValues(rows);
+    Logger.log('동의 이력 ' + rows.length + '줄 append(' + CONSENT_LOG_TAB_ + ')');
+    return rows.length;
+  } finally { lock.releaseLock(); }
 }
 
 function voiceConsentStat_() {
