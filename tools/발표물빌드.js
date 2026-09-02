@@ -188,15 +188,40 @@ function 민목록(html) {
 
 
 /**
+ * 빌드가 «심은» 활자 한 벌의 모양. 가르는 표식은 **`src:url(data:font`** 하나다.
+ *
+ * ■ 🔴 왜 「첫 `@font-face` 묶음」이면 안 되나 (2026-08-31~09-03 · 나흘짜리 주인 없는 적색)
+ *   옛 판은 「`@font-face{…}` 가 줄바꿈으로 이어진 묶음」을 «파일에서 처음 만나는» 자리에서
+ *   되돌렸다. 그러다 08-31 `c3273d30d`(낫표를 킷에 박은 커밋)가 원고 맨 위에 **손글씨** 활자
+ *   한 줄을 들였다 — `@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),…}`.
+ *   그것이 마커보다 «앞»에 서므로, 되돌리기가 **엉뚱한 한 줄을 마커로 바꾸고** 심은 활자는
+ *   그대로 남긴다. ⇒ 원고와 영원히 어긋난다.
+ *   🔴 **그리고 그 적색은 처방을 따라도 안 꺼진다** — 다시 구워도 같은 자리에서 같은 값이 난다.
+ *   실측 09-03: 산출물 7벌 전량이 「소스를 고치고 안 구웠다」 · 그 말은 **사실이 아니었다**
+ *   (원고도 산출물도 안 낡았다). 따를 수 없는 처방은 우회를 정상 통로로 만든다(F103).
+ *
+ * ■ 왜 이 표식인가 — 심는 쪽이 정한다. `docs/tools/브랜드폰트_임베드.py` 는 한 벌을
+ *   `…font-display:block;src:url(data:font/woff2;base64,…) format('woff2')}` 로 짓고
+ *   `"\n".join(faces)` 로 마커 자리에 통째로 넣는다. 손글씨 활자는 `src:local(…)` 이라
+ *   **원리상 안 겹친다**(실측 09-03: 원고 7벌에 `data:font` 0건).
+ * ■ base64 안엔 `}` 가 안 나온다(알파벳이 A-Za-z0-9+/=) — `[^}]*` 가 안전한 이유.
+ * ■ ⚠ 이 자가 틀릴 때의 모습 = **되돌리기가 헛돌고 「낡았다」로 나온다.** 그래서 `--check` 가
+ *   되돌린 판에 심은 활자가 «남아 있는지»를 따로 보고, 남았으면 낡음이 아니라 **이 자를 짚는다.**
+ */
+const 심긴활자 = String.raw`@font-face\{[^}]*src:url\(data:font[^}]*\}`;
+const 심긴묶음 = new RegExp(`${심긴활자}(?:\\n${심긴활자})*`);
+/** 되돌리기가 실제로 됐나 — 심은 활자가 남아 있으면 헛돈 것이다(원고가 스스로 품은 경우는 뺀다). */
+const 심긴활자남았나 = (s) => /src:url\(data:font/.test(s);
+
+/**
  * 산출물에서 임베드된 @font-face 묶음을 도로 마커로 되돌린다 → 소스와 1:1 비교가 된다.
  * 빌드가 `marker → faces.join('\n')` 이라 되돌리는 것도 그 한 덩어리다.
- * base64 안엔 `}` 가 안 나온다(알파벳이 A-Za-z0-9+/=) — `[^}]*` 가 안전한 이유.
  */
 /* ⚠Loom 블록을 **먼저** 뜯는다 — 순서가 뒤바뀌면 `@font-face` 정규식이 첫 매치를 찾을 때
  *   앞에 얹힌 블록 안을 먼저 볼 수 있다. 지금 Loom CSS 엔 `@font-face` 가 없지만,
  *   «오늘 없다»를 근거로 순서를 정하면 생기는 날 조용히 틀린다. */
 const unembed = (html) =>
-  룸벗기기(loom뜯기(normalize(html))).replace(/@font-face\{[^}]*\}(?:\n@font-face\{[^}]*\})*/, MARKER);
+  룸벗기기(loom뜯기(normalize(html))).replace(심긴묶음, MARKER);
 
 /**
  * 빌드가 «더한» 범위 표식(`룸`·`민`)을 도로 걷는다 — 원고(`_src_`)와 1:1 대조가 되려면 되돌릴 수 있어야 한다.
@@ -339,7 +364,16 @@ function main() {
       if (!/@font-face/.test(html)) { stale.push(`${outNameOf(s)} — 산출물에 @font-face 가 없다(임베드 안 된 사본)`); continue; }
       if (html.includes(MARKER)) { stale.push(`${outNameOf(s)} — 마커가 그대로 남았다(치환 실패본)`); continue; }
       const 원고 = normalize(fs.readFileSync(path.join(DIR, s), 'utf8'));
-      if (unembed(html) !== 원고) {
+      const 벗은 = unembed(html);
+      /* 🔴 「낡음」과 «되돌리기가 헛돈 것»을 가른다 — 08-31~09-03 에 이 둘이 같은 얼굴이라
+       *   7벌이 나흘 동안 「소스를 고치고 안 구웠다」로 서 있었고, 그 처방을 따라도 안 꺼졌다.
+       *   심은 활자가 되돌린 판에 남아 있는데 원고엔 없다 = 낡은 게 아니라 **자가 안 맞는 것**이다. */
+      if (심긴활자남았나(벗은) && !심긴활자남았나(원고)) {
+        stale.push(`${outNameOf(s)} — 심은 활자를 못 되돌렸다(되돌리기 과녁이 산출물과 안 맞는다)`
+          + ' — **다시 구워도 안 꺼진다.** 고칠 자리는 산출물이 아니라 `tools/발표물빌드.js` 의 `심긴묶음` 이다');
+        continue;
+      }
+      if (벗은 !== 원고) {
         stale.push(`${outNameOf(s)} — 소스와 산출물 내용이 어긋난다(소스를 고치고 안 구웠다)`);
         continue;
       }
@@ -458,4 +492,4 @@ if (require.main === module) process.exit(main());
 const loom얹기 = (html) => loom얹기모듈.강제얹기(html, LOOM_지면);
 
 module.exports = { 훅들, 얹을까, loom얹기, loom뜯기, unembed, LOOM_지면, LOOM_뜯기,
-  룸씌우기, 민목록, 어두운클래스들, 휘도 };
+  룸씌우기, 민목록, 어두운클래스들, 휘도, 심긴묶음, 심긴활자남았나, MARKER };
