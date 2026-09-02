@@ -26,6 +26,10 @@
 
 /** 손으로 전량을 잴 때 여는 파일들 */
 const 파일들 = [
+  // 소개서 셋(09-03 신설·갱신) — 파트너·투자자·기업이 읽는다
+  'docs/정본/SYNK LAB/SYNK LAB 소개서.txt',
+  'docs/정본/SYNK/SYNK 기업소개서.txt',
+  'docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt',
   'docs/기업철학_홈페이지_v1.md',
   'docs/강사공고_정본_v1.md',
   'docs/강사훈련_온라인자료_v1.md',
