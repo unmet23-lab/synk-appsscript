@@ -178,7 +178,7 @@ function voiceMissionTexts_(ss) {
   if (!sh || sh.getLastRow() < 2) return {};              // 아직 안 쓰셨다 — 정상
   const w = sh.getLastColumn();
   const head = sh.getRange(1, 1, 1, w).getValues()[0].map(h => String(h || '').replace(/\s/g, ''));
-  const cId = head.indexOf('미션ID'), cTx = head.indexOf('목표발화');
+  const cId = head.indexOf('미션ID'), cTx = head.indexOf('목표발화'), cAx = head.indexOf('축');
   if (cId < 0 || cTx < 0) {
     adminMail('[SYNK] 🎙 낭독 미션 목록의 열 이름이 안 맞습니다',
       'voice_missions 시트에 「미션ID」·「목표발화」 열이 필요한데 찾지 못했습니다.\n'
@@ -186,11 +186,21 @@ function voiceMissionTexts_(ss) {
       + '그대로 두면 voice_log 의 「목표발화」 칸이 계속 빈 채로 쌓이고, 그 소리는 나중에 못 씁니다.');
     return {};
   }
+  /* 🔴 [2026-09-01] **한 미션ID 에 낱말이 여럿이다 — 그래서 배열이다.**
+   *   그전 구현은 `out[id] = tx` 라 **뒤 행이 앞 행을 덮었다.** HW306 처럼 낱말 여섯을 지정하면
+   *   다섯이 조용히 사라졌고, 오류도 경고도 없었다. 아래 `voiceSweep_` 주석(:245)은 그때도
+   *   「그날의 값을 **스냅샷**한다」고 적고 있었으니 **구현이 자기 주석을 못 지킨 것**이다.
+   *   ⇒ 소급 불가 직격이었다: 그날 학생에게 무엇을 읽게 했는지가 영영 복원되지 않는다.
+   *   (발음데이터 규격 심문 P0-② · 판정 = `docs/_ops/심문결과/발음데이터_규격-전건판정.md`)
+   * 🔑 축을 함께 담는다(`P3:읽었어요`) — 한 낱말이 어느 축을 노렸는지가 목록에만 있고 로그에 없으면
+   *   나중에 축별로 못 센다. 축 열이 없으면 낱말만 담는다(없는 것을 지어내지 않는다). */
   const out = {};
   sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues().forEach(r => {
     const id = String(r[cId] || '').trim();
     const tx = String(r[cTx] || '').trim();
-    if (id && tx) out[id] = tx;
+    if (!id || !tx) return;
+    const ax = cAx >= 0 ? String(r[cAx] || '').trim() : '';
+    (out[id] || (out[id] = [])).push(ax ? ax + ':' + tx : tx);
   });
   return out;
 }
@@ -277,7 +287,9 @@ function voiceSweep_(ss) {
       mid,
       SCHEMA_VER, // [v9.208] 행이 자기 규격을 들고 있게(A-8) — 정의는 엔진_수집.js 하나(사본 금지 · 함수 안 참조라 파일 로드 순서 무관)
       // [v9.277] 발음 6칸 — 지금 아는 둘만 채우고 나머지 넷은 각자의 채우는 자가 뒤에 붙인다
-      목표문[mid] || '',  // 목표발화 (목록 없으면 빈 칸 — 소급해 채우지 않는다)
+      // [2026-09-01] 그날 지정된 낱말 **전량** 스냅샷(`P3:읽었어요 · P9:많았어요`). 하나만 담던 것을
+      // 고쳤다 — 여섯을 지정하면 다섯이 조용히 사라지고 있었다(심문 P0-②). 목록 없으면 빈 칸.
+      (목표문[mid] || []).join(' · '),  // 목표발화 (소급해 채우지 않는다)
       시즌,               // 시즌     (Ⅰ-8 눈금의 전제)
       '',                 // 전사신뢰도 ← sttSweep_
       '',                 // 전사엔진판 ← sttSweep_
@@ -830,21 +842,42 @@ function buildVoiceGrowthCards_(ss) {
    * 그 조항이 남긴 실측이 「자동 발송 53 자리 중 재학생 본인에게 가는 것 0」이었고, 조항 스스로
    * 「이 칸을 세는 자는 아직 없다 · 자를 세울지는 유호님 판정거리」라고 적어 두었다.
    *
-   * 여기서 찍는 도장의 뜻은 좁다 — **「이 녹음이 학생 본인이 보는 카드에 실렸다」** 하나뿐이다.
-   * 「학생이 그것을 읽었다」가 아니다. 넓혀 읽으면 이 칸이 곧 거짓이 된다.
-   * 🔑 카드에 실린 **그 두 행**(처음·오늘)만 찍는다 — 그 사이 행들은 학생에게 안 보였으므로 안 찍는다.
-   *   전부 찍으면 「돌려줬다」가 부풀고, 부푸는 방향은 언제나 통과다.
-   * ⚠ 한 번 찍힌 날짜는 안 덮는다 — 처음 닿은 날이 답이다(덮으면 「언제부터 돌아갔나」를 잃는다). */
-  const cRet = (typeof voiceCol_ === 'function') ? voiceCol_('돌려준날') : 0;
+   * 여기서 남기는 사건의 뜻은 좁다 — **「이 녹음이 학생 본인이 보는 카드에 실렸다」** 하나뿐이다.
+   * 「학생이 그것을 읽었다」가 아니다. 넓혀 읽으면 이 원장이 곧 거짓이 된다.
+   * 🔑 카드에 실린 **그 두 행**(처음·오늘)만 남긴다 — 그 사이 행들은 학생에게 안 보였다.
+   *   전부 남기면 「돌려줬다」가 부풀고, 부푸는 방향은 언제나 통과다.
+   *
+   * 🪦 [2026-09-01] **`voice_log.돌려준날` 칸에 도장을 찍던 것을 원장 append 로 바꿨다**(심문 P0-⑧).
+   *   관찰 원본 행에 전달 사건을 섞으면 계보가 끊긴다 — 옛 칸은 «처음 실린 날» 하나만 알아서
+   *   두 번 실려도 한 번으로 보였고, 어느 카드로 갔는지는 아무 데도 없었다(심문 P1-⑱ 「빈 껍데기」).
+   *   ⇒ 이제 실릴 때마다 쌓이고, 카드 종류·판이 함께 남는다.
+   * ⚠ 멱등: 같은 (녹음·카드종류·날짜)는 하루에 한 줄이다 — 배치가 두 번 돌아도 안 늘어난다. */
+  const 전달 = ss.getSheetByName('voice_delivery');
   const 행수 = vl.getLastRow() - 1;
-  if (cRet && 행수 > 0 && vl.getLastColumn() >= cRet) {
-    const cur = vl.getRange(2, cRet, 행수, 1).getValues();
+  if (전달 && 행수 > 0 && Object.keys(닿은행).length) {
     const 오늘 = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
-    let 바뀜 = 0;
-    for (let i = 0; i < 행수; i++) {
-      if (닿은행[i + 2] && !String(cur[i][0] || '').trim()) { cur[i][0] = 오늘; 바뀜++; }
+    const 이미 = {};
+    if (전달.getLastRow() > 1) {
+      전달.getRange(2, 1, 전달.getLastRow() - 1, 1).getValues().forEach(r => { 이미[String(r[0] || '')] = 1; });
     }
-    if (바뀜) vl.getRange(2, cRet, 행수, 1).setValues(cur);
+    /* 카드판 = 이 카드를 만든 코드의 판. 「어느 판이 만든 문장인가」가 없으면 나중에 학생이 받은
+     *   것을 재현할 수 없다(talk_log 의 prompt_ver 와 같은 축 · v9.145). */
+    const 카드판 = (typeof SYNK_VERSION === 'string') ? SYNK_VERSION : '';
+    const cSid = 0, cFid = 4;                    // voice_log 1·5열 — 헤더 정본과 같은 자리
+    const 원본 = vl.getRange(2, 1, 행수, Math.max(cFid + 1, 5)).getValues();
+    const 새줄 = [];
+    Object.keys(닿은행).forEach(행 => {
+      const i = Number(행) - 2;
+      if (i < 0 || i >= 행수) return;
+      const sid = String(원본[i][cSid] || '').trim();
+      const fid = String(원본[i][cFid] || '').trim();
+      if (!sid || !fid) return;                  // 조인 키가 없으면 «안 남긴다» — 지어내지 않는다
+      const id = fid + '|목소리성장카드|' + 오늘;
+      if (이미[id]) return;
+      이미[id] = 1;
+      새줄.push([id, sid, fid, '목소리성장카드', 카드판, 오늘, new Date()]);
+    });
+    if (새줄.length) 전달.getRange(전달.getLastRow() + 1, 1, 새줄.length, 새줄[0].length).setValues(새줄);
   }
 }
 

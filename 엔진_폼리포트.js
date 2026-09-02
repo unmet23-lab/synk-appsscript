@@ -441,7 +441,12 @@ function migrateConsentV186() {
  *   포인트까지 지급하고 있었다. 보관이 무기한이 되면서 이 구멍의 비용은 "영구 보관"으로 커진다.
  *   종이 동의서 학생은 상담시트 그 칸에 수기로 '네, 동의합니다'를 넣으면 그대로 통과한다.
  *   실패는 null로 격리 — 시트를 못 읽었을 때 전원 통과시키면 게이트가 침묵으로 열린다(호출부는 보류를 택한다). */
-function voiceConsentMap_() {
+/* [v9.291] 상담시트 동의 열을 «상태 + 그 행에 찍힌 판»으로 읽는다 — {sid: {상태, 판}} | null.
+ *   판 = `음성동의버전`(동의버전스탬프_ 가 응답이 생긴 날 찍고 그 뒤 불변). 열이 없거나 아직 안 찍혔으면 ''(모름).
+ *   🔴 전역 CONSENT_VERSION 을 여기서 대신 넣지 않는다 — 문구 판을 올린 날 재동의 없이 «새 판에 동의»가
+ *   전원에게 찍히던 자리다(09-02 codex P1 e2d9c82fafe6 · 허위 동의). 모르는 것은 모른다고 적는다.
+ *   읽기는 이 한 곳이다 — 옛 호출자용 voiceConsentMap_ 은 여기서 상태만 뽑아 준다. */
+function voiceConsentRead_() {
   try {
     const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
     if (!consult) return null;
@@ -450,6 +455,7 @@ function voiceConsentMap_() {
     const hdr = consult.getRange(2, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
     const ci = hdr.indexOf(CONSENT_EXT_HEADERS[0]);
     const si = hdr.indexOf('학생ID');
+    const vi = hdr.indexOf('음성동의버전');
     if (ci === -1 || si === -1) return null;                 // 열 자체가 없으면 판정 불가 — 통과가 아니라 보류
     const out = {};
     consult.getRange(3, 1, lastRow - 2, w).getValues().forEach(r => {
@@ -459,13 +465,114 @@ function voiceConsentMap_() {
       // [v9.125] 화이트리스트 판정 — 구 코드는 「'아니'로 시작하지 않으면 전부 yes」(fail-open)라
       //   수기 칸의 '거부'·'보류'·'확인중'·'X'가 모두 동의로 통과했다. 무동의 녹음은 영구 보관이라 되돌릴 수 없다.
       //   명시적 긍정만 yes, 명시적 부정만 no, 그 외 전부 ''(보류) — v9.104 원칙(판정 불가는 통과가 아니라 보류).
-      out[sid] = !v ? ''
+      const 상태 = !v ? ''
         : (v.indexOf('아니') === 0 || v.indexOf('거부') === 0 || v.indexOf('미동의') === 0) ? 'no'
         : (v.indexOf('네') === 0 || v.indexOf('동의') === 0) ? 'yes'
         : '';
+      out[sid] = { 상태: 상태, 판: vi === -1 ? '' : String(r[vi] || '').trim() };
     });
     return out;
-  } catch (e) { Logger.log('voiceConsentMap_ 실패: ' + e); return null; }
+  } catch (e) { Logger.log('voiceConsentRead_ 실패: ' + e); return null; }
+}
+
+/* {sid: 'yes'|'no'|''} | null — 옛 호출자들이 쓰는 모양(판정·통계). 읽기는 voiceConsentRead_ 한 곳이다. */
+function voiceConsentMap_() {
+  const rows = voiceConsentRead_();
+  if (!rows) return null;
+  const out = {};
+  Object.keys(rows).forEach((sid) => { out[sid] = rows[sid].상태; });
+  return out;
+}
+
+/* [2026-09-02] 🔴 **동의 이력 원장 — 「그때 동의했나」를 재현하는 유일한 자리** (유호 위임 09-02 「최선을 골라줘」)
+ *
+ * ■ 왜 있나 — 소급 불가 축이고, 지금이 유일한 창이다
+ *   동의 문구 v18.8 이 **「학습에 들어간 데이터는 되돌릴 수 없다」**를 명문화했다. 그러면 그 근거는
+ *   **「들어갈 때 동의 상태가 무엇이었나」**인데, 09-02 실측: **시트 층 어느 수집면도 그것을 안 든다**
+ *   (`hw_feedback`·`quiz_log`·`talk_log`·`voice_log`·`teacher_gold` 전부 · 09-01 에 내가 만든 원장 둘도).
+ *   `voiceConsentMap_` 은 **지금 값**만 안다 — 학생이 내년에 철회하면 작년 행이 그때 동의였는지
+ *   영영 못 가른다. **옛 행에 지어 넣을 수 없으므로 학생이 오기 전에만 열 수 있는 자리다.**
+ *   🔑 계약은 이미 요구하고 있었다(`consent_ver`·`consent_id`) — talk 층은 c10 때부터 저장 중이고
+ *      **시트 층만 빠져 있었다.**
+ *
+ * ■ 왜 «칸»이 아니라 «원장»인가 — 이 판정이 이 수리의 전부다
+ *   수집면 여섯에 `동의판` 칸을 붙이는 길도 있었다. 안 골랐다:
+ *     ① **한 값을 여러 곳이 알면 갈린다** — 여섯 벌 복사는 정확히 그 병이다([[constant-known-in-two-places]]).
+ *     ② 동의는 «행의 성질»이 아니라 **«학생의 시계열»**이다. `schema_ver` 는 행마다 다를 수 있어 칸이
+ *        맞지만, 동의는 사람에게 붙고 시간에 따라 바뀐다 — 원장이 그 모양이다.
+ *     ③ 시트 여섯의 **형상을 안 바꾼다** — 계약 판올림(c15→c16)과 형제 저장소 동행을 안 부른다.
+ *   ⇒ 대신 조인이 한 단계 는다: 「이 행의 `created_at` 이전, 그 학생의 마지막 상태」를 본다.
+ *
+ * ■ 이 수리가 여는 것은 «보존»뿐이다 — v9.197 자기선언 이력과 같은 선을 긋는다
+ *   🔴 **소비자는 0이다.** 각 수집면이 이 원장을 «읽어» 판정하는 배선은 안 짓는다 —
+ *   지금 학생 0명이라 읽을 재료가 없고, 안 쓰는 통로를 미리 지으면 그게 또 하나의 낡을 자리다.
+ *   여는 것은 **「그날 무엇이었는지가 남기 시작한다」** 하나뿐이고, 그것만이 소급 불가다.
+ *
+ * ■ 어떻게 잡나 — 「바뀐 것만」(v9.197 selfDeclareDiff_ 와 같은 무늬 · 새 꼴을 안 짓는다)
+ *   상담시트는 사람이 손으로 고치는 셀이라 onEdit 이 못 잡는 경로가 있다. 밤에 한 번 읽어
+ *   **직전 기록과 다른 것만** append 한다. 안 바뀌면 쓰기 0.
+ *   ⚠ 하루 1회 표본이라 같은 날 두 번 바뀌면 마지막 값만 남는다(자기선언 이력과 같은 한계).
+ */
+const CONSENT_LOG_TAB_ = 'consent_log';
+const CONSENT_LOG_HEADERS = ['student_id', '동의판', '상태', '기록일'];
+
+/* 순수 판정 — 「무엇을 새로 적을 것인가」. 시트를 안 만진다(코어=순수·래퍼=시트).
+ *   map  = {sid: {상태:'yes'|'no'|'', 판:'v19.0'|'기록전(≤v19.0)'|''}}  ← voiceConsentRead_ 의 산출 그대로
+ *          (옛 꼴 {sid: 'yes'} 도 받는다 — 그때만 ver 를 판으로 쓴다 · 회귀 픽스처 호환)
+ *   last = {sid: '판|상태'}        ← 직전 기록. **제자리에서 갱신된다.**
+ * 🔑 **판은 그 학생 행에 찍힌 판이다 — 전역 CONSENT_VERSION 이 아니다**(v9.291 · 09-02 codex P1 e2d9c82fafe6).
+ *   v9.290 은 전역 판을 적어서 문구 판만 올린 날 재동의 없이 «새 판에 yes» 가 전원에게 찍혔다(허위 동의).
+ *   재동의는 행의 판(`음성동의버전`)이 바뀌어야 사건이다 — 같은 'yes' 라도 «어느 문구에 동의했나»가 다르면 한 줄.
+ *   판을 모르면('' · 아직 안 찍힘) 모른다고 적고, 스탬프가 찍히는 밤에 «판을 알게 됐다»가 한 줄 더 남는다.
+ * ⚠ 첫 관측이 보류('')면 안 적는다 — 안 그러면 미응답 전원이 의미 없이 깔린다.
+ *   값이 있던 사람이 보류로 «돌아간 것»은 되돌림이 아니라 사실이라 한 줄로 남긴다. */
+function consentDiff_(map, last, today, ver) {
+  const out = [];
+  Object.keys(map || {}).forEach((sid) => {
+    const v = map[sid];
+    const obj = !!v && typeof v === 'object';
+    const raw = obj ? v.상태 : v;
+    const s = String(raw == null ? '' : raw).trim();
+    const 판 = obj ? String(v.판 == null ? '' : v.판).trim() : String(ver || '');
+    const cur = 판 + '|' + s;
+    const prev = last[sid];
+    if (prev === undefined ? s === '' : prev === cur) return;
+    last[sid] = cur;
+    out.push([sid, 판, s, today]);
+  });
+  return out;
+}
+
+function consentLogNightly_() {
+  /* 🔒 읽기→차이→append 를 한 실행이 독점한다(v9.291 · 09-02 codex P2 985c1a06b915) — 야간 트리거와 손 실행이
+   *   겹치면 둘 다 같은 «마지막 상태»를 읽고 같은 줄을 두 번 적는다. 못 얻으면 이번 밤은 건너뛴다(다음 밤이 잡는다 —
+   *   상태 원장이라 늦게 적혀도 사실은 같다). createWorkLogForm 과 같은 tryLock 30초 관례. */
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) { Logger.log('consentLogNightly_: 다른 실행이 동의 이력을 적는 중이라 이번 밤은 건너뛴다(중복 append 방지)'); return 0; }
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const map = voiceConsentRead_();
+    /* 🔴 map 이 null = 「열이 없어 판정 불가」다(voiceConsentRead_ 의 보류 원칙). **아무것도 안 적는다** —
+     *   여기서 빈 맵으로 접으면 「전원 보류」가 사실처럼 이력에 박히고, 그건 지어낸 값이다. */
+    if (!map) { Logger.log('consentLogNightly_: 동의 열을 못 읽어 이력을 안 적었다(판정 불가 ≠ 보류)'); return 0; }
+    const tz = ss.getSpreadsheetTimeZone();
+    const log = ensureSheet(ss, CONSENT_LOG_TAB_, CONSENT_LOG_HEADERS);
+    const last = {};
+    if (log.getLastRow() >= 2) {
+      log.getRange(2, 1, log.getLastRow() - 1, 3).getValues().forEach((r) => {
+        const sid = String(r[0] || '').trim();
+        if (sid) last[sid] = String(r[1] || '') + '|' + String(r[2] || '');   // 뒤 줄이 이긴다 = 마지막 상태
+      });
+    }
+    /* 기록 «시각»을 초까지 남긴다(09-02 기능체크 4047493e84c6 의 절반) — 같은 날 수집 행의 created_at 과 앞뒤를 가를
+     * 최소 재료. ⚠ 하루 1회 표본 한계는 그대로다: 관측 사이에 두 번 바뀌면 마지막 값만 남는다(설계 · 위 머리말). */
+    const now = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm:ss');
+    const rows = consentDiff_(map, last, now, CONSENT_VERSION);
+    if (!rows.length) return 0;
+    log.getRange(log.getLastRow() + 1, 1, rows.length, CONSENT_LOG_HEADERS.length).setValues(rows);
+    Logger.log('동의 이력 ' + rows.length + '줄 append(' + CONSENT_LOG_TAB_ + ')');
+    return rows.length;
+  } finally { lock.releaseLock(); }
 }
 
 function voiceConsentStat_() {
@@ -1130,6 +1237,16 @@ function interviewPersonalLink() {
 const WORK_KINDS = ['편의점·마트', '카페·식당', '물류·상하차·택배', '공장·제조 라인', '건설·현장', '농장·축산', '매장 판매·서비스', '사무·서무 보조', '통역·번역', '기타'];
 const WORK_PLACES = ['한국에서', '몽골의 한국 회사·한국 사람과 함께', '둘 다 있음'];
 const WORK_STATUSES = ['유학 중 아르바이트(D-2·D-4)', '고용허가제(E-9)', '유학 후 취업(E-7 등)', '기타·잘 모르겠음'];
+/* [v9.293] 결과 칸 셋의 선택지 — 「귀환자」에게서 결과를 받는다(유호 채택 09-02 · 한 차원 D2).
+ * 재직 기간은 「일한 기간」(§2)과 «다른 칸»이다 — 그쪽은 «그 일»의 길이고, 이쪽은 «마지막 직장»의 길이다.
+ * 그만둔 사유는 채점 축 넷과 겹치게 짰다(①되묻기 ②보고 ③안전·규칙 ④관계 언어) — 겹쳐야 가중치가 나온다.
+ * ⚠ 사유는 «자기 보고»다. 진짜 이유와 다를 수 있어 단독으로 판정하지 않고 서술 칸(§5·§7)과 같이 읽는다. */
+/* ⚠ 구간은 «겹치지 않게» 적는다(codex P2 5f735ab55dce 채택) — 첫 판이 「1~3개월 / 3~6개월 / 6개월~1년」이라
+ *   정확히 3개월·6개월·1년인 사람이 두 칸에 걸쳤다. 걸치는 순간 그 사람이 어느 칸을 고르느냐가 «분포»를 흔들고,
+ *   그 분포가 곧 등급 경계의 사전값이다(D2). 달 단위로 끊어 경계를 없앤다. */
+const WORK_TENURES = ['한 달 못 채움', '1~2개월', '3~5개월', '6~11개월', '1~2년', '2년 넘음', '아직 다니고 있다'];
+const WORK_EXITS = ['계약·비자 기간이 끝나서', '한국어가 힘들어서', '일을 못 따라가서', '사람 관계가 힘들어서',
+  '몸이 힘들어서·다쳐서', '돈이 안 맞아서', '더 좋은 곳으로 옮겨서', '학업·귀국 때문에', '그만두지 않았다', '기타'];
 /* 학생ID 안내는 «이 폼 전용»이다 — 제목(조인 키)은 면접 폼과 같은 상수를 쓰되 안내만 갈라진다.
  * 까닭(①배포 검수 41a05e993ae4): 이 폼의 배포처에 **한국 근무 경험이 있는 학부모·지인**이 들어 있다.
  *   면접 폼은 「본인이 면접 본 경험」이라 응답자가 곧 학생이지만, 여기서는 학부모가 «자기» 직장 경험을
@@ -1178,6 +1295,13 @@ const WORK_HELP = {
     + 'Хүндэтгэлийн үг, дуудах нэр, татгалзах эсвэл хүсэлт гаргах үе. Солонгос хэл нь зөв атлаа уур амьсгал хачин болсон мөчийг бичээрэй.',
   '그만둔 사람을 봤다면, 왜 그만뒀나요': '본인 이야기여도 괜찮습니다.\n'
     + 'Өөрийнхөө тухай байсан ч зүгээр.',
+  /* [v9.293] 결과 칸 셋 — 몽골어는 기계 검문(node tools/몽골어대조.js) «전»이다. 말투 층도 미측정. */
+  '얼마나 오래 다녔나요': '마지막으로 다닌 곳 기준으로 골라주세요. 여러 곳이었으면 가장 오래 다닌 곳으로요.\n'
+    + 'Хамгийн сүүлд ажилласан газраа сонгоно уу. Хэд хэдэн газар байсан бол хамгийн удаан ажилласнаа сонгоорой.',
+  '왜 그만두게 되었나요': '가장 큰 이유 하나만 골라주세요. 고르기 어려우면 아래 「가장 힘들었던 것」에 적어주셔도 됩니다.\n'
+    + 'Хамгийн гол шалтгааныг нэгийг нь сонгоно уу. Сонгоход хэцүү бол доорх нүдэнд бичиж болно.',
+  '다시 간다면': '지금 마음 그대로 골라주세요. 어느 답도 좋고 나쁜 답이 아닙니다.\n'
+    + 'Одоогийн бодлоороо сонгоно уу. Аль ч хариулт сайн ч муу ч биш.',
   '자료활용동의': '이 기록을 ① 후배 크루의 직업 체험 연습 자료 ② 그 연습을 만드는 AI의 학습 자료로 쓰는 것에 동의하시나요?\n'
     + '이름·연락처·회사 이름은 연습 자료에 절대 포함하지 않습니다(상황과 일만 씁니다). '
     + '"아니요"를 고르셔도 기록은 감사히 받고, 연습 자료로는 쓰지 않습니다 · 철회는 언제든 학원으로 연락 주세요.\n\n'
@@ -1361,12 +1485,29 @@ function createWorkLogForm_(알림기록) {
   para('하지 말라고 들은 것', false, WORK_HELP['하지 말라고 들은 것']);
   para('말투·호칭 때문에 곤란했던 일', false, WORK_HELP['말투·호칭 때문에 곤란했던 일']);
 
-  form.addSectionHeaderItem().setTitle('6. 끝으로');
+  /* ── [v9.293] 결과 칸 셋 — 「귀환자」에게서 «결과»를 받는다 (유호 채택 09-02 · 한 차원 D2) ──
+   * 왜 더하나: 이 폼은 그동안 «과업·방해·감점»(과정)만 물었다. 그런데 한국에서 일하고 돌아온 사람은
+   *   **결과가 이미 난 사람**이다 — 얼마나 버텼는가 · 왜 그만뒀는가 · 다시 갈 것인가.
+   *   그 셋이 있어야 회차 재료가 「무엇이 있었나」에서 **「무엇이 결과를 갈랐나」**로 올라간다.
+   * 🔑 무엇에 쓰나: 채점 축 넷의 «가중치»와 3급/2급 경계의 **사전 분포**(설계 = 한 차원 지면 D2).
+   *   합격선은 여기서 안 정한다 — 진단 두 번의 분포가 정한다(docs/SHIFT/진단장면_01_편의점야간_v0.md §4).
+   * ⚠ 회고형이라 «예측 타당도»는 못 낸다(그 짝은 첫 졸업 2028-02 뒤 학습기록×취업결과가 낸다).
+   *   그리고 그만둔 사람이 더 많이 답하는 편향이 있다 — 분모(전체 응답 수)와 «함께» 읽는다.
+   * ⚠ 전부 «선택»이다. 필수는 WORK_REQUIRED_ 다섯 그대로 — 결과 칸을 필수로 걸면 과정 칸(이 폼의
+   *   1순위 자산)까지 회수율이 같이 죽는다. 필수를 바꾸면 WORK_REQUIRED_ 도 같은 커밋에서 바꾼다. */
+  form.addSectionHeaderItem().setTitle('6. 그 일의 «결과»')
+    .setHelpText('전부 선택입니다. 이 부분이 다음 크루의 연습을 «무엇부터» 시킬지 정합니다.\n'
+      + 'Бүгд сонголттой. Энэ хэсэг нь дараагийн сурагчид юунаас эхлэн дадлага хийхийг тодорхойлно.');
+  mc('얼마나 오래 다녔나요', WORK_TENURES, false, WORK_HELP['얼마나 오래 다녔나요']);
+  mc('왜 그만두게 되었나요', WORK_EXITS, false, WORK_HELP['왜 그만두게 되었나요']);
+  mc('다시 간다면', ['같은 곳으로 다시 간다', '한국의 다른 곳으로 간다', '한국에서 일할 생각은 없다', '아직 모르겠다'], false, WORK_HELP['다시 간다면']);
+
+  form.addSectionHeaderItem().setTitle('7. 끝으로');
   para('가장 힘들었던 것', false);
   para('그만둔 사람을 봤다면, 왜 그만뒀나요', false, WORK_HELP['그만둔 사람을 봤다면, 왜 그만뒀나요']);
   para('다음 사람에게 한마디', false);
 
-  form.addSectionHeaderItem().setTitle('7. 자료 활용 동의');
+  form.addSectionHeaderItem().setTitle('8. 자료 활용 동의');
   mc('자료활용동의', ['네, 동의합니다', '아니요, 원하지 않습니다'], true, WORK_HELP['자료활용동의']);
 
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
@@ -1442,6 +1583,167 @@ function migrateWorkFormMn() {
     + '\n\n왜 넣었나: 이 폼이 받아내야 하는 것은 「혼났던 일」·「말투 때문에 곤란했던 순간」처럼 미묘한 이야기입니다.'
     + '\n한국어로 써야 한다고 생각하면 한 줄로 줄어듭니다 — 그래서 폼 설명 끝에 「몽골어로 답해도 된다」를 박았습니다.'
     + '\n\n⚠️ 몽골어는 기계 검문(역번역·문법)만 지났습니다. 말투 층은 도구가 없어 «미측정»입니다 — 대외로 크게 뿌리기 전에 원어민 눈이 한 번 더 보면 좋습니다.');
+  return 요약;
+}
+
+/* ── [v9.293] 🎯 라이브 직장 폼에 «결과 칸 셋» 넣기 (멱등) — 유호 채택 09-02 · 한 차원 D2 ──
+ * 왜 «별도 함수»인가: migrateWorkFormMn 과 같은 계보다 — createWorkLogForm 은 살아 있는 폼을 절대
+ *   건드리지 않으므로(배포된 링크·QR 보호), 생성부만 고치면 **08-27 에 이미 선 폼에는 영원히 안 닿는다.**
+ *   「장치와 그 발동 조건은 같은 커밋에서」 — 발동 = 시트 메뉴 「🎯 직장 경험 폼에 결과 칸 넣기」.
+ * ⚠ migrateWorkFormMn 은 «안내문만» 고친다(문항을 못 찾으면 «못 찾음»으로 보고할 뿐 만들지 않는다).
+ *   그래서 문항을 «더하는» 일은 이 함수의 몫이다. 순서: 이것 먼저 → 그다음 Mn(안내문)이 자연히 맞는다.
+ * 🔑 무엇을 더하나: 재직 기간 · 그만둔 사유 · 다시 간다면. 셋 다 **선택**이고, 필수 다섯(WORK_REQUIRED_)은
+ *   그대로다 — 결과 칸을 필수로 걸면 과정 칸(이 폼의 1순위 자산)까지 회수율이 같이 죽는다.
+ * ⚠ **기존 문항의 제목·선택지·응답은 한 글자도 안 건드린다**(응답 시트 헤더 · 폼 서명 · 궤적 조인 키).
+ *   손대는 것은 ①새 문항 셋 추가 ②새 문항의 안내문 ③«섹션 헤더» 번호뿐이다.
+ *   섹션 헤더는 응답 시트의 열이 아니라서 고쳐도 이미 받은 응답과 안 갈린다 — 안 고치면 라이브에
+ *   「6. 끝으로」와 새 「6. 그 일의 결과」가 나란히 서서 응답자가 헷갈린다.
+ * ⚠ 자리 이동은 **인덱스·인덱스 오버로드**로만 부른다(v9.182 라이브 결함 — 아이템 오버로드는 던진다).
+ *   한 번 옮길 때마다 뒤 인덱스가 밀리므로 매번 다시 센다. */
+function migrateWorkFormOutcome() {
+  /* 🔒 잠금 — 문항을 «더하는» 통로라 겹치면 중복 문항이 생긴다(codex P1 74f473751ae0 채택).
+   *   migrateWorkFormMn 은 안내문만 갱신해 겹쳐도 결과가 같지만(멱등), 이쪽은 「없으면 만든다」라
+   *   둘이 동시에 「없다」를 읽으면 둘 다 만든다 — 그러면 응답 열이 둘로 갈려 회수가 조용히 섞인다.
+   *   createWorkLogForm 과 같은 tryLock 30초 관례. 알림은 잠금 «해제 뒤»에 보낸다(P1 34a174bc 계보 —
+   *   adminMail 이 DIGEST_MODE 에서 같은 비재진입 ScriptLock 을 다시 잡는다). */
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    const mL = '⚠️ 다른 실행이 직장 폼을 고치고 있어 30초 기다리다 멈췄습니다 — 문항이 두 벌로 붙지 않도록 일부러 멈춥니다. 잠시 뒤 다시 실행하세요.';
+    Logger.log(mL);
+    return mL;
+  }
+  let 지연알림 = null;
+  try { return migrateWorkFormOutcome_(m => { 지연알림 = m; }); }
+  finally {
+    lock.releaseLock();
+    if (지연알림) adminMail(지연알림.제목, 지연알림.본문);
+  }
+}
+function migrateWorkFormOutcome_(알림기록) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const fid = String(getState(st, '직장폼ID').val || '');
+  if (!fid) { const m = '⚠️ 직장폼ID 미연결 — 먼저 시트 메뉴 「🧰 직장 경험 회수 폼 만들기」를 실행하세요(새로 만들면 결과 칸이 처음부터 들어갑니다).'; Logger.log(m); return m; }
+
+  let form;
+  try { form = FormApp.openById(fid); }
+  catch (e) { const m = '⚠️ 직장 폼을 열지 못했습니다(' + e + ') — 폼 삭제·권한을 확인하세요. 아무것도 고치지 않았습니다.'; Logger.log(m); return m; }
+
+  /* 남의 폼을 덮지 않는다 — «찾는 자리»와 같은 자를 쓴다(migrateWorkFormMn 과 같은 규율). */
+  if (!직장폼서명_(form)) {
+    const m = '⚠️ 직장폼ID 가 가리키는 폼이 직장 경험 폼이 아닙니다(제목 「' + form.getTitle() + '」).\n남의 폼에 문항을 붙이지 않으려고 아무것도 고치지 않았습니다.';
+    Logger.log(m);
+    return m;
+  }
+
+  /* 🔴 «응답이 오는 폼»인지까지 본다(codex P1 c1bc92a6a834 채택) — 서명은 「직장 폼처럼 생겼다」까지만
+   *   말한다. 직장폼ID 가 서명은 같지만 응답 탭에 «안 붙은» 폼(복사본·옛 폼)을 가리키면, 새 문항은
+   *   응답이 안 들어오는 폼에 붙고 엔진이 읽는 탭에는 결과 칸이 영영 안 생긴다 — 그런데 보고는 성공이다.
+   *   생성·복구 경로가 이미 같은 자를 쓴다(tabOk) — 여기만 느슨하면 그 문으로 샌다. */
+  const shT = ss.getSheetByName(WORK_TAB);
+  let tabOk = false;
+  if (shT) { try { tabOk = String(shT.getFormUrl() || '').indexOf(form.getId()) !== -1; } catch (eU) { tabOk = false; } }
+  if (!tabOk) {
+    const m = (shT
+      ? '⚠️ 탭 「' + WORK_TAB + '」이 직장폼ID 와 «다른 폼»에 연결돼 있습니다 — 지금 문항을 넣으면 응답이 안 오는 폼에 붙습니다.'
+      : '⚠️ 응답 탭 「' + WORK_TAB + '」이 없습니다 — 폼과 시트 연결이 끊긴 상태라 결과 칸을 넣어도 회수가 안 됩니다.')
+      + '\n먼저 시트 메뉴 「🧰 직장 경험 회수 폼 만들기」를 눌러 라우팅을 되건 뒤 다시 실행하세요. 아무것도 고치지 않았습니다.';
+    Logger.log(m);
+    return m;
+  }
+
+  const 결과문항 = [
+    ['얼마나 오래 다녔나요', WORK_TENURES],
+    ['왜 그만두게 되었나요', WORK_EXITS],
+    ['다시 간다면', ['같은 곳으로 다시 간다', '한국의 다른 곳으로 간다', '한국에서 일할 생각은 없다', '아직 모르겠다']]
+  ];
+  const 결과머리 = '6. 그 일의 «결과»';
+  const 결과머리안내 = '전부 선택입니다. 이 부분이 다음 크루의 연습을 «무엇부터» 시킬지 정합니다.\n'
+    + 'Бүгд сонголттой. Энэ хэсэг нь дараагийн сурагчид юунаас эхлэн дадлага хийхийг тодорхойлно.';
+
+  const 제목들 = () => form.getItems().map(function (x) { return String(x.getTitle()).trim(); });
+  /* 동의 섹션은 «번호»로 못 찾는다 — 라이브 폼의 번호는 7 이고 코드 정본은 8 이다(이 판올림으로 갈렸다).
+   * 그래서 번호를 뺀 낱말로 찾는다. 못 찾으면 맨 끝에 붙이고 그 사실을 보고한다(조용한 끝 배치 금지). */
+  const 동의자리 = () => {
+    const t = 제목들();
+    for (let i = 0; i < t.length; i++) if (t[i].indexOf('자료 활용 동의') !== -1) return i;
+    return -1;
+  };
+
+  const 넣은것 = [];
+  const 앵커없음 = [];
+
+  // ① 결과 섹션 머리 — 없으면 만들어 동의 섹션 «앞»에 둔다
+  if (제목들().indexOf(결과머리) === -1) {
+    const h = form.addSectionHeaderItem().setTitle(결과머리).setHelpText(결과머리안내);
+    const 목표 = 동의자리();
+    if (목표 === -1) 앵커없음.push(결과머리);
+    else form.moveItem(h.getIndex(), 목표);
+    넣은것.push('섹션 「' + 결과머리 + '」');
+  } else {
+    /* 있는데 동의 «뒤»에 있으면 옮긴다 — 첫 실행에서 만들기는 됐고 moveItem 만 실패한 모양(v9.182).
+     * ⚠ 이 교정은 문항 반복문 «앞»에 있어야 한다 — 뒤에 두면 머리가 문항들 뒤로 가서 순서가 뒤집힌다. */
+    const 머리it = form.getItems().filter(function (x) { return String(x.getTitle()).trim() === 결과머리; })[0];
+    const 동의at0 = 동의자리();
+    if (머리it && 동의at0 !== -1 && 머리it.getIndex() > 동의at0) {
+      form.moveItem(머리it.getIndex(), 동의at0);
+      넣은것.push('자리 교정 — 섹션 「' + 결과머리 + '」');
+    }
+  }
+
+  // ② 결과 문항 셋 — 있으면 안 만들고, 안내문만 정본과 대조해 갱신한다
+  /* 🔑 «있으면 안 만든다»로 끝내지 않는다(codex P2 e5ca1be011e6 채택) — 첫 실행에서 문항은 붙고
+   *   moveItem 만 실패한 폼(v9.182 가 라이브에서 실제로 만난 모양)은 재실행해도 영영 동의 뒤에 남는다.
+   *   그래서 «있는 것»도 자리와 유형을 다시 재고, 어긋나면 고치거나 — 못 고치는 것(유형)은 멈춘다. */
+  const 어긋남 = [];
+  결과문항.forEach(function (q) {
+    const 이미 = form.getItems().filter(function (x) { return String(x.getTitle()).trim() === q[0]; })[0];
+    if (이미) {
+      /* 유형이 다르면 손대지 않는다 — 응답이 이미 쌓였을 수 있고, 유형을 바꾸면 그 응답이 못 읽히는
+       * 열로 남는다. 자동으로 고치는 대신 사람에게 올린다(되돌릴 수 없는 쓰기는 판정이 서야 한다). */
+      if (이미.getType() !== FormApp.ItemType.MULTIPLE_CHOICE) { 어긋남.push(q[0] + '(유형이 객관식이 아니다 — 손대지 않았다)'); return; }
+      if (String(이미.getHelpText() || '') !== WORK_HELP[q[0]]) { 이미.setHelpText(WORK_HELP[q[0]]); 넣은것.push('안내 갱신 — ' + q[0]); }
+      /* 선택지는 «비었을 때만» 채운다 — 이미 값이 있으면 응답 문자열이 그 값에 묶여 있어 갈아 끼우면
+       * 옛 응답이 미아가 된다(제목·선택지 불변 규율). 다르면 고치지 않고 보고한다. */
+      const 지금선택 = 이미.asMultipleChoiceItem().getChoices().map(function (c) { return c.getValue(); });
+      if (!지금선택.length) { 이미.asMultipleChoiceItem().setChoiceValues(q[1]); 넣은것.push('선택지 채움 — ' + q[0]); }
+      else if (지금선택.join('␟') !== q[1].join('␟')) 어긋남.push(q[0] + '(선택지가 정본과 다르다 — 옛 응답 보호로 안 고쳤다)');
+      // 자리 — 동의 섹션 «앞»이어야 한다. 뒤에 있으면(첫 실행의 moveItem 실패) 지금 옮긴다.
+      const 동의at = 동의자리();
+      if (동의at !== -1 && 이미.getIndex() > 동의at) { form.moveItem(이미.getIndex(), 동의at); 넣은것.push('자리 교정 — ' + q[0]); }
+      return;
+    }
+    const it = form.addMultipleChoiceItem().setTitle(q[0]).setChoiceValues(q[1]).setHelpText(WORK_HELP[q[0]]);
+    const 목표 = 동의자리();
+    if (목표 === -1) 앵커없음.push(q[0]);
+    else form.moveItem(it.getIndex(), 목표);   // ← 인덱스·인덱스 오버로드(v9.182)
+    넣은것.push(q[0]);
+  });
+
+  // ③ 섹션 번호 두 개를 코드 정본과 맞춘다 — 응답 열이 아니라서 안전하다(위 주석)
+  [['6. 끝으로', '7. 끝으로'], ['7. 자료 활용 동의', '8. 자료 활용 동의']].forEach(function (p) {
+    const it = form.getItems().filter(function (x) { return String(x.getTitle()).trim() === p[0]; })[0];
+    if (it && it.getType() === FormApp.ItemType.PAGE_BREAK) return;   // 페이지 나눔이면 안 건드린다
+    if (it) { it.setTitle(p[1]); 넣은것.push('섹션 번호 ' + p[0] + ' → ' + p[1]); }
+  });
+
+  const 요약 = (넣은것.length ? '✅ 결과 칸을 넣었습니다 — ' + 넣은것.length + '곳:\n· ' + 넣은것.join('\n· ')
+    : '✅ 이미 정본과 같습니다 — 고칠 것이 없었습니다(이 함수는 몇 번 눌러도 안전합니다).')
+    + (앵커없음.length ? '\n\n⚠️ 동의 섹션을 못 찾아 «맨 끝»에 붙은 것 ' + 앵커없음.length + '개: ' + 앵커없음.join(' · ')
+      + '\n   → 폼을 열어 순서를 손으로 옮기세요(동의는 마지막이어야 합니다).' : '')
+    + (어긋남.length ? '\n\n⚠️ 정본과 어긋나 «손대지 않은» 것 ' + 어긋남.length + '개: ' + 어긋남.join(' · ')
+      + '\n   → 옛 응답이 그 값에 묶여 있어 자동으로 안 고칩니다. 폼을 열어 눈으로 판정하세요.' : '')
+    + '\n\n기존 문항의 제목·선택지·응답은 건드리지 않았습니다.\n배포 링크: ' + form.getPublishedUrl();
+  Logger.log(요약);
+  // 알림은 래퍼가 잠금 «해제 뒤» 보낸다 — adminMail 이 DIGEST_MODE 에서 같은 비재진입 락을 다시 잡는다
+  알림기록({
+    제목: '[SYNK] 🎯 직장 경험 폼 결과 칸 셋 반영',
+    본문: 요약
+      + '\n\n왜 넣었나: 이 폼은 그동안 «과업·방해·감점»(과정)만 물었습니다. 그런데 한국에서 일하고 돌아온 사람은'
+      + '\n결과가 이미 난 사람입니다 — 얼마나 버텼는가 · 왜 그만뒀는가 · 다시 갈 것인가.'
+      + '\n그 셋이 채점 축 넷의 «가중치»와 등급 경계의 사전 분포를 줍니다(docs/SHIFT/한차원_2026-09-02.html D2).'
+      + '\n\n⚠️ 회고형이라 예측 타당도는 못 냅니다. 그리고 그만둔 사람이 더 많이 답하는 편향이 있어 분모와 «함께» 읽습니다.'
+      + '\n⚠️ 새 문항의 몽골어는 기계 검문(node tools/몽골어대조.js) «전»입니다 — 크게 뿌리기 전에 검문과 원어민 눈이 한 번씩.' });
   return 요약;
 }
 

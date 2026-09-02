@@ -286,7 +286,16 @@ function MJ_messengerDigest_() {
     const d = asDate_(r[5]);
     if (d < monday || d >= weekEnd) return;
     const sid = String(r[1]).trim(), pts = Number(r[2]) || 0, rs = String(r[3] || '');
-    if (pts > 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
+    /* 🔑 «획득»의 자는 하나다 — parentWeeklyDigestCore_(엔진_운영배치.js) 가 쓰는 것을 그대로 쓴다.
+     *   양수 + «정정» 음수만 담는다. 정정을 빼면 「왕관은 줄었는데 점수는 그대로」인 부풀린 수가
+     *   나가고(codex 지적 4d0fe9497b6f · 08-21), 음수를 «전부» 담으면 정상적인 스토어 구매 차감까지
+     *   획득에서 빠져 같은 주를 두 통로가 다르게 말한다(codex 지적 a2cf05b13aaf·88d6f514a6cf · 09-02 —
+     *   +10 지급 · -5 스토어면 메신저 +5P, 학부모 메일 +10P). 두 접점이 한 학생을 다르게 말하면
+     *   그 자체가 결함이다.
+     *   ⚠ 0 으로 막지 않는다 — 행 순서가 «정정 먼저»면 그 자리에서 잘려 뒤따르는 양수가 살아난다
+     *     (-10 → 0 → +10 = 10, 참값 0). 막는 것은 읽는 자리 몫이다. */
+    const 획득 = pts > 0 || rs.indexOf('정정') > -1;
+    if (획득 && pts !== 0) ptsW[sid] = (ptsW[sid] || 0) + pts;
     if (rs.indexOf('MVP') > -1 || rs.indexOf('도전') > -1 || rs.indexOf('시냅스') > -1 || rs.indexOf('성장') > -1) crownW[sid] = (crownW[sid] || 0) + (pts > 0 ? 1 : (rs.indexOf('정정') > -1 ? -1 : 0)); // [08-21] 새 사유 편입 + 정정 순계 — 엔진_운영배치 2124행과 같은 규약(초과 지급이 밤에 정정돼도 다이제스트가 옛 횟수를 말하지 않게)
   });
 
@@ -294,7 +303,8 @@ function MJ_messengerDigest_() {
   sids.forEach(sid => {
     const lk = links.map[sid];
     if (!MJ_canSendNow_(lk.lastIn, now, MJ_MSG_TAG)) { skipped++; return; } // 창 밖 — 이메일이 이미 감(유실 아님)
-    const att = attW[sid] || 0, pts = ptsW[sid] || 0, cr = crownW[sid] || 0;
+    /* 음수는 여기서 막는다 — 집계는 날것(정정 포함)으로 하고, 학부모에게 보이는 수만 0 아래로 안 간다. */
+    const att = attW[sid] || 0, pts = Math.max(0, ptsW[sid] || 0), cr = Math.max(0, crownW[sid] || 0);
     const nm = names[sid] || sid;
     const txt = '📮 ' + nm + '\n' +
       'Долоо хоногийн тойм — ирц ' + att + ' · оноо +' + pts + 'P' + (cr > 0 ? ' · 🔥 Сорилт·Өсөлт ' + cr + ' удаа' : '') + ' 🎉\n' +
