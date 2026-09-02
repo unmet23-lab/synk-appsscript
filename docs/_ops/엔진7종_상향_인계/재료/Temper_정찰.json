@@ -1,0 +1,277 @@
+{
+ "engine": "Temper — 쌓는 셋(자산층) 3호 · 처방: 개입→효과 짝 · 코드 0 · 개입 로그 규격 v1(08-24) · policy_ver 스탬프",
+ "as_of": "2026-09-02",
+ "searches_done": [
+  "WebSearch: Statsig changelog August 2026 experiments sequential testing CUPED",
+  "WebSearch: GrowthBook release notes 2026 Bayesian experiments latest",
+  "WebSearch: PostHog experiments changelog 2026 Bayesian sequential",
+  "WebSearch: arxiv 2026 LLM tutor pedagogical policy reinforcement learning tutoring",
+  "WebSearch: Khanmigo effectiveness study results 2026",
+  "WebSearch: Duolingo A/B test learning outcomes research 2026 efficacy",
+  "WebSearch: contextual bandit education intervention adaptive experiment 2026 small sample",
+  "WebSearch: N-of-1 trial Bayesian small sample education intervention effect 2025 2026",
+  "exa: 2026 paper training LLM tutors with RL to teach rather than answer, Socratic tutoring evaluation benchmark",
+  "exa: uplift modeling causal forest library release 2026 EconML CausalML DoubleML",
+  "exa: Alpha School 2 hour learning AI tutor results data 2026",
+  "exa: Google LearnLM Gemini learning coach pedagogy evaluation 2026",
+  "WebSearch: Duolingo research blog 2026 Birdbrain efficacy A/B experiments",
+  "WebSearch: tutoring benchmark 2026 LLM tutor evaluation learning gains simulated students arxiv",
+  "WebSearch: Anthropic Claude for Education learning mode 2026 news",
+  "WebSearch: Speak OR ELSA OR Praktika AI language tutor RCT results 2026",
+  "WebSearch: Thompson sampling hint policy tutoring system adaptive experiment classroom 2026 arxiv",
+  "WebSearch: single-case experimental design Bayesian multilevel N-of-1 education 2026 software package",
+  "exa fetch: statsig.com/blog/sequential-testing-on-statsig · docs.growthbook.io/statistics/overview · posthog.com/changelog",
+  "exa fetch: edworkingpapers.com/ai26-1551 · tandfonline Polish the Gold 2026 · arxiv 2501.03999",
+  "exa: Duolingo 2026 research report Birdbrain adaptive model experiment learning outcomes CEFR",
+  "exa: open-source library adaptive experiments education Thompson sampling small samples 2026",
+  "exa: LLM as judge pedagogical quality tutor responses rubric 2026 open weights reward model",
+  "exa: simonwillison.net 2026 education tutoring AI evaluation / news.hada.io AI 튜터 2026",
+  "exa fetch: github growthbook releases · statsig.com/updates · ai.google.dev gemini-api changelog",
+  "exa fetch: arxiv 2608.03206 EduClaw-Bench · arxiv 2603.24375 reward model · github bayesdecide",
+  "WebSearch: Google DeepMind Guided Learning RCT playbook Fab AI technical report 2026",
+  "WebSearch: Duolingo 2026 efficacy research report August 2026",
+  "WebSearch: Synthesis Tutor OR Speak app 2026 published learning outcomes",
+  "exa fetch: DeepMind Sierra Leone RCT playbook PDF(jun26) · blog.duolingo.com efficacy · arxiv 2512.23633 Eedi RCT",
+  "exa fetch: arxiv 2605.29582 PEARL · arxiv 2507.14848 Bayesian effect sizes brms",
+  "(WebSearch 예산 소진 200/200 — news.hada.io · brms partial pooling 2건은 못 돌림)",
+  "repo grep: docs/Temper_개입로그_규격_v1.md 머리 · 트랙.md uplift|bandit|bayes 0건 · SYNK-talk 재발률|uplift|bandit 0파일 · tools/성과계기판.js 효과|재발률 0줄 (09-02 실측)"
+ ],
+ "findings": [
+  {
+   "name": "사전분석계획(Pre-Analysis Plan)을 policy_ver 재료로 — DeepMind 「Rapid Evidence for AI in Education: An RCT Playbook」",
+   "what": "구글 딥마인드가 2026-06-09 공개한 신속 RCT 플레이북. 학기 단위(8주)로 인과 증거를 내는 절차 — 사전분석계획(결과변수·검정·표본 규칙을 «데이터 보기 전에» 적는다)·실행 충실도 감시(dosage)·소비자 설문 프로토콜을 문서 한 벌로 묶었다. 개입→효과 짝을 «어떤 자로 잴지»를 개입이 나가기 전에 못박는 규격.",
+   "released_or_updated": "2026-06-09",
+   "source_url": "https://storage.googleapis.com/deepmind-media/LearnLM/learnLM_sierraleone_playbook_jun26.pdf",
+   "evidence": "플레이북 목차에 「The Pre-Analysis Plan」·「Monitoring Implementation Fidelity」·「Sampling Considerations」 절이 있고, 같은 날 블로그는 1,763명·12교·8주 RCT 로 +0.258 SD, 사용목표 달성 69%(교육기술 통상 5%)를 보고했다. 본문이 「school terms rather than school years」 주기를 명시.",
+   "why_relevant": "Temper 는 개입 로그 규격 v1 로 «무엇을 골랐나»(policy_ver)는 적지만 «그 판이 무엇으로 성공을 재는가»는 아무 데도 없다(트랙.md·성과계기판.js grep 09-02: 효과·재발률 0줄). 사전분석계획을 policy_ver 재료 13 에 하나 더 넣으면 판이 바뀔 때 자도 같이 판올림된다 — 심문결과 P0 「policy_ver 지문이 실제 규칙 변경을 놓친다」의 그 구멍에 자를 세운다. 빈 칸.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "문서+해시 한 줄. `docs/Temper_사전분석계획_v1.md` 를 쓰고 그 파일 sha256 을 policy_ver 재료에 합치는 것뿐 — GPU·램 무관, 유호님 손 0."
+   },
+   "gate_c": {
+    "failure_mode": "계획이 의식(형식만 남은 절차)이 되어 아무도 안 읽고, 데이터를 본 뒤 결과변수를 바꾸는 «가든 오브 포킹 패스»가 재발한다(계획을 고치면 policy_ver 가 오르므로 흔적은 남지만 막지는 못한다).",
+    "one_thing_to_close": "결과변수 하나(재발률 또는 완주)와 판정 규칙 하나를 «지금» 고르고, 개원 뒤 첫 판정까지 그 파일을 수정 금지로 둔다 — 수정은 새 policy_ver 로만."
+   },
+   "effect_timing": "now",
+   "confidence": "high"
+  },
+  {
+   "name": "16명용 효과 자 = 베이지안 위계 추정 + 명시적 사전분포(수축) — Bähni brms 처방 · GrowthBook proper-prior 기본값 · Polish the Gold(2026)",
+   "what": "작은 표본에서 개입 효과를 «점추정+p값»이 아니라 사후분포(신뢰구간)로 내는 자. 학생×시점 위계를 모형에 넣고(부분 풀링), 효과 사전분포를 명시해 16명이 내는 요행을 0 쪽으로 수축한다. GrowthBook 은 이걸 제품 기본값(Normal(0, 0.3) — 68% 효과가 ±30% 안)으로 운영하고, Polish the Gold(JREE 2026)는 소표본 RCT 의 «우연한 공변량 불균형»을 보정하는 실행 가이드다.",
+   "released_or_updated": "2025-07-20",
+   "source_url": "https://arxiv.org/abs/2507.14848",
+   "evidence": "Bähni 2025-07-20: brms/Stan 으로 다층 구조·이질 분산을 넣은 효과크기 d_s·d_z 계산 절차 제시. GrowthBook 통계 문서: 「proper prior 켜면 Normal(0, 0.3) — 작은 표본 과해석 방지」. Polish the Gold(tandfonline 10.1080/19345747.2026.2634037): 소표본 RCT 에서 chance imbalance 가 효과 추정을 편향시키며 특수교육 등 소표본 분야의 절차를 종합.",
+   "why_relevant": "Temper 의 개입→효과 짝은 코드 0 이고 첫 표본은 16명. 빈도주의 검정은 그 수에서 «0건이 성공 얼굴»(자가 못 재는 것과 효과 없음을 못 가른다)이 된다. 개입 로그 규격이 이미 intervention_id·evidence_refs 를 쌓으므로 자만 없다 — 빈 칸.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "이항 결과(재발/완주)면 Beta 공액 사후로 노드 스크립트 200줄 안에서 닫힌다(GPU 0). 위계·연속형까지 가면 R brms 가 노트북 CPU 로 16명분은 분 단위 — 유호님은 실행 안 함, 세션이 돌리고 수치를 성과계기판에 적는다."
+   },
+   "gate_c": {
+    "failure_mode": "사전분포가 16명 데이터를 지배해 «모든 개입이 효과 0»으로 보이거나(너무 좁음), 반대로 요행을 효과로 읽는다(너무 넓음). 사전분포를 결과 본 뒤 고르면 자가 아니다.",
+    "one_thing_to_close": "사전분포를 사전분석계획에 미리 적고, 보고 때 «사후 = 데이터 몫 + 사전 몫»을 갈라 적는다(분모 있는 숫자 규율 그대로)."
+   },
+   "effect_timing": "later",
+   "confidence": "medium"
+  },
+  {
+   "name": "설계 자 = 다중기저선(multiple-baseline) N-of-1 — 16명을 «16개의 시계열»로 본다(Bayesian SCED · bmscstan)",
+   "what": "학생을 두 집단으로 가르는 대신, 각 학생 안에서 개입 «전/후» 시계열을 재고 개입 시작 시점을 학생마다 어긋나게 둔다(다중기저선). 단일사례 실험설계(SCED)의 베이지안 다층판 — R 패키지 bmscstan·scdtb 가 구현. 2026-01 채택 논문 「Design and analysis of behavioral intervention studies: A Bayesian approach」가 절차를 정리.",
+   "released_or_updated": "2026-01",
+   "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12872030/",
+   "evidence": "검색 요약: 「accepted January 2026 · 대부분 지침이 NHST 기반임을 지적하고 베이지안 설계·분석을 제안」(원문은 안 열어봤다 — 날짜는 요약 기준). bmscstan: Stan 기반 베이지안 다층 단일사례 모형(null 가설 검정 가능). 소표본 RCT 문헌(Polish the Gold 2026)도 같은 결을 짚는다.",
+   "why_relevant": "16명을 8:8 로 가르면 한 집단 8명 — 어떤 자로도 안 잰다. 개입 단위 시계열이면 분석 단위가 «학생»이 아니라 «개입 수천 건»(리허설 delivered 4,468)이 된다. 그리고 «누가 언제 어느 개입을 먼저 받나»는 학생이 오기 전에 정해야 하는 소급 불가 설계 — 지금 결정할 자리. 빈 칸.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "설계는 문서·배정 규칙(deliver 의 시작일 어긋내기) 한 줄. 분석은 R 또는 JS 재구현 — 16명×수개월 시계열은 CPU 로 충분."
+   },
+   "gate_c": {
+    "failure_mode": "언어 학습은 «되돌릴 수 없어»(배운 것을 빼는 ABAB 철회 설계가 성립 안 함) 이월효과가 효과로 위장한다. 시작일을 어긋내지 않으면 시간 효과(개원 뒤 다 같이 느는 것)와 개입 효과가 갈리지 않는다.",
+    "one_thing_to_close": "철회 없는 다중기저선만 쓰고, 개입 시작 시점을 학생별로 무작위 어긋내는 규칙을 deliver 에 박아 policy_ver 에 포함한다."
+   },
+   "effect_timing": "now",
+   "confidence": "low"
+  },
+  {
+   "name": "개입 «단위» Thompson sampling 처방 정책 — WAPTS(데이터 희소 교육용 TS · lenient regret)",
+   "what": "토론토 J.J. Williams 팀이 교육 플랫폼용으로 낸 Thompson sampling 변형. 「팔이 많고 학생이 적은」 희소 환경에서 표준 TS 가 배분 불균형·수렴 지연을 겪는 것을 사후표본 가중으로 고친다. 정책 = 개입 유형별 Beta 사후분포에서 뽑아 고르고, 결과가 오면 갱신 — Temper 의 «처방 규칙»이 손으로 쓴 규칙에서 데이터가 고치는 규칙으로 바뀐다.",
+   "released_or_updated": "2025-01-07",
+   "source_url": "https://arxiv.org/abs/2501.03999",
+   "evidence": "초록: 「Thompson Sampling can lead to imbalanced content allocation and delayed convergence … we introduce WAPTS」. v2 본문: N=50·팔 2·Δ=0.1 모의에서 WAPTS 가 TS·균등보다 정답 선택률 높음, 1000명·24팔에서 TS 대비 정답 선택 약 15% 개선. 같은 팀 EASI(LAK) 논문: OLI 강좌 90%가 113명 이하 — 「사전정보 활용·강좌 간 실험 공유」로 소표본 완화. (v3·v4 갱신일은 안 재봤다.)",
+   "why_relevant": "Temper 처방은 policy_ver 로 «판»만 있고 판을 «고치는 손»이 없다. 학생 단위 밴딧은 16명에서 논문 스스로 부정하지만, 결정 단위를 개입 1건으로 두면 리허설만 4,468건 — 개입 로그 규격의 intervention_id→후행관측 고리가 그대로 보상 신호다. 빈 칸.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "Beta 공액 갱신은 덧셈 두 번 — Apps Script·Supabase Edge 어디서든 의존성 0 으로 짓는다. 학습 없음·GPU 0."
+   },
+   "gate_c": {
+    "failure_mode": "팔(개입 유형)이 많으면 소음에 수렴해 특정 개입만 계속 나가고, 적응 배분으로 모인 데이터는 단순 평균이 편향된다(적응 가중 없이는 효과 자도 같이 고장).",
+    "one_thing_to_close": "결정점당 팔 ≤3 + 균등 무작위 바닥(예: 20%)을 강제해 나중에 효과를 «잴 수 있는» 데이터로 남긴다(banditsCI 의 impose_floor·적응가중 추정 그대로) — 바닥 값은 policy_ver 재료."
+   },
+   "effect_timing": "later",
+   "confidence": "medium"
+  },
+  {
+   "name": "bayesdecide 1.0 — 의존성 0 TypeScript 베이지안 밴딧 + anytime-valid 정지규칙 + 해시 체인 감사로그",
+   "what": "2026-06-21 공개된 npm 라이브러리. Beta/Normal-inverse-Gamma 사후, Thompson/greedy 선택, «언제 봐도 유효한» 신뢰열(confidence sequence) 정지규칙, 결정마다 SHA-256 체인으로 잇는 append-only 감사로그, 시간감쇠, 코호트별 사후 저장소를 노드·엣지·브라우저 공통 코어로 제공. 프롬프트 변형 실험용으로 나왔지만 «개입 변형»에 그대로 맞는다.",
+   "released_or_updated": "2026-06-21",
+   "source_url": "https://github.com/davccavalcante/bayesdecide",
+   "evidence": "README: 「zero required runtime dependencies … 106 tests passing · coverage 97% · node ≥20」, 모듈에 `sequential`(Bayesian 휴리스틱 + anytime-valid confidence sequence)·`audit`(SHA-256 hash-chained log)·`store`(variant, cohort 키)·`decay` 명시. 별 1개·기여자 1명(2026-09-02 기준).",
+   "why_relevant": "앞 finding(개입 단위 TS)의 «구현»을 처음부터 안 짓게 한다. 특히 해시 체인 감사로그는 「이 개입을 왜 골랐나」를 policy_ver 옆에 결정 단위로 남기는 장치 — 개입 로그 규격 ⓪ 「선택의 이유는 그 순간이 지나면 끝」과 같은 결. 빈 칸.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "의존성 0 이라 talk(Supabase Edge/Deno)에 파일째 벤더링 가능. Apps Script 쪽은 CJS/ESM 미지원이라 핵심 200줄만 옮겨 적는다."
+   },
+   "gate_c": {
+    "failure_mode": "별 1개·단일 저자 — 버려지면 정지규칙 버그를 우리가 떠안는다. 기본 정지규칙은 «반복 관찰 하 오류율 비보장»(README 가 스스로 적음)이라 조기 승격이 요행일 수 있다.",
+    "one_thing_to_close": "anytime-valid 규칙만 켜고(기본 휴리스틱 끔), 106 테스트를 talk CI 에 같이 벤더링해 우리 쪽에서 계속 돈다."
+   },
+   "effect_timing": "later",
+   "confidence": "medium"
+  },
+  {
+   "name": "0.5B 교육학 보상모형 — 개입 문안의 «가르치는 법» 점수를 발송 전에 매긴다(Petukhova·Kochmar 2026-03) · TutorBench 루브릭 심판 패턴",
+   "what": "MRBench 인간 쌍대 선호에서 교육학 축 위계(실수 위치·비계·실행가능성·정답 노출 회피 등)를 뽑고, 최소 대조 쌍을 합성해 Bradley-Terry 보상모형을 학습·공개. 0.5B 백본으로 인간 선호 테스트 0.74 — 더 큰 범용 보상모형보다 높다. 같은 계열 TutorBench(2025-10)는 표본별 루브릭+LLM 심판(F1 0.81 vs 인간 다수결)으로 튜터 답을 채점.",
+   "released_or_updated": "2026-03-25",
+   "source_url": "https://arxiv.org/abs/2603.24375",
+   "evidence": "초록: 「Using only synthetic data 0.69 … combining … 0.74 pairwise accuracy, outperforming larger general-purpose reward models while using only a 0.5B-parameter backbone」 · 모델·데이터 공개. TutorBench: 1,490 표본·15,220 루브릭, 프론티어 모델 전부 56% 미만, Claude Sonnet 4 심판이 인간 중앙값보다 정렬 높음.",
+   "why_relevant": "Temper 의 «효과»는 학생이 와야 관측되지만 «가르치는 법의 질»은 지금 잴 수 있다 — 리허설 delivered 4,468건이 채점 대상. 몽골어 검문 5층은 «말이 맞나»를 보지 «가르치나»는 안 본다. 이 점수는 학생 데이터 오기 전 처방 변형을 걸러 16명 표본이 짊어질 팔 수를 줄인다. AI 가 좋아질수록 심판도 좋아지는 자리. 빈 칸.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "0.5B 는 CPU·16GB 로 초당 수십 건. 루브릭 LLM 심판으로 가면 API 호출당 과금(가오픈 때 규칙)."
+   },
+   "gate_c": {
+    "failure_mode": "학습 도메인이 «영어·수학 오류 교정»이라 한국어 학습·몽골 학생 개입 문안에서는 점수가 소음일 수 있다 — 소음을 자로 믿으면 정책이 소음에 최적화된다.",
+    "one_thing_to_close": "유호님이 개입 문안 30건에 좋음/나쁨을 매기고 그 30건에서 모델 쌍대 정확도를 먼저 잰다 — 0.65 미만이면 자로 안 쓴다."
+   },
+   "effect_timing": "now",
+   "confidence": "medium"
+  },
+  {
+   "name": "EduClaw-Bench — 지식추적으로 근거 둔 «30일 모의 학습자»로 튜터 정책을 학생 오기 전에 평가(2026-08)",
+   "what": "고려대·Opentutorials 팀이 낸 장기 벤치마크. 실제 학생 데이터로 학습한 KT 모형이 모의 학습자의 개념별 숙달을 쥐고 30일 동안 튜터 에이전트와 상호작용, 학습이득·응답성·도움됨 + Gagné·Rosenshine 축으로 채점. 실제 교실 현장검증으로 모의 학습자 보정 ECE 0.049.",
+   "released_or_updated": "2026-08",
+   "source_url": "https://arxiv.org/abs/2608.03206",
+   "evidence": "초록: 「55 scenarios … 10 agent adapters over three base-model tiers … almost no combination sustains good tutoring over the full horizon … ECE=0.049 … live-classroom field study」. 핵심 발견 = 기억·간격 연습·전략 유지 같은 «지속» 능력이 무너진다.",
+   "why_relevant": "Temper 정책을 16명에게 처음 쓰기 전에 «모의 학생»에게 먼저 돌릴 수 있는 틀. 그리고 「30일을 못 버틴다」는 결과는 Temper 가 개입 시점 상태(evidence_refs)를 동봉하는 설계의 정당성 — 상태를 잃는 튜터가 무너진다. 오프라인 정책 평가 자리는 빈 칸.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "KT 모형은 XES3G5M(중국 수학)이라 그대로 못 쓴다 — 우리 사건(quiz.answered·submission)로 KT 를 다시 학습해야 하며 학생 0명인 지금은 리허설 사건뿐. 틀(30일 루프·채점 축)만 지금 옮긴다."
+   },
+   "gate_c": {
+    "failure_mode": "모의 학습자가 몽골 한국어 학습자를 닮지 않으면 정책이 모의체에 과적합된다 — 벤치 점수는 오르고 학생은 안 는다.",
+    "one_thing_to_close": "개원 뒤 첫 16명 실응답으로 모의 학습자 보정(ECE)을 재고, 0.1 을 넘으면 모의 평가 결과를 정책 판정 근거에서 뺀다."
+   },
+   "effect_timing": "later",
+   "confidence": "medium"
+  }
+ ],
+ "rejected": [
+  {
+   "name": "PEARL — Socratic 튜터 다목적 RL(USTC·iFLYTEK 2026-05-28)",
+   "why": "㉡ 탈락: 30B 정책 RL 학습은 램 16GB·Arc B390 으로 불가, 프론티어 API 와 «경쟁» 수준이라 API 대비 덜 드는 것도 없다. 요소(모의 학생·생성형 보상모형)는 EduClaw·보상모형 finding 으로 승계."
+  },
+  {
+   "name": "causalml 0.17.0(2026-07-04) · EconML CausalForestDML — uplift/CATE",
+   "why": "㉢ 탈락: 이질 효과(CATE)는 학생 16명 = 클러스터 16개에서 잴 수 없다(UpliftBench 2026-04 는 1,398만 건에서 잰 결과). 다시 여는 조건 = 학생 수백 명 또는 다년 누적 — 그때 0.17 의 sklearn 호환·Polars 지원이 값이 된다."
+  },
+  {
+   "name": "GrowthBook 5.0(2026-07-20 · Agent Skills·CLI·In-App Assistant) / 5.0.1(08-19 보안패치)",
+   "why": "㉠ 동점 이하: 16명·개입 단위 실험에 셋째 시스템을 세우는 것보다 스크립트 200줄이 덜 든다. 값 있는 부분(proper prior 기본값 N(0,0.3))은 finding 2 에 «원리»로만 가져왔다."
+  },
+  {
+   "name": "Statsig — 순차검정(mSPRT)·CUPED",
+   "why": "검색 요약이 「2026-08」이라 했으나 원문 확인 결과 블로그는 2023-10-18 판. 2026-08 업데이트 셋(Layers 타게팅·Create 모달·규칙 정렬)은 UI 뿐. Temper 자리에 새 것 0."
+  },
+  {
+   "name": "PostHog 실험(Bayesian/CUPED)",
+   "why": "체인지로그 2026-09-01·08-28 항목(앞 3000자만 봄)은 오류추적·배치내보내기·데이터웨어하우스 — 실험 항목 0. 그 뒤는 안 재봤다."
+  },
+  {
+   "name": "Duolingo HLR 혼합효과 재방문(PMLR 339 · 2026-06/08)",
+   "why": "Temper 자리가 아니다 — 간격반복은 Trail/Prism 축. 게다가 Duolingo 사내 데이터 기반이라 코드·모델 공개 아님."
+  },
+  {
+   "name": "Alpha School 「2.6배」 MAP 성장",
+   "why": "원자료 비공개(Scientific American 2026-08-28 · kirschnered 2026-07-19 모두 지적) — 근거로 못 쓴다. 눈높이표에 «주의 붙여» 남김."
+  },
+  {
+   "name": "Anthropic Claude for Teachers(2026-07-14) · Claude for Education",
+   "why": "교사 도구·학습모드 — 개입→효과 자가 아니다. Temper 자리와 안 닿는다."
+  },
+  {
+   "name": "sukiOS(2026-04 · TS+ZPD 유아 학습 PWA)",
+   "why": "별 0·단일 저자 아키텍처 전시물. 원리는 WAPTS/bayesdecide finding 이 더 낫게 덮는다."
+  },
+  {
+   "name": "Speak · ELSA · Praktika · Loora · Talkpal · Ling 공개 효과 연구",
+   "why": "검색 2회에서 공개 RCT·효과 보고 0건 발견(리뷰 글뿐). «없다»가 아니라 «못 찾았다»."
+  },
+  {
+   "name": "DeanLLM(2025-08 · 과제 피드백 심판) · AITutor-EvalKit(2025-12) · ES-LLMs(AIED 2026)",
+   "why": "같은 자리(교육학 심판)의 앞 판들 — 보상모형 finding(2026-03) 하나로 대표. 별도 반입은 두 자로 한 판정을 재는 꼴."
+  },
+  {
+   "name": "Gemini API 변경(2026-07-21 · 3.6 Flash GA · temperature/top_p 폐기)",
+   "why": "Temper 자리 무관 — 다만 temperature 폐기는 생성 통로(deliver/생성모드) 쪽에 별도 판정 필요(이 엔진 밖)."
+  }
+ ],
+ "ceiling_reference": [
+  {
+   "who": "Google DeepMind LearnLM — Guided Learning RCT(시에라리온 · 2026-06-09)",
+   "what_they_do": "사전등록 RCT 1,763명·12교·8주 → +0.258 SD(1.2~1.7년치), 교사가 수업 절반에 쓴 반은 1.8~2.5년치. 113,000 대화 분석으로 «Socratic 비율»(비계 질문 76% · 정답 직접 제공 2%)을 정책 지표로 공개, 사용목표 달성 69%(통상 5%). 플레이북·교사훈련 가이드까지 공개.",
+   "source_url": "https://deepmind.google/blog/measuring-the-impact-of-learning-with-ai-in-sierra-leone-and-beyond/",
+   "what_we_lack_or_beat": "우리에게 없는 것 = 사전분석계획·«정책 행동 지표»(우리 개입 중 질문형 비율 같은 것)·대조군. 우리가 앞서는 것 = 개입 시점 상태 동봉(evidence_refs·estimator_version)은 이 RCT 의 로그에도 없는 축 — 2028년 재분석이 가능한 쪽은 우리다."
+  },
+  {
+   "who": "Khan Academy Khanmigo — 2년 군집 RCT(테네시 18교 · EdWorkingPapers 2026-08)",
+   "what_they_do": "「코치 모드」 Khanmigo 배정이 수학 성취 +1.3 백분위/학기(연 0.06~0.08 SD · 95% CI 가 0 을 포함). 96%가 한 번은 썼지만 중앙값 학생은 연습일의 1/3 만 대화, 실수한 세션의 17%에서만 도움 요청 → «engagement 가 병목». 2026년 앱을 «연습 중 자동 발동»으로 재설계.",
+   "source_url": "https://edworkingpapers.com/ai26-1551",
+   "what_we_lack_or_beat": "교훈 = 개입 «전달»과 «복용(dose)»은 다른 열이다. 우리 규격은 후행 관측에 content.viewed 를 적었지만 그 사건이 실제로 생산되는지는 안 재봤다. 자동 발동(학생이 부르지 않아도 개입이 오는) 설계는 우리 deliver 가 이미 그 형태."
+  },
+  {
+   "who": "Duolingo — Efficacy Research Lab + Birdbrain A/B 체계",
+   "what_they_do": "매주 수백 건 A/B(Duolingo Method 백서), Birdbrain 은 «섀도 모드→대조 실험→전면 전환»의 3단 게이트로 채택하고 참여·학습 둘 다 오를 때만 켠다. 외부 효과 연구는 독립 표준시험(CEFR 정렬)으로 재고 「7유닛 = 대학 5학기 상당」 같은 벤치마크로 공개.",
+   "source_url": "https://blog.duolingo.com/results-duolingo-efficacy-studies",
+   "what_we_lack_or_beat": "우리에게 없는 것 = «섀도 모드»(새 policy_ver 를 로그만 하고 안 내보내는 단계)와 독립 시험 닻(우리 닻은 TOPIK 4급 보장 — 있지만 개입 단위와 아직 안 이어짐). 규모 표본은 영영 못 따라간다 — 대신 개입 단위 시계열이 우리 판이다."
+  },
+  {
+   "who": "LearnLM × Eedi — 사람-감독 AI 튜터 RCT(영국 5교 165명 · 2025-12-29)",
+   "what_they_do": "튜터가 LearnLM 초안을 검토·수정해 보내는 human-in-the-loop. 초안 76.4%가 무수정/최소수정 승인, 학생의 다음 주제 신규 문제 해결률 66.2% vs 인간 튜터만 60.7%(+5.5pp).",
+   "source_url": "https://arxiv.org/abs/2512.23633",
+   "what_we_lack_or_beat": "«초안 승인률»이 정책 품질의 무료 자다 — 유호님이 개입 문안을 승인/수정하는 통로가 서면 그 비율이 policy_ver 별 첫 지표가 된다. 우리는 아직 이 승인 로그가 없다."
+  },
+  {
+   "who": "Alpha School — 2시간 학습(MAP 성장 «2.6배» 주장)",
+   "what_they_do": "AI 적응학습 2시간 + 오후 생활기술. 2025-26 MAP 성장 상위 백분위 공개(2026-02-17 자체 보고). 단 원자료·산출법 비공개 — Scientific American(2026-08-28)·Kirschner(2026-07-19) 가 선택효과·전이 미검증을 지적.",
+   "source_url": "https://www.scientificamerican.com/article/alpha-schools-ai-teaching-model-is-expanding-does-it-work/",
+   "what_we_lack_or_beat": "반면교사 = 자를 안 공개한 효과 주장은 남이 못 믿는다. 우리가 앞설 자리 = 개입 로그 규격이 «누가 언제 어떤 상태에서 무엇을 받았나»를 남기므로 2028년에 남이 재계산할 수 있는 쪽."
+  }
+ ]
+}

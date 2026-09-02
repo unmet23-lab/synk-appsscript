@@ -1,0 +1,578 @@
+[
+ {
+  "target": "엔진 Trail 종합 설계",
+  "lens": "철학 정면 충돌 — ㉡ 사람 손 · ㉢ 학생에게 보이는 비교 · ㉣ 식별자 반출 · Ⅰ-4 관찰/판정 분리 · Ⅱ-8 돌려주기 형태 규칙(새 화면·계기판·재촉) · Ⅱ-9 엔진 오학습 · 자산층 3규칙 · 재료의 급 · Ⅰ-3 ⑤ 자기설명 (docs/SYNK_철학.md v1.15 원문 + 재료/철학.json 대조 · 결정.md·시즌회고_설계.md·talk migrations·엔진_궤적.js 머리말·제품방향.md:77 실측)",
+  "refuted": [
+   {
+    "item": "U3 원문 원장 + 판 붙은 판정 층 + 확정 클릭 하나",
+    "severity": "중대",
+    "why": "결과종류·단계·기관·비자 4칸으로 «접는 것»은 Ⅰ-4 표의 「관찰·수집」 행(시스템 몫)이지 「판정·의미부여」 행(목표에 가까워졌나 = 사람)이 아니다. 그런데 설계는 모델 초안을 원장이 «맞다»로 눌러야만 최신관측으로 세고(ⓔ), 그 누름이 졸업생 사건 수에 비례한다 — 「누가 매번 확인하면 된다」 꼴이며, 설계 스스로 「확정률 100% 연속 = 습관 클릭 경보」(ⓕ)를 둬야 하는 것이 그 칸이 판단이 아니라 «검문»임을 증명한다. Core 검수 확정 하나가 이미 ㉡ 의 「하나」를 쓰고 있고, 08-26 확정은 «관찰 원문»만 사람 자리로 열었지 구조화·소비는 시스템이다(철학.json ㉡ boundary). 「소문이 통계가 된다」는 출처 6종 어휘가 이미 막는 자리라 사람 문지기를 둘째로 세울 이유가 못 된다.",
+    "evidence": "docs/SYNK_철학.md:47 「사람이 누르는 칸은 판단이 필요한 자리 하나만 남긴다」 · :116 「관찰·수집(성향·습관·기록) = 시스템 — 데이터로 · 사람 손을 늘리지 않는다(㉡)」 · 종합_Trail.json:105 ⓔⓕ · :132 ③",
+    "fix": "확정 클릭을 «게이트»에서 «예외 통로»로 뒤집는다: verdict_by=model 행은 confidence ≥ 하한이면 그날 최신관측 후보로 자동 승격하고 출처 «본인 제보(AI 초안)» 어휘를 그대로 달아 집계·보장 분자·senior_paths 에서는 «확인» 출처와 갈라 센다(출처 갈래 동반 · 규칙 ③) · 원장 화면에는 «확정 대기 목록»이 아니라 «이의 제기(고치기)» 한 자리만 두고 안 누르면 아무 일도 안 일어난다 · confidence 하한 밑 행만 원장이 고르는 «판단 자리»로 남긴다(그것도 «판단 필요»라 ㉡ 안) · 유호 결정 ③은 「인정하나」가 아니라 「Trail 사람 칸 0 · 예외 1 로 갈지」로 다시 쓴다"
+   },
+   {
+    "item": "U6 첫 소비자 = 두 계급 뷰 — «남의 것» senior_paths → 강사 촉진 카드 + deliver/correct 과제 무대 조각 + 답장 꼬리",
+    "severity": "중대",
+    "why": "㉢ 의 범위는 «학생에게 보이는 것»까지이고 강사가 학생 앞에서 읽어 주는 카드(「작년에 이 자리에서 시작한 선배 중 지금 한국 대학에 다니는 사람이 있다」)는 그 견줌의 결과가 학생에게 나가는 것이다 — 셀 키가 «입학 급수 × 의도 버킷 × goal_track» 이라 문장 자체가 「너와 같은 출발점의 다른 아이」 대조이고, Ⅲ-2 는 「아이가 받는 대조는 이 한 종류뿐(어제의 그 아이)」이라 못박았다. 과제 무대 조각(버킷·단계·개월)은 자산층 산출이 Core 를 거쳐 학생 화면에 닿는 것이라 규칙 ② 「학생 화면에 직접 안 닿는다」의 «직접»을 이름만 바꿔 넘는다. 「좌절·중단 버킷만 있는 셀은 침묵」은 성공 셀만 «있다»로 말하게 만들어 Ⅱ-2 사실성 규격 「없는 성공을 만들지 않는다」의 반대 방향(생존자 편향)이다. 설계 스스로 「강사가 비교로 읽는 것을 기계가 못 막는다 · 강사 훈련 한 줄 필요」라 적었는데 안내 없이 못 쓰는 카드는 Ⅰ-3 ⑤ 자기설명 미달이다.",
+    "evidence": "docs/SYNK_철학.md:48~49 「등수·평균·「다른 아이보다」는 학생·학부모가 보는 어느 화면에도 … 가르는 자는 하나 — 그 견줌의 결과가 학생 화면·문서에 … 나가는가」 · :220 「아이가 받는 대조는 이 한 종류뿐입니다」 · :164 「없는 성공을 만들지 않고 … 비교하지 않는다」 · memory/engine-folder-canon.md:53 「② 학생 화면에 직접 안 닿는다(㉢㉣)」 · 종합_Trail.json:195 장면 ⓑ · :221 failure_mode",
+    "fix": "수신자 축 ④는 «자기 것» my_trail 만으로 채운다. senior_paths 집계는 «강사·원장 내부 재료»(나침반 워크숍 설계·시즌 시작 강사 회의 자료 · 학생 입으로 옮기지 않는 규격)로 격하하고, 학생 접점 셋(강사 촉진 카드 낭독 · deliver/correct 과제 무대 조각·trail_ref · 답장 꼬리 «이야기 한 줄»)은 설계에서 뺀다 — 과제 무대는 학생 데이터 파생이 아닌 «길 사전»(코드 상수 · 유학/취업/창업 장면 목록)에서 뽑는다. 관통왕복 V6 는 «senior 조각 동승»이 아니라 «my_trail 왼쪽(자기 시즌 목표 시계열)이 correct [학생 맥락]에 실리는가»로 다시 정의한다. 선배 데이터가 학생에게 가는 형태는 유호 08-25 「③선배의 방 재판정(개원 후 표본)」 자리에 그대로 둔다(유호 결정 ②는 (b))."
+   },
+   {
+    "item": "U6 «자기 것» my_trail 뷰 — 열에 「판정 갈래」 포함",
+    "severity": "중대",
+    "why": "my_trail 열 목록에 「판정 갈래」(궤적_대조_ 9갈래 = 일치·불일치·좌절·방향 전환 후 불일치…)가 들어 있고 이 뷰가 시즌 회고 병치·명예 졸업생 카드 본문이 된다. 궤적_대조_ 는 규칙 표가 매일 아침 재계산하는 «기계 판정»이라, 「목표에 가까워졌나」의 자동 판정이 학생 화면에 도달하는 것 = 🚫「그 학생의 목표 축을 실시간 자동 판정기로」 정면 위반이고, 「불일치」·「좌절」 라벨이 본인 카드에 남는 것은 승계 제약 «낙인 고착»이다. 설계의 constraint_handling 은 「판정 값은 사람이 누른 verdict 그대로 · 자동 판정 0」이라 적어 열 목록과 자기모순.",
+    "evidence": "docs/SYNK_철학.md:117 「판정·의미부여(목표에 가까워졌나 · 이 시즌은 좋았나) = 사람 — 강사 … 실시간 자동 판정을 금지한 이유」 · :92 「목표에 가까워졌는지는 시즌 회고에서 사람이 판정한다」 · 종합_Trail.json:195 【자기 것】 「열 = 시즌별 의도 점 + 본인 결과 사건 + 판정 갈래」 vs :217 「판정 값은 사람이 누른 verdict 그대로 표시 · 자동 판정 0」",
+    "fix": "my_trail 열 화이트리스트 = season_compass 선언(self_in_5y·season_goal) · season_review 사람 verdict(closer/same/redirected · 학생 자기판정+강사) · 본인 outcome 사건 원문(verdict_by ∈ {form, 확인 출처} 행의 결과종류·단계 · 「좌절」 대신 단계 어휘 그대로) · 급수 이정표(확인 행) — 궤적_대조_ 갈래·intent 점수·전환 시즌ID 파생은 열에서 제거하고 tests/궤적.test.js ⑧ 화이트리스트 회귀에 「대조 갈래 열 0」 단언을 추가한다"
+   },
+   {
+    "item": "U5 보장 부채 계기판 — 「미달 n(케어 부채)」 값",
+    "severity": "중대",
+    "why": "설계 문장 「Ⅰ-4 — 보장 «판정»은 원장(사람) · 시스템은 확인된 급수 있음/없음까지」와 달리 계기판 장면 ⓑ 가 학생 단위로 「미달 5(케어 부채)」를 낸다. «4급 미달 → 케어 부채 발동»은 회사 약속에 대한 판정이자 그 학생 목표(TOPIK 4급)에 대한 판정이라 사람 자리이고, 학생별 «미달·부채» 라벨은 낙인 고착 승계 제약에 걸린다. 확인된 급수 «있음/없음»과 «미달(부채)»은 다른 층인데 한 문장에 섞였다.",
+    "evidence": "docs/SYNK_철학.md:117 (판정 = 사람) · 철학.json prohibitions 「그 학생의 목표 축을 실시간 자동 판정기로 … 목표에 가까워졌는지는 시즌 회고에서 사람이 판정」 · 종합_Trail.json:162 장면 ⓑ 「미달 5(케어 부채)」 vs :182 「보장 «판정»은 원장(사람) … 자동 판정 0」",
+    "fix": "계기판 값은 «졸업 n / 4급↑ 확인 n / 미확인 n / 확인된 급수 ≤3 n»(사실 4칸 · 분모·측정일 동반)까지만 · 「미달」·「부채」 낱말과 학생별 판정 열 0 · 부채 발동 여부는 시즌 회고 날 원장이 학부모와 정하고 그 결과는 outcome_log 에 «학원 서류 확인» 출처의 사건(케어 개시)으로 append — 계기판은 그 사건 수를 «케어 개시 n» 으로 되읽는다"
+   },
+   {
+    "item": "U5 exam.result 학생 제출 카드 — 발표일 아침 말하기 화면 머리에 «뜨는» 카드",
+    "severity": "중대",
+    "why": "exam.result 생산자는 지금 0 이고 이 카드는 Trail 설계가 필요해서 새로 세우는 «학생에게 묻는 화면»이다 — 생산자 이름을 Core 로 적어도 자산층 규칙 ① 「자기 수집 통로를 새로 만들지 않는다 · 닿는 셋이 걷은 것에서 읽기만」의 우회다. 그리고 «발표일 아침에 뜨는 카드»는 Ⅱ-8·Ⅲ-2 「재촉하는 장치를 안 만든다 — 학원에 오는 것이 숙제가 되면 안 된다」에 정면이다(사건 날짜에 맞춰 학생을 부르는 장치). 횡단.json 갭 「exam.result = 「학생」 갈래 · 🚫재료 없이 앞당기기 · 🚫강사 입력 도구보다 먼저 배선」도 같은 자리를 막는다.",
+    "evidence": "docs/SYNK_철학.md:185 「재촉하는 장치를 안 만든다」 · :224 「아이를 재촉하는 장치를 저희는 만들지 않았습니다」 · memory/engine-folder-canon.md:49~53 자산층 3규칙 ① · 횡단.json:151~154 exam.result 갭 · 종합_Trail.json:162 장면 ⓐ",
+    "fix": "Trail 은 「exam.result payload 에 doc_verify_no·발표일·verify_status 칸이 «있으면» topik_milestone 으로 읽는다」까지만 적고, 생산자(학생 제출 UI)는 Core 트랙의 exam.result 「학생」 갈래 판정에 맡긴다(payload 칸 세 개만 다음 c-판 개정 요청으로 남긴다) · 학생 접점이 생기더라도 «날짜에 맞춰 뜨는 카드» 0 — 목표카드 안 상시 한 줄(학생이 스스로 여는 자리) · 2년 창 소급 불가는 «원장이 회차 뒤 학생에게 종이로 받는 절차(운영 실행지)»로 먼저 닫는다(코드 0 · 사람 손은 회차당 1회)"
+   },
+   {
+    "item": "U3 ⓓ 분류 호출 — 원문 살균 범위(이름·전화·메일)와 모델 출력 «기관» 칸",
+    "severity": "중대",
+    "why": "㉣ 식별자 정본(제품방향 불변식 4)에는 «학교»가 들어 있고 소수 인원 구간엔 «날짜»도 식별자다. 근황 원문(「Хавар МУИС-д орсон」)은 학교명+시기를 품은 채 모델 API(밖)로 나가고, 설계는 모델이 «기관=МУИС» 를 뽑아내길 요구한다 — 살균 필터는 이름·전화·메일만이라 학교·시기는 그대로 벤더로 간다. 1기 ≤32명 규모에서 «졸업 기수 + 진학 학교 + 계절»은 한 사람을 특정한다.",
+    "evidence": "docs/제품방향.md:77 「안 나가는 것 = 식별자(이름·연락처·student_id·생년·학교)」 · 횡단.json:32 「⚠소수 인원 구간엔 날짜도 식별자」 · docs/SYNK_철학.md:56 「식별자가 붙어 있는 것만 「밖」이다 … 모델 API·외부 도구·외부 사람이 그 「처리」다」 · 종합_Trail.json:105 ⓓ 「원문 이름·전화·메일 살균 필터」",
+    "fix": "살균 함수 한 곳에 «기관명(대학·회사·학교)·연월» 자리표 치환을 더한다(키릴·한글 대학명 사전 + 정규식 · 픽스처 20 → 40) · 모델 출력 스키마에서 «기관» 칸을 뺀다 — 기관은 원문 안에서 코드 사전 매칭(엔진 안 · 모델 0)으로 채우고 사전 밖이면 '' · 비자 칸도 사전 매칭 우선 · 이 판정은 ㉣ 호출 자리 게이트 「프롬프트 값마다 이 학생을 특정하는가」 실측 항목으로 트랙에 적는다"
+   },
+   {
+    "item": "U2 「목표 실린 과제를 스스로 낸 날」 열 = task.assigned goal_used",
+    "severity": "중대",
+    "why": "Ⅱ-8 빛 축 정의는 「그 목표가 실린 과제를 «스스로» 낸 날 수」(제출 = 학생이 «한 것»)인데 재료로 지목한 task.assigned goal_used 는 «배정 사건»의 속성이라 시스템이 목표를 실어 «준» 날을 센다. 배정 ≠ 제출이면 이 열은 학생이 한 것이 아니라 엔진이 한 것을 세는 축이 되어 「선생님의 뇌 재료 = 학생이 한 것」 자 ③에 어긋나고, 그대로 my_trail 왼쪽에 실리면 거짓 축이 학생·강사에게 간다(「지켰다」와 「줬다」를 섞는 것).",
+    "evidence": "docs/SYNK_철학.md:184 「빛 ← 아이가 자기 목표를 말하고, 그 목표가 실린 과제를 «스스로» 낸 날 수」 · 종합_Trail.json:20 「task.assigned goal_used(목표 실린 과제를 스스로 낸 날 · Core 사건 · 읽기만)」 · 철학.json prohibitions 「추정을 사실처럼 저장 · 자기신고를 관측으로」",
+    "fix": "열 정의를 「goal_used=true 인 task 의 «제출 사건»(hw 제출/task 완료 사건 — 사건 이름은 talk lib/이벤트검증.js 어휘에서 확인 · 안 재봤다)이 있는 날 수」로 바꾸고, 제출 사건이 없는 계약판에서는 이 열을 «미측»(null)로 두어 0 을 안 낸다 · 열 이름도 「목표과제 제출일수」로 배정과 갈라 적는다"
+   },
+   {
+    "item": "U7 OB3/VC 2.0 서명 파일 — «노트북/CI 에서 굽고» · 「받는 쪽이 synk.im 공개키로 검증한다」",
+    "severity": "중대",
+    "why": "발급 입력은 이름이 든 credentialSubject 인데 발급 통로에 CI(GitHub Actions · 저장소 둘 PUBLIC)를 열어 두면 식별자가 우리 저장소 밖의 «처리»로 나간다(㉣ 경계 ⑦ 「안은 통과증이 아니라 경계선 … 외부 도구로 넘어가면 별개 위반」) — 유호 결정 (b) GitHub secret 선택지도 같은 방향이다. 또 「한국 대학·기숙사가 공개키로 검증한다」는 외부 행위자에 대한 주장인데 그 수신처가 OB3 를 읽는지 실측 0 이라 §0 「없는 것을 있다고 쓰지 않는다」에 걸리고, 대체불가 3문 ②(OB3 발급은 Accredible·Credly 가 파는 상품)에서 «돈으로 살 수 있는 것»이라 종류 변화의 근거가 못 된다. 학생 손에 남는 JSON 파일 하나는 Ⅰ-8 재료의 급·Ⅰ-3 ⑤ 자기설명(몽골 LCW 설치·보관 습관 안 재봤다)도 못 지난다.",
+    "evidence": "docs/SYNK_철학.md:73~74 「안은 통과증이 아니라 경계선이다 … 외부 도구·외부 사람에게 넘어가면 별개의 위반」 · :24 §0 시제 규약 · 철학.json rulers 「대체 불가 시험 3문 ②돈으로 살 수 있나」 · 종합_Trail.json:15 「tools/졸업배지굽기.js · Node · 노트북/CI」 · :230 「받는 쪽이 synk.im 밑 공개키로 우리 서버 없이 검증한다」",
+    "fix": "발급은 «노트북 로컬 한 통로»로만(CI 경로·GitHub secret 선택지 삭제 · 유호 결정 ①은 (a) 하나) · 발급 입력은 student_id 인덱스+achievement id 만 넘기고 이름은 로컬 명부에서 붙인다 · 장면 문장을 「검증할 수 있는 파일을 «들고 나간다»」까지로 낮추고 「받는 쪽(한국 대학 n곳)이 실제로 읽는가」를 첫 실측 항목으로 트랙에 적는다 · 학생 접점은 펠트 카드+종이 번호 카드 두 실물이고 JSON 은 그 뒤(QR/앱 «내 카드 파일» 한 칸)에 둔다 · why_one_dimension_up 에서 「자격」 논거를 빼고 «자기 것 평생 열람(수신자 축)»만 남긴다"
+   },
+   {
+    "item": "U5 topik.go.kr 진위확인 원장 클릭(회차당 1회) — «사람 판단 칸으로 세는 것 = 그대로»",
+    "severity": "경미",
+    "why": "진위확인은 판단이 아니라 조회다 — ㉡ 가 남기는 「하나」는 «판단이 필요한 자리»이고, API 부재로 남는 손 조회를 판단 칸으로 이름 붙이면 사람 칸이 셋(Core 검수·Trail 확정·진위확인)으로 는다. 남는 손은 «결함으로 등재된 손»(되열 조건 동반)이지 판단 자리가 아니다.",
+    "evidence": "docs/SYNK_철학.md:47 · :106 「사람이 누르는 칸은 판단이 필요한 자리 하나만 남기는 것이 목표선」 · 종합_Trail.json:191 ④",
+    "fix": "「사람 판단 칸」이 아니라 시트층 도달 장부의 «손 1»(teacher_gold 선례)처럼 «외부 API 부재로 남은 손 1 · 되열 조건 = topik.go.kr 진위확인 API/일괄 조회가 생기는 날»로 등재하고, 회차당 1회 일괄이 아니라 «보장 판정이 걸린 행(회고 날 원장이 학부모와 다룰 행)만» 조회하도록 좁힌다"
+   },
+   {
+    "item": "U5 mongolia_baseline — 법무부 CSV 월 1회 적재(UrlFetch·시트·단언·경보)",
+    "severity": "경미",
+    "why": "학생 데이터는 아니지만 자산층이 제 손으로 세우는 «수집 파이프라인»(적재·단언·경보·소비자)이라 규칙 ① 문면(닿는 셋이 걷은 것에서 읽기만)에 걸리고, ai_scales=false·3문 ② 누구나 받을 수 있는 공개 CSV 라 «한 차원 위» 여섯 축 어디에도 안 닿는다(설계 스스로 세로줄 기여 0 · 맨 뒤). 계기판·대외 문장의 «상대 눈금» 용도라 지금 소비자는 문서 넷의 손 옮긴 숫자 갈아끼우기뿐.",
+    "evidence": "memory/engine-folder-canon.md:49~53 「① 자기 수집 통로를 새로 만들지 않는다」 · 철학.json one_dimension_up_definition 「정확도·자산 개수·화면 다듬기 … 같은 종류」 · 종합_Trail.json:349 ⑨ 「세로줄 기여 0 · 맨 뒤」",
+    "fix": "Trail 설계에서 빼고 «운영층 외부 통계 적재»(엔진_운영배치 또는 tools/ 도구 · 대외 파생 게이트 재료)로 옮긴다 — Trail 은 mongolia_baseline 시트가 있으면 계기판 절에서 «읽기만»"
+   },
+   {
+    "item": "U6 senior_paths — 「활용동의='동의' 행만」을 집계 게이트로",
+    "severity": "경미",
+    "why": "활용동의 칸은 엔진_궤적.js 가 「AI 학습에 써도 되는가」로 정의한 동의이고(:191~195 · 「운영 기록과 다른 질문」), «다른 학생·강사에게 익명 집계로 길 이름을 보여주기»는 다른 목적이다. 동의 문구가 그 목적을 담는지 안 재봤는데 게이트로 쓰면 동의 범위 밖 사용이 초록으로 보인다.",
+    "evidence": "Trail_독해.json:41 「동의는 수확에서 거르지 않고 내보낼 때 거른다 … 「AI 학습에 써도 되는가」는 다른 질문」 · 엔진_궤적.js:191~195 · 종합_Trail.json:195 【남의 것】 「활용동의='동의' 행만」",
+    "fix": "면접폼 「자료활용동의」 문구 원문을 열어 «익명 집계로 다른 학생·강사에게 보여주기»가 포함되는지 첫 실측으로 재고, 없으면 senior_paths(내부 재료로 격하한 뒤에도)는 동의 어휘를 «늘리기만» 규칙대로 새 값(예: «익명 집계 동의») 추가 뒤 그 행만 읽는다"
+   },
+   {
+    "item": "U3 ⓔ·U6 — verdict_by=원장 확정 행이면 출처를 안 가리고 통계·집계에 든다",
+    "severity": "경미",
+    "why": "원장이 «맞다»를 눌러도 원문의 성질은 «본인 제보»(자기 신고)이지 «학원 서류 확인»(관측)이 아니다. 확정 여부와 출처 갈래를 뭉치면 「지켰다」와 「지켰다고 말했다」가 한 통계로 나가고, 보장 분자·대외 집계 문장(「졸업 n 중 m」)에 자기 신고가 섞인다 — 설계가 승계한 「출처 6종 · 이 칸이 없으면 소문이 통계가 된다」 원칙의 반대.",
+    "evidence": "docs/SYNK_철학.md 철학.json rulers 「관찰 ↔ 판정 가름 … 자기 신고(explicit)와 관측(observed)은 다른 사실」 · 엔진_궤적.js:68 「이 칸이 없으면 소문이 통계가 된다」 · 종합_Trail.json:105 ⓔ",
+    "fix": "계기판·집계·대외 문장의 모든 수를 «출처 갈래 동반»으로 낸다(「졸업 n 중 확인 m + 본인 제보 k」) · 보장 분자와 대외 집계는 출처 ∈ {학원 서류 확인, 강사 확인, 면접폼(자동)}만 · «본인 제보(AI 초안)» 확정 행은 «본인 제보» 출처로 남긴다(확정이 출처를 바꾸지 않는다)"
+   },
+   {
+    "item": "U8 정본 자기모순 수리 — 결정.md «:342» 행번호 지목",
+    "severity": "경미",
+    "why": "09-02 이 세션 grep 으로 「자기 3년 궤적 평생 열람」 행은 결정.md:349 다(독해 333 → 종합 342 → 실측 349 · 원장이 append 성질이라 행번호가 세션마다 밀린다). 행번호를 정정 줄의 «출처»로 박으면 다음 세션이 또 틀린 행을 가리킨다 — 「한 값을 두 곳이 알면 갈린다」의 재발.",
+    "evidence": "grep -n '3년 궤적' docs/_ops/결정.md → 349:「| 2026-08-25 | 확정 | Trail 선배 모드 = «명예 졸업생 카드» … 자기 3년 궤적 평생 열람」 · 종합_Trail.json:262 「결정.md:342」",
+    "fix": "정정 줄과 rot-check 낱말 자는 행번호 대신 «날짜+낱말 앵커»(2026-08-25 · 「명예 졸업생 카드」)로 지목하고, 설계 문서 안의 「결정.md:342」 전부를 「결정.md 2026-08-25 명예 졸업생 카드 행」으로 바꾼다"
+   },
+   {
+    "item": "U5 장면 ⓑ — 「1기 졸업 32명 중 4급 이상 확인 21 · 미확인 6 · 미달 5 · 18/32」",
+    "severity": "경미",
+    "why": "학생 0명인 지금 지어낸 수다. 설계가 학생 나침반 카드의 «7명 중 5·1·1»은 지웠으면서 계기판 장면엔 남겼다 — Ⅰ-8 「숫자를 지어내지 않는다」와 Ⅰ-9 ③ 「수는 자·분모·날짜와 함께」에 걸리고, 「1기 32명」은 정원 계획으로 오독될 수 있다.",
+    "evidence": "docs/SYNK_철학.md:139 「그 숫자를 지어내지 않는다」 · 철학.json rulers 「실측이 판정한다 — 수는 자·분모·날짜와 함께」 · 종합_Trail.json:162",
+    "fix": "장면의 수를 «n / m» 자리표로 바꾸거나 문장 앞에 「(예시 수 · 실측 아님)」을 붙인다 · measure 칸의 「09-02 값 = 전부 미측」은 그대로"
+   }
+  ],
+  "kept": [
+   "thesis 뼈대 — 원문 append-only(L1) + 판(model_id+prompt sha) 붙은 판정 층 append(L2) + 옛 판 안 지움 + 재판정은 초안 행만 «더 붙임»(Ⅰ-2·불변식 2·5 정합)",
+   "U1 exit_log 칸 추가만(표 신설 0 · payStatus 감지기 무수정 · «미정» 기본값) + trajectory 종료구분 3열 «추가» + 「처리상태」 교체 안 함 + effective_at '@' 고정 + «미정» 30일 경보(분모 동반) — 종료사유 = 사람이 적는 관찰 원문(08-26 확정 자리)",
+   "U2 intent_timeline — season_compass 선언 N점 + season_review 사람 verdict «읽기만» · 9갈래는 옛 7 이름 불변 + 2 추가 · as_of 관측일 기준(미래정보 누출 차단) · 회고 미기록 시즌 null · 시즌 주기 코드 상수 금지",
+   "U2 season_review 를 «짓지 않고» 마이그 조각(talk supabase/migrations/20260812170000_season_review_c11.sql · 09-02 ls 실재 확인)의 실 DB 적용을 첫 실측으로 — 둘째 정본 방지",
+   "U3 outcome_log 원문 층 4칸 «추가» + 출처 어휘 «본인 제보(AI 초안)» 1값 추가 + outcome_verdict 시트 신설 + enum 은 코드 배열에서 파생 + 살균 필터를 pushGoldenFixture_ 와 같은 함수 한 곳 + 분류 벤더·호출 켜는 날은 유호 자리(권고 없음) + 무료 티어로 학생 원문 0",
+   "U4 자 셋 — 시험지 60(합성 분포 한계 명시 · 실응답 20건 뒤 갈아끼움) + 궤적상한_ 래칫 셋(내리기만) + tests/궤적.test.js 복원 8검사 + 재심 발동 = 모델정책.js 변경 커밋 훅 + app_state classifier_ver 사건(사람 손 0) + 이어 돌기 + 엔진_콘텐츠AI.js 모델 ID 한 곳으로 + 시트층 도달 장부 «등재→실측→상한» 순 + 원격 /triggers 라이브 폼 대조 절(E3 사각)",
+   "U6 «자기 것» my_trail 뷰의 형태 — 남의 열은 RLS 가 아니라 뷰 정의에 «없음» · 열 화이트리스트 회귀 · 회고 병치 왼쪽·명예 졸업생 카드 두 자리만(새 화면 0) · 회고 화면이 season_compass 직접 조회 0 · 부정 단계도 같은 색·크기(신호색 0)",
+   "U6 셀 최소 n 은 app_state 값(코드 상수 아님) · 첫 해 빈 카드를 임시 문장으로 안 메움(시제 §0) — 내부 재료로 격하한 뒤에도 유지",
+   "U7 명예 졸업생 카드 = 있는 홈의 잠금 모드(새 화면 0) · 계정 안 닫힘 · 근황 한 줄 입력에 주기 알림·설문 0(재촉 0 · 유호 08-25 확정) · achievement id 는 학생 오기 전 배열 고정 + 회귀 단언 · 발급 개인키·StatusList 는 git 밖·유호 손 · 종이 번호 카드 3조건(⑤ 자기설명) · 16세 통로에 이름만 붙이고 2029 재판정 대기",
+   "U5 급수 이정표 직교 — OUTCOME_KINDS_ 에 TOPIK 안 섞음 · 미확인은 0 이 아니라 «미확인» · 졸업 행 0 이면 «확인 불가»(0% 금지) · 「+6·+15개월 앱이 묻는다」 규칙 삭제(재촉 0 · 만기율은 내부 계기판 값만)",
+   "U8 결정.md 원문 유지 + 정정 «병기»(유호 08-25 정정의 원장 도달) · 시즌회고_설계.md:23 「표 없다」 정정(09-02 sed 로 문장 실재 확인) · 소개서 원고 §10 수리 후 렌더(산출물 직접 편집 0)",
+   "what_not_to_do 목록 — 런타임 자동 판정 0 · 초안을 통계에 안 셈 · 새 화면·새 탭 0 · 자기 수집 통로 0(근황·종료사유·season_review 는 있는 자리) · 어휘 늘리기만 · 시험지 오염 금지 · 래칫 상한 안 올림 · 분모 없는 숫자 금지 · 기간 단정 금지 · xAPI/EUDI/Wallet/TEE 기각 8건",
+   "build_order 의 «소급 불가 순»(U1 exit_log 칸 → U3 구조 → U2·U7·U6 어휘·id·화이트리스트 못박기 → U4 자 → U8) 과 「U3 호출보다 시험지가 먼저」",
+   "io_with_other_engines 의 Reed(닿지 않음 · 정직) · Prism(조인 키 규약만 · 밀지 않음) · Temper(개입 ID ↔ outcome_log 근거키 같은 student_id 조인 규약만 · C·D 파생 테이블 지금 신설 0)",
+   "vertical_line_contribution 의 정직한 한계 문장 — 「1년차 목표(2027-02~08)에 Trail «실값»은 0 · 개원 전 몫은 «자리»」"
+  ],
+  "overall": "수리 후 통과"
+ },
+ {
+  "target": "엔진 Trail 종합 설계",
+  "lens": "실현성 — 1인·비개발자·AI 원격·램 16GB·Apps Script+Supabase+Expo·개원 6개월·학생 0·몽골어 검수자 미채용·돈은 가오픈. 「지을 수 있나」보다 「지어 놓고 도는가·닿는가·늘어나는가」. 실물 대조 = SYNK-appsscript(엔진_궤적.js·엔진_운영배치.js·엔진_콘텐츠AI.js·tools/모델정책.js·.git/hooks·docs/_ops/결정.md) · SYNK-talk(계약/수집_교정_계약.json·lib/시험결과.js·supabase/migrations 09-02 조각·L0_스키마.sql·functions/roster-ingest·tools/성과계기판.js) · data.go.kr 실페이지 curl(09-02).",
+  "refuted": [
+   {
+    "item": "U5 보장 부채 계기판 — 급수 이정표(exam.result 문서확인번호 · 원장 진위확인 행만)",
+    "severity": "치명",
+    "why": "장면 ⓐ·구조 ⓐ·inputs·build_order ⑧이 「학생이 앱 카드에 급수와 증명서 사진을 올린다(학생 제출 · Core 제출 카드)」로 exam.result 를 학생 생산자로 세운다. 계약 정본은 c6 유호 확정으로 「TOPIK 실성적 = 강사 입력 · 학생이 공식 성적표를 제출하는 통로는 앱 동의 밖이라 만들지 않는다」이고, 08-17 규격은 exam.result 를 «서버사건»(앱이 보내면 거절 · 학생 기기가 자기 급수를 주장할 수 없다)으로 못박았다. 유호 확정을 조용히 뒤집는 동시에 지금 검증기 규격으로는 앱이 낼 수 없는 사건이라 지어도 안 돈다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/계약/수집_교정_계약.json:10 「exam.result(TOPIK 실성적 = 강사 입력으로 유호님 확정 2026-08-06 … 학생이 공식 성적표를 제출하는 통로는 앱 동의 밖이라 만들지 않는다)」 · :97 「이 사건은 서버사건이라 앱이 원리적으로 못 낸다」",
+    "fix": "생산자를 «강사/원장 입력»(teach 서버사건 경로 · observation.noted 와 같은 갈래)으로 바꾼다 — 학생은 증명서를 원장에게 «보여 주는» 사람 자리(사진 저장 0) · doc_verify_no·verify_status·발표일은 그 서버사건 payload 에 · 「Core 제출 카드(목표카드 자리)」 문장과 build_order ⑧의 학생 제출 부분을 삭제 · 학생 제출을 열고 싶으면 c6 확정을 뒤집는 «판정안»으로 유호께 따로 올린다(조용히 아님)."
+   },
+   {
+    "item": "U3 원문 원장 + 판 붙은 판정 층 + 확정 클릭 하나",
+    "severity": "치명",
+    "why": "분류 후보를 「Gemini 구조화 출력(엔진_콘텐츠AI.js 기존 통로 재사용)」이라 쓰고 U4·open_yuho_decisions 도 같은 전제로 「엔진_콘텐츠AI.js 통로 재사용」·「엔진_콘텐츠AI.js 의 하드 모델 ID 를 모델정책.js 로」를 적었다. 실물: appsscript 엔진 파일 전량에 Gemini 호출 0건 — 엔진_콘텐츠AI.js 는 Code.js 의 AI_FEEDBACK_MODEL(Claude) 로 aiCall_ 을 부른다. 「기존 통로」가 없는 실물이고, 모델정책.js 는 Node 도구라 Apps Script 가 require 할 수 없어 「한 곳」도 그 형태로는 못 짓는다.",
+    "evidence": "grep -il gemini *.js(appsscript 엔진 파일) = 0건 · C:/Users/q1212/Documents/SYNK-appsscript/엔진_콘텐츠AI.js:2201 「AI_FEEDBACK_MODEL은 Code.js에 있고」 · :2420 `model: AI_FEEDBACK_MODEL` · tools/모델정책.js:1 (#!/usr/bin/env node)",
+    "fix": "U3 벤더 후보를 「Claude(aiCall_ 기존 통로 · Code.js AI_FEEDBACK_MODEL) / Gemini(신설 어댑터 1벌 · 키 = Script Properties 신규 = 유호 손)」로 사실대로 고쳐 유호 픽 자리에 낸다 · U4 ⓕ는 「Code.js AI_FEEDBACK_MODEL 을 tools/모델정책.js 에서 «생성»한 손사본 상수(계약 SCHEMA_VER 손사본 선례 · 회귀가 둘 일치 단언)」로 바꾼다."
+   },
+   {
+    "item": "U6 첫 소비자 = 두 계급 뷰 — my_trail / senior_paths → Core 촉진 카드 + deliver/correct trail_ref",
+    "severity": "중대",
+    "why": "L1~L5(outcome_log·outcome_verdict·intent_timeline·trajectory·topik_milestone)는 전부 Apps Script 시트인데 L6 소비자(engine.my_trail 뷰·senior_paths 집계 뷰·Core deliver 재료 슬롯·correct [학생 맥락]·talk tools/성과계기판.js 절)는 전부 Supabase 위에 서 있다. Postgres 뷰는 구글 시트를 못 읽는다. 설계가 적은 통로는 「시트층이 Supabase 를 읽는」 방향 하나뿐이고 반대 방향(시트→Supabase 미러)은 stores·cost·build_order 어디에도 없다. 지금 실재하는 반대 방향 통로는 roster-ingest(profiles→engine.learners) 하나. 이 상태로는 V6 는 null 로만 초록이고 「닿는가·늘어나는가」가 영영 안 켜진다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/엔진_운영배치.js:480-482 (ROSTER_INGEST_URL/KEY/ANON) · :564 (roster-ingest 호출이 시트→Supabase 유일 통로) · C:/Users/q1212/Documents/SYNK-talk/tools/성과계기판.js:48 `require('../lib/자격증명.js')`(Supabase 만 읽음) · 종합_Trail.json architecture.stores(시트 6장 / Supabase 뷰 2)",
+    "fix": "L6 앞에 «Trail 인제스트» 한 벌을 명시한다 — roster-ingest 규약·같은 x-roster-ingest-key 로 edge function `trail-ingest` 신설, 궤적재작성_ 말미에 trajectory 전행 + outcome_verdict 사람확정/form 행 + intent_timeline 을 engine.trail_* 표(append·비식별 열만)로 밀고, my_trail·senior_paths 뷰와 성과계기판 절은 그 표만 읽는다 · 생산자(인제스트)·소비자(뷰) 같은 커밋 · 계약 c-판 개정에 trail_* 표를 U5 exam.result 칸과 묶는다 · 미러 성공 행수/시트 행수를 app_state 계기에."
+   },
+   {
+    "item": "U2 의도를 점에서 궤적으로 — 시트층↔Supabase 읽기 통로 1벌",
+    "severity": "중대",
+    "why": "intent_timeline 이 Apps Script 에서 engine.season_compass·season_review 를 «읽는다»고 하며 yuho_decision_needed=없음 · cost=0원 · 통로 형태 무기술. 시트층이 Supabase 에 닿는 유일한 자격은 anon 키 + roster-ingest 공유키이고 anon 은 RLS(learner 본인) 에 막혀 season_compass 전행을 못 읽는다. 읽으려면 service_role 키를 Script Properties 에 넣거나(자격증명 = 유호 손 · 정지선) 읽기 전용 edge function 을 새로 세워야 한다 — 어느 쪽이든 «없음»이 아니다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/엔진_운영배치.js:480-482 · C:/Users/q1212/Documents/SYNK-talk/supabase/functions/roster-ingest/index.ts:98 (`x-roster-ingest-key` 공유키 검사) · 종합_Trail.json U2 yuho_decision_needed 「없음」",
+    "fix": "통로를 「edge function `trail-read`(season_compass·season_review·learners 생애 5칸을 student_code 로 조인해 비식별 행만 반환 · 인증 = 기존 ROSTER_INGEST_KEY 재사용 · 새 비밀 0)」로 명시하고, U6 의 trail-ingest 와 한 함수(양방향)로 묶어 배포 1회로 끝낸다 · yuho_decision_needed 에 「키 재사용이면 0 · service_role 이면 유호 입력 1」을 적는다."
+   },
+   {
+    "item": "U2 「목표 실린 과제 스스로 낸 날」 열 — task.assigned goal_used 읽기",
+    "severity": "중대",
+    "why": "inputs 와 U2 ⓑ가 task.assigned goal_used 를 «Core 사건 · 읽기만»으로 실재하는 재료처럼 쓴다. talk 계약·lib·supabase 에 goal_used 는 0건이고, 세층합류 설계에서 «신설(출력 계약 판올림 · 착수는 4회전 뒤)»이며 뜻도 「그 과제 생성이 무대(목표)를 썼는가」라는 벤더 출력 플래그이지 「학생이 스스로 낸 날」이 아니다. 게다가 「학생에게 읽히는 자리에 쓰는 것은 표본 전까지 보류」가 09-02 심문 판정이다.",
+    "evidence": "grep goal_used C:/Users/q1212/Documents/SYNK-talk/{계약,lib,supabase} = 0건 · C:/Users/q1212/Documents/SYNK-appsscript/docs/세층합류_설계_v1.md:219 「보고(벤더) 【신설 — 출력 계약 판올림】 goal_used」 · :224 「goal_used 를 학생에게 읽히는 자리에 쓰는 것은 표본이 서기 전까지 보류」",
+    "fix": "그 열의 재료를 «학생이 한 것»으로 다시 정한다 — 후보 = goal.responded(c14 · 학생 자기 신고 explicit · 이미 실재) 를 «신고»로 표기해 싣거나, submission.created 중 시즌 목표 문형이 실린 제출(mastery 조인)로 «관측» 열을 세운다 · goal_used 는 「세층합류 ⓒ 착지 뒤 · 강사 화면까지만」으로 옮기고 my_trail 뷰 화이트리스트에서 뺀다."
+   },
+   {
+    "item": "U1 「나갔다」를 가른다 — exit_log 종료사유·effective_at·lifecycle 3열",
+    "severity": "중대",
+    "why": "①「구현 0」이라 쓰지만 talk 쪽엔 09-02 c16 조각이 engine.learners 에 생애 5칸(enrolled_at·observed_at·effective_at·exit_reason·lifecycle_status)을 이미 세웠다(인제스트·시트 칸만 0). ②어휘가 갈린다 — 그 조각의 정본은 exit_reason ∈ {졸업·중도이탈·휴학·이사·미정·기타} · lifecycle_status ∈ {재학·종료·미상 · default 미상}인데 설계는 「lifecycle(졸업/이탈/휴학/미정)」·U6 필터 「lifecycle=졸업」·U5 「lifecycle=졸업 ∧ …」으로 두 축을 한 낱말로 섞었다. 시트 칸이 다른 이름·값으로 서면 인제스트에서 갈리고 「값을 두 곳이 알면 갈린다」의 새 실사례가 된다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/supabase/migrations/20260902600000_learner_lifecycle_c16.sql:13-14 (exit_reason 6 · lifecycle_status 재학·종료·미상) · :79-84 (alter table engine.learners add column …) · roster-ingest/index.ts 에 exit_reason·exit_log 0건",
+    "fix": "exit_log 시트 칸 이름·값을 그 조각과 글자까지 동일하게(exit_reason·effective_at·observed_at·lifecycle_status·last_season_id) · 필터는 exit_reason='졸업' ∧ lifecycle_status='종료' · U1 문구를 「talk 열 다섯은 섰다(c16 09-02) · 시트 칸·퇴소 인제스트·trajectory 3열이 0」으로 · 인제스트(exit_log→learners)를 U6 의 trail-ingest 와 같은 함수·같은 커밋에."
+   },
+   {
+    "item": "U5 exam.result payload 「문항별 정오」",
+    "severity": "중대",
+    "why": "TOPIK 공식 성적은 영역별 점수·등급까지만 나오고 문항별 정오는 응시자에게 주어지지 않는다. 현행 조립기 규격도 필수 셋(exam_kind·exam_date·exam_level) + 선택 둘(exam_round·section_scores)뿐이라 topik_official 행에 문항별 정오를 채울 원천이 없다 — 칸을 열어도 영구 null 이고 「재료(문항별 정오)만 남긴다」는 약속이 빈 약속이 된다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/lib/시험결과.js:71 `{ exam_kind, exam_date, exam_level, exam_round?, section_scores? }` · :118-125 (section_scores = 영역별 점수 객체)",
+    "fix": "topik_official 은 doc_verify_no·verify_status·발표일 세 칸만 추가 · 문항별 정오는 exam_kind=topik_mock(학원 모의) 에만 허용하고 조립기가 official 행의 그 칸을 거부하게 · 계기판·Temper 재료 문장에서 「문항별 정오」를 「영역별 점수」로 고친다."
+   },
+   {
+    "item": "U4 자 셋 — 재심이 «사건»으로 도는 구조(모델정책.js 커밋 훅 재채점)",
+    "severity": "중대",
+    "why": "「tools/모델정책.js 변경 커밋 훅이 픽스처 60 을 새 모델로 재채점」은 커밋 시점에 그 기계에 벤더 키가 있어야 도는 유료 호출이다. 유호 확정은 지출 스위치 둘(시트 CLAUDE_API_KEY / 앱 ANTHROPIC_API_KEY)이고 로컬 환경변수 키는 셋째 스위치이자 자격증명 자리 · 훅이 키 없이 돌면 조용히 건너뛰거나 커밋을 막는다(「통과와 미실행이 같은 모양」). 현행 pre-commit 도 발동 조건만 맡고 판정은 도구에 넘기는 규약이다.",
+    "evidence": "횡단.json yuho_confirmed 「AI 지출 스위치는 «둘»(시트 CLAUDE_API_KEY / 앱 ANTHROPIC_API_KEY) · 방아쇠는 유호님」(memory vendor-api-billing) · C:/Users/q1212/Documents/SYNK-appsscript/.git/hooks/pre-commit:10 「판정은 여기서 안 한다 — 발동 조건만 맡는다」",
+    "fix": "훅은 유료 호출 0 — 모델정책.js 변경을 감지하면 app_state(또는 docs/_ops/엔진점수.jsonl 대기 행)에 「Trail 재채점 대기 · 판=<model_id@prompt sha>」만 등재하고, 채점은 야간 배치(Apps Script · 시트 키 스위치 하나)가 대기 행을 보고 돈다 · 키 없으면 «대기»가 계기판에 남아 0건이 성공 얼굴이 되지 않는다."
+   },
+   {
+    "item": "U6 senior_paths 셀 최소 n = app_state 값(코드 상수 아님)",
+    "severity": "중대",
+    "why": "임계값을 Apps Script 시트 app_state(key/value)에 두고 Supabase 의 senior_paths 집계 뷰가 「셀 n < app_state 최소치면 null」로 읽는다고 쓴다. Postgres 뷰는 시트 셀을 못 읽으므로 임계값이 두 시스템에 두 벌 서거나 뷰 안 상수로 굳는다 — 설계가 스스로 금한 「코드 상수」·「값을 두 곳에」 둘 다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/엔진_궤적.js:138·302 (app_state = 시트 key/value · setState) · 종합_Trail.json U6 「셀 n < app_state 「궤적셀최소n」 이면 null」 + stores 「뷰 engine.my_trail · senior_paths」(Supabase)",
+    "fix": "임계값 정본을 Supabase 한 행(engine.app_config key='trail_cell_min_n' · 시작 5)으로 두고 뷰가 그 행을 조인 · 시트 app_state 에는 «표시»만(trail-read 로 되읽음) · 유호 판정으로 값을 바꾸는 자리 = 그 행 하나."
+   },
+   {
+    "item": "U8 정본 자기모순 수리 — 결정.md:342 정정 병기",
+    "severity": "경미",
+    "why": "09-02 grep 실측이라며 행번호를 333→342 로 고쳤지만 지금 결정.md:342 는 08-25 «밤샘 전량 재굽기» 행이고 「자기 3년 궤적 평생 열람」 행은 :354 다. 행번호를 설계에 박으면 원장이 append 될 때마다 낡는다 — 이번 3안이 두 번 틀린 그 무늬.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/결정.md:354 「Trail 선배 모드 = «명예 졸업생 카드» … 자기 3년 궤적 평생 열람」 · :342 「밤샘 전량 재굽기 규격」",
+    "fix": "설계·U8·open_yuho_decisions 의 「342」를 「grep '3년 궤적' docs/_ops/결정.md 가 가리키는 행(09-02 실측 :354)」으로 바꾸고 행번호 대신 낱말 자(«3년 궤적»)로 가리킨다."
+   },
+   {
+    "item": "U5 mongolia_baseline — data.go.kr 15100039 CSV 를 UrlFetchApp 으로 월 1회 적재",
+    "severity": "경미",
+    "why": "파일 URL 은 atchFileId 로 가리키고 월별 재등록마다 바뀐다(09-02 실측 FILE_000000007631612 · _20260731 판 — 정찰이 본 _20260531/_20260630 은 이미 지난 판). 고정 URL 로 월 1회 당기면 둘째 달부터 손 갱신(㉡) 아니면 조용한 0행 — 설계의 단언 셋은 «잡기»만 하고 «받기»를 못 한다.",
+    "evidence": "curl https://www.data.go.kr/data/15100039/fileData.do (2026-09-02) = 200 · 205,784B · 본문에 atchFileId=FILE_000000007631612 · fileDetailSn=1 · _20260731",
+    "fix": "적재 함수가 매달 데이터셋 페이지(로그인 0)를 먼저 받아 atchFileId·fileDetailSn·파일명 접미(_yyyymmdd)를 파싱한 뒤 그 id 로 CSV 를 받는다 · 파싱 실패·접미가 전월과 같음(갱신 안 됨)도 단언 셋에 더해 넷."
+   },
+   {
+    "item": "U7 did:web 공개키 JSON 을 synk.im 밑 정적으로(도메인 호스팅 클릭 = 어느 화면인지 물어본다)",
+    "severity": "경미",
+    "why": "synk.im 은 이미 GitHub Pages(unmet23-lab/synk-policy · CNAME synk.im)로 서 있고 AI 가 커밋으로 정적 파일을 올릴 수 있다 — 「유호님 손 2회」 중 하나는 0회이고 「물어본다」는 기억을 안 연 결과다(저장소 PUBLIC 이라 공개키만 올린다는 ㉣ 판정과도 맞는다).",
+    "evidence": "C:/Users/q1212/.claude/projects/C--Users-q1212-Documents-SYNK-appsscript/memory/policy-page-publish.md:3 「GitHub Pages(unmet23-lab/synk-policy)로 게시 — 유호 확정 「synk.im 으로 바로」」 · :32 「CNAME = synk.im」",
+    "fix": "U7 cost·yuho_decision ② 를 「did.json = synk-policy 저장소 /.well-known/did.json 커밋(AI 자율 · 공개키만) · 유호 손 = 개인키 생성·보관 1회뿐」으로 고친다."
+   },
+   {
+    "item": "U7 achievement id 7개(시즌 6 + 졸업 1) 코드 배열 못박기 · 회귀 ⑦ 「7 배열 불변」",
+    "severity": "경미",
+    "why": "같은 문단이 「재회전 학생은 지난 시즌 수만큼 · 6 고정 아님」이라 하면서 회귀 ⑦은 7 배열 불변을 단언한다 — 재회전(같은 교재 재수강)이 나오는 순간 둘 중 하나가 빨개진다. 승급 도달제(유호 확정)에서 재회전은 정상이라 첫 기수부터 난다.",
+    "evidence": "종합_Trail.json U7 what ⓑ 「achievement id 7개 … 재회전 학생은 «지난 시즌 수만큼» · 6 고정 아님」 vs U4 ⓒ ⑦「achievement id 7 배열 불변」 · 독해 inherited_constraints 「승급은 도달제라 8주 평가 미달이면 재회전」",
+    "fix": "id 는 «시즌 순번» 6 + 졸업 1 로 7 고정, 재회전은 새 id 가 아니라 같은 id 의 evidence 에 season_id 를 더해 여러 번 발급 가능(CLR 묶음에 2행)으로 규정 · 회귀 ⑦은 배열 7 + 「재회전 픽스처 1건이 8번째 id 를 안 만든다」."
+   },
+   {
+    "item": "U3 확정 화면 — 「하한 밑은 확정 버튼 자체가 안 그려진다 · 「확정 없이 넘기기」 같은 무게」",
+    "severity": "경미",
+    "why": "원장 화면을 «실행지»라 부르지만 실행지는 md 문서이고 Apps Script 시트엔 버튼·신호색 무게를 조절할 자리가 없다 — 드롭다운 셀뿐이면 「버튼 안 그림」 규칙이 물리로 안 선다. 어느 화면(시트 사이드바·웹앱·talk 강사 화면)에 짓는지가 비어 있어 「지어 놓고 도는가」를 못 잰다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/docs/궤적_원장기록_실행지.md(운영 절차 문서) · Code.js:793 이력 [v9.110] 「시트 메뉴(onOpen) 신설」·[v9.137] 「강사 웹화면은 보안 사유로 보류」",
+    "fix": "확정 화면 = 시트 메뉴 → HtmlService 사이드바 1장(원문·초안·confidence 구간 병치 · 하한 밑 버튼 미렌더 · 두 버튼 같은 스타일 토큰)으로 명시하고 회귀는 렌더 HTML 을 문자열로 검사(버튼 유무) · talk 강사 화면은 안 쓴다(보류 이력)."
+   }
+  ],
+  "kept": [
+   "thesis — 뼈대 A(6층 · 판 붙은 append · 시험지·래칫·사건 재심 · 소급 불가 순)",
+   "U1 골자 — exit_log 칸 추가만·표 신설 0·감지기 무수정·«미정» 30일 경보·'@' 고정(어휘만 talk c16 조각에 맞추면 통과)",
+   "U2 season_review — 「짓지 않는다 · 있는 마이그 조각의 적용을 확인」(SYNK-talk supabase/migrations/20260812170000_season_review_c11.sql 실재 · L0_스키마.sql:7853 에 표 등재 확인) · 9갈래 옛 7 이름 불변 · as_of 절단 · 판정은 사람 라벨 읽기만",
+   "U3 구조 — 원문 4칸 append + outcome_verdict 판 붙은 N행 + 사람 확정·form 행만 최신관측 + 살균 필터 pushGoldenFixture_ 와 한 곳 + 키릴 이름 20 픽스처 · 모델 픽·켜는 날은 유호 자리",
+   "U3 cost 검산 — 졸업생 100명×월 1건 ≈ 100호출×~600토큰 = 6만 토큰/월 · Flash-Lite 급 입력 $0.1/M·출력 $0.4/M 이면 수 센트(<$1 성립 · 단가는 정찰이 「안 재봤다」로 표기 유지)",
+   "U4 — 픽스처 60(합성 분포 한계 명시) · tests/궤적.test.js 복원 8검사 · 궤적상한_ 래칫 셋(내리기만) · classifier_ver 별 행수 이어 돌기 · 도달 래칫 등재→실측→상한 · 원격 /triggers 라이브 폼 대조",
+   "U5 — topik_milestone 을 결과종류와 직교 · 보장 분자 = 진위확인 행만 · 졸업 0 이면 «확인 불가»(0% 금지) · 만기율은 내부 계기판만 · «묻는» 사건 없음 · 법무부 적재 단언 셋+경보",
+   "U6 원리 — «자기 것» 뷰는 남의 열 부재 + 화이트리스트 회귀 / «남의 것» 집계는 n≥최소치·침묵 규칙·있다/없다+길 이름·숫자 0 · 조각은 LLM 0 코드 템플릿 · 관통왕복 V6 를 리허설 학생·LLM 0 으로 지금 잰다",
+   "U7 — 명예 졸업생 카드 = 있는 홈의 잠금 모드 · 근황 한 줄 = Vellum 자유문(새 사건 0 · 주기 알림 0) · OB3/VC 2.0 파일은 Node 로 굽고 Apps Script 안에서 안 돌림 · 개인키 git 밖·유호 손 · StatusList 첫날 · 종이 번호 카드 3조건 · 16세 통로 = 이름만(08-30 확정 유지 — 「미성년 안 받는다」는 복구 연락처 축이라 충돌 아님)",
+   "U8 — 결정.md 원문 유지 + 정정 병기 · 시즌회고_설계.md:23 「표 없다」 정정 · 소개서 원고 수리 후 렌더 · rot-check 낱말 자",
+   "what_not_to_do 전건 · build_order 의 소급 불가 우선 순서(① exit_log 칸 → ② 원문 층 자리 → ③ 어휘 못박기 → ④ 시험지 먼저 → … ⑩ 호출은 유호 방아쇠)",
+   "io_with_other_engines — Reed 0 · Prism/Temper 규약만 · 표본 0 규칙"
+  ],
+  "overall": "수리 후 통과"
+ },
+ {
+  "target": "엔진 Trail 종합 설계",
+  "lens": "«진짜 한 차원 위인가» — AI 두 배 자 · 대체불가 3문 · 「선생님의 뇌」 재료(학생이 «한 것») · 세계1등 ceiling 대비 · 걷어낼 것의 실재 · 같은 값 두 곳 · 정찰 출처 실확인(WebFetch 7 URL · repo grep)",
+  "refuted": [
+   {
+    "item": "U5 보장 부채 계기판 — 급수 이정표(exam.result 문서확인번호 · 원장 진위확인 행만)",
+    "severity": "치명",
+    "why": "장면 ⓐ 「학생이 앱 말하기 화면 머리 카드에 급수와 증명서 사진을 올린다(Core exam.result 생산)」는 유호 확정 두 개를 조용히 뒤집는다. c6(2026-08-06 유호 확정)은 「TOPIK 실성적 = 강사 입력 · 학생이 공식 성적표를 제출하는 통로는 앱 동의 밖이라 만들지 않는다」이고, c14 는 exam.result 를 «서버사건»(앱이 보내면 400 · 「학생 기기가 자기 급수를 주장할 수 없다」)으로 물리에 박았다. 설계는 이것을 '유호 판정 자리'로도 안 적고 학생 제출 카드를 Core 몫으로 확정해 버렸다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/계약/수집_교정_계약.json:10 「TOPIK 실성적 = 강사 입력으로 유호님 확정 2026-08-06 … 학생이 공식 성적표를 제출하는 통로는 앱 동의 밖이라 만들지 않는다」 · 같은 파일:18 「observation.noted·exam.result … 서버사건(앱이 보내면 400)」 · 같은 파일:97 「이 사건은 서버사건이라 앱이 원리적으로 못 낸다」",
+    "fix": "U5 ⓐ 의 생산자를 「학생 앱 카드」에서 「강사/원장 입력(teach 경로 서버사건 · 증명서 사진·문서확인번호는 원장이 회차당 일괄 입력)」으로 바꾼다. 학생 제출 카드를 굳이 두려면 open_yuho_decisions 에 「c6 확정(강사 입력) 뒤집기 요청」으로 명시하고 그 전까지 설계에서 뺀다. 「새 화면 0」 문구는 그대로 두되 목표카드 자리 언급은 삭제."
+   },
+   {
+    "item": "U3 원문 원장 + 판 붙은 판정 층 + 확정 클릭 하나 — 분류 호출 후보 «Gemini 구조화 출력(엔진_콘텐츠AI.js 기존 통로)»",
+    "severity": "치명",
+    "why": "Apps Script 엔진 어디에도 Gemini 호출이 없다(Code.js·엔진_콘텐츠AI.js·엔진_두뇌.js·엔진_수집.js·상담AI.js 전부 gemini/generativelanguage 0건). 엔진_콘텐츠AI.js 의 «기존 통로»는 Anthropic(AI_FEEDBACK_MODEL='claude-opus-5' · Code.js:852)이다. Gemini 는 Node 도구(tools/몽골어대조.js·모델정책.js)에만 있다. 「기존 통로 재사용 · 스키마 하나 추가」는 없는 실물을 있다고 쓴 것이고, 유호 모델픽 선택지 두 개의 비용 차이(새 통로+키 주입 vs 기존 통로)를 거꾸로 알려 드리게 된다.",
+    "evidence": "grep -c -i 'gemini|generativelanguage' Code.js 엔진_콘텐츠AI.js 엔진_두뇌.js 엔진_수집.js 상담AI.js = 0·0·0·0·0 (09-02) · C:/Users/q1212/Documents/SYNK-appsscript/Code.js:852 「const AI_FEEDBACK_MODEL = 'claude-opus-5'」",
+    "fix": "U3 ⓓ 후보 표기를 「Gemini = «새 통로»(UrlFetchApp → generativelanguage · 스크립트 속성에 키 주입 = 유호 손 · gemini-mn-check 는 Node 도구라 시트층엔 없음 → 검문 통로도 새로) / Claude = «기존 통로»(엔진_콘텐츠AI.js aiCall 재사용 · output_config)」로 고쳐 유호 픽 재료를 사실대로 낸다. 정찰 finding 3 의 gate_b 「엔진_콘텐츠AI.js 가 이미 Gemini 를 부른다」도 같은 커밋에서 정정."
+   },
+   {
+    "item": "U3 — 원장 «확정 클릭»이 verdict_by=원장 행을 «최신관측»으로 승격(Ⅰ-4 자기신고↔관측 가름)",
+    "severity": "중대",
+    "why": "확정 클릭은 「모델의 4칸 분류가 원문과 맞다」는 판정이지 「그 원문이 사실이다」가 아니다. 근황 한 줄 「МУИС-д орсон」은 explicit(본인 제보)인데 확정 행이 최신관측이 되어 trajectory·senior_paths 로 흐르면 철학 Ⅰ-4 「자기 신고(explicit)와 관측(observed)은 다른 사실 — 섞으면 거짓 축」을 정면으로 지난다. 설계는 「소문이 통계가 된다 방지 = 출처 6종 승계」라고 적었지만 senior_paths 필터엔 활용동의·lifecycle 만 있고 출처 등급이 없다.",
+    "evidence": "철학.json rulers 「관찰 ↔ 판정 가름」: 「자기 신고(explicit)와 관측(observed)은 다른 사실 — 「지켰다」와 「지켰다고 말했다」를 섞으면 거짓 축이 학부모 리포트로 나간다」 · 종합_Trail.json U6 what 「senior_paths 집계 뷰(… 활용동의='동의' 행만 · lifecycle=졸업 …)」(출처 등급 필터 없음)",
+    "fix": "outcome_verdict 의 확정 칸 이름을 「분류 확정」으로 못 박고(사실 등급은 outcome_log 출처 칸이 그대로 쥔다) · trajectory 최신관측에 출처 등급을 동반 · senior_paths·계기판·대외 집계는 「면접폼(자동)·강사 확인·학원 서류 확인·진위확인」 등급 행만 값으로 세고 「본인 제보·보호자 제보·SNS」 등급은 별도 열(들은 것)로 분리 · 회귀 1건: 본인 제보 확정 행이 senior_paths 셀 값에 안 든다."
+   },
+   {
+    "item": "U3 ⓓ 프롬프트 ㉣ 게이트 — 살균 목록(이름·전화·메일)에 «학교·기관명»이 빠졌다",
+    "severity": "중대",
+    "why": "제품방향 불변식 4 의 식별자 정본 목록은 「이름·연락처·student_id·생년·학교」이고 「소수 인원 구간엔 날짜도 식별자」다. U3 는 원문에서 «기관=МУИС» 를 뽑는 것이 목적이라 학교명을 벤더로 보내는데, 1기 30명 안팎에서 「МУИС 간 사람」은 한 명일 수 있다. ㉣ 호출 자리 게이트 「프롬프트 값마다 이 학생을 특정하는가」를 기관명·날짜에 대해 안 물었다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/docs/제품방향.md:78-79 「안 나가는 것 = 식별자(이름·연락처·student_id·생년·학교) … 소수 인원 구간에선 날짜도 식별자다」 · 종합_Trail.json U3 constraint_handling 「student_id·이름·연락처 0 · 원문은 살균(이름 필터)」",
+    "fix": "살균 함수에 기관명·날짜 토큰 마스킹 단계를 더한다(원문의 고유명사·날짜를 «[기관A]»·«[날짜]» 자리표로 바꿔 보내고 모델은 버킷·단계만 판정 · 기관명은 코드가 원문에서 자리표를 되돌려 outcome_log 기관 칸에 «안에서» 적는다). 이것이 성립 안 하면 open_yuho_decisions 에 「기관명이 든 원문을 벤더로 보내는가」 ㉣ 판정 항목을 추가한다."
+   },
+   {
+    "item": "U6 두 계급 뷰 — engine.my_trail·senior_paths 를 Supabase 뷰로 세우는데 그 원천(outcome_verdict·trajectory·exit_log)이 Supabase 에 없다",
+    "severity": "중대",
+    "why": "outcome_log·outcome_verdict·trajectory·topik_milestone 은 전부 Apps Script 시트이고 stores 절의 Supabase 목록엔 season_compass·season_review·learning_events·뷰 둘·Storage 뿐이다. Postgres 뷰는 없는 표 위에 못 선다. U2 의 「시트층↔Supabase 읽기 통로」는 방향이 반대(시트가 Supabase 를 읽음)이고, 시트→Supabase 로 결과 행을 올리는 통로(roster-ingest 류)는 설계 어디에도 없다. 세로줄 기여 1위로 놓은 U6 가 지금 형태로는 지을 수 없다.",
+    "evidence": "종합_Trail.json architecture.stores 「Supabase(talk): engine.season_compass(있음) · engine.season_review … · 뷰 engine.my_trail · senior_paths · Storage …」(결과 표 없음) · C:/Users/q1212/Documents/SYNK-talk/supabase/functions/roster-ingest/index.ts:1 「명부 인제스트 — 아침 스윕(appsscript 명부스윕_)이 engine.learners 에 닿는 문」(결과 행은 안 다룬다)",
+    "fix": "U6 에 「시트→Supabase 결과 거울 1벌」을 명시: engine.trail_outcome(learner_id·관측일·출처등급·결과종류·단계·버킷·verdict_by·classifier_ver · 기관명 0) 을 roster-ingest 와 같은 문(새 Edge 경로 trail-ingest 또는 roster-ingest 확장)으로 매일 아침 밀고, my_trail 은 season_compass+season_review+trail_outcome(본인) 위에, senior_paths 는 trail_outcome+learners.lifecycle 위에 선다고 적는다 · 생산자(적재)·소비자(뷰) 같은 커밋 · 계약 c-판 개정 여부를 「안 재봤다」로 표기."
+   },
+   {
+    "item": "U1 — lifecycle_status·exit_reason·effective_at 의 정본 자리를 exit_log 시트 하나로 적었으나 talk 에 같은 다섯 칸이 engine.learners 에 서고 있다(같은 값 두 곳)",
+    "severity": "중대",
+    "why": "SYNK-talk 작업본에 20260902600000_learner_lifecycle_c16.sql(engine.learners 에 enrolled_at·observed_at·effective_at·exit_reason·lifecycle_status 다섯 칸 · 「사건(exit_log → 퇴소 인제스트)에서 파생」)이 실재한다(09-02 · git log 0건 = 미커밋). U1·U7 은 「talk 에 졸업 상태 코드 0」·「생산자 = Core 운영배치 · exit_log 칸 5」로 적어 원본과 파생의 관계·인제스트 통로를 한 줄도 안 정했다. 그대로 두면 lifecycle 이 시트·trajectory·learners 세 곳이 각자 안다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/supabase/migrations/20260902600000_learner_lifecycle_c16.sql 머리말 「학습자 생애 다섯 — engine.learners.enrolled_at · observed_at · effective_at · exit_reason · lifecycle_status … 이 칸들은 «원본»이 아니라 사건(exit_log → 퇴소 인제스트 · 개원 전)에서 «파생»된다」 · 종합_Trail.json U7 what 「learner lifecycle_status='종료(졸업)' 이면 라우트 … (코드 착지 0 · 09-02 grep talk 0파일)」",
+    "fix": "U1 에 한 줄 추가: 「원본 = exit_log 시트 사건(append) · 파생 = engine.learners 다섯 칸(roster-ingest 가 매일 아침 밀어 넣음 · talk 조각 20260902600000 · 미커밋 상태 확인 필요) · trajectory 종료구분 3열은 exit_log 를 읽는 둘째 파생」. U7 의 「talk 에 졸업 상태 코드 0」을 「칸은 조각으로 섰고(미커밋) 라우팅 코드는 0」으로 정정 · 회귀: learners.lifecycle_status 와 trajectory 종료구분이 같은 날 같은 값(불일치 0 래칫)."
+   },
+   {
+    "item": "U4 자 셋 — tools/모델정책.js 변경 «커밋 훅»이 시험지 60 을 새 모델로 «재채점»한다(자동 지출 + 훅 안 벤더 호출)",
+    "severity": "중대",
+    "why": "커밋 훅이 벤더 API 를 부르면 ①「돈 드는 실행은 유호 방아쇠 · AI 지출 스위치 둘」 확정을 기계가 우회한다(모델정책.js 는 codex 효력표 수정 같은 무관한 이유로도 자주 바뀐다) ②훅 안 네트워크 호출은 게이트초(Ⅰ-9 ②)를 키우고 오프라인·키 없음이면 커밋 자체가 막힌다 ③시험지 재채점의 정본 통로는 이미 talk `npm run eval`+tools/eval-score.js 인데 둘째 통로가 생긴다.",
+    "evidence": "횡단.json yuho_confirmed 「돈 드는 실행(벤더에 실제로 쏘는 것 전부)은 가오픈 때 · 방아쇠는 유호님이 당긴다 · AI 지출 스위치는 둘」 · 철학.json rulers Ⅰ-9 「②절차는 속도에 복무 → 세션이 켜질 때 도는 훅·게이트 합계 ms」 · 종합_Trail.json U4 what ⓔ 「tools/모델정책.js 변경 커밋 훅 → 시험지 재채점」",
+    "fix": "훅은 «채점»이 아니라 «등재»만 한다: 모델정책.js 의 분류 모델 항목 해시가 바뀌면 app_state/큐 파일에 「Trail 시험지 재채점 대기(판 sha)」 한 줄을 적고 rot-check 가 대기 건수를 빨강으로 보인다 · 실제 재채점은 기존 eval 통로(유호 방아쇠 · 결제 연결 뒤)로 한 번 · 재판정 잡은 채점 통과 뒤 app_state classifier_ver 사건으로만."
+   },
+   {
+    "item": "U4 ⓕ — 「엔진_콘텐츠AI.js 의 하드 모델 ID 를 tools/모델정책.js 한 곳으로」",
+    "severity": "경미",
+    "why": "하드값은 엔진_콘텐츠AI.js 가 아니라 Code.js:852 (AI_FEEDBACK_MODEL) 이고 그 줄이 이미 「라우팅 정본 = tools/모델정책.js」라고 적고 있다. Apps Script 런타임은 Node 파일을 읽을 수 없어 «한 곳으로 옮기기»는 물리적으로 불가 — 남는 길은 두 곳을 대조하는 회귀뿐(constant-known-in-two-places 의 정직한 처방).",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/Code.js:852 「const AI_FEEDBACK_MODEL = 'claude-opus-5'; // 라우팅 정본 = tools/모델정책.js」 · grep 'AI_FEEDBACK_MODEL\\s*=' *.js → Code.js:852 하나",
+    "fix": "ⓕ 를 「tests/궤적.test.js ⑨: Code.js AI_FEEDBACK_MODEL(및 분류 모델 상수) === require('../tools/모델정책.js') 의 해당 항목 — 갈리면 빨강」으로 바꾸고 '한 곳으로 옮긴다' 문구를 지운다."
+   },
+   {
+    "item": "U6 senior_paths → 관통왕복 V6 「Trail 조각 동승 · null 이면 길이 불변」 ✓ 를 근거로 trajectory 를 시트층 도달 «도달»로 옮김",
+    "severity": "중대",
+    "why": "도달의 정의는 「읽어서 다음에 줄 것이 바뀐다」다. 2027~2029 년엔 셀 n≥5 를 채우는 졸업 코호트가 없어 조각은 항상 null 이고, null 경로만 ✓ 인 V6 는 「아무것도 안 바뀜」을 초록으로 찍는 «0건이 성공 얼굴» 자다. 설계 자체가 「n≥5 규칙이 1~2년차엔 거의 모든 칸을 비운다」고 인정하면서 그 위에 도달 도장을 찍는다.",
+    "evidence": "철학.json rulers 「도달의 정의 = 「읽힌 것」 — 뷰에 행이 보이는 것을 「엔진이 배웠다」로 부르지 않는다 … 「돈다」 초록인데 「닿는가」 빨간 칸이 가장 위험」 · 종합_Trail.json U6 failure_mode 「n≥5 규칙이 개원 1~2년차엔 거의 모든 칸을 비워 «닿았는데 안 늘었다»가 정직값」",
+    "fix": "V6 를 두 갈래로 잰다: V6-a 리허설 학생 «졸업 5명 + 활용동의 + 같은 출발점 셀»을 insert 해 non-null 조각이 deliver 재료 슬롯·correct [학생 맥락]에 실제로 실리고 무대 문장이 달라지는지 ✓ · V6-b null 이면 길이 불변 ✓ — 둘 다 ✓ 일 때만 trajectory 를 «도달»로 · 운영 표본 위 «늘었나»는 늘지않음상한 축에 ✗ 로 정직 표기."
+   },
+   {
+    "item": "U3·U2 「AI 두 배 자 ①」 주장 — 「모델이 좋아질수록 같은 원문에서 더 꺼낸다」인데 판정 층이 enum 4칸으로 닫혀 있다",
+    "severity": "중대",
+    "why": "outcome_verdict 는 결과종류·단계·기관·비자(전부 코드 배열 enum)+confidence 뿐이라 모델이 두 배 똑똑해져도 «더» 나올 자리가 없다 — 짧은 근황 한 줄의 4칸 분류는 빨리 포화한다. 실제로 «커지는» 것은 L1 raw_text 보존(나중에 다른 질문을 다시 물을 수 있음)이지 판정 층이 아니다. U2 의 「어느 시즌에 왜 바뀌었나를 같은 행에서 더 꺼낸다」도 담을 칸이 없다. 종류 변화의 근거 서술이 자리를 잘못 짚었다.",
+    "evidence": "종합_Trail.json U3 what ⓑ 「outcome_verdict … 판정 4칸 + verdict_by + classifier_ver + confidence + confirmed_at」 · U2 why_one_dimension_up 「모델이 좋아질수록 「어느 시즌에 왜 바뀌었나」를 같은 행에서 더 꺼낸다」 · 철학.json one_dimension_up_definition ① 「자산이 모델 성능의 증가 함수인가」",
+    "fix": "kind_after·U3 why 를 「커지는 자산 = 원문 층(L1)과 «질문 목록»(재판정 시 다시 묻는 것) · 판정 층은 그 질문의 현재 답」으로 고쳐 쓰고, outcome_verdict 에 소비자 0 인 «extra_json»(판 붙은 자유 추출 · 어휘 밖 · 집계에 안 씀) 한 칸을 두어 새 모델이 낸 «더»가 버려지지 않게 한다(어휘 «늘리기만» 규칙과 충돌 없음 · 소비자는 훗날 Temper/유학봇)."
+   },
+   {
+    "item": "U2 — 「선생님의 뇌」 재료 주장: season_compass [그대로]/[바꿀래] 클릭 = «학생이 한 것»",
+    "severity": "경미",
+    "why": "시즌 선언은 explicit(말한 것 · 카드 위 자기 신고)이지 observed 가 아니다. 설계가 «한 것»으로 세울 수 있는 재료는 goal_used(목표 실린 과제를 스스로 낸 날)·exit_log 사유·진위확인된 급수뿐이고, 그 셋은 U2 열 하나·U1·U5 에 걸쳐 있다. 종류 변화의 근거로 «한 것» 축을 내세우려면 어느 열이 관측이고 어느 열이 자기신고인지 표시가 있어야 한다.",
+    "evidence": "철학.json one_dimension_up_definition ② 「학생이 «말한 것»(대화 추출 — 프론티어 md 뇌와 같은 종목) → 학생이 «한 것»」 · 횡단.json yuho_confirmed 「c14 goal.responded = «지켰다고 말했다»(explicit)이지 «지켰다»가 아니다」",
+    "fix": "intent_timeline·trajectory 새 열에 source_kind(explicit/observed) 를 동반하고 U2 why 문장을 「왼쪽은 explicit 시계열 + observed 한 열(goal_used) · «한 것» 축은 goal_used·exit_log·진위확인 셋」으로 정직하게 고친다."
+   },
+   {
+    "item": "U5 ⓐ — topik 진위확인 값을 두 곳이 안다(exam.result payload verify_status ↔ topik_milestone 시트 「진위확인일」 원장 클릭)",
+    "severity": "중대",
+    "why": "「거울 시트」라 해 놓고 원장이 거울에 직접 쓰는 칸(진위확인일)을 두면 그 칸의 정본은 거울이 되고 payload verify_status 와 갈린다 — 갈라지는 방향은 언제나 「통과」(보장 분자가 부푼다). 설계 자신이 「한 값을 두 곳이 알면 갈린다」를 U8 의 근거로 쓴다.",
+    "evidence": "종합_Trail.json U5 what ⓐ 「exam.result payload 화이트리스트에 doc_verify_no·verify_status … · topik_milestone 시트(… 진위확인일) · 진위확인일 칸은 원장 클릭 1 → 시트 칸 하나」 · 철학.json prohibitions 「한 값을 두 곳이 알면 갈린다 — 갈라지는 방향은 언제나 「통과」」",
+    "fix": "진위확인의 정본을 하나로: 원장 클릭이 teach 서버사건(exam.result 의 후속 payload verify_status·verified_at)을 만들고 topik_milestone 은 읽기 전용 거울(손 입력 칸 0) — 또는 반대로 시트 칸만 정본으로 두고 payload 에서 verify_status 를 뺀다. 둘 중 하나를 골라 적고 회귀에 「거울 시트 손 수정 0」."
+   },
+   {
+    "item": "U3 ⓐ — 출처 어휘에 «본인 제보(AI 초안)» 1값 «추가»",
+    "severity": "경미",
+    "why": "outcome_verdict 층이 생기면 「누가 말했나」(출처)와 「누가 분류했나」(verdict_by=model)는 다른 축이다. 출처 값에 AI 초안을 섞는 것은 이 설계의 첫 원칙 「두 축 직교」를 스스로 어기는 것이고 정찰 finding 3 의 «판정 층 없던 때» 처방을 그대로 옮겨 온 잔재다.",
+    "evidence": "종합_Trail.json principles(Trail_독해) 「두 축 직교 — 결과종류와 단계를 섞지 않는다」 · Trail_정찰.json finding 3 one_thing_to_close 「AI 가 넣는 행의 출처를 새 값 «본인 제보(AI 초안)»로 고정」",
+    "fix": "출처 1값 추가를 삭제한다 — 출처는 원문 원천대로(본인 제보 등) · AI 초안 여부는 outcome_verdict.verdict_by 하나가 안다 · 궤적재작성_ 의 최신관측 판정은 verdict_by ∈ {원장, form} 만 본다."
+   },
+   {
+    "item": "U6 — ai_scales: true 표기",
+    "severity": "경미",
+    "why": "U6 의 조각 문장은 「코드 템플릿 · LLM 0」이고 뷰·집계는 SQL 이라 모델이 두 배 똑똑해져도 한 칸도 안 바뀐다. 표기가 자기 서술과 어긋난다.",
+    "evidence": "종합_Trail.json U6 what 「코드 템플릿 · LLM 0 · 버킷·단계·개월 3값」 · U6 ai_scales 「true」",
+    "fix": "ai_scales 를 false 로 고치고 why 에 「종류 변화의 축은 ③흐름 종점·④수신자이지 ①모델 축이 아니다」를 명시."
+   },
+   {
+    "item": "U6 senior_paths — 활용동의='동의' 행만 세는데 근황 한 줄·상담로그·exit_log 원천 행은 동의 값이 없다",
+    "severity": "경미",
+    "why": "활용동의 칸은 면접폼 문항에서 오고 「못 읽은 값은 동의 아님」이 규칙이라, U3 로 새로 들어오는 원문 행 전부가 senior_paths 에서 조용히 빠진다. 뷰는 서지만 면접폼 행만 남아 U3 의 흐름 축 확장이 «남의 것» 뷰에는 0 으로 닿는다.",
+    "evidence": "Trail_독해.json principles 「활용동의 어휘는 폼 문구와 글자까지 같아야 한다(거름망은 못 읽은 값을 「동의 아님」으로 떨어뜨린다)」 · 종합_Trail.json U6 what 「활용동의='동의' 행만」",
+    "fix": "senior_paths 의 동의 게이트를 학습자 단위 사건(data_use.granted/revoked · talk 계약 c16 어휘)으로 바꾸고, 면접폼 활용동의는 그 사건이 없는 행의 폴백으로만 — 선배 카드 전환 날 동의 한 번(가역 · 철회 사건 동반)을 U7 에 명시."
+   },
+   {
+    "item": "U5 ⓑ mongolia_baseline — 법무부 CSV 월 1회 적재 시트를 Trail 이 소유",
+    "severity": "경미",
+    "why": "학생 데이터가 아니라는 논거는 맞지만 자산층 규칙 ①의 «기술적 이유»는 「파이프라인 6 = 관리비용 곱셈」이라 원천이 학생이든 외부든 같다. 또 인용 수치가 이미 낡았다(정찰 17,837행·2026-06-19 → 실페이지 18,542행·최종 2026-08-26·파일 _20260731) — 설계 본문에 사진 숫자를 옮겨 적은 것 자체가 「측정판 날짜 없는 수」다.",
+    "evidence": "https://www.data.go.kr/data/15100039/fileData.do (09-02 WebFetch: Row Count 18,542 · Last Updated 2026-08-26 · 파일 _20260731.CSV · 로그인 불요) · 종합_Trail.json U5 scouting_used 「CSV(2026-06-19 갱신 · 17,837행)」 · 횡단.json asset_layer_rules 규칙 ① 「없으면 「엔진 6」이 아니라 «파이프라인 6»이 된다(관리비용)」",
+    "fix": "적재 함수를 운영층(엔진_운영배치 아침 배치의 외부통계 절)에 두고 Trail 은 그 시트를 «읽기만»으로 적는다 · 본문 숫자는 「행수·갱신일 = 적재 함수가 app_state 에 낸 값」으로만 · 정찰 인용은 «09-02 실페이지 18,542행·08-26 갱신»으로 갱신."
+   },
+   {
+    "item": "U2 ⓑ intent_timeline «파생 시트» — season_compass·season_review 행을 시트로 복제",
+    "severity": "경미",
+    "why": "Supabase 가 정본인 시즌 선언·회고 라벨을 시트에 다시 앉히는 것은 같은 값을 두 곳이 아는 구조다(재작성이 매일이라도 «어제 판»이 하루 산다). 설계는 U8 에서 정확히 이 병을 고치자고 하면서 새 거울을 하나 더 만든다.",
+    "evidence": "종합_Trail.json architecture.layers L3 「intent_timeline(파생 시트 · 입학 의도 1행 + season_compass 선언 N행 + season_review verdict «읽어» 붙임 …)」 · 철학.json prohibitions 「정본 불리기 · 값을 두 곳에」",
+    "fix": "intent_timeline 을 «저장 시트»가 아니라 궤적재작성_ 안의 메모리 조인(읽고 버림)으로 두고 trajectory 새 열만 남긴다 · 시즌 시계열이 시트에 있어야 할 소비자가 생기는 날 그때 거울을 세운다(소비자 없는 파생 표 신설 🚫 와도 한 벌)."
+   },
+   {
+    "item": "U4 ⓒ 회귀 ⑧ — my_trail 뷰 열 화이트리스트 일치를 tests/궤적.test.js(appsscript)에 둔다",
+    "severity": "경미",
+    "why": "뷰는 talk 저장소의 마이그 조각이고 appsscript 테스트는 그 파일을 못 본다(다른 저장소 · 「킷을 고쳐도 talk 은 안 따라온다」). 뷰를 고친 커밋이 초록인 채 화이트리스트가 갈린다.",
+    "evidence": "MEMORY.md 「kit-change-needs-talk-sweep — 킷을 고쳐도 talk 은 안 따라온다 · 커밋 전 전체 npm test」 · 종합_Trail.json U4 what ⓒ 「⑧ … my_trail 뷰 열 화이트리스트 일치(U6)」",
+    "fix": "⑧ 의 뷰 절반을 talk tests/(마이그 조각 파싱 → 열 목록 === 화이트리스트 상수) 로 옮기고 appsscript 쪽엔 enum 원본 대조만 남긴다."
+   },
+   {
+    "item": "U8 정본 자기모순 수리 — 「결정.md 행번호 333→342」",
+    "severity": "경미",
+    "why": "설계 작성 시점(17:20 커밋 기준)에 그 줄은 347행이었고 지금은 354행이다(결정.md 는 append 원장이라 매 커밋 밀린다). 행번호를 «정정»으로 박는 것 자체가 두 곳이 아는 값이다 — 독해 333 · 종합 342 · 실제 347/354 넷이 이미 갈렸다.",
+    "evidence": "git show 7c824a4d9:docs/_ops/결정.md | grep -n '3년 궤적' → 347 · grep -n '3년 궤적' docs/_ops/결정.md (09-02 22시) → 354 · 종합_Trail.json thesis 「결정.md 행번호 333→342」",
+    "fix": "결정.md 인용은 「날짜+낱말(2026-08-25 · '3년 궤적')」로만 적고 행번호를 전부 지운다 · rot-check 낱말 자도 grep 낱말 기준."
+   },
+   {
+    "item": "U2·U6 scouting_used — Khanmigo 「JSON 이면 효과 0」",
+    "severity": "경미",
+    "why": "원문은 「세션 로그 JSON 포함은 그 자체로는 측정 가능한 개선이 없었다 → ①plain text 로 ②24시간 스레드 전부로 두 가지를 바꿨더니 5.09% 상승」이다. 형식 하나만 바꾼 실험이 아니라 «형식+범위» 둘을 같이 바꾼 결과라 「JSON = 0」으로 형식 단독 근거를 세우면 인용 왜곡이다.",
+    "evidence": "https://blog.khanacademy.org/how-khan-academy-is-building-a-better-ai-tutor-our-most-recent-learnings/ (09-02 WebFetch: 「did not lead to measurable improvements on its own. We then made two changes: 1) … plain text instead of … json … 2) we added all the threads … for the previous 24 hours」)",
+    "fix": "인용을 「JSON 단독은 효과 없음 → 산문 + 24시간 이력으로 바꿔 인지 참여 +5.09%(두 변화 동시)」로 고치고, Core 가 intent_timeline 을 실을 때 «산문 + 최근 시즌 이력» 한 벌로 싣는 형식 근거로만 쓴다."
+   },
+   {
+    "item": "U3·U4 scouting_used — 「Fable 5.1 tool_choice 강제 불가 · 구조화는 output_config.format 로만」의 출처 URL(pricing)",
+    "severity": "경미",
+    "why": "인용한 가격표 페이지엔 tool_choice 제약·output_config 언급이 없다(tool-choice 토큰표에 Fable 5.1 행 자체가 없음). 공통스택.json 은 출처를 「릴리스노트」라 적었는데 종합은 pricing URL 을 달았다 — 실확인이 안 되는 URL 이 근거 자리에 있다.",
+    "evidence": "https://platform.claude.com/docs/en/about-claude/pricing (09-02 WebFetch: tool_choice 제약·output_config 문구 0건 · Tool choice 표에 Fable 5.1 행 없음) · 공통스택.json 「릴리스노트: Fable 5.1 에서 tool_choice any/tool 은 400」",
+    "fix": "출처를 릴리스노트 실URL(platform.claude.com/docs/en/release-notes 해당 일자)로 바꾸고 확인 못 하면 「릴리스노트 기재(URL 미확인)」로 낮춰 적는다 · 가격표 URL 은 단가 근거로만."
+   },
+   {
+    "item": "U5 scouting_used — HESA Graduate Outcomes 2026-06-04 페이지",
+    "severity": "경미",
+    "why": "인용 URL 이 09-02 WebFetch 에서 403 으로 열리지 않는다(내용 확인 불가). +15개월 자·해외 졸업생 전화 재도입은 «정찰 검색 요약»에서 온 것이라 실확인 표기가 필요하다.",
+    "evidence": "https://www.hesa.ac.uk/news/04-06-2026/sb275-higher-education-graduate-outcomes-statistics → HTTP 403 (09-02) · Trail_정찰.json ceiling_reference HESA 항",
+    "fix": "「HESA(+15개월 · 2026-06-04 공표 · 페이지는 09-02 403 · 검색 요약 기준)」으로 표기하고 만기율 자 +6/+15 는 우리 규칙으로 못 박되 «HESA 동일 자» 문구는 확인 뒤에만."
+   }
+  ],
+  "kept": [
+   "U1 — exit_log 칸 «추가»(표 신설 0 · payStatus 감지기 무수정 · «미정» 기본값) + trajectory 종료구분 3열 «추가»(「처리상태」 교체 안 함) + 미정 30일 경보·미정 비율 계기 + effective_at '@' 고정",
+   "U2 — season_review 마이그 조각(20260812170000_season_review_c11.sql · 실재 확인)의 «적용 확인»으로 시즌회고_설계.md:23 「표 없다」 정정 · 표 재신설 0 · 9갈래 «늘리기만»(옛 7 이름 불변) · goal_used 열 · 재작성 첫 줄 단언 · 회고 미기록 시즌 null",
+   "U3 — L1 원문 층 4칸 append-only(원문 불변) + L2 outcome_verdict «판 붙은 N행 append»(옛 판·사람 확정 행 안 덮음) · 최신관측 = verdict_by ∈ {원장, form} 만 · 확정 화면 「확정 없이 넘기기」 같은 무게·하한 밑 버튼 없음·확정률 100% 경보 · 모델 픽·호출 켜는 날은 유호 자리(권고 없음)",
+   "U4 — 시험지 60(합성 분포 한계 명시 · 실응답 20건 시 교체) · 엔진점수.jsonl Trail 판 항목(판 다르면 대조 금지) · tests/궤적.test.js 복원(INTERVIEW_KINDS↔INTERVIEW_TO_KIND_ 1:1 등) · 궤적상한_ 래칫 셋(내리기만) · classifier_ver 별 행수 이어 돌기 · 도달 장부 「등재→실측→상한」 순서 · 원격 /triggers 라이브 폼 대조 절",
+   "U5 — 보장 분자 = 「lifecycle=졸업 ∧ 진위확인 행 ∧ 급수≥4」만 · 미확인은 «미확인» · 졸업 0 이면 «확인 불가»(0% 금지) · TOPIK 2년 창을 소급 불가 기술 이유로(seoulstart 페이지 09-02 실확인: 「2-year window closes → blocks both score lookup and certificate issuance」·문서확인번호 진위확인) · 재관측 만기율은 내부 계기판만 · «앱이 묻는다» 규칙 0 · 길과 이정표 직교(OUTCOME_KINDS_ 에 안 섞음)",
+   "U6 — «자기 것» 뷰는 남의 열이 «정의에 없음»(RLS 는 둘째 벽) · «남의 것»은 셀 n ≥ app_state 최소치(코드 상수 아님) · 좌절·중단만 있는 셀 침묵 · 기관명 없음 · 숫자는 학생·강사 화면 0 · 조각은 코드 템플릿 3값·「너」 0 · 1·2기는 강사 입만 · A/C 안의 숫자·「너」 장면 삭제",
+   "U7 — 계정 안 닫힘(잠금 모드 · 새 화면 0) · 근황 한 줄은 새 사건 타입 0 · 주기 알림·설문 0 · OB3/VC 2.0 서명 파일은 학생 손안(공개는 did:web 공개키뿐) · achievement id 7 학생 오기 전 고정 · StatusList 첫날 · 키 생성·보관은 유호 손·git 밖 · 16세 통로에 이름만 붙이고 2029 재판정",
+   "U8 — 결정.md 정정 «병기»(원문 삭제 0 · 공용 원장 즉시 커밋) · 소개서 원고 수리 후 렌더(산출물 직접 편집 0) · 정찰 기각 8건 유지(xAPI·Caliper·EUDI·Wallet·LinkedIn·Solid·Pipelines·TEE)",
+   "what_not_to_do 절 전체(목표 도달 런타임 자동 판정 0 · Santa 형 예측 게이지 안 지음 · 자산층 3규칙 · 분모 없는 숫자 0 · 재촉 장치 0 · 시제 §0 · 「12개월이면 몇 급」 금지)",
+   "build_order 의 «소급 불가 순»(exit_log 칸 → outcome_log 원문 층 → 어휘·id 못박기 → 자 → 정본 수리 → season_review 확인 → …) 과 「호출 켜기보다 시험지가 먼저」",
+   "정찰 출처 실확인 통과: Gemini changelog 2026-07-21(3.5 Flash-Lite GA) · structured-output enum 지원 · arXiv 2601.02720(TEE 안 NLP 로 자격 파생 · 착상만 승계) · data.go.kr 15100039 로그인 없음·월간 갱신"
+  ],
+  "overall": "수리 후 통과"
+ },
+ {
+  "target": "엔진 Trail 종합 설계",
+  "lens": "유호 확정 충돌 + 🚫 기술 이유 승계 + 실물 낡음 (횡단.json yuho_confirmed_engine_wide · Trail_독해 yuho_confirmed·inherited_constraints 대조 · 저장소 grep 09-02 실측 · 시제 §0)",
+  "refuted": [
+   {
+    "item": "U5 보장 부채 계기판 — 급수 이정표(exam.result 문서확인번호 · 원장 진위확인 행만) × 종료구분 × 몽골 전체 분모 + 재관측 만기율 자",
+    "severity": "치명",
+    "why": "장면 ⓐ「학생이 앱 말하기 화면 머리 카드에 급수와 증명서 사진을 올린다(Core exam.result 생산 · 지금 생산자 0)」와 L0「exam.result(… 생산자 0 · 학생 제출)」가 유호 확정을 조용히 뒤집는다. exam.result 는 2026-08-06 유호 확정 «강사 입력»이고 계약이 「학생이 공식 성적표를 제출하는 통로는 앱 동의 밖이라 만들지 않는다 · 서버사건이라 앱이 원리적으로 못 낸다(학생 기기가 자기 급수를 주장할 수 없다)」로 못 박았다. 생산자도 0 이 아니다 — functions/teach exam/save + lib/시험결과.js 조립기가 실재한다(실물 낡음). open_yuho_decisions 에 이 뒤집기가 없다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/계약/수집_교정_계약.json:10 「exam.result(TOPIK 실성적 = 강사 입력으로 유호님 확정 2026-08-06 … 학생이 공식 성적표를 제출하는 통로는 앱 동의 밖이라 만들지 않는다)」 · :97 「이 사건은 서버사건이라 앱이 원리적으로 못 낸다」 · C:/Users/q1212/Documents/SYNK-talk/lib/시험결과.js:2-7 「강사가 넣는 exam.result 의 조립기 … 생산자가 functions/teach 의 exam/save」",
+    "fix": "학생 제출 카드를 설계에서 지우고 생산자를 «강사 exam/save 화면»으로 바꾼다(payload 선택 칸 doc_verify_no·verify_status·announced_at 을 payload_허용필드 개정에 얹고 · 증명서 사진은 강사가 받아 백엔드 Storage) · 「학생이 앱에서 급수를 제출하는 통로」는 08-06 확정을 다시 여는 요청으로 open_yuho_decisions 에 별항 신설 · L0 문구를 「exam.result(생산자 = teach exam/save · 강사 입력 · 첫 실성적 0)」로 정정"
+   },
+   {
+    "item": "U1 「나갔다」를 가른다 — exit_log 종료사유·effective_at·lifecycle 을 Trail 이 읽어 trajectory 에 종료구분 3열을 «더한다»",
+    "severity": "중대",
+    "why": "「학생ID 종단 설계 구현 0」·「lifecycle_status 칸을 exit_log 시트에 더한다」가 낡았다. 09-02 talk 마이그 20260902600000_learner_lifecycle_c16.sql 이 engine.learners 에 enrolled_at·observed_at·effective_at·exit_reason·lifecycle_status 다섯 칸을 «파생 열»로 이미 세웠고(값 = 재학·종료·미상 · 원천 = exit_log → 퇴소 인제스트 개원 전) — 설계대로 exit_log 시트에도 lifecycle_status 칸을 두면 「한 값을 두 곳이 안다」의 실사례가 된다. exit_log 시트도 이미 있다(헤더 5칸 · 복귀재료창 소비자 실재).",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/supabase/migrations/20260902600000_learner_lifecycle_c16.sql:1·9·13-14 「학습자 생애 다섯 — engine.learners.enrolled_at · observed_at · effective_at · exit_reason · lifecycle_status … 이 칸들은 «원본»이 아니라 사건(exit_log → 퇴소 인제스트 · 개원 전)에서 «파생»된다 · lifecycle_status 재학 · 종료 · 미상」 · C:/Users/q1212/Documents/SYNK-appsscript/tests/복귀재료창.test.js:59 「exit_log 한 행 — 정본 헤더 5칸(student_id·이름·반·퇴소감지일·재원일수)」",
+    "fix": "exit_log 시트에는 «사건 원본» 칸만 더한다(종료사유·effective_at·observed_at·마지막_완료_시즌ID) · lifecycle_status 는 engine.learners 파생 열 하나가 정본(시트 칸 신설 0) · U1 생산자를 「Core 운영배치 + 퇴소 인제스트(시트 exit_log → learners 다섯 칸)」로 이름 대고 그 인제스트가 개원 전 몫임을 build_order ① 에 적는다 · trajectory 종료구분 3열은 exit_log 종료사유·effective_at 에서 파생"
+   },
+   {
+    "item": "U2 의도를 점에서 궤적으로 — 「목표 실린 과제 스스로 낸 날」 열(task.assigned goal_used 읽기)",
+    "severity": "중대",
+    "why": "없는 실물을 있다고 썼다. goal_used 는 talk lib·src·supabase·계약 어디에도 0건, appsscript 코드 0건 — 유일한 출처는 세층합류 심문 지면의 「[P0] goal_used 는 현재 즉사」이고 철학 재료도 「빛 축 짓기 전 · goal_used 보고 칸(파서 즉사 함정)」이다. L0 입력 목록과 U2 ⓑ 가 이것을 «읽기만 하면 되는 재료»로 놓아 시제 §0 위반.",
+    "evidence": "grep goal_used C:/Users/q1212/Documents/SYNK-talk/{lib,src,supabase,계약} = 0건(09-02) · C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/심문결과/세층합류_설계_v1-38f1a54dc152-luna-xhigh-1.md:17 「[P0] goal_used 는 현재 즉사하고 의미도 부족하다」",
+    "fix": "L0 입력에서 goal_used 를 빼고 U2 ⓑ 그 열을 「Core 세층합류 goal_used 착지(파서 허용 키 + 자기보고/관측 분리) 뒤 지을 것」으로 시제를 바꾼다 · 그 전까지 intent_timeline 의 그 열은 null(«안 재봤다») · 선행 트랙 이름(트랙 §0-합류 goal_used)을 build_order ⑥ 에 적는다"
+   },
+   {
+    "item": "U3 원문 원장 + 판 붙은 판정 층 — 분류 호출 후보 「Gemini 구조화 출력(엔진_콘텐츠AI.js 기존 통로)」",
+    "severity": "중대",
+    "why": "유호 결정 ① 의 선택지 전제가 틀렸다. 엔진_콘텐츠AI.js 는 Gemini 를 부르지 않는다 — model: AI_FEEDBACK_MODEL(Code.js:852 'claude-opus-5') · thinking: {type:'disabled'} 꼴의 Claude 호출뿐이고 엔진_*.js 전체에 gemini 참조 0(tools/geminilm-*.js·tests 만). 정찰 finding 3 「엔진_콘텐츠AI.js 가 이미 Gemini 를 부른다」를 설계가 검증 없이 옮겨 적었다 — «재사용»이 아니라 Apps Script 안 새 UrlFetch 통로 + 키 자리다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/엔진_콘텐츠AI.js:2698 「payload: JSON.stringify({ model: AI_FEEDBACK_MODEL, … thinking: { type: 'disabled' }」 · C:/Users/q1212/Documents/SYNK-appsscript/Code.js:852 「const AI_FEEDBACK_MODEL = 'claude-opus-5'; // 라우팅 정본 = tools/모델정책.js」 · grep -l gemini 엔진_*.js = 0건(09-02)",
+    "fix": "open_yuho_decisions 【U3·모델픽】 선택지를 「Claude(엔진_콘텐츠AI.js 통로 실재 · output_config.format) / Gemini(Apps Script 안 통로 0 · UrlFetch 1벌 + 스크립트 속성 키 자리 = 유호 손 · 무료 티어 0)」로 정정 · scouting_used 의 finding 3 인용문에 「통로 재사용」 낱말 삭제"
+   },
+   {
+    "item": "U4 자 셋 — ⓑ docs/_ops/엔진점수.jsonl «Trail 판» 항목(tools/이해대장.js 엔진점수() 규약 그대로)",
+    "severity": "중대",
+    "why": "엔진점수() 는 파일 전 줄을 «한 시계열»로 읽어 마지막 «답 온» 회차를 머리 숫자(88/102)로 세운다 — 엔진 키가 없다. Trail 60분모 행을 같은 파일에 더하면 이해대장·엔진 지도의 Core 점수 자리에 Trail 값이 올라가고 「▼ 변화」까지 다른 시험지끼리 뺀다(판 다르면 대조 금지 규칙 위반을 도구가 저지른다).",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/tools/이해대장.js:324-350 「function 엔진점수(root) … const 답온것 = 회차.filter(…); const 현재 = 답온것[답온것.length-1] … 변화: 직전 ? 현재.전체 - 직전.전체」(엔진 필터 없음) · docs/_ops/엔진점수.jsonl 마지막 행 스키마 = {판,전체,분모:102,교정,태그,거짓양성,무응답}",
+    "fix": "행에 「엔진」키(기본 'Core')를 두고 엔진점수(root, 엔진) 로 필터 + 회귀 1건(Trail 행이 섞여도 Core 머리 숫자 불변) — 또는 docs/_ops/엔진점수_Trail.jsonl 별도 파일 + 이해대장 Trail 절 · 어느 쪽이든 U4 ⓑ 에 그 한 줄을 적는다"
+   },
+   {
+    "item": "U6 첫 소비자 = 두 계급 뷰 — engine.my_trail · senior_paths 집계 뷰(셀 n ≥ app_state 최소치)",
+    "severity": "중대",
+    "why": "지금 형태로는 지을 수 없다 — 저장소가 갈린다. my_trail 열(outcome_verdict 확정행·판정 갈래)과 senior_paths 키(의도 버킷·lifecycle·활용동의)는 Apps Script 시트에 있고 뷰는 Supabase 에, 「궤적셀최소n」은 app_state «시트»(엔진_궤적.js ensureSheet)다. 시트층은 Supabase 참조 0 이고 Supabase 뷰는 시트를 못 읽는다. 설계는 U2 ⓒ 「시트→Supabase 읽기 통로」 한 방향만 적었고 역방향(Trail 파생 → engine.*)은 이름이 없다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/엔진_궤적.js:138·156 「ensureSheet(ss, 'app_state', ['key','value'])」 · grep -c 'supabase\\|season' 엔진_궤적.js = 0 · grep -l supabase appsscript *.js = .claude/hooks/credential-guard.js 뿐(09-02) · 횡단.json cross_engine_gaps 「시트층(Apps Script 라이브)은 사슬 ①에서 끊긴다 — supabase 참조 0」",
+    "fix": "L4 파생(trajectory·intent_timeline·outcome_verdict 확정 행)의 «Supabase 거울» engine.trail_* 표를 stores 에 추가하고 생산자(Apps Script UrlFetch → edge function 1벌 · 키 자리 명시)를 U6 과 같은 커밋으로 · 「궤적셀최소n」은 engine 설정 표 한 값(app_state 시트 아님) · 두 저장소 중 정본을 한 줄로(시트 = 원장 · engine.trail_* = 읽기 사본 · 낡음 자 = 갱신일)"
+   },
+   {
+    "item": "U2 ⓒ 시트층↔Supabase 읽기 통로 1벌(리허설 DB 부터) — cost 「0원」 · yuho_decision_needed 「없음」",
+    "severity": "중대",
+    "why": "Apps Script 가 Supabase 를 읽으려면 스크립트 속성에 키 한 벌(anon+전용 role 인지 service 인지)이 서야 하고 자격증명 입력은 유호님 손이다 — 「결정 없음」이 틀렸다. 어느 키냐에 따라 RLS 를 우회하는 통로가 라이브 시트층에 생기므로 반출통로 회귀에도 걸린다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/CLAUDE.md 「자격증명은 커밋·출력·전송·입력하지 않는다(입력은 유호님 손)」 · C:/Users/q1212/Documents/SYNK-appsscript/.claude/hooks/credential-guard.js(시트층 유일 supabase 참조) · tests/반출통로.test.js 실재",
+    "fix": "yuho_decision_needed 에 「Apps Script 스크립트 속성 키 = (a) anon + trail_reader role (b) service · 권고 (a)」 항목 + 유호님 클릭 자리(스크립트 속성 화면) · 대안 「Supabase → 시트 push(edge function 1)」 병기 · tests/반출통로.test.js 에 이 통로 등재를 같은 커밋"
+   },
+   {
+    "item": "U6 ⓓ 관통왕복 V6 「Trail 조각 동승 · null 이면 [학생 맥락] 길이 불변」을 «지금» 잰다",
+    "severity": "중대",
+    "why": "순서가 모순이다. trail_ref 는 payload 새 이름이라 검증기 ⑧ 이 거절하고 «다음 c-판 개정 필수»인데, 설계 스스로 그 개정을 U5 exam.result 칸과 «묶어»(문 = 2027 하반기) 올린다고 했다 — 그러면 V6 는 지금 못 잰다. 관통왕복 명세에도 V6 는 0건.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/lib/이벤트검증.js:904 「const 허용 = (계약 && 계약.learning_events && 계약.learning_events.payload_허용필드)」 · 횡단.json contracts 「c12 = payload_허용필드 화이트리스트(검증기 ⑧ — 새 payload 이름은 다음 판 개정 필수)」 · grep V6 docs/관통왕복_명세.md = 0건",
+    "fix": "V6 를 둘로 가른다 — V6a(지금 · 계약 무변경 · [학생 맥락] 산문 조각이 null 일 때 길이 불변 + 리허설 학생에 조각 심어 산문 동승) / V6b(trail_ref 스탬프 · c-판 개정 뒤) · 또는 「c17 을 지금 올린다」로 적고 판올림 비용(CHECK 이름째 교체 · contract-version-bump-drag)을 cost 에 · build_order ⑦ 의 «묶어» 문구를 그에 맞춰 정정"
+   },
+   {
+    "item": "U6 senior_paths 집계 — 「활용동의='동의' 행만」(outcome_log 활용동의 열 게이트)",
+    "severity": "중대",
+    "why": "동의 범위가 어긋난다. outcome_log 활용동의는 면접폼 「자료활용동의」(면접 경험 자료) 문구 그대로인데, 집계 키(의도 버킷·입학 급수·goal_track·종료구분)는 그 동의 밖의 데이터다. 09-02 신설된 consent_log(「그때 동의했나」를 재현하는 유일한 원장)를 설계가 한 번도 부르지 않는다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/엔진_궤적.js:74-75 「활용동의 — 면접폼 문구와 글자까지 같아야 한다 … (자료활용동의 필수 2지선다)」 · 엔진_셋업확장.js:491 「📈 5 (2026-09-02 · 분모 확대 26→27 — consent_log 신설. 「그때 동의했나」를 재현하는 유일한…」 · 엔진_폼리포트.js:516 「const CONSENT_LOG_TAB_ = 'consent_log'」",
+    "fix": "senior_paths 행 필터를 consent_log(동의 종류 = 「진로 결과 비식별 집계」 · 카드 뜨는 날 as_of 재현) 로 바꾸고, outcome_log 활용동의는 면접 경험 조각(질문 은행)에만 · consent_log 에 그 동의 종류가 없으면 「학생 오기 전 못박을 것」으로 closing_door 에 추가"
+   },
+   {
+    "item": "U6 【남의 것】 → Core deliver 재료 슬롯 + correct [학생 맥락] 1줄(과제 무대 · 학생 화면)",
+    "severity": "중대",
+    "why": "🚫 재제안 금지 「자산층 산출을 학생 화면에 노출」(비교의 씨앗 · Prism 「일반·평균」 선례)을 Core 경유라는 형태로 지나가면서, 유호께 여는 자리는 ⑤「일반화 수준(a/b/c)」뿐이다. 학생이 받는 문장 「먼저 간 선배가 있다」는 남의 결과 집계 산출 자체다 — 뒤집으려면 그 사실을 별항으로 올려야 한다.",
+    "evidence": "횡단.json asset_layer_rules 「🚫 재제안 금지(engine-folder-canon): … 자산층 산출을 학생 화면에 노출」 · 철학.json prohibitions ㉢ 「자산층(Prism 「일반·평균」)은 비교의 씨앗이라 학생 접점에 안 나간다」",
+    "fix": "open_yuho_decisions 에 「선배 집계가 학생 과제 무대(deliver·correct)에 닿아도 되나 — (a) 강사 화면만(기본) (b) 3기부터 무대 조각(유호 픽 · 몽골어 검수 뒤)」 별항 신설 · 결정 전 기본값 = (a) · deliver 슬롯·trail_ref 는 (b) 판정 뒤 짓는다로 build_order ⑦ 갈라 적기"
+   },
+   {
+    "item": "U4 ⓕ 엔진_콘텐츠AI.js 의 하드 모델 ID 를 모델정책.js 한 곳으로",
+    "severity": "경미",
+    "why": "하드값 자리가 다르다 — Code.js:852 `AI_FEEDBACK_MODEL` 이 정본이고 엔진_콘텐츠AI.js 는 그 상수를 읽을 뿐이다. 또 Apps Script 는 Node 파일(tools/모델정책.js)을 require 못 하므로 «옮긴다»가 성립하지 않는다 — 가능한 형태는 «대조»다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/Code.js:852 「const AI_FEEDBACK_MODEL = 'claude-opus-5'; // 라우팅 정본 = tools/모델정책.js」 · 엔진_콘텐츠AI.js:2314·2420·2583 「AI_FEEDBACK_MODEL」 참조만",
+    "fix": "「Code.js:852 ↔ tools/모델정책.js 값 일치 회귀 1건(tests/모델정책.test.js)」로 바꾸고, 재심 커밋 훅 발동 조건에 Code.js 의 AI_FEEDBACK_MODEL 줄 변경도 포함"
+   },
+   {
+    "item": "U8 정본 자기모순 수리 — 결정.md:342 정정 병기",
+    "severity": "경미",
+    "why": "행번호가 또 밀렸다 — 독해 333 → 설계 342 → 09-02 실측 354. 행번호로 지목하면 매번 낡는다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/결정.md:354 「| 2026-08-25 | 확정 | Trail 선배 모드 = «명예 졸업생 카드» — … 자기 3년 궤적 평생 열람 … 코드 착지 시한 = 2027 1기 졸업 전」",
+    "fix": "지목 키를 「2026-08-25 | 확정 | Trail 선배 모드」(날짜+제목)로 바꾸고 measure 의 grep 자도 그 키로 · 정정 병기 줄에도 행번호 대신 날짜 키"
+   },
+   {
+    "item": "U2 ⓐ·U8 「season_review 는 마이그 조각이 c11 유지라 판올림 대상 아님 · 실 DB 적용 여부 안 재봤다」",
+    "severity": "경미",
+    "why": "c16 물리에 이미 편입됐다 — 적용 후 상태 확인 스크립트가 season_review 열과 season_review_verdict_c16·self_c16·decided_c16 제약을 기대한다(판 접미 교체 완료). 「c11 유지」 문장은 낡았고, 적용 확인의 자도 이미 있다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/supabase/확인_적용후상태.sql:48-51 「('season_review','record_snapshot'), ('season_review','verdict') …」 · :113-114 「('season_review_once_c11'), ('season_review_verdict_c16'), ('season_review_self_c16'), ('season_review_decided_c16')」",
+    "fix": "U2 ⓐ 를 「조각 20260812170000(c11) + c16 제약 이름 교체 반영 · 적용 확인 = supabase/확인_적용후상태.sql 을 리허설·운영에 돌린 결과(첫 실측)」로 정정 · 시즌회고_설계.md:23 정정문에도 같은 자를 인용"
+   },
+   {
+    "item": "U7 학생이 들고 나가는 것 — 「talk 에 졸업 상태 코드 0 이라 «없음»이 곧 닫힘」 · 라우팅 조건 lifecycle_status='종료(졸업)'",
+    "severity": "경미",
+    "why": "실물이 낡았다 — c16 lifecycle 마이그가 exit_reason 값에 「졸업」을, lifecycle_status 값에 재학·종료·미상을 두었다. '종료(졸업)' 은 어느 열의 값도 아니다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/supabase/migrations/20260902600000_learner_lifecycle_c16.sql:13-14 「exit_reason 졸업 · 중도이탈 · 휴학 · 이사 · 미정 · 기타 … lifecycle_status 재학 · 종료 · 미상」",
+    "fix": "라우팅 조건 = lifecycle_status='종료' ∧ exit_reason='졸업' · removes 의 「졸업 상태 코드 0」 문장을 「값은 섰고 앱 라우팅 코드 0(grep talk src lifecycle = 0)」로"
+   },
+   {
+    "item": "U5 ⓑ mongolia_baseline — data.go.kr CSV 를 Trail 이 월 1회 적재",
+    "severity": "경미",
+    "why": "학생 데이터가 아니라도 «자산층이 제 수집 파이프라인을 갖는 것»이 규칙 ① 이 막는 형태다(관리비용 곱셈). 설계가 「파이프라인 6 병 예방」이라 적고도 소유를 Trail 에 둔다. URL·컬럼 안정성도 정찰이 「안 열어봤다」로 남긴 상태.",
+    "evidence": "횡단.json asset_layer_rules 「규칙 ① 자기 수집 통로를 «새로» 만들지 않는다 — 쌓는 셋은 닿는 셋이 걷은 것을 «읽기만»」·「🚫 재제안 금지 … 자산층에 자기 수집 통로 신설」 · Trail_정찰.json finding 1 「검색 목록에는 _20260630 판도 떠 있었다(안 열어봤다)」",
+    "fix": "적재 함수를 엔진_운영배치(운영층) 몫의 「외부통계」 시트로 두고 Trail 은 헤더 이름으로 읽기만 — 또는 「Trail 소유 외부 통계 통로 1건 허용」을 open_yuho_decisions 에 별항"
+   },
+   {
+    "item": "U5 「2년 창(발표 후 2년이면 조회·발급 둘 다 막힘)은 소급 불가의 «기술 이유» 그 자체」",
+    "severity": "경미",
+    "why": "근거가 low 다 — 정찰이 가이드 본문을 못 열었고 topik.go.kr 원문 실측이 없다. 설계는 이것을 사실로 굳혀 build_order ⑧ 의 «문»으로 쓴다.",
+    "evidence": "Trail_정찰.json finding 4 「confidence: low … 가이드 본문은 타임아웃으로 못 열어 날짜를 못 잡았다」 · https://seoulstart.com/guides/topik-score-certificate-guide",
+    "fix": "「2년 창(미확인 · topik.go.kr 원문 실측 전)」으로 낮추고 build_order ⑧ 의 문 근거를 「첫 실성적(강사 exam/save · 2027 하반기) 전 payload 칸」 하나로 · 실측 항목을 【안 재본 것】에 추가"
+   },
+   {
+    "item": "U1 what 「payStatus 감지기는 손대지 않고」 vs cost 「운영배치 감지기 분기 1」",
+    "severity": "경미",
+    "why": "한 항목 안에서 서로 어긋난다 — 감지기를 안 건드리면서 그 값을 «미정» 기본값으로 낮추는 분기는 감지기 수정이다.",
+    "evidence": "종합_Trail.json U1 what 「payStatus 감지기는 손대지 않고 그 값을 종료사유 «미정» 기본값으로 낮춘다」 · cost 「운영배치 감지기 분기 1」",
+    "fix": "한 문장으로 — 「감지 조건(payStatus==='퇴소')은 불변 · 감지 «뒤» exit_log 행 쓰기에 종료사유 기본값 '미정' 칸 하나를 더한다(분기 1)」"
+   },
+   {
+    "item": "U2 ⓒ 재작성 함수 첫 줄 단언 「season_compass 행수 ≥ 재원 학생 수」 어긋나면 궤적경보_ 1회",
+    "severity": "경미",
+    "why": "시즌 시작 직후·선언 전에는 원리상 늘 어긋난다(첫 답 0) — 개원 첫날부터 빨간 경보가 «정상값»이 되어 자가 무뎌진다.",
+    "evidence": "철학.json three_layers ㉢ live 「🔴 없다 — 첫 답 0(학생 0명)」 · 종합_Trail.json U2 ⓒ 단언 문구",
+    "fix": "경보가 아니라 계기 값으로 — 「시즌 시작 +N일 지난 재원 학생 중 선언 0 인 수 / 재원 수 · 날짜」를 app_state 에 · 경보는 통로 자체 실패(Supabase 응답 0·인증 실패)에만"
+   },
+   {
+    "item": "architecture.stores 「저장소: evals/궤적_픽스처.json · tests/궤적.test.js(복원) · tools/졸업배지굽기.js · tools/모델정책.js(모델 ID 한 곳)」",
+    "severity": "경미",
+    "why": "있는 것과 지을 것이 한 줄에 섞였다(시제 §0) — 졸업배지굽기.js·궤적_픽스처.json·궤적.test.js 는 09-02 없음, 모델정책.js 는 실재.",
+    "evidence": "ls 09-02: MISSING tools/졸업배지굽기.js · MISSING evals/궤적_픽스처.json · MISSING tests/궤적.test.js · EXISTS tools/모델정책.js",
+    "fix": "stores 를 「있음 / 지을 것」 두 칸으로 가르고 없는 셋에 「짓는다」 표기"
+   },
+   {
+    "item": "build_order ③·⑦ — my_trail 열 화이트리스트·뷰를 유호 판정 【U6·⛔ 문면】 «전»에 짓는다",
+    "severity": "경미",
+    "why": "⛔ 문면 좁히기는 open_yuho_decisions 에 올려 두고도 build_order 는 판정 전에 뷰와 회고 병치 배선을 세운다 — 판정이 (b) 유지로 나면 지은 것이 위반 실물이 된다.",
+    "evidence": "종합_Trail.json build_order ③ 「U6 my_trail 열 화이트리스트」 · ⑦ 「my_trail 뷰 + 회고 병치 왼쪽이 이 뷰만 읽게」 vs open_yuho_decisions 【U6·⛔ 문면】 「(a) 좁힌다 (b) 유지」",
+    "fix": "③·⑦ 의 my_trail 항목에 「유호 판정 【U6·⛔ 문면】 (a) 뒤」 게이트를 붙이고, 판정 전 몫은 뷰 «정의 초안 + 화이트리스트 회귀 파일»까지(배포 0)로 좁힌다"
+   }
+  ],
+  "kept": [
+   "U1 종료구분 3열 «추가»(「처리상태」 교체 0) · effective_at '@' 텍스트 + ymTextColFix_ · «미정» 30일 경보(분모 = 그 달 종료 행) · 표 신설 0(유호 ④) · 「졸업」을 상담시트 처리상태에 안 더함",
+   "U2 intent_timeline(입학 1행 + season_compass N행 + season_review 라벨 읽기만) · 9갈래(옛 7 이름 불변 + 방향 전환 후 일치/불일치) · as_of 관측일 기준 · 회고 미기록 시즌 null · 시즌 주기 코드 상수 금지 · 「방향 전환 후 일치」는 사람값의 대조 이름일 뿐(Ⅰ-4)",
+   "U3 outcome_log 원문 층 4칸 «추가» + 출처 «본인 제보(AI 초안)» 1값 «추가» · outcome_verdict append-only(판 = model_id+prompt sha · 옛 판 안 지움) · 모델 행은 초안 · 최신관측은 원장 확정·form 행만 · 이름 살균 필터를 pushGoldenFixture_ 와 한 곳 + 키릴 이름 20 픽스처 · 프롬프트에 식별자 0 · 확정 화면(원문·초안·confidence 병치 · 하한 밑 버튼 없음 · 확정률 100% 경보) · 모델 픽·호출 켜기·둘째 사람 칸은 유호 자리",
+   "U4 evals/궤적_픽스처.json 60벌(합성 분포 한계 명시 · 실응답 20건 뒤 갈아끼움) · tests/궤적.test.js 복원 8검사 · 궤적상한_ 래칫 셋(내리기만) · 재심 발동 = 모델정책.js 변경 커밋 훅 + app_state classifier_ver 사건 · classifier_ver 별 행수 이어 돌기 · 원격 /triggers 라이브 폼 대조 절(E3 옆) · 시트층 도달 «등재→실측→상한» 순 · 시험지가 호출보다 먼저",
+   "U5 topik_milestone 거울(결과종류 어휘에 안 섞음 = 길과 이정표 직교) · 진위확인 없는 행은 보장 분자 0 · 졸업 행 0 이면 «확인 불가»(0% 금지) · 적재 단언 셋(헤더·몽골 행≥1·전월 ±50%) + 궤적경보_ · 재관측 만기율 +6/+15 = 내부 계기판만 · «앱이 묻는다» 규칙 0(재촉 🚫) · 보장 판정은 원장 대화(사람) · 성과계기판.js 절 「n / 분모 · 날짜」",
+   "U6 두 계급 원리(자기 것 = 열 부재로 보장 + RLS 둘째 벽 · 남의 것 = 셀 n≥최소치 아니면 null · 좌절·중단만 있는 셀 침묵 · 기관명 없음 · 학생 쪽 숫자 0) · 열 화이트리스트 회귀 · 조각은 LLM 아닌 코드 템플릿(3값 · 「너」 0) · 「너와 같은 출발점에서 실패한」 부정 문장 원천 배제 · 첫 해 빈 카드가 정직 · 강사 훈련 한 줄 같은 커밋 · 셀 최소 n 은 코드 상수 아님",
+   "U7 OB3 3.0 / VC 2.0 서명 JSON(학생 손안 · 공개는 did:web 공개키뿐 · 공개 링크 0) · StatusList 첫날부터 · achievement id 7 학생 오기 전 못박기 + 회귀 ⑦ · 로컬 verifier 회귀 · 발급 키는 git 밖·유호 손 · 종이 번호 카드 3조건(인쇄본빌드 통로) · 계정 안 닫힘 · recovery_email 성인만·선택 · 16세 통로 = 이름만 붙이고 2029 재판정 · 근황 한 줄에 주기 알림 0 · 카드는 있는 홈의 잠금 모드(새 화면 0)",
+   "U8 정정 «병기»(원문 삭제 0 · 출처+날짜 동반) · 시즌회고_설계.md:23 「표 없다」 정정 · 소개서 원고 수리 후 렌더(산출물 직접 편집 0) · rot-check 낱말 자 · 공용 원장은 고치는 즉시 커밋",
+   "what_not_to_do 15항 전부(런타임 자동 판정 0 · 초안 비계수 · 자산층 산출 학생 화면 직접 0 · 어휘 늘리기만 · 식별자 프롬프트 0 · 모델 픽·재촉 금지 · 시험지 오염 금지 · 분모 없는 숫자 금지 · 가상 선배로 안 메움 · 기간 단정 재작성 금지 · 정찰 기각 8건 유지)",
+   "open_yuho_decisions 중 【U3·모델픽】(선택지 문구만 정정) · 【U3·돈】 · 【U3·㉡ 확정 클릭】 · 【U6·⛔ 문면】 · 【U6·㉢ 별개 설계】 · 【U7·자격증명】 · 【U7·16세】 · 【U5·㉣ 진위확인】 · 【U5·재촉】 · 【U8·정본】 · 【안 재본 것】 목록",
+   "vertical_line_contribution 의 정직한 한계 문장(1년차 실값 0 · 승급은 Core 재료가 연다 · F207) · io_with_other_engines 의 Prism·Temper «규약만 맞춘다 · 되먹임 지금 안 짬»(표본 0 규칙) · Reed 무관 정직 표기",
+   "build_order 의 소급 불가 순 배열 원리(①exit_log 칸 → ②outcome_log 원문 층 → ③어휘·id 못박기 → ④자 → ⑤정본 수리 → 개원 전 통로 → 첫 실성적 전 payload → 첫 졸업 전 카드)"
+  ],
+  "overall": "수리 후 통과"
+ }
+]
