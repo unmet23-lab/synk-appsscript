@@ -21,8 +21,11 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const 뿌리 = path.join(__dirname, '..');
 const 포트 = Number(process.argv[2]) || 8765;
+// 뿌리 = 서빙할 폴더. 기본은 이 저장소이고, 둘째 인자로 «다른 저장소»를 줄 수 있다
+// (홈페이지 synk-policy 처럼 밖에 사는 지면도 눈으로 재야 하기 때문이다 · 09-03).
+// 어느 쪽이든 아래 경로 검사가 그 뿌리 «밖»을 거절하는 것은 그대로다.
+const 뿌리 = path.resolve(process.argv[3] || path.join(__dirname, '..'));
 
 const 형 = {
   '.html': 'text/html; charset=utf-8',
