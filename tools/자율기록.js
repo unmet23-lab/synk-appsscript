@@ -408,7 +408,10 @@ function 등재() {
   try {
     const out = execFileSync(
       process.execPath,
-      [path.join(ROOT, 'tools', '운영자료.js'), 파생, '--이름', 표시이름],
+      /* 🔑 `--갈래` 를 «명시»한다 — 안 주면 운영자료의 전역 기본값(`기본갈래`)을 타서,
+       *   그 기본값이 언젠가 바뀌면 결정 로그 바로가기가 조용히 다른 폴더로 옮겨 간다
+       *   (codex 지적 e90ba9e7aa36 · 08-20). 결정 기록은 판단용 «방향» 자료 옆에 서야 한다. */
+      [path.join(ROOT, 'tools', '운영자료.js'), 파생, '--이름', 표시이름, '--갈래', '방향'],
       { encoding: 'utf8', cwd: ROOT }
     );
     const 줄 = out.trim().split(/\r?\n/).filter(Boolean).slice(0, 2).join('\n  ');
@@ -416,7 +419,7 @@ function 등재() {
     return true;
   } catch (e) {
     console.error('⚠ 바탕화면 등재에 실패했다 — HTML 은 만들어졌지만 유호님 화면엔 안 걸렸다.');
-    console.error(`  직접: node tools/운영자료.js docs/자율주행_결정록.html --이름 "${표시이름}"`);
+    console.error(`  직접: node tools/운영자료.js docs/자율주행_결정록.html --이름 "${표시이름}" --갈래 방향`);
     console.error(`  사유: ${(e && e.message) || e}`);
     return false;
   }
