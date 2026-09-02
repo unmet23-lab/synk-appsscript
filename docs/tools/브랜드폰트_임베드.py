@@ -105,6 +105,37 @@ def visible_text(src):
     return htmlmod.unescape(s)
 
 
+_CSS_CONTENT = re.compile(r"content\s*:\s*([^;}]+)", re.I)
+_CSS_STR = re.compile(r"'([^']*)'|\"([^\"]*)\"")
+_CSS_ESC = re.compile(r"\\([0-9A-Fa-f]{1,6})[ \t]?")
+
+
+def css_content_chars(src):
+    """<style> 안 `content:` 이 **그리는** 글자.
+
+    🔴 왜 있나 (2026-09-03 실측 · 03_상담브로셔 한 글자)
+      서브셋은 「쓰이는 글자」로 만드는데 그 목록을 `visible_text` 가 뽑고, 그 함수는 <style> 을
+      통째로 버린다. 그런데 CSS 는 글자를 «그린다» — `.vs .col li::before{content:'— '}` 처럼.
+      본문에도 그 글자가 있는 동안은 우연히 덮였다. 09-03 문안 스윕이 본문의 긴 줄표를 0으로
+      만들자 그 글자가 서브셋에서 빠졌고, 크롬이 맑은고딕으로 떨어뜨렸다 —
+      **인쇄물 한 장에 시스템 글꼴 한 글자**가 섞인 것이다.
+      키트검사 실측: 옛 판 MalgunGothic 잉크글자 0 → 새 판 1(—). 화면으로는 안 보인다.
+    ⚠ 이 자가 틀릴 때의 모습 = 넓게 긁어 **안 그리는 글자까지 싣는 것**. 값은 서브셋이 조금
+      커지는 것뿐이고(글자 하나 = 수십 바이트), 반대 방향(빠뜨림)은 종이에 남는다.
+    ⚠ `counter()`·`attr()` 같은 함수형 값은 문자열이 아니라 안 걷는다 — 거기서 나오는 숫자는
+      본문에도 있어서 이미 실린다.
+    """
+    out = set()
+    for block in re.findall(r"(?is)<style[^>]*>(.*?)</style>", src):
+        block = re.sub(r"(?s)/\*.*?\*/", " ", block)      # CSS 주석은 안 그린다
+        for m in _CSS_CONTENT.finditer(block):
+            for a, b in _CSS_STR.findall(m.group(1)):
+                s = a or b
+                s = _CSS_ESC.sub(lambda mm: chr(int(mm.group(1), 16)), s)
+                out.update(c for c in s if not c.isspace())
+    return out
+
+
 def build_faces(chars):
     """각 폰트를 「쓰는 글자 ∩ 그 폰트가 가진 글자」로 서브셋해 base64 woff2 로 만든다."""
     out = []
@@ -168,7 +199,12 @@ def main():
 
     text = visible_text(src)
     chars = {c for c in text if not c.isspace()}
-    print("쓰이는 글자 %d종" % len(chars))
+    css_only = css_content_chars(src) - chars
+    chars |= css_only
+    print("쓰이는 글자 %d종%s" % (
+        len(chars),
+        "" if not css_only else "  (본문엔 없고 CSS 가 그리는 것 %d: %s)" % (
+            len(css_only), " ".join(sorted(css_only)))))
 
     faces, coverage = build_faces(chars)
 
