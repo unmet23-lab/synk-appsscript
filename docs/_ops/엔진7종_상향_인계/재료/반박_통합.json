@@ -319,5 +319,327 @@
    "정지선 넷(돈·모델픽·소급불가·확정충돌)을 기각 사유가 아니라 D-질문(권고 동봉)으로 적은 open_yuho_decisions 형식 · 소개서 ⑦⑩ 매 착지 커밋 동행 · removed_list 로 옛 판을 그 자리에서 걷는 규율"
   ],
   "overall": "수리 후 통과"
+ },
+ {
+  "target": "일곱 통합 설계",
+  "lens": "실현성 — 1인·비개발자·AI 원격·램 16GB·Apps Script+Supabase+Expo·개원까지 약 6개월·학생 0·몽골어 검수자 미채용·돈 드는 API 는 가오픈 때. 「지어 놓고 도는가·닿는가·늘어나는가」를 실물(SYNK-appsscript · SYNK-talk · memory)과 대조하고 비용은 단가×횟수로 검산했다.",
+  "refuted": [
+   {
+    "item": "[새] tools/모델감시.js — 출시·판 변화 감지기 하나 → 결정.md 재심 큐 절",
+    "severity": "중대",
+    "why": "「주 1회 cron + 등록은 list 로 되읽음 · rot-check 48h 상주 칸」은 전부 하네스 예약·세션에 걸린 장치다. 하네스 예약은 노트북·세션이 살아 있을 때만 돌고 등록이 하루 사이 증발한 실측(7건 중 0)이 있으며 rot-check 도 세션이 열려야 읽힌다 — Ⅰ-9① 「발동을 사람 손(=세션 열기)에 걸면 0번 돈다」를 다른 얼굴로 재현한다. 공개 저장소에 GitHub Actions 가 이미 넷 있어 노트북 없이 도는 자리가 실재한다.",
+    "evidence": "C:/Users/q1212/.claude/projects/C--Users-q1212-Documents-SYNK-appsscript/memory/scheduled-task-registration-vanishes.md:「폴더 7개 · list_scheduled_tasks 0건」 · C:/Users/q1212/Documents/SYNK-appsscript/.github/workflows/review-claude.yml:1-13(공개 저장소 러너 무료 · 스위치 변수)",
+    "fix": "감지기의 «읽기»(가격표·changelog·모델 ID·기준선·판 지문 diff)는 SYNK-appsscript/.github/workflows/모델감시.yml `schedule: cron`(주 1회)으로 두어 노트북과 무관하게 돌리고 결과를 docs/_ops/재심큐.jsonl 커밋(벤더 키 불필요)으로 남긴다 · 돈 드는 «재채점»만 큐→노트북/유호 스위치로 갈라 적는다 · rot-check 48h 칸은 그 커밋 시각을 읽는다."
+   },
+   {
+    "item": "[기존→판올림] 수집·교정 계약 c16→c17 «한 판»",
+    "severity": "중대",
+    "why": "shape 는 「소비자 전부 같은 커밋 · 관통왕복 v0.5 같은 커밋 없으면 판올림 금지」인데 engine_order 는 c17 을 3번에 두고 그 어휘의 소비자를 뒤 걸음에 둔다(season_review 확정 열→13번 · exam.result 칸·trail_ref→17번 · goal_outcome·learner_account.linked→18번). 생산자섰는데도달0상한=0 래칫과 스스로 충돌하고, 한 커밋이 양 저장소·lib 다섯·앱 헤더·마이그를 물어 12월 파일럿 하나가 밀리면 전부 밀린다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/lib/이벤트검증.js:633 `const 생산자섰는데도달0상한 = 0;` · 통합_수리전.json shared_contracts[0].shape 「소비자 전부 같은 커밋」 vs engine_order step 3·13·17·18",
+    "fix": "c17 = 「첫 코호트 첫 주에 닫히는 어휘」만(과정 그림자·reads picker_*·arm_id·expected_ver·shadow·kind 여섯·teacher·goal.stated·self_explain·topic.engaged·mascot.touched·listen.session·moment_id·first_kind·corrected_value·atlas.excluded·atlas.summarized·'sim') + 학습자상태 v16 + V6~V9 동승 · 첫 행이 2027 하반기~2028 인 어휘(exam.result 칸·trail_ref·goal_outcome·learner_account.linked·season_review 확정 열)는 c18 로 갈라 그 소비자 걸음(13·17·18)과 같은 커밋 — 「소비자 같은 커밋」 규칙이 판 수를 정한다 · 판올림 8자리는 tools/계약판올림.js 체크리스트→회귀로 한 번 굳혀 N 회 비용을 상수로 만든다."
+   },
+   {
+    "item": "[새] 학생 접점 하루 예산표 — 「묻는 것 ≤2 · 주는 것 자리별 상한 · 몸은 무제한」",
+    "severity": "중대",
+    "why": "「묻는 것 ≤2/일」인데 정본 세층합류 §5 는 되묻기만으로 이미 성향 1+목표 1 = 2 이고 「셋째 장을 붙이려는 다음 설계는 이 줄을 고치는 것이 그 작업의 일부」라 적혀 있다. 설계는 S26·미니 문항·협상 되고침을 얹으면서 그 줄을 안 고쳤고, what_changes_for_student_day 장면은 하루에 미니 문항+되묻기+협상 카드+S26 = 4 를 보여 준다 — 예산표와 장면이 서로 어긋난다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/docs/세층합류_설계_v1.md:289-290 「하루에 되묻기 성격의 카드는 최대 2장 · 성향 1 + 목표 1 … 셋째 장을 붙이려는 다음 설계는 이 줄을 고치는 것이 그 작업의 일부」 · 통합_수리전.json what_changes_for_student_day(20:00~20:40 장면)",
+    "fix": "예산표를 세층합류 §5 그 줄 «한 곳»으로 통합하고 값을 하나로: 묻는 것 상한 2 유지 · S26·협상 되고침은 되묻기 두 슬롯 안에서 «교대»(관찰선택자가 슬롯 배정 · 같은 날 겹침 0) · 「오늘의 한 가지」 미니 문항은 답장 카드 안 선택형이라 «주는 것»으로 재분류(20초 상한) · 장면을 상한에 맞게 다시 쓴다 · 회귀 = progress·correct·companion 세 생산자를 한 함수(lib/접점예산.js)가 세어 하루 묻기 ≤2."
+   },
+   {
+    "item": "D13 【돈 · 한 상한】 돈 드는 실행 전량을 «월 상한 하나»로",
+    "severity": "중대",
+    "why": "상한 예 $30 에 «재심·재채점·회전»만 넣고 개원 뒤 «상시» 비용을 합산하지 않았다. 검산(실측 단가 Opus 5 캐시 켬 ≈$0.009/과제): 192명 기준 deliver ≈$38/월 + companion-bake 192×30×≈$0.009 ≈$52/월 + 요약 인코더(입력 ~8K·출력 1.5K ≈$0.08/학생/주 — U4 의 $0.02 추정은 출력 토큰을 안 셌다) 192×4 ≈$60/월 ⇒ 상시 ≈$150/월 » $30. 개원 첫 달 16명이면 ≈$13/월로 들어가지만 «재원 수 비례»라는 축이 표에 없어 유호님이 정할 값이 하나가 아니다.",
+    "evidence": "통합_수리전.json open_yuho_decisions D13 · 공통스택.json findings[1].cost 「월 4,224과제 = Fable5.1 $61 · Opus5 $38 · Sonnet5 $15」 · C:/Users/q1212/.claude/projects/C--Users-q1212-Documents-SYNK-appsscript/memory/generation-cost-and-capacity.md(월 192명 $119 · 캐싱 꺼짐)",
+    "fix": "D13 표를 두 줄로: ①1회성(회전·재채점·검수 발주·VPS·Lyria) = 월 상한 하나 ②상시 = 「학생 1인당 월 단가」(deliver+companion+인코더 ≈$0.8/명/월 추정 · 첫 회전 계측기가 실값을 낸다) × 재원 수 — 유호님이 정하실 값은 ①의 월 상한과 ②의 «1인당 단가 상한» 둘 · 성과계기판에 «1인당 실측 단가» 열을 두어 상한을 넘으면 큐로."
+   },
+   {
+    "item": "[새] atlas.summarized — 산문 Atlas 한 장",
+    "severity": "중대",
+    "why": "①「홀드아웃 Brier 학생별 5~10 · 미달이면 전판 유지/폐기」는 표본 5~10 으로 판을 자동 폐기하는 잡음 게이트다 — 16명 첫 달엔 as_of 이후 답(quiz.answered·correction.responded)이 학생당 한 자릿수라 결정이 요행으로 갈리고, 「분모가 추정이면 % 를 안 낸다」 자와 어긋난다. ②인코더 배치를 밤 사슬(노트북) 소비자로 두었는데 실학생 요약은 노트북이 꺼진 주에도 M2·companion·deliver 가 «같은 글»을 읽어야 하므로 서버(pg_cron/Edge)에서 돌아야 한다.",
+    "evidence": "통합_수리전.json shared_contracts[3].shape 「채점 = lib/요약채점기.js 홀드아웃 Brier … 미달이면 전판 유지」 · measures[10].denominator 「홀드아웃 답 수(학생별 5~10)」 · shared_contracts[21].consumers 「Core 학생시뮬·요약 인코더 배치」 · 철학.json rulers[8] 「분모가 추정이면 % 를 안 낸다」",
+    "fix": "채점 단위를 «판(summary_ver) × 코호트 합산»으로(학생별 점수는 참고 열 · 합산 홀드아웃 n<100 이면 「못 쟀다」 · 자동 폐기 0 · 판 교체는 재심 큐 질문) · 인코더 실행 자리를 companion-bake 와 같은 pg_cron→Edge Function(주 1회 · 학생당 1건 · 워커학생상한 승계)으로 옮기고 밤 사슬에는 «시뮬 20벌» 배치만 남긴다."
+   },
+   {
+    "item": "engine_order step 11 — Amber 그 자리 반환 · 학부모 P3 순서 게이트(학생 viewed 뒤) + step 7 T19 아침 1통 블록 + step 12 M2 슬롯의 Prism 교안·Trail 촉진 카드",
+    "severity": "중대",
+    "why": "P3 그날 저녁·아침 1통은 Apps Script 22시 배치(엔진_운영배치)이고 content.viewed·좋았던 순간은 Supabase 사건인데, Apps Script 코드에 Supabase «읽기» 통로가 0 이다(roster-ingest «쓰기» 한 곳뿐). 반대로 M2(talk)가 읽어야 할 Prism 교안·Trail 촉진은 시트층 산출이다. 「시트층↔Supabase 읽기 통로 1」은 13번에 있어 7·11·12번이 없는 다리 위에 선다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/엔진_운영배치.js:631(roster-ingest push · 유일한 Supabase 호출) · grep -c supabase Code.js·엔진_셋업확장.js = 0 · 통합_수리전.json engine_order step 13 item 「시트층↔Supabase 읽기 통로 1」",
+    "fix": "「시트층↔Supabase 읽기 통로 1」(Apps Script UrlFetch → talk 읽기 전용 Edge Function `ops-read` · 비식별 인덱스·집계만 · 서버 키 규약)을 step 3 c17 과 같은 배포 창으로 당기고, P3 순서 게이트·T19 블록·M2 Prism/Trail 카드가 전부 그 통로 하나를 읽는다고 shared_contracts 에 «[새] 시트층↔Supabase 읽기 통로» 계약으로 등재한다(생산자 talk · 소비자 Apps Script · 같은 커밋)."
+   },
+   {
+    "item": "conflicts_resolved[8] — 모델 ID 는 tools/모델정책.js 한 곳(appsscript 실재 · talk 는 그 값을 읽는다)",
+    "severity": "중대",
+    "why": "appsscript tools/모델정책.js 는 실재하나 talk 쪽은 lib/과제생성.js 주석 한 줄뿐이고 런타임(deliver-one·companion)은 Deno env GENERATION_MODEL 을 읽는다. Edge Function(Deno)·Expo 앱·Apps Script(V8 · require 불가)·node 도구 네 런타임이 다른 저장소의 node 파일을 «읽을» 통로가 없어 「한 곳」이 문장으로만 선다 — 엔진_콘텐츠AI.js·룸눈·Lyria·심판 하드값을 «옮긴다»가 실현 형태 없이 적혔다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/supabase/functions/deliver-one/index.ts:150·256 `Deno.env.get('GENERATION_MODEL')` · C:/Users/q1212/Documents/SYNK-talk/lib/과제생성.js:9(주석만) · SYNK-talk/tools/모델정책.js 없음(ls 09-03)",
+    "fix": "정본 = `계약/모델정책.json`(양 저장소 동기 · 계약 파일과 같은 동기 규약) + 생성기 하나(tools/모델정책.js --내보내기)가 ①appsscript `contents_모델정책.js` 상수 ②talk `supabase/functions/_shared/모델정책.ts` ③원격배포가 env 로 주입하는 값을 같은 커밋에서 뽑고 CI 가 세 산출을 바이트 대조 — 「한 곳」의 실체를 파일이 아니라 «생성 통로»로 적는다."
+   },
+   {
+    "item": "[새] 몽골어 검수 첫 꾸러미 manifest",
+    "severity": "중대",
+    "why": "①「10~11월 발주 1벌 · 추가 발주 0」인데 목록에 첫 시즌 뒤에야 생기는 것(Prism 첫 시즌 귀 라벨 정답지 · S16 카피=첫 회고 뒤 · Trail 20문장=3기부터 · 조준 새 낱말 ≤3/시즌)이 들어 있어 «한 번»이 성립하지 않는다 ②D16 권고가 「companion-bake 첫 회전 한국어 후보가 나온 뒤 동승」인데 companion-bake 는 engine_order 10번(NIKL 승인 대기 9번 뒤)이라 10~11월과 어긋난다 ③이미 정본 docs/몽골어_검수_꾸러미_설계.md(08-12)와 docs/몽골어검수_요청_큐.md 가 있어 manifest 를 새로 두면 «한 값 두 곳».",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/docs/몽골어_검수_꾸러미_설계.md:1-8 「몽골어 검수 꾸러미 — 설계 정본」 · docs/몽골어검수_요청_큐.md 실재 · 통합_수리전.json shared_contracts[20].consumers 「Prism … 첫 시즌 귀 라벨 정답지」·「Trail 20문장(3기부터)」",
+    "fix": "manifest 를 새 파일이 아니라 docs/몽골어검수_요청_큐.md 의 절(도구가 카피확정 false 를 긁어 채움 · 꾸러미_설계 정본 형식 그대로)로 두고, 꾸러미를 둘로 — ①개원 전(10~11월 · 앱 문구·개입 6종 값록·L1 어휘 v1·낱말 11·앱 판 라벨 · companion 후보는 «표 55줄 한국어 카피»로 먼저) ②첫 시즌 뒤(귀 라벨 정답지·S16·조준 낱말) — 「발주 1회 · 추가 0」 대신 「발주 2회 · 회당 상한」으로 D16 을 다시 적는다."
+   },
+   {
+    "item": "measures — instrument(계기) 열",
+    "severity": "중대",
+    "why": "33개 measures 의 instrument 로 적은 파일 가운데 저장소에 없는 것이 여럿이다(tools/자기설명검수.js · tools/룸눈.js · docs/_ops/룸취향.jsonl · evals/몽글시험지.json · tests/궤적.test.js · tools/prism_*.js · lib/요약채점기.js · lib/섀도대조.js · tools/설명대조.js). 새로 짓는 자인데 denominator 에 「지금」이라 적힌 칸(measures[21]·[22])이 있어 시제 §0 「없는 것을 있다고 쓰지 않는다」에 걸리고 다음 세션이 「자가 있다」로 읽는다.",
+    "evidence": "ls 실측 09-03: C:/Users/q1212/Documents/SYNK-appsscript/tools/자기설명검수.js MISSING · tools/룸눈.js MISSING · docs/_ops/룸취향.jsonl MISSING · C:/Users/q1212/Documents/SYNK-talk/evals/몽글시험지.json MISSING · SYNK-appsscript/tests/궤적.test.js MISSING · 철학.json rulers[7] 시제 규약 §0",
+    "fix": "measures 각 행에 «계기 상태» 열을 더한다 — 「있음(경로)」/「짓는다(engine_order step N)」 — 없는 것은 전부 «짓는다·step N» 으로 적고 denominator 의 「지금」은 「자가 선 뒤」로 바꾼다 · tools/이해대장.js 가 이 열을 ls 로 자동 채운다(손으로 안 적는다)."
+   },
+   {
+    "item": "D7 · shared_contracts[7] — self_explain·goal_text·근황 원문이 인코더·companion-bake 벤더 호출에 실리는 순서(㉣)",
+    "severity": "중대",
+    "why": "자유 한 줄(self_explain)·goal_text≤50cp·근황 원문·24h 첨삭 스레드가 atlas.summarized 인코더(step 10)와 companion-bake 프롬프트에 들어가는데, 「이름 살균 함수 한 곳」은 step 4 에 Apps Script(pushGoldenFixture_ 옆 · 키릴 20 픽스처)로만 있고 step 14 redaction_ver v1 의 살균은 승격 경로용이다 — talk Edge Function 쪽 벤더 호출 «전» 살균이 없어 학생·친구 이름이 붙은 원문이 밖으로 나갈 수 있다(㉣ 경계 ①).",
+    "evidence": "철학.json rulers[9] 「①이름 든 원문→AI ❌」 · 통합_수리전.json engine_order step 4 「이름 살균 함수 한 곳(pushGoldenFixture_ 와 같은 곳·키릴 20 픽스처)」 · step 10 인코더 입력 「원신호+24h 첨삭 스레드+goal.stated+observation.noted」",
+    "fix": "살균 함수를 talk lib/이름살균.js(순수함수 · 동봉.json 으로 deliver/correct/companion/teach 에 실림 · 키릴·한글·라틴 이름 20 픽스처)로 세우고 Apps Script 는 같은 규칙표를 생성 상수로 읽게 하며, 인코더·companion-bake·correct 조립부에 「자유 서술 값은 살균 뒤에만」 회귀(조립부 식별자 차단 회귀 확장)를 step 10 «앞»(c17 커밋)에 둔다."
+   },
+   {
+    "item": "engine_order step 4 — 학생ID 종단 «지금» 칸 넷(0이면 최우선) · measures[28]",
+    "severity": "경미",
+    "why": "실측하면 0 이 아니다 — Supabase 생애 칸 다섯(enrolled_at·observed_at·effective_at·exit_reason·lifecycle_status)이 09-02 c16 조각으로 이미 섰고, 시트 exit_log 헤더에도 종료사유·종료일이 09-02 에 증분됐다. step 0 「실측」 자리는 옳으나 step 4 문장과 measures[28] 「실물 수/4 · 지금 git log·grep」이 낡았다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/supabase/migrations/20260902600000_learner_lifecycle_c16.sql(열 다섯 · CHECK 0) · C:/Users/q1212/Documents/SYNK-appsscript/엔진_운영배치.js:168 `EXIT_LOG_HEADERS = [..., '종료사유', '종료일']`",
+    "fix": "step 4 를 「이미 선 것(Supabase 5칸 · exit_log 종료사유·종료일) 위에 남은 것만: effective_at '@' 서식·observed_at 시트 칸·마지막_완료_시즌ID·trajectory 종료구분 3열·recovery_email·시트↔Supabase 생애값 대조 단언」으로 다시 적고 measures[28] 분모를 실물 목록(있음 n/전체 m)으로 바꾼다."
+   },
+   {
+    "item": "engine_order step 1 — tools/모델정책.js 한 곳(엔진_콘텐츠AI.js·이미지굽기.js:22·Lyria·심판·룸눈 하드값 이동)",
+    "severity": "경미",
+    "why": "이미지굽기.js:22 는 09-03 커밋으로 이미 `require('../모델정책.js').제미나이키경로('돈')` 로 옮겨졌다 — 설계(09-02)보다 실물이 앞섰고 「프리뷰 별칭 낡음」 항목의 전제도 바뀌었다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/tools/lib/이미지굽기.js:19-22 「경로 정본은 tools/모델정책.js 하나다 — 09-03 전엔 이 파일이 같은 문자열을 따로 박아 두고 있었다」",
+    "fix": "step 1 목록에서 이미지굽기.js:22 를 지우고 「Loom 상수 셋 낡음」 중 별칭 항목을 «완료 09-03 · 별칭 생존 models.get 만 남음»으로 표기 · 남은 하드값(엔진_콘텐츠AI.js·Lyria·심판·룸눈)은 위 「생성 통로」 형태로."
+   },
+   {
+    "item": "[새] 밤 사슬 스케줄러 하나(밤샘_*.js · 램문지기 6,000MB)",
+    "severity": "경미",
+    "why": "①Prism 발음 파이프(ForcedAligner·음소 인식)를 「Arc」에 두었는데 torch 계열이 Intel Arc(XPU)에서 도는지는 안 재봤고 실측 선례는 Blender 굽기뿐이다 ②밤샘_*.js 는 날짜별 파일 셋(0831·0901·0902)이라 「스케줄러 하나」의 실물이 아직 «날짜 파일»이다 — 단계 append 가 어느 파일에 붙는지 정본이 없다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/tools/밤샘_0831.js · 밤샘_0901.js · 밤샘_0902.js 실재(ls 09-03) · 공통스택.json findings[4].gate_b 「노트북(램 16GB·Arc B390)엔 못 올린다」",
+    "fix": "「사슬 하나」의 실체를 tools/밤샘.js(단계 append 파일 하나 · 날짜는 로그·도장에만)로 적고 날짜 파일 셋은 이력으로 걷는다 · 발음 파이프 첫 단계를 «CPU 실측(원음 11×3 · 소요 분·상주 램)»으로 두어 Arc 전제는 실측 뒤에만 쓴다."
+   },
+   {
+    "item": "engine_order 전체 — 12월 파일럿(진짜 마감 하나)까지의 «크기»와 파일럿 문 표식",
+    "severity": "경미",
+    "why": "일곱 종합의 세션 추정을 합치면(Temper ≈15 · Trail ≈10 · Loom ≈10 · Vellum ≈10 · Prism ≈10 · Reed ≈8일 · Core ≈15) 파일럿 전 걸음(0~8)만도 60세션 안팎인데 세션 한도(≈8~9M/5h)와 1인 직렬 병목(유호 눈·귀·30건 라벨·실기기 빌드·NIKL 클릭)이 있다. 통합 설계에 걸음별 크기 합계와 「12월 파일럿에 반드시 켜져 있어야 하는 묶음」 표식이 없다 — 범위 축소가 아니라 «문이 닫히는 순서»의 분모가 빠진 것이고, 문이 없는 step 1(감지기·기준선 회전)이 파일럿 문(3·5·6·7·8) 앞에 서 있다.",
+    "evidence": "통합_수리전.json engine_order(19 걸음 · 크기 열 없음) · C:/Users/q1212/.claude/projects/C--Users-q1212-Documents-SYNK-appsscript/memory/workflow-stage-split-session-limit.md 「세션 한도 ≈ 8~9M/5h 창」 · C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/결정.md:297 「진짜 마감 = 12월 파일럿 하나(실패 시 대체물 없음)」",
+    "fix": "engine_order 각 걸음에 «세션 수(종합 추정 합)»와 「12월 파일럿 문 ○/✗」 열을 붙이고, 파일럿 문이 걸린 걸음(3·5·6·7·8 + 위 읽기 통로)을 앞에, step 1 감지기는 8번 뒤로(기준선 회전만 돈 스위치 자리에 남김) · 유호 손 묶음(D17)은 파일럿 −4주 날짜로 못박는다."
+   },
+   {
+    "item": "shared_contracts[0].shape — 「새 표 0 · 물리 열 = season_review 확정 열 1 뿐 · 나머지 jsonb payload」",
+    "severity": "경미",
+    "why": "Supabase 만 보면 참이나 설계 자체가 시트층에 물리 열·탭을 여럿 더한다(trajectory 종료구분 3열 · outcome_log 원문 4칸 · outcome_verdict 시트 · topik_milestone·mongolia_baseline 시트 · recovery_email · prism_map 산출 표) — 「새 표 0」이 거짓 초록으로 읽히고 시트도달 래칫(등재→실측→상한) 자리가 빠진다.",
+    "evidence": "통합_수리전.json engine_order step 4·9·17 · C:/Users/q1212/Documents/SYNK-appsscript/엔진_셋업확장.js:478-499 `시트도달상한_()`(올릴 땐 등재→실측→상한 순서)",
+    "fix": "문장을 「Supabase 새 표 0 · 물리 열 1 / 시트층 새 탭 N·열 M(목록: …)」으로 갈라 적고, 새 탭마다 수집표식/산출표 구분과 시트도달상한_ 등재 순서를 같은 줄에 적는다."
+   }
+  ],
+  "kept": [
+   "thesis · vertical_line_v2 — 자 셋(①모델↑값↑ ②한 것 ③학생 본인)을 한 계약·한 자·한 예산표 위에서 지난다는 축",
+   "conflicts_resolved[2] — listen.session 하나(content.viewed 재사용 금지 · parent_event_id 필수 · 검증기 ⑧ 즉사 이유) · 표본제외 '자습체류' · 학습자상태.js 라디오통로인가() 빼기와의 분리",
+   "conflicts_resolved[3] — moment_id(말할순간 표 값목록 · companion 행만) + first_kind(멱등키) 두 축 분리",
+   "conflicts_resolved[1] · [새] mascot.touched + topic.engaged — 파일 하나(src/마스코트.js)·통로 하나(src/사건통로.js)·판 하나(실물 둘 다 실재)",
+   "[새] atlas.summarized 의 «물리» = learning_events append-only 사건(immutable 트리거 실재) · 옛 요약 입력 배제 · 학생별 최신 1건 접기 · 표 신설 0",
+   "[새] lib/오늘의한가지.js 순수함수 하나(aiWeakMap_ 은 시트층 전용 · talk 통로로 안 부름)",
+   "[새] lib/발화검문.js — 런타임과 시험지가 같은 함수 · 표 파싱 자기 분모 검사 · 걸리면 침묵",
+   "[새] 강사 화면 슬롯 규격 — 아침 카드 슬롯 넷 · 강사 손 = 확정 탭 1 + 8주 1회 확정 칸 1 · 결석·미제출 이름만",
+   "[기존→v2] 시즌 회고 그릇 — engine.season_review 는 c11 마이그 조각 실재 · 굳힌판 v2 조립 하나 · 사람 칸 셋뿐",
+   "conflicts_resolved[4] · D4 — 개원 전 결정론 활성 판 + arm_id·shadow 스탬프만 · 확률 정책은 Temper 섀도 게이트 뒤 후보 판(소개서 §6 A/B 금지 승계)",
+   "[새] 'sim' 출처값 + tools/학생시뮬.js 프로필 세트 하나 — 운영 함수 거절 · is_test 분모 밖(lib/사건출처.js 어휘 확장 자리 실재)",
+   "[새] 시험지 묶음 규격 + tools/eval-score.js engine 열 + 엔진점수.jsonl 하나(장부 넷→하나 · 무응답=null · 판 다르면 대조 금지)",
+   "[새] 관통왕복 명세 v0.4→v0.5 — V6~V9 번호를 한 명세가 배정 · talk tools/관통왕복시험.js 하나(실재)",
+   "[새] goal_used 코드 스탬프 — 빛 산식은 observed(reads.life ∧ submission.created) · 생성 시점 코드 사실",
+   "[새] 과정 그림자 칸 + reads picker_* — compose_meta 승격 · 학부모 소비자 명시 제외 · 강사 라벨 0",
+   "[새] goal.stated + self_explain + corrected_value + atlas.excluded — explicit/observed 나란히 · 빼기 = 근거 단위 영구 사건(자동 해제 없음)",
+   "D2 앱 자습 재생기 12월 파일럿 첫 밤 — expo-audio + app.json UIBackgroundModes audio 가 이미 있어 배경 재생 전제가 실재",
+   "D1~D18 을 «기각 사유»가 아니라 «유호님께 요청할 자리»로 적은 형태(정지선 넷)",
+   "engine_order step 0 「자 먼저 · 0원 · 실측 묶음」과 step 19 「매 착지 커밋에 소개서 ⑦⑩ 동행」",
+   "removed_list — 감시기 일곱→하나 · 장부 넷→하나 · 돈 규칙 여섯→하나 · V6 네 정의→명세 · Core U5 균등 확률 개원 문장 삭제 · companion-bake 자체 산문 삭제 · 렌즈 A Atlas 설정 메뉴 화면 삭제 · 렌즈 C 자동 해제 삭제",
+   "Reed step 2 — 곡시계+곡장부(lib/곡장부.js 실재) 송출 첫날 전 · 세로 안전띠 4/4 · Dual stream 클릭 1회",
+   "conflicts_resolved[16] — Reed 는 생산자가 아니라 자리·규격 · 생산 Vellum 앱 · 소비 Core(자산층 규칙 ① 유지 · 지도 셋째 줄 유지)",
+   "what_changes_for_yuho — 보는 것 네 화면 · 판단 자리 셋 + 손 둘 · 발동은 전부 기계(단 감지기 실행 자리는 위 수리 뒤)",
+   "atlas_definition — 네 층(원신호·파생 저장 0·산문 한 장·집단 사전확률) · 소유는 학생 · 판정은 사람 · 감정·표정·시선 축 0"
+  ],
+  "overall": "수리 후 통과"
+ },
+ {
+  "target": "일곱 통합 설계",
+  "lens": "유호 확정 충돌 + 🚫 기술 이유 승계 + 실물 낡음 (횡단.json yuho_confirmed_engine_wide · 독해 7벌 yuho_confirmed/inherited_constraints · 저장소 둘 grep 09-03 실측 · 시제 §0)",
+  "refuted": [
+   {
+    "item": "[새] atlas.summarized — 산문 Atlas 한 장",
+    "severity": "치명",
+    "why": "LLM 이 지어낸 학생 산문을 engine.learning_events 에 append-only «사건»으로 저장하고, 학생 본인 확인 «전»에 deliver 과제요약·correct [학생 맥락]·companion-bake 가 그대로 읽는다. 이것은 「AI 추정을 사실처럼 저장하지 않는다」(유호 확정 08-05 · 코어엔진 §10)와 승계 제약(저장된 파생 = 낙인 고착 · 프로필 저장 ✗ · 두 시즌 시효 · LLM 추정은 본인 확인 전 생성에 안 쓴다)을 정면으로 어긴다. atlas_definition 자체가 「① 파생(저장 0 · as_of 재계산)」이라 적고 ② 산문만 저장하는 자기모순이 있고, 어느 D 도 「AI 산문을 사건으로 저장해도 되나」를 묻지 않는다(D7 은 자리·빼기만).",
+    "evidence": "재료/철학.json prohibitions 「추정을 사실처럼 저장 · 자기신고를 관측으로」 · Core_독해 inherited_constraints[0] 「저장된 상태는 틀린 낙인이 굳는 자리 · 원신호가 남아 있으면 상태는 언제든 재계산」·[7] 「LLM 추정은 본인 확인 전 생성에 안 쓴다」 · 횡단.json cross_engine_gaps(성향추출) 「본인 확인 '맞다'만 합류 · 프로필 저장 ✗ · 두 시즌 시효」 · Temper_독해 inherited 「🚫 cron 으로 성과를 «저장»」",
+    "fix": "atlas.summarized 를 «저장 사건»에서 «파생»으로 되돌린다 — ① 생성 입력에 실리는 것은 학습자상태 v16 사실 카운트 + explicit(맞다·corrected_value·goal.stated) 만 · ② LLM 추론 문장(「저녁에 더 집중되는 것 같아」류)은 «후보»로만 협상 카드에 노출하고 '맞다' 뒤에만 다음 요약 입력에 합류 · ③ 캐시가 필요하면 저장 0 원칙의 예외를 «summary 캐시 TTL(두 시즌 시효 · 자동 폐기 · 재생성 가능)»로 명시하고 learning_events 밖(파생 캐시)에 두며 D7 에 「AI 산문을 어디까지 저장하나」 선택지를 추가한다 · ④ 강사 M2 산문은 강사판(관찰 포함) · 학생 카드는 학생판(관찰 제외)으로 두 판을 가른다"
+   },
+   {
+    "item": "conflicts_resolved[16] 「Reed 는 Atlas 기여 0」 + removed_list[8] 정본·도구 착지",
+    "severity": "치명",
+    "why": "같은 문서 안에서 conflicts_resolved 는 「줄은 안 옮긴다(셋째 줄 유지)」라 적고, removed_list 마지막 항목은 「엔진 지도 v2.6 「Reed 기여 0」 문장」을 걷는다고 적었다. 유호 확정 08-26(Reed 셋째 줄 · Atlas 를 만드는 것도 관통할 것도 «여섯») 을 open_yuho_decisions 없이 조용히 뒤집는 형태이고, vertical_line_v2 가 Reed 소리(내 리듬·곡 사이 낱말·radio_tone kind)를 30일 짝·관통왕복 V7·V9 에 넣어 관통 대상을 일곱으로 만든다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/결정.md:341 「Reed 는 «셋째 줄»이다(유호 확정 08-26)」 · Temper_독해 yuho_confirmed 「Atlas 를 만드는 것도 관통할 것도 여전히 «여섯»」 · Reed_독해 yuho_confirmed 「Atlas 기여 0 · 억지로 한 줄에 끼우면 두 줄의 뜻이 흐려진다」 · 통합_수리전.json removed_list[8] vs conflicts_resolved[16]",
+    "fix": "removed_list[8] 에서 「Reed 기여 0」 문장 삭제를 뺀다 · 지도 v2.7 은 「Reed 기여 0(단 앱 자습 체류는 Vellum 이 걷고 Core 가 읽는 예외 경로)」로 본문화만 · 관통왕복 V7·V9 의 radio_tone 재측과 30일 짝 kind radio_tone/word_between_songs 가 「관통 대상 여섯」 확정과 어긋남을 D8 에 ④번 질문으로 올린다(「Reed 자리 개입을 Temper 짝에 넣으면 관통 대상이 일곱이 되는데 셋째 줄 확정을 유지하나」)"
+   },
+   {
+    "item": "engine_order step 12 「포트폴리오 걸음 1 생산자」 + vertical_line_v2 「포트폴리오 주인 없음 6주째」 + removed_list 【정본】 「트랙 §4-E 포트폴리오 주인 없음 줄」",
+    "severity": "치명",
+    "why": "포트폴리오 걸음 1 은 이미 지어져 있다 — 2026-09-02 커밋 d8758119d 「가져가는것 걸음1 — attendance 반 스냅샷 · portfolio_moments 최소 원본 · momentSweep_ · 소비자 둘(설계 v1.2)」 · contents_순간.js 실재 · attendance 헤더에 class_snapshot 실재 · tests/가져가는것_걸음1.test.js 실재. 설계는 09-01 grep(횡단.json)을 그대로 믿고 「구현 0곳 · attendance 반 이름 없음(소급 불가)」 위에 step 12 를 세웠다 — 설계 스스로 step 0 에 적은 「낡은 정본 위에 상향이 서면 다음 날 낡는다」의 실례이고 다음 세션이 같은 것을 두 번째 짓게 한다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/엔진_셋업확장.js:142 「'attendance' … [2026-09-02 걸음1] 헤더 정본 = Code.js ATTENDANCE_HEADERS(5 · class_snapshot = 출석 시점 반 스냅샷)」 · git log d8758119d 2026-09-02 · ls contents_순간.js · tests/가져가는것_걸음1.test.js",
+    "fix": "step 12 의 「포트폴리오 걸음 1 생산자(attendance 반 이름·portfolio_moments·class_snapshot·momentSweep_·contents_순간.js)」를 「걸음 1 실물(d8758119d) 라이브 배포 여부 확인 + Loom 조판 소비자 연결」로 바꾼다 · vertical_line_v2 「주인 없음 6주째」와 clauses_no_engine_serves 포트폴리오 문장을 「걸음 1 09-02 착지 · 남은 것 = 걸음 3·5 산출물 넷 + 조판 + 배포」로 고친다 · step 0 실측 묶음에 「횡단.json 의 09-01 grep 결과 전량 재grep」을 넣는다"
+   },
+   {
+    "item": "[기존→v2] 시즌 회고 그릇 — engine.season_review · lib/회고.js 굳힌판 v2",
+    "severity": "중대",
+    "why": "「사람 칸 셋뿐(verdict closer/same/redirected · 통한 개입 · 실현)」으로 접으면서 유호 확정 08-12 「판정 2칸 — 학생 먼저·강사 다음(학생 자기판정 칸)」이 사라졌다. talk lib/회고.js 에 자기판정검사 함수가 이미 있어 실물과도 어긋나고, 학생 항목이 「알게 된 것 셋+협상」으로만 남아 학생 자기판정이 조용히 빠진다(Ⅰ-4 판정=사람의 «학생 먼저» 절반).",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/docs/시즌회고_설계.md:277 「회고 화면(병치 + 판정 2칸 — 학생 먼저·강사 다음)」 · C:/Users/q1212/Documents/SYNK-talk/lib/회고.js:134 function 자기판정검사 · Vellum_독해 yuho_confirmed 「시즌 회고 학생 자기판정 칸」(08-12)",
+    "fix": "사람 칸을 넷으로 적는다 — 학생 자기판정(먼저 · closer/same/redirected) · 강사 verdict · 강사 「통한 개입」 · 실현(goal_outcome) · 굳힌판 v2 조립 순서에 「학생 답이 굳은 뒤에만 강사 칸이 열린다」(대조군 메아리 금지)를 명시"
+   },
+   {
+    "item": "[새] atlas.summarized 소비자 「Atlas 협상 카드·시즌 회고 「알게 된 것 셋」」 + 강사 화면 슬롯 규격",
+    "severity": "중대",
+    "why": "요약 인코더 입력에 observation.noted(강사 관찰 원문)가 들어가고 그 산문을 학생 협상 카드·회고 항목이 읽는다. c14 는 RLS learner_self_events 에서 관찰 원문을 학생에게서 «제외»했고(유호 확정 08-31), 설계 장면도 「teacher_classroom 개입 행 · ㄷ은 못 본다」라 적었는데 산문을 통해 새어 나간다. 관찰 원문에는 다른 학생 이름이 섞일 수 있어 ㉣ 살균 함수 적용도 안 적혀 있다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/supabase/migrations/20260831130000_classroom_loop_c14.sql:12·376-377 「RLS learner_self_events 재정의 — 관찰 원문(강사의 솔직한 서술·태도 포함)을 학생에게 … event_type 제외로 닫는다」 · 통합 what_changes_for_student_day 「ㄷ은 못 본다」",
+    "fix": "산문을 두 판으로 가른다 — 강사판(observation.noted 포함) / 학생판(observation.noted·teacher_classroom 제외 · evidence_refs 화이트리스트에서 event_type 제외) · 인코더 입력의 note_text 는 Trail step 4 의 이름 살균 함수를 지난 것만 · 협상 카드 근거 N/분모의 분모에서 관찰 사건을 뺀다"
+   },
+   {
+    "item": "[새] mascot.touched + topic.engaged — 몽글을 만진 것 / 말풍선에 반응한 것",
+    "severity": "중대",
+    "why": "생산자를 「talk src/마스코트.js 에서 사건통로.js 하나로」 두었는데 유호 확정 08-14 마스코트 금지 셋에 「DB 쓰기 ✗(영원히 읽기 전용)」이 있다. D3 는 케어 vs 감시만 묻고 이 확정과의 충돌을 적지 않았다 — 뒤집으려면 open_yuho_decisions 에 있어야 한다.",
+    "evidence": "Vellum_독해 inherited_constraints[0] 「마스코트 금지 셋 — 유일한 입구 ✗ · DB 쓰기 ✗(영원히 읽기 전용) · 장애 = 침묵」(docs/캐릭터/마스코트_말할순간_설계.md §0 · 유호 확정 08-14) · Vellum 종합 what_not_to_do 「DB 쓰기 ✗(저장은 그 화면의 기능 · 사건통로.js 하나)」",
+    "fix": "D3 에 「08-14 「DB 쓰기 ✗」의 «주체»를 마스코트 두뇌(발화·판정)로 좁히고 화면 기능(사건통로.js)의 관측 기록은 허용하나」를 선택지로 추가 · 생산자 문장을 「마스코트 컴포넌트가 아니라 화면 층(사건통로.js)이 쓴다 · 마스코트 코드는 여전히 DB 를 모른다」로 고쳐 적는다"
+   },
+   {
+    "item": "conflicts_resolved[11] 「사람 칸이 늘어난다 — 리듬으로 접는다」 + what_changes_for_yuho 「누르는 칸 — 판단 자리 셋 + 손 둘」",
+    "severity": "중대",
+    "why": "철학 ㉡ 는 「사람이 누르는 칸은 판단 자리 하나(검수 확정)만」이다. 설계는 시즌 확정 카드 한 장(어휘 늘리기·배분·근황 확정·판올림 픽·모델 픽) + 돈 스위치 + 눈·귀 + 강사 확정 탭 + 회고 확정 칸 둘을 «접기»라 부르며 통합 안에서 스스로 해결했다. 판단 자리가 하나에서 여럿으로 늘어나는 것은 철학 정본 제약이라 유호 질문이어야 한다(D10 ③·D4 는 일부만 묻는다).",
+    "evidence": "재료/철학.json prohibitions[0] 「사람이 누르는 칸은 판단이 필요한 자리 하나(검수 확정)만 · 발동 조건을 사람 손에 거는 장치는 0번 돈다」 · 통합 conflicts_resolved[11] resolution",
+    "fix": "D 하나를 추가한다 — 「㉡ 판단 자리를 검수 확정 하나 → (매일 검수 확정 · 강사 확정 탭 1 · 8주 1회 시즌 카드 1 · 돈 스위치 1) 로 넓히나 / 카드 안 항목 중 기계가 정해도 되는 것(어휘 늘리기 ≤1 축 · 배분 ±20% 안)은 자동으로 접나」 · 이해대장 「판단 자리 목록」 자는 그 결정 «뒤» 상한 래칫으로"
+   },
+   {
+    "item": "engine_order closing_door 의 D 번호 (step 1·5·9·10·12·13·14·15) + what_changes_for_yuho 「D18 묶음」 + conflicts_resolved[8] 「D14」",
+    "severity": "중대",
+    "why": "D9 부터 번호가 한 칸씩 어긋나 있다 — step 12 「유호 D10(Patina 자리)」(Patina 는 D9 · D10 은 Trail) · step 14 「유호 D16」(redaction 은 D15) · step 5 「유호 D13」(사전분석계획은 D12) · step 1·10 「돈 D14」(돈은 D13 · D14 는 모델 픽) · step 9 「D12·D18」(Prism 은 D11 · NIKL 클릭은 D17) · step 15 「D7·D10」(Patina 는 D9) · what_changes_for_yuho 「손 = D18 묶음」(손 묶음은 D17). 다음 에이전트가 이 표를 데이터로 읽으면 결정과 걸음이 엇갈린다.",
+    "evidence": "통합_수리전.json engine_order[12].closing_door 「유호 D10(Patina 자리)」 vs open_yuho_decisions[8] 「D9 … Patina 첫 자리」·[9] 「D10 … Trail 셋」 · engine_order[14].closing_door 「유호 D16」 vs open_yuho_decisions[14] 「D15 … Q8」",
+    "fix": "engine_order·conflicts_resolved·what_changes_for_yuho 의 D 참조를 open_yuho_decisions 의 실제 번호로 전량 재매핑(step1·10→D13 · step5→D12 · step9→D11·D17 · step12·15→D9 · step13→D10 · step14→D15 · 손 묶음→D17 · conflicts[8]→D13) · 번호 대신 질문 키(예 D_patina)를 쓰면 다음 삽입에도 안 어긋난다"
+   },
+   {
+    "item": "[새] 학생 접점 하루 예산표 — 「묻는 것 ≤2 · 주는 것 자리별 상한 · 몸은 무제한」",
+    "severity": "중대",
+    "why": "승계 규율은 「되묻기 카드 하루 최대 2장(성향 1+목표 1) · 세층합류 §5 한 곳」인데 설계는 「묻는 것(되묻기·S26·협상 되고침·미니 문항) 합계 ≤2」로 적어, 되묻기 둘만으로 예산이 차서 S26·오늘의 한 가지 문항이 들어갈 자리가 없다. 같은 문서의 학생 하루 장면은 되묻기 1 + 오늘의 한 가지 1문항 + S26(주 2회) = 3 을 그린다 — 자와 장면이 안 맞는다. 규율의 «집»도 세층합류 §5 에서 Vellum 상수로 옮기면서 옛 자리를 지우는 줄이 없다(두 곳이 알면 갈린다).",
+    "evidence": "Core_독해 inherited_constraints[8] 「하루 되묻기 카드 최대 2장(성향 1+목표 1) 규율은 세층합류 §5 한 곳 · 규율이 두 곳에 살면 카드가 조용히 는다」 · 통합 what_changes_for_student_day 20:00·20:40 장면",
+    "fix": "예산 ⓐ 를 「되묻기(성향 1+목표 1) 고정 + «추가로 묻는 것»(S26·협상 되고침) 하루 ≤1」로 다시 적고, 오늘의 한 가지 20초 문항은 «묻는 것»이 아니라 ⓑ «주는 것»(연습)으로 옮긴다 · 세층합류 §5 규율 문장은 Vellum 상수 파일을 가리키는 한 줄로 바꾸고 옛 값은 지운다"
+   },
+   {
+    "item": "vertical_line_v2 「첫 코호트 첫 주부터 … 다음 숙제 문항이 실제로 달라지며」 + what_changes_for_student_day(Lv2 학생)",
+    "severity": "중대",
+    "why": "개원일 학생 전원이 Lv1~2 인데 유호 확정(08-25·26)은 「초급(Lv1~2)은 생성 대상 밖 · 예비 풀 Lv1~2 = 0벌 · 초급 예비 회전은 일감 목록에」다. 첫 코호트 첫 주에 「다음 숙제 문항이 달라진다」(닿✓)는 deliver 생성이 아니라 시트층 재출제뿐이라 세로줄 ③④ 의 첫 실측이 원리상 초급 생성 갈래 판정 뒤로 밀린다. 설계는 D13 에 「초급 Lv1~2 예비 회전」을 돈 항목으로만 적고 «형태»(보기 2 를 모델이 만들게 하나 · 문장만 AI)를 묻지 않는다.",
+    "evidence": "횡단.json measured_state 「예비 과제 풀 Lv1~2 = 0벌 · 개원 첫 시즌 반은 Lv1~2 뿐 ⇒ 개원일 학생 전원이 예비 풀 밖」 · Core_독해 inherited 「초급(Lv1~2)은 생성 대상에서 뺀다 · 초급 예비 회전의 🚫「보기 2를 모델이 만들게 하기」는 유호 판정 자리」",
+    "fix": "D 하나를 추가한다 — 「초급 생성 갈래 형태(문장만 AI·질문·보기 고정 / 보기 2 도 모델 / 시트층 재출제만)와 초급 예비 회전 착수 시점」 · vertical_line_v2 에 「첫 코호트(Lv1~2)의 닿✓ 통로 = 초급 갈래가 서기 전엔 시트층 재출제(aiWeakMap_) — 생성 경유 닿✓ 는 초급 갈래 뒤」를 한 줄로 적고 measures 「행동안바뀜 1→0」 분모에 급수 갈래를 단다"
+   },
+   {
+    "item": "[새] tools/모델감시.js — 출시·판 변화 감지기 하나 → 결정.md 재심 큐 절",
+    "severity": "중대",
+    "why": "같은 자리에 이미 도구가 있다 — tools/모델정찰.js(신설 08-29 · 「우리가 쓰는 모델 ID 를 벤더 폐기·신규 페이지와 대조 · 과녁 = tools/모델정책.js · 종료코드 0/1/2 확인 불가 가름」)와 장부 docs/_ops/모델정찰.jsonl, 그리고 tools/ai스택점검.js. 설계는 「하네스에 이미 있는 장치를 쓴다」를 원칙으로 적으면서 [새] 파일을 세워 감지기가 둘이 된다(한 값 두 곳 · 상주 도구 수 +1).",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/tools/모델정찰.js:3-20 「모델정찰 — 우리가 쓰는 모델 ID 를 벤더 공식 폐기·신규 페이지와 대조한다(신설 2026-08-29 · 트랙 T2) … 이 파일이 그 방아쇠다」 · docs/_ops/모델정찰.jsonl 첫 행 2026-08-29 · CLAUDE.md 「새 운영 장치는 하네스에 이미 있는지 보고 짓는다」",
+    "fix": "「[새] tools/모델감시.js」를 「[기존→확장] tools/모델정찰.js」로 바꾼다 — 소스 목록에 Anthropic 가격표/changelog·blender.org·Skia releases·Meshy·Lyria 판 문자열을 더하고 판 지문(prompt_ver/summary_ver/classifier_ver/schedule_ver) diff 절을 얹으며 장부는 모델정찰.jsonl 하나 · 종료코드 2(확인 불가) 규약을 그대로 승계 · removed_list 의 「감시기 일곱 → 하나」 문장도 모델정찰.js 이름으로"
+   },
+   {
+    "item": "[새] 'sim' 출처값 + tools/학생시뮬.js 프로필 세트 하나",
+    "severity": "중대",
+    "why": "시험 학습자 표식은 c16 이 이미 «학습자» 칸(engine.learners.is_test)으로 세웠고 그 조각이 「표식을 «사건»이 아니라 «학습자»에 단다 — 한 번 달면 그 학생의 것이 전부 갈린다」를 이유로 적었다. 설계는 source_kind 값목록(어떻게 알게 됐나 = explicit/observed/teacher/inferred)에 'sim' 을 더해 사건 단위 표식을 하나 더 만든다 — 같은 판정에 자가 둘이 되고 source_kind 축의 뜻도 흐려진다(시뮬 학생의 제출도 «observed» 다).",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/supabase/migrations/20260902300000_test_learner_flag_c16.sql:1-13 「시험 학습자 표식 — engine.learners.is_test · 🔑 표식을 «사건»이 아니라 «학습자»에 단다」 · C:/Users/q1212/Documents/SYNK-talk/lib/사건출처.js:27-29 「source_kind 4종 = explicit·teacher·observed·inferred」",
+    "fix": "'sim' source_kind 값을 뺀다 · tools/학생시뮬.js 는 리허설 DB 에 is_test=true 학습자를 «도구가 명시로» 만들고, 운영 함수 거절·엔진점수·「늘었나」 분모 제외는 전부 learners.is_test 하나로 · c17 D1 어휘 목록과 shared_contracts[18] 에서 'sim' 줄 삭제"
+   },
+   {
+    "item": "open_yuho_decisions D17 「GitHub Secrets 에 벤더 키 1회(재심 Action)」 + [새] 감지기 「주 1회 cron + 출시 사건」",
+    "severity": "중대",
+    "why": "removed_list 는 Core 의 GitHub Action 폴링을 걷고 감지기를 하나로 접었는데 D17 은 재심 Action 용 GitHub Secrets 를 남겼다 — 재심이 어디서 도는지(노트북 cron / CI)가 둘로 적혀 있다. Temper 종합 what_not_to_do 는 「CI 는 운영 자격증명을 쥐지 않는다 · 판 재계산은 로컬 도구가 사건(훅)에 돈다」라 못 박았고, 실학생 시험지 판(D15 private 버킷)은 CI 에서 못 읽는다.",
+    "evidence": "통합_수리전.json removed_list[0] 「Core GitHub Action 폴링 … → tools/모델감시.js 하나」 vs open_yuho_decisions[16] D17 「GitHub Secrets 에 벤더 키 1회(재심 Action)」 · Temper 종합 what_not_to_do 「CI 가 운영 짝을 읽어 재계산하지 않는다 — CI 는 운영 자격증명을 쥐지 않는다」",
+    "fix": "재심 실행 자리를 하나로 적는다 — 로컬(노트북) 사건 훅 + 예약 작업(등록은 list 로 되읽음) · D17 에서 GitHub Secrets 줄을 지우고, CI 몫은 «합성 시험지 순수 회귀»만으로 한정"
+   },
+   {
+    "item": "open_yuho_decisions D10 ③ / D17 — Trail U7 「OB3/VC 2.0 서명 파일 · did:web · 종이 번호 카드」",
+    "severity": "중대",
+    "why": "유호 확정 08-04 「학생 파일 공개 링크 없음 · 포트폴리오는 종이와 계정으로만(링크 0)」 위에 «서명 파일을 학생 손에» + did:web 공개 검증 통로를 세운다. 파일은 학생이 어디든 올릴 수 있는 밖의 실물이라 「종이와 계정으로만」의 예외인데, 통합 D 는 개인키 보관 자리(손)만 묻고 예외 여부는 묻지 않는다.",
+    "evidence": "Trail_독해 yuho_confirmed 「학생 파일 공개 링크 없음(「B로 가자」 — Drive 공개 링크는 만료가 없어 구조로 고침) · 포트폴리오는 종이와 계정으로만(링크 0)」(2026-08-04 · docs/가져가는것_설계_v1.md §5-c) · 통합 engine_order[18] item",
+    "fix": "D10 에 ④ 「졸업 카드 서명 파일(OB3/VC) 발급은 08-04 「종이와 계정으로만」의 예외인가 — ⓐ 예외 인정(파일에 식별자 최소 · 검증은 공개키만) ⓑ 종이 번호 카드 3조건만 ⓒ 첫 졸업 전 재판정」 을 추가하고, 결정 전엔 tools/졸업배지굽기.js 를 짓지 않는다"
+   },
+   {
+    "item": "open_yuho_decisions D2 「「곡 3개」 전제는 09-02 8벌 69분으로 낡았다」",
+    "severity": "경미",
+    "why": "09-01 확정의 «다시 여는 조건»은 「곡 20개쯤 + 학생이 앱을 쓰기 시작한 뒤」이고 「곡 3개」는 미룬 «사유»다. 8벌은 20 이 아니며 둘째 조건(학생이 앱을 씀)은 12월 파일럿이 처음 채운다 — 유호님이 읽는 선택지 문장이 확정 문구를 잘못 인용한다.",
+    "evidence": "Reed_독해 inherited_constraints 「앱 자습 라디오 = ⏳미룸(기각 아님) — 다시 여는 조건 = 곡 20개쯤 + 학생이 앱을 쓰기 시작한 뒤 · 재료가 없어서다(곡 3개 · 학생 0명)」(결정.md 09-01)",
+    "fix": "D2 근거 문장을 「확정의 다시 여는 조건은 곡 20개쯤 + 학생이 앱을 씀 — 지금 8벌(69분) · 파일럿 코호트가 둘째 조건을 채우는 첫 날이라 «그릇만» 앞당기자」로 고쳐 적는다"
+   },
+   {
+    "item": "engine_order step 0 「결정.md:342 정정 병기」 · removed_list 【Trail】 「결정.md:342」 · 【Vellum】 「교재연동.js:836 「자랐어요」」 · 【Loom】 「tools/lib/이미지굽기.js:22 프리뷰 별칭」",
+    "severity": "경미",
+    "why": "실물 줄번호가 낡았다 — Trail 「3년 궤적」 줄은 결정.md:368(342 는 까몽 실 확정), 「자랐어요」는 교재연동.js:911(+엔진_폼리포트.js:3138 도 같은 낱말), nano-banana 프리뷰 별칭은 이미지굽기.js:25(22-24 는 09-03 모델정책.js 경로 주석). 「바꾸지 않고 붙인다」 규칙상 실물 이름·줄은 맞아야 절차가 산다.",
+    "evidence": "C:/Users/q1212/Documents/SYNK-appsscript/docs/_ops/결정.md:368 「Trail 선배 모드 … 자기 3년 궤적 평생 열람」 · 교재연동.js:911 「목소리가 자랐어요」 · 엔진_폼리포트.js:3138 「성실하게 자랐어요」 · tools/lib/이미지굽기.js:25 「const 기본모델 = 'nano-banana-pro-preview'」",
+    "fix": "줄번호 넷을 실측값으로 바꾸고(342→368 · 836→911+3138 · 22→25), 착지 커밋에서 줄번호 대신 grep 낱말(「3년 궤적」·「자랐어요」·「nano-banana-pro-preview」)로 지목한다"
+   },
+   {
+    "item": "measures[] instrument 전량 (시제 §0)",
+    "severity": "경미",
+    "why": "measures 의 instrument 칸이 실재 도구와 아직 없는 도구를 같은 문장으로 적는다. 09-03 ls 실측으로 없는 것: tools/모델감시.js·자기설명검수.js·룸눈.js·시험지굽기.js·졸업배지굽기.js·학생시뮬.js·설명대조.js·처방판재계산.js·prism_*.js·발음자.js · talk lib/오늘의한가지.js·발화검문.js·관찰선택자.js·요약채점기.js·섀도대조.js · evals/몽글시험지.json · tests/궤적.test.js · docs/_ops/룸취향.jsonl. 실재: tools/이해대장.js·rot-check.js·브랜드렌더린트.js·시트도달.js · talk lib/동의율.js·성과회수.js·이벤트검증.js · tools/eval-score.js·성과계기판.js·관통왕복시험.js · tests/개입스탬프.test.js(5)·마스코트배선.test.js(8) · appsscript tests/함께한날.test.js.",
+    "evidence": "ls C:/Users/q1212/Documents/SYNK-appsscript/tools · ls C:/Users/q1212/Documents/SYNK-talk/lib tools evals tests (2026-09-03 실측)",
+    "fix": "instrument 칸마다 「[실재]」/「[짓는다]」 표식을 붙이고, [짓는다] 도구는 engine_order 의 어느 걸음에서 서는지 걸음 번호를 단다"
+   },
+   {
+    "item": "[새] lib/발화검문.js — 학생·강사에게 가는 «말» 전부의 한 함수",
+    "severity": "경미",
+    "why": "두 가지가 안 맞는다 — ① 「어휘 1~3급」 자를 강사에게 가는 말(T19·T20·회고 절 · 한국어 가능한 몽골쌤 화면)에까지 걸면 강사 문장이 침묵된다 · ② 「표 화이트리스트는 docs 에서 파싱」인데 표의 정본은 appsscript docs/캐릭터/마스코트_말할순간_설계.md 이고 실물 표는 talk lib/마스코트강사말.js·src/마스코트.js 에 살아 있어, talk 런타임이 다른 저장소 문서를 읽을 수 없다(moment_id 는 「도구가 표에서 계약으로 생성」이라 적고 여기만 런타임 파싱).",
+    "evidence": "C:/Users/q1212/Documents/SYNK-talk/docs/컴패니언_내부계약.md:3 「정본 사슬: appsscript docs/캐릭터/마스코트_말할순간_설계.md v1.1(행동) → …」 · talk lib/마스코트강사말.js · Vellum_독해 inherited 「어휘는 TOPIK 1~3급 언저리(시그니처 어휘 예외)」(학생 접점 규칙)",
+    "fix": "어휘 자는 수신자 갈래(학생·학부모)에만 걸고 강사 갈래는 사실성·비교·식별자 셋만 · 표 화이트리스트는 moment_id 와 같은 도구가 «빌드 시» 표→계약 값목록으로 생성한 파일을 런타임이 읽고, 문서 줄 수 대조는 CI 회귀에서만"
+   },
+   {
+    "item": "what_changes_for_yuho ① 아침 1통 재심 큐 한 줄 「새 모델 X: ㉠ 91/102(합성) · ㉡ 0.74(n) · ㉢ 0.68(n) · 회당 $3.4 · 뒤집기 후보 3」",
+    "severity": "경미",
+    "why": "유호님이 읽는 지면에 잰 적 없는 숫자를 예시로 박았다 — 「실측이 판정한다 · 숫자를 지어내지 않는다」. 다음 세션이 이 줄을 실측으로 오독할 수 있다.",
+    "evidence": "재료/철학.json rulers 「실측이 판정한다 — 수는 자·분모·날짜와 함께 · 잴 수 있는 것은 추정하지 않고 재고」 · 통합 what_changes_for_yuho",
+    "fix": "숫자를 자리표시(「㉠ n/102(합성) · ㉡ x.xx(n)」)로 바꾸거나 「형식 예시 · 값 아님」을 앞에 단다"
+   },
+   {
+    "item": "[기존→판올림] 수집·교정 계약 c16→c17 «한 판» + D1 「소급 불가 어휘 전량」",
+    "severity": "경미",
+    "why": "D1 이 25개 어휘를 전부 「소급 불가(첫 코호트 첫 주)」로 묶었지만 goal_outcome·learner_account.linked(2027-08·2028-02 문)·exam.result 칸(첫 실성적 2027 하반기 전)·trail_ref·season_review 확정 열(첫 회고 2027-04)은 첫 주 소급 불가가 아니다 — Trail 종합도 「exam.result 칸은 첫 실성적 전이 문 · season_review 는 판올림 대상 아님」이라 적었다. 「전량 한 판」의 근거(드래그 한 번)는 서지만 «소급 불가»라는 낱말이 거짓 긴급을 만든다.",
+    "evidence": "Trail 종합 open_yuho_decisions 「exam.result 칸은 첫 실성적(2027 하반기) 전이 문 · season_review 는 마이그 조각이 c11 유지라 판올림 대상 아님」 · 통합 engine_order[18].closing_door 「첫 졸업 2028-02 전」",
+    "fix": "D1 어휘 목록을 두 줄로 가른다 — 「첫 주 소급 불가(과정 그림자·arm_id·loom_ver·expected_ver·shadow·kind·teacher·goal.stated·corrected_value·atlas.excluded·self_explain·topic.engaged·mascot.touched·listen.session·moment_id·first_kind)」 / 「나중 문이지만 한 판에 동승(goal_outcome·learner_account.linked·exam.result 칸·trail_ref·season_review 확정 열·error_tags 뜻)」 · 추천 A 의 근거를 「드래그 한 번」으로만 적는다"
+   }
+  ],
+  "kept": [
+   "thesis 자 셋(모델↑에 값↑ · 재료=한 것 · 수신자=학생 본인)과 vertical_line_v2 의 여덟 칸 배분 골격",
+   "c17 «한 판» 원칙(생산자·소비자 같은 커밋 · 관통왕복 v0.5 같은 커밋 없으면 판올림 금지)",
+   "[기존→v16] lib/학습자상태.js — ㉡ 소비자 «한 파일»(as_of 필수 · 저장 0 · explicit/observed 나란히)",
+   "[기존→v2] intervention.delivered kind 여섯 · 스탬프 다섯+넷 · null 스탬프 = 성공 표식 없음",
+   "[새] listen.session 하나(생산자 Vellum 앱 · Reed 는 규격만 · content.viewed 재사용 금지 이유)",
+   "[새] mascot.touched / topic.engaged 두 사건 분리 · 세션 집계 1행 · 해석 라벨 0 · 노출 행 = 분모",
+   "[새] 과정 그림자 칸 + reads picker_version/picker_reason(원문 아님 · 학부모 리포트 명시 제외)",
+   "[새] goal.stated / self_explain / corrected_value / atlas.excluded — explicit 갈래 분리 · 빼기 = 영구 사건 · 자동 해제 없음",
+   "[새] goal_used 코드 스탬프(Vellum 판 채택 · 자기신고≠관측)",
+   "[새] lib/오늘의한가지.js — 고르는 자 하나(LLM 아님 · aiWeakMap_ 은 시트층 전용)",
+   "[새] 강사 화면 슬롯 규격(관찰 입력 화면엔 0 · 발송 시각 = 관찰 입력 뒤 · 결석은 이름만)",
+   "[새] 사상표 한 장 — 24종 이름 불변 · 늘리기만 · 시즌당 ≤1 축",
+   "[새] 시험지 묶음 규격 + 엔진점수.jsonl engine 열 하나(판 다르면 대조 금지 · 무응답 null)",
+   "[새] 관통왕복 명세 v0.5 — V6~V9 번호를 한 명세가 배정",
+   "[기존] content.viewed(parent_event_id) 유일 생산자 = Vellum 면 · 학부모 P3 는 학생 viewed 뒤",
+   "[새] 몽골어 검수 첫 꾸러미 manifest 하나(검수 전 = 설계된 침묵)",
+   "[새] 밤 사슬 스케줄러 — 밤샘_*.js·램문지기 6,000MB 실재 위에 단계 append · 여덟 단계 빚 먼저",
+   "[기존] 디자인_토큰.json · 마스코트자산.js · 렌더린트 등록층(한 값 한 곳 · ASCII 키)",
+   "conflicts_resolved[4] 되먹임 형태 접합(개원 전 결정론+arm_id 스탬프만 · 확률 정책은 섀도 게이트 뒤 · 탐색 바닥 0%)",
+   "conflicts_resolved[3] moment_id = 말할순간 표 값목록 · Amber 처음 = first_kind 멱등키",
+   "conflicts_resolved[6] 「하나만 돌려주는」 자 하나",
+   "conflicts_resolved[7] 세 축 «빛» = goal_used 코드 스탬프(Vellum 판)",
+   "conflicts_resolved[9] V6 네 정의 → 명세 v0.5",
+   "engine_order step 0 「자 먼저 · 0원 · 지금」 실측 묶음 원칙(단 항목은 재grep)",
+   "engine_order step 2 Reed 곡시계·곡장부 그릇 «송출 첫날 전» + 세로 안전띠",
+   "engine_order step 3~5 순서(계약 → 학생ID 종단 칸 → 사전분석계획 git 선행)",
+   "engine_order step 8 리허설 입구 E1~E4 + 출구를 «같이 한 번»",
+   "engine_order step 9 Prism 「값·판정은 개원 뒤 / 자·계약·집계 코드·조준 배선은 개원 전」 갈라 적기",
+   "atlas_definition 「어떻게 평가되나 — 엔진의 성적이지 학생의 성적이 아니다 · 「학생이 실제로 더 잘하게 됐나」는 게이트에 안 넣는다」",
+   "what_changes_for_student_day 의 형태 원칙(몽골어 검수 전 침묵·몸짓 · 세 축 안 떨어짐 · 재촉 0 · 숫자 0)",
+   "open_yuho_decisions D4·D5·D6·D8·D9·D10①②·D11·D12·D13·D14·D15·D16·D18 의 질문 자체와 선택지 구조(번호만 재매핑)",
+   "D11 ② 학생 음성 원본 안 내보냄(오픈 가중치 로컬 · Azure 다시 여는 조건)",
+   "D14 「제안 없음 — 표까지가 장치의 몫」(모델 픽은 유호님만)",
+   "removed_list 의 감시기 일곱→하나 · 장부 넷→하나 · 돈 규칙 여섯→월 상한 하나 접기(단 기존 모델정찰.js 위에서)",
+   "removed_list 【Loom】 «구» 형태 은퇴 · Skia 2.11.1 고정 걷기 · 【Reed】 유튜브 임베드 후보 걷기 · HLS·Liquidsoap·RealTime 안 짓기"
+  ],
+  "overall": "수리 후 통과"
  }
 ]
