@@ -2394,8 +2394,8 @@ function raidStoryDaily() {
       else lines.push('🩸 ' + bN + ' 남은 HP: ' + remain + ' / ' + hp);
     }
     const crowns = []; // [v7.7→08-20] 오늘의 도전·성장 코너
-    if (crM[cls]) Object.keys(crM[cls]).forEach(s => { if (crM[cls][s] > 0) crowns.push('🌟 MVP: ' + (nameOf[s] || s)); });
-    if (crS[cls]) Object.keys(crS[cls]).forEach(s => { if (crS[cls][s] > 0) crowns.push('⚡ 시냅스: ' + (nameOf[s] || s)); });
+    if (crM[cls]) Object.keys(crM[cls]).forEach(s => { if (crM[cls][s] > 0) crowns.push('🔥 도전: ' + (nameOf[s] || s)); }); // [09-02] 라벨도 새 이름으로 — 분류는 08-20 에 옮겼는데 학생이 읽는 낱말만 옛 이름(MVP·시냅스)이 남아 있었다
+    if (crS[cls]) Object.keys(crS[cls]).forEach(s => { if (crS[cls][s] > 0) crowns.push('🌱 성장: ' + (nameOf[s] || s)); });
     if (crowns.length) lines.push('✨ 오늘의 도전·성장 — ' + crowns.join(' · '));
     out.push([today, cls, '일일', '⚔️ ' + cls + ' — 오늘 ' + tot + ' 데미지!', lines.join(' ')]);
   });
@@ -2761,6 +2761,11 @@ function checkScene() {
   const aaIsScene = String(pf.getRange('AA1').getValue()) === '이전장면';
 
   const w = Math.min(pf.getMaxColumns(), 82); // CD82(다음장면조건)까지 — D-1 판정의 말 게이트 재료
+  /* 🔒 CD82 가 **실재할 때만** D-1 을 판정한다(fail-closed · codex P2 f49d02f5a234 · 09-02).
+   *   열이 82개 미만이거나 헤더가 「다음장면조건」이 아니면 r[81] 은 undefined/딴 값이고, 아래 «조건문이 없다 = 게이트 통과»
+   *   판독이 AG33=1 인 학생 전원에게 「내일 새 장면」을 보낸다 — 새 시트·부분 실패 셋업에서 나는 거짓 알림이다.
+   *   못 재면 «안 보낸다»가 맞는 방향이고, 건너뛴 사실은 아래 원장 메일·로그에 그 이름으로 남긴다(침묵 금지). */
+  const cdGate = w >= 82 && String(pf.getRange(1, 82).getValue() || '').trim() === '다음장면조건';
   const data = pf.getRange(2, 1, last - 1, w).getValues();
   const log = ensureSheet(ss, 'scene_log', SCENE_LOG_HEADERS);
   // 재료 — 오늘 «직접» 맞힌 문형(조건문형 칸) · 오늘 제출문(그날의문장 칸) · 60일 게이트 해제 판정(마지막 AI 도달일)
@@ -2893,8 +2898,9 @@ function checkScene() {
       });
     });
   }
-  if (opened.length || quiet14.length || gateFreeL.length || staleCls.length || d1Missed.length) {
+  if (opened.length || quiet14.length || gateFreeL.length || staleCls.length || d1Missed.length || !cdGate) {
     const L = [];
+    if (!cdGate) L.push('⚠ profiles 에 CD82(다음장면조건)가 없어 강사 D-1 판정을 **건너뛰었다**(안 보낸 것이지 대상 0명이 아니다) — calcAll 이 한 번 돌면 열이 선다. 계속 뜨면 열 배치를 확인해 주세요');
     if (opened.length) L.push('🧶 새 장면이 열린 크루 ' + opened.length + '명\n' + opened.map(o => '· ' + o.name + ' — 장면 ' + o.n + (o.form ? ' (' + o.form + ')' : '')).join('\n'));
     if (quiet14.length) L.push('🕯️ 2주째 만남이 없는 크루 ' + quiet14.length + '명\n' + quiet14.map(q => '· ' + q.name + ' (마지막 ' + q.d + ')').join('\n'));
     if (gateFreeL.length) L.push('🔴 문법 도달이 60일 끊겨 게이트가 해제된 크루 ' + gateFreeL.length + '명 — 학생 잘못이 아닌 이유(채점 통로·수업)를 먼저 보세요\n' + gateFreeL.map(n => '· ' + n).join('\n'));
@@ -2908,7 +2914,7 @@ function checkScene() {
   if (pf.getRange('AD1').getValue() !== '마지막발화장면') pf.getRange('AD1').setValue('마지막발화장면');
   writeIfChanged(pf, 2, 27, newAA);
   writeIfChanged(pf, 2, 30, newAD);
-  Logger.log('장면: 발화 ' + opened.length + '명 · D-1 반 ' + Object.keys(d1ByCls).length + (d1Missed.length ? ' · 쿼터 유실 ' + d1Missed.length + '반(다이제스트 합류)' : ''));
+  Logger.log('장면: 발화 ' + opened.length + '명 · D-1 반 ' + (cdGate ? Object.keys(d1ByCls).length : '판정 건너뜀(CD82 부재)') + (d1Missed.length ? ' · 쿼터 유실 ' + d1Missed.length + '반(다이제스트 합류)' : ''));
 }
 
 /* ===================== 강사 케어 지수 ===================== */

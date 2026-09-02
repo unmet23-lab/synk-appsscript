@@ -610,6 +610,17 @@ test('날짜 기준 — 채번과 등록일이 같은 타임존(시트 TZ를 믿
   assert.ok(/Utilities\.formatDate\(new Date\(\), TZ_, 'yyyy-MM-dd'\)/.test(상담), '등록일이 TZ_를 안 쓴다');
 });
 
+test('상담시트 처리상태 색 — Butter(검토중) 면 위 글자는 Ink(흰 글자 하나를 전부에 얹으면 여린 면에서 글자가 사라진다)', () => {
+  // codex P2 bdacfddecda9·2c6b8fe9ba91 (09-02 수리) — 토큰 규칙: Butter #F5C445 위 글자는 Ink #2B2320.
+  const 블록 = 상담.slice(상담.indexOf("const 색 = { '신규접수'"), 상담.indexOf('sh.setConditionalFormatRules'));
+  assert.ok(블록.length > 0, '처리상태 색 블록을 못 찾았다');
+  assert.ok(/'검토중': '#F5C445'/.test(블록), '검토중 배경이 Butter 가 아니다 — 이 검사의 전제가 바뀌었다');
+  /* 앵커 갱신 09-03 — master 의 변수 이름이 `글자색` → `글자` 다(뜻·동작 동일). */
+  assert.ok(/const 글자 = \{[^}]*'검토중': 브랜드_\.ink/.test(블록), '검토중(Butter) 글자색이 Ink 가 아니다');
+  assert.ok(/setFontColor\(글자\[s\] \|\| '#FFFFFF'\)/.test(블록), '글자색이 상태별이 아니다 — 흰색 하나를 전부에 얹는다');
+  assert.ok(/ink: '#2B2320'/.test(상담), '브랜드_.ink 가 토큰 Ink(#2B2320)가 아니다');
+});
+
 test('상담시트 증분 — 선언한 헤더가 전부 실제로 채워지고, 라벨 키가 카드 컬럼에 있다', () => {
   // 헤더만 늘리고 매핑을 빠뜨리면 열은 생기는데 영원히 빈칸이다 — 「연동됐다」로 보이는 최악의 실패.
   const 헤더fn = 상담.match(/const 증분헤더_ = \[[\s\S]*?\n\];/)[0];

@@ -33,23 +33,45 @@
 
 ## 돌리는 법 — 명령 세 줄
 
-PowerShell 이든 bash 든, **저장소 맨 위 폴더**에서.
+**저장소 맨 위 폴더**에서. ②의 키 넘기는 줄은 셸마다 문법이 다르다 — **자기 셸의 블록**을 그대로 복사한다
+(옛 판은 「PowerShell 이든 bash 든」이라 적고 bash 문법(`VAR=$(...)` · `\` 줄잇기)만 실었다 — 이 기계의 주 셸이
+PowerShell 이라 그대로 밟는 자리였다 · codex P1 5ce79bbcc695).
+
+bash (Git Bash 포함):
 
 ```bash
 # ① 시험지가 정본과 어긋나지 않았는지 먼저 본다 (모델 호출 0건 · 공짜 · 3초)
 node evals/검문자.js --자체점검
 
 # ② 시험을 돌린다 (제미나이를 28번 부른다 · 지금 쓰는 무료 키로 둘 다 답했다 · 4~8분)
+#    판을 «박는다» — 의심줄.js 는 0.122.x 결과 모양을 전제하므로 @latest 가 모양을 바꾸는 날 ③이 죽는다
 GEMINI_API_KEY=$(node -e "process.stdout.write(require('./tools/모델정책.js').제미나이키()||'')") \
-  npx -y promptfoo@latest eval -c evals/몽골어검문.yaml -j 2 --delay 3000 \
+  npx -y promptfoo@0.122.2 eval -c evals/몽골어검문.yaml -j 2 --delay 3000 \
   --no-table --no-share -o evals/_결과/결과.json
 
 # ③ 사람이 볼 줄만 뽑아 본다 (맞은 줄은 안 올라온다)
 node evals/의심줄.js evals/_결과/결과.json
 ```
 
+PowerShell:
+
+```powershell
+# ①
+node evals/검문자.js --자체점검
+
+# ② 환경변수는 이 창에 남는다 — 끝나면 지운다(세 번째 줄). 값은 화면에 찍히지 않는다.
+$env:GEMINI_API_KEY = node -e "process.stdout.write(require('./tools/모델정책.js').제미나이키()||'')"
+npx -y promptfoo@0.122.2 eval -c evals/몽골어검문.yaml -j 2 --delay 3000 --no-table --no-share -o evals/_결과/결과.json
+Remove-Item Env:GEMINI_API_KEY
+
+# ③
+node evals/의심줄.js evals/_결과/결과.json
+```
+
 - 🔑 **키를 화면에 찍지 않는다.** ②의 첫 줄이 키 파일(`C:\Users\q1212\SYNK_보안\제미나이.txt`)에서
   값을 읽어 **환경변수로만** 넘긴다. 명령을 그대로 복사해 쓰면 된다.
+- promptfoo 판은 `0.122.2` 로 박는다(이 기계 실측 판 · 머리말). 올릴 때는 `node evals/의심줄.js` 가 결과
+  모양을 아직 읽는지 먼저 본다 — 못 읽으면 「0건」이 아니라 「확인 불가」로 죽게 돼 있다.
 - ②를 다시 돌리면 이미 받은 답은 다시 안 부른다(promptfoo 가 `~/.promptfoo` 에 쟁여둔다).
   **완전히 새로 재려면** 끝에 `--no-cache` 를 붙인다.
 - 결과 파일 `evals/_결과/` 는 **커밋하지 않는다**(`evals/.gitignore`). 이 저장소는 PUBLIC 이다.
@@ -110,9 +132,10 @@ AI 심판을 굳이 달고 싶으면 `몽골어검문.yaml` 맨 아래 주석 �
 
 ## 사람이 보는 자리 — 전량이 아니라 «의심 줄»만
 
-`node evals/의심줄.js` 가 올리는 것은 셋뿐이다:
+`node evals/의심줄.js` 가 올리는 것은 넷뿐이다:
 
-1. 정답지와 어긋난 줄 · 2. **두 모델이 서로 갈린 줄** · 3. 답을 못 읽은 줄
+1. 정답지와 어긋난 줄 · 2. **두 모델이 서로 갈린 줄** · 3. 답을 못 읽은 줄(오류·판정불능·**결과 행 없음**)
+· 4. 판정은 맞는데 **채점 부품이 떨어진 줄**(「어색」이라 하고서 입력에 없는 문장을 근거로 든 답 — 근거채점)
 
 맞은 줄은 안 올라온다. 사람 눈은 갈린 자리에만 쓴다.
 그리고 결과 파일이 없으면 **「의심 줄 0건」이 아니라 「확인 불가」로 죽는다** — 안 잰 것을

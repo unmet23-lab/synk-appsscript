@@ -676,49 +676,71 @@ function 상담_초안발송_(p) {
   if (!세션 || !초안id || !(n >= 1 && n <= 3)) return out('잘못된 요청입니다 (s·i·d 확인).');
   if (String(p.t || '') !== 상담_링크토큰_(세션, 초안id)) return out('거부됨 — 링크 서명이 맞지 않습니다.');
 
+  /* 🔒 잠금 범위 (codex P2 c4edf5b10168 · 09-02): 옛 판은 이 함수 «전체»를 스크립트 잠금으로 감쌌다 — 확인 화면의
+   *   역번역(Claude 호출 · 수 초)과 Meta 전송까지 잠금 안이었다. 같은 스크립트 잠금을 학부모 웹훅의 상한 예약
+   *   (`상담_상한막힘_` · tryLock 3초)이 쓰므로, 원장이 확인 화면을 여는 그 몇 초에 들어온 학부모 말은
+   *   「잠금을 못 잡았습니다」로 사람에게 인계됐다 — 봇이 답할 수 있던 말인데.
+   *   ⇒ 잠금은 **1회성 게이트의 왕복 하나**(표식 셀 재확인 → 「발송중」 찜)만 감싼다. 읽기·확인 화면·전송은 잠금 밖이다.
+   *   찜을 먼저 박고 보내므로 재클릭·메일 전달이 겹쳐도 두 번 나가지 않고, 전송이 실패하면 표식을 되돌려 재시도 길을 남긴다. */
+  const 발송중안내 = (표식) => out('이 초안은 지금 「발송 중」으로 표시돼 있습니다 (' + 표식 + '). 잠시 뒤에도 그대로면 앞선 시도가 중간에 죽은 것입니다 — '
+    + '상담로그의 그 줄 9열을 비우면 다시 보낼 수 있고, 급하면 메신저에서 직접 답장해 주세요.');
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('상담로그');
+  if (!sh || sh.getLastRow() < 2) return out('상담로그가 없습니다.');
+  const from = Math.max(2, sh.getLastRow() - 300);
+  const rows = sh.getRange(from, 1, sh.getLastRow() - from + 1, 9).getValues();
+  let draftRow = 0, draftVal = null, 마지막수신 = null;
+  rows.forEach((r, i) => {
+    if (String(r[1]) !== 세션) return;
+    // 🔑 「이 세션의 최신 draft」가 아니라 **링크가 가리킨 그 초안**을 찾는다 — 한 사람이 여러 번 물으면
+    //   유호님이 읽은 묶음과 최신 묶음이 달라지고, 그러면 읽지 않은 답이 학부모에게 나간다.
+    if (r[2] === 'draft' && String(r[8]).indexOf(초안id) >= 0) { draftRow = from + i; draftVal = r; }
+    if (r[2] === 'user' && r[0] instanceof Date) 마지막수신 = r[0];
+  });
+  if (!draftRow) return out('이 초안을 찾지 못했습니다 — 메일이 오래됐거나 로그가 밀려났습니다. 메신저에서 직접 답변해 주세요.');
+  const 표식 = String(draftVal[8] || '');
+  if (표식.indexOf('발송됨') === 0) return out('이미 발송된 초안입니다 (' + 표식 + '). 중복 발송을 막았습니다.');
+  if (표식.indexOf('발송중') === 0) return 발송중안내(표식);
+  if (!상담_창열림_(마지막수신)) {
+    return out('24시간 창이 닫혔습니다 — Meta 정책상 자유 발송이 불가합니다. 메신저 앱에서 직접 답장해 주세요.');
+  }
+  let d;
+  try { d = JSON.parse(String(draftVal[3])); } catch (_) { return out('초안 기록이 손상됐습니다 — 메신저에서 직접 답변해 주세요.'); }
+  const 텍스트 = d && d.초안 && d.초안[n - 1];
+  if (!텍스트) return out('초안 ' + n + '번이 없습니다.');
+
+  if (!실행) {
+    /* 확인 화면 — 부작용 0. 실제로 나갈 문장과 그 역번역을 보여주고, 발송 링크는 **여기에만** 있다. 잠금 밖이다. */
+    const 역 = 상담_역번역_(PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY'), [텍스트]);
+    const 발송주소 = ScriptApp.getService().getUrl() + '?act=send&s=' + encodeURIComponent(세션) +
+      '&i=' + 초안id + '&t=' + 상담_링크토큰_(세션, 초안id) + '&d=' + n;
+    return out(상담_확인화면본_(텍스트, 역, n, 발송주소));
+  }
+
+  // 실행 — ① 찜(잠금 안 · 표식 셀을 «다시» 읽는다: 위에서 읽은 값은 잠금 밖의 것이라 그 사이 다른 클릭이 지나갔을 수 있다)
+  const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+  const 시각 = () => Utilities.formatDate(new Date(), tz, 'MM-dd HH:mm');
+  const 표식셀 = sh.getRange(draftRow, 9);
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) return out('처리 중입니다 — 잠시 후 다시 확인해 주세요.');
+  let 이전표식;
   try {
-    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('상담로그');
-    if (!sh || sh.getLastRow() < 2) return out('상담로그가 없습니다.');
-    const from = Math.max(2, sh.getLastRow() - 300);
-    const rows = sh.getRange(from, 1, sh.getLastRow() - from + 1, 9).getValues();
-    let draftRow = 0, draftVal = null, 마지막수신 = null;
-    rows.forEach((r, i) => {
-      if (String(r[1]) !== 세션) return;
-      // 🔑 「이 세션의 최신 draft」가 아니라 **링크가 가리킨 그 초안**을 찾는다 — 한 사람이 여러 번 물으면
-      //   유호님이 읽은 묶음과 최신 묶음이 달라지고, 그러면 읽지 않은 답이 학부모에게 나간다.
-      if (r[2] === 'draft' && String(r[8]).indexOf(초안id) >= 0) { draftRow = from + i; draftVal = r; }
-      if (r[2] === 'user' && r[0] instanceof Date) 마지막수신 = r[0];
-    });
-    if (!draftRow) return out('이 초안을 찾지 못했습니다 — 메일이 오래됐거나 로그가 밀려났습니다. 메신저에서 직접 답변해 주세요.');
-    if (String(draftVal[8]).indexOf('발송됨') === 0) return out('이미 발송된 초안입니다 (' + draftVal[8] + '). 중복 발송을 막았습니다.');
-    if (!상담_창열림_(마지막수신)) {
-      return out('24시간 창이 닫혔습니다 — Meta 정책상 자유 발송이 불가합니다. 메신저 앱에서 직접 답장해 주세요.');
-    }
-    let d;
-    try { d = JSON.parse(String(draftVal[3])); } catch (_) { return out('초안 기록이 손상됐습니다 — 메신저에서 직접 답변해 주세요.'); }
-    const 텍스트 = d && d.초안 && d.초안[n - 1];
-    if (!텍스트) return out('초안 ' + n + '번이 없습니다.');
-
-    if (!실행) {
-      /* 확인 화면 — 부작용 0. 실제로 나갈 문장과 그 역번역을 보여주고, 발송 링크는 **여기에만** 있다. */
-      const 역 = 상담_역번역_(PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY'), [텍스트]);
-      const 발송주소 = ScriptApp.getService().getUrl() + '?act=send&s=' + encodeURIComponent(세션) +
-        '&i=' + 초안id + '&t=' + 상담_링크토큰_(세션, 초안id) + '&d=' + n;
-      return out(상담_확인화면본_(텍스트, 역, n, 발송주소));
-    }
-
-    if (!상담_전송_(세션, 텍스트, { 플랫폼: d.플랫폼 })) {
-      return out('발송에 실패했습니다 — 상담로그와 관리자 메일에서 원인을 확인해 주세요(토큰 만료가 가장 흔합니다).');
-    }
-    const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
-    sh.getRange(draftRow, 9).setValue('발송됨 ' + n + ' · ' + Utilities.formatDate(new Date(), tz, 'MM-dd HH:mm') + ' · ' + 초안id);
-    상담_기록_(세션, 'bot', 텍스트, false, null, '인계 초안 ' + n + ' 발송 — 유호님 선택', d.플랫폼);
-    return out('✅ 발송 완료 (초안 ' + n + ')\n\n' + 텍스트);
+    이전표식 = String(표식셀.getValue() || '');
+    if (이전표식.indexOf('발송됨') === 0) return out('이미 발송된 초안입니다 (' + 이전표식 + '). 중복 발송을 막았습니다.');
+    if (이전표식.indexOf('발송중') === 0) return 발송중안내(이전표식);
+    표식셀.setValue('발송중 ' + n + ' · ' + 시각() + ' · ' + 초안id);
+    SpreadsheetApp.flush();   // 찜이 다음 클릭에 보이려면 잠금을 풀기 «전에» 시트에 닿아야 한다
   } finally {
     lock.releaseLock();
   }
+
+  // ② 전송(잠금 밖 · 수 초) → ③ 도장. 실패하면 찜을 되돌린다 — 실패한 초안은 다시 보낼 수 있어야 한다.
+  if (!상담_전송_(세션, 텍스트, { 플랫폼: d.플랫폼 })) {
+    표식셀.setValue(이전표식);
+    return out('발송에 실패했습니다 — 상담로그와 관리자 메일에서 원인을 확인해 주세요(토큰 만료가 가장 흔합니다).');
+  }
+  표식셀.setValue('발송됨 ' + n + ' · ' + 시각() + ' · ' + 초안id);
+  상담_기록_(세션, 'bot', 텍스트, false, null, '인계 초안 ' + n + ' 발송 — 유호님 선택', d.플랫폼);
+  return out('✅ 발송 완료 (초안 ' + n + ')\n\n' + 텍스트);
 }
 
 /* [v9.226] 확인 화면 본문 — 순수 조립(리뷰 P2-②). 🔑 발송 링크는 역번역이 «있을 때만» 실린다.
@@ -800,7 +822,9 @@ function 상담_상한막힘_(props, 갈래) {
  *   · 시험 질문이 전부 한국어이므로 답도 한국어여야 한다(【말투】 규칙). 이 함수는 그 전제 위에 선다.
  */
 function 점검_답결함_(답) {
-  const 답s = String(답 || '');
+  // 공백만 있는 답도 «빈 답»이다 — 생산 경로(상담_답하기_ 의 `.trim() || 상담_인계문`)와 같은 자로 잰다(codex P2 b5ba6c292958 · 09-02).
+  //   trim 없이 재면 " " 가 「글자가 하나도 없다」 결함으로 세어져 정상 인계가 적색이 된다.
+  const 답s = String(답 || '').trim();
   if (!답s) return '';   // 빈 답변 = 정상적인 인계의 모습. 그 판정은 인계9 가 한다(여기서 두 번 벌하지 않는다)
   const 글자 = 답s.replace(/[^가-힣Ѐ-ӿA-Za-z]/g, '');
   if (!글자) return '답에 글자가 하나도 없다(숫자·기호뿐) — 학부모가 읽을 수 없는 답이다';
