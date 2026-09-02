@@ -66,7 +66,10 @@ function html을글로(s) {
     .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<\/(p|div|li|h[1-6]|tr|section|article)>/gi, '\n\n')
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
+    /* 🔴 인라인 태그는 «공백»으로 지운다 — 빈 문자열로 지우면 앞뒤 글자가 붙는다(09-03 실물).
+     *   `<span>서울 어학당</span><span>대학 부설…` 이 「어학당대학 부설」이 되어
+     *   nounPile(명사 다섯이 조사 없이 이어진다)로 헛되이 세어졌다. 사람이 보는 화면에는 그런 낱말이 없다. */
+    .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
