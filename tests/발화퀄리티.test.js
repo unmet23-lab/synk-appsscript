@@ -504,11 +504,13 @@ test('STT 진단 함수가 실제 응답 코드를 보여준다(추측 금지)',
   assert.ok(fn.includes('getContentText()'), '실패 시 응답 원문을 보여주지 않는다');
 });
 
-test('voiceConsentMap_은 열이 없으면 null(보류)을 돌려준다', () => {
-  const fn = section('function voiceConsentMap_(', 'function voiceConsentStat_(');
-  assert.ok(/if \(ci === -1 \|\| si === -1\) return null/.test(fn),
+test('voiceConsentMap_은 열이 없으면 null(보류)을 돌려준다 — 읽기는 v9.291 부터 voiceConsentRead_ 한 곳이고 map 은 거기서 상태만 뽑는다', () => {
+  const 읽기 = section('function voiceConsentRead_(', 'function voiceConsentMap_(');
+  assert.ok(/if \(ci === -1 \|\| si === -1\) return null/.test(읽기),
     '동의 열·학생ID 열이 없을 때 빈 맵을 주면 전원이 통과한다');
-  assert.ok(/catch \(e\)[\s\S]{0,80}return null/.test(fn), '예외 시 null(보류)이 아니다');
+  assert.ok(/catch \(e\)[\s\S]{0,80}return null/.test(읽기), '예외 시 null(보류)이 아니다');
+  const fn = section('function voiceConsentMap_(', 'function voiceConsentStat_(');
+  assert.ok(/if \(!rows\) return null/.test(fn), 'map 이 읽기의 null(보류)을 빈 맵으로 접으면 전원이 통과한다');
 });
 
 test('동의 문항은 제목만 보고 스킵하지 않는다 — 문구 개정이 라이브 폼에 닿아야 한다', () => {
