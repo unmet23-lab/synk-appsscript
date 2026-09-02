@@ -1,0 +1,668 @@
+<title>SYNK 문안 전후 대조</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --종이:#FBF7F0; --카드:#FFFFFF; --먹:#2B2320; --흐림:#8D857A; --테두리:#EDE7DC;
+  --코랄:#F96859; --코랄연:#FEF0E9; --코랄진:#AE322A; --회연:#EDE7DC; --회:#C7BFB2;
+  --청금:#3D6BC9;
+  --글:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --종이:#17120F; --카드:#241D19; --먹:#F3EDE4; --흐림:#A79C90; --테두리:#3A302A;
+  --코랄:#FD9C87; --코랄연:#33211C; --코랄진:#FBB7A3; --회연:#2E2621; --회:#574C44;
+  --청금:#8FB0EE;
+}}
+:root[data-theme="dark"]{
+  --종이:#17120F; --카드:#241D19; --먹:#F3EDE4; --흐림:#A79C90; --테두리:#3A302A;
+  --코랄:#FD9C87; --코랄연:#33211C; --코랄진:#FBB7A3; --회연:#2E2621; --회:#574C44;
+  --청금:#8FB0EE;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--종이);color:var(--먹);font-family:var(--글);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.판{max-width:860px;margin:0 auto;padding:56px 22px 96px}
+
+header.머리{border-bottom:2px solid var(--먹);padding-bottom:26px;margin-bottom:12px}
+.눈썹{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--흐림);margin:0 0 10px}
+h1{font-size:clamp(28px,4.6vw,40px);line-height:1.2;margin:0 0 14px;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+.한줄{margin:0;color:var(--흐림);max-width:60ch}
+
+.셈판{display:flex;gap:0;margin:30px 0 46px;border:1px solid var(--테두리);border-radius:3px;overflow:hidden;background:var(--카드)}
+.칸{flex:1;padding:16px 18px;border-right:1px solid var(--테두리)}
+.칸:last-child{border-right:0}
+.칸 b{display:block;font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.칸 span{font-size:12.5px;color:var(--흐림)}
+.칸.강조 b{color:var(--코랄)}
+
+.갈래{margin:0 0 54px}
+.갈래머리{display:flex;gap:18px;align-items:baseline;border-bottom:1px solid var(--테두리);padding-bottom:14px;margin-bottom:20px}
+.셈{margin:0;flex:0 0 auto;display:flex;align-items:baseline;gap:3px}
+.셈 .수{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--코랄);letter-spacing:-.03em}
+.셈 .단위{font-size:12px;color:var(--흐림)}
+.갈래머리 h2{font-size:19px;margin:0 0 4px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.설명{margin:0;font-size:14px;color:var(--흐림);max-width:58ch}
+.더{margin:6px 0 0;font-size:12.5px;color:var(--흐림)}
+
+.사례들{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.사례{background:var(--카드);border:1px solid var(--테두리);border-radius:3px;padding:13px 15px}
+.어디{margin:0 0 9px;font-size:11.5px;color:var(--흐림);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.쓰임{background:var(--코랄연);color:var(--코랄진);padding:1px 7px;border-radius:2px;font-size:10.5px;font-weight:500}
+.쌍{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:660px){.쌍{grid-template-columns:1fr;gap:8px}}
+.쪽{position:relative;padding-left:13px}
+.쪽::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:2px}
+.쪽.전::before{background:var(--회)}
+.쪽.후::before{background:var(--코랄)}
+.딱지{display:block;font-size:10.5px;letter-spacing:.1em;color:var(--흐림);margin-bottom:3px}
+.쪽.후 .딱지{color:var(--코랄진)}
+.쪽 p{margin:0;font-size:14.5px;line-height:1.6;word-break:keep-all}
+mark{background:none;padding:0}
+mark.ㄱ{background:var(--회연);text-decoration:line-through;text-decoration-color:var(--회);color:var(--흐림);border-radius:2px;padding:0 2px}
+mark.ㄴ{background:var(--코랄연);color:var(--코랄진);font-weight:600;border-radius:2px;padding:0 2px}
+
+.안고침{background:var(--카드);border:1px solid var(--테두리);border-radius:3px;padding:22px 24px;margin:56px 0 0}
+.안고침 h2{margin:0 0 6px;font-size:19px;font-weight:600}
+.안고침>p{margin:0 0 18px;color:var(--흐림);font-size:14px;max-width:60ch}
+.안고침 dl{margin:0;display:flex;flex-direction:column;gap:13px}
+.줄{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline}
+.줄 dt{font-weight:600;font-size:14.5px;white-space:nowrap}
+.줄 dt em{font-style:normal;color:var(--코랄);font-variant-numeric:tabular-nums;margin-left:5px;font-size:13px}
+.줄 dd{margin:0;font-size:14px;color:var(--흐림);word-break:keep-all}
+
+.남은{border-left:3px solid var(--청금);padding:2px 0 2px 18px;margin:44px 0 0}
+.남은 h2{margin:0 0 8px;font-size:19px;font-weight:600}
+.남은 p{margin:0 0 10px;max-width:62ch;word-break:keep-all}
+.보기{background:var(--카드);border:1px solid var(--테두리);border-radius:3px;padding:12px 14px;margin:12px 0;font-size:14.5px;line-height:1.6}
+.보기 b{color:var(--코랄진)}
+.끝{margin:52px 0 0;padding-top:18px;border-top:1px solid var(--테두리);font-size:12.5px;color:var(--흐림)}
+</style>
+
+<div class="판">
+<header class="머리">
+  <p class="눈썹">SYNK LAB · 2026-09-03</p>
+  <h1>문안을 이렇게 고쳤습니다</h1>
+  <p class="한줄">학부모·학생·강사가 읽는 글 열넷을 기계로 재고 고친 기록입니다. 말투를 확정하시기 전에 «전과 후»를 나란히 보시라고 만들었습니다.</p>
+</header>
+
+<div class="셈판">
+  <div class="칸"><b>1,268</b><span>처음 지적</span></div>
+  <div class="칸 강조"><b>429</b><span>실제로 고친 자리</span></div>
+  <div class="칸"><b>97</b><span>지금 남은 지적</span></div>
+</div>
+
+<section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">206</span><span class="단위">곳</span></p>
+    <div>
+      <h2>「이름 — 설명」을 「이름: 설명」으로</h2>
+      <p class="설명">가장 많이 바꾼 무늬입니다. 이름과 설명 사이라 콜론이 그 관계를 그대로 보여 줍니다.</p>
+      <p class="더">아래는 8개만 골랐습니다. 나머지 198곳도 같은 무늬입니다.</p>
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>SYNK<mark class="ㄱ"> —</mark> 학생마다 나만의 선생님을</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>SYNK<mark class="ㄴ">:</mark> 학생마다 나만의 선생님을</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_02_학부모_안내문_A4_kr<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>「나침반」 세션<mark class="ㄱ"> —</mark> 목적을 찾습니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>「나침반」 세션<mark class="ㄴ">:</mark> 목적을 찾습니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>왜 하필 4급인가<mark class="ㄱ"> —</mark> 돈이 되는 네 관문</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>왜 하필 4급인가<mark class="ㄴ">:</mark> 돈이 되는 네 관문</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>SYNK 의 약속<mark class="ㄱ"> —</mark> 보장, 그리고 배상</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>SYNK 의 약속<mark class="ㄴ">:</mark> 보장, 그리고 배상</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_02_학부모_안내문_A4_kr<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>K컬처 워밍업<mark class="ㄱ"> —</mark> 몸으로 수업을 엽니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>K컬처 워밍업<mark class="ㄴ">:</mark> 몸으로 수업을 엽니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>「나침반」 세션<mark class="ㄱ"> —</mark> 방향을 먼저 정합니다</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>「나침반」 세션<mark class="ㄴ">:</mark> 방향을 먼저 정합니다</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>「싱크 크루」<mark class="ㄱ"> —</mark> 팀으로 진짜 경험을 만듭니다</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>「싱크 크루」<mark class="ㄴ">:</mark> 팀으로 진짜 경험을 만듭니다</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>「싱크 포트폴리오」<mark class="ㄱ"> —</mark> 성장이 증거로 쌓입니다</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>「싱크 포트폴리오」<mark class="ㄴ">:</mark> 성장이 증거로 쌓입니다</p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">115</span><span class="단위">곳</span></p>
+    <div>
+      <h2>문장 뒤의 줄표를 마침표로</h2>
+      <p class="설명">앞이 「…합니다」로 끝나면 이미 한 문장이 닫힌 자리입니다. 두 문장으로 끊었습니다.</p>
+      <p class="더">아래는 8개만 골랐습니다. 나머지 107곳도 같은 무늬입니다.</p>
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>자체 교재6권 골격·레벨별 요목 확정 / 1권 원고 완성<mark class="ㄱ"> —</mark> 원어민 검수를 앞두고 있습니다 /</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>자체 교재6권 골격·레벨별 요목 확정 / 1권 원고 완성<mark class="ㄴ">.</mark> 원어민 검수를 앞두고 있습니다 /</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>6개월권 월 42만₮ 기준 · 집에서 다니고, 연말에 TOPIK 4급 «보장»<mark class="ㄱ"> — 못 지키면 배상</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>6개월권 월 42만₮ 기준 · 집에서 다니고, 연말에 TOPIK 4급 «보장»<mark class="ㄴ">. 못 지키면 배상합니다</mark></p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_05_커리큘럼_로드맵_A3<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>TOPIK 급은 넓습니다. SYNK의 레벨은 그보다 촘촘해서 한 급을 두 관문에 걸쳐 다지는 구간이 있습니다<mark class="ㄱ"> —</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>TOPIK 급은 넓습니다. SYNK의 레벨은 그보다 촘촘해서 한 급을 두 관문에 걸쳐 다지는 구간이 있습니다<mark class="ㄴ">.</mark></p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_05_커리큘럼_로드맵_A3<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>8주차 승급 평가를 통과하면 다음 관문으로 올라갑니다. 아직이면 ‘다시 도전’으로 한 바퀴 더 단단하게 다집니다<mark class="ㄱ"> —</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>8주차 승급 평가를 통과하면 다음 관문으로 올라갑니다. 아직이면 ‘다시 도전’으로 한 바퀴 더 단단하게 다집니다<mark class="ㄴ">.</mark></p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_01_설명회_덱_16x9<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>주의 <mark class="ㄱ">—</mark> 이 덱은 아직 v7 을 못 따라갔습니다(2026-08-26 실측). 대본이 v6 53구간에서 v7 77구간으로 늘고</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>주의 <mark class="ㄴ">·</mark> 이 덱은 아직 v7 을 못 따라갔습니다(2026-08-26 실측). 대본이 v6 53구간에서 v7 77구간으로 늘고</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_01_설명회_덱_16x9<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>몽골어는 전부 비어 있습니다(검수자 확정 전 금지 · 요청 = 몽골어검수_요청_큐). 자리는 한국어와 같은 크기로 잡아 뒀습니다<mark class="ㄱ"> —</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>몽골어는 전부 비어 있습니다(검수자 확정 전 금지 · 요청 = 몽골어검수_요청_큐). 자리는 한국어와 같은 크기로 잡아 뒀습니다</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_02_학부모_안내문_A4_kr<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p><mark class="ㄱ">— </mark>학생마다 자기만의 선생님이 한 명씩 있습니다. 마음을 만나고 판단하는 것은 교실의 선생님이고, 기억하고 골라 돌려주는 일은 그 곁의 열여섯이 맡습니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>학생마다 자기만의 선생님이 한 명씩 있습니다. 마음을 만나고 판단하는 것은 교실의 선생님이고, 기억하고 골라 돌려주는 일은 그 곁의 열여섯이 맡습니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>2년째 · 서울대학 1학년 (D-2 로 비자 변경 <mark class="ㄱ">—</mark> 심사 한 번 더)수료증은 이 대학 입학엔 통했습니다. 하지만 TOPIK 이 없으면 아르바이트는 주중 10시간입니다. 수료증은 출입국에서 안 통하니까요.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>2년째 · 서울대학 1학년 (D-2 로 비자 변경 <mark class="ㄴ">·</mark> 심사 한 번 더)수료증은 이 대학 입학엔 통했습니다. 하지만 TOPIK 이 없으면 아르바이트는 주중 10시간입니다. 수료증은 출입국에서 안 통하니까요.</p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">44</span><span class="단위">곳</span></p>
+    <div>
+      <h2>나란한 것을 잇는 자리는 가운뎃점으로</h2>
+      <p class="설명">「길 A」와 「서울 어학당」처럼 대등한 것을 잇는 자리입니다.</p>
+      <p class="더">아래는 5개만 골랐습니다. 나머지 39곳도 같은 무늬입니다.</p>
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>길 B <mark class="ㄱ">—</mark> SYNK 1년</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>길 B <mark class="ㄴ">·</mark> SYNK 1년</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">병합판<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>02 <mark class="ㄱ">—</mark> 우리가 하는 일</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>02 <mark class="ㄴ">·</mark> 우리가 하는 일</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">병합판<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>05 <mark class="ㄱ">—</mark> 자주 묻는 질문</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>05 <mark class="ㄴ">·</mark> 자주 묻는 질문</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">병합판_자립형<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>02 <mark class="ㄱ">—</mark> 우리가 하는 일</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>02 <mark class="ㄴ">·</mark> 우리가 하는 일</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">병합판_자립형<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>05 <mark class="ㄱ">—</mark> 자주 묻는 질문</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>05 <mark class="ㄴ">·</mark> 자주 묻는 질문</p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">24</span><span class="단위">곳</span></p>
+    <div>
+      <h2>줄표를 아예 지운 자리</h2>
+      <p class="설명">앞뒤가 이미 다른 줄이거나 표의 빈칸이라 부호가 없어도 읽힙니다.</p>
+      <p class="더">아래는 4개만 골랐습니다. 나머지 20곳도 같은 무늬입니다.</p>
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>독일 인지신경과학의 제스처<mark class="ㄱ">–</mark>어휘 연구</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>독일 인지신경과학의 제스처<mark class="ㄴ">-</mark>어휘 연구</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>SYNK LAB 상담 브로셔 <mark class="ㄱ">— A4 12쪽</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>SYNK LAB 상담 브로셔 <mark class="ㄴ">(A4 12쪽)</mark></p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>SYNK 통합 교육 시스템<mark class="ㄱ"> —</mark>네 가지 차별점</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>SYNK 통합 교육 시스템네 가지 차별점</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_05_커리큘럼_로드맵_A3<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>SYNK LAB 커리큘럼 <mark class="ㄱ">로드맵 — A3 양면</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>SYNK LAB 커리큘럼 <mark class="ㄴ">단계별 계획 (A3 양면)</mark></p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">8</span><span class="단위">곳</span></p>
+    <div>
+      <h2>영어 직역을 우리말로</h2>
+      <p class="설명">「에 대해」·「를 통해」·「하는 중입니다」는 영어 문형을 그대로 옮긴 자리입니다.</p>
+      
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>몽골 학생<mark class="ㄱ">을 위해</mark> 처음부터 다시 쓴 교재라서 가능한 일입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>몽골 학생<mark class="ㄴ">에게 맞춰</mark> 처음부터 다시 쓴 교재라서 가능한 일입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>2027년 2월 25일 개원을 준비<mark class="ㄱ">하는 중입</mark>니다. 그 2주 전 2월 11일부터 무료 체험 2주를 엽니다. 그래서 “몇 명이 몇 급에 합격했다”는 말씀을 드릴 수 없습니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>2027년 2월 25일 개원을 준비<mark class="ㄴ">합</mark>니다. 그 2주 전 2월 11일부터 무료 체험 2주를 엽니다. 그래서 “몇 명이 몇 급에 합격했다”는 말씀을 드릴 수 없습니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>학생은 자기 실력<mark class="ㄱ">에 대한 판단을</mark> 선생님의 말투에서 가져갑니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>학생은 자기 실력<mark class="ㄴ">이 어떤지를</mark> 선생님의 말투에서 가져갑니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p><mark class="ㄱ">각 문장에 대해</mark> 아래 다섯에서 «해당하는 것 전부»를 고릅니다. 전부 맞아야 1점입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p><mark class="ㄴ">문장마다</mark> 아래 다섯에서 «해당하는 것 전부»를 고릅니다. 전부 맞아야 1점입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사공고_정본_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>시연 두 번(각 30분 · 합쳐 1시간)에 <mark class="ㄱ">대해 </mark>15,000₮를 드립니다. 시간당 15,000₮ 기준입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>시연 두 번(각 30분 · 합쳐 1시간)에 15,000₮를 드립니다. 시간당 15,000₮ 기준입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">기업철학_홈페이지_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>신체 활동이 집중력과 학습에 <mark class="ㄱ">긍정적 영향을 준다는 사실은 여러 연구를 통해 축적되어 왔습</mark>니다. 몇 가지만 살펴보겠습니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>신체 활동이 집중력과 학습에 <mark class="ㄴ">좋다는 것은 여러 연구가 쌓아 온 사실입</mark>니다. 몇 가지만 살펴보겠습니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>오늘 수업에서 학생 한 명을 떠올리고, 그 학생<mark class="ㄱ">에 대해 한 문장을</mark> 남깁니다. 「오늘 아마라가 유난히 조용했다」처럼 본 것 그대로. 점수도 평가도 아니고, 잘 쓸 필요도 없습니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>오늘 수업에서 학생 한 명을 떠올리고, 그 학생<mark class="ㄴ">을 한 문장으로</mark> 남깁니다. 「오늘 아마라가 유난히 조용했다」처럼 본 것 그대로. 점수도 평가도 아니고, 잘 쓸 필요도 없습니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">기업철학_홈페이지_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>교육 현장에서 자주 마주하는 문제는 지식의 부족이 아닙니다. 오랜 학업을 마치고 원하던 대학에 들어간 학생이 "이제 나는 무엇을 해야 하는가"를 되묻습니다. 여기에 지금 교육의 한계가 담겨 있습니다. 입시라는 단일 목표만을 향해 달려온 탓에, 정작 자기 자신<mark class="ㄱ">에 대한 이해와 방향에 대한 탐색</mark>이 뒤로 밀린 것입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>교육 현장에서 자주 마주하는 문제는 지식의 부족이 아닙니다. 오랜 학업을 마치고 원하던 대학에 들어간 학생이 "이제 나는 무엇을 해야 하는가"를 되묻습니다. 여기에 지금 교육의 한계가 담겨 있습니다. 입시라는 단일 목표만을 향해 달려온 탓에, 정작 자기 자신<mark class="ㄴ">을 아는 일과 방향을 찾는 일</mark>이 뒤로 밀린 것입니다.</p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">8</span><span class="단위">곳</span></p>
+    <div>
+      <h2>어려운 말을 쉬운 말로</h2>
+      <p class="설명">국립국어원이 다듬은 말이 있는 낱말입니다.</p>
+      <p class="더">아래는 6개만 골랐습니다. 나머지 2곳도 같은 무늬입니다.</p>
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>누구나 좋아할 수밖에 없는 K컬처의 재미, 그리고 아이만의 목적을 찾아주는 <mark class="ㄱ">로드맵</mark>.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>누구나 좋아할 수밖에 없는 K컬처의 재미, 그리고 아이만의 목적을 찾아주는 <mark class="ㄴ">단계별 계획</mark>.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>측정 가능한 경쟁 우위입니다. 유학·K컬처 진출·글로벌 취업까지 진로 <mark class="ㄱ">로드맵</mark>이 이어집니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>측정 가능한 경쟁 우위입니다. 유학·K컬처 진출·글로벌 취업까지 진로 <mark class="ㄴ">계획</mark>이 이어집니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>입학할 때, 그리고 시즌마다 목적<mark class="ㄱ">·로드맵 워크숍</mark>을 엽니다. 왜 한국어를 배우는가, 5년 뒤의 나는</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>입학할 때, 그리고 시즌마다 목적<mark class="ㄴ">과 계획을 정리하는 시간</mark>을 엽니다. 왜 한국어를 배우는가, 5년 뒤의 나는</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>졸업할 때 아이는 자격증 한 장이 아니라 실제 포트폴리오와 자신만의 <mark class="ㄱ">로드맵</mark>을 함께 들고 나갑니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>졸업할 때 아이는 자격증 한 장이 아니라 실제 포트폴리오와 자신만의 <mark class="ㄴ">계획</mark>을 함께 들고 나갑니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_03_상담브로셔_A4_12쪽<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>읽기·듣기·말하기·쓰기 4개 영역 정기 점검, 매달 월간 리포트카드, 전담 <mark class="ㄱ">멘토의 취약 지점</mark> 밀착 관리.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>읽기·듣기·말하기·쓰기 4개 영역 정기 점검, 매달 월간 리포트카드, 전담 <mark class="ㄴ">선생님이 약한 곳을</mark> 밀착 관리.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>1년째 · 서울어학당 (D-4 어학연수 비자)비자부터 문턱입니다. 몽골은 법무부 지정 21개국이라 <mark class="ㄱ">잔고</mark> 증명 같은 추가 서류를 요구받습니다. 입국 후 6개월은 아르바이트 신청 자체가 불가이고, 그 뒤에도 TOPIK 2급이 있어야 합니다. 1년에 4,100만₮ 이상이 나갑니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>1년째 · 서울어학당 (D-4 어학연수 비자)비자부터 문턱입니다. 몽골은 법무부 지정 21개국이라 <mark class="ㄴ">예금 잔액</mark> 증명 같은 추가 서류를 요구받습니다. 입국 후 6개월은 아르바이트 신청 자체가 불가이고, 그 뒤에도 TOPIK 2급이 있어야 합니다. 1년에 4,100만₮ 이상이 나갑니다.</p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">7</span><span class="단위">곳</span></p>
+    <div>
+      <h2>그 밖</h2>
+      
+      <p class="더">아래는 4개만 골랐습니다. 나머지 3곳도 같은 무늬입니다.</p>
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>1년 4,100만~5,580만₮. 학비 400~744만원에 서울 생활비<mark class="ㄱ"> 월 약 120만원입니다.</mark> 수업료보다 서울에서 «사는 값»이 더 큽니다. 몽골 국적은 1년 4학기 등록이 의무라, 반년만 다녀 보는 선택지도 없습니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>1년 4,100만~5,580만₮. 학비 400~744만원에 서울 생활비<mark class="ㄴ">가 월 약 120만원이라,</mark> 수업료보다 서울에서 «사는 값»이 더 큽니다. 몽골 국적은 1년 4학기 등록이 의무라, 반년만 다녀 보는 선택지도 없습니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>1년째 · 서울어학당 (D-4 어학연수 비자)비자부터 문턱<mark class="ㄱ">입니다. 몽골은 법무부 지정 21개국이라</mark> 예금 잔액 증명 같은 추가 서류를 요구받습니다. 입국 후 6개월은 아르바이트 신청 자체가 불가이고, 그 뒤에도 TOPIK 2급이 있어야 합니다. 1년에 4,100만₮ 이상이 나갑니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>1년째 · 서울어학당 (D-4 어학연수 비자)비자부터 문턱<mark class="ㄴ">이라, 몽골은 법무부 지정 21개국이어서</mark> 예금 잔액 증명 같은 추가 서류를 요구받습니다. 입국 후 6개월은 아르바이트 신청 자체가 불가이고, 그 뒤에도 TOPIK 2급이 있어야 합니다. 1년에 4,100만₮ 이상이 나갑니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>정신력으로 하는 게 아<mark class="ㄱ">닙니다.</mark> 곁이 받쳐 줍니다. 숙제는 미니게임이고, 학생마다 자기만의 선생님이 한 명씩 무엇을 틀리는지·언제 집중이 오르는지를 매일 눈여겨 적어 두고, 그 이해만큼 다음 숙제가 실제로 달라집니다. 그리고 매일의 공부가 기록으로 남아 「이렇게 가르쳤더니 정말 늘었는가」를 30일 뒤 다시 확인합니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>정신력으로 하는 게 아<mark class="ㄴ">니라</mark> 곁이 받쳐 줍니다. 숙제는 미니게임이고, 학생마다 자기만의 선생님이 한 명씩 무엇을 틀리는지·언제 집중이 오르는지를 매일 눈여겨 적어 두고, 그 이해만큼 다음 숙제가 실제로 달라집니다. 그리고 매일의 공부가 기록으로 남아 「이렇게 가르쳤더니 정말 늘었는가」를 30일 뒤 다시 확인합니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사공고_정본_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p><mark class="ㄱ">마감 — 2026년 9월 30일</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p><mark class="ㄴ">지원서: [확인 필요 — 구글 설문지 링크]</mark></p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">6</span><span class="단위">곳</span></p>
+    <div>
+      <h2>사실만 늘어놓던 자리를 이유로 이음</h2>
+      <p class="설명">유호님이 「이해가 안 간다」고 하신 자리와 정확히 겹칩니다. 문장 사이 관계를 독자가 세워야 했습니다.</p>
+      
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p><mark class="ㄱ">다른 것은 하나</mark>입니다. 서울 어학당에서 1년 4,100만₮을 쓰느냐, 몽골 집에서 1년 504만₮으로 같은 급수를 «보장»받느냐.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p><mark class="ㄴ">목적지는 같습니다. 대학도, 아르바이트도, 구직비자도 TOPIK 4급 하나가 엽니다. 그래서 갈리는 것은 하나뿐</mark>입니다. 서울 어학당에서 1년 4,100만₮을 쓰느냐, 몽골 집에서 1년 504만₮으로 같은 급수를 «보장»받느냐.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>같은 해에 출발한 두 학생을 나란히 놓으면, 차이가 달력에 그대로 보입니다. (두 학생은 가상<mark class="ㄱ">입니다.</mark> 규정과 가격은 전부 실제입니다.)</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>같은 해에 출발한 두 학생을 나란히 놓으면, 차이가 달력에 그대로 보입니다. (두 학생은 가상<mark class="ㄴ">이지만</mark> 규정과 가격은 전부 실제입니다.)</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>학부 3~4학년은 4급이 있어야 주중 30시간(주말·방학 무제한)<mark class="ㄱ">. 없으면 주중 10시간입니다. 최저시급으로 다달이 약 90만원(≈ 230만₮) 차이</mark>입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>학부 3~4학년은 4급이 있어야 주중 30시간(주말·방학 무제한)<mark class="ㄴ">이고, 없으면 주중 10시간입니다. 그 차이가 최저시급으로 다달이 약 90만원(≈ 230만₮)</mark>입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>1년 504만₮. 길 A 의 8~11배 아래<mark class="ㄱ">입니다.</mark> 차액 약 3,600만~5,080만₮이 가족 주머니에 남습니다. 서울 월세도, 낯선 도시에 혼자 보내는 걱정도 없습니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>1년 504만₮. 길 A 의 8~11배 아래<mark class="ㄴ">라서</mark> 차액 약 3,600만~5,080만₮이 가족 주머니에 남습니다. 서울 월세도, 낯선 도시에 혼자 보내는 걱정도 없습니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>2년째 · 서울대학 1학년 (D-2 비자 · 관문 한 번)어학연수 없이 바로 학부<mark class="ㄱ">입니다. 4급이 있으니</mark> 첫 학기부터 아르바이트 주중 30시간 + 주말·방학 무제한입니다. 최저시급 주중분만 월 약 134만원입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>2년째 · 서울대학 1학년 (D-2 비자 · 관문 한 번)어학연수 없이 바로 학부<mark class="ㄴ">로 갑니다. 4급이 있어서</mark> 첫 학기부터 아르바이트 주중 30시간 + 주말·방학 무제한입니다. 최저시급 주중분만 월 약 134만원입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">SYNK_이야기<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>아이가 한국 대학으로 가는 길은 사실상 둘<mark class="ㄱ">입니다.</mark> 목적지는 같습니다. TOPIK 4급. 대학 입학과 졸업, 아르바이트 시간, 졸업 후 구직비자까지 전부 이 급수 하나에 묶여 있습니다. 다른 것은 어디서, 얼마에, 무엇을 받으며 가느냐입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>아이가 한국 대학으로 가는 길은 사실상 둘<mark class="ㄴ">이고,</mark> 목적지는 같습니다. TOPIK 4급. 대학 입학과 졸업, 아르바이트 시간, 졸업 후 구직비자까지 전부 이 급수 하나에 묶여 있습니다. 다른 것은 어디서, 얼마에, 무엇을 받으며 가느냐입니다.</p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">5</span><span class="단위">곳</span></p>
+    <div>
+      <h2>「이것이」를 이름으로</h2>
+      <p class="설명">앞에 가리킬 것이 없는 「이것/그것」은 읽는 사람을 멈추게 합니다.</p>
+      
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>이<mark class="ㄱ">것</mark>이 시연 채점표 B2(5점)입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>이<mark class="ㄴ"> 이음</mark>이 시연 채점표 B2(5점)입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>이<mark class="ㄱ">것은</mark> 말투 문제가 아니라 점수가 걸린 문제입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>이<mark class="ㄴ"> 차이는</mark> 말투 문제가 아니라 점수가 걸린 문제입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>여기서 아낀 시간을 아래 난점에 다시 <mark class="ㄱ">씁니다. 이</mark>것이 이 절의 핵심입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>여기서 아낀 시간을 아래 난점에 다시 <mark class="ㄴ">쓰는 </mark>것이 이 절의 핵심입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>이<mark class="ㄱ">것</mark>이 저희가 시스템으로 대신할 수 없다고 판단한 자리이고, 이 채용이 존재하는 이유 그 자체입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>이<mark class="ㄴ"> 한 줄</mark>이 저희가 시스템으로 대신할 수 없다고 판단한 자리이고, 이 채용이 존재하는 이유 그 자체입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>심사도 재량도 없고 명부로만 확인합니다. <mark class="ㄱ">위의</mark> 여덟 갈래는 전원에게 똑같이 열려 있고, 아래는 거기에 얹히는 별도 묶음입니다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>심사도 재량도 없고 명부로만 확인합니다. <mark class="ㄴ">급여가 오르는</mark> 여덟 갈래는 전원에게 똑같이 열려 있고, 아래는 거기에 얹히는 별도 묶음입니다.</p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">4</span><span class="단위">곳</span></p>
+    <div>
+      <h2>범위는 물결표로</h2>
+      <p class="설명">「30–36」은 범위 표기입니다. 한국어에서는 물결표를 씁니다.</p>
+      
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">_src_01_설명회_덱_16x9<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>03TOPIK은 확실하게▷ 7<mark class="ㄱ">–</mark>8“먼저 약속입니다”</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>03TOPIK은 확실하게▷ 7<mark class="ㄴ">~</mark>8“먼저 약속입니다”</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">_src_01_설명회_덱_16x9<span class="쓰임">학부모가 읽는 글</span></p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>08-24: 대본의 AI 청크 3(「하나만 더 — 막지 않고 가르칩니다」 ▷44<mark class="ㄱ">–</mark>46)도 이 장이 받는다.</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>08-24: 대본의 AI 청크 3(「하나만 더 — 막지 않고 가르칩니다」 ▷44<mark class="ㄴ">~</mark>46)도 이 장이 받는다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p><mark class="ㄱ">12:00–15:00 | 오늘 목표 3분 | 1인 45초 — 목표 ~30초 + 오른쪽 조원이 15</mark>초</p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p><mark class="ㄴ">2:00–12:00 | 숙제 브리핑 10분 | 1인 2분 30초: ①잘 된 문장 ~40초 ②헷갈린 자리 ~50초 ③질문 1개 + 답 ~60</mark>초</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사훈련_온라인자료_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p><mark class="ㄱ">4번 | 15–20분 | 전환 | 브리핑 0분: 이 5분의 성격은 「검수 마무리 + 오늘 목표 듣기」입니다</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p><mark class="ㄴ">1번 | 0~5분 | 몸풀기 + 브리핑 앞 | 브리핑 ~3분</mark></p></div>
+      </div>
+    </li>
+  </ol>
+</section><section class="갈래">
+  <header class="갈래머리">
+    <p class="셈"><span class="수">2</span><span class="단위">곳</span></p>
+    <div>
+      <h2>군더더기를 덜어냄</h2>
+      
+      
+    </div>
+  </header>
+  <ol class="사례들">
+    <li class="사례">
+      <p class="어디">기업철학_홈페이지_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p>신체 활동이 집중력과 학습에 좋다는 것은 여러 연구가 쌓아 온 사실입니다.<mark class="ㄱ"> 몇 가지만 살펴보겠습니다.</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p>신체 활동이 집중력과 학습에 좋다는 것은 여러 연구가 쌓아 온 사실입니다.</p></div>
+      </div>
+    </li>
+    <li class="사례">
+      <p class="어디">강사공고_정본_v1</p>
+      <div class="쌍">
+        <div class="쪽 전"><span class="딱지">전</span><p><mark class="ㄱ">4 | 최종 면접 — 저희가 고르는 자리가 아니라, 저희를 다 보여 드리고 선생님이 고르시는 자리입니다. 급여표를 그대로 펼칩니다 | 30분</mark></p></div>
+        <div class="쪽 후"><span class="딱지">후</span><p><mark class="ㄴ">1 | 서류: 지원서를 작성해 주시면 됩니다 | —</mark></p></div>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<section class="안고침">
+  <h2>일부러 안 고친 것</h2>
+  <p>기계가 지적했지만 두었습니다. 우리 글의 성격에 맞거나, 고치면 오히려 잃는 자리입니다.</p>
+  <dl>
+    <div class="줄"><dt>문장형 제목<em>41곳</em></dt><dd>「낱말 하나를 먼저 맞춥니다」 같은 제목입니다. 검사기 자신이 「강의 교안의 부제는 문장이 정상」이라고 적어 두었고, 41곳 중 35곳이 그 강사 교안이었습니다. 읽는 선생님에게 말을 거는 의도로 보고 두었습니다.</dd></div>
+    <div class="줄"><dt>짧은 문단<em>3곳</em></dt><dd>공고문은 게시물이라 문단이 짧은 것이 읽기 좋습니다.</dd></div>
+    <div class="줄"><dt>목록 앞 이모지<em>2곳</em></dt><dd>🔴·⚠ 는 급한 것을 먼저 보시라는 우리 표식입니다.</dd></div>
+    <div class="줄"><dt>긴 문장<em>6곳</em></dt><dd>넷은 내부 변경 기록이고 둘은 각주·표 칸입니다. 각주는 촘촘한 것이 정상입니다.</dd></div>
+    <div class="줄"><dt>명사 나열<em>4곳</em></dt><dd>태그가 붙어 생긴 헛것이거나 제품 이름 나열입니다(「시냅스 코어 6권 + 시냅스 톡 4권」).</dd></div>
+    <div class="줄"><dt>「법무부 매뉴얼」<em>1곳</em></dt><dd>문서 정식 이름(「체류자격별 통합 안내매뉴얼」)의 줄임입니다. 실물 이름은 바꾸지 않습니다.</dd></div>
+  </dl>
+</section>
+
+<section class="남은">
+  <h2>남은 81곳 — 여기서 멈춘 까닭</h2>
+  <p>남은 것은 「사실만 나열한 문단」과 「같은 어미가 넷 이어지는 자리」입니다. 그런데 열어 보니 <b>두 종류가 섞여</b> 있었습니다.</p>
+  <div class="보기">
+    <b>① 진짜 흠</b><br>
+    1년 504만₮. 길 A 의 8~11배 아래입니다. 차액이 가족 주머니에 남습니다.<br>
+    <span style="color:var(--흐림)">→ 세 문장 사이 관계를 읽는 사람이 세워야 합니다. 「~라서」로 이었습니다.</span>
+  </div>
+  <div class="보기">
+    <b>② 일부러 끊은 것</b><br>
+    1년 504만₮.<br>
+    <span style="color:var(--흐림)">→ 견적 카드에 크게 박는 숫자입니다. 「그래서」를 붙이면 힘이 빠집니다.</span>
+  </div>
+  <p>기계는 이 둘을 못 가릅니다. 하나씩 열어 사람 눈으로 갈라야 하는데, <b>그 판정의 기준이 곧 말투</b>라 유호님 확정이 먼저입니다.</p>
+</section>
+
+<p class="끝">잰 자 = hanlint(한국어 산문 검사기) · 색·서체는 docs/디자인_토큰.json 의 킷 값 · 고친 내역은 git 이력에 남아 있습니다.</p>
+</div>
