@@ -17,6 +17,7 @@ from . import (
     library_index,
     registers,
     relevance,
+    rerank,
     schema,
     signals,
     skill_meta,
@@ -431,6 +432,26 @@ def _render_ranked_clusters(
     return lines
 
 
+def _auxiliary_candidate_pool(
+    report: schema.Report,
+    visible_clusters: list[schema.Cluster],
+    solid_clusters: list[schema.Cluster],
+) -> list[schema.Candidate]:
+    """Candidates for Best Takes and Top Community Comments.
+
+    Those sections are cross-cutting evidence surfaces, so they read every
+    cluster that clears the relevance floor, not only the ``cluster_limit``
+    clusters shown in ``## Ranked Evidence Clusters``: a 3,000-vote comment on
+    the thread in cluster eleven is exactly what the brief is for. The
+    nothing-solid gate is unchanged: when the visible set has clusters but
+    none clear the floor, the pool is empty.
+    """
+    if visible_clusters and not solid_clusters:
+        return []
+    all_solid = _clusters_clearing_relevance_floor(report, report.clusters)
+    return _candidates_for_auxiliary_sections(report, report.clusters, all_solid)
+
+
 def _clusters_clearing_relevance_floor(
     report: schema.Report,
     clusters: list[schema.Cluster],
@@ -645,12 +666,13 @@ def _render_registered_sections(
         solid_clusters,
     )
     no_solid_evidence = bool(visible_clusters) and not solid_clusters
+    aux_candidates = _auxiliary_candidate_pool(report, visible_clusters, solid_clusters)
     if no_solid_evidence:
         best_takes: list[str] = []
         top_comments: list[str] = []
     else:
         best_takes = _render_best_takes(
-            visible_candidates,
+            aux_candidates,
             limit=audience.budget_for("best_takes", int(fun_params["limit"])),
             threshold=float(fun_params["threshold"]),
             vote_weight=float(fun_params.get("vote_weight", 18.0)),
@@ -671,7 +693,7 @@ def _render_registered_sections(
         top_comments = _render_top_comments(
             report,
             limit=audience.budget_for("top_comments", 8),
-            candidates=visible_candidates,
+            candidates=aux_candidates,
         )
         if not top_comments:
             top_comments = [
@@ -697,7 +719,7 @@ def _render_registered_sections(
         "best_takes": best_takes,
         "top_comments": top_comments,
         "source_outcomes": _render_source_outcome_note(report),
-        "source_coverage": _render_source_coverage(report),
+        "source_coverage": _render_source_coverage(report, include_errors=False),
     }
     lines: list[str] = []
     for section_name in audience.section_order:
@@ -753,9 +775,10 @@ def render_compact(
             ]
         )
 
-    if report.warnings:
+    user_warnings = _warnings_without_source_failures(report.warnings)
+    if user_warnings:
         lines.append("## Warnings")
-        lines.extend(f"- {warning}" for warning in report.warnings)
+        lines.extend(f"- {warning}" for warning in user_warnings)
         lines.append("")
 
     # LAW 7 backstop: emit the DEGRADED RUN WARNING block BEFORE the evidence
@@ -791,6 +814,9 @@ def render_compact(
         solid_clusters,
     )
     no_solid_evidence = bool(visible_clusters) and not solid_clusters
+    aux_candidates = _auxiliary_candidate_pool(
+        evidence_report, visible_clusters, solid_clusters
+    )
     hiring_block = (
         []
         if no_solid_evidence
@@ -811,7 +837,7 @@ def render_compact(
 
         if not no_solid_evidence:
             best_takes = _render_best_takes(
-                visible_candidates,
+                aux_candidates,
                 limit=fun_params["limit"],
                 threshold=fun_params["threshold"],
                 vote_weight=fun_params.get("vote_weight", 18.0),
@@ -821,7 +847,7 @@ def render_compact(
 
             top_comments = _render_top_comments(
                 evidence_report,
-                candidates=visible_candidates,
+                candidates=aux_candidates,
             )
             if top_comments:
                 lines.extend([""] + top_comments)
@@ -830,7 +856,7 @@ def render_compact(
         if outcome_note:
             lines.extend([""] + outcome_note)
 
-        lines.extend(_render_source_coverage(report))
+        lines.extend(_render_source_coverage(report, include_errors=False))
     else:
         lines.extend(
             _render_registered_sections(
@@ -2480,7 +2506,29 @@ def _polymarket_top_markets(
     return summaries
 
 
-def _render_source_coverage(report: schema.Report) -> list[str]:
+# Warnings that only restate a per-source outcome. The compact (model-facing)
+# stdout carries those through ## Partial Coverage, and the user-facing
+# footer carries counts only; doctor --postmortem, the saved raw file, and
+# --emit=json keep the full list.
+_SOURCE_FAILURE_WARNING_PREFIXES = (
+    "Some sources failed",
+    "Some sources returned partial results",
+)
+
+
+def _warnings_without_source_failures(warnings: list[str]) -> list[str]:
+    return [
+        warning
+        for warning in warnings
+        if not warning.startswith(_SOURCE_FAILURE_WARNING_PREFIXES)
+    ]
+
+
+def _render_source_coverage(
+    report: schema.Report,
+    *,
+    include_errors: bool = True,
+) -> list[str]:
     lines = [
         "## Source Coverage",
         "",
@@ -2493,7 +2541,7 @@ def _render_source_coverage(report: schema.Report) -> list[str]:
         if outcome and outcome.state != health.OK:
             line += f" ({_format_outcome(outcome)})"
         lines.append(line)
-    if report.errors_by_source:
+    if include_errors and report.errors_by_source:
         lines.append("")
         lines.append("## Source Errors")
         lines.append("")
@@ -2531,7 +2579,15 @@ def _format_outcome(outcome: schema.SourceOutcome) -> str:
     state = outcome.state
     if state == schema.PARTIAL:
         noun = "item" if outcome.items_returned == 1 else "items"
-        summary = f"partial after {outcome.items_returned} {noun}"
+        summary = f"partial — {outcome.items_returned} {noun} returned"
+        detail_l = detail.lower()
+        if (
+            "429" in detail_l
+            or "rate-limited" in detail_l
+            or "rate limit" in detail_l
+            or "too many requests" in detail_l
+        ):
+            summary += ", some requests rate-limited"
     elif state == schema.NO_RESULTS:
         summary = "no results"
     else:
@@ -2796,9 +2852,9 @@ def _build_source_footer_lines(report: schema.Report) -> list[str]:
             parts.append(f"{with_transcripts}/{len(items)} with transcripts")
         stats = " │ ".join(parts)
         line = _footer_line_for_source(emoji, label, len(items), item_word, stats)
-        outcome = report.source_status.get(source_key)
-        if outcome and outcome.state != health.OK:
-            line += f" │ ⚠ {_format_outcome(outcome)}"
+        # Counts only: run diagnostics live in doctor --postmortem, the saved
+        # raw file, and the model-facing ## Partial Coverage note, never on
+        # the user-facing conclusion surface.
         out.append(line)
 
     # Polymarket (special: count + odds string from existing helper)
@@ -2813,9 +2869,6 @@ def _build_source_footer_lines(report: schema.Report) -> list[str]:
             line = f"📊 Polymarket: {count_str} {plural} │ {odds_str}"
         else:
             line = f"📊 Polymarket: {count_str} {plural}"
-        outcome = report.source_status.get("polymarket")
-        if outcome and outcome.state != health.OK:
-            line += f" │ ⚠ {_format_outcome(outcome)}"
         out.append(line)
 
     amazon_line = _amazon_footer_line(report)
@@ -2833,9 +2886,6 @@ def _build_source_footer_lines(report: schema.Report) -> list[str]:
             line = f"🌐 Web: {count_str} {plural} - {names}"
         else:
             line = f"🌐 Web: {count_str} {plural}"
-        outcome = report.source_status.get("grounding")
-        if outcome and outcome.state != health.OK:
-            line += f" │ ⚠ {_format_outcome(outcome)}"
         out.append(line)
 
     # Only populated sources (>=1 item) get an emoji-tree line. A source that
@@ -2882,7 +2932,10 @@ def _amazon_footer_line(report: schema.Report) -> str | None:
         # "no products matched" sends the user to fix the wrong thing --
         # so lead with the real outcome, same as every other footer branch.
         if failed:
-            return f'📦 Amazon: no results for "{keyword}" │ ⚠ {_format_outcome(outcome)}'
+            # Counts-only footer: the outcome itself lives in ## Partial
+            # Coverage and doctor --postmortem, so just avoid the misleading
+            # "no products matched" wording when the search never ran.
+            return f'📦 Amazon: no results for "{keyword}"'
         return f'📦 Amazon: no products matched "{keyword}"'
 
     count = len(items)
@@ -2899,8 +2952,6 @@ def _amazon_footer_line(report: schema.Report) -> str | None:
         if total_ratings:
             parts.append(f"{total_ratings:,} ratings")
         line = f"📦 Amazon: {' │ '.join(parts)}"
-        if failed:
-            line += f" │ ⚠ {_format_outcome(outcome)}"
         return line
 
     # Only the *sampled* products earn a slot. A run can carry a dozen
@@ -2936,8 +2987,6 @@ def _amazon_footer_line(report: schema.Report) -> str | None:
     # still accepts a quote so a future writer can supply one.
     entries = [amazon.footer_entry(s) for s in stats]
     line = f"📦 Amazon: {count} {plural} │ {', '.join(entries)}"
-    if failed:
-        line += f" │ ⚠ {_format_outcome(outcome)}"
     return line
 
 
@@ -2994,12 +3043,23 @@ def _render_emoji_footer(report: schema.Report, save_path: str | None) -> list[s
     """
     source_lines = _build_source_footer_lines(report)
     voices_line = _top_voices_footer_line(report)
+    # The freshness verdict is computed for the report body, but a reader who
+    # only scans this footer never sees it — and it is the one line that says
+    # how much of the evidence is actually recent.
+    freshness_warning = _assess_data_freshness(report)
+    freshness_line = f"🕒 {freshness_warning}" if freshness_warning else None
     raw_line = f"📎 Raw results saved to {save_path}" if save_path else None
 
     body: list[str] = []
     body.extend(source_lines)
     if voices_line:
         body.append(voices_line)
+    # Append freshness whenever it would annotate something: either the body
+    # already has content, or the raw-results line will make the footer
+    # non-empty. An otherwise empty run stays silent rather than announcing
+    # its own emptiness.
+    if freshness_line and (body or raw_line):
+        body.append(freshness_line)
     if raw_line:
         body.append(raw_line)
 
@@ -3400,20 +3460,12 @@ def _source_label(source: str) -> str:
 def _best_take_relevance_ok(candidate) -> bool:
     """Exclude off-topic-but-viral candidates from Best Takes.
 
-    The engine demotes candidates that don't match the topic entity by tagging
-    ``entity-miss`` in the explanation and/or zeroing ``final_score`` (e.g. a
-    39k-like Grand Tour comment surfacing in a 'Patagonia brand' run). Those
-    must never reach Best Takes no matter how upvoted their comments are.
-    Plain ``fallback-local-score`` (without entity-miss) is NOT a demotion --
-    it is the default reason when LLM rerank didn't score an item -- so it is
-    not gated here.
+    Delegates to ``rerank.candidate_relevance_ok``, which owns the entity-miss
+    demotion test. Do not re-implement the check here: this site previously
+    carried its own copy, which meant the first-party carve-out applied in
+    rerank never reached Best Takes or cluster visibility.
     """
-    explanation = (candidate.explanation or "").lower()
-    if "entity-miss" in explanation:
-        return False
-    if (candidate.final_score or 0.0) <= 0.0:
-        return False
-    return True
+    return rerank.candidate_relevance_ok(candidate)
 
 
 def _effective_fun_score(candidate, vote_weight: float) -> float:

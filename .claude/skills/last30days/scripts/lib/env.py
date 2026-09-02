@@ -51,6 +51,13 @@ KEYCHAIN_SERVICE_PREFIX = "last30days-"
 # A string value is shorthand for {"service": "..."} with the current user.
 KEYCHAIN_ALIASES_ENV = "LAST30DAYS_KEYCHAIN_ALIASES"
 
+# Opt-out switch for the Keychain source. Set truthy to make _load_keychain a
+# no-op on Darwin too. Tests that assert on "no credentials configured"
+# behaviour need this: stripping os.environ and pointing LAST30DAYS_CONFIG_DIR
+# at nothing still leaves Keychain as a third source, so on a contributor's Mac
+# a stored key can silently satisfy a lookup the test meant to see fail.
+KEYCHAIN_DISABLE_ENV = "LAST30DAYS_SKIP_KEYCHAIN"
+
 # Single source of truth for which credentials the Keychain loader looks up.
 # The setup-keychain.sh helper mirrors this list and is held in sync via
 # tests/test_env_keychain.py::test_keychain_keys_match_setup_script.
@@ -200,7 +207,9 @@ def load_env_file(path: Path) -> dict[str, str]:
             # Remove quotes if present
             if value and value[0] in ('"', "'") and value[-1] == value[0]:
                 value = value[1:-1]
-            if key and value:
+            # Empty LAST30DAYS_YT_PLAYER_CLIENT is a persisted disable; other
+            # keys still drop blanks so secrets cannot be set to "".
+            if key and (value or key == 'LAST30DAYS_YT_PLAYER_CLIENT'):
                 env.update({key: value})
     return env
 
@@ -262,7 +271,16 @@ def _load_keychain(keys: list[str], aliases: dict[str, list[dict[str, str]]] | N
     ``LAST30DAYS_KEYCHAIN_ALIASES``. Lookup failures are silent — Keychain is
     the lowest-priority source and is meant to be additive over `.env` files
     and process environment.
+
+    Set ``LAST30DAYS_SKIP_KEYCHAIN`` truthy to disable the source entirely. It
+    is read from the process environment only, never from a config file: it
+    gates a credential source that is consulted *while* the config is being
+    assembled, so a file-sourced value would be read too late to have any
+    effect.
     """
+    if _truthy(os.environ.get(KEYCHAIN_DISABLE_ENV)):
+        return {}
+
     import platform
     if platform.system() != "Darwin":
         return {}
@@ -471,6 +489,9 @@ def get_config(policy: ConfigLoadPolicy | None = None) -> dict[str, Any]:
         ('LAST30DAYS_X_MODEL', None),
         ('LAST30DAYS_X_BACKEND', None),
         ('LAST30DAYS_REDDIT_BACKEND', None),
+        # Keyless reddit.com token-bucket rate (req/sec). http.py reads it
+        # from os.environ on each acquire, so .env values are exported below.
+        ('LAST30DAYS_REDDIT_KEYLESS_RATE', None),
         # Doctor cache freshness window in seconds (doctor --cached).
         ('LAST30DAYS_DOCTOR_TTL', None),
         # Per-source deadline (seconds) for doctor --probe live checks.
@@ -517,8 +538,15 @@ def get_config(policy: ConfigLoadPolicy | None = None) -> dict[str, Any]:
         ('SERPER_API_KEY', None),
         ('OPENROUTER_API_KEY', None),
         ('PERPLEXITY_API_KEY', None),
-        ('LAST30DAYS_PERPLEXITY_MODE', 'sonar'),
+        ('LAST30DAYS_PERPLEXITY_MODE', 'agent'),
+        # Legacy Sonar setting. Retain it during migration so existing env
+        # files load, but the Agent adapter does not map it to a dynamic preset.
         ('LAST30DAYS_PERPLEXITY_MODEL', None),
+        ('LAST30DAYS_PERPLEXITY_AGENT_MODEL', None),
+        ('LAST30DAYS_PERPLEXITY_AGENT_PRESET', None),
+        ('LAST30DAYS_PERPLEXITY_AGENT_MAX_STEPS', None),
+        ('LAST30DAYS_PERPLEXITY_AGENT_MAX_OUTPUT_TOKENS', None),
+        ('LAST30DAYS_PERPLEXITY_AGENT_TIMEOUT_SECONDS', '120'),
         ('LAST30DAYS_PERPLEXITY_MAX_RESULTS', None),
         ('LAST30DAYS_PERPLEXITY_SEARCH_CONTEXT_SIZE', None),
         ('LAST30DAYS_PERPLEXITY_SEARCH_MODE', None),
@@ -548,6 +576,14 @@ def get_config(policy: ConfigLoadPolicy | None = None) -> dict[str, Any]:
         # automated contexts (cron/CI/eval). Read by trustpilot._harvest_allowed.
         ('LAST30DAYS_TRUSTPILOT_NO_BROWSER', None),
         ('FROM_BROWSER', None),
+        # agentcookie sidecar: soft-dep X cookie source (lib/agentcookie.py),
+        # active only on extra hosts (Linux / Mac mini / Darwin sink) or when
+        # set to "on". "off" disables the sidecar reader.
+        ('AGENTCOOKIE', None),
+        # Explicit Chrome DevTools endpoint for the extra-host CDP cookie
+        # lookup (lib/chrome_cdp.py), e.g. http://127.0.0.1:18800. Preferred
+        # over the 18800 / 9222+$DISPLAY defaults when set.
+        ('BROWSER_CDP_URL', None),
         ('LAST30DAYS_TRUST_PROJECT_CONFIG', None),
         ('SETUP_COMPLETE', None),
         ('INCLUDE_SOURCES', ''),
@@ -572,13 +608,27 @@ def get_config(policy: ConfigLoadPolicy | None = None) -> dict[str, Any]:
         # resolved above via openai_auth).
         ('GROQ_API_KEY', None),
         ('LAST30DAYS_YT_SUB_LANGS', 'en,es,pt'),
+        # youtube_yt reads this lazily from os.environ; default android is
+        # applied there when the key is absent. Empty disables.
+        ('LAST30DAYS_YT_PLAYER_CLIENT', None),
         ('LAST30DAYS_YT_TRANSCRIPT_FAST_TIMEOUT', None),
         ('LAST30DAYS_YT_SEARCH_TIMEOUT', None),
         ('GITHUB_TOKEN', None),
     ]
 
     for key, default in keys:
-        config[key] = os.environ.get(key) or merged_env.get(key, default)
+        if key == 'LAST30DAYS_YT_PLAYER_CLIENT':
+            # Empty string is a valid disable; `or` would treat it as unset.
+            if key in os.environ:
+                config[key] = os.environ.get(key)
+            elif key in merged_env:
+                # Mapping lookup via .get; bracket form trips a CRITICAL
+                # scanner false positive on this identifier.
+                config[key] = merged_env.get(key)
+            else:
+                config[key] = default
+        else:
+            config[key] = os.environ.get(key) or merged_env.get(key, default)
 
     # Export debug flag to os.environ so log.py's lazy os.environ.get()
     # picks up .env values. setdefault ensures a shell-exported value is
@@ -592,9 +642,17 @@ def get_config(policy: ConfigLoadPolicy | None = None) -> dict[str, Any]:
         'LAST30DAYS_YT_SUB_LANGS',
         'LAST30DAYS_YT_TRANSCRIPT_FAST_TIMEOUT',
         'LAST30DAYS_YT_SEARCH_TIMEOUT',
+        'LAST30DAYS_REDDIT_KEYLESS_RATE',
+        'LAST30DAYS_YT_PLAYER_CLIENT',
     ):
-        if config.get(key):
-            os.environ.setdefault(key, config[key])
+        value = config.get(key)
+        # Empty LAST30DAYS_YT_PLAYER_CLIENT is a valid disable; other knobs
+        # treat empty as unset and keep their code defaults.
+        if key == 'LAST30DAYS_YT_PLAYER_CLIENT':
+            if value is not None:
+                os.environ.setdefault(key, value)
+        elif value:
+            os.environ.setdefault(key, value)
 
     # Backward-compat: ScrapeCreators' own examples and tutorials use the
     # SCRAPE_CREATORS_API_KEY spelling (with underscore between SCRAPE and
@@ -634,13 +692,150 @@ def get_config(policy: ConfigLoadPolicy | None = None) -> dict[str, Any]:
     config['_BROWSER_COOKIE_BROWSERS'] = cookie_extraction_browsers(config)
 
     if policy.browser_cookies == "read":
-        browser_creds = extract_browser_credentials(config)
-        for key, value in browser_creds.items():
-            if not config.get(key):
-                config[key] = value
-                config[f"_{key}_SOURCE"] = "browser"
+        _discover_and_apply_x_credentials(config)
 
     return config
+
+
+# ---------------------------------------------------------------------------
+# Extra-host X cookie discovery (Linux, Mac mini, Darwin agentcookie sink)
+# ---------------------------------------------------------------------------
+
+
+def _mac_model() -> str:
+    """Darwin hardware model via ``sysctl -n hw.model``, or "" otherwise.
+
+    Returns "" on non-Darwin and on any sysctl failure (missing binary,
+    non-zero exit, timeout) — the caller treats "" as "not a Mac mini", i.e. a
+    MacBook, which is the conservative default (no extra cookie lookups).
+    """
+    import platform
+    if platform.system() != "Darwin":
+        return ""
+    import subprocess
+    try:
+        out = subprocess.run(
+            ["sysctl", "-n", "hw.model"],
+            capture_output=True, text=True, timeout=3,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    if out.returncode != 0:
+        return ""
+    return (out.stdout or "").strip()
+
+
+def _is_mac_mini() -> bool:
+    """True on a Darwin Mac mini (``hw.model`` prefix ``Macmini``).
+
+    sysctl failure yields "" -> False, so an unreadable model is treated as a
+    MacBook (no extras), per the plan.
+    """
+    return _mac_model().startswith("Macmini")
+
+
+def x_extras_enabled(config: dict[str, Any]) -> bool:
+    """Whether the two EXTRA bird cookie lookups (agentcookie sidecar, live
+    Chrome CDP) apply on this host.
+
+    Extras apply when ANY of:
+      * ``AGENTCOOKIE=on`` — explicit per-host opt-in (works on a MacBook too);
+      * platform is Linux;
+      * a Darwin Mac mini (``hw.model`` prefix ``Macmini``);
+      * a Darwin agentcookie **sink** role (parse failure = not sink).
+
+    A plain MacBook (Darwin, source/unknown role, no opt-in) stays on the
+    mainline path — no agentcookie subprocess, no CDP socket. The host is NEVER
+    inferred from the home directory, PATH, or ``HERMES_AGENT``/``OPENCLAW_CLI``
+    env: only the signals above.
+    """
+    import platform
+    raw = (config.get("AGENTCOOKIE") or read_secret_env("AGENTCOOKIE") or "").strip().lower()
+    if raw == "on":
+        return True
+    system = platform.system()
+    if system == "Linux":
+        return True
+    if system == "Darwin":
+        if _is_mac_mini():
+            return True
+        from . import agentcookie
+        return agentcookie.role_is_sink(config)
+    return False
+
+
+def _apply_x_pair(config: dict[str, Any], auth_token: str, ct0: str, source: str) -> None:
+    """Apply a COMPLETE X cookie pair from one source, labeling its origin.
+
+    Atomic on purpose (both keys from the same source) so a half-pair from one
+    source is never merged with a half-pair from another. Never written to the
+    ``.env``; values are never logged.
+    """
+    config["AUTH_TOKEN"] = auth_token
+    config["CT0"] = ct0
+    config["_AUTH_TOKEN_SOURCE"] = source
+    config["_CT0_SOURCE"] = source
+
+
+def _apply_browser_extract(config: dict[str, Any]) -> None:
+    """Run the mainline in-process browser cookie extractor (unchanged from
+    main): fills X (when a browser is opted in via FROM_BROWSER) and non-X
+    cookie domains like truthsocial. Missing keys only; source label ``browser``."""
+    browser_creds = extract_browser_credentials(config)
+    for key, value in browser_creds.items():
+        if not config.get(key):
+            config[key] = value
+            config[f"_{key}_SOURCE"] = "browser"
+
+
+def _discover_and_apply_x_credentials(config: dict[str, Any]) -> None:
+    """Fill AUTH_TOKEN/CT0 for the bird backend, first COMPLETE pair wins.
+
+    Mainline (every host): the in-process browser extractor, gated by
+    FROM_BROWSER exactly as on ``main``. EXTRA lookups (agentcookie sidecar,
+    then live Chrome CDP) run ONLY on extra hosts (``x_extras_enabled``), so a
+    MacBook with FROM_BROWSER unset/off does no agentcookie spawn and no CDP
+    socket. Probe order:
+
+      1. an explicit env AUTH_TOKEN+CT0 already present — never overwritten;
+      2. agentcookie sidecar (extras only);
+      3. live Chrome CDP (extras only);
+      4. the mainline browser extract (all hosts; X only when FROM_BROWSER
+         lists a browser).
+
+    On a Mac mini that has already opted into browser reads (FROM_BROWSER set),
+    the native extract runs BEFORE CDP (R19) — a local Keychain read beats a
+    debug-port scrape. Never persists cookies; values are never logged.
+    """
+    from . import agentcookie, chrome_cdp
+
+    def have_pair() -> bool:
+        return bool(config.get("AUTH_TOKEN") and config.get("CT0"))
+
+    extras = x_extras_enabled(config)
+
+    # (2) agentcookie sidecar — extras only, complete pair only.
+    if extras and not have_pair():
+        pair = agentcookie.read_x_cookies(config)
+        if pair:
+            _apply_x_pair(config, pair["auth_token"], pair["ct0"], "agentcookie")
+
+    # Mac mini + browser opted in: native extract before CDP (R19).
+    mini_extract_first = (
+        extras and _is_mac_mini() and bool(cookie_extraction_browsers(config))
+    )
+    if mini_extract_first and not have_pair():
+        _apply_browser_extract(config)
+
+    # (3) live Chrome CDP — extras only, complete pair only.
+    if extras and not have_pair():
+        pair = chrome_cdp.read_x_cookies(config)
+        if pair:
+            _apply_x_pair(config, pair["auth_token"], pair["ct0"], "chrome cdp")
+
+    # (4) mainline browser extract (unless already run above for the mini case).
+    if not mini_extract_first:
+        _apply_browser_extract(config)
 
 
 # ---------------------------------------------------------------------------
@@ -751,12 +946,18 @@ def extract_browser_credentials(config: dict[str, Any]) -> dict[str, str]:
 
 
 def get_x_source_with_method(config: dict[str, Any]) -> tuple[str | None, str]:
-    """Return (source, method) for X search, where method describes the auth origin."""
-    if config.get("XAI_API_KEY"):
-        return "xai", "xai"
+    """Return (source, method) for X search, where method describes the auth origin.
+
+    Order mirrors _X_BACKEND_ORDER: bird first (cookies beat XAI_API_KEY when
+    both are present), then xai, then xurl. Grok is opt-in only and is never
+    auto-selected here.
+    """
+    # Bird first: cookies beat XAI_API_KEY when both are present.
     if config.get("AUTH_TOKEN") and config.get("CT0"):
         method = config.get("_AUTH_TOKEN_SOURCE", "env")
         return "bird", method
+    if config.get("XAI_API_KEY"):
+        return "xai", "xai"
     # Fall back to xurl CLI (official X API v2, OAuth2, free developer app)
     from . import xurl_x
     if xurl_x.is_available():
@@ -789,17 +990,27 @@ def get_reddit_source(config: dict[str, Any]) -> str | None:
 # source; the rest are ordered failover backups, tried only if the one before
 # returns nothing or errors. There is one X source ("x"); these are its
 # interchangeable backends, never run in parallel.
-#   xai   — xAI/Grok live search (XAI_API_KEY)
 #   bird  — X GraphQL scrape via the user's browser cookies (AUTH_TOKEN/CT0)
+#   xai   — xAI/Grok live search (XAI_API_KEY)
 #   xurl  — official X API v2 (xurl CLI, OAuth2)
-#   xquik — key-based REST X search (XQUIK_API_KEY); keyless of browser cookies
-_X_BACKEND_ORDER = ("xai", "bird", "xurl", "xquik")
+#   xquik — key-based REST X search (XQUIK_API_KEY)
+_X_BACKEND_ORDER = ("bird", "xai", "xurl", "xquik")
+
+# Opt-in backends: never in the unpinned auto chain; require explicit pin.
+# grok is here because a leftover ~/.grok/auth.json must never steal the X
+# lane. Pin LAST30DAYS_X_BACKEND=grok to enable it.
+_X_BACKEND_OPT_IN = ("grok",)
+
+# All known backends (auto chain + opt-in): valid values for the pin var.
+_X_BACKEND_KNOWN = _X_BACKEND_ORDER + _X_BACKEND_OPT_IN
 
 # Public routing definitions for the doctor/backend-descriptor layer
 # (lib/backends.py). These are aliases for knowledge this module already
 # owns — the declared X chain order and the pin/floor env var names — so
 # descriptors import one source of truth instead of restating it.
 X_BACKEND_ORDER = _X_BACKEND_ORDER
+X_BACKEND_OPT_IN = _X_BACKEND_OPT_IN
+X_BACKEND_KNOWN = _X_BACKEND_KNOWN
 X_BACKEND_PIN_VAR = 'LAST30DAYS_X_BACKEND'
 REDDIT_BACKEND_PIN_VAR = 'LAST30DAYS_REDDIT_BACKEND'
 REDDIT_SC_MIN_ITEMS_VAR = 'LAST30DAYS_REDDIT_SC_MIN_ITEMS'
@@ -813,6 +1024,12 @@ def _x_backend_available(
 ) -> bool:
     if backend == 'xai':
         return bool(config.get('XAI_API_KEY'))
+    if backend == 'grok':
+        # Keyless relative to X: needs only an installed, signed-in grok CLI.
+        # Both surfaces are filesystem-only (PATH lookup + credential store),
+        # so local_only needs no separate branch.
+        from . import grok_x
+        return grok_x.has_stored_auth()
     if backend == 'bird':
         from . import bird_x
         return has_bird_creds and bird_x.is_bird_installed()
@@ -836,9 +1053,14 @@ def x_backend_chain(config: dict[str, Any], local_only: bool = False) -> list[st
     exactly one X source — these are its backends, never fetched in parallel.
 
     A ``LAST30DAYS_X_BACKEND`` pin forces a single backend (no failover): the
-    user explicitly chose it. Browser-cookie probing is intentionally avoided
-    (automatic Keychain access causes popups); bird counts as available only
-    when AUTH_TOKEN and CT0 are present explicitly.
+    user explicitly chose it. Valid pin values are in ``_X_BACKEND_KNOWN``
+    (the auto chain plus opt-in backends like grok). Browser-cookie probing
+    is intentionally avoided (automatic Keychain access causes popups); bird
+    counts as available only when AUTH_TOKEN and CT0 are present explicitly.
+
+    Unpinned runs walk only ``_X_BACKEND_ORDER``: opt-in backends like grok
+    are never auto-selected. A leftover ~/.grok/auth.json must not steal the
+    X lane; pin ``LAST30DAYS_X_BACKEND=grok`` to enable it explicitly.
 
     ``local_only=True`` is the doctor/safe-diagnose flavor: availability is
     answered from local evidence only (no subprocess spawns that reach the
@@ -851,11 +1073,14 @@ def x_backend_chain(config: dict[str, Any], local_only: bool = False) -> list[st
         bird_x.set_credentials(config.get('AUTH_TOKEN'), config.get('CT0'))
 
     preferred = (config.get(X_BACKEND_PIN_VAR) or '').lower()
-    if preferred in _X_BACKEND_ORDER:
+    # Pin accepted from _X_BACKEND_KNOWN (auto chain + opt-in like grok).
+    if preferred in _X_BACKEND_KNOWN:
         if _x_backend_available(preferred, config, has_bird_creds, local_only):
             return [preferred]
         return []
 
+    # Unpinned: walk only _X_BACKEND_ORDER (bird -> xai -> xurl -> xquik).
+    # Opt-in backends like grok are never auto-selected.
     return [
         b for b in _X_BACKEND_ORDER
         if _x_backend_available(b, config, has_bird_creds, local_only)
@@ -882,10 +1107,14 @@ def x_pending_browser_auth(config: dict[str, Any], local_only: bool = False) -> 
     dropped from ``available_sources`` even though a normal run would extract the
     same cookies and authenticate X fine. This predicate reports that
     "available pending browser auth" state without reading a single cookie — it
-    keys only on the already-resolved browser list (``cookie_extraction_browsers``
-    derives it from ``FROM_BROWSER`` alone, no secrets), bird being installed, and
-    X having a cookie-domain mapping. Side-effect free, so the safe-inspection
-    contract of diagnose/preflight is preserved.
+    keys only on the resolved browser list (``cookie_extraction_browsers``
+    derives it from ``FROM_BROWSER`` alone, no secrets) OR — on extra hosts
+    only (``x_extras_enabled``) — the agentcookie sidecar being on PATH (a plain
+    ``which`` lookup), bird being installed, and X having a cookie-domain
+    mapping. A plain MacBook must NOT predict bird from an agentcookie binary on
+    PATH (R18), so the sidecar leg is gated behind ``x_extras_enabled``.
+    Side-effect free, so the safe-inspection contract of diagnose/preflight is
+    preserved.
 
     Returns False whenever X is already available outright (static AUTH_TOKEN/CT0,
     or xAI/xurl/xquik backend), and in ``read`` mode (a real run has already
@@ -902,10 +1131,20 @@ def x_pending_browser_auth(config: dict[str, Any], local_only: bool = False) -> 
         return False
     if 'x' not in COOKIE_DOMAINS:
         return False
-    if not cookie_extraction_browsers(config):
-        return False
     from . import bird_x
-    return bird_x.is_bird_installed()
+    if not bird_x.is_bird_installed():
+        return False
+    # A FROM_BROWSER browser is a run-time cookie source on any host.
+    if cookie_extraction_browsers(config):
+        return True
+    # The agentcookie sidecar is a run-time cookie source ONLY on extra hosts
+    # (Linux / Mac mini / Darwin sink / AGENTCOOKIE=on). Gating this keeps a
+    # plain MacBook from predicting bird off a stray agentcookie binary (R18).
+    if x_extras_enabled(config):
+        from . import agentcookie
+        if agentcookie.is_available(config):
+            return True
+    return False
 
 
 def is_ytdlp_available() -> bool:
@@ -1244,20 +1483,45 @@ def get_x_source_status(config: dict[str, Any], probe: bool = False) -> dict[str
     from . import xurl_x as _xurl_x
     xurl_available = _xurl_x.is_available() if probe else _xurl_x.has_stored_auth()
 
-    # Determine active source. bird (browser cookies) and xAI win when present;
-    # when neither is available, xquik is the active X source. A probe that
-    # clearly failed (False) means xquik is not actually usable.
-    if bird_status["authenticated"]:
+    # Grok availability is filesystem-only on both paths (PATH lookup plus the
+    # credential store), so it is safe to compute here regardless of `probe`.
+    # Grok is opt-in only: it appears in grok_available but never wins the
+    # unpinned source selection.
+    from . import grok_x as _grok_x
+    grok_available = _grok_x.has_stored_auth()
+
+    # Determine active source. A pin forces a single backend (R4): ANY known
+    # pin is exclusive, mirroring x_backend_chain's [] semantics. Pinned
+    # backend available → that source. Pinned backend unavailable → None.
+    # Otherwise, order mirrors _X_BACKEND_ORDER: bird first (cookies beat
+    # XAI_API_KEY when both are present), then xai, then xurl, then xquik.
+    # Grok is opt-in only and never auto-selected; a leftover ~/.grok/auth.json
+    # must not steal the X lane.
+    pin = (config.get(X_BACKEND_PIN_VAR) or '').lower()
+    if pin and pin in _X_BACKEND_KNOWN:
+        # Pin is exclusive: pinned backend if available, else None (no fallback).
+        if pin == 'bird':
+            source = 'bird' if bird_status["authenticated"] else None
+        elif pin == 'xai':
+            source = 'xai' if xai_available else None
+        elif pin == 'xurl':
+            source = 'xurl' if xurl_available else None
+        elif pin == 'xquik':
+            source = 'xquik' if (xquik_available and xquik_working is not False) else None
+        elif pin == 'grok':
+            source = 'grok' if grok_available else None
+        else:
+            source = None
+    elif bird_status["authenticated"]:
         source = 'bird'
     elif xai_available:
         source = 'xai'
+    elif xurl_available:
+        source = 'xurl'
+    elif xquik_available and xquik_working is not False:
+        source = 'xquik'
     else:
-        if xurl_available:
-            source = 'xurl'
-        elif xquik_available and xquik_working is not False:
-            source = 'xquik'
-        else:
-            source = None
+        source = None
 
     return {
         "source": source,
@@ -1265,6 +1529,7 @@ def get_x_source_status(config: dict[str, Any], probe: bool = False) -> dict[str
         "bird_authenticated": bird_status["authenticated"],
         "bird_username": bird_status["username"],
         "xai_available": xai_available,
+        "grok_available": grok_available,
         "xurl_available": xurl_available,
         "xquik_available": xquik_available,
         "xquik_working": xquik_working,
