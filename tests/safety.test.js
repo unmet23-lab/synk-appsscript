@@ -1997,6 +1997,35 @@ test('[v9.293] 🎯 직장 경험 폼 결과 칸 셋 — 선택 유지 · 기존
   const out = section('function migrateWorkFormOutcome()', 'function migrateFormCopy0901()');
   // 엉뚱한 폼을 고치지 않는다 — «찾는 자리»와 같은 서명 자
   assert.ok(/if \(!직장폼서명_\(form\)\)/.test(out), '결과 칸 통로가 서명 자를 안 쓴다 — 동명 복사본에 문항을 붙인다');
+  /* [v9.294] codex P1 c1bc92a6a834 — 서명은 「직장 폼처럼 생겼다」까지만 말한다. 응답 탭에 «안 붙은»
+   * 폼에 문항을 붙이면 회수는 0인데 보고는 성공이라, 조용한 실패가 된다. 생성 경로와 같은 자를 쓴다. */
+  assert.ok(/shT\.getFormUrl\(\)[\s\S]{0,60}indexOf\(form\.getId\(\)\)/.test(out) && /if \(!tabOk\)/.test(out),
+    '결과 칸 통로가 응답 탭↔폼 연결을 대조하지 않는다 — 응답이 안 오는 폼에 문항이 붙는다');
+  /* [v9.294] codex P1 74f473751ae0 — 「없으면 만든다」라 둘이 동시에 「없다」를 읽으면 둘 다 만든다.
+   * 잠금은 래퍼가 잡고 알림은 «해제 뒤»에 보낸다(adminMail 이 같은 비재진입 락을 다시 잡는다). */
+  const outWrap = section('function migrateWorkFormOutcome()', 'function migrateWorkFormOutcome_(');
+  assert.ok(/LockService\.getScriptLock\(\)/.test(outWrap) && /tryLock\(30000\)/.test(outWrap),
+    '결과 칸 통로에 잠금이 없다 — 메뉴를 두 번 누르면 문항이 두 벌로 붙는다');
+  assert.ok(/finally \{[\s\S]{0,200}releaseLock\(\)[\s\S]{0,200}지연알림/.test(outWrap),
+    '잠금 해제·지연 알림 순서가 없다 — adminMail 이 같은 락을 다시 잡아 알림이 죽는다');
+  assert.ok(!/adminMail\(/.test(section('function migrateWorkFormOutcome_(', 'function migrateFormCopy0901()')),
+    '결과 칸 본체가 잠금 «안»에서 adminMail 을 부른다(비재진입 락)');
+  /* [v9.294] codex P2 e5ca1be011e6 — 첫 실행에서 문항은 붙고 moveItem 만 실패한 폼(v9.182 의 실제 모양)은
+   * 「있으면 넘긴다」로는 영영 안 고쳐진다. 있는 것도 자리·유형을 다시 재고, 못 고치는 것은 보고한다. */
+  assert.ok(/자리 교정/.test(out) && /어긋남/.test(out),
+    '재실행이 «있는 문항»의 자리·형상을 안 본다 — 이동만 실패한 폼이 영영 동의 뒤에 남는다');
+  assert.ok(/이미\.getType\(\) !== FormApp\.ItemType\.MULTIPLE_CHOICE/.test(out),
+    '유형이 다른 동명 문항을 그대로 고친다 — 쌓인 응답이 못 읽히는 열로 남는다');
+  // 머리 자리 교정은 문항 반복문 «앞»이어야 한다 — 뒤면 머리가 문항들 뒤로 밀려 순서가 뒤집힌다
+  assert.ok(out.indexOf('자리 교정 — 섹션') !== -1 && out.indexOf('자리 교정 — 섹션') < out.indexOf('결과문항.forEach'),
+    '섹션 머리 자리 교정이 문항 반복문 뒤에 있다 — 머리가 문항 뒤로 간다');
+  /* [v9.294] codex P2 5f735ab55dce — 재직 기간 구간이 겹치면 정확히 3·6·12개월인 사람이 두 칸에 걸리고
+   * 그 임의성이 곧 등급 경계의 사전 분포를 흔든다. 겹치는 표기(`N~M개월` 의 M 이 다음 칸의 시작)를 막는다. */
+  const 기간 = section('const WORK_TENURES =', 'const WORK_EXITS =');
+  assert.ok(!/'1~3개월'|'3~6개월'|'6개월~1년'/.test(기간), '재직 기간 구간이 겹친다 — 경계값이 두 칸에 해당한다');
+  /* ⚠ 과녁을 WORK_TENURES «만»으로 좁힌 까닭: 기존 §2 문항 「일한 기간」에도 같은 겹침이 있으나
+   * 그건 **라이브에 응답이 쌓인 선택지**라 고치면 옛 응답이 미아가 된다(제목·선택지 불변 규율).
+   * 아는 채로 안 고치는 것이지 못 본 것이 아니다 — 트랙 §9-SHIFT 에 적었다. */
   // 기존 «문항»의 제목·선택지 불변: setTitle 은 섹션 헤더에만 · setChoiceValues 는 새로 만든 항목에만
   const 제목쓰기 = out.match(/\.setTitle\(/g) || [];
   const 섹션제목 = out.match(/addSectionHeaderItem\(\)\.setTitle\(/g) || [];
@@ -2004,9 +2033,15 @@ test('[v9.293] 🎯 직장 경험 폼 결과 칸 셋 — 선택 유지 · 기존
   const 섹션번호 = out.match(/it\.setTitle\(p\[1\]\)/g) || [];
   assert.equal(제목쓰기.length, 섹션제목.length + 새문항제목.length + 섹션번호.length,
     '결과 칸 통로가 «기존 문항»의 제목을 고친다 — 응답 헤더·서명·조인 키가 갈린다');
+  /* 선택지 쓰기는 둘뿐이고 «둘 다 안전한 자리»여야 한다 — ①새로 만드는 항목의 체인
+   * ②이미 있는데 선택지가 «비었을 때»만(v9.294 · 값이 있으면 옛 응답이 그 문자열에 묶여 있어 안 고친다). */
   const 선택지쓰기 = out.match(/\.setChoiceValues\(/g) || [];
-  assert.equal(선택지쓰기.length, (out.match(/addMultipleChoiceItem\(\)\.setTitle\([^)]*\)\.setChoiceValues\(/g) || []).length,
-    '결과 칸 통로가 «기존 문항»의 선택지를 고친다');
+  const 생성체인 = out.match(/addMultipleChoiceItem\(\)\.setTitle\([^)]*\)\.setChoiceValues\(/g) || [];
+  const 빈칸채움 = out.match(/if \(!지금선택\.length\) \{ 이미\.asMultipleChoiceItem\(\)\.setChoiceValues\(/g) || [];
+  assert.equal(선택지쓰기.length, 생성체인.length + 빈칸채움.length,
+    '결과 칸 통로가 «기존 문항»의 선택지를 무조건 고친다 — 옛 응답이 그 값에 묶여 있다');
+  assert.ok(빈칸채움.length === 1 && /지금선택\.join\('␟'\) !== q\[1\]\.join\('␟'\)/.test(out),
+    '선택지가 정본과 다를 때 «고치지 않고 보고»하는 갈래가 없다');
   // 멱등 — 있으면 안 만들고, 안내문만 정본과 대조해 갱신한다
   assert.ok(/if \(이미\)/.test(out) && /!==\s*WORK_HELP\[q\[0\]\]/.test(out), '결과 칸 통로가 멱등이 아니거나 안내문을 정본과 대조하지 않는다');
   // 자리 이동은 인덱스·인덱스 오버로드로만(v9.182 라이브 결함) · 못 찾으면 조용히 끝에 두지 않는다
