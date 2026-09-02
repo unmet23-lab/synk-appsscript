@@ -1,0 +1,276 @@
+<title>PRO가 여는 문</title>
+<meta name="description" content="허깅페이스 유료 구독이 우리 사업에 실제로 여는 자리 — 굽기만 보면 유호님 계산이 맞다. 그런데 진짜 질문은 다른 데 있었다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+  :root{
+    --paper:#FBF7F0; --ink:#2B2320; --card:#FBF7F0; --note:#EDE7DC; --line:#F0E3C8; --line2:#C7BFB2;
+    --sub:#575046; --sub2:#575046;
+    --coral:#F96859; --coral-text:#AE322A; --coral-face:#FEF0E9; --wash:#FEF0E9;
+    --lapis-text:#24448C; --lapis-face:#C5D6F5;
+    --meadow-text:#3F6B2E; --meadow-face:#D3E8BE;
+    --butter-text:#7E5A10; --butter-face:#FFEBB0;
+    --pop-text:#99295D; --pop-face:#F8C7DE;
+    --font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,'Malgun Gothic','Apple SD Gothic Neo',monospace;
+    --실:2px; --숨:4px; --틈:8px; --참:12px; --칸:16px; --단:24px; --켜:40px; --장:64px; --막:104px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#080605; --ink:#FBF7F0; --card:#2B2320; --note:rgba(251,247,240,.07); --line:rgba(240,227,200,.28); --line2:rgba(240,227,200,.48);
+      --sub:#C7BFB2; --sub2:#EDE7DC;
+      --coral:#F96859; --coral-text:#FBB7A3; --coral-face:rgba(249,104,89,.18); --wash:rgba(249,104,89,.14);
+      --lapis-text:#C5D6F5; --lapis-face:#24448C;
+      --meadow-text:#D3E8BE; --meadow-face:#3F6B2E;
+      --butter-text:#FFEBB0; --butter-face:#7E5A10;
+      --pop-text:#F8C7DE; --pop-face:#99295D;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#080605; --ink:#FBF7F0; --card:#2B2320; --note:rgba(251,247,240,.07); --line:rgba(240,227,200,.28); --line2:rgba(240,227,200,.48);
+    --sub:#C7BFB2; --sub2:#EDE7DC;
+    --coral:#F96859; --coral-text:#FBB7A3; --coral-face:#AE322A; --wash:rgba(249,104,89,.14);
+    --lapis-text:#C5D6F5; --lapis-face:#24448C;
+    --meadow-text:#D3E8BE; --meadow-face:#3F6B2E;
+    --butter-text:#FFEBB0; --butter-face:#7E5A10;
+    --pop-text:#F8C7DE; --pop-face:#99295D;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light dark}
+  body{margin:0;padding:var(--켜) var(--단) var(--막);background:var(--paper);color:var(--ink);
+       font-family:var(--font);font-weight:500;font-size:15.5px;line-height:1.72;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto}
+  header{border-bottom:var(--실) solid var(--line);padding-bottom:var(--칸)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--sub);margin:0 0 var(--틈)}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.24;margin:0 0 var(--틈);text-wrap:balance}
+  .sub{color:var(--sub);font-size:14px;margin:0;max-width:66ch}
+  .lead{background:var(--wash);border-left:var(--숨) solid var(--coral);padding:var(--칸) var(--단);margin:var(--단) 0 var(--켜);border-radius:0 8px 8px 0}
+  .lead p{margin:0 0 var(--참)} .lead p:last-child{margin:0} .lead b{font-weight:800}
+  .lead .no{font-family:var(--mono);font-size:12px;color:var(--coral-text);font-weight:500;letter-spacing:.06em}
+  h2{font-size:21px;font-weight:800;line-height:1.24;margin:var(--장) 0 var(--틈);padding-bottom:var(--틈);border-bottom:1px solid var(--line);text-wrap:balance}
+  h2 .n{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--sub);margin-right:var(--틈)}
+  h3{font-size:16.5px;font-weight:800;line-height:1.3;margin:var(--단) 0 var(--숨)}
+  h4{font-size:15px;font-weight:800;margin:var(--단) 0 var(--숨)}
+  p{margin:0 0 var(--참);max-width:72ch}
+  ul,ol{margin:0 0 var(--참);padding-left:1.3em} li{margin:0 0 var(--숨)} li>ul{margin-top:var(--숨)}
+  .hint{color:var(--sub);font-size:13.5px;margin:var(--숨) 0 var(--칸)}
+  .card{border:1px solid var(--line);border-radius:8px;padding:var(--칸) var(--단);margin-bottom:var(--참);background:var(--card)}
+  .card.top{border-color:var(--coral);border-left-width:var(--숨)}
+  .card.dead{border-style:dashed}
+  .card h3{margin-top:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--틈)}
+  .card p{margin-bottom:var(--틈)}
+  .row{display:grid;grid-template-columns:104px 1fr;gap:var(--숨) var(--참);font-size:14.5px;margin-top:var(--틈)}
+  .k{color:var(--sub);font-weight:700;font-size:13px;padding-top:2px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11.5px;font-weight:500;padding:1px 8px;border-radius:999px;white-space:nowrap;vertical-align:middle;line-height:1.6}
+  .pill.sub{background:var(--meadow-face);color:var(--meadow-text)}
+  .pill.api{background:var(--butter-face);color:var(--butter-text)}
+  .pill.win{background:var(--lapis-face);color:var(--lapis-text)}
+  .pill.no{background:var(--coral-face);color:var(--coral-text)}
+  .pill.grey{background:var(--note);color:var(--sub2)}
+  .pill.pop{background:var(--pop-face);color:var(--pop-text)}
+  .v{font-weight:800;white-space:nowrap} .v.pass{color:var(--meadow-text)} .v.cond{color:var(--lapis-text)} .v.fail{color:var(--coral-text)}
+  .note{background:var(--note);border-radius:6px;padding:var(--참) var(--칸);margin:var(--참) 0;font-size:14px}
+  .note p:last-child{margin-bottom:0}
+  .tbl{overflow-x:auto;margin:var(--참) 0 var(--숨)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:var(--틈) var(--참);border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--sub);font-size:12.5px;font-weight:700;white-space:nowrap}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  code{font-family:var(--mono);background:var(--note);padding:1px 6px;border-radius:4px;font-size:12.5px;color:var(--sub2);word-break:break-all}
+  a{color:var(--lapis-text);text-decoration-thickness:1px;text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+  .terms{display:grid;grid-template-columns:1fr 1fr;gap:var(--숨) var(--단);font-size:13.5px;margin:var(--칸) 0}
+  .terms dt{font-weight:800;color:var(--sub2)} .terms dd{margin:0 0 var(--틈)}
+  .toc{display:flex;flex-wrap:wrap;gap:var(--틈);margin:var(--칸) 0 0;padding:0;list-style:none;font-size:13.5px}
+  .toc a{display:inline-block;padding:2px 10px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--sub2)}
+  footer{margin-top:var(--장);padding-top:var(--칸);border-top:1px solid var(--line);font-size:13px;color:var(--sub)}
+  @media (max-width:640px){.row{grid-template-columns:1fr;gap:2px}.terms{grid-template-columns:1fr}body{padding:var(--단) var(--칸) var(--장)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SYNK · 구독 판정 · 2026-09-03</p>
+  <h1>PRO가 여는 문</h1>
+  <p class="sub">유호님 물음 — 「$9 짜리 구독이 크레딧 $2 를 주는데, 구독 안 하고 <b>$9 를 그냥 충전</b>하면 더 낫지 않나?」 계산은 맞다. 그런데 답을 찾다 보니 <b>진짜 질문이 다른 데</b> 있었다.</p>
+  <ul class="toc">
+    <li><a href="#s1">유호님 계산 검산</a></li>
+    <li><a href="#s2">PRO만 여는 문</a></li>
+    <li><a href="#s3">비어 있는 자리</a></li>
+    <li><a href="#s4">우리가 올릴 수 있는 것</a></li>
+    <li><a href="#s5">두 갈래</a></li>
+    <li><a href="#s6">못 잰 것</a></li>
+    <li><a href="#s7">용어</a></li>
+  </ul>
+</header>
+
+<div class="lead">
+  <p><b>① 유호님 계산은 맞다.</b> 굽기만 놓고 보면 <b>$9 를 직접 넣는 쪽이 4.5배</b>다. 게다가 우리가 실제로 쓰는 양이 <b>한 달에 60센트도 안 돼서</b>, $9 한 번이면 <b>1년 넘게</b> 쓴다.</p>
+  <p><b>🔑 ② 그런데 돈으로 «못 사는» 것이 따로 있었다.</b> 허깅페이스 규칙 원문 — <b>「도는 화면(Gradio·Docker)을 만들려면 유료 플랜이 있어야 한다. 무료 계정은 2개까지만.」</b> 즉 <b>우리 도구를 남들이 쓰게 올리는 일</b>은 충전으로 못 산다. 구독이 여는 문이다.</p>
+  <p><b>③ 그리고 그 문 너머가 비어 있다.</b> 세상 AI 가 도구로 부를 수 있는 화면이 <b>1000개 넘게</b> 있는데 — <b>몽골어 0개 · 한글 0개 · 발음 0개 · 언어학습 0개 · 퀴즈 0개</b>다(오늘 실측). 유호님이 어제 착수하신 <b>「몽골어 AI 선점」</b>의 자리가 문자 그대로 <b>비어 있다.</b></p>
+  <p><span class="no">그래서</span> 물음이 「PRO 냐 충전이냐」가 아니라 <b>「우리 도구를 세상에 올릴 것이냐」</b>로 바뀐다. 올린다면 PRO 가 필요하고, 안 올린다면 유호님 말씀대로 충전이 낫다.</p>
+</div>
+
+<h2 id="s1"><span class="n">§1</span>유호님 계산 검산 — 맞습니다</h2>
+
+<p>문서 원문 셋으로 확인했다.</p>
+<ul>
+  <li>「Jobs 는 <b>잔액이 양수인 누구나</b> 쓸 수 있다」 — 구독 없이도 굽기가 된다</li>
+  <li>「구독에 딸린 크레딧은 <b>매달 지급되어</b> 같은 잔액에 더해진다」 — $2 는 그저 얹어주는 것</li>
+  <li>「크레딧이 바닥나면 <b>자동 충전</b>을 켜두길 권한다」 — 직접 넣는 길이 있다</li>
+</ul>
+
+<div class="tbl">
+<table>
+  <thead><tr><th>&nbsp;</th><th>내는 돈</th><th>손에 쥐는 크레딧</th><th>까몽 몇 장</th><th>밤 굽기 몇 번</th></tr></thead>
+  <tbody>
+    <tr><td>PRO 구독</td><td class="num">$9 / 매달</td><td class="num">$2</td><td class="num">400장</td><td class="num">100번</td></tr>
+    <tr><td><b>직접 충전</b></td><td class="num">$9 / 한 번</td><td class="num v pass">$9</td><td class="num v pass">1,800장</td><td class="num v pass">450번</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><b>4.5배다.</b> 그리고 우리 실제 사용량이 아주 적다 — 밤 굽기 한 번(네 장)이 <b>2센트</b>라, 매일 해도 한 달에 <b>60센트</b>다. <b>$9 를 한 번 넣으면 1년 넘게 쓴다.</b> PRO 는 그 $9 를 <b>매달</b> 가져간다.</p>
+
+<div class="note">
+  <p>🔴 <b>다만 무료 계정의 월 $0.10 은 굽기에 못 쓴다.</b> 문서 표가 갈라 적는다 — 무료의 $0.10 은 <b>「모델 빌려 쓰기」에만</b>, PRO 의 $2 는 <b>「모든 컴퓨트 서비스」</b>에 쓸 수 있다. 그래서 무료 계정으로 굽기를 하려면 <b>반드시 직접 충전</b>해야 한다(「추가 사용 = 크레딧 구매 필요」).</p>
+</div>
+
+<h2 id="s2"><span class="n">§2</span>PRO만 여는 문 — 돈으로 못 사는 것들</h2>
+
+<p>혜택 전량을 우리 자리에 대조했다. <b>「우리 자리」 칸이 이 표의 값</b>이다.</p>
+
+<div class="tbl">
+<table>
+  <thead><tr><th>PRO 가 주는 것</th><th>무료 계정</th><th>PRO</th><th>우리 자리</th></tr></thead>
+  <tbody>
+    <tr><td><b>도는 화면 만들기</b><br><span class="hint">Gradio·Docker</span></td><td class="v fail">못 만든다<br><span class="hint">공짜 GPU 판 2개만 예외</span></td><td class="v pass">만든다</td><td class="v pass"><b>🔑 여기가 급소</b> — 공짜 도구(N2)를 올리는 자리. 돈으로 못 산다</td></tr>
+    <tr><td>공짜 GPU 화면 호스팅</td><td class="num">2개</td><td class="num v pass">10개</td><td>도구 후보가 <b>일곱</b>이다(§4)</td></tr>
+    <tr><td>공짜 GPU 하루 몫</td><td class="num">5분</td><td class="num v pass">40분</td><td>도구를 쓰는 <b>사람 수</b>가 여기 걸린다</td></tr>
+    <tr><td>몫 넘어서 더 쓰기</td><td class="v fail">불가</td><td class="v pass">$1 / 10분</td><td>도구가 인기 있으면 필요</td></tr>
+    <tr><td><b>소스 감춘 화면</b><br><span class="hint">앱은 공개 · 코드는 비공개</span></td><td class="v fail">불가</td><td class="v pass">가능</td><td class="v cond">우리 <b>표기 규칙</b>을 지키며 도구만 여는 길</td></tr>
+    <tr><td>크레딧</td><td class="num">$0.10<br><span class="hint">모델 빌려 쓰기만</span></td><td class="num">$2.00<br><span class="hint">전 서비스</span></td><td>굽기 — <b>충전으로 대체 가능</b></td></tr>
+    <tr><td>프로필에 글 쓰기<br><span class="hint">Articles · Posts</span></td><td class="v fail">불가</td><td class="v pass">가능</td><td class="v cond">AI 쪽 사람들이 모인 곳에 우리를 남긴다</td></tr>
+    <tr><td>사설 자료 훑어보기</td><td class="v fail">불가</td><td class="v pass">가능</td><td class="v cond">발음 데이터가 쌓인 뒤</td></tr>
+    <tr><td>개발 모드(원격 접속)</td><td class="v fail">불가</td><td class="v pass">가능</td><td>작업 편의 — 값 작다</td></tr>
+    <tr><td>사설 저장</td><td class="num">100GB</td><td class="num">1TB</td><td class="v fail"><b>0</b> — 학생 소리는 밖에 안 낸다(정지선)</td></tr>
+    <tr><td>공개 저장</td><td class="num">~5TB</td><td class="num">10TB</td><td class="v fail">0 — 지금 올린 것 0개</td></tr>
+    <tr><td>먼저 써보기 · 배지</td><td class="v fail">—</td><td class="v pass">—</td><td class="v fail">0</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+  <p>🔑 <b>표를 한 줄로 줄이면</b> — PRO 가 여는 문 중 <b>돈으로 못 사는 것은 「도는 화면을 만드는 권한」 하나</b>다. 나머지는 크레딧을 충전하거나(굽기) 우리 자리가 아니다(저장·배지).</p>
+  <p>그리고 <b>공짜 GPU 화면은 호스팅 값이 0원</b>이다 — 시간당 돈이 안 나간다. 쓰는 사람이 자기 몫을 쓴다. 즉 <b>도구를 올려 두는 것 자체는 공짜</b>고, 문턱은 「만들 권한」뿐이다.</p>
+</div>
+
+<h2 id="s3"><span class="n">§3</span>비어 있는 자리 — 오늘 세어 봤다</h2>
+
+<p>허깅페이스에는 <b>「AI 가 도구로 부를 수 있는 화면」</b> 목록이 있다. 세상 어느 AI 조수든 클릭 한 번으로 자기 도구로 삼는다. 우리 영역이 거기 있는지 셌다.</p>
+
+<div class="tbl">
+<table>
+  <thead><tr><th>무엇으로 찾았나</th><th>세상에 있는 것</th><th>&nbsp;</th></tr></thead>
+  <tbody>
+    <tr><td>전체</td><td class="num">1,000개 이상</td><td class="hint">조회 한도까지</td></tr>
+    <tr><td>소리 만들기</td><td class="num">132개</td><td></td></tr>
+    <tr><td>말 알아듣기</td><td class="num">18개</td><td></td></tr>
+    <tr><td>번역</td><td class="num">14개</td><td></td></tr>
+    <tr><td>교육</td><td class="num">3개</td><td></td></tr>
+    <tr><td>한국어</td><td class="num">2개</td><td class="hint">개인정보법 하나 · 욕설 거르기 하나 — <b>교육과 무관</b></td></tr>
+    <tr><td>문법</td><td class="num">1개</td><td></td></tr>
+    <tr><td><b>몽골어</b></td><td class="num v fail">0개</td><td rowspan="5" style="vertical-align:middle"><b class="v pass">🔑 여기가 통째로 비어 있다</b></td></tr>
+    <tr><td><b>한글</b></td><td class="num v fail">0개</td></tr>
+    <tr><td><b>발음</b></td><td class="num v fail">0개</td></tr>
+    <tr><td><b>언어 학습</b></td><td class="num v fail">0개</td></tr>
+    <tr><td><b>퀴즈 · 어휘</b></td><td class="num v fail">0개</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>자료(데이터셋) 쪽도 어제와 같다 — <b>몽골어↔한국어 0건 · 한국어 발음 0건 · 한국어 배우는 사람 자료 0건 · 몽골어→한글 0건.</b> 토픽 자료만 <b>1건</b>(2023년 · 내려받은 사람 23).</p>
+
+<div class="note">
+  <p>🔴 <b>그리고 우리 계정에 올라간 것은 지금 0개다</b> — 모델 0 · 자료 0 · 화면 0. 즉 <b>선점의 출발선에 아직 서지도 않았다.</b></p>
+  <p>유호님이 어제 확정하신 <b>「몽골어 AI 선점(N1)」</b>은 지금 <code>synk.im</code> 위에 서 있다. 그건 <b>사람이 찾아와야</b> 보이는 자리다. 허깅페이스 화면은 <b>AI 가 스스로 찾아 쓰는</b> 자리라 성격이 다르다 — 둘은 겹치지 않는다.</p>
+</div>
+
+<h2 id="s4"><span class="n">§4</span>우리가 올릴 수 있는 것 — 일곱</h2>
+
+<p><b>재료는 오늘 이미 다 재봤다.</b> 아래 일곱은 새로 만드는 게 아니라 <b>오늘·어제 실측한 것을 화면에 올리는 일</b>이다.</p>
+
+<div class="tbl">
+<table>
+  <thead><tr><th>#</th><th>도구</th><th>재료(이미 있는 것)</th><th>공짜 GPU</th><th>지금 상태</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td><b>내 이름, 한글로</b></td><td><code>synk.im/name/</code> 라이브 · 표기 규칙 28개 검산 통과</td><td class="v pass">필요 없음</td><td class="v pass">옮기기만 하면 된다</td></tr>
+    <tr><td class="num">2</td><td>몽골어 되번역기</td><td><b>오늘 실측</b> — NLLB · 7문장 중 4~5</td><td>가벼움</td><td>바로 가능</td></tr>
+    <tr><td class="num">3</td><td>낱말 시각 찍기</td><td><b>오늘 실측</b> — MMS · 문장 속 낱말 위치</td><td>가벼움</td><td>바로 가능</td></tr>
+    <tr><td class="num">4</td><td><b>발음 점수기</b></td><td><b>어제 실측</b> — 자모 인식기(들리는 대로 받아쓰기) + 3번</td><td>필요</td><td class="v cond">N2 계획의 셋째 — 재료가 오늘 갖춰졌다</td></tr>
+    <tr><td class="num">5</td><td>한국어 소리 만들기</td><td>Qwen3-TTS Sohee(정본)</td><td>필요</td><td class="v cond">앱 실시간 소리와 <b>같은 물건</b></td></tr>
+    <tr><td class="num">6</td><td><b>몽골어 소리 만들기</b></td><td>OmniVoice(정본)</td><td>필요</td><td class="v cond">세상에 몽골어 소리 도구가 <b>거의 없다</b></td></tr>
+    <tr><td class="num">7</td><td>토픽 모의고사 채점기</td><td>문항 팩이 선행</td><td>가벼움</td><td>N2 계획의 둘째</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+  <p>🔑 <b>5번이 두 몫을 한다.</b> 앱 숙제 문구 4건은 「○○」에 학생 이름이 들어가 <b>미리 못 굽는다</b> — 실시간으로 만들어야 한다. 그 자리에 필요한 것과, 세상에 내놓을 도구가 <b>같은 화면 하나</b>다.</p>
+  <p><b>무료 2개로는 이 중 둘밖에 못 올린다.</b> 그리고 그 둘조차 «공짜 GPU 판»이어야 한다 — 1·2·3·7 처럼 가벼운 것은 <b>무료 계정으로 아예 못 만든다</b>(도는 화면을 만들 권한이 없다).</p>
+</div>
+
+<h2 id="s5"><span class="n">§5</span>두 갈래 — 무엇을 고르느냐가 아니라 무엇을 할 것이냐</h2>
+
+<div class="card top">
+  <h3>㉠ 도구를 세상에 올린다 <span class="pill sub">PRO 필요</span></h3>
+  <p>월 $9. 여는 것 = <b>도구 일곱까지 올릴 자리</b> + 하루 40분 처리량 + 소스 감추기 + 크레딧 $2.</p>
+  <div class="row">
+    <div class="k">얻는 것</div><div>비어 있는 자리(§3)에 <b>첫 번째로 선다.</b> 몽골어·한글·발음·언어학습 넷이 전부 0개인 목록이다.</div>
+    <div class="k">굽기는</div><div>월 $2 로 <b>400장</b> — 우리 실사용(월 60센트)의 <b>세 배 넘는다.</b> 따로 충전할 일이 없다.</div>
+    <div class="k">언제 값이 나나</div><div>도구를 <b>실제로 올린 날부터.</b> 안 올리면 월 $9 가 그냥 나간다 — 지난 18일이 그랬다.</div>
+  </div>
+</div>
+
+<div class="card top">
+  <h3>㉡ 굽기만 한다 <span class="pill api">충전이 4.5배</span></h3>
+  <p>구독을 끊고 <b>$9 를 한 번 충전</b>. 그러면 굽기를 <b>1년 넘게</b> 쓴다.</p>
+  <div class="row">
+    <div class="k">얻는 것</div><div>같은 돈으로 굽기 <b>4.5배</b> · 매달 빠져나가지 않는다</div>
+    <div class="k">잃는 것</div><div>§4 의 일곱을 <b>못 올린다.</b> 공짜 GPU 판 둘은 남지만 가벼운 도구(이름·번역·채점)는 그 판이 아니다</div>
+    <div class="k">되돌리기</div><div>쉽다 — 다시 켜고 끄는 데 마찰이 없다(월 단위 · 화면 클릭)</div>
+  </div>
+</div>
+
+<div class="note">
+  <p><b>제 판단</b> — 유호님이 <b>어제 「몽골어 AI 선점을 시작하자」고 확정</b>하셨고, 그 트랙의 다음 두 걸음(토픽 채점기 · 발음 점수기)이 이미 적혀 있다. 그리고 그 재료가 <b>오늘 다 갖춰졌다.</b> 그러면 ㉠ 이다.</p>
+  <p>다만 <b>조건을 붙인다</b> — 「도구를 올린 날부터 값이 난다」가 이 판정의 전부다. <b>이번 달 안에 하나도 안 올리면 그때는 ㉡ 로 간다.</b> 지난 18일처럼 켜만 두고 안 쓰는 것이 가장 나쁘다.</p>
+</div>
+
+<h2 id="s6"><span class="n">§6</span>못 잰 것 — 「없다」가 아니라 「안 재봤다」</h2>
+<ul>
+  <li>🔴 <b>남은 잔액</b>과 <b>크레딧이 매달 리셋인지 쌓이는지</b> — 조회가 막혀 있다(HTTP 403). 유호님 화면에만 나온다. <b>쌓인다면 ㉡ 의 값이 더 커진다.</b></li>
+  <li>🔴 <b>최소 충전액</b> — $9 를 그대로 넣을 수 있는지 안 봤다.</li>
+  <li>화면을 올렸을 때 <b>실제로 얼마나 발견되는지</b> — 「0개인 자리」는 쟀지만 「올리면 몇 명이 쓰나」는 못 잰다(아직 아무것도 안 올렸다).</li>
+  <li>공짜 GPU 화면에서 <b>방문자가 쓸 때 누구 몫이 깎이는지</b> — 문서상 <b>쓰는 사람 몫</b>으로 읽히지만(「도구를 부르면 <b>네</b> 몫이 쓰인다」) 우리 화면으로 직접 재보지 않았다.</li>
+  <li>도구 1·2·3·7 을 «공짜 GPU 판»으로 만들 수 있는지 — 가벼운 도구라 GPU 가 필요 없는데, 무료 2개 예외가 그런 것도 받아주는지 안 봤다.</li>
+</ul>
+
+<h2 id="s7"><span class="n">§7</span>용어</h2>
+<dl class="terms">
+  <dt>크레딧</dt><dd>허깅페이스에서 컴퓨터를 빌려 쓸 때 깎이는 잔액. 미리 넣어 두거나 구독이 매달 준다.</dd>
+  <dt>도는 화면(Space)</dt><dd>허깅페이스에 올려 두는 «작동하는 데모». 사람이 웹으로 쓰고, AI 조수도 도구로 부른다.</dd>
+  <dt>정적 화면</dt><dd>글·그림만 있고 계산을 안 하는 화면. 누구나 공짜로 만든다.</dd>
+  <dt>공짜 GPU(ZeroGPU)</dt><dd>허깅페이스가 그래픽카드를 잠깐씩 빌려주는 방식. 호스팅 값이 0원이고, 쓰는 사람의 하루 몫에서 깎인다.</dd>
+  <dt>AI 가 부르는 도구</dt><dd>클로드·커서 같은 AI 조수가 클릭 한 번으로 자기 도구로 삼는 것. 공개 화면이면 <b>누구의 AI든</b> 부를 수 있다.</dd>
+  <dt>소스 감춘 화면</dt><dd>앱은 누구나 쓰지만 코드는 안 보이는 화면. PRO 전용.</dd>
+</dl>
+
+<footer>
+  자 = 허깅페이스 공식 문서 6벌(<code>pricing</code> · <code>jobs-pricing</code> · <code>billing</code> · <code>spaces-overview</code> · <code>spaces-zerogpu</code> · <code>spaces-mcp-servers</code> · 09-03 조회) · 창구 API 실측(AI 가 부르는 화면 목록을 7개 낱말로 세었다 · 자료 목록 5개 낱말) · 계정 <code>q121235</code>.
+  형제 지면 = <code>docs/허깅페이스_수확_2026-09-03.html</code>(무엇을 가져올까) · <code>docs/허깅페이스_정찰_2026-09-02.html</code>(소리 축). 2026-09-03.
+</footer>
+</div>
