@@ -148,6 +148,66 @@ function profilesBlockWrite_(dst, start, heads, rows, stateKey, label, lastNow, 
 const EXIT_KEEP_COLS_ = [27, 28, 30, 31, 32, 37, 41, 44, 45, 46, 49, 50, 54, 55, 80, 105];
 //                      AA  AB  AD  AE  AF  AK  AO  AR  AS  AT  AW  AX  BB  BC  CB  DA
 
+/* ═══════════════════════════════════════════════════════════════════
+ * [2026-09-02 · 학생ID 종단 ㉡] 퇴소 «사건» 원장 exit_log — 헤더 정본은 여기 하나다
+ *   (골격 `엔진_셋업확장.js` sheetSkeleton_ 과 아래 syncProfiles 가 둘 다 이 상수를 참조한다 — 두 곳이 알면 갈린다).
+ *   설계 = docs/학생ID_종단_설계.md §5㉡ · 판정 Ⅲ-1·Ⅲ-2·Ⅳ-1 · 결정.md 08-30(칸 · 목록 여섯).
+ *
+ * ■ append 전용이다 — 한 학생의 둘째 사건은 «새 줄»이지 «수정»이 아니다(휴학→복학→재퇴소). 행을 고치거나 지우는
+ *   코드를 만들지 않는다. 표(enrollment_episodes)로 접는 것은 개원 전 칸이다(결정 08-30).
+ * ■ 칸은 «끝»에만 는다 — 읽는 쪽(`엔진_콘텐츠AI.js` 복귀창_ 의 r[3] 퇴소감지일)이 열 번호로 집는다.
+ *   라이브 시트의 헤더 증분은 `헤더보정_`(엔진_수집.js)이 한다 — ensureSheet 는 시트가 없을 때만 헤더를 쓴다.
+ * ■ 두 시각을 가른다(판정 Ⅲ-2 「관측 시각 대 효력 시각」):
+ *   · 퇴소감지일 = 기계가 알아챈 날(배치가 돈 날 · 자동)
+ *   · 종료일     = 실제로 끝난 날 — **사람이 적는다**(자동으로 알 수 없다). 🔑 비어 있으면 읽는 쪽은 퇴소감지일을 쓴다.
+ * ■ 종료사유 = 사람이 적는 드롭다운(값 = EXIT_REASONS_). 비어 있음 = «아직 안 적음»이지 「기타」가 아니다.
+ * ■ `마지막_완료_시즌ID` 는 **일부러 없다** — 커리큘럼 정본(docs/커리큘럼_정본_v1.md)에 시즌 «식별자» 규격이 없다
+ *   (있는 것은 「1권 = 1시즌 8주」와 Lv1~6 뿐 · 엔진의 시즌 라벨은 시작일 yyyy-MM-dd 다). 규격 없이 적으면 뜻 모를
+ *   숫자가 쌓인다(판정 Ⅶ-1) — 규격이 서는 날 «끝에» 한 칸 더한다.
+ * ═══════════════════════════════════════════════════════════════════ */
+const EXIT_LOG_HEADERS = ['student_id', '이름', '반', '퇴소감지일', '재원일수', '종료사유', '종료일'];
+/* 종료사유 — 원장 수기 드롭다운의 정본(결정.md 08-30 · 여섯). 「미정」이 있는 까닭: 사람이 손으로 적는 칸인데
+ * «아직 모른다»를 적을 낱말이 없으면 미분류가 전부 「기타」로 가고 이탈률이 조용히 갈린다.
+ * ⚠ 문구를 고치면 이미 적힌 행과 갈라진다. **늘리는 것은 안전하고, 고치는 것은 소급 마이그레이션이다**(OUTCOME_KINDS_ 와 같은 규약). */
+const EXIT_REASONS_ = ['졸업', '중도이탈', '휴학', '이사', '미정', '기타'];
+const EXIT_REASON_VALIDATION_VER_ = 'v1'; // 목록이 «늘면» 판을 올린다 — 다음 실행에서 500행에 1회 재적용된다(궤적_결과시트_ 와 같은 꼴)
+
+/* exit_log 시트 준비 — 헤더 정본 + 종료사유 드롭다운. 매일 아침 syncProfiles 가 부른다(멱등 · 검증 재적용은 판이 바뀔 때만).
+ *   setAllowInvalid(true) = 경고만 — 기계가 append 하는 행은 종료사유가 빈 채로 들어오고, 사람이 목록 밖 낱말을
+ *   적어도 배치가 죽지 않는다(가드가 데이터 유입을 끊으면 안 된다 · 궤적_결과시트_ 의 판단 그대로). */
+function exitLog시트_(ss) {
+  const sh = ensureSheet(ss, 'exit_log', EXIT_LOG_HEADERS);
+  헤더보정_(sh, EXIT_LOG_HEADERS);   // 이미 서 있는 5칸 시트에 종료사유·종료일 이름표 — 없으면 새 칸이 조용히 버려진다
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  if (String(getState(st, '퇴소사유검증판').val || '') === EXIT_REASON_VALIDATION_VER_) return sh;
+  const rows = 500; // 선반영 구간 — 500명이 나간 뒤의 이야기다
+  if (sh.getMaxRows() < rows + 1) sh.insertRowsAfter(sh.getMaxRows(), rows + 1 - sh.getMaxRows());
+  const rule = SpreadsheetApp.newDataValidation().requireValueInList(EXIT_REASONS_, true).setAllowInvalid(true).build();
+  sh.getRange(2, EXIT_LOG_HEADERS.indexOf('종료사유') + 1, rows, 1).setDataValidation(rule);
+  setState(st, '퇴소사유검증판', EXIT_REASON_VALIDATION_VER_);
+  return sh;
+}
+
+/* exit_log 에 사건이 하나라도 있는 학생 — A열 전량(append 전용이라 같은 학생이 여러 줄일 수 있다). */
+function exitLog기록자_(exitSh) {
+  const ids = new Set();
+  if (exitSh.getLastRow() >= 2) exitSh.getRange(2, 1, exitSh.getLastRow() - 1, 1).getValues().forEach(r => { if (r[0]) ids.add(String(r[0])); });
+  return ids;
+}
+
+/* 퇴소 사건을 «지금» 적나 — 설계 §5㉡ 「학생」이 아니라 **「학생 + 마지막 사건 이후」**.
+ *   옛 규칙(exitedIds 에 있으면 영영 건너뜀)은 같은 아침 재실행의 중복은 막았지만 **복학 뒤 재퇴소도 같이 막았다**(판정 Ⅳ-1).
+ *   «마지막 사건 뒤에 돌아왔나»는 profiles 행의 유무로 안다 — 퇴소 감지 = 그 실행에서 profiles 행 삭제(v9.34 행 정합)이고,
+ *   행이 다시 있다는 것은 그 뒤 payStatus 가 퇴소가 아닌 아침이 한 번은 있었다는 뜻이다(재등록 → 명부 재진입 → 행 생성).
+ *   ⚠ 실패 방향 — 사건을 적은 뒤 행 삭제 전에 그 실행이 죽으면 다음 아침 같은 사건이 한 줄 더 적힌다. 겹친 줄은 사람이
+ *     보고 가를 수 있지만 안 적힌 사건은 되돌릴 수 없다(설계 §5㉠ 「실패의 방향」과 같은 규율). 그래서 쓰는 자리는
+ *     행 삭제 «바로 앞»이다(syncProfiles). */
+function 퇴소사건필요_(sid, exitedIds, keep) {
+  const k = String(sid);
+  if (!exitedIds.has(k)) return true;   // 첫 사건
+  return !!keep[k];                      // 사건 뒤 명부에 돌아온 적이 있다 → 새 사건(복학 후 재퇴소)
+}
+
 function syncProfiles() {
   try { // [v8.2] 상담시트 미연결·권한 오류에도 앱 본체는 무사
   const book = SpreadsheetApp.openById(CONSULT_SHEET_ID);
@@ -206,23 +266,26 @@ function syncProfiles() {
 
   const now = new Date();
   const newById = {}, newSeq = []; // [v9.34] 상담시트 신본 — id별 큐(중복 id도 기존처럼 행 수 보존)
-  // [v9.28] 퇴소 이벤트 로그 — 진짜 이탈률·재원기간(LTV 기초) 확보. 학생당 최초 감지 1회만 기록(중복 방지)
-  const exitSh = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'exit_log', ['student_id','이름','반','퇴소감지일','재원일수']);
-  const exitedIds = new Set();
-  if (exitSh.getLastRow() >= 2) exitSh.getRange(2, 1, exitSh.getLastRow() - 1, 1).getValues().forEach(r => { if (r[0]) exitedIds.add(String(r[0])); });
+  // [v9.28] 퇴소 이벤트 로그 — 진짜 이탈률·재원기간(LTV 기초) 확보.
+  // [2026-09-02 · 학생ID 종단 ㉡] append 전용 «사건» 원장(정본·규칙 = 위 EXIT_LOG_HEADERS 머리말). 여기서는 사건을 «모으기만» 한다 —
+  //   쓰는 자리는 아래 급감 가드 «뒤» · 행 삭제 «바로 앞»이다(까닭은 그 자리 주석). 구판 「학생당 최초 감지 1회만」(exitedIds 영구 차단)은
+  //   복학 뒤 재퇴소를 영영 못 적었다 → 퇴소사건필요_(학생 + 마지막 사건 이후)로 갈았다.
+  const exitSh = exitLog시트_(SpreadsheetApp.getActiveSpreadsheet());
+  const exitedIds = exitLog기록자_(exitSh);
+  const 퇴소사건 = [], 퇴소본것 = {}; // 퇴소본것 = 이 실행에서 모은 학생 — 상담시트 중복 행이 같은 아침에 두 줄을 만들지 않게
   data.forEach(row => {
     if (!row[0]) return;               // A 이름
     const userId = row[59];            // [v8.3] BH 학생ID (v18.1)
     if (!userId) return;
     if (payStatus[userId] === '퇴소') { // [v8.3] 퇴소자는 앱 제외 (이력은 시트 보관)
-      if (!exitedIds.has(String(userId))) {
+      if (!퇴소본것[String(userId)] && 퇴소사건필요_(userId, exitedIds, keep)) {
+        퇴소본것[String(userId)] = 1;
         const caK = keep[userId] && keep[userId].created_at;
         const caD = caK ? (caK instanceof Date ? caK : toDate_(caK)) : null;
         const tenureDays = caD ? Math.floor((now - caD) / 86400000) : '';
-        // [v9.153] 소독 채널로 append — 이름·반은 상담시트 원문(남의 글). skip 비교는 append라 도달 불가지만, 시트 쓰기 통로를 writeIfChanged 하나로 통일한다
-        writeIfChanged(exitSh, exitSh.getLastRow() + 1, 1, [[userId, row[0] || '', row[3] || '',
-          Utilities.formatDate(now, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd'), tenureDays]]);
-        exitedIds.add(String(userId));
+        // 종료사유·종료일은 빈 채로 — 사람이 적는 칸이다(자동으로 알 수 없는 것을 자동인 척하지 않는다)
+        퇴소사건.push([userId, row[0] || '', row[3] || '',
+          Utilities.formatDate(now, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd'), tenureDays, '', '']);
       }
       return;
     }
@@ -330,6 +393,10 @@ function syncProfiles() {
   // [v9.34] 물리 행 정리 — ① 사라진 학생 행은 전 열 통째 삭제(아래 행이 상태열과 함께 당겨져 정합 유지)
   //   ② 신규 학생은 기존 학생 블록 끝에 '빈 행'을 삽입해 배치(비학생 행의 잔존 상태열을 물려받지 않게).
   //   비학생 행은 학생 뒤 배치 불변식([v7.0]) 그대로 유지된다.
+  // [2026-09-02 · 학생ID 종단 ㉡] 퇴소 사건 기입 — 급감 가드 «뒤»(로스터를 믿는 아침에만 사건을 적는다 · 보류된 아침에 적으면 행이 안 지워져
+  //   다음 아침 같은 사건이 매일 한 줄씩 는다) · 행 삭제 «바로 앞»(사이에서 죽으면 겹친 줄이 남지, 사건이 사라지진 않는다 — 안전한 쪽으로 틀린다).
+  //   [v9.153] 소독 채널로 append — 이름·반은 상담시트 원문(남의 글). skip 비교는 append라 도달 불가지만, 시트 쓰기 통로를 writeIfChanged 하나로 통일한다
+  if (퇴소사건.length) writeIfChanged(exitSh, exitSh.getLastRow() + 1, 1, 퇴소사건);
   removedRows.sort((a, b) => b - a).forEach(rn => dst.deleteRow(rn));
   const survCnt = ordered.length - apCnt;
   if (apCnt > 0 && dst.getLastRow() > survCnt + 1) dst.insertRowsAfter(survCnt + 1, apCnt);

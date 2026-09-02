@@ -1688,22 +1688,84 @@ function createAbsenceForm() {
  *   두 번 나가고, 그 순간 앱에서 두 학생이 한 사람이 된다(profiles 키가 학생ID다).
  *   ⚠ **ScriptLock은 프로젝트마다 별개다** — 그래서 채번은 이 프로젝트에서만 한다.
  *     크루카드 웹앱(별도 프로젝트)은 학생ID를 비운 채 넘기고, 채우는 건 여기뿐이다.
+ *
+ * [2026-09-02 · 학생ID 종단 ㉠] 되돌아가지 않는 바닥 — 설계 docs/학생ID_종단_설계.md §5㉠ · 판정 Ⅰ-1·Ⅰ-3.
+ *   구판은 「상담시트 BH 최대값 + 1」이라 행이 하나 빠지면 번호가 되돌아갔다 — 졸업생 번호가 신입에게 다시 나가고
+ *   앱(student_code)에서 두 사람이 한 행에 섞인다. 섞인 뒤에는 못 가른다. 이제 바닥은 app_state['학생ID_최종번호']다:
+ *     락 안에서 ① 바닥 = max(카운터, 상담시트 스캔 최대값) ② 카운터를 «먼저» 올린다(선점) ③ 그 다음 행에 쓴다
+ *     ④ ③이 죽으면 그 번호는 «버린다»(구멍 · 재사용 금지).
+ *   🔑 핵심은 원자성이 아니라 «실패의 방향»이다 — 번호에 구멍이 나는 것은 아무도 안 다치고, 번호가 겹치는 것은
+ *     두 사람의 기록을 섞는다. 그래서 멱등키·예약행은 짓지 않았다(선례 = Code.js reservePlIds 의 setState 선행).
+ *   🔴 카운터가 «없으면» 발급을 멈춘다 — reservePlIds 의 「0이면 스캔으로 자기초기화」는 베끼지 않는다(판정 Ⅰ-3):
+ *     학생번호엔 아카이브 시트가 없어, 유실된 날 상담시트만 보고 0 근처로 되돌아간다 — 이 처방이 막으려던 바로 그 사고.
+ *     세우는 손은 하나 = 학생ID카운터세우기()(시트 메뉴 「🔢 학생ID 카운터 세우기」). 발급이 하루 늦는 것은 되돌릴 수
+ *     있고, 번호가 되돌아가는 것은 못 되돌린다.
  * ═══════════════════════════════════════════════════════════════════ */
 const 학생ID_열_ = 60;                          // BH · 상담데이터입력 v18.1~ (syncProfiles의 row[59])
 const 학생ID_패턴_ = /^SYNK-(\d+)$/;
 const 학생ID_발급상태_ = ['반배정', '앱편입'];   // crewcard/상담시트.js 처리상태_와 같은 낱말을 쓴다
+const 학생ID_카운터키_ = '학생ID_최종번호';      // app_state 키 — «마지막으로 나간 번호»(다음 번호가 아니다). 사람이 보게 시트에 둔다(PL카운터 선례)
+const 학생ID_엔진ID속성_ = 'ENGINE_SS_ID';       // Script Properties — 상담시트 트리거 문맥에서 엔진 시트를 되찾는 열쇠(학생ID_엔진시트_)
+const 학생ID_경보속성_ = '학생ID카운터경보';      // Script Properties — 「카운터 없음」 알림의 상태 변화 1회 dedup
 
-function 학생ID_최대번호_(consult) {
+/* 엔진 스프레드시트(app_state 가 사는 곳). 🔴 문맥이 둘이라 «활성 시트»를 그냥 믿지 않는다:
+ *   · 아침 배치·메뉴·편집기 = 활성 시트가 엔진 시트다 → 그 ID 를 Script Properties 에 스스로 적어 둔다.
+ *   · onConsultEdit(상담시트 «설치형» 트리거 · 외부 파일) = 활성 시트가 상담시트로 보고될 수 있다. 그때 그대로 ensureSheet 하면
+ *     상담시트에 app_state 탭이 생기고 카운터가 두 벌이 된다 — 그래서 활성 시트가 상담시트면 적어 둔 ID 로 엔진 시트를 연다.
+ *   못 찾으면 null — 부르는 쪽이 「카운터를 먼저 세워라」로 멈춘다(모르면 안 하는 쪽으로 접힌다). */
+function 학생ID_엔진시트_() {
+  const props = PropertiesService.getScriptProperties();
+  let ss = null;
+  try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (e) { ss = null; }
+  if (ss && ss.getId() !== CONSULT_SHEET_ID) {
+    if (props.getProperty(학생ID_엔진ID속성_) !== ss.getId()) props.setProperty(학생ID_엔진ID속성_, ss.getId());
+    return ss;
+  }
+  const id = props.getProperty(학생ID_엔진ID속성_);
+  if (!id) return null;
+  try { return SpreadsheetApp.openById(id); } catch (e) { Logger.log('학생ID — 엔진 시트 열기 실패(' + id + '): ' + e); return null; }
+}
+function 학생ID_상태시트_() {
+  const ss = 학생ID_엔진시트_();
+  return ss ? ensureSheet(ss, 'app_state', ['key', 'value']) : null;
+}
+
+/* 카운터 읽기 — «없다»의 정의 = 키 행이 없다 · 값이 빈칸이다 · 수가 아니다 → null.
+ *   🔑 세우기가 심은 숫자 0(학생이 아직 한 명도 없다)은 «없음»이 아니라 유효한 바닥이다 — 0 을 없음으로 읽으면 학생 0명인
+ *   학원은 첫 번호를 영영 못 뽑는다(교착). 유실(행 삭제·빈칸)은 그대로 «없음»으로 접혀 발급이 멈춘다. */
+function 학생ID_카운터_(st) {
+  const g = getState(st, 학생ID_카운터키_);
+  if (g.row < 1) return null;
+  const s = String(g.val == null ? '' : g.val).trim();
+  return /^\d+$/.test(s) ? parseInt(s, 10) : null;
+}
+
+/* 원장 알림 — 상태 변화 1회(궤적경보_ 와 같은 규율 · 매 아침·매 편집마다 같은 메일이 오면 곧 안 읽힌다).
+ *   dedup 자리가 시트가 아니라 Script Properties 인 까닭: app_state 를 «못 찾은» 경우에도 알려야 한다. */
+function 학생ID_경보_(sig, body) {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    if ((props.getProperty(학생ID_경보속성_) || '') === sig) return;
+    if (sig) adminMail('[SYNK] ⚠️ 학생ID 발급 멈춤 — 카운터를 먼저 세우세요', body);
+    if (sig) props.setProperty(학생ID_경보속성_, sig); else props.deleteProperty(학생ID_경보속성_);
+  } catch (e) { Logger.log('학생ID 경보 실패(삼킴): ' + e); }
+}
+
+/* 상담시트 BH 스캔 — {max, count}. 채번의 «올리기» 재료이자 현황(설계 §7 개원 전 첫 작업)의 자다 — 열·정규식은 여기 한 곳. */
+function 학생ID_스캔_(consult) {
+  const out = { max: 0, count: 0 };
   const last = consult.getLastRow();
-  if (last < 3) return 0;
+  if (last < 3) return out;
   const col = consult.getRange(3, 학생ID_열_, last - 2, 1).getValues();
-  let max = 0;
   for (let i = 0; i < col.length; i++) {
     const m = String(col[i][0]).match(학생ID_패턴_);
-    if (m) max = Math.max(max, parseInt(m[1], 10));
+    if (!m) continue;
+    out.count++;
+    out.max = Math.max(out.max, parseInt(m[1], 10));
   }
-  return max;
+  return out;
 }
+function 학생ID_최대번호_(consult) { return 학생ID_스캔_(consult).max; }
 
 /* [v5] slice → padStart: SYNK-1000 이후 ID 중복 방지 */
 function 학생ID_포맷_(n) { return 'SYNK-' + String(n).padStart(3, '0'); }
@@ -1714,6 +1776,7 @@ function 학생ID_포맷_(n) { return 'SYNK-' + String(n).padStart(3, '0'); }
  *   들어오면 장난 제출 한 번이 학생 계정이 된다.
  *   재실행 안전: 이미 ID가 있으면 손대지 않는다. 이름이 빈 행에는 발급하지 않는다
  *   (syncProfiles가 row[0]을 이름으로 그대로 쓰므로 무명 학생이 생긴다).
+ *   [2026-09-02 · ㉠] 번호는 «카운터를 먼저 올리고» 쓴다 — 순서가 처방의 전부다(절 머리말). 카운터가 없으면 0건 발급 + 로그 + 원장 알림.
  *   반환 = 발급 목록 [{row, name, id}] */
 function 학생ID_발급_() {
   let consult;
@@ -1738,20 +1801,39 @@ function 학생ID_발급_() {
     const c이름 = colOf['이름(한국어)'] === undefined ? 0 : colOf['이름(한국어)'];
 
     const rows = consult.getRange(3, 1, last - 2, width).getValues();
-    let next = 학생ID_최대번호_(consult);   // 채번 정본 — 여기서 따로 스캔하지 않는다
-    const 발급 = [];
+    // 발급 대상을 «먼저» 모은다 — 번호는 그 수만큼 한 번에 선점한다(대상이 0이면 카운터를 건드리지도 않는다)
+    const 대상 = [];
     for (let i = 0; i < rows.length; i++) {
       if (학생ID_발급상태_.indexOf(String(rows[i][c상태] || '').trim()) === -1) continue;
       if (String(rows[i][학생ID_열_ - 1] || '').trim()) continue;   // 이미 있으면 그대로 둔다
       const 이름 = String(rows[i][c이름] || '').trim();
       if (!이름) continue;                                          // 무명 행에는 발급하지 않는다
-      next++;
-      const id = 학생ID_포맷_(next);
-      consult.getRange(3 + i, 학생ID_열_).setValue(id);
-      발급.push({ row: 3 + i, name: 이름, id: id });
+      대상.push({ row: 3 + i, name: 이름 });
     }
+    if (!대상.length) return [];
+
+    // ── 채번 바닥(설계 §5㉠ · 순서가 처방의 전부다) ──
+    const st = 학생ID_상태시트_();
+    const 카운터 = st ? 학생ID_카운터_(st) : null;
+    if (카운터 === null) {
+      const 왜 = st ? 'app_state 에 「' + 학생ID_카운터키_ + '」 키가 없거나 값이 수가 아니다' : '엔진 시트(app_state)를 이 문맥에서 못 찾았다';
+      const 안내 = '시트 메뉴 SYNK ▸ 「🔢 학생ID 카운터 세우기」를 먼저 누르세요. 자기초기화는 하지 않습니다 — 카운터가 유실된 날 상담시트만 보고 번호가 되돌아가는 사고를 막는 자리입니다.';
+      Logger.log('학생ID 발급 중단 — ' + 왜 + '. 발급 대기 ' + 대상.length + '건은 그대로 남습니다(아침 백스톱이 다시 시도). ' + 안내);
+      학생ID_경보_('없음:' + (st ? '키' : '시트'), '학생ID 발급이 멈춰 있습니다 — ' + 왜 + '.\n발급 대기 ' + 대상.length + '건: ' +
+        대상.map(function (t) { return t.name + '(' + t.row + '행)'; }).join(', ') + '\n\n' + 안내 + '\n\n※ 상태가 바뀌기 전까지 이 알림은 다시 오지 않습니다.');
+      return [];
+    }
+    학생ID_경보_('', '');                                            // 정상 — 다음에 또 없어지면 다시 알린다
+    const 바닥 = Math.max(카운터, 학생ID_최대번호_(consult));       // ① 시트 스캔은 «올리기»에만 쓴다 — 카운터를 내리는 일은 없다
+    setState(st, 학생ID_카운터키_, 바닥 + 대상.length);            // ② 선점 — 행에 쓰기 «전»에 올린다. 여기서 죽으면 번호가 비지, 겹치지 않는다
+    const 발급 = [];
+    대상.forEach(function (t, k) {                                   // ③ 기입 — 도중에 죽은 번호는 버린다(다음 실행은 ②가 올린 뒤에서 뽑는다)
+      const id = 학생ID_포맷_(바닥 + k + 1);
+      consult.getRange(t.row, 학생ID_열_).setValue(id);
+      발급.push({ row: t.row, name: t.name, id: id });
+    });
     if (발급.length) {
-      Logger.log('학생ID 발급 %s건: %s', 발급.length,
+      Logger.log('학생ID 발급 %s건(바닥 %s → 카운터 %s): %s', 발급.length, 바닥, 바닥 + 대상.length,
         발급.map(function (x) { return x.id + '(' + x.name + '·' + x.row + '행)'; }).join(', '));
     }
     return 발급;
@@ -1788,6 +1870,66 @@ function setupConsultTrigger() {
   if (있음) { Logger.log('상담시트 onEdit 트리거 이미 있음 — 새로 만들지 않는다'); return; }
   ScriptApp.newTrigger('onConsultEdit').forSpreadsheet(CONSULT_SHEET_ID).onEdit().create();
   Logger.log('✅ 상담시트 onEdit 트리거 생성 — 「처리상태」를 반배정/앱편입으로 바꾸면 학생ID가 즉시 발급됩니다');
+}
+
+/* ▶ 학생ID 카운터 세우기 — 개원 전 1회 · 멱등 · 시트 메뉴 「🔢 학생ID 카운터 세우기」(menuStudentIdCounterInit) 또는 편집기 ▶.
+ *   [2026-09-02 · 학생ID 종단 ㉠] 채번 바닥(app_state['학생ID_최종번호'])을 세우는 «유일한» 손이다 — 발급 경로는 스스로 심지 않는다.
+ *   · 키가 «없을 때만» 상담시트 BH 최대 번호로 심는다(학생이 0명이면 0 — 첫 학생이 SYNK-001 이 된다).
+ *   · 있으면 「이미 있음(값)」으로 수렴하고 아무것도 안 바꾼다. **절대 낮추지 않는다** — 낮추면 번호가 되돌아간다.
+ *     상담시트 최대값이 카운터보다 커도 여기서 안 올린다: 발급 경로가 max() 로 알아서 따라잡는다(한 판정엔 자 하나).
+ *   ⚠ 상담시트에서 학생ID 행을 지운 적이 있으면 «최대 번호»가 진짜 마지막 번호보다 작을 수 있다 — 그럴 땐 app_state 값을
+ *     손으로 «올린다»(내리는 일은 어떤 경우에도 없다). */
+function 학생ID카운터세우기() {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) return '⚠ 다른 배치가 채번 락을 쥐고 있습니다 — 잠시 뒤 다시 누르세요(아무것도 안 바꿨습니다).';
+  try {
+    const st = 학생ID_상태시트_();
+    if (!st) return '⚠ 엔진 시트(app_state)를 못 찾았습니다 — 엔진 스프레드시트를 연 채로 SYNK 메뉴에서 누르세요(아무것도 안 바꿨습니다).';
+    let consult = null;
+    try { consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력'); } catch (e) { consult = null; }
+    if (!consult) return '⚠ 상담시트(상담데이터입력)를 못 열었습니다 — 모르면 심지 않습니다(아무것도 안 바꿨습니다).';
+    const 스캔 = 학생ID_스캔_(consult);
+    const 있던 = 학생ID_카운터_(st);
+    let out;
+    if (있던 !== null) {
+      out = '이미 있음(' + 있던 + ') — 그대로 둡니다(낮추지 않습니다).\n상담시트 BH: 학생ID 보유 ' + 스캔.count + '행 · 최대 번호 ' + 스캔.max +
+        (스캔.max > 있던 ? '\n⚠ 최대 번호가 카운터보다 큽니다 — 다음 발급이 max() 로 따라잡습니다(카운터는 안 내려갑니다).' : '') +
+        '\n다음 학생 = ' + 학생ID_포맷_(Math.max(있던, 스캔.max) + 1);
+    } else {
+      setState(st, 학생ID_카운터키_, 스캔.max);
+      out = '✅ 세웠습니다 — app_state[' + 학생ID_카운터키_ + '] = ' + 스캔.max + ' (상담시트 BH 최대 번호 · 보유 ' + 스캔.count + '행)' +
+        '\n다음 학생 = ' + 학생ID_포맷_(스캔.max + 1) +
+        '\n이 값은 되돌아가지 않습니다 — 손으로 낮추지 마세요. 상담시트에서 학생ID 행을 지운 적이 있다면 진짜 마지막 번호로 «올리세요».';
+    }
+    학생ID_경보_('', '');                                            // 세웠으니 「카운터 없음」 알림을 재무장한다
+    Logger.log('학생ID 카운터 세우기: ' + out.replace(/\n/g, ' · '));
+    return out;
+  } finally { lock.releaseLock(); }
+}
+
+/* 🔎 학생ID 현황 — 읽기 전용(시트 데이터를 쓰지 않는다 · 탭을 만들지도 않는다 · 예외 = 엔진 시트 ID 를 Script Properties 에 적어 두는
+ *   학생ID_엔진시트_ 의 자기치유 하나). 시트 메뉴 「🔎 학생ID 현황 보기」(menuStudentIdStatus).
+ *   설계 §7 「개원 전 첫 작업」의 자 — ①상담시트 BH 에 학생ID 가 붙은 행 수(0이면 소급할 과거가 없어 판정 Ⅵ-1 을 닫는다)
+ *   ②exit_log 행 수(개원 전이라 0 이 정상) ③app_state 카운터. 셋을 Logger 와 반환값(alert) 둘 다로 낸다. */
+function 학생ID현황_() {
+  const 줄 = [];
+  let consult = null;
+  try { consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력'); } catch (e) { consult = null; }
+  const 스캔 = consult ? 학생ID_스캔_(consult) : null;
+  줄.push('① 상담시트 BH 학생ID 보유 행 = ' + (스캔 ? 스캔.count + '건 (최대 번호 ' + 스캔.max + ')' : '(상담시트를 못 열었다)'));
+  const ss = 학생ID_엔진시트_();
+  const ex = ss ? ss.getSheetByName('exit_log') : null;
+  줄.push('② exit_log 행 = ' + (!ss ? '(엔진 시트를 못 찾았다)' : !ex ? '(탭 없음 — 첫 syncProfiles 가 만든다)'
+    : Math.max(0, ex.getLastRow() - 1) + '건' + (ex.getLastColumn() < EXIT_LOG_HEADERS.length
+      ? ' · ⚠ 헤더 ' + ex.getLastColumn() + '칸(다음 아침 배치가 ' + EXIT_LOG_HEADERS.length + '칸으로 늘린다)' : ' · 헤더 ' + ex.getLastColumn() + '칸')));
+  const st = ss ? ss.getSheetByName('app_state') : null;
+  const 카운터 = st ? 학생ID_카운터_(st) : null;
+  줄.push('③ app_state[' + 학생ID_카운터키_ + '] = ' + (카운터 === null ? '없음 → 발급이 멈춰 있다. 메뉴 「🔢 학생ID 카운터 세우기」를 누른다'
+    : 카운터 + ' · 다음 학생 = ' + 학생ID_포맷_(Math.max(카운터, 스캔 ? 스캔.max : 0) + 1)));
+  if (스캔 && 카운터 !== null && 스캔.max > 카운터) 줄.push('⚠ 상담시트 최대 번호(' + 스캔.max + ')가 카운터보다 크다 — 다음 발급이 max() 로 따라잡는다(카운터는 안 내려간다)');
+  const out = '🔎 학생ID 현황(읽기 전용)\n' + 줄.join('\n');
+  Logger.log(out);
+  return out;
 }
 
 /* ═══════════════════════════════════════════════════════════════════

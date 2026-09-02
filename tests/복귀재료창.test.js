@@ -43,6 +43,10 @@ const QUIZ_LOG_HEADERS = JSON.parse(
   code.match(/const QUIZ_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
 const QUIZ_CONFIDENCE = JSON.parse(
   code.match(/const QUIZ_CONFIDENCE = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
+/* [2026-09-02 · 학생ID 종단 ㉡] exit_log 헤더는 정본(엔진_운영배치.js EXIT_LOG_HEADERS · 7칸)에서 뜬다 — 손 사본 5칸이면
+ *   정본이 늘어도 이 픽스처는 옛 모양으로 초록이라, 「끝에 붙였으니 r[3] 은 안 흔들린다」를 재는 자가 없다. */
+const EXIT_LOG_HEADERS = JSON.parse(
+  code.match(/const EXIT_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
 
 const toDate_ = 불러오기('function toDate_(v)', '\n// [opt] 셀값', 'toDate_', {});
 /* 정본을 그대로 태운다 — 스텁으로 채우면 그 함수가 깨져도 이 시험이 초록이다. */
@@ -56,8 +60,12 @@ const 날 = (n) => {
   return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
 };
 
-/** exit_log 한 행 — 정본 헤더 5칸(student_id·이름·반·퇴소감지일·재원일수). */
-const 퇴소행 = (sid, 며칠전, 재원 = 60) => [sid, '', '', 날(며칠전), 재원];
+/** exit_log 한 행 — 정본 헤더 7칸(student_id·이름·반·퇴소감지일·재원일수·종료사유·종료일). 뒤 두 칸은 사람이 적는 칸이라 빈다. */
+const 퇴소행 = (sid, 며칠전, 재원 = 60) => {
+  const r = new Array(EXIT_LOG_HEADERS.length).fill('');
+  r[0] = sid; r[3] = 날(며칠전); r[4] = 재원;
+  return r;
+};
 /** student_errors 한 행 — 로더가 보는 8칸만 채운다(r0 날짜 · r1 학생ID · r3 유형 · r4 메모 · r7 상태). */
 const 오류행 = (sid, 며칠전, 유형 = '조사', 메모 = '을/를') => {
   const r = new Array(8).fill('');
@@ -84,7 +92,7 @@ function 태우기(옵션) {
   const 학생들 = o.학생들 || [{ id: 'S1', lv: 3, fav: '', dream: '', pain: '' }];
   const 호출 = [], 로그 = [];
   const ql = o.퀴즈행들 ? 탭(QUIZ_LOG_HEADERS.slice(), o.퀴즈행들) : null;
-  const el = o.퇴소들 ? 탭(['student_id', '이름', '반', '퇴소감지일', '재원일수'], o.퇴소들) : null;
+  const el = o.퇴소들 ? 탭(EXIT_LOG_HEADERS.slice(), o.퇴소들) : null;
   const ad = 탭(['student_id', '날짜', '한문장', '퀴즈문제', '퀴즈정답해설']);
   /* `오류들` 을 주면 **약점맵도 정본을 태운다** — 그래야 「호출부가 창을 약점맵에 넘기는가」가 재진다.
    * 스텁으로 두면 그 배선을 끊어도 프롬프트가 안 변해 변이가 통째로 안 잡힌다(실측: 변이 ⑧ 구멍). */
@@ -121,7 +129,7 @@ function 태우기(옵션) {
 /** 약점맵을 실제로 태운다 — student_errors 만 있는 판(hw_feedback 은 없다). */
 function 약점재기(오류들, 퇴소들) {
   const se = 탭(['날짜', '학생ID', '', '유형', '메모', '', '', '상태'], 오류들);
-  const el = 퇴소들 ? 탭(['student_id', '이름', '반', '퇴소감지일', '재원일수'], 퇴소들) : null;
+  const el = 퇴소들 ? 탭(EXIT_LOG_HEADERS.slice(), 퇴소들) : null;
   const ss = { getSheetByName: (n) => (n === 'student_errors' ? se : n === 'exit_log' ? el : null) };
   return aiWeakMap_(ss, 퇴소들 ? 복귀창_(ss) : undefined);
 }
@@ -191,14 +199,14 @@ test('[#Q99 5/5] 퇴소감지일이 «미래»여도 창이 안 좁아진다 —
 test(`[#Q99 5/5] 공백이 ${공백상한일}일을 넘으면 안 넓힌다 — 너무 낡은 약점은 그 사람의 지금이 아니다`, () => {
   const 판 = 약점재기([오류행('S1', 공백상한일 + 40)], [퇴소행('S1', 공백상한일 + 30)]);
   assert.deepEqual(판, {}, '공백 상한을 넘었는데도 창이 넓어졌다');
-  const 안 = 복귀창_({ getSheetByName: () => 탭(['student_id', '이름', '반', '퇴소감지일', '재원일수'],
+  const 안 = 복귀창_({ getSheetByName: () => 탭(EXIT_LOG_HEADERS.slice(),
     [퇴소행('S1', 공백상한일 + 30)]) });
   assert.equal(안.상한밖, 1, '상한 밖으로 뺀 사람을 안 세었다 — 조용히 빠지면 「재료 없음」과 구분이 안 된다');
   assert.deepEqual(안.맵, {}, '상한 밖인데 맵에 남았다');
 });
 
 test('[#Q99 5/5] 두 번 나갔다 온 사람은 «마지막» 퇴소가 창을 정한다', () => {
-  const sh = 탭(['student_id', '이름', '반', '퇴소감지일', '재원일수'],
+  const sh = 탭(EXIT_LOG_HEADERS.slice(),
     [퇴소행('S1', 100), 퇴소행('S1', 20)]);
   const r = 복귀창_({ getSheetByName: () => sh });
   const 마지막 = new Date(날(20)).getTime();
