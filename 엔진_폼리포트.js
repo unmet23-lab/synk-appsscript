@@ -1660,8 +1660,35 @@ const WORK_REQUIRED_ = ['일한 곳', '무슨 일', '시킨 일 그대로', '예
  *   자리가 서로 다른 자를 쓰면 느슨한 쪽 문으로 남의 폼이 들어온다. 실제로 마이그레이션이 제목만 보고 있었다.
  * ⚠ 「기존 폼 반환」 경로는 이 자를 **안 쓴다** — 거기엔 「문항을 붙이다 끊긴 폼」도 들어와야 하고,
  *   그런 폼은 서명이 없어 여기서 «남의 폼»으로 판정된다. 그 경로는 제목만 보고 완료 표식으로 가른다. */
+/* 🔴 폼 제목은 «두 곳»에 산다 — 여기가 이 서명이 헛발동한 자리다(09-03 라이브).
+ *   ① 설문지 제목(form title) = Form.getTitle() 이 읽는 것 · 응답자 화면 맨 위에 뜨는 글자
+ *   ② 문서 제목(document title) = Drive 파일 이름 · 편집 화면 왼쪽 위
+ * FormApp.create(제목) 은 **②만 세운다** — ①은 빈 채로 남는다. 그런데 화면은 ①이 비면 ②를 대신
+ *   보여주므로 사람 눈에는 멀쩡하다. 그래서 getTitle() 하나만 보면 «우리가 방금 만든 폼»이 남의 폼으로 찍힌다.
+ * 실측(09-03 · 이 저장소가 만든 폼 7벌을 응답 페이지 payload 로 잼): ①이 빈 것 5 = 반 출석 · 오늘의 퀴즈 ·
+ *   한국어로 말 걸기 · 출퇴근 · 월간 만족도. 나머지 2 중 하나가 반대 증거다 — 약점 메모 폼은
+ *   ① 'SYNK 연습 포인트 (강사용)'(syncTeacherMemoForm_ :1161 의 setTitle 이 쓴 값) ≠
+ *   ② 'SYNK 약점 메모 (강사용)'(create 가 쓴 값). ①②는 서로 안 따라가는 «다른 칸»이다.
+ * 🔑 느슨해지지 않는다 — ①이 «비었을 때만» ②를 본다. ①이 차 있는데 다르면 예전 그대로 거절이고,
+ *   ①②가 다 어긋나도 거절이다. 못 읽으면 빈 문자열 = 어떤 제목과도 안 맞아 거절 쪽으로 떨어진다. */
+function 직장폼제목_(form) {
+  const t = String(form.getTitle() || '').trim();
+  if (t) return t;
+  try { return String(DriveApp.getFileById(form.getId()).getName() || '').trim(); }
+  catch (e) { return ''; }
+}
+/* 빈 ①을 제자리에 채운다 — 문서 제목으로 «우회해» 통과한 폼은 다음에도 계속 우회한다.
+ * 한 번 채워 두면 그 뒤로는 우회 없이 곧장 선다. 응답자 화면 글자는 안 바뀐다(이미 ②가 같은 글자로
+ *   대신 보이고 있다) — 되돌릴 수 있는 내부 편집이다.
+ * ⚠ 서명 함수는 읽기 전용으로 둔다(워치독 엔진_콘텐츠AI.js:1181 이 매번 부른다) — 그래서 치유는
+ *   «고치러 온» 마이그레이션만 부르고, 무엇을 했는지 반드시 보고에 싣는다(조용한 쓰기 금지). */
+function 직장폼제목치유_(form) {
+  if (String(form.getTitle() || '').trim()) return '';
+  try { form.setTitle(WORK_FORM_TITLE); return '설문지 제목(빈칸 → 「' + WORK_FORM_TITLE + '」)'; }
+  catch (e) { return ''; }
+}
 function 직장폼서명_(form) {
-  if (String(form.getTitle()).trim() !== WORK_FORM_TITLE) return false;
+  if (직장폼제목_(form) !== WORK_FORM_TITLE) return false;
   const t = form.getItems().map(function (i) { return String(i.getTitle()).trim(); });
   return t.indexOf('시킨 일 그대로') !== -1 && t.indexOf('예정에 없던 일이 생긴 적') !== -1;
 }
@@ -1716,8 +1743,8 @@ function createWorkLogForm_(알림기록) {
             Logger.log('직장 경험 폼 — ID는 복구했지만 필수 문항이 빠져 완료 도장은 안 찍었습니다: ' + 빠진필수.join(' · '));
           }
         } else {
-          const mX = '⚠️ 탭 「' + WORK_TAB + '」에 연결된 폼이 직장 경험 폼이 아닙니다(제목 「' + f0.getTitle() + '」'
-            + (String(f0.getTitle()).trim() === WORK_FORM_TITLE ? ' · 제목은 같지만 필수 문항 「시킨 일 그대로」·「예정에 없던 일이 생긴 적」이 없습니다' : '') + ').\n'
+          const mX = '⚠️ 탭 「' + WORK_TAB + '」에 연결된 폼이 직장 경험 폼이 아닙니다(제목 「' + 직장폼제목_(f0) + '」'
+            + (직장폼제목_(f0) === WORK_FORM_TITLE ? ' · 제목은 같지만 필수 문항 「시킨 일 그대로」·「예정에 없던 일이 생긴 적」이 없습니다' : '') + ').\n'
             + '엉뚱한 폼을 채택하지 않으려고 멈췄습니다. 탭 이름을 바꾸거나(예: ' + WORK_TAB + '_옛것) 올바른 폼 ID를 app_state 「직장폼ID」에 넣은 뒤 다시 실행하세요.';
           Logger.log(mX);
           return mX;
@@ -1734,8 +1761,8 @@ function createWorkLogForm_(알림기록) {
       /* 🔑 순서가 곧 판정이다(①배포 검수 9675a3471a43·132ede0b00a2) — ①이게 그 폼인가 ②완성됐나 ③탭이 붙었나.
        *   완성 여부를 먼저 보지 않고 라우팅부터 고치면 «문항이 빠진 폼»에 응답 탭만 예쁘게 달아 놓고
        *   「복구했습니다」로 보고하게 된다. 그리고 저장된 ID 도 늙는다 — 제목으로 한 번 대조한다. */
-      if (String(exForm.getTitle()).trim() !== WORK_FORM_TITLE) {
-        const mI = '⚠️ app_state 의 「직장폼ID」가 가리키는 폼의 제목이 「' + exForm.getTitle() + '」입니다 — 직장 경험 폼이 아닙니다.\n'
+      if (직장폼제목_(exForm) !== WORK_FORM_TITLE) {
+        const mI = '⚠️ app_state 의 「직장폼ID」가 가리키는 폼의 제목이 「' + 직장폼제목_(exForm) + '」입니다 — 직장 경험 폼이 아닙니다.\n'
           + '낡은 ID 이거나 다른 폼을 가리키고 있습니다. 그 행을 지운 뒤 다시 실행하면 새로 만들거나 응답 탭에서 복구합니다.';
         Logger.log(mI);
         return mI;
@@ -1791,6 +1818,11 @@ function createWorkLogForm_(알림기록) {
    *   어디서 끊겨도, ID 를 안 적어 둔 폼은 아무도 그 존재를 모르는 고아가 되고 다음 실행이 또 만든다.
    *   ⚠ 그래서 create 에 «체이닝을 붙이지 않는다» — 체인 안에서 실패하면 이 줄에 도달하지 못한다. */
   setState(st, '직장폼ID', form.getId());
+  /* 🔑 제목을 «한 번 더» 세운다 — FormApp.create(제목) 은 문서 제목(Drive 이름)만 쓰고 설문지 제목은
+   *   비워 둔다(근거는 직장폼제목_ 주석의 실측). 서명이 읽는 것이 그 설문지 제목이라, 안 채우면 이 폼은
+   *   태어나자마자 제 서명에 걸려 «남의 폼»으로 찍힌다 — 09-03 라이브에서 실제로 그랬다(결과 칸 메뉴 2회 거절).
+   *   create 체이닝에 붙이지 않는 것은 위 규율 그대로다(ID 저장이 먼저). */
+  form.setTitle(WORK_FORM_TITLE);
   form.setDescription(WORK_DESC).setCollectEmail(false);
 
   function txt(t, req, help) { const i = form.addTextItem().setTitle(t); if (req) i.setRequired(true); if (help) i.setHelpText(help); return i; }
@@ -1897,12 +1929,15 @@ function migrateWorkFormMn() {
    * 그래서 «찾는 자리»와 같은 자를 쓴다(①배포 검수 550ba898c5dd) — 여기가 느슨하면 그 문으로 남의 폼의
    * 설명과 안내가 통째로 덮어써진다. 되돌릴 수 없는 쓰기라 «판정이 서지 않으면 아무것도 안 한다». */
   if (!직장폼서명_(form)) {
-    const m = '⚠️ 직장폼ID 가 가리키는 폼이 직장 경험 폼이 아닙니다(제목 「' + form.getTitle() + '」'
-      + (String(form.getTitle()).trim() === WORK_FORM_TITLE ? ' · 제목은 같지만 필수 문항 「시킨 일 그대로」·「예정에 없던 일이 생긴 적」이 없습니다' : '') + ').\n'
+    const m = '⚠️ 직장폼ID 가 가리키는 폼이 직장 경험 폼이 아닙니다(제목 「' + 직장폼제목_(form) + '」'
+      + (직장폼제목_(form) === WORK_FORM_TITLE ? ' · 제목은 같지만 필수 문항 「시킨 일 그대로」·「예정에 없던 일이 생긴 적」이 없습니다' : '') + ').\n'
       + '남의 폼을 덮어쓰지 않으려고 아무것도 고치지 않았습니다.';
     Logger.log(m);
     return m;
   }
+
+  /* 빈 «설문지 제목»부터 채운다 — 위 서명이 문서 제목으로 «우회해» 통과한 자리다(09-03). 한 번 채우면 그 뒤로는 곧장 선다. */
+  const 제목치유 = 직장폼제목치유_(form);
 
   const 바뀐것 = [];
   if (String(form.getDescription() || '') !== WORK_DESC) { form.setDescription(WORK_DESC); 바뀐것.push('폼 설명(맨 위)'); }
@@ -1919,7 +1954,10 @@ function migrateWorkFormMn() {
     : '✅ 이미 정본과 같습니다 — 고칠 것이 없었습니다(이 함수는 몇 번 눌러도 안전합니다).')
     + (못찾음.length ? '\n\n⚠️ 폼에서 못 찾은 문항 ' + 못찾음.length + '개: ' + 못찾음.join(' · ')
       + '\n   → 제목이 바뀌었거나 문항이 지워진 자리입니다. 그 문항은 한국어 안내로 남습니다.' : '')
-    + '\n\n제목·선택지·기존 응답은 건드리지 않았습니다.\n배포 링크: ' + form.getPublishedUrl();
+    + (제목치유 ? '\n\n🔧 함께 고친 것: ' + 제목치유
+      + '\n   → 이 폼은 «설문지 제목»이 빈 채로 태어났습니다(폼을 만드는 명령이 문서 제목만 세웁니다).'
+      + ' 그 빈칸 때문에 서명 검사가 이 폼을 «남의 폼»으로 찍고 있었습니다. 응답자 화면에 보이는 글자는 그대로입니다.' : '')
+    + '\n\n문항 제목·선택지·기존 응답은 건드리지 않았습니다.\n배포 링크: ' + form.getPublishedUrl();
   Logger.log(요약);
   adminMail('[SYNK] 🇲🇳 직장 경험 폼 몽골어 안내 반영', 요약
     + '\n\n왜 넣었나: 이 폼이 받아내야 하는 것은 「혼났던 일」·「말투 때문에 곤란했던 순간」처럼 미묘한 이야기입니다.'
@@ -1973,7 +2011,9 @@ function migrateWorkFormOutcome_(알림기록) {
 
   /* 남의 폼을 덮지 않는다 — «찾는 자리»와 같은 자를 쓴다(migrateWorkFormMn 과 같은 규율). */
   if (!직장폼서명_(form)) {
-    const m = '⚠️ 직장폼ID 가 가리키는 폼이 직장 경험 폼이 아닙니다(제목 「' + form.getTitle() + '」).\n남의 폼에 문항을 붙이지 않으려고 아무것도 고치지 않았습니다.';
+    const m = '⚠️ 직장폼ID 가 가리키는 폼이 직장 경험 폼이 아닙니다(제목 「' + 직장폼제목_(form) + '」'
+      + (직장폼제목_(form) === WORK_FORM_TITLE ? ' · 제목은 같지만 필수 문항 「시킨 일 그대로」·「예정에 없던 일이 생긴 적」이 없습니다' : '') + ').\n'
+      + '남의 폼에 문항을 붙이지 않으려고 아무것도 고치지 않았습니다.';
     Logger.log(m);
     return m;
   }
@@ -2011,6 +2051,9 @@ function migrateWorkFormOutcome_(알림기록) {
     for (let i = 0; i < t.length; i++) if (t[i].indexOf('자료 활용 동의') !== -1) return i;
     return -1;
   };
+
+  /* 빈 «설문지 제목»부터 채운다 — 위 서명이 문서 제목으로 «우회해» 통과한 자리다(09-03 · 이 버튼이 두 번 거절당한 바로 그 자리). */
+  const 제목치유 = 직장폼제목치유_(form);
 
   const 넣은것 = [];
   const 앵커없음 = [];
@@ -2090,6 +2133,9 @@ function migrateWorkFormOutcome_(알림기록) {
       + '\n   → 폼을 열어 순서를 손으로 옮기세요(동의는 마지막이어야 합니다).' : '')
     + (어긋남.length ? '\n\n⚠️ 정본과 어긋나 «손대지 않은» 것 ' + 어긋남.length + '개: ' + 어긋남.join(' · ')
       + '\n   → 옛 응답이 그 값에 묶여 있어 자동으로 안 고칩니다. 폼을 열어 눈으로 판정하세요.' : '')
+    + (제목치유 ? '\n\n🔧 함께 고친 것: ' + 제목치유
+      + '\n   → 이 폼은 «설문지 제목»이 빈 채로 태어났습니다(폼을 만드는 명령이 문서 제목만 세웁니다).'
+      + ' 그 빈칸 때문에 이 버튼이 09-03 에 두 번 거절했습니다. 응답자 화면에 보이는 글자는 그대로입니다.' : '')
     + '\n\n기존 문항의 제목·선택지·응답은 건드리지 않았습니다.\n배포 링크: ' + form.getPublishedUrl();
   Logger.log(요약);
   // 알림은 래퍼가 잠금 «해제 뒤» 보낸다 — adminMail 이 DIGEST_MODE 에서 같은 비재진입 락을 다시 잡는다

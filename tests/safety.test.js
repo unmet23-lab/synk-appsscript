@@ -1923,7 +1923,10 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   // ID는 «만든 그 자리에서» 저장한다 — 뒤로 미루면 그 사이 실패가 「폼은 있는데 아무도 모르는」 상태를 남긴다.
   //   ⚠ 첫 등장으로 재면 안 된다 — 복구 경로에도 같은 setState 가 있어 언제나 앞선다. 생성 블록만 잘라서 본다.
   const 생성부 = body.slice(body.indexOf('FormApp.create('));
-  assertOrder(생성부, ["setState(st, '직장폼ID'", 'form.setDestination(']);
+  /* 🔴 «설문지 제목»을 갖고 태어나게 한다(09-03 라이브에서 잡힌 자리) — FormApp.create(제목) 은
+   *   문서 제목(Drive 파일 이름)만 세우고 설문지 제목은 비워 둔다. 서명이 읽는 것이 그 설문지 제목이라,
+   *   안 채우면 이 폼은 태어나자마자 제 서명에 걸려 «남의 폼»으로 찍힌다(결과 칸 메뉴가 2회 거절당했다). */
+  assertOrder(생성부, ["setState(st, '직장폼ID'", 'form.setTitle(WORK_FORM_TITLE)', 'form.setDestination(']);
   assert.ok(body.includes('새 폼을 만들지 않았습니다'), '폼 열기 실패 시 재생성 차단 경로가 없다');
   assert.ok(body.includes('연결 폼에서 복구'), 'ID 유실 시 응답 탭에서 복구하는 경로가 없다 — 중복 폼이 생겨 회수가 두 곳으로 갈린다');
   // 익명 회수 — 이름·연락처가 필수면 「혼났던 경험」(가장 값진 자료)이 안 들어온다
@@ -1946,7 +1949,19 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   // 「ID가 읽힌다」를 완료로 취급하지 않는다 — setDestination 이 실패했으면 폼은 사는데 제출이 어디에도 안 쌓인다(①배포 검수 257ac0b6fe00)
   assert.ok(/if \(!shT\)[\s\S]{0,400}exForm\.setDestination\(/.test(body), '기존 폼 경로에 응답 라우팅 복구가 없다 — 탭이 없으면 제출이 영영 안 쌓인다');
   // 복구한 폼은 제목으로 검증한다 — 탭 이름은 사람이 바꿀 수 있어 엉뚱한 폼이 붙어 있을 수 있다(①배포 검수 695480e24333)
-  assert.ok(/f0\.getTitle\(\)\)\.trim\(\) === WORK_FORM_TITLE/.test(body), '응답 탭에서 복구한 폼을 제목으로 검증하지 않는다');
+  assert.ok(/직장폼제목_\(f0\) === WORK_FORM_TITLE/.test(body), '응답 탭에서 복구한 폼을 제목으로 검증하지 않는다');
+  /* 🔴 제목은 «두 곳»에 산다(09-03 라이브 실측) — 설문지 제목(Form.getTitle 이 읽는 것 · 응답자 화면)과
+   *   문서 제목(Drive 파일 이름 · 편집 화면 왼쪽 위). FormApp.create 는 문서 제목만 세우므로, getTitle()
+   *   하나만 보면 «우리가 방금 만든 폼»이 남의 폼으로 찍힌다. 그래서 자를 직장폼제목_ 하나로 모았다.
+   *   여기서 못박는 것은 그 자가 «느슨해지지 않는다»는 것 — 아래 셋이 무너지면 남의 폼이 그 문으로 들어온다. */
+  const 제목자 = code.slice(code.indexOf('function 직장폼제목_(form)'), code.indexOf('function 직장폼제목치유_'));
+  assert.ok(/if \(t\) return t;[\s\S]{0,200}DriveApp\.getFileById/.test(제목자),
+    '직장폼제목_ 가 «설문지 제목이 빌 때만» 문서 제목을 보는 구조가 아니다 — 이러면 자가 느슨해진다');
+  assert.ok(/catch \(e\) \{ return ''; \}/.test(제목자),
+    '직장폼제목_ 가 제목을 못 읽을 때 빈 문자열(=거절)로 안 떨어진다');
+  const 서명자 = code.slice(code.indexOf('function 직장폼서명_(form)'), code.indexOf('function createWorkLogForm()'));
+  assert.ok(!/setTitle\(|setDescription\(|setHelpText\(|setState\(/.test(서명자),
+    '서명 자가 폼에 «쓰고» 있다 — 워치독(엔진_콘텐츠AI.js)이 매 점검마다 부르는 자리라 읽기 전용이어야 한다');
   // 표준 탭 이름이 이미 차 있으면 새 폼을 만들지 않고 멈춘다 — 접미사 탭이 되면 회수량이 워치독에서 사라진다(①배포 검수 10a5f2f323f0)
   assert.ok(/if \(ss\.getSheetByName\(WORK_TAB\)\)[\s\S]{0,600}return mT;/.test(body), '탭 이름 충돌 시 생성을 멈추는 가드가 없다');
   // 탭이 «이 폼의» 탭인지 대조한다 — 옛 탭·재생성된 탭이면 제출처와 워치독이 갈라진다(①배포 검수 0b240aac65cc)
@@ -1958,7 +1973,7 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   /* 검증 «순서»가 곧 판정이다(①배포 검수 9675a3471a43·132ede0b00a2): ①이게 그 폼인가(제목) ②완성됐나(표식)
    * ③탭이 붙었나(라우팅). 완성을 먼저 안 보면 «문항이 빠진 폼»에 탭만 달아 놓고 「복구했다」고 보고한다. */
   const 기존경로 = body.slice(body.indexOf('const exForm = FormApp.openById(exId);'));
-  assertOrder(기존경로, ['exForm.getTitle()).trim() !== WORK_FORM_TITLE', "getState(st, '직장폼완료')", 'const shT = ss.getSheetByName(WORK_TAB)']);
+  assertOrder(기존경로, ['직장폼제목_(exForm) !== WORK_FORM_TITLE', "getState(st, '직장폼완료')", 'const shT = ss.getSheetByName(WORK_TAB)']);
   // 워치독도 「이름이 같은 탭」을 그 폼의 탭으로 믿지 않는다(①배포 검수 b073a11c3a3e)
   assert.ok(/shWk\.getFormUrl\(\)[\s\S]{0,40}indexOf\(wkId\)/.test(code), '워치독이 응답 탭과 폼의 연결을 대조하지 않는다 — 갈아 끼워진 탭의 행을 직장 경험으로 센다');
   // ID 가 없으면 «검증 못 한 것»이지 정상이 아니다 — 세면 옛 탭의 행이 그럴듯한 회수량으로 찍힌다(①배포 검수 12f7d19f598f)
