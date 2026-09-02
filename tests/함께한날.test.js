@@ -144,6 +144,21 @@ test('⑤ 막5 checkScene — 멱등키(잠금 창)·마커 발화·기입→알
   assert.ok(!code.includes("safeRun('checkEvolution'"), '밤 배치가 아직 checkEvolution 을 부른다 — 한 밤 두 체계');
 });
 
+test('막5 D-1 — CD82(다음장면조건)가 없으면 판정을 «안 한다»(fail-closed · codex P2 f49d02f5 · 09-02)', () => {
+  const s = code.indexOf('function checkScene()');
+  const body = code.slice(s, code.indexOf('/* ===================== 강사 케어 지수', s));
+  assert.ok(body.includes("const cdGate = w >= 82 && String(pf.getRange(1, 82).getValue() || '').trim() === '다음장면조건'"),
+    'CD82 실재 검사가 없다 — r[81] undefined 가 «게이트 통과»로 읽혀 AG33=1 전원에게 D-1 이 나간다');
+  /* 앵커 갱신 09-03 — master 가 «두 층»으로 만들었다. 위 cdGate 는 여전히 열(헤더)이 섰나를 보고,
+   *   행마다 다시 `cd82있나`(그 행에 CD82 칸이 실재하나)를 본다. 열은 섰는데 행이 짧은 경우가
+   *   남아 있어서다 — 그 행의 r[81] 은 undefined 이고 String(undefined || '') 은 빈 문자열이라
+   *   indexOf 가 -1 을 내 «통과»로 읽힌다. 두 층을 다 재야 이 검사가 뜻대로 선다. */
+  assert.ok(/cd82있나 && \(Number\(r\[32\]\) \|\| 0\) === 1/.test(body), 'D-1 조건이 행 단위 CD82 실재 검사를 앞세우지 않는다');
+  assert.ok(body.includes("const cd82있나 = r.length > 81 && typeof r[81] !== 'undefined'"),
+    '행 단위 CD82 검사가 없다 — 열은 섰지만 짧은 행이 «게이트 통과»로 읽힌다');
+  assert.ok(body.includes('!cdGate') && body.includes('강사 D-1 판정을 **건너뛰었다**'), '건너뛴 사실이 원장 메일에 안 남는다 — 침묵은 통과의 얼굴이다');
+});
+
 test('한마디 규격 — 결석·끊김 언급 분기 0(발화표 S19 · 재촉 장치 금지)', () => {
   const s = code.indexOf('function sceneSpeak_');
   const body = code.slice(s, code.indexOf('\nfunction', s + 10));

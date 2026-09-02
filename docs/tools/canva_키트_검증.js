@@ -8,9 +8,10 @@
  *   색 이름(`KC Sun (Part6·겹침 잉크)`)만 갱신되고 팔레트 이름은 낡은 채 남아 서로 모순이었다.
  *
  * 🔴 **그리고 바로 그 상태가 됐다**(08-30 실측): 이 파일의 기대값을 정본 킷과 대조하던
- *   ⚰`tests/브랜드색.test.js` 는 ⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다. **대조하는 자가 없다** —
- *   즉 이 검증기는 지금 「낡았는지 아무도 모르는 검증기」다. 아래 한 줄은 그때의 배선 설명으로 읽을 것.
- * 이 파일의 기대값은 그 회귀가 정본 킷(디자인_토큰.json)과 대조해 **낡지 않게잠근다** —
+ *   ⚰`tests/브랜드색.test.js` 는 ⚠삭제됨 e75fc7fc 2026-08-19 — 그 뒤 「낡았는지 아무도 모르는 검증기」였고,
+ *   실제로 낡았다: 08-20 에 KIT 만 2027 킷으로 올라가고 PALETTES·NAMED 는 구 킷(Cream·Navy·Slate)에 남아
+ *   **맞게 갱신된 Canva 키트도 빨간불**을 받게 돼 있었다(codex P2 407f33f365e9·be3ffc2e47c9 · 09-02 수리).
+ * 지금 대조하는 자 = `tests/canva키트검증.test.js` — KIT·PALETTES 를 정본 킷(디자인_토큰.json)과 맞춰 **낡지 않게 잠근다.**
  * 검증기가 스스로 낡으면 검증기가 있다는 사실이 더 위험하다.
  *
  * ── 쓰는 법 (유호님 기준 클릭 단위) ──────────────────────────────────
@@ -74,28 +75,24 @@
     '#13724a': 'Emerald',
   };
 
-  // 팔레트 이름은 「오용 차단 장치」다 — 이름에 제한을 박아 두면 쓰는 사람이 규칙을 안 찾아봐도 걸린다.
+  /* 팔레트 이름 — 정본 = docs/디자인_토큰.json 의 `팔레트` 칸(색마다 달려 있다 · 42색을 아홉 팔레트가 나눠 든다).
+   * ⚠ 손으로 적힌 값이다(이 파일은 Canva 콘솔에 붙여 넣는 것이라 JSON 을 읽을 수 없다). 낡음은
+   *   tests/canva키트검증.test.js 가 정본과 대조해 잡는다 — 값을 고칠 때는 정본(토큰 JSON)부터 고친다. */
   const PALETTES = [
     '01 Core',
-    '02 Cream Family',
-    '03 Coral Family',
-    '04 Navy Family',
-    '05 K-Culture (3색 Part 6 전용 · Sun=모드C 2도)', // v1.5 — Sun만 모드 C로 빠졌다
-    '06 Slate (3층 잉크 · Slate=다크 / Slate 2=라이트)', // v1.8 — 바닥을 바꿔 쓰면 대비 미달
-    /* v1.10 — 팔레트 이름은 **안 바꾼다**(유호님이 등록해 둔 것을 그대로 둔다). 이 문구는 "Lime 2 는"
-     * 이라고 그 색을 지목하고 있어 Emerald 에 대해 거짓말을 하지 않는다. Emerald 의 제한은
-     * 아래 NAMED 의 **스와치 이름**이 진다 — 색마다 자기 규칙을 이름에 달고 있으면 팔레트 이름을
-     * 매번 고쳐 Canva 를 왕복할 필요가 없다. */
-    '07 Lime Family (Lime 2 · 라이트에선 면으로만)',
+    '02 Ground',
+    '03 Threads',
+    '05 K-Culture',
+    '02 Chalk Family',     // ⏳ 퇴역 대기 12색이 아직 정본에 들고 있는 옛 팔레트 넷 — 정본에서 빠지는 날 여기서도 뺀다
+    '04 Graphite Family',
+    '06 Ash',
+    '07 Lime',
+    '08 Emerald',
   ];
 
-  // 시맨틱이 박힌 색 이름 — 지워지면 그 자리가 바로 오용된다(라임=v1.6, Sun=v1.5)
-  const NAMED = {
-    '#c8ff3d': 'Lime (앱 성장·획득 전용)',
-    '#ffd447': 'KC Sun (Part6·겹침 잉크)',
-    '#b8e836': 'Lime 2 (라이트=면만)',
-    '#13724a': 'Emerald (라이트 전용)',
-  };
+  /* 스와치 «이름»도 전량 본다 — hex 만 맞추면 사람이 이름을 바꿔도 초록이었다(옛 NAMED 는 구 킷 넷만 봤다 · be3ffc2e47c9).
+   * 기대 이름 = KIT 의 값 그대로. 이름 뒤에 제한 문구를 괄호로 단 것(예: 'Lime (앱 성장·획득 전용)')은 같은 이름으로 받는다. */
+  const 이름있나 = (leaves, name) => leaves.some((t) => t === name || t.startsWith(name + ' ('));
 
   const leaves = [...document.querySelectorAll('*')]
     .filter((e) => e.childElementCount === 0)
@@ -132,12 +129,12 @@
     }
   }
 
-  for (const [hex, label] of Object.entries(NAMED)) {
-    if (!leaves.includes(label)) problems.push(`색 이름이 사라졌거나 바뀌었다 (${hex}) — 기대: 「${label}」`);
+  for (const [hex, name] of Object.entries(KIT)) {
+    if (!이름있나(leaves, name)) problems.push(`색 이름이 사라졌거나 바뀌었다 (${hex}) — 기대: 「${name}」`);
   }
 
   if (problems.length === 0) {
-    console.log(`%c✅ 전부 일치 — ${킷개수}색 · 팔레트 ${PALETTES.length}개 이름 · 시맨틱 색 이름 ${Object.keys(NAMED).length}건`,
+    console.log(`%c✅ 전부 일치 — ${킷개수}색 · 팔레트 ${PALETTES.length}개 이름 · 스와치 이름 ${킷개수}건`,
       'color:#027a48;font-weight:bold;font-size:14px');
   } else {
     console.log('%c✘ 정본과 어긋난 곳 ' + problems.length + '건', 'color:#b91c1c;font-weight:bold;font-size:14px');

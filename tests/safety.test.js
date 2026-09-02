@@ -1517,6 +1517,45 @@ test('[v9.75] 만족도팩 켜기 큐 — 설문 폼 미생성·수강 등록 �
   assert.ok(pfl.includes('만료 D-14/D-3'), '만료 안내 침묵 경고 문구가 없다');
 });
 
+test('[09-02] 메신저 주간 점수는 정정 순계 — 밤에 정정된 초과 지급이 부풀려 나가지 않는다(codex P2 4d0fe949)', () => {
+  const mj = fs.readFileSync(path.join(ROOT, '만족도팩.js'), 'utf8');
+  const digest = mj.slice(mj.indexOf('function MJ_messengerDigest_('), mj.indexOf('function MJ_msgSection_('));
+  /* 앵커 갱신 09-03 — 이 검사가 쓰인 뒤 master 가 같은 판정을 변수(`획득`)로 뺐다. 뜻·동작은 그대로고
+   *   문구만 갈렸다. 두 줄로 나눈 이유: 판정식과 «그 판정이 합계에 걸렸나»는 따로 깨질 수 있다. */
+  assert.ok(digest.includes("const 획득 = pts > 0 || rs.indexOf('정정') > -1;"),
+    '메신저 점수의 «획득» 판정식이 없다 — 정정 행이 빠지면 +20P 가 +10P 를 부풀린다');
+  assert.ok(digest.includes('if (획득 && pts !== 0) ptsW[sid]'),
+    '«획득» 판정이 합계에 안 걸렸다 — 식만 있고 안 쓰이면 없는 것과 같다');
+  // 상위 다이제스트(엔진_운영배치)와 같은 규약이어야 한다 — 한쪽만 고치면 이메일과 메신저가 다른 점수를 말한다
+  const parent = section('const ptsW = {}, mvpW = {}, synW = {};', 'const mvpN = ');
+  assert.ok(parent.includes('if (isE && pts !== 0) ptsW[sid]'), '상위 다이제스트 규약 앵커가 바뀌었다 — 메신저 미러도 같이 본다');
+});
+
+test('[09-02] 주간 워치독 — 의도된 미개통은 ✅ 도 ⚠️ 도 아닌 ⓘ 로 낸다(codex P2 3602c41d·9e616375)', () => {
+  const wd = section('function systemWatchdog(', 'function buildSystemManifest()');
+  /* 앵커 갱신 09-03 — 셋째 상태를 `null` 이 아니라 `'ⓘ'` 로 표현하도록 master 가 바꿨고, 제목에
+   *   「건」까지 붙였다. 검사의 뜻(셋째 상태가 있나 · 미개통이 그것으로 찍히나 · 제목이 그 수를 세나)은 그대로다. */
+  assert.ok(wd.includes("out.push((ok === 'ⓘ' ? 'ⓘ ' : ok ? '✅ ' : '⚠️ ') + msg)"), '세 번째 상태(ⓘ)가 없다');
+  assert.ok(/add\('ⓘ', '교재연동 미개통/.test(wd), '교재연동 미개통이 ⓘ 가 아니다 — ✅ 로 찍히면 판정관 실행 0회가 «전부 정상»의 얼굴이 된다');
+  assert.ok(!/add\(true, 'ⓘ/.test(wd), '✅ 접두에 ⓘ 를 손으로 붙인 옛 모양이 남아 있다');
+  assert.ok(wd.includes("(info ? ' · ⓘ ' + info + '건' : '')"), '메일 제목이 정보 칸 수를 안 센다 — «전부 정상»에 섞인다');
+});
+
+test('[09-02] 인계 초안 발송 — 스크립트 잠금은 「발송중」 찜 왕복만 감싼다(역번역·Meta 전송은 잠금 밖 · codex P2 c4edf5b1)', () => {
+  const ai = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8').replace(/\r\n/g, '\n');
+  const fn = ai.slice(ai.indexOf('function 상담_초안발송_('), ai.indexOf('function 상담_확인화면본_('));
+  const iLock = fn.indexOf('lock.tryLock(5000)'), iRel = fn.indexOf('lock.releaseLock()');
+  assert.ok(iLock > -1 && iRel > iLock, '잠금이 없다');
+  const i역 = fn.indexOf('상담_역번역_('), i전송 = fn.indexOf('상담_전송_(');
+  assert.ok(i역 > -1 && i역 < iLock, '역번역(Claude 호출 · 수 초)이 잠금 안이다 — 학부모 웹훅이 상한 예약 tryLock(3000) 에서 밀려 인계된다');
+  assert.ok(i전송 > iRel, 'Meta 전송이 잠금 안이다');
+  const i찜 = fn.indexOf("'발송중 '");
+  assert.ok(i찜 > iLock && i찜 < iRel, '「발송중」 찜이 잠금 안이 아니다 — 재클릭 두 번이 다 나간다');
+  const i재확인 = fn.indexOf("indexOf('발송됨') === 0", iLock);
+  assert.ok(i재확인 > iLock && i재확인 < iRel, '잠금 안에서 표식을 다시 읽지 않는다 — 잠금 밖에서 읽은 값으로 찜하면 두 클릭이 같이 통과한다');
+  assert.ok(fn.includes('표식셀.setValue(이전표식)'), '전송 실패 때 찜을 안 되돌린다 — 실패한 초안이 영영 「발송중」이다');
+});
+
 test('[v9.71] 메신저 연결 스위프가 상담로그 실제 열 순서(시각·세션·발신·내용)와 맞는다', () => {
   // 상담AI.js가 쓰는 헤더와 만족도팩이 읽는 인덱스가 어긋나면 연결 요청이 영원히 접수되지 않는다(양쪽 파일 교차 계약).
   const ai = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8');

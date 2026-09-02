@@ -58,6 +58,13 @@ const 정책 = require('./모델정책.js');
 const { 토큰대조 } = require('./몽골어대조.js');
 
 const 저장소 = path.resolve(__dirname, '..');
+/** 출력 폴더가 저장소 «안»인가 — 루트 그 자체도 안이다. `startsWith(루트 + sep)` 만 보면 `--출력 <루트>` 가 새는
+ *  경계값이었다(codex P1 dfbdcd58be31·4432603abc8a · 09-02). Windows 는 대소문자를 안 가르므로 같이 접는다. */
+function 저장소안인가(폴더, 루트 = 저장소) {
+  const 접기 = (p) => (process.platform === 'win32' ? path.resolve(p).toLowerCase() : path.resolve(p));
+  const a = 접기(폴더), b = 접기(루트);
+  return a === b || a.startsWith(b + path.sep);
+}
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
 const 호출타임아웃 = 180_000; // 오디오는 텍스트보다 오래 걸린다(실측 3.9초였지만 긴 문장·혼잡 대비)
 const 재시도지연 = [10_000, 30_000]; // 무료 티어 분당 상한(429)·순간 장애(500/503)
@@ -175,6 +182,8 @@ function WAV만들기(pcm, 형식) {
 /** 「소리가 들어 있나」를 잰다 — 크기만으로는 무음 파일도 커 보인다. 16비트만 잰다. */
 function 소리측정(pcm, 형식) {
   if (형식.비트 !== 16) return { 잼: false, 이유: `16비트가 아니라 못 쟀다(L${형식.비트})` };
+  // 홀수 바이트 = 표본 경계가 깨진 응답(잘림 의심). 반쪽 표본을 버리고 재면 「쟀다」가 거짓이 된다(codex P1 d8ecdd22eb14).
+  if (pcm.length % 2 !== 0) return { 잼: false, 이유: `PCM 길이가 홀수(${pcm.length}바이트) — 표본 경계가 깨졌다(잘린 응답 의심)` };
   const n = Math.floor(pcm.length / 2);
   if (n === 0) return { 잼: false, 이유: '표본 0개' };
   let 피크 = 0, 제곱합 = 0, 무음표본 = 0;
@@ -339,7 +348,8 @@ async function 한판(key, model, 항목, 목소리, 출력폴더) {
   const 소리 = 측정.잼
     ? `${측정.소리있음 ? '소리 있음' : '🔴 무음 의심'} · ${측정.초.toFixed(2)}초 · 피크 ${측정.피크dBFS.toFixed(1)}dBFS · RMS ${측정.RMSdBFS.toFixed(1)}dBFS · 무음표본 ${(측정.무음비율 * 100).toFixed(1)}%`
     : `⚠ 소리 못 잼 — ${측정.이유}`;
-  console.log(`  ✅ ${항목.코드}/${목소리} — ${r.ms}ms · ${(wav.length / 1024).toFixed(1)}KB · ${소리}`);
+  const 아이콘 = 측정.잼 ? (측정.소리있음 ? '✅' : '🔴') : '⚠'; // 못 잰 굽기에 ✅ 를 찍지 않는다
+  console.log(`  ${아이콘} ${항목.코드}/${목소리} — ${r.ms}ms · ${(wav.length / 1024).toFixed(1)}KB · ${소리}`);
   console.log(`     → ${경로}`);
   장부.push({
     모델: model, 코드: 항목.코드, 갈래: 항목.갈래, 언어: 항목.언어, 목소리,
@@ -350,7 +360,19 @@ async function 한판(key, model, 항목, 목소리, 출력폴더) {
     무음비율: 측정.잼 ? 측정.무음비율 : null,
     소리있음: 측정.잼 ? 측정.소리있음 : null,
   });
-  return 측정.잼 ? 측정.소리있음 : true;
+  /* 못 잰 것은 «성공»이 아니다 — true 로 접으면 비16비트·잘린 응답이 「사는 모델」로 뽑히고 종료코드 0 이 됐다
+   *   (codex P1 c85b152cc156·d8ecdd22eb14 · 09-02). 못 잼 = 모른다 = 통과 아님. */
+  return 측정.잼 ? 측정.소리있음 : false;
+}
+
+/** 요약 판정 — 장부 한 벌을 종료코드로. 실패·무음 의심·못 잼(소리있음 null)·역듣기 불가 어느 하나라도 있으면 2.
+ *  «못 잼»이 여기 들어온 것이 09-02 수리다 — 그전엔 실패·무음·역듣기만 봐서 비16비트 응답이 종료 0 이었다. */
+function 종료판정(장부) {
+  const 실패 = 장부.filter((r) => !r.ok).length;
+  const 무음 = 장부.filter((r) => r.ok && r.소리있음 === false).length;
+  const 못잼 = 장부.filter((r) => r.ok && r.소리있음 === null).length;
+  const 역듣기불가 = 장부.filter((r) => r.역듣기 && !r.역듣기.ok).length;
+  return { 실패, 무음, 못잼, 역듣기불가, 코드: (실패 || 무음 || 못잼 || 역듣기불가) ? 2 : 0 };
 }
 
 async function 모델목록(key) {
@@ -412,11 +434,12 @@ async function main() {
   }
 
   const 출력폴더 = 값('--출력', process.env.SYNK_음성출력 || path.join(os.tmpdir(), 'synk-음성실측'));
-  fs.mkdirSync(출력폴더, { recursive: true });
-  if (path.resolve(출력폴더).startsWith(저장소 + path.sep)) {
-    console.error(`🔴 출력 폴더가 저장소 안이다 → ${출력폴더}. 소비자 0 오디오를 git 에 쌓지 않는다.`);
+  // 검사가 mkdir 보다 «먼저»다 — 순서가 반대면 거절하면서도 저장소 안에 빈 폴더를 만들고 나간다
+  if (저장소안인가(출력폴더)) {
+    console.error(`🔴 출력 폴더가 저장소 안이다(루트 그 자체 포함) → ${출력폴더}. 소비자 0 오디오를 git 에 쌓지 않는다.`);
     return 깨끗이끝내기(1);
   }
+  fs.mkdirSync(출력폴더, { recursive: true });
   console.log(`\n■ 출력 폴더: ${출력폴더}`);
 
   const 간격 = Number(값('--간격', '4000'));
@@ -522,13 +545,14 @@ async function main() {
   fs.writeFileSync(장부경로, JSON.stringify({ 언제: new Date().toISOString(), 장부 }, null, 2), 'utf8');
   console.log(`   장부: ${장부경로}`);
 
-  // 「확인 불가」도 2다 — 못 잰 것을 0(초록)으로 접으면 그게 이 저장소가 여러 번 데인 무늬다.
-  const 역듣기불가 = 장부.filter((r) => r.역듣기 && !r.역듣기.ok).length;
-  return 깨끗이끝내기(실패.length || 무음.length || 역듣기불가 ? 2 : 0);
+  // 「확인 불가」도 2다 — 못 잰 것(비16비트·잘린 PCM)을 0(초록)으로 접으면 그게 이 저장소가 여러 번 데인 무늬다.
+  const 판 = 종료판정(장부);
+  if (판.코드) console.log(`\n종료 2 — 실패 ${판.실패} · 무음 의심 ${판.무음} · 못 잼 ${판.못잼} · 역듣기 불가 ${판.역듣기불가} (어느 하나라도 있으면 통과가 아니다)`);
+  return 깨끗이끝내기(판.코드);
 }
 
 if (require.main === module) {
   main().catch((e) => { console.error(`실행 오류: ${e && e.message}`); 깨끗이끝내기(1); });
 }
 
-module.exports = { 오디오형식, WAV만들기, 소리측정, 정본대조, 읽힐글, 문장표, 후보모델 };
+module.exports = { 오디오형식, WAV만들기, 소리측정, 정본대조, 읽힐글, 문장표, 후보모델, 저장소안인가, 종료판정 };
