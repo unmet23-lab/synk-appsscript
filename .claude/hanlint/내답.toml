@@ -1,0 +1,25 @@
+# 내가 유호님께 내는 답을 재는 자
+#
+# 유호 지적 09-03: 「지금 니가 구사하는게 이해가 안가거나 애매하게 말하는게 너무 많단말이지」
+# 그 자리를 이 자가 잰다. CLAUDE.md 「읽히게」 절의 기계 짝이다.
+#
+# 🔴 채팅 답은 «문서»가 아니라서 문서 짜임 규칙을 전부 끈다 —
+#    제목 수준·도입 길이·마지막 절 같은 것은 답에 없는 개념이고, 켜 두면 시끄럽기만 해서
+#    결국 아무도 안 보게 된다(voice-guard 주석이 경고한 BYPASS 습관).
+preset = "docs"
+
+disable = [
+  # ── 글의 짜임 (답에는 없는 개념)
+  "headingSkip", "headingUniform", "loneSubheading", "introLong", "introImage",
+  "moreLater", "bridgeRepeat", "sectionNoProse", "blockUnread", "emojiBullet",
+  # ── 두 자리 대조 (답은 한 편의 완결된 글이 아니다)
+  "countMismatch", "enoughOnce", "fieldEcho", "keywordHeading",
+  # ── 분모가 우리 것이 아닌 규칙
+  "outsideProfile",
+  # ── 답에서는 오히려 옳은 것
+  #    「처음에는 ~라고 썼다」 = 내가 틀린 것을 밝히는 자리다. CLAUDE.md 솔직함 절이 시키는 일이라 끈다.
+  "draftHistory",
+  # 이모지 목록(🔴·⚠)은 유호님이 급한 것을 먼저 보시라고 쓰는 표식이다.
+]
+
+# 긴 문장 상한은 검사기 기본값 30 어절 그대로다 — 설정 파일로는 못 바꾼다(키는 preset·disable 둘뿐).

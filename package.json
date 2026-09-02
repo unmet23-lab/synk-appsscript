@@ -1,0 +1,11 @@
+{
+  "name": "synk-appsscript",
+  "private": true,
+  "description": "SYNK LAB 엔진 저장소. 라이브 코드는 딸린 프로그램 0개로 돈다 — 여기 적힌 것은 «글을 재는 도구»뿐이고 배포집합(.claspignore)에 안 들어간다.",
+  "devDependencies": {
+    "hanlint": "^0.0.9"
+  },
+  "scripts": {
+    "글검사": "node tools/글검사.js"
+  }
+}
