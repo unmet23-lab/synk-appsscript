@@ -694,6 +694,100 @@ function linkFormTab_(ss, before, tabName) {
     created.setName(ss.getSheetByName(tabName) ? tabName + '_' + Utilities.formatDate(new Date(), tz, 'MMdd_HHmm') : tabName);
   }
 }
+/* [v9.299] 폼이 «실제로 쓰는» 응답 탭을 찾는다 — 탭 «이름»이 아니라 «폼 연결»로.
+ *
+ * ■ 왜 (09-03 라이브 실측)
+ *   폼 만들기를 두 번 누르면 바로 위 `linkFormTab_` 이 이름 충돌을 날짜 접미로 피한다
+ *   (`약점메모폼_응답` 이 이미 있으면 `약점메모폼_응답_0724_2032`). 그때 app_state 의 폼ID·URL 은
+ *   **새 폼**으로 갈아끼워지는데, 읽는 쪽은 옛 이름을 그대로 연다 —
+ *   ⇒ 강사가 쓴 응답이 **조용히 안 읽힌다**(고장 소리가 안 난다).
+ *   09-03 에 강사 약점 메모가 정확히 그 상태였다: 폼은 `약점메모폼_응답_0724_2032` 에 쓰고
+ *   `sweepTeacherMemoForm_` 은 `약점메모폼_응답` 을 열고 있었다(7/24 사고 · v9.62 가드 이전).
+ *   v9.62 재실행 가드는 «재발»을 막지만 이미 갈라진 자리는 잇지 못한다.
+ *
+ * ■ 자 — `Sheet.getFormUrl()`
+ *   그 탭에 연결된 폼의 편집 URL 을 준다(폼 응답 탭이 아니면 null). 폼ID 가 그 안에 들어 있으므로
+ *   **이름이 무엇이든** 「이 폼이 쓰는 탭」이 정확히 하나 잡힌다. 같은 API 를 `syncTeacherMemoForm_`
+ *   이 이미 반대 방향(탭 → 폼ID 복구)으로 쓰고 있다 — 검증된 통로다.
+ *
+ * ■ 폴백은 «옛 이름»
+ *   폼ID 가 비었거나(아직 안 만든 폼) 어느 탭도 안 물면 이름으로 연다 — 옛 동작 그대로라
+ *   이 함수가 새 실패 모드를 만들지 않는다.
+ * ⚠ 대가: 탭 수만큼 getFormUrl() 을 부른다(09-03 라이브 84탭). 야간 배치 자리라 감당한다 —
+ *   화면 경로에서 부르려면 그 자리에서 다시 재라. */
+function 폼응답탭_(ss, formId, 이름폴백) {
+  const fid = String(formId || '').trim();
+  if (fid) {
+    const sheets = ss.getSheets();
+    for (let i = 0; i < sheets.length; i++) {
+      let u = '';
+      try { u = sheets[i].getFormUrl() || ''; } catch (e) { u = ''; } // 폼 없는 탭은 예외를 던지기도 한다
+      if (u && u.indexOf(fid) !== -1) return sheets[i];
+    }
+  }
+  return 이름폴백 ? ss.getSheetByName(이름폴백) : null;
+}
+
+/* [v9.299] 폼ID 키 ↔ 코드가 읽는 응답 탭 이름의 짝 — **이 목록이 정본이다.**
+ *   두 이름 체계(app_state 키 · 시트 탭)를 잇는 다리라 어딘가엔 적어야 한다. 한 곳에만 적고
+ *   아래 대조가 그것을 쓴다([[constant-known-in-two-places]] 를 피하는 방식).
+ *   ⚠ 이름이 안 맞는 짝이 둘 있다(면접폼ID→면접기록_응답 · 직장폼ID→직장기록_응답) — 그래서
+ *   「ID 키에서 탭 이름을 규칙으로 만든다」가 안 된다. 새 폼을 만들면 여기 한 줄을 더한다. */
+function 폼탭짝_() {
+  return [
+    ['약점메모폼ID', '약점메모폼_응답'], ['마감폼ID', '마감폼_응답'], ['강의폼ID', '강의폼_응답'],
+    ['면접폼ID', '면접기록_응답'], ['직장폼ID', '직장기록_응답'], ['목소리폼ID', '목소리폼_응답'],
+    ['반출석폼ID', '반출석폼_응답'], ['출퇴근폼ID', '출퇴근폼_응답'], ['퀴즈폼ID', '퀴즈폼_응답'],
+    ['대화폼ID', '대화폼_응답'], ['숙제폼ID', '숙제폼_응답'], ['출석폼ID', '출석폼_응답'],
+    ['결석폼ID', '결석폼_응답'], ['학업폼ID', '학업폼_응답'], ['설문폼ID', '설문폼_응답'],
+    ['리드폼ID', '리드폼_응답'],
+    /* [v9.299 · codex 배포검수 P1②] 레벨테스트는 폼ID 가 아니라 **게시 URL** 만 저장한다(v9.94 계보).
+     *   그래서 다른 짝과 같은 자로 못 잰다 — 빼 두면 `sweepLevelTest_` 가 정확한 이름만 읽는 상태로
+     *   조용히 남고(v9.60 실사고를 겪은 바로 그 폼이다) 조립 점검은 「정상」이라 말한다.
+     *   ⇒ 셋째 칸에 «자 종류»를 적어 대조가 갈래를 갈라 재게 한다. 새 폼을 더할 때 이 칸을 비우면 'id'. */
+    ['레벨테스트URL', '레벨테스트_응답', 'url'],
+  ];
+}
+
+/* [v9.299] 「폼이 쓰는 탭」과 「코드가 읽는 탭」이 갈라졌나 — 전수 대조(읽기 전용).
+ *   반환 = {갈림: [{키, 이름, 실제}], 정상: n, 미생성: n, 확인불가: n}
+ *   ■ 왜 전수인가: 09-03 에 약점메모 하나를 고쳤는데, 같은 사고를 겪은 자리가 또 있는지는
+ *     «세어야» 안다(레벨테스트도 응답 탭이 둘이다 — v9.60 실사고). 하나 고치고 나머지를 안 세면
+ *     그 병은 남는다.
+ *   ■ 「미생성」과 「갈림」을 가른다: 폼ID 가 없는 것은 아직 안 만든 폼이지 결함이 아니다
+ *     ([[zero-is-a-success-face-taxonomy]] — 0을 한 갈래로 뭉치지 않는다). */
+function 폼탭대조_(ss) {
+  const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+  const out = { 갈림: [], 정상: 0, 미생성: 0, 확인불가: 0 };
+  폼탭짝_().forEach(function (p) {
+    const key = p[0], name = p[1], 자 = p[2] || 'id';
+    let val = '';
+    try { val = String((getState(st, key) || {}).val || '').trim(); } catch (e) {}
+    if (!val) { out.미생성++; return; }                       // 아직 안 만든 폼
+    if (자 === 'url') {
+      /* 게시 URL 갈래 — 폼ID 가 없으니 방향을 뒤집는다: 「코드가 읽는 탭」에 연결된 폼의 게시 URL 이
+       *   app_state 에 적힌 것과 같은가. 다르면 **다른 폼이 그 탭에 쓰고 있다**(= 학생에게 나간 폼의
+       *   응답은 딴 탭에 쌓인다). FormApp 은 그 한 탭에 대해서만 연다. */
+      const sh = ss.getSheetByName(name);
+      let edit = '';
+      try { edit = (sh && sh.getFormUrl && sh.getFormUrl()) || ''; } catch (eU) { edit = ''; }
+      if (!edit) { out.확인불가++; return; }                   // 탭이 없거나 폼 연결이 끊겼다
+      let pub = '';
+      try { pub = FormApp.openByUrl(edit).getPublishedUrl() || ''; } catch (eO) { out.확인불가++; return; }
+      const 잘라 = (u) => String(u).split('?')[0].replace(/\/(viewform|edit).*$/, '');
+      if (pub && 잘라(pub) === 잘라(val)) out.정상++;
+      else out.갈림.push({ 키: key, 이름: name, 실제: '다른 폼이 「' + name + '」에 쓴다(게시 URL 불일치)' });
+      return;
+    }
+    const 실제 = 폼응답탭_(ss, val, '');                        // 폴백 없이 «폼 연결»만 본다
+    if (!실제) { out.확인불가++; return; }                      // 폼은 있는데 이 문서에 응답 탭이 없다
+    const 실제이름 = 실제.getName();
+    if (실제이름 === name) out.정상++;
+    else out.갈림.push({ 키: key, 이름: name, 실제: 실제이름 });
+  });
+  return out;
+}
+
 // 공용: 학생ID 문항의 미리채움 URL 틀 — SIDTOKEN 자리에 학생ID를 치환해 학생별 원터치 링크를 만든다(writeSharedCols_).
 function prefillTemplateOf_(form, itemTitle) {
   const it = form.getItems().find(i => i.getTitle() === itemTitle);
