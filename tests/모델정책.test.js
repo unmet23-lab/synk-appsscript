@@ -410,3 +410,47 @@ test('[F445] 폐지된 `fable심문` 이 살아있는 지시문에 「쓸 수 �
   assert.ok(fs.existsSync(path.join(ROOT, 'tools', 'codex-review.js')),
     '심문 통로가 하나도 없다 — 폐지가 게이트까지 지웠다');
 });
+
+/* 🔴 «항상 무료 먼저» — 유호 지시 2026-09-03 「항상 무료먼저 사용하게 해줘」.
+ *
+ * 기본이 무료인 것은 위 시험이 지킨다. 여기서 지키는 것은 그 다음 층이다:
+ *   **돈을 쓰는 «자리»가 조용히 늘어나지 않는가.**
+ * 09-03 실측으로 돈 열쇠를 부르는 곳은 둘뿐이었고(그림 굽기·음성 실측), 둘 다 사람이 손으로
+ * 부르는 도구다 — 자동으로 도는 것은 하나도 없다. 그래서 «지금은 충전이 없어도 아무것도 안 멈춘다».
+ * 그 사실이 이 저장소의 성질인데, 새 코드 한 줄이 `제미나이키('돈')` 을 쓰면 그 성질이 조용히 깨진다.
+ * ⇒ 목록을 여기 박고, 늘어나면 시험이 운다. 늘리려면 **이름을 올리고 왜인지 적는 것**이 조건이다.
+ */
+test('🔴 「돈」 열쇠를 부르는 자리는 목록에 있는 것뿐이다 — 돈 쓰는 자리가 조용히 늘면 안 된다', () => {
+  const fs = require('node:fs');
+  /* 허용된 곳과 «왜 돈인가». 공짜 몫이 원리상 없는 갈래만 여기 온다
+   * (구글 공식 가격표 09-03: 그림 Nano Banana Pro = Free Tier 「Not available」). */
+  const 허용 = {
+    'tools/lib/이미지굽기.js': '그림 1컷 — 공짜 몫이 없다(가격표 Not available). 쓰는 도구 = 라디오무대굽기·펠트색굽기',
+    'tools/음성실측.js': '몽골어 음성(TTS) 실측 — 오디오는 공짜 몫 밖. 제품에 안 붙은 «재보는» 도구다',
+  };
+  /* 상대경로로 훑는다 — 절대경로에 자를 대면 저장소가 어디 놓였느냐로 답이 갈린다
+   * (ai스택점검이 워크트리에서 자기 문서 229벌을 통째로 걸러낸 그 사고). */
+  const 훑기 = (상대) => {
+    const 절대 = path.join(ROOT, 상대);
+    if (!fs.existsSync(절대)) return [];
+    return fs.readdirSync(절대, { withFileTypes: true }).flatMap((e) => {
+      const 다음 = 상대 ? `${상대}/${e.name}` : e.name;
+      if (e.isDirectory()) return /^(node_modules|\.git|worktrees|_archive)$/.test(e.name) ? [] : 훑기(다음);
+      return e.isFile() && e.name.endsWith('.js') ? [다음] : [];
+    });
+  };
+  const 찾은 = [];
+  for (const 상대 of [...훑기('tools'), ...훑기('evals')]) {
+    const 본문 = fs.readFileSync(path.join(ROOT, 상대), 'utf8');
+    // 정본(모델정책.js)은 표를 «정의»하는 자리라 뺀다 — 부르는 쪽만 센다.
+    if (상대 === 'tools/모델정책.js') continue;
+    if (/제미나이키(?:경로)?\(\s*['"]돈['"]\s*\)/.test(본문)) 찾은.push(상대);
+  }
+  const 새것 = 찾은.filter((p) => !(p in 허용));
+  assert.deepStrictEqual(새것, [],
+    `돈 열쇠를 새로 부르는 곳이 생겼다 — 「항상 무료 먼저」(유호 09-03)를 지나쳤다.\n`
+    + `  공짜 몫으로 되는 일이면 용도를 '글'로 바꾸고, 정말 돈이 필요하면 이 시험의 «허용» 표에 이름과 까닭을 올려라.`);
+  // 반대로도 잰다 — 목록에만 있고 실물이 없으면 그 줄은 낡은 것이다(자가 헐거워진 채 초록).
+  const 사라진 = Object.keys(허용).filter((p) => !찾은.includes(p));
+  assert.deepStrictEqual(사라진, [], '허용 표에 있는데 실물이 그 열쇠를 안 쓴다 — 표가 낡았다');
+});
