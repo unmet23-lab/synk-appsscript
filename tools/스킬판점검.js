@@ -28,11 +28,17 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const 저장소뿌리 = path.resolve(__dirname, '..');
 const 표경로 = path.join(저장소뿌리, '.claude', 'skills', '외부반입_출처.md');
 const 장부경로 = path.join(저장소뿌리, 'docs', '_ops', '스킬판장부.json');
+/* 「마지막으로 재본 때」는 저장소 «밖»에 둔다. 장부(기준선)에 같이 적으면 훅이 돌 때마다
+ * 그 파일이 미커밋으로 떠서, 다음 세션이 배포 1단계에서 「남의 변경인가」를 헛세게 된다.
+ * 기준선은 세션 사이에 «공유»돼야 하니 저장소에 남고, 잰 때는 이 기계의 사정이라 밖이다.
+ * ⚠ 지워지면 한 번 더 재기만 한다(네트워크 9회 · 무해한 실패). */
+const 잰때경로 = path.join(os.tmpdir(), 'synk-스킬판-잰때');
 const 조용한날 = 7;
 
 /* ── 표 읽기 — 정본은 외부반입_출처.md 하나다 ───────────────────────── */
@@ -100,7 +106,16 @@ function 장부쓰기(장부) {
 
 function 지난날(iso) {
   if (!iso) return Infinity;
-  return (Date.now() - new Date(iso).getTime()) / 86400000;
+  const t = new Date(iso).getTime();
+  if (!isFinite(t)) return Infinity;   // 쓰레기 값이면 「안 재봤다」로 읽는다(조용히 건너뛰지 않는다)
+  return (Date.now() - t) / 86400000;
+}
+
+function 잰때읽기() {
+  try { return fs.readFileSync(잰때경로, 'utf8').trim() || null; } catch { return null; }
+}
+function 잰때쓰기() {
+  try { fs.writeFileSync(잰때경로, new Date().toISOString(), 'utf8'); } catch { /* 못 적어도 다음에 한 번 더 잴 뿐 */ }
 }
 
 /* ── 본체 ─────────────────────────────────────────────────────────── */
@@ -146,9 +161,8 @@ async function 본체() {
   const 도장 = 인자.includes('--도장');
 
   if (훅모드) {
-    const 장부 = 장부읽기();
-    // 아직 이르면 네트워크를 안 쓴다 — 보통 세션은 0초다
-    if (지난날(장부.마지막대조) < 조용한날) process.exit(0);
+    // 아직 이르면 네트워크를 안 쓴다 — 보통 세션은 0초다. 「잰 때」는 저장소 밖(위 주석)
+    if (지난날(잰때읽기()) < 조용한날) process.exit(0);
   }
 
   const { 결과, 장부, 오류, 못읽은줄 } = await 재기();
@@ -163,6 +177,7 @@ async function 본체() {
 
   if (도장) {
     도장찍기(결과, 장부);
+    잰때쓰기();
     console.log(`✅ 지금 상류를 기준선으로 적었다 — ${결과.length - 못잰것.length}벌 (못 잰 것 ${못잰것.length})`);
     return;
   }
@@ -186,16 +201,15 @@ async function 본체() {
     } else if (못읽은줄 && 못읽은줄.length) {
       // 「0벌 뒤짐」이 표가 깨져서 나온 거짓 초록일 수 있다 — 그 자리를 알린다
       console.log(`⚠ 스킬 판 점검: 표에서 «세지 못한» 줄 ${못읽은줄.length}개(${못읽은줄.join(' · ')}) — 그만큼 「0벌 뒤짐」은 덜 센 값이다.`);
-    } else {
-      // 아무것도 안 움직였다 — 잰 때만 갱신하고 조용히 넘어간다
-      장부.마지막대조 = new Date().toISOString();
-      장부쓰기(장부);
     }
+    // 잰 때는 «어느 갈래로 끝나든» 적는다 — 울고 나서 안 적으면 매 세션 같은 소리를 낸다.
+    // 장부(기준선)는 안 건드린다: 그건 사람이 `--도장` 을 찍을 때만 움직인다.
+    잰때쓰기();
     process.exit(0);
   }
 
   // 사람이 직접 부른 경우 — 전량을 보여준다
-  console.log(`\n밖에서 들여온 스킬 ${결과.length}벌 · 마지막 대조 ${장부.마지막대조 ? 장부.마지막대조.slice(0, 10) : '(없다)'}\n`);
+  console.log(`\n밖에서 들여온 스킬 ${결과.length}벌 · 마지막 «도장» ${장부.마지막대조 ? 장부.마지막대조.slice(0, 10) : '(없다)'}\n`);
   for (const r of 결과) {
     if (r.못쟀다) { console.log(`  ⬜ ${r.이름} — 못 쟀다 (${r.못쟀다})`); continue; }
     const 표시 = r.처음 ? '🆕 기준선 없음' : r.움직였나 ? '🔄 원본이 움직였다' : '✅ 그대로';
@@ -215,8 +229,14 @@ async function 본체() {
   console.log('');
 }
 
-본체().catch((e) => {
-  const 훅 = process.argv.includes('--훅');
-  if (!훅) console.error(`⚠ 점검이 죽었다: ${e.message}`);
-  process.exit(훅 ? 0 : 1);
-});
+/* 시험이 «순수 부분»을 직접 태울 수 있게 연다 — 표 읽기와 날짜 셈은 네트워크가 없어야 잰다.
+ * `require.main` 가드가 없으면 require 하는 순간 본체가 돌아 시험이 바깥을 때린다. */
+module.exports = { 표읽기, 지난날, 장부읽기, 잰때읽기, 잰때쓰기, 표경로, 장부경로, 잰때경로, 조용한날 };
+
+if (require.main === module) {
+  본체().catch((e) => {
+    const 훅 = process.argv.includes('--훅');
+    if (!훅) console.error(`⚠ 점검이 죽었다: ${e.message}`);
+    process.exit(훅 ? 0 : 1);
+  });
+}
