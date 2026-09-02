@@ -42,6 +42,8 @@
 
 const fs = require('fs');
 const path = require('path');
+/* 브랜드 서체를 지면 «안»에 싣는 단일 통로 — 바깥 호출은 아티팩트 CSP 가 조용히 막는다. */
+const 브랜드폰트 = require('./브랜드폰트.js');
 
 const 루트 = path.resolve(__dirname, '..', '..');
 const 토큰길 = path.join(루트, 'docs', '디자인_토큰.json');
@@ -1244,6 +1246,10 @@ function 시연(옵션 = {}) {
 <meta name="theme-color" content="${색['Graphite']}">
 <title>Loom 부품 시연 — 물성 사다리·율·광학</title>
 <style>
+/* 브랜드 서체 — 지면 «안»에 싣는다(2026-09-03). 바깥에서 부르면 아티팩트 뷰어의 CSP 가
+   스타일시트를 막아 에러 없이 대체 서체로 내려앉고, 인터넷이 없어도 같다.
+   자산·지문·근거는 tools/lib/브랜드폰트.js 하나가 진다. */
+${브랜드폰트.면()}
 ${스타일}
 ${사다리}
 </style></head>

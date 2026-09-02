@@ -49,6 +49,8 @@ const fs = require('node:fs');
  * 여기서 고르는 것은 프리셋 하나뿐 — `부품만` = 지면이 자기 디자인을 지고 부품만 얹는 판.
  * 🔴 훅이 0 이면 통로가 «안 얹는다». 그래야 「마커만 켜진 초록」이 안 생긴다(F517②). */
 const loom얹기모듈 = require('./lib/loom얹기.js');
+/* 브랜드 서체를 지면 «안»에 싣는 단일 통로 — 바깥 호출은 아티팩트 CSP 가 조용히 막는다. */
+const 브랜드폰트 = require('./lib/브랜드폰트.js');
 function loom태우기(html) {
   const r = loom얹기모듈.얹기(html, { 지면: '부품만' });
   if (!r.얹힘 && r.범위흠) console.error('   ⚠ Loom 미적용 — ' + r.범위흠);
@@ -223,15 +225,13 @@ function HTML(접힌것, 지금 = '') {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>자율주행 결정 기록 — SYNK</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;800&family=DM+Mono:wght@400;500&display=swap">
 <style>
   /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
   @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
-@font-face{
-  font-family:'SUIT Variable'; font-style:normal; font-weight:100 900; font-display:swap;
-  src:url('https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.woff2') format('woff2-variations');
-}
+  /* 브랜드 서체(SUIT)는 지면 «안»에 싣는다 — 바깥(cdn.jsdelivr.net)에서 부르면 아티팩트 뷰어의
+     CSP 가 에러 없이 막아 대체 서체로 내려앉고, 오프라인에서도 같다. 정본 = tools/lib/브랜드폰트.js */
+${브랜드폰트.면()}
 :root{
   --paper:#FBF7F0; --ink:#2B2320; --navy:#262626; --navy2:#08090C; --navy3:#373737;
   --slate:#8C8C8C; --slate2:#666666; --cream:#E4E4E7; --cream2:#EAEAEA; --cream3:#D1D2D4;
