@@ -15,10 +15,28 @@
  */
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { engineSource } = require('./_engine-source');
 const { 코드만 } = require('./lib/소스검사.js');
 
 const code = engineSource();
+
+/* [09-03] 소비자를 찾을 때는 **배포 집합 전체**를 본다 — `engineSource()` 로는 못 본다.
+ *   `tests/_engine-source.js` 머리말이 밝혀 두었듯 `교재연동.js`(8번째 뒤)·`엔진_두뇌.js`(마지막)는
+ *   filePushOrder 가드와 충돌해 ENGINE_FILES 에 «구조상» 못 들어간다. 그런데 목소리 폼을 쓰는
+ *   코드가 바로 거기 산다(교재연동.js) — 엔진 소스만 보면 「그 키를 쓰는 코드가 없다」는
+ *   **거짓 적색**이 난다(실측 09-03). 런타임엔 같은 전역이므로 검사만 넓히면 된다. */
+const 배포소스 = (function () {
+  const ROOT = path.resolve(__dirname, '..');
+  /* ⚠ `filePushOrder` 만으로는 모자란다 — 만족도팩.js 처럼 그 목록에 없는데도 `.claspignore`
+   *   허용으로 라이브에 올라가는 파일이 있다(09-03 실측: clasp push 17개 ↔ filePushOrder 15개).
+   *   ⇒ 루트의 `.js` 전부를 본다. `_` 로 시작하는 것(`_보류_…`)만 뺀다 — 그건 배포에서 빠진 자리다. */
+  const 파일들 = fs.readdirSync(ROOT)
+    .filter((f) => f.endsWith('.js') && !f.startsWith('_'))
+    .filter((f) => fs.statSync(path.join(ROOT, f)).isFile());
+  return 파일들.map((f) => { try { return fs.readFileSync(path.join(ROOT, f), 'utf8'); } catch (e) { return ''; } }).join('\n');
+})();
 
 function fnOf(name) {
   const s = code.indexOf('function ' + name + '(');
@@ -188,14 +206,31 @@ test('게시 URL 갈래 — 탭의 폼 연결이 끊겼으면 «확인불가»',
 
 /* ── ③ 짝 목록이 실물과 안 갈렸는가 ──────────────────────────────── */
 
-test('🔴 짝 목록의 탭 이름은 «코드가 실제로 여는 이름»과 같다 — 낡으면 대조가 거짓 초록을 낸다', () => {
+test('🔴 짝 목록의 이름은 «짝 목록 밖의 코드»가 실제로 쓰는 이름과 같다 — 낡으면 대조가 거짓 초록을 낸다', () => {
+  /* [codex 재검수 P2] 옛 판은 소스 «전체»에서 찾았다 — 그런데 그 소스에 `폼탭짝_` 정의가 들어 있어
+   *   단언이 **자기 자신을 다시 읽고** 있었다(목록에 무슨 이름을 적든 초록). 소비자가 딴 이름을
+   *   써도 안 잡히니 이 검사가 지키려던 것을 정확히 놓친다.
+   *   ⇒ 짝 목록 정의를 «도려낸» 소스에서 찾는다. 그러면 「그 이름을 실제로 쓰는 다른 코드」만 남는다. */
   const 폼탭짝_ = load('폼탭짝_');
   const 짝 = 폼탭짝_();
-  assert.ok(짝.length >= 16, '짝이 ' + 짝.length + '개로 줄었다 — 분모가 줄면 초록이 거짓말한다');
-  const 소스 = 코드만(code);
+  assert.ok(짝.length >= 17, '짝이 ' + 짝.length + '개로 줄었다 — 분모가 줄면 초록이 거짓말한다');
+
+  /* 도려내기는 «배포소스 자신»에서 자른다 — engineSource 로 자른 조각은 줄끝이 달라 안 물린다(09-03). */
+  const s0 = 배포소스.indexOf('function 폼탭짝_(');
+  assert.notEqual(s0, -1, '폼탭짝_ 정의를 배포 집합에서 못 찾았다');
+  const e0 = 배포소스.indexOf('\nfunction ', s0 + 10);
+  const 밖 = 코드만(배포소스.slice(0, s0) + '\n/* 짝 목록 정의는 도려냈다 */\n' +
+    배포소스.slice(e0 === -1 ? 배포소스.length : e0));
+  assert.equal(밖.indexOf("['약점메모폼ID', '약점메모폼_응답']"), -1,
+    '짝 목록 정의가 안 도려내졌다 — 이 검사는 다시 자기 자신을 본다(이 줄이 P2 의 재발 감시다)');
+  assert.ok(밖.includes("setState(st, '목소리폼ID'"),
+    '배포 집합 전체를 안 보고 있다 — 교재연동.js 가 시야 밖이면 거짓 적색이 난다');
+
   짝.forEach(([key, tab]) => {
-    assert.ok(소스.includes("'" + key + "'"), '폼ID 키 ' + key + ' 를 쓰는 코드가 없다(짝 목록이 낡았다)');
-    assert.ok(소스.includes("'" + tab + "'"), '응답 탭 ' + tab + ' 을 여는 코드가 없다(짝 목록이 낡았다)');
+    assert.ok(밖.includes("'" + key + "'"),
+      '폼ID 키 ' + key + ' 를 «쓰는» 코드가 짝 목록 밖에 없다(목록이 낡았거나 소비자가 사라졌다)');
+    assert.ok(밖.includes("'" + tab + "'"),
+      '응답 탭 ' + tab + ' 을 «여는» 코드가 짝 목록 밖에 없다(소비자가 딴 이름을 쓰고 있다)');
   });
   const keys = 짝.map((p) => p[0]);
   assert.equal(new Set(keys).size, keys.length, '같은 폼ID 키가 두 번 — 대조가 같은 자리를 두 번 센다');
@@ -210,16 +245,28 @@ test('🔑 약점메모 스위프가 «이름»이 아니라 폼응답탭_ 으�
     '옛 직접 열기가 남아 있다');
 });
 
-test('🔴 포인터가 «탭 전환»을 안다 — 갈아탄 새 탭의 첫 행을 영영 안 읽던 자리(codex P1①)', () => {
+test('🔴 포인터는 «표식이 지금 탭과 같을 때만» 쓴다 — 첫 실행이 바로 위험한 순간이다(codex P1)', () => {
   const 몸 = 코드만(fnOf('sweepTeacherMemoForm_'));
   assert.ok(/약점메모폼_포인터탭/.test(몸), '읽은 탭 이름을 안 적는다 — 탭이 갈리면 포인터가 뜻을 잃는다');
-  assert.ok(/이전탭 && 이전탭 !== 지금탭/.test(몸), '탭 전환을 감지하는 자리가 없다');
-  assert.ok(/let from =/.test(몸), 'from 이 const 라 탭 전환 뒤 되돌릴 수 없다');
-  // 순서: 리셋이 «클램프보다 앞»이어야 한다 — 뒤면 클램프가 먼저 포인터를 내리고 return 해 버린다
-  const iReset = 몸.indexOf('이전탭 !== 지금탭');
-  const iClamp = 몸.indexOf('from > last');
-  assert.ok(iReset !== -1 && iClamp !== -1 && iReset < iClamp,
-    '탭 전환 리셋이 클램프 뒤에 있다 — 새 탭 첫 행이 다시 사라진다');
+  assert.ok(/let from = \(이전탭 === 지금탭\)/.test(몸),
+    '표식이 «같을 때만» 쓰는 꼴이 아니다 — 「이전탭 && …」 로 가드하면 표식이 없는 첫 판을 통과시킨다');
+  assert.ok(!/if \(이전탭 && 이전탭 !== 지금탭\)/.test(몸), '옛 가드가 남아 있다(첫 판 구멍)');
+  // 순서: 표식 판정이 «클램프보다 앞»이어야 한다 — 뒤면 클램프가 먼저 포인터를 내리고 return 해 버린다
+  const i판정 = 몸.indexOf('이전탭 === 지금탭');
+  const i클램프 = 몸.indexOf('from > last');
+  assert.ok(i판정 !== -1 && i클램프 !== -1 && i판정 < i클램프,
+    '표식 판정이 클램프 뒤에 있다 — 새 탭 첫 행이 다시 사라진다');
+});
+
+test('🔴 조립 점검이 «확인불가»를 초록으로 안 낸다 — 못 잰 것은 통과가 아니다(codex P1)', () => {
+  const s = code.indexOf('function preflightGlide(');
+  const e = code.indexOf('\nfunction ', s + 10);
+  const 몸 = 코드만(code.slice(s, e === -1 ? code.length : e));
+  const i대조 = 몸.indexOf('폼탭대조_(ss)');
+  const 절 = 몸.slice(i대조, i대조 + 1600);
+  assert.ok(/대조\.확인불가/.test(절), '확인불가를 아예 안 본다');
+  assert.ok(/else if \(대조\.확인불가\)[\s\S]{0,400}?warn\(/.test(절),
+    '확인불가인데 ok() 로 찍는다 — 응답이 안 읽히는 경로가 ✅ 로 통과한다');
 });
 
 test('조립 점검(preflight)이 폼↔탭 대조를 부른다 — 사람 눈에 안 기댄다', () => {
