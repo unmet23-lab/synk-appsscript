@@ -111,7 +111,7 @@ function 굽기(파일) {
   const 서체 = 브랜드폰트.심기(나온판2);
   const 나온판3 = 서체.html;
 
-  const out = src.replace(/\.html$/, '_자립형.html');
+  const out = 자립형경로(src);
   fs.writeFileSync(out, 나온판3);
   const kb = (n) => (n / 1024).toFixed(0) + 'KB';
   console.log(`✅ ${path.relative(ROOT, out)}`);
@@ -128,8 +128,46 @@ function 굽기(파일) {
   return out;
 }
 
-const 인자 = process.argv.slice(2);
-if (!인자.length) { console.error('쓸 파일을 달라: node tools/시안굽기.js docs/홈페이지_시안/병합판.html'); process.exit(1); }
-if (!ffmpeg있나()) { console.error('🔴 ffmpeg 가 없다 — 굽지 않고 멈춘다(그림 깨진 판을 내보내지 않는다).'); process.exit(1); }
-try { 인자.forEach(굽기); }
-catch (e) { console.error('🔴 굽기 실패 —', e.message); process.exit(1); }
+/**
+ * 본판 → 자립형 파일 이름. **여기 하나가 그 규칙을 안다** — 검사가 따로 적으면 갈린다.
+ */
+function 자립형경로(src) { return src.replace(/\.html$/, '_자립형.html'); }
+
+/**
+ * 「그림 빼고 같은가」를 재려고 **굽기가 한 일만** 걷어낸다 → 본판과 1:1 대조가 된다.
+ *
+ * ■ 🔴 왜 있나 (2026-09-03 실측 · 자립형이 본판보다 **814줄** 뒤처져 있었다)
+ *   자립형은 본판에서 파생되는데, 다시 굽는 것은 **손 규율**이었다(「본판을 고치면 자립형도
+ *   다시 굽는다」는 주석 한 줄). 손 규율은 「내가 고칠 때」만 듣고 사고는 「남이 고칠 때」 난다 —
+ *   09-02 「쓰는 것만 싣는다」 배선과 09-03 문안 스윕 둘 다 본판에만 닿았고, 자립형은
+ *   **아무 소리 없이** 옛 판으로 남았다. 그 판이 첨부·메일로 나가는 «대외 한 장»이다.
+ *   ⇒ 재는 자를 여기 두고 `tests/자립형동행.test.js` 가 그 자를 쓴다.
+ *
+ * ■ 걷는 것 넷 = 굽기가 «더하는» 것 전량. 이것 말고 다른 차이가 나면 그건 **뒤처짐**이다.
+ *   ① 서체 — 심은 블록도 바깥 호출도 뺀다. 되돌리는 자는 `브랜드폰트.원고로` 하나다(⑤와 한 벌).
+ *   ② `src="…"` 값 — 상대경로가 data URI 로 바뀐다(그림·스크립트 둘 다)
+ *   ③ `<script>` 속 — 파일이 통째로 심긴다
+ *   ④ `data-synk-mascot` — 굽기가 자동으로 단다(브랜드 린트가 경로를 잃지 않게)
+ * 🔑 순서가 뜻이다 — 서체를 «먼저» 걷는다. `src` 값을 뭉갠 뒤엔 `sun-typeface` 가 사라져
+ *   바깥 호출을 못 찾는다(본판은 부르고 자립형은 품는데, 둘을 같게 만드는 것이 이 자다).
+ * ■ ⚠ 이 자가 틀릴 때의 모습 = **걷는 범위를 넓혀 놓고 초록.** 넓히면 진짜 뒤처짐이 함께 지워진다.
+ *   그래서 픽스처가 「본판을 한 글자 고치면 무나」를 따로 문다.
+ */
+function 동행벗기기(html) {
+  return 브랜드폰트.원고로(String(html))
+    .replace(/src="[^"]*"/g, 'src="‹"')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '<script>‹</script>')
+    .replace(/ data-synk-mascot(="[^"]*")?/g, '');
+}
+
+module.exports = { 굽기, 자립형경로, 동행벗기기 };
+
+/* 🔑 CLI 로 부를 때만 돈다 — `require` 로 열 수 있어야 위 자를 **검사가 같이 쓴다**.
+ *   그전엔 로드 즉시 `process.exit` 이라 단위 시험이 원리적으로 못 닿았다(`발표물빌드.js` 와 같은 규율). */
+if (require.main === module) {
+  const 인자 = process.argv.slice(2);
+  if (!인자.length) { console.error('쓸 파일을 달라: node tools/시안굽기.js docs/홈페이지_시안/병합판.html'); process.exit(1); }
+  if (!ffmpeg있나()) { console.error('🔴 ffmpeg 가 없다 — 굽지 않고 멈춘다(그림 깨진 판을 내보내지 않는다).'); process.exit(1); }
+  try { 인자.forEach(굽기); }
+  catch (e) { console.error('🔴 굽기 실패 —', e.message); process.exit(1); }
+}
