@@ -77,6 +77,8 @@
   .pill.grey{background:var(--note);color:var(--sub2)}
   .pill.pop{background:var(--pop-face);color:var(--pop-text)}
   .v{font-weight:800;white-space:nowrap} .v.pass{color:var(--meadow-text)} .v.cond{color:var(--lapis-text)} .v.fail{color:var(--coral-text)}
+  .stale{background:var(--coral-face);border-left:var(--숨) solid var(--coral);border-radius:0 8px 8px 0;padding:var(--참) var(--칸);margin:var(--단) 0 0;font-size:14px}
+  .stale p{margin:0}
   .note{background:var(--note);border-radius:6px;padding:var(--참) var(--칸);margin:var(--참) 0;font-size:14px}
   .note p:last-child{margin-bottom:0}
   .tbl{overflow-x:auto;margin:var(--참) 0 var(--숨)}
@@ -118,10 +120,12 @@
   </ul>
 </header>
 
+<div class="stale" id="뒤집힘"><p>🔴 <b>이 지면의 결론 ③ 과 §6(「PRO 는 해지해도 된다」)은 다음 날 뒤집혔다.</b> 09-03 에 클라우드 굽기를 실제로 돌려 보니 까몽 표정 넷이 8시간 20분에서 <b>10분</b>으로 줄었고(약 50배), 그 굽는 값은 PRO 가 매달 주는 크레딧에서 나갔다. <b>지금 판정 = 유지·조건부</b>(이번 달 안에 도구를 하나도 안 올리면 그때 해지+충전) — 정본은 <code>docs/허깅페이스_PRO가여는문_2026-09-03.html</code>. 아래 §1~§5·§8 의 실측은 그대로 유효하다.</p></div>
+
 <div class="lead" id="결론">
   <p><b>① 결제의 정체 = 8월 15일에 유호님이 직접 켜신 PRO($9/월)의 두 번째 달.</b> 켠 목적(3D 형상용 ZeroGPU)은 다음 날 판정으로 닫혔고, 그 뒤 18일 동안 PRO 가 값을 한 자리는 없었다.</p>
   <p><b>② 허깅페이스에서 진짜 값이 되는 것은 「구독」이 아니라 «자(ruler)» 둘이다.</b> 오늘 이 기계에서 실측으로 섰다 — ㉠ 한국어 발음을 «들리는 대로» 받아쓰는 자모 인식기(연음·비음화·경음화가 적용된 채 보인다) ㉡ 몽골어 소리를 되받아쓰는 몽골어 전용 인식기(우리 TTS 두 벌 다 CER 5~6%). 둘 다 무료 다운로드다. 곁발견 하나 — <b>몽골어 TTS 두 벌이 모두 「AI」라는 낱말을 이상하게 읽는다.</b></p>
-  <p><b>③ PRO 는 해지해도 된다.</b> 오늘 실측에 쓴 GPU 시간은 약 3분 — 무료 몫(하루 5분) 안이다. 다시 켜는 조건은 아래 §6 에 못 박았다. 해지·결제는 유호님 손이다.</p>
+  <p><b>③ <s>PRO 는 해지해도 된다.</s></b> <b>09-03 에 철회했다</b>(위 붉은 칸). 이 날 실측에 쓴 그림카드 시간은 약 3분으로 무료 몫(하루 5분) 안이었지만, 다음 날 «클라우드 굽기»라는 쓸 자리가 실물로 서면서 근거가 무너졌다. 해지·결제는 여전히 유호님 손이다.</p>
 </div>
 
 <h2 id="결제"><span class="n">§1</span>왜 결제됐나 — 계정에 직접 물었다</h2>
@@ -259,6 +263,7 @@
 </table></div>
 
 <h2 id="판정"><span class="n">§6</span>PRO 유지·해지 — 2게이트로</h2>
+<div class="stale"><p>🔴 <b>철회된 절이다(09-03).</b> 아래 「해지하면」 칸의 셈은 맞지만 전제(「PRO 가 필요한 줄이 0」)가 틀렸다 — 클라우드 굽기가 그 줄이었다. 「다시 켜는 조건」 칸은 지금도 유효하다.</p></div>
 <p>유호님 지출 규칙은 둘이다 — ㉠ 내 작업 스타일에 맞나 ㉡ 퀄리티가 «확실히» 오르나. PRO $9/월은 ㉠은 통과하나 ㉡이 비어 있다: 오늘 실측 14회 호출의 GPU 시간이 약 3분으로 무료 몫(5분/일) 안이었고, 값이 나는 여덟 자리(§4) 중 PRO 가 필요한 줄이 없다.</p>
 <div class="grid2">
 <div class="card"><h3>해지하면</h3><ul><li>매월 1일 $9 가 멈춘다(다음 갱신 10-01).</li><li>ZeroGPU 40분→5분/일 — 오늘 같은 실측은 그대로 된다.</li><li>Space 올리기 10개→2개(09-14 부터) — ⑥에 충분.</li><li>월 크레딧 $2→$0.10 — ⑤ 첫 실측은 해지 «전»에 돌리면 0원.</li></ul></div>
