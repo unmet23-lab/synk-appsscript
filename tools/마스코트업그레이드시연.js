@@ -188,9 +188,11 @@ const html = `<!doctype html>
       <canvas id="큰판" width="624" height="624" style="width:312px;height:312px"></canvas>
     </div>
     <div class="조절">
-      <div class="줄"><label>시차(입체)</label><input id="시차" type="range" min="0" max="0.60" step="0.01" value="0.24"><span class="값" id="시차값">0.24</span></div>
-      <div class="줄"><label>가로 진폭</label><input id="가로" type="range" min="0" max="0.60" step="0.01" value="0.27"><span class="값" id="가로값">0.27</span></div>
-      <div class="줄"><label>세로 진폭</label><input id="세로" type="range" min="0" max="0.30" step="0.01" value="0.07"><span class="값" id="세로값">0.07</span></div>
+      <div class="줄"><label>시차(입체)</label><input id="시차" type="range" min="0" max="0.60" step="0.01" value="0.17"><span class="값" id="시차값">0.17</span></div>
+      <div class="줄"><label>가로 진폭</label><input id="가로" type="range" min="0" max="0.60" step="0.01" value="0.30"><span class="값" id="가로값">0.30</span></div>
+      <div class="줄"><label>세로 진폭</label><input id="세로" type="range" min="0" max="0.30" step="0.01" value="0.05"><span class="값" id="세로값">0.05</span></div>
+      <div class="줄"><label>쉬는 참(초)</label><input id="쉬는참" type="range" min="0" max="20" step="0.5" value="9.5"><span class="값" id="쉬는참값">9.5</span></div>
+      <div class="줄"><label>돌아보기(초)</label><input id="돌아보기" type="range" min="0.6" max="4" step="0.1" value="1.7"><span class="값" id="돌아보기값">1.7</span></div>
       <div class="집" id="4D집"></div>
     </div>
   </div>
@@ -327,9 +329,9 @@ function 삼각형(ctx,img,p0,p1,p2,t0,t1,t2){
 
 /* ── ① 4D ──────────────────────────────────────────────────────────────── */
 let 입체켬 = true, 지금가이드 = '몽글';
-const 세기 = { 시차:0.24, 가로:0.27, 세로:0.07 };
+const 세기 = { 시차:0.17, 가로:0.30, 세로:0.05, 쉬는참:9.5, 돌아보기:1.7 };
 const 그림들 = { 몽글: $('원본몽글'), 까몽: $('원본까몽') };
-for(const k of ['시차','가로','세로']){
+for(const k of ['시차','가로','세로','쉬는참','돌아보기']){
   $(k).addEventListener('input', (e)=>{ 세기[k]=+e.target.value; $(k+'값').textContent=세기[k].toFixed(2); 집갱신(); });
 }
 $('깊이끔').onclick = ()=>{ 입체켬=false; $('깊이켬').classList.remove('켬'); $('깊이끔').classList.add('켬'); };
@@ -348,7 +350,7 @@ function 집갱신(){
       : 눈어긋 > 3.5 ? '<span class="빔">너무 큽니다 — 얼굴이 미끄러져 보일 수 있습니다.</span>'
       : '<span class="좋">읽히는 범위입니다.</span>')
     + '<br>눈 대 몸 대비 ' + d.눈대몸 + '배 · 실루엣 가장자리는 <b>0 이라 제자리에 못 박힙니다</b>(테두리가 안 흔들립니다).'
-    + '<br>앱에 지금 들어간 값 = 시차 0.24 · 가로 0.27 · 세로 0.07';
+    + '<br>앱에 지금 들어간 값 = 시차 0.17 · 가로 0.30 · 세로 0.05 · 쉬는 참 9.5초 · 돌아보기 1.7초';
 }
 집갱신();
 
@@ -416,8 +418,20 @@ function 루프(t){
   const 초 = t/1000;
   const d = 자료.깊이[지금가이드];
   const 그림 = 그림들[지금가이드];
-  const 시점x = 입체켬 ? Math.cos(초/11*Math.PI*2)*세기.가로 : 0;
-  const 시점y = 입체켬 ? Math.sin(초/14*Math.PI*2)*세기.세로 : 0;
+  /* 🔴 09-02 둘째 수리 — 유호님 「멀미도 나고 뭔가 자연스럽지못한느낌」.
+     쉬지 않고 도는 사인 둘을 **사건**으로 바꿨다: 평소엔 완전 정지, 가끔 한쪽을 슬쩍 돌아본다.
+     살아 있는 것은 늘 흔들리지 않는다 — 가만히 있다가 가끔 고개를 돌린다. */
+  let 시점x = 0, 시점y = 0;
+  if(입체켬){
+    const 한바퀴 = 세기.쉬는참 + 세기.돌아보기;
+    const 회차 = Math.floor(초/한바퀴);
+    const 안에서 = 초 - 회차*한바퀴;
+    if(안에서 < 세기.돌아보기){
+      const 크기 = Math.sin(안에서/세기.돌아보기*Math.PI);          // 0 → 1 → 0 (갔다가 돌아온다)
+      시점x = 크기 * (회차%2===0 ? 1 : -1) * 세기.가로;             // 회차마다 좌우가 바뀐다
+      시점y = Math.sin(안에서/세기.돌아보기*Math.PI*2) * 세기.세로;  // 곁들이는 끄덕임
+    }
+  }
   const 숨 = 초/3.6;
   const 공통 = { z:입체켬?d.z:null, 기준:d.기준, 시차:세기.시차, 시점x, 시점y, 숨 };
 
