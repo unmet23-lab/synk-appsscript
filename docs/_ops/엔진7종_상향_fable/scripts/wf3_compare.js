@@ -106,10 +106,10 @@ const SYNTH_SCHEMA = {
   },
 }
 
-function synthPrompt(verdicts) {
+function synthPrompt(verdictsRef) {
   return `${COMMON}
-【과제】 절 심사 ${verdicts.length}벌과 기계 자를 합쳐 유호님이 읽을 비교 보고서를 ${OUT} 에 Write 로 저장한다(마크다운 · 한국어 · 결론 먼저 · 쉬운 낱말 · 낯선 낱말은 그 자리에 뜻).
-심사 결과(JSON): ${JSON.stringify(verdicts)}
+【과제】 절 심사 결과 전량과 기계 자를 합쳐 유호님이 읽을 비교 보고서를 ${OUT} 에 Write 로 저장한다(마크다운 · 한국어 · 결론 먼저 · 쉬운 낱말 · 낯선 낱말은 그 자리에 뜻).
+심사 결과 = 파일 ${verdictsRef} (JSON 배열 · 절 17 × 렌즈 3 · 전부 읽는다 · 큰 파일이니 node 로 축·절별 평균을 먼저 뽑고 근거는 원문을 연다).
 기계 자(에이전트 없이 잰 값): ${JSON.stringify(MEASURED)}
 보고서 규격:
 - 머리: 「두 판은 같은 재료·같은 절차로 두 모델이 따로 쓴 것 · 심사는 눈가림 · 어느 판이 어느 모델인지는 맨 끝에 붙는다(지금은 모른다)」.
@@ -154,17 +154,25 @@ function fixPrompt(skeptic) {
 refuted=true 인 주장은 근거를 고치거나 주장을 낮춘다(「안 재봤다」로). 결론이 흔들리면 §0 의 결론을 «합친다» 쪽으로 바꾸고 그 까닭을 적는다. 끝나면 고친 자리 목록을 낸다.`
 }
 
-// ───────────── 실행 ─────────────
-log(`심사 ${SECTIONS.length}절 × 렌즈 ${LENSES.length}`)
-const jobs = []
-for (const s of SECTIONS) for (const l of LENSES) jobs.push({ s, l })
-const verdicts = (await parallel(jobs.map(({ s, l }) => () =>
-  agent(judgePrompt(s, l), { label: `심사:${s}:${l.key}`, phase: '심사', schema: VERDICT_SCHEMA, effort: l.effort })
-))).filter(Boolean)
-log(`심사 ${verdicts.length}/${jobs.length}`)
+// ───────────── 실행 — args.stage = 'judge' | 'synth' (두 런으로 가른다 · 한도에 걸려도 심사 결과가 파일로 남게) ─────────────
+const STAGE = args.stage || 'judge'
 
+if (STAGE === 'judge') {
+  log(`심사 ${SECTIONS.length}절 × 렌즈 ${LENSES.length}`)
+  const DONE = new Set(args.done || []) // 앞 런에서 이미 산 «절:렌즈» 짝은 건너뛴다(한도로 끊긴 뒤 빠진 것만 돌린다)
+  const jobs = []
+  for (const s of SECTIONS) for (const l of LENSES) if (!DONE.has(`${s}:${l.key}`)) jobs.push({ s, l })
+  if (DONE.size) log(`건너뜀 ${DONE.size} · 돌릴 것 ${jobs.length}`)
+  const verdicts = (await parallel(jobs.map(({ s, l }) => () =>
+    agent(judgePrompt(s, l), { label: `심사:${s}:${l.key}`, phase: '심사', schema: VERDICT_SCHEMA, effort: l.effort })
+  ))).filter(Boolean)
+  log(`심사 ${verdicts.length}/${jobs.length}`)
+  return { verdicts, missing: jobs.length - verdicts.length }
+}
+
+// stage === 'synth' — args.verdictsPath = 심사 결과 JSON 파일(본세션이 저널에서 뽑아 저장한 것)
 phase('종합')
-const synth = await agent(synthPrompt(verdicts), { label: '종합:보고서', phase: '종합', schema: SYNTH_SCHEMA, effort: 'max' })
+const synth = await agent(synthPrompt(args.verdictsPath), { label: '종합:보고서', phase: '종합', schema: SYNTH_SCHEMA, effort: 'max' })
 
 phase('반박')
 let skeptic = null
@@ -175,4 +183,4 @@ if (synth) {
     fix = await agent(fixPrompt(skeptic), { label: '수리:보고서', phase: '반박', effort: 'high' })
   }
 }
-return { verdicts, synth, skeptic, fix, missing: jobs.length - verdicts.length }
+return { synth, skeptic, fix }

@@ -23,19 +23,28 @@ function split(md) {
 
 function measure(md, label, path) {
   const c = (re) => (md.match(re) || []).length;
+  const uTitles = c(/^#### U\d+\b/gm); // 두 판의 U 제목 꼴이 다르다(U1. · U1 「…」)
   const dTitles = c(/^### (🆕 )?D\d+/gm) + c(/^\*\*D\d+ \[/gm); // 두 판의 D 제목 꼴이 다르다(### D1 · **D1 [키]**)
   let graph = '안 재봄';
   try {
     const g = execSync('node tools/doc-graph.js 2>&1', { cwd: 'C:/Users/q1212/Documents/SYNK-appsscript', encoding: 'utf8' });
     const base = p.basename(path);
-    graph = g.includes(base) ? (g.split('\n').filter((l) => l.includes(base)).length + '줄 언급(빨강/경고 후보 · 원문은 doc-graph 출력)') : '언급 0(초록)';
+    // 빨강(🔴)·경고(⚠) 머리 밑에 들여쓰기로 이어지는 줄에서만 이 파일 이름을 센다(색인 구역의 언급은 안 센다)
+    let hdr = null;
+    let hit = 0;
+    for (const l of g.split('\n')) {
+      if (/^\s*(🔴|⚠)/.test(l)) hdr = l.trim();
+      else if (/^\S/.test(l)) hdr = null;
+      if (hdr && l.includes(base)) hit++;
+    }
+    graph = hit ? `${hit}줄(빨강·경고 구역 안)` : '빨강·경고 0';
   } catch (e) { graph = 'doc-graph 실행 실패: ' + String(e.message).slice(0, 80); }
   return {
     판: label,
     바이트: Buffer.byteLength(md, 'utf8'),
     줄: md.split(/\r?\n/).length,
     절_헤딩: c(/^## §\d+/gm),
-    상향_항목_U: c(/^#### U\d+\./gm),
+    상향_항목_U: uTitles,
     유호_판정_D: dTitles,
     안_재봤다: c(/안 재봤/g),
     영건: c(/0건/g),
