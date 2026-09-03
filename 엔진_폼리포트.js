@@ -2967,6 +2967,81 @@ function setupStore() {
   replaceContentType(ss, 'store', items);
 }
 
+/* ═══ [가져가는것 걸음 2] 🧥 과잠 — 「받았다」를 시스템이 알게 만든다 ═══════════
+ *
+ * 🔴 무엇이 고장나 있었나(08-11 실측 · 08-26 재확인): `jacket_grants` 의 「지급상태」를
+ *   **읽는 코드가 0곳**이었다. 헤더 정의 두 곳과 원장 안내 메일 문구 한 곳에만 나온다.
+ *   결과: 학생 목표 카드는 자격에 도달하면 「🎉 자격 도달! 곧 전달해 드려요」를 **영구 표시**한다 —
+ *   12개월을 기다려 실물을 받은 날 화면이 아무 변화도 안 만들고, **받은 뒤에도 같은 문구가 계속 떠**
+ *   안내가 거짓이 된다. 열두 달짜리 약속의 마지막 한 걸음이 화면에서 사라져 있었다.
+ *
+ * 🔑 「지급일」 칸을 더한다 — 명문(헤더 «정의»)을 늘려도 물리(라이브 시트의 «칸»)는 안 늘어난다.
+ *   `ensureSheet` 은 시트가 «없을 때만» 헤더를 쓰고, 있으면 손대지 않는다. 그래서 치유를 따로 건다.
+ * 🔑 날짜는 **원장이 안 적는다** — 「지급완료」로 바뀐 것을 엔진이 처음 본 날이 곧 받은 날이다.
+ *   손일을 하나 늘리면 언젠가 안 적히고, 안 적힌 날 학생 화면은 다시 거짓말로 돌아간다. */
+const JACKET_HEADERS = ['student_id', '이름', '자격도달일', '재원개월', '누적P', '지급상태', '지급일'];
+
+/** 라이브 시트의 헤더를 정본에 맞춘다(멱등). 이미 맞으면 아무것도 안 쓴다. */
+function jacketEnsureHeaders_(gr) {
+  const w = Math.max(gr.getLastColumn(), JACKET_HEADERS.length);
+  const cur = gr.getRange(1, 1, 1, w).getValues()[0].map((v) => String(v || '').trim());
+  if (JACKET_HEADERS.every((h, i) => cur[i] === h)) return false;
+  gr.getRange(1, 1, 1, JACKET_HEADERS.length).setValues([JACKET_HEADERS]);
+  return true;
+}
+
+/** 「지급완료」인데 지급일이 빈 행에 오늘을 찍는다 → 오늘 받은 학생의 sid 배열을 돌려준다.
+ *  이 배열이 소비자 둘의 방아쇠다: 태그 굽기 · 오늘의 알림. */
+function jacketStampGiven_(gr, today) {
+  if (gr.getLastRow() < 2) return [];
+  const n = gr.getLastRow() - 1;
+  const rows = gr.getRange(2, 1, n, JACKET_HEADERS.length).getValues();
+  const 오늘받음 = [];
+  rows.forEach((r, i) => {
+    if (String(r[5] || '').trim() !== '지급완료') return;
+    if (String(r[6] || '').trim()) return;                 // 이미 찍혔다 — 멱등
+    gr.getRange(2 + i, 7).setValue(today);
+    오늘받음.push({ sid: String(r[0]).trim(), 이름: String(r[1] || r[0]), 자격도달일: r[2] });
+  });
+  return 오늘받음;
+}
+
+/* ── 소비자 ① — 굿즈 태그를 굽는다 (설계 §10-c · 55×85mm) ─────────────────────
+ * 물건만 주면 물건이고, 한 줄이 붙으면 기록이 된다. 말은 `contents_증서.js` 가 쥔다(엔진에 문구 0).
+ * ⚠ 미배포(반쪽 배포)면 `typeof GOODS_TAG_SAY === 'undefined'` 로 조용히 건너뛴다 — 배치가 안 죽는다. */
+function jacketPrintTags_(받은이들, tz) {
+  if (typeof GOODS_TAG_SAY === 'undefined') return '';
+  if (!받은이들.length) return '';
+  const 말 = GOODS_TAG_SAY['과잠'];
+  const 개월 = JACKET_TENURE_MONTHS === 12 ? '열두 달' : JACKET_TENURE_MONTHS + '개월';
+  const 태그 = 받은이들.map((p) => {
+    const 시작 = p.자격도달일 ? Utilities.formatDate(asDate_(p.자격도달일), tz, 'yyyy년 M월 d일') : '';
+    const 채움 = (s) => String(s).replace('{이름}', p.이름).replace('{개월}', 개월).replace('{시작일}', 시작);
+    return '<div class="t"><div class="b">' + 채움(말.본문) + '</div>' +
+      (말.아래 && 시작 ? '<div class="s">' + 채움(말.아래) + '</div>' : '') +
+      '<div class="h"></div></div>';
+  }).join('');
+  // 색은 킷만 — Paper 바탕 · Ink 글자 · Stitch 실땀 테두리. 순백·킷 밖 회색 0.
+  const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>SYNK 과잠 태그</title>' +
+    '<style>@page{size:A4;margin:0;}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+    'body{margin:0;padding:10mm;background:#FBF7F0;font-family:' + "'Inter Tight','SUIT',sans-serif" + ';color:#2B2320;}' +
+    '.g{display:flex;flex-wrap:wrap;gap:6mm;}' +
+    '.t{width:55mm;height:85mm;border:1.2pt dashed #F0E3C8;border-radius:3mm;padding:7mm 6mm;' +
+    'display:flex;flex-direction:column;justify-content:center;text-align:center;position:relative;}' +
+    '.b{font-size:11pt;line-height:1.7;font-weight:600;}' +
+    '.s{font-size:9.5pt;line-height:1.6;color:#575046;margin-top:3mm;}' +
+    /* 끈 구멍 자리 — 실물은 여기 펀치를 낸다(설계 §11-a #14 「구멍 1 + 실」) */
+    '.h{position:absolute;top:5mm;left:50%;margin-left:-1.5mm;width:3mm;height:3mm;' +
+    'border:1pt solid #F0E3C8;border-radius:50%;}' +
+    '@media print{.t{page-break-inside:avoid;}}</style></head>' +
+    '<body><div class="g">' + 태그 + '</div></body></html>';
+  const blob = Utilities.newBlob(html, 'text/html',
+    'SYNK_과잠태그_' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '.html');
+  const it = DriveApp.getFoldersByName('SYNK_인쇄');
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder('SYNK_인쇄');
+  return folder.createFile(blob).getUrl();
+}
+
 /* ===================== [v9.83] 🧥 과잠 자격 워처 ===================== */
 // 매일 아침(morningJobs). 재원 JACKET_TENURE_MONTHS개월 + 누적 획득 JACKET_MIN_POINTS 도달 학생을
 // jacket_grants 시트에 1회만 적재하고 원장에게 지급 명단을 알린다.
@@ -3000,7 +3075,26 @@ function jacketWatch_() {
 
   const pf = ss.getSheetByName('profiles');
   if (!pf || pf.getLastRow() < 2) return; // 콜드 가드 — 로스터 없으면 판정 자체를 열지 않는다
-  const gr = ensureSheet(ss, 'jacket_grants', ['student_id', '이름', '자격도달일', '재원개월', '누적P', '지급상태']);
+  const gr = ensureSheet(ss, 'jacket_grants', JACKET_HEADERS);
+  jacketEnsureHeaders_(gr);                               // 있는 시트의 헤더는 ensureSheet 이 안 고친다
+  {
+    /* [가져가는것 걸음 2] 「받았다」를 여기서 붙잡는다 — 매일 아침 한 번, 멱등.
+     * 잡은 뒤 태그를 굽고 원장에게 링크를 보낸다. 학생 화면 쪽 소비자는 Code.js 목표 카드가 진다. */
+    const tzJ = ss.getSpreadsheetTimeZone();
+    const todayJ = Utilities.formatDate(new Date(), tzJ, 'yyyy-MM-dd');
+    const 오늘받음 = jacketStampGiven_(gr, todayJ);
+    if (오늘받음.length) {
+      let 태그URL = '';
+      try { 태그URL = jacketPrintTags_(오늘받음, tzJ); } catch (eT) { Logger.log('과잠 태그 굽기 실패(무해): ' + eT); }
+      if (quotaOk(1)) {
+        adminMail('[SYNK] 🧥 ' + JACKET_ITEM_NAME + ' 전달 ' + 오늘받음.length + '명 — 태그가 나왔습니다',
+          오늘받음.map((p) => '· ' + p.이름 + ' (' + p.sid + ')').join('\n') +
+          (태그URL ? '\n\n태그 인쇄 파일: ' + 태그URL + '\n55×85mm · 점선을 따라 뜯고 위 동그라미에 구멍을 내어 실을 겁니다.' : '') +
+          '\n\n학생 목표 카드도 오늘부터 「받은 날」로 바뀝니다.');
+      }
+      Logger.log('🧥 과잠 전달 확인 ' + 오늘받음.length + '명 · 태그 ' + (태그URL ? '구움' : '못 구움'));
+    }
+  }
   const already = new Set();
   if (gr.getLastRow() >= 2) gr.getRange(2, 1, gr.getLastRow() - 1, 1).getValues()
     .forEach(r => { if (r[0]) already.add(String(r[0]).trim()); });
@@ -3020,16 +3114,18 @@ function jacketWatch_() {
       - (now.getDate() < joined.getDate() ? 1 : 0);        // 만 개월(일자 미달이면 1개월 차감)
     const pts = Number(r[15]) || 0;                       // P열 = 획득 누계(잔액 AQ 아님 — 소비해도 안 깎인다)
     if (months >= JACKET_TENURE_MONTHS && pts >= JACKET_MIN_POINTS)
-      out.push([sid, r[1] || sid, today, months, pts, '지급대기']);
+      out.push([sid, r[1] || sid, today, months, pts, '지급대기', '']);   // 마지막 = 지급일(전달한 날 엔진이 찍는다)
   });
   if (!out.length) return;
 
-  gr.getRange(gr.getLastRow() + 1, 1, out.length, 6).setValues(out);
+  gr.getRange(gr.getLastRow() + 1, 1, out.length, JACKET_HEADERS.length).setValues(out);
   if (quotaOk(1)) {
     adminMail('[SYNK] 🧥 ' + JACKET_ITEM_NAME + ' 지급 대상 ' + out.length + '명',
       out.map(o => '· ' + o[1] + ' (' + o[0] + ') — 재원 ' + o[3] + '개월 · 누적 ' + o[4] + 'P').join('\n') +
       '\n\n조건: 재원 ' + JACKET_TENURE_MONTHS + '개월 이상 + 누적 획득 ' + JACKET_MIN_POINTS + 'P 이상.' +
-      '\n포인트 차감 없는 무료 지급입니다. 실물을 전달한 뒤 jacket_grants 시트의 「지급상태」를 「지급완료」로 바꿔주세요.');
+      '\n포인트 차감 없는 무료 지급입니다. 실물을 전달한 뒤 jacket_grants 시트의 「지급상태」를 「지급완료」로 바꿔주세요.' +
+      '\n\n날짜는 안 적으셔도 됩니다 — 바꾸신 다음 날 아침에 엔진이 「지급일」 칸을 채우고,' +
+      '\n그 학생의 목표 카드가 「받은 날」로 바뀌며, 이름이 든 태그 인쇄 파일이 함께 나옵니다.');
   }
   Logger.log('🧥 과잠 자격 신규 ' + out.length + '명');
 }
@@ -4530,14 +4626,19 @@ function buildMonthlyCards_() {
       : '🌟 다음 달 주인공 예약';
     const mi = String(monMapC[s.mon] || ''); // [v9.35]
     // [v9.35] 골격을 소프트 글로우 축으로 정렬(보더 #C4B5FD 2px·라운드 18/12·섀도) — 티어 그라디언트는 유지
+    /* [가져가는것 걸음 2] 색을 킷으로 옮겼다 — 이 카드는 **종이로도 나가는** 유일한 카드다
+     *   (월간 봉투 안의 절취 조각 · 설계 §11-a #11). 종이는 화면보다 규약이 엄하다:
+     *   ✕#fff → Paper(순백 금지 · 킷 철칙 ①) · ✕#E5E7EB → Stitch(구분선의 정본은 실땀) ·
+     *   ✕#6B7280 → Ash Wool(양모 회색 3 = 캡션 자리) · ✕#1D1D1C → Ink(Graphite 2 는 퇴역 대기).
+     *   ⚠ 화면 층의 같은 회색 39곳은 이 트랙 밖이다 — 별건(트랙 §6). */
     return [ym, s.id, CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #FBB7A3;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(249,104,89,.14);">' +
-      '<div style="background:#fff;border-radius:12px;padding:10px 12px;text-align:center;">' +
-      '<div style="font-size:11px;color:#6B7280;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
+      '<div style="background:#FBF7F0;border-radius:12px;padding:10px 12px;text-align:center;">' +
+      '<div style="font-size:11px;color:#8D857A;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
       '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + s.nm + '</div>' +
       (mi.indexOf('http') === 0 ? '<img src="' + mi + '" style="width:72px;image-rendering:pixelated;display:block;margin:2px auto 0;"/>' : '') + // [v9.35] A안 이미지에도 무해
-      '<div style="font-size:12px;color:#1D1D1C;">' + s.mon + '와 함께한 한 달</div>' +
-      '<div style="font-size:11px;color:#6B7280;padding-top:2px;">' + (function(){ const ps2 = playStyleOf_(cardLogs[s.id] || []); return ps2[0] + ' ' + ps2[1]; })() + '</div>' +
-      '<div style="font-size:13px;padding-top:6px;border-top:1px dashed #E5E7EB;margin-top:6px;">' + stat + '</div>' +
+      '<div style="font-size:12px;color:#2B2320;">' + s.mon + '와 함께한 한 달</div>' +
+      '<div style="font-size:11px;color:#8D857A;padding-top:2px;">' + (function(){ const ps2 = playStyleOf_(cardLogs[s.id] || []); return ps2[0] + ' ' + ps2[1]; })() + '</div>' +
+      '<div style="font-size:13px;padding-top:6px;border-top:1px dashed #F0E3C8;margin-top:6px;">' + stat + '</div>' +
       '</div></div>'];
   });
   if (rows.length) cd.getRange(cd.getLastRow() + 1, 1, rows.length, 3).setValues(rows);
@@ -4556,9 +4657,22 @@ function printMonthlyCards() {
   rowsP.forEach(r => { const y6 = String(r[0] || ''); if (y6 > ymP) ymP = y6; });
   const cards = rowsP.filter(r => String(r[0]) === ymP && r[2]).map(r => String(r[2]));
   if (!cards.length) return ymP + ' 발간분 없음';
+  /* [가져가는것 걸음 2] 인쇄 규격을 코드가 진다 — 전에는 메일 문구가 「A4 가로 + 배경 그래픽 켜기」라고
+   *   말로만 안내했고, 그 둘을 원장이 매번 손으로 골라야 했다. 안 고르면 여백이 붙고 배경이 날아간다.
+   *   ⓐ `@page` 로 용지·여백을 잠근다(크롬이 머리글에 날짜·URL 찍는 것도 같이 막힌다)
+   *   ⓑ `print-color-adjust: exact` 로 배경색을 인쇄에 살린다 — 「배경 그래픽」 체크를 대신한다
+   *   ⓒ 카드마다 **절취선**을 두른다 — 재단이 아니라 손으로 뜯는 선이다(설계 §11-a #11 · 재단 0)
+   *   ⓓ 바탕은 Paper — 순백은 킷이 금지한다(철칙 ①). */
   const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>SYNK 이달의 카드 ' + ymP + '</title>' +
-    '<style>body{margin:0;padding:8mm;background:#fff;}.g{display:flex;flex-wrap:wrap;gap:5mm;}.c{width:62mm;}@media print{.c{page-break-inside:avoid;}}</style></head>' +
-    '<body><div class="g">' + cards.map(c => '<div class="c">' + c + '</div>').join('') + '</div></body></html>';
+    '<style>@page{size:A4 landscape;margin:0;}' +
+    '*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+    'body{margin:0;padding:8mm;background:#FBF7F0;}' +
+    '.g{display:flex;flex-wrap:wrap;gap:5mm;}' +
+    '.c{width:62mm;border:1px dashed #F0E3C8;border-radius:3mm;padding:2mm;}' +
+    '.tip{font-size:9pt;color:#8D857A;padding-bottom:4mm;}' +
+    '@media print{.c{page-break-inside:avoid;}.tip{display:none;}}</style></head>' +
+    '<body><div class="tip">점선을 따라 손으로 뜯어 주세요 — 자르는 도구가 필요 없습니다.</div>' +
+    '<div class="g">' + cards.map(c => '<div class="c">' + c + '</div>').join('') + '</div></body></html>';
   const blob = Utilities.newBlob(html, 'text/html', 'SYNK_이달의카드_' + ymP + '.html');
   const it = DriveApp.getFoldersByName('SYNK_인쇄');
   const folder = it.hasNext() ? it.next() : DriveApp.createFolder('SYNK_인쇄');
@@ -4566,9 +4680,29 @@ function printMonthlyCards() {
   let pdfUrl = '';
   try { const pdf = blob.getAs('application/pdf'); pdf.setName('SYNK_이달의카드_' + ymP + '.pdf'); pdfUrl = folder.createFile(pdf).getUrl(); } catch (eP) {}
   const msg = ymP + ' 카드 ' + cards.length + '장\nHTML: ' + fHtml.getUrl() + (pdfUrl ? '\nPDF: ' + pdfUrl : '\n(PDF 자동 변환 실패 — HTML 파일을 열어 Ctrl+P로 인쇄)');
-  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🖨️ 이달의 카드 인쇄 파일 (' + ymP + ')', msg + '\n\n인쇄 팁: A4 가로 방향 + "배경 그래픽" 옵션 켜기. 이름 인쇄 지급 전 학생·학부모 동의 확인.');
+  // [가져가는것 걸음 2] 「A4 가로 + 배경 그래픽 켜기」는 이제 파일이 스스로 정한다(@page · print-color-adjust)
+  //   ⇒ 그 안내를 지운다. 안 지우면 이미 된 것을 매번 손으로 다시 고르라는 말이 남는다.
+  if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 🖨️ 이달의 카드 인쇄 파일 (' + ymP + ')',
+    msg + '\n\n용지·여백·배경색은 파일이 정해 두었습니다 — 그대로 인쇄하시면 됩니다.' +
+    '\n점선은 자르는 선이 아니라 손으로 뜯는 선입니다(가위 필요 없음).' +
+    '\n이름이 인쇄되므로 지급 전 학생·학부모 동의를 확인해 주세요.');
   Logger.log(msg);
   return msg;
+}
+
+/* [가져가는것 걸음 2] 메뉴에서 부르는 자리 — 결과를 «화면»으로 돌려준다.
+ * 메뉴를 눌렀는데 아무 일도 안 일어나 보이면 원장은 두 번 세 번 누른다(그때마다 파일이 하나씩 더 생긴다).
+ * 「기능은 자기를 설명해야 완성」(브랜드 규칙)의 가장 싼 집행이 이 한 상자다. */
+function menuPrintMonthlyCards() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    const msg = printMonthlyCards();
+    ui.alert('🖨 이달의 카드', msg + '\n\n링크는 원장 메일로도 갔습니다.\n' +
+      'Drive 의 「SYNK_인쇄」 폴더에서도 열 수 있습니다.', ui.ButtonSet.OK);
+  } catch (e) {
+    ui.alert('🖨 이달의 카드', '아직 못 만들었어요 — ' + e.message +
+      '\n\n카드는 매월 1일 발간 뒤에 생깁니다.', ui.ButtonSet.OK);
+  }
 }
 
 // [v9.12] 🗺️ 시냅스 여행 지도 — 스토리북이 다녀간 한국 12경, 도감 문법(???)의 지도판

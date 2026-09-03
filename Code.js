@@ -2657,6 +2657,23 @@ function calcAll() {
   const fortuneOut = [], speakOut = [], recordOut = []; // [v9.12]
   const biSet = (typeof MJ_beginnerSet_ === 'function') ? MJ_beginnerSet_(pf) : null; // [v9.70] 초급 한·몽 병기 대상(AY 완전초보·기초) — 만족도팩.js 누락(반쪽 배포)에도 안전
   const goalOut = [], perDayOut = []; // [v9.28] 목표진행 카드 · 출석일당포인트(주말반 보정 참고 지표)
+  /* [가져가는것 걸음 2] 🧥 과잠을 «받았나» — jacket_grants 지급상태·지급일.
+   * 08-11 실측: 이 열을 읽는 코드가 0곳이었다. 그래서 목표 카드가 자격 도달 뒤로
+   * 「곧 전달해 드려요」를 영구 표시했고, **실물을 받은 뒤에도 같은 문구가 계속 떠** 안내가 거짓이 됐다.
+   * 12개월을 기다려 받은 순간이 화면에서 아무 일도 아니게 되는 자리 — 여기가 그것을 닫는다.
+   * 지급일은 원장이 안 적는다: 지급상태가 바뀐 것을 아침 배치가 처음 본 날을 찍는다(엔진_폼리포트 jacketStampGiven_). */
+  const jacketGot = {};   // sid → 받은 날(yyyy-MM-dd · 날짜 칸이 아직 안 찍혔으면 빈 문자열)
+  {
+    const jgS = ss.getSheetByName('jacket_grants');
+    if (jgS && jgS.getLastRow() >= 2) {
+      const wJ = Math.max(jgS.getLastColumn(), 6);
+      jgS.getRange(2, 1, jgS.getLastRow() - 1, wJ).getValues().forEach(rr => {
+        if (!rr[0] || String(rr[5] || '').trim() !== '지급완료') return;
+        const dJ = rr[6] ? asDate_(rr[6]) : null;
+        jacketGot[String(rr[0]).trim()] = (dJ && !isNaN(dJ.getTime())) ? dstr(dJ, tz) : '';
+      });
+    }
+  }
   const styleOut = [], chemOut = [], matchOut = []; // [v9.13]
   const weeklyOut = [], talkOut = [], bannerOut = []; // [v9.16]
   const alertOut = []; // [v9.20] 오늘의알림(BX 76) — 결정적 순간 1건(도전·성장/진화/생일/임박), 없으면 ''
@@ -3128,7 +3145,11 @@ function calcAll() {
           //  임박 넛지는 몬스터한마디(BF)가 이미 담당. BX는 이벤트일에만 채워지고 다음날 ''로 복귀.
           const isBday6 = bdayMMDD_(r[5], tz) === todayYmd0.slice(5, 10); // [v9.34] Date 셀 생일도 인식(1451과 동일 통일)
           // [v9.50·B1] 세계관 내레이터 — 진화 순간 배너를 그 학생의 실데이터(이름·몬스터·문법·기록)로 개인화(결정론 템플릿 6종)
-          alertOut.push([crownToday2 ? '🔥 오늘 도전·성장을 인정받았어요! 최고예요 🎉'
+          // [가져가는것 걸음 2] 🧥 과잠을 받은 날 — 사슬 맨 앞이다. 열두 달에 한 번뿐인 하루라
+          //   도전·성장(매일 올 수 있다)보다 희소하고, 그날 이 자리를 내주지 않으면 그 순간이 화면에서 사라진다.
+          alertOut.push([jacketGot[id] === todayYmd0
+            ? '🧥 오늘 ' + JACKET_ITEM_NAME + '을 받았어요 — 열두 달을 걸어서 온 옷이에요'
+            : crownToday2 ? '🔥 오늘 도전·성장을 인정받았어요! 최고예요 🎉'
             : sceneRecent ? hashPick_(NARRATE_SCENE, id + todayYmd0) // [함께한날 막4] 진화 내레이터 → 장면 내레이터
                 .replace('{n}', r[1] || id).replace('{s}', String(sceneIdx || 1))
                 .replace('{g}', gTodayForm ? '\'' + gTodayForm + '\'을 직접 맞히고 ' : '')
@@ -3194,7 +3215,15 @@ function calcAll() {
             const tenureDone = monthsG >= JACKET_TENURE_MONTHS;
             const head = '🧥 <b>' + JACKET_ITEM_NAME + '</b> — 재원 <b>' + Math.max(monthsG, 0) + '/' + JACKET_TENURE_MONTHS +
               '개월</b> · 누적 <b>' + t + 'P</b>/' + JACKET_MIN_POINTS + 'P' + (needP <= 0 ? ' ✅' : '');
-            if (tenureDone && needP <= 0) goalOut.push([head + '<div style="font-size:11.5px;color:#12B76A;margin-top:3px;">🎉 자격 도달! 곧 전달해 드려요 — 포인트는 하나도 쓰지 않아요</div>']);
+            /* [가져가는것 걸음 2] 세 갈래로 갈린다 — 받았다 / 자격은 됐고 아직 안 받았다 / 걷는 중.
+             * 전에는 앞 둘이 한 문장이라, 받은 뒤에도 「곧 전달해 드려요」가 영영 떠 있었다. */
+            const 받은날 = jacketGot[id];
+            if (받은날 !== undefined) {
+              // 축하 기록 — 날짜가 아직 안 찍힌 첫날에도 문장이 성립해야 한다(칸이 비어도 거짓말은 안 한다)
+              goalOut.push([head + '<div style="font-size:11.5px;color:#3F6B2E;margin-top:3px;">🧥 ' +
+                (받은날 ? Utilities.formatDate(new Date(받은날), tz, 'yyyy년 M월 d일') + ', ' : '') +
+                '이 옷을 받았어요 — 열두 달을 걸어서 온 옷이에요</div>']);
+            } else if (tenureDone && needP <= 0) goalOut.push([head + '<div style="font-size:11.5px;color:#3F6B2E;margin-top:3px;">🎉 자격 도달! 곧 전달해 드려요 — 포인트는 하나도 쓰지 않아요</div>']);
             else {
               const tenureDate = new Date(joinedG.getFullYear(), joinedG.getMonth() + JACKET_TENURE_MONTHS, joinedG.getDate());
               const tenureStr = Utilities.formatDate(tenureDate, tz, 'yyyy년 M월 d일');

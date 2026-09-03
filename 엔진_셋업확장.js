@@ -207,7 +207,7 @@ function sheetSkeleton_() {
     ['synk_cards', ['월','student_id','카드HTML']],
     ['world_raid', ['월','보스명','HP','누적데미지','상태']],
     ['academic_log', ACADEMIC_LOG_HEADERS, 수집표식_], // [v9.239] 헤더 정본 공유(손사본 3벌 → 1벌) · [v9.244] 학업 사건 원장 — append 전용
-    ['jacket_grants', ['student_id','이름','자격도달일','재원개월','누적P','지급상태']], // [v9.83] 🧥 과잠 자격 대장
+    ['jacket_grants', JACKET_HEADERS], // [v9.83] 🧥 과잠 자격 대장 · [가져가는것 걸음2] 헤더 정본 공유(손 사본 2벌 → 1벌 · 「지급일」이 여기만 안 늘던 자리)
     // [v9.138] 📊 학습 데이터 축적층 — 「2년 축적 → AI 회화 앱」의 원본. 운영 시트가 아니라 **수집기**다.
     //   quiz_log: 구조상 가장 크게 새던 곳 — 퀴즈 100문항을 매일 띄우면서 학생의 선택을 한 건도 안 받고 있었다.
     //   문항 텍스트·정답을 행에 함께 스냅샷한다(contents가 개정돼도 2년 뒤 해석이 가능하도록).
@@ -5190,6 +5190,9 @@ function onOpen() {
       .addItem('🔄 전체 재계산', 'calcAll')
       .addItem('📊 강사 지표 갱신', 'calcTeacherStats')
       .addItem('🖨 숙제 서클 종이 다시 인쇄(오늘 수업 반)', 'menuPrintCircleSheets')
+      // [가져가는것 걸음 2] 이달의 카드 — 함수는 v9 초부터 있었는데 **메뉴에 없어** Apps Script
+      //   편집기에서만 돌았다(08-26 실측). 원장이 못 부르는 기능은 없는 기능이다.
+      .addItem('🖨 이달의 카드 인쇄 파일 만들기', 'menuPrintMonthlyCards')
       .addSeparator()
       .addSubMenu(준비)
       .addSubMenu(폼만들기)
