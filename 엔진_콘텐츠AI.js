@@ -1894,14 +1894,26 @@ function notifyDroppedSids_(label, sids) {
      *   자기가 걸린다 — P1 48f070b17495 가 세운 규율). 그래서 위에서 읽은 `seen` 과 여기 사이에
      *   다른 실행이 같은 키를 찍었을 수 있고, 그대로 덮으면 **그쪽이 방금 알린 sid 가 seen 에서
      *   사라져 내일 또 같은 메일이 간다.** 다시 읽어 합치면 그 자리가 닫힌다.
+     * 🔒 그리고 그 읽기-병합-쓰기를 **잠금 안에서** 한다(codex P2 `83c20817d737` 채택 수리 · 09-03).
+     *   다시 읽는 것만으로는 창이 좁아질 뿐 안 닫힌다 — 두 실행이 `다시` 를 «동시에» 읽으면
+     *   마지막 쓰기가 그 사이 남의 sid 를 여전히 덮는다. 여기는 adminMail 을 이미 지난 자리라
+     *   그 비재진입 락과 안 겹치므로 잠글 수 있다(위 규율을 어기지 않는다).
+     *   못 잡으면 마킹을 건너뛴다 — 그 대가는 「내일 한 통 더」이고, 남의 기록을 덮는 것보다 싸다.
      * ⚠ 남는 것 = «중복 메일» 한 통의 가능성이다. 두 실행이 같은 sid 를 각각 fresh 로 셀 창이
      *   메일 왕복만큼 열려 있다. 그걸 없애려면 마킹을 메일 «앞»으로 옮겨야 하는데, 그러면 큐 적재가
      *   실패한 날 통보가 영영 증발한다(그 순서를 tests/safety.test.js:1303 이 일부러 못 박았다).
      *   손실 없는 시끄러움과 조용한 증발 중에 앞엣것을 고른다. */
-    const 다시 = String(props.getProperty(key) || '').split('|');
-    const 그새seen = 다시[0] === today ? 다시.slice(1) : [];
-    props.setProperty(key, [today].concat(그새seen, fresh)
-      .filter((s, i, a) => a.indexOf(s) === i).slice(0, 200).join('|')); // 발송(큐 적재) 성공분만 마킹 + 9KB 보호 — safeRun 실패 메일 패턴(실패 시 다음 스위프 재시도)
+    const 마킹잠금 = (typeof LockService !== 'undefined' && LockService) ? LockService.getScriptLock() : null;
+    if (마킹잠금 && !마킹잠금.tryLock(3000)) {
+      Logger.log('notifyDroppedSids_: 같은 표식을 다른 실행이 쓰고 있다 — 마킹을 건너뛴다(그 sid 는 내일 한 번 더 알린다)');
+      return;
+    }
+    try {
+      const 다시 = String(props.getProperty(key) || '').split('|');
+      const 그새seen = 다시[0] === today ? 다시.slice(1) : [];
+      props.setProperty(key, [today].concat(그새seen, fresh)
+        .filter((s, i, a) => a.indexOf(s) === i).slice(0, 200).join('|')); // 발송(큐 적재) 성공분만 마킹 + 9KB 보호 — safeRun 실패 메일 패턴(실패 시 다음 스위프 재시도)
+    } finally { if (마킹잠금) 마킹잠금.releaseLock(); }
   } catch (e) { Logger.log('notifyDroppedSids_ 실패: ' + e); }
 }
 
