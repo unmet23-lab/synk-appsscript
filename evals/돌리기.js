@@ -164,7 +164,10 @@ async function main() {
   return 0;
 }
 
-main().then((c) => process.exit(c)).catch((e) => {
+/* 종료 코드는 «세우고» 자연히 끝낸다 — `process.exit()` 을 async 안에서 부르면 windows libuv 가
+ * 닫히는 중인 핸들을 만나 `Assertion failed: UV_HANDLE_CLOSING` 을 뱉는다(09-03 실물). 그 줄은
+ * 무해하지만 사람 눈엔 «죽었다»로 읽혀서, 진짜 사고와 구분이 안 되는 잡음이 된다. */
+main().then((c) => { process.exitCode = c; }).catch((e) => {
   console.error('🔴 실행기가 죽었다:', (e && e.message) || e);
-  process.exit(2);
+  process.exitCode = 2;
 });
