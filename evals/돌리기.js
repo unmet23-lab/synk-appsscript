@@ -24,7 +24,18 @@
  *   node evals/돌리기.js --재보기            몫 프로브만 (시험은 안 돌린다 · 1발)
  *   node evals/돌리기.js --문항 4            앞에서 N 문항만 (몫이 적은 날 나눠 돌리기)
  *   node evals/돌리기.js --그냥              게이트를 무시하고 강행(몫을 알고도 태울 때만)
+ *   node evals/돌리기.js --예약              예약 작업이 부르는 꼴 (아래)
  *   종료 0=시험 끝 · 3=게이트가 막음(«실패»가 아니라 «안 던졌다») · 2=시험이 도중에 죽음
+ *
+ * ■ `--예약` — 스스로 조용해지는 되풀이 (2026-09-03 · 유호 지시 「자동으로 되게」)
+ *   예약 작업 `SYNK_검문시험` 이 **매일** 부른다. 매일 도는데도 몫을 안 태우는 까닭:
+ *     · **도장이 있으면 0발로 끝난다.** 도장 = `_결과/도장_<모델>.json` — «어느 모델을 언제 쟀나».
+ *       한 번 재고 나면 그 뒤로는 네트워크를 아예 안 탄다.
+ *     · **모델 이름이 도장에 박힌다.** 그래서 다음에 픽을 갈아타면(3.9 …) 도장이 안 맞아
+ *       **스스로 다시 잰다** — 「갈아탔는데 안 재봤다」가 다시 생기지 않는다.
+ *     · 몫이 아직 안 찼으면 게이트가 0발로 세우고, **다음 날 같은 시각에 또 시도한다.**
+ *   🔑 왜 「매일」인가 — 「내일 오후 한 번」으로 걸면 그날 몫이 모자랐을 때 그걸로 끝이고,
+ *      다시 거는 것은 사람 몫이 된다. 09-03 에 배운 것이 정확히 그 자리다(보류를 깨우는 것이 없었다).
  *
  * 🔑 이 파일은 **모델 이름도 사고 수준도 안 적는다** — 정본은 `tools/모델정책.js` 하나다.
  */
@@ -81,10 +92,28 @@ function 시험규모() {
 
 const 초읽기 = (s) => (s == null ? '(안 알려줬다)' : s < 90 ? `${Math.round(s)}초 뒤` : `${Math.round(s / 60)}분 뒤`);
 
+/* 도장 = 「이 모델은 이미 쟀다」. 모델 이름이 박혀 있어서 픽을 갈아타면 저절로 안 맞는다. */
+const 도장경로 = (model) => path.join(여기, '_결과', `도장_${model}.json`);
+
 async function main() {
   const 픽 = 정책.제미나이설정();
-  console.log('■ 몽골어 검문 시험지 — 게이트 셋을 지나야 던진다');
-  console.log(`  정본 픽: ${픽.model} / 생각 깊이 ${픽.thinking_level}\n`);
+  const 예약 = 있나('--예약');
+  console.log(`■ 몽골어 검문 시험지 — 게이트 셋을 지나야 던진다${예약 ? ' (예약 실행)' : ''}`);
+  console.log(`  정본 픽: ${픽.model} / 생각 깊이 ${픽.thinking_level}`);
+  console.log(`  때: ${new Date().toLocaleString('ko-KR')}\n`);
+
+  /* 🔑 예약이 매일 도는데도 몫을 안 태우는 자리 — 도장이 있으면 **여기서 끝난다**(호출 0). */
+  if (예약) {
+    const p = 도장경로(픽.model);
+    if (fs.existsSync(p)) {
+      let 도장 = {}; try { 도장 = JSON.parse(fs.readFileSync(p, 'utf8')); } catch { /* 깨졌으면 다시 잰다 */ }
+      if (도장.끝났나) {
+        console.log(`⏭ 이미 쟀다 — ${픽.model} · ${도장.때}. **한 발도 안 던진다.**`);
+        console.log(`   다시 재려면 이 파일을 지운다: ${path.relative(루트, p)}`);
+        return 0;
+      }
+    }
+  }
 
   // ① 정본 대조
   const a = 정본대조();
@@ -160,14 +189,53 @@ async function main() {
   }
   if (r.status !== 0) { console.error(`\n🔴 시험이 죽었다(종료 ${r.status}) — «확인 불가»다.`); return 2; }
 
-  console.log(`\n✅ 시험 끝. 사람이 볼 줄만: node evals/의심줄.js ${결과}`);
+  /* 사람이 볼 줄만 뽑아 «파일로» 남긴다 — 예약이 새벽에 돌면 화면을 보는 사람이 없다.
+   * 맞은 줄은 안 올라온다(의심줄.js 의 규약). */
+  const 요약파일 = path.join(여기, '_결과', `요약_${픽.model}_${낸날}.txt`);
+  let 요약글 = '';
+  const s = spawnSync(process.execPath, [path.join(여기, '의심줄.js'), 결과], {
+    cwd: 루트, encoding: 'utf8', windowsHide: true,
+  });
+  요약글 = `${s.stdout || ''}${s.stderr || ''}`.trim() || '(의심줄이 아무것도 안 냈다)';
+  fs.writeFileSync(요약파일, 요약글, 'utf8');
+
+  /* 도장 — 「이 모델은 쟀다」. `--예약` 은 다음 날부터 여기서 0발로 끝난다.
+   * 모델 이름이 박혀 있어 픽을 갈아타면 저절로 안 맞고, 그러면 스스로 다시 잰다. */
+  fs.writeFileSync(도장경로(픽.model), JSON.stringify({
+    끝났나: true, 모델: 픽.model, 사고: 픽.thinking_level,
+    때: new Date().toISOString(), 문항: 실제문항, 발: 실제발,
+    결과파일: path.relative(루트, 결과), 요약파일: path.relative(루트, 요약파일),
+  }, null, 1), 'utf8');
+
+  console.log(`\n✅ 시험 끝 — ${픽.model} 도장을 찍었다(다음 예약은 0발로 끝난다).`);
+  console.log(`\n${요약글.slice(0, 4000)}`);
+  console.log(`\n   결과 = ${path.relative(루트, 결과)}`);
+  console.log(`   요약 = ${path.relative(루트, 요약파일)}`);
   return 0;
+}
+
+/* `--예약` 은 사람이 안 보는 시각에 돈다 — 그래서 «무슨 일이 있었나»를 한 줄로 남긴다.
+ * 🔑 예약 작업은 **cmd 를 거치지 않고 node.exe 를 직접** 부른다. `.cmd` 래퍼를 쓰면 cmd.exe 가
+ *   배치 파일을 OEM 코드페이지(CP949)로 파싱하는데 이 저장소 경로엔 한글이 있어 깨진다
+ *   (실측 사고: `rem` 주석 안의 한글 한 낱말이 조각을 «명령»으로 실행하게 만들었다).
+ *   그래서 리다이렉트를 못 쓰고, 로그를 이 파일이 스스로 적는다. */
+function 예약로그(종료) {
+  const 말 = { 0: '끝났다(또는 이미 쟀다 · 0발)', 2: '도중에 죽었다 — 확인 불가', 3: '게이트가 막았다(0발 · 내일 또 시도)' };
+  try {
+    fs.mkdirSync(path.join(여기, '_결과'), { recursive: true });
+    fs.appendFileSync(path.join(여기, '_결과', '예약로그.txt'),
+      `${new Date().toISOString()}\t종료 ${종료}\t${말[종료] || '(모르는 종료값)'}\n`, 'utf8');
+  } catch { /* 로그를 못 적는 것이 시험을 죽이지는 않는다 */ }
 }
 
 /* 종료 코드는 «세우고» 자연히 끝낸다 — `process.exit()` 을 async 안에서 부르면 windows libuv 가
  * 닫히는 중인 핸들을 만나 `Assertion failed: UV_HANDLE_CLOSING` 을 뱉는다(09-03 실물). 그 줄은
  * 무해하지만 사람 눈엔 «죽었다»로 읽혀서, 진짜 사고와 구분이 안 되는 잡음이 된다. */
-main().then((c) => { process.exitCode = c; }).catch((e) => {
+main().then((c) => {
+  if (있나('--예약')) 예약로그(c);
+  process.exitCode = c;
+}).catch((e) => {
   console.error('🔴 실행기가 죽었다:', (e && e.message) || e);
+  if (있나('--예약')) 예약로그(2);
   process.exitCode = 2;
 });
