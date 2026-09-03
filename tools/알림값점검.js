@@ -25,10 +25,20 @@ const fs = require('fs');
 const path = require('path');
 
 const 뿌리 = path.resolve(__dirname, '..');
-const 판정경로 = path.join(뿌리, 'docs', '_ops', '알림값판정.json');
 const 장부경로 = path.join(뿌리, '.claude', '알림장부.jsonl');
 
 const 훅모드 = process.argv.includes('--훅');
+
+/* 🔴 시험할 때 «공용 판정표를 임시로 고치지» 마라 — 09-03 20:30 에 실제로 사고가 났다.
+ *   판정일을 잠깐 오늘로 당겨 시험하는 사이에 옆 세션이 열려서 「0번 떴다 → 걷는다」를 봤다.
+ *   그 세션은 원인을 「판정일을 지은날과 같은 날로 적었다」로 잘못 짚어 파일에 경고를 남겼고,
+ *   내 시험의 «되돌리기»가 그 경고를 도로 지웠다(옆 세션 작업을 덮은 것이다).
+ *   ⇒ 그래서 시험용 판정표를 따로 줄 수 있게 열어 둔다. 공용 파일은 손대지 않는다.
+ *      node tools/알림값점검.js --훅 --판정표 <시험용파일> */
+const 표자리 = process.argv.indexOf('--판정표');
+const 판정경로 = 표자리 >= 0 && process.argv[표자리 + 1]
+  ? path.resolve(process.argv[표자리 + 1])
+  : path.join(뿌리, 'docs', '_ops', '알림값판정.json');
 
 function 장부읽기() {
   // 🔑 「못 쟀다」(null)와 「0건」(빈 배열)을 가른다 — 둘이 같은 얼굴이면 이 자가 거짓말을 한다.
