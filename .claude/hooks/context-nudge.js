@@ -101,6 +101,13 @@ const 짧게 = (n) => (n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
   }
   if (!말.length) process.exit(0); // 걸릴 게 없거나 이미 알렸으면 완전 침묵
 
+  // 「이 알림이 값이 있었나」를 2주 뒤에 기계가 세도록 그 자리에서 적어 둔다(tools/알림값점검.js)
+  try {
+    const { 적기 } = require('./lib/알림장부.js');
+    if (이미.맥락 && 맥락 > 맥락천장) 적기('맥락', { 맥락, 적중: Math.round(적중 * 100) });
+    if (이미.재활용 && 적중 < 재활용바닥) 적기('재활용', { 맥락, 적중: Math.round(적중 * 100), 만듦 });
+  } catch { /* 못 적어도 알림 자체는 나간다 */ }
+
   try { fs.writeFileSync(표시길, JSON.stringify(이미), 'utf8'); } catch { /* 못 적으면 다음에 또 뜬다 — 무해하다 */ }
   console.log('⚡ ' + 말.join('\n⚡ '));
   process.exit(0);
