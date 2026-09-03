@@ -4210,7 +4210,7 @@ function writeSharedCols_(ss, pf, st) {
       && typeof 등반카드HTML_ === 'function' && typeof 토픽등반_ === 'function') {
     const climbRows = rows.map(r => {
       if (!r[0] || String(r[3] || '') !== 'student') return [''];
-      return [등반카드HTML_(토픽등반_(climbMap[String(r[0]).trim()] || {}, Number(r[66]) || 0))]; // BO67 급수 — 교재 구간 표기용(판정엔 안 쓴다)
+      return [등반카드HTML_(토픽등반_(climbMap[String(r[0]).trim()] || {}, Number(r[66]) || 0))]; // BO67 급수 — 급수 구간 표기용(판정엔 안 쓴다)
     });
     profilesBlockWrite_(pf, profilesBlockAt_(pf, CLIMB_HEADS_), CLIMB_HEADS_,
       climbRows, '등반열충돌', '토픽 등반', pf.getLastRow(), 0);
