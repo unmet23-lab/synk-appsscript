@@ -72,7 +72,25 @@ BRAND_FONTS = ("intertight", "suit", "dmmono")
 #   진짜 폴백이 이 문으로 조용히 지나간다.
 # 실측 09-03: 이 칸이 없어 발표물 7벌 «전량»이 08-31 부터 FAIL 이었다 — 종이는 멀쩡한데
 #   판정만 빨간, 주인 없는 적색이다.
-SYSTEM_BY_DESIGN = {"synkbracket": set("「」")}
+# 🔴 이름을 «토큰에서 캔다» — 손으로 적으면 하나만 알게 된다(09-03 실측).
+#   낫표교정은 `src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),…` 로 «시스템 글꼴을 빌린다».
+#   그 빌린 이름 중 어느 것이 PDF 에 적히는지는 그 기계에 무엇이 깔렸느냐로 갈린다 —
+#   같은 지면이 SYNKBracket 으로 적히기도 하고 MalgunGothic 으로 적히기도 한다.
+#   손 목록에 「synkbracket」 하나만 있었더니, 부품을 입힌 덱이 MalgunGothic 으로 적혀 빨개졌다.
+#   종이는 멀쩡한데 판정만 빨간, 또 하나의 «주인 없는 적색»이었다.
+#   ⚠ 넓히되 «글자 안일 때만» 통과다 — 이 가족이 낫표 밖을 그리면 그대로 적색이다.
+def _낫표가족():
+    이름들 = {"synkbracket"}
+    try:
+        교정 = _토큰.get("서체", {}).get("낫표교정", "")
+        for m in re.finditer(r"local\(['\"]([^'\"]+)['\"]\)", 교정):
+            이름들.add(m.group(1).replace(" ", "").replace("-", "").lower())
+    except Exception:
+        pass          # 토큰을 못 읽어도 검사는 돌아야 한다 — 그때는 좁은 목록으로 잰다
+    return 이름들
+
+
+SYSTEM_BY_DESIGN = {이름: set("「」") for 이름 in _낫표가족()}
 
 DELIMS = " \t\r\n\f\x00/[]<>(){}%"
 

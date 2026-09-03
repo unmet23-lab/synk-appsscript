@@ -18,6 +18,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -430,11 +431,42 @@ function main() {
   for (const s of srcs) {
     const src = path.join(DIR, s);
     const out = path.join(DIR, outNameOf(s));
-    const cmd = [EMBED, src, out];
-    if (wantPdf) cmd.push('--pdf', out.replace(/\.html$/, '.pdf'));
 
     console.log(`\n── ${outNameOf(s)}`);
-    const r = spawnSync(py, cmd, { encoding: 'utf8', timeout: 300000 });
+    /* 🔴 Loom 을 «폰트를 심기 전»에 입힌다 (유호 지시 09-03 「인쇄물도 Loom 입혀야지」).
+     *   전에는 파이썬이 HTML 과 PDF 를 함께 내고 **그 뒤**에 Loom 을 얹었다. 그래서 화면에서
+     *   보는 지면과 손에 쥐는 종이가 «다른 문서»였다(상담브로셔 12쪽 중 10쪽이 달랐다 · 09-03 실측).
+     *   차례를 뒤집으면 한 벌에서 둘이 같이 나온다.
+     *   ⚠ 덤으로 하나 더 맞는다 — 부품이 «그리는» 글자가 서브셋 계산에 먼저 들어간다.
+     *     뒤에 얹으면 그 글자만 종이에서 네모가 된다(쪽번호에서 이미 밟은 함정이다). */
+    let 원고 = fs.readFileSync(src, 'utf8');
+    /* 범위 먼저 — `.룸` 이 없으면 맨요소 훅이 «어디에도 안 닿아» 훅 0 이 되고, 훅 0 이면 안 얹는다. */
+    const 민결과 = 민목록(원고);
+    const 범위결과 = 룸씌우기(민결과.html);
+    if (범위결과.html !== 원고) {
+      원고 = 범위결과.html;
+      console.log(`   ·  룸 범위 — 밝은 칸 ${범위결과.밝음} 에 씌움 · 어두운 칸 ${범위결과.어둠} 은 건너뜀`
+        + (민결과.센다 ? ` · 손번호 목록 ${민결과.센다}벌에 .민` : ''));
+    }
+    const 얹은결과 = loom얹기모듈.얹기(원고, { 지면: LOOM_지면 });
+    if (얹은결과.얹힘) {
+      원고 = 얹은결과.html;
+      loom붙은것.push(`${outNameOf(s)} (훅 ${얹은결과.훅.length}: ${얹은결과.훅.join('·')})`);
+      console.log(`   ✅ Loom 부품 ${얹은결과.훅.length}종 — ${얹은결과.훅.join('·')}`);
+    } else {
+      loom안붙은것.push(outNameOf(s));
+      console.log(`   ·  Loom 훅 0 — 안 얹었다 (${얹은결과.사유})`);
+    }
+
+    /* 파이썬은 «부품까지 입은» 원고를 받는다. 임시 방에 건네고 곧 지운다 —
+       원고방(`_src_`)에 중간물을 남기면 그게 다음 회차의 «원고»로 잡힌다. */
+    const 임시방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-발표물-'));
+    const 임시원고 = path.join(임시방, path.basename(s));
+    fs.writeFileSync(임시원고, 원고, 'utf8');
+    const cmd = [EMBED, 임시원고, out];
+    if (wantPdf) cmd.push('--pdf', out.replace(RegExp('[.]html$'), '.pdf'));
+    const r = spawnSync(py, cmd, { encoding: 'utf8', timeout: 900000 });
+    try { fs.rmSync(임시방, { recursive: true, force: true }); } catch { /* 청소 실패는 결과와 무관 */ }
     if (r.stdout) process.stdout.write(r.stdout.replace(/^/gm, '   '));
     if (r.status !== 0) {
       fail++;
@@ -451,28 +483,12 @@ function main() {
       continue;
     }
 
-    /* Loom — 판정은 공용 통로가 진다(훅 게이트 · 얹을 자리 · 결과 확인). 여기는 결과만 읽는다.
-     * ⚠ 훅은 «원고»로 잰다 — 산출물은 폰트 임베드가 붙어 커졌을 뿐 마크업은 같고, `--check` 가
-     *   원고 기준으로 낡음을 판정하므로 두 자를 갈라 놓으면 그 둘이 어긋난다. */
-    /* 범위 먼저 — `.룸` 이 없으면 맨요소 훅이 «어디에도 안 닿아» 훅 0 이 되고, 훅 0 이면 안 얹는다.
-     * 그래서 이 두 줄이 「입는다/못 입는다」를 가르는 자리다(발표물 3벌이 여기서 갈렸다). */
-    const 민결과 = 민목록(html);
-    const 범위결과 = 룸씌우기(민결과.html);
-    if (범위결과.html !== html) {
-      html = 범위결과.html;
-      console.log(`   ·  룸 범위 — 밝은 칸 ${범위결과.밝음} 에 씌움 · 어두운 칸 ${범위결과.어둠} 은 건너뜀`
-        + (민결과.센다 ? ` · 손번호 목록 ${민결과.센다}벌에 .민` : ''));
-    }
-
-    const 얹은결과 = loom얹기모듈.얹기(html, { 지면: LOOM_지면 });
-    if (얹은결과.얹힘) {
-      html = 얹은결과.html;
-      fs.writeFileSync(out, html, 'utf8');
-      loom붙은것.push(`${outNameOf(s)} (훅 ${얹은결과.훅.length}: ${얹은결과.훅.join('·')})`);
-      console.log(`   ✅ Loom 부품 ${얹은결과.훅.length}종 — ${얹은결과.훅.join('·')}`);
-    } else {
-      loom안붙은것.push(outNameOf(s));
-      console.log(`   ·  Loom 훅 0 — 안 얹었다 (${얹은결과.사유})`);
+    /* 부품이 «실제로 실렸는지» 산출물에서 되읽는다 — 「얹었다」가 아니라 «들어 있다»를 본다.
+       얹기는 위(폰트 심기 «전»)에서 이미 끝났다. 여기서 다시 얹으면 두 번 얹힌다. */
+    if (얹은결과.얹힘 && !LOOM_뜯기.test(normalize(html))) {
+      fail++;
+      console.error('   🔴 Loom 을 얹었는데 산출물에 그 블록이 없다 — 폰트를 심으며 잃었다');
+      continue;
     }
   }
 
