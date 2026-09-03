@@ -170,6 +170,11 @@
             "type": "command",
             "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/알림값점검.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --훅; fi; exit 0",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/evals/돌리기.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --알림; fi; exit 0",
+            "timeout": 15
           }
         ]
       }
