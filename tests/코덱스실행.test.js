@@ -210,3 +210,82 @@ test('🔑 --마른손 은 코덱스를 안 태우고 ⓪만 낸다 — 임시 �
   assert.strictEqual(r2.status, 2, '구멍 난 발주서는 종료 2 다');
   assert.ok(/«시험»/.test(r2.stderr), r2.stderr);
 });
+
+/* ── 🔴 자기 채점 막기 (2026-09-04 · GPT 지적으로 잡힌 진짜 구멍) ─────────────────────────
+ * 새는 방향은 「통과」다 — 실행자가 저를 재는 시험을 느슨하게 고쳐도 종료코드는 초록이 된다.
+ * 그래서 여기서는 «막히나»를 문다(소스에 무슨 글자가 있나가 아니라 · 기억 `test-guards-the-defect`). */
+
+test('🔴 시험파일인가 — 시험 자리는 잡고 보통 소스는 안 잡는다', () => {
+  for (const p of ['tests/a.test.js', 'test/b.js', '__tests__/c.js', 'evals/d.js', 'src/x.spec.ts', 'a/tests/deep/e.js']) {
+    assert.ok(빌드.시험파일인가(p), `시험으로 잡혀야 한다: ${p}`);
+  }
+  for (const p of ['tools/codex-build.js', 'Code.js', 'docs/틀.md', 'contents_a.js', 'src/latest.js', 'tools/protest.js']) {
+    assert.ok(!빌드.시험파일인가(p), `시험이 아니어야 한다: ${p}`);
+  }
+});
+
+test('🔴 시험손댐 — 있던 시험을 고치거나 지우면 잡고, 새 시험·발주서가 연 것은 통과시킨다', () => {
+  const 원본 = new Map([['tests/a.test.js', 'AAA'], ['tests/b.test.js', 'BBB']]);
+  const 지금 = (f) => ({ 'tests/a.test.js': 'CHANGED', 'tests/b.test.js': 'BBB' }[f] ?? null);
+
+  // ⓐ 고친 것을 잡는다
+  const r1 = 빌드.시험손댐(['tests/a.test.js', 'add.js'], 원본, 지금, []);
+  assert.deepStrictEqual(r1, ['tests/a.test.js (고쳤다)'], JSON.stringify(r1));
+
+  // ⓑ 안 고친 시험·범위 안 소스는 조용하다 — 거짓 빨강이면 레인이 아예 안 돈다
+  assert.deepStrictEqual(빌드.시험손댐(['tests/b.test.js', 'add.js'], 원본, 지금, []), []);
+
+  // ⓒ 지운 것을 «지웠다»로 잡는다(내용 비교로는 못 가른다)
+  const r3 = 빌드.시험손댐(['tests/z.test.js'], new Map([['tests/z.test.js', 'ZZZ']]), () => null, []);
+  assert.deepStrictEqual(r3, ['tests/z.test.js (지웠다)'], JSON.stringify(r3));
+
+  // ⓓ 새로 지은 시험은 원본에 없으니 자유다 — 이게 막히면 발주가 시험을 못 붙인다
+  assert.deepStrictEqual(빌드.시험손댐(['tests/새것.test.js'], 원본, () => 'NEW', []), []);
+
+  // ⓔ 발주서가 «이름 대어» 연 자리만 통과 — 다른 시험은 그대로 막힌다
+  assert.deepStrictEqual(빌드.시험손댐(['tests/a.test.js'], 원본, 지금, ['tests/a.test.js']), []);
+  assert.deepStrictEqual(빌드.시험손댐(['tests/a.test.js'], 원본, 지금, ['tests/딴것.test.js']), ['tests/a.test.js (고쳤다)']);
+});
+
+test('🔴 «시험 수정 허용» 은 시험만 연다 — 그 절로 소스·금지 경로를 열면 발주서가 거절된다', () => {
+  const 열림 = (본문) => 빌드.발주서검사(발주.replace('## 금지', `## 시험 수정 허용\n${본문}\n\n## 금지`));
+
+  const ok = 열림('- `tests/a.test.js`');
+  assert.deepStrictEqual(ok.오류들, [], JSON.stringify(ok.오류들));
+  assert.deepStrictEqual(ok.시험수정허용, ['tests/a.test.js']);
+
+  const 소스 = 열림('- `Code.js`');
+  assert.ok(소스.오류들.some((e) => /시험 파일이 아니다/.test(e)), JSON.stringify(소스.오류들));
+
+  const 금지 = 열림('- `tools/codex-build.js`');
+  assert.ok(금지.오류들.some((e) => /시험 파일이 아니다|만질 수 없는/.test(e)), JSON.stringify(금지.오류들));
+
+  const 빈절 = 열림('(없음)');
+  assert.ok(빈절.오류들.some((e) => /경로가 0개다/.test(e)), JSON.stringify(빈절.오류들));
+
+  // 절이 아예 없으면 조용하고 목록은 빈다 — 기본이 «막힘»이다
+  const 기본 = 빌드.발주서검사(발주);
+  assert.deepStrictEqual(기본.시험수정허용, []);
+  assert.deepStrictEqual(기본.오류들, [], JSON.stringify(기본.오류들));
+});
+
+test('🔴 시험지문들 — 추적 중인 시험만 지문을 뜬다(미추적 새 시험은 원래 없던 것이다)', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-jam-'));
+  assert.strictEqual(spawnSync('git', ['init', '-q', 방], { encoding: 'utf8' }).status, 0);
+  fs.mkdirSync(path.join(방, 'tests'));
+  fs.writeFileSync(path.join(방, 'tests', 'a.test.js'), 'AAA\n');
+  fs.writeFileSync(path.join(방, 'add.js'), 'x\n');
+  spawnSync('git', ['-C', 방, 'add', '--', 'tests/a.test.js', 'add.js'], { encoding: 'utf8' });
+  spawnSync('git', ['-C', 방, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'b', '--', 'tests/a.test.js', 'add.js'], { encoding: 'utf8' });
+  fs.writeFileSync(path.join(방, 'tests', '미추적.test.js'), 'NEW\n');
+
+  const 맵 = 빌드.시험지문들(방);
+  assert.ok(맵.has('tests/a.test.js'), '추적 중인 시험은 담긴다');
+  assert.ok(!맵.has('tests/미추적.test.js'), '미추적 새 시험은 안 담긴다');
+  assert.ok(!맵.has('add.js'), '시험 아닌 것은 안 담긴다');
+
+  // 실제로 고치면 지문이 갈린다 — 이 대조가 자물쇠의 몸통이다
+  fs.writeFileSync(path.join(방, 'tests', 'a.test.js'), 'AAA CHANGED\n');
+  const 지금 = (f) => { try { return require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(방, f))).digest('hex'); } catch (_) { return null; } };
+  assert.deepStrictEqual(빌드.시험손댐(['tests/a.test.js'], 맵, 지금, []), ['tests/a.test.js (고쳤다)']);
+});
