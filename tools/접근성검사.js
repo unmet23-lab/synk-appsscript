@@ -108,7 +108,10 @@ async function 한장(html) {
           await new Promise((r) => setTimeout(r, 60));
         }
         window.scrollTo(0, 0);
-        await new Promise((r) => setTimeout(r, 900));
+        /* 🔴 나타나는 «동안»에 재면 반쯤 투명한 색이 잡힌다 — 09-03 실측: 카드 글자가
+           #8C8C8C(4.50대1)인데 #8B8B8B(4.44대1)로 읽혀 적색이 났다. 나타나기(0.85초)가
+           끝나고도 남게 넉넉히 기다린다. 여기서 아끼면 그 아낌이 «가짜 적색»으로 돌아온다. */
+        await new Promise((r) => setTimeout(r, 2200));
         return true;
       })()`,
       awaitPromise: true, returnByValue: true,

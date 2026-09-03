@@ -166,8 +166,10 @@ nav.lang button:disabled{cursor:default;opacity:.4}
 /* ── 챕터 공통 ────────────────────────────────── */
 .below{padding:clamp(80px,15vh,180px) var(--gut) clamp(56px,9vh,100px);max-width:1180px;margin:0 auto}
 .chap{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--sub);display:block;margin-bottom:18px}
-h2{font-size:clamp(34px,7.6vw,84px);font-weight:800;letter-spacing:-.05em;line-height:.96;text-wrap:balance;margin-bottom:22px}
-h2 em{font-style:normal;color:var(--sub)}
+/* 지면의 «제일 큰 제목»은 h1 이어야 한다 — 화면 읽어 주는 장치와 검색이 그걸로 지면을
+   가리킨다(09-03 접근성 실측: 홈페이지에 h1 이 0개였다). 꾸밈은 h2 와 똑같이 둔다. */
+h1,h2{font-size:clamp(34px,7.6vw,84px);font-weight:800;letter-spacing:-.05em;line-height:.96;text-wrap:balance;margin-bottom:22px}
+h1 em,h2 em{font-style:normal;color:var(--sub)}
 h2.mid{font-size:clamp(26px,4.6vw,48px);line-height:1.06}
 .lead{color:var(--sub);font-size:clamp(15px,1.8vw,18px);line-height:1.7;max-width:60ch;letter-spacing:-.01em}
 .gap{height:clamp(70px,13vh,150px)}
@@ -682,6 +684,9 @@ html.js .reveal.lit{opacity:1;transform:none}
     <button type="button" disabled title="몽골어판 준비 중">MN</button>
   </nav>
 </header>
+<!-- 본문 표시 — 화면 읽어 주는 장치가 머리말을 건너뛰고 본문으로 바로 갈 수 있게 한다.
+     꾸밈은 클래스가 지므로 이 태그는 보이는 것을 안 바꾼다(09-03 · 픽셀로 확인). -->
+<main>
 
 <section class="stage">
   <div class="orb">
@@ -717,7 +722,7 @@ html.js .reveal.lit{opacity:1;transform:none}
 
 <section class="below">
   <span class="chap">00</span>
-  <h2><em>정원은 16명,</em><br>선생님은 17명입니다.</h2>
+  <h1><em>정원은 16명,</em><br>선생님은 17명입니다.</h1>
   <p class="lead">학생마다 자기만의 선생님이 한 명씩 있습니다. 마음을 만나고 판단하는 것은 교실의 선생님이고, 기억하고 골라 돌려주는 일은 그 곁의 열여섯이 맡습니다.</p>
 
   <div class="gap"></div>
@@ -905,6 +910,7 @@ html.js .reveal.lit{opacity:1;transform:none}
 
 <!-- 4D 엔진 — 정본은 이 파일이다. 자립형으로 구울 때 `시안굽기.js` 가 통째로 심는다
      (첨부 하나가 계약이라 `src` 로 두고 가면 그 기능만 조용히 죽는다). -->
+</main>
 <script src="살아있는몽글.js"></script>
 <script>
 /* 첫 줄의 `js` 클래스가 숨김을 «켠다» — 이 줄에 닿지 못하면 본문은 숨겨지지 않는다.

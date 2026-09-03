@@ -593,7 +593,9 @@ h1{font-size:42px;line-height:1.14;font-weight:700;letter-spacing:-.025em;margin
     <p class="눈썹">SYNK SHIFT · 한국 법인</p>
     <h1>SYNK SHIFT</h1>
   </header>
-  <div class="룸">
+  <!-- 본문을 main 으로 감싼다 — 화면 읽어 주는 장치가 「여기부터 본문」으로 건너뛴다.
+       꾸밈은 클래스가 지므로 태그만 바꾸면 보이는 것은 그대로다(09-03 접근성 실측). -->
+  <main class="룸">
 
 <p>한국에서 짓고 있는 회사입니다. 이 글은 파트너·기업·투자자, 그리고 함께 일하실 분께 드리는 편지입니다.</p>
 <p><strong>30초 안에 찾으실 것 셋</strong></p>
@@ -640,9 +642,9 @@ h1{font-size:42px;line-height:1.14;font-weight:700;letter-spacing:-.025em;margin
 <h2 id="절9">맺으며</h2>
 <p>20년 뒤 굳건한 브랜드의 최종형은 「좋은 회사」가 아니라 <strong>「기준을 정하는 곳」</strong>이라고 생각합니다. 그 자리에 가려면 오늘부터 데이터가 쌓여야 하는데, 나중에 시작하면 5년을 통째로 잃기 때문입니다. 그래서 학생이 처음 앱을 여는 날부터 그 기록이 졸업 뒤까지 이어지도록 설계를 먼저 넣었습니다. 지금은 아무것도 증명하지 못합니다. 다만 무엇을 어떤 순서로 지을지는 여기 그대로 적어 두었으니, 1년 뒤에 이 글을 다시 열어 맞는지 재 보실 수 있습니다.</p>
 <blockquote><p><strong>SYNK LAB은 첫 실물이고, SYNK SHIFT는 그 방법을 파는 곳입니다.</strong></p></blockquote>
-  </div>
-  <p class="꼬리">이 지면은 정본 글에서 구워집니다 — 글을 고치실 자리는
+  </main>
+  <footer><p class="꼬리">이 지면은 정본 글에서 구워집니다 — 글을 고치실 자리는
     <code>docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt</code> 하나입니다.
-    다시 구우려면 <code>node tools/SHIFT소개서지면.js</code>.</p>
+    다시 구우려면 <code>node tools/SHIFT소개서지면.js</code>.</p></footer>
 </div>
 </body></html>
