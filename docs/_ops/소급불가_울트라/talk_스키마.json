@@ -1,0 +1,541 @@
+{
+ "engine.schema_migrations": {
+  "cols": [
+   "version",
+   "name",
+   "applied_at"
+  ],
+  "n": 3
+ },
+ "engine.learners": {
+  "cols": [
+   "learner_id",
+   "auth_user_id",
+   "student_code",
+   "display_name",
+   "contact",
+   "birth_year",
+   "level_current",
+   "home_aimag",
+   "gender",
+   "goal_track",
+   "created_at",
+   "schema_ver"
+  ],
+  "n": 12
+ },
+ "engine.learning_events": {
+  "cols": [
+   "event_id",
+   "learner_id",
+   "event_type",
+   "task_type",
+   "actor_kind",
+   "occurred_at",
+   "ingested_at",
+   "correlation_id",
+   "idempotency_key",
+   "session_id",
+   "content_id",
+   "retry_of_event_id",
+   "parent_event_id",
+   "turn_no",
+   "skill_ids",
+   "skill_taxonomy_ver",
+   "level_snapshot",
+   "goal_snapshot",
+   "intervention_id",
+   "model",
+   "prompt_ver",
+   "policy_ver",
+   "consent_ver",
+   "degraded",
+   "payload",
+   "schema_ver"
+  ],
+  "n": 26
+ },
+ "engine.submissions": {
+  "cols": [
+   "submission_id",
+   "event_id",
+   "task_type",
+   "task_format",
+   "task_ref",
+   "task_snapshot",
+   "task_schema_ver",
+   "body_original",
+   "image_refs",
+   "audio_ref",
+   "audio_duration_sec",
+   "transcript",
+   "transcript_verified",
+   "transcript_state",
+   "stt_segments",
+   "stt_confidence",
+   "code_switch_spans",
+   "capture_meta",
+   "redaction_ver",
+   "redaction_result",
+   "audio_deleted_at",
+   "occurred_at",
+   "schema_ver"
+  ],
+  "n": 23
+ },
+ "engine.corrections": {
+  "cols": [
+   "correction_id",
+   "submission_id",
+   "reviewed_correction_id",
+   "actor_kind",
+   "corrected_text",
+   "error_tags",
+   "explanation",
+   "model",
+   "prompt_ver",
+   "reviewer",
+   "verdict",
+   "verdict_reason",
+   "reviewer_confidence",
+   "l1_source_phrase",
+   "rubric_scores",
+   "review_listened_ms",
+   "created_at",
+   "schema_ver"
+  ],
+  "n": 18
+ },
+ "engine.skills": {
+  "cols": [
+   "skill_id",
+   "label_ko",
+   "label_mn",
+   "domain",
+   "parent_id",
+   "superseded_by",
+   "error_tags",
+   "schema_ver"
+  ],
+  "n": 8
+ },
+ "engine.consents": {
+  "cols": [
+   "consent_id",
+   "learner_id",
+   "consent_ver",
+   "doc_hash",
+   "agreed_at",
+   "revoked_at",
+   "schema_ver"
+  ],
+  "n": 7
+ },
+ "engine.pipeline_jobs": {
+  "cols": [
+   "job_id",
+   "submission_id",
+   "status",
+   "attempt_count",
+   "attempt_id",
+   "lease_until",
+   "is_audit_sample",
+   "last_error",
+   "created_at",
+   "updated_at"
+  ],
+  "n": 10
+ },
+ "engine.daily_activity": {
+  "cols": [
+   "learner_id",
+   "activity_date",
+   "session_count",
+   "expected"
+  ],
+  "n": 4
+ },
+ "engine.staff": {
+  "cols": [
+   "auth_user_id",
+   "staff_id",
+   "role",
+   "display_name",
+   "active",
+   "revoked_before",
+   "created_at"
+  ],
+  "n": 7
+ },
+ "engine.staff_access_log": {
+  "cols": [
+   "log_id",
+   "staff_id",
+   "at",
+   "action",
+   "target_ids"
+  ],
+  "n": 5
+ },
+ "radio.broadcast_segment": {
+  "cols": [
+   "segment_id",
+   "kind",
+   "kind_detail",
+   "started_at",
+   "ended_at",
+   "title",
+   "source",
+   "schema_ver"
+  ],
+  "n": 8
+ },
+ "radio.chat_message": {
+  "cols": [
+   "message_id",
+   "channel_id",
+   "display_name",
+   "body",
+   "raw",
+   "sent_at",
+   "ingested_at",
+   "command_kind",
+   "command_arg",
+   "parser_ver",
+   "schema_ver"
+  ],
+  "n": 11
+ },
+ "radio.ingest_heartbeat": {
+  "cols": [
+   "id",
+   "polled_at",
+   "video_id",
+   "messages_seen",
+   "concurrent_viewers",
+   "schema_ver"
+  ],
+  "n": 6
+ },
+ "radio.viewer_link": {
+  "cols": [
+   "link_id",
+   "channel_id",
+   "learner_id",
+   "claim_message_id",
+   "confirmed_by",
+   "confirmed_at",
+   "unlinked_at",
+   "schema_ver"
+  ],
+  "n": 8
+ },
+ "radio.quiz_round": {
+  "cols": [
+   "round_id",
+   "task_ref",
+   "task_snapshot",
+   "shown_at",
+   "closed_at",
+   "retry_of_round_id",
+   "schema_ver"
+  ],
+  "n": 7
+ },
+ "radio.subtitle_card_log": {
+  "cols": [
+   "id",
+   "content_ref",
+   "content_snapshot",
+   "shown_from",
+   "shown_to",
+   "schema_ver"
+  ],
+  "n": 6
+ },
+ "engine.season": {
+  "cols": [
+   "season_id",
+   "code",
+   "textbook",
+   "starts_on",
+   "ends_on",
+   "schema_ver",
+   "/*",
+   "*",
+   "*",
+   "exclude"
+  ],
+  "n": 10
+ },
+ "engine.season_compass": {
+  "cols": [
+   "compass_id",
+   "learner_id",
+   "season_id",
+   "answers",
+   "self_in_5y_changed",
+   "goal_track_at_open",
+   "recorded_by",
+   "recorded_at",
+   "schema_ver",
+   "/*",
+   "*",
+   "*",
+   "*",
+   "*",
+   "*",
+   "*",
+   "*",
+   "(",
+   "self_in_5y_changed",
+   "and",
+   "and",
+   ")",
+   "self_in_5y_changed",
+   "and",
+   "and",
+   ")",
+   ")"
+  ],
+  "n": 27
+ },
+ "engine.season_review": {
+  "cols": [
+   "review_id",
+   "learner_id",
+   "season_id",
+   "record_snapshot",
+   "verdict",
+   "verdict_by_self",
+   "note",
+   "opened_by",
+   "opened_at",
+   "decided_by",
+   "decided_at",
+   "schema_ver",
+   "/*",
+   "*",
+   "*",
+   "/*",
+   "*",
+   "(verdict",
+   "or",
+   "and",
+   ")"
+  ],
+  "n": 21
+ },
+ "engine.classes": {
+  "cols": [
+   "class_id",
+   "class_key",
+   "season_id",
+   "display_name",
+   "active",
+   "created_at",
+   "schema_ver"
+  ],
+  "n": 7
+ },
+ "engine.staff_classes": {
+  "cols": [
+   "staff_id",
+   "class_id",
+   "assigned_at",
+   "schema_ver"
+  ],
+  "n": 4
+ },
+ "engine.teacher_notes": {
+  "cols": [
+   "note_id",
+   "submission_id",
+   "staff_id",
+   "body",
+   "origin",
+   "disposition",
+   "created_at",
+   "updated_at",
+   "schema_ver"
+  ],
+  "n": 9
+ },
+ "engine.companion_qa": {
+  "cols": [
+   "qa_id",
+   "staff_id",
+   "at",
+   "screen",
+   "question",
+   "answer",
+   "cited_refs",
+   "handoff",
+   "handoff_reason",
+   "model",
+   "prompt_ver"
+  ],
+  "n": 11
+ },
+ "ops.cron_runs": {
+  "cols": [
+   "id",
+   "jobname",
+   "/*",
+   "request_id",
+   "queued_at",
+   "outcome",
+   "status_code",
+   "timed_out",
+   "error_msg",
+   "/*",
+   "body",
+   "harvested_at",
+   "/*",
+   "*",
+   "('대기'"
+  ],
+  "n": 15
+ },
+ "engine.generation_jobs": {
+  "cols": [
+   "job_id",
+   "learner_id",
+   "assign_date",
+   "batch_run_id",
+   "status",
+   "snapshot_as_of",
+   "branch_snapshot",
+   "skill_ids",
+   "skill_taxonomy_ver",
+   "not_target_reason",
+   "event_draft",
+   "load_error",
+   "load_failed_at",
+   "load_fail_run_id",
+   "load_retry_count",
+   "fence",
+   "owner",
+   "lease_until",
+   "model",
+   "prompt_ver",
+   "policy_ver",
+   "estimator_version",
+   "schema_ver",
+   "outcome",
+   "'성공','대상아님','구제경로','키없음','예산소진','타임아웃','벤더오류'",
+   "'응답파손','입력초과','응답초과','검문탈락','상태없음','상태오류','내부오류'",
+   "'판불일치'))",
+   "assigned_event_id",
+   "winning_attempt_id",
+   "deciding_attempt_id",
+   "created_at",
+   "closed_at",
+   "status",
+   "or",
+   ")",
+   "status",
+   ")",
+   "status",
+   "and",
+   ")",
+   "case",
+   "when",
+   "when",
+   "when",
+   "when",
+   "else",
+   "end",
+   ")",
+   "case",
+   "when",
+   "then",
+   "else",
+   "end",
+   ")",
+   "status",
+   "or",
+   "and",
+   ")",
+   "status",
+   "or",
+   ")",
+   "btrim(model)",
+   "and",
+   ")"
+  ],
+  "n": 64
+ },
+ "engine.generation_attempts": {
+  "cols": [
+   "attempt_id",
+   "job_id",
+   "attempt_no",
+   "fence",
+   "owner",
+   "model",
+   "prompt_ver",
+   "policy_ver",
+   "estimator_version",
+   "schema_ver",
+   "skill_taxonomy_ver",
+   "request_body",
+   "requested_at",
+   "raw_response",
+   "responded_at",
+   "result",
+   "('성공','검문탈락','타임아웃','벤더오류','응답파손','입력초과','응답초과'))",
+   "gate_failed_reasons",
+   "btrim(model)",
+   "and",
+   ")"
+  ],
+  "n": 21
+ },
+ "engine.generation_batch_runs": {
+  "cols": [
+   "run_id",
+   "assign_date",
+   "run_kind",
+   "started_at",
+   "snapshot_as_of",
+   "calendar_game_day",
+   "enrolled_count",
+   "roster_hash",
+   "level_distribution",
+   "model",
+   "prompt_ver",
+   "policy_ver",
+   "estimator_version",
+   "schema_ver",
+   "skill_taxonomy_ver",
+   "target_count",
+   "loaded_count",
+   "skipped_game_count",
+   "skipped_existing_count",
+   "partial_count",
+   "finished_at",
+   "target_count",
+   "or",
+   ")",
+   "btrim(model)",
+   "and",
+   ")",
+   "partial_count",
+   ")",
+   "(skipped_game_count",
+   "or",
+   "and",
+   "or",
+   ")",
+   "finished_at",
+   "or",
+   "and",
+   ")",
+   "finished_at",
+   "or",
+   ")"
+  ],
+  "n": 41
+ }
+}
