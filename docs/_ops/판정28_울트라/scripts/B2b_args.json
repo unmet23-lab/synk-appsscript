@@ -1,0 +1,35 @@
+{
+ "stampToday": "2026-09-03",
+ "items": [
+  {
+   "id": "pilot-3",
+   "doc": "docs/파일럿_체험2주_설계_v1.md"
+  },
+  {
+   "id": "pilot-2",
+   "doc": "docs/파일럿_체험2주_설계_v1.md"
+  },
+  {
+   "id": "teacher-8",
+   "doc": "docs/강사채용_부트캠프_v1.md",
+   "merge": "pilot-6",
+   "merge_why": "강사 문서 §13-2 #8 이 「공간·대상·참가비는 파일럿 문서 §A-2 소관 — 같은 자리에서 함께」라 적었다"
+  },
+  {
+   "id": "teacher-a",
+   "doc": "docs/강사채용_부트캠프_v1.md"
+  },
+  {
+   "id": "teacher-7",
+   "doc": "docs/강사채용_부트캠프_v1.md"
+  },
+  {
+   "id": "paper-8",
+   "doc": "docs/가져가는것_설계_v1.md"
+  },
+  {
+   "id": "ending-1",
+   "doc": "docs/끝의설계_v1.md"
+  }
+ ]
+}
