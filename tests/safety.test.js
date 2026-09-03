@@ -2194,6 +2194,18 @@ test('[v9.293] 🎯 직장 경험 폼 결과 칸 셋 — 선택 유지 · 기존
     '잠금 해제·지연 알림 순서가 없다 — adminMail 이 같은 락을 다시 잡아 알림이 죽는다');
   assert.ok(!/adminMail\(/.test(section('function migrateWorkFormOutcome_(', 'function migrateFormCopy0901()')),
     '결과 칸 본체가 잠금 «안»에서 adminMail 을 부른다(비재진입 락)');
+  /* [2026-09-03] codex P3 85ea109cbb73·8741ad6a9822 — 설문지 제목 치유는 «맨 먼저» 일어난다.
+   * 그 뒤 쓰기가 던지면 라이브 폼의 제목은 이미 바뀐 채인데 사람에게 가는 것은 「실패」뿐이라,
+   * 「제목이 왜 바뀌었지」를 다음 사람이 못 잇는다. 두 통로가 «모양은 달라도» 같은 값을 내야 한다:
+   *   · 결과 칸 = 래퍼가 상자로 받아 catch 에서 알림을 세우고 finally 가 보낸다(잠금 규율 유지)
+   *   · 몽골어 안내 = 래퍼가 없어(멱등이라 잠금 불필요) 본체가 직접 감싼다 */
+  assert.ok(/catch \(e\) \{[\s\S]{0,400}제목치유흔적[\s\S]{0,600}throw e/.test(outWrap),
+    '결과 칸 래퍼가 «제목만 고치고 멈춘» 경로를 안 알린다 — 라이브 제목이 왜 바뀌었는지 못 잇는다');
+  assert.ok(/치유기록\(제목치유\)/.test(section('function migrateWorkFormOutcome_(', 'function migrateFormCopy0901()')),
+    '결과 칸 본체가 치유 사실을 래퍼로 안 흘린다 — 상자가 비어 위 알림이 영영 안 선다');
+  const mnBody = section('function migrateWorkFormMn()', '/* ── [v9.293]');
+  assert.ok(/catch \(e\) \{[\s\S]{0,600}제목치유[\s\S]{0,600}throw e/.test(mnBody),
+    '몽골어 안내 통로가 «제목만 고치고 멈춘» 경로를 안 알린다(이쪽은 래퍼가 없어 본체가 감싼다)');
   /* [v9.294] codex P2 e5ca1be011e6 — 첫 실행에서 문항은 붙고 moveItem 만 실패한 폼(v9.182 의 실제 모양)은
    * 「있으면 넘긴다」로는 영영 안 고쳐진다. 있는 것도 자리·유형을 다시 재고, 못 고치는 것은 보고한다. */
   assert.ok(/자리 교정/.test(out) && /어긋남/.test(out),

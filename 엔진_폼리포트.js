@@ -2076,29 +2076,50 @@ function migrateWorkFormMn() {
   const 제목치유 = 직장폼제목치유_(form);
   if (제목치유) Logger.log('[직장 폼] 제목 치유 —' + 제목치유);
 
-  const 바뀐것 = [];
-  if (String(form.getDescription() || '') !== WORK_DESC) { form.setDescription(WORK_DESC); 바뀐것.push('폼 설명(맨 위)'); }
+  /* 🔴 «제목만 고치고 멈춘» 자리도 사람에게 간다 (2026-09-03 · codex P3 `8741ad6a9822` 채택 수리).
+   *   아래 쓰기가 던지면 요약도 메일도 못 나가는데 라이브 폼의 제목은 이미 바뀐 뒤다. 그러면
+   *   유호님께 가는 것은 「실패」뿐이라 「제목이 왜 바뀌었지」를 다음 사람이 못 잇는다.
+   * ⚠ 이쪽은 결과 칸 통로와 달리 «공개 래퍼가 없다»(잠금이 필요 없는 멱등 갱신이라 안 씌웠다).
+   *   그래서 상자 대신 여기서 직접 감싼다 — 두 통로가 같은 값을 내되 모양이 다른 까닭이다. */
+  try {
+    const 바뀐것 = [];
+    if (String(form.getDescription() || '') !== WORK_DESC) { form.setDescription(WORK_DESC); 바뀐것.push('폼 설명(맨 위)'); }
 
-  const items = form.getItems();
-  const 못찾음 = [];
-  Object.keys(WORK_HELP).forEach(function (title) {
-    const it = items.filter(function (x) { return String(x.getTitle()).trim() === title; })[0];
-    if (!it) { 못찾음.push(title); return; }   // 제목이 갈렸다는 신호 — 조용히 넘기면 그 문항만 한국어로 남는다
-    if (String(it.getHelpText() || '') !== WORK_HELP[title]) { it.setHelpText(WORK_HELP[title]); 바뀐것.push(title); }
-  });
+    const items = form.getItems();
+    const 못찾음 = [];
+    Object.keys(WORK_HELP).forEach(function (title) {
+      const it = items.filter(function (x) { return String(x.getTitle()).trim() === title; })[0];
+      if (!it) { 못찾음.push(title); return; }   // 제목이 갈렸다는 신호 — 조용히 넘기면 그 문항만 한국어로 남는다
+      if (String(it.getHelpText() || '') !== WORK_HELP[title]) { it.setHelpText(WORK_HELP[title]); 바뀐것.push(title); }
+    });
 
-  const 요약 = (바뀐것.length ? '✅ 몽골어 안내를 넣었습니다 — ' + 바뀐것.length + '곳 갱신:\n· ' + 바뀐것.join('\n· ')
-    : '✅ 이미 정본과 같습니다 — 고칠 것이 없었습니다(이 함수는 몇 번 눌러도 안전합니다).')
-    + (못찾음.length ? '\n\n⚠️ 폼에서 못 찾은 문항 ' + 못찾음.length + '개: ' + 못찾음.join(' · ')
-      + '\n   → 제목이 바뀌었거나 문항이 지워진 자리입니다. 그 문항은 한국어 안내로 남습니다.' : '')
-    + 제목치유   // 갈래 셋을 스스로 말하는 완성된 토막('' = 이미 서 있었다)
-    + '\n\n문항 제목·선택지·기존 응답은 건드리지 않았습니다.\n배포 링크: ' + form.getPublishedUrl();
-  Logger.log(요약);
-  adminMail('[SYNK] 🇲🇳 직장 경험 폼 몽골어 안내 반영', 요약
-    + '\n\n왜 넣었나: 이 폼이 받아내야 하는 것은 「혼났던 일」·「말투 때문에 곤란했던 순간」처럼 미묘한 이야기입니다.'
-    + '\n한국어로 써야 한다고 생각하면 한 줄로 줄어듭니다 — 그래서 폼 설명 끝에 「몽골어로 답해도 된다」를 박았습니다.'
-    + '\n\n⚠️ 몽골어는 기계 검문(역번역·문법)만 지났습니다. 말투 층은 도구가 없어 «미측정»입니다 — 대외로 크게 뿌리기 전에 원어민 눈이 한 번 더 보면 좋습니다.');
-  return 요약;
+    const 요약 = (바뀐것.length ? '✅ 몽골어 안내를 넣었습니다 — ' + 바뀐것.length + '곳 갱신:\n· ' + 바뀐것.join('\n· ')
+      : '✅ 이미 정본과 같습니다 — 고칠 것이 없었습니다(이 함수는 몇 번 눌러도 안전합니다).')
+      + (못찾음.length ? '\n\n⚠️ 폼에서 못 찾은 문항 ' + 못찾음.length + '개: ' + 못찾음.join(' · ')
+        + '\n   → 제목이 바뀌었거나 문항이 지워진 자리입니다. 그 문항은 한국어 안내로 남습니다.' : '')
+      + 제목치유   // 갈래 셋을 스스로 말하는 완성된 토막('' = 이미 서 있었다)
+      + '\n\n문항 제목·선택지·기존 응답은 건드리지 않았습니다.\n배포 링크: ' + form.getPublishedUrl();
+    Logger.log(요약);
+    adminMail('[SYNK] 🇲🇳 직장 경험 폼 몽골어 안내 반영', 요약
+      + '\n\n왜 넣었나: 이 폼이 받아내야 하는 것은 「혼났던 일」·「말투 때문에 곤란했던 순간」처럼 미묘한 이야기입니다.'
+      + '\n한국어로 써야 한다고 생각하면 한 줄로 줄어듭니다 — 그래서 폼 설명 끝에 「몽골어로 답해도 된다」를 박았습니다.'
+      + '\n\n⚠️ 몽골어는 기계 검문(역번역·문법)만 지났습니다. 말투 층은 도구가 없어 «미측정»입니다 — 대외로 크게 뿌리기 전에 원어민 눈이 한 번 더 보면 좋습니다.');
+    return 요약;
+  } catch (e) {
+    /* 예외는 삼키지 않는다 — 다시 던져 화면·실행 기록에 그대로 남긴다.
+     * 다만 «제목은 이미 고쳤다»는 사실만 메일로 따로 보낸다(그 한 줄이 없으면 라이브 폼의
+     * 제목이 왜 바뀌었는지 아무도 못 잇는다). 메일이 또 실패해도 원래 예외를 가리지 않는다. */
+    if (제목치유) {
+      try {
+        adminMail('[SYNK] ⚠️ 직장 경험 폼 — 제목만 고치고 멈췄습니다',
+          '몽골어 안내를 넣다가 멈췄습니다. 다만 «이것은 이미 끝났습니다»:' + 제목치유
+          + '\n\n멈춘 자리: ' + (e && e.message ? e.message : e)
+          + '\n\n→ 시트 메뉴에서 한 번 더 실행하세요. 제목은 이미 서 있어 그 단계는 건너뜁니다.'
+          + '\n   (안내문 갱신은 몇 번 눌러도 결과가 같습니다.)');
+      } catch (e2) { Logger.log('[직장 폼] 제목 치유 알림도 실패: ' + e2); }
+    }
+    throw e;
+  }
 }
 
 /* ── [v9.293] 🎯 라이브 직장 폼에 «결과 칸 셋» 넣기 (멱등) — 유호 채택 09-02 · 한 차원 D2 ──
@@ -2127,14 +2148,33 @@ function migrateWorkFormOutcome() {
     Logger.log(mL);
     return mL;
   }
+  /* 🔴 «제목만 고치고 멈춘» 자리도 사람에게 간다 (2026-09-03 · codex P3 `85ea109cbb73` 채택 수리).
+   *   설문지 제목 치유는 «맨 먼저» 일어나는데(그래야 그 뒤 판정이 엄격한 길로 지난다), 문항을
+   *   더하다 예외가 나면 요약도 메일도 못 나갔다. 그러면 라이브 폼의 제목은 이미 바뀌었는데
+   *   유호님께 간 것은 「실패」뿐이라, 「제목이 왜 바뀌었지」를 다음 사람이 못 잇는다.
+   * 🔑 상자 하나를 더 둔다 — 지연알림과 같은 무늬다. catch 가 알림을 세우고 finally 가 보내므로
+   *   «잠금 해제 뒤 발송» 규율(P1 34a174bc)이 그대로 지켜진다. 예외는 삼키지 않고 다시 던진다. */
   let 지연알림 = null;
-  try { return migrateWorkFormOutcome_(m => { 지연알림 = m; }); }
+  let 제목치유흔적 = '';
+  try { return migrateWorkFormOutcome_(m => { 지연알림 = m; }, t => { 제목치유흔적 = t; }); }
+  catch (e) {
+    if (제목치유흔적) {
+      지연알림 = {
+        제목: '[SYNK] ⚠️ 직장 경험 폼 — 제목만 고치고 멈췄습니다',
+        본문: '결과 칸을 넣다가 멈췄습니다. 다만 «이것은 이미 끝났습니다»:' + 제목치유흔적
+          + '\n\n멈춘 자리: ' + (e && e.message ? e.message : e)
+          + '\n\n→ 시트 메뉴에서 한 번 더 실행하세요. 제목은 이미 서 있어 그 단계는 건너뜁니다.'
+          + '\n   (문항은 「없으면 만든다」라 두 번 눌러도 두 벌로 안 붙습니다.)',
+      };
+    }
+    throw e;
+  }
   finally {
     lock.releaseLock();
     if (지연알림) adminMail(지연알림.제목, 지연알림.본문);
   }
 }
-function migrateWorkFormOutcome_(알림기록) {
+function migrateWorkFormOutcome_(알림기록, 치유기록) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   const fid = String(getState(st, '직장폼ID').val || '');
@@ -2190,9 +2230,14 @@ function migrateWorkFormOutcome_(알림기록) {
   };
 
   /* 빈 «설문지 제목»부터 채운다 — 위 서명이 문서 제목으로 «우회해» 통과한 자리다(09-03 · 이 버튼이 두 번 거절당한 바로 그 자리).
-   * 🔑 즉시 로그에 남긴다(①배포 검수 P2) — 아래 문항 넣기가 던지면 요약은 못 나가는데 «제목은 이미 바뀐» 상태다. */
+   * 🔑 즉시 로그에 남긴다(①배포 검수 P2) — 아래 문항 넣기가 던지면 요약은 못 나가는데 «제목은 이미 바뀐» 상태다.
+   * 🔑 래퍼에도 흘린다(P3 `85ea109cbb73`) — 로그는 남지만 «사람에게 가는 것»은 실패 한 줄뿐이었다.
+   *   래퍼가 이 값을 쥐고 있어야 예외 경로에서도 「제목은 이미 고쳤다」를 메일로 보낼 수 있다. */
   const 제목치유 = 직장폼제목치유_(form);
-  if (제목치유) Logger.log('[직장 폼] 제목 치유 —' + 제목치유);
+  if (제목치유) {
+    Logger.log('[직장 폼] 제목 치유 —' + 제목치유);
+    if (치유기록) 치유기록(제목치유);
+  }
 
   const 넣은것 = [];
   const 앵커없음 = [];
