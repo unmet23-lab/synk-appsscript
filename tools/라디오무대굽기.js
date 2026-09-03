@@ -42,7 +42,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { 키, 한컷 } = require('./lib/이미지굽기');
+const { 키, 한컷, 배치게이트 } = require('./lib/이미지굽기');
 
 const ROOT = path.resolve(__dirname, '..');
 const 낼곳 = path.join(ROOT, 'docs/라디오/무대');
@@ -158,6 +158,9 @@ function main() {
   const 목록 = 하나 ? [하나] : Object.keys(무대들);
 
   (async () => {
+    /* 돈 게이트 — 굽기 «전»에 얼마인지 말하고, 크레딧이 죽었으면 0원에 선다(09-03 · 유호 확정).
+     * 목록 길이는 «최대»다(아래에서 이미 있는 장은 건너뛴다) — 게이트는 상한선을 말한다. */
+    if (!(await 배치게이트(목록.length, '2K'))) { process.exitCode = 3; return; }
     /* 🔑 «합계 = 갈래 + 갈래»로 적는다 — 끝줄에 「2장」만 적으면 **굽지 않고 건너뛴 실행도
      *   구운 것처럼 읽힌다**(돈이 드는 도구라 그 오독의 값이 크다). */
     let 구움 = 0, 건너뜀 = 0;

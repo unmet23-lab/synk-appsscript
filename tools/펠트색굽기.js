@@ -26,7 +26,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { 키, 한컷 } = require('./lib/이미지굽기');
+const { 키, 한컷, 배치게이트 } = require('./lib/이미지굽기');
 
 const REPO = path.resolve(__dirname, '..');
 /* 정본 폴더는 손으로 안 든다(2026-08-20) — 주인은 `docs/디자인_토큰.json` 이고
@@ -119,6 +119,9 @@ rounded dome head, wavy flowing bottom edge. No mouth. ${색규약} ${스튜디�
   const k = 키();
   const 결과 = {};
   const 대상 = process.argv[2] ? 작업들.filter((z) => z.이름 === process.argv[2]) : 작업들;
+  /* 돈 게이트 — 굽기 «전»에 얼마인지 말하고, 크레딧이 죽었으면 0원에 선다(09-03 · 유호 확정).
+   * 게이트가 없던 09-03 이전엔 크레딧이 마른 것을 «첫 장을 던져 보고» 알았다. */
+  if (!(await 배치게이트(대상.length, '1K'))) process.exit(3);
   let 실패 = 0;
   for (const z of 대상) {
     // 런타임참조는 같은 실행의 산출물이 1순위 → 디스크에 이미 구운 것 → 대체참조.
@@ -133,6 +136,9 @@ rounded dome head, wavy flowing bottom edge. No mouth. ${색규약} ${스튜디�
     } catch (e) {
       실패++;
       console.error(`🔴 ${e.message}`);
+      /* 돈 벽은 «이 장»의 실패가 아니라 «남은 전부»의 실패다 — 계속 돌면 남은 장이 모두
+       * 거절당하는 요청이 된다(09-03 에 글 쪽에서 밟은 그 무늬). 여기서 통째로 선다. */
+      if (e.돈벽) { console.error('   ⛔ 남은 장은 안 던진다 — 돈 벽이다.'); break; }
     }
   }
   console.log(`\n합계 = 시도 ${대상.length} = 성공 ${대상.length - 실패} + 실패 ${실패}`
