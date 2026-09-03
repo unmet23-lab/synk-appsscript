@@ -95,12 +95,14 @@ ${loom.css({ 지면: '밝은부품' })}
     <p class="눈썹">SYNK SHIFT · 한국 법인</p>
     <h1>${제목.replace(/\s*소개서$/, '')}</h1>
   </header>
-  <div class="룸">
+  <!-- 본문을 main 으로 감싼다 — 화면 읽어 주는 장치가 「여기부터 본문」으로 건너뛴다.
+       꾸밈은 클래스가 지므로 태그만 바꾸면 보이는 것은 그대로다(09-03 접근성 실측). -->
+  <main class="룸">
 ${몸}
-  </div>
-  <p class="꼬리">이 지면은 정본 글에서 구워집니다 — 글을 고치실 자리는
+  </main>
+  <footer><p class="꼬리">이 지면은 정본 글에서 구워집니다 — 글을 고치실 자리는
     <code>docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt</code> 하나입니다.
-    다시 구우려면 <code>node tools/SHIFT소개서지면.js</code>.</p>
+    다시 구우려면 <code>node tools/SHIFT소개서지면.js</code>.</p></footer>
 </div>
 </body></html>`;
 
