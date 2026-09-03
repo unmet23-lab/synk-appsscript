@@ -57,6 +57,24 @@ test('Ⓐ 이미 있는 시트의 헤더를 치유가 잡는다 — ensureSheet 
     'jacketWatch_ 가 헤더 치유를 안 부른다 — 정의를 늘려도 라이브 칸은 안 는다');
 });
 
+test('Ⓐ 🔴 jacket_grants 적재는 행소독_ 을 지난다 — 「=」로 시작하는 이름을 시트가 «실행»한다', () => {
+  /* 이 이름의 출처는 크루카드 웹앱의 «익명» doPost 다(크루카드 → 상담시트 → syncProfiles → profiles → 여기).
+   * 소독 없이 칸에 넣으면 `=IMPORTDATA("…?d="&TEXTJOIN(",",1,profiles!B2:B60))` 한 줄로
+   * 같은 파일의 학생 명부가 밖으로 나간다 — 사람이 그 칸을 클릭할 필요도 없다(시트가 스스로 평가한다).
+   * ⚠ profiles 를 지났다고 안전하지 않다: 거기서 붙는 아포스트로피는 저장할 때 소비돼
+   *   getValues 가 «원문»을 돌려준다. 소독은 쓰는 자리마다 다시 해야 한다. */
+  const from = 코드정제.indexOf('function jacketWatch_');
+  const to = 코드정제.indexOf('function healthCheck', from);
+  assert.notEqual(from, -1);
+  assert.notEqual(to, -1);
+  const 워처 = 코드정제.slice(from, to);
+  assert.ok(/\.setValues\(행소독_\(out\)\)/.test(워처), 'jacket_grants 적재가 소독을 안 지난다');
+  assert.equal(/\.setValues\(out\)/.test(워처), false, '날것 out 을 그대로 쓰는 자리가 남았다');
+  // 🚫 관리자 메일 본문은 **안 고친다** — 순수 글자 메일이고 받는 이가 원장 하나다(감싸면 읽기만 나빠진다)
+  assert.ok(/'· ' \+ o\[1\] \+ ' \('/.test(워처),
+    '관리자 메일의 이름 표기가 바뀌었다 — 글자 메일은 소독 대상이 아니다(고치면 원장이 읽기 나빠진다)');
+});
+
 /* ── B. 스탬프 멱등 ──────────────────────────────────────────────────────────── */
 
 /** 시트를 흉내낸다 — getRange(행,열).setValue 와 getRange(행,열,행수,열수).getValues 둘만 쓴다. */
@@ -163,6 +181,32 @@ test('Ⓒ 🔴 태그의 이름은 escHtml_ 를 거친다 — 안 거치면 학�
   assert.equal(/replace\('\{이름\}',\s*p\.이름\)/.test(태그), false, '이름을 날것으로 치환한다');
   // 치환은 «함수»로 — 문자열로 주면 이름 안의 `$&`·`$\'` 가 치환 지시로 읽혀 딴 글자가 박힌다
   assert.ok(/\.replace\('\{이름\}',\s*\(\)\s*=>/.test(태그), '치환을 함수로 주지 않는다');
+});
+
+test('Ⓒ 🔴 이달의 카드도 이름을 escHtml_ 로 감싼다 — 태그보다 나쁘다(시트에 «저장»된다)', () => {
+  /* 같은 뿌리(익명 doPost → 상담시트 → profiles)인데 태그보다 두 가지가 더 나쁘다:
+   *   ⓐ 여기서 만든 HTML 은 synk_cards 시트에 **저장돼 남는다** — 굽고 마는 태그와 달리 지울 때까지 다시 읽힌다.
+   *   ⓑ 한 장에 **그달 재원생 전원**의 이름이 있다(태그는 그날 받은 몇 명뿐).
+   * 그리는 자리는 09-03 실측으로 하나뿐 — printMonthlyCards 가 이 HTML 을 A4 그리드에 이어 붙여
+   *   Drive 「SYNK_인쇄」 에 .html·.pdf 로 굽고 원장 메일로 링크를 보낸다(앱·웹앱 소비자 0). */
+  const from = 코드정제.indexOf('function buildMonthlyCards_');
+  const to = 코드정제.indexOf('function printMonthlyCards', from);
+  assert.notEqual(from, -1);
+  assert.notEqual(to, -1);
+  const 카드 = 코드정제.slice(from, to);
+  assert.ok(/escHtml_\(s\.nm\)/.test(카드), '학생 이름이 이스케이프 없이 카드 HTML 에 들어간다');
+  assert.equal(/\+\s*s\.nm\s*\+/.test(카드), false, '이름을 날것으로 잇는 자리가 남았다');
+  /* 🚫 기계가 만든 값까지 감싸면 우리가 «일부러» 넣은 태그가 글자로 보인다.
+   *   stat=숫자와 상수만 · tier=CARD_TIERS 상수 · playStyleOf_=PLAY_STYLES 상수표 —
+   *   익명으로 사람이 넣는 값은 이름 하나뿐이다. */
+  assert.equal(/escHtml_\((?!s\.nm)/.test(카드), false,
+    '이름 말고 다른 값까지 감쌌다 — 기계가 만든 태그가 글자로 보인다');
+
+  // 인쇄 쪽은 시트에 든 HTML 을 «그대로» 잇는다 — 그래서 소독은 굽는 자리에서 끝나야 한다
+  const 인쇄 = 코드정제.slice(to, 코드정제.indexOf('function menuPrintMonthlyCards', to));
+  assert.ok(/getSheetByName\('synk_cards'\)/.test(인쇄), '인쇄물이 synk_cards 를 안 읽는다 — 그리는 자리를 다시 잰다');
+  assert.ok(/'<div class="c">' \+ c \+ '<\/div>'/.test(인쇄),
+    '인쇄물이 저장된 HTML 을 그대로 안 잇는다 — 소독을 어디서 할지 다시 판정해야 한다');
 });
 
 /* ── D. 학생이 읽는 말 ───────────────────────────────────────────────────────── */
