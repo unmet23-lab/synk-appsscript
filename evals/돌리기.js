@@ -93,8 +93,20 @@ function 시험규모() {
 
 const 초읽기 = (s) => (s == null ? '(안 알려줬다)' : s < 90 ? `${Math.round(s)}초 뒤` : `${Math.round(s / 60)}분 뒤`);
 
-/* 도장 = 「이 모델은 이미 쟀다」. 모델 이름이 박혀 있어서 픽을 갈아타면 저절로 안 맞는다. */
+/* 도장 = 「이 모델은 이미 쟀다」. 모델 이름이 박혀 있어서 픽을 갈아타면 저절로 안 맞는다.
+ * `_결과/` 는 커밋하지 않는다(evals/.gitignore — 결과에 몽골어 본문과 모델 답이 그대로 들어가는데
+ * 이 저장소는 PUBLIC 이다). 그래서 도장은 **이 기계에만** 산다. */
 const 도장경로 = (model) => path.join(여기, '_결과', `도장_${model}.json`);
+
+/* 판정 = **숫자만**. 몽골어도 문항 이름도 안 담는다 — 그래서 커밋해도 되고, 그 덕에
+ * «두 기계가 같은 시험을 두 번 돌리는 것»을 막는다(하루 몫은 하나뿐이다).
+ * 남의 기계(GitHub Actions)가 먼저 재면 이 파일이 커밋돼 오고, 그러면 이 기계는 안 던진다. */
+const 판정경로 = (model) => path.join(여기, '_판정', `${model}.json`);
+
+/* 「알렸나」는 **이 기계의 사정**이라 커밋하지 않는다 — 도장으로 재든 판정으로 재든 한 번만 뜬다. */
+const 알림표시경로 = (model) => path.join(여기, '_결과', `알렸다_${model}.txt`);
+
+const 읽기 = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
 
 /* ── `--알림` (0발 · 네트워크 0) ─────────────────────────────────────
  * 예약은 사람이 없는 시각에 돈다. 그래서 **결과가 유호님을 찾아와야** 한다 — 세션 첫머리 훅이
@@ -105,25 +117,41 @@ const 도장경로 = (model) => path.join(여기, '_결과', `도장_${model}.js
  * 못 쟀다는 사실 자체는 트랙.md 가 쥔다 — 두 곳이 같은 것을 짖지 않는다. */
 function 알림() {
   let 픽; try { 픽 = 정책.제미나이설정(); } catch { return 0; }
-  const p = 도장경로(픽.model);
-  if (!fs.existsSync(p)) return 0;                       // 아직 안 쟀다 — 조용
-  let 도장; try { 도장 = JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return 0; }
-  if (!도장.끝났나 || 도장.알렸나) return 0;               // 이미 알렸다 — 조용
+  if (fs.existsSync(알림표시경로(픽.model))) return 0;     // 이미 알렸다 — 조용
+  const 도장 = 읽기(도장경로(픽.model));
+  const 판정 = 읽기(판정경로(픽.model));
+  if (!(도장 && 도장.끝났나) && !판정) return 0;            // 아직 안 쟀다 — 조용
 
+  const 때 = (도장 && 도장.때) || (판정 && 판정.때);
+  console.log(`📋 **몽골어 검문 시험 결과가 나왔다** — ${픽.model} / 생각 깊이 ${픽.thinking_level}`
+    + ` · 잰 때 ${new Date(때).toLocaleString('ko-KR')}${판정 && 판정.어디서 ? ` · 잰 곳 ${판정.어디서}` : ''}`);
+
+  /* 숫자는 «합계 = 갈래 + 갈래»로 — 못 잰 칸을 틀린 칸과 섞으면 0 의 뜻이 흐려진다. */
+  if (판정 && 판정.점수) {
+    for (const [라벨, s] of Object.entries(판정.점수)) {
+      console.log(`   ${라벨}: 칸 ${s.맞음 + s.틀림 + s.못잼} = 맞음 ${s.맞음} + 틀림 ${s.틀림} + 못잼 ${s.못잼}`
+        + (s.근거흠 ? ` (그중 근거가 떨어진 칸 ${s.근거흠})` : ''));
+    }
+  }
+
+  /* 요약(의심 줄)은 «이 기계에서 잰 것»에만 있다 — 남의 기계는 몽골어를 안 내보낸다. */
   let 요약 = '';
-  try { 요약 = fs.readFileSync(path.join(루트, 도장.요약파일), 'utf8').trim(); } catch { /* 없으면 없는 대로 */ }
-  console.log(`📋 **몽골어 검문 시험 결과가 나왔다** — ${도장.모델} / 생각 깊이 ${도장.사고} · 잰 때 ${new Date(도장.때).toLocaleString('ko-KR')}`);
-  console.log(`   문항 ${도장.문항}개 · 던진 발 ${도장.발}`);
+  if (도장 && 도장.요약파일) { try { 요약 = fs.readFileSync(path.join(루트, 도장.요약파일), 'utf8').trim(); } catch { /* 없으면 없는 대로 */ } }
   if (요약) {
     console.log('   ─ 사람이 볼 줄(맞은 줄은 안 올라온다) ─');
     for (const l of 요약.split(/\r?\n/).slice(0, 40)) console.log(`   ${l}`);
+  } else if (판정) {
+    console.log(`   의심 줄은 여기 없다 — 남의 기계는 숫자만 내보낸다(몽골어 본문은 안 나간다).`);
+    console.log(`   줄까지 보려면 이 기계에서 한 번 더: node evals/돌리기.js --그냥`);
   } else {
-    console.log(`   요약 파일을 못 읽었다: ${도장.요약파일} — 「결함 0건」이 아니라 «확인 불가»다.`);
+    console.log(`   요약 파일을 못 읽었다 — 「결함 0건」이 아니라 «확인 불가»다.`);
   }
-  console.log(`   전문 = ${도장.결과파일} · 이 알림은 **한 번만** 뜬다(도장에 적었다).`);
+  console.log(`   이 알림은 **한 번만** 뜬다.`);
 
-  도장.알렸나 = new Date().toISOString();
-  try { fs.writeFileSync(p, JSON.stringify(도장, null, 1), 'utf8'); } catch { /* 못 적으면 한 번 더 뜬다 */ }
+  try {
+    fs.mkdirSync(path.join(여기, '_결과'), { recursive: true });
+    fs.writeFileSync(알림표시경로(픽.model), new Date().toISOString(), 'utf8');
+  } catch { /* 못 적으면 한 번 더 뜬다 — 조용해지는 것보다 낫다 */ }
   return 0;
 }
 
@@ -135,16 +163,17 @@ async function main() {
   console.log(`  정본 픽: ${픽.model} / 생각 깊이 ${픽.thinking_level}`);
   console.log(`  때: ${new Date().toLocaleString('ko-KR')}\n`);
 
-  /* 🔑 예약이 매일 도는데도 몫을 안 태우는 자리 — 도장이 있으면 **여기서 끝난다**(호출 0). */
+  /* 🔑 예약이 매일 도는데도 몫을 안 태우는 자리 — 이미 쟀으면 **여기서 끝난다**(호출 0).
+   * 둘 중 «어느 쪽»이라도 있으면 잰 것이다: 도장(이 기계가 쟀다) · 판정(남의 기계가 재서 커밋해 왔다).
+   * 하루 몫은 기계마다가 아니라 «열쇠마다» 하나라, 두 기계가 같은 시험을 두 번 돌리면 그냥 낭비다. */
   if (예약) {
-    const p = 도장경로(픽.model);
-    if (fs.existsSync(p)) {
-      let 도장 = {}; try { 도장 = JSON.parse(fs.readFileSync(p, 'utf8')); } catch { /* 깨졌으면 다시 잰다 */ }
-      if (도장.끝났나) {
-        console.log(`⏭ 이미 쟀다 — ${픽.model} · ${도장.때}. **한 발도 안 던진다.**`);
-        console.log(`   다시 재려면 이 파일을 지운다: ${path.relative(루트, p)}`);
-        return 0;
-      }
+    const 도장 = 읽기(도장경로(픽.model));
+    const 판정 = 읽기(판정경로(픽.model));
+    const 잰것 = (도장 && 도장.끝났나 && { 때: 도장.때, 곳: '이 기계' }) || (판정 && { 때: 판정.때, 곳: 판정.어디서 || '남의 기계' });
+    if (잰것) {
+      console.log(`⏭ 이미 쟀다 — ${픽.model} · ${잰것.때} · ${잰것.곳}. **한 발도 안 던진다.**`);
+      console.log(`   다시 재려면 지운다: ${path.relative(루트, 도장경로(픽.model))} · ${path.relative(루트, 판정경로(픽.model))}`);
+      return 0;
     }
   }
 
@@ -239,6 +268,23 @@ async function main() {
     때: new Date().toISOString(), 문항: 실제문항, 발: 실제발,
     결과파일: path.relative(루트, 결과), 요약파일: path.relative(루트, 요약파일),
   }, null, 1), 'utf8');
+
+  /* 판정 — **숫자만**. 몽골어도 문항 이름도 안 담아서 PUBLIC 저장소에 커밋할 수 있고,
+   * 그 덕에 다른 기계가 같은 시험을 다시 돌리지 않는다. 셈은 `의심줄.js` 가 한다(자는 하나다). */
+  try {
+    const { 의심줄추출 } = require(path.join(여기, '의심줄.js'));
+    const 뽑음 = 의심줄추출(JSON.parse(fs.readFileSync(결과, 'utf8')));
+    fs.mkdirSync(path.join(여기, '_판정'), { recursive: true });
+    fs.writeFileSync(판정경로(픽.model), JSON.stringify({
+      모델: 픽.model, 사고: 픽.thinking_level, 때: new Date().toISOString(),
+      어디서: process.env.GITHUB_ACTIONS ? '남의 기계(GitHub)' : '이 기계',
+      칸수: 뽑음.칸수, 의심줄수: (뽑음.올릴것 || []).length,
+      점수: Object.fromEntries([...뽑음.점수.entries()]),
+    }, null, 1), 'utf8');
+    console.log(`   판정(숫자만) = ${path.relative(루트, 판정경로(픽.model))} — 커밋해도 되는 파일이다.`);
+  } catch (e) {
+    console.error(`   ⚠ 판정 숫자를 못 뽑았다: ${e.message} — 결과 자체는 위 파일에 있다.`);
+  }
 
   console.log(`\n✅ 시험 끝 — ${픽.model} 도장을 찍었다(다음 예약은 0발로 끝난다).`);
   console.log(`\n${요약글.slice(0, 4000)}`);
