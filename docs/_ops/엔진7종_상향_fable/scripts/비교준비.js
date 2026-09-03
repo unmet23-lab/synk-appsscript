@@ -23,7 +23,7 @@ function split(md) {
 
 function measure(md, label, path) {
   const c = (re) => (md.match(re) || []).length;
-  const dTitles = c(/^### (🆕 )?D\d+/gm);
+  const dTitles = c(/^### (🆕 )?D\d+/gm) + c(/^\*\*D\d+ \[/gm); // 두 판의 D 제목 꼴이 다르다(### D1 · **D1 [키]**)
   let graph = '안 재봄';
   try {
     const g = execSync('node tools/doc-graph.js 2>&1', { cwd: 'C:/Users/q1212/Documents/SYNK-appsscript', encoding: 'utf8' });
