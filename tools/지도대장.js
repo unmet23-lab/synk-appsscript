@@ -283,15 +283,7 @@ const 브랜드서체 = [
 ];
 const 빠진서체 = (폰트) => 브랜드서체.filter((f) => !폰트.some((n) => f.re.test(n))).map((f) => f.이름);
 
-/** 헤드리스 크롬 경로 — 없으면 null */
-function 크롬() {
-  const 후보 = [
-    'C:/Program Files/Google/Chrome/Application/chrome.exe',
-    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-    process.env.CHROME_PATH,
-  ].filter(Boolean);
-  return 후보.find((p) => { try { return fs.existsSync(p); } catch (_) { return false; } }) || null;
-}
+/* 크롬을 찾는 일은 이제 tools/lib/크롬조종.js 하나가 진다(09-03). */
 
 /** 🔴 SUIT 는 **700(Bold) 원본이 폰트 폴더에 없다**(`SUIT-Bold.otf` 미투입 — 유호님 몫으로 열려 있다).
  *  지도 CSS 는 700 을 열 곳 넘게 쓰는데, 그 굵기가 없으면 크롬은 800 으로 낮춰 그리는 게 아니라
@@ -379,8 +371,6 @@ function 폰트심기(htmlPath) {
  *   그때 오류 문구는 "Failed to write file" 뿐이라 원인이 안 보인다 — 그래서 통로를 아예 우회한다.
  */
 function 굽기(htmlPath) {
-  const bin = 크롬();
-  if (!bin) return { ok: false, 이유: '크롬을 못 찾았다(CHROME_PATH 로 지정 가능)' };
 
   const 심기 = 폰트심기(htmlPath);
   if (!심기.ok) return 심기;
@@ -388,15 +378,16 @@ function 굽기(htmlPath) {
   const 이름 = path.basename(htmlPath, '.html');
   const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-map-'));
   const 임시pdf = path.join(임시, 'out.pdf');
-  const url = 'file:///' + htmlPath.replace(/\\/g, '/').split('/').map(encodeURIComponent).join('/').replace(/^([A-Za-z])%3A/, '$1:');
 
-  const r = spawnSync(bin, [
-    // ⚠ `--virtual-time-budget` 이 없으면 **임베드 폰트가 로드되기 전에** 인쇄가 끝난다 —
-    //   PDF 는 조용히 폴백(굴림체)으로 나가고 크기만 1/15 로 줄어든다(2026-08-06 실측).
-    //   설치된 폰트로 그릴 때는 티가 안 나서 여태 안 보였다.
-    '--headless', '--disable-gpu', '--no-pdf-header-footer', '--virtual-time-budget=8000',
-    `--print-to-pdf=${임시pdf}`, url,
-  ], { encoding: 'utf8', timeout: 120000 });
+  /* ⚠ 옛 방식은 크롬에 `--virtual-time-budget=8000`(8초어치 기다린다)을 줬다. 그게 없으면
+   *   **임베드 폰트가 로드되기 전에** 인쇄가 끝나 PDF 가 조용히 폴백(굴림체)으로 나갔다
+   *   (2026-08-06 실측 · 크기가 1/15 로 줄었다). 그런데 「8초」는 기다림이 아니라 추측이다 —
+   *   문서가 길면 그 예산 안에서 조판이 안 끝나고, 그래도 «열리는» PDF 가 나온다(09-03 실측).
+   *   그래서 «활자가 앉았다»는 신호를 기다리는 통로에 맡긴다. 아래 서체 게이트는 그대로 둔다
+   *   — 막는 그물은 둘일수록 좋다. */
+  const r = spawnSync(process.execPath, [
+    path.join(__dirname, '지면인쇄.js'), htmlPath, 임시pdf,
+  ], { encoding: 'utf8', timeout: 600000 });
 
   if (!fs.existsSync(임시pdf)) {
     return { ok: false, 이유: `크롬이 PDF를 못 만들었다: ${String(r.stderr || '').split('\n').slice(-3).join(' ').trim()}` };
