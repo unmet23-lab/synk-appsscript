@@ -5,7 +5,7 @@
  *          node tools/교재읽기본.js --바탕화면  → 바탕화면에도 한 벌
  *
  * 왜 있나 (2026-08-09 · 유호님 「보여줘」):
- *   권1 원고는 한 파일이 아니다 — 1·3~8과는 `docs/교재_시냅스코어_권1_원고_v2.md` 에 있고
+ *   권1 원고는 한 파일이 아니다 — 1·3~8과는 `docs/_archive/교재_시냅스코어_권1_원고_v2.md` 에 있고
  *   **2과 본문만 `docs/_archive/교재_시냅스코어_권1_초안_v1.md` §③** 에 있다(중복 사본 금지 원칙의
  *   결과다). v2 의 2과 자리에는 "저기가 정본" 이라는 안내 한 줄만 서 있어, 원고를 처음부터 끝까지
  *   읽으려면 사람이 두 파일을 오가야 했다. 여기서 **읽을 때만** 합친다 — 원본 md 는 건드리지 않는다.
@@ -29,7 +29,11 @@ const { esc, 렌더 } = require('./lib/마크다운.js');
 const { 경로: 바탕화면 } = require('./lib/바탕화면.js');
 
 const ROOT = path.join(__dirname, '..');
-const 본편 = path.join(ROOT, 'docs', '교재_시냅스코어_권1_원고_v2.md');
+/* ⚰ **원고 넷이 `_archive/` 로 보관됐다** (2026-09-03 · 유호 확정 「교재랑 앱이랑은 아예 별개라고
+ *   생각해줄래? 교재는 기각하고 어디 안보이는곳에 보관만해줘」 · 교재 제작은 재헌님 몫).
+ *   이 도구는 «걷지 않고» 보관본을 읽게만 바꿨다 — 유호님이 「보관만」이라 하셨으므로 열어 볼 길은 남긴다.
+ *   🔑 앞으로 앱·엔진 설계는 교재를 전제하지 않는다(memory `textbook-separate-from-app`). */
+const 본편 = path.join(ROOT, 'docs', '_archive', '교재_시냅스코어_권1_원고_v2.md');
 const 초안 = path.join(ROOT, 'docs', '_archive', '교재_시냅스코어_권1_초안_v1.md');
 const TOKENS = path.join(ROOT, 'docs', 'tools', 'synk-tokens.css');
 const OUT_DIR = path.join(ROOT, 'docs', '교재_읽기본');
@@ -267,7 +271,8 @@ function 빌드(opt) {
 <header class="band">${LOGO_W5}
   <div><h1>${esc(제목)}</h1>
   <div class="cap">열람용 스냅샷 ${날짜} · 정본은 저장소 md — 어긋나면 md 가 이긴다<br>
-  1·3~8과 = docs/교재_시냅스코어_권1_원고_v2.md · 2과 = docs/_archive/교재_시냅스코어_권1_초안_v1.md §③</div></div>
+  1·3~8과 = docs/_archive/교재_시냅스코어_권1_원고_v2.md · 2과 = docs/_archive/교재_시냅스코어_권1_초안_v1.md §③<br>
+  ⚰ 보관본이다 — 교재와 앱은 별개로 간다(유호 확정 09-03 · 교재는 재헌님 몫)</div></div>
   <div class="우">
     <button class="칩" id="작게" aria-label="지면 목업 작게">A−</button>
     <button class="칩" id="크게" aria-label="지면 목업 크게">A+</button>
@@ -284,7 +289,7 @@ ${body}
 <footer>이 파일은 <strong>열람용 사본</strong>입니다 — 고치는 곳은 저장소 md 이고,
 고친 뒤 <code>node tools/교재읽기본.js</code> 로 다시 굽습니다.<br>
 ⚠️ 인쇄·조판 전 필수: 본문의 <code>📱 [V1-0X-XX]</code> 는 설계상 가상 코드라
-<code>docs/교재_앱_연동_매핑_v1.md</code> §④ 치환표대로 실존 QZ ID 로 바꿔야 QR 이 빈 곳을 안 가리킵니다.<br>
+<code>docs/_archive/교재_앱_연동_매핑_v1.md</code> §④ 치환표대로 실존 QZ ID 로 바꿔야 QR 이 빈 곳을 안 가리킵니다.<br>
 검수 상태: 유호님 검수 전 완주본 · 몽골어(⚡거울·키릴 대조)는 전량 원어민 검수 필요(R1).</footer>
   </main>
 </div>
