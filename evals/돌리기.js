@@ -108,6 +108,18 @@ const 알림표시경로 = (model) => path.join(여기, '_결과', `알렸다_${
 
 const 읽기 = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
 
+/* 원격(origin)에 판정이 이미 있나 — **읽기만** 한다.
+ * `fetch` 는 원격 참조만 갱신하고 로컬 브랜치·작업 트리를 안 건드린다. 이 저장소는 세션이
+ * 여럿 도는 일이 흔해서, 「pull 해서 본다」는 남의 미커밋 작업 위에 손을 얹는 짓이 된다.
+ * 못 물어보면(네트워크 없음 등) **false 가 아니라 «모른다»로 쳐야 맞지만**, 여기서 false 를
+ * 돌려도 최악은 「한 번 더 재본다」이고 그건 게이트가 다시 막는다 — 잘못된 쪽으로 안전하다. */
+function 원격판정있나(model) {
+  const 조용히 = { cwd: 루트, stdio: 'ignore', timeout: 60_000, windowsHide: true };
+  try { spawnSync('git', ['fetch', '--quiet', 'origin'], 조용히); } catch { return false; }
+  const r = spawnSync('git', ['cat-file', '-e', `origin/master:evals/_판정/${model}.json`], 조용히);
+  return r.status === 0;
+}
+
 /* ── `--알림` (0발 · 네트워크 0) ─────────────────────────────────────
  * 예약은 사람이 없는 시각에 돈다. 그래서 **결과가 유호님을 찾아와야** 한다 — 세션 첫머리 훅이
  * 이걸 부른다. 규칙 둘:
@@ -173,6 +185,15 @@ async function main() {
     if (잰것) {
       console.log(`⏭ 이미 쟀다 — ${픽.model} · ${잰것.때} · ${잰것.곳}. **한 발도 안 던진다.**`);
       console.log(`   다시 재려면 지운다: ${path.relative(루트, 도장경로(픽.model))} · ${path.relative(루트, 판정경로(픽.model))}`);
+      return 0;
+    }
+    /* 🔴 로컬에 없다고 «아무도 안 쟀다»가 아니다 — 남의 기계(GitHub)가 재서 커밋해 뒀는데
+     *   이 기계가 아직 안 받아온 상태일 수 있다. 그걸 안 보면 두 기계가 각자 14발씩 던져
+     *   하루 몫 20발을 넘긴다(09-03 에 두 예약을 같은 시각에 걸었다가 드러난 구멍).
+     *   `fetch` 만 한다 — 로컬 브랜치도 작업 트리도 안 건드린다(다른 세션이 일하는 중일 수 있다). */
+    if (원격판정있나(픽.model)) {
+      console.log(`⏭ **남의 기계가 이미 쟀다**(원격에 판정이 있다) — ${픽.model}. 한 발도 안 던진다.`);
+      console.log('   받아오려면: git pull --ff-only  (이 도구는 받아오지 않는다 — 남의 작업을 건드리지 않으려고)');
       return 0;
     }
   }
