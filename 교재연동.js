@@ -141,7 +141,10 @@ function setupTextbookLink() {
     if (t.getHandlerFunction() === '교재연동Nightly') ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('교재연동Nightly').timeBased().everyDays(1).atHour(23).create();
-  Logger.log('✅ 교재연동 설치 완료 — 매일 23시: 목소리 스윕+링크, 일요일 밤: 연습 노트 생성.');
+  /* [09-04] 「일요일 밤: 연습 노트 생성」을 뺐다 — 그 기능이 걷혔는데 로그가 계속 약속하고 있었다
+   *   (codex P2 `c49bd9497403`). 설치 로그는 **설치한 사람이 「무엇이 켜졌나」를 아는 유일한 자리**라
+   *   거기 남은 옛 약속은 그대로 거짓 확신이 된다. */
+  Logger.log('✅ 교재연동 설치 완료 — 매일 23시: 목소리 스윕 + 링크 + 전사 + 성장 카드 + 문법 판정.');
   교재연동Nightly(); // 설치 직후 1회 즉시(링크 열을 바로 채워 Glide 조립을 기다리게 하지 않는다)
 }
 
