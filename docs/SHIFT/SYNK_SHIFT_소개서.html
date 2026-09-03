@@ -61,8 +61,10 @@ h1{font-size:42px;line-height:1.14;font-weight:700;letter-spacing:-.025em;margin
 .룸 li{margin:0 0 8px}
 .룸 hr{border:0;height:1px;background:var(--stitch);margin:44px 0}
 .룸 strong{font-weight:700}
+/* 🔴 Ash Wool 은 Paper 위에서 3.41대1 이라 본문 크기로는 안 읽힌다(09-03 접근성 실측).
+   같은 계열의 짙은 판 Deep Wool 은 7.45대1 — 결은 그대로 두고 읽히게만 바꾼다. */
 .꼬리{margin-top:64px;padding-top:20px;border-top:1px solid var(--oat);
-      font-size:13.5px;color:var(--ash-wool);line-height:1.65}
+      font-size:13.5px;color:var(--deep-wool);line-height:1.65}
 @media (max-width:640px){ body{font-size:16px} h1{font-size:32px} .판{padding:38px 18px 80px} }
 /* ── Loom 밝은부품 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
    통로: node tools/lib/loom.js --css 밝은부품
