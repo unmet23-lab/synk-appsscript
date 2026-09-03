@@ -72,12 +72,17 @@ ${r.stdout || ''}${r.stderr || ''}`);
 /* ── ② 브랜드 폰트 ──────────────────────────────────────────────────────────
    🔴 SUIT 는 한글만(키릴 0/7) · Inter Tight 는 키릴만(한글 0/4)이다.
    한·몽 병기 자막은 한 줄 안에 둘이 섞이므로 **둘 다** 있어야 한다. */
-const 폰트벌 = [
-  ['SUIT', ['SUIT-Regular.otf', 'SUIT-Medium.otf', 'SUIT-SemiBold.otf', 'SUIT-ExtraBold.otf', 'SUIT-Heavy.otf']],
-  ['InterTight', ['InterTight-Regular.ttf', 'InterTight-Medium.ttf', 'InterTight-SemiBold.ttf', 'InterTight-Bold.ttf']],
-];
-for (const [갈래, 파일들] of 폰트벌) {
-  for (const f of 파일들) 복사(path.join(저장소, 'docs', '브랜드_폰트', 갈래, f), `폰트/${f}`);
+/* 🔴 목록을 여기 다시 적지 않는다 — 정본은 `src/킷/폰트벌.json` 하나다
+ *   (2026-09-03 · codex P2 `9e833d1ba653` 채택 수리).
+ *   그 파일의 머리말은 이미 「킷 다리 폰트.ts(등록) · 자산모으기.js(복사) · 발행검사.js ②(cmap)
+ *   셋이 이 한 표를 본다」고 «선언»했는데, 셋 중 복사기만 제 목록을 따로 들고 있었다.
+ *   그래서 표에서 파일을 더하거나 이름을 바꾸면 등록·검사는 새 목록을 쓰고 public/폰트 에는
+ *   옛 아홉만 깔려, 렌더에서 조용히 폴백이 났다. 값이 두 곳에 살면 반드시 갈린다. */
+const 폰트벌선언 = require(path.join(__dirname, 'src', '킷', '폰트벌.json'));
+for (const v of 폰트벌선언.벌 || []) {
+  const 조각 = String(v.정본 || '').split('/').filter(Boolean);
+  if (!조각.length) continue;
+  복사(path.join(저장소, 'docs', '브랜드_폰트', ...조각), `폰트/${조각[조각.length - 1]}`);
 }
 
 /* ── ②-b 로고 ───────────────────────────────────────────────────────────────
