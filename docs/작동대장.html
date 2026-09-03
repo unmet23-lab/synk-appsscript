@@ -334,17 +334,23 @@
     background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
 
   /*loom부품:태그*/
-  .칩{display:inline-flex;align-items:center;gap:var(--숨);
-    padding:calc(var(--숨) + 1px) var(--참);border-radius:999px;position:relative;
-    font-size:.78rem;font-weight:700;letter-spacing:-.01em;color:var(--룸-chalk);
-    background:linear-gradient(170deg, rgba(228,228,231,0.12), rgba(228,228,231,0.03) 60%),
-               rgba(29,29,28,0.55);
-    box-shadow:inset 0 1px 0 rgba(228,228,231,0.18),0 8px 16px -10px rgba(0,0,0,.9);}
-  .칩::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-    pointer-events:none;background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
-    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-    -webkit-mask-composite:xor;mask-composite:exclude;opacity:.8;}
+  /* 분류 칩 — 유호 확정 09-03 「4번이 제일 낫다」로 **배경을 걷고 «표식»으로** 갔다.
+     이 자리가 저장소의 마지막 CSS 흉내였고, 그것이 여기서 닫힌다.
+     🔑 까닭은 «관습»을 의심한 유호님 물음이었다: 「이걸 이렇게 지금 배경으로 글씨를 꾸미는 이유가 뭐야?」
+        답 = 기능이 요구한 게 아니다. 칩이 하는 일은 「이 낱말은 분류다」를 알리는 것 하나이고,
+        배경은 그 일을 하면서 **대비 천장**을 물고 온다 — 밝은 천 9.4 · 어두운 천 11.2 · 본문 15.1.
+        배경을 빼면 칩 글자가 본문과 같은 대비를 그대로 쓴다.
+     ⚠ 잃는 것을 적어 둔다: 14px 에서는 펠트 «결»이 안 보여 재질감이 형체로만 남는다.
+        그래도 흉내가 아니라 «구운 것»이라는 사실은 지켜진다(자산 = 단추민판).
+     🔴 배경만 지우면 안 된다 — 아래 ::before 가 그리던 네모가 남아 「글씨가 오른쪽으로 튀어나간」
+        것처럼 보인다(09-03 실측 · 그 유령 테두리를 못 찾아 두 번 헤맸다). 그래서 함께 걷는다. */
+  /* ⚠여기는 «자리»만 잡는다 — 표식 그림은 구움표가 얹는다(자산이 없으면 굵은 글자로 선다).
+     갈라 둔 까닭: 분모가 「그 CSS 가 실제로 나갔나」로 구움을 세므로, 구운 것을 쓰는 규칙은
+     반드시 구움표에 있어야 한다. 여기 두면 자산이 없어도 초록으로 세어진다(F517② 와 같은 자리). */
+  .칩{display:inline-flex;align-items:center;position:relative;
+    padding:0;margin:0 5px;border-radius:0;
+    font-size:inherit;font-weight:800;letter-spacing:-.01em;color:inherit;box-shadow:none;}
+  .칩::before{content:none;}
 
   /*loom부품:구분선*/
   /* 실금 — 선은 재질을 «안» 입는다. 획이라 두께가 없고, 두께가 없으면 물성이 없다. */
@@ -509,6 +515,29 @@
     min-width:2.9em;height:2.9em;padding:0 var(--참) .025em;}
   .히어로수::before{display:none;}
 
+  /* 분류 칩 — 유호 확정 09-03 「4번이 제일 낫다」로 **배경을 걷고 «표식»으로** 갔다.
+     이 자리가 저장소의 마지막 CSS 흉내였고, 그것이 여기서 닫힌다.
+     🔑 «관습»을 의심한 유호님 물음이 이 갈래를 열었다: 「배경으로 글씨를 꾸미는 이유가 뭐야?」
+        답 = 기능이 요구한 게 아니다. 칩이 하는 일은 「이 낱말은 분류다」를 알리는 것 하나이고,
+        배경은 그 일을 하면서 **대비 천장**을 물고 온다 — 밝은 천 9.4 · 어두운 천 11.2 · 본문 15.1.
+        배경을 빼면 칩 글자가 본문과 같은 대비를 그대로 쓴다.
+     값(유호 픽 ④): 표식 14px · 왼쪽 4 · 표식과 글자 사이 6(⇒ padding-left 24) · 앞뒤 5(margin) ·
+        세로 1px 올림 — 행 중앙이 아니라 **x-높이 중앙**이다(한글은 상자 중앙보다 살짝 위가 시각 중심).
+     ⚠ 잃는 것: 14px 에서는 펠트 «결»이 안 보여 재질감이 형체로만 남는다.
+        그래도 흉내가 아니라 «구운 것»이라는 사실은 지켜진다.
+     🔴 배경만 지우면 안 된다 — 잔부품의 .칩::before 가 그리던 네모가 남아
+        「글씨가 오른쪽으로 튀어나간」 것처럼 보인다(09-03 · 그 유령 테두리를 못 찾아 두 번 헤맸다).
+        그래서 잔부품 쪽에서 그 가짜 요소를 함께 걷었다.
+     ⚠이 주석에 백틱을 쓰지 않는다 — 여기는 템플릿 리터럴 «안»이라 하나로 CSS 가 통째로 끊긴다. */
+  .칩{background-image:url("data:image/webp;base64,UklGRtwDAABXRUJQVlA4INADAAAwFgCdASqAAIAAPj0ei0OiIaEWDvwYIAPEtIBqZ7hdkW/AMWRhrRoegHoa+jyQ0xIpP6+37RI4En7x5FxOEubRXsKb739hyVvaXegpECNWj5Q1NaceBi3+ieJqjf6XaX6l1s+SEcabzexxshgO8FYf43SoMCZTwsk7qoCJC2ypOSs7cs7+MKRC3TD0W439+GE1OiupLUCvYIz61xsvyH5GdhRZMzBN6yf12iSdhPVW4Z81YShl3wtYDgAA/v4G0AAZ2F/LRu3/0g/eftC59JEFDhc2wSTKNaqr828UFHW5qHOgx/wuMeKE53Gv+/+qoEdzmzmf9/+7W4qm/wkvxL37Tfk6x8Q5onaRdP2GFc9UpuwcDttv9W1/0kX6OxW7/pB19E8Wg4E83/eo36fq+2jzf3pi4Y9dZ/d17SapziXfZDZWN25ddb32wrRY5PYuNh+38PTkvc5+zYDlGPBiFoU3b/Pp/8/H7R026fiMYQVbB/edrstFhdMr1lqb3mF2CEKvK57QJu59FbK5Um3nxsEvfEvuQj6Y5z//gzExrP0xJCrVO3xXt08YB/j++MU4YWgt9eRo1awnAWpmHYwUD4e1PulJyb/VkEKulC0UwPgamVFTTehcC+Wl145fRfnqvZ+e9LPTOhgs+HMeAQ66s/1r+8kd/CWLyt2DcwFM3tjzl8rqiPTR0uEeXtky9fhrsjGdXIF/8NYO8/Me9HfuSKEtN++tvgwNlCRt96b7ZUmYNxZPVpSDuRGLIIhaAUUQNw4iOn2k+RmBZTb79W4M/wWnOd83DwMZM8MsCoU462QRaKz5EpzhCoUIuZXR+xxfsR/GQ0zMuxyx//EvBvFRda29pN50bYTv7/SJHwQ3eDS+PwbkcjpypALUJNRVg6CQzf9mNTl1arNSh7BrfTvwQqADtlDxuBOcVyQGKmNb/Q4S4Uqfwyo2OEZpNY0XBa1KomEReqEX0gsFuJmCBSUDlVc17vFzxl5asKwrGFZvXwdjyitRw9cO84ljApfR4mJyXqMYcZn/vYY4v8d5oQAZ+cs09I8QN7qUMZPWUAn8yuh6gE0B8szvRx8kcxFwEmV+yg2D3EhFt36exk5vUctlEzM8P7tDkhR6U4RWBT8Gj86jRZUi0vFIVkNn9gQdJB1ichq+7K3XYZ/LN+7Eird3v7FxjeS38bnw4pESSjw7ac/aDdfLVt2CU8VSzdilMPuRkAVpUUekLy3/LD5RjtSUy98NLCqyEAI50CBMCIfELxSDVqUTSOH8dsQpFnZSX52IRUS4w8s38hn978JNAQAgAAAA");
+    background-size:14px 14px;background-position:center;background-repeat:no-repeat;
+    background-color:transparent;
+    background-position:4px calc(50% - 1px);padding:0 0 0 24px;
+    /* ⚠아래 둘을 여기서 다시 못 박는다 — 낮 프리셋의 .칩 규칙이 «이 줄 앞»에서
+       color 와 inset 테두리를 걸어 두는데, 그 둘은 배경만 덮어서는 안 걷힌다.
+       안 못 박으면 어두운 지면에서 글자가 어두운 잉크색으로 남아 안 보이고, 유령 네모가 따라온다. */
+    color:inherit;box-shadow:none;}
+
   /* 링크점 — 본문 링크 뒤의 표식. 유호 확정 09-03 「땀점으로 바꾼다」로 유리구가 여기서 걷혔다.
      🔑 이 자리로 09-01 확정(「유리·레진 구슬은 나간다」)의 마지막 조각이 닫힌다.
      ⚠지면에서 **3px** 다 — 부품 통틀어 가장 작다. 그래서 이 판정의 질문은 하나였다:
@@ -531,7 +560,7 @@
 
 <h1>작동 대장</h1>
 <p class="sub">이번 주에 <b>무엇을 뜯을 것인가</b>를 고르는 한 장 — 「무엇이 있나」가 아니라 <b>「무엇이 실제로 도나」</b>를 잰다.</p>
-<div class="stamp">🕐 측정 2026-09-03 15:23 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
+<div class="stamp">🕐 측정 2026-09-03 20:29 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
 
 <h2><span class="no">Ⅰ</span>이해 사슬 — 학생의 무엇이 엔진까지 닿나</h2>
 <p class="lead">판정의 주인은 <code>docs/SYNK_철학.md</code> 부록 A-1 이다. 이 화면은 <b>인용</b>이고 여기서 다시 판정하지 않는다.</p>
@@ -562,7 +591,7 @@
 
 
 <h2><span class="no">Ⅲ</span>네 통 — 지금 상태</h2>
-<p class="lead">장치 <b>189개</b>(도구·라이브러리·훅)를 회귀 75벌 · 마찰 장부 30건 · 저장소 글 419벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
+<p class="lead">장치 <b>192개</b>(도구·라이브러리·훅)를 회귀 76벌 · 마찰 장부 30건 · 저장소 글 427벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
 <div class="tongs">
 <div class="tong" style="--c:#C79200">
     <div class="tong-h"><span class="tong-i">🟠</span><span class="tong-n">자꾸 깨진다</span></div>
@@ -571,17 +600,17 @@
   </div>
 <div class="tong" style="--c:#AE322A">
     <div class="tong-h"><span class="tong-i">🔴</span><span class="tong-n">맨몸이다</span></div>
-    <div class="tong-v">105</div>
+    <div class="tong-v">104</div>
     <div class="tong-d">남들은 부르는데 회귀가 없다 · 뜯으면 위험</div>
   </div>
 <div class="tong" style="--c:#262626">
     <div class="tong-h"><span class="tong-i">⚫</span><span class="tong-n">아무도 안 부른다</span></div>
-    <div class="tong-v">13</div>
+    <div class="tong-v">15</div>
     <div class="tong-d">저장소 어디에도 이름이 없다 · 삭제 후보</div>
   </div>
 <div class="tong" style="--c:#13724A">
     <div class="tong-h"><span class="tong-i">🟢</span><span class="tong-n">괜찮다</span></div>
-    <div class="tong-v">71</div>
+    <div class="tong-v">73</div>
     <div class="tong-d">안 건드린다</div>
   </div>
 </div>
@@ -590,26 +619,26 @@
 <p class="lead">수리가 아니라 <b>재설계</b>를 볼 자리다 — 같은 파일이 마찰 장부에 5번 넘게 올랐다는 것은 <b>고쳐도 또 아팠다</b>는 뜻이다. 「2번째 = 실수가 아니라 시스템 결함 · 3번째 = 원인을 쓸 수 없게 만든다」(CLAUDE.md).</p>
 <p class="none">해당 없음 — 이 통은 비었다.</p>
 <div class="hist"><div class="hb"><div class="hb-bar" style="height:84px;background:#D1D2D4"></div>
-      <div class="hb-v">176</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:6.204545454545455px;background:#D1D2D4"></div>
+      <div class="hb-v">179</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:6.100558659217878px;background:#D1D2D4"></div>
       <div class="hb-v">13</div><div class="hb-k">1</div></div></div>
   <p class="more">가로 = 그 도구가 마찰 장부에 인용된 건수 · 세로 = 도구 개수 · <b style="color:#AE322A">빨강 = 5건 이상</b>(「자꾸 깨진다」로 세는 구간).</p>
 
-<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>105건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
-<p class="lead">저장소 여기저기서 부르는데 회귀 75벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
+<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>104건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
+<p class="lead">저장소 여기저기서 부르는데 회귀 76벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고 · UTC)</span></th></tr></thead>
     <tbody><tr>
       <td class="mono">tools/doc-graph.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">33곳</td>
+      <td class="c">32곳</td>
       <td class="c">2026-09-01<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/lib/마스코트자산.js</td>
       <td class="c"><span class="pill warn">1건</span> <span class="fs">F671</span></td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">24곳</td>
+      <td class="c">25곳</td>
       <td class="c">2026-09-01<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
@@ -624,7 +653,7 @@
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c">17곳</td>
-      <td class="c">2026-09-01<span class="dim"> · 2일</span></td>
+      <td class="c">2026-09-03<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/세트굽기.js</td>
@@ -644,7 +673,7 @@
       <td class="mono">tools/lib/램문지기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">12곳</td>
+      <td class="c">13곳</td>
       <td class="c">2026-09-01<span class="dim"> · 2일</span></td>
     </tr>
 <tr>
@@ -653,13 +682,6 @@
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c">9곳</td>
       <td class="c">2026-08-22<span class="dim"> · 12일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/모델정찰.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">8곳</td>
-      <td class="c">2026-09-03<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/오브굽기.js</td>
@@ -711,6 +733,13 @@
       <td class="c">2026-09-03<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
+      <td class="mono">tools/배너굽기.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">6곳</td>
+      <td class="c">2026-09-02<span class="dim"> · 1일</span></td>
+    </tr>
+<tr>
       <td class="mono">tools/부품대조.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
@@ -738,9 +767,9 @@
       <td class="c">6곳</td>
       <td class="c">2026-09-03<span class="dim"> · 0일</span></td>
     </tr></tbody></table>
-    <p class="more">…외 85건 — 전량은 <code>node tools/작동대장.js --요약</code></p>
+    <p class="more">…외 84건 — 전량은 <code>node tools/작동대장.js --요약</code></p>
 
-<h2><span class="no">Ⅵ</span>⚫ 아무도 안 부른다 — <b>13건</b> <span class="dim">· 삭제 후보</span></h2>
+<h2><span class="no">Ⅵ</span>⚫ 아무도 안 부른다 — <b>15건</b> <span class="dim">· 삭제 후보</span></h2>
 <p class="lead">회귀·다른 도구·훅·문서·<code>settings.json</code> 어디에도 이름이 없다. 경량 원칙의 과녁이다 — 다만 <b>삭제는 실사용 실측 후 건별</b>이고, 「대장에 떴다」는 삭제 근거가 아니라 <b>열어볼 이유</b>다(유호 08-13).</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고 · UTC)</span></th></tr></thead>
@@ -777,14 +806,14 @@
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c"><span class="pill unk">모름</span></td>
+      <td class="c">2026-09-03<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/와펜시안.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c"><span class="pill unk">모름</span></td>
+      <td class="c">2026-09-03<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/외부도구받기.js</td>
@@ -822,6 +851,20 @@
       <td class="c">2026-09-02<span class="dim"> · 1일</span></td>
     </tr>
 <tr>
+      <td class="mono">tools/칩띠대조.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c"><span class="pill unk">모름</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/칩시안한장.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c"><span class="pill unk">모름</span></td>
+    </tr>
+<tr>
       <td class="mono">tools/html-script-check.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
@@ -838,7 +881,7 @@
     
 
 <h2><span class="no">Ⅶ</span>부품 — 대외 구역별 상태</h2>
-<p class="lead">정본 = <code>docs/시스템_대장.md</code> (50줄). 막대 = 🟢 라이브 · 🟡 반영 대기 · ⚪ 설계만.</p>
+<p class="lead">정본 = <code>docs/시스템_대장.md</code> (49줄). 막대 = 🟢 라이브 · 🟡 반영 대기 · ⚪ 설계만.</p>
 <table class="t"><thead><tr><th>구역</th><th>줄</th><th>상태 분포</th><th class="mono">🟢·🟡·⚪</th></tr></thead><tbody><tr>
       <td>접수·상담 <span class="dim">(대외)</span></td>
       <td class="c">8</td>
@@ -871,13 +914,13 @@
     </tr>
 <tr>
       <td>게임화·콘텐츠 <span class="dim">(대외)</span></td>
-      <td class="c">7</td>
+      <td class="c">6</td>
       <td class="bar">
-        <span style="width:85.71428571428571%;background:#13724A"></span
-        ><span style="width:14.285714285714285%;background:#FFD447"></span
+        <span style="width:83.33333333333334%;background:#13724A"></span
+        ><span style="width:16.666666666666664%;background:#FFD447"></span
         ><span style="width:0%;background:#D1D2D4"></span>
       </td>
-      <td class="c mono">6 · 1 · 0</td>
+      <td class="c mono">5 · 1 · 0</td>
     </tr>
 <tr>
       <td>데이터·AI 자산 <span class="dim">(대외)</span></td>
