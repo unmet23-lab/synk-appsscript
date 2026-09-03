@@ -29,6 +29,7 @@ import io
 import os
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 
@@ -42,6 +43,28 @@ from fontTools.ttLib import TTFont
 # 폰트 3종은 전부 OFL(각 폴더에 원문 동봉)이라 저장소에 들일 수 있다 → 저장소가 정본이 됐다(유호 승인 08-10).
 # 폴백 경로를 두지 않는다 — 없으면 조용히 옛 자리를 쓰는 게 아니라 `build_faces` 가 누락을 소리내야 한다.
 FONT_ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "브랜드_폰트"))
+REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+
+# ── 쪽번호 ────────────────────────────────────────────────────────
+# 쪽 상자를 손으로 안 나눈 «흐르는» 지면은 크롬이 아무 데서나 끊고 쪽번호도 못 넣는다
+# (크롬은 @page 의 «여백 칸»을 안 그린다 — 표준에는 있는데 구현이 없다).
+# Paged.js 가 그 자리를 메운다: 지면을 쪽 상자로 잘라 놓고 여백 칸에 번호를 그린다.
+# 원고가 아래 마커를 품은 판에만 실린다 — 안 품으면 한 글자도 안 늘어난다.
+PAGED_마커 = "<!--@PAGED@-->"
+PAGED_JS = os.path.join(REPO, "tools", "vendor", "paged.polyfill.min.js")
+
+# 🔴 총쪽수를 «우리가» 넣는 까닭(09-03 실측): Paged.js 는 다 짜고 나서 총수를 제 변수에 적는데
+#   크롬이 그걸로 counter(pages) 를 다시 안 센다 — 「1 / 0」이 여덟 쪽 내리 찍혔다.
+#   그래서 다 짠 뒤 우리가 «글자»로 넣고, 두 번 그려진 다음에 「다 됐다」를 올린다.
+PAGED_훅 = (
+    "<script>window.PagedConfig={after:function(f){"
+    "var n=(f&&f.total)||document.querySelectorAll('.pagedjs_page').length;"
+    "document.documentElement.style.setProperty('--synk-total-pages',"
+    "String.fromCharCode(34)+n+String.fromCharCode(34));"
+    "requestAnimationFrame(function(){requestAnimationFrame(function(){"
+    "window.__SYNK_PAGED_DONE=true;});});"
+    "}};</script>"
+)
 
 # (css family, weight, 파일 상대경로)
 FACES = [
@@ -201,6 +224,16 @@ def main():
     chars = {c for c in text if not c.isspace()}
     css_only = css_content_chars(src) - chars
     chars |= css_only
+
+    # 🔴 쪽번호는 «CSS 가 그리는 숫자»다 — 본문에 숫자가 없으면 서브셋에서 빠지고
+    #   번호 자리에 두부(네모)가 선다. 조용히 틀리는 자리라 여기서 못 박는다.
+    쪽번호판 = PAGED_마커 in src
+    if 쪽번호판:
+        쪽글자 = set("0123456789/")
+        더한것 = 쪽글자 - chars
+        chars |= 쪽글자
+        print("쪽번호판이다 — 숫자와 빗금을 서브셋에 못 박는다 (더 실은 것 %d자%s)" % (
+            len(더한것), "" if not 더한것 else ": " + " ".join(sorted(더한것))))
     print("쓰이는 글자 %d종%s" % (
         len(chars),
         "" if not css_only else "  (본문엔 없고 CSS 가 그리는 것 %d: %s)" % (
@@ -219,12 +252,43 @@ def main():
         print("   --폴백허용 이라 통과시킨다. 이 글자들만 OS 글꼴이 그린다(나머지는 임베드본).")
 
     out_html = src.replace("/*@FONTS@*/", "\n".join(faces))
+    if 쪽번호판:
+        js = pathlib.Path(PAGED_JS).read_text(encoding="utf-8")
+        out_html = out_html.replace(
+            PAGED_마커,
+            PAGED_훅 + chr(10) + chr(60) + 'script data-synk-paged="0.4.3"' + chr(62)
+            + chr(10) + js + chr(10) + chr(60) + "/script" + chr(62), 1)
+        print("쪽번호 폴리필을 실었다 (%.0f KB) — 지면을 쪽으로 자르고 아래 칸에 번호를 그린다"
+              % (len(js) / 1024.0))
+
     outp = pathlib.Path(a.out)
     outp.parent.mkdir(parents=True, exist_ok=True)
     outp.write_text(out_html, encoding="utf-8")
     print("HTML → %s  (%.0f KB)" % (outp, outp.stat().st_size / 1024.0))
 
-    if a.pdf:
+    if a.pdf and 쪽번호판:
+        # 🔴 쪽번호판을 «시간»으로 기다리면 조용히 잘린다 — 09-03 실측: 같은 지면을
+        #   40초어치 기다려 1쪽 · 120초어치 2쪽 · 400초어치 3쪽으로 뱉었다(진짜는 8쪽).
+        #   셋 다 «열리는» PDF 라 아무 검사도 안 문다. 그래서 «신호»로 기다리는 통로에 맡긴다.
+        pdfp = pathlib.Path(a.pdf)
+        pdfp.parent.mkdir(parents=True, exist_ok=True)
+        # 🔴 옛 PDF 를 «먼저 치운다». 안 치우면 인쇄가 실패해도 그 자리에 파일이 있어서
+        #   「났다」로 읽힌다 — 09-03 에 실제로 그렇게 지나갔다(스크립트가 스타일 안에 갇혀
+        #   신호가 영영 안 왔는데, 옛 PDF 덕에 빌드가 초록이었다).
+        if pdfp.exists():
+            pdfp.unlink()
+        노드 = shutil.which("node") or "C:/Program Files/nodejs/node.exe"
+        r = subprocess.run(
+            [노드, os.path.join(REPO, "tools", "지면인쇄.js"),
+             str(outp.resolve()), str(pdfp.resolve()),
+             "--기다림", "window.__SYNK_PAGED_DONE===true", "--최대초", "120"],
+            capture_output=True, timeout=600)
+        if r.returncode != 0 or not pdfp.exists():
+            raise SystemExit("쪽번호판 PDF 생성 실패 (rc=%s)%s%s%s%s" % (
+                r.returncode, chr(10), r.stdout.decode("utf-8", "replace"),
+                chr(10), r.stderr.decode("utf-8", "replace")))
+        print("PDF  → %s  (%.0f KB · 쪽번호판)" % (pdfp, pdfp.stat().st_size / 1024.0))
+    elif a.pdf:
         chrome = next((c for c in CHROME_CANDIDATES if c and os.path.exists(c)), None)
         if not chrome:
             raise SystemExit("크롬을 못 찾았다")
