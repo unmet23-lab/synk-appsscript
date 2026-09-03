@@ -129,7 +129,11 @@ function purgeLegacyMonsterRows_() {
 //   (Code.js SCENE_LADDER_ 맞힌 말 문턱 · 설계 §4-3: 층 6 vs 장면 12 불일치·첫 층 공짜 문제의 처방).
 
 /* ===================== [v9.218] TOPIK 급수 태그 (칸 4·5·6) =====================
- * 유호님 확정 2026-08-12 — 「레벨별 교재 진도에 맞게 TOPIK을 앱에 반영한다」의 첫 고리.
+ * 🔴 [09-04 정정] 이 자리의 옛 주석은 「유호님 확정 2026-08-12 — 레벨별 «교재 진도»에 맞게 TOPIK을
+ *   앱에 반영한다」였다. 둘 다 걷는다: ① 그 문구를 `docs/_ops/결정.md` 에서 찾으면 **0건**이다
+ *   (출처를 못 찾은 인용) ② 유호 확정 2026-09-03 「교재와 앱은 아예 별개다 · 앱·엔진 설계는
+ *   교재를 전제하지 않는다」가 교재 전제를 통째로 걷었다.
+ *   ⇒ 이 칸이 실제로 붙는 곳은 교재가 아니라 **급수 요목과 문법 뱅크**(우리 것)다.
  *   채택 갈래 = ㉡ **기출을 문항 소스로 싣지 않고, 급수 판정 «기준»으로만 쓴다**
  *   (㉠ 기출 탑재는 철학 ①기본의 「신선」 미달 + 저작권 축이라 기각).
  *
@@ -371,7 +375,7 @@ const TOPIK_PEAK_TARGET = 4;   // 과녁 — 유호 확정 08-31 「몽골에서
  *   5급 봉우리에 세우면 그건 **없는 성공**이다(철학 Ⅱ-2). 중간이 비면 거기서 멈춘다.
  *
  * @param {Object} 도달 - { [grammar_id]: true } — `토픽등반_도달맵_` 이 낸다
- * @param {number} [lv] - 학생 급수(Lv1~6) · 없으면 0. 교재 구간 표기에만 쓴다(판정엔 안 쓴다)
+ * @param {number} [lv] - 학생 급수(Lv1~6) · 없으면 0. 급수 구간 표기에만 쓴다(판정엔 안 쓴다)
  */
 function 토픽등반_(도달, lv) {
   const 있음 = 도달 || {};
@@ -402,7 +406,7 @@ function 토픽등반_(도달, lv) {
     지금: 지금, 남은문형: 지금.남은,
     한걸음: 지금.분모 ? 1 / 지금.분모 : 0,   // 하나 더 넘으면 오르는 비율(소수)
     과녁: TOPIK_PEAK_TARGET,
-    교재급: Number(lv) || 0, 교재밴드: band
+    급수: Number(lv) || 0, 토픽밴드: band
   };
 }
 
@@ -456,8 +460,8 @@ function 등반카드HTML_(c) {
   const nearLine = near
     ? '<div style="font-size:11.5px;color:#8D857A;padding-top:6px;">가까이 온 것 — <span style="color:#2B2320;">' + near + '</span></div>'
     : '';
-  const bandLine = (c.교재급 && c.교재밴드.length)
-    ? '<div style="font-size:11px;color:#8D857A;padding-top:4px;">지금 교재 Lv' + c.교재급 + ' · ' + c.교재밴드.join('~') + '급 구간 · 함께 가는 곳 ' + c.과녁 + '급</div>'
+  const bandLine = (c.급수 && c.토픽밴드.length)
+    ? '<div style="font-size:11px;color:#8D857A;padding-top:4px;">지금 Lv' + c.급수 + ' · ' + c.토픽밴드.join('~') + '급 구간 · 함께 가는 곳 ' + c.과녁 + '급</div>'
     : '<div style="font-size:11px;color:#8D857A;padding-top:4px;">함께 가는 곳 ' + c.과녁 + '급</div>';
   return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:12px 14px;color:#2B2320;">'
     + '<div style="font-size:12.5px;font-weight:800;padding-bottom:8px;">⛰ 토픽 등반</div>'
@@ -468,7 +472,7 @@ function 등반카드HTML_(c) {
     + stepLine + nearLine + bandLine
     + '<div style="font-size:10.5px;color:#8D857A;padding-top:8px;line-height:1.6;border-top:1px dashed #F0E3C8;margin-top:8px;">'
     + '이 줄이 세는 것 — 서로 다른 날 <b>두 번</b>, 내가 직접 쓰거나 말해서 맞은 문형.<br/>'
-    + '분모는 우리 교재의 그 급 문형 수다(시험 점수 예측이 아니다).</div>'
+    + '분모는 우리 문법 목록의 그 급 문형 수다(시험 점수 예측이 아니다).</div>'
     + '</div>';
 }
 
