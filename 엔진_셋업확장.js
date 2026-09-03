@@ -244,6 +244,85 @@ function sheetSkeleton_() {
     [TRAJECTORY_TAB_, TRAJECTORY_HEADERS_] // 궤적 의도(엔진_궤적) — 결과쪽 outcome_log 의 짝
   ];
 }
+/* 🔴 라이브 시트 «칸»을 골격 정본에 맞춘다 — `ensureSheet` 가 못 보는 사각.
+ *   `ensureSheet`(Code.js)는 **탭이 없을 때만** 헤더를 쓰고, 이미 있는 탭은 한 글자도 안 고친다.
+ *   그래서 골격에 칸을 더해도 라이브는 영영 옛 칸이다. 2026-09-03 라이브 93탭 전수 대조 실측:
+ *     voice_log 18↔7 · hw_feedback 20↔12 · talk_log 13↔10 · quiz_log 13↔11 · jacket_grants 7↔6.
+ *   voice_log 의 「목표발화·시즌·미션ID」가 없으면 **그날 학생이 무엇을 읽었나**가 영영 없다(소급 불가).
+ *   자 = `node docs/_ops/소급불가_울트라/헤더대조.js` · 색인 = `docs/소급불가_색인_2026-09-03.md`
+ *
+ * 🔒 왜 «순서»까지 맞춰야 하나: 열 위치를 골격에서 파생하므로(`skeletonHeadersOf_` · 손 인덱스 금지)
+ *   라이브 순서가 정본과 어긋나면 코드가 엉뚱한 열을 읽는다.
+ * 🔒 그래서 정본에 «없는 이름»의 열이 정본 범위 안에 있으면 이름을 덮어쓰지 않고 **맨 뒤로 민다**.
+ *   실물 = hw_feedback L열 `🔒 Row ID`(죽은 Glide 잔재 · 값 1행이 데모 FBDEMO-01). 그대로 덮었다면
+ *   그 값이 「숙제ID」로 읽혔다. 못 밀면 그 표는 **건너뛴다** — 반쯤 맞춘 표를 남기지 않는다.
+ * ⚠ 이 자는 «칸 이름»만 세운다. 그 칸에 값이 차는지는 다른 층이다. */
+/** 그 열의 «머리 아래»(2행부터)에 값이 하나라도 있나 — 빈 헤더 열이 참말로 빈지 가르는 자.
+ *   빈 헤더가 있을 때만 부른다(38개 표를 매 아침 전수 스캔하지 않으려는 것). */
+function 열에값있나_(sh, col) {
+  const 끝행 = sh.getLastRow();
+  if (끝행 < 2) return false;
+  const 값들 = sh.getRange(2, col, 끝행 - 1, 1).getValues();
+  for (let r = 0; r < 값들.length; r++) {
+    if (String(값들[r][0] == null ? '' : 값들[r][0]).trim() !== '') return true;
+  }
+  return false;
+}
+
+function 시트칸정본맞추기_(ss) {
+  const 결과 = { 맞춘표: [], 민열: [], 건너뛴표: [], 더한칸: 0 };
+  sheetSkeleton_().forEach(function (k) {
+    const 이름 = k[0], 정본칸 = k[1];
+    if (!정본칸 || !정본칸.length) return;
+    const sh = ss.getSheetByName(이름);
+    if (!sh) return;                                   // 없는 탭은 ensureSheet 몫이다
+    // 🔑 정본 폭까지 «먼저» 늘린다 — 안 늘리면 마지막 자리의 남의 열은 「맨 뒤로」가 제자리라
+    //   한 칸도 안 움직이고, 그 뒤 헤더보정_ 가 그 이름을 덮어쓴다(회귀가 이 자리를 잡았다).
+    if (sh.getMaxColumns() < 정본칸.length) {
+      sh.insertColumnsAfter(sh.getMaxColumns(), 정본칸.length - sh.getMaxColumns());
+    }
+    const 볼폭 = Math.min(sh.getMaxColumns(), 정본칸.length);
+    if (볼폭 < 1) return;
+    const 지금 = sh.getRange(1, 1, 1, 볼폭).getValues()[0]
+      .map(function (v) { return String(v == null ? '' : v).trim(); });
+    const 정본이름 = {};
+    정본칸.forEach(function (h) { 정본이름[h] = true; });
+
+    let 민것 = 0, 막힘 = '';
+    for (let i = 볼폭 - 1; i >= 0; i--) {              // 뒤에서부터 — 앞쪽 인덱스가 안 밀린다
+      const nm = 지금[i];
+      if (!nm) {
+        // 🔴 이름은 없는데 그 «아래»에 값이 있으면 «이름 없는 데이터 열»이다.
+        //   정본 이름을 씌우면 그 값이 그 칸의 값으로 오인된다(이종 검수 86417b4327af 채택).
+        //   빈 이름은 밀어낼 근거가 약하니(무엇인지 모른다) 덮지 않고 그 표를 **멈춘다**.
+        if (열에값있나_(sh, i + 1)) {
+          막힘 = (i + 1) + '열 = 이름은 없는데 아래에 값이 있다 — 무엇인지 모르는 데이터 열이라 사람이 본다';
+          break;
+        }
+        continue;                                      // 참말로 빈 열이면 정본 이름을 채운다
+      }
+      if (nm === 정본칸[i]) continue;                   // 제자리
+      if (정본이름[nm]) {                               // 🔴 정본 이름인데 «자리»가 다르다 = 순서가 섞였다.
+        막힘 = (i + 1) + '열 「' + nm + '」 가 정본 자리(' + (정본칸.indexOf(nm) + 1) + '열)와 다르다 — 사람이 본다';
+        break;                                         //   밀지도 덮지도 않는다. 덮으면 그 열의 값이 남의 이름을 뒤집어쓴다.
+      }
+      try {
+        sh.insertColumnsAfter(sh.getMaxColumns(), 1);  // 정본 폭 «밖»에 자리를 하나 만들고 그리로 민다
+        sh.moveColumns(sh.getRange(1, i + 1, 1, 1), sh.getMaxColumns() + 1);
+        결과.민열.push(이름 + ' ' + (i + 1) + '열 「' + nm + '」');
+        민것++;
+      } catch (e) { 막힘 = (i + 1) + '열 「' + nm + '」 — ' + e; break; }
+    }
+    if (막힘) { 결과.건너뛴표.push(이름 + ': ' + 막힘); return; }
+
+    const 전폭 = sh.getMaxColumns();
+    헤더보정_(sh, 정본칸);                              // 엔진_수집.js · 런타임 호출이라 로드 순서 무관
+    결과.맞춘표.push(이름 + '(' + 정본칸.length + '칸' + (민것 ? ' · 민 열 ' + 민것 : '') + ')');
+    결과.더한칸 += Math.max(0, sh.getMaxColumns() - 전폭);
+  });
+  return 결과;
+}
+
 /** [v9.241] 수집 장부 탭 이름 — 골격의 세 번째 칸에서 **도출**한다(손 목록 금지 · 회귀가 대조한다). */
 function 수집장부탭_() {
   return sheetSkeleton_().filter(function (k) { return k[2] === 수집표식_; }).map(function (k) { return k[0]; });
@@ -1488,6 +1567,9 @@ function safeRun(name, fn) {
 
 function morningJobs() {   // 매일 07시
   rehearsalForceOff_(); // [v9.120] 리허설이 켜진 채 배치가 오면 그날 알림이 통째로 죽는다 — TTL과 별개의 두 번째 안전장치
+  // 🔴 값을 쓰는 배치들보다 «먼저» 칸을 세운다 — 칸이 없으면 그날 값이 안 적히고, 그 줄은 영영 빈 채다.
+  //    ensureSheet 는 «없는 탭»만 만들므로 골격에 칸을 더해도 라이브가 안 따라온다(09-03 실측 5표).
+  safeRun('시트칸맞추기', function () { 시트칸정본맞추기_(SpreadsheetApp.getActiveSpreadsheet()); });
   safeRun('학생ID발급', function () { 학생ID_발급_(); }); // [v9.164] 반배정·앱편입인데 ID가 빈 행을 채운다. **syncProfiles보다 앞** — 뒤에 두면 그날 아침 앱에 못 들어가고 하루 밀린다. onEdit 트리거가 죽어도 여기서 잡히는 두 번째 발동층
   safeRun('syncProfiles', syncProfiles);       // [v7.0] 동기화 먼저 — 신규 학생 생일을 당일부터 인식
   safeRun('birthdayCheck', birthdayCheck);
