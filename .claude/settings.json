@@ -61,6 +61,11 @@
             "shell": "bash",
             "timeout": 25,
             "statusMessage": "낯선 낱말 세기"
+          },
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/context-nudge.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\"; fi; exit 0",
+            "timeout": 10
           }
         ]
       }
