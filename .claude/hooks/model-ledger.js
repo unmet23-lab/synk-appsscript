@@ -74,7 +74,13 @@ async function 전환() {
 }
 
 // ───────────── --시작 : 이어받는 세션에게만 짖는다 ─────────────
-function 시작() {
+/* 🔑 「이어받는 세션」만이다. 유호님이 «이 세션 안에서» 모델을 바꾸신 것은 유호님이 아시니 안 짖는다.
+ *    그래서 마지막 전환의 세션 id 가 지금 세션과 같으면 침묵한다.
+ *    (09-03 실측 교훈: 조건이 «상태»면 한 번 걸린 뒤 계속 뜬다. 알림은 «사건»이어야 한다.) */
+async function 시작() {
+  let 나 = null;
+  try { 나 = (JSON.parse((await 입력읽기()) || '{}')).session_id || null; } catch { /* 없어도 돈다 */ }
+
   let 줄들;
   try {
     줄들 = fs.readFileSync(장부경로(), 'utf8').trim().split('\n').filter(Boolean);
@@ -94,6 +100,7 @@ function 시작() {
     break;
   }
   if (!마지막) process.exit(0); // 0건이면 완전 침묵
+  if (나 && 마지막.세션 === 나) process.exit(0); // 이 세션 안에서 바꾸신 것 — 유호님이 아신다
 
   const 나이분 = Math.round((Date.now() - new Date(마지막.시각).getTime()) / 60000);
   const 언제 = 나이분 < 60 ? `${나이분}분 전` : `${Math.round(나이분 / 60)}시간 전`;
@@ -101,12 +108,12 @@ function 시작() {
   console.log(
     `🎚 **앞선 작업이 돈 모델** — ${언제} ${읽는이름(마지막.전)} → **${읽는이름(마지막.후)}** 로 바뀌었다.\n` +
     `   이어받는 트랙이면 «앞 단계와 같은 모델»이라야 그 위에 선다(09-03 실책 자리).\n` +
-    `   지금 무엇으로 돌고 있는지는 상태줄 첫 칸이 안다 · 모델 픽은 유호님 몫이다.`
+    `   지금 무엇으로 돌고 있는지는 «입력칸 아래 앱 바»가 안다 · 모델 픽은 유호님 몫이다.`
   );
   process.exit(0);
 }
 
 const 모드 = process.argv[2];
 if (모드 === '--전환') 전환().catch(() => process.exit(0));
-else if (모드 === '--시작') { try { 시작(); } catch { process.exit(0); } }
+else if (모드 === '--시작') 시작().catch(() => process.exit(0));
 else { console.error('사용법: --전환 (PostModelSwitch) | --시작 (SessionStart)'); process.exit(1); }
