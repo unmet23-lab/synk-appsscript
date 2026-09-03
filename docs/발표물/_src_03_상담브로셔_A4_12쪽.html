@@ -165,6 +165,9 @@ tr.hi td{ background:var(--coral-wash); }
 .vs .col .h{ font-size:2.6mm; font-weight:700; letter-spacing:.12em; }
 .vs .col.old .h{ color:var(--navy-3); }
 .vs .col.new .h{ color:var(--coral); }
+/* 목록 항목은 «목록 안»에 있어야 화면 읽어 주는 장치가 「셋 중 하나」라고 말해 준다.
+   보이는 꼴은 그대로 둔다 — 여백·점 없음까지 같은 값이다(09-03). */
+.vs .col ul{ list-style:none; padding:0; margin:0; }
 .vs .col li{ font-size:3.6mm; margin-top:2.8mm; list-style:none; line-height:1.5; }
 .vs .col.old li{ color:var(--navy-3); }
 .vs .col.new li{ color:var(--cream-3); }
@@ -446,15 +449,19 @@ tr.hi td{ background:var(--coral-wash); }
     <div class="vs">
       <div class="col old">
         <div class="h">기존 분산 교육</div>
+        <ul>
         <li>학원 3곳 = 비용 3배</li>
         <li>복잡한 시간표 조율</li>
         <li>매일 이동으로 소모</li>
+        </ul>
       </div>
       <div class="col new">
         <div class="h">SYNK 통합 시스템</div>
+        <ul>
         <li>등록 한 번, 학원 한 곳</li>
         <li>정규 수업 + 자유 참여 프로그램</li>
         <li>한 공간에서 모든 학습 완결</li>
+        </ul>
       </div>
     </div>
     <div class="fn">등록은 두 갈래입니다. 정규 한국어 수업에 집중한 쪽, 여기에 한국인 원어민 회화·글로벌 영어·TOPIK
