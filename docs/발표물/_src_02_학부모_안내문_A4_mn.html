@@ -31,7 +31,21 @@
 @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
 
 /*@FONTS@*/
-@page { size: A4 portrait; margin: 0; }
+/* ── 쪽번호 ─────────────────────────────────────────────────────────
+   이 지면은 다른 발표물과 달리 «쪽 상자»가 없다 — 한 덩어리로 흐른다. 그래서 크롬이
+   아무 데서나 끊고, 몇 쪽인지도 안 적힌다(실측 7쪽). 번역해 넣는 작업본이라 쪽이
+   가리켜지지 않으면 「3쪽 둘째 칸」 같은 말을 주고받을 수가 없다.
+   ⇒ 자르는 일을 Paged.js 에 맡긴다. head 끝의 PAGED 마커와 한 벌이고, 임베드 도구가 싣는다.
+   ⚠ 이 주석에 그 마커를 «글자 그대로» 적지 마라 — 치환이 여기부터 걸려 스타일 안에 갇힌다.
+   ⚠ 여백을 0 이 아니게 둔다 — 그 여백 칸이 쪽번호가 앉는 자리다. 크롬 머리글은 이미
+     --no-pdf-header-footer 로 꺼져 있고, 실제 인쇄 여백은 Paged.js 가 따로 깐다. */
+@page { size: A4 portrait; margin: 16mm 15mm 18mm;
+  @bottom-center {
+    content: counter(page) " / " var(--synk-total-pages, "?");
+    font-family:'Inter Tight',system-ui,sans-serif; font-size:3.1mm; font-weight:600;
+    letter-spacing:.06em; color:var(--navy-3); margin-top:6mm;
+  }
+}
 :root{
   --coral:#F96859; --coral-3:#AE322A; /* 라이트 강조 글자 전용 — 24px↑ 또는 18.7px↑ bold */ --coral-wash:#FEF0E9; --coral-soft:#FBB7A3;
   --paper:#FBF7F0; --navy:#262626; --navy-2:#08090C; --navy-3:#373737;
@@ -47,7 +61,10 @@ html,body{
 }
 .mono{ font-family:'DM Mono',ui-monospace,'Cascadia Mono','Consolas',monospace; }
 
-.sheet{ width:210mm; min-height:297mm; padding:14mm 15mm; background:var(--paper); margin:0 auto; }
+/* 쪽 여백은 이제 @page 가 준다 — 상자가 제 여백을 또 주면 두 겹이 된다. */
+.sheet{ width:auto; min-height:0; padding:0; background:var(--paper); margin:0; }
+h2, h3{ break-after:avoid-page; page-break-after:avoid; }   /* 제목만 남고 본문이 넘어가는 것을 막는다 */
+p, li{ orphans:2; widows:2; }                               /* 한 줄만 떨어져 넘어가는 것을 막는다 */
 
 .banner{
   background:var(--navy-2); color:var(--cream); border-radius:2.4mm;
@@ -97,6 +114,7 @@ html,body{
 
 @media screen{ body{ background:var(--cream-2); padding:8mm; } .sheet{ box-shadow:0 3mm 12mm rgba(8,9,12,.22); } }
 </style>
+<!--@PAGED@-->
 </head>
 <body>
 

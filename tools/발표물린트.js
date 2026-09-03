@@ -77,8 +77,12 @@ const MIDNIGHT_DEAD = ['#101528', '#08080B', '#0B1A2E'];
 
 function lint(file) {
   const html = fs.readFileSync(file, 'utf8');
+  /* 실린 남의 코드는 «종이에 안 찍힌다» — 검사 대상에서 뺀다.
+     Paged.js 를 실은 판이 「폐기 표기: Define」과 「@import 또는 CDN url()」로 빨개졌다(09-03 실측).
+     그 글자들은 전부 폴리필 소스 안에 있고 인쇄면에는 하나도 안 나온다 — 자가 틀린 적색이었다. */
+  const 종이 = html.replace(/<script[\s\S]*?<\/script>/g, '');
   // 인쇄면에 실제로 찍히는 텍스트만 본다 — 주석·CSS 안의 말은 종이에 안 나온다.
-  const body = html.replace(/<!--[\s\S]*?-->/g, '').replace(/<style[\s\S]*?<\/style>/g, '');
+  const body = 종이.replace(/<!--[\s\S]*?-->/g, '').replace(/<style[\s\S]*?<\/style>/g, '');
   const text = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
   // ⚠ CSS 주석도 걷어낸다. 안 걷으면 「#101528 은 탈락값이다」라고 적어 둔 주석 자체를
   //   위반으로 잡는다(실측 — 이 린트가 처음 돈 날 자기 주석에 걸렸다).
@@ -118,7 +122,7 @@ function lint(file) {
   const ext = [...body.matchAll(/(?:src|href)\s*=\s*"([^"]+)"/g)].map((m) => m[1])
     .filter((u) => !u.startsWith('#') && !u.startsWith('data:'));
   if (ext.length) bad.push(`외부 자원: ${ext.join(', ')}`);
-  if (/@import/.test(html) || /url\(\s*['"]?https?:/.test(html)) bad.push('@import 또는 CDN url()');
+  if (/@import/.test(종이) || /url\(\s*['"]?https?:/.test(종이)) bad.push('@import 또는 CDN url()');
 
   // 기간 약속 금지 — 승급은 도달제다(정본 ■7)
   if (/(\d+)\s*(개월|주|년)\s*이?면\s*\d*\s*급/.test(text)) bad.push('기간 약속(「N개월이면 N급」)');
@@ -206,9 +210,18 @@ function lint(file) {
   if (revived.length) bad.push(`반전면에 탈락한 색 ${revived.join(', ')} (확정값은 ${MIDNIGHT_OK})`);
 
   // 인쇄 규격
-  const size = (css.match(/@page\s*\{[^}]*size:\s*([^;]+);/) || [])[1];
+  const size = (css.match(/@page\s*\{[^}]*[;{\s]size:\s*([^;]+);/) || [])[1];
   if (!size) bad.push('@page 용지 선언 없음');
-  if (!/@page\s*\{[^}]*margin:\s*0/.test(css)) bad.push('@page 여백 0 잠금 없음(크롬이 머리글을 찍는다)');
+  /* ⚠ 쪽번호판은 여백을 «0 이 아니게» 둔다 — 그 여백 칸이 쪽번호가 앉는 자리다.
+   *   크롬 머리글은 이미 --no-pdf-header-footer 로 꺼져 있고, 실제 인쇄 여백은
+   *   Paged.js 가 제 몫으로 따로 깐다. 이 판에서는 이 잠금이 도리어 쪽번호를 막는다.
+   *   대신 «번호가 앉을 칸이 실제로 있는가»를 본다 — 마커만 있고 칸이 없으면 번호가 안 나온다.
+   *   원고(마커)와 산출물(실린 폴리필) 둘 다에서 알아본다. */
+  const 쪽번호판 = html.includes('<!--@PAGED@-->') || /data-synk-paged/.test(html);
+  if (!쪽번호판 && !/@page\s*\{[^}]*margin:\s*0/.test(css)) bad.push('@page 여백 0 잠금 없음(크롬이 머리글을 찍는다)');
+  if (쪽번호판 && !/@bottom-(center|left|right)/.test(css)) {
+    bad.push('쪽번호판인데 @page 안에 번호가 앉을 여백 칸이 없다');
+  }
   if (!/print-color-adjust:\s*exact/.test(css)) bad.push('print-color-adjust: exact 없음(배경이 인쇄에서 날아간다)');
 
   info.push(`용지 ${size ? size.trim() : '?'}`);
