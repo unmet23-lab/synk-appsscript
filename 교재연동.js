@@ -40,7 +40,7 @@
  *   보관 = git 이력 + docs/_archive/교재_앱_연동_매핑_v1.md(09-03 에 이미 보관됐다). */
 const TB_VOICE_POINTS = 10;              // 목소리 제출 포인트(하루 1회 자체 가드)
 const TB_VOICE_REASON = '목소리제출';     // point_logs 사유(멱등 키)
-const TB_NOTE_MAX = 3;                   // 연습 노트 최대 항목 수(인지 부하 상한)
+/* ⚰ [09-04] TB_NOTE_MAX(연습 노트 항목 상한 3)를 걷었다 — 그 노트를 만들던 함수가 없어졌다. */
 const TB_GROWTH_MIN_DAYS = 21;           // 성장 카드 최소 간격(처음↔최신)
 const TB_JUDGE_MAX_PER_RUN = 20;         // C. 문법 판정 — 밤당 최대 학생 수(비용·시간 가드)
 const TB_JUDGE_TEXT_CAP = 600;           // 학생당 판정 입력 문장 길이 상한(자 · 쓰기·말하기 공용)
@@ -129,11 +129,12 @@ function setupTextbookLink() {
   if (pf) {
     if (String(pf.getRange('DB1').getValue()) !== '목소리폼URL') pf.getRange('DB1').setValue('목소리폼URL');
     if (String(pf.getRange('DC1').getValue()) !== '목소리성장카드') pf.getRange('DC1').setValue('목소리성장카드');
-    /* [v9.229] 개명 — 「필살기노트」 → 「연습노트」(유호 확정 08-13 갈래2-② ⓑ · 카피 전수감사).
-     * 구 표기 「내일의 필살기」 계열이 퇴역했고 이 열 이름이 그 계열의 마지막 라이브 자리였다.
-     * 🔑 이 한 줄이 마이그레이션이다 — 옛 이름이든 빈 칸이든 새 이름으로 덮는다. 열의 «값»은
-     *   건드리지 않는다(다음 일요일 밤 buildFocusNotes_ 가 새 제목으로 다시 쓴다). */
-    if (String(pf.getRange('DD1').getValue()) !== '연습노트') pf.getRange('DD1').setValue('연습노트');
+    /* ⚰ [09-04] DD1 「연습노트」 열 이름 갱신을 걷었다 — 그 열을 채우던 기능이 없어졌다
+     *   (유호 확정 09-04 「연습 노트는 걷어줘」). v9.229 의 개명 마이그레이션(「필살기노트」→
+     *   「연습노트」)이 여기 있었는데, 이제 어느 이름이든 아무도 안 읽으므로 고칠 까닭이 없다.
+     * 🔴 **라이브 시트의 그 열은 지우지 않는다.** 열을 빼면 뒤 열이 통째로 한 칸씩 밀려
+     *   위치로 읽는 다른 기능이 조용히 어긋난다(v9.138 이 그 자리다). 값이 안 채워질 뿐이고,
+     *   앱에서 그 칸을 내리는 것은 화면 쪽 판정이라 여기서 안 한다. */
   }
   // 야간 트리거(23:00) — 같은 함수의 기존 트리거는 제거 후 재설치(멱등)
   ScriptApp.getProjectTriggers().forEach(t => {
@@ -160,10 +161,14 @@ function 교재연동Nightly() {
   try { masteryFromVoice_(ss); } catch (e) { Logger.log('masteryFromVoice_ 오류: ' + e); }
   try { writeVoiceLinks_(ss); } catch (e) { Logger.log('writeVoiceLinks_ 오류: ' + e); }
   try { buildVoiceGrowthCards_(ss); } catch (e) { Logger.log('buildVoiceGrowthCards_ 오류: ' + e); }
-  // 연습 노트는 주 1회(일요일 밤)면 충분 — 매일 바뀌면 "노트"가 아니라 소음이 된다
-  if (new Date().getDay() === 0) {
-    try { buildFocusNotes_(ss); } catch (e) { Logger.log('buildFocusNotes_ 오류: ' + e); }
-  }
+  /* ⚰ [09-04] 연습 노트(buildFocusNotes_)를 걷었다 — 유호 확정 09-04 「연습 노트는 걷어줘」.
+   *   09-03 확정 「교재와 앱은 아예 별개」의 마지막 조각이다. 여기 있던 것은 일요일 밤 주 1회
+   *   호출이었다(매일 돌리면 「노트」가 아니라 소음이 된다는 판정 아래).
+   *   🔑 유호님께 재료를 드릴 때 **전제가 그 사이 바뀌었다는 것도 함께 드렸다** — 같은 날 새벽에
+   *     교재 과 매핑이 이미 걷혀(위 35행) 이 기능은 그 시점에 이미 교재를 안 읽고 있었다.
+   *     그 사실을 아신 채로 「그래도 걷는다」를 고르셨다.
+   *   ⚠ 딸려 나간 것 = mastery_log 의 «유일한 소비자»다. 그 시트는 이제 쌓이기만 하고 읽는 곳이
+   *     없다(엔진_셋업확장.js 의 수집 장부에 그렇게 적었다). 되살리려면 git 이력에 그대로 있다. */
 }
 
 /* [v9.277] 🎙 낭독 미션 목록 — 「미션ID → 그날 무엇을 읽게 했나」 한 벌.
@@ -1104,65 +1109,6 @@ function buildVoiceGrowthCards_(ss) {
     });
     if (새줄.length) 전달.getRange(전달.getLastRow() + 1, 1, 새줄.length, 새줄[0].length).setValues(새줄);
   }
-}
-
-// ── B. 연습 노트(주 1회) → profiles '연습노트' 열 ─────────────────────────
-//   재료: mastery_log '연습'(미도달 문법) + aiWeakMap_(강사 메모 14일 + 최근 첨삭 포인트)
-//   AI 호출 0 — 전부 기존 데이터의 재조립. [09-04] 교재 과 매핑은 걷혔다(위 35행).
-function buildFocusNotes_(ss) {
-  const pf = ss.getSheetByName('profiles');
-  if (!pf || pf.getLastRow() < 2) return;
-
-  // 문법 이름 사전(GRAMMAR_BANK는 Code.js 전역 — 함수 안 접근 규칙 준수)
-  const gName = {};
-  try { GRAMMAR_BANK.forEach(g => { gName[g[0]] = g[1]; }); } catch (e) {}
-
-  // 학생별 미도달('연습') 문법 — upsert 시트라 마지막 상태가 정본
-  const practicing = {}; // sid → [grammar_id...]
-  const ml = ss.getSheetByName('mastery_log');
-  if (ml && ml.getLastRow() >= 2) {
-    const st = {}; // sid|gid → 상태(뒤 행이 최신)
-    ml.getRange(2, 1, ml.getLastRow() - 1, 3).getValues().forEach(r => {
-      const sid = String(r[0] || '').trim(), gid = String(r[1] || '').trim();
-      if (sid && gid) st[sid + '|' + gid] = String(r[2] || '');
-    });
-    Object.keys(st).forEach(k => {
-      if (st[k] !== '연습') return;
-      const p = k.split('|');
-      (practicing[p[0]] = practicing[p[0]] || []).push(p[1]);
-    });
-  }
-  let weak = {};
-  try { weak = aiWeakMap_(ss); } catch (e) {} // 강사 메모+첨삭 — Code.js 로더 재사용
-
-  const n = pf.getLastRow() - 1;
-  const ids = pf.getRange(2, 1, n, 4).getValues();
-  const out = ids.map(r => {
-    const sid = String(r[0] || '').trim();
-    if (!sid || r[3] !== 'student') return [''];
-    const gids = (practicing[sid] || []).slice(0, TB_NOTE_MAX);
-    const memos = (weak[sid] || []).slice(-1); // 가장 최근 코치 문구 1건만(소음 방지)
-    if (!gids.length && !memos.length) return [''];
-    let md = '## 📖 내 연습 노트 — 이번 주\n\n';
-    if (gids.length) {
-      // [09-04] 「— 권1 N과 다시 펴기」 꼬리를 걷었다(유호 지시 「교재관련 오염되거나 낡은거 다 지워줘」).
-      //   연습 노트 본체는 mastery_log·student_errors·hw_feedback 만 읽으므로 교재 없이 그대로 선다.
-      md += gids.map((g, i) => (i + 1) + '. **' + (gName[g] || g) + '**').join('\n') + '\n\n';
-    }
-    if (memos.length) md += '💬 최근 코치: ' + memos[0] + '\n\n';
-    md += '이것만 잡으면 다음 진화가 가까워져요 ⚡';
-    return [md];
-  });
-  /* 🔴 배포 순서에 안 기댄다 — 코드가 먼저 나가고 setupTextbookLink 가 아직 안 돌면
-   *   새 이름 열이 없어 col=0 이 되고, 노트가 **조용히 멈춘다**(에러도 안 난다).
-   *   그래서 여기서 옛 이름을 찾아 그 자리에서 헤더만 갈아 끼운다 — 값·열 위치는 그대로다.
-   *   설치를 다시 돌리든 안 돌리든 같은 결과가 되는 자리(v9.229 개명). */
-  let col = tbProfileCol_(pf, '연습노트');
-  if (!col) {
-    const 옛 = tbProfileCol_(pf, '필살기노트');
-    if (옛) { pf.getRange(1, 옛).setValue('연습노트'); col = 옛; }
-  }
-  if (col) writeIfChanged(pf, 2, col, out);
 }
 
 // ── C. AI 문법 판정 [v9.59] — 숙제 문장 → mastery_log 자동 축적(교사 손 0) ──
