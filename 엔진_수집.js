@@ -410,7 +410,7 @@ function createTalkForm() {
   setState(st, '대화폼ID', form.getId());
   setState(st, '대화폼URL틀', prefillTemplateOf_(form, '학생ID'));
   Logger.log('✅ 한국어 대화 폼 생성 완료! 야간 배치(22시)가 답장을 만듭니다.');
-  return '한국어 대화 폼 생성 완료 — 학생별 주소가 profiles 「대화폼URL」 열에 채워집니다. 지금은 그 주소를 학생에게 직접 주고, 새 앱이 서면 「한국어로 말 걸기」 버튼에 잇습니다.';
+  return '한국어 대화 폼 생성 완료 — 학생별 주소가 다음 calcAll부터 profiles 「대화폼URL」 열에 채워집니다. 지금은 그 주소를 학생에게 직접 주고, 새 앱이 서면 「한국어로 말 걸기」 버튼에 잇습니다.';
 }
 
 /* 직전 턴들을 Claude messages 형식으로 — 이게 있어야 「대화」이고, 없으면 매번 처음 만난 사이가 된다.
