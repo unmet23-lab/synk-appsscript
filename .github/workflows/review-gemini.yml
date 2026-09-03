@@ -45,6 +45,18 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
 
+      # 모델은 **저장소 정본에서 읽는다**(vars.GEMINI_MODEL 이 아니라) — 2026-09-03.
+      # 옛 판은 GitHub 저장소 변수를 읽었는데 그 변수는 실제로 **0개**였고(09-03 `gh variable list` 실측),
+      # 그러면 이 레인만 조용히 액션 기본 모델로 돌아 「정본 = tools/모델정책.js」가 거짓이 된다.
+      # 한 값을 두 곳이 알면 갈리고, 갈라진 쪽은 조용하다(constant-known-in-two-places).
+      - name: Resolve model from repo policy
+        id: 모델
+        run: |
+          M=$(node -e "process.stdout.write(require('./tools/모델정책.js').제미나이설정().model)")
+          if [ -z "$M" ]; then echo "::error::모델정책.js 에서 제미나이 픽을 못 읽었다 — 이건 「기본값으로 돈다」가 아니라 «확인 불가»다"; exit 1; fi
+          echo "id=$M" >> "$GITHUB_OUTPUT"
+          echo "제미나이 검수 모델 = $M (정본 = tools/모델정책.js)"
+
       - name: Gemini pull request review
         uses: google-github-actions/run-gemini-cli@v0
         env:
@@ -53,7 +65,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          gemini_model: ${{ vars.GEMINI_MODEL }}
+          gemini_model: ${{ steps.모델.outputs.id }}
           workflow_name: gemini-review
           github_pr_number: ${{ github.event.pull_request.number }}
           settings: |

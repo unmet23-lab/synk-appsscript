@@ -294,7 +294,7 @@ test('걸린 것이 하나도 없으면 적색 0 — 다만 그때도 축은 다
 
 const { 키생존축 } = require(도구);
 
-const 산것 = (용도) => ({ 때: new Date(Date.now() - 90 * 60000).toISOString(), 캐시: true, 기록: { 살았나: true, 용도, 모델: 'gemini-3.7-flash' } });
+const 산것 = (용도) => ({ 때: new Date(Date.now() - 90 * 60000).toISOString(), 캐시: true, 기록: { 살았나: true, 용도, 모델: 'gemini-3.8-flash' } });
 const 죽은것 = (용도, o) => ({ 때: new Date(Date.now() - 60000).toISOString(), 캐시: false, 기록: { 살았나: false, 용도, ...o } });
 
 /* 🔑 «우는 크기»가 용도마다 다르다 — 유호 지시 09-03 「항상 무료먼저 사용하게 해줘」.

@@ -172,7 +172,9 @@ test('코덱스효력 표가 벤더 실물(models_cache.json)과 같다 — 손�
 test('🔑 제미나이 기본 = flash/high — 유호 확정(2026-08-05 "flash high로 세팅해줘") 잠금', () => {
   assert.strictEqual(정책.제미나이.기본, '무료최상');
   const p = 정책.제미나이설정();
-  assert.strictEqual(p.model, 'gemini-3.7-flash', '유호 지시 2026-08-31 「제미나이는 3.7을 유지해줘」와 다르다');
+  assert.strictEqual(p.model, 'gemini-3.8-flash', '유호 지시 2026-09-03 「전부 3.8 로」와 다르다');
+  /* 「심화추론모드」의 실물 = 이 한 줄이다. 09-03 프로브에서 3.8 은 max·ultra·deep·dynamic 을 전부
+   * 400 으로 거절했다 — high 가 천장이라 **이 값이 내려가면 심화가 꺼진 것**이고, 위로 올릴 곳은 없다. */
   assert.strictEqual(p.thinking_level, 'high');
 });
 

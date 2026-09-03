@@ -55,14 +55,14 @@ test('② 합의 분모 = 실제로 본 회차 — gemini 회차가 확인불가
 test('③ 두 벤더가 같은 결함을 짚으면 합의 2/2 · 한쪽만 짚으면 단독으로 센다', () => {
   const r = 검수.회차병합([
     { 벤더: 'codex', 요약: 'a', 지적: [지적('Code.js', '널 참조'), 지적('엔진_폼리포트.js', '빈 배열', 'P2')], 원문: 'x' },
-    { 벤더: 'gemini', 서빙모델: 'gemini-3.7-flash-001', 요약: 'b', 지적: [지적('Code.js', '널 참조')], 원문: 'y' },
+    { 벤더: 'gemini', 서빙모델: 'gemini-3.8-flash-001', 요약: 'b', 지적: [지적('Code.js', '널 참조')], 원문: 'y' },
   ]);
   const 합의 = Object.fromEntries(r.지적.map((f) => [f.제목, f.합의]));
   assert.equal(합의['널 참조'], '2/2');
   assert.equal(합의['빈 배열'], '1/2');
   assert.equal(r.회차별[0].단독, 1);
   assert.equal(r.회차별[1].단독, 0);
-  assert.equal(r.회차별[1].서빙모델, 'gemini-3.7-flash-001', '서빙 모델이 장부 모양에 안 실렸다');
+  assert.equal(r.회차별[1].서빙모델, 'gemini-3.8-flash-001', '서빙 모델이 장부 모양에 안 실렸다');
   assert.match(검수.회차별줄 ? 검수.회차별줄(r.회차별, r.지적) : '2회·gemini', /2회·gemini/);
 });
 
