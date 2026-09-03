@@ -50,7 +50,12 @@ jobs:
       # 그러면 이 레인만 조용히 액션 기본 모델로 돌아 「정본 = tools/모델정책.js」가 거짓이 된다.
       # 한 값을 두 곳이 알면 갈리고, 갈라진 쪽은 조용하다(constant-known-in-two-places).
       - name: Resolve model from repo policy
-        id: 모델
+        # 🔴 id 는 **ASCII 만** 쓴다 — 한글을 쓰면 GitHub 이 파일 전체를 파싱하지 못한다.
+        #   09-03 에 `id: 모델` 로 넣었다가 이 워크플로가 **100건 연속 실패**했다(성공 0):
+        #   이름을 못 읽어 목록에 «경로»로 뜨고, 트리거(`on: pull_request`)를 못 읽어 모든 push 에
+        #   반응하며, 잡을 하나도 못 만든 채 끝난다(로그 0건 · 그래서 사유가 안 보인다).
+        #   같은 무늬 = 기억 `workflow-schema-ascii-keys`(밖으로 «키»로 나가는 낱말은 ASCII).
+        id: model
         run: |
           M=$(node -e "process.stdout.write(require('./tools/모델정책.js').제미나이설정().model)")
           if [ -z "$M" ]; then echo "::error::모델정책.js 에서 제미나이 픽을 못 읽었다 — 이건 「기본값으로 돈다」가 아니라 «확인 불가»다"; exit 1; fi
@@ -65,7 +70,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          gemini_model: ${{ steps.모델.outputs.id }}
+          gemini_model: ${{ steps.model.outputs.id }}
           workflow_name: gemini-review
           github_pr_number: ${{ github.event.pull_request.number }}
           settings: |
