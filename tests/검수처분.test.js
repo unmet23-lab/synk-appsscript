@@ -253,3 +253,80 @@ test('왕복 — 실저장소 지문으로 게이트가 실제로 열린다/안 
   fs.writeFileSync(기각p, JSON.stringify({ 키: 'KEY1', 처분: '대상아님', 사유: 'x', 지문: { '(루트)': '옛지문' } }) + '\n');
   assert.strictEqual(판().level, 'block', '다른 배포 내용에 대한 판정이 이 배포를 열면 안 된다');
 });
+
+/* ══ 무효 표식 축 (2026-09-03 · 체크포인트 방 열쇠 충돌의 뒤처리) ══════════════════════════
+ *
+ * 실사고: 방 열쇠에 «내용» 축이 없던 동안 한 세션의 기록행에 **옆 세션의 지적**이 박혔다.
+ *   그 행이 주장하는 것은 «이 배포내용을 검수했다»인데 codex 는 그 바이트를 한 번도 안 봤다 —
+ *   즉 행 자체가 도장으로서 거짓이다. 장부는 append-only 라 지울 수 없고, 지적을 `--기각` 하면
+ *   **남의 진짜 지적이 재발 필터에서 영구히 사라진다.** 그래서 무효로 만드는 것은 지적이 아니라
+ *   «행과 지문의 짝»이다.
+ * ⚠ 새는 방향을 못 박는다 — 표식이 안 먹히면 그 행은 계속 게이트를 막고(사람이 본다), 표식이
+ *   너무 먹으면 검수 안 한 배포가 열린다(아무도 안 본다). 그래서 ③④가 이 파일의 급소다. */
+test('무효 표식이 붙은 기록행은 **도장으로 안 센다** — 그리고 그 사실을 화면에 말한다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-무효-'));
+  const 기록p = path.join(방, '기록.jsonl');
+  const 기각p = path.join(방, '기각.jsonl');
+  fs.writeFileSync(기각p, '');
+  const 판 = () => R.게이트판정(path.join(__dirname, '..'), path.join(__dirname, '..'),
+    { 기록경로: 기록p, 기각경로: 기각p });
+  const fp = 판().fp;   // 지금 이 트리의 배포 지문 — 행을 그 지문에 맞춰 심어야 게이트가 집는다
+  const 행 = { 시각: 'T-오염', 범위: ['(루트)'], 지문: { '(루트)': fp },
+    지적: [{ 등급: 'P1', 키: 'K영상', 파일: '영상/씨앗.js', 제목: 'x', 근거: 'y', 수정방향: 'z' }] };
+
+  // ① 표식이 없으면 그 행이 게이트를 막는다(2026-09-03 에 실제로 일어난 그 모양 — 남의 지적으로 막혔다)
+  fs.writeFileSync(기록p, JSON.stringify(행) + '\n');
+  assert.strictEqual(판().level, 'block', '전제가 깨졌다 — 막지도 않는 행이면 이 시험은 아무것도 안 잰다');
+
+  // ② 표식을 붙이면 도장에서 빠진다 → 이 지문엔 «유효한 기록이 없다»
+  fs.appendFileSync(기록p, JSON.stringify({ 종류: '무효', 시각: 'T-표식', 무효행: 'T-오염', 사유: '방 열쇠 충돌' }) + '\n');
+  const 뒤 = 판();
+  assert.strictEqual(뒤.level, 'none', '무효 표식이 붙은 행이 여전히 도장으로 세어졌다');
+  assert.ok(뒤.lines.join('\n').includes('무효 표식 1'),
+    '「기록이 없다」와 「기록은 있는데 무효다」가 같은 얼굴이면 다음 사람이 장부를 열고 헤맨다(0은 분모와 함께)');
+
+  // ③ 🔴 표식 행 자체는 **절대** 도장이 아니다 — 지문 칸이 없으니 원리상 안 걸려야 한다
+  fs.writeFileSync(기록p, JSON.stringify({ 종류: '무효', 시각: 'T-표식', 무효행: 'T-없는행', 사유: 'x' }) + '\n');
+  assert.strictEqual(판().level, 'none', '표식 행이 검수 기록으로 읽혔다 — 그러면 표식을 적을수록 게이트가 열린다');
+
+  // ④ 짝을 못 찾는 표식은 **아무것도 안 지운다**(그 행이 아직 다른 워크트리에 있는 경우)
+  fs.writeFileSync(기록p, JSON.stringify(행) + '\n'
+    + JSON.stringify({ 종류: '무효', 시각: 'T-표식', 무효행: 'T-오타', 사유: '시각을 잘못 쳤다' }) + '\n');
+  assert.strictEqual(판().level, 'block', '오타 난 표식이 엉뚱한 행을 열었다 — 새는 방향이 「통과」다');
+
+  // ⑤ 지적은 손대지 않는다 — 그 7건은 «남의 진짜 지적»이라 키로 계속 찾을 수 있어야 한다
+  fs.writeFileSync(기록p, JSON.stringify(행) + '\n'
+    + JSON.stringify({ 종류: '무효', 시각: 'T-표식', 무효행: 'T-오염', 사유: '방 열쇠 충돌' }) + '\n');
+  const 남은지적 = R.장부읽기(기록p, '').flatMap((r) => r.지적 || []).find((f) => f.키 === 'K영상');
+  assert.ok(남은지적, '무효 표식이 지적까지 지웠다 — 그러면 --기각 과 다를 게 없고, 남의 진짜 지적이 사라진다');
+});
+
+test('--기록무효 레버 — 사유 없이는 안 받고, 적으면 장부에 표식 한 줄이 남는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-무효레버-'));
+  const 기록p = path.join(방, '기록.jsonl');
+  fs.writeFileSync(기록p, JSON.stringify({ 시각: 'T-오염', 범위: ['(루트)'], 지문: { '(루트)': 'ffff0000' }, 지적: [] }) + '\n');
+  const 부른다 = (인자) => spawnSync(process.execPath, [도구, ...인자], {
+    env: { ...process.env, SYNK_REVIEW_LEDGER: 기록p, SYNK_REVIEW_REJECTS: path.join(방, 'r.jsonl') },
+    encoding: 'utf8',
+  });
+
+  assert.strictEqual(부른다(['--기록무효', 'T-오염']).status, 2,
+    '사유 없는 표식은 받지 않는다 — 왜 도장이 아닌지 못 읽으면 다음 사람이 되살릴 수도 없다');
+  assert.strictEqual(부른다(['--기록무효', '--사유', '왜']).status, 2, '시각 없이 부르면 거절해야 한다');
+
+  const r = 부른다(['--기록무효', 'T-오염', '--사유', '방 열쇠 충돌 — 지적이 옆 세션 것이다']);
+  assert.strictEqual(r.status, 0, `표식을 못 적었다: ${r.stderr}`);
+  const 행들 = fs.readFileSync(기록p, 'utf8').trim().split('\n').map((l) => JSON.parse(l));
+  assert.strictEqual(행들.length, 2, '장부는 append-only 다 — 원래 행이 사라지면 안 된다');
+  assert.ok(행들[0].시각 === 'T-오염' && (행들[0].지적 || []).length === 0, '원래 행이 고쳐졌다');
+  assert.deepStrictEqual(
+    { 종류: 행들[1].종류, 무효행: 행들[1].무효행 }, { 종류: '무효', 무효행: 'T-오염' },
+    '표식 행의 모양이 읽는 쪽(무효행들)과 갈렸다 — 갈리면 표식이 조용히 아무 일도 안 한다');
+  assert.ok(R.무효행들(행들).has('T-오염'), '쓰는 쪽과 읽는 쪽이 같은 장부로 왕복하지 못한다');
+
+  // 🔑 짝이 없는 시각도 **적는다**(다른 워크트리의 행일 수 있다) — 대신 화면이 크게 말한다
+  const r2 = 부른다(['--기록무효', 'T-어디에도없음', '--사유', '다른 트리의 행이다']);
+  assert.strictEqual(r2.status, 0, '짝이 없다고 거절하면 다른 워크트리의 행에는 표식을 못 남긴다');
+  assert.ok(/없다/.test(r2.stderr), '짝을 못 찾았는데 조용히 넘어갔다 — 오타를 사람이 못 본다');
+});
+
