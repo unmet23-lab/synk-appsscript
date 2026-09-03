@@ -43,10 +43,13 @@ bash (Git Bash 포함):
 # ① 시험지가 정본과 어긋나지 않았는지 먼저 본다 (모델 호출 0건 · 공짜 · 3초)
 node evals/검문자.js --자체점검
 
-# ② 시험을 돌린다 (제미나이를 28번 부른다 · 지금 쓰는 무료 키로 둘 다 답했다 · 4~8분)
+# ② 시험을 돌린다 (제미나이를 28번 부른다 · 5~10분)
 #    판을 «박는다» — 의심줄.js 는 0.122.x 결과 모양을 전제하므로 @latest 가 모양을 바꾸는 날 ③이 죽는다
+#    🔴 -j 1 --delay 4000 을 줄이지 마라. 공짜 몫은 «1분에 20번»이다(09-03 실측 · 429 원문
+#       "free_tier_requests, limit: 20 ... retry in 45s"). 옛 판의 -j 2 --delay 3000 은 1분에 40번을
+#       던져 상한의 두 배였고, 그 벽에 갇힌 재시도가 몫을 또 먹어 28칸 중 «답 1칸»만 나왔다.
 GEMINI_API_KEY=$(node -e "process.stdout.write(require('./tools/모델정책.js').제미나이키()||'')") \
-  npx -y promptfoo@0.122.2 eval -c evals/몽골어검문.yaml -j 2 --delay 3000 \
+  npx -y promptfoo@0.122.2 eval -c evals/몽골어검문.yaml -j 1 --delay 4000 \
   --no-table --no-share -o evals/_결과/결과.json
 
 # ③ 사람이 볼 줄만 뽑아 본다 (맞은 줄은 안 올라온다)
@@ -61,15 +64,16 @@ node evals/검문자.js --자체점검
 
 # ② 환경변수는 이 창에 남는다 — 끝나면 지운다(세 번째 줄). 값은 화면에 찍히지 않는다.
 $env:GEMINI_API_KEY = node -e "process.stdout.write(require('./tools/모델정책.js').제미나이키()||'')"
-npx -y promptfoo@0.122.2 eval -c evals/몽골어검문.yaml -j 2 --delay 3000 --no-table --no-share -o evals/_결과/결과.json
+npx -y promptfoo@0.122.2 eval -c evals/몽골어검문.yaml -j 1 --delay 4000 --no-table --no-share -o evals/_결과/결과.json
 Remove-Item Env:GEMINI_API_KEY
 
 # ③
 node evals/의심줄.js evals/_결과/결과.json
 ```
 
-- 🔑 **키를 화면에 찍지 않는다.** ②의 첫 줄이 키 파일(`C:\Users\q1212\SYNK_보안\제미나이.txt`)에서
-  값을 읽어 **환경변수로만** 넘긴다. 명령을 그대로 복사해 쓰면 된다.
+- 🔑 **키를 화면에 찍지 않는다.** ②의 첫 줄이 키 파일에서 값을 읽어 **환경변수로만** 넘긴다.
+  명령을 그대로 복사해 쓰면 된다. 시험은 **공짜 몫 열쇠**(`SYNK_보안\제미나이_무료.txt` · 09-03 부터
+  「글」과 「돈」이 갈렸다)를 쓴다 — 경로를 아는 곳은 `tools/모델정책.js` 하나다.
 - promptfoo 판은 `0.122.2` 로 박는다(이 기계 실측 판 · 머리말). 올릴 때는 `node evals/의심줄.js` 가 결과
   모양을 아직 읽는지 먼저 본다 — 못 읽으면 「0건」이 아니라 「확인 불가」로 죽게 돼 있다.
 - ②를 다시 돌리면 이미 받은 답은 다시 안 부른다(promptfoo 가 `~/.promptfoo` 에 쟁여둔다).
