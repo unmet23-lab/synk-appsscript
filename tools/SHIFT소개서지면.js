@@ -30,6 +30,8 @@ const 뿌리 = path.resolve(__dirname, '..');
 const { 바꾸기 } = require('./lib/마크다운을html로.js');
 const loom = require('./lib/loom.js');
 const 토큰 = require(path.join(뿌리, 'docs', '디자인_토큰.json'));
+/* 브랜드 서체는 «굽는 자리»에서 심는다 — 정본 통로 하나. */
+const 브랜드폰트 = require("./lib/브랜드폰트.js");
 
 const 정본 = path.join(뿌리, 'docs', '정본', 'SYNK SHIFT', 'SYNK SHIFT 소개서.txt');
 
@@ -100,15 +102,23 @@ ${몸}
 </div>
 </body></html>`;
 
+  /* 🔴 브랜드 서체를 «굽는 자리»에서 심는다 (09-03 실측 · 오늘만 네 번 난 자리).
+   *   손으로 심으면 다음 굽기가 되돌린다 — 실제로 40분 만에 되돌려졌다.
+   *   서체 이름만 부르고 안 실으면 `tests/지면폰트.test.js` ⑦ 이 문다(시스템 고딕으로 떨어진다). */
+  const 서체 = 브랜드폰트.심기(html);
+
   fs.mkdirSync(path.dirname(낼곳), { recursive: true });
-  fs.writeFileSync(낼곳, html, 'utf8');
-  return { 낼곳, 크기: Buffer.byteLength(html), 부품: (html.match(/\/\*loom부품:/g) || []).length };
+  fs.writeFileSync(낼곳, 서체.html, 'utf8');
+  return {
+    낼곳, 크기: Buffer.byteLength(서체.html),
+    부품: (서체.html.match(/\/\*loom부품:/g) || []).length, 서체: 서체.자리,
+  };
 }
 
 if (require.main === module) {
   const 낼곳 = process.argv[2] || path.join(뿌리, 'docs', 'SHIFT', 'SYNK_SHIFT_소개서.html');
   const r = 굽기(낼곳);
-  console.log(`✅ ${path.relative(뿌리, r.낼곳)}  (${(r.크기 / 1024).toFixed(0)}KB · 부품 ${r.부품}종)`);
+  console.log(`✅ ${path.relative(뿌리, r.낼곳)}  (${(r.크기 / 1024).toFixed(0)}KB · 부품 ${r.부품}종 · 서체 ${r.서체})`);
   console.log('   글의 정본 = docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt — 이 지면은 손으로 안 고친다.');
 }
 module.exports = { 굽기, 정본 };

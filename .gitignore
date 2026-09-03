@@ -198,3 +198,6 @@ docs/소리/
 # 클라우드 굽기 작업 폴더 (tools/화면클라우드굽기.js) — 재료는 버킷이 쥔다
 upload_screens/
 받을것_*/
+# 밖에서 받아 오는 큰 것 — 다시 받는 통로 = node tools/외부도구받기.js (2026-09-03)
+tools/vendor/pdfcpu/
+docs/어휘/*.csv
