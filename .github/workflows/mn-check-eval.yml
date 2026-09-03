@@ -1,0 +1,93 @@
+# 노트북 없이 도는 몽골어 검문 시험 — 유호 확정 2026-09-03 「깃허브 예약도 세운다」
+#
+# ■ 무엇을 하나
+#   `evals/몽골어검문.yaml`(우리가 실제로 틀렸던 몽골어 14문장)을 지금 쓰는 제미나이 픽에 풀린다.
+#   과녁 = 「모델을 갈아탔는데 그게 예전만큼 잡는지 안 재봤다」를 닫는 것. 정본 = tools/모델정책.js.
+#
+# 🔴 스위치 — 저장소 변수 `SYNK_EVAL_GITHUB` = `on` 일 때만 뜬다. 그 전에는 아예 안 돈다.
+# 🔒 시크릿 — `GEMINI_API_KEY_FREE` : **공짜 몫** 열쇠(글 전용). review-gemini.yml 의 `GEMINI_API_KEY`
+#    와 **다른 열쇠다** — 09-03 에 「글(공짜)」과 「돈(그림·음악)」을 갈랐고, 검문은 공짜 쪽을 쓴다.
+#    열쇠 값을 넣는 것은 유호님 손이다(자격증명은 클로드가 만지지 않는다).
+#
+# 🔑 왜 매일인데 몫을 안 태우나 — 하루 공짜 몫은 **20발**(09-03 실측)이고 이 시험은 14발이다.
+#    그래서 `evals/_판정/<모델>.json` 이 이미 있으면 `돌리기.js` 가 **한 발도 안 던지고** 끝낸다.
+#    그 판정 파일은 이 워크플로가 커밋한다 ⇒ 노트북의 예약(SYNK_MnCheckEval)도 그걸 보고 안 던진다.
+#    한 몫을 두 기계가 나눠 먹지 않게 하는 자리가 그 파일 하나다.
+#
+# 🛡 몽골어는 밖으로 안 나간다 — 커밋하는 것은 **숫자만**(맞음·틀림·못잼). 결과 전문(`_결과/`)에는
+#    몽골어 본문과 모델 답이 그대로 들어가는데 이 저장소는 PUBLIC 이라 그쪽은 올리지 않는다
+#    (evals/.gitignore). 러너가 끝나면 그 파일들은 러너와 함께 사라진다.
+name: mn-check-eval
+
+on:
+  schedule:
+    # 08:30 UTC = 17:30 KST. 공짜 몫은 태평양 자정(= 한국 오후 4~5시)에 새로 찬다.
+    - cron: '30 8 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: mn-check-eval
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  eval:
+    if: ${{ vars.SYNK_EVAL_GITHUB == 'on' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write   # 판정(숫자만)을 커밋한다
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # 열쇠는 «파일»로 놓는다 — 경로를 아는 곳이 tools/모델정책.js 하나이고, 그 통로가 env 로
+      # 경로만 받는다(값은 어디에도 안 적힌다). 러너가 끝나면 이 파일도 함께 사라진다.
+      - name: Place the free-tier key
+        env:
+          KEY: ${{ secrets.GEMINI_API_KEY_FREE }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::시크릿 GEMINI_API_KEY_FREE 가 비어 있다 — 이건 「시험 통과」가 아니라 «안 돌렸다»다."
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s' "$KEY" > "$RUNNER_TEMP/keys/gemini-free.txt"
+
+      - name: Run the eval (gates first)
+        id: run
+        env:
+          GEMINI_KEY_PATH_FREE: ${{ runner.temp }}/keys/gemini-free.txt
+        run: |
+          set +e
+          node evals/돌리기.js --예약
+          C=$?
+          set -e
+          echo "code=$C" >> "$GITHUB_OUTPUT"
+          # 3 = 게이트가 0발로 막았다(몫이 아직 안 찼다). 실패가 아니라 «안 던졌다» — 내일 또 돈다.
+          if [ "$C" = "3" ]; then echo "::notice::게이트가 0발로 막았다 — 몫이 아직 안 찼다. 내일 다시 돈다."; exit 0; fi
+          exit "$C"
+
+      - name: Commit the verdict (numbers only)
+        if: ${{ always() && steps.run.outputs.code == '0' }}
+        run: |
+          if [ -z "$(git status --porcelain -- evals/_판정)" ]; then
+            echo "판정에 바뀐 것이 없다 — 커밋하지 않는다(이미 재 둔 것이다)."
+            exit 0
+          fi
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -- evals/_판정
+          git commit -m "몽골어 검문 시험 판정(숫자만) — 남의 기계가 쟀다
+
+노트북과 무관하게 도는 통로(mn-check-eval). 커밋하는 것은 맞음·틀림·못잼 수뿐이고
+몽골어 본문과 모델 답은 안 나간다(evals/.gitignore · 저장소 PUBLIC).
+이 파일이 있으면 노트북 예약도 한 발 안 던진다 — 하루 몫은 열쇠마다 하나다."
+          git push
