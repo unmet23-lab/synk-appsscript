@@ -111,9 +111,11 @@ async function 한컷({ 이름, 지시, 참조 = [], 비율 = '1:1', 크기 = '1
    * 무료 크레딧 $300 이 AI Studio 문에는 안 먹고 그 문에는 먹기 때문이다(구글 공식). */
   const res = await fetch(require('../모델정책.js').제미나이URL('돈', 모델), {
     method: 'POST',
-    headers: { 'x-goog-api-key': k, 'content-type': 'application/json' },
+    // 🔑 Vertex 문은 API 키를 못 받는다(조직 밖 프로젝트 · 09-04) — 인증 머리는 정책이 낸다.
+    headers: await require('../모델정책.js').제미나이헤더('돈'),
     body: JSON.stringify({
-      contents: [{ parts }],
+      // 🔑 `role` 은 Vertex 문이 요구한다(없으면 400 · 09-04) — AI Studio 도 받는 형태다.
+      contents: [{ role: 'user', parts }],
       generationConfig: { responseModalities: ['IMAGE'], imageConfig: { imageSize: 크기, aspectRatio: 비율 } },
     }),
   });

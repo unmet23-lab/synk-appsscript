@@ -673,10 +673,74 @@ const 제미나이문들 = {
   },
   돈: {
     이름: 'Vertex AI', base: 'https://aiplatform.googleapis.com/v1', env: 'GEMINI_BASE_PAID',
-    모델경로: (m) => `/publishers/google/models/${m}`, 목록가능: false,
+    모델경로: (m) => `/projects/${벌텍스프로젝트()}/locations/${벌텍스위치()}/publishers/google/models/${m}`,
+    목록가능: false, 인증: 'oauth',
     왜: '무료 크레딧 $300 이 AI Studio 문에는 안 먹고 이 문에는 먹는다(구글 공식)',
   },
 };
+/* 🔴 **Vertex 는 API 키를 못 받는다 — 이 프로젝트에서는 «원리상» 그렇다** (09-04 실측으로 판정)
+ *   09-04 아침에는 「키가 거절되지 않았다」고 적었는데, 그건 «열쇠 제한»에서 막힌 것을 보고
+ *   그 너머를 못 본 것이었다. 제한을 넓히려 하자 구글이 이렇게 답했다:
+ *     `Operation denied by org policy: ["constraints/iam.managed.disableServiceAccountApiKeyCreation"]`
+ *   이 프로젝트(`gen-lang-client-0106203750`)는 **조직 밖**이라(`parent` 없음 · 실측) 그 정책을 끌
+ *   «자리»가 아예 없다. 서비스 계정 열쇠 발급도 같은 이유로 막힌다(`iam.serviceAccountKeys.create` denied).
+ *   ⇒ 열쇠를 넓히는 길·서비스 계정 열쇠를 뽑는 길 **둘 다 닫혔다. 다시 시도하지 않는다.**
+ *
+ * ✅ **열린 길 = OAuth 토큰**(Vertex 의 정식 인증이다 · 09-04 실측 200).
+ *   토큰의 뿌리는 이미 이 기계에 있는 구글 로그인(`~/.clasprc.json` 의 refresh token)이다 —
+ *   배포 통로(clasp)가 늘 살려 두는 자격이라 따로 갱신할 것이 없고, 권한에 `cloud-platform` 이 들어 있다.
+ *   🔑 사본을 만들지 않는다 — 만들면 clasp 갱신 때 둘이 갈리고 갈린 쪽은 조용하다.
+ *   ⚠ 되살리는 법은 하나: `npx clasp login`(유호님 손 · 브라우저 동의 한 번). 그 절차를 오류문이 직접 말한다. */
+const 벌텍스프로젝트 = () => process.env.SYNK_VERTEX_PROJECT || 'gen-lang-client-0106203750';
+const 벌텍스위치 = () => process.env.SYNK_VERTEX_LOCATION || 'global'; // 리전 문은 10% 비싸다 — 전역이 기본
+
+/** Vertex 용 access token. 1시간짜리라 임시 파일에 캐시해 프로세스들이 나눠 쓴다(값은 어디에도 안 적는다). */
+async function 벌텍스토큰() {
+  const os = require('os');
+  const path = require('path');
+  const 캐시경로 = path.join(os.tmpdir(), 'synk_vertex_token.json');
+  try {
+    const c = JSON.parse(fs.readFileSync(캐시경로, 'utf8'));
+    if (c && c.token && c.expiry > Date.now() + 120_000) return c.token;
+  } catch { /* 없거나 깨졌으면 새로 만든다 */ }
+
+  const 자격경로 = process.env.SYNK_VERTEX_OAUTH || path.join(os.homedir(), '.clasprc.json');
+  if (!fs.existsSync(자격경로)) {
+    throw 확인불가(`Vertex 토큰의 뿌리(구글 로그인)를 못 찾았다: ${자격경로}\n`
+      + `   되살리는 법: npx clasp login — 브라우저가 한 번 열리고 그 뒤로는 자동이다.`);
+  }
+  const j = JSON.parse(fs.readFileSync(자격경로, 'utf8'));
+  const t = (j.tokens && j.tokens.default) || j;
+  if (!t.refresh_token) throw 확인불가(`${자격경로} 에 refresh_token 이 없다 — npx clasp login 을 다시 한다.`);
+
+  const 몸 = new URLSearchParams({
+    client_id: t.client_id, client_secret: t.client_secret, refresh_token: t.refresh_token, grant_type: 'refresh_token',
+  });
+  const res = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 몸,
+  });
+  const 답 = await res.json().catch(() => ({}));
+  if (!res.ok || !답.access_token) {
+    throw 확인불가(`구글 토큰 갱신 실패 ${res.status}: ${답.error_description || 답.error || ''}\n`
+      + `   되살리는 법: npx clasp login`);
+  }
+  try {
+    fs.writeFileSync(캐시경로, JSON.stringify({ token: 답.access_token, expiry: Date.now() + (Number(답.expires_in) || 3600) * 1000 }));
+  } catch { /* 캐시는 편의일 뿐 — 못 써도 매번 새로 받으면 된다 */ }
+  return 답.access_token;
+}
+
+/** 그 용도가 쓰는 «인증 머리». 문마다 방식이 다르다 — 글=API 키 · 돈=OAuth 토큰.
+ *  🔑 인증을 아는 곳은 여기 하나다(호출부 다섯이 각자 알면 한쪽만 옮겨지고 그쪽은 조용히 죽는다). */
+async function 제미나이헤더(용도) {
+  const 문 = 제미나이문(용도);
+  if (문.인증 === 'oauth') {
+    return { authorization: `Bearer ${await 벌텍스토큰()}`, 'content-type': 'application/json' };
+  }
+  const key = 제미나이키(용도);
+  if (!key) throw 확인불가(제미나이키안내(용도));
+  return { 'x-goog-api-key': key, 'content-type': 'application/json' };
+}
 /** 그 용도가 쓰는 문. env 로 그 자리만 덮어쓸 수 있다(되돌리기 = 변수 지우기). */
 function 제미나이문(용도) {
   const k = 용도고르기(용도);
@@ -747,15 +811,24 @@ function 코덱스캐시() {
  *   null 을 「정상」으로 접으면 그게 zero-is-a-success-face 다.
  * 여기 하나가 프로브의 유일한 통로다 — `--제미나이확인` 도 아래에서 이걸 부른다. */
 async function 제미나이생존({ timeoutMs = 8000, 용도 = '글' } = {}) {
-  const key = 제미나이키(용도);
-  if (!key) return { 살았나: null, 종류: '키없음', 용도, 사유: `키 파일을 못 읽었다(${제미나이키경로(용도)})`, 안내: 제미나이키안내(용도) };
+  /* 문마다 «자격»이 다르다 — 글은 API 키 파일, 돈은 구글 로그인(OAuth 토큰)이다(09-04).
+   * 자격이 아예 없으면 「죽었다」가 아니라 **못 물어본 것**이라 살았나=null 로 낸다. */
+  let 머리;
+  try {
+    머리 = await 제미나이헤더(용도);
+  } catch (e) {
+    const 말 = String((e && e.message) || e);
+    return { 살았나: null, 종류: '키없음', 용도, 사유: 말.split('\n')[0].slice(0, 200), 안내: 말 };
+  }
   const 기본 = 제미나이설정();
   try {
     const r = await fetch(제미나이URL(용도, 기본.model), {
       method: 'POST',
-      headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
+      headers: 머리,
       body: JSON.stringify({
-        contents: [{ parts: [{ text: '1+1=? 숫자만.' }] }],
+        /* 🔑 `role` 은 Vertex 문이 **요구**한다(없으면 400 「Please use a valid role」 · 09-04 실측).
+         * AI Studio 문은 없어도 받으므로 양쪽 다 되는 이 형태로 통일한다. */
+        contents: [{ role: 'user', parts: [{ text: '1+1=? 숫자만.' }] }],
         generationConfig: { thinkingConfig: { thinkingLevel: 기본.thinking_level } },
       }),
       signal: AbortSignal.timeout(timeoutMs),
@@ -924,6 +997,7 @@ module.exports = {
   회차기본, 회차상한, 회차설정, 명시픽, 심문편성, 심문런들,
   제미나이, 제미나이사고, 제미나이설정, 제미나이키, 제미나이키경로, 제미나이생존, 제미나이키안내, 열쇠파일,
   제미나이문들, 제미나이문, 제미나이URL,   // 🚪 문 가르기(09-04) — 글=AI Studio(공짜 유지) · 돈=Vertex($300 크레딧)
+  제미나이헤더, 벌텍스토큰, 벌텍스프로젝트, 벌텍스위치, // 🔑 인증도 문이 쥔다(09-04) — 글=API 키 · 돈=OAuth 토큰
 };
 
 if (require.main === module) {

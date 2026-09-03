@@ -60,9 +60,11 @@ async function 제미나이(key, model, prompt, opts = {}) {
     try {
       res = await fetch(정책.제미나이URL(opts.용도 || '글', model), {
         method: 'POST',
-        headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
+        // 🔑 인증 머리는 정책이 낸다 — 글=API 키 · 돈=OAuth 토큰(Vertex 는 키를 못 받는다 · 09-04).
+        headers: await 정책.제미나이헤더(opts.용도 || '글'),
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
+          // 🔑 `role` 은 Vertex 문이 요구한다(없으면 400 · 09-04) — AI Studio 도 받는 형태다.
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
           // 사고 수준은 정책 픽의 모델일 때만 싣는다 — 딴 모델을 골랐으면 그 모델이 이 파라미터를
           // 받는지 모르므로 안 보낸다(조용한 400 방지).
           ...(opts.schema || opts.thinking
