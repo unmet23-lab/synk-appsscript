@@ -659,12 +659,17 @@ ${차례.map((c, i) => `    <li><a href="#${c.id}"><span class="n">${String(i + 
   s = s.replace(/class="muted"/g, 'class="흐린"');
   s = s.replace(/class="small"/g, 'class="작게"');
 
-  /* h2 — 절 번호를 «유리 원판»으로 세운다. 옛 제목의 동그라미 숫자는 지운다(두 번 세지 않는다). */
+  /* h2 — 절 번호를 «자수 단추»로 세운다(09-03 에 유리 원판에서 갈렸다 · 유호 확정).
+     옛 제목의 동그라미 숫자는 지운다(두 번 세지 않는다).
+     🔑 `data-n` 은 **여기서만 나온다** — 앞 열두 절은 번호가 그림 안에 수놓여 있어 Loom 이
+        낱장을 갈아 끼우는데, CSS 는 counter 값으로 그림을 못 고른다(counter 는 content 에만 산다).
+        그래서 «세는 자»가 그 수를 표식으로 남긴다. 13번부터는 짝이 없어 민판 + 글자로 선다. */
   let 절 = 0;
   s = s.replace(/<h2 id="(s\d+)">([\s\S]*?)<\/h2>/g, (_, id, 글) => {
     절++;
     const 민 = 글.replace(new RegExp(`^\\s*[${동그라미}]\\s*`), '').trim();
-    return `<h2 id="${id}" class="듦"><span class="번호">${String(절).padStart(2, '0')}</span><span>${민}</span></h2>`;
+    const n = String(절).padStart(2, '0');
+    return `<h2 id="${id}" class="듦"><span class="번호" data-n="${n}">${n}</span><span>${민}</span></h2>`;
   });
   잰것.절 = 절;
   if (절 !== 차례.length) 흠.push(`절 ${절}개 ≠ 차례 ${차례.length}개 — 레일이 없는 절이나 절이 없는 레일이 생긴다`);
