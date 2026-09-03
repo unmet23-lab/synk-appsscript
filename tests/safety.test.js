@@ -1923,7 +1923,10 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   // ID는 «만든 그 자리에서» 저장한다 — 뒤로 미루면 그 사이 실패가 「폼은 있는데 아무도 모르는」 상태를 남긴다.
   //   ⚠ 첫 등장으로 재면 안 된다 — 복구 경로에도 같은 setState 가 있어 언제나 앞선다. 생성 블록만 잘라서 본다.
   const 생성부 = body.slice(body.indexOf('FormApp.create('));
-  assertOrder(생성부, ["setState(st, '직장폼ID'", 'form.setDestination(']);
+  /* 🔴 «설문지 제목»을 갖고 태어나게 한다(09-03 라이브에서 잡힌 자리) — FormApp.create(제목) 은
+   *   문서 제목(Drive 파일 이름)만 세우고 설문지 제목은 비워 둔다. 서명이 읽는 것이 그 설문지 제목이라,
+   *   안 채우면 이 폼은 태어나자마자 제 서명에 걸려 «남의 폼»으로 찍힌다(결과 칸 메뉴가 2회 거절당했다). */
+  assertOrder(생성부, ["setState(st, '직장폼ID'", 'form.setTitle(WORK_FORM_TITLE)', 'form.setDestination(']);
   assert.ok(body.includes('새 폼을 만들지 않았습니다'), '폼 열기 실패 시 재생성 차단 경로가 없다');
   assert.ok(body.includes('연결 폼에서 복구'), 'ID 유실 시 응답 탭에서 복구하는 경로가 없다 — 중복 폼이 생겨 회수가 두 곳으로 갈린다');
   // 익명 회수 — 이름·연락처가 필수면 「혼났던 경험」(가장 값진 자료)이 안 들어온다
@@ -1946,7 +1949,39 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   // 「ID가 읽힌다」를 완료로 취급하지 않는다 — setDestination 이 실패했으면 폼은 사는데 제출이 어디에도 안 쌓인다(①배포 검수 257ac0b6fe00)
   assert.ok(/if \(!shT\)[\s\S]{0,400}exForm\.setDestination\(/.test(body), '기존 폼 경로에 응답 라우팅 복구가 없다 — 탭이 없으면 제출이 영영 안 쌓인다');
   // 복구한 폼은 제목으로 검증한다 — 탭 이름은 사람이 바꿀 수 있어 엉뚱한 폼이 붙어 있을 수 있다(①배포 검수 695480e24333)
-  assert.ok(/f0\.getTitle\(\)\)\.trim\(\) === WORK_FORM_TITLE/.test(body), '응답 탭에서 복구한 폼을 제목으로 검증하지 않는다');
+  assert.ok(/직장폼제목_\(f0\) === WORK_FORM_TITLE/.test(body), '응답 탭에서 복구한 폼을 제목으로 검증하지 않는다');
+  /* 🔴 제목은 «두 곳»에 산다(09-03 라이브 실측) — 설문지 제목(Form.getTitle 이 읽는 것 · 응답자 화면)과
+   *   문서 제목(Drive 파일 이름 · 편집 화면 왼쪽 위). FormApp.create 는 문서 제목만 세우므로, getTitle()
+   *   하나만 보면 «우리가 방금 만든 폼»이 남의 폼으로 찍힌다. 그래서 자를 직장폼제목_ 하나로 모았다.
+   *   여기서 못박는 것은 그 자가 «느슨해지지 않는다»는 것 — 아래 셋이 무너지면 남의 폼이 그 문으로 들어온다. */
+  const 제목자 = code.slice(code.indexOf('function 직장폼제목_(form)'), code.indexOf('function 직장폼제목치유_'));
+  assert.ok(/if \(t\) return t;[\s\S]{0,200}DriveApp\.getFileById/.test(제목자),
+    '직장폼제목_ 가 «설문지 제목이 빌 때만» 문서 제목을 보는 구조가 아니다 — 이러면 자가 느슨해진다');
+  assert.ok(/catch \(e\) \{ return ''; \}/.test(제목자),
+    '직장폼제목_ 가 제목을 못 읽을 때 빈 문자열(=거절)로 안 떨어진다');
+  /* [①배포 검수 854bb25d87cb 채택] 읽기 «둘 다» try 안이라야 「못 읽으면 거절」이 참이 된다 — 첫 판은
+   * getTitle() 이 try 밖이어서 그 호출이 던지면 거절이 아니라 «예외»로 튀었다(주석과 이 회귀는 거절을
+   * 약속하고 있었다 · 약속과 물건이 갈린 자리). 위 두 줄만으로는 그 갈림을 못 본다. */
+  assert.ok(/try \{[^\r\n]*form\.getTitle\(\)/.test(제목자),
+    '직장폼제목_ 의 설문지 제목 읽기가 try 밖이다 — 그 호출이 던지면 「거절」이 아니라 예외로 튄다');
+  const 서명자 = code.slice(code.indexOf('function 직장폼서명_(form)'), code.indexOf('function createWorkLogForm()'));
+  assert.ok(!/setTitle\(|setDescription\(|setHelpText\(|setState\(/.test(서명자),
+    '서명 자가 폼에 «쓰고» 있다 — 워치독(엔진_콘텐츠AI.js)이 매 점검마다 부르는 자리라 읽기 전용이어야 한다');
+  /* [①배포 검수 947f3f044f72 채택] 치유는 갈래 «셋»을 갈라 말한다 — 이미 서 있음('') · 채웠음 · 못 채웠음.
+   * 첫 판은 실패도 '' 를 내서 조용히 성공으로 읽혔다(0건이 성공 얼굴을 쓰는 자리). 쓴 «뒤 다시 읽어» 확인한다. */
+  const 치유자 = code.slice(code.indexOf('function 직장폼제목치유_(form)'), code.indexOf('function 직장폼서명_(form)'));
+  assert.ok(/setTitle\(WORK_FORM_TITLE\);[\s\S]{0,120}getTitle\(\)/.test(치유자),
+    '제목 치유가 쓴 «뒤 다시 읽어» 확인하지 않는다 — 쓰기가 안 먹어도 「고쳤다」로 보고된다');
+  assert.ok(/catch \(e\) \{[\s\S]{0,120}⚠️/.test(치유자),
+    '제목 치유의 쓰기 실패가 조용하다 — 실패와 「이미 서 있음」이 같은 모양이면 안 된다');
+  assert.ok(/try \{[^\r\n]*form\.getTitle\(\)/.test(치유자),
+    '직장폼제목치유_ 의 제목 읽기가 try 밖이다 — 그 호출이 던지면 「고치러 온 통로」가 통째로 죽는다');
+  /* [①배포 검수 eb8c0edb35dc 채택] 사람에게 보이는 줄에는 «보임» 자를 쓴다 — 판정용 자는 빈 문자열을
+   * 내므로 그대로 찍으면 「제목 「」」가 된다. 유호님이 09-03 에 보신 그 화면이 정확히 이 자리다. */
+  assert.ok(!/제목 「' \+ 직장폼제목_\(/.test(code),
+    '거절 문구가 판정용 자를 그대로 찍는다 — 못 읽거나 비었을 때 빈 「」 가 다시 뜬다');
+  assert.ok(/function 직장폼제목보임_\(form\)[\s\S]{0,160}직장폼제목_\(form\) \|\|/.test(code),
+    '보임 자가 없거나 판정 자를 안 감싼다 — 두 자가 갈리면 화면과 판정이 어긋난다');
   // 표준 탭 이름이 이미 차 있으면 새 폼을 만들지 않고 멈춘다 — 접미사 탭이 되면 회수량이 워치독에서 사라진다(①배포 검수 10a5f2f323f0)
   assert.ok(/if \(ss\.getSheetByName\(WORK_TAB\)\)[\s\S]{0,600}return mT;/.test(body), '탭 이름 충돌 시 생성을 멈추는 가드가 없다');
   // 탭이 «이 폼의» 탭인지 대조한다 — 옛 탭·재생성된 탭이면 제출처와 워치독이 갈라진다(①배포 검수 0b240aac65cc)
@@ -1958,7 +1993,11 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   /* 검증 «순서»가 곧 판정이다(①배포 검수 9675a3471a43·132ede0b00a2): ①이게 그 폼인가(제목) ②완성됐나(표식)
    * ③탭이 붙었나(라우팅). 완성을 먼저 안 보면 «문항이 빠진 폼»에 탭만 달아 놓고 「복구했다」고 보고한다. */
   const 기존경로 = body.slice(body.indexOf('const exForm = FormApp.openById(exId);'));
-  assertOrder(기존경로, ['exForm.getTitle()).trim() !== WORK_FORM_TITLE', "getState(st, '직장폼완료')", 'const shT = ss.getSheetByName(WORK_TAB)']);
+  /* [①배포 검수 ed44cb1528a8 채택] ②완성됐나 «뒤»에 ②-b 서명을 하나 더 세운다 — 제목 대조는 설문지
+   * 제목이 비면 문서 제목(남이 붙일 수 있는 이름)으로 떨어지므로, 완료 표식까지 있는 남의 폼이
+   * 정상으로 지나갈 수 있었다. 서명을 «완료 뒤»에 두는 것이 곧 판정이다 — 앞에 두면 문항을 붙이다
+   * 끊긴 우리 폼(서명 없음)이 「만들다 만 상태」 안내 대신 「남의 폼」으로 찍힌다. */
+  assertOrder(기존경로, ['직장폼제목_(exForm) !== WORK_FORM_TITLE', "getState(st, '직장폼완료')", '직장폼서명_(exForm)', 'const shT = ss.getSheetByName(WORK_TAB)']);
   // 워치독도 「이름이 같은 탭」을 그 폼의 탭으로 믿지 않는다(①배포 검수 b073a11c3a3e)
   assert.ok(/shWk\.getFormUrl\(\)[\s\S]{0,40}indexOf\(wkId\)/.test(code), '워치독이 응답 탭과 폼의 연결을 대조하지 않는다 — 갈아 끼워진 탭의 행을 직장 경험으로 센다');
   // ID 가 없으면 «검증 못 한 것»이지 정상이 아니다 — 세면 옛 탭의 행이 그럴듯한 회수량으로 찍힌다(①배포 검수 12f7d19f598f)
@@ -2008,6 +2047,13 @@ test('[v9.270] 🇲🇳 직장 경험 폼 몽골어 — 안내문 정본 하나 
   assert.ok(!/setTitle\(/.test(mig) && !/setChoiceValues\(/.test(mig), '마이그레이션이 제목·선택지를 건드린다 — 헤더·서명·조인 키가 갈린다');
   // 엉뚱한 폼을 고치지 않는다 + 못 찾은 문항을 조용히 넘기지 않는다
   assert.ok(/if \(!직장폼서명_\(form\)\)/.test(mig), '마이그레이션이 «찾는 자리»와 같은 서명 자를 쓰지 않는다 — 동명 복사본의 안내를 통째로 덮어쓴다');
+  /* 🔴 [①배포 검수 ed25df351411 채택] 쓰기 전에 «응답이 오는 폼»인지까지 본다. 설문지 제목이 비면
+   * 신원을 문서 제목(Drive 파일 이름)으로 보는데 그 이름은 **남이 제 폼에 붙일 수 있는** 값이라,
+   * 문항 두 개까지 흉내 낸 폼을 직장폼ID 에 꽂으면 이 통로가 그 폼을 덮어쓸 수 있었다.
+   * 응답 탭이 «어느 폼에» 붙어 있는지는 우리 시트의 setDestination 이 정한다 — 남이 못 고치는 자다.
+   * 결과 칸 통로는 이미 이 자를 쓰고 있었다(codex P1 c1bc92a6a834) — 여기만 없어서 그 문으로 샜다. */
+  assert.ok(/shT\.getFormUrl\(\)[\s\S]{0,60}indexOf\(form\.getId\(\)\)/.test(mig) && /if \(!tabOk\)/.test(mig),
+    '몽골어 통로가 응답 탭↔폼 연결을 대조하지 않는다 — 문서 제목만 흉내 낸 남의 폼을 덮어쓸 수 있다');
   assert.ok(/못찾음\.push\(title\)/.test(mig) && /못 찾은 문항/.test(mig), '제목이 갈린 문항을 조용히 넘긴다 — 그 문항만 한국어로 남는다');
   // 발동 조건이 같은 커밋에 있어야 한다(CLAUDE.md) — 시트 메뉴가 없으면 유호님이 부를 길이 없다
   assert.ok(code.includes("function menuMigrateWorkFormMn()") && code.includes("'menuMigrateWorkFormMn'"),
