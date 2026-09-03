@@ -50,30 +50,35 @@ function 인라인(파일, 폭) {
 /* 배정 정본 = tools/엔진히어로굽기.js 의 목록. 여기 것은 «까닭»을 사람 말로 옮긴 벌이다.
  * ⚠ 저쪽이 바뀌면 여기도 바뀌어야 한다 — 그래서 형태 이름을 함께 적어 어긋나면 눈에 걸리게 둔다. */
 const 엔진들 = [
-  { 이름: 'Core', 형태: '게이지고리', 하는일: '학생의 이해가 어디까지 찼는지 센다',
+  { 이름: 'Core', 색이름: '풀색 Meadow', 형태: '게이지고리', 하는일: '학생의 이해가 어디까지 찼는지 센다',
     까닭: '차오르는 고리 — 두뇌가 하는 일이 «채우는» 일이라서.' },
-  { 이름: 'Loom', 형태: '폼폼', 하는일: '앱의 모든 화면을 펠트 실물로 짓는다',
+  { 이름: 'Loom', 색이름: '산호 Coral', 형태: '폼폼', 하는일: '앱의 모든 화면을 펠트 실물로 짓는다',
     까닭: '털공 그 자체 — 이 엔진은 «재질»이 하는 말이라 다른 물건을 빌릴 필요가 없다.' },
-  { 이름: 'Vellum', 형태: '말풍선', 하는일: '학생과 말이 오가는 자리를 만든다',
+  { 이름: 'Vellum', 색이름: '쪽빛 Lapis', 형태: '말풍선', 하는일: '학생과 말이 오가는 자리를 만든다',
     까닭: '말풍선 — 닿는 면이 곧 말이 오가는 자리다.' },
-  { 이름: 'Trail', 형태: '매듭', 하는일: '학생이 지나온 길을 남긴다',
+  { 이름: 'Trail', 색이름: '버터 Butter', 형태: '매듭', 하는일: '학생이 지나온 길을 남긴다',
     까닭: '매듭 — 떠난 뒤에도 이어져 있다는 뜻을 실로 맺었다.' },
-  { 이름: 'Prism', 형태: '차트', 하는일: '학생이 어디쯤 서 있는지 갈라 보여준다',
+  { 이름: 'Prism', 색이름: '분홍 Pop', 형태: '차트', 하는일: '학생이 어디쯤 서 있는지 갈라 보여준다',
     까닭: '차트 — 하나로 뭉친 것을 갈라 보여주는 물건.' },
-  { 이름: 'Temper', 형태: '도장', 하는일: '맞았는지 틀렸는지 판정한다',
+  { 이름: 'Temper', 색이름: '진한 산호 Coral 3', 형태: '도장', 하는일: '맞았는지 틀렸는지 판정한다',
     까닭: '도장 — 판정은 «찍는» 일이고, 담금질도 같은 낱말이다.' },
-  { 이름: 'Reed', 형태: '녹음', 하는일: '학생의 목소리를 듣고 발음을 잰다',
+  { 이름: 'Reed', 색이름: '라임 Lime', 형태: '녹음', 하는일: '학생의 목소리를 듣고 발음을 잰다',
     까닭: '파형 자수 — 소리를 눈에 보이는 물건으로 만든 것.' },
 ];
 
 function main() {
   let 있음 = 0; let 없음 = 0;
   const 카드 = [];
+  const 한줄 = [];   /* 맨 위 「일곱 한 줄」 띠 — 세트로 보이나를 «세로로 스크롤하지 않고» 재는 자리 */
 
   for (const e of 엔진들) {
     const 파일 = path.join(방, `히어로_${e.이름}.png`);
     const 큰 = 인라인(파일, 460);
     const 작은 = 인라인(파일, 150);
+    const 띠 = 인라인(파일, 300);
+    한줄.push(띠
+      ? `<figure class="띠칸"><img src="${띠}" alt="${esc(e.이름)}" width="300"><figcaption>${esc(e.이름)}<br><span class="작게 흐린">${esc(e.색이름)}</span></figcaption></figure>`
+      : `<figure class="띠칸"><div class="못구움 띠못">못 구웠다</div><figcaption>${esc(e.이름)}</figcaption></figure>`);
     if (큰) 있음 += 1; else 없음 += 1;
     const 그림 = 큰
       ? `<img src="${큰}" alt="${esc(e.이름)} 표지 얼굴" width="460">`
@@ -118,12 +123,24 @@ function main() {
   .못구움 { width: 460px; max-width: 100%; aspect-ratio: 1/1; display: grid; place-content: center;
             text-align: center; border: 2px dashed #c0392b66; border-radius: 6px; color: #c0392b; }
   .못구움.작은못 { width: 150px; aspect-ratio: 1/1; }
+  .일곱띠 { display: flex; gap: .9em; flex-wrap: wrap; margin: var(--단, 1.2em) 0; align-items: flex-start; }
+  .일곱띠 figure { margin: 0; flex: 0 0 auto; text-align: center; width: 300px; max-width: 46vw; }
+  .일곱띠 img { display: block; width: 100%; height: auto; border-radius: 6px; }
+  .일곱띠 figcaption { margin-top: .35em; font-size: .8em; line-height: 1.35; }
+  .못구움.띠못 { width: 300px; max-width: 46vw; aspect-ratio: 1/1; }
 </style>
 <div class="판"><div class="글">
 
 <h1>엔진 얼굴 일곱</h1>
 <p class="리드">소개서 일곱 벌의 <strong>표지에 앉을 얼굴</strong>입니다. 지금까지는 작은 부품을 확대해 썼고,
 이번에는 무대·조명·얕은 심도를 걸어 <strong>사진처럼</strong> 구웠습니다(유호 교정 09-01 「명품화」).</p>
+
+<h2>일곱을 한 줄로</h2>
+<p>세트로 보이는지는 <strong>나란히 놓아야</strong> 보입니다. 하나씩 스크롤해서 보면 각각은 다 괜찮아 보이기 때문입니다.
+색이 서로 갈리는지, 하나가 튀지 않는지를 이 줄에서 봐 주세요.</p>
+<div class="일곱띠">
+${한줄.join('\n')}
+</div>
 
 <h2>무엇을 보고 고르시나</h2>
 <ol class="듦">
