@@ -23,8 +23,24 @@ const rows = J.split(',')
   })
   .filter((l) => l && l.type === 'result' && l.result && typeof l.result === 'object');
 
+// 옛글자 가드(유호 확정 — 쓰는 문자는 한글·몽골어·영어 셋뿐)가 커밋을 막으므로 «쓸 때» 지운다.
+// 저널에서 다시 뽑을 때마다 되살아나니 손으로 고치면 안 되고 이 자리에서 막아야 한다.
+const 한자표 = { [String.fromCodePoint(0x5206)]: '분' }; // U+5206 = 시간 단위 「분」 · 🔑 옛글자는 이 파일 「안」에도 글자로 못 쓴다(가드가 소스도 본다)
+const 범위 = [[0x3040, 0x30ff], [0x3400, 0x4dbf], [0x4e00, 0x9fff], [0xf900, 0xfaff]];
+const 옛글자 = new RegExp('[' + 범위.map(([a, b]) => String.fromCodePoint(a) + '-' + String.fromCodePoint(b)).join('') + ']', 'g');
+const 씻는다 = (s) => {
+  let 남은 = 0;
+  const out = s.replace(옛글자, (c) => {
+    if (한자표[c]) return 한자표[c];
+    남은 += 1;
+    return c;
+  });
+  if (남은) console.warn('⚠ 표에 없는 옛글자', 남은, '자 — 커밋이 막힌다. 한자표에 뜻을 더해라');
+  return out;
+};
+
 const write = (name, v) => {
-  fs.writeFileSync(path.join(OUT, name), JSON.stringify(v, null, 1));
+  fs.writeFileSync(path.join(OUT, name), 씻는다(JSON.stringify(v, null, 1)));
   return name;
 };
 

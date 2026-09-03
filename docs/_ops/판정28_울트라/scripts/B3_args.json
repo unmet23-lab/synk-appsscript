@@ -1,0 +1,65 @@
+{
+ "stampToday": "2026-09-03",
+ "items": [
+  {
+   "id": "ending-3",
+   "doc": "docs/끝의설계_v1.md"
+  },
+  {
+   "id": "space-6",
+   "doc": "docs/공간설계_v1.md"
+  },
+  {
+   "id": "space-3",
+   "doc": "docs/공간설계_v1.md"
+  },
+  {
+   "id": "paper-2",
+   "doc": "docs/가져가는것_설계_v1.md"
+  },
+  {
+   "id": "paper-4",
+   "doc": "docs/가져가는것_설계_v1.md"
+  },
+  {
+   "id": "paper-3",
+   "doc": "docs/가져가는것_설계_v1.md"
+  },
+  {
+   "id": "ending-5",
+   "doc": "docs/끝의설계_v1.md"
+  },
+  {
+   "id": "ending-6",
+   "doc": "docs/끝의설계_v1.md"
+  },
+  {
+   "id": "paper-9",
+   "doc": "docs/가져가는것_설계_v1.md",
+   "merge": "paper-10",
+   "merge_why": "가져가는것 §16-a ⑩ 의 갈래 ⓐ 가 원문에 「ⓐ 지금(⑨ⓐ와 한 벌)」이라고 적혀 있다"
+  },
+  {
+   "id": "gauge-2",
+   "doc": "docs/명품눈금_v1.md"
+  },
+  {
+   "id": "gauge-5",
+   "doc": "docs/명품눈금_v1.md"
+  },
+  {
+   "id": "gauge-6",
+   "doc": "docs/명품눈금_v1.md"
+  },
+  {
+   "id": "gauge-7",
+   "doc": "docs/명품눈금_v1.md",
+   "merge": "gauge-10-3",
+   "merge_why": "같은 물음이 한 문서 안에 두 번 실렸다"
+  },
+  {
+   "id": "gauge-10-2",
+   "doc": "docs/명품눈금_v1.md"
+  }
+ ]
+}

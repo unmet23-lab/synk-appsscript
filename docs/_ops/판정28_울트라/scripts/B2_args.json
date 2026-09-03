@@ -1,0 +1,69 @@
+{
+ "stampToday": "2026-09-03",
+ "items": [
+  {
+   "id": "teacher-4",
+   "doc": "docs/강사채용_부트캠프_v1.md",
+   "merge": "ending-7",
+   "merge_why": "몽골어 검수 큐의 «순서»를 한 번 정하면 둘이 같이 닫힌다 — 채용 네 벌(공고 mn·지원서 mn·면접 안내·근로계약서)과 위기의 말 각본 여섯(환불·결석·펑크·부상·배웅)이 같은 사람·같은 발주"
+  },
+  {
+   "id": "space-2",
+   "doc": "docs/공간설계_v1.md",
+   "merge": "space-9",
+   "merge_why": "space-9 가 재는 항목 ②에 「임대 계약 면적(②와 한 몸)」이라 스스로 적었고, 08-26 색인의 「열쇠 3(매물을 무엇으로 고르나)」도 「이것이 풀리면 개원 시 몇 실을 여나 · 크루 광장"
+  },
+  {
+   "id": "teacher-6",
+   "doc": "docs/강사채용_부트캠프_v1.md"
+  },
+  {
+   "id": "teacher-f",
+   "doc": "docs/강사채용_부트캠프_v1.md",
+   "merge": "pilot-1",
+   "merge_why": "둘 다 「울란바토르에서 방을 어디서 빌리나」다"
+  },
+  {
+   "id": "pilot-7",
+   "doc": "docs/파일럿_체험2주_설계_v1.md"
+  },
+  {
+   "id": "space-5",
+   "doc": "docs/공간설계_v1.md"
+  },
+  {
+   "id": "teacher-5",
+   "doc": "docs/강사채용_부트캠프_v1.md"
+  },
+  {
+   "id": "pilot-3",
+   "doc": "docs/파일럿_체험2주_설계_v1.md"
+  },
+  {
+   "id": "pilot-2",
+   "doc": "docs/파일럿_체험2주_설계_v1.md"
+  },
+  {
+   "id": "teacher-8",
+   "doc": "docs/강사채용_부트캠프_v1.md",
+   "merge": "pilot-6",
+   "merge_why": "강사 문서 §13-2 #8 이 「공간·대상·참가비는 파일럿 문서 §A-2 소관 — 같은 자리에서 함께」라 적었다"
+  },
+  {
+   "id": "teacher-a",
+   "doc": "docs/강사채용_부트캠프_v1.md"
+  },
+  {
+   "id": "teacher-7",
+   "doc": "docs/강사채용_부트캠프_v1.md"
+  },
+  {
+   "id": "paper-8",
+   "doc": "docs/가져가는것_설계_v1.md"
+  },
+  {
+   "id": "ending-1",
+   "doc": "docs/끝의설계_v1.md"
+  }
+ ]
+}
