@@ -619,7 +619,18 @@ async function 제미나이생존({ timeoutMs = 8000, 용도 = '글' } = {}) {
     /* 종류를 가르는 값어치: 「한도·결제」는 유호님 손(충전·결제)이고 「자격」은 키 교체다.
      * 9월 예고된 Standard 키 거부가 오면 401/403 으로 온다 — 그때 처방이 달라야 한다. */
     const 종류 = r.status === 429 ? '한도·결제' : (r.status === 401 || r.status === 403) ? '자격' : '기타';
-    return { 살았나: false, 용도, 상태: r.status, 종류, 사유, 모델: 기본.model };
+    /* 429 안에는 «다음 수»가 들어 있는데 09-03 까지 그걸 버리고 있었다 — 그래서 벽에 대고 64분을
+     * 던졌다. 구글이 주는 두 값을 그대로 들고 나간다:
+     *   · limit: N  = 그 몫의 상한(무료 등급 실측 20) · · retryDelay = 언제 다시 던져도 되나.
+     * ⚠ 「N이 하루치냐 분당이냐」는 이 응답이 «안 말한다». 09-03 실측으로 **분당은 아니다** —
+     *   1분에 1~3발만 던지며 38분을 기다려도 계속 429였다. 그러니 창의 길이는 «안 재봤다»로 둔다. */
+    const 몫상한 = (() => { const m = /limit:\s*(\d+)/.exec(사유); return m ? Number(m[1]) : null; })();
+    const 다시초 = (() => {
+      const d = (j.error && j.error.details) || [];
+      for (const x of d) if (x && typeof x.retryDelay === 'string') return Number(String(x.retryDelay).replace(/s$/, '')) || null;
+      const m = /retry in ([\d.]+)s/i.exec(사유); return m ? Number(m[1]) : null;
+    })();
+    return { 살았나: false, 용도, 상태: r.status, 종류, 사유, 모델: 기본.model, 몫상한, 다시초 };
   } catch (e) {
     // 네트워크·타임아웃은 «키가 죽었다»가 아니다 — 못 물어본 것이다.
     return { 살았나: null, 용도, 종류: '네트워크', 사유: String((e && e.message) || e).slice(0, 200) };
