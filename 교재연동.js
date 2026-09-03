@@ -180,10 +180,36 @@ function voiceMissionTexts_(ss) {
   const head = sh.getRange(1, 1, 1, w).getValues()[0].map(h => String(h || '').replace(/\s/g, ''));
   const cId = head.indexOf('미션ID'), cTx = head.indexOf('목표발화'), cAx = head.indexOf('축');
   if (cId < 0 || cTx < 0) {
-    adminMail('[SYNK] 🎙 낭독 미션 목록의 열 이름이 안 맞습니다',
-      'voice_missions 시트에 「미션ID」·「목표발화」 열이 필요한데 찾지 못했습니다.\n'
-      + '지금 머리글: ' + head.join(' · ') + '\n\n'
-      + '그대로 두면 voice_log 의 「목표발화」 칸이 계속 빈 채로 쌓이고, 그 소리는 나중에 못 씁니다.');
+    /* 🔴 «하루 한 번»만 알린다 (2026-09-03 · codex P2 `28ff9c56654b` 채택 수리).
+     *   이 함수는 새 제출이 있든 없든 매 실행 맨 앞에서 불린다(잠금 «전»에 읽는 것이 설계다 —
+     *   P1 48f070b17495). 그래서 머리글이 한 번 어긋나면 야간 배치마다, 그리고 원장이 메뉴를
+     *   누를 때마다 같은 메일이 나갔다. 매일 우는 경보는 읽히지 않게 되고, 그러면 진짜 경보도 묻힌다.
+     * 🔑 조용한 쪽으로 기울지 않는다 — 날짜를 «못 재면» 그냥 알린다(못 잰 것을 「알렸다」로 접지 않는다).
+     * ⚠ 마킹은 메일 «뒤»다(notifyDroppedSids_ 와 같은 규율) — 큐 적재가 실패한 날 통보가
+     *   증발하지 않게. 대가로 두 실행이 겹치면 같은 날 두 통이 갈 수 있는데, 그건 손실이 아니다.
+     * ⚠ `typeof` 로 감싼 까닭: 시험이 이 함수를 소스에서 잘라 adminMail 하나만 주입해 태운다
+     *   (tests/발음미션목록.test.js) — 없는 전역을 부르면 그 시험이 죽는다. */
+    let 오늘알림 = true;
+    let 찍기 = null;
+    try {
+      if (typeof PropertiesService !== 'undefined' && PropertiesService && typeof Utilities !== 'undefined') {
+        const props = PropertiesService.getScriptProperties();
+        const tz = (ss.getSpreadsheetTimeZone && ss.getSpreadsheetTimeZone()) || 'Asia/Ulaanbaatar';
+        const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
+        if (String(props.getProperty('미션헤더경고') || '') === today) 오늘알림 = false;
+        else 찍기 = () => props.setProperty('미션헤더경고', today);
+      }
+    } catch (e) { 오늘알림 = true; 찍기 = null; }
+    if (오늘알림) {
+      adminMail('[SYNK] 🎙 낭독 미션 목록의 열 이름이 안 맞습니다',
+        'voice_missions 시트에 「미션ID」·「목표발화」 열이 필요한데 찾지 못했습니다.\n'
+        + '지금 머리글: ' + head.join(' · ') + '\n\n'
+        + '그대로 두면 voice_log 의 「목표발화」 칸이 계속 빈 채로 쌓이고, 그 소리는 나중에 못 씁니다.\n'
+        + '(고칠 때까지 이 알림은 하루 한 번만 갑니다 — 실행 기록에는 매번 남습니다.)');
+      if (찍기) try { 찍기(); } catch (e2) { /* 못 찍으면 내일 또 알린다 — 조용해지는 것보다 낫다 */ }
+    } else if (typeof Logger !== 'undefined') {
+      Logger.log('[목소리] 미션 목록 열 이름이 안 맞는다 — 오늘 이미 알렸다(하루 1회). 지금 머리글: ' + head.join(' · '));
+    }
     return {};
   }
   /* 🔴 [2026-09-01] **한 미션ID 에 낱말이 여럿이다 — 그래서 배열이다.**
@@ -213,7 +239,16 @@ function voiceSweep_(ss) {
    *   여기서 안 잡혀 **배치가 통째로 멈춘다.** 읽기 전용이라 잠금 밖이 안전하다.
    *   ⚠ 비용 = 새 제출이 없어도 시트를 한 번 읽는다(야간 1회 · 무시 가능). 그 대가로
    *   「잠금 안에서 메일에 닿는 경로 0」이 눈으로 확인된다. */
-  const 목표문 = voiceMissionTexts_(ss);
+  /* 🔴 여기서 죽으면 «배치가 통째로» 멈춘다 — 감싼다 (2026-09-03 · codex P2 `28ff9c56654b` 채택 수리).
+   *   위 주석대로 이 호출은 잠금 «밖»이라 우리 락에는 안 걸린다. 그런데 머리글이 어긋난 «동시에»
+   *   다른 실행이 ScriptLock 을 쥐고 있으면, 이 안의 adminMail 이 그 락을 30초 기다리다 던진다.
+   *   그 예외는 아래 잠금 회피(tryLock)에 닿기도 «전»이라 야간 배치가 그 자리에서 끝난다 —
+   *   목소리는 물론 뒤따르는 일까지 그날 통째로 안 돈다.
+   * 🔑 목표발화를 못 읽는 것은 «치명»이 아니다(그 칸이 빈 채로 쌓일 뿐이고, 위 함수가 이미 알린다).
+   *   배치를 멈추는 쪽이 더 비싸다. 그래서 삼키되 반드시 로그에 남긴다. */
+  let 목표문 = {};
+  try { 목표문 = voiceMissionTexts_(ss) || {}; }
+  catch (e) { Logger.log('voiceSweep_: 미션 목록을 못 읽었다 — 목표발화 없이 계속한다(그 칸은 빈 채로 쌓인다): ' + e); }
   /* [2026-09-03 · 이종 검수 P1 a1ba9ec3127f] 🔒 한 번에 하나만 돈다.
    *   이 함수는 이제 두 곳에서 불린다 — 23시 야간 배치(`교재연동Nightly`)와 원장이 누르는
    *   「목소리 지금 걷어오기」 메뉴(v9.296). 둘이 겹치면 **같은 포인터와 같은 새 응답을 함께 읽어**

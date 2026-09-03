@@ -1889,7 +1889,19 @@ function notifyDroppedSids_(label, sids) {
       fresh.slice(0, 10).map(s => '· "' + s + '"').join('\n') + (fresh.length > 10 ? '\n· …외 ' + (fresh.length - 10) + '건' : '') +
       '\n\nprofiles에 없는 학생ID라 집계에 반영되지 않았습니다(포인터는 전진 · 원본 행은 ' + label + '_응답 탭에 남아 있음). ' +
       '미리채움 링크가 아닌 손 입력이거나 링크 ID 오염일 수 있어요 — 실제 학생이면 profiles 등록(또는 ID 교정) 후 재제출을 안내하세요. (같은 ID는 오늘 다시 알리지 않습니다)');
-    props.setProperty(key, [today].concat(seen, fresh).slice(0, 200).join('|')); // 발송(큐 적재) 성공분만 마킹 + 9KB 보호 — safeRun 실패 메일 패턴(실패 시 다음 스위프 재시도)
+    /* 🔴 찍기 «직전»에 다시 읽어 «합친다» (2026-09-03 · codex P2 `68e0f44ff476` 채택 수리).
+     *   이 함수는 스위프의 잠금 «해제 뒤»에 불린다(잠금 안에서 adminMail 을 부르면 그 비재진입 락에
+     *   자기가 걸린다 — P1 48f070b17495 가 세운 규율). 그래서 위에서 읽은 `seen` 과 여기 사이에
+     *   다른 실행이 같은 키를 찍었을 수 있고, 그대로 덮으면 **그쪽이 방금 알린 sid 가 seen 에서
+     *   사라져 내일 또 같은 메일이 간다.** 다시 읽어 합치면 그 자리가 닫힌다.
+     * ⚠ 남는 것 = «중복 메일» 한 통의 가능성이다. 두 실행이 같은 sid 를 각각 fresh 로 셀 창이
+     *   메일 왕복만큼 열려 있다. 그걸 없애려면 마킹을 메일 «앞»으로 옮겨야 하는데, 그러면 큐 적재가
+     *   실패한 날 통보가 영영 증발한다(그 순서를 tests/safety.test.js:1303 이 일부러 못 박았다).
+     *   손실 없는 시끄러움과 조용한 증발 중에 앞엣것을 고른다. */
+    const 다시 = String(props.getProperty(key) || '').split('|');
+    const 그새seen = 다시[0] === today ? 다시.slice(1) : [];
+    props.setProperty(key, [today].concat(그새seen, fresh)
+      .filter((s, i, a) => a.indexOf(s) === i).slice(0, 200).join('|')); // 발송(큐 적재) 성공분만 마킹 + 9KB 보호 — safeRun 실패 메일 패턴(실패 시 다음 스위프 재시도)
   } catch (e) { Logger.log('notifyDroppedSids_ 실패: ' + e); }
 }
 
