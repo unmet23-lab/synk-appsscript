@@ -150,6 +150,28 @@
             "shell": "bash",
             "timeout": 45,
             "statusMessage": "외부 스킬 판 점검"
+          },
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/model-ledger.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --시작; fi; exit 0",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/tools/도구판점검.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --훅; fi; exit 0",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PostModelSwitch": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/model-ledger.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then node \"$H\" --전환; fi; exit 0",
+            "timeout": 20
           }
         ]
       }
