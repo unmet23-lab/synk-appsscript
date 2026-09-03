@@ -141,9 +141,18 @@ const 판들 = [
   },
 ];
 
-function 칸(x, 폭 = 190) {
+/**
+ * 한 칸. `현행` 이면 빈 칸의 뜻이 **반대**다 — 그래서 갈라 그린다(09-03).
+ *   후보가 비면 = 굽기가 실패했다(사고). 머리말 「대가」가 경계한 그 자리.
+ *   현행이 비면 = **판정이 끝나 그 부품을 걷었다**(성과). 자산 창고에서 빠졌다는 뜻이다.
+ *   한 얼굴로 그리면 09-03 처럼 「못 구웠다 2」가 떠서 «닫힌 판정»이 사고로 읽힌다.
+ */
+function 칸(x, 폭 = 190, 현행 = false) {
   if (!x.uri) {
-    return `<figure class="유리 잔잔 형태칸 없음"><div class="빈판">못 구웠다</div>
+    return 현행
+      ? `<figure class="유리 잔잔 형태칸 걷힘"><div class="빈판">걷혔다</div>
+      <figcaption>${esc(x.이름)}<br><span class="작게 흐린">판정이 끝나 자산에서 빠졌다</span></figcaption></figure>`
+      : `<figure class="유리 잔잔 형태칸 없음"><div class="빈판">못 구웠다</div>
       <figcaption>${esc(x.이름)}</figcaption></figure>`;
   }
   return `<figure class="유리 잔잔 형태칸"><img src="${x.uri}" alt="${esc(x.이름)}" style="max-width:${폭}px">
@@ -169,17 +178,38 @@ function 세겹줄(세겹) {
     return `<div class="유리 알림 듦"><p class="작게" style="margin:0">🔴 세 겹 중 못 구운 조각이 있다 —
       ${['왼', '중', '오른'].filter((k) => !세겹[k]).map(esc).join('·')}. 셋은 한 벌이라 하나가 없으면 이 판정이 안 선다.</p></div>`;
   }
-  const 배경 = `background:url(${세겹.왼}) left/auto 100% no-repeat,`
-    + `url(${세겹.오른}) right/auto 100% no-repeat,`
-    + `url(${세겹.중}) center/auto 100% repeat-x`;
-  return `<div class="유리 잔잔 판" style="padding:var(--단)">
-    <p class="작게 흐린" style="margin:0 0 .8em">아래는 그림 셋을 <b>실제 CSS 세 겹 배경</b>으로 이어 붙인 것이다 —
-      길이가 달라도 마구리는 안 늘어나고 가운데만 반복된다.</p>
-    <div class="세겹줄">
-      <span class="세겹칩" style="${배경}">펠트</span>
-      <span class="세겹칩" style="${배경}">한국어 학원</span>
-      <span class="세겹칩" style="${배경}">아주 긴 분류 이름도 마구리가 안 늘어난다</span>
-    </div></div>`;
+  /* 가운데를 «어떻게» 채우나 — 이것이 09-03 에 드러난 진짜 갈림이다.
+     ㉠ 반복: 원래 비율로 타일링. 조각의 좌우 끝이 안 맞아 **이을 때마다 세로 선**이 선다.
+     ㉡ 늘리기: 칩 폭에 맞춰 한 덩이로 늘린다. 줄이 사라지는 대신 실땀이 가로로 늘어난다.
+     둘 다 실물로 보여 눈으로 고르게 한다 — 숫자로는 못 가르는 자리다. */
+  const 마구리 = `url(${세겹.왼}) left/auto 100% no-repeat,url(${세겹.오른}) right/auto 100% no-repeat`;
+  const 방식들 = [
+    { 이름: '㉠ 반복', 배경: `background:${마구리},url(${세겹.중}) center/auto 100% repeat-x`,
+      곁: '가운데를 원래 비율로 타일처럼 깐다(지금 코드).' },
+    { 이름: '㉡ 늘리기', 배경: `background:${마구리},url(${세겹.중}) center/100% 100% no-repeat`,
+      곁: '가운데를 칩 폭에 맞춰 한 덩이로 늘린다.' },
+  ];
+  /* 🔴 «크게 본 줄»을 함께 낸다(09-03 신설). 실크기 24px 만 보여 주면 이 판의 질문
+     (「이어 붙인 자리가 보이나」)에 **답할 수가 없다** — 이음선이 1px 밑으로 깔려 눈에 안 걸린다.
+     실측 09-03: 키워 보니 반복 쪽은 「한국어 학원」에 세로 선 하나, 긴 이름에는 **다섯 개**가 섰다.
+       늘리기로 바꾸자 그 다섯이 사라지고 «마구리가 붙는 자리» 둘만 남았다.
+     ⚠키운 것은 «실물»이 아니다(배경도 함께 늘어난다). 그래서 두 크기를 나란히 둔다. */
+  const 줄 = (배경, 크게) => {
+    const 스타일 = 크게 ? `${배경};height:112px;font-size:2.4rem;padding:0 40px` : 배경;
+    return `<div class="세겹줄${크게 ? ' 크게' : ''}">
+      <span class="세겹칩" style="${스타일}">펠트</span>
+      <span class="세겹칩" style="${스타일}">한국어 학원</span>
+      <span class="세겹칩" style="${스타일}">아주 긴 분류 이름도 마구리가 안 늘어난다</span>
+    </div>`;
+  };
+  const 판 = (m) => `<div class="유리 잔잔 판" style="padding:var(--단);margin:var(--단) 0">
+    <p class="꼭지" style="margin:0 0 .3em">${esc(m.이름)}</p>
+    <p class="작게 흐린" style="margin:0 0 .8em">${esc(m.곁)} 아래 첫 줄이 <b>실제로 앉는 크기(24px)</b>다.</p>
+    ${줄(m.배경, false)}
+    <p class="작게" style="margin:1.3em 0 .7em">🔎 <b>같은 것을 크게 열어 본 것</b> —
+      <b>이음매가 보이는지</b>가 이 판의 질문이다.</p>
+    ${줄(m.배경, true)}</div>`;
+  return 방식들.map(판).join('\n');
 }
 
 function main() {
@@ -187,17 +217,22 @@ function main() {
     console.error(`🔴 렌더 방이 없다 — 굽기가 먼저다(밤 사슬 ⑤·⑤-c).\n   ${방}`);
     process.exit(1);
   }
-  let 있음 = 0, 없음 = 0;
+  /* 세 갈래로 센다 — 「있다 / 못 구웠다 / 걷혔다」. 앞의 둘만 세면 닫힌 판정이 사고로 읽힌다(칸() 머리말). */
+  let 있음 = 0, 없음 = 0, 걷힘 = 0;
   const 절들 = 판들.map((판, i) => {
-    const 것들 = [판.현행, ...판.후보];
-    것들.forEach((x) => { if (x.uri) 있음 += 1; else 없음 += 1; });
+    if (판.현행.uri) 있음 += 1; else 걷힘 += 1;      // 현행이 비면 = 자산에서 빠졌다(판정 끝)
+    판.후보.forEach((x) => { if (x.uri) 있음 += 1; else 없음 += 1; });
     const 후보칸 = 판.후보.map((x) => 칸(x)).join('');
+    const 닫힘표 = 판.현행.uri ? '' : `<div class="유리 알림 조용 듦"><p class="작게" style="margin:0">
+  ✅ <b>이 판은 닫혔다</b> — 옛 부품이 자산 창고에서 빠졌으므로 왼쪽 「현행」이 빈다.
+  아래 후보 가운데 하나가 이미 지면에 서 있다(무엇이 섰는지는 <code>docs/_ops/결정.md</code> 가 쥔다).</p></div>`;
     return `<h2 id="s${i + 1}" class="듦"><span>${esc(판.이름)}</span></h2>
 <p class="듦">${판.자리.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</p>
+${닫힘표}
 <div class="유리 알림 듦"><p class="작게" style="margin:0"><b>이 판이 묻는 것</b> —
   ${판.묻는것.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`(.+?)`/g, '<code>$1</code>')}</p></div>
 <div class="맞줄">
-  <div class="쪽"><p class="꼭지">현행 — before</p><div class="형태줄">${칸(판.현행, 230)}</div></div>
+  <div class="쪽"><p class="꼭지">현행 — before</p><div class="형태줄">${칸(판.현행, 230, true)}</div></div>
   <div class="쪽"><p class="꼭지">후보 — after</p><div class="형태줄">${후보칸}</div></div>
 </div>
 ${판.세겹 ? 세겹줄(판.세겹) : ''}
@@ -227,9 +262,14 @@ ${실크기줄(판)}`;
 .형태칸 figcaption{margin-top:var(--틈);font-size:.78rem;color:var(--ash);line-height:1.4;max-width:22ch;}
 .형태칸.없음 .빈판{display:grid;place-items:center;min-height:120px;border-radius:12px;
   border:1px dashed rgba(var(--coral-rgb),.5);color:var(--coral);font-size:.82rem;font-weight:700;}
+/* 걷힌 칸은 «적색이 아니다» — 코랄(신호색)을 쓰지 않는다. 색이 뜻을 나른다. */
+.형태칸.걷힘 .빈판{display:grid;place-items:center;min-height:120px;border-radius:12px;
+  border:1px dashed var(--ash2);color:var(--ash2);font-size:.82rem;font-weight:700;}
 .실줄{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
 .실칸{display:inline-grid;place-items:center;}
 .세겹줄{display:flex;flex-wrap:wrap;gap:var(--칸);align-items:center;}
+/* 크게 본 줄은 세로로 쌓는다 — 나란히 두면 긴 칩이 줄바꿈돼 «반복 횟수»가 흐려진다. */
+.세겹줄.크게{flex-direction:column;align-items:flex-start;gap:22px;}
 .세겹칩{display:inline-flex;align-items:center;height:34px;padding:0 16px;
   font-size:.86rem;font-weight:700;color:var(--ink);letter-spacing:-.02em;}
 @media print{ .형태칸 img{max-width:150px;} }
@@ -281,9 +321,12 @@ ${절들.join('\n')}
   } finally { try { fs.unlinkSync(임시); } catch { /* */ } }
 
   const html = fs.readFileSync(출력, 'utf8');
-  /* 0 은 분모와 함께 쓴다 — 빠진 칸을 «없는 것»이 아니라 «못 구운 것»으로 세어 낸다(머리말 「대가」). */
+  /* 0 은 분모와 함께 쓴다 — 그리고 «못 구운 것»과 «걷힌 것»을 갈라 센다(칸() 머리말).
+     한 칸으로 뭉치면 닫힌 판정이 굽기 사고로 읽히고, 그 오해는 «고칠 것이 있다»는 쪽으로 샌다. */
   console.log(`■ 부품 형태 시안  ${path.relative(루트, 출력)}  `
-    + `(${Math.round(Buffer.byteLength(html) / 1024)}KB · 판 ${판들.length} · 그림 ${있음 + 없음} = 있음 ${있음} + 못구움 ${없음})`);
+    + `(${Math.round(Buffer.byteLength(html) / 1024)}KB · 판 ${판들.length} · `
+    + `그림 ${있음 + 없음 + 걷힘} = 있음 ${있음} + 못구움 ${없음} + 걷힘 ${걷힘})`);
+  if (걷힘) console.log(`  ✅ 걷힘 ${걷힘} — 판정이 끝나 자산에서 빠진 옛 부품이다(적색 아니다).`);
   if (없음) {
     console.log('  🟡 못 구운 칸이 있다 — 지면에는 «못 구웠다»로 그렸다(빈칸으로 두면 판정처럼 보인다).');
     console.log('     처방: node tools/세트굽기.js --세트 형태후보,부품형태');
