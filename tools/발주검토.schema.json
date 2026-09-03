@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "발주서 검토(구현 전) — 코덱스가 발주서의 구멍을 찾는다 · tools/codex-build.js ①단계",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["판정", "구멍들", "질문들"],
+  "properties": {
+    "판정": { "type": "string", "enum": ["착수가능", "보완필요"] },
+    "구멍들": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["종류", "내용", "심각"],
+        "properties": {
+          "종류": { "type": "string", "enum": ["입출력", "빈값", "완료기준", "모순", "범위", "기타"] },
+          "내용": { "type": "string", "minLength": 1 },
+          "심각": { "type": "string", "enum": ["막힘", "경고"] }
+        }
+      }
+    },
+    "질문들": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  }
+}

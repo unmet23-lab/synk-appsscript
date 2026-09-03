@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "코덱스 실행자 최종 답 — tools/codex-build.js 가 --output-schema 로 강제한다",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["상태", "요약", "바꾼파일들", "시험", "남긴것", "발주밖발견", "확신도"],
+  "properties": {
+    "상태": { "type": "string", "enum": ["완료", "부분", "못함"] },
+    "요약": { "type": "string", "minLength": 1 },
+    "바꾼파일들": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["경로", "무엇"],
+        "properties": {
+          "경로": { "type": "string", "minLength": 1 },
+          "무엇": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "시험": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["명령", "결과", "비고"],
+        "properties": {
+          "명령": { "type": "string", "minLength": 1 },
+          "결과": { "type": "string", "enum": ["통과", "실패", "못돌림"] },
+          "비고": { "type": "string" }
+        }
+      }
+    },
+    "남긴것": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "발주밖발견": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "확신도": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

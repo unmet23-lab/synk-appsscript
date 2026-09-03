@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "수용 기준 대조 — 검수자(코덱스 · 새 세션)가 발주서의 수용 기준을 하나씩 diff 에 댄다 · tools/codex-build.js ⑥단계",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["항목", "요약"],
+  "properties": {
+    "항목": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["기준", "판정", "근거"],
+        "properties": {
+          "기준": { "type": "string", "minLength": 1 },
+          "판정": { "type": "string", "enum": ["충족", "미충족", "확인불가"] },
+          "근거": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "요약": { "type": "string", "minLength": 1 }
+  }
+}
