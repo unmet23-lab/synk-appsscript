@@ -1949,12 +1949,15 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   // 「ID가 읽힌다」를 완료로 취급하지 않는다 — setDestination 이 실패했으면 폼은 사는데 제출이 어디에도 안 쌓인다(①배포 검수 257ac0b6fe00)
   assert.ok(/if \(!shT\)[\s\S]{0,400}exForm\.setDestination\(/.test(body), '기존 폼 경로에 응답 라우팅 복구가 없다 — 탭이 없으면 제출이 영영 안 쌓인다');
   // 복구한 폼은 제목으로 검증한다 — 탭 이름은 사람이 바꿀 수 있어 엉뚱한 폼이 붙어 있을 수 있다(①배포 검수 695480e24333)
-  assert.ok(/직장폼제목_\(f0\) === WORK_FORM_TITLE/.test(body), '응답 탭에서 복구한 폼을 제목으로 검증하지 않는다');
+  assert.ok(/직장폼제목_\(f0, true\) === WORK_FORM_TITLE/.test(body), '응답 탭에서 복구한 폼을 제목으로 검증하지 않는다');
   /* 🔴 제목은 «두 곳»에 산다(09-03 라이브 실측) — 설문지 제목(Form.getTitle 이 읽는 것 · 응답자 화면)과
    *   문서 제목(Drive 파일 이름 · 편집 화면 왼쪽 위). FormApp.create 는 문서 제목만 세우므로, getTitle()
    *   하나만 보면 «우리가 방금 만든 폼»이 남의 폼으로 찍힌다. 그래서 자를 직장폼제목_ 하나로 모았다.
    *   여기서 못박는 것은 그 자가 «느슨해지지 않는다»는 것 — 아래 셋이 무너지면 남의 폼이 그 문으로 들어온다. */
-  const 제목자 = code.slice(code.indexOf('function 직장폼제목_(form)'), code.indexOf('function 직장폼제목치유_'));
+  // 자르는 손잡이에 닫는 괄호를 넣지 않는다 — 인자가 늘면 못 찾고, 못 찾으면 slice(-1) 이 «엉뚱한 꼬리»를 잰다
+  const 제목자머리 = code.indexOf('function 직장폼제목_(form');
+  assert.ok(제목자머리 !== -1, '직장폼제목_ 를 못 찾았다 — 이름이 바뀌었으면 아래 검사가 전부 헛돈다');
+  const 제목자 = code.slice(제목자머리, code.indexOf('function 직장폼제목치유_'));
   assert.ok(/if \(t\) return t;[\s\S]{0,200}DriveApp\.getFileById/.test(제목자),
     '직장폼제목_ 가 «설문지 제목이 빌 때만» 문서 제목을 보는 구조가 아니다 — 이러면 자가 느슨해진다');
   assert.ok(/catch \(e\) \{ return ''; \}/.test(제목자),
@@ -1964,12 +1967,18 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
    * 약속하고 있었다 · 약속과 물건이 갈린 자리). 위 두 줄만으로는 그 갈림을 못 본다. */
   assert.ok(/try \{[^\r\n]*form\.getTitle\(\)/.test(제목자),
     '직장폼제목_ 의 설문지 제목 읽기가 try 밖이다 — 그 호출이 던지면 「거절」이 아니라 예외로 튄다');
-  const 서명자 = code.slice(code.indexOf('function 직장폼서명_(form)'), code.indexOf('function createWorkLogForm()'));
+  const 서명자머리 = code.indexOf('function 직장폼서명_(form');
+  assert.ok(서명자머리 !== -1, '직장폼서명_ 를 못 찾았다 — 이름이 바뀌었으면 아래 읽기전용 검사가 헛돈다');
+  const 서명자 = code.slice(서명자머리, code.indexOf('function createWorkLogForm()'));
   assert.ok(!/setTitle\(|setDescription\(|setHelpText\(|setState\(/.test(서명자),
     '서명 자가 폼에 «쓰고» 있다 — 워치독(엔진_콘텐츠AI.js)이 매 점검마다 부르는 자리라 읽기 전용이어야 한다');
   /* [①배포 검수 947f3f044f72 채택] 치유는 갈래 «셋»을 갈라 말한다 — 이미 서 있음('') · 채웠음 · 못 채웠음.
    * 첫 판은 실패도 '' 를 내서 조용히 성공으로 읽혔다(0건이 성공 얼굴을 쓰는 자리). 쓴 «뒤 다시 읽어» 확인한다. */
-  const 치유자 = code.slice(code.indexOf('function 직장폼제목치유_(form)'), code.indexOf('function 직장폼서명_(form)'));
+  /* ⚠ 끝 손잡이에도 닫는 괄호를 안 넣는다 — 못 찾으면 indexOf 가 -1 이고 slice(시작, -1) 은 «파일 끝까지»를
+   * 잘라서, 아래 검사들이 엉뚱하게 넓은 범위를 보며 조용히 통과한다(자가 망가져도 초록인 자리). */
+  const 치유자끝 = code.indexOf('function 직장폼서명_(form');
+  assert.ok(치유자끝 !== -1, '직장폼서명_ 를 못 찾아 치유 자의 범위를 못 자른다');
+  const 치유자 = code.slice(code.indexOf('function 직장폼제목치유_(form)'), 치유자끝);
   assert.ok(/setTitle\(WORK_FORM_TITLE\);[\s\S]{0,120}getTitle\(\)/.test(치유자),
     '제목 치유가 쓴 «뒤 다시 읽어» 확인하지 않는다 — 쓰기가 안 먹어도 「고쳤다」로 보고된다');
   assert.ok(/catch \(e\) \{[\s\S]{0,120}⚠️/.test(치유자),
@@ -1980,7 +1989,8 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
    * 내므로 그대로 찍으면 「제목 「」」가 된다. 유호님이 09-03 에 보신 그 화면이 정확히 이 자리다. */
   assert.ok(!/제목 「' \+ 직장폼제목_\(/.test(code),
     '거절 문구가 판정용 자를 그대로 찍는다 — 못 읽거나 비었을 때 빈 「」 가 다시 뜬다');
-  assert.ok(/function 직장폼제목보임_\(form\)[\s\S]{0,160}직장폼제목_\(form\) \|\|/.test(code),
+  /* 보임 자는 판정 자를 «그대로» 감싼다 — 곁다리 켜짐(탭연결확인됨)까지 같이 넘겨야 화면과 판정이 안 갈린다. */
+  assert.ok(/function 직장폼제목보임_\(form, 탭연결확인됨\)[\s\S]{0,160}직장폼제목_\(form, 탭연결확인됨\) \|\|/.test(code),
     '보임 자가 없거나 판정 자를 안 감싼다 — 두 자가 갈리면 화면과 판정이 어긋난다');
   // 표준 탭 이름이 이미 차 있으면 새 폼을 만들지 않고 멈춘다 — 접미사 탭이 되면 회수량이 워치독에서 사라진다(①배포 검수 10a5f2f323f0)
   assert.ok(/if \(ss\.getSheetByName\(WORK_TAB\)\)[\s\S]{0,600}return mT;/.test(body), '탭 이름 충돌 시 생성을 멈추는 가드가 없다');
@@ -1997,7 +2007,16 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
    * 제목이 비면 문서 제목(남이 붙일 수 있는 이름)으로 떨어지므로, 완료 표식까지 있는 남의 폼이
    * 정상으로 지나갈 수 있었다. 서명을 «완료 뒤»에 두는 것이 곧 판정이다 — 앞에 두면 문항을 붙이다
    * 끊긴 우리 폼(서명 없음)이 「만들다 만 상태」 안내 대신 「남의 폼」으로 찍힌다. */
-  assertOrder(기존경로, ['직장폼제목_(exForm) !== WORK_FORM_TITLE', "getState(st, '직장폼완료')", '직장폼서명_(exForm)', 'const shT = ss.getSheetByName(WORK_TAB)']);
+  assertOrder(기존경로, ['const shT = ss.getSheetByName(WORK_TAB)', '직장폼제목_(exForm, tabOk) !== WORK_FORM_TITLE', "getState(st, '직장폼완료')", '직장폼서명_(exForm, tabOk)']);
+  /* 🔴 [①배포 검수 6ae0f9351269 채택] 문서 제목은 «신원»이 아니라 곁다리 증거다 — 남이 제 폼에 그대로
+   * 붙일 수 있는 이름이라, 그것만으로 「우리 폼」이라 판정하면 통로마다 문이 하나씩 열린다(같은 뿌리를
+   * 세 번 짚였다: ed25df351411 · ed44cb1528a8 · 이것). 그래서 되돌아보기를 «켜야 켜지는» 것으로 바꿨다 —
+   * 둘째 인자는 「우리 응답 탭이 바로 이 폼에 붙어 있음을 부르는 쪽이 확인했다」는 뜻이다.
+   * 켜는 곳은 셋뿐: 탭이 준 폼(f0) · 탭 대조를 이미 통과한 마이그레이션 둘. 그 밖은 엄격이다. */
+  assert.ok(/if \(!탭연결확인됨\) return '';/.test(제목자),
+    '문서 제목 되돌아보기가 «켜야 켜지는» 것이 아니다 — 남이 붙인 파일 이름만으로 남의 폼이 통과한다');
+  assert.ok(/직장폼서명_\(f0, true\)/.test(body),
+    '탭이 준 폼(f0)에서 곁다리 증거를 안 켠다 — 설문지 제목이 빈 옛 폼을 복구 경로가 못 알아본다');
   // 워치독도 「이름이 같은 탭」을 그 폼의 탭으로 믿지 않는다(①배포 검수 b073a11c3a3e)
   assert.ok(/shWk\.getFormUrl\(\)[\s\S]{0,40}indexOf\(wkId\)/.test(code), '워치독이 응답 탭과 폼의 연결을 대조하지 않는다 — 갈아 끼워진 탭의 행을 직장 경험으로 센다');
   // ID 가 없으면 «검증 못 한 것»이지 정상이 아니다 — 세면 옛 탭의 행이 그럴듯한 회수량으로 찍힌다(①배포 검수 12f7d19f598f)
@@ -2008,9 +2027,9 @@ test('[v9.268] 🧰 직장 경험 폼 — 재실행 안전·익명 회수·활�
   /* 제목은 고유하지 않다 — 복사본·동명 폼을 거르려면 «이 폼을 이 폼이게 하는» 필수 두 칸까지 본다(①배포 검수 728e50c7d939).
    * 🔑 그 자는 «하나»여야 한다(①배포 검수 550ba898c5dd) — 찾는 자리와 고치는 자리가 다른 자를 쓰면
    * 느슨한 쪽 문으로 남의 폼이 들어온다(실제로 마이그레이션이 제목만 보고 있었다). */
-  assert.ok(/function 직장폼서명_\(form\)[\s\S]{0,400}indexOf\('시킨 일 그대로'\) !== -1 && t\.indexOf\('예정에 없던 일이 생긴 적'\) !== -1/.test(code),
+  assert.ok(/function 직장폼서명_\(form[\s\S]{0,400}indexOf\('시킨 일 그대로'\) !== -1 && t\.indexOf\('예정에 없던 일이 생긴 적'\) !== -1/.test(code),
     '폼 서명 공용 자(직장폼서명_)가 없거나 필수 두 칸을 안 본다');
-  assert.ok(/if \(직장폼서명_\(f0\)\)/.test(body), '복구 경로가 공용 서명 자를 쓰지 않는다 — 제목만 같은 남의 폼이 데이터 소스가 된다');
+  assert.ok(/if \(직장폼서명_\(f0, true\)\)/.test(body), '복구 경로가 공용 서명 자를 쓰지 않는다 — 제목만 같은 남의 폼이 데이터 소스가 된다');
   const 생성끝 = body.slice(body.indexOf('FormApp.create('));
   assertOrder(생성끝, ['linkFormTab_(ss, before, WORK_TAB)', "setState(st, '직장폼완료', 'y')"]);
   // 워치독 — 폼 생존 + 회수량(설계 준비도)
@@ -2046,7 +2065,10 @@ test('[v9.270] 🇲🇳 직장 경험 폼 몽골어 — 안내문 정본 하나 
   // 제목·선택지는 건드리지 않는다 — 제목은 응답 시트 헤더이자 폼 서명이자 궤적 조인 키다
   assert.ok(!/setTitle\(/.test(mig) && !/setChoiceValues\(/.test(mig), '마이그레이션이 제목·선택지를 건드린다 — 헤더·서명·조인 키가 갈린다');
   // 엉뚱한 폼을 고치지 않는다 + 못 찾은 문항을 조용히 넘기지 않는다
-  assert.ok(/if \(!직장폼서명_\(form\)\)/.test(mig), '마이그레이션이 «찾는 자리»와 같은 서명 자를 쓰지 않는다 — 동명 복사본의 안내를 통째로 덮어쓴다');
+  assert.ok(/if \(!직장폼서명_\(form, true\)\)/.test(mig), '마이그레이션이 «찾는 자리»와 같은 서명 자를 쓰지 않는다 — 동명 복사본의 안내를 통째로 덮어쓴다');
+  /* 🔴 [①배포 검수 6ae0f9351269] 곁다리 증거(문서 제목)를 켜려면 «먼저» 응답 탭 대조를 통과해야 한다 —
+   * 순서가 곧 안전이다. 뒤에 두면 서명이 남이 붙인 파일 이름만으로 남의 폼을 「우리 폼」이라 부른다. */
+  assertOrder(mig, ['const shT = ss.getSheetByName(WORK_TAB)', 'if (!tabOk)', '직장폼서명_(form, true)']);
   /* 🔴 [①배포 검수 ed25df351411 채택] 쓰기 전에 «응답이 오는 폼»인지까지 본다. 설문지 제목이 비면
    * 신원을 문서 제목(Drive 파일 이름)으로 보는데 그 이름은 **남이 제 폼에 붙일 수 있는** 값이라,
    * 문항 두 개까지 흉내 낸 폼을 직장폼ID 에 꽂으면 이 통로가 그 폼을 덮어쓸 수 있었다.
@@ -2084,7 +2106,9 @@ test('[v9.293] 🎯 직장 경험 폼 결과 칸 셋 — 선택 유지 · 기존
   });
   const out = section('function migrateWorkFormOutcome()', 'function migrateFormCopy0901()');
   // 엉뚱한 폼을 고치지 않는다 — «찾는 자리»와 같은 서명 자
-  assert.ok(/if \(!직장폼서명_\(form\)\)/.test(out), '결과 칸 통로가 서명 자를 안 쓴다 — 동명 복사본에 문항을 붙인다');
+  assert.ok(/if \(!직장폼서명_\(form, true\)\)/.test(out), '결과 칸 통로가 서명 자를 안 쓴다 — 동명 복사본에 문항을 붙인다');
+  // 곁다리 증거를 켜기 «전»에 응답 탭 대조를 통과해야 한다(①배포 검수 6ae0f9351269 · 몽골어 통로와 같은 규율)
+  assertOrder(out, ['const shT = ss.getSheetByName(WORK_TAB)', 'if (!tabOk)', '직장폼서명_(form, true)']);
   /* [v9.294] codex P1 c1bc92a6a834 — 서명은 「직장 폼처럼 생겼다」까지만 말한다. 응답 탭에 «안 붙은»
    * 폼에 문항을 붙이면 회수는 0인데 보고는 성공이라, 조용한 실패가 된다. 생성 경로와 같은 자를 쓴다. */
   assert.ok(/shT\.getFormUrl\(\)[\s\S]{0,60}indexOf\(form\.getId\(\)\)/.test(out) && /if \(!tabOk\)/.test(out),
