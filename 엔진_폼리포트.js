@@ -1808,8 +1808,25 @@ function createWorkLogForm_(알림기록) {
       const shT = ss.getSheetByName(WORK_TAB);
       let tabOk = false;
       if (shT) { try { tabOk = String(shT.getFormUrl() || '').indexOf(exForm.getId()) !== -1; } catch (eU) { tabOk = false; } }
-      if (직장폼제목_(exForm, tabOk) !== WORK_FORM_TITLE) {
-        const mI = '⚠️ app_state 의 「직장폼ID」가 가리키는 폼의 제목이 「' + 직장폼제목보임_(exForm, tabOk) + '」입니다 — 직장 경험 폼이 아닙니다.\n'
+      /* 🔴 탭이 없을 때 곁다리를 «대신» 세우는 자(①배포 검수 8812afdbcd6c 채택) — 앞 회차의 조임이
+       *   하필 이 경로의 «존재 이유»까지 닫았다: 응답 탭이 지워진 옛 폼(설문지 제목도 빈)을 되살리는 것이
+       *   바로 아래 setDestination·linkFormTab_ 이 하는 일인데, 탭이 없으니 곁다리가 안 켜지고 제목 대조에서
+       *   즉시 되돌아가 «되살릴 길이 0»이 됐다.
+       * 🔑 여기서 위협 모형을 바로 잡는다 — 이 문이 막는 것은 «공격»이 아니라 «사고»다. app_state 를 고칠 수
+       *   있는 사람은 이미 이보다 큰 것을 할 수 있다(다른 폼 ID 로 갈아끼우기·학생 데이터 읽기). 실제로
+       *   막아야 하는 것은 **낡은 ID · 복사본 · 손으로 만든 동명 폼** 셋이고, 그 셋은 문서 제목과
+       *   **필수 문항 전수**를 동시에 맞추지 못한다(복사본은 완료 표식이 없고, 동명 폼은 문항이 없다).
+       * ⇒ 그래서 탭 대신 «더 강한 형상»을 요구한다: 서명의 두 칸이 아니라 WORK_REQUIRED_ 다섯 전부.
+       *   탭이 있으면 그쪽이 더 센 증거라 형상은 안 묻는다. */
+      let 곁다리허용 = tabOk;
+      if (!곁다리허용) {
+        try {
+          const 있는문항0 = exForm.getItems().map(function (i) { return String(i.getTitle()).trim(); });
+          곁다리허용 = WORK_REQUIRED_.every(function (t) { return 있는문항0.indexOf(t) !== -1; });
+        } catch (eQ) { 곁다리허용 = false; }   // 문항을 못 읽으면 «모른다» = 안 켠다
+      }
+      if (직장폼제목_(exForm, 곁다리허용) !== WORK_FORM_TITLE) {
+        const mI = '⚠️ app_state 의 「직장폼ID」가 가리키는 폼의 제목이 「' + 직장폼제목보임_(exForm, 곁다리허용) + '」입니다 — 직장 경험 폼이 아닙니다.\n'
           + '낡은 ID 이거나 다른 폼을 가리키고 있습니다. 그 행을 지운 뒤 다시 실행하면 새로 만들거나 응답 탭에서 복구합니다.';
         Logger.log(mI);
         return mI;
@@ -1829,7 +1846,7 @@ function createWorkLogForm_(알림기록) {
        * ⚠ 자리를 지킨다 — 서명은 «완료 표식 뒤»에 선다. 앞에 세우면 「문항을 붙이다 끊긴 폼」(서명이 아직
        *   없다)이 여기서 «남의 폼»으로 찍혀, 바로 그 폼을 위해 있는 위 「만들다 만 상태」 안내에 영영 못 닿는다.
        *   그래서 이 자는 «완료로 적힌 것»에만 걸린다 — 스스로 완료라 말한 폼에만 완료의 증거를 묻는다. */
-      if (!직장폼서명_(exForm, tabOk)) {
+      if (!직장폼서명_(exForm, 곁다리허용)) {
         const mS = '⚠️ app_state 의 「직장폼ID」가 «완료»로 적혀 있는데, 그 폼에는 필수 문항 「시킨 일 그대로」·「예정에 없던 일이 생긴 적」이 없습니다 — 직장 경험 폼이 아닙니다.\n'
           + '이름만 같은 다른 폼일 수 있습니다. app_state 의 「직장폼ID」 행을 지운 뒤 다시 실행하면 새로 만들거나 응답 탭에서 복구합니다.\n배포 링크: ' + exForm.getPublishedUrl();
         Logger.log(mS);
