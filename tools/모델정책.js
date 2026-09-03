@@ -643,6 +643,53 @@ function 제미나이키안내(용도) {
     + `   경로를 바꾸려면 env ${열쇠파일[k].env}.`;
 }
 
+/* ── 🚪 제미나이 «문» — 같은 모델을 두 주소로 부를 수 있다 (2026-09-04 · 유호 「Vertex 문으로 주소 교체」)
+ *
+ * ■ 왜 용도별로 «가르나» (통째로 못 옮기는 이유)
+ *   구글 공식: **무료 크레딧 $300 은 AI Studio 문의 Gemini API 값을 못 낸다.** 옆문(Vertex AI)으로
+ *   가면 같은 모델이 그 크레딧으로 돈다. 그런데 두 열쇠의 사정이 정반대다(09-04 프로브 실측):
+ *     · 「글」(공짜) = `synk-radio24`(프로젝트 466312713016). **결제가 안 붙어서 공짜**다(결정 09-03).
+ *       Vertex 는 결제를 요구하므로 이 열쇠를 옮기면 **그 순간 공짜가 죽는다.** ⇒ 여기 그대로 둔다.
+ *     · 「돈」(유료) = 프로젝트 1036791389049. 크레딧이 닳는 자리라 **여기가 $300 이 갈 문**이다.
+ *   ⇒ 그래서 「문」은 하나가 아니라 **용도가 쥔다.** 통째 교체는 공짜 열쇠를 죽인다.
+ *
+ * ■ 09-04 프로브가 실제로 낸 것(둘 다 403 인데 «막은 것»이 다르다 — 처방이 갈린다)
+ *   · 글 → `Agent Platform API has not been used in project 466312713016 ... or it is disabled`
+ *     = 열쇠는 통과, **그 프로젝트에 문이 안 켜졌다**(켜면 결제가 따라온다 ⇒ 안 켠다).
+ *   · 돈 → `API_KEY_SERVICE_BLOCKED` (consumer projects/1036791389049)
+ *     = 문은 있는데 **열쇠에 걸린 「이 API 만」 제한**이 aiplatform 을 안 받는다. 콘솔에서 제한을 넓히면 열린다.
+ *   🔑 즉 **API 키는 Vertex 에서 «거절되지 않았다»** — 「키는 안 된다」는 바깥 글은 이 주소꼴에 안 맞는다.
+ *
+ * ■ 주소꼴이 다르다 — base 만 바꾸면 404 다
+ *   AI Studio: `{base}/models/{모델}:generateContent`
+ *   Vertex   : `{base}/publishers/google/models/{모델}:generateContent`  (프로젝트는 열쇠가 안다 — URL 에 안 넣는다)
+ * ⚠ 목록 조회(`/models?pageSize=200`)는 **AI Studio 에만** 있다 ⇒ `목록가능` 으로 갈라 둔다.
+ * ⚠ 안 재봤다: Vertex 응답이 `modelVersion` 을 주는지. 장부가 그 칸을 쓰므로 첫 성공 때 확인한다. */
+const 제미나이문들 = {
+  글: {
+    이름: 'AI Studio', base: 'https://generativelanguage.googleapis.com/v1beta', env: 'GEMINI_BASE_FREE',
+    모델경로: (m) => `/models/${m}`, 목록가능: true,
+    왜: '결제가 안 붙어서 공짜다 — 옮기면 공짜가 죽는다(결정 09-03)',
+  },
+  돈: {
+    이름: 'Vertex AI', base: 'https://aiplatform.googleapis.com/v1', env: 'GEMINI_BASE_PAID',
+    모델경로: (m) => `/publishers/google/models/${m}`, 목록가능: false,
+    왜: '무료 크레딧 $300 이 AI Studio 문에는 안 먹고 이 문에는 먹는다(구글 공식)',
+  },
+};
+/** 그 용도가 쓰는 문. env 로 그 자리만 덮어쓸 수 있다(되돌리기 = 변수 지우기). */
+function 제미나이문(용도) {
+  const k = 용도고르기(용도);
+  const 문 = 제미나이문들[k];
+  const 덮음 = process.env[문.env];
+  return 덮음 ? { ...문, base: String(덮음).replace(/\/+$/, ''), 덮어씀: true } : 문;
+}
+/** 그 용도·모델의 전체 주소. 메서드는 `generateContent` 처럼 콜론 뒤에 붙는 이름. */
+function 제미나이URL(용도, 모델, 메서드 = 'generateContent') {
+  const 문 = 제미나이문(용도);
+  return `${문.base}${문.모델경로(모델)}:${메서드}`;
+}
+
 /* 전송 모양: 부르는 쪽(몽골어대조.js · 향후 라이브시트 층)은 `generateContent` 에
  * `generationConfig.thinkingConfig.thinkingLevel` 로 싣는다(2026-08-05 실측 통과 형태). */
 function 제미나이설정(이름) {
@@ -704,7 +751,7 @@ async function 제미나이생존({ timeoutMs = 8000, 용도 = '글' } = {}) {
   if (!key) return { 살았나: null, 종류: '키없음', 용도, 사유: `키 파일을 못 읽었다(${제미나이키경로(용도)})`, 안내: 제미나이키안내(용도) };
   const 기본 = 제미나이설정();
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${기본.model}:generateContent`, {
+    const r = await fetch(제미나이URL(용도, 기본.model), {
       method: 'POST',
       headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -717,11 +764,21 @@ async function 제미나이생존({ timeoutMs = 8000, 용도 = '글' } = {}) {
     const 사유 = String((j.error && j.error.message) || '').slice(0, 200);
     if (r.ok) {
       const 사고 = j.usageMetadata && j.usageMetadata.thoughtsTokenCount;
-      return { 살았나: true, 용도, 모델: 기본.model, 사고토큰: 사고 == null ? null : 사고 };
+      /* 🔑 `modelVersion` 이 «무엇이 답했나»다. Vertex 문이 이 칸을 주는지 아직 안 재봤으므로
+       *   없으면 없다고 그대로 들고 나간다(있는 척하면 장부가 조용히 빈다). */
+      return { 살았나: true, 용도, 문: 제미나이문(용도).이름, 모델: 기본.model, 답한모델: j.modelVersion || null, 사고토큰: 사고 == null ? null : 사고 };
     }
     /* 종류를 가르는 값어치: 「한도·결제」는 유호님 손(충전·결제)이고 「자격」은 키 교체다.
      * 9월 예고된 Standard 키 거부가 오면 401/403 으로 온다 — 그때 처방이 달라야 한다. */
-    const 종류 = r.status === 429 ? '한도·결제' : (r.status === 401 || r.status === 403) ? '자격' : '기타';
+    let 종류 = r.status === 429 ? '한도·결제' : (r.status === 401 || r.status === 403) ? '자격' : '기타';
+    /* 🚪 403 안에서 «문 탓»을 갈라낸다 — 처방이 다르다. 「자격」으로 뭉치면 열쇠를 갈아 끼우다 헛돈다.
+     *   · API_KEY_SERVICE_BLOCKED = 열쇠에 걸린 「이 API 만」 제한이 이 문을 안 받는다 ⇒ 콘솔에서 제한 넓히기
+     *   · has not been used / is disabled = 그 프로젝트에 문이 안 켜졌다 ⇒ 콘솔에서 API 켜기(결제가 따라온다) */
+    if (r.status === 403) {
+      const 원인 = ((j.error && j.error.details) || []).map((d) => d && d.reason).filter(Boolean).join(' ');
+      if (/API_KEY_SERVICE_BLOCKED/.test(원인)) 종류 = '문·열쇠제한';
+      else if (/has not been used|is disabled/.test(사유)) 종류 = '문·안켜짐';
+    }
     /* 429 안에는 «다음 수»가 들어 있는데 09-03 까지 그걸 버리고 있었다 — 그래서 벽에 대고 64분을
      * 던졌다. 구글이 주는 두 값을 그대로 들고 나간다:
      *   · limit: N  = 그 몫의 상한(무료 등급 실측 20) · · retryDelay = 언제 다시 던져도 되나.
@@ -733,7 +790,7 @@ async function 제미나이생존({ timeoutMs = 8000, 용도 = '글' } = {}) {
       for (const x of d) if (x && typeof x.retryDelay === 'string') return Number(String(x.retryDelay).replace(/s$/, '')) || null;
       const m = /retry in ([\d.]+)s/i.exec(사유); return m ? Number(m[1]) : null;
     })();
-    return { 살았나: false, 용도, 상태: r.status, 종류, 사유, 모델: 기본.model, 몫상한, 다시초 };
+    return { 살았나: false, 용도, 문: 제미나이문(용도).이름, 상태: r.status, 종류, 사유, 모델: 기본.model, 몫상한, 다시초 };
   } catch (e) {
     // 네트워크·타임아웃은 «키가 죽었다»가 아니다 — 못 물어본 것이다.
     return { 살았나: null, 용도, 종류: '네트워크', 사유: String((e && e.message) || e).slice(0, 200) };
@@ -741,28 +798,34 @@ async function 제미나이생존({ timeoutMs = 8000, 용도 = '글' } = {}) {
 }
 
 async function 제미나이확인(용도 = '글') {
+  const 문 = 제미나이문(용도);
   console.log(`■ 열쇠 「${용도}」 — ${열쇠파일[용도].뭐냐}`);
+  console.log(`   문: ${문.이름} (${문.base})${문.덮어씀 ? ` · env ${문.env} 로 덮어씀` : ''} — ${문.왜}`);
   const key = 제미나이키(용도);
   if (!key) {
     console.error('🔴 키를 못 읽었다 — 조회를 **안 돌린 것**이지 「모델이 없다」가 아니다.');
     console.error('   ' + 제미나이키안내(용도));
     return 2;
   }
-  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', {
-    headers: { 'x-goog-api-key': key },
-  });
-  if (!res.ok) {
-    console.error(`🔴 조회 실패 ${res.status} — ${(await res.text()).slice(0, 300)}`);
-    return 2;
-  }
-  const 살아있음 = new Set(((await res.json()).models || []).map((m) => String(m.name || '').replace(/^models\//, '')));
   let 최악 = 0;
-  for (const 키 of ['최상', '무료최상']) {
-    const p = 제미나이[키];
-    const ok = 살아있음.has(p.model);
-    if (!ok) 최악 = 1;
-    console.log(`${ok ? '✅' : '🔴'} ${키}: ${p.model} / thinking_level=${p.thinking_level}` +
-      (ok ? '' : ' — 이 키로는 안 보인다(모델 ID 가 낡았거나 등급 밖)'));
+  /* 목록 조회는 AI Studio 문에만 있다. 옆문(Vertex)에서는 **없는 자를 흉내 내지 않고** 건너뛴다 —
+   * 「목록에 있더라」는 확인을 못 하니 그 자리는 아래 프로브 하나가 진다. */
+  if (!문.목록가능) {
+    console.log(`   (모델 목록 조회는 ${문.이름} 문에 없다 — 「표에 있나」는 **안 재봤다**. 아래 프로브가 판정한다)`);
+  } else {
+    const res = await fetch(`${문.base}/models?pageSize=200`, { headers: { 'x-goog-api-key': key } });
+    if (!res.ok) {
+      console.error(`🔴 조회 실패 ${res.status} — ${(await res.text()).slice(0, 300)}`);
+      return 2;
+    }
+    const 살아있음 = new Set(((await res.json()).models || []).map((m) => String(m.name || '').replace(/^models\//, '')));
+    for (const 키 of ['최상', '무료최상']) {
+      const p = 제미나이[키];
+      const ok = 살아있음.has(p.model);
+      if (!ok) 최악 = 1;
+      console.log(`${ok ? '✅' : '🔴'} ${키}: ${p.model} / thinking_level=${p.thinking_level}` +
+        (ok ? '' : ' — 이 키로는 안 보인다(모델 ID 가 낡았거나 등급 밖)'));
+    }
   }
   // 기본 픽은 존재만이 아니라 **사고 수준까지** 산다 — 목록에 있어도 파라미터가 거절되면 못 쓴다.
   // 프로브 알맹이는 `제미나이생존()` 하나다(자를 둘로 만들지 않는다 · ai스택점검도 그걸 부른다).
@@ -775,8 +838,15 @@ async function 제미나이확인(용도 = '글') {
   if (생존.살았나 === false) {
     최악 = 1;
     console.log(`🔴 프로브 실패: ${기본.model}/${기본.thinking_level} → ${생존.상태} ${String(생존.사유).slice(0, 160)}`);
+    /* 처방을 종류별로 낸다 — 「403」 한 덩어리로 두면 열쇠를 갈아 끼우다 헛돈다(09-04 실측 두 갈래). */
+    if (생존.종류 === '문·열쇠제한') {
+      console.log(`   처방: 이 열쇠에 걸린 「이 API 만」 제한이 ${문.이름} 을 안 받는다. 콘솔 → API 및 서비스 → 사용자 인증 정보 → 그 열쇠 → API 제한에 aiplatform.googleapis.com 을 더한다.`);
+    } else if (생존.종류 === '문·안켜짐') {
+      console.log(`   처방: 그 프로젝트에 ${문.이름} 문이 안 켜져 있다. ⚠ 켜면 결제가 따라오니 «공짜 열쇠 프로젝트»에는 켜지 않는다.`);
+    }
   } else {
-    console.log(`✅ 프로브: ${기본.model}/${기본.thinking_level} 응답 OK · 사고 토큰 ${생존.사고토큰 == null ? '(미보고)' : 생존.사고토큰}`);
+    console.log(`✅ 프로브: ${기본.model}/${기본.thinking_level} 응답 OK · 사고 토큰 ${생존.사고토큰 == null ? '(미보고)' : 생존.사고토큰}`
+      + ` · 답한 모델 ${생존.답한모델 || '(안 알려준다)'}`);
   }
   if (최악) console.log('\n표가 낡았으면 tools/모델정책.js 의 제미나이 픽을 고친다 — 조용히 다른 모델로 돌지 않는다.');
   return 최악;
@@ -853,6 +923,7 @@ module.exports = {
   코덱스캐시, 코덱스캐시경로,
   회차기본, 회차상한, 회차설정, 명시픽, 심문편성, 심문런들,
   제미나이, 제미나이사고, 제미나이설정, 제미나이키, 제미나이키경로, 제미나이생존, 제미나이키안내, 열쇠파일,
+  제미나이문들, 제미나이문, 제미나이URL,   // 🚪 문 가르기(09-04) — 글=AI Studio(공짜 유지) · 돈=Vertex($300 크레딧)
 };
 
 if (require.main === module) {

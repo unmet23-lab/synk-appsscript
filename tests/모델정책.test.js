@@ -511,3 +511,64 @@ test('🚪 열림 감시가 실제로 발화한다 — 네 갈래를 픽스처�
   assert.ok(못봄.length === 1 && /안 재봤다/.test(못봄[0]), '캐시를 못 읽었는데 침묵했다 — 「못 봤다」와 「아직」이 같은 얼굴이면 안 된다');
   assert.deepStrictEqual(정찰.열림줄들([], true, {}), [], '표가 비면 조용하다');
 });
+
+// ───────────────────────────────── 🚪 제미나이 «문» — 글은 공짜 문에, 돈은 크레딧 문에 (09-04)
+/* 새는 방향: ⓐ 「Vertex 로 옮기자」가 통째 교체로 와서 «글» 열쇠까지 옮겨진다 → 그 프로젝트에 결제가
+ *   붙고 공짜가 죽는다(되돌릴 수 없다 · 결정 09-03). ⓑ 누가 base 만 바꾸고 주소꼴을 안 바꿔 404 가
+ *   난다. ⓒ 어느 파일이 주소를 다시 하드코딩해 문이 두 곳에 산다(constant-known-in-two-places).
+ * 셋 다 조용해서 픽스처로 문다. */
+
+test('🔴 «글» 문은 AI Studio 그대로다 — 옮기면 공짜가 죽는다(결정 09-03)', () => {
+  const 글 = 정책.제미나이문('글');
+  assert.strictEqual(글.base, 'https://generativelanguage.googleapis.com/v1beta', '글 열쇠는 결제가 안 붙어서 공짜다. 문을 옮기면 결제가 따라와 그 순간 죽는다');
+  assert.strictEqual(글.목록가능, true, 'AI Studio 문에는 모델 목록이 있다 — 정찰이 그걸 읽는다');
+  assert.match(정책.제미나이URL('글', 'M'), /\/v1beta\/models\/M:generateContent$/);
+});
+
+test('🔴 «돈» 문은 Vertex 다 — 무료 크레딧 $300 이 AI Studio 문에는 안 먹는다', () => {
+  const 돈 = 정책.제미나이문('돈');
+  assert.strictEqual(돈.base, 'https://aiplatform.googleapis.com/v1');
+  assert.strictEqual(돈.목록가능, false, 'Vertex 에는 목록 조회가 없다 — 있다고 하면 «안 재봤다»가 «봤다»로 접힌다');
+  // 🔴 base 만 바꾸고 주소꼴을 안 바꾸면 404 다. publishers/google 이 빠지는 것을 여기서 잡는다.
+  assert.match(정책.제미나이URL('돈', 'M'), /\/v1\/publishers\/google\/models\/M:generateContent$/);
+});
+
+test('🔑 두 문은 서로 다르다 · 모르는 용도는 거절한다', () => {
+  assert.notStrictEqual(정책.제미나이문('글').base, 정책.제미나이문('돈').base, '둘이 같아졌다 — 통째 교체가 들어왔다는 뜻이다');
+  assert.strictEqual(정책.제미나이문().base, 정책.제미나이문('글').base, '기본은 글이다');
+  assert.throws(() => 정책.제미나이문('그림'), /용도는/, '모르는 용도를 조용히 글로 접으면 「돈 문으로 돌렸다」고 믿는 상태가 생긴다');
+});
+
+test('🔑 env 로 그 자리만 덮어쓸 수 있다 — 되돌리기는 변수 지우기 하나', () => {
+  const 옛 = process.env.GEMINI_BASE_PAID;
+  try {
+    process.env.GEMINI_BASE_PAID = 'https://example.test/v9/';
+    const 돈 = 정책.제미나이문('돈');
+    assert.strictEqual(돈.base, 'https://example.test/v9', '끝의 빗금을 안 걷으면 주소에 // 가 생긴다');
+    assert.strictEqual(돈.덮어씀, true, '덮어쓴 사실이 안 보이면 「정본대로 돈다」고 믿는다');
+    assert.strictEqual(정책.제미나이문('글').덮어씀, undefined, '한쪽 덮어쓰기가 다른 쪽까지 물들면 안 된다');
+  } finally {
+    if (옛 === undefined) delete process.env.GEMINI_BASE_PAID; else process.env.GEMINI_BASE_PAID = 옛;
+  }
+  assert.strictEqual(정책.제미나이문('돈').base, 'https://aiplatform.googleapis.com/v1', '변수를 지우면 정본으로 돌아온다');
+});
+
+test('🔴 주소를 하드코딩한 파일이 없다 — 문은 모델정책 한 곳만 안다', () => {
+  const fs = require('node:fs');
+  const 볼것 = [
+    'tools/모델정책.js', 'tools/lib/제미나이호출.js', 'tools/lib/이미지굽기.js', 'tools/음성실측.js',
+  ];
+  const 걸린 = [];
+  for (const rel of 볼것) {
+    const 본문 = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    본문.split('\n').forEach((줄, i) => {
+      /* 🔑 «주소»만 잡는다 — 도메인 이름이 안내 문구에 나오는 것은 설명이지 호출이 아니다
+       *   (첫 판이 「제한에 aiplatform.googleapis.com 을 더한다」는 처방 줄을 잡았다 · 09-04). */
+      if (!/https?:\/\/[a-z0-9.-]*googleapis\.com/i.test(줄)) return;
+      if (/^\s*[*/]/.test(줄)) return;                       // 주석은 설명이지 주소가 아니다
+      if (rel === 'tools/모델정책.js' && /^\s*이름:/.test(줄)) return; // 문 표 = 유일한 정본 자리
+      걸린.push(`${rel}:${i + 1} ${줄.trim().slice(0, 90)}`);
+    });
+  }
+  assert.deepStrictEqual(걸린, [], '주소가 코드에 다시 박혔다 — 한쪽만 옮겨지면 그쪽이 조용히 갈린다');
+});

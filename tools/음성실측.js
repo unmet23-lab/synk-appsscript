@@ -65,7 +65,10 @@ function 저장소안인가(폴더, 루트 = 저장소) {
   const a = 접기(폴더), b = 접기(루트);
   return a === b || a.startsWith(b + path.sep);
 }
-const BASE = 'https://generativelanguage.googleapis.com/v1beta';
+/* 🚪 주소 정본 = `모델정책.제미나이URL(용도, 모델)`(09-04). 목소리는 「돈」 열쇠라 **Vertex AI 문**이다 —
+ * 무료 크레딧 $300 이 AI Studio 문에는 안 먹고 그 문에는 먹기 때문이다(구글 공식).
+ * ⚠ 단 «모델 목록»은 AI Studio 문에만 있다(카탈로그 조회는 굽는 값이 아니라 공짜다) ⇒ 아래 `목록문`. */
+const 목록문 = 정책.제미나이문('글').base;
 const 호출타임아웃 = 180_000; // 오디오는 텍스트보다 오래 걸린다(실측 3.9초였지만 긴 문장·혼잡 대비)
 const 재시도지연 = [10_000, 30_000]; // 무료 티어 분당 상한(429)·순간 장애(500/503)
 
@@ -217,7 +220,7 @@ async function TTS호출(key, model, 글, 목소리) {
     const t0 = Date.now();
     let res, 본문;
     try {
-      res = await fetch(`${BASE}/models/${model}:generateContent`, {
+      res = await fetch(정책.제미나이URL('돈', model), {
         method: 'POST',
         headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -292,7 +295,7 @@ async function 역듣기(key, wav경로, 언어) {
   for (let 회 = 0; ; 회++) {
     let res, 본문;
     try {
-      res = await fetch(`${BASE}/models/${픽.model}:generateContent`, {
+      res = await fetch(정책.제미나이URL('돈', 픽.model), {
         method: 'POST',
         headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -376,7 +379,7 @@ function 종료판정(장부) {
 }
 
 async function 모델목록(key) {
-  const res = await fetch(`${BASE}/models?pageSize=1000`, { headers: { 'x-goog-api-key': key } });
+  const res = await fetch(`${목록문}/models?pageSize=1000`, { headers: { 'x-goog-api-key': key } });
   if (!res.ok) {
     console.error(`🔴 조회 실패 ${res.status} — **안 돌린 것**이지 「모델이 없다」가 아니다.`);
     return 2;
