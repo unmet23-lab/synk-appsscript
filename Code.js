@@ -3444,12 +3444,10 @@ function calcAll() {
   ctData.forEach(r => { if (r[1] === 'fuel' && r[2]) fuelMapW[String(r[2])] = Number(r[5]) || 0; });
   const fuelW = weeklyFuel_(ss, fuelMapW, mondayW).week; // [v9.25] 연료 주간집계 헬퍼 통합
   Object.keys(fuelW).forEach(c => { weekDmg[c] = (weekDmg[c] || 0) + fuelW[c]; });
-  const hof = ensureSheet(ss, 'hall_of_fame', ['연도','이름','반','업적','한마디','사진URL','student_id']); // [v7.8] 졸업생 명예의 전당 — 원장이 Glide 폼으로 행 추가 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
-  // [v9.151] student_id 증분(끝) — 이름만으로는 졸업 후 이력(로그·성장 기록)과 조인이 안 된다. 한국행 실적은
-  //   연락이 끊기면 소급 불가 자산(memory masterplan-v3-2026-08-04) — class_stats 열 증분과 같은 패턴. 다른
-  //   주인 헤더가 서 있으면 덮지 않는다(빈칸일 때만 — 점거 가드 계열).
-  if (hof.getMaxColumns() < 7) hof.insertColumnsAfter(hof.getMaxColumns(), 7 - hof.getMaxColumns());
-  if (String(hof.getRange(1, 7).getValue() || '') === '') hof.getRange(1, 7).setValue('student_id');
+  /* ⚰ [2026-09-03 유호 확정] 졸업생 명예의 전당(hall_of_fame)을 걷었다 — 여기 있던 것 =
+   *   시트 보장 + student_id 열 증분(졸업 후 이력과 조인하려던 자리). 첫 졸업생이 1년 이상 뒤라
+   *   채울 데이터가 없다. 종단 기록은 outcome_log 가 이미 쥐고 있어 잃는 것이 0 이다.
+   *   골격·데모·퇴역 등재는 엔진_셋업확장.js 의 ⚰ 주석과 한 벌이다. */
   const cs = ensureSheet(ss, 'class_stats', CLASS_STATS_HEADERS); // [v9.241] 헤더 정본 공유(골격 등재 — 손사본 2벌 차단)
   if (cs.getRange(1, 7).getValue() !== '반주간데미지') cs.getRange(1, 7).setValue('반주간데미지'); // [v7.3]
   if (cs.getMaxColumns() < 8) cs.insertColumnsAfter(cs.getMaxColumns(), 8 - cs.getMaxColumns()); // [v9.1]

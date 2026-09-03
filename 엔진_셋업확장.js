@@ -164,7 +164,13 @@ function sheetSkeleton_() {
      *   league_history 가 «있어서» 성립했다(월+시즌을 둘 다 가진 유일한 시트였다). 그대로 뺐으면
      *   그 검사는 잴 것을 잃고 조용히 초록이 된다 — 합성 골격으로 함수 자체를 재도록 고쳤다.
      *   빠진 자리를 세는 곳 = `tests/수집탭워치독.test.js` 의 `의도적퇴역`(옛 손 목록은 역사라 안 건드린다). */
-    ['hall_of_fame', ['연도','이름','반','업적','한마디','사진URL']],
+    /* ⚰ [2026-09-03 유호 확정] hall_of_fame(졸업생 명예의 전당)을 골격에서 **뺐다**(라이브 탭도 지운다).
+     *   08-27 에 걷힌 «월간 챔피언 전당»과는 다른 물건이고 사유도 다르다 — 비교 철학이 아니라
+     *   「채울 데이터가 아직 없다」다. 첫 졸업생은 1년 이상 뒤이고(개원 2027-02), 그때까지
+     *   이 시트는 데모 1행 말고는 영원히 비어 있다. 유호 09-03 「어차피 졸업하려면 1년이상필요해」.
+     * 🔑 다시 여는 조건 = 첫 기수 졸업이 보이는 때. 그때는 학생 ID 종단 기록(outcome_log)이
+     *   이미 서 있으므로 시트를 새로 짜도 잃는 것이 0 이다 — 그래서 지금 걷는 것이 소급 불가가 아니다.
+     *   퇴역을 세는 곳 = `tests/수집탭워치독.test.js` 의 `의도적퇴역`(갯수하한도 함께 내렸다). */
     ['raid_story', ['date','class_name','유형','제목','스토리']],
     [KPI_SHEET_NAME, KPI_HEADERS], // [v9.26] 이탈률·전환율 계측 시트
     ['exit_log', EXIT_LOG_HEADERS, 수집표식_], // [v9.28] 퇴소 이벤트 로그 · [v9.244] 이탈 이해의 원본 — 떠난 순간은 소급이 안 된다 · [2026-09-02] 헤더 정본 = 엔진_운영배치.js EXIT_LOG_HEADERS(종료사유·종료일 «끝에» 증분 · append 전용 사건 원장 · 학생ID 종단 ㉡)
@@ -724,7 +730,7 @@ function seedDemoData() {
   const wr = ensureSheet(ss, 'world_raid', ['월', '보스명', 'HP', '누적데미지', '상태']);
   const wrHas = wr.getLastRow() >= 2 && wr.getRange(2, 1, wr.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ymLast);
   if (!wrHas) wr.getRange(wr.getLastRow() + 1, 1, 1, 5).setValues([[ymLast, worldBossOf(ss).name + ' (데모)', 800, 843, '격파']]); // [검증 반영] '(데모)' 마커 — clear가 값 우연 일치(HP 800) 아닌 마커로 회수
-  // ⑧ 운영 시트 — 문의·결석신고·매출·리드·전당·크루 프로젝트·리포트카드 1장
+  // ⑧ 운영 시트 — 문의·결석신고·매출·리드·크루 프로젝트·리포트카드 1장
   ensureSheet(ss, 'inquiries', ['student_id', '이름', '문의내용', '상태', '접수시각'])
     .appendRow(['DEMO-02', '사라 어머니', '[DEMO] 겨울방학 특강도 있을까요? 아이가 학원 가는 날만 기다려요 😊', '접수', now]);
   ensureSheet(ss, 'absence_notice', ['student_id', '반', '날짜', '사유', '등록시각'])
@@ -737,13 +743,11 @@ function seedDemoData() {
     [d8(day(12)), '[DEMO] 아누진', '9911-0001', '페이스북', '', 'Y', 'Y', '3개월', d8(day(9)), '', '', '7월 신학기'],
     [d8(day(8)), '[DEMO] 빌군', '9911-0002', '추천', '바야르', 'Y', 'N', '', '', '보류', '', ''],
     [d8(day(4)), '[DEMO] 사인자야', '9911-0003', '인스타', '', 'N', 'N', '', '', '시간대', '', '7월 신학기']]);
-  ensureSheet(ss, 'hall_of_fame', ['연도', '이름', '반', '업적', '한마디', '사진URL'])
-    .appendRow(['2025', '김철수', '졸업 크루', 'TOPIK 4급 합격 · 서울 유학', '[DEMO] SYNK에서 보낸 1년이 인생을 바꿨어요', 'https://placehold.co/400x400/3D5AFE/FFFFFF/png?text=HOF']);
   ensureSheet(ss, 'crew_projects', ['시즌', '반', '프로젝트명', '한줄소개', '결과물링크', '사진URL', '공개일', '참여크루', '비고'])
     .appendRow(['여름 시즌', CLS_A, 'K-POP 커버 무대', '나담 축제 무대에서 한국어 노래 완창', '', 'https://placehold.co/400x300/FF6B35/FFFFFF/png?text=CREW', d8(day(15)), '바야르, 사라, 테무진', '[DEMO]']);
   const rc = ensureSheet(ss, 'report_cards', ['card_id', 'student_id', '월', 'image_url', '칭호', '코멘트', 'created_at']);
   rc.appendRow(['RCD-01', 'DEMO-01', ymLast, 'https://placehold.co/600x800/3D5AFE/FFFFFF/png?text=REPORT+' + ymLast, '🌟 하루도 안 빠진 달', '[DEMO] 이번 달 수업일에 한 번도 안 빠진 크루', now]);
-  L.push('✓ 운영 시트 7종(문의·결석·매출·리드·전당·크루·리포트)');
+  L.push('✓ 운영 시트 6종(문의·결석·매출·리드·크루·리포트)');
   // 데모모드 마커 = 시드시각|스토리북 사전존재|월간배치 사전완료 — clear가 "데모가 만든 것"만 회수하기 위한 판별값
   const sbSheet = ss.getSheetByName('synk_stories');
   const sbPre = (sbSheet && sbSheet.getLastRow() >= 2 && sbSheet.getRange(2, 1, sbSheet.getLastRow() - 1, 1).getValues().some(r => String(r[0]) === ymLast)) ? 1 : 0;
@@ -1028,7 +1032,6 @@ function clearDemoData() {
   wipe('absence_notice', isDemoSid, 1);
   wipe('payments', isDemoSid, 1);
   wipe('leads', r => String(r[1] || '').indexOf('[DEMO]') === 0, 2);
-  wipe('hall_of_fame', r => String(r[4] || '').indexOf('[DEMO]') === 0, 5);
   wipe('crew_projects', r => String(r[8] || '').indexOf('[DEMO]') === 0, 9);
   { const bMsg = budgetStop_('weekly_topics 회수'); if (bMsg) return bMsg; } // [v9.47] 체크포인트 ② — 운영 시트 뒤
   wipe('weekly_topics', r => hasDemoCls(r[0]), 1);
