@@ -210,6 +210,13 @@ function 민목록(html) {
  */
 const 심긴활자 = String.raw`@font-face\{[^}]*src:url\(data:font[^}]*\}`;
 const 심긴묶음 = new RegExp(`${심긴활자}(?:\\n${심긴활자})*`);
+/* 쪽번호 폴리필도 «되돌릴 수» 있어야 한다 — 아니면 그 지면 하나가 영원히 「낡음」으로 운다.
+ * 빌드가 마커 자리에 훅 + 폴리필을 한 덩어리로 넣으므로, 되돌리는 것도 그 한 덩어리다.
+ * ⚠ [^]*? 를 쓴 이유 — 줄바꿈까지 먹는 «아무 글자»를 뜻한다. 폴리필 안에 </script 가
+ *   0건인 것은 실측했다(09-03). 그 전제가 깨지면 첫 닫는 표에서 끊긴다. */
+const PAGED_MARKER = '<!--@PAGED@-->';
+const 심긴쪽번호 = /<script>window[.]PagedConfig[^]*?<script data-synk-paged="[^"]*">[^]*?<[/]script>/;
+
 /** 되돌리기가 실제로 됐나 — 심은 활자가 남아 있으면 헛돈 것이다(원고가 스스로 품은 경우는 뺀다). */
 const 심긴활자남았나 = (s) => /src:url\(data:font/.test(s);
 
@@ -221,7 +228,7 @@ const 심긴활자남았나 = (s) => /src:url\(data:font/.test(s);
  *   앞에 얹힌 블록 안을 먼저 볼 수 있다. 지금 Loom CSS 엔 `@font-face` 가 없지만,
  *   «오늘 없다»를 근거로 순서를 정하면 생기는 날 조용히 틀린다. */
 const unembed = (html) =>
-  룸벗기기(loom뜯기(normalize(html))).replace(심긴묶음, MARKER);
+  룸벗기기(loom뜯기(normalize(html))).replace(심긴묶음, MARKER).replace(심긴쪽번호, PAGED_MARKER);
 
 /**
  * 빌드가 «더한» 범위 표식(`룸`·`민`)을 도로 걷는다 — 원고(`_src_`)와 1:1 대조가 되려면 되돌릴 수 있어야 한다.
@@ -492,4 +499,5 @@ if (require.main === module) process.exit(main());
 const loom얹기 = (html) => loom얹기모듈.강제얹기(html, LOOM_지면);
 
 module.exports = { 훅들, 얹을까, loom얹기, loom뜯기, unembed, LOOM_지면, LOOM_뜯기,
-  룸씌우기, 민목록, 어두운클래스들, 휘도, 심긴묶음, 심긴활자남았나, MARKER };
+  룸씌우기, 민목록, 어두운클래스들, 휘도, 심긴묶음, 심긴활자남았나, MARKER,
+  PAGED_MARKER, 심긴쪽번호 };
