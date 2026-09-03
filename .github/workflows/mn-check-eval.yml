@@ -85,9 +85,12 @@ jobs:
           git config user.name  'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add -- evals/_판정
-          git commit -m "몽골어 검문 시험 판정(숫자만) — 남의 기계가 쟀다
-
-노트북과 무관하게 도는 통로(mn-check-eval). 커밋하는 것은 맞음·틀림·못잼 수뿐이고
-몽골어 본문과 모델 답은 안 나간다(evals/.gitignore · 저장소 PUBLIC).
-이 파일이 있으면 노트북 예약도 한 발 안 던진다 — 하루 몫은 열쇠마다 하나다."
+          # 🔴 메시지를 `-m` 여러 개로 나눈다(문단이 된다). 블록 스칼라(`run: |`) 안에서는
+          #    **들여쓰기가 0칸인 줄이 블록을 끝내 버린다** — 09-03 에 커밋 메시지 본문을
+          #    0칸으로 적었다가 이 파일 전체의 YAML 파싱이 깨졌고, 그러자 깃허브가 `name` 도
+          #    `workflow_dispatch` 도 못 읽어 「트리거가 없다」로 거절했다.
+          git commit \
+            -m "몽골어 검문 시험 판정(숫자만) — 남의 기계가 쟀다" \
+            -m "노트북과 무관하게 도는 통로(mn-check-eval). 커밋하는 것은 맞음·틀림·못잼 수뿐이고 몽골어 본문과 모델 답은 안 나간다(evals/.gitignore · 저장소 PUBLIC)." \
+            -m "이 파일이 있으면 노트북 예약도 한 발 안 던진다 — 하루 몫은 열쇠마다 하나다."
           git push

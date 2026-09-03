@@ -96,3 +96,49 @@ test('🔑 남의 기계 워크플로는 «판정만» 커밋한다 — 전문�
   assert.doesNotMatch(yml, /git add[^\n]*_결과/, '🔴 워크플로가 결과 전문을 커밋한다 — 몽골어가 공개된다');
   assert.match(yml, /vars\.SYNK_EVAL_GITHUB == 'on'/, '스위치가 없다 — 켜기 전에 도는 워크플로가 된다');
 });
+
+/* ── 워크플로가 «읽히나» ─────────────────────────────────────────────
+ * 09-03 실물: `run: |` 블록 안에 **들여쓰기 0칸 줄**(커밋 메시지 본문)을 넣었더니 그 줄에서 블록이
+ * 끝나 파일 전체의 YAML 이 깨졌다. 그러자 깃허브가 `name` 도 `workflow_dispatch` 도 못 읽어
+ * 「트리거가 없다」로 실행을 거절했다. **그런데 워크플로는 목록에 `active` 로 떠 있었다** —
+ * 즉 「등록돼 있다」가 「읽힌다」를 뜻하지 않는다. 그때 내가 잰 것은 탭 문자뿐이었다.
+ * 자를 둘로 둔다: ①들여쓰기 자(node 만으로 늘 돈다) ②진짜 파싱(파이썬이 있을 때만). */
+const 워크플로들 = () => fs.readdirSync(path.join(ROOT, '.github', 'workflows'))
+  .filter((f) => /\.ya?ml$/.test(f)).map((f) => path.join(ROOT, '.github', 'workflows', f));
+
+test('🔑 워크플로에 «들여쓰기 0칸인데 키가 아닌 줄»이 없다 — 그 줄이 블록을 끊는다', () => {
+  for (const p of 워크플로들()) {
+    fs.readFileSync(p, 'utf8').split(/\r?\n/).forEach((l, i) => {
+      if (!l.trim() || /^\s/.test(l) || /^#/.test(l)) return;      // 빈 줄·들여쓴 줄·주석은 통과
+      if (/^[A-Za-z_][A-Za-z0-9_-]*:/.test(l) || l === '---') return; // 최상위 키는 통과
+      assert.fail(`${path.basename(p)}:${i + 1} 들여쓰기 0칸인데 키가 아니다 — 여기서 블록이 끊긴다\n    ${l.slice(0, 90)}`);
+    });
+  }
+});
+
+test('🔑 워크플로가 실제로 파싱되고 트리거를 갖는다 (파이썬이 있을 때 — 없으면 「안 재봤다」로 죽는다)', () => {
+  let 파이썬;
+  for (const c of ['python', 'python3', 'py']) {
+    try { execFileSync(c, ['-c', 'import yaml'], { stdio: 'ignore' }); 파이썬 = c; break; } catch { /* 다음 후보 */ }
+  }
+  if (!파이썬) {
+    /* 통과와 미실행이 같은 모양이면 안 된다 — 위 ①은 이미 돌았으니 여기서는 그 사실만 남긴다. */
+    console.error('   ⚠ 파이썬 yaml 이 없어 «진짜 파싱»은 안 재봤다 — 들여쓰기 자만 돌았다.');
+    return;
+  }
+  const 코드 = [
+    'import yaml,glob,sys',
+    'bad=[]',
+    "for f in sorted(glob.glob('.github/workflows/*.yml')):",
+    '    try:',
+    "        d=yaml.safe_load(open(f,encoding='utf-8'))",
+    "        k=[x for x in d if x is True or x=='on']",
+    "        if not d.get('name'): bad.append(f+' : name 없음')",
+    "        if not k: bad.append(f+' : 트리거 없음')",
+    '    except Exception as e:',
+    "        bad.append(f+' : '+type(e).__name__)",
+    "print('|'.join(bad))",
+  ].join('\n');
+  const out = execFileSync(파이썬, ['-c', 코드], { cwd: ROOT, encoding: 'utf8' }).trim();
+  assert.strictEqual(out, '', `워크플로가 안 읽힌다(깃허브도 못 읽는다):\n    ${out.split('|').join('\n    ')}`);
+});
