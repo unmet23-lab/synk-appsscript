@@ -168,7 +168,80 @@ test('Ⓒ 소비자 ② 굿즈 태그 — 굽는 함수가 있고 워처가 실�
   assert.ok(/width:55mm;height:85mm/.test(태그.slice(0, 3000)), '태그 판형이 55×85mm 가 아니다');
 });
 
-test('Ⓒ 🔴 태그의 이름은 escHtml_ 를 거친다 — 안 거치면 학생 이름이 밖으로 나간다', () => {
+/* 🔴 이 함수를 «실제로 태운다» — 소스 글자만 보는 자는 그 글자가 틀렸을 때 침묵한다.
+ * 09-03 에 옆 레인이 정확히 그 병으로 라이브를 죽였다: `safety.test.js` 가
+ * `이미.isRequired()` 라는 «소스 문자열»을 요구하고 있었는데, 그 호출 자체가 제네릭 문항에
+ * 없는 것이라 라이브가 「isRequired is not a function」으로 죽었다. **자가 결함을 지키면 초록은 영원하다.**
+ * 그래서 여기서는 「escHtml_ 가 적혀 있나」가 아니라 **「태그가 실제로 막히나」**를 잰다.
+ * Apps Script 전역은 최소로 흉내낸다 — 굽는 결과 HTML 만 가로채면 된다. */
+function 태그굽기태우기(이름) {
+  const src = 읽기('엔진_폼리포트.js');
+  const s = src.indexOf('function jacketPrintTags_');
+  assert.notEqual(s, -1, 'jacketPrintTags_ 를 못 찾았다');
+  const e = src.indexOf('\n}', s);
+  const 함수 = src.slice(s, e + 2);
+
+  const code = 읽기('Code.js');
+  const em = code.match(/function escHtml_\(s\) \{[^\n]*\n?/);
+  assert.ok(em, 'escHtml_ 정본을 못 찾았다 — 이름이 밀렸다');
+
+  let 구운것 = '';
+  const 흉내 = `
+    const JACKET_TENURE_MONTHS = 12;
+    const GOODS_TAG_SAY = ${JSON.stringify(new Function(`${읽기('contents_증서.js')}\nreturn GOODS_TAG_SAY;`)())};
+    ${em[0]}
+    const asDate_ = (v) => new Date(v);
+    const Utilities = {
+      formatDate: () => '2027년 6월 12일',
+      newBlob: (html) => { 받기(html); return {}; }
+    };
+    const DriveApp = {
+      getFoldersByName: () => ({ hasNext: () => true, next: () => ({ createFile: () => ({ getUrl: () => 'x' }) }) })
+    };
+    ${함수}
+    return jacketPrintTags_(받은이들, 'Asia/Ulaanbaatar');`;
+  new Function('받은이들', '받기', 흉내)(
+    [{ sid: 'S1', 이름: 이름, 자격도달일: '2027-06-12' }],
+    (html) => { 구운것 = html; });
+  return 구운것;
+}
+
+test('Ⓒ 🔴 태그를 «실제로 구워» 태그 주입이 막히는지 잰다 — 소스 글자가 아니라 결과를 본다', () => {
+  const 나쁜이름 = '바트<img src=x onerror="fetch(1)">';
+  const html = 태그굽기태우기(나쁜이름);
+  assert.ok(html, '아무것도 안 구웠다 — 흉내가 깨졌으면 이 검사는 늘 초록이다');
+  assert.equal(html.includes('<img src=x'), false,
+    '학생 이름의 태그가 종이에 살아 있다 — 원장이 인쇄하려 파일을 여는 순간 그날 받은 학생 전원의 이름이 나간다');
+  assert.ok(html.includes('&lt;img src=x'), '이스케이프된 흔적이 없다 — 이름이 통째로 사라졌는지 본다');
+  assert.ok(html.includes('바트'), '이름의 성한 부분까지 지워졌다 — 막는 것과 지우는 것은 다르다');
+});
+
+test('Ⓒ 🔴 그 자가 «눈멀지 않았다» — 이스케이프를 걷으면 반드시 빨개진다', () => {
+  /* 탐지력 시험: 같은 흉내에 escHtml_ 를 «통과시키는» 판을 넣어, 위 검사가 그것을 잡는지 본다.
+     안 잡으면 위 초록은 아무것도 보장하지 않는다(자가 자기를 검사하는 자리). */
+  const src = 읽기('엔진_폼리포트.js');
+  const s = src.indexOf('function jacketPrintTags_');
+  const e = src.indexOf('\n}', s);
+  const 구멍난판 = src.slice(s, e + 2).replace('escHtml_(p.이름)', 'p.이름');
+  assert.notEqual(구멍난판, src.slice(s, e + 2), '구멍을 못 냈다 — 이 시험이 아무것도 안 잰다');
+
+  let 구운것 = '';
+  new Function('받은이들', '받기', `
+    const JACKET_TENURE_MONTHS = 12;
+    const GOODS_TAG_SAY = ${JSON.stringify(new Function(`${읽기('contents_증서.js')}\nreturn GOODS_TAG_SAY;`)())};
+    const escHtml_ = (s) => String(s);
+    const asDate_ = (v) => new Date(v);
+    const Utilities = { formatDate: () => '2027년 6월 12일', newBlob: (h) => { 받기(h); return {}; } };
+    const DriveApp = { getFoldersByName: () => ({ hasNext: () => true, next: () => ({ createFile: () => ({ getUrl: () => 'x' }) }) }) };
+    ${구멍난판}
+    return jacketPrintTags_(받은이들, 'Asia/Ulaanbaatar');`)(
+    [{ sid: 'S1', 이름: '바트<img src=x onerror="fetch(1)">', 자격도달일: '2027-06-12' }],
+    (html) => { 구운것 = html; });
+  assert.ok(구운것.includes('<img src=x'),
+    '구멍을 냈는데도 태그가 안 샜다 — 위 검사가 무엇을 재고 있는지 다시 봐야 한다');
+});
+
+test('Ⓒ 태그의 이름은 escHtml_ 를 거친다(소스 층) — 위 실측과 겹쳐 본다', () => {
   /* 이 이름의 출처는 크루카드 웹앱의 «익명» doPost 다(크루카드 → 상담시트 → syncProfiles → profiles → jacket_grants).
    * 그 통로의 유일한 소독기 셀안전_ 은 수식 실행만 막고 `<`·`>` 는 통과시킨다.
    * 안 거치면 신청서 이름 칸의 태그가 이 종이에 살아, 원장이 인쇄하려고 파일을 여는 순간
