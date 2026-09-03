@@ -1,0 +1,255 @@
+{
+ "engine": "Core — 학습 엔진·회사의 뇌(수집→계약→추론) · 제품 = SYNK Atlas(학생 한 명분의 축적된 이해)",
+ "as_of": "2026-09-02",
+ "searches_done": [
+  "WebSearch: Anthropic Claude memory feature news August 2026",
+  "WebSearch: Gemini API changelog August 2026 September 2026",
+  "WebSearch: OpenAI latest model release notes September 2026 memory personalization",
+  "WebSearch: FSRS-6 FSRS latest version 2026 open-spaced-repetition changelog",
+  "WebSearch: arxiv 2026 knowledge tracing LLM learner modeling intelligent tutoring system latest",
+  "WebSearch: Anthropic prompt caching batch API pricing 2026 latest",
+  "WebSearch: agent long-term memory architecture 2026 Mem0 Letta Zep benchmark latest",
+  "WebSearch: contextual bandit reinforcement learning next exercise selection language learning app 2026",
+  "WebSearch: Duolingo 2026 personalization Birdbrain AI learner model latest",
+  "WebSearch: Speak app ELSA Khanmigo 2026 AI tutor memory personalization update",
+  "WebSearch: LLM evaluation framework model migration regression test 2026 promptfoo latest release",
+  "WebSearch: Alpha School 2026 AI tutor 2 hour learning data results Synthesis tutor",
+  "exa: simonwillison.net August 2026 new model release memory feature",
+  "WebSearch: ts-fsrs FSRS-7 release 2026 fractional intervals",
+  "WebSearch: Anthropic API memory tool context management developer platform 2026 release notes",
+  "WebFetch: ai.google.dev/gemini-api/docs/changelog (2026-06~09 항목)",
+  "WebSearch: Khanmigo 2026 update learner memory personalization Khan Academy announcement",
+  "WebSearch: Speak language app 2026 announcement personalized tutor memory",
+  "WebSearch: arxiv 2026 LLM learner profile bias student model fairness knowledge tracing",
+  "WebSearch: arxiv 2026 reinforcement learning bandit adaptive sequencing intelligent tutoring deployed",
+  "exa: Alpha School Timeback learner model knowledge graph mastery AI tutor how it works 2026",
+  "exa: news.hada.io 2026년 8월 AI 에이전트 메모리 개인화 학습",
+  "WebFetch: mem0.ai/blog/state-of-ai-agent-memory-2026",
+  "WebFetch: anthropic.com/news (2026-07~09 목록)",
+  "WebFetch: platform.claude.com/docs/en/release-notes/overview (2026-06~09 전량)",
+  "WebFetch: platform.claude.com/docs/en/about-claude/pricing (전 모델 단가·캐시·배치 표)",
+  "WebFetch: ai.google.dev/gemini-api/docs/pricing (3.7/3.6 Flash · 3.5 Flash-Lite · 3.5 Transcribe)",
+  "WebFetch: arxiv 2605.01097 · 2604.08263 · 2605.25535 · 2605.28009 · 2605.30051 · 2506.16982 · 2606.20138",
+  "WebFetch: github ts-fsrs releases · fsrs-rs releases · open-spaced-repetition discussion #30 · expertium Benchmark.html",
+  "WebSearch: Speak blog 2026 Made For You lessons",
+  "WebSearch: blog.duolingo.com 2026 Birdbrain v3",
+  "WebSearch: Khan Academy blog 2026 Khanmigo proactive redesign prerequisites",
+  "WebSearch: Claude for Education learning mode 2026",
+  "WebSearch: Gemini API Interactions API 2026 state memory persistence",
+  "WebSearch: Inspect AI evals framework 2026 release / OpenAI Evals",
+  "WebSearch: 2026 arxiv language learning adaptive item selection LLM tutor A/B test",
+  "WebFetch: platform.claude.com memory-tool · compaction 문서",
+  "WebFetch: techcrunch 2026-08-25 Claude memory 기사",
+  "WebFetch: blog.khanacademy.org how-khan-academy-is-building-a-better-ai-tutor (2026-05-06)",
+  "repo grep(09-02): 엔진_콘텐츠AI.js·Code.js·docs/코어엔진_설계.md·docs/복습스케줄러_설계.md · SYNK-talk lib/교정엔진.js·supabase/functions/*·docs/L0_데이터계약.md — cache_control·messages/batches·compaction·memory_20250818·learner_profile 실물 유무"
+ ],
+ "findings": [
+  {
+   "name": "Khan Academy 「학습 이력을 프롬프트에 넣는 방법」 실측 — 무엇이 다음 문항 정답률을 올리고 무엇이 0인가",
+   "what": "Khanmigo 를 15M+ 튜터링 스레드·약 20회 시험으로 고친 결과 공개(2025-10~2026-04). 학생의 «최근 수행 요약»·«미숙달 선행 스킬(짧은 복습 제안)»·«24시간 안 대화 로그(JSON→평문)»를 프롬프트에 넣었고, «예제 문제 유형»·«후속 링크»는 넣어도 효과 0.",
+   "released_or_updated": "2026-05-06",
+   "source_url": "https://blog.khanacademy.org/how-khan-academy-is-building-a-better-ai-tutor-our-most-recent-learnings/",
+   "evidence": "다음 문항 정답률 +6.1%(최근 수행 요약 +3.4% · 선행 스킬 표면화 +2.7%) · 24시간 스킬 대화 로그 포함 시 인지적 참여 +5.09% · 예제 유형·후속 링크 추가 = 측정 가능한 효과 없음 · 수학 에이전트 응답 3.6초 단축에도 정확도 유지.",
+   "why_relevant": "코어설계 §10 E2 수용 기준(「지난 세 번의 연습에서…」 — 근거가 문장에 들어 있는 것)이 «무엇을 프롬프트에 실을지» 순서·항목을 아직 정하지 않았다. 이 실측이 그 빈 칸의 첫 값(최근 수행 요약 + 미숙달 선행 축 + 당일 대화)을 준다. 또 «AI 가 잘할수록 세지는» 자리 — 모델이 좋아질수록 이력 요약을 더 잘 쓴다.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "Edge Fn `tasks`/`companion` 프롬프트 조립부에 세 조각(최근 수행 요약·미숙달 선행 skills·당일 이벤트 평문)을 붙이는 일 — 전부 L0 `learning_events`·`skills`·`corrections` 에서 파생 가능. GPU·기계 무관."
+   },
+   "gate_c": {
+    "failure_mode": "K-12 수학·수만 명 기준 효과가 한국어·수십 명에선 사라지거나(잡음), 이력 조각이 프롬프트 «앞»에 놓이면 캐싱 프리픽스를 끊어 단가가 오른다(memory generation-cost-and-capacity 의 「학생 조각을 맨 아래로」와 충돌).",
+    "one_thing_to_close": "SYNK-talk `evals/픽스처.json` 시험지에 «이력 없음 vs 있음» 두 열을 두고 «다음 문항 정답률» 한 지표로만 채점한다 — 지표가 안 움직이면 조각을 뺀다."
+   },
+   "effect_timing": "later",
+   "confidence": "high"
+  },
+  {
+   "name": "Language Bottleneck Models(LBM) v2 — Atlas 를 «글로 된 요약»으로 두되 «그 요약만으로 다음 답을 맞히나»를 합격 기준으로",
+   "what": "지식 추적을 역문제로 다시 세운 틀: 인코더 LLM 이 학생 지식 상태를 «자연어 요약»으로 쓰고, 얼어붙은 디코더 LLM 이 «그 요약만» 보고 과거 답을 재구성·미래 답을 예측해야 한다. 요약의 참됨을 예측력으로 잰다(오개념 같은 질적 정보까지 담긴다).",
+   "released_or_updated": "2026-02-09",
+   "source_url": "https://arxiv.org/abs/2506.16982",
+   "evidence": "v2 2026-02-09(Berthon · van der Schaar) · 「competitive accuracy with improved sample efficiency」 · CD·KT 모델이 못 담는 질적 통찰(오개념) 표현 · CC BY 4.0 · 코드 공개 여부는 안 재봤다.",
+   "why_relevant": "L0 계약은 `learner_profile` 을 «파생·지금 안 만든다»로 두었고(L0_데이터계약 §1), 코어설계 §10 은 학습자 모델 «수용 기준»만 있다. LBM 은 그 파생물의 «형식(사람이 읽는 글)»과 «합격 자(디코더 예측력)»를 한 번에 준다 — 학습 없이 API 두 번(인코더·디코더)으로 되고, 모델이 좋아질수록 요약도 예측도 세진다.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "주 1회 배치: 학생별 `learning_events`+`corrections` → 인코더 호출(요약) → 홀드아웃 답 5~10개로 디코더 예측 채점 → 예측력 미달이면 요약 폐기. 전부 Edge Fn + Batch API. 훈련 0."
+   },
+   "gate_c": {
+    "failure_mode": "요약이 «이 학생은 못한다»류 낙인 문장으로 굳고, 다음 요약이 옛 요약을 읽어 자기강화(낙인 고착 · 옛 판 공존).",
+    "one_thing_to_close": "요약은 «예측력 점수»로만 채점하고 성격·능력 판정 낱말은 금칙(synk-brand 금칙어에 추가) · 새 요약이 서면 옛 판을 그 자리에서 지운다(git 이 아니라 DB 버전 열 하나)."
+   },
+   "effect_timing": "later",
+   "confidence": "high"
+  },
+  {
+   "name": "Learning to Prompt — «지도 방식(분석형/발판형)»을 고르는 정책을 시뮬레이터로 먼저 배우고 실학생 A/B 로 옮긴 실용 사례",
+   "what": "LLM 튜터가 대화 전사에서 교육 특징 14개를 뽑아 «분석형(analytical)» vs «발판형(scaffolding)» 프롬프트를 라우팅. 라우터는 시뮬 학생으로 학습 → 실제 고등학생 A/B. 확률적 라우터만 이겼고 그리디 라우터는 기준선과 같았다.",
+   "released_or_updated": "2026-08-26",
+   "source_url": "https://arxiv.org/abs/2606.20138",
+   "evidence": "제출 2026-06-18 · 개정 2026-08-26 · A/B 359명·656대화 · 상호작용 약 3턴 감소(p=0.007) · 연습 전환율 확률적 라우터 28.1% vs 기준 19.6% · 그리디 라우터 19.1%(=기준) · 시뮬 학생은 아첨해 sim-to-real 갭 발생.",
+   "why_relevant": "코어설계 §10 고리(학생 상태 → AI 가 고른 지도 방식 → 반응 → 성과)에 «고르는 정책»이 아직 없다 — 지금은 `intervention.delivered` 로그만 있다. 이 사례는 팔 2개짜리 확률적 정책(사실상 밴딧)이 실학생에서 값을 냈고, 그리디는 0이었다는 «설계 제약»을 준다.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "팔 2~3개(분석형·발판형·짧은 비교문제)를 프롬프트 변형으로 두고 Thompson 샘플링 한 함수(수십 줄)를 Edge Fn `companion`/`tasks` 에 붙인다. 보상 = 다음 문항 정답 or 1·7·30일 유지. 훈련 인프라 0."
+   },
+   "gate_c": {
+    "failure_mode": "학생 수십 명·팔 3개면 신호가 몇 달간 잡음이고, 그리디로 바꾸면 논문처럼 효과 0 · 시뮬로 예열하면 아첨 학생에 과적합.",
+    "one_thing_to_close": "정책은 «확률적»만 허용(그리디 금지) · 갱신은 «실학생 이벤트»로만(합성 픽스처 금지 — 코어설계 A-7 분리 유지) · 팔별 노출 수를 Atlas 화면에 적어 «아직 모른다»를 드러낸다."
+   },
+   "effect_timing": "later",
+   "confidence": "high"
+  },
+  {
+   "name": "MemGuard — 기억을 «사실·사건·규칙» 유형으로 갈라 저장·검색해야 오염(과일반화)이 준다",
+   "what": "장기 기억 LLM 에서 «맥락 한정 사건이 일반 주장으로 굳거나, 의미상 비슷하지만 기능상 다른 기억이 생성을 오도하는» 오염을 정의하고, 저장 시 기능 역할(사용자 사실/에피소드/행동 규칙)을 붙여 유형별로만 검색하는 틀.",
+   "released_or_updated": "2026-05-27",
+   "source_url": "https://arxiv.org/abs/2605.28009",
+   "evidence": "기억 신뢰도 최대 +28.27% · 검색 기억 토큰 5.8배 감소 · 환각·장기대화 벤치마크에서 개선(초록 수치 · 코드 공개는 안 재봤다).",
+   "why_relevant": "Atlas → 프롬프트 조립 규격이 비어 있다. L0 는 이미 `learning_events`(사건)·`corrections`(사실)·`skills`(축)로 갈라져 있으니 «유형별 검색»은 스키마를 안 바꾸고 조립부 규칙 하나로 된다. 「한 번 틀린 것」이 「늘 틀리는 것」으로 굳는 낙인은 이 오염의 교육판이다.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "조립 규칙: 사건(events)은 최근 N건만 날짜와 함께 · 사실(corrections 승격분)은 «횟수 ≥ k 인 것만 일반 진술 허용» · 규칙(철학·검수 기준)은 별도 블록·캐시 프리픽스. 코드 수십 줄."
+   },
+   "gate_c": {
+    "failure_mode": "유형 라벨을 잘못 붙이면 그 항목이 검색에서 영영 빠져 «없는 것»이 된다(0건이 성공 얼굴).",
+    "one_thing_to_close": "라벨 없는 항목은 «전부 넣는» 폴백 + 조립 결과에 «유형별 건수 = 합계»를 적어 갈래를 보이게 한다."
+   },
+   "effect_timing": "later",
+   "confidence": "medium"
+  },
+  {
+   "name": "Claude 소비자 메모리 개편 — «주제별 열람·편집·삭제» + «민감 주제 기본 제외 + 토글» (Atlas 학생 열람권의 참조 설계)",
+   "what": "채팅·Cowork 메모리를 통합하고, Settings › Memory 에 기억을 «주제별»로 나열해 보고 고치고 지우게 했다. 건강·인종·종교·정치·성정체성은 기본 저장 안 함(토글로 켬) · 신분증·범죄·이민 상태는 영구 제외 · 대화 «중»에 갱신.",
+   "released_or_updated": "2026-08-25",
+   "source_url": "https://techcrunch.com/2026/08/25/claude-cowork-finally-remembers-what-you-told-the-app-in-chat/",
+   "evidence": "2026-08-25 · Free/Pro/Max 기본 켬 · 주제별 view/edit/delete · 민감 주제 기본 제외 + 「include sensitive topics」 토글 + 저장 시 알림 · 실시간 갱신.",
+   "why_relevant": "코어설계 §6·§8 는 학생 기억을 Supabase `engine.*` 에 두고 «열람권» 문제를 적었지만(코어설계 95·108행), «학생 본인이 자기 Atlas 를 어떻게 보고 고치나»는 규격이 없다(grep 0건 · 09-02). 세계 1등 소비자 제품의 현행 답이 «주제별 목록 + 삭제 + 민감 기본 제외»다 — 학생 ID 장수 설계(student-id-longevity)와 같은 자리.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "앱 화면 하나(주제별 목록 · 삭제 버튼 · «다음 할 것» 표기) + DB 삭제·버전 열. Expo 화면 + Supabase RLS 로 원격 시공 가능."
+   },
+   "gate_c": {
+    "failure_mode": "학생이 자기 «약점 목록»을 보고 사기가 꺾이거나(낙인), 지운 기억이 파생 요약에 남아 되살아난다(소급 불가).",
+    "one_thing_to_close": "학생 화면은 «약점»이 아니라 «다음에 할 것»으로만 적는 문안 규칙 하나 + 삭제는 원천 행이 아니라 «파생 요약 재생성»까지 한 벌로 묶는다."
+   },
+   "effect_timing": "later",
+   "confidence": "medium"
+  },
+  {
+   "name": "프롬프트 캐싱 «자동 모드»(top-level cache_control) + Batch API 스택 — 과제 생성 야간 워커에 «둘 다 없다»",
+   "what": "Anthropic 가격 문서가 «Automatic caching: 요청 최상위에 cache_control 하나만 두면 브레이크포인트를 시스템이 관리»를 권장 시작점으로 명시. Batch 50% 는 캐시 배수와 «겹친다»(Opus 5 배치 캐시히트 $0.25/M). Fable 5.1 은 캐시 읽기 0.025x($0.25/M).",
+   "released_or_updated": "2026-09-01",
+   "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
+   "evidence": "가격 문서(09-01 갱신 판): 자동 캐싱 문구 · 5분 쓰기 1.25x · 1시간 2x · 읽기 0.1x(Fable 5.1 은 0.025x) · Batch 50% 겹침 · Sonnet 5 $2/$10 영구(08-10) · Opus 5 $5/$25. repo 실측(09-02 grep): 과제 생성 Edge Fn `tasks`/`deliver` 에 `cache_control` 0건·`messages/batches` 0건(교정 `correct` 는 둘 다 있음 · `companion` 은 캐시만) · 엔진_콘텐츠AI.js 배치 네 자리 cache_control 0건(주석 2534행 자인) · 80호출 usage cache 0(memory generation-cost-and-capacity 08-26).",
+   "why_relevant": "과제는 00:00~05:50 야간 크론으로 미리 만든다(학생 대기 0) — Batch 의 24시간 창과 정확히 맞는 자리인데 안 쓴다. 학생 조각이 프롬프트 맨 위(110자 지점)에 있어 캐시가 끊기는 순서 문제도 «자동 모드»면 브레이크포인트 손배치 없이 잡힌다. 과제당 ₩41 → 캐시 ₩13 → 배치 겹치면 ≈₩7.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음(교정 `correct` 의 배치·캐시 통로를 «그대로 빌려» 과제 생성에 붙인다 — 새 통로 신설 아님)"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "`correct/index.ts` 의 배치 제출·수거 코드가 이미 있다. `tasks` 워커에 같은 통로 + 학생 조각을 맨 아래로 + top-level cache_control. 검증 = 응답 usage 의 cache_read/creation 을 `캐시성적()`(교정엔진.js 439행)로 잰다."
+   },
+   "gate_c": {
+    "failure_mode": "배치가 06:00 마감 안에 안 돌아오면 아침에 «빈손» · 최소 프리픽스(Opus 5 = 512토큰) 못 넘으면 캐시가 «오류 0·증상 0»으로 안 생긴다 · 순서를 바꾸면 회전 결과가 흐려진다(memory 가 개원 전으로 미룬 이유).",
+    "one_thing_to_close": "배치 미도착 시 예비 풀(fallback-reserve-pool)로 떨어지는 한 줄 + `캐시성적()` 을 과제 통로에도 붙여 «cache_read 0 이면 빨강»."
+   },
+   "effect_timing": "later",
+   "confidence": "high"
+  }
+ ],
+ "rejected": [
+  {
+   "name": "FSRS-7(open-spaced-repetition)",
+   "why": "「최종판 · 소수 간격 · 망각곡선 8파라미터」라 하나 ts-fsrs 최신 릴리스는 5.4.2, fsrs-rs 는 v6.6.2 — FSRS-7 은 벤치마크 코드·PR 에만 있고 «출시된 구현이 없다»(09-02 릴리스 페이지 실측). 동점 이하 = 기존 FSRS-6(복습스케줄러_설계 v0.4) 유지. 다시 여는 조건 = ts-fsrs 에 FSRS-7 태그가 서는 날. 같은 페이지의 「RWKV 가 FSRS 를 이긴다」도 학습 데이터·GPU 훈련이 필요해 학생 0명·램 16GB 자리에선 소비자 없음."
+  },
+  {
+   "name": "Neural-Symbolic KT(Responsible-DKT · 2604.08263) · Interpretable Difficulty-Aware KT(2605.01097)",
+   "why": "둘 다 «신경망 KT 를 훈련»하는 틀(전자는 10% 데이터로 AUC 0.80). 우리는 개원일 학생 0명·첫 해 이벤트 수천 건이라 훈련 분모가 없고, L0 는 『C·D 계층(learner_skill_state 등) 파생·선행 구축 금지』를 명문화했다(코어설계 252행 🚫 — 이유 = V3식 선행 구축 재상륙·데이터 오염). 승계할 설계 제약 = «마스터리/비마스터리 규칙을 기호로 주입» 발상과 «능력·난이도를 두 축으로 갈라 적기»(IRT) — 이건 LBM·MemGuard finding 의 조립 규칙에 흡수. 재개 조건 = 학습 이벤트 수만 건."
+  },
+  {
+   "name": "Mem0(2026-04 알고리즘 · LoCoMo 92.5) · Zep · Letta · Memora · SelfMem",
+   "why": "외부 메모리 SaaS/프레임워크 = 학생 기억을 Supabase `engine.*` 밖에 «두 번째로» 두는 것(한 값 두 곳) + 대화층을 외부 에이전트에 안 내준다(conversation-layer-principle) + 개인정보 경계. 우리 규모(수십 명)에선 벤치마크 차이가 소비자 없음. 승계할 값 = 「user_id/session 다중 범위」·「요약이 아니라 원문을 보존하고 검색은 추상+큐로」(Memora) — 이미 L0 원문 보존 원칙과 같다."
+  },
+  {
+   "name": "Anthropic memory 도구(`memory_20250818`) · compaction 베타(`compact-2026-01-12`)",
+   "why": "memory 도구 = 모델이 자유 텍스트 파일을 스스로 쓰는 에이전트 세션 기억 — 학생 기억을 «권한·버전 있는 DB»에 둔다는 코어설계 §6 과 정면 충돌(파일이 정본과 갈린다). compaction = 장기 «한 대화» 요약 — 우리 통로는 단발 호출(과제 생성·교정·주간 요약)이라 소비자 없음. 상담AI 가 장기 대화가 되는 날 다시 본다."
+  },
+  {
+   "name": "Personalize-then-Store(PerMemBench · 2605.25535)",
+   "why": "「무엇을 저장할지 사용자별 게이팅」 — 저자 스스로 «gating 판정은 미해결»이라 적었다. 벤치마크만 있고 가져올 부품이 없다. 승계할 자 = «완벽 게이팅이면 큰 이득» → 우리는 «전량 저장 + 조립 시 선택»으로 가므로 무관."
+  },
+  {
+   "name": "promptfoo 0.121.18(2026-07-14 · OpenAI 인수) · Inspect AI 0.3.225(2026-05-23) · DeepEval 4.0.3",
+   "why": "모델 교체 시험지는 이미 `SYNK-talk evals/픽스처.json`(102문항)+`tools/eval-score.js` 로 돈다(코어설계 268행). 새 프레임을 들이면 자가 둘이 된다(one-ruler-per-judgment). 「더 되는 것」= 여러 모델 나란히·비용·지연 열 — 이건 eval-score.js 에 열 셋을 «추가»하면 끝이지 프레임 교체 이유가 아니다. promptfoo 는 OpenAI 인수로 벤더 종속 위험까지."
+  },
+  {
+   "name": "Gemini 3.7 Flash GA(08-13) · 3.6 Flash · 3.5 Flash-Lite(07-21) · GPT-5.6 Sol/Luna/Terra(2026-08) · Claude Fable 5.1(09-01) — 모델 갈아타기",
+   "why": "모델픽은 유호님 몫(정지선 — 기각 사유가 아니라 «내가 안 정하는 자리»). 단가 사실만 적는다: Gemini 3.7/3.6 Flash 도입가 $0.75/$3.75 는 2026-12-31 종료 · 2027-01-01 부터 2배($1.50/$7.50) — 개원(2027-02-25)은 그 «뒤»다 → 몽골어 검문 다섯 층(gemini-mn-check)이 어느 Gemini 판을 쓰는지 안 재봤다 · vendor-api-billing 에 이 날짜를 적을 것. Fable 5.1 은 캐시 읽기 0.025x 지만 사고를 못 꺼서 출력이 늘고(memory 실측 Opus 5 는 80호출 중 21만 사고) 캐시 후 단가는 Opus 5 ≈$0.009 < Fable 5.1 ≈$0.015/과제 — 교체 근거 없음."
+  },
+  {
+   "name": "Gemini 3.5 Transcribe(08-26 · custom vocabulary biasing · $0.003/min) · Agentic Video Understanding(09-01)",
+   "why": "Core 자리가 아니다(발음 데이터 = Prism/Temper). 다만 승계할 사실 하나: pronunciation-data-track 의 「STT 가 오류를 고쳐 받아쓴다」 문제에 «어휘 편향(biasing)»은 정답 쪽으로 더 고치는 도구라 역효과 위험 — 그 트랙이 열릴 때 «편향 끄기» 조건으로 본다."
+  },
+  {
+   "name": "Claude for Teachers(2026-07-14) · Claude for Education Learning Mode",
+   "why": "미국 K-12·대학 계정 제품 — 우리 엔진에 붙일 API 부품이 아니다. 「소크라테스식으로 답 대신 묻기」는 이미 철학·컴패니언 설계에 있다."
+  },
+  {
+   "name": "Timeback 플랫폼(Alpha School · 1EdTech API · MCP 제공)",
+   "why": "미국 학교 생태계 배포 플랫폼 — 우리 엔진을 «그 위에» 짓는 것은 정본·개인정보·대화층 원칙과 충돌. 승계할 설계 축 하나는 ceiling 에 적었다(«노력 부족 vs 너무 어려움» 가르기)."
+  }
+ ],
+ "ceiling_reference": [
+  {
+   "who": "Khan Academy Khanmigo(2026 재설계)",
+   "what_they_do": "학생이 묻기 전에 «먼저» 나서고(proactive), 스킬 마스터리·미숙달 선행 스킬을 프롬프트로 받아 복습을 제안하며, 15M+ 스레드로 «다음 문항 정답률·인지적 참여»를 지표로 삼아 조각별 효과(+3.4/+2.7/+5.09%)를 잰다. 2026 여름 지구(district) 전면 배포. 배경 = 접근 가능 학생 중 15% 만 쓰던 저사용.",
+   "source_url": "https://blog.khanacademy.org/how-khan-academy-is-building-a-better-ai-tutor-our-most-recent-learnings/",
+   "what_we_lack_or_beat": "우리에게 없는 것 = «조각별 효과를 재는 지표 한 줄»(다음 문항 정답률)과 «먼저 나서는» 트리거. 우리가 이기는 자리 = 오프라인 학원 + 앱이라 «사람 선생님의 뇌»가 같은 Atlas 를 본다(Khanmigo 는 교사 대시보드가 별도)."
+  },
+  {
+   "who": "Duolingo Birdbrain(v2 비동기 · v3 120개 코스 확장 중)",
+   "what_they_do": "매일 12.5억 문항으로 학생 능력·문항 난이도를 같이 갱신하는 딥러닝 모델(반감기 회귀 계보) + 세션 생성기가 «지금 이 학생»의 레슨을 조립 + 밴딧(알림 시점·KDD 2020). 미완·이탈 세션 페이로드도 «분 단위»로 신호화.",
+   "source_url": "https://blog.duolingo.com/learning-how-to-help-you-learn-introducing-birdbrain/",
+   "what_we_lack_or_beat": "없는 것 = 분모(그들은 하루 12.5억, 우리는 개원일 0) → 학습형 KT 가 아니라 «규칙+FSRS-6+LLM 요약»으로 가야 하는 이유. 이기는 자리 = 한 학생의 «말·글 원문»을 다 갖고 교정 쌍까지 있다(Birdbrain 은 정오답 비트).",
+   "what_we_beat_note": "우리는 학생 식별을 졸업 뒤까지 살린다(student-id-longevity) — 그들은 계정."
+  },
+  {
+   "who": "Alpha School / Timeback(2-Hour Learning)",
+   "what_they_do": "학생마다 «지식 그래프(숙달/미숙달)» + «관심 그래프»를 두고 생성 AI 가 문항·이야기를 그 자리에서 만든다 · 90% 숙달 게이트 · 외부 표준시험(MAP)과 앱 행동을 «닫힌 고리»로 상관 · 화면을 보는 비전 모델의 «낭비 미터» · 「참여 높고 성과 낮으면 지도 문제 / 참여 낮으면 동기 문제」로 «노력 부족 vs 너무 어려움»을 가른다.",
+   "source_url": "https://docs.timeback.com/beta/about-timeback/how-it-works",
+   "what_we_lack_or_beat": "없는 것 = «노력 vs 난이도»를 가르는 축(우리 학습자 모델은 정오답·교정만) · 외부 시험(TOPIK)과 앱 행동의 상관 고리(우리는 TOPIK 4급 보장이 부채인데 고리가 없다). 이기는 자리 = 감시형 비전 모델 없이 «살아있는 선생님(가이드 셋)» — 학생 경험 축."
+  },
+  {
+   "who": "Speak(Series C · $1B · OpenAI 펀드)",
+   "what_they_do": "「Made For You」 — Free Talk 뒤 «그 학생의 실수»에서 맞춤 레슨을 생성(Premium 하루 3개 · Plus 무제한) · 롤플레이에서 톤·발음·문법 교정 · 25M+ 맞춤 레슨 누적.",
+   "source_url": "https://www.speak.com/blog/series-c",
+   "what_we_lack_or_beat": "없는 것 = «실수 → 다음 레슨» 자동 생성이 «학생이 보는 화면»에 붙어 있다(우리는 과제 파이프에만). 이기는 자리 = 실수의 «원인 층»(몽골어 화자 오류·교정 말뭉치 ③)을 쌓는다 — Speak 은 실수 목록."
+  },
+  {
+   "who": "Claude(Anthropic) 소비자 메모리 2026-08-25",
+   "what_they_do": "주제별 기억 목록 · 편집·삭제 · 민감 주제 기본 제외 + 토글 · 대화 중 실시간 갱신 · 채팅/Cowork 통합.",
+   "source_url": "https://techcrunch.com/2026/08/25/claude-cowork-finally-remembers-what-you-told-the-app-in-chat/",
+   "what_we_lack_or_beat": "없는 것 = 학생이 자기 Atlas 를 보고 지우는 화면 규격. 이기는 자리 = 우리 기억은 «학습 사건·교정»이라 지워도 «파생 요약 재생성»으로 일관성이 유지되게 설계할 수 있다(그들은 자유 텍스트)."
+  }
+ ]
+}

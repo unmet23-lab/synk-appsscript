@@ -1,0 +1,256 @@
+{
+ "engine": "공통(AI·에이전트 스택)",
+ "as_of": "2026-09-02",
+ "searches_done": [
+  "WebSearch: anthropic.com/news Claude release August 2026",
+  "WebSearch: Gemini API changelog August 2026 release notes",
+  "WebSearch: OpenAI GPT-5 API release notes August 2026 latest model pricing",
+  "WebSearch: supabase changelog August 2026",
+  "WebSearch: Expo SDK 55 release changelog 2026",
+  "WebSearch: Google Apps Script release notes 2026 new features",
+  "WebSearch: Claude API prompt caching batch pricing memory tool September 2026",
+  "WebSearch: Model Context Protocol MCP specification 2026 latest update",
+  "WebSearch: Gemini Nano on-device model 2026 Android AICore latest",
+  "WebSearch: Duolingo AI features 2026 latest Speak ELSA language learning app AI update August 2026",
+  "exa: simonwillison.net August 2026 new LLM model release",
+  "exa: open-weight LLM released August 2026 Qwen 3.8 DeepSeek V4 Gemma 4 Muse Glimmer",
+  "exa: open-source TTS/STT 2026 multilingual Korean Mongolian pronunciation",
+  "exa: LLM evaluation framework 2026 promptfoo Braintrust Inspect changelog August 2026",
+  "exa: Speak app AI tutor new feature 2026",
+  "exa: Praktika 4.0 / ELSA 2026 / Loora 2026 updates",
+  "exa: Claude Fable 5.1 Mythos 5.1 announcement pricing context release date",
+  "exa fetch: ai.google.dev changelog.md.txt · supabase.com/changelog · expo.dev/changelog/sdk-56 · developers.google.com/apps-script/release-notes",
+  "exa fetch: platform.claude.com pricing · releasebot anthropic developer platform · MCP 2026-07-28 blog · releasebot gemini-api",
+  "exa fetch: ai.google.dev/gemini-api/docs/pricing · expo.dev/changelog/sdk-57 · blog.mean.ceo anthropic august 2026",
+  "exa: Anthropic 2026-08-19 computer use / Files API / Skills API GA / memory stores",
+  "exa: Supabase Developer Update August 2026 Edge Functions queues cron vector",
+  "exa: OpenAI realtime speech-to-speech gpt-realtime-2.1 pricing 2026",
+  "exa: Duolingo Q2 2026 earnings AI Video Call August 2026",
+  "exa: Gemini 3.5 Transcribe pricing · Gemini 3.7 Flash introductory price",
+  "exa: Khanmigo 2026 / Alpha School / Synthesis Tutor updates",
+  "exa: Gemini 3.5 Transcribe supported languages Korean Mongolian custom vocabulary",
+  "exa: Google developers blog August 2026 Gemini API structured output function calling",
+  "exa: news.hada.io 2026년 8월 AI 모델 출시",
+  "exa: Claude API structured outputs / effort / release notes July-August 2026",
+  "exa: Gemini 3.5 Transcribe verbatim mode disfluencies option",
+  "exa: OpenAI gpt-transcribe pricing whisper-1 deprecation 2026",
+  "exa: Supabase Edge Functions 2026 wall clock timeout background tasks",
+  "exa: Claude Managed Agents scheduled deployments budgets August 2026",
+  "로컬 실측: SYNK-talk supabase/functions/transcribe/index.ts(모델 whisper-1) · lib/교정엔진.js(raw fetch · cache_control 있음 · tool_choice 0건) · lib/생성상수.js(150000 하드값) · package.json(expo ~57.0.18) · tools/모델정책.js · tools/몽골어대조.js(temperature 0건) · docs/개원전_일괄판정_큐.md(Q1~Q9) · docs/AI기능_정찰_2026-08.md(S1~S3)"
+ ],
+ "findings": [
+  {
+   "name": "Gemini 3.5 Transcribe(파일) + Transcribe Live — 전사 벤더 후보(verbatim 모드·custom_vocabulary·낱말 타임스탬프)",
+   "what": "구글의 전용 STT 모델 둘(gemini-3.5-transcribe / gemini-3.5-transcribe-live)이 2026-08-26 GA. VERBATIM 모드(기본 · 군말·되풀이·말 고침을 «그대로» 둠)와 SMART 모드(다듬음)를 고르고, custom_vocabulary 로 특정 낱말 인식을 편향시키며, verbatim 에서만 낱말 단위 타임스탬프·화자 분리가 된다. Live 는 서브초 지연 스트리밍(세션 10분 상한).",
+   "released_or_updated": "2026-08-26",
+   "source_url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-5-transcribe/",
+   "evidence": "언어표(docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-5-transcribe): 한국어 ko-KR = Supported · 몽골어 mn-MN = Experimental. 가격(ai.google.dev/gemini-api/docs/pricing · 08-27 실측): 파일 $2/M 오디오 입력·$12/M 텍스트 출력 ≈ $0.005/분, Live $3.5/$21 ≈ $0.009/분. 지금 우리 전사 = whisper-1(OpenAI · $0.006/분 · SYNK-talk supabase/functions/transcribe/index.ts 44행). 함정 실측: python-genai issue #2923 — Interactions API 에 transcription_config 를 넣으면 status incomplete 로 멈춘다(SDK 2.17.0 기준).",
+   "why_relevant": "발음 데이터 트랙(Trail·Prism)의 급소가 «STT 가 오류를 고쳐서 받아쓴다»였다(pronunciation-data-track). whisper-1 은 모드 손잡이가 없고, 이 모델은 verbatim 을 «명시»하고 확정 낱말 11개(연음6·비음화3·경음화2)를 custom_vocabulary 로 걸 수 있다. 몽골어 코드스위칭도 language_codes=[ko-KR, mn-MN] 로 «둘 다» 힌트 가능(whisper-1 은 ko 하나로 못박음). Live 쪽은 큐 Q1(실시간 음성 대화)의 STT 반쪽 후보 — Transcribe Live($0.009/분)+Claude+Qwen3-TTS Sohee 로 «우리 목소리»의 파이프라인이 선다(gpt-realtime-2.1 ≈$0.05/분과 대조).",
+   "gate_a": {
+    "kind": "better_replacement",
+    "what_to_remove": "supabase/functions/transcribe/index.ts 의 whisper-1 — 단 「고쳐 듣기」를 전제로 선 두 칸 설계(transcript / transcript_verified)의 계약 뜻이 바뀌므로 A/B 가 먼저"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "Edge Function 안 fetch 한 벌 교체 + 제미나이 키 실재(C:\\Users\\q1212\\SYNK_보안\\제미나이.txt). ⚠ 무료 티어는 입력이 구글 학습에 쓰인다 → 학생 음성은 결제 연결 «뒤»에만(gemini-mn-check 확정). A/B 는 학생 음성이 아니라 유호님 목소리 11낱말로 지금 돌릴 수 있다."
+   },
+   "gate_c": {
+    "failure_mode": "verbatim 이라도 «발음 오류»까지 원어민 소리로 되돌릴 수 있다(군말 보존 ≠ 오발음 보존) — 그러면 whisper 와 같은 병이고, 게다가 두 칸 설계가 전제한 「고쳐 듣기」가 벤더마다 달라 옛 전사와 새 전사가 영영 안 갈린다(index.ts 주석의 ponytail 그대로).",
+    "one_thing_to_close": "전사 행에 «모델 버전 열»을 먼저 추가한 뒤(둘째 벤더가 오기 전 · index.ts 가 스스로 적어 둔 항목), 11낱말을 [풀고기]식으로 «틀리게» 읽은 소리를 whisper-1 / gemini verbatim / gemini verbatim+custom_vocabulary 셋에 넣어 오류가 «남는지» 유호님 귀+글자로 대조."
+   },
+   "effect_timing": "now",
+   "confidence": "high",
+   "cost": "파일 ≈$0.005/분(구글 가격표 08-27). 산수 예: 192명×1분×22일 = 4,224분 ≈ $21/월(발화 길이 실측 0 · 내 가정). Live ≈$0.009/분. 결제 연결이 전제(정지선 «돈» → 유호님 요청 자리)."
+  },
+  {
+   "name": "Claude Fable 5.1 — 캐시 읽기 $0.25/M(0.025×) · Sonnet 5 $2/$10 유지 → 야간 과제 생성 단가표 갱신",
+   "what": "Fable 5.1(claude-fable-5-1) 09-01 출시: $10/$50 는 그대로, 캐시 읽기만 $1→$0.25/M(다른 모델은 0.1× · Fable 5.1 만 0.025×). 1M 컨텍스트·128K 출력·적응 사고 «상시»(끌 수 없음). 별도로 Sonnet 5 의 $2/$10 이 정가로 확정(09-01 $3/$15 인상 취소 · 08-10 공지).",
+   "released_or_updated": "2026-09-01",
+   "source_url": "https://platform.claude.com/docs/en/about-claude/pricing",
+   "evidence": "가격표(platform.claude.com 09-02 실측): Fable 5.1 $10/$12.5(5분 쓰기)/$20(1시간)/$0.25(읽기)/$50 · Opus 5 $5/$0.50(읽기)/$25 · Sonnet 5 $2/$0.20/$10. 발표문(anthropic.com/claude-fable-and-mythos-5-1): 「전형 워크로드 −25% · 고도 에이전트 −45%」. 릴리스노트: Fable 5.1 에서 tool_choice any/tool 은 400(우리 교정엔진·companion 은 tool_choice 0건 — 실측) · 메시지별 effort 베타(mid-conversation-output-config-2026-07-01).",
+   "why_relevant": "Core(과제 생성) 단가표(generation-cost-and-capacity · 08-26 실측 입력 4,385/출력 248 · Opus 5 · 캐싱 꺼짐 $0.028/과제)의 「Fable 은 2배로 안 끝난다」 줄이 캐싱을 켜면 낡는다. 같은 usage 로 다시 산수(캐시 적중 4,250 · 미적중 135): Fable 5.1 캐시켬 ≈ $0.0145 · Opus 5 캐시켬 ≈ $0.0090 · Sonnet 5 캐시켬 ≈ $0.0036 (vs 지금 $0.028). 월 4,224과제 = Fable5.1 $61 · Opus5 $38 · Sonnet5 $15 · 지금 $119. ⇒ 캐싱 순서 뒤집기(학생 조각 맨 아래)가 «모델 픽과 무관하게» 3배 자리이고, 그 위에서 모델 픽(유호님 몫)을 다시 묻는다.",
+   "gate_a": {
+    "kind": "better_replacement",
+    "what_to_remove": "generation-cost-and-capacity 의 「Fable 5 ≈2배 $0.056~0.074」 산수줄(캐시 0.1× 전제) · 캐싱 ⏳「개원 전에 켠다」의 근거 수치"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "lib/교정엔진.js 는 이미 cache_control 을 싣고 있고 생성 통로만 없다(08-26 실측 cache_read 0). 프롬프트 조각 순서 교체 + 80호출 회전 재실측이면 된다. 모델 ID 교체는 유호님 픽."
+   },
+   "gate_c": {
+    "failure_mode": "Fable 은 사고를 못 끄니 출력 248 이 아니라 그 몇 배가 된다(Opus 실측: 80호출 중 21만 사고). 출력 $50/M 이 지배해 «캐시 절감을 다 먹는다». 또 Fable 5.1 은 tool_choice 강제 불가 → 훗날 구조화 출력이 필요하면 output_config.format 로만.",
+    "one_thing_to_close": "§8-B 80호출 회전을 «캐싱 켠 채» Opus 5 / Sonnet 5 / Fable 5.1 셋에 돌려 usage(cache_read·output·사고 토큰)와 품질 도장을 한 표로 낸다 — 그 표가 유호님 모델 픽의 재료."
+   },
+   "effect_timing": "later",
+   "confidence": "high",
+   "cost": "Fable 5.1 $10/$50 · 읽기 $0.25/M(가격표 09-02). 과제당 산수(08-26 usage 재사용): Fable5.1 ≈$0.0145 · Opus5 ≈$0.0090 · Sonnet5 ≈$0.0036. 회전 실측 3벌 = 80호출×3 ≈ $2.25(Opus)+$1(Sonnet)+$4.5(Fable) ≈ $8."
+  },
+  {
+   "name": "Supabase Unified Logs(오픈 베타 · 전 플랜) + Edge Functions 개요 지표 — 원격 검증 눈",
+   "what": "8월 개발자 업데이트(v1.26.08): Auth·DB·Edge Functions·Storage·Realtime 로그를 한 화면에서 검색·라이브 테일·타임라인으로 보는 Unified Logs 가 오픈 베타(전 플랜), Edge Functions 개요 페이지에 함수별 오류율·실행시간·CPU·메모리 표시. 같은 달 Management API 의 analytics/endpoints/logs.all 이 2026-09-23 제거되고 ClickHouse SQL 전용 logs 엔드포인트로 갈린다.",
+   "released_or_updated": "2026-08-07",
+   "source_url": "https://github.com/supabase/supabase/releases/tag/v1.26.08",
+   "evidence": "release v1.26.08 본문: 「Edge Functions overview page now shows each function's error rates, execution time, and CPU and memory use」 · byteiota 08-11: 「Unified Logs … open beta … rolling out to all plans」 · supabase.com/changelog 07-23: 「logs.all endpoint is removed on 2026-09-23 … migrate to the new ClickHouse-backed logs endpoint」.",
+   "why_relevant": "엔진 일곱이 밤에 도는 자리(pg_cron → transcribe/deliver/correct Edge Functions)를 AI 가 «원격으로» 재는 눈이 함수별 로그뿐이었다. 「배포 ≠ 반영」·「546/504 가 pending 안 줄어듦으로만 보인다」(생성상수 주석)를 서비스 횡단 타임라인으로 한 번에 본다. 비용 0.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "대시보드 기능 — 코드 0. 단 logs.all 을 부르는 도구가 우리 쪽에 있으면 09-23 에 조용히 죽는다(있는지 안 재봤다)."
+   },
+   "gate_c": {
+    "failure_mode": "logs.all 호출 도구가 있었다면 09-23 부터 «0건 초록»(zero-is-a-success-face). 베타라 화면이 바뀌어 클릭 안내가 낡는다.",
+    "one_thing_to_close": "두 저장소 tools/ 와 .github 워크플로에서 `logs.all` / `analytics/endpoints` 문자열 grep 한 번 — 0건이면 닫힘, 있으면 새 logs 엔드포인트로."
+   },
+   "effect_timing": "now",
+   "confidence": "high",
+   "cost": "0"
+  },
+  {
+   "name": "Supabase Edge Function 벽시계 — 유료 400초 / 무료 150초, 응답 유휴 150초는 공통 · EdgeRuntime.waitUntil 백그라운드",
+   "what": "한도 문서: Wall clock 무료 150s · 유료 400s, 요청 유휴 타임아웃 150s(응답 안 보내면 504), CPU 2s. 08-14 트러블슈팅 문서: 응답을 먼저 돌려주고 EdgeRuntime.waitUntil() 로 뒷일을 잇는 워커는 «조기 회수(EarlyDrop)»를 피하되 하드 벽시계는 못 넘고, 넘으면 546.",
+   "released_or_updated": "2026-08-14",
+   "source_url": "https://supabase.com/docs/guides/troubleshooting/edge-functions-worker-timeouts-and-websocket-drops",
+   "evidence": "supabase.com/docs/guides/functions/limits: 「Maximum Duration (Wall clock limit) … Free plan: 150s Paid plans: 400s」 · 「Request idle timeout: 150s」. 우리 lib/생성상수.js 24~31행은 「플랫폼 150초」를 하드값(150000)으로 두고 워커학생상한 = 3.",
+   "why_relevant": "Core 야간 생성의 «진짜 천장은 3 이라는 임시 숫자»(generation-cost-and-capacity: 108명 벽). 유료 플랜이면 응답을 먼저 돌려주고 waitUntil 로 400초까지 잇는 구조가 되어 한 워커가 2.6배 더 집는다. 큐가 skip locked 라 병렬도 열려 있다.",
+   "gate_a": {
+    "kind": "better_replacement",
+    "what_to_remove": "lib/생성상수.js 의 「플랫폼 150초」 상수 전제(응답 상한과 벽시계를 한 수로 본 것) — 둘로 가른다"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "Edge Function 안 구조 변경(즉시 202 응답 + waitUntil) + 생성상수 산식 갱신. 프로젝트가 무료인지 유료인지 «안 재봤다» — 대시보드 한 번."
+   },
+   "gate_c": {
+    "failure_mode": "waitUntil 뒷일이 400초 벽에서 546 으로 죽는데 응답은 이미 200 이라 «성공 얼굴» — 증상은 다시 「pending 이 안 줄어든다」. CPU 2초 한도는 벽시계와 독립이라 JSON 큰 파싱이 먼저 죽을 수 있다.",
+    "one_thing_to_close": "플랜 확인 뒤 워커 한 벌을 계측(시작/끝/546 로그를 ledger 에 남김)해 «한 번에 몇 명»을 실측으로 갱신 — 생성상수 주석의 「실측이 서면 이 줄을 걷는다」 그 줄."
+   },
+   "effect_timing": "later",
+   "confidence": "medium",
+   "cost": "지금 무료 플랜이면 Pro $25/월(supabase.com/pricing 통념 · 이번 정찰에서 재확인 안 함) — 정지선 «돈» 자리. 이미 유료면 0."
+  },
+  {
+   "name": "Raon-Speech(KRAFTON · Apache 2.0) — 한국어 모국어 «전이중» 음성 LM · 큐 Q1(실시간 음성 대화) 병합 후보",
+   "what": "KRAFTON AI 공개 9B 한·영 SpeechLM(Raon-Speech) + 실시간 전이중 대화 모델(Raon-SpeechChat): 끼어들기·맞장구·턴테이킹을 학습(116K시간 정렬 대화), 한국어 벤치마크 셋(KVoiceBench·KOpenAudioBench·KMMAU)까지 공개. SKT 백본 21B-A3B 판(A.X-K2-Raon-Speech)은 CC BY-NC(비상업).",
+   "released_or_updated": "2026-04",
+   "source_url": "https://github.com/krafton-ai/Raon-Speech",
+   "evidence": "README: 「9B bilingual (English/Korean) SpeechLM」 · 「Raon-SpeechChat … full-duplex conversation … turn-taking, backchanneling, and interruption handling」 · 「1M+ hours … English-Korean」 · 라이선스 Apache 2.0(저장소 생성 2026-04-01). 21B 판 카드(huggingface KRAFTON/A.X-K2-Raon-Speech-21B-A3B): 「30B 이하 공개 음성 LM 중 한국어 종합 1위(0.72)」 · CC BY-NC 4.0.",
+   "why_relevant": "큐 Q1(면접 시뮬레이터 본체)의 08-24 기준선이 gpt-realtime-2.1 ≈$0.05/분이었다. 한국어가 «모국어»인 전이중 모델이 오픈 가중치로 있으면 ①분당 과금이 아니라 GPU 시간 과금 ②Sohee 처럼 우리 목소리 통제 ③학생 발화 원본이 벤더로 안 나간다. Q1 판정일에 «그날의 최신»과 병합할 재료.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음(Q1 미착수)"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "노트북(램 16GB·Arc B390)엔 못 올린다 — 임대 GPU 에 올려 원격으로 시연·검증. 9B 는 Apache 라 상업 OK, 21B 판은 비상업이라 금지."
+   },
+   "gate_c": {
+    "failure_mode": "몽골어 억양의 한국어 초급 발화에서 턴테이킹·ASR 이 무너진다(벤치마크는 전부 원어민 한국어) · 지연이 학생 체감 1초를 넘긴다 · GPU 호스팅이 «상시»면 학생 0명에도 돈이 샌다.",
+    "one_thing_to_close": "임대 GPU 에 9B 를 올려 10분 데모(몽골어 억양 한국어 3문장 + 끼어들기 1회)를 유호님 귀로 — 통과·탈락을 Q1 줄에 적는다."
+   },
+   "effect_timing": "later",
+   "confidence": "medium",
+   "cost": "모델 0(Apache 2.0). GPU 임대 시간당 요금은 안 재봤다(데모 1시간 단위 · 상시 서빙이면 월 단위 — 판정일에 실측)."
+  }
+ ],
+ "rejected": [
+  {
+   "name": "Gemini 3.7 Flash(08-13 GA · 도입가 $0.75/$3.75)",
+   "why": "이미 채택됨(tools/모델정책.js · 유호 08-31 gemini-3.7-flash/high) — 새 것 아님. 단 도입가가 2026-12-31 에 끝나 2027-01-01 부터 $1.50/$7.50(2배) — 개원(02-25) 전. 지금 무료 티어라 $0 이지만 결제 연결 뒤 단가는 이 값으로 계산할 것."
+  },
+  {
+   "name": "Gemini API temperature/top_p/top_k 폐기(07-21)",
+   "why": "우리 호출자(tools/몽골어대조.js) 실측 0건 — 해당 없음."
+  },
+  {
+   "name": "Anthropic Files API·Skills API·computer/browser use GA(08-19)",
+   "why": "큐 Q4(운영 파이프라인 스킬화)와 같은 항목 — 새 사실은 「GA 됐다(베타 헤더 불필요 · 1TB/조직)」뿐. Q4 질문에 그 한 줄만 갱신하면 되고 지금 반입 소비자 0."
+  },
+  {
+   "name": "Claude Managed Agents — 예약 배포(06-09)·세션 예산·memory stores(08-19)·Dreams",
+   "why": "야간 스케줄러는 pg_cron 이 이미 하고(동점 → 기존 유지), 기억은 git 이 소유한다는 원칙(engine-folder-canon 「엔진은 빌리고 기록은 소유한다」)과 대화층 외부 비위탁(conversation-layer-principle)에 어긋난다."
+  },
+  {
+   "name": "MCP 2026-07-28 사양(무상태 코어·MRTR·헤더 라우팅)",
+   "why": "우리는 MCP 서버를 호스팅하지 않는다 — 닿는 자리 0."
+  },
+  {
+   "name": "오픈 가중치 8월 파도 — DeepSeek V4 Pro 0813(MIT · $0.435/$0.87) · Qwen3.8-27B(Apache · 08-14) · Muse Glimmer 30B(Apache · 08-10) · Hy4 preview(08-28)",
+   "why": "㉠ 「확실히 나은」을 못 잰다 — 몽골어·한국어 초급 교정 품질 실측 0. 로컬 27~30B 는 16GB 노트북에 못 올리고(Glimmer 4bit 도 24GB GPU), API 로 쓰면 지금 무료 티어 Gemini 와 비용 동점 이하. 단 듀오링고가 «오픈 모델로 통화당 $0.30→$0.01» 을 실증했으니 개원 전 판정 큐에 «회화 층 벤더» 질문으로 병합할 가치는 있다(결론이 아니라 질문)."
+  },
+  {
+   "name": "Gemini Nano 4 / Gemma 4 AICore 온디바이스(04)",
+   "why": "플래그십 안드로이드 전제 — 몽골 학생 기기 분포 안 재봤다. 온디바이스 STT 는 08-26 정찰 S1 로 이미 착수 트랙."
+  },
+  {
+   "name": "Expo SDK 57.0.17(Hermes V1 메모리 회귀 수정 · 08-27) · SDK 56 Expo UI 안정화",
+   "why": "SYNK-talk 는 이미 expo ~57.0.18 — 회귀 수정 포함. Expo UI 네이티브 프리미티브는 «색/폰트는 킷만» 방향과 충돌 가능하고 우리가 쓰는 커뮤니티 컴포넌트 목록을 안 재봤다."
+  },
+  {
+   "name": "Apps Script — 편집기 Gemini 사이드패널(08-03) · 코어 서비스 GA(06-22) · Vertex AI 고급 서비스(01-12)",
+   "why": "코드는 AI 가 clasp 로 짓고 유호님은 편집기를 안 연다. Vertex 고급 서비스는 GCP 결제 전제라 지금 UrlFetch+제미나이 키 통로보다 더 되는 게 없다."
+  },
+  {
+   "name": "OpenAI gpt-transcribe(07-28 · $0.0045/분) · gpt-live-transcribe",
+   "why": "낱말 타임스탬프·세그먼트가 없다(whisper-1 전용) — 우리 전사가 stt_segments 를 쓴다. 같은 자리는 Gemini 3.5 Transcribe 가 더 된다(findings). whisper-1 은 07-20 폐기 9종(gpt-4o-audio/realtime 계열)에 없다."
+  },
+  {
+   "name": "gpt-realtime-2.1 / 2.1-mini(07-06)",
+   "why": "이미 큐 Q1 의 기준선(08-24) — 새 것 아님. 커뮤니티 보고(08-03): 구조화된 대화 워크플로에서 옛 realtime-mini 보다 회귀."
+  },
+  {
+   "name": "promptfoo 0.122(08-04 · Node 20 폐기) · Braintrust MCP(08-26)",
+   "why": "우리 evals 는 자체 node 스크립트(evals/검문커버리지.js · tools/ai스택점검.js)로 돌고, 하네스 종속 없이 git 이 쥔다 — 동점이면 기존 유지 · Braintrust 는 호스팅 종속."
+  },
+  {
+   "name": "Confucius4-TTS(arXiv 2608.11650 · 08) · VoxCPM2(06-05 · Apache · 30개 언어)",
+   "why": "한국어 목소리는 유호님 귀가 09-01 에 Qwen3-TTS Sohee 로 통과 — 동점/미측이면 기존 유지. 둘 다 몽골어 미지원/미확인(OmniVoice 가 유일한 몽골어 후보라는 판정 그대로)."
+  },
+  {
+   "name": "Claude for Teachers(K-12 무료 Enterprise)",
+   "why": "미국 학군 대상 — 몽골 사설 학원에 닿는 자리 0."
+  },
+  {
+   "name": "Grok 4.6(08-12 · $2/$6)",
+   "why": "AI 스택 벤더는 셋으로 확정(ai-stack-decision) — 넷째 벤더 추가는 「결손 보전」 축에 없다."
+  },
+  {
+   "name": "Anthropic Python SDK 1.0(httpx2 · 08-20) · TS SDK 0.122",
+   "why": "우리 호출은 raw fetch(lib/교정엔진.js 63행) — SDK 판올림이 닿는 코드 0."
+  }
+ ],
+ "ceiling_reference": [
+  {
+   "who": "Duolingo(Q2 2026 실적 발표 · 08-05)",
+   "what_they_do": "Video Call(AI 회화) 원가를 통화당 $0.30→$0.01 미만으로 내렸다 — 「주로 오픈소스 모델로 옮겨서, 품질 손실 없이」. 그 덕에 Max 전용이던 회화를 Super 가입자에게 열고 Max 폐지까지 검토. 핵심 지표 = «DAU 당 말한 낱말 수»(2년 내내 우상향). 무료 티어에도 말하기 문항·음성 답변을 늘림. 중국은 현지 모델만.",
+   "source_url": "https://stockanalysis.com/stocks/duol/transcripts/660304-q2-2026/",
+   "what_we_lack_or_beat": "부족: 회화 통로가 큐 Q1(미착수)이고 «말한 낱말 수/DAU» 같은 자가 없다. 이김: 우리는 몽골어 L1 학생 1:1 오프라인 접점이 있고, 발음 데이터를 «원본 오디오»로 쥔다(듀오링고는 텍스트 지표)."
+  },
+  {
+   "who": "Speak(Custom Courses 베타 05-20 · Speak Level · Smart Review · Tutor Lesson)",
+   "what_they_do": "학생이 «목표·상황»을 말하면 맞춤 코스 한 단위를 생성(닫힌 베타). 모든 실수를 추적해 잊기 직전에 되살리는 Smart Review(LLM 기반 간격반복). 실시간 API 로 «발음 틀리면 다시 말하게» 하는 Tutor Lesson. 기업판은 달력·직무를 넣어 내일 회의용 롤플레이를 만든다. $100M ARR.",
+   "source_url": "https://help.speak.com/en/articles/15176053-beta-what-are-custom-courses",
+   "what_we_lack_or_beat": "부족: 학생이 «주제를 말하면» 과제가 생기는 입력 축이 없다(우리는 밤 자동 생성 — 학생 입력 축은 안 재봤다) · 실수 «잊기 직전» 되살림 자. 이김: 선생님(유호) 검수 게이트가 파이프에 있고, 과제가 오프라인 수업 20분 구조와 맞물린다."
+  },
+  {
+   "who": "Khan Academy Khanmigo(실험 결과 05-01 · Gemini 대화형 도표 08-27)",
+   "what_they_do": "6개월 1,500만 튜터링 스레드 실험: 학생의 «구조화된 학습 이력»(최근 정답/오답·선수 기술 미달)을 튜터에 주면 다음 문항 정답률 +6.1%. 같은 로그를 JSON 으로 주면 효과 0, «평문 + 지난 24시간 스레드»로 주면 인지적 몰입 +5.09%. AI 가 만든 연습문제는 교사가 편집·거부한 뒤에만 학생에게(08-27). 튜터가 먼저 「어떻게 풀었나」를 묻는다.",
+   "source_url": "https://blog.khanacademy.org/how-khan-academy-is-building-a-better-ai-tutor-our-most-recent-learnings/",
+   "what_we_lack_or_beat": "부족: companion/teach 가 학생 이력을 «어떤 형식으로» 넣는지 안 재봤다 — JSON 이면 칸 아카데미 실측상 효과 0. 이김: 교사 승인 게이트는 세 층 합류 설계(E2)에 이미 있다."
+  },
+  {
+   "who": "Praktika 4.0(02-19)",
+   "what_they_do": "생성형 AI 애니메이션으로 «살아 움직이는» 튜터(Skye·Tama) · 여러 AI 에이전트가 협력해 학습 계획을 계속 갱신(multi-agent study plan) · 사진·PDF·음성 업로드로 그 자리 수업 생성 · 한국어 코스 보유.",
+   "source_url": "https://praktika.ai/blog/praktika-4-0",
+   "what_we_lack_or_beat": "부족: 살아있는 튜터 애니메이션(몽글 3D 는 유호 기각 08-26 · 펠트 정본) · 다중 에이전트 학습계획 갱신. 이김: 가이드 셋(몽글·까몽·마린)의 «성격·목소리» 정본과 오프라인 관계."
+  },
+  {
+   "who": "Loora(03-24 Key Takeaways)",
+   "what_they_do": "대화 한 번마다 교정 «딱 하나»를 골라 짧은 연습으로 바꿔 준다(한 번에 하나만 남게).",
+   "source_url": "https://www.loora.com/news",
+   "what_we_lack_or_beat": "부족: 교정엔진이 error_tags 를 여러 개 낸다 — «오늘 하나»로 줄여 주는 층이 있는지 안 재봤다. 이김: 교정이 선생님 검수를 거친다."
+  }
+ ]
+}

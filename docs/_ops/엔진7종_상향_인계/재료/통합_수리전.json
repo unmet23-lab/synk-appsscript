@@ -1,0 +1,910 @@
+{
+ "thesis": "일곱 엔진이 «한 차원 위»가 되는 것은 각자 정확해지는 일이 아니라, 학생이 «한 것»(과정·몸·자습·교실·확인·삶)이 계약 한 판(c17)의 한 원장에 첫 주부터 모이고 → 산문 한 장(atlas.summarized)으로 합쳐져 한 판정이 되고 → 선택기 다섯(무엇을 물을까·어떤 형식을 줄까·언제 어떤 결로 말할까·어느 결을 언제 깔까·다음 시즌 무엇을 말하게 할까)이 «다음에 줄 것»을 바꾸고 → 모든 개입이 한 규격(kind 여섯·스탬프 다섯+넷)으로 30일 짝을 «자가 먼저 선 채» 남기고 → 학생 본인이 공동 저자로 되받고 → 감지기 하나·시험지 일곱·재심 큐 하나로 모델이 바뀔 때마다 사람 손 0으로 다시 재지는 «한 사람을 깊이 이해하는 한 시스템»이 될 때다 — 자 셋(①모델↑에 값↑ ②재료=말한 것이 아니라 한 것 ③수신자=학생 본인)을 일곱이 같은 계약·같은 자·같은 예산표 위에서 함께 지난다.",
+ "vertical_line_v2": "【1년차 목표 v2 · 2026-08-06~2027-08】 「㉡㉢ 엔진 도달 + 세로줄 1회 관통」을 이렇게 올려 적는다: 「첫 코호트 첫 주(2027-02-25)부터 ㉠㉡㉢ 재료가 결과만이 아니라 «과정(고쳐쓰기·머뭇·이탈)·몸(만짐)·자습(켜 둔 시각)·교실(강사가 한 것·학생이 말한 목표)·확인(맞다/아니다/고침/빼기)·삶(시즌 선언·근황)»까지 한 원장(engine.learning_events · c17)에 «비어 있지 않게» 모이고(모✓) → 셋이 이름=값 세 조각이 아니라 «산문 한 장»(atlas.summarized · 예측력으로 채점)으로 합쳐져 한 판정이 되고 → 다음 숙제 문항·다음 몽글의 말·다음 자습 소리가 실제로 달라지며(닿✓ · 행동안바뀜상한 1→0) → 모든 개입이 kind·기대(expected_ver)·섀도·형식(arm_id·loom_ver) 스탬프를 달아 30일 뒤 「들었나」 짝이 «자(사전분석계획)가 데이터보다 먼저 선 채» 남고 → 그 짝이 강사 시즌 회고 확정 칸과 학생 본인 한 줄(S16·답장 꼬리·캐릭터 자리)까지 돌아가며(누구=학생 0/53→n/N) → 그 상태 전부를 도구가 재고 모델이 바뀌면 사람 손 0으로 재심되는(Ⅰ-9① 0번→사건 발동) 세로줄이 실학생 한 명 위에서 1회 관통한다」.\n\n【일곱이 나눠 맡는 칸】 ① ㉠ 오답의 «급» — Core(과정 그림자 원신호 · 검수 확정 라벨) + Prism(편집 유도 태그·사상표 한 장 = 집단 키 · 태거 정밀도 두 벌 = 세로줄이 읽는 오류 축의 «잡음 크기») + Vellum(self_explain «왜 그렇게 썼나» 원문) — 「학생이 늘었다」와 「첨삭 모델이 바뀌었다」를 처음 가른다. ② ㉡ 사람 — 생산자는 닿는 셋뿐: Vellum 앱 화면(topic.engaged 노출·반응 / self_explain / 과정 칸 찍기 / listen.session · Reed 는 자리·규격만) · Loom 감각층(mascot.touched 세션 집계 · radio_on) · Core teach(goal.stated explicit · 관찰|개입 갈래) ; 소비자는 하나 = Core lib/학습자상태.js v16(한 파일 · 한 판올림 · 표본제외 목록 · explicit/observed 나란히 · null≠0) — ㉡ 재료 종류 2(제출·이탈)→7. ③ ㉢ 삶 — Core(season_goal·goal.stated·회고 그릇·goal_outcome 어휘) + Trail(intent_timeline 시계열 · 9갈래 · my_trail 자기 것 뷰 · 급수 이정표) · 판정(가까워졌나·통했나·실현했나)은 사람. ④ «한 판정» — Core 산문 Atlas 인코더(atlas.summarized · summary_ver · ≤1,500토큰 · 옛 요약 배제 · Brier 채점) 하나가 정본이고 deliver 과제요약(4회전 ⑥ 판정 뒤 교체)·correct [학생 맥락]·companion-bake·강사 M2·Trail my_trail 요약이 «같은 글»을 읽는다(관통왕복 V2·V5 재정의). ⑤ «다음에 줄 것» — 선택기 다섯이 각자 policy_ver 이름공간을 갖고 한 학생 예산표(Vellum 상수 한 곳) 안에서만 움직인다: Core 관찰선택자(무엇을 물을까 · 정보 이득) · Core 처방정책(어떤 형식 · 개원 전 결정론+arm_id 스탬프 · 확률 정책은 Temper 섀도 게이트 뒤 후보 판) · Vellum 발화정책(언제·어느 결로 말할까 · 표=후보·상한 · 케어 하한) · Reed 곡편성 학생띠(어느 결을 언제 · 활성 게이트 뒤) · Prism 조준(다음 시즌 무엇을 말하게 · 승인 1클릭). ⑥ 30일 짝 — 개입 kind 여섯을 한 규격으로: task(Core deliver) · companion(Vellum companion-bake) · teacher_classroom(Core teach) · radio_tone/word_between_songs(Reed 규격 · Vellum 앱 생산) · report(Loom 시즌 책·A4 발송) ; 관측 짝 content.viewed(parent) 는 Vellum 면이 유일 생산자 ; 자 = Temper 사전분석계획 v1 + 성과회수 v3(방향 적중·사후=데이터 몫+사전 몫·kind 별 분모) ; 기저율·잡음 = Prism. ⑦ 돌려주기 — Vellum 면(세 축 사실 카운트·Amber 그 자리·협상 카드·오늘의 한 가지·S26·S16·회고 「알게 된 것 셋」) · Loom 몸(듣는다·기다린다)·Patina·시즌 책·교실 A4 · Reed 소리(내 리듬·곡 사이 낱말) · Trail 회고 병치·졸업 카드 파일 · 강사 슬롯 넷(Core 산문+볼 자리 · Vellum T19/T20 · Prism 교안 · Trail 촉진) · 학부모 P3(학생 viewed 뒤). ⑧ 자·재심 — 작업 시스템: 감지기 하나(tools/모델감시.js) → 재심 큐 절(결정.md) · 시험지 일곱 · 엔진점수.jsonl engine 열 · 이해대장 일곱 절+수신자 분포 · 관통왕복 v0.5(V6~V9) · 래칫 등재 한 곳.\n\n【재는 자】 이해대장 「닿는 층」 1/3→3/3(승급은 첫 실학생·활성 뒤 F207) · ㉡ 재료 종류 2→7 · 관통왕복 9/9(리허설 · LLM 0) · 행동안바뀜상한 1→0 · 개입 스탬프 완비율(운영 첫 주) · 수신자 분포 학생 n/N · 재심 발동 수/감지 수. 【급소 = 개원 전】 c17 한 판(어휘 전량) · 12월 파일럿 E1~E4 입구+출구 한 번에 · 개원일에 닫히는 넷(가설 사전등록 · 사전분석계획 git · 학생ID 종단 칸 넷 · goal_used·redaction_ver) — «돈다» 승급은 코드가 아니라 학생이 열지만, 그 문이 첫 주에 «열려 있게» 하는 것은 전부 지금 코드 몫이다.\n\n【clauses_no_engine_serves 이제 누가 맡나】 세 힘(Ⅱ-6·Ⅲ·Ⅲ-6·C-5) = Core(⑭관찰축+goal.stated explicit/observed 분리) + Temper U3(사람 개입 축 · 세 힘 «변화»=짝) + Vellum U6/U7(질문하는 힘=self_explain · 마음을 끄는 힘=T19 인계) + Trail U2(스스로 하는 힘=목표 실린 과제 낸 날 시계열) · 리포트 재료는 Loom 시즌 책 «어제의 그 아이» 열 / 싱크 포트폴리오(Ⅱ-7·Ⅲ-5·Ⅰ-7·C-4·6) = Loom U4 조판 소비자 먼저 + Vellum 창구(Amber 역방향) + 생산자 걸음 1(Core 시트층 · attendance 반 이름) → Trail 졸업 카드 결합 / Reed 자습→㉡ = Reed U2 규격 · Vellum 앱 생산 · Core v16 소비(+Loom radio_on) / Ⅰ-5 넷째 칸·④ 도장 자 = 작업 시스템 tools/이해대장.js 수신자 분포 절+도장 파서 / Ⅰ-9① 재심·④ 상주 자 = 감지기 하나+큐(이 설계가 첫 실행) / Ⅰ-8 효율 눈금 켤 자리 = Temper U5 회고 굳힌판 v2 절+「통한 개입」 확정 칸(Core season_review 물리 열 · 값은 첫 시즌 뒤) / Ⅰ-3 ⑤ 자기설명 = Vellum U8(지도 「닿는 셋=①②③④⑤」) · Loom 부품 · Reed 「읽어야 하는 요소 0」 · 자 = 자기설명검수 렌더린트 / Reed 철학 문장 0 = 유호 정본 개정 한 줄(그 전엔 Reed U2 로 ㉡ 밑 예외 경로 본문화) / 수업·현장 데이터화(Ⅱ-5) = Core 사건 규격(observation.noted·teacher 개입·goal.stated) + Temper U3 + 포트폴리오 층 · 「교실에서 무엇을 데이터로」는 유호 판정 D6.",
+ "shared_contracts": [
+  {
+   "name": "[기존→판올림] 수집·교정 계약 c16→c17 «한 판»",
+   "producer": "Core(계약 주인 · 양 저장소 동기 · CHECK 72 이름 판 접미 교체 · SCHEMA_VER · 검증기 ⑧ payload_허용필드 · 파서 미지 키 · 마이그 조각 · X-Contract-Ver)",
+   "consumers": [
+    "Loom(mascot.touched·loom_ver)",
+    "Vellum(topic.engaged·self_explain·first_kind·guide BC55)",
+    "Trail(exam.result 칸·task.assigned trail_ref)",
+    "Prism(error_tags 뜻 「집계 키→교육용 라벨」)",
+    "Temper(actor_kind teacher·'사람.*'·expected_ver·shadow·moment_id·season_review 확정 열·규격 §⑤ 주석)",
+    "Reed(listen.session·kind 둘·preference stated_via·표본제외 자습체류)",
+    "Core(과정 그림자 칸·arm_id·goal.stated·corrected_value·atlas.excluded·atlas.summarized/summary_ver·goal_outcome·learner_account.linked·reads picker_*·'sim')"
+   ],
+   "shape": "어휘 전량 한 판 · 새 표 0 · 물리 열 = season_review 확정 열 1 뿐 · 나머지 jsonb payload · 생산자와 소비자 같은 커밋 · 관통왕복 v0.5 같은 커밋 없으면 판올림 금지",
+   "why": "일곱이 각자 c17 을 요구하면 판올림 드래그(8자리)가 일곱 번 · 판이 다른 리허설 행이 섞인다 · 소급 불가 어휘가 개원 첫 주 전에 한 번에 닫혀야 한다"
+  },
+  {
+   "name": "[기존→v16] lib/학습자상태.js — ㉡ 소비자 «한 파일»",
+   "producer": "Core(순수함수 · as_of 필수 · 저장 0)",
+   "consumers": [
+    "deliver 과제요약",
+    "correct [학생 맥락]",
+    "Vellum 마스코트·되묻기 v2·발화정책",
+    "Reed 곡편성 학생띠(활성 게이트 뒤)",
+    "Temper estimator 스탬프·셀 정규화 어휘",
+    "Trail 출발점 셀 키",
+    "관찰선택자·요약 인코더"
+   ],
+   "shape": "14축 + 과정 축 · 입력 목록에 listen.session(집중띠 시각 재료)·mascot.touched(가벼운 신호 · 분모 분리)·topic.engaged(⑤관심)·self_explain(③자기인식)·goal.stated(⑬ origin student|engine) · atlas.excluded 제외 · explicit/observed 나란히 · 표본제외 목록(자습체류·만짐) · null 사유 · 관통왕복 V2 23/23 한 번 재측",
+   "why": "다섯 엔진이 같은 파일을 따로 판올림하면 신뢰도가 공짜로 오르고 V2 가 다섯 번 깨진다 — 한 판올림에 다섯 입력"
+  },
+  {
+   "name": "[기존→v2] 개입 사건 규격 intervention.delivered — kind 여섯 · 스탬프 다섯+넷",
+   "producer": "kind 별 생산자: task=Core deliver · companion=Vellum companion-bake · teacher_classroom=Core teach · radio_tone/word_between_songs=Vellum 앱(Reed 규격) · report=Loom 시즌 책·A4 발송(Vellum 창구가 나름)",
+   "consumers": [
+    "Temper 성과회수 v3(kind 별 분모 · 합치지 않음)",
+    "tools/성과계기판.js",
+    "관통왕복 V9",
+    "Trail 시즌별 「통한 것」 행",
+    "Prism(안 읽음 · 경계)"
+   ],
+   "shape": "kind∈{task,companion,teacher_classroom,radio_tone,word_between_songs,report} 닫힌 값목록 · actor_kind∈{machine,teacher} · policy_ver 이름공간(kind 별: 오늘과제 판 · 발화정책 판 · '사람.교실.v1' · schedule_ver · recipe_ver) · estimator 3열 · intervention_id · as_of · +expected_ver(계획 판 이름) +shadow{policy_ver,choice_ref} +arm_id(형식) +loom_ver(부품판) +moment_id(companion 만) · null 스탬프 = 성공 표식 없음 · 학습개입 ○/✗ 표(kind×moment_id · Temper 정본)가 분모를 정한다",
+   "why": "개입 갈래가 하나(과제 배달)에서 여섯이 되는데 규격이 여섯 벌이면 30일 짝을 못 맺는다 · 「리포트=개입인가」는 Temper 가 표로 가른다 · 개입 시점 어휘는 그 순간 뒤 재구성 불가"
+  },
+  {
+   "name": "[새] atlas.summarized — 산문 Atlas 한 장",
+   "producer": "Core 요약 인코더(원신호+24h 첨삭 스레드+goal.stated+observation.noted+시즌 목표 · 옛 요약 입력 배제 · 인덱스 치환 · ≤1,500토큰 · 낙인 금칙어 검문)",
+   "consumers": [
+    "deliver 과제요약(4회전 ⑥ 판정 뒤 교체)",
+    "correct [학생 맥락]",
+    "Vellum companion-bake(자체 산문 생성 0)",
+    "강사 M2 산문",
+    "Trail my_trail 요약 판",
+    "세 축 성적표 ㉢ 일치",
+    "Atlas 협상 카드·시즌 회고 「알게 된 것 셋」"
+   ],
+   "shape": "learning_events 사건(append-only) · payload{산문·summary_ver·prompt_ver·as_of·evidence_refs · 식별자 0} · 소비자 접기 = 학생별 최신 1건 · atlas.excluded 뒤 재생성 = 새 사건 · 채점 = lib/요약채점기.js 홀드아웃 Brier vs 빈도 기준선(미달이면 전판 유지)",
+   "why": "「셋이 한 판정으로 합쳐진다」의 실물 · Khan 실측(JSON 0 · 산문+24h +6.1%) · 산문 생성기가 둘(companion-bake·deliver)이면 같은 학생을 두 글로 안다"
+  },
+  {
+   "name": "[새] listen.session — 앱 자습 체류(㉡ 「언제 집중이 오르나」 가장 값싼 신호)",
+   "producer": "Vellum 앱 화면(Reed 는 재생기·곡시계·팩 규격만 · Reed 는 생산자 아님)",
+   "consumers": [
+    "Core 학습자상태 v16 집중띠 «시각 재료»(같은 커밋)",
+    "Reed 곡편성 학생띠(집중띠 산출 경유)",
+    "Loom Patina 색온도(읽기만)",
+    "Trail 시즌별 자습 시간대 한 줄(Core 경유)",
+    "Prism 시간대 청취 분포(집단 · 읽기만)"
+   ],
+   "shape": "payload{started_at·ended_at·listened_s·mode(함께|내리듬)·결·track_ids·pack_ver·schedule_ver·end_reason(정지|앱종료|상한종료)} · source_kind=observed · radio-* 통로 표식 안 물림(학습자상태:141 이 빼는 행) · 표본제외 '자습체류'(리듬·끈기 완주 분모 제외) · 두 겹 자(상한종료=잠 · 같은 밤 제출 겹침 있음/없음) · content.viewed 재사용 금지(parent_event_id 필수·도달 소비자 게이트웨이 → 검증기 ⑧ 즉사)",
+   "why": "Reed 3문 ① 「작아진다→커진다」를 뒤집는 유일한 문 · Core U3 의 content.viewed 안·Reed U2 의 listen.session 안이 갈렸다 → Reed 의 기술 이유가 서서 listen.session 하나"
+  },
+  {
+   "name": "[새] mascot.touched + topic.engaged — 몽글을 만진 것 / 말풍선에 반응한 것",
+   "producer": "둘 다 talk src/마스코트.js 에서 사건통로.js 하나로: mascot.touched = Loom 감각층 집계기(탭·쓰다듬·꾹·깨움 세션 1행 · radio_on) · topic.engaged = Vellum(혼잣말 line_id·topic·shown/tap/dwell/ignore · 노출 행 = 분모)",
+   "consumers": [
+    "학습자상태 v16(만짐=리듬·집중띠 «가벼운 신호» 분모 분리 · 반응=⑤관심)",
+    "Patina 손버릇 자리·색온도",
+    "deliver 소재 가중(적응기 뒤)",
+    "성과계기판(유실 자: 앱 연 날≠봉투 있는 날 · 노출 없는 반응=빨강)"
+   ],
+   "shape": "두 사건 · 한 파일 · 한 통로 · 해석 라벨 0 · 낱개 터치 저장 ✗ · 관찰기(균등 노출) 뒤 반응만 관심 신호 · 성격 불변",
+   "why": "Loom U1(mascot.touched)과 Vellum U8(「홈 몽글 터치 = topic.engaged」)이 같은 손짓을 두 이름으로 잡으려 했다 — 몸 만짐과 말풍선 반응은 다른 신호라 둘 다 두되 파일·통로·판은 하나"
+  },
+  {
+   "name": "[새] 과정 그림자 칸 + reads picker_version/picker_reason",
+   "producer": "Vellum 앱 화면이 찍고(compose_meta 승격분·선택 지연 ms·이탈 지점·STT 세그먼트 참조) Core 가 읽는다 · picker_* 는 Core 관찰선택자가 task.assigned reads 에",
+   "consumers": [
+    "학습자상태 v16 과정 축(끈기·자기인식·작성과정)",
+    "요약 인코더",
+    "되묻기 v2 순서",
+    "성과계기판 non-null 비율",
+    "Prism 원신호(읽기만)"
+   ],
+   "shape": "submission.created / session.abandoned payload 숫자·순서·참조뿐(원문 아님) · 학부모 리포트 소비자 목록에서 «명시 제외» · 강사 화면 라벨 0",
+   "why": "제출 «순간»에만 있는 신호 · 첫 코호트 첫 주에 꺼져 있으면 영영 빈다 · 세층합류 §8 구멍 5 를 이 판에서 닫는다"
+  },
+  {
+   "name": "[새] goal.stated + self_explain + estimate.responded.corrected_value + atlas.excluded — «학생이 말한 것·확인·고침·빼기» (explicit 갈래)",
+   "producer": "goal.stated = Core teach(M2 강사 탭 · channel teacher_relay · origin_goal_id) · self_explain = Vellum(correction.responded payload · 보기 3+자유 한 줄) · corrected_value·atlas.excluded = Vellum 화면(협상 카드·시즌 회고 셋)",
+   "consumers": [
+    "학습자상태 v16(⑬ origin student|engine · ③자기인식 · explicit 나란히 · excluded 제외)",
+    "progress 오늘목표 카드(학생 말 우선)",
+    "요약 인코더 재생성",
+    "lib/동의율(맞다/아니다/고침 분모 셋)",
+    "Prism 오개념 분포(읽기만)",
+    "tools/설명대조.js(사람 표본 30)",
+    "Trail intent_timeline(goal.stated 원문은 안 씀 · season_compass 만)"
+   ],
+   "shape": "source_kind=explicit · observed 와 섞지 않음 · 보정 없음 · 원문 보존 · 판정 «점수» 저장 0 · 빼기 = 근거 단위 영구 사건(원천 삭제 0 · 자동 해제 없음) · 값록 '맞다'|'아니다' 그대로 + corrected_value 1탭 선택형",
+   "why": "「지켰다」≠「지켰다고 말했다」 · 말한 것과 한 것의 «차이»가 ㉡ 자기인식 재료 · 학생이 라벨 검증자에서 공동 저자가 되는 어휘는 첫 카드 «전»에 있어야 한다"
+  },
+  {
+   "name": "[새] goal_used 코드 스탬프 (task.assigned)",
+   "producer": "Core deliver(생성 입력에 season_goal 이 실렸나 = 코드 사실 · 모델 출력 goal_used 키는 참고 열)",
+   "consumers": [
+    "Vellum 세 축 «빛»(reads.life='season_goal' ∧ submission.created · 하루 +1)",
+    "Trail intent_timeline 「목표 실린 과제 스스로 낸 날」 열",
+    "관통왕복 V3/V4"
+   ],
+   "shape": "task.assigned payload 불리언+참조 · 생성왕복 A1~A9 에 항목 1",
+   "why": "Core io 가 「빛←goal.responded」로, Vellum U5 가 「reads.life ∧ submission(observed)」로 적어 갈렸다 — 철학(목표 실린 과제 스스로 낸 날)과 자기신고≠관측 규칙이 Vellum 판을 고른다 · 생성 시점에 안 적으면 소급 불가"
+  },
+  {
+   "name": "[새] lib/오늘의한가지.js — 「하나만 돌려주는」 고르는 자",
+   "producer": "Core(순수함수 · 검수 확정 라벨 빈도 + FSRS due + 발음 본보기 유무 → 태그 하나·낱말 하나 · LLM 아님)",
+   "consumers": [
+    "correct key_takeaway{tag,one_line,mini_item}",
+    "Vellum 「오늘의 한 가지」 카드 얼굴",
+    "Reed word_between_songs 낱말 선택",
+    "Loom 시즌 책 «줄어든 것 셋» 후보"
+   ],
+   "shape": "입력 = engine.corrections error_tags(검수 확정 우선) · FSRS due · 발음본보기 11 목록 · 출력 = {tag, word|null, evidence_ref} · aiWeakMap_(Apps Script)은 시트층 재출제 전용으로 남고 talk 통로로 안 부른다",
+   "why": "Core U6·Vellum U6·Reed U5 가 같은 「오늘 하나」를 셋이 따로 고르면 같은 날 세 가지가 돌아간다 · 한 판정엔 자 하나"
+  },
+  {
+   "name": "[새] lib/발화검문.js — 학생·강사에게 가는 «말» 전부의 한 함수",
+   "producer": "Vellum(여섯 자: 사실성 cited_refs · 평가어 0 · 비교 0 · 식별자 0 · 어휘 1~3급·옛글자 0 · 표 밖 0) + 평가어·비교어 어휘 정본은 synk-brand 금칙어에",
+   "consumers": [
+    "companion-bake 출력",
+    "Core key_takeaway one_line",
+    "Temper S16 한 줄",
+    "Loom 시즌 책·교실 A4 문장(파생 게이트 「타 학생에 비해」 포함)",
+    "Prism 교안 카드 문장",
+    "Trail 촉진 카드·졸업 카드 문장",
+    "evals/몽글시험지 러너",
+    "렌더린트"
+   ],
+   "shape": "런타임과 시험지가 같은 함수 · 표 화이트리스트는 docs 에서 파싱(줄 수≠기대면 측정 불능) · 걸리면 침묵(degraded 0)",
+   "why": "돌려주는 자리가 일곱에서 열둘로 느는데 검문이 엔진마다 다르면 같은 문장이 한 엔진에선 침묵·다른 엔진에선 발송된다"
+  },
+  {
+   "name": "[새] 학생 접점 하루 예산표 — 「묻는 것 ≤2 · 주는 것 자리별 상한 · 몸은 무제한」",
+   "producer": "Vellum(lib 상수 한 곳 · 몽골어 검수 전 = 설계된 침묵·몸짓만)",
+   "consumers": [
+    "Core 관찰선택자(되묻기 카드 순서·오늘목표 선점)",
+    "Vellum 발화정책·Amber 하루 1회·S26 주 2회·오늘의 한 가지",
+    "Temper S16(시즌 1)",
+    "Reed word_between_songs(시간당 ≤1)",
+    "Core 협상 카드(같은 카드 안 1탭 · 카드 수 불변)"
+   ],
+   "shape": "ⓐ 묻는 것(되묻기·S26·협상 되고침·미니 문항) 합계 하루 ≤2 · 20초 · 축별 1회 · 부정 재노출 금지 · 힘든 날(S20) 다음날 0 ⓑ 주는 것(Amber 그 자리 · 답장 꼬리 · 미니게임 관찰 한 줄 · S16 · 곡 사이 낱말) 자리별 상한 · 겹침 금지 ⓒ 몸(세 축·Patina·반응 상태기계·자습 소리) 예산 밖 · 회귀가 위반 0 을 센다",
+   "why": "여덟 자리가 같은 학생 하루에 동시에 닿으면 «재미없는 설문»이 카드 여덟 장으로 돌아온다 — ㉡ 설문 금지의 총량 자가 한 곳에 있어야 한다"
+  },
+  {
+   "name": "[새] 강사 화면 슬롯 규격 — M2 아침 카드 + 시즌 회고 화면",
+   "producer": "Vellum(강사 창구 정본 · 줄 수 상한 · 「관찰 입력 화면엔 0」 · 발송 시각 = 관찰 M2 입력 «뒤»)",
+   "consumers": [
+    "Core(학생별 산문 Atlas + 「볼 자리」 한 줄 + 학생 말 vs 엔진 추천 · goal.stated 태그 칸)",
+    "Vellum T19 오늘 말 걸 아이 셋 · T20 어제 몽글이 한 말",
+    "Prism 교안 카드(반·주 · 텍스트 축만 · 문턱 미달 빈 카드)",
+    "Trail 촉진 카드(시즌 시작날만 · 있다/없다+길 이름)",
+    "Temper 회고 절 + 「통한 개입」 확정 칸",
+    "강사 확정 탭 하나(area·tags 초안 확정 · 관찰|개입 6종 · 학생 말한 목표 태그)"
+   ],
+   "shape": "아침 카드 슬롯 넷 · 회고 화면 절 셋 · 강사 손 = 확정 탭 1 + 회고 확정 칸 1(8주 1회) · 결석·미제출은 이름만 횟수 0 · 등수·반 대비 0 · 사유 분포 경보",
+   "why": "다섯 엔진이 강사 화면에 각자 카드를 밀면 관심이 «챙길 목록»이 된다(㉡ 위반 형태) · 관찰 오염 ㉯는 축 가름+발송 시각으로 닫는다"
+  },
+  {
+   "name": "[기존→v2] 시즌 회고 그릇 — engine.season_review · lib/회고.js 굳힌판 v2",
+   "producer": "Core(그릇·굳힌판 조립 · 사람 판정 값은 읽기만)",
+   "consumers": [
+    "학생 항목 「알게 된 것 셋」+협상(Core U6)",
+    "Temper 절(짝 갈래별 n/m·미도래) + 강사 「통한 개입」 확정 칸(c17 물리 열)",
+    "Trail my_trail 병치 왼쪽 + intent_timeline verdict 읽기",
+    "실현 칸(goal_outcome · 2028+)",
+    "Vellum S16 재료(강사 확정 행만)",
+    "Loom 시즌 책 강사 한 줄(읽기만)",
+    "Prism 시즌 판정 카드(별도 지면 · 학생 회고엔 0)"
+   ],
+   "shape": "record_snapshot jsonb 굳힌판 v2(그 순간 본 숫자를 굳혀 판정과 근거가 안 갈리게) · 사람 칸 셋뿐(verdict closer/same/redirected · 통한 개입 · 실현) · 학생 항목과 강사 판정 칸 분리 · summary_ver 동반 · Ⅰ-8 효율 눈금의 «켤 자리»",
+   "why": "일곱이 전부 시즌 회고에 착지한다 · 그릇이 둘이면 첫 회고 행이 v1 로 굳고 첫 시즌의 짝 절은 영영 없다(2027-04 말)"
+  },
+  {
+   "name": "[새] 사상표 한 장 — 편집 유도 태그→24종 · 어휘 «늘리기만»",
+   "producer": "Prism(git 정본 1장 · 머리에 검산 일치율·자·날짜 · enum 은 파생)",
+   "consumers": [
+    "Prism 집계(집단 키 = 편집 태그)",
+    "Core 검수 확정 라벨 enum(파생 · 개인 단위 = 검수 라벨 우선)",
+    "Temper 결과변수 태그(30일 재발률 · 계획 파일에 사상표 판)",
+    "학습자상태 오류 축(여는 날 잡음 상한)",
+    "Reed 낱말 갈래 선택"
+   ],
+   "shape": "24종 이름 불변 · 시즌당 ≤1 축 늘리기 · 사람 확정 1회(원장) · as/talk 두 저장소가 «이름만» 공유하던 것을 한 표로",
+   "why": "개인(Core)·집단(Prism)·처방(Temper)이 세 어휘로 갈리면 「학생이 늘었다/모델이 바뀌었다/개입이 들었다」를 한 판에서 못 가른다"
+  },
+  {
+   "name": "[새] 시험지 묶음 규격 + tools/eval-score.js engine 열 + 엔진점수.jsonl 하나",
+   "producer": "작업 시스템(러너·점수 도구) · 시험지는 엔진별: Core 합성 102(+실학생 판 = Prism 시험지굽기 표집·Core 경로 B granted) · Vellum 몽글 220 · Trail 60 · Temper 30 · Prism 태거 합성 400+NIKL 50 · Loom 슬롯 6 · Reed 고정 세트 12",
+   "consumers": [
+    "결정.md 재심 큐 절",
+    "tools/이해대장.js",
+    "rot-check",
+    "유호 모델 픽 표"
+   ],
+   "shape": "행 = {engine, 판(prompt/summary/classifier/pack sha), 모델, 측정일, 맞힘/분모, 무응답=null(점수 아님), 비용, 시험지 출처 분모(실학생 n/합성 n)} · 판 다르면 대조 금지를 코드가 지킴 · 시험지를 모델에 맞춰 고치지 않음 · 룸슬롯점수.jsonl·Reed점수.jsonl·처방판.jsonl 은 별 파일이 아니라 engine·kind 열",
+   "why": "장부가 넷이면 「엔진 점수」가 네 정의가 되고 이해대장이 넷을 따로 읽는다 · 한 값 한 곳"
+  },
+  {
+   "name": "[새] tools/모델감시.js — 출시·판 변화 감지기 하나 → 결정.md 재심 큐 절",
+   "producer": "작업 시스템(기준선 파일 · 소스 목록: Anthropic·Gemini·OpenAI 가격표/changelog · blender.org · Skia releases · Meshy · Lyria 판 문자열 · 추정판/prompt_ver/summary_ver/classifier_ver/schedule_ver 지문 diff · 주 1회 cron + 출시 사건 · 등록은 list 로 되읽음 · «마지막 성공 읽기 시각» rot-check 상주 48h)",
+   "consumers": [
+    "Core 세 축 성적표·시뮬",
+    "Vellum 몽글 갈래",
+    "Trail classifier 재판정(이어 돌기)",
+    "Prism 재채점·시험지굽기",
+    "Temper 심판 재자격·옛 짝 재채점",
+    "Loom 슬롯 6 재심",
+    "Reed 고정 세트 재생성 큐"
+   ],
+   "shape": "사건 하나(감지) → 큐 절 하나(질문+당김 트리거 꼴 · 회차당 뒤집기 예산 3) → 0원 자(로컬·순수함수·오픈가중치)는 즉시 자동 · 벤더 과금 재채점은 월 상한 하나 안에서 자동 · 밖은 큐에서 유호 스위치 · 모델 ID 는 tools/모델정책.js 한 곳(appsscript 실재 · talk 는 그 값을 읽는다)",
+   "why": "일곱 설계가 감시기 일곱·발동 조건 일곱·돈 규칙 여섯을 세웠다 — Ⅰ-9① 이 0번 돈 병은 발동을 사람 손에 건 것이었고, 장치가 일곱이면 상주 도구 수(Ⅰ-9④)가 일곱 배"
+  },
+  {
+   "name": "[새] 관통왕복 명세 v0.4→v0.5 — V6~V9 신설 · 한 명세 한 도구",
+   "producer": "작업 시스템(docs/관통왕복_명세.md · talk tools/관통왕복시험.js · 리허설 학생 · LLM 0 · 과금 0 · 운영 무접촉)",
+   "consumers": [
+    "c17 판올림 게이트(같은 커밋 없으면 금지)",
+    "일곱 엔진 착지 커밋",
+    "12월 파일럿 출구"
+   ],
+   "shape": "V6 = 과정 그림자 5칸이 v16 축에 non-null(Core) · V7 = listen.session 1건+mascot.touched 봉투 1건이 집중띠에 실리고 과제요약 줄이 바뀜(Reed·Loom 합침) · V8 = Trail 조각 동승·null 이면 [학생 맥락] 길이 불변 · V9 = 개입 행에 kind·expected_ver·shadow·arm_id·loom_ver 완비 + 회고 카드 산출 1벌(Temper·Core·Loom 합침) + V1 재측 kind 별(companion·teacher·radio_tone) · V2·V5 는 «산문에 축 실값·급수·목표가 실렸나»로 재정의",
+   "why": "Core·Loom·Trail·Temper 가 각자 「V6」을 다른 뜻으로 적었다 — 번호를 한 명세가 배정해야 23/23 이 한 수로 남는다"
+  },
+  {
+   "name": "[새] 'sim' 출처값 + tools/학생시뮬.js 프로필 세트 하나",
+   "producer": "Core(프로필 20벌 · Prism L1 간섭 규칙 목록 재사용 · 리허설 DB 전용)",
+   "consumers": [
+    "Core 첨삭→되묻기→재출제→요약 다회전 루프",
+    "Vellum 몽글시험지 상태 픽스처",
+    "Prism 태거 정밀도 벌(300~500)",
+    "Temper 개입 문안 그림자 채점",
+    "Trail 픽스처 60(합성 · 별도)"
+   ],
+   "shape": "사건 출처 값 'sim' 을 c17 값목록에 · 운영 함수가 «거절» · is_test 분모 밖 · 결과는 「늘었나」·㉡㉢·정책 갱신·집계·엔진점수 운영 표본 어디에도 안 적음",
+   "why": "'sim' 생성기가 넷이면 어느 하나가 운영에 새어 0 이 거짓 초록이 된다(zero-is-a-success-face)"
+  },
+  {
+   "name": "[기존] content.viewed(parent_event_id) — 개입→관측 짝의 «봤다»",
+   "producer": "Vellum 면(말풍선 열림·카드 열림·곡 사이 낱말 튼 뒤 · 유일 생산자)",
+   "consumers": [
+    "Temper 성과회수(kind 별 · 즉시/1/7/30일)",
+    "Vellum 관계 원장 파생 조인",
+    "학부모 P3 순서 게이트(학생 viewed 뒤에만)",
+    "Loom Patina 다림질(항목별 있음/없음)"
+   ],
+   "shape": "parent = 개입 event_id 필수(c9) · 앱 청취엔 안 씀(listen.session) · 관계 원장·짝 ID 저장 0(파생 조인)",
+   "why": "짝의 둘째 절반이 한 사건이어야 여섯 kind 가 같은 자로 회수된다"
+  },
+  {
+   "name": "[새] 몽골어 검수 첫 꾸러미 manifest",
+   "producer": "작업 시스템(카피확정 키 false 전수를 엔진별로 도구가 모은다 · 10~11월 발주 1벌)",
+   "consumers": [
+    "Vellum(Amber 4종 · 오늘의 한 가지 · 관찰 한 줄 · 보기 3 · S26·T19·T20·S16 · 「그럼 언제?」·「빼 줘」)",
+    "Temper 개입 6종 값록",
+    "Prism L1 어휘 v1 + 첫 시즌 귀 라벨 정답지",
+    "Reed 낱말 11(유호 귀) · 앱 판 라벨 한 낱말",
+    "Loom 시즌 책 본문(검문 5층)",
+    "Trail 20문장(3기부터)"
+   ],
+   "shape": "검수 통과(confirm) 행만 학생 접점에 · 그 전엔 설계된 침묵(몸짓만) · 강사 화면은 한국어 가능",
+   "why": "몽골어 검수자가 일곱 엔진 전부의 공통 차단자다 — 발주가 여섯이면 돈도 시간도 여섯"
+  },
+  {
+   "name": "[새] 밤 사슬 스케줄러 하나(밤샘_*.js · 램문지기 6,000MB)",
+   "producer": "Loom(파일 주인 · 여덟 단계 빚 먼저)",
+   "consumers": [
+    "Prism 발음 파이프(Arc · 원음 300)",
+    "Core 학생시뮬·요약 인코더 배치",
+    "Temper 처방심판 0.5B(CPU)",
+    "Loom Patina 컷·듣는 컷·히어로"
+   ],
+   "shape": "단계 append · 램 자(코어 곡선·User/Kernel) · 낮 손 호출 ✗ · 고아 프로세스 무늬 감시",
+   "why": "노트북 램 16GB 하나를 셋이 밤에 따로 물면 굽기가 먼저 죽는다 · 하네스에 이미 있는 장치를 쓴다"
+  },
+  {
+   "name": "[기존] 디자인_토큰.json · 마스코트자산.js · 렌더린트 등록층 — 재질·부품·화면 검문",
+   "producer": "Loom(값 정본 · DTCG 변환층은 파생 · 룸잉크 자 = 구운 원판 실측 밝기)",
+   "consumers": [
+    "Vellum 앱 부품·세 축 또렷함/발광 컷",
+    "Reed 앱 판 화면·펠트 무대·세로 안전띠 상수",
+    "Trail 졸업 카드·촉진 카드 지면",
+    "Prism 교안 카드·내부 지면",
+    "Temper 강사 회고 카드(분모 동반 판)",
+    "자기설명검수·Patina 서수 0·비교 금칙어·읽어야 하는 요소 0 검문"
+   ],
+   "shape": "한 값 한 곳 · 밖으로 나가는 키 ASCII · CI 바이트 대조 · 등록층에 없으면 CI 가 영원히 안 본다",
+   "why": "학생이 보는 면이 일곱 엔진에서 나오는데 자가 하나여야 ㉢·Ⅰ-8·⑤ 가 한 번에 검문된다"
+  }
+ ],
+ "conflicts_resolved": [
+  {
+   "conflict": "계약 판올림을 일곱이 따로 요구 — Core c17(어휘 11) · Loom c17(mascot.touched·loom_ver) · Vellum c17(어휘 넷 단독) · Temper c17(어휘 다섯 단독) · Reed c17(listen.session 단독) · Trail(다음 c-판에 묶음) · Prism(c17 후보)",
+   "between": "일곱 전부 ↔ 계약 주인 Core",
+   "resolution": "c17 «한 판» — 어휘 전량을 한 판에 · 판올림 드래그 8자리 한 번 · 소비자 전부 같은 커밋 · 관통왕복 v0.5 같은 커밋 · 12월 파일럿 전 상한 · 유호 결정은 «범위» 하나(D1)로 합친다"
+  },
+  {
+   "conflict": "같은 손짓을 두 엔진이 두 이름으로 — Loom mascot.touched(몸 만짐 세션 집계) vs Vellum U8 「홈 몽글 터치 = topic.engaged 입력」",
+   "between": "Loom U1 ↔ Vellum U1/U8",
+   "resolution": "몸 만짐(탭·쓰다듬·꾹·깨움)=mascot.touched(Loom 감각층 집계기) · 말풍선 반응(노출·탭·체류·무시)=topic.engaged(Vellum) — 다른 신호라 둘 다 두되 파일(마스코트.js)·통로(사건통로.js)·판(c17)은 하나 · Vellum U8 의 동일시 문장은 걷는다"
+  },
+  {
+   "conflict": "㉡ 자습 신호의 사건 이름 셋 — Core U3 「content.viewed 또는 progress 재생 세션 값」 · Reed U2 listen.session 신설 · Loom U1 radio_on",
+   "between": "Core ↔ Reed ↔ Loom",
+   "resolution": "listen.session 하나(Reed 의 기술 이유: content.viewed 는 parent_event_id 필수·도달 소비자 게이트웨이라 검증기 ⑧ 즉사) · 생산자 = Vellum 앱 · 소비자 = 학습자상태 v16 집중띠 «시각 재료» · radio_on 은 mascot.touched 의 보조 칸으로 남긴다(다른 신호) · Core U3 의 content.viewed 옵션 삭제"
+  },
+  {
+   "conflict": "같은 이름 다른 뜻 — moment_id: Vellum U2 = Amber «처음» 종류(first_submission …) · Temper U2 = 말할순간 표 55줄 값목록(companion 발화 순간)",
+   "between": "Vellum ↔ Temper",
+   "resolution": "moment_id = 말할순간 표 줄(Temper 값목록 · 도구가 표에서 계약으로 생성 · companion 행만) · Amber 처음 종류는 first_kind 칸(멱등키 learner_id×first_kind · 같은 값 두 번 insert 거절) — 두 축을 한 칸에 겹치지 않는다"
+  },
+  {
+   "conflict": "되먹임의 «형태»가 정면충돌 — Core U5 = 팔 균등 «확률» 배정(Thompson · 대조군=배달 사건 단위)으로 개원 · Temper U4/U7 what_not_to_do = 「Thompson·밴딧·균등 무작위 바닥 전부 안 한다 · 탐색 바닥 0% · 전원 활성 판」(소개서 §6 A/B 금지 유호 확정 인용)",
+   "between": "Core U5 ↔ Temper U4·U7",
+   "resolution": "Temper 가 「가르치는 법」 주인이고 유호 확정(소개서 §6)을 쥔다 → 개원 전 = 결정론 활성 판 + arm_id «스탬프만»(형식 어휘 · 확률 배정 0 · 탐색 바닥 0%) · Core 의 확률 정책은 Temper U7 «후보 판» 경로(섀도 진입 → 갈린 결정 관찰 대조 → 유호 픽)를 지나야 활성 · 「그리디 코드 경로 안 만든다」는 승계 · 「탐색 바닥 >0 여부」와 「판올림=섀도 2주 뒤 픽」은 유호 질문 하나(D4)로 합친다 · Core U5 의 「균등 확률로 개원」 문장은 걷는다"
+  },
+  {
+   "conflict": "학생 맥락 «산문» 생성기가 둘 — Core U4 atlas.summarized 인코더(deliver·correct·M2) · Vellum U3 companion-bake 자체 프롬프트에 «산문 두 줄+24h 스레드»",
+   "between": "Core U4 ↔ Vellum U3 (+Trail U2 intent_timeline 「산문으로」·U6 trail_ref 템플릿)",
+   "resolution": "산문 정본 = atlas.summarized 하나(Core 인코더 · 지금 짓는다 · deliver 재료 «교체»만 4회전 뒤) · companion-bake·M2·Trail 요약은 학생별 최신 1건을 «읽는다»(자체 산문 0) · Trail 의 intent_timeline·trail_ref 는 인코더 «입력»으로 흐르고 코드 템플릿 1줄은 evidence_refs 로만 · 한 학생을 두 글로 알지 않는다"
+  },
+  {
+   "conflict": "「하나만 돌려주는」 고르는 자가 셋 — Core U6 key_takeaway(오류태그 빈도 코드·aiWeakMap_) · Vellum U6 오늘의 한 가지(aiWeakMap_ 최다 태그) · Reed U5 곡 사이 낱말(error_tags 빈도·aiWeakMap_·FSRS due) + Temper 「aiWeakMap_(Apps Script)을 talk 통로로 쓰지 않는다(없는 실물)」",
+   "between": "Core ↔ Vellum ↔ Reed ↔ Temper",
+   "resolution": "lib/오늘의한가지.js 순수함수 하나(Core · 검수 확정 라벨 빈도+FSRS due+발음본보기 유무) · 세 자리가 같은 값을 읽는다(같은 날 세 가지가 안 돌아간다) · aiWeakMap_ 은 시트층 재출제 전용"
+  },
+  {
+   "conflict": "세 축 «빛»의 재료가 갈림 — Core io 「빛←goal.responded/goal.stated 날 수」(explicit) vs Vellum U5 「reads.life='season_goal' ∧ submission.created · goal_used 코드 사실」(observed)",
+   "between": "Core ↔ Vellum(+Trail intent_timeline 열)",
+   "resolution": "Vellum 판 채택(철학 「목표 실린 과제를 스스로 낸 날」 · 자기신고≠관측 금지) · goal_used 는 deliver 코드 스탬프 하나 · 산식은 lib 순수함수 한 곳(갈래 사전 상수 한 곳) · Core io 문장 정정 · Trail 열도 같은 스탬프를 읽는다"
+  },
+  {
+   "conflict": "재심·감시 장치가 일곱 — Core(GitHub Action+벤더 폴링) · Loom(주 1회 fetch 넷+룸슬롯점수.jsonl) · Vellum(모델 ID 사건) · Trail(모델정책.js 커밋 훅+classifier_ver 사건) · Prism(tools/모델감시.js 기준선·CI cron) · Temper(모델정책.js diff/ai스택점검 회차) · Reed(Lyria ID·가격표 diff+Reed점수.jsonl) + 돈 규칙 여섯(자동 상한 $5/$30 · 알림→클릭 · 항상 유호 · 무료 티어 …)",
+   "between": "일곱 전부 ↔ 작업 시스템(Ⅰ-9①·④)",
+   "resolution": "감지기 하나(tools/모델감시.js · 소스 목록·기준선·마지막 성공 읽기 시각) → 사건 하나 → 결정.md 재심 큐 절 하나(질문+당김 트리거 · 회차 3건) · 모델 ID 는 tools/모델정책.js 한 곳(appsscript 실재) · 장부 = 엔진점수.jsonl engine 열 하나 · 돈 = «월 상한 하나»(0원 자는 즉시 자동 · 과금 재채점은 상한 안 자동 · 밖은 유호 스위치) — 유호 질문 하나(D14)"
+  },
+  {
+   "conflict": "관통왕복 «V6» 을 넷이 다른 뜻으로 — Core(과정 그림자 non-null) · Loom(만짐 봉투→집중띠) · Trail(Trail 조각 동승·null 이면 길이 불변) · Temper(expected_ver·shadow 실림+회고 카드) · Reed(V1 radio_tone 재측·V2 집중띠)",
+   "between": "Core ↔ Loom ↔ Trail ↔ Temper ↔ Reed",
+   "resolution": "명세 v0.5 가 번호를 배정: V6 과정(Core) · V7 자습+만짐→집중띠(Reed·Loom 합침) · V8 Trail 조각 · V9 개입 스탬프 완비+회고 카드(Temper·Core·Loom 합침)+V1 kind 별 재측 · 도구 하나(관통왕복시험.js) · 9/9 한 수"
+  },
+  {
+   "conflict": "강사 화면에 다섯 엔진이 각자 카드 — Core(산문 Atlas+볼 자리+학생말 vs 추천) · Vellum(T19/T20) · Prism(교안 카드) · Trail(촉진 카드) · Temper(회고 절+확정 칸) → «챙길 목록»(㉡ 위반 형태)·관찰 오염 ㉯ 위험",
+   "between": "Core ↔ Vellum ↔ Prism ↔ Trail ↔ Temper",
+   "resolution": "강사 창구 정본 = Vellum 슬롯 규격(아침 카드 슬롯 넷 · 회고 화면 절 셋 · 줄 수 상한 회귀 · 관찰 입력 화면엔 0 · 발송 시각 = 관찰 입력 뒤) · 강사 손 = 확정 탭 1(관찰|개입 갈래·학생 말한 목표 태그 포함) + 회고 확정 칸 1 · Prism 의 ㉯ 처방(텍스트 축만·발송 시각)을 전 카드에 적용"
+  },
+  {
+   "conflict": "사람 칸이 늘어난다 — 검수 확정(Core) 외에 Trail 원장 확정 클릭 · Prism 어휘 확정+배분 승인+여는 판정 · Temper 강사 확정+판올림 픽+30건 라벨 · Loom 룸눈 픽+Patina 판정 · Reed 귀 채택+돈 스위치 · Vellum 표 ○ … (㉡ 「판단 자리 하나」)",
+   "between": "일곱 전부 ↔ 철학 ㉡",
+   "resolution": "리듬으로 접는다: 매일 = 검수 확정 하나(그대로) · 강사 = 확정 탭 1 + 8주 1회 회고 칸 1 · 원장(유호) = «시즌 확정 카드» 한 장(Prism 어휘·배분 · Trail 근황 확정+goal_outcome 짝 · 판올림 픽 · 모델 픽 표 · 8주 1회 한 화면) + 돈 스위치(가오픈 원칙) + 눈·귀(재료의 급 · 룸눈 앞단·큐 상한으로 줄이되 남긴다) · 발동은 전부 기계 · «판단 자리 목록»을 이해대장 절이 센다"
+  },
+  {
+   "conflict": "시즌 회고 그릇에 일곱이 착지 — Core 학생 셋+실현 칸 · Temper 절+확정 칸 · Trail 병치·verdict · Vellum 「통한 말·순간」 후보 · Prism 판정 카드 · Loom 시즌 책 · A·C 안 season_review 「표 없음→신설」",
+   "between": "일곱 전부 ↔ Core lib/회고.js",
+   "resolution": "그릇 하나(Core · 마이그 조각 실재 · 실 DB 적용 «확인») · 굳힌판 v2 한 조립에 절 셋 · 사람 칸 셋뿐(verdict · 통한 개입 · 실현) · Vellum 「통한 말」은 Temper 「통한 개입」 목록의 companion 행으로 접힘 · Prism 카드는 학생 회고 밖(원장 지면) · 첫 회고(2027-04 말) 전 한 번"
+  },
+  {
+   "conflict": "학생 접점에 열두 자리가 동시에 닿는다 — Core(답장 꼬리·협상 카드·회고 셋) · Vellum(Amber·세 축·S26·오늘의 한 가지·관찰 한 줄) · Loom(몸·Patina·시즌 책) · Reed(자습 소리·곡 사이 낱말) · Temper(S16) · Trail(병치·졸업 카드) · 검문·예산 상수가 엔진마다",
+   "between": "닿는 셋+Temper+Trail+Reed ↔ 철학 ㉡·Ⅱ-8·재촉 장치 금지",
+   "resolution": "학생 접점 하루 예산표 한 곳(Vellum 상수 · 묻는 것 ≤2 · 주는 것 자리별 상한 · 몸은 예산 밖) + 발화검문 «한 함수»를 모든 «말»이 지난다 + 새 화면 0·푸시 신설 0 · 몽골어 검수 전 = 설계된 침묵"
+  },
+  {
+   "conflict": "«sim»·리허설 생성기가 넷 — Core 학생시뮬 20벌 · Vellum 몽글시험지 상태 픽스처 4벌 · Prism 합성 L1 간섭 300~500 · Temper EduClaw 후일",
+   "between": "Core ↔ Vellum ↔ Prism ↔ Temper",
+   "resolution": "프로필 세트 하나(tools/학생시뮬.js · Prism L1 규칙 목록을 프로필 재료로) · 'sim' 값 하나(c17) · 운영 함수 거절 하나 · 각 시험지는 그 세트를 읽는다"
+  },
+  {
+   "conflict": "밤 자원(램 16GB·Arc)을 셋이 따로 문다 — Loom 밤샘 사슬 · Prism 발음 파이프(원음 300) · Core 시뮬/인코더 배치 · Temper 심판",
+   "between": "Loom ↔ Prism ↔ Core ↔ Temper",
+   "resolution": "밤샘_*.js 사슬 하나에 단계 append(램문지기 · 빚인 Loom 여덟 단계 먼저 · Blender 5.2.1 판 승인 뒤 그 위에서) · 낮 손 호출 ✗"
+  },
+  {
+   "conflict": "「Reed 는 Atlas 기여 0」(지도 v2.6 · 유호 확정 08-26 셋째 줄) vs Reed U2/U3/U5 가 ㉡ 생산·개입 kind·되돌리기까지",
+   "between": "Reed ↔ 지도 정본 ↔ Core",
+   "resolution": "줄은 안 옮긴다(셋째 줄 유지) · Reed 는 «생산자»가 아니라 자리·규격(재생기·곡시계·팩·소리자리)이고 생산은 Vellum 앱·소비는 Core — 자산층 규칙 ①과 셋째 줄 확정을 둘 다 지키며 지도 v2.7 에서 예외 경로를 본문화 · 3문 ① 답만 「작아진다→커진다」로"
+  },
+  {
+   "conflict": "이해대장에 절이 여덟 — Core 「누구=학생」 절 · Vellum 수신자 분포 절 · Prism 「강사(Prism)」 갈래 · Loom ㉡ 칸 등재 · Trail 계기 · Temper 재료 수 절 · Reed 절+래칫 셋 (도구 실물엔 아직 0 · 09-02 grep)",
+   "between": "일곱 ↔ tools/이해대장.js",
+   "resolution": "도구 하나 · 엔진별 절 일곱 + 수신자 분포 자 하나(합계=강사+학부모+학생+내부 · engine 열 · 자기 분모 검사) + 트랙 도장 파서 하나 + 판단 자리 목록 · 값은 손으로 안 적는다"
+  },
+  {
+   "conflict": "Loom U4 「시즌 책 발송 = 개입인가」를 Temper 에 묻고, Temper 는 개입 종류 축을 actor_kind/moment_id 로만 두었다",
+   "between": "Loom ↔ Temper",
+   "resolution": "kind=report 를 닫힌 값목록에 넣고 스탬프(intervention_id·recipe_ver·loom_ver)는 찍는다(싸고 가역) · 학습개입 ○/✗ 는 Temper 의 kind×moment_id 표가 정한다(발송 «뒤» 행동이 바뀌었나는 표본 뒤)"
+  }
+ ],
+ "engine_order": [
+  {
+   "step": 0,
+   "engine": "작업 시스템(+Trail U8·Prism U0)",
+   "item": "«자 먼저 · 0원 · 지금» — 실측 묶음(학생ID 종단 칸 넷 착수 여부 · intervention.delivered 정본에 arm ID 실재 · season_review 실 DB 적용 · 아침 푸시 실물 · 시즌 회고 화면 강사/학생 칸 분리 · exam.result 규격에 문항별 정오 · 되묻기 정렬 SQL 라이브 · ffconcat 재읽기 16초 팩 · nano-banana 별칭 models.get · Reed 곡 물량) + 정본 수리(결정.md:342 정정 병기 · 시즌회고_설계:23 · 소개서 낡음 통보 6건) + Prism U0 산출 계약 검증기·학생 접점 참조 상한 0 래칫 + tools/이해대장.js 수신자 분포 절·판단 자리 목록·도장 파서",
+   "why_this_order": "뒤의 전부가 이 자를 지난다 · 낡은 정본 위에 상향이 서면 다음 날 낡는다(이번 3안 중 둘이 실제로 옛 줄을 실측으로 옮겨 적었다)",
+   "closing_door": "문 없음 — 단 «안 재봤다»를 닫지 않으면 1번 이후의 순서 자체가 틀린다(종단 칸 넷이 0이면 4번이 1번으로 올라온다)"
+  },
+  {
+   "step": 1,
+   "engine": "작업 시스템(+Core U7·Loom U6·Vellum U4·Trail U4·Temper U6·Reed U8)",
+   "item": "감지기 하나(tools/모델감시.js) + 결정.md 재심 큐 절 + tools/모델정책.js 한 곳(엔진_콘텐츠AI.js·이미지굽기.js:22·Lyria·심판·룸눈 하드값 이동) + 엔진점수.jsonl engine 열 + 시험지 일곱 등재 + «판 기준선 회전»(Core 시험지 «이력 없음/있음» 두 열 · 몽글 220 · Trail 60 · Temper 30건 라벨→0.5B 심판 자격 · Loom 첫 재심 3건 · Reed 회차 0 = 현재 판 8벌)",
+   "why_this_order": "Fable 5.1 이 09-01 에 나왔고 v7 이후 유효 회차 0 — 개원 전 마지막 세대의 점수가 없으면 개원 후 첫 재심의 기준선이 없다 · Loom 상수 셋은 이미 낡았다(프리뷰 별칭·5.2.0·2.11.1) · 첫 Lyria 판 교체 «전»",
+   "closing_door": "«판 기준선»은 모델 교체 «전»에만 찍힌다 · 프리뷰 별칭이 죽었으면 캐러셀·NPC 굽기가 지금 조용히 멈춰 있다 · 돈은 유호 월 상한(D14) 안에서"
+  },
+  {
+   "step": 2,
+   "engine": "Reed U1·U9(+Loom 안전띠)",
+   "item": "곡시계 + 곡장부.json 저장(재현 칸 필수 · 판 표식 pack_ver·schedule_ver · 크레딧.md 는 파생) + 래칫 셋 + 세로 안전띠 상수·검사 게이트 4/4 + Dual stream 클릭 1회(중앙 크롭)",
+   "why_this_order": "송출 첫날부터 매일 닫힌다 — 그릇 없이 튼 기간의 곡 단위 체류는 영영 빈칸",
+   "closing_door": "송출 첫날(라이브 액세스 해제 09-02 22:21 KST 뒤 VPS 결제와 함께 «며칠» 안) · 스트림 시작 뒤엔 세로를 못 뺀다"
+  },
+  {
+   "step": 3,
+   "engine": "Core(계약 주인) — 일곱 어휘 전량",
+   "item": "c17 «한 판» — 과정 그림자 칸·reads picker_* · arm_id·loom_ver·expected_ver·shadow·kind 여섯·actor_kind teacher·'사람.*' · goal.stated · corrected_value·atlas.excluded·atlas.summarized/summary_ver · self_explain · topic.engaged(+노출) · mascot.touched · listen.session(+표본제외 자습체류·도달 장부 줄) · moment_id 값목록(표→도구 생성)·first_kind · preference stated_via · goal_outcome·learner_account.linked · exam.result 칸(doc_verify_no·verify_status·발표일·문항별 정오)·trail_ref · season_review 확정 열 1·summary_ver 칸 · error_tags 뜻 · 규격 §⑤ 주석 · 'sim' 값록+운영 거절 · 학습개입 ○/✗ 표 열 + 학습자상태 v16 동승 + 사건출처 등재 + 관통왕복 v0.5(V6~V9) 같은 커밋 + 소비자 전부 같은 커밋 + 배포(리허설→운영) + 배달왕복 122 재실측",
+   "why_this_order": "소급 불가 어휘 전량이 한 판에 · 판올림 드래그 8자리를 한 번만 · 생산자섰는데도달0상한=0 이라 소비자 동반이 조건",
+   "closing_door": "12월 파일럿 첫 밤·첫 교실·첫 개입 → 개원 첫 배달 2027-02-25 · 「늦게 넣은 열은 그 앞이 영영 빈다」 · 유호 D1"
+  },
+  {
+   "step": 4,
+   "engine": "Core U9·Trail U1·U3(구조)·U2(어휘)·U7(id)",
+   "item": "학생ID 종단 «지금» 칸 넷(0이면 최우선) + exit_log 종료사유·effective_at('@')·observed_at·lifecycle_status·마지막_완료_시즌ID + trajectory 종료구분 3열 «추가»·미정 30일 경보 + outcome_log 원문 4칸·출처 «본인 제보(AI 초안)»·outcome_verdict 시트·근거키·classifier_ver·이름 살균 함수 한 곳(pushGoldenFixture_ 와 같은 곳·키릴 20 픽스처) + 9갈래 이름·출발점 키·achievement id 7·my_trail 열 화이트리스트·«계정 안 닫힘»·recovery_email 칸 — 코드는 얇게 · 회귀에 단언(tests/궤적.test.js 복원 8검사)",
+   "why_this_order": "첫 학생 입학 «전»에만 손실 0 · 첫 이탈은 첫 시즌 안에 날 수 있다 · 첫 관측(재학 중 면접폼)이 옛 12칸으로 들어오면 원문 없는 행이 영구",
+   "closing_door": "2027-02-25 입학 전 · 호출은 안 켠다(시험지가 먼저 · 돈은 첫 근황 전)"
+  },
+  {
+   "step": 5,
+   "engine": "Temper U1·U2(규격 v2)",
+   "item": "docs/Temper_사전분석계획_v1.md(결과변수 하나=같은 오류 태그 30일 재발률 · 재노출 분모 · 창 · 사전분포 · 정지규칙 · 갈린 결정 하한 30 · 회색 표기 하한 · 판정자=회고 강사 · 첫 질문 「초급→중급 전환기」) + lib/성과회수.js v3(계획 sha256 = 회수판 재료 · 방향 적중 · 사후=데이터 몫+사전 몫 · kind 별) + deliver expected_ver 한 줄 + 규격 v1→v2 그 자리 대체 + rot-check 지문 대조 절 + 개입스탬프 test 5→7",
+   "why_this_order": "「자가 데이터보다 먼저 섰다」는 첫 개입이 나가는 순간 영영 못 만든다(git 시각이 증거) · 결과변수 어휘는 3의 사상표 위에 선다",
+   "closing_door": "12월 파일럿 첫 개입 «전» git · expected_ver 없이 쌓인 개입은 소급=날조 · 유호 D13"
+  },
+  {
+   "step": 6,
+   "engine": "Reed U2·U6 + Loom U1·U2 + Vellum U1(앱 쪽 수집면)",
+   "item": "앱 자습 재생기(내려받은 앱 판 mp3 −16 · 기기 안 곡시계 «함께» 기본 · listen.session 끝 사유 · 두 겹 자) + lib/소리자리.js·앱 판 화면 규격(읽어야 하는 요소 0) + 몸이 듣는다(mascot.touched 집계기·유실 자) + 반응 상태기계 «듣는다» 한 상태+시각 눌림(무음 폰 하한 F471) + topic.engaged 관찰기 균등 노출 상수·가이드 정본 BC55·self_explain 그릇·S26 줄 + 실기기 개발 빌드 1회(귀검수 5 같은 날 · 지연 ms 셋 실측 · Skia 2.11.2 픽셀 대조)",
+   "why_this_order": "파일럿 첫 밤·첫 말하기 숙제·첫 반응 신호는 한 번뿐 · 만질 이유 없는 몸의 봉투는 빈다 · 안 켜면 재료가 0",
+   "closing_door": "12월 파일럿 코호트 첫 밤 «전» 한 커밋(재생기+사건+소비자) · 첫 노출 shown_at 을 그 순간 안 적으면 분모가 영영 없다 · 유호 D2·D3"
+  },
+  {
+   "step": 7,
+   "engine": "Core U2 + Temper U3 + Vellum U7(교실 쪽 수집면)",
+   "item": "M2 관찰 확정 탭 «한 칸에 셋»(area·tags 초안 확정 · 관찰|개입 갈래 6종 AI 초안+확정 1 · 학생이 말한 목표 태그 goal.stated) → teach 가 observation.noted + intervention.delivered(kind=teacher_classroom · '사람.교실.v1') + goal.stated 를 같은 트랜잭션에 + 강사 슬롯 규격(T19 오늘 말 걸 아이·T20 어제 몽글 말·선정 상수 한 곳·결석은 이름만·사유 분포 경보) + 관찰왕복시험 27→+N + 탭률 계기",
+   "why_this_order": "첫 학기 강사가 «한 것»과 학생이 «제 입으로 말한 목표»는 그날 안 적으면 영영 없다 · 세 힘(Ⅱ-6)의 첫 재료가 여기서 선다",
+   "closing_door": "12월 파일럿 첫 서클 → 개원 첫 학기 첫 서클 · 파일럿 2주 실측(관찰:개입 비율·무수정 확정률)으로 6종 값록을 c17 안에서 한 번 고친다 · 유호 D6"
+  },
+  {
+   "step": 8,
+   "engine": "작업 시스템(리허설 입구+출구)",
+   "item": "개원 리허설 «수집면 전부 켜짐» E1~E4(시트 골격 전량 · 트리거 실설치 /triggers · 계약 라이브_대응 14칸↔라이브 헤더 · 학생 빌드가 production) + 「앱 자습 판 켜짐」·「교실 개입 행 1건」·「voiceSweep_·sttSweep_ 라이브 도는 것 눈 실측」 줄 추가 → 출구 = 관통왕복 V1~V9 + 배달왕복 122 + 관찰왕복 + 만짐·청취 봉투 — 입구·출구를 «같이 한 번» 잰다(지금까지 한 번도 같이 안 재봤다)",
+   "why_this_order": "출구가 초록이어도 입구가 안 켜지면 첫 주 짝이 영영 빈다 · 첫 학생의 첫 주는 한 번뿐",
+   "closing_door": "12월 파일럿 코호트(진짜 마감 하나 · 실패 시 대체물 없음) → 2027-02-25"
+  },
+  {
+   "step": 9,
+   "engine": "Prism U1·U2·U5·U4·U3",
+   "item": "NIKL 나눔터 신청(유호 클릭 2 · 오늘) → 가설.jsonl 사전등록 H1~H8+논문 값 행+대응표(다른 세션 30문장 검산 ≥24/30) → 편집 유도 태그층(lib/편집정렬.js·사상표 한 장·픽스처 62 일치 ≥56/62·as/talk 어휘 분열 닫기)+합성 벌 정밀도 두 벌 → 발음 자 파이프(ForcedAligner+음소 인식+G2P · 3값 · Arc 밤 사슬)+유호 목소리 11×3+일부러 틀린 벌 1회 리허설 → 조준 배선(등장률 자 처리 다섯·제안 원장·검증기 값 셋·읽는 입구 같은 커밋·옛 voice_log 분모 불변 회귀) → 집계층 코드(가설 검증기 · 중복 제거 키 · 분모 둘 · 문턱 추정 표기 · 시즌당 ≤1 축 · 리허설 학생+합성 벌 위에서 검증)",
+   "why_this_order": "승인 리드타임이 가장 긴 문(NIKL) · 가설 «사전등록»은 첫 실데이터 «전»에만 성립 · 첫 시즌 소리에 어느 자 판이 붙었나는 그날 박아야 남는다 · 「값·판정은 개원 뒤 / 자·계약·집계 코드·조준 배선은 개원 전」으로 트랙 §4-C 판정줄을 갈라 적는다",
+   "closing_door": "개원일 2027-02-25(사전등록·24종 늘리기) · 첫 녹음 전(음성 반출 판정) · 첫 시즌 종료 전(조준 배선) · 유호 D12·D18"
+  },
+  {
+   "step": 10,
+   "engine": "Core U4(인코더) + Vellum U3·U4(companion-bake)",
+   "item": "산문 Atlas 인코더 + atlas.summarized 발행 + lib/요약채점기.js(홀드아웃 Brier · 주 1회) + 시험지 «이력 없음/있음» 두 열(1번 기준선 회전에 동승) → lib/발화검문.js 한 함수 + 평가어·비교어 어휘(synk-brand) + 표 파싱 자기 분모 검사 + 조립부 식별자 차단 회귀 → companion-bake 전야 굽기(별도 pg_cron · 학생 맥락 = atlas.summarized 최신 1건 · 스탬프 다섯+moment_id · 몽골어 검문 5층 · 문구 없으면 침묵 · 앱 아침 큐) + lib/성과회수 companion 갈래 + lib/발화정책 골격(관찰기=표 규칙 그대로 · 케어 하한 · 되돌림 회귀 · 활성 전 무동작) + 창구 다섯 같은 원장 — deliver 과제요약 «교체»(산문+학생 조각 맨 아래+cache_control+Batch+key_takeaway 3키 동반 목록)는 4회전 ⑥ 판정 «뒤» 5회전 판 한 번",
+   "why_this_order": "첫 달 관계 원장이 0행으로 흐르는 것을 막는다(몽글 발화 생산자 0) · 세로줄 «한 판정»의 실물이 글 한 장이 된다 · 유호 08-25 확정(두 손이 한 프롬프트를 만지지 않는다)을 존중해 deliver 교체만 뒤로",
+   "closing_door": "개원 첫 주(첫 발화의 스탬프 다섯 칸 · 첫 관계 기록) · 생성 통로 교체는 4회전 뒤 한 번만 · 첫 회전 돈 = D14 · 유호 D5"
+  },
+  {
+   "step": 11,
+   "engine": "Vellum U2·U5·U6 + Core U6(답장 꼬리)",
+   "item": "Amber 그 자리 반환(«처음» 4종 실시간 같은 요청 · first_kind 멱등 · 잠긴 5순간 열기 · 「우리」탭 BY 한 줄 · 학부모 P3 순서 게이트 · 하루 1회) + 세 축 맑기·빛(갈래 사전 상수 한 곳 · goal_used 스탬프 · 안 떨어짐 회귀 · 교재연동.js:836 「자랐어요」 카드 걷기) + 답장 꼬리 key_takeaway 3키(파서 동반 목록 · 오늘의한가지.js) + 「오늘의 한 가지」 카드 얼굴 + S26 self_explain 되묻기(보기 3+자유 한 줄 · 주 2회 · 그림자 판정) + 미니게임 관찰 한 줄 + 학생 예산표 상수 한 곳 + tools/설명대조.js(표본 30)",
+   "why_this_order": "첫 제출·첫 녹음·첫 무오류의 «그 순간 반응»만 소급이 안 된다 · 첫 달에 몸이 안 움직이면 첫인상에서 「나를 알아봐 주는 방식」 2/3 를 잃는다 · Ⅰ-5 넷째 칸 0/53 의 첫 반례",
+   "closing_door": "2027-03 첫 주 첫 제출 · goal_used 스탬프는 생성 시점(소급 불가) · 몽골어 카피는 검수 전 설계된 침묵 · 유호 D5·D7·D17"
+  },
+  {
+   "step": 12,
+   "engine": "Loom U4·U7(+포트폴리오 걸음 1)",
+   "item": "룸잉크 자를 구운 원판 실측 밝기로(입은 지면 45벌 일괄 재판정) + DTCG/Style Dictionary 변환층(중성축 11색 바이트 0 → 전 축) + 데이터 원고 어댑터(Trail·Core 행 → 마크다운+조판 힌트 · 닫힌 어휘 · Prism 값 밖 · 히어로 힌트만 모델 슬롯) + «리포트» 프리셋(교실 A4 1보 · 시즌 책 A4·폰 두 벌 · 표지 = 교정 «후» 문장 · 타 학생 값 0) + 발송 사건 kind=report 스탬프(intervention_id·recipe_ver·loom_ver) + 포트폴리오 걸음 1 생산자(attendance 반 이름 · portfolio_moments · class_snapshot · momentSweep_ · contents_순간.js · 배포 창) — 리허설 학생 t-관통A 8주치로 A4 1장+시즌 책 1벌 초록(LLM 0)",
+   "why_this_order": "조판 소비자가 먼저 서야 래칫이 포트폴리오 생산자를 끌어온다(주인 없음 6주째) · 무대·작품·촬영은 그날 안 담으면 영영 없다 · 자(룸잉크)가 틀린 채 뒤의 판정이 서면 거짓 초록 위",
+   "closing_door": "첫 달 회고 A4(개원+4주) · 첫 시즌 책(2027-04) · attendance 반 이름은 학생 오기 전 · 히어로 힌트 호출은 돈 방아쇠 뒤 · 유호 D10(Patina 자리) 은 여기서 묻고 굽기는 15번"
+  },
+  {
+   "step": 13,
+   "engine": "Core(회고 그릇) + Temper U5 + Trail U2·U6(자기 것) + Prism 카드 통로",
+   "item": "season_review 실 DB 적용 «확인»(미적용이면 그 조각 배포) + lib/회고.js 굳힌판 v2(학생 「알게 된 것 셋」+협상 · Temper 절 갈래별 n/m·미도래 · 강사 「통한 개입」 확정 칸(선택형+자유 한 줄+모르겠다·회색 표기) · Trail my_trail 뷰 병치 왼쪽(열 화이트리스트 회귀 · season_compass 직접 조회 0) · 실현 칸 «이름») + 시트층↔Supabase 읽기 통로 1 + intent_timeline 파생·9갈래·재작성 첫 줄 단언 + S16 «행 규격»(카피는 유호 자리) + Prism 시즌 판정 카드→회고 사람 판정 자리 + tools/이해대장.js Temper 절(재료 수만)",
+   "why_this_order": "record_snapshot 은 «그 순간 굳힌 것»이 정본 — 첫 회고 행이 v1 로 굳으면 첫 시즌의 짝 절·학생 셋·병치는 영영 없다 · Ⅰ-8 효율 눈금의 그릇 이름이 여기서 선다",
+   "closing_door": "첫 시즌 회고 2027-04 말 «전» · 첫 시즌 왼쪽(선언)은 그 시즌에만 적힌다 · 유호 D11"
+  },
+  {
+   "step": 14,
+   "engine": "Core U8 + Prism U7",
+   "item": "redaction_ver v1 규격(AI 완성형 1벌 → 유호 픽 · 자유서술 칸 이름 살균 포함) + functions/review 뒷단 [자동] 4단(비식별 산출물 content_hash → data_use.granted → 훈/평 group_id 배타 → 시험지 실학생 판 편입) + revoked 전파 같은 커밋 + 승격 왕복시험(의사 1→granted 1→평가 묶음 1→격차 0) + tools/시험지굽기.js(granted 층화 표집 · PUBLIC 밖 저장 · 겹쳐 채점 1회 · 실학생 0 접미) + 성과계기판 ⑥격차 16→0",
+   "why_this_order": "첫 promotion_intent(개원 셋째 주쯤)가 붙기 전에 규격이 한 판으로 서야 첫 코호트 산출물이 한 판 · Ⅰ-2 「우리 학생이 실제로 틀린 문제로 판정」이 문장에서 자로",
+   "closing_door": "첫 promotion_intent 전 · Q8 08-24 시점과 어긋남은 한 줄로 알리고 지금 말을 따른다 · 유호 D16"
+  },
+  {
+   "step": 15,
+   "engine": "Core U1(관찰선택자)·U6(협상 카드) + Loom U3(Patina)",
+   "item": "lib/관찰선택자.js(정보 이득 · 축별 노출 분모 · 주 40% 상한 · 「오래 안 물은 축」은 2차 키 · 카드 ≤2 회귀) + deliver 관측 요청 힌트·게임 배정 힌트·M2 「볼 자리」 한 줄 + 캐릭터 자리 협상 카드(엔진이 본 것·근거 N/분모·맞아/아니야→이거야 1탭·빼기 → 파생 재생성 회귀 「excluded 근거 0건」) + Patina(비교불가 회귀 먼저 → 녹음띠 24컷 밤 사슬 뒤 → 리허설 A/B 나란히 «양 안 보임» 유호 눈 → 앱 명목형+지면) + 시뮬 20벌로 «4주 뒤 null 아닌 축 수/14» 자 검증",
+   "why_this_order": "첫 시즌 되묻기 예산 56장은 한 번뿐이고 순번 정렬로 쓴 카드는 되돌릴 수 없다 · 첫 학생이 첫 카드에 «아니야»를 누르는 순간부터 «그럼 뭐야»가 남아야(어휘는 3에서) · Patina 손버릇·색온도는 6의 봉투 위에서만",
+   "closing_door": "개원 첫 시즌(2027-02~04) 안 · 소급 가능한 것은 컷·화면 · 소급 불가는 어휘(3에서 닫힘) · 유호 D7·D10"
+  },
+  {
+   "step": 16,
+   "engine": "Temper U4 + Core U5(그림자) + Reed U3·U5",
+   "item": "오늘과제 섀도 판 파일 분리 + deliver 섀도 계산(payload.shadow) + lib/섀도대조.js(갈린 결정만 · 관찰 대조·인과 아님 · 하한 30 미만 = 못 쟀다) + tools/처방판재계산.js(판올림 커밋 훅 · 로컬) + test ⑥ + 계기판 섀도 절 + Core arm_id 결정론 스탬프+처방 순위 그림자(확률 0) + Reed 「내 리듬」 코드 자리(곡편성 입력 객체 · progress 자습편성 · radio_tone 스탬프 회귀 · 활성 게이트 띠수≥2·n≥12 · 자습실 null · 「내 자리」 스위치) + word_between_songs(낱말 선택기=오늘의한가지 · 큐 · content.viewed parent · 끄기 스위치 · 시간당 ≤1)",
+   "why_this_order": "첫 규칙 변경(첫 시즌 회고 즈음)이 섀도 없이 나가면 그 판 전환은 시간 순차 비교로만 남는다 · 개입 스탬프·parent 고리 없이 튼 밤은 30일 짝이 안 남는다",
+   "closing_door": "첫 판올림 «전» · 첫 교정 행 «전»(곡 사이 낱말 그릇) · 활성은 첫 코호트 30일 뒤 게이트가 스스로 · 유호 D4·D8"
+  },
+  {
+   "step": 17,
+   "engine": "Prism U8·U6 + Trail U6(남의 것)·U5 + Temper U5(S16 켬)",
+   "item": "교안 카드(문턱·빈 카드 규칙 먼저 커밋 → 텍스트 축만 · 관찰 입력 뒤 발송 · 열람 자 · 강사판 꼬리) + L1 원인 어휘 닫힌 목록·대조 설명 사전 골격·교차 표 코드(교재 인계 시점) + senior_paths 집계 뷰(n≥app_state 최소치 · 침묵 규칙 · 코드 템플릿 3값 · 촉진 카드 칸 · 강사 훈련 한 줄) + exam.result 칸 소비(topik_milestone 거울 · 진위확인 칸 · 보장 분자 게이트 · 졸업 0 = 확인 불가) + mongolia_baseline 월 1회 적재·단언 셋·계기판 절 + S16 한 줄 경유(강사 확정 행만 · 시즌당 1 · 카피 유호 확정 뒤)",
+   "why_this_order": "첫 학기 강사가 카드 없이 8주를 가르치는 것은 되돌릴 수 없다 · 첫 실성적(2027 하반기)의 문서확인번호는 2년 창 · 2기 첫 시즌(2028-03) 카드는 1기 출발점 키·활용동의 값이 남아야 뜬다",
+   "closing_door": "통로·문턱·빈 카드 규칙은 개원 전 · 발송은 첫 실데이터 뒤 · exam.result 칸은 첫 회차 전 · 2028-03"
+  },
+  {
+   "step": 18,
+   "engine": "Trail U7 + Core U9(후반) + Temper U7 + Loom U8 + Reed U4·U7",
+   "item": "명예 졸업생 카드 잠금 화면(my_trail 본문) + 근황 한 줄 통로(→ outcome_log L1 · 주기 알림 0) + tools/졸업배지굽기.js(OB3/VC 2.0 · did:web · StatusList 첫날 · 로컬 verifier) + 종이 번호 카드 3조건 + 16세 통로 안내 한 줄 + goal_outcome 후보 제시(사람 확정) + learner_account.linked 실물 + Temper 처방후보판.js(둘째 시즌 뒤 · 섀도 진입만) + Meshy 무료 1소품→펠트 굽기(판 A~E 옆) + 24시간 펼침·자연층 변주(판정 ③ 뒤) + 닫힌 루프 곡지시.js·밝기 자(송출 2주 뒤 표본)",
+   "why_this_order": "소급 가능하거나 문이 나중에 닫히는 것들 — 단 «떠나는 날의 한 줄»은 떠나는 그날뿐이라 첫 졸업 전이 절대 마감",
+   "closing_door": "게임 앱 2027-08 전(연결 사건) · 첫 졸업 2028-02 전(여섯 중 가장 되돌릴 수 없는 문) · 라디오 무대가 «구»로 굳기 전 · 송출 2주 뒤 판정"
+  },
+  {
+   "step": 19,
+   "engine": "작업 시스템(착지 · 매 커밋 동행)",
+   "item": "소개서 7벌 판올림(⑦ 대장·⑩ 닫히는 문 · 옛 표 삭제 · 시제 §0 · 수치는 grep 재확인) + 엔진 지도 v2.7(닿는 셋 = ①②③④⑤ · Reed 예외 경로 본문화 · 이해대장 ㉡ 칸에 Loom·Vellum·Reed 생산자 등재 · 세 축 성적표) + 렌더린트 등록층 + 트랙 §4-E 닫힌 갭 줄 삭제 + 큐 Q7·Q8 줄 정정 + 철학 정본 다음 개정에 얹을 줄 셋 대기(Reed 문장 · Ⅰ-4 곁줄 · Ⅰ-8 켤 자리)",
+   "why_this_order": "마지막이 아니라 «매 착지 커밋»에 — 따로 두면 낡고 다음 세션이 「앱 입구 ✗」를 근거로 문고리를 세 번째 짓는다",
+   "closing_door": "문 없음 — 단 각 걸음의 착지 커밋에 ⑦⑩ 이 동행하지 않으면 정본이 「짓는 중」을 「없다」로 말한다"
+  }
+ ],
+ "atlas_definition": "【무엇으로 이루어지나 — 네 층】 ⓪ 원신호(정본 · append-only · 학생 오기 전 어휘를 닫는다) = engine.learning_events(c17) + 시트 수집면 27종. 갈래 다섯을 source_kind 로 갈라 둔 채 한 원장에: «한 것»(observed — 제출·과정 그림자·이탈·퀴즈 확신도·미니게임·말풍선 반응·몸 만짐·자습 체류·목표 실린 과제 낸 날·급수 취득) · «확인·고친·뺀 것»(explicit — estimate.responded+corrected_value·goal.responded·atlas.excluded·가이드 선택·낱말 끄기·내 자리 스위치) · «말한 것»(explicit·teacher_relay — goal.stated·self_explain·시즌 선언 self_in_5y·근황 한 줄 원문) · «사람이 한 것»(teacher — observation.noted·teacher_classroom 개입·검수 확정·시즌 회고 판정·원장 확정·강사 통한 개입 확정) · «받은 것»(intervention.delivered kind 여섯 + content.viewed parent). 식별자는 백엔드 안 · 벤더로 나가는 것은 인덱스와 이름 뗀 원문뿐. ① 파생(저장 0 · as_of 재계산 · 옛 판 공존 없음) = 학습자상태 v16(14축+과정·explicit 나란히·null 사유·표본제외) · 세 축(크기·맑기·빛 = 사실 카운트) · Amber 순간(1번째 행) · 관계 원장(delivered↔viewed↔행동 짝 · 파생 조인) · Patina 자리값(명목형 · 클라이언트) · 성과회수 v3(방향 적중·사후) · intent_timeline·trajectory(Trail 시트 매일 재작성) · my_trail 뷰(자기 것 · 남의 열 부재) · senior_paths 집계(남의 것 · n≥최소치) · Prism 셀(집단 · 학생 행 0). ② 산문 한 장 = atlas.summarized 사건(summary_ver·prompt_ver·evidence_refs·≤1,500토큰 · 사건은 최근 N건+날짜 / 사실은 횟수≥k 만 일반 진술 / 규칙은 별도 블록 · 옛 요약 입력 배제 · 낙인 금칙어 검문) — 강사와 엔진이 «같은 글»을 본다(Birdbrain 40차원 벡터·Khanmigo 별도 대시보드와 갈리는 자리). ③ 집단 사전확률(Prism · prior 는 예측이지 규칙이 아니다 · 학생 화면 0).\n\n【어떻게 갱신되나】 즉시(제출 처리 같은 요청 안 = Amber «처음» · 협상 카드 «아니야→이거야») · 밤(companion-bake 전야 굽기 · deliver 배달 스탬프 · 궤적 재작성 · 요약 인코더 주 1회 · 밤 사슬 발음·시뮬·심판) · 시즌(회고 굳힌판 v2 · Prism 지지/반증 · 조준 제안 · 후보 판 재생성) · 사건(모델 출시·판 변화 감지 → 재심 큐 → 시험지 일곱) · 학생의 «빼기»(atlas.excluded → 파생 재생성 한 벌 · 원천 삭제 0 · 자동 해제 없음) · 졸업 뒤(근황 한 줄 → outcome_log → goal_outcome 짝 · learner_account.linked 로 게임 앱까지).\n\n【어떻게 평가되나 — 엔진의 성적이지 학생의 성적이 아니다】 세 축 성적표(㉠ 시험지 합성 102+실학생 n 판 따로 · ㉡ 본인 동의율 맞다/아니다/고침 분모 셋 · ㉢ 회고 강사 판정↔엔진 요약 일치) + 요약 예측력 Brier(빈도 기준선 대비 · 미달이면 폐기) + 방향 적중 n/도래·미도래 + 도달 래칫 넷·시트층 래칫 + 이해대장 「닿는 층 1/3→3/3」·㉡ 재료 종류 2→7 + 수신자 분포(합계=갈래합) + 관통왕복 9/9 + engine 열 엔진점수.jsonl(판·분모·비용·무응답 null). 「학생이 실제로 더 잘하게 됐나」는 게이트·대장 어디에도 안 넣는다(첫 학생 뒤 시즌 대비 · 판정자 강사 · 그릇 = 회고 Temper 절).\n\n【어떻게 돌려주나 — 수신자 넷 · 새 화면 0】 학생 본인 = 캐릭터 세 축(숫자 0 · 셋 다 안 떨어짐) · 캐릭터 자리 협상 카드(엔진이 본 것+근거 N/분모 · 맞아/아니야→이거야 · 빼기) · 답장 꼬리 한 줄+오늘의 한 가지 20초 · Amber 그 자리 · S26 되묻기 · 미니게임 관찰 한 줄 · Patina 자국 · 몸 반응 · 자습 소리(내 리듬·곡 사이 낱말·끄기) · S16 시즌 한 줄 · 회고 「알게 된 것 셋」+지난 답 병치 · 교실 A4·시즌 책 · 졸업 카드 서명 파일 — 전부 「엔진이 본 것」+「다음에 할 것」 언어 · 등수·평균·남·약점 목록 0 · 하루 예산표 안 · 발화검문 통과. 강사 = M2 슬롯 넷(산문 Atlas+볼 자리 · 오늘 말 걸 아이·어제 몽글 말 · 반 교안 카드 · 시즌 촉진 카드) + 회고 절·확정 칸(강사는 «사람이어야만 하는 일»에 재료를 받는다 — 자리는 줄지 않고 값이 재진다). 학부모 = P3 그날 저녁(학생 viewed 뒤에만) · 주간(과정 축 제외) · 시즌 책. 회사 = 성과계기판·재심 큐·교재 인계·보장 부채 계기판(분모 동반).\n\n【소유·경계·시효】 소유는 학생(공동 저자 · 열람·고침·빼기 · 졸업 뒤 계정 안 닫힘 · 서명 파일이 학생 손에) — 「나만의 선생님」의 실체는 기능이 아니라 소유 관계. 경계 = 판정(목표에 가까워졌나·통했나·실현했나·좋은 습관인가)은 사람 · 실시간 자동 판정 0 · 낙인 라벨 저장 0(파생만 · 자리는 옮겨가지 굳지 않는다) · Prism 집단은 사전확률·교안·교재로만 · 감정·표정·시선 축 0. 시효 = 재학 12개월 → 한 사람의 10년(goal_outcome·learner_account.linked·근황) — 인터넷에 없는 셋(우리 학생이 틀리는 것 · 우리가 개입한 결과 · 졸업 뒤 삶)이 전부 한 learner_id 위에 쌓인다.",
+ "what_changes_for_student_day": "개원 첫 달, Lv2 학생 하나(가명 ㄷ)의 하루 — 현행 대비 «달라지는 것만»(몽골어 검수 전 문구는 설계된 침묵 = 몸짓만 · 「돈다」는 첫 실학생 뒤에 대장이 정한다).\n\n07:30 폰을 켠다. 지금은 몽글 상주 코드 전·앱 입구 ✗·푸시 0. 뒤: 푸시는 여전히 없고, 켰을 때 몽글 한 줄이 «기다리고» 있다 — 어제 숙제 «내용»을 기억하는 한 줄(companion-bake 전야 굽기 · 좋았던 순간에만). 잠결에 두 번 쓰다듬는다 — 아무것도 안 뜬다(mascot.touched 봉투가 세션 끝에 조용히 1행 · 말풍선을 톡 치면 topic.engaged 노출·반응 1행). 09:00 서클(폰 0대). 강사 손 카드에 「오늘 말 걸면 좋을 아이 셋」(좋았던 순간에서만 · 결석은 이름만). ㄷ이 「오늘은 발음 하고 싶어요」 하면 강사가 서클 뒤 M2 확정 탭에서 태그 하나(goal.stated · 5초) — 지금은 이 말이 영영 없다. 저녁 카드는 엔진 추천이 아니라 «ㄷ이 말한 목표»를 되묻는다. 15:30 순회. 몽골쌤이 「어제 몽글이 ㄷ에게 한 말」을 보고 같은 얼굴로 이어 말한다 · 「'-으니까' 앞 받침 짚어 줌」 한 줄이 관찰+개입 갈래로 남는다(teacher_classroom 개입 행 · ㄷ은 못 본다). 20:00 숙제. 말하기 녹음띠가 시침으로 넘어가는 순간 몽글이 몸을 기울이고 숨이 느려진다(듣는다) · 말이 끊기면 그대로 기다린다(재촉 0) · 맺으면 «몽» 되튐. 「먹었어요→먹어요→먹었어요」 두 번 고쳐 쓰고 3분 머뭇거린 것이 과정 그림자로 남는다(지금은 마지막 문장과 제출 시각뿐). 보내기를 누르는 «같은 요청» 안에서 첫 제출이 판정되어 까몽이 한 칸 다가온다(Amber · 지금은 아무것도 안 한다) · 「우리」탭에 「처음 녹음한 날 · 3월 2일」 한 줄. 답장이 오면 눈웃음(받았다 · 내용 평가 0) · 답장 위 카드 한 장 「오늘의 한 가지: -았/었- · 20초 1문항」(태그 빈도 코드가 고름) · 재도전 뒤 주 2회만 「-았/었-을 고른 까닭은?」 보기 셋(그냥/규칙/들어본 대로)+한 줄 선택 · 안 써도 침묵. 20:40 되묻기 카드 1장 — 「오래 안 물은 축」이 아니라 ㄷ의 상태에서 비어 있는 작성과정 축을 고른 질문 · 「아니야」를 누르면 같은 카드 안에서 「그럼 언제?」 1탭 · 「이 답은 오늘 밤 숙제 첫 문항을 바꿔」 한 줄(⑤ 자기설명). 캐릭터를 누르면 「맑기」 옆에 「요즘 새로 해 본 일이 4갈래래」 · 「빛」 옆에 「이번 시즌 목표를 넣어서 낸 날 3일」 · 「저녁에 더 집중되는 것 같아 — 맞아? / 아니야」 · 어느 근거든 «빼 줘»(지금은 크기 축 하나 · 되묻기는 검증 라벨 하나). 23:00 자습. 앱 라디오를 켜 두면(내려받은 앱 판 · 방송과 «함께» 같은 곡 · 화면은 펠트 무대 정지 그림+불빛 · 글자 0) 아무것도 묻지 않는다 — listen.session 만 남고 다음 주 배달 시각·문안·무대가 조금 달라진다(「어? 내 시간에 맞네」) · 차분 곡 사이 3초에 원어민 목소리로 「먹었어요」 한 번(어제 교정받은 낱말 · 끄기 스위치 · 시간당 1 · 지금 라디오 자체가 없다). 그날 저녁 학부모 P3 「오늘 처음으로 한국어로 끝까지 말했어요」는 ㄷ의 content.viewed 가 찍힌 «뒤»에만. 금요일 교실에서 A4 한 장 — 이번 달 말한 문장 셋(교정 «후»가 표지 · 원문 안쪽) · 처음 해 본 갈래 · 나침반 첫 답 옆 빈 칸 · 펠트 히어로 · 타 학생 값 0(지금 「가져가는 것 0」). 사흘 안 온 날 — 세 축 셋 다 안 떨어지고 아무 재촉도 없다 · 돌아온 날만 「오랜만이야」. 개원 첫 달 내내 ㄷ이 «보는» 숫자는 0 · «묻힘»은 하루 2장·20초 상한 · 나머지는 전부 몸·소리·종이로.",
+ "what_changes_for_yuho": "【보는 것 — 네 화면뿐】 ① 아침 1통(엔진_운영배치 · 기존): 다섯째 블록 「오늘 말 걸 아이 셋」 + 재심 큐 한 줄(「새 모델 X: ㉠ 91/102(합성)·실학생 n/m · ㉡ 0.74(n) · ㉢ 0.68(n) · 회당 $3.4 · 뒤집기 후보 3」 · 표만 · 재촉 0) + 「돈 스위치 대기 n건」. ② 이해대장 한 장(node tools/이해대장.js · 손으로 안 적음): 엔진별 절 일곱(닿는 층 1/3 · ㉡ 재료 종류 · 과정 non-null · Prism 완비/거절 · Trail 커버리지 · Temper 재료 수 · Reed 곡 귀속·도달) + 수신자 분포(강사 n·학부모 n·학생 n·내부 n · 합계=갈래합 아니면 측정 불능) + 래칫 전량 + 판단 자리 목록(누가 무엇을 언제 누르나) + 트랙 도장 파서. ③ 시즌 확정 카드(8주 1회 · 한 화면): Prism 어휘 늘리기 후보 ≤1·배분 제안(승인 1클릭) · Trail 근황 확정(원문·초안·confidence 병치 · 「확정 없이 넘기기」 같은 무게)+goal_outcome 짝 후보 · 판올림 근거 표(섀도 대조·강사 확정 일치율 · 픽) · 모델 픽 표(usage·세 축 · 유호님만 고름) · 보장 부채(졸업 n 중 4급↑ 확인/미확인/미달 · 몽골 분모). ④ 판정 지면(밤 사슬 아침): 룸눈이 앞단에서 거른 6장 위·걸러진 것 접힌 채 이유 한 줄(34장 나열이 아니라) + 곡 귀 판정 큐(주 4벌 상한).\n\n【누르는 칸 — 판단 자리 셋 + 손 둘】 매일 = 검수 확정 하나(현행 그대로 · 몽골쌤 순회+유호). 시즌 = ③ 확정 카드 한 장(어휘·배분·근황·판올림·모델 픽을 한 자리에 모아 손이 졸업생·엔진 수에 비례하지 않게). 돈 = 스위치 하나(가오픈 원칙 · «월 상한 값» 하나로 재심·재채점·회전 전부 · 상한 0 이면 전부 클릭). 눈·귀 = 재료의 급(룸눈 뒤 6장 · 곡 채택/은퇴 · 덕킹 A/B · Patina 나란히 «양이 보이나») — 기계가 못 대신하는 명품 축이라 남기되 앞단 자·큐 상한으로 «줄어든다»(34→6). 손(1회성·자격증명·로그인) = D18 묶음(NIKL 가입·Dual stream·Blender 다운로드·GitHub Secrets·개인키·did:web·실기기 빌드·30건 라벨).\n\n【발동은 전부 기계】 감지·재심·재계산·큐 등재·발송·굽기 사슬·이해대장 갱신·소개서 낡음 경보 — 사람 손에 걸린 발동 조건 0(Ⅰ-9① 0번 돈 병의 처방). 「판단 자리 하나만 남는가」의 답: 매일 자리는 검수 확정 하나 그대로 · 시즌 자리는 카드 한 장으로 접힌다 · 눈·귀는 줄이되 없애지 않는다(철학 Ⅰ-8) — 그리고 그 셋을 이해대장이 목록으로 세므로 «늘어나는 순간 보인다».",
+ "measures": [
+  {
+   "name": "관통왕복 V1~V9 ✓ 수(명세 v0.5)",
+   "instrument": "talk tools/관통왕복시험.js · 리허설 학생 t{base36}-관통A/B · LLM 0·과금 0 · 운영 무접촉",
+   "denominator": "9(지금 5/5 v0.4 · c17 커밋에서 9/9 재실측)"
+  },
+  {
+   "name": "이해대장 「엔진에 닿는 층」 1/3→3/3",
+   "instrument": "node tools/이해대장.js 렌더(F207 · 승급은 활성+첫 실학생 뒤)",
+   "denominator": "3 · 첫 학생 뒤"
+  },
+  {
+   "name": "㉡ 재료 종류 수(제출·이탈·자습 체류·만짐·말풍선 반응·자기설명·과정)",
+   "instrument": "tools/이해대장.js ㉡ 칸 생산자 등재 수(Loom·Vellum·Reed 이름 등재)",
+   "denominator": "7 후보 · 코드로 지금 2→7 등재 · 「돈다」는 첫 학생 뒤"
+  },
+  {
+   "name": "도달 래칫 넷(도달0상한 3 · 생산자섰는데도달0 0 · 행동안바뀜 1→0 · 늘지않음 1)",
+   "instrument": "talk lib/이벤트검증.js const · 새 생산자 8종은 소비자 같은 커밋",
+   "denominator": "사건 종/부품 수 · 행동안바뀜·늘지않음 되갚음은 첫 학생 뒤"
+  },
+  {
+   "name": "시트층 도달 래칫 {도달0: 5→4, 손: 1}",
+   "instrument": "엔진_셋업확장.js 시트도달상한_() · tools/lib/시트도달.js · 등재→실측→상한 순",
+   "denominator": "표식 27종(골격 58) · voice_labels 되갚음 = Prism 읽는 날(첫 시즌 뒤)"
+  },
+  {
+   "name": "개입 스탬프 완비율(다섯 칸+kind+expected_ver+arm_id+loom_ver+shadow)",
+   "instrument": "talk tools/성과계기판.js 「개입 스탬프」 절 · 개입스탬프.test.js 5→7검사",
+   "denominator": "intervention.delivered 행 전체(리허설 4,468 지금 · 운영 첫 주 과녁)"
+  },
+  {
+   "name": "개입→효과 연결률·방향 적중 n/도래·미도래(kind 여섯 갈라 · 합치지 않음)",
+   "instrument": "lib/성과회수.js v3 + 성과계기판 ① · 사후=데이터 몫+사전 몫 · 미도래 null",
+   "denominator": "보상 창 닫힌 그 kind 노출 수 · 첫 학생 30일 뒤(지금 0/0 · 리허설 1/1225 는 결함 아님)"
+  },
+  {
+   "name": "섀도 대조: 갈린 결정 n/전체 · 판올림→활성 일수 중앙값 · 처방판 행 수 = 판올림 커밋 수",
+   "instrument": "lib/섀도대조.js · tools/처방판재계산.js · rot-check 1:1 절 · 엔진점수.jsonl engine=temper kind=재계산",
+   "denominator": "전체 결정 수 · 하한 30 미만 = 못 쟀다 · 첫 판올림 뒤"
+  },
+  {
+   "name": "학생당 4주 뒤 null 아닌 축 수 · 축별 노출 분포 최대 비율 ≤0.4 · 카드 ≤2/일",
+   "instrument": "lib/학습자상태.js v16 + lib/관찰선택자.js 회귀 + 이해대장 절(시뮬 20벌로 자만 검증)",
+   "denominator": "14×재학생(is_test 제외) · 첫 학생 뒤(지금 0/0)"
+  },
+  {
+   "name": "본인 동의율(맞다/아니다/고침 분모 셋 · 채널 갈라) · 협상 카드 응답 분포 · 반영 제외 사건 수/학생",
+   "instrument": "talk lib/동의율 · 세 축 성적표 ㉡ 열",
+   "denominator": "노출 수 · 첫 학생 뒤"
+  },
+  {
+   "name": "요약 예측력(홀드아웃 Brier vs 빈도 기준선 · summary_ver)",
+   "instrument": "talk lib/요약채점기.js · 주 1회 · 시뮬로 지금 · 실학생 뒤 참값",
+   "denominator": "홀드아웃 답 수(학생별 5~10)"
+  },
+  {
+   "name": "엔진점수.jsonl engine 갈래(core 합성 102/실학생 n · vellum 몽글 220 · trail 60 · temper 30 · prism 태거 400+50 · loom 슬롯 6 · reed 세트 12)",
+   "instrument": "tools/eval-score.js · 판·측정일·모델·비용·무응답 null·시험지 출처 분모 · 판 다르면 대조 금지",
+   "denominator": "각 시험지 문항 수 · 지금 기준선 회전(돈 D14)"
+  },
+  {
+   "name": "재심 발동 수 / 감지된 출시·판 변화 사건 수 · 감지기 마지막 성공 읽기 시각(48h)",
+   "instrument": "tools/모델감시.js 기준선·로그 · 결정.md 재심 큐 절 · rot-check 상주 칸",
+   "denominator": "감지 사건 수(0/0 = 감지 안 됨 표기) · 지금 0/≥1(Fable 5.1 09-01)"
+  },
+  {
+   "name": "수신자 분포(강사·학부모·학생·내부 · engine 열 · 합계=갈래합) · 재학생 본인 n/N",
+   "instrument": "tools/이해대장.js 수신자 분포 절(엔진_운영배치 발송 로그+카드 노출 자리 파싱 · 로그 형식 바뀌면 측정 불능)",
+   "denominator": "자동 발송·카드 노출 자리 전수 · 지금 «안 재봤다»(08-29 0/53 손 실측) · 자 서면 참값 · 첫 학생 뒤"
+  },
+  {
+   "name": "판단 자리 목록(검수 확정·강사 확정 탭·회고 확정 칸·시즌 확정 카드·돈 스위치·눈·귀) 수",
+   "instrument": "tools/이해대장.js 절(코드·화면 등록층에서 센다)",
+   "denominator": "등록된 사람 칸 전수(지금 손으로 셈 → 도구)"
+  },
+  {
+   "name": "listen.session 행 / 학습자상태가 읽은 행 · 봉투 있는 날 / 앱 연 날(유실 자) · 라디오통로판별=false 회귀",
+   "instrument": "이벤트검증 도달 장부 'listen.session'·'mascot.touched' 소비자 지목 · 성과계기판 절 · 회귀 세 축 동시",
+   "denominator": "앱 로그인 일수 · 파일럿 첫 주"
+  },
+  {
+   "name": "topic.engaged 반응/노출(소재·시즌) · 노출 없는 반응 = 0 · 기기 캐시≠BC55 학생 수 = 0",
+   "instrument": "성과계기판 event_type 별 · 검증기 규칙 · 앱 부팅 대조 로그",
+   "denominator": "노출 행 수 · 첫 학생 뒤"
+  },
+  {
+   "name": "Amber 반응 지도 배선 5/18→10/18 · 처음→반환 지연 = 같은 요청 · P3 학생 viewed 선행 100% · first_kind 중복 0",
+   "instrument": "tests/마스코트배선.test.js · 검증기 회귀 · 순서 회귀",
+   "denominator": "18 · 동승 건 수"
+  },
+  {
+   "name": "세 축 산식 1/3→3/3 · goal_used 스탬프 채움률 · 「안 떨어짐」 회귀 · 「우리」탭 숫자·퍼센트 0",
+   "instrument": "tests/함께한날.test.js(9→+4) · 생성왕복 A1~A9+1 · 렌더린트 NPC §4 규격 3",
+   "denominator": "3 · 생성 과제 행"
+  },
+  {
+   "name": "발화검문 통과/굽기 출력 · 표밖발화상한=0 · 검문실패상한 · 표 파싱 줄 수 = 55+추가(아니면 측정 불능)",
+   "instrument": "lib/발화검문.js(런타임=시험지 동일 함수) · evals/몽글시험지.json 러너",
+   "denominator": "굽기 출력 전량 · 문항 수"
+  },
+  {
+   "name": "학생 접점 예산 위반 0(묻는 것 ≤2/일 · S20 다음날 되묻기 0 · 낱말 시간당 ≤1 · 겹침 0)",
+   "instrument": "Vellum 예산표 상수 회귀",
+   "denominator": "학생·일 · 지금 회귀 · 값은 첫 학생"
+  },
+  {
+   "name": "자기설명 한 줄 없는 학생 화면 N/전수 · 「읽어야 하는 요소 0」(앱 판) · Patina 서수 부품 0 · 비교 금칙어 0/지면 · 룸잉크 재판정 빨강/45 · DTCG diff 바이트 0",
+   "instrument": "tools/자기설명검수.js · 렌더린트 등록층(tools/브랜드렌더린트.js) · 룸잉크 자(구운 원판 실측) · 토큰내보내기 CI",
+   "denominator": "학생 화면 전수 · 지면 47 · 토큰 수 · 지금"
+  },
+  {
+   "name": "룸눈 일치율·홀드아웃 재현율 · 유호 앞 장 수(밤 산출→후보) · 슬롯 6 재심 행 수 · 낡은 상수 잔존 0",
+   "instrument": "tools/룸눈.js + docs/_ops/룸취향.jsonl(도구가 캔다) · 엔진점수.jsonl engine=loom",
+   "denominator": "유호 실판정 장 수(분모 <30 이면 % 안 냄) · 밤 산출 장 수 · 지금"
+  },
+  {
+   "name": "Prism 산출 행 완비율 · 검증기 거절 N/입력 M(행 0 과 가름) · src+functions prism_ 참조 0 · 가설 사전등록 8·등록일<개원일 · 태거 정밀도 두 벌 차(왜곡량) · 발음 «일부러 틀린» 낱말 라벨 잔존/틀린 수 · 배분 승인→반영 행/제안 · 축별 최소 2 위반 0",
+   "instrument": "tests/prism계약.test.js · tools/prism_prior.js · tools/prism_align.js · tools/발음자.js · tools/prism_aim.js · tools/프리즘판정.js",
+   "denominator": "시즌 산출 행 · 합성 400~500/NIKL 50 · 픽스처 오류문 62 · 틀리게 읽은 낱말 수 · 제안 행 · 지금(자)/첫 시즌 뒤(값)"
+  },
+  {
+   "name": "교안 카드 발송/(반×주) · 열람/발송 · 관찰 area 겹침 0 · 문턱 미달 «없음» 비율",
+   "instrument": "전달 원장 열람 자 · CI 겹침 검사 · 수신자 분포 「강사(Prism)」 갈래",
+   "denominator": "반 수×주 수 · 첫 학생 뒤"
+  },
+  {
+   "name": "trajectory 종료구분 분포·미정 비율 · outcome_verdict 확정/초안/form · 초안→확정 수정률·확정률(100% 연속 경보) · 궤적상한_ 셋 · tests/궤적.test.js 0→8 · my_trail 열 화이트리스트 · senior_paths n≥최소치 셀/전체",
+   "instrument": "app_state 계기판 값 · 엔진_궤적.js 재작성 · tests/궤적.test.js · 뷰 정의 회귀",
+   "denominator": "exit_log 행 · outcome_log 행 · 출발점 셀 · 코드 지금 / 값은 첫 이탈·2028+"
+  },
+  {
+   "name": "보장 부채 계기판(졸업 n 중 4급↑ 확인/미확인/미달 · 몽골 D-2 전체 n 법무부 yyyy-MM판 · 재관측 만기율 +6/+15 · 법무부 적재 성공 월/경과 월)",
+   "instrument": "talk tools/성과계기판.js 절 · topik_milestone·mongolia_baseline 시트 · 단언 셋 경보",
+   "denominator": "exit_log 졸업(0 이면 «확인 불가» · 0% 금지) · 첫 실성적 2027 하반기 뒤"
+  },
+  {
+   "name": "⑥승격 격차(의사 n − 발행 m) 16→0 · 철회 전파 회귀(revoked 1→산출물 0) · 시험지 실학생 표집 비율 · granted 없는 표집 원문 = 0",
+   "instrument": "성과계기판 ⑥ · 승격 왕복시험 · tools/시험지굽기.js 머리 커버리지",
+   "denominator": "promotion_intent 행 · 문항 수 · 첫 promotion_intent 뒤"
+  },
+  {
+   "name": "학생ID 종단 칸 넷 실물 수/4 · goal_outcome 짝/졸업생 · learner_account 연결/게임 앱 전환 학생 · 졸업 카드 발급/졸업 n · verifier 통과/발급",
+   "instrument": "git log·grep·배포판 대조(지금) · tools/졸업배지굽기.js 회귀 · Trail 계기",
+   "denominator": "4 · 졸업생 수(2028-02 이후 · 그 전 «없음이 정상») · 2027-08 이후"
+  },
+  {
+   "name": "Reed: 곡 귀속 없는 heartbeat/전체 · 재현칸없음채택=0 · 규격밖채택=0 · 곡당 관측 n≥12 곡 수/채택 곡 · 안전띠 4/4 · Shorts 실물 1/1 · listen.session 앱 자습 켠 학생/로그인 학생",
+   "instrument": "tools/이해대장.js Reed 절 · 래칫 셋 · 곡시계·곡장부.json · 엔진점수.jsonl engine=reed 회차",
+   "denominator": "heartbeat 행(봇 죽은 구간 제외) · 채택 곡 수 · 무대 컷 4 · 송출 첫 주 / 첫 학생 뒤"
+  },
+  {
+   "name": "몽골어 검수 꾸러미: 카피확정 키 false 수/전수(엔진별) · confirm 통과 행/사전 행",
+   "instrument": "tools manifest(카피확정 파싱) · 검수자 꾸러미 회신",
+   "denominator": "학생 접점 문구 전수 · 지금(수) / 10~11월 발주 뒤(통과)"
+  },
+  {
+   "name": "게이트초 ms 증가분 · 상주총량 · 상주 도구 수(자동 통로에 붙은 감시기·훅 수)",
+   "instrument": "tools/rot-check.js 게이트초·상주총량 절 + 신설 상주 도구 수 절(Ⅰ-9④ 자 없음 → 짓는다)",
+   "denominator": "세션 · 지금(자 늘릴 때마다 재본 뒤 적음)"
+  },
+  {
+   "name": "E1~E4 입구 + 출구 «같이 한 번» 잰 횟수",
+   "instrument": "12월 파일럿 코호트 리허설 장부(관통왕복_명세 ⑥ + 추가 줄 셋)",
+   "denominator": "1(지금 0 · 한 번도 같이 안 재봄)"
+  }
+ ],
+ "open_yuho_decisions": [
+  {
+   "question": "D1 【소급 불가 · 계약】 c16→c17 «한 판»의 범위와 시점 — 일곱 엔진의 소급 불가 어휘 전량(과정 그림자·arm_id·loom_ver·expected_ver·shadow·kind 여섯·teacher·goal.stated·corrected_value·atlas.excluded·atlas.summarized·self_explain·topic.engaged·mascot.touched·listen.session·moment_id·first_kind·preference stated_via·goal_outcome·learner_account.linked·exam.result 칸·trail_ref·season_review 확정 열·error_tags 뜻·'sim')을 한 판에 올리나",
+   "options": [
+    "A) 전량 한 판 · 지금 착수 · 12월 파일럿 «전» 배포(관통왕복 v0.5·학습자상태 v16·소비자 전부 같은 커밋)",
+    "B) 엔진별로 쪼개 c17·c18·c19(판올림 드래그 8자리 × N · 판 다른 리허설 행 섞임)",
+    "C) 개원 뒤(첫 코호트 첫 주 어휘가 영영 빈다)"
+   ],
+   "recommendation": "A — 드래그 비용은 한 번이고 넷 이상이 개원 첫 주에 닫히는 문이다 · 조건 = V6~V9 같은 커밋 · arm ID 가 정본 열셋에 이미 있으면 뺀다(0번 실측)",
+   "why_only_yuho": "소급 불가(첫 코호트 첫 주) + 판올림은 라이브 DB·앱 헤더를 함께 바꾸는 배포 창이라 /deploy ㉡「소급 불가 첫 박음」 눈 검수 자리"
+  },
+  {
+   "question": "D2 【확정 좁힘 09-01 · 소급 불가】 앱 자습 라디오 「⏳미룸(곡 20개쯤 + 학생이 앱을 쓰기 시작한 뒤)」을 «그릇 먼저»로 당기나 — 12월 파일럿 첫 밤에 재생기(«함께» 모드·내려받은 앱 판)+listen.session+집중띠 소비자+소리자리를 한 커밋으로",
+   "options": [
+    "㉠ 확정 유지(파일럿 뒤 착수 · 첫 시즌 밤 리듬 8주 통째로 빈다)",
+    "㉡ 12월 파일럿 첫 밤에 한 커밋으로 켠다(0원 · 실기기 빌드 1회 · 상한종료 연속 3시간)",
+    "㉢ 개원 2027-02-25 에 맞춘다"
+   ],
+   "recommendation": "㉡ — Reed 3문 ① 을 뒤집는 유일한 문 · 「곡 3개」 전제는 09-02 8벌 69분으로 낡았다 · 09-01 미룸 사유 「재료가 없어서」의 재료가 이 배선의 소비자",
+   "why_only_yuho": "유호 확정(09-01 미룸)과 어긋나는 자리 + 소급 불가 + 실기기 개발 빌드는 유호님 폰"
+  },
+  {
+   "question": "D3 【소급 불가 · 케어 vs 감시】 몽글을 «만진 것»(mascot.touched 세션 집계 1행 · radio_on)과 «말풍선에 반응한 것»(topic.engaged 노출·탭·체류·무시)을 데이터로 삼나",
+   "options": [
+    "A) 세션당 집계 1행 + 노출 행 분모 · 해석 라벨 0 · 학생 화면 0(권고)",
+    "B) 사건당 1행(폭주·감시감)",
+    "C) 안 남김(㉡ 재료 종류 +2 가 영영 빈다)"
+   ],
+   "recommendation": "A — 「노는 자리에서 저절로」의 정답 형태 · 「안 만진 아이」는 null · EU AI Act 5조 정서 추론 0 · 동의 갈래 = 「학생 산출」 명문",
+   "why_only_yuho": "학생이 «감시받는» 느낌이 될 수 있는 첫 관측 축의 개방은 소급 불가 + 철학 「거울보다 친구」 경계의 판정"
+  },
+  {
+   "question": "D4 【확정 충돌 08-11 · 소개서 §6 · 판올림 관행】 되먹임의 «형태» — 「성과·오류태그를 과제 선택 규칙에 되먹이지 않는다」(상태기반 §2 ㉠)와 「A/B 금지 · 모든 학생이 그 시점의 최선」을 지키면서 여는 길: 개원 전 = 결정론 활성 판 + arm_id·shadow «스탬프만»(탐색 바닥 0% · 확률 배정 0) → 첫 판올림부터 «섀도 2주 뒤 유호 픽» → 확률 정책(Thompson)은 둘째 시즌 뒤 «후보 판»으로 섀도 게이트를 지나야 활성",
+   "options": [
+    "ⓐ 그릇(스탬프·섀도 배관)만 개원 전 + 판올림=섀도 2주 뒤 픽 + 탐색 바닥 0%(재개 조건 = 두 시즌 연속 갈린 결정 하한 미달 → 판정안) + 후보 판 채택(섀도 진입만)",
+    "ⓑ 그릇도 미룸(첫 달 개입이 영영 «형식 미상» · 첫 판 전환이 시간 순차 비교로만)",
+    "ⓒ Core U5 원안(팔 균등 확률 배정으로 개원 · 표본 0 갱신 · 소개서 §6 정면)"
+   ],
+   "recommendation": "ⓐ — Core 의 확률 정책과 Temper 의 「밴딧 안 한다」 충돌을 «후보 판은 섀도를 지난다»로 접합 · 눈금 값(대조군 %·최소 탐색·표본 하한)은 첫 코호트 30일 뒤 별도 카드(지금 안 묻는다)",
+   "why_only_yuho": "유호 확정 셋(08-11 되먹임 금지 · 소개서 §6 · 「판올림=커밋 즉시 라이브」)을 한 형태로 다시 여는 자리 + 판마다 유호 픽이 하나 는다(㉡ 판단 칸)"
+  },
+  {
+   "question": "D5 【확정 충돌 08-14 · 표 밖 발화 금지】 말할순간 §1-2 「언제 말하나 = 규칙」을 «표 = 후보·상한 / 선택 = 그 학생의 짝 이력(발화정책)»으로 재해석 + 표 v1.2 줄 넷(T19 오늘 말 걸 아이 · T20 어제 몽글 말 · S26 자기설명 되묻기 · 하루 1회 그 자리 반환) ○ + Amber 3칸(6종 그대로 · 그 자리 연기+BY 한 줄 · P3 그날 저녁 학생 viewed 뒤) ○ + S16 시즌 한 줄(강사 확정 행만 · 시즌당 1 · 첫 회고 뒤) 허용",
+   "options": [
+    "A) 그대로(규칙이 언제까지 · 발화정책 기각 · 관계 원장은 회수만)",
+    "B) 재해석 + 관찰기 첫 시즌은 표 규칙 그대로 · 적응기는 첫 시즌 회고 뒤 표본 위에서(케어 하한 + 하한 밑이면 표로 되돌아가는 회귀) + 넷 ○ + Amber ○ + S16 예",
+    "C) 개원 첫 주부터 적응"
+   ],
+   "recommendation": "B — 값(적응기 하한 N·짝 창)은 지금 안 정한다 · 정본 문장 교체는 ○ 뒤 v1.2 에서 · 표 밖 발화 금지라 ○ 없이는 넷 다 못 짓는다",
+   "why_only_yuho": "08-14 전건 ○ 표의 «원칙» 재해석 + 학생에게 「가르치는 법」이 처음 돌아가는 자리(S16)의 허용"
+  },
+  {
+   "question": "D6 【확정 충돌 08-26 · 매뉴얼 §4-5 시간 예산】 강사 자리를 넓힌다 — 관찰 M2 확정 탭 «한 칸에 셋»: 관찰|개입 갈래(AI 초안+확정 1 · 6종 값록 · 기본 없음) + 학생이 «말한 목표» 태그(서클 뒤 한 번 · 16명×5초≈80초 추정) + 아침 인계 블록의 결석·미제출은 «이름만·횟수 0»",
+   "options": [
+    "ⓐ 넓힌다(확정 1 그대로 · 새 화면 0 · 12월 파일럿 2주 실측으로 6종 값록 c17 안에서 한 번 고침) + A 서클 뒤 한 번 + (b) 이름만",
+    "ⓑ observation.noted 만(개입 갈래·학생의 말 영영 0 · 「학생의 말」 갭 유지)",
+    "ⓒ 별도 화면 / 학생 발언 즉시 / 횟수까지(㉡ 손 +1 · 감시 목록)"
+   ],
+   "recommendation": "ⓐ — 「사람이어야만 하는 일」에 재료를 대는 방향이라 강사 자리가 줄지 않고 값이 재진다 · 세 힘(Ⅱ-6)의 첫 재료",
+   "why_only_yuho": "08-26 「강사 관찰 = 사람 자리」 정의의 범위 + 「교실에서 무엇을 데이터로 만들 것인가」는 유호 판단 선행(철학.json) + 강사 시간 예산은 운영 결정"
+  },
+  {
+   "question": "D7 【Ⅱ-8 새 화면 금지·재촉 장치 경계 · 소급 불가】 Atlas 공동 저작의 «자리» — 열람·고치기·빼기를 어디에 두고, 「빼기」의 범위와 아침 푸시 신설 여부",
+   "options": [
+    "A) 캐릭터(세 축)를 누르는 자리 + 시즌 회고 「알게 된 것 셋」(새 화면 0) · 빼기 = 반영 제외 «사건»(근거 단위 · 영구 · 원신호 보존 · 파생 재생성 · 자동 해제 없음) · 아침 푸시 신설 안 함(답장 꼬리·「보냈어요」 카드 꼬리만) · 되고침은 같은 카드 안 1탭 선택형(explicit · 보정 없음)",
+    "B) 설정 메뉴형 새 화면(Claude 08-25 형 · Ⅱ-8 정면) / 열람만(빼기 없음) / 07:10 알림 통로 신설",
+    "C) 원천 삭제(🚫 소급 불가·계보 붕괴) / 「보냈어요」 카드 꼬리에만(전체 그림 없음)"
+   ],
+   "recommendation": "A — 「스스로 찾으려면 먼저 자기를 봐야 한다」의 첫 실물이 «내 거울»이 아니라 «같이 보는 친구»가 되게 · 코어엔진 §10 도전안 ⏳3 을 같이 닫는다",
+   "why_only_yuho": "Ⅱ-8 형태 규칙·재촉 장치 경계는 유호 확정 축이고 atlas.excluded 어휘는 첫 카드 «전» 소급 불가"
+  },
+  {
+   "question": "D8 【확정 충돌 08-25 ② · 09-01 ㉢ 경계 · 09-02 반복 단위】 Reed 셋 — ① 곡 «사이» 원어민 낱말(앱 판 · 학생 본인 오늘 낱말 · 시간당 ≤1 · 끄기 스위치 · 유튜브 0)이 「DJ 는 말하지 않는다·한 결로 계속」과 양립하나 ② 학생마다 결 도착 시각 ±60분·자연층 비중이 다른 것이 «학생에게 보이는 비교»인가(«함께» 기본+「내 자리」 스위치 · 자습실은 «함께» 강제) ③ 방송 반복 단위 1시간→24시간 펼침+자연층 변주(판정 자리 = 확정이 적은 「송출 2주 뒤 체류」 · 재료 실측만 지금)",
+   "options": [
+    "㉠ ①앱 판만 ○ · ②비교 아니다(화면에 이유 0) → «내 리듬» 진행 · ③송출 2주 뒤 재판정(ffconcat 재읽기 되면 무재시작 · 안 되면 06:00 하루 1회 재시작 허용)",
+    "㉡ ①안 한다(말 0) · ②보이는 비교로 본다(앱 판도 학원요약까지) · ③1시간 루프 유지",
+    "㉢ ③24시간 펼침 · 재시작 불허(주 1회 갱신)"
+   ],
+   "recommendation": "㉠ — 말하는 주체가 DJ 가 아니라 «선생님 목소리» 자리이고 학생 것만 돌려주니 Ⅱ-8 · 첫 실학생 뒤 2주 «날» A/B 로 재판정해 떨어지면 뺀다 · ③은 판정을 앞당기지 않는다",
+   "why_only_yuho": "유호 확정 셋(08-25 ② · 09-01 ㉢ 경계 · 09-02 1시간 팩)의 재판정 자리"
+  },
+  {
+   "question": "D9 【확정 충돌 살아있는재질 §4 · ㉢】 Patina 첫 자리 — 지면(시즌 책·학부모 카드) 먼저인가, 앱 학생 화면까지 «명목형 자리 무늬»(서수 0 · 최대 2칸 자리 이동 · 되돌림 없음)인가",
+   "options": [
+    "㉠ 지면 먼저(§4 현행)",
+    "㉡ 앱까지 명목형만 · 통과 조건 = 리허설 A(저녁 말하기형)/B(아침 퀴즈형) 실기기 나란히 검수에서 「누가 더 많이 했는지 안 보인다」 · 보이면 ㉠으로 철회",
+    "㉢ 앱까지 서수(양) 포함(㉢ 위반 위험)"
+   ],
+   "recommendation": "㉡ — 자국 어휘 셋(손버릇 자리·시간대 색온도·다림질)·부품 셋(녹음띠·카드·바늘)·서수 0 을 결정.md 한 줄로 · 결정 전엔 레시피와 회귀만 짓고 굽지 않는다",
+   "why_only_yuho": "「폰을 나란히 놓으면 견줄 수 있고 끌 수 없다」(몸통 크기 금지의 이유)는 유호 눈이 판정 축(color-adoption-needs-eye-axis)"
+  },
+  {
+   "question": "D10 【확정 충돌 08-25 · ㉡ 사람 칸】 Trail 셋 — ① ⛔ 「outcome_log·trajectory 는 어느 화면에도」를 「남의 결과가 든 시트·열은 어느 화면에도 · 자기 것 뷰(my_trail)는 회고 병치·졸업 카드 두 자리에만」으로 좁힘 ② 「같은 출발점 선배」 익명 집계(n≥app_state 최소치 5 · 있다/없다+길 이름 · 1·2기는 강사 입만 · 기관명 삭제)를 «선배의 방 재판정(개원 후 표본)»과 별개로 지금 설계 ③ 원장 «확정 클릭»을 사람 판단 칸으로 인정(단 «시즌 확정 카드» 한 장에 모아 손이 졸업생 수에 비례하지 않게)",
+   "options": [
+    "ⓐ 셋 다 ○(좁힌다 · 별개 지금 · 인정)",
+    "ⓑ 유지·묶음·원장 수기 전량(08-25 「궤적 평생 열람」과 문면 충돌 · 첫 표본부터 못 읽음 · ㉡ 위반 방향)"
+   ],
+   "recommendation": "ⓐ — 머리말이 이미 「본인 목표는 본인이 봐도 된다」 · 개인 매칭과 집계 맥락은 ㉢ 위험 등급이 다르다 · 뷰·분모 규칙은 첫 표본 전에 서야 첫 표본부터 읽힌다",
+   "why_only_yuho": "08-25 확정 둘(궤적 평생 열람 · 선배의 방 재판정)의 문면과 ㉡ 「사람 칸 하나」의 범위 판정"
+  },
+  {
+   "question": "D11 【확정 대조 발음데이터_규격 §5-6 · ㉣ 소급 불가 · 판정줄】 Prism 셋 — ① 「자동 발음 판정은 «지금» 짓지 않는다」를 «자(파이프라인)만 개원 전 · 값·어휘 v1 은 규격대로 개원 후»로(유호 목소리 11×3+일부러 틀린 벌 리허설 · 0원) ② 학생 음성 원본 외부 벤더 반출 — 첫 녹음 «전» ③ 트랙 §4-C 「집계층 = 개원 직후」(AI 판정줄)를 「값·판정은 개원 뒤 / 자·계약·집계 코드·조준 배선·카드 통로는 개원 전」으로 갈라 적기",
+   "options": [
+    "A) ①세운다 ②안 내보냄(오픈 가중치 로컬만 · Azure 는 다시 여는 조건 = 오픈 자 일치율 <0.7 · 켜도 유호 목소리만) ③갈라 적고 착수",
+    "B) ①규격대로 첫 시즌 종료 뒤(시계열 첫 점 없음 · 어휘 확정이 빈손 위) ②잘린 클립만 Azure(≈$1.32/시간 · 계정 클릭) ③원판정 유지"
+   ],
+   "recommendation": "A — 첫 시즌 소리에 «어느 자 판이 붙었나»는 그날 박아야 남는다 · 한 번 나간 음성은 되돌릴 수 없다(경계 ③)",
+   "why_only_yuho": "규격 확정 대조 + 음성 원본은 «통로 하나로 좁혀 유호 판정»(철학 ㉣ 경계 ③) + 소급 불가"
+  },
+  {
+   "question": "D12 【소급 불가 · 첫 개입 전 git】 Temper 사전분석계획의 «결과변수 하나» + 사전분포 + 첫 질문 — 첫 실학생 개입 «전»에 git 에 있어야 「자가 먼저 섰다」가 성립",
+   "options": [
+    "ⓐ 같은 오류 태그 30일 재발률 + 재노출 분모 규칙(30일 안 그 태그 문항 ≥1회 다시 나가야 도래) · 사전분포 Normal(0,0.3) 상당 · 갈린 결정 하한 30 · 회색 표기 하한 도래 ≥3 · 첫 질문 「초급→중급 전환기가 교정 급소인가」 · 첫 회고까지 파일 수정 금지(수정 = 새 회수판)",
+    "ⓑ 과제 완주율 주(분모 늘 있으나 「배웠나」와 멀다 · 참고 칸으로만)",
+    "ⓒ 둘 다 주(한 판정에 자 둘)"
+   ],
+   "recommendation": "ⓐ — ㉠ 직결 · 사상표 24종 어휘와 한 벌 · 재작성 3단 고리 실재 · 안 재본 것: 개원일 학생 전원이 Lv1~2 라 첫 시즌 «전환기» 표본이 0 일 수 있다(초급 예비 회전에서 실측)",
+   "why_only_yuho": "성공의 자를 무엇으로 삼나는 회사의 약속(4급 보장·개입-효과 최상위 자산)과 한 몸이고 첫 개입 뒤엔 소급=날조"
+  },
+  {
+   "question": "D13 【돈 · 한 상한】 돈 드는 실행 전량을 «월 상한 하나»로 — 재심·재채점 회전(Core 세 축 ≈$3~10/회 · Vellum 몽글 3벌 ≈$6 · Prism 재채점 $1~3/모델 · Loom 별칭 GA A/B 소액 · Reed 재생성 ≈$0.96~1.92) + 4회전 $2.25 → 5회전(산문 과제요약+캐싱+Batch 교체 · 08-25 「두 손이 한 프롬프트」 확정 존중해 4회전 «뒤») + companion-bake 첫 회전 ≈$8 + 합성 L1 벌 $1~3(0원 통로 우선) + Trail 분류 호출(첫 근황 전 · 월 $1 미만 추정) + Lyria 지시 4벌 $0.96·8시간 $15.4 + Meshy(무료 1소품 뒤) + VPS $6 — 단가 대부분 «안 재봤다»(첫 회차 계측기가 낸다)",
+   "options": [
+    "A) 월 상한 값 하나를 정하신다(예 $30 · 0원 자는 즉시 자동 · 과금 재채점은 상한 안 자동 · 밖은 큐에서 스위치) + 4회전 충전 날 + 5회전은 4회전 ⑥ 판정 뒤 한 번",
+    "B) 상한 0(전부 클릭 · 「발동을 사람 손에 걸면 0번」 재현) · 가오픈 원칙 그대로",
+    "C) 지금 전부 결제"
+   ],
+   "recommendation": "A — 「돈 드는 실행은 가오픈 때 · 방아쇠는 유호」 원칙을 «상한 값 하나»로 기계화 · AI 는 재촉하지 않는다 · 시험지 두 열은 5회전과 별 판(생성 통로 무접촉)",
+   "why_only_yuho": "정지선 «돈» — 유호님 자원이고 방아쇠는 유호님만 당긴다(vendor-api-billing)"
+  },
+  {
+   "question": "D14 【모델 픽】 correct·deliver·companion(Opus 5 / Sonnet 5 / Fable 5.1) · Trail 결과 분류(Gemini JSON Schema / Claude output_config) · 룸눈 이해 모델(현행 채택 이해 모델 · 무료 티어는 비마스코트 렌더만) · Temper 심판(0.5B 로컬 → 미달 시 루브릭 LLM) · Lyria 판 · 이미지 굽기 GA ID — 재심 고리가 낸 usage·세 축 표를 재료로",
+   "options": [
+    "표가 나온 뒤 유호님이 고른다(AI 는 제안하지 않는다) · 사실 하나만: Fable 5.1 은 사고를 못 꺼 출력이 늘고 tool_choice 강제가 400 이라 구조화 출력은 output_config 로만(릴리스노트 09-01) · 캐시 뒤 단가 Opus 5 ≈$0.009 < Fable ≈$0.015/과제(08-26 산수 · 안 재봤다)"
+   ],
+   "recommendation": "제안 없음 — 표까지가 장치의 몫",
+   "why_only_yuho": "정지선 «모델픽»(model-effort-defaults · 유호님만)"
+  },
+  {
+   "question": "D15 【확정 충돌 Q8 08-24 시점 · ㉣ 저장 자리】 Q8(data_use.granted 생산자 + redaction_ver v1)을 «당김 트리거(첫 promotion_intent) 전에» 앞당겨 규격을 지금 픽하고 코드는 개원 전에 · 실학생 시험지 픽스처 저장 자리(저장소 둘 다 PUBLIC 08-29 실측) · redaction_ver v1 에 「자유서술 칸 이름 살균」 포함",
+   "options": [
+    "A) 규격 픽 지금(AI 완성형 1벌 → 유호 1회) · 코드 개원 전 · 저장 = Supabase private storage 버킷(운영 · RLS) · 살균 포함",
+    "B) Q8 트리거 그대로(첫 실학생 승격 의사 날) · 저장 = 로컬 SYNK_보안(노트북 밖에서 못 돈다)",
+    "C) 개원 뒤 · 별도 private repo(계정 하나 더)"
+   ],
+   "recommendation": "A — 첫 산출물이 한 판으로 서고 ⑥격차 16 빚의 자가 초록이 되게 · 08-24 Q8 시점과 어긋남은 한 줄로 알리고 지금 말을 따른다",
+   "why_only_yuho": "유호 확정(Q8 08-24) 재판정 + ㉣ 「식별자가 붙은 채 밖으로」의 경계를 어디에 두나(pushGoldenFixture_ 전제 뒤집힘 · 유호 판정거리 v1.13)"
+  },
+  {
+   "question": "D16 【돈 · 공통 차단자】 몽골어 검수자 첫 꾸러미 발주(60,000₮ 제안 · 08-28 「지금 안 정한다」 · 되돌아오는 자리 10~11월) — 일곱 엔진의 학생 접점 문구 전부(Amber 4종·오늘의 한 가지·관찰 한 줄·보기 3·S26·T19·T20·S16·「그럼 언제?」·「빼 줘」·개입 6종 값록·L1 어휘 v1·첫 시즌 귀 라벨 정답지·낱말 11·앱 판 라벨·시즌 책 본문·Trail 20문장)를 도구가 manifest 하나로 모아 «한 번» 발주",
+   "options": [
+    "A) 10~11월 한 꾸러미로 발주(companion-bake 첫 회전 한국어 후보가 나온 뒤 동승 · 추가 발주 0)",
+    "B) 엔진별 따로(돈·시간 여섯 배)",
+    "C) 개원 뒤(개원일 학생 화면이 «말 없는 스티커» · 몸짓만)"
+   ],
+   "recommendation": "A — 검수 전은 설계된 침묵이라 개원일 문구 0 은 위험이고, 발주 한 번이 일곱의 문을 같이 연다",
+   "why_only_yuho": "정지선 «돈» + 「지금 안 정한다」 유호 확정의 되돌아오는 자리"
+  },
+  {
+   "question": "D17 【유호 손 묶음 · 자격증명·로그인·클릭 · 판정 아님】 언제 한 번에 하실지 — NIKL 나눔터 회원가입+「오류주석 말뭉치·몽골」 신청(오늘 · 승인 리드타임이 가장 긴 문) · YouTube Dual stream 켬+«중앙 크롭»(첫 송출 전 · 시작 뒤 세로 못 뺌) · Blender 5.2.1 다운로드 클릭 1회 · GitHub Secrets 에 벤더 키 1회(재심 Action) · 졸업 카드 서명 개인키 보관 자리(로컬 SYNK_보안+종이 백업 권고)+synk.im did.json 호스팅 클릭(화면은 안 봤다 · 물어본다) · 실기기 개발 빌드 1회(감각층 귀검수 5 답과 같은 날) · 개입 문안 30건 좋음/나쁨 라벨(20~30분) · Supabase 토큰 만료 09-06(재발급) · 가설 사전등록 전 NIKL 승인",
+   "options": [
+    "A) 이번 주 한 자리에서 NIKL·Supabase 토큰·30건 라벨 · 첫 송출 전 Dual stream · 12월 파일럿 전 실기기 빌드+귀검수 · 나머지는 그 트랙 착수 때",
+    "B) 각 트랙이 부를 때마다"
+   ],
+   "recommendation": "A — 부르는 자리는 돈·로그인·인증 셋뿐(CLAUDE.md) · 묶어서 한 번",
+   "why_only_yuho": "자격증명은 유호님 손(AI 는 입력하지 않는다) · 계정 생성·클릭은 API 부재"
+  },
+  {
+   "question": "D18 【정본 개정 · Ⅰ-9 ⑤ 정본 불리기】 철학 정본 다음 개정 때 얹을 줄 셋 — Reed 뿌리 문장(Ⅱ-1 「앉아 있는 시간마저」 또는 ㉡ 밑 «혼자가 아닌 자리 · 그 자리에서 리듬이 모인다») · Ⅰ-4 곁줄 「학생의 고침은 observed 를 덮지 않고 나란히」 · Ⅰ-8 효율 눈금 «켤 자리» = 시즌 회고 Temper 절+확정 칸 · 그리고 지도 v2.7 「닿는 셋 = ①②③④⑤ · Reed 예외 경로 본문」",
+   "options": [
+    "A) 정본은 다음에 여실 때 세 줄 한 번에(서술 편집 · 판 안 올림) · 지도 v2.7 은 이 트랙 착지 커밋(0원)",
+    "B) 지금 정본 판올림(파생 전량 낡음)"
+   ],
+   "recommendation": "A — 「정본을 불리는 개정은 ⑤를 거스른다」 · 결정.md 선등재로 효력을 먼저",
+   "why_only_yuho": "철학 정본은 보존 3 · 개정은 유호님 지시로만"
+  }
+ ],
+ "removed_list": [
+  "【통합에서 걷는 것】 감시기·재심 방아쇠 일곱(Core GitHub Action 폴링 · Loom 주 1회 fetch 넷 · Vellum 모델 ID 사건 · Trail 모델정책 커밋 훅 · Prism 모델감시 CI cron · Temper ai스택점검 회차 · Reed Lyria diff) → tools/모델감시.js 하나 · 별도 장부 셋(docs/_ops/룸슬롯점수.jsonl · Reed점수.jsonl · 처방판.jsonl) → 엔진점수.jsonl engine·kind 열 · 돈 규칙 여섯 → 월 상한 하나 · 「V6」 네 정의 → 명세 v0.5 V6~V9 · moment_id 두 뜻 → moment_id+first_kind · Core U3 의 «content.viewed/progress 재생 세션» 옵션 · Vellum U8 「홈 몽글 터치 = topic.engaged」 동일시 · Core io 「빛←goal.responded/goal.stated 날 수」 · Core U5 「팔 균등 확률 배정으로 개원」·그리디 코드 경로 · companion-bake 자체 «산문 두 줄» 생성(atlas.summarized 읽기로) · 「오늘 하나」 고르는 자 셋(aiWeakMap_ 을 talk 통로로 포함) → lib/오늘의한가지.js · 이해대장 「누구=학생」 절과 수신자 분포 절 둘 → 절 하나 · 강사 카드 통로 다섯 → 슬롯 규격 · 발화 검문·학생 예산 상수가 엔진마다 → 함수 하나·상수 한 곳 · 'sim' 생성기 넷 → 프로필 세트 하나 · 밤 작업 스케줄 셋 → 사슬 하나 · 몽골어 검수 발주 여섯 → 꾸러미 하나 · A·C 안의 season_review 「표 없음→신설」 · 렌즈 A 의 Atlas 설정 메뉴 새 화면 · 렌즈 C 의 「반영 제외 두 시즌 자동 해제」 · A 안의 「동률 바닥 20%·IPW」·C 안의 「IPS」 이름표 · C 안의 배분 «확정=자동» · B 안의 사후분포 값 git 저장·오늘과제 재료 15 직접 읽기 · A 안의 «모델 ID diff → 자동 재생성 지출» 고리",
+  "【Core】 되묻기 정렬 「오래 안 물은 축 먼저」 단일 정렬(2차 키로 격하 · 8efa5ad SQL 라이브 실측과 함께) · 세층합류 §8 점검표 «구멍 5» 표기 · 코어엔진_설계 §10 「우리는 제출물을 남기고 선택을 버린다」 · 엔진추천목표_설계 §3 「학생이 다른 목표를 말해도 같은 행」 · 트랙 §4-E 「학생의 말」 갭 줄 · 지도 v2.6 「Reed 는 Atlas 에 기여하지 않는다」의 예외 괄호(본문화) · Reed 소개서 §5 「체류를 개인 단위로 물을 수 없다」·§8 ① 「작아진다」 · talk lib/과제요약.js §6-2 «이름=값·50 절단»의 벤더 재료 역할(엔진점수 동률 이상 뒤 · evidence_refs 변환은 남김) · correct [학생 맥락] «줄 하나» 규격 · generation-cost 「Fable ≈2배」 산수줄 · 소개서 v1.3 §9 학생 행 미래형 · 이해대장 「AI 게이트웨이 부품 1」 칸(활성 실측 뒤) · 별도 대조군 설계 · 상태기반_과제선택 §2 ㉠ 범위(유호 뒤 «순위 외 전부»로) · 되묻기 «단일 뜻 = 검증 라벨»(협상 카드로) · 코어엔진 §10 도전안 ⏳유호 3 대기 상태 · Ⅰ-9① 「수요일 재심」 사람 절차·큐 Q7 사람 발동 줄·「(2주전) 가오픈 때 한 번에」 재심 항목 · 엔진점수 «단일 축»(시험지 102만) 표기 · 성과계기판 ⑥격차 16 빨강 · 큐 Q8 줄(앞당김) · 「졸업」 낱말 기계 0건 상태",
+  "【Loom】 「Loom 은 학생 데이터와 배선 0」 상태 · 소개서 §10 「시간이 닫는 문은 여섯 중 Loom 이 가장 작다」(게이트 뒤) · 감각층_설계 §0 «출력 층» 정의 · 마스코트.js 연출 타이머 중 말하기 화면 몫(상태기계 흡수 뒤) · package.json skia 2.11.1 고정 · 감각층 「코드 0줄」 · Patina 「이름·자리·금지선만 · 레시피 0」 · 양모공방_요소사전 「읽음·방문 = 다림질 자국」 손 규칙(양→자리) · 살아있는재질 §4 「먼저 서는 자리는 지면」(D9 뒤) · 배치판단층 §4 「데이터 생성기 조판 v1 밖」 · docs/발표물/10_상담결과_요약_A4.html 류 손 단품·손 조판 학부모 안내문 절차 · 「PPT·슬라이드 규격 ⬜」 · 「Loom 은 돌려주는 자리 없다」 · 자기 목소리 되듣기 QR(음성 통로 판정 전) · 판정 지면 «구운 장 전부 나열» · 펠트엔진 §5 ▶ 표식(검수·형상) · 판정 대기 산문·판정 장부 흩어짐 · 펠트엔진 §5 «재대조 자» 손 절차 · tools/lib/이미지굽기.js:22 프리뷰 별칭 · Blender 5.2.0 설치본 · talk 킷 값 «손 반영» 절차(kit-change-needs-talk-sweep 처방 자체)·영상/src/킷 손 다리·L2 「토큰↔코드 두 자리」 · 룸잉크 토큰 Graphite 폴백 자 · 늘 실리는 84KB 중 은퇴 «구» 30KB · 트랙 §2-업 ③ 「미룸」 · 소품 손 모델링 절차·«구» 형태(판 A~E 서는 날)",
+  "【Vellum】 talk App.js:202·인증화면.js:224 「가이드 정본 = 기기 파일」(D4-1 → 캐시) · 가이드_정본 §8-2 「topic.engaged 제안」 ⏳ · 「혼잣말 반응을 preference.stated 에」 안 · 반응 지도 「잠긴 13순간」 중 5 · Amber 초안 v1 「코드 0 · ⏳유호 3칸」 · 축하 장치 둘(장면 사다리+Amber → first_kind 하나) · 소개서 §5 「전야 굽기 배치」 현재형·배선 설계 §2 ⏳ · 말할순간 §1-2 첫 층(D5 뒤 격하) · 소개서 §10 「기록층 승계」 산문 · 소개서 §7 「표 밖 발화 회귀(예정)」 · Q7 「몽글 갈래 = 유호 호출」 · 「몽글 발화 품질 안 재봤다」 · 표 목록 코드 복제 길 · 함께한날_설계 v1.1 §2·§4 「크기만」 · 교재연동.js:836 「…자랐어요」 단정 카드·성장 카드 rG[4] 고친문장 읽기 · 소개서 §3·§6 시제 불일치 · 자유서술 «필수» 되묻기 형태 · 소개서 §5 창구 표 ①② 「앱 입구 ✗」·트랙 「남은 것은 앱 입구」·「몽글이 혼자 챙긴다」 전제 · 지도 「닿는 셋 = ①②③④」 · 소개서 v1.5 머리·§7 대장 08-24 표 · 철학 Ⅰ-5 「자동 발송 53 중 0」 손 실측 · 「자기설명 0건」 · 학생 앱 푸시 신설 후보",
+  "【Trail】 「나갔다 = payStatus==='퇴소' 한 낱말」 · 학생ID §6-2 「lifecycle 읽는 자 = 2028 명단 뷰」(매일로) · C 안 「처리상태 칸 교체」 · trajectory 「의도↔결과」 입학 1점 대조 뜻 · docs/궤적_원장기록_실행지.md 「원장 수기 5칸 필수 드롭다운」 절차 · 엔진_궤적.js:149 「절반은 원장이 손으로」 전제 · 엔진_폼리포트.js:1199 「훗날」 · B 안 model_ver 덮기·C 안 초안 덮기 · 「사람 손이 두 목록을 같이 보는 규약」(:92 주석) · 정찰 「새 모델 나오면 잰다」 절차 문장 · 엔진_콘텐츠AI.js 하드 모델 ID · 시트층 도달 장부 trajectory «손 목록» · 소개서 §5 「셋 다 지금 할 일이 0」 · 손 옮긴 「몽골 유학생 n만」·「N급」 자 없는 숫자(측정판 통로로) · 「연 1회 안부 설문」 발상·C 안 「+6·+15개월 앱이 묻는다」 · ⛔ 문면(D10 뒤) · 엔진_셋업확장.js:370·:463 주석 상태 · A 안 「선배 7명은 유학 5·취업 1·준비 중 1」 · C 안 「너와 같은 출발점 … 경기도의 공장」 · 「졸업 = 계정 닫힘」 기본값 · 가져가는것 걸음 5 「파일 0」 · 결정.md:342 「3년 궤적 · 2027 1기」 효력(정정 병기) · 시즌회고_설계.md:23 「회고 표는 없다」 · 소개서 §10 「한 시점에 통째로」",
+  "【Prism】 자산층 규칙②③ «문서 규율만» · open_gaps ③④⑦ · 소개서 §02 「몽골어 화자 데이터 공백」(축·사전분포는 NIKL 이 쥔다로 좁힘) · §03 「아직 확인 전」 영구 문구·「축 9(P1~P9)」 · §04 「집계도 같은 상수(LLM 태그)를 읽는다」 · as/talk 24종 «이름만» 공유 · 「태그 축 실측 0」으로 개원 · dataCoverageReport 「6개월마다 열어본다」 손 절차·「🕳 못 잡은 유형 N/23」 절(대체 소비자 같은 커밋) · 트랙 §4-C:4455 「집계층 = 개원 직후 · 앞당길 이유 없음」 판정줄(갈라 적기) · 「빈 칸 = 다음 시즌 유도 숙제」 산문 전제(엔진_수집.js:637-639) · 규격 §2-3 「낱말 열한 개 고정」 · ⑲ 「등장률을 사람이 센다」·「심문 ⑲ 확정 자」 표기 · 소개서 §05 ⓑⓒ 입구·「모델 평가 시험지 사람이 굽는다」 · Q7 사람 방아쇠 · 무응답 손 기록·픽스처 손 편집 판올림 · 엔진점수 「마지막 갱신 08-22」·비용 칸 없음 · 규격 §6 「자동 발음 판정은 안 다룬다」 공백·§3 「재전사 자 없다」·§6-2 「당분간 3축」·§6-2:777 「연음·겹받침·음운변동」(한 값 두 곳) · Gemini 3.5 Transcribe custom_vocabulary 방향 · 「분포≠처방」 오독(원인은 Prism) · §5-6 「누구=내부」(첫 카드 뒤) · §10 「낭독 미션 원고 유호님이」 · §07 「어휘와 문장 0」 · 교재연동.js:171 주석 · talk DB 파생 prism.* 지금 신설 · 실학생 픽스처 PUBLIC git",
+  "【Temper】 성과회수.js 머리말 산문 정본(계획 파일로) · 계기판 «점추정 연결률만» 절 · 트랙 1321 「전환기 급소 — 이름만」 · 소개서 v1.5 §3 「개입 = 넷」 목록 · 규격 v1 §③ⓐ 잔재·§⑤ 「다음 개정에 편승」 미이행(세 판 놓침) · 「강사 관찰 = 임시 다리」 잔재 · 배선 설계 §6 moment_id «예고» · C 안 「강사가 6종을 직접 고른다」 · policy_ver 별 «시간 순차 비교» · 「판올림 = 커밋 즉시 라이브」(D4 뒤) · 「계기판 로컬 HTML 이 유일한 소비자」 · 소개서 §5 「시즌 회고 재료」 통로 없는 목적지 · 이해대장 「Temper 는 잴 칸이 없다」 · A 안 답장 꼬리 규격·「아직 재는 중」·늘지않음상한 등재 · 「모델 교체 시 재는 자 없음」 · Q7 범위가 Core 만 · 예비 풀이 «안 걸러진 채» 개원",
+  "【Reed】 bots/송출/크레딧.md 장부 대역·인코딩.sh md 직독 · 소개서 §7 「장부·편성·되돌아오는 축 코드 0」 · 앱 자습 = 유튜브 임베드 후보 · 「누가 얼마나 들었나 원리상 0」의 앱 판 부분 · ⏳미룸의 «전부 미룸» · HLS 스트리밍·Liquidsoap 재인코딩·블록별 ffmpeg·Lyria RealTime 안 · 곡편성.js 시계 단일 인자 · 소개서 §6 「개인 성향 못 잰다」 앱 판 · 재생목록.js «차례 그대로 한 바퀴»(D8 ③ 뒤) · 결표 «방송 미적용» · 라디오곡차례.js `결차례` 생산 비율 역할 · 발음 본보기 11 «Trail 전용» 위치 · 소개서 §1 「Reed 는 가르치지 않는다」 · B 안 유튜브 판 공통 낱말 선택지 · 흩어진 소리 규칙 넷 · C 안 「낱말 클립 −14」 · 소개서 §7 「자리별 규칙 표 코드 0」 · 곡생산 프롬프트 손 조정 · 「성적표 → 유호님의 다음 곡 결정 재료」 · 트랙·memory 곡 물량 숫자 두 값(69.0/68.2) · 곡편성 상수 코드 형태 · 세로판 자체 인코딩·두 벌째 오버레이 지면·「두 벌 vs 반응형」 판정 · 독해·정찰의 「편성 정본 = lib/라디오편성.js」·`talk lib/몽글목소리.js` 경로 오독",
+  "【정본·도구 착지에서 걷는 것】 소개서 7벌의 낡은 ⑦ 대장·⑩ 문장 전량(옛 표는 그 자리에서 삭제 · 원고가 정본 · 산출물 직접 편집 0) · 엔진 지도 v2.6 「닿는 셋 = ①②③④」·「Reed 기여 0」 문장 · 트랙 §4-E 닫히는 갭 줄(학생의 말 · 포트폴리오 주인 없음 · Reed→㉡ · Loom 배치 판단 1보 · Vellum 강사판 입구) · 개원전_일괄판정_큐 Q7·Q8 의 사람 발동·시점 줄 · Ⅰ-9① 재심의 «사람 손» 발동 형태 자체 · 이해대장 「넷째 칸 0건 = 안 재봤다」 표식(자가 서면 참값으로)"
+ ]
+}
