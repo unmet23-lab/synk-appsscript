@@ -529,8 +529,28 @@ test('🔴 «돈» 문은 Vertex 다 — 무료 크레딧 $300 이 AI Studio 문
   const 돈 = 정책.제미나이문('돈');
   assert.strictEqual(돈.base, 'https://aiplatform.googleapis.com/v1');
   assert.strictEqual(돈.목록가능, false, 'Vertex 에는 목록 조회가 없다 — 있다고 하면 «안 재봤다»가 «봤다»로 접힌다');
-  // 🔴 base 만 바꾸고 주소꼴을 안 바꾸면 404 다. publishers/google 이 빠지는 것을 여기서 잡는다.
-  assert.match(정책.제미나이URL('돈', 'M'), /\/v1\/publishers\/google\/models\/M:generateContent$/);
+  /* 🔴 base 만 바꾸고 주소꼴을 안 바꾸면 404 다. 세 조각이 다 있어야 한다:
+   *   `projects/<프로젝트>` · `locations/<위치>` · `publishers/google`.
+   * 🔑 앞의 둘은 09-04 에 «인증이 API 키에서 OAuth 토큰으로 바뀌면서» 필수가 됐다 —
+   *   키를 쓸 때는 프로젝트를 열쇠가 알았지만, 토큰은 그걸 모르므로 주소가 말해야 한다. */
+  assert.match(
+    정책.제미나이URL('돈', 'M'),
+    /\/v1\/projects\/[^/]+\/locations\/[^/]+\/publishers\/google\/models\/M:generateContent$/,
+  );
+  assert.strictEqual(돈.인증, 'oauth', 'Vertex 는 API 키를 못 받는다(조직 밖 프로젝트 · 09-04) — 키로 되돌리면 403 이다');
+});
+
+test('🔑 «돈» 문의 프로젝트·위치는 env 로 덮을 수 있다 — 되돌리기는 변수 지우기 하나', () => {
+  const 옛 = [process.env.SYNK_VERTEX_PROJECT, process.env.SYNK_VERTEX_LOCATION];
+  try {
+    process.env.SYNK_VERTEX_PROJECT = 'p-시험';
+    process.env.SYNK_VERTEX_LOCATION = 'loc-시험';
+    assert.match(정책.제미나이URL('돈', 'M'), /\/projects\/p-시험\/locations\/loc-시험\//);
+  } finally {
+    if (옛[0] === undefined) delete process.env.SYNK_VERTEX_PROJECT; else process.env.SYNK_VERTEX_PROJECT = 옛[0];
+    if (옛[1] === undefined) delete process.env.SYNK_VERTEX_LOCATION; else process.env.SYNK_VERTEX_LOCATION = 옛[1];
+  }
+  assert.strictEqual(정책.벌텍스위치(), 'global', '기본 위치는 전역이다 — 리전 문은 10% 비싸다');
 });
 
 test('🔑 두 문은 서로 다르다 · 모르는 용도는 거절한다', () => {
@@ -564,7 +584,9 @@ test('🔴 주소를 하드코딩한 파일이 없다 — 문은 모델정책 �
     본문.split('\n').forEach((줄, i) => {
       /* 🔑 «주소»만 잡는다 — 도메인 이름이 안내 문구에 나오는 것은 설명이지 호출이 아니다
        *   (첫 판이 「제한에 aiplatform.googleapis.com 을 더한다」는 처방 줄을 잡았다 · 09-04). */
-      if (!/https?:\/\/[a-z0-9.-]*googleapis\.com/i.test(줄)) return;
+      /* 🔑 «제미나이 문»만 잡는다(09-04). 토큰 발급처 `oauth2.googleapis.com` 은 문이 아니라
+       *   «자격»을 받는 자리이고 정책 한 곳에만 산다 — 그것까지 잡으면 자가 엉뚱한 줄을 빨갛게 만든다. */
+      if (!/https?:\/\/(generativelanguage|aiplatform)\.googleapis\.com/i.test(줄)) return;
       if (/^\s*[*/]/.test(줄)) return;                       // 주석은 설명이지 주소가 아니다
       if (rel === 'tools/모델정책.js' && /^\s*이름:/.test(줄)) return; // 문 표 = 유일한 정본 자리
       걸린.push(`${rel}:${i + 1} ${줄.trim().slice(0, 90)}`);

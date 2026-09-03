@@ -222,9 +222,11 @@ async function TTS호출(key, model, 글, 목소리) {
     try {
       res = await fetch(정책.제미나이URL('돈', model), {
         method: 'POST',
-        headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
+        // 🔑 Vertex 문은 API 키를 못 받는다(조직 밖 프로젝트 · 09-04) — 인증 머리는 정책이 낸다.
+        headers: await 정책.제미나이헤더('돈'),
         body: JSON.stringify({
-          contents: [{ parts: [{ text: 글 }] }],
+          // 🔑 `role` 은 Vertex 문이 요구한다(없으면 400 · 09-04) — AI Studio 도 받는 형태다.
+          contents: [{ role: 'user', parts: [{ text: 글 }] }],
           generationConfig: {
             responseModalities: ['AUDIO'],
             speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 목소리 } } },
@@ -297,9 +299,11 @@ async function 역듣기(key, wav경로, 언어) {
     try {
       res = await fetch(정책.제미나이URL('돈', 픽.model), {
         method: 'POST',
-        headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
+        // 🔑 Vertex 문은 API 키를 못 받는다(조직 밖 프로젝트 · 09-04) — 인증 머리는 정책이 낸다.
+        headers: await 정책.제미나이헤더('돈'),
         body: JSON.stringify({
           contents: [{
+            role: 'user', // 🔑 Vertex 문이 요구한다(없으면 400 · 09-04) — AI Studio 도 받는다
             parts: [
               { text: `이 오디오는 ${언어이름} 음성이다. 들리는 대로 ${언어이름}로 받아써라. 고쳐 쓰거나 다듬지 말고, 받아쓴 글만 출력해라. 설명·따옴표 금지.` },
               { inlineData: { mimeType: 'audio/wav', data: fs.readFileSync(wav경로).toString('base64') } },
