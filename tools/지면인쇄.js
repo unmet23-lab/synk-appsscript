@@ -26,6 +26,11 @@ const { 지면열기 } = require('./lib/크롬조종.js');
 async function 인쇄(html, pdf, { 기다림 = null, 최대초 = 90 } = {}) {
   const { c, 닫기, 걸린초 } = await 지면열기(html, { 기다림, 최대초 });
   try {
+    /* 🔴 «인쇄 모드»를 못 박는다. 안 박으면 화면용 꾸밈이 그대로 인쇄된다 —
+     *   09-03 실측: 상담브로셔 12쪽 중 10쪽이 옛 통로와 달라졌다(절 번호 원판이 인쇄본에
+     *   새로 생기고 제목 크기가 줄었다). 우리 지면은 @media print 로 인쇄판을 따로 짜므로
+     *   이 한 줄이 「같은 파일에서 다른 문서가 나오는」 자리를 막는다. */
+    await c.보냄('Emulation.setEmulatedMedia', { media: 'print' });
     const { data } = await c.보냄('Page.printToPDF', {
       printBackground: true,      // 배경 색·면이 빠지면 우리 인쇄물은 흰 종이가 된다
       preferCSSPageSize: true,    // @page 의 용지 선언을 크롬 기본값보다 앞세운다
