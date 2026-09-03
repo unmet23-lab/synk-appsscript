@@ -451,13 +451,26 @@ const 측정기 = `(() => {
         if (r.bottom > 바닥) 바닥 = r.bottom;
       });
       const cs = getComputedStyle(액);
+      /* 위아래를 «둘 다» 잰다 — 아래만 재면 내용이 위로 넘치는 배치에서 안 잡힌다
+         (기록장조판의 뒤표지에서 실제로 그 구멍이 났다 · 09-03). 종이에서는 위로 잘린 줄도
+         아래로 잘린 줄과 똑같이 «없는 줄»로 보인다. */
+      /* ⚠ 흐름 «안»에 있는 것만 센다. position:absolute 로 뺀 장식(시즌 표식은 액자 선 위에
+         일부러 걸쳐 놓은 획이다)을 같이 세면 그 장식 하나 때문에 멀쩡한 장이 전부 「위로 넘침」이 된다 —
+         자를 고치다가 낸 거짓 적색이고, 09-03 에 6장 전부가 그렇게 빨개졌다. */
+      let 꼭대기 = ar.bottom;
+      Array.prototype.slice.call(액.children).forEach(function (c) {
+        if (getComputedStyle(c).position === 'absolute') return;
+        const r = c.getBoundingClientRect();
+        if (r.top < 꼭대기) 꼭대기 = r.top;
+      });
+      const 안쪽위 = ar.top + (parseFloat(cs.paddingTop) || 0);
       const 안쪽바닥 = ar.bottom - (parseFloat(cs.paddingBottom) || 0);
       return {
         장: i + 1,
         쪽높이mm: +(pr.height * mm).toFixed(1),
         쪽폭mm: +(pr.width * mm).toFixed(1),
-        남는여백mm: +((안쪽바닥 - 바닥) * mm).toFixed(1),
-        넘침: 바닥 > 안쪽바닥 + 0.5,
+        남는여백mm: +(Math.min(안쪽바닥 - 바닥, 꼭대기 - 안쪽위) * mm).toFixed(1),
+        넘침: 바닥 > 안쪽바닥 + 0.5 || 꼭대기 < 안쪽위 - 0.5,
         빈칸: 액.querySelectorAll('.빈칸').length,
         한일줄: 액.querySelectorAll('.한일 li').length
       };
@@ -488,13 +501,15 @@ const 부풀리기 = `(() => {
   });
 })();`;
 
-function 실측(html, 주입) {
+/* 실측 통로 — 다른 종이 도구도 이 자리를 나눠 쓴다(기록장조판). 자기 측정기를 들고 오면 그걸 태운다.
+ * 크롬 찾기·한글 경로·빈 결과 거절 같은 함정은 여기 한 번만 적혀 있어야 한다. */
+function 실측(html, 주입, 측정기_) {
   const chrome = findChrome();
   if (!chrome) throw new Error('크롬을 못 찾았다 — CHROME_PATH 로 지정하라(실측 없이 「통과」라고 쓰지 않는다)');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-증서-'));
   const tmp = path.join(dir, 'page.html');
   try {
-    fs.writeFileSync(tmp, html.replace('</body>', '<script>' + (주입 || '') + 측정기 + '</script></body>'), 'utf8');
+    fs.writeFileSync(tmp, html.replace('</body>', '<script>' + (주입 || '') + (측정기_ || 측정기) + '</script></body>'), 'utf8');
     // ⚠ 한글 경로 → encodeURI. 안 하면 빈 문서가 뜨고 「넘침 0건」으로 통과한다.
     const url = 'file:///' + encodeURI(tmp.replace(/\\/g, '/'));
     const out = execFileSync(chrome, ['--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
@@ -620,4 +635,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { 문안, 시즌판, 수료판, 지면, CSS, 한일세줄, 금칙검사, 금칙, 픽스처, 수료픽스처, 실측, 표식 };
+module.exports = { 문안, 시즌판, 수료판, 지면, CSS, 한일세줄, 금칙검사, 금칙, 픽스처, 수료픽스처, 실측, 굽기, 표식 };
