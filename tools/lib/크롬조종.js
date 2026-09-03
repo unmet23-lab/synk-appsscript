@@ -116,6 +116,17 @@ async function 지면열기(html, { 기다림 = null, 최대초 = 90 } = {}) {
     const 실림 = c.사건('Page.loadEventFired');
     await c.보냄('Page.navigate', { url: require('node:url').pathToFileURL(path.resolve(html)).href });
     await 실림;
+
+    /* 🔴 `load` 는 **활자가 앉기 전**이다. 심은 활자로 다시 짜이면 줄이 접히는 자리가 달라지고,
+     *   그 전에 찍으면 «폴백 활자로 조판된 판»이 결과가 된다. 새는 방향은 언제나 「통과」다.
+     *   같은 교훈을 tools/발표물린트.js 의 넘침 검사가 먼저 적었다(2026-08-10 · 18px 가 튀었다).
+     *   여기서는 그 기다림을 «모든 부름»에 깐다 — 인쇄든 검사든 활자가 앉은 판을 본다.
+     *   ⚠ 프레임(requestAnimationFrame)이 아니라 setTimeout 으로 한 턴 넘긴다(재배치를 앉힌다). */
+    await c.보냄('Runtime.evaluate', {
+      expression: '(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())'
+        + '.then(() => new Promise((r) => setTimeout(() => r(true), 0)))',
+      awaitPromise: true, returnByValue: true,
+    });
     let 걸린초 = 0;
     if (기다림) {
       const 시작 = Date.now(); const 끝 = 시작 + 최대초 * 1000;

@@ -289,19 +289,19 @@ def main():
                 chr(10), r.stderr.decode("utf-8", "replace")))
         print("PDF  → %s  (%.0f KB · 쪽번호판)" % (pdfp, pdfp.stat().st_size / 1024.0))
     elif a.pdf:
-        chrome = next((c for c in CHROME_CANDIDATES if c and os.path.exists(c)), None)
-        if not chrome:
-            raise SystemExit("크롬을 못 찾았다")
+        # 🔴 여기도 «시간»이 아니라 «신호»로 기다린다. 옛 방식은 8초어치를 주고 찍었는데
+        #   load 는 «활자가 앉기 전»이라, 폴백 활자로 조판된 판이 종이가 될 수 있었다.
+        #   두 통로가 같은 지면을 내는지 픽셀로 재 봤다 — 상담브로셔 12쪽 전부 같았다(09-03).
         pdfp = pathlib.Path(a.pdf)
         pdfp.parent.mkdir(parents=True, exist_ok=True)
-        cmd = [
-            chrome, "--headless=new", "--disable-gpu", "--no-sandbox",
-            "--no-pdf-header-footer", "--virtual-time-budget=8000",
-            "--print-to-pdf=%s" % str(pdfp.resolve()), outp.resolve().as_uri(),
-        ]
+        if pdfp.exists():
+            pdfp.unlink()      # 옛 PDF 가 남으면 실패가 «성공 얼굴»로 지나간다
+        노드 = shutil.which("node") or "C:/Program Files/nodejs/node.exe"
+        cmd = [노드, os.path.join(REPO, "tools", "지면인쇄.js"),
+               str(outp.resolve()), str(pdfp.resolve())]
         # 크롬 stderr 은 UTF-8 인데 윈도 기본이 cp949 라 그대로 읽으면 죽는다(로그가 본 작업을 죽인다).
-        r = subprocess.run(cmd, capture_output=True, timeout=180)
-        if not pdfp.exists():
+        r = subprocess.run(cmd, capture_output=True, timeout=600)
+        if r.returncode != 0 or not pdfp.exists():
             raise SystemExit("PDF 생성 실패 (rc=%s)\n%s\n%s" % (
                 r.returncode,
                 r.stdout.decode("utf-8", "replace"),
