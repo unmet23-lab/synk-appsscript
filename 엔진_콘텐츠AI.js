@@ -1178,6 +1178,10 @@ function systemWatchdog(asText) {
      ['면접폼ID', '면접 기록 폼(비자·취업)', 'createInterviewLogForm 재실행'],
      // 직장폼만 서명(제목+필수 두 문항)까지 — ID 가 «다른 폼»으로 바뀌어도 openById 는 성공이라
      // 생존 검사가 초록인 채 무관 응답을 직장 경험으로 세던 구멍(codex P2 5b85e75e).
+     /* ⚠ 둘째 인자를 «안» 넘긴다 = 엄격(설문지 제목 하나만 본다). 문서 제목(Drive 파일 이름)은 남이 제 폼에
+      *   붙일 수 있는 값이라 곁다리 증거일 뿐이고, 그 곁다리는 「우리 응답 탭이 그 폼에 붙었다」를 이미
+      *   확인한 자리에서만 켠다(①배포 검수 6ae0f9351269). 여기는 읽기 전용 점검이라 엄격이 안전하다 —
+      *   설문지 제목이 빈 옛 폼은 폼 고치기 메뉴가 한 번 돌면 제목이 채워져 이 검사도 함께 풀린다. */
      ['직장폼ID', '직장 경험 폼(VR 직업체험 0단계)', 'createWorkLogForm 재실행', function (f) { return (typeof 직장폼서명_ !== 'function') || 직장폼서명_(f); }]].forEach(p => {
       const fid = stF ? String(getState(stF, p[0]).val || '') : '';
       if (!fid) { add(true, p[1] + ': 미연결 — ID 없음(도입 전이면 정상)'); return; }
