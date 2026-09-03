@@ -523,8 +523,18 @@ footer b{color:var(--navy);font-weight:500}
   /* 링크점 — 본문 링크 뒤의 표식. 유호 확정 09-03 「땀점으로 바꾼다」로 유리구가 여기서 걷혔다.
      🔑 이 자리로 09-01 확정(「유리·레진 구슬은 나간다」)의 마지막 조각이 닫힌다.
      ⚠지면에서 **3px** 다 — 부품 통틀어 가장 작다. 그래서 이 판정의 질문은 하나였다:
-       「그 크기에 실 결이 남는가」. 안 남으면 유리를 뺀 값이 0이므로 바꿀 까닭이 없었다. */
-  .룸 a .점,.링크점{background-image:url("data:image/webp;base64,UklGRgIEAABXRUJQVlA4WAoAAAAQAAAAXwAAXwAAQUxQSB4AAAABUBRJasQhCv/GwMC8OJKIyPpeJ77wgRe84+X7379WUDggvgMAADAVAJ0BKmAAYAA+PRqKQyIhoRgMdAAgA8SxgEKW4z8B/hr6O2QGA29HPr9EB1F+9B14nis6OQtStyCmVpEE8I8x9XZVtLrYq+6JkULSwi+tNYmNmPJkbt541g8FTP7x1o3BQulAJw/MjwFdqfv32Rzxbpo/6yfy+wemZuCchtUBDyj4FVHljAt7ZDYb/TvSYVslZI4XueLFoN+RecTbUY/P1DrUz2hxwQzXIL4iUzS/boAA/v+db5DTIdvYm5jws5YIEpyNC4NQ/tGaptbnhFSBP//eQGeFTtlDVn7CHlhpC/mhO86CsmpObAz6rLavEA/C/f3NX/+fToQ6UhuY3zo3r9cxf1t12DUg5EiFSvSZ7Bx5wWB5pU1VbNAp8OMQrFfA1P37rtPRepZoXVc8j+MOdeSej/4egmo62C3aZa0tNZTdEc26zqnT5GIeUVS/Rx4SSfOKGzd7BMLHufzFcMQdoc3Z5tPuYVQW9MvbMafzOhOzeZLL2poHJmivDPGR5/Cggu5lwRz7Tuo4sAY576DuOoRknpoUPbZpJ8AIjA0D8X0Sdxc7E68Op1T5SafZlRy9/agZSnr6PPsPN17M0BqVK4BPO1I6UMLIcAr5xQxHJRXUW1atj8PQmSw8Aedlu7ZlyNE8pKxnu1AQYNG2lNKleDgZTMpMibWEnydqeYLLSmVzMfkxN16q/TQIz5naLV9ZEjdlinR1lh/wz9bok+GZAzYV90UyhLDjR8yrUTlztosflGgU1BRC5EGpIuGa8X3eumGFpbC7YudwPciYyvKBTcWPcY3LHVdeQp+W5Y93l9wzzWVwu1iagctlD9CteiXXBrczPs7f2Ydkh3pRSoX672/VqgudijiYQtLdCjTIgy4qpesg/eAE1Yyi/sateDqOxvGKauYGD1cuAGq0Qk2vaveiZlWdMGSTz29iGcjI+n7/jPeFIAF+35l0M6dzpZIS6YyXYIdh7g84uARnw8I+cNLKCCLmQ/KcXVoahUTnd6o/p7KPBm7kyQm8RKPGrU4NkFteA+qwBQAYEI1hnZTAqsduFE8ncnVEf64VPT3t9KHz+nPDJw0L4V6oulioJbFXDO65eUZi388Ry7aIptt9hqeQGZKDxpVP/zzA+j1TIQMqD8WXyTzbxY5PhJmweExuLPYGsfDqd/nDyMwqsYKulEGAAbRmc7dmyT2t44Zkc+N99VbiP5JM2o2wQiaUuFJYCZ+rMps2QjpI1zZoBY5sYDOGRNBaUj17hssXixp5vg47PQAAAAAAAAAAAAA=");
+       「그 크기에 실 결이 남는가」. 안 남으면 유리를 뺀 값이 0이므로 바꿀 까닭이 없었다.
+     🔴 **본문 링크는 «의사요소»로 그려진다 — 그 선택자를 안 적으면 자산이 아무 데도 안 닿는다**
+       (2026-09-03 · codex P1 08ca957a4e83 채택 수리). 첫 판은 「a .점」·「.링크점」 둘만 적었는데,
+       실제 본문 링크의 표식은 잔부품() 의 「a:not(.민):not(.레일 a)::before」 다(:631 참조).
+       그래서 구움표는 «있는데» 지면에는 여전히 **평면 코랄 원**이 떴다 — 유호 확정이 실물에
+       한 걸음도 못 닿은 채였다. 자산을 갈아 놓고 «부르는 자리»를 안 갈면 값이 0 이다.
+       🔑 특이성으로 이긴다: 여기 (0,2,2) > 밝은글자() 의 「a:not(.민)::before」 (0,1,2) 라
+         낮 지면의 background 단축(coral3)이 이 배경 이미지를 못 지운다. 그리고 얹기() 가
+         background-color:transparent 를 함께 내므로 :631 의 코랄 원도 그 자리에서 사라진다.
+     ⚠ 이 주석 안에서 백틱을 쓰지 않는다 — 이 블록 전체가 템플릿 문자열이라 그 순간 끊긴다
+       (09-03 에 내가 그 자리를 한 번 밟았다). */
+  .룸 a:not(.민):not(.레일 a)::before,.룸 a .점,.링크점{background-image:url("data:image/webp;base64,UklGRgIEAABXRUJQVlA4WAoAAAAQAAAAXwAAXwAAQUxQSB4AAAABUBRJasQhCv/GwMC8OJKIyPpeJ77wgRe84+X7379WUDggvgMAADAVAJ0BKmAAYAA+PRqKQyIhoRgMdAAgA8SxgEKW4z8B/hr6O2QGA29HPr9EB1F+9B14nis6OQtStyCmVpEE8I8x9XZVtLrYq+6JkULSwi+tNYmNmPJkbt541g8FTP7x1o3BQulAJw/MjwFdqfv32Rzxbpo/6yfy+wemZuCchtUBDyj4FVHljAt7ZDYb/TvSYVslZI4XueLFoN+RecTbUY/P1DrUz2hxwQzXIL4iUzS/boAA/v+db5DTIdvYm5jws5YIEpyNC4NQ/tGaptbnhFSBP//eQGeFTtlDVn7CHlhpC/mhO86CsmpObAz6rLavEA/C/f3NX/+fToQ6UhuY3zo3r9cxf1t12DUg5EiFSvSZ7Bx5wWB5pU1VbNAp8OMQrFfA1P37rtPRepZoXVc8j+MOdeSej/4egmo62C3aZa0tNZTdEc26zqnT5GIeUVS/Rx4SSfOKGzd7BMLHufzFcMQdoc3Z5tPuYVQW9MvbMafzOhOzeZLL2poHJmivDPGR5/Cggu5lwRz7Tuo4sAY576DuOoRknpoUPbZpJ8AIjA0D8X0Sdxc7E68Op1T5SafZlRy9/agZSnr6PPsPN17M0BqVK4BPO1I6UMLIcAr5xQxHJRXUW1atj8PQmSw8Aedlu7ZlyNE8pKxnu1AQYNG2lNKleDgZTMpMibWEnydqeYLLSmVzMfkxN16q/TQIz5naLV9ZEjdlinR1lh/wz9bok+GZAzYV90UyhLDjR8yrUTlztosflGgU1BRC5EGpIuGa8X3eumGFpbC7YudwPciYyvKBTcWPcY3LHVdeQp+W5Y93l9wzzWVwu1iagctlD9CteiXXBrczPs7f2Ydkh3pRSoX672/VqgudijiYQtLdCjTIgy4qpesg/eAE1Yyi/sateDqOxvGKauYGD1cuAGq0Qk2vaveiZlWdMGSTz29iGcjI+n7/jPeFIAF+35l0M6dzpZIS6YyXYIdh7g84uARnw8I+cNLKCCLmQ/KcXVoahUTnd6o/p7KPBm7kyQm8RKPGrU4NkFteA+qwBQAYEI1hnZTAqsduFE8ncnVEf64VPT3t9KHz+nPDJw0L4V6oulioJbFXDO65eUZi388Ry7aIptt9hqeQGZKDxpVP/zzA+j1TIQMqD8WXyTzbxY5PhJmweExuLPYGsfDqd/nDyMwqsYKulEGAAbRmc7dmyT2t44Zkc+N99VbiP5JM2o2wQiaUuFJYCZ+rMps2QjpI1zZoBY5sYDOGRNBaUj17hssXixp5vg47PQAAAAAAAAAAAAA=");
     background-size:contain;background-position:center;background-repeat:no-repeat;
     background-color:transparent;box-shadow:none;}
 
