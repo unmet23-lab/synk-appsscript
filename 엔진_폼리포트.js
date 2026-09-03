@@ -3097,7 +3097,17 @@ function jacketPrintTags_(받은이들, tz) {
   const 개월 = JACKET_TENURE_MONTHS === 12 ? '열두 달' : JACKET_TENURE_MONTHS + '개월';
   const 태그 = 받은이들.map((p) => {
     const 시작 = p.자격도달일 ? Utilities.formatDate(asDate_(p.자격도달일), tz, 'yyyy년 M월 d일') : '';
-    const 채움 = (s) => String(s).replace('{이름}', p.이름).replace('{개월}', 개월).replace('{시작일}', 시작);
+    /* 🔴 이름은 **반드시 `escHtml_` 를 거친다** — 이 이름의 출처는 크루카드 웹앱의 익명 `doPost` 다
+     *   (`crewcard/크루카드.js` → 상담시트 → `syncProfiles` → profiles → jacket_grants).
+     *   그 통로의 유일한 소독기 `셀안전_` 은 «수식 실행»만 막고 `<`·`>` 는 그대로 통과시킨다.
+     *   안 거치면 신청서 이름 칸에 넣은 태그가 이 종이에 살아서, 원장이 인쇄하려고 파일을 여는 순간
+     *   **그날 과잠을 받은 학생 전원의 이름이 밖으로 나간다** — 안전 넷의 「학생 식별 데이터」 위반이다.
+     *   같은 폴더에 같은 방식으로 굽는 서클 인쇄물은 이미 `circleEsc_` 로 전량을 감싼다(그 관행을 따른다).
+     * ⚠ 치환은 «함수»로 준다 — 문자열로 주면 이름 안의 `$&`·`$'` 가 치환 지시로 읽혀 딴 글자가 박힌다. */
+    const 채움 = (s) => String(s)
+      .replace('{이름}', () => escHtml_(p.이름))
+      .replace('{개월}', () => 개월)
+      .replace('{시작일}', () => 시작);
     return '<div class="t"><div class="b">' + 채움(말.본문) + '</div>' +
       (말.아래 && 시작 ? '<div class="s">' + 채움(말.아래) + '</div>' : '') +
       '<div class="h"></div></div>';
