@@ -4,6 +4,7 @@ export const meta = {
   phases: [
     { title: 'Measure', detail: '건별로 실제로 잰다 — 저장소·바깥 사실·산수·문안' },
     { title: 'Refute', detail: '건별 적대 검증 — 근거가 이름과 숫자인가' },
+    { title: 'Repair', detail: '반박을 채택·기각으로 처분하고 갈래를 다시 세운다' },
   ],
 }
 
@@ -26,6 +27,19 @@ SYNK LAB — 몽골 울란바토르에 2027-02-25 개원하는 한국어 학원(
   파일이면 \`경로:행\`, 값이면 출처 URL과 확인한 날, 법이면 법령 이름과 조문 번호.
 - **안 잰 것을 「없다」고 쓰지 않는다.** 못 쟀으면 not_measured 칸에 「무엇을 못 쟀고 무엇이 있어야 재나」를 적는다.
 - 저장소 안의 사실은 **직접 열어** 확인한다(Grep/Read). 「~일 것이다」로 쓰지 않는다.
+
+🔴 **09-03 1차에서 반박이 사실 오류 40건을 잡았다. 그 넷이 되풀이된 무늬다 — 같은 자리를 밟지 마라:**
+1. **절 제목만 보고 본문을 추정했다.** 제목의 낱말과 본문의 그 낱말이 «같은 것»을 가리키는지 확인한다.
+   (실제 사고: 절 제목의 「이름이 없다」가 문패가 아니라 «반 걸이판»의 이름 칸을 가리키고 있었다.)
+2. **같은 낱말이 두 곳에서 다른 것을 가리키는데 한 낱말로 붙였다.** 문서마다 그 낱말의 정의를 다시 찾는다.
+3. **수를 옮겨 적고 다시 안 셌다.** 「문패 4벌인데 이름을 지을 반은 24개」처럼 두 수가 안 맞는 자리를 찾는다.
+4. **「막혀 있다」를 확인 없이 썼다.** 정말 막혔는지 그 자리를 열어 본다(트랙·결정·원문이 이미 열어 둔 적이 있다).
+
+🔴 **branches 의 detail 과 recommend_why 에도 근거를 붙인다** — measured 칸에만 출처를 적고
+갈래·권고를 근거 없이 쓰면 반박이 그 자리를 친다. 「어느 파일 몇 행이 그렇게 말하나」를 문장 안에 넣는다.
+
+🔴 **갈래를 내기 전에 스스로 검사한다** — 두 갈래를 나란히 놓고 「둘 다 고를 수 있나?」를 묻는다.
+고를 수 있으면 배타가 아니다. 갈래를 다시 짠다.
 - 바깥 사실(법·시세·시장)은 **찾아서** 확인한다. 몽골 현지 값은 특히 «몇 년도 기준인지»를 같이 적는다.
 - 오늘은 **${TODAY}** 이다. 값에 날짜를 붙인다.
 
@@ -115,6 +129,29 @@ const VERDICT = {
   required: ['target', 'refuted', 'severity', 'problems', 'keep'],
 }
 
+// 수리 산출 = 잰 것과 같은 꼴 + change_log
+const REPAIRED = {
+  type: 'object',
+  additionalProperties: false,
+  properties: Object.assign({}, MEASURE.properties, {
+    change_log: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          kind: { type: 'string' },
+          verdict: { type: 'string', enum: ['accepted', 'rejected', 'partly'] },
+          what_changed: { type: 'string' },
+          why: { type: 'string' },
+        },
+        required: ['kind', 'verdict', 'what_changed', 'why'],
+      },
+    },
+  }),
+  required: MEASURE.required.concat(['change_log']),
+}
+
 phase('Measure')
 log(ITEMS.length + '건을 잰다')
 
@@ -160,6 +197,27 @@ const out = await pipeline(
       'refuted = 갈래나 권고가 **바뀌어야 하면** true. 표현만 다듬으면 되는 정도면 false + severity minor.',
       { label: 'refute:' + it.id, phase: 'Refute', schema: VERDICT }
     ).then((v) => ({ measured: m, verdict: v }))
+  },
+  (r, it) => {
+    if (!r || r.none || !r.measured) return { none: true, id: it.id }
+    if (!r.verdict || (r.verdict.severity === 'none' && !r.verdict.refuted)) {
+      return { measured: r.measured, verdict: r.verdict, repaired: r.measured, clean: true }
+    }
+    return agent(
+      COMMON +
+      '\n\n# 네 일 = 수리. 앞 단계가 재고, 다른 에이전트가 그것을 깨러 들어갔다.\n\n' +
+      '## 잰 것\n```json\n' + JSON.stringify(r.measured, null, 1) + '\n```\n\n' +
+      '## 반박\n```json\n' + JSON.stringify(r.verdict, null, 1) + '\n```\n\n' +
+      '# 🔴 반박을 액면 그대로 고치지 않는다\n\n' +
+      '반박은 근거를 대고 오지만 «틀릴 수 있다». 지적마다 **네가 직접 실물을 열어 다시 재고** 처분한다.\n' +
+      '- **accepted** — 재봤더니 반박이 맞다. 고친다.\n' +
+      '- **rejected** — 재봤더니 반박이 틀렸다. **왜 틀렸는지 파일·행으로 짚는다.** 근거 없는 기각은 안 된다.\n' +
+      '- **partly** — 사실은 맞는데 처방이 과하거나 좁다. 어디까지 받았는지 적는다.\n\n' +
+      'change_log 에 지적 하나마다 한 줄. 하나도 빠뜨리지 않는다.\n' +
+      '반박이 「갈래가 통째로 깨졌다」고 했으면 갈래를 새로 만든다. 살릴 것(keep)은 그대로 들고 간다.\n\n' +
+      '고친 산출을 위 「잰 것」과 같은 꼴로 내고, change_log 를 더한다.',
+      { label: 'repair:' + it.id, phase: 'Repair', schema: REPAIRED }
+    ).then((rp) => ({ measured: r.measured, verdict: r.verdict, repaired: rp }))
   }
 )
 

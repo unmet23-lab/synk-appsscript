@@ -2,34 +2,6 @@
  "stampToday": "2026-09-03",
  "items": [
   {
-   "id": "ending-3",
-   "doc": "docs/끝의설계_v1.md"
-  },
-  {
-   "id": "space-6",
-   "doc": "docs/공간설계_v1.md"
-  },
-  {
-   "id": "space-3",
-   "doc": "docs/공간설계_v1.md"
-  },
-  {
-   "id": "paper-2",
-   "doc": "docs/가져가는것_설계_v1.md"
-  },
-  {
-   "id": "paper-4",
-   "doc": "docs/가져가는것_설계_v1.md"
-  },
-  {
-   "id": "paper-3",
-   "doc": "docs/가져가는것_설계_v1.md"
-  },
-  {
-   "id": "ending-5",
-   "doc": "docs/끝의설계_v1.md"
-  },
-  {
    "id": "ending-6",
    "doc": "docs/끝의설계_v1.md"
   },
