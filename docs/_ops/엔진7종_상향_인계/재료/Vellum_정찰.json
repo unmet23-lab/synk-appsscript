@@ -1,0 +1,180 @@
+{
+ "engine": "Vellum",
+ "as_of": "2026-09-02",
+ "searches_done": [
+  "Gemini API changelog September 2026 Live API",
+  "OpenAI Realtime API release notes August 2026",
+  "Anthropic Claude voice mode API 2026 announcement",
+  "Gemini Nano on-device Android AICore Prompt API 2026 latest",
+  "Apple Foundation Models framework iOS 27 2026 update",
+  "Expo SDK 55 OR SDK 56 changelog 2026 New Architecture",
+  "Rive runtime React Native 2026 release notes data binding",
+  "Live2D Cubism SDK 2026 release latest",
+  "arxiv 2026 self-explanation reflection prompts language learning app LLM tutor study",
+  "AI companion tutor motivation retention study 2026 language learning warmth care",
+  "Duolingo August 2026 new feature video call Lily update",
+  "Speak app 2026 new feature roleplay tutor latest",
+  "Qwen3 small model on-device 0.6B 1.7B 2026 mobile release latest",
+  "Khanmigo 2026 update Khan Academy new features August",
+  "Praktika OR Loora OR ELSA AI avatar language tutor 2026 update latest",
+  "Lottie dotLottie 2026 release react native skia lottie latest",
+  "Expo SDK 58 changelog 2026",
+  "Duocon 2026 Duolingo announcements September",
+  "Gemini Live API native audio affective dialog proactive audio 2026 update developers blog",
+  "LearnLM Gemini for Education update August 2026 tutoring",
+  "Gemma 4 AICore developer preview Android on-device 2026 blog",
+  "GPT-Realtime-2 OpenAI voice model August 2026 pricing languages",
+  "Rive image mesh deformation raster character bones runtime 2026",
+  "Anthropic Claude API audio input speech 2026 developer platform news",
+  "Alpha School OR Synthesis Tutor 2026 update AI tutor motivation results August",
+  "Apple SpeechAnalyzer on-device speech to text Korean iOS 26 27 2026",
+  "Praktika app 2026 update new avatar feature release",
+  "Gemini 3.5 Transcribe Live gemini-3.5-transcribe-live announcement 2026",
+  "[fetch] ai.google.dev/gemini-api/docs/changelog (08-13·08-26·08-27·09-01 항목 확인)",
+  "[fetch] platform.openai.com/docs/changelog (gpt-realtime-2.1 07-06)",
+  "[fetch] platform.claude.com release notes (09-01 · 오디오 입력 항목 없음)",
+  "[fetch] expo.dev/changelog/sdk-56 · sdk-57",
+  "[fetch] arxiv 2608.25180 · 2607.03303 · 2605.04816 · 2602.20486 · edworkingpapers ai26-1451",
+  "[fetch] github rive-nitro-react-native · npm @rive-app/react-native",
+  "[fetch] blog.google gemini-3-5-transcribe · blog.khanacademy.org 08-27 · duoplanet video-call · copycatcafe duolingo-max(08-2026 점검판)",
+  "[repo] SYNK-talk package.json(expo ~57.0.18 · RN 0.86.3 · Skia 2.11.1 · Reanimated 없음) · src/온디바이스전사.js · lib/전사.js(whisper-1) · docs/개원전_일괄판정_큐.md Q1 · 결정.md 08-27 「AI대화 false 유지」 · 기억 mascot-companion-layer·cared-feeling-frequency·app-motion-stack"
+ ],
+ "findings": [
+  {
+   "name": "실시간 speech-to-speech 지형 09-02 판 — Q1(면접 시뮬 본체) 후보표 갱신: gpt-realtime-2.1 · Gemini Live 네이티브 오디오(Affective Dialog·Proactive Audio) · Claude API 는 오디오 입력 없음",
+   "what": "몽글과 «그 자리에서 말로» 주고받는 실시간 대화 후보 둘. OpenAI 는 07-06 에 gpt-realtime-2.1(+mini · 침묵·소음·끼어들기 처리 개선 · 128K 컨텍스트)을 냈고, Google Live API 는 감정 표현에 맞춰 답하는 Affective Dialog 와 기기 향 발화만 골라 답하는 Proactive Audio(프리뷰)를 든다. Claude 는 앱 음성 모드(07-23 · 모델 선택)만 있고 09-01 플랫폼 릴리즈노트(Fable 5.1)에 오디오 입력·speech-to-speech 항목이 없다 — 후보표에서 뺀다.",
+   "released_or_updated": "2026-07-06",
+   "source_url": "https://platform.openai.com/docs/changelog",
+   "evidence": "OpenAI changelog Jul 6 2026: 「Released GPT-Realtime-2.1 … improved alphanumeric recognition, silence and noise handling, and interruption behavior. Also released GPT-Realtime-2.1 mini」. 단가(gpt-realtime-2 · 05-07 출시): 오디오 입력 $32 / 출력 $64 per M 토큰, 캐시 입력 $0.40(vantaige.io 정리 · 1차 소스 재확인은 안 했다). Google: 「Affective Dialog … Proactive Audio (in Preview)」(ai.google.dev/gemini-api/docs/live-api). Claude: platform.claude.com 09-01 항목에 오디오 없음(WebFetch 실측 09-02).",
+   "why_relevant": "Vellum 의 「학생에게 닿는 면」에 실시간 «말» 통로가 0 이다(talk 는 비동기 회화·교정 · 답장은 밤 22시 배치). 개원전 큐 Q1 이 이 자리를 08-24 값(gpt-realtime-2.1 ≈$0.05/분)으로 쥐고 있어 «빈 칸»이 확정돼 있다 — 이 finding 은 그 후보표의 09-02 갱신이다. 세계 1등(듀오링고 Video Call·Speak Live Roleplays)이 전부 이 자리에 서 있다.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "Expo 57 에서 WebSocket/WebRTC 클라이언트 + Supabase Edge Fn 이 임시 토큰 발급(키는 서버만) — AI 가 원격으로 짓는다. 단 마이크·회선 실측(몽골 회선 지연·barge-in)은 실기기라 유호님 손 1회(emulator-review-blocked 와 같은 벽). Reanimated 없이도 가능(오디오 파형은 Skia)."
+   },
+   "gate_c": {
+    "failure_mode": "결정.md 08-27 이 적은 병 그대로 — AI대화는 「모방↔습득 구분 불가」라 도달을 못 올리는데, 실시간이 되면 학생이 더 «유창하게 따라 말하기»만 하고 엔진엔 아무것도 안 쌓인다(철학 ④ ✗✗✗). 여기에 몽골 회선 지연으로 끼어들기가 깨지면 「AI 가 말을 자른다」는 첫인상.",
+    "one_thing_to_close": "대화 전사를 기존 transcript/transcript_verified 쌍과 같은 규격으로 Trail 에 보내는 통로 하나 — 그것이 서기 전엔 프로토타입도 안 켠다(Q1 의 「$5 프로토타입」 정의에 이 조건을 붙인다)."
+   },
+   "effect_timing": "later",
+   "confidence": "high"
+  },
+  {
+   "name": "학생 자기설명 판정기 — 숙제에 「왜 이렇게 썼나」 한 줄 + LLM 이 완전성 판정·재도전(ESSE · arXiv 2608.25180) · 답장은 소크라틱 물음형(arXiv 2607.03303)",
+   "what": "학생이 자기 답(문법 선택·낱말)을 한 줄로 설명하면 LLM 이 «맞나·빠졌나»를 즉시 판정해 되묻고, 학생이 고쳐 쓰는 고리. ESSE(CS1 · 08-25)는 LLM 판정이 전문가·군중 기준 둘과 대조해 «엔진으로 쓸 만큼» 맞고, 학생이 포기 대신 «지속·수정»하며 설명이 회를 거듭해 완전해졌다고 보고. 별도 6주 66명 연구(06-26)는 소크라틱 물음형 튜터가 프롬프트 다듬기형보다 후반 학습 이득이 컸다.",
+   "released_or_updated": "2026-08-25",
+   "source_url": "https://arxiv.org/abs/2608.25180",
+   "evidence": "초록: 「its feedback leads students to persist and revise rather than abandon a line, that their explanations grow more complete and conceptually richer across attempts」 · 「LLM-based assessment is good enough to power a self-explanation tutor」. 2607.03303: 「SG-students … achieved higher learning gains in later sessions」.",
+   "why_relevant": "철학 Ⅱ-8 「알아낸 것은 학생에게 돌려준다」와 학습자상태 ⑫확인축(학생이 맞다/아니다 답함)은 «시스템→학생» 방향인데, «학생→시스템» 방향의 자기설명 칸이 숙제 뱅크 210 에 0 이다(talk lib·src 와 contents_*.js grep 09-02: 「왜 그렇게 봤는지 한 줄」은 유호님 회고 화면, 「왜 그렇게 말해요?」는 서클 동료용 — 학생 본인 자기설명 0 · grep 기준이라 «안 재봤다»에 가깝다). 발음 트랙의 원리 「소급 불가는 무엇을 말하게 하느냐」가 여기도 걸린다 — 설명을 안 받으면 그 학생의 «오개념»은 영영 없다. AI 가 좋아질수록 판정이 세지는 자리.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "밤 22시 배치(숙제 첨삭·대화 답장)에 판정 프롬프트 한 벌 + 몽골어 검문 5층 통과 + 결과는 기존 intervention.delivered 에 합류(새 테이블 0). 자는 tools/전사대조.js 와 같은 꼴의 «사람 표본 30건 대조»로 AI 가 세운다."
+   },
+   "gate_c": {
+    "failure_mode": "ESSE 도 LLM 판정의 «계통적 편차»를 보고했다 — 모호한 설명을 후하게 통과시키면 학생이 「설명 쓰기」를 요식으로 학습하고, 반대로 깐깐하면 초급이 한국어로 설명 자체를 못 해 포기(초급은 몽골어 설명 허용이 필요한데 그러면 검문 층이 달라진다).",
+    "one_thing_to_close": "사람 표본 30건 대조 규약(전사대조 ≤5%p 규약과 같은 꼴 · 표본<30 은 참고 강등) — 이 자가 서기 전엔 판정 결과를 학생에게 «점수»로 보이지 않고 «되묻기»로만 보인다."
+   },
+   "effect_timing": "later",
+   "confidence": "high"
+  },
+  {
+   "name": "몽글→사람 인계 큐 — 「오늘 말 걸 학생 + 말할 거리(좋았던 순간에서만)」를 유호님 강사판에 넘기는 창구(EdWorkingPaper 26-1451 · Khosravi 외 AI 학습 컴패니언 프레임)",
+   "what": "AI 튜터에 «접근»만 주면 안 쓴다는 RCT 둘(초등 · 2026-06): 통제군 절반이 플랫폼을 한 번도 안 열었고 쓴 아이도 주 2~5분 · 사람 튜터(가르치지 않고 «참여»만 챙김)가 붙자 주당 사용 +1~4분·참여 71~80%↑(성취는 ↑ 안 됨). Khosravi 외(05-06)는 컴패니언 설계 3층(교육학·적응·책임)을 제안. 우리 자리에선 몽글이 학생에게 말하는 표(S23)는 있는데, «유호님에게» 오늘 누구에게 무슨 말을 걸지 넘기는 창구가 없다.",
+   "released_or_updated": "2026-06",
+   "source_url": "https://edworkingpapers.com/sites/default/files/ai26-1451.pdf",
+   "evidence": "초록: 「nearly half of students in the control group never used the platform, and those who did averaged only 2-5 minutes per week. Working with human tutors increased average weekly platform usage by 1 to 4 minutes and engagement by 71-80%. However … did not improve reading achievement」. 컴패니언 프레임: arXiv 2605.04816(05-06) 「pedagogical · adaptive · responsible design foundation」.",
+   "why_relevant": "슬로건 「정원 16명, 선생님 17명」의 17번째(몽글)가 16명을 «혼자» 챙기면 이 연구의 통제군이 된다. 마스코트 동반자층 정본(08-14)은 강사판 T 표 18줄을 착지시켰지만(talk 6fc57ae·4cf7cc9) 「오늘 말 걸 학생·말할 거리」 류 문구는 강사화면·교수멘탈화면·강사API 에 0(grep 09-02 「말 걸·인계·안 온·결석」). 케어 느낌(유호 08-13 「빈도를 올려도 좋다」)을 «사람 손»으로 실현하는 자리이고, 말할 거리는 AI 가 좋아질수록 좋아진다.",
+   "gate_a": {
+    "kind": "empty_slot",
+    "what_to_remove": "없음"
+   },
+   "gate_b": {
+    "remote_buildable": true,
+    "note": "새 테이블 0 — intervention.delivered·content.viewed·학습자상태 스탬프에서 파생해 강사판 T 표에 줄 1~2 추가 + 문구는 lib/마스코트강사말.js 정본. 표 밖 발화 금지 회귀에 그대로 걸린다."
+   },
+   "gate_c": {
+    "failure_mode": "목록이 «감시 목록»이 된다 — 「안 한 학생」을 세워 주면 관심이 잔소리로 변하고 마스코트 원칙 「관심은 좋았던 순간에만(감시와 가르는 선)」을 원장 손으로 깨뜨린다. 그리고 이 연구도 «성취»는 안 올랐다 — 참여만 올리고 배움이 안 오르면 부채(4급 보장)가 그대로다.",
+    "one_thing_to_close": "말할 거리를 «좋았던 순간» 사건(achieve·재도전·이어짐)에서만 뽑고 결석·미제출은 «횟수 없이 이름만» 넘기는 규칙 하나(선정 규칙을 코드 상수 한 곳에)."
+   },
+   "effect_timing": "later",
+   "confidence": "medium"
+  }
+ ],
+ "rejected": [
+  {
+   "name": "Expo SDK 56/57/58 · RN New Architecture",
+   "why": "빈 칸 없음 — talk 는 이미 expo ~57.0.18 · RN 0.86.3 · React 19.2.3(package.json 09-02). SDK 56 의 Hermes V1 메모리 회귀는 57.0.17 로 닫혔고(expo.dev/changelog/sdk-57 08-27 추기) SDK 58 은 검색 0건(09-01). Expo UI(SwiftUI/Compose) 안정화는 우리 UI 가 Loom 구운 펠트라 소비자 0."
+  },
+  {
+   "name": "Rive React Native 2.0(Nitro · @rive-app/react-native 0.4.20 · 2026-08-19 갱신)",
+   "why": "래스터 메시+본 변형이 있어 «구운 펠트 PNG 를 숨쉬게» 하는 재질 규칙은 통과하지만, 리깅·메시·상태기계가 Rive 에디터(GUI) 전용이라 AI 가 원격으로 못 짓는다(㉡) — 유호님(비개발자) 손이 반복 필요. 재개 조건 = 프로그래매틱 리깅/임포트 API 가 나오는 날. 같은 이유로 Live2D Cubism 5.4 alpha(07-14 · RN 런타임 없음 · WebView) 도 기각."
+  },
+  {
+   "name": "Lottie / dotLottie / react-native-skottie",
+   "why": "08-27 재질 판정으로 닫힌 자리(벡터 = 싸구려 별 · 빛이 재료에서 안 나옴 · app-motion-stack) — 2026 에 그 판정을 뒤집을 변화 없음(검색 09-02: 로드맵 항목 0)."
+  },
+  {
+   "name": "Gemini 3.5 Transcribe / transcribe-live(08-26 GA · $0.005/분·라이브 $0.009/분 · WER 2.6%/4.0%)",
+   "why": "㉠ 동점 이하 — 「Smart transcription」이 자기수정·군말을 «지워» 매끈한 글로 만드는 모델인데(blog.google 08-26 원문 「removes filler words … handles self-corrections」), 우리 transcript 칸의 목적은 반대다(lib/전사.js: Whisper 가 고쳐 듣는 것조차 학생 오류 소실이라 verified 칸을 갈랐다). verbatim 모드 실재는 안 재봤다. 재개 조건 = verbatim 옵션 확인 + tools/전사대조.js 한국어 CER 대조에서 whisper-1 대비 ≤5%p 규약 통과(표본 = 실기기 몽골 화자 30문장 · 지금 0)."
+  },
+  {
+   "name": "Gemini Nano 4 / Gemma 4 AICore Prompt API(04-02 개발자 프리뷰) · Apple Foundation Models iOS 27 AFM3(06-08) · Qwen3.5-0.8B 온디바이스(03-02)",
+   "why": "㉠ 동점 — 「그 자리 반환」 즉시성은 클라우드 Gemini 3.5 Flash-Lite 가 건당 거의 0원·1초 내로 같은 값을 내고, 온디바이스가 이기는 축(0원·오프라인)은 AICore 지원 기기(플래그십)·iPhone 비율 등 몽골 학생 기기 분포를 안 재봤다. Qwen 0.8B 는 한국어 품질 미검증 + 앱 0.5GB. 재개 조건 = 첫 학생 기기 분포 실측에서 AICore/iOS 27 이 절반 넘는 날 · 또는 UB 회선이 22시 배치를 못 받는 날이 실측되는 날."
+  },
+  {
+   "name": "Claude API 음성(앱 음성 모드 07-23 · Claude Code /voice 03-03)",
+   "why": "API 에 오디오 입력·speech-to-speech 가 없다(platform.claude.com 릴리즈노트 09-01 Fable 5.1 항목까지 WebFetch 실측 · 기억 ai-stack-decision 「클로드는 오디오 입력 불가」와 일치) — Q1 후보표에 못 올린다. 이 finding 셋의 «텍스트» 판정(자기설명 판정·말할 거리)엔 그대로 쓴다."
+  },
+  {
+   "name": "Gemini 3.1 flash TTS 스트리밍(06-17)",
+   "why": "TTS 정본 = Qwen3-TTS Sohee(유호 귀 통과 09-01 · tts-voice-stack). 귀 판정 재통과 없이는 동점 → 기존 유지. 재개 조건 = 실시간 대화(Q1)가 열려 «굽기»가 아니라 «스트리밍»이 필요해지는 날."
+  },
+  {
+   "name": "Khanmigo 대화형 다이어그램(08-27) · Gemini Study Notebooks/Guided Learning(08-2026)",
+   "why": "수학·과학 시각화 자리 — 우리 자리(한국어 · 몽글)에 직접 대체할 부품이 없다. 「학생이 화면에서 한 조작에 AI 가 반응」 원리만 천장 대조에 남긴다."
+  },
+  {
+   "name": "Duolingo Video Call · Speak Live Roleplays · Praktika 3D 아바타 · ChatGPT 발음 탭투히어(08-31)",
+   "why": "제품이지 부품이 아니다 — 천장 대조(ceiling_reference)로만 적는다. 이들이 서 있는 자리는 전부 finding 1(Q1)의 자리."
+  }
+ ],
+ "ceiling_reference": [
+  {
+   "who": "Duolingo — Video Call(릴리)·Roleplay · Falstaff 초급 가이드 통화",
+   "what_they_do": "캐릭터와 FaceTime 처럼 실시간 대화(한국어 포함) · 릴리가 지난 통화를 기억하고 「한동안 안 걸면 음성메시지를 남기는」 먼저 말 걸기 · 상대 수준에 따라 말 속도·난이도 자동 조절 · 대화 기록을 나중에 다시 봄 · Explain My Answer 는 2026 초 한국어 코스 포함 무료화, 초급용 가이드 통화 캐릭터(Falstaff) 추가(08-2026 점검판 리뷰).",
+   "source_url": "https://duoplanet.com/duolingo-video-call/",
+   "what_we_lack_or_beat": "부족: 실시간 «말» 통로 0(비동기 · 밤 22시 배치) · 「먼저 말 걸기」는 표(S23)는 있으나 학생 0 으로 미가동. 이기는 것: 듀오는 캐릭터가 «혼자» 챙기는데 우리는 17번째(몽글) 뒤에 16명을 아는 사람 선생님이 있고, 관심을 «좋았던 순간»에만 건다(감시와 가르는 선 · 08-14 확정) · 전사 원문↔검증 쌍이 엔진에 닿는다."
+  },
+  {
+   "who": "Speak — Live Roleplays(OpenAI Realtime API 위)",
+   "what_they_do": "speech-to-speech 로 사람 상대만큼 빠른 응답 · 자체 «숙련도 그래프»가 대화 난이도·문형·어휘를 실시간으로 맞춤 · 롤플레이마다 달성 목표와 막힐 때 힌트 · Premium Plus 는 Free Talk·Roleplay 의 «실수»에서 맞춤 레슨 무제한 생성.",
+   "source_url": "https://www.speak.com/blog/live-roleplays",
+   "what_we_lack_or_beat": "부족: 실시간 대화 · 대화 중 «수준 그래프가 난이도를 바꾸는» 고리(우리는 상태 기반 과제 선택이 배치·활성 전). 이기는 것: Speak 도 인정한 한계 「speech-to-speech 는 발음 코칭·미세 피드백에 아직 약하다」 — 우리 발음 트랙(낱말 11 · 원문↔검증 diff)이 그 자리를 데이터로 쥔다."
+  },
+  {
+   "who": "Khan Academy Khanmigo — 대화형 다이어그램(Google.org 펠로우십 · 08-27)",
+   "what_they_do": "AI 가 «시각이 도움이 되는 순간»을 스스로 감지해 조작 가능한 그림을 생성하고, 학생이 선분을 끌면 그 위치에 «반응»한다 · 예비 지표: 참여↑ · 다음 문항 정답률(next-item correctness)↑ · 교사는 AI 생성 문항을 «큐레이션한 뒤» 배정.",
+   "source_url": "https://blog.khanacademy.org/new-ai-tools-bring-interactive-diagrams-and-targeted-practice-thanks-to-khan-academys-partnership-with-google-org/",
+   "what_we_lack_or_beat": "부족: 「학생이 화면에서 한 조작에 몽글이 반응」하는 고리 0(몽글은 상태를 3축으로 비추지만 학생 조작을 안 읽는다). 이기는 것: 교사 큐레이션 원칙은 우리 원장 채점·검수 통로가 이미 같은 구조(단정형은 강사 [그래요/아니에요] 문을 지난 것만)."
+  },
+  {
+   "who": "Praktika — 3D 아바타 튜터 5인(Raika·Tama·Skye·Camila·Min-Jun)",
+   "what_they_do": "합성 음성에 맞춰 입 모양·깜빡임·미소가 움직이는 «살아있는» 아바타가 상황 시뮬레이션(면접·식당·호텔)을 진행 · 4.0(04-2025) 발음 피드백 · 배경·억양이 다른 인물 다섯을 «고른다».",
+   "source_url": "https://practiceme.app/vs/praktika",
+   "what_we_lack_or_beat": "부족: 입 모양 동기(립싱크)·표정 구동 — 몽글은 숨 루프(정지 1.5초에 8,985px 변화 · 08-27 실측)뿐. 이기는 것: 재질 — 우리는 구운 펠트 «사진»(Loom 규칙)이고, 가이드 셋(몽글·까몽·마린) 선택제는 이미 확정(08-28)."
+  },
+  {
+   "who": "OpenAI ChatGPT — 발음 도움(탭투히어 + 음소 분해 · 08-31)",
+   "what_they_do": "「어떻게 발음해?」에 낱말을 눌러 듣고 음소 단위 분해를 보여 준다 · Live voice 가 잠금화면·Dynamic Island 에 상주.",
+   "source_url": "https://releasebot.io/updates/openai",
+   "what_we_lack_or_beat": "부족: 낱말 «눌러 듣기» 본보기가 앱 안에 상주하지 않는다(발음 본보기 11 은 굽기 트랙 · tts-voice-stack). 이기는 것: 본보기 목소리가 유호님 귀를 통과한 정본(Sohee)이고, 학생의 «실제 발음»이 원문↔검증 쌍으로 남는다 — ChatGPT 는 듣기만 준다."
+  }
+ ]
+}
