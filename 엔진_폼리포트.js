@@ -2237,12 +2237,22 @@ function migrateWorkFormOutcome_(알림기록) {
        * 손으로 필수를 켠 폼에 이 통로가 닿으면 계약이 안 서고, 빈 칸으로 못 내는 응답자가 과정 칸까지
        * 통째로 버린다. 선택으로 «푸는» 쪽은 쌓인 응답을 하나도 안 깨므로 자동으로 고쳐도 안전하다
        * (반대 방향 — 선택을 필수로 켜는 것 — 은 안 한다). */
-      if (이미.isRequired()) { 이미.setRequired(false); 넣은것.push('필수 해제 — ' + q[0]); }
+      /* 🔴 제네릭 Item 에는 isRequired·setRequired 가 **없다** — 유형이 정해진 문항으로 바꿔야 나온다.
+       *   2026-09-03 라이브 실패 실물: 「이미.isRequired is not a function」(유호님이 시트 메뉴에서 누르셨다).
+       *   getItems() 가 주는 것은 제네릭 Item 인데 getTitle·getType·getHelpText·getIndex 는 거기에도 있어서,
+       *   이 한 줄만 티 없이 섞여 있었다. 바로 아래 선택지 줄은 이미 asMultipleChoiceItem() 을 거치고 있었다
+       *   — 같은 손이 한 곳만 빠뜨린 자리다.
+       * ⚠ 이 줄은 v9.295(09-02)에 들어와 09-03 까지 **한 번도 안 돌았다** — 서명 검사가 늘 먼저 거절해서
+       *   여기에 닿지 못했다. 소스층 회귀는 그 내내 전부 초록이었다(tools/실행층점검.js 가 경고하는 그 층 · F081 계보).
+       *   「배포 뒤 1회 실행이 유일한 검증」이 이 자리에서 또 증명됐다.
+       * 🔑 위 getType 대조로 객관식임을 이미 확인했으니 여기서 바꾸는 것은 안전하다. 한 번만 바꿔 두고 같이 쓴다. */
+      const 이미MC = 이미.asMultipleChoiceItem();
+      if (이미MC.isRequired()) { 이미MC.setRequired(false); 넣은것.push('필수 해제 — ' + q[0]); }
       if (String(이미.getHelpText() || '') !== WORK_HELP[q[0]]) { 이미.setHelpText(WORK_HELP[q[0]]); 넣은것.push('안내 갱신 — ' + q[0]); }
       /* 선택지는 «비었을 때만» 채운다 — 이미 값이 있으면 응답 문자열이 그 값에 묶여 있어 갈아 끼우면
        * 옛 응답이 미아가 된다(제목·선택지 불변 규율). 다르면 고치지 않고 보고한다. */
-      const 지금선택 = 이미.asMultipleChoiceItem().getChoices().map(function (c) { return c.getValue(); });
-      if (!지금선택.length) { 이미.asMultipleChoiceItem().setChoiceValues(q[1]); 넣은것.push('선택지 채움 — ' + q[0]); }
+      const 지금선택 = 이미MC.getChoices().map(function (c) { return c.getValue(); });
+      if (!지금선택.length) { 이미MC.setChoiceValues(q[1]); 넣은것.push('선택지 채움 — ' + q[0]); }
       else if (지금선택.join('␟') !== q[1].join('␟')) 어긋남.push(q[0] + '(선택지가 정본과 다르다 — 옛 응답 보호로 안 고쳤다)');
       // 자리 — 동의 섹션 «앞»이어야 한다. 뒤에 있으면(첫 실행의 moveItem 실패) 지금 옮긴다.
       const 동의at = 동의자리();

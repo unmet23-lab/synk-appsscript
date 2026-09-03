@@ -2171,6 +2171,14 @@ test('[v9.293] 🎯 직장 경험 폼 결과 칸 셋 — 선택 유지 · 기존
   const out = section('function migrateWorkFormOutcome()', 'function migrateFormCopy0901()');
   // 엉뚱한 폼을 고치지 않는다 — «찾는 자리»와 같은 서명 자
   assert.ok(/if \(!직장폼서명_\(form, true\)\)/.test(out), '결과 칸 통로가 서명 자를 안 쓴다 — 동명 복사본에 문항을 붙인다');
+  /* 🔴 [2026-09-03 라이브 실패] 제네릭 Item 에는 isRequired·setRequired 가 없다 — getItems() 로 꺼낸 문항에
+   * 그대로 부르면 라이브가 「이미.isRequired is not a function」으로 죽는다. 유호님이 시트 메뉴에서 만나셨다.
+   * 🔑 이 결함은 v9.295(09-02)부터 있었는데 소스층 회귀는 그 내내 «전부 초록»이었다 — 서명 검사가 늘 먼저
+   *   거절해서 그 줄에 닿지 못했기 때문이다. 실행층에서만 드러나는 자리라, 자를 소스 구조로라도 세워 둔다. */
+  assert.ok(!/이미\.(isRequired|setRequired)\(/.test(code),
+    '결과 칸 통로가 제네릭 문항에 isRequired·setRequired 를 부른다 — 라이브에서 「is not a function」으로 죽는다');
+  assert.ok(/const 이미MC = 이미\.asMultipleChoiceItem\(\)/.test(out) && /이미MC\.isRequired\(\)/.test(out),
+    '객관식으로 «한 번 바꿔 두고» 쓰지 않는다 — 같은 자리에서 또 갈린다');
   // 곁다리 증거를 켜기 «전»에 응답 탭 대조를 통과해야 한다(①배포 검수 6ae0f9351269 · 몽골어 통로와 같은 규율)
   assertOrder(out, ['const shT = ss.getSheetByName(WORK_TAB)', 'if (!tabOk)', '직장폼서명_(form, true)']);
   /* [v9.294] codex P1 c1bc92a6a834 — 서명은 「직장 폼처럼 생겼다」까지만 말한다. 응답 탭에 «안 붙은»
@@ -2201,7 +2209,10 @@ test('[v9.293] 🎯 직장 경험 폼 결과 칸 셋 — 선택 유지 · 기존
     '머리 교정이 문항 반복문 «앞»에서 돈다 — 그 시점의 문항 자리는 아직 참이 아니다');
   /* [v9.295] codex P2 ea5f2cc4e7cf — 결과 칸은 «선택»이 계약이다. 손으로 필수를 켠 폼에서 이 통로가
    * 그대로 두면 빈 칸으로 못 내는 응답자가 과정 칸까지 통째로 버린다. 푸는 방향만 자동으로 고친다. */
-  assert.ok(/이미\.isRequired\(\)\) \{ 이미\.setRequired\(false\)/.test(out),
+  /* ⚠ 이 자가 09-02~09-03 내내 «망가진 모양»을 못박고 있었다 — 정규식이 `이미.isRequired()` 를 요구했는데
+   * 그게 바로 라이브에서 죽는 호출이었다. 자가 결함을 «지키고» 있으면 회귀는 영원히 초록이다.
+   * 그래서 유형을 바꿔 둔 이름(이미MC)으로 요구를 옮긴다 — 위 §「제네릭 Item」 주석이 까닭이다. */
+  assert.ok(/이미MC\.isRequired\(\)\) \{ 이미MC\.setRequired\(false\)/.test(out),
     '기존 결과 문항의 «필수»를 선택으로 되돌리지 않는다 — 계약이 안 선다');
   assert.ok(!/setRequired\(true\)/.test(out), '결과 칸 통로가 문항을 «필수로» 켠다 — 선택이 계약이다');
   /* [v9.294] codex P2 5f735ab55dce — 재직 기간 구간이 겹치면 정확히 3·6·12개월인 사람이 두 칸에 걸리고
@@ -2222,7 +2233,7 @@ test('[v9.293] 🎯 직장 경험 폼 결과 칸 셋 — 선택 유지 · 기존
    * ②이미 있는데 선택지가 «비었을 때»만(v9.294 · 값이 있으면 옛 응답이 그 문자열에 묶여 있어 안 고친다). */
   const 선택지쓰기 = out.match(/\.setChoiceValues\(/g) || [];
   const 생성체인 = out.match(/addMultipleChoiceItem\(\)\.setTitle\([^)]*\)\.setChoiceValues\(/g) || [];
-  const 빈칸채움 = out.match(/if \(!지금선택\.length\) \{ 이미\.asMultipleChoiceItem\(\)\.setChoiceValues\(/g) || [];
+  const 빈칸채움 = out.match(/if \(!지금선택\.length\) \{ 이미MC\.setChoiceValues\(/g) || [];
   assert.equal(선택지쓰기.length, 생성체인.length + 빈칸채움.length,
     '결과 칸 통로가 «기존 문항»의 선택지를 무조건 고친다 — 옛 응답이 그 값에 묶여 있다');
   assert.ok(빈칸채움.length === 1 && /지금선택\.join\('␟'\) !== q\[1\]\.join\('␟'\)/.test(out),
