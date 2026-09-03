@@ -1374,7 +1374,7 @@ function buildSystemManifest() {
   // 7) 생성 메타
   push('생성 시각', Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm'), OK);
   push('생성 경로', '수동 buildSystemManifest() · 주간 weeklyJobs · 재건 bootstrapSynk', OK);
-  push('Glide 바인딩', '미바인딩(진단 전용) — update 쿼터 소비 0', OK);
+  push('앱 바인딩', '미바인딩(진단 전용) — update 쿼터 소비 0', OK);
 
   // 출력 — writeIfChanged로 변경 시에만(쿼터 절약). 이전 실행이 더 길었으면 초과 행 정리
   const prevLast = sh.getLastRow();

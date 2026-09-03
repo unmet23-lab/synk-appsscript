@@ -1135,7 +1135,7 @@ function bootstrapSynk() {
   const rebuildFailed = log.some(line => line.indexOf('✗') === 0);
   const summary = (rebuildFailed ? 'SYNK OS 재건 일부 실패' : 'SYNK OS 재건 완료') +
     ' — 시트 ' + ss.getSheets().length + '장 · 콘텐츠 ' + cnt + '개\n' + log.join('\n') +
-    '\n\n다음 단계: resetAllTriggers() 1회 실행(트리거 통합 재설치) → 데이터 복원(백업 폴더) → Glide 연결';
+    '\n\n다음 단계: resetAllTriggers() 1회 실행(트리거 통합 재설치) → 데이터 복원(백업 폴더) → 앱 연결';
   Logger.log(summary);
   return summary;
 }
@@ -1389,9 +1389,9 @@ function preflightGlide() {
         else if (r[3] === 'parent') { parTotal++; if (String(shared[i][12] || '')) parFilled++; }   // 자녀_주간리포트
       });
       if (stuTotal && stuFilled < stuTotal) warn('학생 공유열 미충전 ' + stuFilled + '/' + stuTotal + ' — 숙제 키가 아직 없을 수 있음(밤 21시 이후 자동, 즉시 원하면 calcAll 재실행)');
-      else if (stuTotal) ok('학생 공유열 충전 완료 ' + stuFilled + '/' + stuTotal + '(숙제·퀴즈·팁·배너·보스·여행지도 — Glide 계산 컬럼 불필요)');
+      else if (stuTotal) ok('학생 공유열 충전 완료 ' + stuFilled + '/' + stuTotal + '(숙제·퀴즈·팁·배너·보스·여행지도 — 앱에서 따로 계산할 필요 없음)');
       if (parTotal && parFilled < parTotal) warn('학부모 공유열 미충전 ' + parFilled + '/' + parTotal + ' — parent_of(J열) 자녀 연결을 확인하세요(연결 후 calcAll 재실행)');
-      else if (parTotal) ok('학부모 공유열 충전 완료 ' + parFilled + '/' + parTotal + '(자녀 카드 6종 — Relation·Lookup 불필요)');
+      else if (parTotal) ok('학부모 공유열 충전 완료 ' + parFilled + '/' + parTotal + '(자녀 카드 6종 — 앱에서 따로 이을 필요 없음)');
     }
   }
 
@@ -1450,7 +1450,7 @@ function preflightGlide() {
   // 8) 실측 매니페스트 갱신 + 요약
   if (ensureBudget('system_manifest 실측')) { try { buildSystemManifest(); ok('system_manifest 실측 갱신'); } catch (e) { warn('manifest 실패: ' + e.message); } }
   if (!pausedP) clearContinue_('preflightGlide'); // [v9.47] 완주 시 잔여 이어하기 트리거 청소
-  const report = '===== SYNK Glide 조립 사전점검 (' + SYNK_VERSION + ' · ' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + ') =====\n'
+  const report = '===== SYNK 조립 사전점검 (' + SYNK_VERSION + ' · ' + Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm') + ') =====\n'
     + L.join('\n')
     + '\n=====\n' + (pausedP ? '⏱️ 일부 무거운 단계가 시간 예산으로 미뤄졌습니다 — 1분 후 자동 이어하기(재실행 무해).\n' : '')
     + '⚠ 줄을 전부 해소하면 조립 준비 완료. 세부 실측은 system_manifest 시트 참조.';
@@ -4074,7 +4074,7 @@ function createLessonCloseForm() {
   step('완료');
   adminMail('[SYNK] 📋 차시 마감폼 생성 완료',
     '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
-    '\n\nGlide 수업 준비 탭 버튼(Open Link)에도 이 URL을 넣으면 됩니다.\n편집용: ' + form.getEditUrl() +
+    '\n\n새 앱 수업 준비 화면의 버튼에도 이 주소를 넣습니다.\n편집용: ' + form.getEditUrl() +
     '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.' +
     '\n※ 차시·주차는 시즌 시작일에서 계산합니다 — app_state "시즌시작일"이 비어 있으면 0으로 적재됩니다.');
   Logger.log('✅ 차시 마감폼 생성 완료: ' + form.getPublishedUrl());

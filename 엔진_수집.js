@@ -219,7 +219,7 @@ function migrateHwFormV9138() {
   } catch (e) { out.push('⚠️ 폼 접근 실패 — 숙제폼ID/권한 확인: ' + e); }
   const report = '📝 숙제 폼 수집 문항(v9.138)\n' + out.join('\n')
     + '\n\n이 두 문항이 하는 일: ①어느 과제가 어떤 오류를 부르는지 연결 ②원문→교정→재작성 3단 데이터'
-    + '\n다음: calcAll ▶ → Glide 첨삭 카드에 「다시 써보기」 버튼(hw_feedback 다시쓰기URL 열)을 연결하세요.';
+    + '\n다음: calcAll ▶ → hw_feedback 「다시쓰기URL」 열에 학생별 주소가 채워집니다 — 새 앱 첨삭 카드의 「다시 써보기」 버튼이 그 열을 씁니다.';
   Logger.log(report);
   if (quotaOk(1)) MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📝 숙제 폼 수집 문항 추가(v9.138)', report);
   return report;
@@ -303,7 +303,7 @@ function createQuizForm() {
   setState(st, '퀴즈폼URL틀', prefillTemplate2_(form, '학생ID', '퀴즈ID'));
   Logger.log('✅ 퀴즈 응답 폼 생성 완료! 다음 calcAll부터 profiles 퀴즈폼URL 열에 학생별 링크가 채워집니다.');
   Logger.log('편집용: ' + form.getEditUrl());
-  return '퀴즈 응답 폼 생성 완료 — Glide 학생 홈에 「퀴즈 답하기」 버튼(퀴즈폼URL 열)을 연결하세요.';
+  return '퀴즈 응답 폼 생성 완료 — 학생별 주소가 다음 calcAll부터 profiles 「퀴즈폼URL」 열에 채워집니다. 지금은 그 주소를 학생에게 직접 주고(수업 중 QR·채팅), 새 앱이 서면 「퀴즈 답하기」 버튼에 잇습니다.';
 }
 
 /* 두 필드 프리필 틀 — prefillTemplateOf_(1개)의 확장. SIDTOKEN + 지정 토큰 자리를 치환해 쓴다.
@@ -410,7 +410,7 @@ function createTalkForm() {
   setState(st, '대화폼ID', form.getId());
   setState(st, '대화폼URL틀', prefillTemplateOf_(form, '학생ID'));
   Logger.log('✅ 한국어 대화 폼 생성 완료! 야간 배치(22시)가 답장을 만듭니다.');
-  return '한국어 대화 폼 생성 완료 — Glide 학생 홈에 「한국어로 말 걸기」 버튼(대화폼URL)을 연결하세요.';
+  return '한국어 대화 폼 생성 완료 — 학생별 주소가 profiles 「대화폼URL」 열에 채워집니다. 지금은 그 주소를 학생에게 직접 주고, 새 앱이 서면 「한국어로 말 걸기」 버튼에 잇습니다.';
 }
 
 /* 직전 턴들을 Claude messages 형식으로 — 이게 있어야 「대화」이고, 없으면 매번 처음 만난 사이가 된다.
@@ -700,7 +700,7 @@ function dataCoverageReport(opts) {
   L.push('');
   L.push('■ 퀴즈 응답 (소급 절대 불가 축 — 그날 고른 답은 다시 못 받는다)');
   L.push('  응답 ' + 응답 + '건 · 다룬 문항 ' + Object.keys(문항종).length + '종 · 정답 ' + 정답 + ' · 판정보류 ' + 보류 + ' · 「찍었어요」 ' + 찍음);
-  if (!응답) L.push('  ⚠️ 0건 — 퀴즈 응답 폼이 없거나(SYNK 메뉴 ▸ 퀴즈 응답 폼 만들기) Glide 버튼이 아직 안 붙었습니다.');
+  if (!응답) L.push('  ⚠️ 0건 — 퀴즈 응답 폼이 없거나(SYNK 메뉴 ▸ 퀴즈 응답 폼 만들기) 학생에게 주소가 아직 안 갔습니다(profiles 「퀴즈폼URL」 열).');
   else if (정답 + 보류 < 응답 * 0.99 && 응답 > 20) {
     const 정답률 = Math.round(정답 / Math.max(1, 응답 - 보류) * 100);
     L.push('  정답률 ' + 정답률 + '%(판정보류 제외) — 「찍었어요」인데 정답인 건은 아직 모르는 것으로 읽습니다.');
@@ -822,7 +822,7 @@ function dataCoverageMonthly_() {
 
   const 처방 = [];
   if (s.골든표본 && !s.골든응답) 처방.push(
-    '① 정답 모음에 강사 응답이 0건입니다 — Glide 강사 탭 「정답 모음」이 조립됐는지, 강사가 주 5건을 채우고 있는지 보세요.\n' +
+    '① 정답 모음에 강사 응답이 0건입니다 — 강사 화면의 「정답 모음」이 열려 있는지, 강사가 주 5건을 채우고 있는지 보세요.\n' +
     '   이 칸이 비면 2년 뒤 「어느 AI가 우리 학생에게 맞는가」를 감으로 고릅니다. 소급 불가(강사를 다시 앉힐 수 없음).');
   if (s.골든응답 && s.골든수정 === s.골든응답) 처방.push(
     '① 강사 정답 모음이 전부 「고칠 곳이 있다」로만 쌓였습니다 — 「AI가 맞았다」 라벨이 0이면 재현율을 못 잽니다.\n' +
@@ -1149,7 +1149,7 @@ function fixtureDiff_(원문, 교정) {
 function 골든픽스처_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const gd = ss.getSheetByName('teacher_gold');
-  if (!gd || gd.getLastRow() < 2) return '강사 정답 모음이 비어 있습니다 — 표본은 매주 월요일 배치가 뽑고, 강사 응답은 Glide 강사 탭 「정답 모음」에서 채웁니다.';
+  if (!gd || gd.getLastRow() < 2) return '강사 정답 모음이 비어 있습니다 — 표본은 매주 월요일 배치가 뽑고, 강사 응답은 강사 화면의 「정답 모음」에서 채웁니다.';
   const tz = ss.getSpreadsheetTimeZone();
   const rows = gd.getRange(2, 1, gd.getLastRow() - 1, GOLD_HEADERS.length).getValues();
   const 항목 = [];

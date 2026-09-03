@@ -1199,7 +1199,7 @@ function createTeacherMemoForm() {
   setState(st, '약점메모폼URL', form.getPublishedUrl());
   adminMail('[SYNK] 🧩 연습 포인트 폼 생성 완료',
     '강사 단톡·즐겨찾기에 배포할 링크:\n' + form.getPublishedUrl() +
-    '\n\nGlide 수업 준비 탭의 버튼(Open Link)에도 이 URL을 넣으면 됩니다.\n편집용: ' + form.getEditUrl() +
+    '\n\n새 앱 수업 준비 화면의 버튼에도 이 주소를 넣습니다.\n편집용: ' + form.getEditUrl() +
     '\n\n※ 재실행해도 안전합니다(제자리 업그레이드 · URL 불변). 반·강사가 바뀌면 다음 날 아침 드롭다운이 자동 갱신됩니다.');
   Logger.log('✅ 연습 포인트 폼 생성 완료: ' + form.getPublishedUrl());
   Logger.log('편집용: ' + form.getEditUrl());
@@ -3579,7 +3579,7 @@ function closeStudentFileLinks() {
       '「액세스가 거부됨」이면 폴더 상속과 충돌하는 것입니다 — 폴더 공유 상태를 먼저 확인하세요.');
   } else if (closed) {
     msg.push('', '✅ 닫혔습니다. 이제 이 파일들은 로그인한 소유자만 볼 수 있습니다.',
-      '⚠ Glide 학부모 「성장 리포트」 탭의 이미지가 비게 됩니다 — 그 컴포넌트를 걷어내세요.',
+      '⚠ 학부모 「성장 리포트」 화면의 이미지가 비게 됩니다 — 그 자리를 걷어내세요.',
       '   카드는 이제 보호자 이메일로 PNG 첨부 발송됩니다(SEND_REPORT_EMAIL=true).');
   }
   const out = msg.join('\n');
