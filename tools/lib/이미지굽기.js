@@ -107,7 +107,9 @@ async function 한컷({ 이름, 지시, 참조 = [], 비율 = '1:1', 크기 = '1
     parts.push({ inline_data: { mime_type: mime(r), data: fs.readFileSync(r).toString('base64') } });
   }
   const t0 = Date.now();
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${모델}:generateContent`, {
+  /* 🚪 주소 정본 = `모델정책.제미나이URL('돈', 모델)`(09-04). 그림은 「돈」 열쇠라 **Vertex AI 문**으로 간다 —
+   * 무료 크레딧 $300 이 AI Studio 문에는 안 먹고 그 문에는 먹기 때문이다(구글 공식). */
+  const res = await fetch(require('../모델정책.js').제미나이URL('돈', 모델), {
     method: 'POST',
     headers: { 'x-goog-api-key': k, 'content-type': 'application/json' },
     body: JSON.stringify({

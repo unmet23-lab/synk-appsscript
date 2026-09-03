@@ -23,7 +23,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const BASE = 'https://generativelanguage.googleapis.com/v1beta';
+/* 🚪 주소는 `tools/모델정책.js` 의 `제미나이URL(용도, 모델)` 하나가 쥔다(09-04) — 「글」은 AI Studio,
+ * 「돈」은 Vertex AI 다. 여기 상수로 두면 문이 두 곳에 살아 한쪽만 옮겨진다(constant-known-in-two-places).
+ * BASE 는 옛 이름 그대로 내보내되 «글 문»의 값을 정책에서 가져온다 — 부르는 쪽이 안 깨진다. */
+const 정책 = require(require('path').join(__dirname, '..', '모델정책.js'));
+const BASE = 정책.제미나이문('글').base;
 const 호출타임아웃 = 60_000;
 const 재시도지연 = [5_000, 15_000]; // 무료 티어 분당 상한(429)·순간 장애(500/503)용
 
@@ -47,13 +51,14 @@ function 제미나이스키마(schema) {
   return out;
 }
 
-/** 답 텍스트(기본) 또는 `opts.상세` 면 { text, modelVersion, finishReason, usage } */
+/** 답 텍스트(기본) 또는 `opts.상세` 면 { text, modelVersion, finishReason, usage }.
+ *  @param opts.용도 '글'(기본 · AI Studio 문) | '돈'(Vertex AI 문) — 주소를 이 값이 고른다(09-04) */
 async function 제미나이(key, model, prompt, opts = {}) {
   const 타임아웃 = Number(opts.timeoutMs) || 호출타임아웃;
   for (let 회 = 0; ; 회++) {
     let res, 본문;
     try {
-      res = await fetch(`${BASE}/models/${model}:generateContent`, {
+      res = await fetch(정책.제미나이URL(opts.용도 || '글', model), {
         method: 'POST',
         headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -117,7 +122,6 @@ async function main() {
     try { schema = JSON.parse(fs.readFileSync(path.resolve(스키마경로), 'utf8')); }
     catch (e) { console.error(`실행 오류: 스키마를 못 읽었다 — ${e.message}`); process.exit(1); }
   }
-  const 정책 = require(path.join(__dirname, '..', '모델정책.js'));
   /* 🔑 이 통로는 **글 전용**이다(몽골어 검문 · 검수 러너의 gemini 회차) — 그래서 「글」 열쇠(공짜 몫).
    * 그림·음악·목소리는 여기를 안 지나간다(각자 「돈」 열쇠를 쓴다 · 유호 확정 09-03). */
   const key = 정책.제미나이키('글');
