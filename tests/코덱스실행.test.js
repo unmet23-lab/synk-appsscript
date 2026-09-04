@@ -245,6 +245,62 @@ test('🔴 한도 마커 — ① 태우기 전에 막고 ② 차단문이 준 �
   assert.ok(/FAKECODEX/.test(강행글), '강행은 게이트를 지나 코덱스를 태워야 한다: ' + 강행글.slice(-400));
 });
 
+/* 🔴 2026-09-05 실측 — 한도로 죽은 런은 «커밋 없이 파일만» 남기고, 워크트리가 발주 지문으로
+ *   정해지므로 다음 런이 그 잔해를 **제 결과로 커밋한다**. 이어 도는 것은 옳은데, 안 적으면
+ *   커밋 제목이 「라운드 N」 하나뿐이라 합칠지 정하는 사람이 «이번 회차가 지은 것»으로 읽는다.
+ * 📏 자 = 커밋의 제목·본문에 그 표시가 실제로 있나(소스 글자가 아니라 만들어진 커밋을 읽는다). */
+test('🔴 앞 회차가 짓다 만 잔해를 이어받으면 커밋이 그렇게 말한다 — 「라운드 N」 하나로 뭉뚱그리지 않는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-carry-'));
+  assert.strictEqual(spawnSync('git', ['init', '-q', 방], { encoding: 'utf8' }).status, 0);
+  fs.writeFileSync(path.join(방, 'add.js'), 'module.exports = (a, b) => a + b;\n');
+  fs.writeFileSync(path.join(방, '발주.md'), 발주);
+  spawnSync('git', ['-C', 방, 'add', '--', 'add.js'], { encoding: 'utf8' });
+  spawnSync('git', ['-C', 방, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'base', '--', 'add.js'], { encoding: 'utf8' });
+
+  const 런방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-carry-runs-'));
+  const 가짜방 = path.join(런방, 'npm');
+  fs.mkdirSync(가짜방, { recursive: true });
+  /* 가짜 코덱스 — 🪤 작업 폴더는 cwd 가 아니라 `-C` 로 온다(09-05 에 이걸 무시해 본 저장소에 파일이 샜다).
+   *   FAKE_MODE=die  : `-C` 안에 반쯤 짓고 죽는다(= 한도로 끊긴 런)
+   *   FAKE_MODE=ok   : 아무것도 안 짓고 답 파일만 남기고 성공한다(= 잔해만 남은 다음 런) */
+  fs.writeFileSync(path.join(가짜방, 'fakecodex.js'), [
+    "const fs = require('fs'), path = require('path');",
+    'const a = process.argv.slice(2);',
+    "const wt = a[a.indexOf('-C') + 1];",
+    "const out = a[a.indexOf('-o') + 1];",
+    "if (process.env.FAKE_MODE === 'die') {",
+    "  fs.appendFileSync(path.join(wt, 'add.js'), '// 짓다 만 자국\\n');",
+    '  process.stderr.write("ERROR: You\'ve hit your usage limit. Upgrade to Pro or try again at 9:37 PM.\\n");',
+    '  process.exit(1);',
+    '}',
+    "fs.writeFileSync(out, JSON.stringify({ 상태: '완료', 요약: '새로 지은 것 없음', 바꾼파일들: [], 시험: [], 남긴것: [], 발주밖발견: [], 확신도: 0.5, 항목: [] }), 'utf8');",
+  ].join('\n'), 'utf8');
+  fs.writeFileSync(path.join(가짜방, 'codex.cmd'), '@echo off\r\nnode "%~dp0fakecodex.js" %*\r\n', 'utf8');
+  fs.writeFileSync(path.join(가짜방, 'codex'), '#!/bin/sh\nexec node "$(dirname "$0")/fakecodex.js" "$@"\n', { mode: 0o755 });
+
+  const 바탕 = { ...process.env, SYNK_REVIEW_RUNS: 런방, SYNK_BUILD_LEDGER: path.join(런방, '장부.jsonl'), APPDATA: 런방 };
+  if (process.platform !== 'win32') 바탕.PATH = 가짜방 + path.delimiter + process.env.PATH;
+  const 인자 = ['--발주', path.join(방, '발주.md'), '--저장소', 방, '--발주검토안함', '--검수안함', '--라운드', '1', '--timeout', '60'];
+
+  // ① 한도로 끊긴 런 — 커밋은 0 이고 짓다 만 파일만 워크트리에 남는다
+  const 죽음 = 실행(인자, { env: { ...바탕, FAKE_MODE: 'die' } });
+  assert.strictEqual(죽음.status, 2, 죽음.stderr + 죽음.stdout);
+  const wt = 빌드.워크트리경로(방, 빌드.발주지문(fs.readFileSync(path.join(방, '발주.md'), 'utf8')));
+  assert.ok(/짓다 만 자국/.test(fs.readFileSync(path.join(wt, 'add.js'), 'utf8')), '짓다 만 것은 워크트리에 남는다');
+  assert.strictEqual(spawnSync('git', ['-C', 방, 'log', '--oneline', '--all'], { encoding: 'utf8' }).stdout.trim().split('\n').length, 1, '죽은 런은 커밋을 안 남긴다');
+
+  // ② 한도가 풀린 뒤 같은 명령 — 잔해가 이 라운드의 커밋으로 들어간다
+  fs.rmSync(path.join(런방, '한도.json'), { force: true });
+  const 이어 = 실행(인자, { env: { ...바탕, FAKE_MODE: 'ok' } });
+  const 이어글 = 이어.stdout + 이어.stderr;
+  assert.ok(/이어받는다/.test(이어글), '화면이 먼저 말해야 한다: ' + 이어글.slice(-400));
+
+  const 가지 = 빌드.가지이름(빌드.발주지문(fs.readFileSync(path.join(방, '발주.md'), 'utf8')));
+  const 메시지 = spawnSync('git', ['-C', 방, 'log', '-1', '--format=%B', 가지], { encoding: 'utf8' }).stdout;
+  assert.ok(/앞 회차 이어받음 1/.test(메시지), '제목만 보는 눈(--oneline)에도 보여야 한다: ' + 메시지);
+  assert.ok(/add\.js/.test(메시지) && /새로 지은 것이 아니다/.test(메시지), '본문이 어느 파일인지 말해야 한다: ' + 메시지);
+});
+
 test('🔑 --마른손 은 코덱스를 안 태우고 ⓪만 낸다 — 임시 저장소에서 형식·범위·계획을 출력한다', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-test-'));
   const 초기 = spawnSync('git', ['init', '-q', 방], { encoding: 'utf8' });
