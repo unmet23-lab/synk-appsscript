@@ -118,12 +118,17 @@ ${안들.map((a, i) => {
 
   const 임시 = path.join(os.tmpdir(), `칩시안-${process.pid}.html`);
   fs.writeFileSync(임시, html, 'utf8');
+  /* 🔴 2026-09-04 — 옛 산출을 먼저 지운다(codex `a4918bf57d0d` · 칩띠대조와 같은 무늬).
+   *   `existsSync` 하나로 판정하면 어제 그림이 오늘의 실패를 덮는다. 「없앤 뒤에 생겼나」로 묻는다. */
+  try { fs.unlinkSync(나갈곳); } catch { /* 없으면 그만 */ }
   const 창높 = 200 + 안들.length * 250;
-  const r = spawnSync(크롬(), ['--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
-    '--force-device-scale-factor=2', `--window-size=1400,${창높}`,
-    `--screenshot=${나갈곳}`, 'file:///' + 임시.split(path.sep).join('/')], { encoding: 'utf8' });
-  try { fs.unlinkSync(임시); } catch { /* */ }
-  if (!fs.existsSync(나갈곳)) { console.error('🔴 못 찍었다:', (r.stderr || '').slice(0, 300)); process.exit(1); }
+  let r;
+  try {
+    r = spawnSync(크롬(), ['--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
+      '--force-device-scale-factor=2', `--window-size=1400,${창높}`,
+      `--screenshot=${나갈곳}`, 'file:///' + 임시.split(path.sep).join('/')], { encoding: 'utf8' });
+  } finally { try { fs.unlinkSync(임시); } catch { /* */ } }
+  if (!fs.existsSync(나갈곳)) { console.error('🔴 못 찍었다:', ((r && r.stderr) || '').slice(0, 300)); process.exit(1); }
   console.log(`■ 칩 시안 한 장  ${나갈곳}  (${Math.round(fs.statSync(나갈곳).size / 1024)}KB · 안 ${안들.length}/8)`);
 }
 

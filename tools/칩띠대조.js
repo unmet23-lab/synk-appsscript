@@ -85,12 +85,19 @@ ${있는것.map((p, i) => `<div class="${i ? 'sec' : ''}"><h2>${p.이름}</h2><p
 
   const 임시 = path.join(os.tmpdir(), `칩띠-${process.pid}.html`);
   fs.writeFileSync(임시, html, 'utf8');
+  /* 🔴 2026-09-04 — 옛 산출을 먼저 지운다(codex `53ead1688473`).
+   *   판정이 `existsSync(나갈곳)` 하나였는데, 어제 찍은 그림이 그 자리에 있으면 **오늘 크롬이 죽어도 초록**이었다.
+   *   「없앤 뒤에 생겼나」로 물어야 그 자리가 참을 말한다(zero-is-a-success-face-taxonomy 계열). */
+  try { fs.unlinkSync(나갈곳); } catch { /* 없으면 그만 */ }
   const 높이 = 140 + 있는것.length * 470;   /* 판당 = 머리 + 실크기줄 + 큰줄 셋. 09-03 에 360 으로 잡았다가 마지막 판이 잘렸다 */
-  const r = spawnSync(크롬(), ['--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
-    '--force-device-scale-factor=2', `--window-size=1060,${높이}`,
-    `--screenshot=${나갈곳}`, `file:///${임시.replace(/\\/g, '/')}`], { encoding: 'utf8' });
-  try { fs.unlinkSync(임시); } catch { /* */ }
-  if (!fs.existsSync(나갈곳)) { console.error('🔴 못 찍었다:', (r.stderr || '').slice(0, 300)); process.exit(1); }
+  let r;
+  // 크롬을 못 찾으면 여기서 던진다 — 임시 HTML 은 finally 가 치운다(안 그러면 tmp 에 쌓인다).
+  try {
+    r = spawnSync(크롬(), ['--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
+      '--force-device-scale-factor=2', `--window-size=1060,${높이}`,
+      `--screenshot=${나갈곳}`, `file:///${임시.replace(/\\/g, '/')}`], { encoding: 'utf8' });
+  } finally { try { fs.unlinkSync(임시); } catch { /* */ } }
+  if (!fs.existsSync(나갈곳)) { console.error('🔴 못 찍었다:', ((r && r.stderr) || '').slice(0, 300)); process.exit(1); }
   console.log(`■ 칩 띠 대조  ${나갈곳}  (${Math.round(fs.statSync(나갈곳).size / 1024)}KB · 판 ${있는것.length}/${판들.length})`);
 }
 
