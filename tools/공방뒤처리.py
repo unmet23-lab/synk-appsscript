@@ -2,8 +2,15 @@
 
 무엇을 하나 (규격에 따라 갈린다):
   부품·장면 — 흰 배경·그림자·구멍을 걷는다(`tools/흰배경걷기.py`).
-  천        — 배경이 곧 그림이라 안 걷는다. 크기만 줄인다.
-  둘 다 1800px webp 로 담고, `docs/공방/계획.json` 의 `파일` 을 그 이름으로 옮긴다.
+  천        — 배경이 곧 그림이라 안 걷는다.
+  둘 다 **원본 크기 그대로 AVIF** 로 담고, `docs/공방/계획.json` 의 `파일` 을 그 이름으로 옮긴다.
+
+🔑 **왜 AVIF 인가 (09-05 실측 · 4K 배지 한 장)**
+  원본 PNG 18.6MB → webp q90 1.1MB(PSNR 48.2dB) → **AVIF q70 0.7MB(48.1dB)**.
+  같은 품질에 36% 작다. 원본 대비 **3.8%** 이고 눈으로는 구분되지 않는다.
+  그래서 «4096px 을 그대로 두고» 담아도 102장이 71MB 다 — 크기를 줄일 이유가 없어졌다.
+  ✅ 크롬이 AVIF 를 4096px 그대로 읽는 것을 실물로 확인했다(지면·인쇄 조판이 전부 크롬이다).
+  ⚠ PowerPoint 처럼 AVIF 를 못 읽는 곳에 넣을 때만 그때 PNG 로 바꾼다.
 
 왜 따로 있나: 굽는 일(돈·네트워크)과 다듬는 일(이 기계의 CPU)은 성격이 다르다.
   굽기가 끊겨도 이미 난 것은 이 도구로 언제든 마저 다듬을 수 있어야 한다.
@@ -13,7 +20,8 @@
 사용:
   python tools/공방뒤처리.py              # 계획의 「구웠다」 중 아직 png 인 것 전부
   python tools/공방뒤처리.py --묶음 "숫자"
-  python tools/공방뒤처리.py --너비 2400
+  python tools/공방뒤처리.py --꼴 WEBP        # AVIF 를 못 읽는 곳에 쓸 때
+  python tools/공방뒤처리.py --너비 1800      # 굳이 줄여야 할 때
 """
 import argparse
 import io
@@ -35,9 +43,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--묶음', help='이 묶음만 다듬는다')
-    ap.add_argument('--너비', type=int, default=1800, help='담을 때 긴 변 최대(px). 기본 1800')
-    ap.add_argument('--품질', type=int, default=88, help='webp 품질 0~100. 기본 88')
+    ap.add_argument('--너비', type=int, default=0,
+                    help='담을 때 긴 변 최대(px). 0(기본) 이면 «원본 크기 그대로» — AVIF 라 줄일 이유가 없다')
+    ap.add_argument('--꼴', default='AVIF', choices=['AVIF', 'WEBP'],
+                    help='담는 꼴. 기본 AVIF(같은 품질에 webp 보다 36%% 작다 · 09-05 실측)')
+    ap.add_argument('--품질', type=int, default=0,
+                    help='0(기본) 이면 꼴에 맞춰 고른다 — AVIF 70 · WEBP 90')
     a = ap.parse_args()
+    확장 = '.avif' if a.꼴 == 'AVIF' else '.webp'
+    품질 = a.품질 or (70 if a.꼴 == 'AVIF' else 90)
 
     계획 = json.load(io.open(계획경로, encoding='utf-8'))
     할것 = []
@@ -55,7 +69,8 @@ def main():
         print('■ 다듬을 것이 없다(0장).')
         return
 
-    print(f'■ 뒤처리 {len(할것)}장 · 긴 변 {a.너비}px')
+    print(f'■ 뒤처리 {len(할것)}장 · {a.꼴} q{품질} · 긴 변 '
+          + (f'{a.너비}px' if a.너비 else '원본 그대로'))
     산것 = 실패 = 0
     for 묶, 것, 규격 in 할것:
         png = os.path.join(방, 것['파일'])
@@ -63,7 +78,7 @@ def main():
             print(f'   ⚠ 원본이 없다 — {것["파일"]}')
             실패 += 1
             continue
-        webp = png[:-4] + '.webp'
+        담을것 = png[:-4] + 확장
         try:
             if 규격 == '천':
                 im = Image.open(png).convert('RGB')
@@ -78,16 +93,20 @@ def main():
                     continue
                 im = Image.open(누끼).convert('RGBA')
                 os.remove(누끼)
-            im.thumbnail((a.너비, a.너비), Image.LANCZOS)
-            im.save(webp, 'WEBP', quality=a.품질, method=6)
+            if a.너비:
+                im.thumbnail((a.너비, a.너비), Image.LANCZOS)
+            if a.꼴 == 'AVIF':
+                im.save(담을것, 'AVIF', quality=품질)
+            else:
+                im.save(담을것, 'WEBP', quality=품질, method=6)
         except Exception as e:                                   # noqa: BLE001
             print(f'   🔴 {것["이름"]} — {str(e)[:120]}')
             실패 += 1
             continue
-        것['파일'] = os.path.basename(webp)
+        것['파일'] = os.path.basename(담을것)
         산것 += 1
-        print(f'   ✅ [{묶}] {것["이름"]} → {os.path.basename(webp)} '
-              f'{im.size[0]}x{im.size[1]} {os.path.getsize(webp) // 1024}KB')
+        print(f'   ✅ [{묶}] {것["이름"]} → {os.path.basename(담을것)} '
+              f'{im.size[0]}x{im.size[1]} {os.path.getsize(담을것) // 1024}KB')
 
     io.open(계획경로, 'w', encoding='utf-8', newline='').write(
         json.dumps(계획, ensure_ascii=False, indent=2) + '\n')
