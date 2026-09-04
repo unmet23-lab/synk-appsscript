@@ -340,6 +340,36 @@ test('🔑 타임아웃은 signal 로 가른다 — 실측에서 e.killed 는 un
   assert.match(문장, /900/, '소진한 초를 안 밝혔다 — 얼마를 기다렸는지 모르면 얼마로 늘릴지도 모른다');
 });
 
+/* 🔴 2026-09-05 실측 — `timeout` 은 «끊는 시각»이 아니라 «신호를 보내는 시각»이다.
+ *   윈도에서 우리가 낳는 것은 `cmd.exe` 이고 코덱스는 그 손자라, 시간이 다 되면 자식은 죽어도
+ *   손자가 출력 통로를 놓을 때까지 이 동기 호출이 «안 돌아온다». 실측: `--timeout 60` 에
+ *   90초 사는 가짜를 걸었더니 **91초** 뒤에 돌아왔는데 문면은 「60초 소진」 하나였다.
+ *   ⇒ 그 문면만 믿으면 다음 세션이 「60초라 했는데 왜 아직?」을 처음부터 다시 겪는다.
+ * 📏 자 = codex() 를 «실제로» 태워서(가짜 · 벤더 미접촉) 오래 걸린 사실이 문면에 실리나 본다. */
+test('🔴 타임아웃 문면이 «실제로 걸린 시간»을 밝힌다 — --timeout 은 상한이 아니라 하한이다', function (t) {
+  if (process.platform !== 'win32') return t.skip('이 무늬는 cmd.exe 를 거치는 윈도 통로의 것이다');
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-timeout-'));
+  const npm방 = path.join(방, 'npm');
+  fs.mkdirSync(npm방, { recursive: true });
+  // 가짜 코덱스 — 6초를 살고 스스로 끝난다(건 값 2초보다 길다)
+  fs.writeFileSync(path.join(npm방, 'fakecodex.js'), 'setTimeout(() => process.exit(1), 6000);\n', 'utf8');
+  fs.writeFileSync(path.join(npm방, 'codex.cmd'), '@echo off\r\nnode "%~dp0fakecodex.js" %*\r\n', 'utf8');
+
+  const 옛APPDATA = process.env.APPDATA;
+  process.env.APPDATA = 방;
+  let 잡은 = null;
+  const 시작 = Date.now();
+  try { 검수.codex(['exec', '-'], 'x', 2000, '실행 1'); } catch (e) { 잡은 = e; }
+  const 걸린 = Date.now() - 시작;
+  process.env.APPDATA = 옛APPDATA;
+
+  assert.ok(잡은, '가짜가 실패했는데 codex() 가 안 던졌다');
+  assert.ok(잡은.타임아웃, '타임아웃으로 안 읽혔다: ' + 잡은.message);
+  assert.ok(걸린 > 4000, '이 실험의 전제 — 건 값(2초)보다 오래 붙들려야 한다. 실제 ' + 걸린 + 'ms');
+  assert.match(잡은.message, /실제로는 \d+초/, '더 오래 걸린 사실이 문면에 없다(「2초 소진」만 남으면 거짓말이다): ' + 잡은.message);
+  assert.match(잡은.message, /하한/, '「상한이 아니라 하한」이라는 판정이 문면에 없다: ' + 잡은.message);
+});
+
 test('🔑 타임아웃 처방이 **실행 가능한 명령**이다 — 그 플래그를 도구가 실제로 안다 (F103 자기 처방)', () => {
   const 문장 = 검수.실패요점(타임아웃err, 900000, 'codex 검수');
   const m = 문장.match(/--timeout (\d+)/);

@@ -1491,6 +1491,14 @@ function codex(args, 입력, timeoutMs, 라벨) {
   if (isWin && !fs.existsSync(bin)) {
     const e = new Error(`codex CLI 를 찾을 수 없다: ${bin}`); e.확인불가 = true; throw e;
   }
+  /* 🔴 09-05 실측 — `timeout` 은 **끊는 시각이 아니라 «신호를 보내는» 시각**이다.
+   *   윈도에서 우리가 직접 낳는 것은 `cmd.exe` 이고 코덱스는 그 «손자»다. 시간이 다 되면 자식은
+   *   죽지만 손자가 출력 통로를 붙들고 있어, 이 동기 호출은 **손자가 스스로 끝날 때까지 안 돌아온다.**
+   *   실측: `--timeout 60` 인데 90초 사는 가짜를 걸었더니 **91초** 뒤에 돌아왔다(문면은 「60초 소진」).
+   *   ⇒ `--timeout` 은 상한이 아니라 **하한**이다. 아래에서 실제 걸린 시간을 재어 같이 말한다
+   *   (「60초라 했는데 왜 아직?」을 다음 세션이 다시 겪지 않게 · 진짜 상한을 세우려면 프로세스
+   *   나무째 죽이는 통로가 필요한데 그건 이 동기 함수의 모양을 바꾼다 → 아직 안 했다). */
+  const 시작 = Date.now();
   try {
     execFileSync(
       isWin ? (process.env.ComSpec || 'cmd.exe') : bin,
@@ -1511,6 +1519,14 @@ function codex(args, 입력, timeoutMs, 라벨) {
     const err = new Error(실패요점(e, timeoutMs, 라벨));
     err.확인불가 = true;
     err.타임아웃 = !!(e && e.signal);
+    err.걸린ms = Date.now() - 시작;
+    /* 실제로 더 오래 걸렸으면 그 사실을 «숫자로» 붙인다 — 안 붙이면 문면이 「60초 소진」이라
+     * 거짓말이 된다(위 주석). 1.2배를 넘을 때만 말한다: 오차로 시끄러워지지 않게. */
+    if (err.타임아웃 && err.걸린ms > timeoutMs * 1.2) {
+      err.message += `\n   ⚠ 실제로는 ${Math.round(err.걸린ms / 1000)}초 뒤에 돌아왔다(건 값은 ${Math.round(timeoutMs / 1000)}초).`
+        + ' 시간이 다 되면 우리가 낳은 자식은 죽지만 **코덱스는 그 손자라 안 죽고**, 출력 통로를 놓을 때까지 이 호출이 안 끝난다.'
+        + ' ⇒ `--timeout` 은 상한이 아니라 하한이다. 긴 판은 `--던지기` 로 백그라운드에 두고 로그를 파일로 받아라.';
+    }
     /* 한도 오류면 마커를 적는다 — 다음 호출부터는 위 게이트가 태우기 전에 끊고,
      * review-runs 훅이 세션을 열 때마다 리셋 시각을 알린다(세션마다 재발견하는 비용 제거). */
     const 기록 = 런.한도기록(String((e && e.stderr) || (e && e.message) || ''));
