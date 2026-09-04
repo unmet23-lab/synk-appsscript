@@ -83,7 +83,10 @@ function 상태옮김(묶, 것, 파일) {
     if (굽을것.length === 0) { console.log('🚫 구울 것이 없다(0원).'); return; }
   }
 
-  const 크기 = String(인자.크기 || '2K');
+  /* 🔴 기본이 4K 다(유호 확정 09-05 「제미나이로 굽는거는 전부다 4K로 하는거로 결정하자」).
+   *   작게 구워 두면 나중에 크게 못 늘린다 — 제미나이는 같은 그림을 다시 못 낸다.
+   *   용량은 AVIF 가 푼다(`공방뒤처리.py`). 336원/장 · 77초/장. */
+  const 크기 = String(인자.크기 || '4K');
   const 굽기 = require('./lib/이미지굽기.js');
   const ok = await 굽기.배치게이트(굽을것.length, 크기);
   if (!ok) { console.log('🚫 게이트가 막았다 — 한 장도 안 구웠다.'); process.exit(1); }
