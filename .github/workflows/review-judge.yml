@@ -10,6 +10,12 @@
 name: review-judge
 
 on:
+  # 🔴 09-05: PR 이벤트가 «빠져» 있었다. 봇이 코멘트를 남겨야만 이 잡이 깨어나므로, 두 봇이 다
+  #   침묵하면(열쇠가 없거나 죽으면) 그 커밋에는 도장이 pending 도 아닌 «아예 없음»으로 남는다.
+  #   그러면 이 파일이 스스로 적어 둔 규율 「봇이 침묵하면 pending 이지 초록이 아니다」를 **찍을
+  #   기회가 없다.** PR 이 열리거나 새 커밋이 밀리는 순간 먼저 pending 을 박아 두어야 그 말이 산다.
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
   issue_comment:
     types: [created, edited]
   pull_request_review:
