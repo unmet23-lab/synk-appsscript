@@ -2313,6 +2313,11 @@ function gemini심문한회(프롬프트, timeoutMs, 결과, i, 총, 픽) {
     execFileSync(process.execPath,
       [제미나이호출경로, '--model', 픽.model,
         ...(픽.thinking_level ? ['--thinking', 픽.thinking_level] : []),
+        /* 🔴 09-04 실측 — 심문은 «돈» 창구로 간다. 첫 판이 공짜 몫(하루 20발)에서 죽었다:
+         *   `Quota exceeded ... free_tier_requests, limit: 20`. 심문은 문서 전문을 통째로 보내는
+         *   무거운 호출이고 빈도가 낮다(통틀어 네 번 돌았다) — 크레딧이 덮기에 딱 맞는 모양이다.
+         *   ⚠ 검수 둘째 눈은 그대로 「글」이다(자주 돌고 diff 만 본다 · 크레딧을 거기 태우지 않는다). */
+        '--용도', '돈',
         '-o', 원본, '--timeout', String(Math.min(timeoutMs, 900000))],
       자식옵션({
         cwd: 대상ROOT, input: 프롬프트, encoding: 'utf8', timeout: timeoutMs,
