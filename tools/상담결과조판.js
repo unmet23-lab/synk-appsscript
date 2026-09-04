@@ -123,18 +123,61 @@ function 꽂기(html, 값) {
   return html;
 }
 
-/** 「시작 Lv ____ → 목표 ____급 · 정규 과정 ____시즌」의 밑줄 셋을 값으로. */
+/* ── 자리표 꽂기 ────────────────────────────────────────────────────────────
+ * 밑줄 칸(fill)과 달리 «문장 안»에 박히는 값들이다 — 히어로의 큰 숫자, 「시작 Lv …」 한 줄.
+ * 지면이 `<span data-슬롯="시즌수">__</span>` 로 자리를 열어 두면 여기가 채운다.
+ * 🔑 라벨 찾기와 같은 원리다 — **이름으로 찾는다.** 자리 순서에 기대지 않으므로 지면을
+ *   다시 짜도 이름만 지키면 그대로 돈다(v3→v4 재설계에서 이 통로가 값을 냈다). */
+function 슬롯꽂기(html, 값) {
+  길칸들.forEach((k) => {
+    const v = 값[k];
+    if (v === undefined || v === null || String(v) === '') return;
+    const 패턴 = new RegExp('(<span[^>]*data-슬롯="' + 이스케이프(k) + '"[^>]*>)([\\s\\S]*?)(</span>)', 'g');
+    html = html.replace(패턴, (_, 앞, __, 뒤) => 앞 + 글자막기(String(v)) + 뒤);
+  });
+  return html;
+}
+
+/** 「시작 Lv ____ → 목표 ____급 · 정규 과정 ____시즌」 한 줄을 쓰는 지면이면 그것도 채운다.
+ *  🔑 지면이 그 문장을 안 쓰면 조용히 지나간다 — v4 는 히어로가 그 말을 대신하므로 문장이 없다. */
 function 길꽂기(html, 값) {
   const 있는것 = 길칸들.filter((k) => 값[k] !== undefined && 값[k] !== null && String(값[k]) !== '');
   if (!있는것.length) return html;
   const 원문 = /시작 Lv ____ → 목표 ____급 · 정규 과정 ____시즌/;
-  if (!원문.test(html)) {
-    throw new Error('「목표까지의 길」 한 줄을 못 찾았다 — 지면 문장이 바뀌었다(tools/상담결과조판.js 의 길꽂기)');
-  }
+  if (!원문.test(html)) return html;
   const 채움 = (k, 기본) => (값[k] ? 글자막기(String(값[k])) : 기본);
   return html.replace(원문,
     '시작 ' + 채움('시작Lv', 'Lv ____') + ' → 목표 ' + 채움('목표급수', '____') + '급 · 정규 과정 ' +
     채움('시즌수', '____') + '시즌');
+}
+
+/* ── 마스코트 심기 ──────────────────────────────────────────────────────────
+ * 🔑 경로는 `tools/lib/마스코트자산.js` 하나가 안다 — 여기 적으면 두 벌이 된다.
+ *   1024px 원본을 그대로 넣으면 종이가 610KB 무거워지므로 인쇄 크기(≈24mm · 300dpi ≈ 290px)에
+ *   맞춰 줄여 심는다. ⚠ 줄이는 자가 없으면(파이썬·PIL 부재) **자리를 비우고 그 사실을 말한다** —
+ *   조용히 원본을 심으면 종이 무게가 다섯 배가 된다. */
+function 마스코트심기(html) {
+  if (html.indexOf('@@마스코트@@') < 0) return { html, 심었나: false, 사유: '지면에 자리가 없다' };
+  let 경로;
+  try {
+    const 자산 = require('./lib/마스코트자산.js');
+    /* 🔴 `누끼:true` 를 안 주면 «배경이 붙은 판»이 온다 — 09-05 실측에서 어두운 히어로 카드 위에
+       밝은 회색 사각형이 그대로 얹혔다(알파 0). 지면에 얹을 때는 언제나 누끼다. */
+    경로 = path.join(ROOT, 자산.경로('눈웃음', { 누끼: true }));
+  } catch (e) {
+    return { html: html.replace(/@@마스코트@@/g, ''), 심었나: false, 사유: '자산 통로를 못 열었다: ' + e.message };
+  }
+  const 결과 = require('child_process').spawnSync('python', ['-c',
+    'import sys,io,base64;from PIL import Image;' +
+    'im=Image.open(sys.argv[1]).convert("RGBA");im.thumbnail((320,320),Image.LANCZOS);' +
+    'b=io.BytesIO();im.save(b,"WEBP",quality=88,method=5);' +
+    'sys.stdout.write(base64.b64encode(b.getvalue()).decode())', 경로], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
+  if (결과.status !== 0 || !결과.stdout) {
+    return { html: html.replace(/@@마스코트@@/g, ''), 심었나: false,
+      사유: '줄이기 실패 — ' + String(결과.stderr || '').trim().split('\n').pop() };
+  }
+  return { html: html.replace(/@@마스코트@@/g, 'data:image/webp;base64,' + 결과.stdout),
+    심었나: true, 크기KB: Math.round(결과.stdout.length * 0.75 / 1024) };
 }
 
 function 이스케이프(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
@@ -335,11 +378,14 @@ function 지면(값) {
   const 원고 = fs.readFileSync(원고경로, 'utf8');
   const 자 = 글자수자(원고);
   let html = 꽂기(원고, 값);
+  html = 슬롯꽂기(html, 값);
   html = 길꽂기(html, 값);
+  const 코 = 마스코트심기(html);
+  html = 코.html;
   /* Loom 은 «값을 다 꽂은 뒤»에 얹는다 — 규율은 「원고 CSS 뒤」다(앞에 두면 동점에서 원고가 이겨
    * 훅은 늘고 화면은 그대로가 된다). 훅이 0이면 얹기가 스스로 안 얹고 사유를 돌려준다. */
   const 얹은 = loom얹기.얹기(html, { 지면: LOOM_지면 });
-  return { html: 얹은.html, 자, loom: 얹은 };
+  return { html: 얹은.html, 자, loom: 얹은, 마스코트: 코 };
 }
 
 function main() {
@@ -358,7 +404,7 @@ function main() {
     값 = 데이터 ? JSON.parse(fs.readFileSync(path.resolve(데이터), 'utf8')) : 픽스처(모양);
   }
 
-  const { html, 자, loom } = 지면(값);
+  const { html, 자, loom, 마스코트 } = 지면(값);
 
   /* 기본 출력은 임시 폴더 — 증서조판·기록장조판이 세운 관례다. 종이는 언제든 다시 굽는 것이라
    * 저장소에 쌓아 두면 다음 세션의 「미커밋」 알림에 남의 산출물이 섞인다. */
@@ -370,6 +416,7 @@ function main() {
   console.log('  지면 = docs/발표물/_src_10_상담결과_요약_A4.html · 채우는 칸 ' + 칸들.length + ' + 길 3');
 
   /* ① 지면이 스스로 적은 글자 수 자 */
+  console.log('  마스코트 ' + (마스코트.심었나 ? '✅ 심었다 (' + 마스코트.크기KB + ' KB)' : '· ' + 마스코트.사유));
   console.log('  Loom 부품 ' + (loom.얹힘 ? '✅ ' + loom.훅.length + '종 — ' + loom.훅.join('·')
     : '· 안 얹었다 (' + loom.사유 + ')'));
 
@@ -419,5 +466,5 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { 칸들, 길칸들, 글자수자, 꽂기, 길꽂기, 길이검사, 금칙검사, 빈칸세기, 픽스처, 지면,
+module.exports = { 칸들, 길칸들, 글자수자, 꽂기, 슬롯꽂기, 길꽂기, 마스코트심기, 길이검사, 금칙검사, 빈칸세기, 픽스처, 지면,
   측정기, 부풀리기, 상담행에서, 요일시간_, 수준_Lv, 급수_Lv };
