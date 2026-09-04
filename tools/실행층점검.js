@@ -159,7 +159,13 @@ function 훑기(opt = {}) {
       기준 = `범위 ${범위}`;
     }
     try {
-      files = git(['diff', '--name-only', 범위]).split('\n').map((s) => s.trim()).filter(Boolean);
+      /* 🔴 09-05: `core.quotepath` 를 안 끄면 git 이 비ASCII 파일 이름을 8진수로 이스케이프해 내놓는다
+       *   (원격 실측: `"contents_\354\203\201\353\213\264AI.js"`). 이 저장소는 배포 파일 열여덟 중
+       *   대부분이 한글 이름이라, 그대로 두면 아래 층이 «그 파일을 못 알아본다» — 실행층이 바뀌었는데
+       *   「안 바뀌었다」로 읽히는 방향이라 새는 쪽이 하필 조용하다. 로컬 git 설정이 이미 꺼 둔 기계에서는
+       *   안 터지므로(이 노트북이 그렇다) 원격에서만 갈린다. 같은 사고를 tests/이종검수.test.js 가 먼저 물었다. */
+      files = git(['-c', 'core.quotepath=false', 'diff', '--name-only', 범위])
+        .split('\n').map((s) => s.trim()).filter(Boolean);
     } catch (e) {
       return {
         항목: [], 범위, 잰것: false, 자동범위,
