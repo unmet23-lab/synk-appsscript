@@ -675,7 +675,10 @@ ${브랜드폰트.면()}
   .사유 li{margin:0 0 6px;line-height:1.55}
   .사유 code{background:var(--cream);border-radius:4px;padding:1px 6px;color:var(--navy)}
   .범례{margin-top:36px;padding-top:16px;border-top:1px solid var(--cream3);color:var(--slate2);font-size:12px}
-  .칩{display:inline-block;border-radius:999px;padding:2px 12px;margin:0 8px 6px 0;font-weight:700;font-size:11.5px}
+  /* 🔴 이름을 갈랐다(09-04 · codex 1823e3122dfe) — 옛 이름 «.칩» 은 Loom 의 «분류 칩»과 같은 이름이었다.
+     Loom 조립분이 뒤에 얹히면서 padding:0·border-radius:0 으로 덮어, 이 범례가 «글자에 붙은 사각형»이 됐다.
+     둘은 다른 물건이다(저기는 문서의 분류 표식, 여기는 상태 색 견본) — 같은 이름을 쓰면 순서가 승패를 정한다. */
+  .범례칩{display:inline-block;border-radius:999px;padding:2px 12px;margin:0 8px 6px 0;font-weight:700;font-size:11.5px}
   footer{margin-top:24px;color:var(--slate2);font-size:11.5px;line-height:1.7}
   @media print{.복사{display:none}.카드{break-inside:avoid}}
 </style>
@@ -714,11 +717,11 @@ ${빨강사유}</div>
 ${실물표(실물)}
 
 <div class="범례">
-  <span class="칩" style="background:${킷.emerald};color:${킷.cream}">돈다 · 닿는다</span>
-  <span class="칩" style="background:${킷.sun};color:${킷.ink}">짓고 있다</span>
-  <span class="칩" style="background:${킷.slate2};color:${킷.cream}">개원과 함께</span>
-  <span class="칩" style="background:${킷.coral};color:${킷.navy2}">아직 없다 · 끊겼다</span>
-  <span class="칩" style="background:transparent;color:${킷.coral3};border:2px dashed ${킷.coral3}">비었다</span>
+  <span class="범례칩" style="background:${킷.emerald};color:${킷.cream}">돈다 · 닿는다</span>
+  <span class="범례칩" style="background:${킷.sun};color:${킷.ink}">짓고 있다</span>
+  <span class="범례칩" style="background:${킷.slate2};color:${킷.cream}">개원과 함께</span>
+  <span class="범례칩" style="background:${킷.coral};color:${킷.navy2}">아직 없다 · 끊겼다</span>
+  <span class="범례칩" style="background:transparent;color:${킷.coral3};border:2px dashed ${킷.coral3}">비었다</span>
   <div style="margin-top:10px">색은 브랜드 킷 23색에서만 뽑는다(유호님 확정) · KC Sun 은 면으로만 쓰고 글자로 쓰지 않는다.</div>
 </div>
 ${함께볼것구역()}
