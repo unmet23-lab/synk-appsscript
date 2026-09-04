@@ -92,10 +92,24 @@ async function 배치게이트(장수, 크기 = '1K') {
   return false;
 }
 
-/* 돈이 마른 신호만 벽으로 센다 — 429(몫·크레딧) · 402(결제) · 403 중 billing 문면.
- * 400(잘못된 지시)이나 500(저쪽 사고)은 벽이 아니다. 그건 그 장만의 실패다. */
+/* 돈이 마른 신호만 벽으로 센다 — 402(결제) · 403 중 billing 문면 · 429 중 «크레딧» 문면.
+ * 400(잘못된 지시)이나 500(저쪽 사고)은 벽이 아니다. 그건 그 장만의 실패다.
+ *
+ * 🔑 **429 는 두 가지다**(09-05 실측으로 갈랐다):
+ *   ㉠ 「Resource exhausted. Please try again later」 = **분당 몫**이다. 잠시 뒤 스스로 풀린다
+ *      — 크레딧 43만 원이 살아 있는데도 났고, 40초를 두고 다시 던지니 그대로 구워졌다.
+ *   ㉡ 「prepayment credits are depleted」 류 = **크레딧**이다. 안 풀린다.
+ *   09-05 전에는 둘을 같이 벽으로 세워, 23장 배치가 첫 장에서 통째로 섰다(0장 구움).
+ *   ㉠을 벽으로 세우면 «기다리면 되는 일»에 배치를 버리게 된다.
+ *   ⚠ 그래도 ㉠이 그 장의 «실패»인 것은 같다 — 부르는 쪽이 기다렸다 다시 던진다
+ *      (`공방굽기.js` 가 90초를 두고 한 번만 다시 던진다. 무한 재시도는 09-03 의 그 사고다). */
+function 몫벽인가(status, 본문) {
+  return status === 429 && !/credit|billing|payment|depleted/i.test(String(본문 || ''));
+}
+
 function 돈벽인가(status, 본문) {
-  if (status === 429 || status === 402) return true;
+  if (status === 402) return true;
+  if (status === 429) return !몫벽인가(status, 본문);
   return status === 403 && /billing|quota|credit|payment/i.test(String(본문 || ''));
 }
 
@@ -136,7 +150,9 @@ async function 한컷({ 이름, 지시, 참조 = [], 비율 = '1:1', 크기 = '1
       e.돈벽 = true;
       throw e;
     }
-    throw new Error(`${이름} 거절 ${res.status} (${초}초) — ${본문}`);
+    const e = new Error(`${이름} 거절 ${res.status} (${초}초) — ${본문}`);
+    if (몫벽인가(res.status, 본문)) e.몫벽 = true;   // 부르는 쪽이 기다렸다 한 번 다시 던진다
+    throw e;
   }
   const j = await res.json();
   const img = (j?.candidates?.[0]?.content?.parts || []).find((p) => p.inlineData || p.inline_data);
@@ -148,4 +164,4 @@ async function 한컷({ 이름, 지시, 참조 = [], 비율 = '1:1', 크기 = '1
   return 저장경로;
 }
 
-module.exports = { 키, 한컷, 기본모델, 예상비용, 돈열쇠생존, 구워도되나, 돈벽인가, 장당달러, 배치게이트 };
+module.exports = { 키, 한컷, 기본모델, 예상비용, 돈열쇠생존, 구워도되나, 돈벽인가, 몫벽인가, 장당달러, 배치게이트 };

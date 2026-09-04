@@ -57,13 +57,18 @@ const 규격표 = {
     'Every wool fibre is resolved — you can count the strands and see how the nap catches light. ' +
     'No text, no watermark, no props, no hands, no background pattern. ' +
     'Tack sharp, medium format macro, photorealistic craft object.',
+  /* ⚠ 이 규격은 «장면»으로 쓴다 — 09-05 에 `IMAGE_RECITATION` 으로 거절당했다.
+   *   첫 판은 flat·seamless·even·no vignette 를 거듭 못 박았는데, 그렇게 쓰면 모델이
+   *   「알려진 텍스처 이미지를 그대로 내라」는 요구로 읽고 통째로 거절한다(펠트 크림을
+   *   처음 구울 때 밟은 것과 같은 무늬 · 기억 loom-baked-assets-only-for-ui).
+   *   그래서 «작업대 위에 놓인 큰 천에 가까이 다가간 사진»이라는 장면을 준다. */
   천:
-    'A seamless flat texture photograph filling the entire frame edge to edge. ' +
-    'No object, no border, no edge of cloth visible — the surface continues past every side. ' +
-    'Shot straight down under broad even diffused light so the surface reads flat and even, ' +
-    'with no vignette, no drop shadow and no hot spot. ' +
-    'Every fibre is resolved — you can see the individual strands and how the nap lies. ' +
-    'No text, no watermark, no props, no hands, no pattern or motif.',
+    'A close macro photograph of a large piece of cloth lying on a work table, the camera near ' +
+    'enough that the cloth fills the whole frame and no edge, corner or fold of it comes into ' +
+    'view. Soft north-window daylight rakes gently across the surface, so the individual fibres ' +
+    'and the direction of the nap are easy to read. ' +
+    'Nothing else is in the picture — no objects, no hands, no seams, no printed motif. ' +
+    'No text, no watermark. Tack sharp, medium format macro.',
   장면:
     'A still life photograph of a single handmade object resting on a plain warm off-white ' +
     'paper surface, shot slightly from above. Soft daylight from a north window, one gentle ' +
@@ -137,14 +142,25 @@ function 상태옮김(묶, 것, 파일) {
     const 규격 = 규격표[것.규격 || '부품'];
     if (!규격) { console.log(`🔴 ${것.이름} — 모르는 규격 「${것.규격}」(있는 것: ${Object.keys(규격표).join('·')})`); 실패++; continue; }
     process.stdout.write(`■ ${i + 1}/${굽을것.length} ${것.이름} … `);
+    const 한장 = () => 굽기.한컷({
+      이름: 것.이름,
+      지시: 것.지시 + ' ' + 규격,
+      비율: 것.비율 || '1:1',
+      크기,
+      저장경로: 저장,
+    });
     try {
-      await 굽기.한컷({
-        이름: 것.이름,
-        지시: 것.지시 + ' ' + 규격,
-        비율: 것.비율 || '1:1',
-        크기,
-        저장경로: 저장,
-      });
+      try {
+        await 한장();
+      } catch (e) {
+        /* 🔑 429 「Resource exhausted」 는 «분당 몫»이지 크레딧이 아니다(09-05 실측).
+         *   90초를 두고 **한 번만** 다시 던진다 — 무한 재시도는 09-03 에 하루 몫을
+         *   두 칸 만에 태운 그 사고다. */
+        if (!e.몫벽) throw e;
+        process.stdout.write('몫이 찼다 · 90초 뒤 한 번 더 … ');
+        await new Promise((r) => setTimeout(r, 90000));
+        await 한장();
+      }
       상태옮김(묶음, 것, 쇠 + '.png');
       console.log('✅', path.basename(저장));
       성공++;

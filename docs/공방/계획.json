@@ -14,7 +14,7 @@
       {
         "이름": "천·바탕",
         "쓰는 곳": "지면 배경 · 카드 바탕 · PPT 표지",
-        "상태": "2/8",
+        "상태": "8/8",
         "것들": [
           {
             "이름": "크림 양모 펠트",
@@ -28,111 +28,135 @@
           },
           {
             "이름": "라피스 펠트",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_라피스펠트",
             "규격": "천",
-            "지시": "A flat sheet of densely needle-felted wool in a deep lapis blue, the fibres matted evenly in every direction."
+            "지시": "The cloth is densely needle-felted wool dyed a deep ink blue, the blue of a fountain pen on cold paper.",
+            "파일": "공방_라피스펠트.webp"
           },
           {
             "이름": "메도우 펠트",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_메도우펠트",
             "규격": "천",
-            "지시": "A flat sheet of densely needle-felted wool in a soft meadow green, the fibres matted evenly in every direction."
+            "지시": "The cloth is densely needle-felted wool dyed a soft leaf green, the green of new grass in early spring.",
+            "파일": "공방_메도우펠트.webp"
           },
           {
             "iso": true,
             "이름": "버터 펠트",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_버터펠트",
             "규격": "천",
-            "지시": "A flat sheet of densely needle-felted wool in a warm butter yellow, the fibres matted evenly in every direction."
+            "지시": "The cloth is densely needle-felted wool dyed a warm pale yellow, the yellow of butter left out on a saucer.",
+            "파일": "공방_버터펠트.webp"
           },
           {
             "이름": "리넨 캔버스",
-            "상태": "아직",
+            "상태": "구웠다",
             "메모": "펠트 말고 다른 결이 한 벌 있어야 지면끼리 구분된다",
             "쇠": "공방_리넨캔버스",
             "규격": "천",
-            "지시": "A flat piece of natural undyed linen canvas, the open plain weave clearly visible, slubs and irregular threads running through it."
+            "지시": "The cloth is natural undyed linen canvas, oat coloured, its open plain weave loose enough to count the threads, slubs running irregularly through it.",
+            "파일": "공방_리넨캔버스.webp"
           },
           {
             "이름": "누빔(퀼팅) 천",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_누빔퀼팅천",
             "규격": "천",
-            "지시": "A flat piece of quilted cotton in warm cream, stitched in an even diamond grid, each diamond softly puffed between the stitch lines."
+            "지시": "The cloth is quilted cotton in warm cream, stitched in an even diamond grid, each diamond softly puffed between the stitch lines.",
+            "파일": "공방_누빔퀼팅천.webp"
           },
           {
             "이름": "코듀로이",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_코듀로이",
             "규격": "천",
-            "지시": "A flat piece of cotton corduroy in warm coral, fine even wales running vertically, the pile catching light along each ridge."
+            "지시": "The cloth is cotton corduroy dyed a warm coral, fine even wales running in one direction, the pile catching light along every ridge.",
+            "파일": "공방_코듀로이.webp"
           }
         ]
       },
       {
         "이름": "장식 조각",
         "쓰는 곳": "지면 포인트 · 카드 모서리 · 증서",
-        "상태": "3/9",
+        "상태": "11/11",
         "것들": [
           {
             "이름": "리본 매듭(코랄)",
             "상태": "구웠다",
-            "파일": "시험_펠트_리본매듭.png"
+            "파일": "시험_펠트_리본매듭.webp"
           },
           {
             "이름": "별 자수(버터)",
             "상태": "구웠다",
-            "파일": "시험_펠트_별자수.png"
+            "파일": "시험_펠트_별자수.webp"
           },
           {
             "이름": "실타래(코랄)",
             "상태": "구웠다",
-            "파일": "시험_펠트_실타래.png"
+            "파일": "시험_펠트_실타래.webp"
           },
           {
             "이름": "꽃 아플리케",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꽃아플리케",
             "규격": "부품",
-            "지시": "A small five petal flower cut from wool felt in warm coral, the petals slightly overlapping, its centre a tight cluster of french knots in cream thread."
+            "지시": "A small five petal flower cut from wool felt in warm coral, the petals slightly overlapping, its centre a tight cluster of french knots in cream thread.",
+            "파일": "공방_꽃아플리케.webp"
           },
           {
             "이름": "잎사귀 조각",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_잎사귀조각",
             "규격": "부품",
-            "지시": "A single leaf shape cut from meadow green wool felt, one central vein hand stitched down its length in cream thread with small even stitches."
+            "지시": "A single leaf shape cut from meadow green wool felt, one central vein hand stitched down its length in cream thread with small even stitches.",
+            "파일": "공방_잎사귀조각.webp"
           },
           {
             "이름": "작은 깃발",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_작은깃발",
             "규격": "부품",
-            "지시": "A small triangular pennant of butter yellow wool felt sewn onto a short pale wooden stick, the felt edge cut with a gentle wave."
+            "지시": "A small triangular pennant of butter yellow wool felt sewn onto a short pale wooden stick, the felt edge cut with a gentle wave.",
+            "파일": "공방_작은깃발.webp"
           },
           {
             "이름": "테두리 레이스",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_테두리레이스",
             "규격": "부품",
-            "지시": "A short strip of hand crocheted cream cotton lace with a scalloped edge, lying flat and slightly curved."
+            "지시": "A short strip of hand crocheted cream cotton lace with a scalloped edge, lying flat and slightly curved.",
+            "파일": "공방_테두리레이스.webp"
           },
           {
             "이름": "코너 장식",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_코너장식",
             "규격": "부품",
-            "지시": "A quarter rosette ornament cut from wool felt in warm coral, its two straight edges meeting at a clean right angle, the curved edge scalloped and blanket stitched in cream thread."
+            "지시": "A quarter rosette ornament cut from wool felt in warm coral, its two straight edges meeting at a clean right angle, the curved edge scalloped and blanket stitched in cream thread.",
+            "파일": "공방_코너장식.webp"
           },
           {
             "이름": "매듭 끈",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_매듭끈",
             "규격": "부품",
-            "지시": "A length of twisted cotton cord in warm coral tied into one simple overhand knot near the middle, both ends trailing loosely."
+            "지시": "A length of twisted cotton cord in warm coral tied into one simple overhand knot near the middle, both ends trailing loosely.",
+            "파일": "공방_매듭끈.webp"
+          },
+          {
+            "이름": "단추(라피스)",
+            "상태": "구웠다",
+            "파일": "시험_펠트_단추_라피스.webp",
+            "메모": "유호 판정 09-05 「다 쓸것같아 다 좋아」"
+          },
+          {
+            "이름": "체크 표식",
+            "상태": "구웠다",
+            "파일": "시험_펠트_체크표식.webp",
+            "메모": "유호 판정 09-05 「다 쓸것같아 다 좋아」"
           }
         ]
       },
@@ -189,92 +213,103 @@
       {
         "이름": "큰 그림",
         "쓰는 곳": "PPT 표지 · 홍보물 · 영상 배경",
-        "상태": "0/5",
+        "상태": "5/5",
         "것들": [
           {
             "이름": "펠트 지구본",
-            "상태": "아직",
+            "상태": "구웠다",
             "메모": "한국과 몽골을 잇는 그림",
             "쇠": "공방_펠트지구본",
             "규격": "장면",
-            "지시": "A small globe made entirely of felted wool, the continents appliqued in meadow green onto a deep lapis blue ocean, one thin cream thread arcing across it between two hand stitched dots."
+            "지시": "A small globe made entirely of felted wool, the continents appliqued in meadow green onto a deep lapis blue ocean, one thin cream thread arcing across it between two hand stitched dots.",
+            "파일": "공방_펠트지구본.webp"
           },
           {
             "이름": "펠트 여권·비자",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_펠트여권비자",
             "규격": "장면",
-            "지시": "A passport sized booklet sewn from wool felt in deep lapis blue, a simple blank crest hand embroidered on the cover in butter yellow thread, a narrow felt ribbon marking a page."
+            "지시": "A passport sized booklet sewn from wool felt in deep lapis blue, a simple blank crest hand embroidered on the cover in butter yellow thread, a narrow felt ribbon marking a page.",
+            "파일": "공방_펠트여권비자.webp"
           },
           {
             "이름": "펠트 책 한 권",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_펠트책한권",
             "규격": "장면",
-            "지시": "A small closed book bound in warm coral wool felt, the stacked pages cream and slightly uneven, a thin cord bookmark escaping from the top."
+            "지시": "A small closed book bound in warm coral wool felt, the stacked pages cream and slightly uneven, a thin cord bookmark escaping from the top.",
+            "파일": "공방_펠트책한권.webp"
           },
           {
             "이름": "펠트 계단(성장)",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_펠트계단성장",
             "규격": "장면",
-            "지시": "Three small square blocks of felted wool stacked into rising steps, cream then butter yellow then warm coral, climbing from left to right."
+            "지시": "Three small square blocks of felted wool stacked into rising steps, cream then butter yellow then warm coral, climbing from left to right.",
+            "파일": "공방_펠트계단성장.webp"
           },
           {
             "이름": "펠트 창문",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_펠트창문",
             "규격": "장면",
-            "지시": "A small window frame sewn from cream wool felt with four panes, a butter yellow felt curtain gathered to one side and tied with a cord."
+            "지시": "A small window frame sewn from cream wool felt with four panes, a butter yellow felt curtain gathered to one side and tied with a cord.",
+            "파일": "공방_펠트창문.webp"
           }
         ]
       },
       {
         "이름": "새 UI 부품",
         "쓰는 곳": "앱 화면 · 지면",
-        "상태": "0/6",
+        "상태": "6/6",
         "것들": [
           {
             "이름": "화살표(네 방향)",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_화살표네방향",
             "규격": "부품",
-            "지시": "A short thick arrow cut from wool felt in warm coral, pointing to the right, its edges hand stitched with a running stitch in cream thread."
+            "지시": "A short thick arrow cut from wool felt in warm coral, pointing to the right, its edges hand stitched with a running stitch in cream thread.",
+            "파일": "공방_화살표네방향.webp"
           },
           {
             "이름": "닫기(가위표)",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_닫기가위표",
             "규격": "부품",
-            "지시": "Two short thick bars cut from wool felt in warm coral, crossing at their centres to form an X, each bar edge stitched in cream thread."
+            "지시": "Two short thick bars cut from wool felt in warm coral, crossing at their centres to form an X, each bar edge stitched in cream thread.",
+            "파일": "공방_닫기가위표.webp"
           },
           {
             "이름": "더보기(점 셋)",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_더보기점셋",
             "규격": "부품",
-            "지시": "Three small round felted wool dots in warm coral, sitting in one evenly spaced horizontal row."
+            "지시": "Three small round felted wool dots in warm coral, sitting in one evenly spaced horizontal row.",
+            "파일": "공방_더보기점셋.webp"
           },
           {
             "이름": "잠금",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_잠금",
             "규격": "부품",
-            "지시": "A small padlock shape cut from wool felt in warm coral, its shackle a separate arc of twisted cream cord passing through the top."
+            "지시": "A small padlock shape cut from wool felt in warm coral, its shackle a separate arc of twisted cream cord passing through the top.",
+            "파일": "공방_잠금.webp"
           },
           {
             "이름": "종(알림)",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_종알림",
             "규격": "부품",
-            "지시": "A small bell shape sewn from butter yellow wool felt, its edge blanket stitched in cream thread, a tiny cream felt clapper hanging below."
+            "지시": "A small bell shape sewn from butter yellow wool felt, its edge blanket stitched in cream thread, a tiny cream felt clapper hanging below.",
+            "파일": "공방_종알림.webp"
           },
           {
             "이름": "진행 막대",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_진행막대",
             "규격": "부품",
-            "지시": "A short rounded capsule of wool felt in warm coral, its left portion a slightly raised meadow green felt band, like a progress meter sewn from cloth."
+            "지시": "A short rounded capsule of wool felt in warm coral, its left portion a slightly raised meadow green felt band, like a progress meter sewn from cloth.",
+            "파일": "공방_진행막대.webp"
           }
         ],
         "_옮긴 이유": "유호 확정 09-05 「일단 당분간은 블렌더는 제미나이 없을때 사용하는거로 하자」 — 블렌더로 세우려면 형태 함수를 새로 짜야 해 한 종에 몇 시간이 든다. 제미나이는 문장 한 줄에 30초다."
