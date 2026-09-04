@@ -165,7 +165,13 @@ test('🔑 과녁은 **프로젝트별**이다 — 처방한 커밋에 그 프�
   for (const [proj, 이름] of [[루트프로젝트, '(루트)'], [path.join(ROOT, 'crewcard'), 'crewcard']]) {
     const m = 근(proj);
     assert.ok(m, 이름 + ' 과녁이 안 나왔다 — 두 프로젝트 다 과녁이 나와야 한다');
-    const r = spawnSync('git', ['-C', ROOT, 'show', '--name-only', '--format=', m[1]], { encoding: 'utf8' });
+    /* 🔴 09-05: `core.quotepath` 를 끄지 않으면 git 이 **비ASCII 파일 이름을 8진수로 이스케이프**해
+     *   내놓는다 — 원격 실측: `"contents_\354\203\201\353\213\264AI.js"`. 우리 배포 파일은 이름이
+     *   거의 다 한글이라(`contents_상담AI.js` 등 18건 중 16건) 글자 비교가 전부 어긋났고,
+     *   자는 그것을 「배포 파일이 0건」으로 읽어 멀쩡한 커밋을 F292 위반으로 몰았다.
+     *   이 기계에서만 초록이던 까닭도 이것이다 — 여기 git 설정은 이미 꺼져 있다. */
+    const r = spawnSync('git', ['-C', ROOT, '-c', 'core.quotepath=false', 'show', '--name-only', '--format=', m[1]],
+      { encoding: 'utf8' });
     const 담김 = (r.stdout || '').split('\n').map((x) => x.trim()).filter(Boolean);
     const 집합 = 점검.배포집합(proj, ROOT) || [];
     assert.ok(집합.length, 이름 + ' 배포집합을 못 읽었다 — 못 읽으면 아래 판정이 언제나 초록이다');
