@@ -35,7 +35,35 @@ except ImportError:
 표식 = (255, 0, 255)   # 배경으로 번진 자리를 찍는 색(원본에 있을 리 없는 자홍)
 
 
-def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼):
+def 흰그림자다듬기(원px, ap, w, h, 바닥, 채도문):
+    """배경으로 «번지지 못한» 흰 자리를 밝기에 비례해 투명하게 만든다.
+
+    왜(09-05 실물): 흰 바닥에서 찍으면 그림자도 흰색 계열이라, 배경만 걷으면 물체 옆에
+      «흰 덩어리»가 불투명하게 남는다. 크림 종이(#FBF7F0) 위에 얹으면 그 자리가 하얗게 뜬다
+      — 골무·실패 아래가 그랬다.
+    어떻게: 채도가 거의 없고(물체가 아니고) 아주 밝은 픽셀만 골라, 흰색에 가까울수록
+      알파를 낮춘다. 그림자의 «어두운 쪽»은 남으므로 물건의 무게는 안 사라진다.
+    """
+    민수 = 0
+    for y in range(h):
+        for x in range(w):
+            if ap[x, y] == 0:
+                continue
+            r, g, b = 원px[x, y]
+            mx, mn = max(r, g, b), min(r, g, b)
+            if mx - mn > 채도문:      # 색이 있으면 물체다 — 안 건드린다
+                continue
+            if mx < 바닥:             # 짙은 그림자는 남긴다
+                continue
+            t = (mx - 바닥) / max(255 - 바닥, 1)
+            새 = int(ap[x, y] * (1.0 - min(1.0, t)))
+            if 새 != ap[x, y]:
+                민수 += 1
+            ap[x, y] = 새
+    return 민수
+
+
+def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=218, 채도문=22):
     원 = Image.open(경로).convert('RGB')
     w, h = 원.size
     tmp = 원.copy()
@@ -57,6 +85,8 @@ def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼):
     if 지운수 == 0:
         print(f'   ⚠ {os.path.basename(경로)} — 배경을 한 점도 못 찾았다(임계 {임계}). '
               f'배경이 흰색이 아니거나 물건이 테두리에 닿아 있다.')
+
+    민수 = 흰그림자다듬기(원.load(), ap, w, h, 흰바닥, 채도문) if 흰바닥 > 0 else 0
     알파 = 알파.filter(ImageFilter.GaussianBlur(부드럼))
     out = 원.convert('RGBA')
     out.putalpha(알파)
@@ -75,7 +105,7 @@ def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼):
             out = 판
 
     out.save(출력)
-    print(f'   ✅ {os.path.basename(출력)}  배경 {지운수 * 100 // (w * h)}% · {out.size[0]}×{out.size[1]}')
+    print(f'   ✅ {os.path.basename(출력)}  배경 {지운수 * 100 // (w * h)}% · 흰그림자 {민수:,}점 · {out.size[0]}×{out.size[1]}')
     return 지운수 > 0
 
 
@@ -89,6 +119,11 @@ def main():
     ap.add_argument('--정사각', action='store_true',
                     help='정사각 판에 가운데로 앉힌다 — UI 칸이 가로로 길 때 contain 이 점으로 줄이는 것을 막는다')
     ap.add_argument('--부드럼', type=float, default=0.8, help='가장자리 계단 다듬기(가우시안 반지름)')
+    ap.add_argument('--흰바닥', type=int, default=218,
+                    help='이 밝기(0~255)를 넘는 «저채도» 픽셀은 흰색에 가까울수록 투명하게 만든다 — '
+                         '흰 바닥에서 찍으면 그림자도 흰색이라 배경만 걷으면 흰 덩어리가 남는다. 0 이면 안 한다')
+    ap.add_argument('--채도문', type=int, default=22,
+                    help='RGB 최대-최소가 이 값을 넘으면 «색이 있는 것»이라 흰그림자 다듬기에서 뺀다(물체 보호)')
     a = ap.parse_args()
 
     파일들 = sorted(glob.glob(a.입력)) if any(c in a.입력 for c in '*?[') else [a.입력]
@@ -102,7 +137,7 @@ def main():
     산것 = 0
     for p in 파일들:
         out = a.출력 or (os.path.splitext(p)[0] + '_누끼.png')
-        if 걷는다(p, out, a.임계, a.여백, a.정사각, a.부드럼):
+        if 걷는다(p, out, a.임계, a.여백, a.정사각, a.부드럼, a.흰바닥, a.채도문):
             산것 += 1
     print(f'■ 합계 {len(파일들)}장 = 걷힘 {산것} + 못 걷음 {len(파일들) - 산것}')
 
