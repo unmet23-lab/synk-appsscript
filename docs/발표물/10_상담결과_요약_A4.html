@@ -133,7 +133,12 @@ html,body{
 .cyc{ display:flex; flex-direction:column; gap:1.2mm; margin-top:1.6mm; }
 .cyc .s{ display:flex; align-items:flex-start; gap:2mm; }
 .cyc .s .n{
-  flex:0 0 auto; width:4.4mm; height:4.4mm; border-radius:50%; background:var(--navy-2); color:var(--cream);
+  /* 🔴 여기에 `background` 축약을 쓰면 안 된다 — 그 한 줄이 `background-image:none` 을 품어
+     Loom 이 뒤에 얹는 단추 그림을 «조용히» 지운다(09-05 실측: 훅 5종이 붙었는데 화면은 그대로였다).
+     그래서 축약을 걷고 **바탕색 자체를 뺐다**(09-05 실크기 실측) — 남색 원이 뒤에 남으면
+     4.4mm 에서 단추가 그 안에 갇혀 «검은 점» 하나로 보인다. 단추가 칸을 꽉 쓰게 둔다.
+     글자는 잉크다(유호 확정 09-03 「단추 번호 잉크」) — 크림 단추 위 흰 글자는 대비가 죽는다. */
+  flex:0 0 auto; width:4.4mm; height:4.4mm; border-radius:50%; color:var(--navy);
   font-size:2.2mm; font-weight:700; display:flex; align-items:center; justify-content:center;
 }
 .cyc .s .t{ font-size:2.6mm; line-height:1.4; }
@@ -833,10 +838,10 @@ html,body{
           <div class="mnh">__________________</div>
           <div class="koh">8주 동안 무엇이 일어나는가</div>
           <div class="cyc">
-            <div class="s"><div class="n mono">1</div><div class="t"><b>Learn</b> — 배웁니다. 매일의 워밍업부터 이미 한국어 수업입니다.<div class="mn">34자</div></div></div>
-            <div class="s"><div class="n mono">2</div><div class="t"><b>Plan</b> — 방향을 정합니다. 「나침반」 세션에서 목적을 먼저 묻습니다.<div class="mn">34자</div></div></div>
-            <div class="s"><div class="n mono">3</div><div class="t"><b>Experience</b> — 몸으로 겪습니다. 「싱크 크루」를 팀으로 완성합니다.<div class="mn">36자</div></div></div>
-            <div class="s"><div class="n mono">4</div><div class="t"><b>Record</b> — 기록으로 남깁니다. 「싱크 포트폴리오」에 쌓입니다.<div class="mn">32자</div></div></div>
+            <div class="s"><div class="n mono 번호" data-n="1">1</div><div class="t"><b>Learn</b> — 배웁니다. 매일의 워밍업부터 이미 한국어 수업입니다.<div class="mn">34자</div></div></div>
+            <div class="s"><div class="n mono 번호" data-n="2">2</div><div class="t"><b>Plan</b> — 방향을 정합니다. 「나침반」 세션에서 목적을 먼저 묻습니다.<div class="mn">34자</div></div></div>
+            <div class="s"><div class="n mono 번호" data-n="3">3</div><div class="t"><b>Experience</b> — 몸으로 겪습니다. 「싱크 크루」를 팀으로 완성합니다.<div class="mn">36자</div></div></div>
+            <div class="s"><div class="n mono 번호" data-n="4">4</div><div class="t"><b>Record</b> — 기록으로 남깁니다. 「싱크 포트폴리오」에 쌓입니다.<div class="mn">32자</div></div></div>
           </div>
         </div>
 
