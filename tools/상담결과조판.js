@@ -151,6 +151,27 @@ function 길꽂기(html, 값) {
     채움('시즌수', '____') + '시즌');
 }
 
+/* ── 펠트 천 심기 ───────────────────────────────────────────────────────────
+ * 유호 지시 09-05 「펠트판을 배경에 깔아보자 · 제미나이 크레딧을 써서 만들어달란거야」.
+ * 두 장을 구워 `docs/Loom_자산/구움/` 에 두었다(굽는 데 375원 · Vertex `gemini-3-pro-image`):
+ *   `펠트_종이바탕.webp` = 종이 전체 · `펠트_어두운판.webp` = 머리와 히어로 카드.
+ * 🔴 **구운 색을 그대로 쓰지 않았다** — 모델이 낸 크림은 `#CEC0AE`(베이지)라 브랜드 Paper 와 멀었다.
+ *   ⇒ 휘도만 뽑아 «결»로 삼고 브랜드 색 위에 얹었다(마스코트가 「재염색」으로 서 있는 것과 같은 규율).
+ *   종이 바탕은 글자가 위에 올라가므로 진폭을 ±5.9/255 로 눌렀고, 히어로는 깊이가 값이라 ±12.1 로 뒀다. */
+const 펠트들 = { '@@펠트종이@@': '펠트_종이바탕.webp', '@@펠트어둠@@': '펠트_어두운판.webp' };
+
+function 펠트심기(html) {
+  const 심은것 = [], 빈것 = [];
+  Object.entries(펠트들).forEach(([자리, 파일]) => {
+    if (html.indexOf(자리) < 0) return;
+    const p = path.join(ROOT, 'docs', 'Loom_자산', '구움', 파일);
+    if (!fs.existsSync(p)) { html = html.split(자리).join(''); 빈것.push(파일); return; }
+    html = html.split(자리).join('data:image/webp;base64,' + fs.readFileSync(p).toString('base64'));
+    심은것.push(파일 + ' ' + Math.round(fs.statSync(p).size / 1024) + 'KB');
+  });
+  return { html, 심은것, 빈것 };
+}
+
 /* ── 마스코트 심기 ──────────────────────────────────────────────────────────
  * 🔑 경로는 `tools/lib/마스코트자산.js` 하나가 안다 — 여기 적으면 두 벌이 된다.
  *   1024px 원본을 그대로 넣으면 종이가 610KB 무거워지므로 인쇄 크기(≈24mm · 300dpi ≈ 290px)에
@@ -382,10 +403,12 @@ function 지면(값) {
   html = 길꽂기(html, 값);
   const 코 = 마스코트심기(html);
   html = 코.html;
+  const 천 = 펠트심기(html);
+  html = 천.html;
   /* Loom 은 «값을 다 꽂은 뒤»에 얹는다 — 규율은 「원고 CSS 뒤」다(앞에 두면 동점에서 원고가 이겨
    * 훅은 늘고 화면은 그대로가 된다). 훅이 0이면 얹기가 스스로 안 얹고 사유를 돌려준다. */
   const 얹은 = loom얹기.얹기(html, { 지면: LOOM_지면 });
-  return { html: 얹은.html, 자, loom: 얹은, 마스코트: 코 };
+  return { html: 얹은.html, 자, loom: 얹은, 마스코트: 코, 펠트: 천 };
 }
 
 function main() {
@@ -404,7 +427,7 @@ function main() {
     값 = 데이터 ? JSON.parse(fs.readFileSync(path.resolve(데이터), 'utf8')) : 픽스처(모양);
   }
 
-  const { html, 자, loom, 마스코트 } = 지면(값);
+  const { html, 자, loom, 마스코트, 펠트 } = 지면(값);
 
   /* 기본 출력은 임시 폴더 — 증서조판·기록장조판이 세운 관례다. 종이는 언제든 다시 굽는 것이라
    * 저장소에 쌓아 두면 다음 세션의 「미커밋」 알림에 남의 산출물이 섞인다. */
@@ -416,6 +439,8 @@ function main() {
   console.log('  지면 = docs/발표물/_src_10_상담결과_요약_A4.html · 채우는 칸 ' + 칸들.length + ' + 길 3');
 
   /* ① 지면이 스스로 적은 글자 수 자 */
+  console.log('  펠트 천 ' + (펠트.심은것.length ? '✅ ' + 펠트.심은것.join(' · ')
+    : '· 지면에 자리가 없다') + (펠트.빈것.length ? ' 🔴 파일 없음: ' + 펠트.빈것.join(' · ') : ''));
   console.log('  마스코트 ' + (마스코트.심었나 ? '✅ 심었다 (' + 마스코트.크기KB + ' KB)' : '· ' + 마스코트.사유));
   console.log('  Loom 부품 ' + (loom.얹힘 ? '✅ ' + loom.훅.length + '종 — ' + loom.훅.join('·')
     : '· 안 얹었다 (' + loom.사유 + ')'));
@@ -466,5 +491,5 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { 칸들, 길칸들, 글자수자, 꽂기, 슬롯꽂기, 길꽂기, 마스코트심기, 길이검사, 금칙검사, 빈칸세기, 픽스처, 지면,
+module.exports = { 칸들, 길칸들, 글자수자, 꽂기, 슬롯꽂기, 길꽂기, 마스코트심기, 펠트심기, 길이검사, 금칙검사, 빈칸세기, 픽스처, 지면,
   측정기, 부풀리기, 상담행에서, 요일시간_, 수준_Lv, 급수_Lv };
