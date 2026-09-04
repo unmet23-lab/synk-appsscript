@@ -340,34 +340,51 @@ test('🔑 타임아웃은 signal 로 가른다 — 실측에서 e.killed 는 un
   assert.match(문장, /900/, '소진한 초를 안 밝혔다 — 얼마를 기다렸는지 모르면 얼마로 늘릴지도 모른다');
 });
 
-/* 🔴 2026-09-05 실측 — `timeout` 은 «끊는 시각»이 아니라 «신호를 보내는 시각»이다.
- *   윈도에서 우리가 낳는 것은 `cmd.exe` 이고 코덱스는 그 손자라, 시간이 다 되면 자식은 죽어도
- *   손자가 출력 통로를 놓을 때까지 이 동기 호출이 «안 돌아온다». 실측: `--timeout 60` 에
- *   90초 사는 가짜를 걸었더니 **91초** 뒤에 돌아왔는데 문면은 「60초 소진」 하나였다.
- *   ⇒ 그 문면만 믿으면 다음 세션이 「60초라 했는데 왜 아직?」을 처음부터 다시 겪는다.
- * 📏 자 = codex() 를 «실제로» 태워서(가짜 · 벤더 미접촉) 오래 걸린 사실이 문면에 실리나 본다. */
-test('🔴 타임아웃 문면이 «실제로 걸린 시간»을 밝힌다 — --timeout 은 상한이 아니라 하한이다', function (t) {
+/* 🔴 2026-09-05 실측 — 옛 통로에서 `--timeout` 은 **상한이 아니라 하한**이었다.
+ *   윈도에서 우리가 낳던 것은 `cmd.exe` 이고 코덱스는 그 «손자»라, 시간이 다 되면 자식은 죽어도
+ *   손자가 출력 통로를 놓을 때까지 동기 호출이 안 돌아왔다: `--timeout 60` 에 90초 사는 가짜를
+ *   걸었더니 **91초** 뒤에 돌아왔다(문면은 「60초 소진」 하나뿐이라 그 사실이 어디에도 안 남았다).
+ *   ⇒ 심부름꾼(`tools/lib/코덱스러너.js`)을 사이에 두어 **나무째 끊는** 통로를 세웠다(유호 지시).
+ * 📏 자 두 개 — ① 상한 «시각»에 돌아오나 ② **손자가 정말 죽나**(박동이 멈추나).
+ *   ②를 안 재면 「부모는 돌아왔는데 고아가 한도를 계속 먹는」 자리를 놓친다. */
+test('🔴 --timeout 은 진짜 상한이다 — 오래 사는 코덱스도 그 시각에 끊기고, 손자까지 함께 죽는다', async function (t) {
   if (process.platform !== 'win32') return t.skip('이 무늬는 cmd.exe 를 거치는 윈도 통로의 것이다');
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-timeout-'));
   const npm방 = path.join(방, 'npm');
   fs.mkdirSync(npm방, { recursive: true });
-  // 가짜 코덱스 — 6초를 살고 스스로 끝난다(건 값 2초보다 길다)
-  fs.writeFileSync(path.join(npm방, 'fakecodex.js'), 'setTimeout(() => process.exit(1), 6000);\n', 'utf8');
+  const 박동 = path.join(방, 'heartbeat.txt');
+  /* 가짜 코덱스 — 1초마다 박동을 남기며 **60초** 산다(상한 3초보다 훨씬 길다).
+   * 옛 통로였다면 이 호출은 60초를 기다렸다. */
+  fs.writeFileSync(path.join(npm방, 'fakecodex.js'), [
+    "const fs = require('fs');",
+    'const 박동 = ' + JSON.stringify(박동) + ';',
+    'let n = 0;',
+    'setInterval(() => {',
+    '  n += 1;',
+    "  try { fs.appendFileSync(박동, n + '\\n'); } catch (_) {}",
+    '  if (n >= 60) process.exit(1);',
+    '}, 1000);',
+  ].join('\n'), 'utf8');
   fs.writeFileSync(path.join(npm방, 'codex.cmd'), '@echo off\r\nnode "%~dp0fakecodex.js" %*\r\n', 'utf8');
+  const 센다 = () => { try { return fs.readFileSync(박동, 'utf8').trim().split('\n').filter(Boolean).length; } catch (_) { return 0; } };
 
   const 옛APPDATA = process.env.APPDATA;
   process.env.APPDATA = 방;
+  const 상한 = 3000;
   let 잡은 = null;
   const 시작 = Date.now();
-  try { 검수.codex(['exec', '-'], 'x', 2000, '실행 1'); } catch (e) { 잡은 = e; }
+  try { 검수.codex(['exec', '-'], 'x', 상한, '실행 1'); } catch (e) { 잡은 = e; }
   const 걸린 = Date.now() - 시작;
   process.env.APPDATA = 옛APPDATA;
 
-  assert.ok(잡은, '가짜가 실패했는데 codex() 가 안 던졌다');
+  assert.ok(잡은, '가짜가 안 끝났는데 codex() 가 안 던졌다');
   assert.ok(잡은.타임아웃, '타임아웃으로 안 읽혔다: ' + 잡은.message);
-  assert.ok(걸린 > 4000, '이 실험의 전제 — 건 값(2초)보다 오래 붙들려야 한다. 실제 ' + 걸린 + 'ms');
-  assert.match(잡은.message, /실제로는 \d+초/, '더 오래 걸린 사실이 문면에 없다(「2초 소진」만 남으면 거짓말이다): ' + 잡은.message);
-  assert.match(잡은.message, /하한/, '「상한이 아니라 하한」이라는 판정이 문면에 없다: ' + 잡은.message);
+  assert.ok(걸린 < 상한 * 3, `상한 ${상한}ms 인데 ${걸린}ms 를 기다렸다 — 상한이 안 섰다(옛 통로에서는 가짜 수명 60초를 다 기다렸다)`);
+
+  // ② 손자가 죽었나 — 부모가 돌아온 뒤에도 박동이 늘면 고아가 살아 한도를 계속 먹는다
+  const 돌아온뒤 = 센다();
+  await new Promise((r) => setTimeout(r, 4000));
+  assert.strictEqual(센다(), 돌아온뒤, '부모는 돌아왔는데 손자가 살아 박동을 계속 찍는다 — 나무째 안 끊겼다');
 });
 
 test('🔑 타임아웃 처방이 **실행 가능한 명령**이다 — 그 플래그를 도구가 실제로 안다 (F103 자기 처방)', () => {
@@ -1526,12 +1543,16 @@ test('☠️ 정상 종료엔 리스너가 돌고, 밖에서 죽이면 안 돈�
  * 탐지력은 픽스처가 지고(실저장소는 지금 마침 통과라 거짓양성만 검사한다), 분모를 함께 읽는다. */
 const 창검사 = 검수.창숨김누락;
 
-test('🔑 codex-review.js 의 자식 호출부 **전량**이 창숨김 통로를 지난다 — 한 자리만 빠져도 창이 뜬다', () => {
-  const src = fs.readFileSync(path.join(ROOT, 'tools', 'codex-review.js'), 'utf8');
-  const 빠진줄 = 창검사(src);
-  assert.notStrictEqual(빠진줄, null, '자식 호출부를 하나도 못 찾았다 — 검사가 0건을 돌고 초록을 냈다(분모 없는 초록 · F207)');
-  assert.deepStrictEqual(빠진줄, [], `창숨김 통로를 안 지나는 자식 호출부: ${빠진줄 && 빠진줄.join(', ')} 줄 — 그 자리가 유호님 화면에 검은 창을 띄운다`);
-});
+/* 🔑 «전량»의 분모에 **심부름꾼도 든다**(09-05 신설) — 코덱스를 실제로 낳는 자리가 그리로 옮겨졌다.
+ *   여기를 안 세면 「codex-review.js 는 깨끗한데 창은 뜬다」가 된다(검사가 과녁을 놓친 초록). */
+for (const 쪽 of [['tools', 'codex-review.js'], ['tools', 'lib', '코덱스러너.js']]) {
+  test(`🔑 ${쪽.join('/')} 의 자식 호출부 **전량**이 창숨김 통로를 지난다 — 한 자리만 빠져도 창이 뜬다`, () => {
+    const src = fs.readFileSync(path.join(ROOT, ...쪽), 'utf8');
+    const 빠진줄 = 창검사(src);
+    assert.notStrictEqual(빠진줄, null, '자식 호출부를 하나도 못 찾았다 — 검사가 0건을 돌고 초록을 냈다(분모 없는 초록 · F207)');
+    assert.deepStrictEqual(빠진줄, [], `창숨김 통로를 안 지나는 자식 호출부: ${빠진줄 && 빠진줄.join(', ')} 줄 — 그 자리가 유호님 화면에 검은 창을 띄운다`);
+  });
+}
 
 test('🔑 탐지력(픽스처) — 통로를 안 지나는 호출부를 잡는다. 실저장소가 통과라고 검사가 산 것은 아니다', () => {
   const 가짜 = [

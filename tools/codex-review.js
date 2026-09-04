@@ -1477,6 +1477,9 @@ function 한도차단문(상태) {
   ].join('\n   ');
 }
 
+/* 코덱스를 낳는 심부름꾼 — 진짜 상한을 세우는 자리다(까닭은 아래 codex() 안 주석). */
+const 코덱스러너경로 = path.join(__dirname, 'lib', '코덱스러너.js');
+
 function codex(args, 입력, timeoutMs, 라벨) {
   /* 벤더 한도 게이트 — 모든 codex 호출이 이 함수 하나를 지나므로 여기가 안전망이다(새 호출
    * 경로가 생겨도 못 샌다 — 「라우팅은 훅보다 넓어야 한다」). 판정은 검수런.한도막나 한 곳. */
@@ -1491,49 +1494,73 @@ function codex(args, 입력, timeoutMs, 라벨) {
   if (isWin && !fs.existsSync(bin)) {
     const e = new Error(`codex CLI 를 찾을 수 없다: ${bin}`); e.확인불가 = true; throw e;
   }
-  /* 🔴 09-05 실측 — `timeout` 은 **끊는 시각이 아니라 «신호를 보내는» 시각**이다.
-   *   윈도에서 우리가 직접 낳는 것은 `cmd.exe` 이고 코덱스는 그 «손자»다. 시간이 다 되면 자식은
-   *   죽지만 손자가 출력 통로를 붙들고 있어, 이 동기 호출은 **손자가 스스로 끝날 때까지 안 돌아온다.**
-   *   실측: `--timeout 60` 인데 90초 사는 가짜를 걸었더니 **91초** 뒤에 돌아왔다(문면은 「60초 소진」).
-   *   ⇒ `--timeout` 은 상한이 아니라 **하한**이다. 아래에서 실제 걸린 시간을 재어 같이 말한다
-   *   (「60초라 했는데 왜 아직?」을 다음 세션이 다시 겪지 않게 · 진짜 상한을 세우려면 프로세스
-   *   나무째 죽이는 통로가 필요한데 그건 이 동기 함수의 모양을 바꾼다 → 아직 안 했다). */
+  /* 🔴 09-05 실측 — 예전엔 여기서 `cmd.exe` 를 직접 낳고 `timeout` 만 걸었다. 그 값은 **끊는 시각이
+   *   아니라 «신호를 보내는» 시각**이었다: 코덱스는 우리가 낳은 자식이 아니라 그 «손자»라, 자식이
+   *   죽어도 손자가 출력 통로를 붙들고 있고 동기 호출은 그 통로가 닫혀야 끝난다. `--timeout 60` 에
+   *   90초 사는 가짜를 걸면 **91초** 뒤에 돌아왔다 — 상한이 아니라 하한이었다.
+   * ✅ 그래서 **심부름꾼**(`tools/lib/코덱스러너.js`)을 하나 사이에 둔다. 그가 코덱스를 낳으므로
+   *   손자의 번호를 알고, 시간이 다 되면 **나무째** 끊고 스스로 나간다(종료 124). 출력은 파이프가
+   *   아니라 «파일»로 받아 아무도 통로에 붙들리지 않는다. ⇒ 이 값이 진짜 상한이 됐다.
+   * 🔑 그래도 `execFileSync` 에 timeout 을 «남겨» 둔다 — 심부름꾼 자신이 굳는 경우의 뒷벽이다.
+   *   그 뒷벽은 상한보다 넉넉해야 «심부름꾼이 끊는 정상 동작»을 앞질러 죽이지 않는다(여유 30초). */
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-codex-'));
+  const 입력파일 = path.join(방, 'in.txt');
+  const 나감파일 = path.join(방, 'out.txt');
+  const 새는곳파일 = path.join(방, 'err.txt');
+  const 명세파일 = path.join(방, 'spec.json');
+  const 읽기 = (p) => { try { return fs.readFileSync(p, 'utf8'); } catch (_) { return ''; } };
+  const 치우기 = () => { try { fs.rmSync(방, { recursive: true, force: true }); } catch (_) { /* 임시방이라 남아도 해롭지 않다 */ } };
+  fs.writeFileSync(입력파일, 입력 == null ? '' : String(입력), 'utf8');
+  fs.writeFileSync(명세파일, JSON.stringify({
+    bin,
+    args,
+    /* cwd = **재는 저장소**. codex 는 여기서 git 을 돌린다(실측) — 1단계에 커스텀 프롬프트를
+     * 못 주므로(위 ⛔막다른 길) 이 한 줄이 「어느 저장소의 규약으로 볼 것인가」를 정하는
+     * 유일한 손잡이다.
+     * ⏭ 렌즈 파일의 «우선순위»는 **안 재봤다**: 이 집엔 `AGENTS.md` 가 없고 그때 codex 가
+     *   `CLAUDE.md:45` 를 인용한 것이 근거의 전부라, 「`AGENTS.md` 가 있으면 그쪽을 집는다」는
+     *   추론이다. talk 엔 둘 다 있어서(`AGENTS.md` → `docs/이_저장소_규약.md`) 첫 talk 런이
+     *   그 답을 낸다 — 그 결과를 여기 적어 추론을 실측으로 바꿔라. */
+    cwd: 대상ROOT,
+    입력파일, 나감파일, 새는곳파일,
+    상한ms: timeoutMs,
+  }), 'utf8');
+
   const 시작 = Date.now();
   try {
     execFileSync(
-      isWin ? (process.env.ComSpec || 'cmd.exe') : bin,
-      isWin ? ['/c', bin, ...args] : args,
-      /* cwd = **재는 저장소**. codex 는 여기서 git 을 돌린다(실측) — 1단계에 커스텀 프롬프트를
-       * 못 주므로(위 ⛔막다른 길) 이 한 줄이 「어느 저장소의 규약으로 볼 것인가」를 정하는
-       * 유일한 손잡이다.
-       * ⏭ 렌즈 파일의 «우선순위»는 **안 재봤다**: 이 집엔 `AGENTS.md` 가 없고 그때 codex 가
-       *   `CLAUDE.md:45` 를 인용한 것이 근거의 전부라, 「`AGENTS.md` 가 있으면 그쪽을 집는다」는
-       *   추론이다. talk 엔 둘 다 있어서(`AGENTS.md` → `docs/이_저장소_규약.md`) 첫 talk 런이
-       *   그 답을 낸다 — 그 결과를 여기 적어 추론을 실측으로 바꿔라. */
-      자식옵션({ cwd: 대상ROOT, input: 입력, encoding: 'utf8', timeout: timeoutMs, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 })
+      process.execPath,
+      [코덱스러너경로, 명세파일],
+      자식옵션({ encoding: 'utf8', timeout: timeoutMs + 30000, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 })
     );
     /* 성공 1회 = 한도가 풀렸다는 유일한 실측 — 마커가 있었다면 지운다(오탐 자가 치유). */
     if (한도) { 런.한도해제(); console.error('✅ codex 성공 — 벤더 한도 마커를 지웠다(풀림 실측).'); }
+    치우기();
   } catch (e) {
     /* 실행 자체가 실패했다 = **확인 불가**다. 여기서 「지적 0건」으로 접으면 거짓 초록이 된다. */
-    const err = new Error(실패요점(e, timeoutMs, 라벨));
+    const 새는글 = 읽기(새는곳파일) || String((e && e.stderr) || '');
+    const 걸린ms = Date.now() - 시작;
+    /* 심부름꾼이 상한에 걸려 끊었으면 종료 124 다. 그 갈래를 «타임아웃»으로 읽는다 —
+     * 아래 `실패요점` 이 signal 로 타임아웃을 가르므로(실측 F249) 그 모양을 그대로 지어 준다. */
+    const 끊겼나 = (e && e.status === 124) || !!(e && e.signal);
+    const 재료 = 끊겼나 ? { signal: 'SIGTERM', stderr: 새는글 } : { status: e && e.status, stderr: 새는글 || (e && e.message) };
+    const err = new Error(실패요점(재료, timeoutMs, 라벨));
     err.확인불가 = true;
-    err.타임아웃 = !!(e && e.signal);
-    err.걸린ms = Date.now() - 시작;
-    /* 실제로 더 오래 걸렸으면 그 사실을 «숫자로» 붙인다 — 안 붙이면 문면이 「60초 소진」이라
-     * 거짓말이 된다(위 주석). 1.2배를 넘을 때만 말한다: 오차로 시끄러워지지 않게. */
-    if (err.타임아웃 && err.걸린ms > timeoutMs * 1.2) {
-      err.message += `\n   ⚠ 실제로는 ${Math.round(err.걸린ms / 1000)}초 뒤에 돌아왔다(건 값은 ${Math.round(timeoutMs / 1000)}초).`
-        + ' 시간이 다 되면 우리가 낳은 자식은 죽지만 **코덱스는 그 손자라 안 죽고**, 출력 통로를 놓을 때까지 이 호출이 안 끝난다.'
-        + ' ⇒ `--timeout` 은 상한이 아니라 하한이다. 긴 판은 `--던지기` 로 백그라운드에 두고 로그를 파일로 받아라.';
+    err.타임아웃 = 끊겼나;
+    err.걸린ms = 걸린ms;
+    /* 상한이 실제로 섰는지 «숫자로» 남긴다. 넘겼다면 그건 심부름꾼까지 굳어 뒷벽이 문 것이니
+     * 조용히 넘기지 않는다(그 경우가 곧 이 통로의 다음 결함이다). */
+    if (끊겼나 && 걸린ms > timeoutMs * 1.5) {
+      err.message += `\n   ⚠ 상한 ${Math.round(timeoutMs / 1000)}초인데 실제로는 ${Math.round(걸린ms / 1000)}초 걸렸다 — 심부름꾼(코덱스러너)까지 안 끊긴 자리다. 이 줄이 보이면 그 통로를 의심해라.`;
     }
     /* 한도 오류면 마커를 적는다 — 다음 호출부터는 위 게이트가 태우기 전에 끊고,
      * review-runs 훅이 세션을 열 때마다 리셋 시각을 알린다(세션마다 재발견하는 비용 제거). */
-    const 기록 = 런.한도기록(String((e && e.stderr) || (e && e.message) || ''));
+    const 기록 = 런.한도기록(새는글 || String((e && e.message) || ''));
     if (기록) {
       err.한도 = true;
       err.message += `\n   ⛔ 한도 마커를 적었다(리셋 ${기록.리셋시각 || '시각 미상 — 원문 참조'}) — 다음 호출은 태우기 전에 막힌다.`;
     }
+    치우기();
     throw err;
   }
 }
