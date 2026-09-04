@@ -1,8 +1,10 @@
 # 노트북 없는 검수 ③ — 집계 잡(심판) (안 B · 정찰 지면 docs/교차검수_재설계_정찰_2026-09-02.html §8)
 #
-# 봇들의 코멘트를 읽어 «둘 이상이 P0/P1 을 짚었나»를 커밋 상태 하나(`SYNK/검수합의`)로 낸다.
-#   · 응답한 벤더가 둘 미만 → pending(아직 못 셌다 — «봇 침묵 = 미확인» 얼굴. 초록으로 접지 않는다)
-#   · 둘 이상이 P0/P1 → failure(사람이 본다) · 그 밖 → success
+# 봇들의 코멘트를 읽어 «문턱만큼 P0/P1 을 짚었나»를 커밋 상태 하나(`SYNK/검수합의`)로 낸다.
+#   · 응답한 벤더가 0 → pending(아직 못 셌다 — «봇 침묵 = 미확인» 얼굴. 초록으로 접지 않는다)
+#   · 문턱 = min(2, 응답 벤더 수) 만큼 P0/P1 → failure(사람이 본다) · 그 밖 → success
+#   🔴 09-05 에 「둘 이상」 못박기를 걷었다 — 깃허브 벤더가 클로드 하나뿐이라 그 하나가 P0 를 짚어도
+#     영원히 pending 이었다. 벤더가 늘면 문턱도 저절로 올라간다(둘이면 다시 「둘 이상」이다).
 #   유호님이 원하시면 Settings → Branches 에서 이 상태를 required 로 올리면 merge 게이트가 된다.
 # 🔴 스위치 — `SYNK_REVIEW_GITHUB` = `on`. 시크릿 불필요(GITHUB_TOKEN 만).
 # 📏 v0 — 벤더 판별은 코멘트 작성자 로그인(claude · chatgpt-codex-connector · gemini · coderabbit)과
@@ -87,7 +89,7 @@ jobs:
             const 줄 = 응답벤더.length
               ? 응답벤더.map((v) => `- ${v}: 코멘트 ${응답.get(v).건수} · ${응답.get(v).짚음 ? '🔴 P0/P1 짚음' : '✅ 차단급 없음'}`).join('\n')
               : '- (아직 응답한 벤더가 없다)';
-            const body = `[review-judge] SYNK 검수 합의 — 커밋 ${pr.head.sha.slice(0, 7)}\n\n${줄}\n\n**판정: ${state}** — ${설명}\n\n_자 = .github/workflows/review-judge.yml v0 · 둘 이상이 P0/P1 을 짚어야 실패로 센다. 봇이 침묵하면 pending 이지 초록이 아니다._`;
+            const body = `[review-judge] SYNK 검수 합의 — 커밋 ${pr.head.sha.slice(0, 7)}\n\n${줄}\n\n**판정: ${state}** — ${설명}\n\n_자 = .github/workflows/review-judge.yml v1 · 문턱 = min(2, 응답 벤더 수) 만큼 P0/P1 을 짚어야 실패로 센다. 봇이 침묵하면 pending 이지 초록이 아니다._`;
             const mine = comments.find((c) => /^\s*\[review-judge\]/.test(c.body || '') && (c.user || {}).type === 'Bot');
             if (mine) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
             else await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
