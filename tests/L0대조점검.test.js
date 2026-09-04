@@ -116,6 +116,13 @@ test('표가 이름을 대는데 대상 목록에 없는 시트를 알린다 —
 });
 
 test('🔑 실저장소 — 자의 «대상» 목록이 실제 헤더 상수를 다 찾는다(이름이 바뀌면 조용히 못 잰다)', () => {
+  /* 🔴 09-05: 이 줄만 «형제 저장소»를 요구한다. 원격 CI 는 이 저장소 하나만 체크아웃하므로
+   *   talk 이 원리상 없고, 그때 나는 빨강은 결함이 아니라 «못 잰 것»이다(실측: run 33915165291).
+   *   위 픽스처 시험들이 자의 동작을 이미 다 재므로, 여기서는 못 잼을 적고 건너뛴다. */
+  const 형제L0 = path.join(REPO, '..', 'SYNK-talk', 'docs', 'L0_데이터계약.md');
+  if (!fs.existsSync(형제L0)) {
+    return void console.log(`  ↷ skip: 형제 저장소 L0 가 이 판에 없다 — ${형제L0}`);
+  }
   const r = spawnSync(process.execPath, [자, '--json'], { encoding: 'utf8' });
   const j = JSON.parse(r.stdout);
   assert.ok(!j.못잼, `실저장소에서 못 쟀다: ${j.못잼}`);
