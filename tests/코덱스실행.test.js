@@ -373,6 +373,66 @@ test('🔴 검수가 끊긴 커밋은 다음 런이 도장을 마저 찍는다 �
   assert.strictEqual(fs.readFileSync(흔적, 'utf8').trim().split('\n').length, 2, '검수가 다시 불려야 한다(이 줄이 09-05 의 결함을 문다)');
 });
 
+/* 🔴 2026-09-05 실측 — 수용 대조가 한도로 못 돌아도 「✅ 완주 · 미충족 0 · 종료 0」이 나왔다.
+ *   그 «0» 은 「0건」이 아니라 «안 쟀다» 다. 수용 기준은 발주서가 정한 «이게 되면 합격»이고
+ *   그걸 재는 자는 이 단계 하나뿐이라, 못 잰 채 찍힌 완주 도장은 아무도 안 본 합격이 된다.
+ *   ⑤ 검수는 확인 불가면 멈추는데 ⑥ 만 삼키고 있었다(두 «모델 판정»의 비대칭).
+ * 📏 자 = 「완주 도장이 찍히나」다 — 종료코드와 장부 상태를 함께 문다. */
+test('🔴 수용 대조를 못 쟀으면 완주가 아니다 — 「미충족 0」과 「안 쟀다」를 가른다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-accept-'));
+  assert.strictEqual(spawnSync('git', ['init', '-q', 방], { encoding: 'utf8' }).status, 0);
+  /* 이 시험만의 발주서 — 공용 픽스처의 시험 명령(`node --test tests/`)은 이 노드 판에서 폴더를
+   * 모듈로 읽어 실패한다(09-05 실측). 시험 실패가 섞이면 «완주가 아닌 까닭»이 흐려진다. */
+  const 발주2 = [
+    '# 발주 — add.js 옆에 시험을 붙인다', '', '## 목표', '`add.js` 에 시험이 없다. 시험을 붙인다.', '',
+    '## 범위', '- `add.js`', '- `tests/`', '',
+    '## 수용 기준', '1. `tests/sae.test.js` 가 있고 통과한다.', '',
+    '## 시험', '- `node --test tests/sae.test.js`', '',
+  ].join('\n');
+  fs.writeFileSync(path.join(방, 'add.js'), 'module.exports = (a, b) => a + b;\n');
+  fs.writeFileSync(path.join(방, '발주.md'), 발주2);
+  spawnSync('git', ['-C', 방, 'add', '--', 'add.js'], { encoding: 'utf8' });
+  spawnSync('git', ['-C', 방, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'base', '--', 'add.js'], { encoding: 'utf8' });
+
+  const 런방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-accept-runs-'));
+  const 가짜방 = path.join(런방, 'npm');
+  fs.mkdirSync(가짜방, { recursive: true });
+  /* 가짜 코덱스 — 짓기는 성공하고 «수용 대조»에서만 한도로 죽는다.
+   * 가르는 자 = `--output-schema` 값(수용 단계만 `수용대조.schema.json` 을 건다). */
+  fs.writeFileSync(path.join(가짜방, 'fakecodex.js'), [
+    "const fs = require('fs'), path = require('path');",
+    'const a = process.argv.slice(2);',
+    "const ci = a.indexOf('-C');",
+    "if (ci === -1 || a.some((s) => String(s).includes('수용대조.schema.json'))) {",
+    '  process.stderr.write("ERROR: You\'ve hit your usage limit. Upgrade to Pro or try again at 9:37 PM.\\n");',
+    '  process.exit(1);',
+    '}',
+    'const wt = a[ci + 1];',
+    "const out = a.includes('-o') ? a[a.indexOf('-o') + 1] : null;",
+    "const 새시험 = path.join(wt, 'tests', 'sae.test.js');",
+    'if (!fs.existsSync(새시험)) {',
+    "  fs.mkdirSync(path.join(wt, 'tests'), { recursive: true });",
+    '  fs.writeFileSync(새시험, "const t=require(\'node:test\');\\nt.test(\'ok\', () => {});\\n");',
+    '}',
+    "if (out) fs.writeFileSync(out, JSON.stringify({ 상태: '완료', 요약: 'x', 바꾼파일들: [], 시험: [], 남긴것: [], 발주밖발견: [], 확신도: 0.9 }), 'utf8');",
+  ].join('\n'), 'utf8');
+  fs.writeFileSync(path.join(가짜방, 'codex.cmd'), '@echo off\r\nnode "%~dp0fakecodex.js" %*\r\n', 'utf8');
+  fs.writeFileSync(path.join(가짜방, 'codex'), '#!/bin/sh\nexec node "$(dirname "$0")/fakecodex.js" "$@"\n', { mode: 0o755 });
+
+  const 장부 = path.join(런방, '장부.jsonl');
+  const env = { ...process.env, SYNK_REVIEW_RUNS: 런방, SYNK_BUILD_LEDGER: 장부, SYNK_REVIEW_LEDGER: path.join(런방, '검수기록.jsonl'), APPDATA: 런방 };
+  if (process.platform !== 'win32') env.PATH = 가짜방 + path.delimiter + process.env.PATH;
+
+  const r = 실행(['--발주', path.join(방, '발주.md'), '--저장소', 방, '--발주검토안함', '--검수안함', '--라운드', '1', '--timeout', '60'], { env });
+  const 글 = r.stdout + r.stderr;
+  assert.ok(/시험\(도구가 돌렸다\): 통과/.test(글), '이 실험의 전제 — 커밋도 시험도 통과한다: ' + 글.slice(-500));
+  assert.ok(!/✅ 완주/.test(글), '수용 대조를 못 쟀는데 완주 도장이 찍히면 안 된다: ' + 글.slice(-500));
+  assert.strictEqual(r.status, 1, '못 잰 것은 «처리할 것이 남았다»(1)다: ' + 글.slice(-300));
+  assert.ok(/못 쟀다/.test(글), '「미충족 0」과 「안 쟀다」를 화면이 갈라 말해야 한다: ' + 글.slice(-400));
+  const 마지막행 = JSON.parse(fs.readFileSync(장부, 'utf8').trim().split('\n').pop());
+  assert.strictEqual(마지막행.상태, '수용확인불가', '장부에도 갈려 남아야 한다: ' + JSON.stringify(마지막행.상태));
+});
+
 test('🔑 --마른손 은 코덱스를 안 태우고 ⓪만 낸다 — 임시 저장소에서 형식·범위·계획을 출력한다', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-test-'));
   const 초기 = spawnSync('git', ['init', '-q', 방], { encoding: 'utf8' });
