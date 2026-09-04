@@ -301,6 +301,78 @@ test('🔴 앞 회차가 짓다 만 잔해를 이어받으면 커밋이 그렇�
   assert.ok(/add\.js/.test(메시지) && /새로 지은 것이 아니다/.test(메시지), '본문이 어느 파일인지 말해야 한다: ' + 메시지);
 });
 
+/* 🔴 2026-09-05 실측 — 검수가 한도로 죽으면 **커밋은 남고 도장만 없다.** 리셋 뒤 같은 명령을
+ *   다시 부르면 실행자가 이미 다 지어 놔 「바뀐 파일 0개」가 되고, 그러면 ⑤ 가 통째로 건너뛰어져
+ *   **도장 없는 커밋이 가지에 영영 남았다** — 화면엔 「커밋 없음」에 지적 0·미충족 0 이라
+ *   거의 다 된 얼굴을 한다. 새는 방향이 「통과」라 회귀가 없으면 조용히 되돌아온다.
+ * 📏 자 = 「검수가 «불렸나»」다(통과했나가 아니다 — 우리가 고친 것은 부르지도 않던 것이다). */
+test('🔴 검수가 끊긴 커밋은 다음 런이 도장을 마저 찍는다 — 새로 지은 것이 0개여도 건너뛰지 않는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-stamp-'));
+  assert.strictEqual(spawnSync('git', ['init', '-q', 방], { encoding: 'utf8' }).status, 0);
+  fs.writeFileSync(path.join(방, 'add.js'), 'module.exports = (a, b) => a + b;\n');
+  fs.writeFileSync(path.join(방, '발주.md'), 발주);
+  spawnSync('git', ['-C', 방, 'add', '--', 'add.js'], { encoding: 'utf8' });
+  spawnSync('git', ['-C', 방, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'base', '--', 'add.js'], { encoding: 'utf8' });
+
+  const 런방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-stamp-runs-'));
+  const 가짜방 = path.join(런방, 'npm');
+  const 흔적 = path.join(런방, 'trace.txt');
+  fs.mkdirSync(가짜방, { recursive: true });
+  /* 가짜 코덱스 — 짓기는 성공하고 **검수에서만** 한도로 죽는다.
+   * 🪤 두 통로를 가르는 자는 `-C` 다: 실행 레인은 `codex exec -C <워크트리>` 로 부르고,
+   *   **검수 자식은 `-C` 를 안 준다**(cwd 로 준다 · 09-05 실측). `-C` 만 믿고 상대경로를 쓰면
+   *   검수 쪽 호출에서 «엉뚱한 자리»에 파일이 생겨 다음 런이 범위밖으로 멈춘다(실제로 밟았다).
+   *   그래서 `-C` 가 없는 호출에서는 아무것도 짓지 않고 한도로 죽인다(한도는 통로를 안 가린다).
+   * 흔적 경로는 파일에 박는다 — env 는 손자 프로세스까지 안 흐른다(09-05 실측). */
+  fs.writeFileSync(path.join(가짜방, 'fakecodex.js'), [
+    "const fs = require('fs'), path = require('path');",
+    `const TRACE = ${JSON.stringify(흔적)};`,
+    'const a = process.argv.slice(2);',
+    "const ci = a.indexOf('-C');",
+    "if (ci === -1) {   // 검수 자식의 호출 — 이 실험에선 한도로 죽는다",
+    "  if (a.includes('review')) fs.appendFileSync(TRACE, 'REVIEW\\n');",
+    '  process.stderr.write("ERROR: You\'ve hit your usage limit. Upgrade to Pro or try again at 9:37 PM.\\n");',
+    '  process.exit(1);',
+    '}',
+    'const wt = a[ci + 1];',
+    "const out = a.includes('-o') ? a[a.indexOf('-o') + 1] : null;",
+    "const 새시험 = path.join(wt, 'tests', '새.test.js');",
+    'if (!fs.existsSync(새시험)) {',
+    "  fs.mkdirSync(path.join(wt, 'tests'), { recursive: true });",
+    '  fs.writeFileSync(새시험, "const t=require(\'node:test\');\\nt.test(\'ok\', () => {});\\n");',
+    '}',
+    "if (out) fs.writeFileSync(out, JSON.stringify({ 상태: '완료', 요약: 'x', 바꾼파일들: [], 시험: [], 남긴것: [], 발주밖발견: [], 확신도: 0.9, 항목: [] }), 'utf8');",
+  ].join('\n'), 'utf8');
+  fs.writeFileSync(path.join(가짜방, 'codex.cmd'), '@echo off\r\nnode "%~dp0fakecodex.js" %*\r\n', 'utf8');
+  fs.writeFileSync(path.join(가짜방, 'codex'), '#!/bin/sh\nexec node "$(dirname "$0")/fakecodex.js" "$@"\n', { mode: 0o755 });
+
+  const env = {
+    ...process.env,
+    SYNK_REVIEW_RUNS: 런방,
+    SYNK_BUILD_LEDGER: path.join(런방, '장부.jsonl'),
+    SYNK_REVIEW_LEDGER: path.join(런방, '검수기록.jsonl'),   // 진짜 검수 장부를 안 건드린다
+    APPDATA: 런방,
+  };
+  if (process.platform !== 'win32') env.PATH = 가짜방 + path.delimiter + process.env.PATH;
+  const 인자 = ['--발주', path.join(방, '발주.md'), '--저장소', 방, '--발주검토안함', '--라운드', '1', '--timeout', '60'];
+
+  // ① 검수에서 끊긴다 — 커밋은 남고 도장은 없다
+  const 첫판 = 실행(인자, { env });
+  assert.strictEqual(첫판.status, 2, '검수를 못 잰 것은 «확인 불가»다: ' + (첫판.stderr + 첫판.stdout).slice(-400));
+  const 가지 = 빌드.가지이름(빌드.발주지문(fs.readFileSync(path.join(방, '발주.md'), 'utf8')));
+  const 제목 = spawnSync('git', ['-C', 방, 'log', '-1', '--format=%s', 가지], { encoding: 'utf8' }).stdout.trim();
+  assert.ok(/^\[codex 실행자\]/.test(제목), '커밋은 남아 있어야 한다: ' + 제목);
+  assert.strictEqual(fs.readFileSync(흔적, 'utf8').trim().split('\n').length, 1, '검수는 한 번 불렸다');
+
+  // ② 한도가 풀린 뒤 같은 명령 — 새로 지을 것이 0개여도 도장을 마저 찍으러 간다
+  fs.rmSync(path.join(런방, '한도.json'), { force: true });
+  const 둘째판 = 실행(인자, { env });
+  const 둘째글 = 둘째판.stdout + 둘째판.stderr;
+  assert.ok(/바뀐 파일이 0개/.test(둘째글), '이 실험의 전제 — 실행자는 이번엔 아무것도 안 짓는다: ' + 둘째글.slice(-400));
+  assert.ok(/검수 도장이 없다/.test(둘째글), '도장 없는 앞 커밋을 집어야 한다: ' + 둘째글.slice(-500));
+  assert.strictEqual(fs.readFileSync(흔적, 'utf8').trim().split('\n').length, 2, '검수가 다시 불려야 한다(이 줄이 09-05 의 결함을 문다)');
+});
+
 test('🔑 --마른손 은 코덱스를 안 태우고 ⓪만 낸다 — 임시 저장소에서 형식·범위·계획을 출력한다', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-test-'));
   const 초기 = spawnSync('git', ['init', '-q', 방], { encoding: 'utf8' });
