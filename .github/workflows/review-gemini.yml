@@ -85,13 +85,19 @@ jobs:
           GEMINI_CLI_TRUST_WORKSPACE: 'true'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_FREE }}
-          # 🔴 09-05: 이 잡이 «성공 도장을 받고 7.8초 만에 조용히» 끝났다(run 33922839253).
-          #   남은 자취는 `##[warning]Gemini CLI stderr was not valid JSON` 한 줄뿐이라 원인을
-          #   못 잡았다. 디버그를 켜면 CLI 가 stderr 에 사람이 읽는 줄을 남긴다.
-          GEMINI_DEBUG: 'true'
+          # ⚠ 여기(스텝 env)에 GEMINI_DEBUG 를 줘도 «안 먹는다» — 액션이 자기 입력값으로 덮어쓴다
+          #   (09-05 실측: 스텝 env 는 true 인데 안쪽 gemini_run 스텝은 GEMINI_DEBUG=false 였다).
+          #   켜는 자리는 아래 `with:` 의 `gemini_debug` 다.
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY_FREE }}
           gemini_model: ${{ steps.model.outputs.id }}
+          # 🔴 09-05: 이 잡이 **3분 25초 동안 돌고도 코멘트를 0건** 남겼다(run 33924199954).
+          #   즉 읽기는 읽었는데 «말을 남기는 통로»에서 막힌다. 그런데 액션이 CLI 의 stderr 를
+          #   `Gemini CLI stderr was not valid JSON` 한 줄로 버려서 원인이 로그에 안 남았다.
+          #   이 둘을 켜야 stderr 가 파일로 저장돼 산출물로 올라간다
+          #   (action.yml 실측: 올리는 스텝 조건이 `inputs.upload_artifacts == 'true'`).
+          gemini_debug: true
+          upload_artifacts: true
           workflow_name: gemini-review
           github_pr_number: ${{ github.event.pull_request.number }}
           settings: |
