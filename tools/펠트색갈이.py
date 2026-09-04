@@ -211,10 +211,15 @@ def main():
                     help='조준 보정 회차(닫힌 루프). 1 이면 한 번만 곱하고 끝낸다')
     ap.add_argument('--무채base', action='store_true',
                     help='전면이 무채 천(회색 원료 base)일 때 — 마스크를 끄고 코어를 L* 백분위로 잰다. '
-                         '유채 픽셀 2% 초과 그림엔 못 쓴다(마스크가 지킬 것이 있는 그림)')
+                         '유채 픽셀 2%% 초과 그림엔 못 쓴다(마스크가 지킬 것이 있는 그림)')
     a = ap.parse_args()
 
-    im = Image.open(a.입력).convert('RGB')
+    _원 = Image.open(a.입력)
+    # 🔑 투명을 들고 온다(2026-09-05) — 블렌더 부품(`요소_*_몸.png`)은 RGBA 라서
+    #   그냥 convert('RGB') 하면 투명 자리가 «검정»으로 굳어 지면에 검은 네모가 뜬다.
+    #   알파는 염색 대상이 아니므로 떼어 두었다가 출력에 그대로 되붙인다.
+    _알파 = _원.getchannel('A') if _원.mode in ('RGBA', 'LA') or 'transparency' in _원.info else None
+    im = _원.convert('RGB')
     W, H = im.size
     px = im.load()
 
@@ -273,7 +278,7 @@ def main():
         t = []
         for y in range(0, H, 3):
             for x in range(0, W, 3):
-                q = image_px[x, y]
+                q = image_px[x, y][:3]   # 출력이 RGBA 일 수 있다(알파 복원 뒤) — 색 함수는 3채널만 받는다
                 if a.무채base:
                     t.append((lab(q)[0], q))
                 else:
@@ -311,6 +316,9 @@ def main():
         want = lin_rgb(목표)
         조준 = [min(1.0, 조준[i] * (want[i] / max(cur[i], 1e-6))) for i in range(3)]
 
+    if _알파 is not None:
+        out = out.convert('RGBA')
+        out.putalpha(_알파)
     out.save(a.출력)
     o = out.load()
     앵커 = 좌표평균(o)
