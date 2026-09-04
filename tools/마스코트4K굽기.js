@@ -54,6 +54,23 @@ in mid air, weightless, with nothing under it — no table, no floor, no wall, n
 const 금지 = `No text, no letters, no numbers, no logo, no watermark, no props, no hands,
 no second object, no border, no frame. Nothing scary.`;
 
+/* 🔴 09-05 유호 교정 「전체적으로 옆모습 보면 눈이 너무 튀어나왔어 몽글이든 까몽이든」.
+ *   첫 판 실측: 돌아간 판에서 «먼 쪽» 눈이 머리 윤곽 «밖»으로 삐져나왔다 — 머리에 구슬을
+ *   붙여 놓은 꼴이다. 까닭 = 「박아 넣는다」고만 쓰고 «얼마나 깊이»를 안 적었다.
+ *   ⇒ 셋을 숫자와 규칙으로 못 박는다:
+ *     ⓐ 구의 «절반 아래»만 보인다(반구가 아니라 그보다 얕게)
+ *     ⓑ 윤곽을 «절대» 깨지 않는다 — 이것이 판정 규칙이다
+ *     ⓒ 돌아가면 먼 쪽 눈은 «타원»이 된다(튀어나온 공은 각도가 변해도 원으로 남는다) */
+const 눈박힘 = `HOW THE EYE SITS — read this carefully, the first attempt got it wrong:
+The eye is SET DEEP INTO the surface, not glued on top of it. It is sunk in so that LESS THAN
+HALF of the sphere shows — a shallow cap, not a ball. The surrounding material rises in a soft
+ring right up against its rim, slightly overlapping the edge of the eye all the way around.
+🔴 THE EYE NEVER BREAKS THE OUTLINE OF THE HEAD. At every angle its silhouette stays well
+inside the silhouette of the body — it must never bulge out past the edge, never stick out
+sideways, never read as a bead stuck onto the side. When the character is turned, the far eye
+is FORESHORTENED by the curve of the head and reads as a narrow ELLIPSE, squeezed horizontally
+— it is NOT a full circle. A protruding ball would stay circular; this one must not.`;
+
 /* ── 몽글 ───────────────────────────────────────────────────────── */
 
 const 몽글카메라 = `CAMERA AND POSE — THIS IS THE MOST IMPORTANT INSTRUCTION:
@@ -86,11 +103,11 @@ sharp. Museum-quality fibre-art photography, extremely high detail in the wool f
 stitching.`;
 
 const 몽글눈뜸 = `FACE: exactly two eyes and nothing else. Each eye is a small perfectly round
-glossy BLACK bead, smooth and shiny like polished glass with one tiny white highlight, sewn
-into the felt so the wool dimples very slightly around it. The two beads sit at exactly the
-same height, level with each other, in the upper third of the doll. They are set WIDE APART —
-the gap between them is about one third of the doll's full width. No mouth, no nose, no
-eyebrows, no blush, no cheeks, no other feature.`;
+glossy BLACK bead, smooth and shiny like polished glass with one tiny white highlight.
+${눈박힘}
+The two beads sit at exactly the same height, level with each other, in the upper third of the
+doll. They are set WIDE APART — the gap between them is about one third of the doll's full
+width. No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.`;
 
 const 몽글눈감음 = `FACE: exactly two closed eyes and nothing else. Each eye is a single curved
 line of dark brown embroidery thread, stitched into the felt, curving gently DOWNWARD like a
@@ -135,10 +152,21 @@ out the fur tips around the whole outline. Shallow depth of field so the fur det
 face is razor sharp while the outermost hairs go softly out of focus. Museum-quality creature
 photography, extremely high detail in every individual hair.`;
 
-const 까몽눈뜸 = (설명) => `FACE: exactly two eyes and nothing else. Each eye is a large round
+/* 🔴 09-05 실측 — 본체·좌34·우34 에서 눈이 «작아졌다». 까몽의 표식은 큰 동그란 눈인데
+ *   「large」라는 낱말만으로는 크기가 안 선다. ⇒ 머리 너비에 대한 «비율»로 못 박는다. */
+const 까몽눈뜸 = (설명) => `FACE: exactly two eyes and nothing else. Each eye is a LARGE round
 eye with a bright APPLE-GREEN iris ring around a big glossy black pupil, and one small round
-white highlight in the upper left of the pupil. ${설명} There is only the faintest hint of a
-dark nose in the fur. No mouth, no whiskers, no eyebrows, no blush, no other feature.`;
+white highlight in the upper left of the pupil.
+SIZE — the first attempt made them too small: each eye is about ONE QUARTER of the head's
+width. The two eyes plus the gap between them span roughly THREE QUARTERS of the head's width.
+These are big, storybook-cute eyes that dominate the face.
+🔴 BOTH EYES GLOW THE SAME: the apple-green iris ring is equally bright, equally saturated and
+equally wide on the LEFT eye and on the RIGHT eye. Neither eye falls into shadow, neither
+turns dark or loses its green. The reference photograph has one eye dimmer than the other —
+that is a flaw in the old picture, do not copy it. Light the two eyes evenly.
+${눈박힘}
+${설명} There is only the faintest hint of a dark nose in the fur. No mouth, no whiskers,
+no eyebrows, no blush, no other feature.`;
 
 const 까몽눈선 = (설명) => `FACE: exactly two closed eyes and nothing else. Each eye is a single
 curved line of bright APPLE-GREEN thread stitched into the fur. ${설명} No black pupils anywhere.
@@ -173,10 +201,12 @@ const 판들 = [
   { 누구: '까몽', 이름: '까몽_윙크', 카메라: 까몽카메라, 참조: '까몽_윙크.png',
     얼굴: `FACE: exactly two eyes and nothing else, and they do NOT match. The creature's RIGHT
 eye (on the LEFT side of the picture as we look at it) is CLOSED — a single curved line of
-bright apple-green thread arcing gently downward. The other eye is fully OPEN — a large round
+bright apple-green thread arcing gently downward. The other eye is fully OPEN — a LARGE round
 eye with a bright apple-green iris ring, a big glossy black pupil, and one small white
-highlight. A wink. There is only the faintest hint of a dark nose in the fur. No mouth, no
-whiskers, no eyebrows, no blush, no other feature.` },
+highlight; it is about one quarter of the head's width. A wink.
+${눈박힘}
+There is only the faintest hint of a dark nose in the fur. No mouth, no whiskers, no eyebrows,
+no blush, no other feature.` },
   { 누구: '까몽', 이름: '까몽_으쓱', 카메라: 까몽카메라, 참조: '까몽_으쓱.png',
     얼굴: 까몽눈선('Both are short, nearly flat, slightly downturned green lines — a breezy "who, me?" shrug. They sit level with each other.') },
   { 누구: '까몽', 이름: '까몽_졸림', 카메라: 까몽카메라, 참조: '까몽_졸림.png',
@@ -186,9 +216,14 @@ whiskers, no eyebrows, no blush, no other feature.` },
 function 지시조립(판) {
   const 몸 = 판.누구 === '몽글' ? 몽글몸 : 까몽몸;
   const 빛 = 판.누구 === '몽글' ? 몽글빛 : 까몽빛;
+  /* 🔴 09-05 실측 — 까몽_좌34 가 «회색 바닥에 그림자»로 나왔다. 견본 그림의 배경이 그렇기
+   *   때문이다. 견본은 힘이 세서, 쓰라고 준 것 말고도 따라온다. ⇒ 무엇을 «안» 보는지 적는다. */
   const 같은것 = `Reproduce THIS EXACT character — the one in the reference image — at much
 higher resolution. Same silhouette, same proportions, same colour. Not a similar character:
-the same one. Only the expression is as described below.`;
+the same one. Only the expression is as described below.
+🔴 Use the reference ONLY for the character's shape, colour and markings. IGNORE the
+reference's background completely — ignore its surface, its floor, its wall, its grey tone and
+its shadow. Those belong to the old photograph, not to this one.`;
   return [판.카메라, 배경, 같은것, 몸, 판.얼굴, 빛, 금지].join('\n\n');
 }
 
