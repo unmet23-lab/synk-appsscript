@@ -687,6 +687,22 @@ test('🔑 ⓐ 키로 부르면 그 자리 하나가 나온다 — 09-04 유호 
   }
 });
 
+test('🔴 ⑦ 집안 — 같은 집안 둘은 «남남»이 아니다(09-05 · 「GPT ×2」 오기가 났던 자리)', () => {
+  /* 밖의 사실 반박은 「조사원 둘」이 정본인데, 그 둘이 한 집안이면 사각이 겹쳐 한 벌과 다르지 않다.
+   * 장부에 실제로 적히는 이름들(codex(live) · ChatGPT Deep Research …)로 잰다. */
+  assert.strictEqual(정책.집안가르기('gemini'), 'google');
+  assert.strictEqual(정책.집안가르기('제미나이 Deep Research'), 'google');
+  assert.strictEqual(정책.집안가르기('codex(live)'), 'openai', 'codex 는 ChatGPT 와 한 집안이다 — 장부에 이 이름으로 적힌다');
+  assert.strictEqual(정책.집안가르기('ChatGPT Deep Research'), 'openai');
+  assert.strictEqual(정책.집안가르기('claude'), 'anthropic');
+});
+
+test('🔴 ⑦ 모르는 조사원은 «남남»으로 세지 않는다 — 모르는 것을 「다르다」로 세면 한 벌이 둘로 부푼다', () => {
+  for (const 모르는것 of ['마누스', '', null, undefined, '   ']) {
+    assert.strictEqual(정책.집안가르기(모르는것), null, `"${모르는것}" 을 아는 집안으로 셌다`);
+  }
+});
+
 test('🔴 ⑥ 모든 자리가 배선 표 셋 중 하나에 든다 — 새 자리를 넣고 이 표를 안 고치면 조용히 「닿을 것 없음」으로 세어진다', () => {
   /* 09-05 에 도장을 갈랐다. 「누가 맡나」와 「엔진에 닿나」를 한 낱말로 재던 것이
    * 스물두 자리가 제 규칙을 어기는 꼴을 만들었다(두 집안 심문이 각각 P0). */
