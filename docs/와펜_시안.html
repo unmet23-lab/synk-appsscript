@@ -3,7 +3,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>와펜 결 판정</title>
-<!-- 브랜드 서체(SUIT)는 «굽기»가 지면 안에 싣는다 — 바깥에서 부르면 아티팩트 CSP 가 조용히 막는다 -->
+<!-- 서체 둘을 갈라 둔다(09-04 정정 — 앞 주석이 SUIT 를 말하면서 바로 아래 Inter Tight 를 불러 헷갈렸다):
+     · 한글 SUIT = «굽기»가 지면 안에 싣는다. 바깥에서 부르면 아티팩트 CSP 가 조용히 막는다.
+     · 아래 링크는 «라틴 글자»용 Inter Tight 뿐이다 — 이 지면은 판정용이라 라틴이 폴백돼도 값이 안 죽는다. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
 <!-- 자동 생성: node tools/와펜시안.js — 손 편집 금지(재생성이 덮는다) -->
 <meta name="theme-color" content="#08090C">
@@ -435,7 +437,8 @@
       box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
     .체크::before,.히어로수::before{content:none;}
 
-    .칩{background:var(--chalk2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--chalk3);}
+    /* 칩은 종이에서도 배경을 안 입는다(유호 확정 09-03 · 흰 바탕은 대비 상한이 낮아 되레 나빠진다).
+       배경 그래픽을 끄면 표식 그림이 빠지고 굵은 글자로 선다 — 설계된 폴백이다. */
     .칩::before{content:none;}
     .실금{background:var(--chalk3);}
     blockquote::before{background:var(--chalk3);color:var(--ink);box-shadow:none;}

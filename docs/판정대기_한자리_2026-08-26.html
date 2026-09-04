@@ -659,7 +659,8 @@ td.d{font-family:var(--mono); font-size:12.5px; white-space:nowrap; color:var(--
       box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
     .체크::before,.히어로수::before{content:none;}
 
-    .칩{background:var(--룸-chalk2);color:var(--룸-ink);box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
+    /* 칩은 종이에서도 배경을 안 입는다(유호 확정 09-03 · 흰 바탕은 대비 상한이 낮아 되레 나빠진다).
+       배경 그래픽을 끄면 표식 그림이 빠지고 굵은 글자로 선다 — 설계된 폴백이다. */
     .칩::before{content:none;}
     .실금{background:var(--룸-chalk3);}
     .룸 blockquote::before{background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:none;}
