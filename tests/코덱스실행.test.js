@@ -198,6 +198,53 @@ test('🔑 모르는 플래그는 종료 2 로 거절하고 아는 낱말을 알
   assert.ok(/--발주/.test(r.stderr + r.stdout), '차단문에 아는 낱말이 실려야 처방이 된다');
 });
 
+/* 🔴 2026-09-05 실측 — 한도 마커가 있을 때 이 레인이 ①막고 ②처방대로 뚫리나.
+ *   그날 ①은 섰는데 ②가 죽어 있었다: 차단문(codex() 안 · 두 레인이 «같은 문장»을 쓴다)이
+ *   `--한도무시` 를 처방하는데 codex-build 의 등록층에 그 낱말이 없어 「모르는 플래그」로 거절됐다.
+ *   처방이 그대로 안 먹으면 남는 길은 env 직접 심기뿐이고, 그게 곧 우회가 정상 통로가 되는 자리다(F103).
+ * 📏 자는 «소스 글자»가 아니라 «가짜 코덱스가 불렸나»다 — 태우기 전에 막았으면 흔적이 0이고,
+ *   처방이 먹었으면 그 가짜의 오류 문면이 나온다. 가짜라서 벤더에 닿지 않는다. */
+test('🔴 한도 마커 — ① 태우기 전에 막고 ② 차단문이 준 처방(--한도무시)이 이 레인에서도 먹는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-quota-'));
+  assert.strictEqual(spawnSync('git', ['init', '-q', 방], { encoding: 'utf8' }).status, 0);
+  fs.writeFileSync(path.join(방, 'add.js'), 'module.exports = (a, b) => a + b;\n');
+  fs.writeFileSync(path.join(방, '발주.md'), 발주);
+  spawnSync('git', ['-C', 방, 'add', '--', 'add.js'], { encoding: 'utf8' });
+  spawnSync('git', ['-C', 방, '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'base', '--', 'add.js'], { encoding: 'utf8' });
+
+  /* 런방 = 마커가 사는 방(env 로 갈라 둔다 — 이 기계의 «진짜» 한도 판정을 건드리지 않는다). */
+  const 런방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-quota-runs-'));
+  fs.writeFileSync(path.join(런방, '한도.json'), JSON.stringify({
+    감지시각: new Date().toISOString(),
+    리셋시각: new Date(Date.now() + 3600e3).toISOString(),
+    원문: "ERROR: You've hit your usage limit. Upgrade to Pro or try again at 9:37 PM.",
+    출처런: '',
+  }), 'utf8');
+
+  /* 가짜 코덱스 — 불리면 제 이름을 오류에 적고 죽는다(벤더에 안 닿는다). 윈도는 `%APPDATA%\\npm\\codex.cmd`
+   * 를 «직접» 부르고 다른 데선 PATH 를 탄다 — 두 통로를 다 막아 둬야 실측이 기계에 안 기댄다. */
+  const 가짜방 = path.join(런방, 'npm');
+  fs.mkdirSync(가짜방, { recursive: true });
+  fs.writeFileSync(path.join(가짜방, 'codex.cmd'), '@echo off\r\necho ERROR: FAKECODEX burned 1>&2\r\nexit /b 1\r\n', 'utf8');
+  fs.writeFileSync(path.join(가짜방, 'codex'), '#!/bin/sh\necho "ERROR: FAKECODEX burned" >&2\nexit 1\n', { mode: 0o755 });
+
+  const env = { ...process.env, SYNK_REVIEW_RUNS: 런방, SYNK_BUILD_LEDGER: path.join(런방, '장부.jsonl'), APPDATA: 런방 };
+  /* 윈도는 APPDATA 로 잡히므로 PATH 를 안 건드린다 — `PATH`/`Path` 두 키가 겹치면 자식의 git 이 죽는다. */
+  if (process.platform !== 'win32') env.PATH = 가짜방 + path.delimiter + process.env.PATH;
+  const 인자 = ['--발주', path.join(방, '발주.md'), '--저장소', 방, '--발주검토안함', '--timeout', '60'];
+
+  const 막힘 = 실행(인자, { env });
+  const 막힘글 = 막힘.stderr + 막힘.stdout;
+  assert.ok(/한도/.test(막힘글), '마커가 있으면 한도로 끊어야 한다: ' + 막힘글.slice(-400));
+  assert.ok(!/FAKECODEX/.test(막힘글), '태우기 «전»에 막아야 한다 — 코덱스가 불렸다: ' + 막힘글.slice(-400));
+  assert.strictEqual(막힘.status, 2, '한도로 못 잰 것은 «확인 불가»(2)지 통과가 아니다');
+
+  const 강행 = 실행([...인자, 검수.한도무시플래그], { env });
+  const 강행글 = 강행.stderr + 강행.stdout;
+  assert.ok(!/모르는 플래그/.test(강행글), '차단문이 준 처방이 거절되면 우회가 정상 통로가 된다(09-05 에 실제로 그랬다): ' + 강행글.slice(-400));
+  assert.ok(/FAKECODEX/.test(강행글), '강행은 게이트를 지나 코덱스를 태워야 한다: ' + 강행글.slice(-400));
+});
+
 test('🔑 --마른손 은 코덱스를 안 태우고 ⓪만 낸다 — 임시 저장소에서 형식·범위·계획을 출력한다', () => {
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-test-'));
   const 초기 = spawnSync('git', ['init', '-q', 방], { encoding: 'utf8' });
