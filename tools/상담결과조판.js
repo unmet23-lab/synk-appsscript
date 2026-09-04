@@ -42,6 +42,13 @@ const ROOT = path.resolve(__dirname, '..');
 const { 실측, 굽기 } = require('./증서조판.js');
 /* 인쇄 금지 계약의 정본은 발표물린트 한 곳이다. */
 const { STUDENT_BANNED } = require('./발표물린트.js');
+/* 🔴 Loom 부품을 입히는 통로도 «공용 하나»다(`tools/lib/loom얹기.js`).
+ *   유호 물음 09-05 「이 상담 결과 요약지는 왜 우리 loom 엔진을 안 썼어?」가 이 배선을 낳았다.
+ *   안 쓰던 까닭 = 이 지면이 2026-08-05 에 났고 발표물에 Loom 을 얹기 시작한 것은 08-16 이라,
+ *   원고가 부품을 «부르지 않아» 빌드가 안 얹었다(빌드는 훅이 없으면 안 얹는다 — 그게 규율이다).
+ *   ⇒ 원고 순번에 `.번호` 훅을 달고, 이 통로가 그 뒤에 CSS 를 얹는다. 프리셋은 발표물빌드와 같은 것. */
+const loom얹기 = require('./lib/loom얹기.js');
+const LOOM_지면 = '밝은부품';   // 크림 바탕 인쇄물 — 발표물빌드와 같은 프리셋(두 곳이 갈리면 종이가 갈린다)
 
 const 원고경로 = path.join(ROOT, 'docs', '발표물', '_src_10_상담결과_요약_A4.html');
 
@@ -325,7 +332,10 @@ function 지면(값) {
   const 자 = 글자수자(원고);
   let html = 꽂기(원고, 값);
   html = 길꽂기(html, 값);
-  return { html, 자 };
+  /* Loom 은 «값을 다 꽂은 뒤»에 얹는다 — 규율은 「원고 CSS 뒤」다(앞에 두면 동점에서 원고가 이겨
+   * 훅은 늘고 화면은 그대로가 된다). 훅이 0이면 얹기가 스스로 안 얹고 사유를 돌려준다. */
+  const 얹은 = loom얹기.얹기(html, { 지면: LOOM_지면 });
+  return { html: 얹은.html, 자, loom: 얹은 };
 }
 
 function main() {
@@ -344,7 +354,7 @@ function main() {
     값 = 데이터 ? JSON.parse(fs.readFileSync(path.resolve(데이터), 'utf8')) : 픽스처(모양);
   }
 
-  const { html, 자 } = 지면(값);
+  const { html, 자, loom } = 지면(값);
 
   /* 기본 출력은 임시 폴더 — 증서조판·기록장조판이 세운 관례다. 종이는 언제든 다시 굽는 것이라
    * 저장소에 쌓아 두면 다음 세션의 「미커밋」 알림에 남의 산출물이 섞인다. */
@@ -356,6 +366,9 @@ function main() {
   console.log('  지면 = docs/발표물/_src_10_상담결과_요약_A4.html · 채우는 칸 ' + 칸들.length + ' + 길 3');
 
   /* ① 지면이 스스로 적은 글자 수 자 */
+  console.log('  Loom 부품 ' + (loom.얹힘 ? '✅ ' + loom.훅.length + '종 — ' + loom.훅.join('·')
+    : '· 안 얹었다 (' + loom.사유 + ')'));
+
   const 잰자 = Object.keys(자).length;
   console.log('  글자 수 자 ' + 잰자 + '개를 지면에서 읽었다: ' +
     Object.entries(자).map(([k, v]) => k + ' ' + v).join(' · '));
