@@ -35,6 +35,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 const ROOT = path.resolve(__dirname, '..');
 /* 크롬 찾기·측정 통로·폰트 임베드는 증서조판이 이미 한 벌 갖고 있다 — 떼어 쓴다. */
@@ -345,7 +346,10 @@ function main() {
 
   const { html, 자 } = 지면(값);
 
-  const out = path.resolve(값읽('--out', path.join(ROOT, 'docs', '_ops', '산출', '상담결과_' + (값.이름 || '픽스처') + '.html')));
+  /* 기본 출력은 임시 폴더 — 증서조판·기록장조판이 세운 관례다. 종이는 언제든 다시 굽는 것이라
+   * 저장소에 쌓아 두면 다음 세션의 「미커밋」 알림에 남의 산출물이 섞인다. */
+  const 기본 = path.join(os.tmpdir(), 'synk-상담결과조판');
+  const out = path.resolve(값읽('--out', path.join(기본, '상담결과_' + (값.이름 || '픽스처') + '.html')));
   const pdf = argv.includes('--pdf') ? out.replace(/\.html$/, '.pdf') : null;
 
   console.log('상담 결과 종이 — ' + (데이터 ? path.basename(데이터) : '픽스처(' + 모양 + ')'));
