@@ -22,7 +22,13 @@ const path = require('path');
  * = Free Tier 「Not available」 · 1K/2K 한 장 $0.134 · 4K $0.24). 유호 확정 09-03 「글은 공짜, 그림은 유료」.
  * 경로 정본은 `tools/모델정책.js` 하나다 — 09-03 전엔 이 파일이 같은 문자열을 따로 박아 두고 있었다. */
 const 기본키경로 = require('../모델정책.js').제미나이키경로('돈');
-const 기본모델 = 'nano-banana-pro-preview';
+/* 🔴 **모델 «이름»도 문마다 다르다** — 09-04 에 주소만 Vertex 로 옮기고 이름을 안 고쳐서 09-05 에 404 를 밟았다:
+ *   `Publisher model .../models/nano-banana-pro-preview was not found`.
+ *   AI Studio 이름 `nano-banana-pro-preview` ↔ Vertex 이름 `gemini-3-pro-image`(같은 그림 모델).
+ * 🔑 주소를 옮길 때 «이름표»도 같이 옮겼는지 본다 — 문만 갈면 그 문에 없는 이름을 부르게 된다.
+ *   Vertex 에 실재하는 그림 모델(09-05 목록 실측) = `gemini-3-pro-image` · `gemini-3.1-flash-image` ·
+ *   `gemini-3.1-flash-image-preview` · `gemini-3.1-flash-lite-image`. */
+const 기본모델 = process.env.SYNK_IMAGE_MODEL || 'gemini-3-pro-image';
 
 function 키(키경로 = 기본키경로) {
   const raw = fs.readFileSync(키경로, 'utf8');
