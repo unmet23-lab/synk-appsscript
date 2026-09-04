@@ -1574,6 +1574,7 @@ section.page{
 </style>
 
 
+
 <style data-몽글="v1">
   /* ── 지면 «안»에 구운 자산 (node tools/크루카드굽기.js · 손 편집 금지)
      몽글 정본 = 펠트코랄_0815 누끼 (경로의 주인 = tools/lib/마스코트자산.js) ·
@@ -1595,8 +1596,7 @@ section.page{
   .몽글[data-몽글="놀람"]{background-image:var(--몽글-놀람);}
   .몽글[data-몽글="눈감음"]{background-image:var(--몽글-눈감음);}
   /* 종이 — 배경 그래픽이 기본 꺼짐이라 안 찍힌다. 장식이므로 «일부러» 안 켠다(카드의 라임 원과 같은 처지). */
-</style>
-<style data-loom="밝은부품">
+</style><style data-loom="밝은부품">
 /* ── Loom 밝은부품 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
    통로: node tools/lib/loom.js --css 밝은부품
    값:   docs/디자인_토큰.json (색·율·재질·부품) — 이 CSS 에 hex·px 원본은 없다
@@ -2135,7 +2135,8 @@ section.page{
       box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
     .체크::before,.히어로수::before{content:none;}
 
-    .칩{background:var(--룸-chalk2);color:var(--룸-ink);box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
+    /* 칩은 종이에서도 배경을 안 입는다(유호 확정 09-03 · 흰 바탕은 대비 상한이 낮아 되레 나빠진다).
+       배경 그래픽을 끄면 표식 그림이 빠지고 굵은 글자로 선다 — 설계된 폴백이다. */
     .칩::before{content:none;}
     .실금{background:var(--룸-chalk3);}
     .룸 blockquote::before{background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:none;}

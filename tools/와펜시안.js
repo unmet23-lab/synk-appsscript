@@ -73,7 +73,9 @@ function 밝기(파일) {
 const 현행 = (이름, 폭 = 300) => 인라인(path.join(현행방, `${이름}.png`), 폭);
 const 후보 = (이름, 폭 = 300) => 인라인(path.join(후보방, `${이름}.png`), 폭);
 
-/* ── 다섯 판 — 왼쪽부터 «얕음 → 깊음», 맨 끝이 폼폼(넘어간 자리) ──────────────
+/* ── 후보들 — 왼쪽부터 «얕음 → 깊음», 맨 끝이 폼폼(넘어간 자리) ──────────────
+ * ⚠ 여기에 «몇 판»인지 수를 적지 않는다 — 09-03 2차에서 넷이 더 붙었는데 머리말은 「다섯 판」에
+ *   멈춰 있었고, 그 거짓말을 검수가 잡았다(지적 1eff6c359ac5). 수를 아는 것은 아래 배열 하나다.
  * 실크기 44px = 히어로수가 지면에서 앉는 크기(본문 17px 기준 2.6em). loom.js 가 쓴 값을 옮겼다. */
 const 실크기 = 44;
 const 줄 = [
@@ -126,7 +128,9 @@ function main() {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>와펜 결 판정</title>
-<!-- 브랜드 서체(SUIT)는 «굽기»가 지면 안에 싣는다 — 바깥에서 부르면 아티팩트 CSP 가 조용히 막는다 -->
+<!-- 서체 둘을 갈라 둔다(09-04 정정 — 앞 주석이 SUIT 를 말하면서 바로 아래 Inter Tight 를 불러 헷갈렸다):
+     · 한글 SUIT = «굽기»가 지면 안에 싣는다. 바깥에서 부르면 아티팩트 CSP 가 조용히 막는다.
+     · 아래 링크는 «라틴 글자»용 Inter Tight 뿐이다 — 이 지면은 판정용이라 라틴이 폴백돼도 값이 안 죽는다. -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap">
 <!-- 자동 생성: node tools/와펜시안.js — 손 편집 금지(재생성이 덮는다) -->
 <!--펠트스킨-->
