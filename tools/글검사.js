@@ -203,6 +203,26 @@ if (!있나()) {
   process.exit(2);
 }
 if (인자.includes('--기준선')) { 기준선뜨기(); process.exit(0); }
+/* --json — 화면은 파일마다 12건에서 접는데(진짜 적색이 밀려나지 않게), «판정 지면»을 지으려면
+ * 전량이 필요하다. 09-04 실측: 선언 99건 중 화면에 나온 것은 77건이고 22건은 「그 밖 N건」으로
+ * 접혀 있었다 — 자는 정직했고 모자란 것은 «전량을 꺼내는 통로»였다.
+ * 🔑 이 갈래는 화면과 «같은 것»을 센다(기준선 잠금·자 고르기 그대로) — 다른 수가 나오면 그게 병이다. */
+if (인자.includes('--json')) {
+  const 전량 = 인자.includes('--전량');
+  const 잠금 = 전량 ? null : 기준선읽기();
+  const 밖 = [];
+  let 잠긴수 = 0;
+  for (const f of 대외문안) {
+    const r = 재기(f, 자고르기(f));
+    if (r.없음) continue;
+    for (const d of r.지적) {
+      if (잠금 && 잠금.has(지문(f, d))) { 잠긴수++; continue; }
+      밖.push({ 파일: f, ...d });
+    }
+  }
+  console.log(JSON.stringify({ 뜬때: new Date().toISOString(), 전량, 잠긴수, 건수: 밖.length, 지적: 밖 }, null, 1));
+  process.exit(0);
+}
 if (인자.includes('--답')) {
   let 글 = '';
   try { 글 = fs.readFileSync(0, 'utf8'); } catch {}
