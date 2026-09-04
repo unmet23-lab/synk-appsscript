@@ -1090,6 +1090,100 @@
           }
         ],
         "상태": "0/4"
+      },
+      {
+        "이름": "캐러셀 부품",
+        "쓰는 곳": "SNS 캐러셀(1080 정사각·4:5) — 지금 CSS 로 그린 자리를 펠트로 갈아 끼운다",
+        "_결": "캐러셀은 «어두운 바탕에 흰 글씨»다. 그래서 부품은 밝은 색(크림·버터·코랄)이라야 살고, 어두운 부품은 안 보인다. 배경 천도 어두운 것이 따로 필요하다.",
+        "것들": [
+          {
+            "이름": "먹색 펠트",
+            "상태": "아직",
+            "쇠": "공방_먹색펠트",
+            "규격": "천",
+            "지시": "The cloth is densely needle-felted wool in a deep charcoal, almost black but still warm, the colour of a well-used cast iron pan."
+          },
+          {
+            "이름": "짙은 회색 펠트",
+            "상태": "아직",
+            "쇠": "공방_짙은회색펠트",
+            "규격": "천",
+            "지시": "The cloth is densely needle-felted wool in a deep slate grey, the grey of wet stone."
+          },
+          {
+            "이름": "진행 점 켜짐",
+            "상태": "아직",
+            "쇠": "공방_진행점켜짐",
+            "규격": "부품",
+            "지시": "A small round pompom of warm coral felted wool, plump and evenly fuzzy, seen straight on."
+          },
+          {
+            "이름": "진행 점 꺼짐",
+            "상태": "아직",
+            "쇠": "공방_진행점꺼짐",
+            "규격": "부품",
+            "지시": "A small round pompom of pale grey felted wool, plump and evenly fuzzy, seen straight on."
+          },
+          {
+            "이름": "구분 띠 스티치",
+            "상태": "아직",
+            "쇠": "공방_구분띠스티치",
+            "규격": "부품",
+            "비율": "16:9",
+            "지시": "A single long horizontal line of large hand running stitches in cream wool thread on nothing, the thread lying in a straight row with even gaps, spanning the full width of the frame."
+          },
+          {
+            "이름": "구분 띠 리본",
+            "상태": "아직",
+            "쇠": "공방_구분띠리본",
+            "규격": "부품",
+            "비율": "16:9",
+            "지시": "A long narrow strip of warm coral wool felt lying flat and straight across the frame, its cut edges showing raw felted fibre."
+          },
+          {
+            "이름": "모서리 접힘",
+            "상태": "아직",
+            "쇠": "공방_모서리접힘",
+            "규격": "부품",
+            "지시": "A single corner of pale cream wool felt folded back on itself, as if the corner of a page had been turned down."
+          },
+          {
+            "이름": "북마크",
+            "상태": "아직",
+            "쇠": "공방_북마크",
+            "규격": "부품",
+            "지시": "A narrow bookmark ribbon of butter yellow wool felt with a notched V cut at its lower end, hanging straight."
+          },
+          {
+            "이름": "큰 따옴표",
+            "상태": "아직",
+            "쇠": "공방_큰따옴표",
+            "규격": "부품",
+            "지시": "A pair of large opening quotation marks cut from cream wool felt as two thick comma shapes, side by side."
+          },
+          {
+            "이름": "대문 모서리 장식",
+            "상태": "아직",
+            "쇠": "공방_대문모서리장식",
+            "규격": "부품",
+            "지시": "An ornate corner piece of cream wool felt shaped like a quarter frame, its inner edge scalloped and blanket stitched in coral thread."
+          },
+          {
+            "이름": "끝 매듭",
+            "상태": "아직",
+            "쇠": "공방_끝매듭",
+            "규격": "부품",
+            "지시": "A single tight knot tied in thick cream wool cord, both short ends trailing downward, marking the end of something."
+          },
+          {
+            "이름": "넘김 손가락",
+            "상태": "아직",
+            "쇠": "공방_넘김손가락",
+            "규격": "부품",
+            "지시": "A simple hand shape of pale cream wool felt with the index finger extended, pointing to the right, the edges blanket stitched."
+          }
+        ],
+        "상태": "0/12"
       }
     ]
   },
