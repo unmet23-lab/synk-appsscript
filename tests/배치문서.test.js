@@ -44,6 +44,21 @@ test('🔑 다시 쓰기는 멱등이다 — 안 바뀌었는데 파일을 건�
   fs.rmSync(path.dirname(임시), { recursive: true, force: true });
 });
 
+test('🔴 줄끝(CRLF)이 달라도 «같다»고 답한다 — 09-05 에 이 자가 거짓 빨강을 냈다', () => {
+  /* 실측: 합치기 직후 문서 구역은 CRLF 인데(git 이 윈도에서 그렇게 체크아웃한다) 뽑는 쪽은 LF 라,
+   * **내용이 한 글자도 안 다른데** 「갈라졌다」가 떴다. 거짓 빨강은 자를 죽인다 —
+   * 몇 번 겪으면 사람이 그 자를 안 믿고, 그때부터 진짜 갈라짐도 안 보인다. */
+  const 임시 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'synk-배치문서-')), 'crlf.md');
+  fs.writeFileSync(임시, `앞글\n\n${정책.배치문서마커.시작} -->\n${정책.배치문서마커.끝}\n`);
+  정책.문서심기(임시);
+  const LF판 = fs.readFileSync(임시, 'utf8');
+  fs.writeFileSync(임시, LF판.replace(/\n/g, '\r\n'));            // 줄끝만 바꾼다 — 내용은 그대로
+  assert.ok(정책.문서대조(임시).같나, '줄끝만 다른데 갈라졌다고 답했다 — 거짓 빨강이다');
+  assert.strictEqual(정책.문서심기(임시).바뀜, false, '줄끝만 다른 파일을 다시 썼다 — diff 가 매번 더러워진다');
+  assert.ok(fs.readFileSync(임시, 'utf8').includes('\r\n'), '그 파일이 쓰던 줄끝을 안 지켰다');
+  fs.rmSync(path.dirname(임시), { recursive: true, force: true });
+});
+
 test('🔴 마커가 없는 파일은 거절한다 — 조용히 끝에 붙이면 어느 문서에 붙었는지 아무도 모른다', () => {
   const 임시 = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'synk-배치문서-')), '마커없음.md');
   fs.writeFileSync(임시, '마커가 없는 글\n');
