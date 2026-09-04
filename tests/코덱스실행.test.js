@@ -158,14 +158,20 @@ test('🔒 읽기 플래그 = 검수 잠금 그대로 + 웹검색 없음', () =>
 
 // ───────────────────────────────── 모델정책 — 실행자 픽은 검수에서 파생한다
 
-test('🔑 실행 선택지는 sol·luna 둘 · 기본 luna · 값은 검수선택지에서 파생한다(유호님이 검수 값을 바꾸면 같이 움직인다)', () => {
+/* ✅ [2026-09-04] 기본이 luna → sol 로 올라갔다(유호 확정 「아스트라 전까지 sol 1회」).
+ *   🔑 **이 검사의 심장은 «기본이 무엇이냐»가 아니라 «검수에서 파생하느냐»다** — 그래서 아래는
+ *   값을 손으로 적지 않고 `검수선택지[검수기본]` 과 대조한다. 유호님이 다음에 또 바꾸셔도
+ *   실행자만 옛 값에 남으면 여기서 운다(그것이 이 자가 막는 병이다). */
+test('🔑 실행 선택지는 sol·luna 둘 · 기본은 ①검수 기본을 따라간다 · 값은 검수선택지에서 파생한다', () => {
   assert.deepStrictEqual(Object.keys(정책.실행선택지).sort(), ['luna', 'sol']);
-  assert.strictEqual(정책.실행기본, 'luna');
+  assert.strictEqual(정책.실행기본, 정책.검수기본,
+    '③실행자 기본이 ①검수 기본과 갈렸다 — 유호 확정은 「싹다」라 셋이 한 값으로 움직인다');
   const 기본 = 정책.실행설정([]);
-  assert.strictEqual(기본.model, 정책.검수선택지.luna.model);
-  assert.strictEqual(기본.effort, 정책.검수선택지.luna.effort);
-  assert.strictEqual(정책.실행설정(['--실행', 'sol']).model, 'gpt-5.6-sol');
-  assert.strictEqual(정책.실행설정(['--실행', 'luna', '--효력', 'max']).effort, 'max');
+  assert.strictEqual(기본.model, 정책.검수선택지[정책.검수기본].model);
+  assert.strictEqual(기본.effort, 정책.검수선택지[정책.검수기본].effort);
+  /* 명시 픽은 여전히 기본을 이긴다 — 기본이 sol 이 됐으므로 반대편(luna)으로 뒤집어 잰다. */
+  assert.strictEqual(정책.실행설정(['--실행', 'luna']).model, 'gpt-5.6-luna');
+  assert.strictEqual(정책.실행설정(['--실행', 'sol', '--효력', 'max']).effort, 'max');
   assert.throws(() => 정책.실행설정(['--실행', 'terra']), (e) => e.확인불가 === true && /terra/.test(e.message));
   assert.throws(() => 정책.실행설정(['--실행']), (e) => e.확인불가 === true);
 });
