@@ -271,6 +271,31 @@ const 측정기 = `(() => {
       return { i: i, 글자수: 글.length, 높이mm: +(r.height * mm).toFixed(1),
                넘침: f.scrollHeight > f.clientHeight + 1, 글: 글.slice(0, 40) };
     });
+    /* 🔴 «쪽 밖으로 나갔나»만 재면 종이가 망가져도 초록이 뜬다 — 09-05 실측에서 실제로 그랬다.
+       쪽이 overflow:hidden 이라 넘친 내용이 밖으로 안 나가고 **아래 형제 위에 겹쳐 앉는다.**
+       그래서 「다음 단계」가 바닥 안내 위에 포개진 채로 「넘침 없다」가 나왔다.
+       ⇒ 쪽의 «직접 자식»들이 세로로 겹치나를 함께 잰다. 겹침은 넘침과 다른 결함이다. */
+    const 층 = Array.prototype.slice.call(쪽.children)
+      .filter(function (c) { return getComputedStyle(c).position !== 'absolute'; })
+      .map(function (c) {
+        const r = c.getBoundingClientRect();
+        /* 🔴 층 «자신»의 상자만 재면 안 된다 — 자식이 층 밖으로 넘쳐도 상자는 그대로다.
+           그 상태가 바로 09-05 의 사고였다(화면 겹침 0곳인데 종이에서는 포개졌다).
+           ⇒ 자손 가운데 «가장 아래»를 그 층의 진짜 바닥으로 삼는다. */
+        let 바닥 = r.bottom;
+        Array.prototype.slice.call(c.querySelectorAll('*')).forEach(function (k) {
+          if (getComputedStyle(k).position === 'absolute') return;
+          const kr = k.getBoundingClientRect();
+          if (kr.height && kr.bottom > 바닥) 바닥 = kr.bottom;
+        });
+        return { 이름: c.className.split(' ')[0] || c.tagName.toLowerCase(), 위: r.top, 아래: 바닥 }; })
+      .filter(function (x) { return x.아래 > x.위; })
+      .sort(function (a, b) { return a.위 - b.위; });
+    const 겹침 = [];
+    for (let i = 0; i + 1 < 층.length; i++) {
+      const d = 층[i].아래 - 층[i + 1].위;
+      if (d > 0.5) 겹침.push({ 위층: 층[i].이름, 아래층: 층[i + 1].이름, mm: +(d * mm).toFixed(1) });
+    }
     document.body.insertAdjacentHTML('beforeend',
       '<pre id="SYNK_' + 'CERT_OUT">' + JSON.stringify({ 잰것: [{
         장: 1,
@@ -279,6 +304,7 @@ const 측정기 = `(() => {
         남는여백mm: +(Math.min(pr.bottom - 바닥, 꼭대기 - pr.top) * mm).toFixed(1),
         넘침: 바닥 > pr.bottom + 0.5 || 꼭대기 < pr.top - 0.5,
         칸넘침: 칸.filter(function (c) { return c.넘침; }).length,
+        겹침: 겹침,
         칸: 칸
       }] }) + '</pre>');
   } catch (e) {
@@ -473,6 +499,12 @@ function main() {
     const s = r.잰것[0];
     console.log('  실측: ' + s.쪽폭mm + '×' + s.쪽높이mm + 'mm · 남는 여백 ' + s.남는여백mm + 'mm · ' +
       '쪽 넘침 ' + (s.넘침 ? '🔴 있다' : '없다') + ' · 칸 넘침 ' + s.칸넘침 + '개');
+    const 겹 = s.겹침 || [];
+    if (겹.length) {
+      console.log('  🔴 층이 겹친다 ' + 겹.length + '곳 — 넘침과 «다른» 결함이다(쪽 안에서 포개진다)');
+      겹.forEach((g) => console.log('     · ' + g.위층 + ' 가 ' + g.아래층 + ' 위로 ' + g.mm + 'mm'));
+      process.exitCode = 1;
+    } else console.log('  ✅ 층 겹침 0곳');
     if (argv.includes('--넘침시험')) {
       const r2 = 실측(html, 부풀리기, 측정기);
       const 잡았나 = r2.잰것[0].넘침 || r2.잰것[0].칸넘침 > 0;
