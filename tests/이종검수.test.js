@@ -18,6 +18,8 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const 검수 = require(path.join(ROOT, 'tools', 'codex-review.js'));
+/* 자체 CLI 플래그 목록을 그 파일에서 읽어 온다 — 예외를 이 시험에 하드코딩하면 두 곳이 갈린다(09-04). */
+const 정책 = require(path.join(ROOT, 'tools', '모델정책.js'));
 const 점검 = require(path.join(ROOT, 'tools', '배포판점검.js'));
 
 const 루트프로젝트 = ROOT;
@@ -577,7 +579,10 @@ test('🔑 코드가 실제로 읽는 플래그가 전부 화이트리스트에 
   assert.ok(쓰는것.size >= 10, `소스에서 뽑은 플래그가 ${쓰는것.size}개뿐 — 스캔이 헛돌았다`);
   for (const f of 쓰는것) {
     if (f === '--help') continue;                    // 조기 반환으로 처리된다
-    if (f === '--제미나이확인') continue;             // 모델정책.js 자체 CLI(이 도구 인자가 아니다)
+    /* 모델정책.js «자체» CLI 플래그는 codex-review 의 인자가 아니다. 목록을 여기 하드코딩하면
+     * 그쪽에 플래그를 더할 때마다 두 곳을 고쳐야 하고 한쪽만 고치면 조용히 빨개진다 —
+     * 그래서 그 파일이 `자체플래그` 로 스스로 말하게 하고 여기서는 읽기만 한다(09-04). */
+    if (정책.자체플래그.has(f)) continue;
     assert.ok(검수.아는플래그.has(f), `코드는 ${f} 를 읽는데 화이트리스트에 없다 — 쓰는 순간 거절당한다`);
   }
 });
