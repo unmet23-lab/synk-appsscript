@@ -6,16 +6,36 @@
 <!--
   SYNK LAB 발표물 10번 — 상담 결과 요약 1장 (A4 세로 · 단면)
   브랜드 키트 = docs/발표물/_브랜드킷.md
-  산출물 사양 = docs/정본/SYNK/SYNK 발표물 제작 프롬프트 v1.txt v1.4 §10
   레벨 매핑   = 2026-08-04 유호님 확정 (memory topik-scope-5geup-2026-08-04)
 
   ▶ 이 종이의 진짜 독자는 상담에 온 사람이 아니라 **그 자리에 없던 결정권자**다.
-     어머니가 상담에 오고 학원비는 아버지·조부모가 정하는 일이 흔하다. 그래서
-       ① 인쇄 고정부는 몽골어가 주 언어, 한국어를 작게 병기
-       ② 왼쪽 칸은 반드시 학부모 눈앞에서 손으로 채운다(미리 채워 건네지 않는다)
+     어머니가 상담에 오고 학원비는 아버지·조부모가 정하는 일이 흔하다.
+     그래서 인쇄 고정부는 몽골어가 주 언어이고 한국어를 작게 병기한다(§10 ①).
+     몽골어 칸은 비어 있다(에리카쌤 검수 전 확정 금지) — 칸마다 글자 수 한도를 적어 두었다.
 
-  ▶ 몽골어 칸은 전부 비어 있다(에리카쌤 검수 전 확정 금지). 칸마다 글자 수 한도를
-     적어 두었다 — 몽골어는 한국어보다 20~30% 길어지므로 미리 자리를 넓게 잡았다.
+  ▶ 🔴 v3.0 재설계 (2026-09-05 · 유호 판정 ⓒ「먼저 덜어내고, 남은 자리에 재질을 넣는다」)
+     v2 는 A4 한 장에 요소 174개가 들어차 있었다. 유호 판정 09-05:
+     「펠트 요소나 ui ux 레이아웃 싹다 그냥 양산형 ai로 나왔는데 이거 잘 만든거 맞아?」
+     ⇒ 잰 것: 발표물 일곱 벌이 전부 같은 결(요소 126~494 · 테두리 46~68)이고,
+        시즌 증서만 다르다(요소 23 · 테두리 6). 이 종이는 «학생이 가져가는 종이»라
+        증서 계열인데 브로셔 계열의 옷을 입고 있었다.
+
+     ① **덜어낸 것 넷** — 8주 흐름 · 앱에서 겪는 것 · 세 힘 · 매달 가는 것 상세.
+        전부 브로셔(03)와 학부모 안내문(02)이 이미 하는 말이다. 상담 «결과»지가 할 말이 아니고,
+        그 넷이 지면의 절반을 먹어 정작 학생 자기 이야기가 조연 자리로 밀려 있었다.
+     ② **2단 → 한 단.** 학생이 받는 종이는 «내 이야기»가 처음부터 끝까지 흘러야 한다.
+        좌우로 갈리면 눈이 두 번 출발한다.
+     ③ **비운 자리에 부품을 넣었다**(뜻이 맞는 자리에만 · Loom 설계 §3-4 ②「아무 데나 놓으면 벽지」):
+        말풍선 = 본인의 말 그대로 · 게이지 = 목표까지의 길 · 체크 = 레벨테스트 확인 ·
+        도장 = 상담한 사람 · 시침핀 = 다음 단계 · 매듭 = 안내 불릿.
+     🔴 부품 여섯 중 게이지·시침핀·매듭은 **상자가 없다** — 지면이 width/height 를 줘야 보인다
+        (기억 loom-baked-assets-only-for-ui 의 「얹기 통로의 구멍」).
+     🔴 `background` 축약을 쓰지 않는다 — 그 한 줄이 `background-image:none` 을 품어
+        Loom 이 뒤에 얹는 그림을 조용히 지운다(09-05 실측). 색만 바꿀 자리는 `background-color`.
+
+  ▶ 🔑 왼쪽 칸의 **라벨 열 개와 「시작 Lv …」 한 줄은 조판기가 찾는 열쇠다**
+     (`tools/상담결과조판.js`). 글자를 바꾸면 굽기가 그 자리에서 멈춰 선다 — 그게 설계다.
+     칸을 옮기는 것은 자유이나 라벨 글자는 그대로 둔다.
 
   ▶ 인쇄 — Ctrl+P → "PDF로 저장" · A4 · 세로 · 여백 "없음" · "배경 그래픽" 켜기
 -->
@@ -26,17 +46,15 @@
 @page { size: A4 portrait; margin: 0; }
 
 :root{
-  --coral:#F96859; --coral-wash:#FEF0E9; --coral-soft:#FBB7A3;
-  --coral-3:#AE322A; /* 라이트 강조 글자 전용 — 24px↑ 또는 18.7px↑ bold */
+  --coral:#F96859; --coral-wash:#FEF0E9; --coral-3:#AE322A;
   --paper:#FBF7F0; --navy:#262626; --navy-2:#08090C; --navy-3:#373737;
-  --cream:#E4E4E7; --cream-2:#EAEAEA; --cream-3:#D1D2D4;
-  --ink:#2B2320; /* 코랄 면 위 글자 전용 — 본문 잉크는 --navy */
-  --hair:rgba(55,55,55,.25);
+  --cream:#E4E4E7; --cream-3:#D1D2D4;
+  --hair:rgba(55,55,55,.22);
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 
 html,body{
-  background:var(--paper); color:var(--navy);
+  background-color:var(--paper); color:var(--navy);
   font-family:'SYNK Bracket','Inter Tight','SUIT',system-ui,'Malgun Gothic','맑은 고딕',sans-serif;
   font-weight:500;
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -46,128 +64,96 @@ html,body{
 
 .sheet{
   width:210mm; height:297mm; display:flex; flex-direction:column;
-  overflow:hidden; background:var(--paper);
+  overflow:hidden; background-color:var(--paper);
 }
-.pad{ padding:0 9mm; display:flex; flex-direction:column; flex:1 1 auto; min-height:0; }
 
 /* ══ 머리 반전면 ══════════════════════════════════════ */
 .hero{
-  background:var(--navy-2); color:var(--cream);
-  padding:5.4mm 9mm 5mm; position:relative; overflow:hidden; flex:0 0 auto;
-}
-.hero::before{
-  content:''; position:absolute; inset:0;
-  background-image:
-    radial-gradient(circle at 4.5mm 4.5mm, rgba(228,228,231,.13) 0 .26mm, transparent .26mm);
-  background-size:8mm 8mm;
+  background-color:var(--navy-2); color:var(--cream);
+  padding:6mm 14mm 5.6mm; position:relative; overflow:hidden; flex:0 0 auto;
 }
 .hero::after{
   content:''; position:absolute; left:0; right:0; bottom:0; height:.6mm;
   background:linear-gradient(90deg,var(--cream) 0 26%, rgba(228,228,231,.18) 26% 100%);
 }
-.hero .in{ position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.hero .in{ position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:8mm; }
 .eyebrow{ font-size:2.4mm; font-weight:700; letter-spacing:.28em; color:var(--cream-3); }
-/* 몽골어가 주 언어 — 한국어는 그 아래 작게 병기(§10 ①) */
-.hero .mnhead{ font-size:6.6mm; font-weight:800; color:var(--cream); letter-spacing:.04em; margin-top:2.6mm; line-height:1.1; }
-.hero .kohead{ font-size:3.1mm; color:var(--cream-3); margin-top:2mm; }
+.hero .mnhead{ font-size:6.8mm; font-weight:800; color:var(--cream); letter-spacing:.04em; margin-top:3mm; line-height:1.1; }
+.hero .kohead{ font-size:3.1mm; color:var(--cream-3); margin-top:2.2mm; }
 
 /* ⚠ .symbol 은 정사각이 아니다 — W5 축약 워드마크 가로:세로 = 1.5:1. 주입은 tools/로고주입.js */
-.lockup{ display:flex; flex-direction:column; align-items:flex-end; gap:1.8mm; flex:0 0 auto; }
-.symbol{ width:21mm; height:13.4mm; flex:0 0 auto; }
+.lockup{ display:flex; flex-direction:column; align-items:flex-end; gap:2mm; flex:0 0 auto; }
+.symbol{ width:22mm; height:14mm; flex:0 0 auto; }
 .symbol svg{ width:100%; height:100%; display:block; }
-.lockup .tag{ font-size:2.1mm; font-weight:700; color:var(--cream); }
+.lockup .tag{ font-size:2.2mm; font-weight:700; color:var(--cream); }
 /* 슬로건 부연 — 「17」은 부연 없이 나가지 않는다(문서_지도 조건). 두 줄이 한 벌이다. */
-.lockup .sub{ font-size:1.9mm; font-weight:500; color:var(--cream-3); margin-top:.8mm; text-align:right; }
+.lockup .sub{ font-size:1.9mm; font-weight:500; color:var(--cream-3); margin-top:.9mm; text-align:right; }
 
-/* ══ 2단 ══════════════════════════════════════════════ */
-.cols{ display:flex; gap:4mm; margin-top:4mm; flex:1 1 auto; min-height:0; }
-.left{ flex:0 0 45%; display:flex; flex-direction:column; gap:2.4mm; }
-.right{
-  flex:1 1 auto; display:flex; flex-direction:column; gap:2.2mm;
-  background:var(--cream-2); border:.3mm solid var(--hair); border-radius:2.2mm; padding:3.2mm 3.6mm;
-}
+/* ══ 한 단 흐름 ═══════════════════════════════════════
+   v2 의 2단을 접었다. 여백이 이 지면의 주된 재료다 — 칸 사이 간격이 위계를 진다. */
+.pad{ padding:9mm 14mm 0; display:flex; flex-direction:column; flex:1 1 auto; min-height:0; gap:6.4mm; }
 
-.lbl{ font-size:2.4mm; font-weight:800; letter-spacing:.03em; color:var(--navy-3); }
+.lbl{ font-size:2.5mm; font-weight:800; letter-spacing:.03em; color:var(--navy-3); }
 .lbl .ko{ color:var(--navy-3); font-weight:500; }
-.fill{ border-bottom:.4mm solid var(--navy-3); height:8.4mm; }
-.fill.tall{ height:14mm; }
-.g2{ display:flex; gap:3mm; }
-.g2 > *{ flex:1 1 0; }
-
-.box{ border:.3mm solid var(--hair); border-radius:1.8mm; padding:2.4mm 3mm; background:#fff; }
-.box.sig{ border:.5mm solid var(--coral); background:var(--coral-wash); }   /* 신호색 강조 — 지면에 2곳만 */
-
-.mn{ font-size:2.1mm; color:var(--navy-3); letter-spacing:.03em; margin-top:.8mm; }
+.fill{ border-bottom:.4mm solid var(--navy-3); height:8.6mm; }
+.fill.tall{ height:13mm; }
+.mn{ font-size:2.1mm; color:var(--navy-3); letter-spacing:.03em; margin-top:.9mm; }
 .mn::before{ content:'MN '; font-family:'DM Mono',ui-monospace,monospace; font-size:1.8mm; letter-spacing:.09em; }
 
-/* 6칸 여정 띠 — 5번 로드맵의 축소판 */
-.band{ display:flex; gap:1mm; margin-top:1.6mm; }
-.band .c{ flex:1 1 0; border-radius:1mm; padding:1.4mm .3mm; text-align:center; border:.25mm solid var(--hair); background:var(--cream-2); }
-.band .c.j{ background:var(--cream-2); border:.5mm solid var(--navy-3); }   /* 흑백 재복사 생존 — 색이 아니라 보더가 구분을 진다 */
-.band .c .l{ font-size:2.3mm; font-weight:800; }
-.band .c .g{ font-size:2mm; color:var(--navy-3); margin-top:.4mm; }
-.bandnote{ font-size:2.4mm; color:var(--navy-3); margin-top:1.6mm; font-weight:800; }
+.row{ display:flex; gap:7mm; }
+.row > *{ flex:1 1 0; }
 
-.dest{ display:flex; gap:2.2mm; margin-top:1.8mm; }
-.dest .d{ flex:1 1 0; border-radius:1.4mm; padding:1.6mm 2mm; background:var(--paper); border:.3mm solid var(--cream-3); }
-.dest .d .k{ font-size:1.9mm; font-weight:800; color:var(--navy-3); letter-spacing:.09em; }
-.dest .d .v{ font-size:2.8mm; font-weight:800; margin-top:.6mm; line-height:1.28; }
+/* 🔑 신호 칸 둘 — 이 지면에서 색이 갇히는 자리는 여기뿐이다(Loom 헌법: 코랄은 히어로 1점).
+   말풍선 부품이 「본인의 말 그대로」 위에 앉는다. */
+.say{ border-left:.7mm solid var(--coral); padding:0 0 0 5mm; }
+.head{ display:flex; align-items:center; gap:2.2mm; }
+.말풍선{ width:4.6mm; height:4.6mm; flex:0 0 auto; }   /* 부품은 정사각 — 칸도 정사각으로 둔다 */
+.시침핀{ width:4.2mm; height:4.2mm; flex:0 0 auto; }
+.도장{ width:4.2mm; height:4.2mm; flex:0 0 auto; }
+.체크{ width:2.8mm; height:2.8mm; flex:0 0 auto; vertical-align:-.4mm; }
+.foot .매듭{ width:2.2mm; height:2.2mm; flex:0 0 auto; margin-top:.9mm; }
 
-/* ══ 오른쪽 인쇄 고정부 ═══════════════════════════════ */
-.r h3{ font-size:2.4mm; font-weight:700; letter-spacing:.14em; color:var(--navy-3); }
-.r .mnh{ font-size:3.4mm; font-weight:800; color:var(--navy-3); letter-spacing:.03em; margin-top:.8mm; }
-.r .koh{ font-size:2.3mm; color:var(--navy-3); margin-top:.5mm; }
-
-.cyc{ display:flex; flex-direction:column; gap:1.2mm; margin-top:1.6mm; }
-.cyc .s{ display:flex; align-items:flex-start; gap:2mm; }
-.cyc .s .n{
-  /* 🔴 여기에 `background` 축약을 쓰면 안 된다 — 그 한 줄이 `background-image:none` 을 품어
-     Loom 이 뒤에 얹는 단추 그림을 «조용히» 지운다(09-05 실측: 훅 5종이 붙었는데 화면은 그대로였다).
-     그래서 축약을 걷고 **바탕색 자체를 뺐다**(09-05 실크기 실측) — 남색 원이 뒤에 남으면
-     4.4mm 에서 단추가 그 안에 갇혀 «검은 점» 하나로 보인다. 단추가 칸을 꽉 쓰게 둔다.
-     글자는 잉크다(유호 확정 09-03 「단추 번호 잉크」) — 크림 단추 위 흰 글자는 대비가 죽는다. */
-  flex:0 0 auto; width:4.4mm; height:4.4mm; border-radius:50%; color:var(--navy);
-  font-size:2.2mm; font-weight:700; display:flex; align-items:center; justify-content:center;
+/* 목표까지의 길 — 실 한 오라기 위에 매듭 여섯.
+   🔴 첫 판은 여기에 게이지를 놓았다가 물렸다(09-05 실측): 부품은 **전부 정사각**이라
+      가로 110px×세로 9px 칸에 넣으면 `contain` 이 세로에 맞춰 9×9 로 줄여 «점»이 된다.
+      부품을 쓸 때는 칸 비율을 부품 비율(1:1)에 맞춘다 — 부품을 칸에 늘리지 않는다. */
+.way .band{ display:flex; gap:1.4mm; margin-top:3mm; position:relative; }
+.way .band::before{
+  content:''; position:absolute; left:6%; right:6%; top:1.6mm; height:.3mm;
+  background-color:var(--hair);
 }
-.cyc .s .t{ font-size:2.6mm; line-height:1.4; }
-.cyc .s .t b{ font-weight:800; }
-
-.pow{ display:flex; gap:1.8mm; margin-top:1.6mm; }
-.pow .p{ flex:1 1 0; border:.25mm solid var(--hair); border-radius:1.4mm; padding:1.8mm 1.6mm; background:var(--paper); }
-.pow .p .t{ font-size:2.5mm; font-weight:800; line-height:1.28; }
-.pow .p .r{ font-size:2.1mm; color:var(--navy-3); margin-top:.9mm; line-height:1.34; }
-.pow .p .r b{ color:var(--navy); font-weight:800; }
-
-.chips{ display:flex; flex-wrap:wrap; gap:1.2mm; margin-top:1.5mm; }
-.chips span{ font-size:2.3mm; font-weight:800; padding:1mm 2mm; border-radius:1mm; background:var(--paper); border:.25mm solid var(--hair); }
-.chips span.g{ background:var(--navy-2); border-color:var(--navy-2); color:var(--cream); }
-
-.contact{ margin-top:auto; border-top:.4mm solid var(--hair); padding-top:2.2mm; }
-.contact .row{ display:flex; gap:2.2mm; margin-top:1.4mm; }
-.contact .row .c{ flex:1 1 0; }
-.contact .row .c .k{ font-size:2mm; font-weight:700; color:var(--navy-3); letter-spacing:.06em; }
-.contact .row .c .b{ border-bottom:.35mm solid var(--navy-3); height:5.2mm; }
+.way .band .c{ flex:1 1 0; text-align:center; position:relative; }
+.way .band .매듭{ width:3.2mm; height:3.2mm; display:block; margin:0 auto; }
+.way .band .c.j .매듭{ width:4.2mm; height:4.2mm; }   /* 과녁 구간은 매듭이 굵다 — 색이 아니라 크기가 구분을 진다(흑백 재복사 생존) */
+.way .band .c .l{ font-size:2.3mm; font-weight:800; margin-top:1.4mm; }
+.way .band .c.j .l{ color:var(--navy); }
+.way .band .c .g{ font-size:2mm; color:var(--navy-3); margin-top:.2mm; }
+.bandnote{ font-size:2.8mm; color:var(--navy); margin-top:2.6mm; font-weight:800; }
+.dest{ font-size:2.3mm; color:var(--navy-3); margin-top:1.4mm; line-height:1.5; }
+.dest b{ color:var(--navy); font-weight:800; }
 
 /* ══ 바닥 ═════════════════════════════════════════════ */
 .foot{
-  flex:0 0 auto; margin-top:2.6mm; padding:2.4mm 0 6mm; border-top:.3mm solid var(--hair);
-  display:flex; justify-content:space-between; align-items:flex-end; gap:6mm;
+  flex:0 0 auto; margin-top:auto; padding:4mm 14mm 7mm; border-top:.3mm solid var(--hair);
+  display:flex; justify-content:space-between; align-items:flex-end; gap:8mm;
   font-size:2.2mm; color:var(--navy-3); line-height:1.5;
 }
 .foot b{ color:var(--navy); font-weight:800; }
+.foot ul{ list-style:none; display:flex; flex-direction:column; gap:1.2mm; }
+.foot li{ display:flex; align-items:flex-start; gap:2mm; }
 .foot .end{ text-align:right; white-space:nowrap; }
-.foot .end .s{ font-size:2.6mm; font-weight:800; color:var(--navy); }
-.foot .end .v{ font-size:2mm; color:var(--navy-3); margin-top:1mm; }
+.foot .end .s{ font-size:2.8mm; font-weight:800; color:var(--navy); line-height:1.35; }
+.foot .end .v{ font-size:2mm; color:var(--navy-3); margin-top:1.4mm; }
 
 @media screen{
-  body{ background:var(--cream-2); padding:8mm; }
+  body{ background-color:#EAEAEA; padding:8mm; }
   .sheet{ box-shadow:0 3mm 12mm rgba(8,9,12,.22); margin:0 auto; }
 }
 </style>
 </head>
 <body>
 
-<section class="sheet">
+<section class="sheet 룸">
 
   <header class="hero">
     <div class="in">
@@ -193,143 +179,84 @@ html,body{
   </header>
 
   <div class="pad">
-    <div class="cols">
 
-      <!-- ════ 왼쪽 · 이 학생의 것 (눈앞에서 손으로 채운다) ════ -->
-      <div class="left">
-
-        <div class="g2">
-          <div><div class="lbl">________ <span class="ko">이름</span></div><div class="fill"></div></div>
-          <div><div class="lbl">________ <span class="ko">상담일</span></div><div class="fill"></div></div>
-        </div>
-
-        <div><div class="lbl">________ <span class="ko">상담한 사람</span></div><div class="fill"></div></div>
-
-        <div class="box">
-          <div class="lbl">________ <span class="ko">지금 자리</span></div>
-          <div class="fill"></div>
-          <!-- 체크박스는 글리프가 아니라 CSS 박스 — ☐(U+2610)는 브랜드 3종 어디에도 없어 폰트를 깔아도 폴백한다(등록서 실측) -->
-          <div style="font-size:2.2mm;color:var(--navy-3);margin-top:1.2mm"><span style="display:inline-block;width:2mm;height:2mm;border:.3mm solid var(--navy-3);border-radius:.3mm;vertical-align:-.2mm;margin-right:.8mm"></span>첫 수업 날 레벨테스트로 확인<span class="mn">10자</span></div>
-        </div>
-
-        <div class="box sig">
-          <div class="lbl" style="color:var(--navy-3)">________ <span class="ko">이 학생이 말한 목표 — 본인의 말 그대로</span></div>
-          <div class="fill tall"></div>
-          <div class="mn">28자 이내</div>
-        </div>
-
-        <div class="box">
-          <div class="lbl">________ <span class="ko">목표까지의 길</span></div>
-          <div class="band">
-            <div class="c"><div class="l">Lv1</div><div class="g mono">1</div></div>
-            <div class="c"><div class="l">Lv2</div><div class="g mono">2</div></div>
-            <div class="c"><div class="l">Lv3</div><div class="g mono">2~3</div></div>
-            <div class="c j"><div class="l">Lv4</div><div class="g mono">3</div></div>
-            <div class="c j"><div class="l">Lv5</div><div class="g mono">3~4</div></div>
-            <div class="c j"><div class="l">Lv6</div><div class="g mono">4~5</div></div>
-          </div>
-          <div class="bandnote">시작 Lv ____ → 목표 ____급 · 정규 과정 ____시즌<span class="mn">18자</span></div>
-          <div class="dest">
-            <div class="d"><div class="k mono">ENTRY</div><div class="v">한국 대학 입학선<br>TOPIK 3급 · Lv4</div></div>
-            <div class="d"><div class="k mono">DEGREE</div><div class="v">졸업·전공선<br>TOPIK 4급 · Lv5~6</div></div>
-          </div>
-        </div>
-
-        <div class="g2">
-          <div><div class="lbl">________ <span class="ko">추천 반</span></div><div class="fill"></div></div>
-          <div><div class="lbl">________ <span class="ko">요일 · 시간</span></div><div class="fill"></div></div>
-        </div>
-
-        <div><div class="lbl">________ <span class="ko">이 학생에게 특히 맞을 것</span></div><div class="fill"></div></div>
-        <div><div class="lbl">________ <span class="ko">안내한 수강 조건</span></div><div class="fill"></div></div>
-
-        <div class="box sig">
-          <div class="lbl" style="color:var(--navy-3)">________ <span class="ko">다음 단계 — 하나만, 날짜와 함께</span></div>
-          <div class="fill"></div>
-          <div class="mn">20자 이내</div>
-        </div>
-
-      </div>
-
-      <!-- ════ 오른쪽 · SYNK가 하는 것 (인쇄 고정) ════ -->
-      <div class="right r">
-
-        <div>
-          <h3 class="mono">8 WEEKS</h3>
-          <div class="mnh">__________________</div>
-          <div class="koh">8주 동안 무엇이 일어나는가</div>
-          <div class="cyc">
-            <div class="s"><div class="n mono 번호" data-n="1">1</div><div class="t"><b>Learn</b> — 배웁니다. 매일의 워밍업부터 이미 한국어 수업입니다.<div class="mn">34자</div></div></div>
-            <div class="s"><div class="n mono 번호" data-n="2">2</div><div class="t"><b>Plan</b> — 방향을 정합니다. 「나침반」 세션에서 목적을 먼저 묻습니다.<div class="mn">34자</div></div></div>
-            <div class="s"><div class="n mono 번호" data-n="3">3</div><div class="t"><b>Experience</b> — 몸으로 겪습니다. 「싱크 크루」를 팀으로 완성합니다.<div class="mn">36자</div></div></div>
-            <div class="s"><div class="n mono 번호" data-n="4">4</div><div class="t"><b>Record</b> — 기록으로 남깁니다. 「싱크 포트폴리오」에 쌓입니다.<div class="mn">32자</div></div></div>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="mono">EVERY MONTH</h3>
-          <div class="mnh">__________________</div>
-          <div class="koh">매달 집으로 가는 것</div>
-          <div style="font-size:2.6mm;line-height:1.45;margin-top:1.4mm">
-            <b>월간 리포트카드</b> — 앱이 매월 자동으로 발행합니다. 이번 달에 무엇을 했고 어디까지 왔는지가 한 장으로 옵니다.
-            <div class="mn">44자</div>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="mono">IN THE APP</h3>
-          <div class="mnh">__________________</div>
-          <div class="koh">앱에서 아이가 겪는 것</div>
-          <div class="chips">
-            <!-- 낱말(집필 규범 「죽은 표기 대조표」): 몬스터·캐릭터 → 가이드(08-26) · 7단계 진화 → 가이드 세 축 · 왕관·도전 배지 → 오늘의 도전·오늘의 성장.
-                 이 칸의 정본 문구는 집필 규범 「앱에서 아이가 겪는 것」 줄이 그대로 준다. -->
-            <span>내 가이드가 자라기</span><span class="g">포인트 · 오늘의 도전 · 오늘의 성장</span><span>반 전체 레이드</span><span>스트릭</span>
-          </div>
-          <div style="font-size:2.1mm;color:var(--navy-3);margin-top:1.2mm;line-height:1.4">
-            곁에 오고, 또렷해지고, 밝아져요<div class="mn">30자</div>
-          </div>
-        </div>
-
-        <div>
-          <h3 class="mono">THREE POWERS</h3>
-          <div class="mnh">__________________</div>
-          <div class="koh">사람이어야만 하는 세 가지 힘</div>
-          <div class="pow">
-            <div class="p"><div class="t">① 질문하는 힘</div><div class="r">무엇이 진짜 문제인지 스스로 묻고 정의하는 힘<br><b>→ 나침반 세션</b><div class="mn">26자</div></div></div>
-            <div class="p"><div class="t">② 스스로 하는 힘</div><div class="r">시키지 않아도 먼저 움직이고 끝까지 해내는 힘<br><b>→ 싱크 크루</b><div class="mn">26자</div></div></div>
-            <div class="p"><div class="t">③ 마음을 끄는 힘</div><div class="r">여럿의 생각을 하나로 모아 해내며 자신감과 사람을 함께 얻는 힘<br><b>→ 반 레이드 · 발표</b><div class="mn">26자</div></div></div>
-          </div>
-          <div style="font-size:2.1mm;color:var(--navy-3);margin-top:1.2mm">이 힘이 자라면 한국어 실력도 더 단단해집니다.<div class="mn">24자</div></div>
-        </div>
-
-        <div class="contact">
-          <h3 class="mono">CONTACT</h3>
-          <div class="row">
-            <div class="c"><div class="k">페이스북</div><div class="b"></div></div>
-            <div class="c"><div class="k">전화</div><div class="b"></div></div>
-          </div>
-          <div class="row">
-            <div class="c"><div class="k">주소</div><div class="b"></div></div>
-            <div class="c"><div class="k">상담 시간</div><div class="b"></div></div>
-          </div>
-        </div>
-
+    <!-- ① 누구와 언제 ─────────────────────────────── -->
+    <div class="row">
+      <div><div class="lbl">________ <span class="ko">이름</span></div><div class="fill"></div></div>
+      <div><div class="lbl">________ <span class="ko">상담일</span></div><div class="fill"></div></div>
+      <div>
+        <div class="head"><span class="도장"></span><div class="lbl">________ <span class="ko">상담한 사람</span></div></div>
+        <div class="fill"></div>
       </div>
     </div>
 
-    <div class="foot">
-      <div>
-        <b>급수와 기간은 약속이 아닙니다.</b> 승급은 기간이 아니라 <b>개인별 도달제</b>이며, 8주차 승급 평가를 통과하면 올라가고 아직이면 ‘다시 도전’으로 한 바퀴 더 다집니다. ·
-        학생의 사진·영상은 언제나 사전 동의를 받고, 언제든 철회하실 수 있습니다.
-        <div class="mn">96자</div>
+    <!-- ② 지금 어디에 있나 ────────────────────────── -->
+    <div>
+      <div class="lbl">________ <span class="ko">지금 자리</span></div>
+      <div class="fill"></div>
+      <div style="font-size:2.3mm;color:var(--navy-3);margin-top:1.6mm">
+        <span class="체크"></span> 첫 수업 날 레벨테스트로 확인<span class="mn">10자</span>
       </div>
-      <div class="end">
-        <div class="s">진짜 한국어는<br>SYNK에서 시작됩니다</div>
-        <div class="v mono">10 · SUMMARY · v2.0</div>
+    </div>
+
+    <!-- ③ 🔑 이 종이의 주인공 — 본인의 말 ──────────── -->
+    <div class="say">
+      <div class="head">
+        <span class="말풍선"></span>
+        <div class="lbl">________ <span class="ko">이 학생이 말한 목표 — 본인의 말 그대로</span></div>
       </div>
+      <div class="fill tall"></div>
+      <div class="mn">28자 이내</div>
+    </div>
+
+    <!-- ④ 목표까지의 길 ──────────────────────────── -->
+    <div class="way">
+      <div class="lbl">________ <span class="ko">목표까지의 길</span></div>
+      <div class="band">
+        <div class="c"><span class="매듭"></span><div class="l">Lv1</div><div class="g mono">1</div></div>
+        <div class="c"><span class="매듭"></span><div class="l">Lv2</div><div class="g mono">2</div></div>
+        <div class="c"><span class="매듭"></span><div class="l">Lv3</div><div class="g mono">2~3</div></div>
+        <div class="c j"><span class="매듭"></span><div class="l">Lv4</div><div class="g mono">3</div></div>
+        <div class="c j"><span class="매듭"></span><div class="l">Lv5</div><div class="g mono">3~4</div></div>
+        <div class="c j"><span class="매듭"></span><div class="l">Lv6</div><div class="g mono">4~5</div></div>
+      </div>
+      <div class="bandnote">시작 Lv ____ → 목표 ____급 · 정규 과정 ____시즌<span class="mn">18자</span></div>
+      <div class="dest">한국 대학 <b>입학선</b>은 TOPIK 3급(Lv4) · 졸업과 전공까지 가는 <b>졸업선</b>은 TOPIK 4급(Lv5~6)입니다.</div>
+    </div>
+
+    <!-- ⑤ 어느 반에서, 무엇이 맞나 ────────────────── -->
+    <div class="row">
+      <div><div class="lbl">________ <span class="ko">추천 반</span></div><div class="fill"></div></div>
+      <div><div class="lbl">________ <span class="ko">요일 · 시간</span></div><div class="fill"></div></div>
+    </div>
+
+    <div><div class="lbl">________ <span class="ko">이 학생에게 특히 맞을 것</span></div><div class="fill"></div></div>
+    <div><div class="lbl">________ <span class="ko">안내한 수강 조건</span></div><div class="fill"></div></div>
+
+    <!-- ⑥ 🔑 헤어지기 전에 정하는 하나 ────────────── -->
+    <div class="say">
+      <div class="head">
+        <span class="시침핀"></span>
+        <div class="lbl">________ <span class="ko">다음 단계 — 하나만, 날짜와 함께</span></div>
+      </div>
+      <div class="fill"></div>
+      <div class="mn">20자 이내</div>
     </div>
 
   </div>
+
+  <div class="foot">
+    <ul>
+      <li><span class="매듭"></span><div><b>매달 월간 리포트카드가 집으로 갑니다.</b> 이번 달에 무엇을 했고 어디까지 왔는지가 한 장으로 옵니다.<span class="mn">44자</span></div></li>
+      <li><span class="매듭"></span><div><b>급수와 기간은 약속이 아닙니다.</b> 승급은 기간이 아니라 개인별 도달제이며, 8주차 평가를 통과하면 올라가고 아직이면 한 바퀴 더 다집니다.<span class="mn">62자</span></div></li>
+      <li><span class="매듭"></span><div>학생의 사진·영상은 언제나 사전 동의를 받고, 언제든 철회하실 수 있습니다.<span class="mn">34자</span></div></li>
+    </ul>
+    <div class="end">
+      <div class="s">진짜 한국어는<br>SYNK에서 시작됩니다</div>
+      <div class="v mono">10 · SUMMARY · v3.0</div>
+    </div>
+  </div>
+
 </section>
 
 </body>
