@@ -20,11 +20,31 @@ function 새로열기() {
   return require(모듈경로);
 }
 
-/** 정해진 status 를 내는 가짜 fetch 를 깔고, 호출 횟수를 세는 상자를 돌려준다. */
+/* 🔴 2026-09-04 — **이 시험이 죽어 있었다.** 09-04 에 그림 문이 Vertex OAuth 로 갈아타면서
+ *   `한컷` 이 fetch 를 **두 번** 타게 됐다(①구글 토큰 갱신 ②그림 생성). 가짜 fetch 는 URL 을
+ *   안 가리고 모두에 같은 status 를 줬기 때문에 **토큰 갱신이 429 를 먼저 먹고** 죽었고,
+ *   그래서 정작 과녁인 「돈 벽이 서나」는 한 번도 안 재고 있었다.
+ *   더 나쁜 것: 통과 여부가 **그 기계의 토큰 캐시가 살았나**에 갈렸다(캐시가 살면 fetch 를
+ *   안 타서 초록 · 죽으면 적색). 재현되지 않는 자는 자가 아니다.
+ *   ⇒ 인증을 스텁으로 끊는다. 이 시험의 과녁은 «돈 벽»이지 «인증»이 아니고, 그래야 fetch 횟수가
+ *     정확히 «돈이 나가는 호출»만 센다. 실기계의 토큰 캐시도 안 건드린다. */
+const 정책경로 = require.resolve(path.join(__dirname, '..', 'tools', '모델정책.js'));
+(() => {
+  const 진짜 = require(정책경로);
+  require.cache[정책경로].exports = Object.assign(Object.create(Object.getPrototypeOf(진짜)), 진짜, {
+    제미나이헤더: async () => ({ authorization: 'Bearer 시험용-네트워크-안-탐', 'content-type': 'application/json' }),
+  });
+})();
+
+/** 정해진 status 를 내는 가짜 fetch 를 깔고, 호출 횟수를 세는 상자를 돌려준다.
+ *  🔑 세는 것은 «그림 생성 호출»뿐이다 — 돈은 거기서만 나간다. */
 function 가짜fetch(status, 본문 = '{}') {
   const 상자 = { 횟수: 0 };
   const 원래 = global.fetch;
-  global.fetch = async () => {
+  global.fetch = async (url) => {
+    // 인증 문이 새어 들어오면 이 시험은 또 엉뚱한 것을 재게 된다 — 그 자리에서 운다.
+    assert.ok(!String(url).includes('oauth2.googleapis.com'),
+      '🔴 인증 스텁이 풀렸다 — 이 시험이 「돈 벽」 대신 「토큰 갱신」을 재고 있다');
     상자.횟수 += 1;
     return { ok: status >= 200 && status < 300, status, text: async () => 본문, json: async () => ({}) };
   };
