@@ -26,6 +26,10 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+/* 🔑 그림과 «서체»는 갈래가 다르다. 그림은 727장이라 심으면 수백 MB 가 되지만(위 주석),
+ *   서체는 한 벌 813KB 뿐이고 그것이 없으면 판 전체가 시스템 고딕으로 떨어져 브랜드가 안 보인다.
+ *   유호 확정 09-05 「나도 잘 확인해야하니」 — 고르는 판이니 서체는 실제로 떠야 한다. */
+const 브랜드폰트 = require(path.join(__dirname, 'lib', '브랜드폰트.js'));
 
 const ROOT = path.resolve(__dirname, '..');
 const 나갈방 = path.join(ROOT, 'docs', '공방');
@@ -72,12 +76,14 @@ function 훑기(뿌리) {
 /* ── 지면 껍데기 — 어두운 무대. 펠트는 어두운 바닥에서 결이 산다 ──────────────── */
 const 껍데기 = (제목, 앞머리, 속) => `<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><title>${제목}</title>
+${브랜드폰트.블록()}
 <style>
 :root{ --paper:${색['Paper']}; --ink:${색['Ink']}; --coral:${색['Coral']};
   --무대:#14161B; --칸:#1D2027; --테:rgba(228,228,231,.13); --글:#E4E4E7; --흐림:#9AA0AB; }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--무대);color:var(--글);
-  font-family:'Inter Tight','SUIT',system-ui,'Malgun Gothic',sans-serif;font-size:15px;line-height:1.6}
+  font-family:'Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-size:15px;line-height:1.6}
 .wrap{max-width:1280px;margin:0 auto;padding:40px 28px 90px}
 a{color:inherit}
 h1{font-size:30px;font-weight:800;letter-spacing:-.02em}
