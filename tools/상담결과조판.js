@@ -89,6 +89,10 @@ function 글자수자(html) {
   칸들.forEach((칸) => {
     const 패턴 = new RegExp(
       '<div class="lbl"[^>]*>________\\s*<span class="ko">' + 이스케이프(칸.라벨) + '</span></div>' +
+      /* 라벨이 부품과 함께 `.head` 로 감싸이면 닫는 태그가 하나 더 온다(v3 구조).
+         그 한 칸을 안 열어 두면 자가 「28자」를 못 읽고 «조용히» 검사를 건너뛴다 —
+         09-05 에 실제로 그랬다(자 3개 → 1개로 줄었는데 초록은 그대로였다). */
+      '(?:\\s*</div>)?' +
       '\\s*<div class="fill[^"]*"></div>\\s*<div class="mn">(\\d+)자');
     const m = html.match(패턴);
     if (m) 자[칸.키] = Number(m[1]);
