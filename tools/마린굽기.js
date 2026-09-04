@@ -80,6 +80,15 @@ from the upper left, gentle rim light. The character stands centred, full body v
 slight three-quarter turn. Plain seamless soft background in a neutral tone, softly out of
 focus, no scenery. Square framing with generous empty space around the character.`;
 
+/* 🔑 09-05 — 유호님이 «정면을 본 마린»을 부르셨다. 위 상수는 `three-quarter turn`(비스듬)이라
+ *   그 자리를 갈아야 한다. 정면은 마스코트 기본판의 자세이기도 하다(앱 화면·카드가 정면을 쓴다). */
+const 정면카메라 = `Photographed with a 50mm macro lens, shallow depth of field, soft studio
+light from the upper left, gentle rim light. The character stands centred and faces the
+camera DIRECTLY, perfectly straight on, fully frontal and symmetrical — both lenses level,
+both tiny arms visible at its sides, no turn of the body at all. Full body visible.
+Plain seamless soft background in a neutral tone, softly out of focus, no scenery.
+Square framing with generous empty space around the character.`;
+
 const 금지 = `NO human face, no human skin, no eyes, no mouth, no nose, no hair.
 No text, no letters, no numbers, no logo, no watermark, no weapons of any kind, no gun,
 no blade, no blood, no menace. Nothing scary. Do not show the table edge or the studio.
@@ -589,6 +598,124 @@ gentle marks of long service — two small grey-blue patches sewn on with visibl
 slightly mismatched thread, and one softly worn corner gone fuzzy. Nothing damaged, just used
 and cared for over many years.`,
   },
+
+  /* ── 09-05 9차 — 정면 · 목도리 없음 (유호 확정 09-05) ──────────────────────
+   * 🔴 **목도리는 기본형에서 뺀다** — 「여름때 더워보여. 이게 기본이면 안돼」(결정.md 09-05).
+   *   그래서 탑10 의 3·4번(목도리 판)은 목도리를 빼고 그 «색»만 가져온다.
+   *   대신 노랑을 목도리 아닌 자리(테두리·배지·주머니·눈)에 점으로 넣어 밋밋해지지 않게 한다.
+   * 🔑 카메라도 `정면카메라` 로 간다 — 유호님이 「정면을 본 마린」을 부르셨고,
+   *   정면은 앱 화면·카드가 실제로 쓰는 기본 자세다. */
+
+  // ㉠ 1번 결 — 남색 + 꽃 주머니 (정본의 반전을 소품으로 보여주는 판)
+  {
+    이름: '정면1a_꽃주머니', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Lapis.png', 'Oat.png', 'Meadow.png', 'Chalk.png'],
+    옷: `Navy felt with the huge helmet and two warm amber glowing lenses. On the front of the
+tiny body sits one small oatmeal felt pouch with a rounded flap, and peeking out of it one
+tiny felt flower with a green stem. Everything else regulation neat. No scarf.`,
+  },
+  {
+    이름: '정면1b_꽃주머니_노랑꽃', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Lapis.png', 'Butter.png', 'Oat.png', 'Chalk.png'],
+    옷: `Navy felt with the huge helmet and two cream-white glowing lenses. A small cream felt
+pouch on the front of the tiny body, with one tiny butter-yellow flower peeking out. Thin
+cream piping along the helmet rim. No scarf.`,
+  },
+  {
+    이름: '정면1c_꽃주머니_민트꽃', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Lapis.png', 'MeadowSoft.png', 'Chalk.png', 'Butter.png'],
+    옷: `Navy felt with the huge helmet and two soft golden glowing lenses. A small sage-green
+felt pouch on the front of the tiny body with a tiny cream flower peeking out. Simple, tidy,
+nothing else. No scarf.`,
+  },
+  {
+    이름: '정면1d_꽃주머니_큰눈', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Lapis.png', 'Butter.png', 'Meadow.png', 'Chalk.png'],
+    옷: `Navy felt with the huge helmet. The two glowing lenses are LARGE and warm amber, taking
+up a generous part of the helmet front, which reads especially soft. One small oatmeal pouch
+with a tiny flower on the front of the tiny body. No scarf.`,
+  },
+  {
+    이름: '정면1e_꽃주머니_짙은남색', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['LapisDeep.png', 'Butter.png', 'Oat.png', 'Chalk.png'],
+    옷: `Very deep midnight navy felt, almost black but unmistakably blue, with the huge helmet
+and two bright warm-gold glowing lenses that stand out strongly against it. One small cream
+pouch with a tiny yellow flower on the tiny body. No scarf.`,
+  },
+
+  // ㉡ 3번 결 — 남색 (목도리를 뺀 자리에 노랑을 점으로)
+  {
+    이름: '정면3a_남색_민무늬', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Lapis.png', 'Chalk.png', 'Butter.png', 'Stone.png'],
+    옷: `Clean navy felt with the huge helmet and two cream-white glowing lenses. Absolutely
+minimal — no badges, no pouches, no scarf, no trim except one fine cream running stitch along
+the helmet rim. Pure simple shape.`,
+  },
+  {
+    이름: '정면3b_남색_노랑테', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Lapis.png', 'Butter.png', 'Chalk.png', 'Oat.png'],
+    옷: `Navy felt with the huge helmet and two cream glowing lenses, each ringed by a thick
+BUTTER-YELLOW stitched rim that makes the eyes pop warmly. A matching thin yellow line runs
+along the bottom hem of the tiny body. No scarf.`,
+  },
+  {
+    이름: '정면3c_남색_노랑배지', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Lapis.png', 'Butter.png', 'Chalk.png', 'Coral.png'],
+    옷: `Navy felt with the huge helmet and two golden glowing lenses. On one tiny shoulder a
+small round butter-yellow felt badge with a cream star stitched inside, hand-sewn and slightly
+off-centre. Nothing else. No scarf.`,
+  },
+  {
+    이름: '정면3d_남색_노랑눈', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Lapis.png', 'Butter.png', 'ButterDeep.png', 'Chalk.png'],
+    옷: `Navy felt with the huge helmet. The two glowing lenses are a strong warm BUTTER-YELLOW,
+bright and cheerful against the deep navy — the yellow lives entirely in the eyes. The body is
+plain navy with one fine cream stitch line. No scarf.`,
+  },
+  {
+    이름: '정면3e_남색_노랑어깨', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Lapis.png', 'Butter.png', 'Chalk.png', 'Stone.png'],
+    옷: `Navy felt with the huge helmet and two cream glowing lenses. Two small rounded shoulder
+plates in warm butter-yellow felt sit on the tiny body, edged in cream blanket stitch —
+the only warm colour. No scarf.`,
+  },
+
+  // ㉢ 4번 결 — 민트 (목도리를 뺀 자리에 노랑을 점으로)
+  {
+    이름: '정면4a_민트_민무늬', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['MeadowSoft.png', 'Chalk.png', 'Butter.png', 'Meadow.png'],
+    옷: `Clean soft mint-green felt with the huge helmet and two cream-white glowing lenses.
+Absolutely minimal — no badges, no pouches, no scarf, only one fine cream running stitch along
+the helmet rim. Fresh and simple.`,
+  },
+  {
+    이름: '정면4b_민트_노랑테', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['MeadowSoft.png', 'Butter.png', 'Chalk.png', 'Meadow.png'],
+    옷: `Soft mint-green felt with the huge helmet and two cream glowing lenses, each ringed by
+a thick BUTTER-YELLOW stitched rim. A matching thin yellow line along the bottom hem of the
+tiny body. No scarf.`,
+  },
+  {
+    이름: '정면4c_민트_노랑배지', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['MeadowSoft.png', 'Butter.png', 'Chalk.png', 'Coral.png'],
+    옷: `Soft mint-green felt with the huge helmet and two cream glowing lenses. On one tiny
+shoulder a small round butter-yellow felt badge with a cream star stitched inside, hand-sewn
+and slightly off-centre. Nothing else. No scarf.`,
+  },
+  {
+    이름: '정면4d_민트_꽃주머니', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['MeadowSoft.png', 'Butter.png', 'Oat.png', 'Chalk.png'],
+    옷: `Soft mint-green felt with the huge helmet and two cream glowing lenses. On the front of
+the tiny body one small cream felt pouch with a tiny butter-yellow flower peeking out —
+the mint version of the flower-pouch idea. No scarf.`,
+  },
+  {
+    이름: '정면4e_민트_진하게', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Meadow.png', 'MeadowDeep.png', 'Butter.png', 'Chalk.png'],
+    옷: `Deeper sage-green felt, richer and more grounded than a pale mint, with the huge helmet
+and two warm butter-yellow glowing lenses that glow strongly against the green. Plain body,
+one fine cream stitch line. No scarf.`,
+  },
 ];
 
 function 참조경로(파일들) {
@@ -610,30 +737,39 @@ async function main() {
 
   fs.mkdirSync(낼곳, { recursive: true });
   const k = 키();
-  let 구움 = 0, 건너뜀 = 0;
+  let 구움 = 0, 건너뜀 = 0, 연속실패 = 0;
   const 다시 = argv.includes('--다시');
   const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
 
   for (const [i, 판] of 대상.entries()) {
     const 저장경로 = path.join(낼곳, `${판.이름}.png`);
     if (fs.existsSync(저장경로) && !다시) { 건너뜀 += 1; console.log(`⏭  ${판.이름} — 이미 있다(--다시 면 다시 굽는다)`); continue; }
-    const 지시 = [재질, 판.몸덮기 || 몸, 판.성격덮기 || 성격, 판.옷, 카메라, 금지].join('\n\n');
+    const 지시 = [재질, 판.몸덮기 || 몸, 판.성격덮기 || 성격, 판.옷, 판.카메라덮기 || 카메라, 금지].join('\n\n');
     /* 🔴 09-05 실측 — 열 장을 연달아 던지자 넷째에서 `429 RESOURCE_EXHAUSTED` 가 났다.
      *   크레딧이 마른 것이 아니라 **분당 몫**에 걸린 것이다(그때 크레딧은 99.6% 남아 있었다).
-     *   ⇒ 사이를 띄운다. 값이 아니라 «시간»을 쓰는 쪽이 싸다. */
-    if (i > 0) await 잠깐(12_000);
+     *   ⇒ 사이를 띄운다. 값이 아니라 «시간»을 쓰는 쪽이 싸다.
+     * 🔴 09-05 둘째 실측 — 12초로도 모자랐다. 열다섯 중 하나만 나오고 열넷이 429 였다.
+     *   더 아픈 것은 «벽에 대고 두드린 것»이다 — 실패한 요청도 몫을 먹으니 한 판에 4번씩,
+     *   56발이 벽을 45분 동안 세워 뒀다. 그래서 둘을 같이 고친다:
+     *     ⓐ 사이를 30초로 (분당 둘)
+     *     ⓑ 막히면 길게 쉬고(2·5·8분) 두 번만, 그리고 «세 판이 잇달아» 막히면 그만둔다.
+     *       벽이 오래 서 있는 것인데 계속 두드리면 벽을 내가 붙잡고 있는 셈이다. */
+    if (i > 0) await 잠깐(30_000);
     let 시도 = 0;
     for (;;) {
       try {
         const r = await 한컷({ 이름: 판.이름, 지시, 참조: 참조경로(판.참조), 비율: '1:1', 크기: '2K', 저장경로, k });
         console.log(`✅ ${판.이름} — ${r && r.초 ? r.초 + '초 · ' : ''}${저장경로}`);
-        구움 += 1;
+        구움 += 1; 연속실패 = 0;
         break;
       } catch (e) {
         const 분당벽 = /429|RESOURCE_EXHAUSTED/.test(e.message);
-        if (분당벽 && 시도 < 3) { 시도 += 1; console.log(`   ⏳ ${판.이름} 분당 벽 — ${30 * 시도}초 쉬고 다시(${시도}/3)`); await 잠깐(30_000 * 시도); continue; }
+        const 쉼 = [120_000, 300_000, 480_000];
+        if (분당벽 && 시도 < 2) { console.log(`   ⏳ ${판.이름} 몫 벽 — ${쉼[시도] / 60_000}분 쉬고 다시(${시도 + 1}/2)`); await 잠깐(쉼[시도]); 시도 += 1; continue; }
         console.error(`❌ ${판.이름} — ${e.message.slice(0, 160)}`);
         if (e.돈벽 && !분당벽) return 마무리();
+        연속실패 += 1;
+        if (연속실패 >= 3) { console.error(`\n🛑 세 판이 잇달아 막혔다 — 벽이 오래 서 있다. 여기서 멈춘다(두드릴수록 벽이 길어진다).`); return 마무리(); }
         break;
       }
     }
