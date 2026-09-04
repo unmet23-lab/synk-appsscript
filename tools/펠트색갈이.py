@@ -209,6 +209,11 @@ def main():
                     help='하이라이트 압축 시작점(선형광 0~1). 낮추면 결이 살고 코어가 목표에서 멀어진다')
     ap.add_argument('--보정', type=int, default=3,
                     help='조준 보정 회차(닫힌 루프). 1 이면 한 번만 곱하고 끝낸다')
+    ap.add_argument('--밝기', type=float,
+                    help='보이는 평균 L*(밝기)를 이 값에 못 박는다. 안 주면 색만 맞추고 밝기는 흐르는 대로 둔다. '
+                         '왜 필요한가(09-05 실측): 코어를 목표색에 맞추면 «어두운 그림일수록 게인이 크게 걸려» '
+                         '더 많이 밝아진다 — 같은 메도우로 칠했는데 별은 +4.8, 폼폼은 +21.0 이었다. '
+                         '그러면 부품끼리의 명암 관계가 뭉개져 한 판에 늘어놓았을 때 몇몇만 튄다')
     ap.add_argument('--무채base', action='store_true',
                     help='전면이 무채 천(회색 원료 base)일 때 — 마스크를 끄고 코어를 L* 백분위로 잰다. '
                          '유채 픽셀 2%% 초과 그림엔 못 쓴다(마스크가 지킬 것이 있는 그림)')
@@ -315,6 +320,32 @@ def main():
         cur = lin_rgb(anchored)
         want = lin_rgb(목표)
         조준 = [min(1.0, 조준[i] * (want[i] / max(cur[i], 1e-6))) for i in range(3)]
+
+    # 4.5 — 밝기 못박기(선택). 색조는 그대로 두고 «보이는 평균 밝기»만 목표로 민다.
+    #   게인 전체에 스칼라를 곱하면 선형광이 배로 움직여 색조가 안 흔들린다.
+    #   L* 와 선형광은 세제곱 관계라 비율을 그대로 세제곱해 밀고, 비선형(무릎·8bit)이 남기는
+    #   오차는 닫힌 루프로 줄인다 — 색 보정과 같은 방식이다.
+    _알파px = _알파.load() if _알파 is not None else None
+
+    def 보이는평균L(image_px):
+        s = 0.0; n = 0
+        for y in range(0, H, 4):
+            for x in range(0, W, 4):
+                if _알파px is not None and _알파px[x, y] < 200:
+                    continue
+                s += lab(image_px[x, y][:3])[0]; n += 1
+        return s / max(n, 1)
+
+    if a.밝기 is not None:
+        전 = 보이는평균L(out.load())
+        for _ in range(8):
+            현재 = 보이는평균L(out.load())
+            if abs(현재 - a.밝기) < 0.3:
+                break
+            s = ((a.밝기 + 16) / max(현재 + 16, 1e-6)) ** 3
+            게인 = tuple(g * max(0.25, min(4.0, s)) for g in 게인)
+            out, 칠한수, clipped = 적용(px, W, H, 게인, a.무릎, 전면=a.무채base)
+        print(f'   밝기 못박음  보이는 평균 L* {전:.1f} → {보이는평균L(out.load()):.1f}  (목표 {a.밝기:.1f})')
 
     if _알파 is not None:
         out = out.convert('RGBA')
