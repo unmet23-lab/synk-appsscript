@@ -387,6 +387,208 @@ wide apart near the outer edges of the visor band, cool white, which reads more 
 machine-like while still being gentle. Neat grey plates, minimal trim, everything regulation
 tidy.`,
   },
+
+  /* ── 09-05 6차 — 판정 축이 «소유욕»으로 굳었다 (유호 09-05) ────────────────
+   *   「지금 버전이 전 버전보다 훨씬 학생 입장에서 소유욕? 같은걸 자극할 것 같아」
+   * 🔑 이 한 마디가 지금까지 나온 판정 중 가장 정확한 자다. 마린은 학생이 «고르는» 캐릭터이고,
+   *   고른 뒤에는 몇 년을 함께 간다 ⇒ 「잘 만들었나」보다 **「내 것으로 삼고 싶은가」**가 이긴다.
+   * ⇒ 굳은 축 둘(큰 헬멧 비율 · 눈 둘)은 이제 안 흔든다. 색과 «작은 디테일»만 갈아
+   *   소유욕이 어디서 오는지 좁힌다 — 디테일은 «자세히 볼수록 발견이 있는» 자리다. */
+  {
+    이름: '소유A_크림', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Chalk.png', 'Oat.png', 'Butter.png', 'Stone.png'],
+    옷: `Soft cream and ivory felt, the gentlest possible palette: the huge helmet is warm
+cream with two round pale-gold glowing lenses. Everything is soft and low-contrast, the felt
+looks especially thick and pettable. A single thin oat-coloured band around the middle.`,
+  },
+  {
+    이름: '소유B_민트', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['MeadowSoft.png', 'Chalk.png', 'KCCoolBlue.png', 'Butter.png'],
+    옷: `Fresh pale mint-green felt: the huge helmet is soft mint with two round cream-white
+glowing lenses. Small rounded shoulder plates in a slightly deeper sage, edged in cream
+blanket stitch. Light, fresh, spring-like.`,
+  },
+  {
+    이름: '소유C_버터노랑', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Butter.png', 'ButterSoft.png', 'Oat.png', 'Chalk.png'],
+    옷: `Warm butter-yellow felt: the huge helmet is soft golden yellow with two round
+cream-white glowing lenses. Tiny cream shoulder plates and a small stitched band across the
+little body. Sunny, warm, immediately cheerful.`,
+  },
+  {
+    이름: '소유D_라벤더', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['PopSoft.png', 'LapisSoft.png', 'Chalk.png', 'Butter.png'],
+    옷: `Soft lavender felt: the huge helmet is pale purple with two round warm-white glowing
+lenses. Delicate cream piping traces the helmet rim. Everything soft-edged and dreamy.
+Calm, gentle, a little magical.`,
+  },
+  {
+    이름: '소유E_체리', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['체리.png', 'Coral.png', 'Chalk.png', 'Butter.png'],
+    옷: `Deep cherry-red felt: the huge helmet is rich red with two round cream-white glowing
+lenses. Crisp cream trim along the helmet edge and the tiny shoulder plates. Bold, confident,
+the most eye-catching of the family.`,
+  },
+  {
+    이름: '소유F_남색_목도리', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Lapis.png', 'Coral.png', 'Chalk.png', 'Butter.png'],
+    옷: `Navy felt with the huge helmet and two golden-white glowing lenses. A small knitted
+scarf of soft coral yarn is wrapped once around where the helmet meets the little body, its
+fringed ends hanging down one side. The scarf is the only warm colour and it makes the whole
+figure feel looked-after.`,
+  },
+  {
+    이름: '소유G_회색_어깨배지', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Stone.png', 'Coral.png', 'Butter.png', 'Chalk.png'],
+    옷: `Steel-grey felt with the huge helmet and two pale-blue glowing lenses. On one tiny
+shoulder sits a small round felt badge — a simple coral circle with a cream star shape
+stitched inside it, clearly hand-sewn and slightly off-centre. That one small imperfect badge
+is the whole personality of the piece.`,
+  },
+  {
+    이름: '소유H_남색_안테나', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Lapis.png', 'Butter.png', 'Chalk.png', 'Stone.png'],
+    옷: `Navy felt with the huge helmet and two warm glowing lenses. Two slim antenna threads
+stand up from the top of the helmet, each tipped with a tiny round butter-yellow bead that
+catches the light. They wobble slightly, giving the still figure a hint of life.`,
+  },
+  {
+    이름: '소유I_회색_세월자국', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Stone.png', 'Oat.png', 'Stitch.png', 'Chalk.png'],
+    옷: `Steel-grey felt with the huge helmet and two soft white glowing lenses. The helmet
+carries gentle marks of a long service — two small felt patches sewn on with visible stitches
+in slightly mismatched thread, and one softly worn corner where the fibre has gone fuzzy.
+Nothing damaged, just loved and used. It looks like it has a history.`,
+  },
+  {
+    이름: '소유J_남색_작은주머니', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Lapis.png', 'Oat.png', 'Meadow.png', 'Chalk.png'],
+    옷: `Navy felt with the huge helmet and two golden glowing lenses. On the front of the tiny
+body sits one small oatmeal felt pouch with a rounded flap, closed with a single cream stitch,
+and peeking out of the top is one tiny felt flower with a green stem — the soft spot the
+character would never admit to. Everything else is regulation neat.`,
+  },
+
+  /* ── 09-05 7차 — 색이 «노랑·초록»으로 좁혀졌다 (유호 09-05) ────────────────
+   *   「지금은 노란색 버터노랑이랑 그린색? 2번째꺼가 그나마 낫다」
+   * ⇒ 남색·회색 계열은 접는다. 남은 축은 «그 두 색 안에서의 톤»과 «디테일» 둘뿐이다.
+   * 🔑 오늘 정하기로 한 자리라 이번 열은 폭을 넓히지 않고 **좁혀서 촘촘히** 낸다. */
+  {
+    이름: '노랑1_진한골드', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['ButterDeep.png', 'Butter.png', 'Oat.png', 'Chalk.png'],
+    옷: `Rich deep golden-yellow felt, noticeably warmer and more saturated than a pale butter:
+the huge helmet is deep gold with two round cream-white glowing lenses. Small cream shoulder
+plates edged in tidy running stitch. Confident, warm, autumnal.`,
+  },
+  {
+    이름: '노랑2_연한크림노랑', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['ButterSoft.png', 'Chalk.png', 'Oat.png', 'Butter.png'],
+    옷: `Very pale creamy yellow felt, soft and milky: the huge helmet is barely-there butter
+with two round warm-white glowing lenses. Everything low-contrast and gentle, the felt looking
+especially thick and soft. Quiet, tender, easy on the eye.`,
+  },
+  {
+    이름: '노랑3_목도리', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Butter.png', 'Meadow.png', 'Chalk.png', 'Oat.png'],
+    옷: `Warm butter-yellow felt with the huge helmet and two cream-white glowing lenses.
+A small knitted scarf of soft sage-green yarn is wrapped once around where the helmet meets
+the little body, its fringed ends hanging down one side. The green against the yellow feels
+like someone chose it for them.`,
+  },
+  {
+    이름: '노랑4_어깨배지', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Butter.png', 'Meadow.png', 'Chalk.png', 'Coral.png'],
+    옷: `Warm butter-yellow felt with the huge helmet and two cream glowing lenses. On one tiny
+shoulder sits a small round felt badge — a sage-green circle with a cream star stitched inside,
+clearly hand-sewn and slightly off-centre. One imperfect little thing on an otherwise tidy
+figure.`,
+  },
+  {
+    이름: '노랑5_세월자국', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Butter.png', 'Oat.png', 'Stitch.png', 'Chalk.png'],
+    옷: `Warm butter-yellow felt with the huge helmet and two cream glowing lenses. The helmet
+carries gentle marks of long service — two small oat-coloured patches sewn on with visible
+stitches in slightly mismatched thread, and one softly worn corner gone fuzzy. Nothing damaged,
+just used and cared for. It looks like it has a history.`,
+  },
+  {
+    이름: '초록1_진한세이지', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Meadow.png', 'MeadowDeep.png', 'Chalk.png', 'Butter.png'],
+    옷: `Deeper sage-green felt, richer and more grounded than a pale mint: the huge helmet is
+soft deep green with two round cream-white glowing lenses. Small shoulder plates in a lighter
+sage, edged with cream blanket stitch. Calm, natural, quietly reassuring.`,
+  },
+  {
+    이름: '초록2_아주연한민트', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['MeadowSoft.png', 'Chalk.png', 'Butter.png', 'KCCoolBlue.png'],
+    옷: `Very pale mint felt, almost white with a breath of green: the huge helmet is the softest
+mint with two round warm-white glowing lenses. Everything delicate and low-contrast, the felt
+looking freshly brushed. Light, airy, spring morning.`,
+  },
+  {
+    이름: '초록3_목도리', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['MeadowSoft.png', 'Butter.png', 'Chalk.png', 'Meadow.png'],
+    옷: `Soft mint-green felt with the huge helmet and two cream-white glowing lenses. A small
+knitted scarf of warm butter-yellow yarn is wrapped once around where the helmet meets the
+little body, fringed ends hanging down one side. The yellow against the mint is the only warm
+note and it makes the figure feel looked-after.`,
+  },
+  {
+    이름: '초록4_어깨배지', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['MeadowSoft.png', 'Butter.png', 'Chalk.png', 'Coral.png'],
+    옷: `Soft mint-green felt with the huge helmet and two cream glowing lenses. On one tiny
+shoulder sits a small round felt badge — a butter-yellow circle with a cream star stitched
+inside, hand-sewn and a little off-centre. That single imperfect badge carries the whole
+personality.`,
+  },
+  {
+    이름: '초록5_노랑조합', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Meadow.png', 'Butter.png', 'ButterSoft.png', 'Chalk.png'],
+    옷: `Two-tone: the huge helmet is soft sage-green while the small body below is warm
+butter-yellow, the two colours meeting in a clean stitched seam. Two round cream-white glowing
+lenses. Tiny yellow shoulder plates on the green helmet side. The pairing is fresh and cheerful
+without either colour winning.`,
+  },
+
+  /* ── 09-05 8차 — 남색을 도로 살린다 (유호 「아냐 남색계열도 좋아」) ──────────
+   * 앞서 이미 나온 남색 판(눈둘A · 눈둘C · 소유F 목도리 · 소유H 안테나)과 안 겹치게
+   * «톤»(더 짙게·더 옅게)과 «아직 안 붙인 디테일»로만 다섯을 낸다. */
+  {
+    이름: '남색1_아주짙게', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['LapisDeep.png', 'DeepWool.png', 'Chalk.png', 'Butter.png'],
+    옷: `Very deep midnight navy felt, almost black but unmistakably blue: the huge helmet is
+dark ink-navy with two round warm-gold glowing lenses that read especially bright against it.
+Fine cream piping along the helmet rim. Deep, serious, night-sky.`,
+  },
+  {
+    이름: '남색2_연한하늘', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['LapisSoft.png', 'Chalk.png', 'KCCoolBlue.png', 'Butter.png'],
+    옷: `Soft pale blue felt, gentle and washed-out like a clear morning sky: the huge helmet is
+light powder blue with two round cream-white glowing lenses. Everything low-contrast and calm,
+the felt looking especially soft. Approachable, quiet, easy.`,
+  },
+  {
+    이름: '남색3_노랑목도리', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Lapis.png', 'Butter.png', 'Chalk.png', 'Oat.png'],
+    옷: `Navy felt with the huge helmet and two cream-white glowing lenses. A small knitted
+scarf of warm butter-yellow yarn is wrapped once around where the helmet meets the little body,
+fringed ends hanging down one side. The yellow is the only warm note against all that navy.`,
+  },
+  {
+    이름: '남색4_어깨배지', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Lapis.png', 'Butter.png', 'Chalk.png', 'Coral.png'],
+    옷: `Navy felt with the huge helmet and two golden glowing lenses. On one tiny shoulder sits
+a small round felt badge — a butter-yellow circle with a cream star stitched inside, hand-sewn
+and slightly off-centre. One small imperfect thing on an otherwise regulation-tidy figure.`,
+  },
+  {
+    이름: '남색5_세월자국', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격,
+    참조: ['Lapis.png', 'Stone.png', 'Stitch.png', 'Chalk.png'],
+    옷: `Navy felt with the huge helmet and two soft white glowing lenses. The helmet carries
+gentle marks of long service — two small grey-blue patches sewn on with visible stitches in
+slightly mismatched thread, and one softly worn corner gone fuzzy. Nothing damaged, just used
+and cared for over many years.`,
+  },
 ];
 
 function 참조경로(파일들) {
