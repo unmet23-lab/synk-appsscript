@@ -276,7 +276,10 @@ test('🔴 앞 회차가 짓다 만 잔해를 이어받으면 커밋이 그렇�
     "fs.writeFileSync(out, JSON.stringify({ 상태: '완료', 요약: '새로 지은 것 없음', 바꾼파일들: [], 시험: [], 남긴것: [], 발주밖발견: [], 확신도: 0.5, 항목: [] }), 'utf8');",
   ].join('\n'), 'utf8');
   fs.writeFileSync(path.join(가짜방, 'codex.cmd'), '@echo off\r\nnode "%~dp0fakecodex.js" %*\r\n', 'utf8');
-  fs.writeFileSync(path.join(가짜방, 'codex'), '#!/bin/sh\nexec node "$(dirname "$0")/fakecodex.js" "$@"\n', { mode: 0o755 });
+  /* 🪤 껍데기에 `dirname "$0"` 을 쓰면 안 된다 — PATH 로 찾아 부르면 `$0` 이 경로가 아니라 «이름»만
+   * 와서 `.` 을 가리킨다(2026-09-05 CI 실측: 리눅스에서만 셋이 빨갰다. 윈도의 `%~dp0` 는 멀쩡했다).
+   * 자리를 절대 경로로 박는다 — 그러면 어디서 불려도 같은 것을 태운다. */
+  fs.writeFileSync(path.join(가짜방, 'codex'), `#!/bin/sh\nexec node ${JSON.stringify(path.join(가짜방, 'fakecodex.js'))} "$@"\n`, { mode: 0o755 });
 
   const 바탕 = { ...process.env, SYNK_REVIEW_RUNS: 런방, SYNK_BUILD_LEDGER: path.join(런방, '장부.jsonl'), APPDATA: 런방 };
   if (process.platform !== 'win32') 바탕.PATH = 가짜방 + path.delimiter + process.env.PATH;
@@ -344,7 +347,10 @@ test('🔴 검수가 끊긴 커밋은 다음 런이 도장을 마저 찍는다 �
     "if (out) fs.writeFileSync(out, JSON.stringify({ 상태: '완료', 요약: 'x', 바꾼파일들: [], 시험: [], 남긴것: [], 발주밖발견: [], 확신도: 0.9, 항목: [] }), 'utf8');",
   ].join('\n'), 'utf8');
   fs.writeFileSync(path.join(가짜방, 'codex.cmd'), '@echo off\r\nnode "%~dp0fakecodex.js" %*\r\n', 'utf8');
-  fs.writeFileSync(path.join(가짜방, 'codex'), '#!/bin/sh\nexec node "$(dirname "$0")/fakecodex.js" "$@"\n', { mode: 0o755 });
+  /* 🪤 껍데기에 `dirname "$0"` 을 쓰면 안 된다 — PATH 로 찾아 부르면 `$0` 이 경로가 아니라 «이름»만
+   * 와서 `.` 을 가리킨다(2026-09-05 CI 실측: 리눅스에서만 셋이 빨갰다. 윈도의 `%~dp0` 는 멀쩡했다).
+   * 자리를 절대 경로로 박는다 — 그러면 어디서 불려도 같은 것을 태운다. */
+  fs.writeFileSync(path.join(가짜방, 'codex'), `#!/bin/sh\nexec node ${JSON.stringify(path.join(가짜방, 'fakecodex.js'))} "$@"\n`, { mode: 0o755 });
 
   const env = {
     ...process.env,
@@ -417,7 +423,10 @@ test('🔴 수용 대조를 못 쟀으면 완주가 아니다 — 「미충족 0
     "if (out) fs.writeFileSync(out, JSON.stringify({ 상태: '완료', 요약: 'x', 바꾼파일들: [], 시험: [], 남긴것: [], 발주밖발견: [], 확신도: 0.9 }), 'utf8');",
   ].join('\n'), 'utf8');
   fs.writeFileSync(path.join(가짜방, 'codex.cmd'), '@echo off\r\nnode "%~dp0fakecodex.js" %*\r\n', 'utf8');
-  fs.writeFileSync(path.join(가짜방, 'codex'), '#!/bin/sh\nexec node "$(dirname "$0")/fakecodex.js" "$@"\n', { mode: 0o755 });
+  /* 🪤 껍데기에 `dirname "$0"` 을 쓰면 안 된다 — PATH 로 찾아 부르면 `$0` 이 경로가 아니라 «이름»만
+   * 와서 `.` 을 가리킨다(2026-09-05 CI 실측: 리눅스에서만 셋이 빨갰다. 윈도의 `%~dp0` 는 멀쩡했다).
+   * 자리를 절대 경로로 박는다 — 그러면 어디서 불려도 같은 것을 태운다. */
+  fs.writeFileSync(path.join(가짜방, 'codex'), `#!/bin/sh\nexec node ${JSON.stringify(path.join(가짜방, 'fakecodex.js'))} "$@"\n`, { mode: 0o755 });
 
   const 장부 = path.join(런방, '장부.jsonl');
   const env = { ...process.env, SYNK_REVIEW_RUNS: 런방, SYNK_BUILD_LEDGER: 장부, SYNK_REVIEW_LEDGER: path.join(런방, '검수기록.jsonl'), APPDATA: 런방 };
