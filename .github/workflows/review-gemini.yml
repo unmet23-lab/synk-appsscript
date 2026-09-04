@@ -85,6 +85,10 @@ jobs:
           GEMINI_CLI_TRUST_WORKSPACE: 'true'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_FREE }}
+          # 🔴 09-05: 이 잡이 «성공 도장을 받고 7.8초 만에 조용히» 끝났다(run 33922839253).
+          #   남은 자취는 `##[warning]Gemini CLI stderr was not valid JSON` 한 줄뿐이라 원인을
+          #   못 잡았다. 디버그를 켜면 CLI 가 stderr 에 사람이 읽는 줄을 남긴다.
+          GEMINI_DEBUG: 'true'
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY_FREE }}
           gemini_model: ${{ steps.model.outputs.id }}
@@ -108,3 +112,23 @@ jobs:
               "https://github.com/gemini-cli-extensions/code-review"
             ]
           prompt: '/pr-code-review'
+
+      # 🔴 09-05 에 이 잡이 **말 한 마디 없이 초록**을 냈다. 그 침묵은 「지적할 게 없다」와 구별이
+      #   안 되고, 심판은 그것을 pending 으로 세지만 **이 잡 자신은 성공으로 남아** 다음 사람이
+      #   「제미나이도 봤다」로 읽는다. 우리 프롬프트는 지적이 0건이어도 총평 한 개를 요구하므로,
+      #   코멘트가 0 이면 그것은 «검수 통과»가 아니라 «안 돌았다»다.
+      - name: The reviewer must have actually spoken
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          sleep 20   # 코멘트가 늦게 붙는 창을 준다
+          N=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+                --jq '[.[] | select((.user.login|ascii_downcase|test("gemini")) or (.body|test("\\[review-gemini\\]")))] | length')
+          echo "제미나이가 남긴 말: ${N}건"
+          if [ "${N:-0}" -eq 0 ]; then
+            echo "::error title=제미나이가 침묵했다::검수가 한 마디도 안 남겼다 — 이건 「지적 0건」이 아니라 «안 돌았다»다. 위 Run Gemini CLI 로그의 stderr 를 본다."
+            exit 1
+          fi
