@@ -165,10 +165,19 @@ test('🔑 과녁은 **프로젝트별**이다 — 처방한 커밋에 그 프�
   for (const [proj, 이름] of [[루트프로젝트, '(루트)'], [path.join(ROOT, 'crewcard'), 'crewcard']]) {
     const m = 근(proj);
     assert.ok(m, 이름 + ' 과녁이 안 나왔다 — 두 프로젝트 다 과녁이 나와야 한다');
-    const 담김 = spawnSync('git', ['-C', ROOT, 'show', '--name-only', '--format=', m[1]],
-      { encoding: 'utf8' }).stdout.split('\n').map((x) => x.trim()).filter(Boolean);
+    const r = spawnSync('git', ['-C', ROOT, 'show', '--name-only', '--format=', m[1]], { encoding: 'utf8' });
+    const 담김 = (r.stdout || '').split('\n').map((x) => x.trim()).filter(Boolean);
     const 집합 = 점검.배포집합(proj, ROOT) || [];
     assert.ok(집합.length, 이름 + ' 배포집합을 못 읽었다 — 못 읽으면 아래 판정이 언제나 초록이다');
+    /* 🔴 09-05: 「0건」이 «배포 파일이 없다»인지 «diff 를 못 읽었다»인지 갈라야 한다. 옛 판은 둘을
+     *   한 말로 냈고, 원격 CI 에서 git 이 죽으면(실측: `fatal: not a git repository`) 멀쩡한 커밋을
+     *   F292 위반으로 몰았다 — run 33915165291. 못 읽은 것은 «없음»이 아니라 «안 재봤음»이다. */
+    if (r.status !== 0 || !담김.length) {
+      console.log(`  ↷ skip: ${이름} 과녁 ${m[1]} 의 diff 를 못 읽었다`
+        + ` (git 종료 ${r.status}${r.stderr ? ' · ' + String(r.stderr).trim().split('\n')[0] : ''})`
+        + ' — 「배포 파일이 0건」이 아니라 «못 쟀다»다');
+      continue;
+    }
     assert.ok(담김.some((f) => 집합.includes(f)),
       이름 + ' 에 처방한 커밋 ' + m[1] + ' 의 diff 에 그 프로젝트 배포 파일이 0건이다 — '
       + '처방을 그대로 따라도 «범위 밖»으로 기록돼 게이트가 그대로 남는다(F292)');
