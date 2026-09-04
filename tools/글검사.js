@@ -106,10 +106,15 @@ function 재기(파일, 설정, 형식 = 'json') {
   const html = /\.html?$/i.test(절대);
   const 인자 = ['--config', 설정, '--format', 형식];
   let 결과;
+  /* 🔴 «잰 글»을 밖으로 같이 돌려준다 — 지적의 줄 번호는 **전처리된 글** 기준이다.
+   *   그걸 원본 HTML 에 대고 읽으면 style 블록 한복판이 나온다(09-04 에 내가 그렇게 읽고
+   *   「26건이 CSS 다」로 잘못 셌다). 문맥을 뽑는 쪽은 반드시 이 글을 봐야 한다. */
+  let 잰글 = '';
   try {
     const 글 = html
       ? html을글로(fs.readFileSync(절대, 'utf8'))
       : 몽골어줄지우기(md주석지우기(fs.readFileSync(절대, 'utf8')));
+    잰글 = 글;
     결과 = cp.execFileSync(process.execPath, [검사기, '-', ...인자, '--path', 파일],
       { input: 글, encoding: 'utf8', maxBuffer: 1 << 26 });
   } catch (e) {
@@ -128,8 +133,8 @@ function 재기(파일, 설정, 형식 = 'json') {
       급: f.severity ?? '',
       말: f.why ?? '',
       글: String(f.quote ?? '').slice(0, 90),
-    })) };
-  } catch { return { 파일, 지적: [], 파싱실패: 결과.slice(0, 200) }; }
+    })), 잰글 };
+  } catch { return { 파일, 지적: [], 파싱실패: 결과.slice(0, 200), 잰글 }; }
 }
 
 /** 지적 하나의 «신원» — 줄 번호는 글이 밀리면 바뀌니 «파일+규칙+글자»로 잡는다. */
@@ -215,9 +220,16 @@ if (인자.includes('--json')) {
   for (const f of 대외문안) {
     const r = 재기(f, 자고르기(f));
     if (r.없음) continue;
+    const 줄들 = String(r.잰글 || '').split('\n');
     for (const d of r.지적) {
       if (잠금 && 잠금.has(지문(f, d))) { 잠긴수++; continue; }
-      밖.push({ 파일: f, ...d });
+      /* 앞뒤를 «잰 글»에서 뜬다 — 판정에는 문단이 필요하고, 원본 파일에서 뜨면 줄이 밀려
+       * 엉뚱한 자리가 나온다(위 재기() 머리말). 앞 3줄·뒤 3줄이면 문단 하나가 들어온다. */
+      const i = (d.줄 || 1) - 1;
+      const 앞뒤 = 줄들.slice(Math.max(0, i - 3), i + 4)
+        .map((s, k) => ({ 줄: Math.max(0, i - 3) + k + 1, 여기: Math.max(0, i - 3) + k === i, 글: s.trim() }))
+        .filter((x) => x.글);
+      밖.push({ 파일: f, ...d, 앞뒤 });
     }
   }
   console.log(JSON.stringify({ 뜬때: new Date().toISOString(), 전량, 잠긴수, 건수: 밖.length, 지적: 밖 }, null, 1));
