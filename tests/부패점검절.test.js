@@ -130,6 +130,63 @@ test('③ 면제 둘 — 삭제 표식이 붙은 줄 · 시험 파일 안 따옴
   });
 });
 
+/* 🔴 2026-09-04 신설 둘 — 그날 실측에서 이 절이 **91줄 중 90줄을 헛불렀다**(진짜는 1줄).
+ *   면제가 새는 무늬가 둘이었고, 둘 다 「자를 안 재고 부르는 쪽을 고치면」 기록이 거짓이 되는 자리다. */
+test('③ 면제 — `docs/_ops/` 밑 JSON 은 «코드»가 아니라 «기록»이다(세지 말고 세어서 밝힌다)', () => {
+  픽스처((뿌리) => {
+    const 형 = path.join(path.dirname(뿌리), path.basename(뿌리) + '-형제');
+    fs.mkdirSync(path.join(형, '.git'), { recursive: true });
+    try {
+      // 운영 기록의 이름은 «부름»이 아니라 ⓐ앞으로 지을 일감이거나 ⓑ「없다」는 지적의 인용이다.
+      적기(뿌리, 'docs/_ops/어떤판/심사.json',
+        JSON.stringify({ 소견: '세는 자 = ' + 시험경로('앞으로지을것') + ' · 짓는다' }));
+      // 같은 폴더의 .js 는 «코드»라 그대로 잰다 — 면제가 폴더째 먹으면 진짜가 묻힌다.
+      적기(뿌리, 'docs/_ops/어떤판/scripts/돌리개.js', '// 이 자리는 ' + 시험경로('진짜없는것') + ' 가 지킨다');
+
+      const v = 환경('SYNK_OWNER_SIBLINGS', '../' + path.basename(형),
+        () => R.이름부름Section(뿌리));
+
+      const 이름들 = v.없는것.map((x) => x.이름);
+      assert.ok(!이름들.includes(시험경로('앞으로지을것')),
+        '🔴 기록 JSON 면제가 죽었다 — 과거 기록은 고칠 수 없어 원리상 영영 적색이 된다');
+      assert.ok(이름들.includes(시험경로('진짜없는것')),
+        '🔴 면제가 폴더째 먹었다 — `docs/_ops/` 밑 .js 는 코드라 그대로 재야 한다');
+      assert.strictEqual(v.기록JSON, 1,
+        '건너뛴 수를 안 세면 분모가 조용히 샌다 — 이 도구가 고치려는 바로 그 병이다');
+    } finally {
+      fs.rmSync(형, { recursive: true, force: true });
+    }
+  });
+});
+
+test('③ 픽스처 면제는 «문자열 구간 안»으로 잰다 — 따옴표에 딱 붙지 않아도 값이다', () => {
+  픽스처((뿌리) => {
+    const 형 = path.join(path.dirname(뿌리), path.basename(뿌리) + '-형제');
+    fs.mkdirSync(path.join(형, '.git'), { recursive: true });
+    try {
+      적기(뿌리, 시험경로('픽스처쪽'), [
+        // ⓐ 따옴표 «안»에 경로 뒤로 말이 더 붙은 기대값 — 앞판은 뒤 글자가 공백이라 면제가 풀렸다
+        "assert.deepStrictEqual(r, ['" + 시험경로('뒤에말붙음') + " (고쳤다)']);",
+        // ⓑ 앞에 한 겹 더 붙은 경로 — 매치가 중간부터라 앞 글자가 빗금이었다
+        "assert.ok(시험파일인가('a/" + 시험경로('앞에겹붙음') + "'));",
+        // ⓒ 산문 강조(백틱)는 여전히 «부름»이다 — 08-30 에 그 규칙이 진짜 7줄을 삼켰다
+        '// ' + 백틱 + 시험경로('산문강조2') + 백틱 + ' 가 이 자리를 진다',
+      ].join('\n'));
+
+      const v = 환경('SYNK_OWNER_SIBLINGS', '../' + path.basename(형),
+        () => R.이름부름Section(뿌리));
+
+      const 이름들 = v.없는것.map((x) => x.이름);
+      assert.ok(!이름들.includes(시험경로('뒤에말붙음')), '문자열 안인데 부름으로 셌다(ⓐ)');
+      assert.ok(!이름들.includes(시험경로('앞에겹붙음')), '문자열 안인데 부름으로 셌다(ⓑ)');
+      assert.ok(이름들.includes(시험경로('산문강조2')),
+        '🔴 백틱까지 면제하면 진짜 신호가 걷힌다 — 면제가 병이 된 자리');
+    } finally {
+      fs.rmSync(형, { recursive: true, force: true });
+    }
+  });
+});
+
 test('③ 확장자 뒤에 글자가 이어지면 다른 파일이다 — .json 을 .js 로 잡지 않는다', () => {
   픽스처((뿌리) => {
     const 형 = path.join(path.dirname(뿌리), path.basename(뿌리) + '-형제');
