@@ -28,29 +28,47 @@
           },
           {
             "이름": "라피스 펠트",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_라피스펠트",
+            "규격": "천",
+            "지시": "A flat sheet of densely needle-felted wool in a deep lapis blue, the fibres matted evenly in every direction."
           },
           {
             "이름": "메도우 펠트",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_메도우펠트",
+            "규격": "천",
+            "지시": "A flat sheet of densely needle-felted wool in a soft meadow green, the fibres matted evenly in every direction."
           },
           {
             "iso": true,
             "이름": "버터 펠트",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_버터펠트",
+            "규격": "천",
+            "지시": "A flat sheet of densely needle-felted wool in a warm butter yellow, the fibres matted evenly in every direction."
           },
           {
             "이름": "리넨 캔버스",
             "상태": "아직",
-            "메모": "펠트 말고 다른 결이 한 벌 있어야 지면끼리 구분된다"
+            "메모": "펠트 말고 다른 결이 한 벌 있어야 지면끼리 구분된다",
+            "쇠": "공방_리넨캔버스",
+            "규격": "천",
+            "지시": "A flat piece of natural undyed linen canvas, the open plain weave clearly visible, slubs and irregular threads running through it."
           },
           {
             "이름": "누빔(퀼팅) 천",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_누빔퀼팅천",
+            "규격": "천",
+            "지시": "A flat piece of quilted cotton in warm cream, stitched in an even diamond grid, each diamond softly puffed between the stitch lines."
           },
           {
             "이름": "코듀로이",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_코듀로이",
+            "규격": "천",
+            "지시": "A flat piece of cotton corduroy in warm coral, fine even wales running vertically, the pile catching light along each ridge."
           }
         ]
       },
@@ -76,27 +94,45 @@
           },
           {
             "이름": "꽃 아플리케",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_꽃아플리케",
+            "규격": "부품",
+            "지시": "A small five petal flower cut from wool felt in warm coral, the petals slightly overlapping, its centre a tight cluster of french knots in cream thread."
           },
           {
             "이름": "잎사귀 조각",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_잎사귀조각",
+            "규격": "부품",
+            "지시": "A single leaf shape cut from meadow green wool felt, one central vein hand stitched down its length in cream thread with small even stitches."
           },
           {
             "이름": "작은 깃발",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_작은깃발",
+            "규격": "부품",
+            "지시": "A small triangular pennant of butter yellow wool felt sewn onto a short pale wooden stick, the felt edge cut with a gentle wave."
           },
           {
             "이름": "테두리 레이스",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_테두리레이스",
+            "규격": "부품",
+            "지시": "A short strip of hand crocheted cream cotton lace with a scalloped edge, lying flat and slightly curved."
           },
           {
             "이름": "코너 장식",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_코너장식",
+            "규격": "부품",
+            "지시": "A quarter rosette ornament cut from wool felt in warm coral, its two straight edges meeting at a clean right angle, the curved edge scalloped and blanket stitched in cream thread."
           },
           {
             "이름": "매듭 끈",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_매듭끈",
+            "규격": "부품",
+            "지시": "A length of twisted cotton cord in warm coral tied into one simple overhand knot near the middle, both ends trailing loosely."
           }
         ]
       },
@@ -158,57 +194,38 @@
           {
             "이름": "펠트 지구본",
             "상태": "아직",
-            "메모": "한국과 몽골을 잇는 그림"
+            "메모": "한국과 몽골을 잇는 그림",
+            "쇠": "공방_펠트지구본",
+            "규격": "장면",
+            "지시": "A small globe made entirely of felted wool, the continents appliqued in meadow green onto a deep lapis blue ocean, one thin cream thread arcing across it between two hand stitched dots."
           },
           {
             "이름": "펠트 여권·비자",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_펠트여권비자",
+            "규격": "장면",
+            "지시": "A passport sized booklet sewn from wool felt in deep lapis blue, a simple blank crest hand embroidered on the cover in butter yellow thread, a narrow felt ribbon marking a page."
           },
           {
             "이름": "펠트 책 한 권",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_펠트책한권",
+            "규격": "장면",
+            "지시": "A small closed book bound in warm coral wool felt, the stacked pages cream and slightly uneven, a thin cord bookmark escaping from the top."
           },
           {
             "이름": "펠트 계단(성장)",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_펠트계단성장",
+            "규격": "장면",
+            "지시": "Three small square blocks of felted wool stacked into rising steps, cream then butter yellow then warm coral, climbing from left to right."
           },
           {
             "이름": "펠트 창문",
-            "상태": "아직"
-          }
-        ]
-      }
-    ]
-  },
-  "블렌더": {
-    "_왜 이쪽인가": "재현이 필요하고 UI 에 정확히 앉아야 하는 것. 씨앗이 고정돼 언제든 같은 그림이 다시 나온다. 돈 0.",
-    "_한도": "한 장 2~3분 · 램 16GB 한 대 · 전량이면 8시간. 밤 배치로만 돌린다.",
-    "묶음": [
-      {
-        "이름": "부품 색 갈래",
-        "쓰는 곳": "앱 UI · 지면 부품",
-        "상태": "9종 × 1색",
-        "메모": "🔴 여기가 유호님이 09-05 에 짚으신 «맨날 똑같은 코랄»의 자리다. 색은 42개인데 부품 자산이 9종뿐이고 색 갈래가 없다.",
-        "것들": [
-          {
-            "이름": "단추민판 — 라피스·메도우·버터·무채",
-            "상태": "아직"
-          },
-          {
-            "이름": "매듭점 — 코랄·라피스·메도우",
-            "상태": "아직"
-          },
-          {
-            "이름": "폼폼민방울 — 라피스·메도우·버터",
-            "상태": "아직"
-          },
-          {
-            "이름": "체크 — 메도우(완료)·무채(대기)",
-            "상태": "아직"
-          },
-          {
-            "이름": "도장 — 코랄·라피스",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_펠트창문",
+            "규격": "장면",
+            "지시": "A small window frame sewn from cream wool felt with four panes, a butter yellow felt curtain gathered to one side and tied with a cord."
           }
         ]
       },
@@ -219,30 +236,85 @@
         "것들": [
           {
             "이름": "화살표(네 방향)",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_화살표네방향",
+            "규격": "부품",
+            "지시": "A short thick arrow cut from wool felt in warm coral, pointing to the right, its edges hand stitched with a running stitch in cream thread."
           },
           {
             "이름": "닫기(가위표)",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_닫기가위표",
+            "규격": "부품",
+            "지시": "Two short thick bars cut from wool felt in warm coral, crossing at their centres to form an X, each bar edge stitched in cream thread."
           },
           {
             "이름": "더보기(점 셋)",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_더보기점셋",
+            "규격": "부품",
+            "지시": "Three small round felted wool dots in warm coral, sitting in one evenly spaced horizontal row."
           },
           {
             "이름": "잠금",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_잠금",
+            "규격": "부품",
+            "지시": "A small padlock shape cut from wool felt in warm coral, its shackle a separate arc of twisted cream cord passing through the top."
           },
           {
             "이름": "종(알림)",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_종알림",
+            "규격": "부품",
+            "지시": "A small bell shape sewn from butter yellow wool felt, its edge blanket stitched in cream thread, a tiny cream felt clapper hanging below."
           },
           {
             "이름": "진행 막대",
-            "상태": "아직"
+            "상태": "아직",
+            "쇠": "공방_진행막대",
+            "규격": "부품",
+            "지시": "A short rounded capsule of wool felt in warm coral, its left portion a slightly raised meadow green felt band, like a progress meter sewn from cloth."
           }
-        ]
+        ],
+        "_옮긴 이유": "유호 확정 09-05 「일단 당분간은 블렌더는 제미나이 없을때 사용하는거로 하자」 — 블렌더로 세우려면 형태 함수를 새로 짜야 해 한 종에 몇 시간이 든다. 제미나이는 문장 한 줄에 30초다."
       }
     ]
+  },
+  "블렌더": {
+    "_왜 이쪽인가": "재현이 필요하고 UI 에 정확히 앉아야 하는 것. 씨앗이 고정돼 언제든 같은 그림이 다시 나온다. 돈 0.",
+    "_한도": "한 장 2~3분 · 램 16GB 한 대 · 전량이면 8시간. 밤 배치로만 돌린다.",
+    "묶음": [
+      {
+        "이름": "부품 색 갈래",
+        "쓰는 곳": "앱 UI · 지면 부품",
+        "상태": "재염색이 한다(굽지 않는다)",
+        "메모": "🔴 여기가 유호님이 09-05 에 짚으신 «맨날 똑같은 코랄»의 자리다. 색은 42개인데 부품 자산이 9종뿐이고 색 갈래가 없다.",
+        "것들": [
+          {
+            "이름": "단추민판 — 라피스·메도우·버터·무채",
+            "상태": "재염색"
+          },
+          {
+            "이름": "매듭점 — 코랄·라피스·메도우",
+            "상태": "재염색"
+          },
+          {
+            "이름": "폼폼민방울 — 라피스·메도우·버터",
+            "상태": "재염색"
+          },
+          {
+            "이름": "체크 — 메도우(완료)·무채(대기)",
+            "상태": "재염색"
+          },
+          {
+            "이름": "도장 — 코랄·라피스",
+            "상태": "재염색"
+          }
+        ],
+        "_왜 안 굽나": "09-05 실측: 이미 구운 판에 `python tools/펠트색갈이.py <입력> <출력> --목표 \"#색\" --색상만` 을 걸면 돈 0원·한 장 3초로 색 갈래가 나온다. 굽는 일이 아니라 «후처리»다. 🔑 --색상만 을 반드시 준다 — 킷 색을 그대로 목표로 주면 원본보다 채도가 확 올라 쨍해진다(유호 지적 09-05 「너무 쨍한데? 잘 안보일정도야」)."
+      }
+    ],
+    "_지위": "⚠ 예비 통로다(유호 확정 09-05) — 제미나이를 못 쓸 때만 온다. 이미 구운 부품 9종은 계속 쓴다."
   }
 }

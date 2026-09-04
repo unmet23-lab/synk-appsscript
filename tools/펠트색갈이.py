@@ -164,6 +164,22 @@ def hexs(rgb):
     return ''.join('%02X' % max(0, min(255, round(c))) for c in rgb)
 
 
+def lab2rgb(L, a, b):
+    """Lab → sRGB. `--색상만` 이 «원본의 결에 목표 색상만 얹은 색»을 지어내는 데 쓴다."""
+    fy = (L + 16) / 116.0
+    fx = fy + a / 500.0
+    fz = fy - b / 200.0
+
+    def g(t):
+        return t ** 3 if t ** 3 > 0.008856 else (t - 16.0 / 116) / 7.787
+
+    X, Y, Z = g(fx) * 0.95047, g(fy) * 1.0, g(fz) * 1.08883
+    r = X * 3.2404542 + Y * -1.5371385 + Z * -0.4985314
+    gg = X * -0.9692660 + Y * 1.8760108 + Z * 0.0415560
+    bb = X * 0.0556434 + Y * -0.2040259 + Z * 1.0572252
+    return tuple(_to_srgb(v) for v in (r, gg, bb))
+
+
 def 적용(px, W, H, 게인, 무릎, 전면=False):
     """게인을 선형광에서 곱한다. 같은 RGB 는 같은 답이라 캐시로 접는다(보정 회차의 비용).
     전면=True(무채 base): 마스크를 끈다 — 전면이 천이라 지킬 것이 없다(자격 검사가 선행)."""
@@ -209,6 +225,12 @@ def main():
                     help='하이라이트 압축 시작점(선형광 0~1). 낮추면 결이 살고 코어가 목표에서 멀어진다')
     ap.add_argument('--보정', type=int, default=3,
                     help='조준 보정 회차(닫힌 루프). 1 이면 한 번만 곱하고 끝낸다')
+    ap.add_argument('--색상만', action='store_true',
+                    help='목표 색에서 «색상»만 가져오고 채도·밝기는 원본 그대로 둔다 — 「색만 바꾸고 결은 그대로」. '
+                         '왜(유호 지적 09-05 「라피스랑 메도우 버전은 너무 쨍한데? 잘 안보일정도야」): '
+                         '킷 색을 그대로 목표로 주면 원본보다 채도가 확 오른다. 양모는 킷 색을 채도 62%% 로 '
+                         '앉히기 때문이다(블렌더 부품 실측). 이 손잡이는 그 비율을 «그림마다» 알아서 지킨다. '
+                         '밝기도 원본 평균에 자동으로 못 박는다')
     ap.add_argument('--밝기', type=float,
                     help='보이는 평균 L*(밝기)를 이 값에 못 박는다. 안 주면 색만 맞추고 밝기는 흐르는 대로 둔다. '
                          '왜 필요한가(09-05 실측): 코어를 목표색에 맞추면 «어두운 그림일수록 게인이 크게 걸려» '
@@ -296,6 +318,16 @@ def main():
 
     원본코어 = 좌표평균(px)
     목표 = hex2rgb(a.목표)
+
+    if a.색상만:
+        # 원본의 «결»(밝기·채도)을 그대로 두고 목표의 «색상»만 얹는다.
+        oL, oa, ob = lab(원본코어)
+        oC = math.hypot(oa, ob)
+        _, ta, tb = lab(목표)
+        th = math.atan2(tb, ta)
+        목표 = tuple(round(v) for v in lab2rgb(oL, oC * math.cos(th), oC * math.sin(th)))
+        print(f'   색상만 — 원본 결(L*{oL:.1f} 채도 {oC:.1f})에 {a.목표.upper()} 의 색상만 얹는다 → #{hexs(목표)}')
+
     print(f'■ 입력  {a.입력}')
     print(f'   코어 #{hexs(원본코어)}  (좌표 {len(코어좌표):,}점으로 못박음)  → 목표 {a.목표.upper()}')
 
@@ -335,6 +367,9 @@ def main():
                     continue
                 s += lab(image_px[x, y][:3])[0]; n += 1
         return s / max(n, 1)
+
+    if a.색상만 and a.밝기 is None:
+        a.밝기 = 보이는평균L(px)      # 원본의 «보이는 밝기»를 그대로 지킨다
 
     if a.밝기 is not None:
         전 = 보이는평균L(out.load())
