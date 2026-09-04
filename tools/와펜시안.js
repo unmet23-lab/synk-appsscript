@@ -54,10 +54,15 @@ function 인라인(파일, 폭) {
 function 밝기(파일) {
   if (!fs.existsSync(파일)) return null;
   try {
-    /* 알파가 있는 화소만 남기고 1×1 로 줄여 평균색을 읽는다 — 배경(투명)이 평균을 안 끌어내린다. */
+    /* 알파가 있는 화소만 남기고 1×1 로 줄여 평균색을 읽는다 — 배경(투명)이 평균을 안 끌어내린다.
+     * 🔴 2026-09-04 — 알파를 읽는 함수 이름이 틀려 이 통로가 통째로 죽어 있었다.
+     *   `a(X,Y)` 는 geq 에 없는 이름이라 ffmpeg 가 「Unknown function in 'a(X,Y)'」로 즉사했고,
+     *   아래 catch 가 null 을 삼켜 **지면에 밝기 숫자가 한 번도 안 나왔다**(codex P1 `7acc4885a361`).
+     *   실측(ffmpeg 8.1.2): a(X,Y) ❌ · alpha(X,Y) ✅. 알파 평면의 이름은 `alpha` 다.
+     * ⚠ 「투명 화소가 평균을 끌어내리나」는 **안 재봤다** — 이 줄이 고친 것은 «죽은 통로»뿐이다. */
     const 임시 = path.join(os.tmpdir(), `와펜밝기-${process.pid}-${path.basename(파일, '.png')}.txt`);
     execFileSync('ffmpeg', ['-y', '-i', 파일, '-vf',
-      'format=rgba,geq=r=r(X\\,Y):g=g(X\\,Y):b=b(X\\,Y):a=a(X\\,Y),scale=1:1,format=rgb24',
+      'format=rgba,geq=r=r(X\\,Y):g=g(X\\,Y):b=b(X\\,Y):a=alpha(X\\,Y),scale=1:1,format=rgb24',
       '-f', 'rawvideo', 임시], { stdio: 'ignore' });
     const b = fs.readFileSync(임시); try { fs.unlinkSync(임시); } catch { /* */ }
     if (b.length < 3) return null;
