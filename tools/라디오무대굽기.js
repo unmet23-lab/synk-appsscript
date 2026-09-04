@@ -115,6 +115,91 @@ never blue, never black — densely embroidered with MANY stars: dozens of tiny 
 knots plus a scattering of larger six-armed star stitches, thickest near the top of the frame.
 The warm brown sky and the cool glowing water are the two halves of this picture.`,
   },
+
+  /* ── 09-05 신설 (유호 지시) ────────────────────────────────────────────────
+   * 「전자도 한번 구워줘 · 새 해변 배경이랑 차분도 · 도시느낌의 배경도 하나 ·
+   *  전부 아름다운느낌이면 좋겠어 그리고 드림코어느낌의 정말 아름답고 황홀한 느낌으로도 몇장」
+   * 🔑 드림코어는 결 하나가 아니라 «셋»으로 나눴다 — 같은 낱말로 세 번 부르면 비슷한 것만 나온다.
+   *   하늘/물/들판으로 장면을 갈라야 세 장이 서로 다른 아름다움을 낸다. */
+
+  house: {
+    이름: '전자 — 밤의 네온 항구',
+    참조: ['Lapis.png', 'LapisDeep.png', 'Pop.png', 'DeepWool.png'],
+    장면: `A tiny felt night harbour seen across still black water, lit by neon.
+The horizon sits LOW in the upper third; the lower HALF is calm dark water of deep indigo
+wool, glassy and smooth, carrying long vertical reflections of coloured light stitched in
+glossy floss — magenta, cyan and warm amber streaks running down toward the viewer.
+Far away along the horizon, a low skyline of simple felt blocks in deep navy and charcoal,
+each tiny window a single bright french knot. A few slim felt light poles stand at the far
+left and far right edges, each topped with a glowing bead of pale wool wrapped in a halo of
+loose roving. Thin ribbons of magenta and cyan roving drift low over the water as neon haze.
+THE SKY: deep midnight indigo felt graded to warm violet near the horizon, with a soft
+electric glow rising off the distant city. Cool, sleek, quietly euphoric night mood.`,
+  },
+
+  city: {
+    이름: '도시 — 비 갠 저녁의 골목 옥상',
+    참조: ['Stone.png', 'Ash.png', 'Butter.png', 'Lapis.png'],
+    장면: `A tiny felt city rooftop view at blue hour, just after rain.
+The lower edge is a low felt parapet wall of textured grey stone-coloured wool, running
+along the very bottom of the frame. Beyond and below it, layered rows of small felt rooftops
+and building blocks recede into the distance at the far left and far right, built from
+grey, ash and soft slate wool, each lit window a warm butter-yellow french knot, hundreds of
+them scattered like embers. A few slim felt antennas and a water tank sit at the extreme left
+edge; a string of tiny bulb lights is strung across the top right corner on a thread.
+Wet rooftops catch light in long soft stitched highlights. Thin sheets of white roving mist
+lie between the building layers, making each row further away paler than the last.
+THE SKY: a deep dusky blue felt washed with warm amber near the low horizon where the sun
+just left, one or two long clouds of loose roving. Melancholy, warm, beautiful city calm.`,
+  },
+
+  dream_sky: {
+    이름: '드림코어 — 구름 위의 계단',
+    참조: ['LapisSoft.png', 'CoralSoft.png', 'ButterSoft.png', 'Chalk.png'],
+    장면: `A tiny surreal felt dreamscape floating in an endless pastel sky.
+The whole frame is filled with soft billowing clouds of white and pale pink wool roving,
+piled thick along the bottom edge like a sea of fleece and thinning to open sky above.
+At the far left edge, a short flight of pale felt steps rises out of the cloud and simply
+ends in mid-air. At the far right, a single doorway frame of cream felt stands free with
+nothing behind it, its opening filled with a softer, brighter light than the sky around.
+Small pale spheres of wool drift weightlessly at different depths, some near and blurred,
+some far and tiny. Long thin stitches of iridescent floss arc between them like faint threads.
+THE SKY: an impossibly beautiful gradient of pale lilac, peach, mint and cream felt, glowing
+from within, with a soft halo bloom near the upper right. Weightless, nostalgic, euphoric —
+the feeling of a half-remembered dream you did not want to leave.`,
+  },
+
+  dream_water: {
+    이름: '드림코어 — 끝없는 거울 물',
+    참조: ['LapisSoft.png', 'Chalk.png', 'PopSoft.png', 'Stone.png'],
+    장면: `A tiny surreal felt dreamscape: an endless shallow mirror of water under a vast sky.
+The lower two thirds is perfectly still pale water — smooth felt in soft lilac-grey, so calm
+it doubles everything above it in a soft blurred reflection, its surface marked only by a few
+faint concentric ripple rings of running stitch. The horizon is a single clean line very low
+in the frame. Scattered far along that horizon, at the left and right edges only, stand a few
+tall thin felt arches and one lone rounded doorway, small and pale, each mirrored below.
+Two or three soft glowing orbs of cream wool hover above the water near the edges, each with
+a gentle bloom and a faint reflected twin. Thin veils of white roving mist lie on the water.
+THE SKY: an enormous gradient of pale rose, periwinkle and cream felt with a low soft sun
+of butter wool near the horizon, its light spilling across the mirror in a long stitched path.
+Silent, vast, achingly beautiful — stillness that feels like it goes on forever.`,
+  },
+
+  dream_field: {
+    이름: '드림코어 — 빛나는 들판',
+    참조: ['MeadowSoft.png', 'CoralSoft.png', 'ButterSoft.png', 'Chalk.png'],
+    장면: `A tiny surreal felt dreamscape: a rolling meadow glowing at the last light of day.
+The lower half is soft rolling ground of pale sage and mint wool, its surface embroidered all
+over with thousands of tiny stitches suggesting grass, and dotted with small pale flowers made
+of french knots in cream and blush. Fireflies — dozens of tiny glowing beads of butter wool
+with soft halos — drift at every depth, thickest near the left and right edges, sparse in the
+middle. A few slender felt stems and seed heads lean in from the very bottom edge, close to
+the lens and softly out of focus. Far away on the low horizon, a line of small simplified
+felt trees, hazy and pale. Long sheets of golden roving haze lie across the field.
+THE SKY: a breathtaking gradient of warm apricot, blush pink and pale gold felt rising into
+soft lavender, with the sun just below the horizon throwing a glow up through the haze.
+Warm, golden, overwhelmingly beautiful — the last perfect minute of a summer evening.`,
+  },
 };
 
 function 참조경로(파일들) {
