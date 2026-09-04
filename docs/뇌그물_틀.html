@@ -1,0 +1,508 @@
+<title>SYNK 기억 그물</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --종이:#FBF7F0; --면:#F5F0E7; --올린면:#FFFFFF;
+  --잉크:#2B2320; --보조:#8D857A; --여린:#C7BFB2;
+  --실:#D8CFC2; --실진:#B3A99A;
+  --테두리:#E4DACA;
+  --일감:#3D6BC9; --지시:#F96859; --참고:#5F9440; --유호:#B98A0C;
+  --일감면:#3D6BC9; --지시면:#F96859; --참고면:#7DB45A; --유호면:#F5C445;
+  --그림자:0 1px 2px rgba(43,35,32,.06), 0 8px 24px rgba(43,35,32,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --종이:#080605; --면:#171310; --올린면:#2B2320;
+    --잉크:#FBF7F0; --보조:#A99F92; --여린:#575046;
+    --실:#3A342E; --실진:#5E564C;
+    --테두리:#332C26;
+    --일감:#9DBBF2; --지시:#FBB7A3; --참고:#B7D89C; --유호:#FFDE8A;
+    --일감면:#5B87DB; --지시면:#FD9C87; --참고면:#8FC16C; --유호면:#F5C445;
+    --그림자:0 1px 2px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --종이:#080605; --면:#171310; --올린면:#2B2320;
+  --잉크:#FBF7F0; --보조:#A99F92; --여린:#575046;
+  --실:#3A342E; --실진:#5E564C;
+  --테두리:#332C26;
+  --일감:#9DBBF2; --지시:#FBB7A3; --참고:#B7D89C; --유호:#FFDE8A;
+  --일감면:#5B87DB; --지시면:#FD9C87; --참고면:#8FC16C; --유호면:#F5C445;
+  --그림자:0 1px 2px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--종이); color:var(--잉크);
+  font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.판{display:grid; grid-template-columns:308px 1fr; height:100vh; height:100dvh; overflow:hidden}
+
+/* ── 옆 패널 ─────────────────────────────── */
+.옆{
+  background:var(--면); border-right:1px solid var(--테두리);
+  display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden;
+}
+.머리{padding:22px 20px 16px; border-bottom:1px solid var(--테두리)}
+.이름{font-family:'Gowun Dodum',serif; font-size:23px; line-height:1.25; margin:0 0 4px; letter-spacing:-.01em}
+.한줄{margin:0; font-size:12.5px; color:var(--보조); line-height:1.5}
+
+.셈{display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--테두리)}
+.셈 > div{padding:13px 20px}
+.셈 > div + div{border-left:1px solid var(--테두리)}
+.수{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums; font-size:25px; line-height:1; display:block}
+.수딱지{font-size:11px; color:var(--보조); margin-top:5px; display:block; letter-spacing:.03em}
+
+.칸{padding:16px 20px; border-bottom:1px solid var(--테두리)}
+.칸딱지{font-size:10.5px; letter-spacing:.09em; color:var(--보조); text-transform:uppercase; margin:0 0 10px; font-weight:600}
+
+.찾기{position:relative}
+.찾기 input{
+  width:100%; padding:9px 11px 9px 30px; font:inherit; font-size:13px;
+  background:var(--올린면); color:var(--잉크);
+  border:1px solid var(--테두리); border-radius:7px; outline:none;
+}
+.찾기 input::placeholder{color:var(--여린)}
+.찾기 input:focus{border-color:var(--지시); box-shadow:0 0 0 3px color-mix(in srgb, var(--지시) 18%, transparent)}
+.돋보기{position:absolute; left:10px; top:50%; transform:translateY(-50%); width:13px; height:13px; opacity:.5; pointer-events:none}
+.맞음{margin:8px 0 0; padding:0; list-style:none; max-height:186px; overflow-y:auto}
+.맞음 li{margin:0}
+.맞음 button{
+  width:100%; text-align:left; background:none; border:0; cursor:pointer;
+  padding:6px 8px; border-radius:6px; font:inherit; font-size:12px; color:var(--잉크);
+  display:flex; align-items:center; gap:7px; line-height:1.3;
+}
+.맞음 button:hover,.맞음 button:focus-visible{background:var(--올린면); outline:none}
+.맞음 .알{width:7px; height:7px; border-radius:50%; flex:0 0 auto}
+.맞음 .글{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+.범례{display:flex; flex-direction:column; gap:2px}
+.갈래{
+  display:flex; align-items:center; gap:9px; width:100%;
+  background:none; border:0; cursor:pointer; padding:6px 8px; margin:0 -8px;
+  border-radius:6px; font:inherit; font-size:12.5px; color:var(--잉크); text-align:left;
+}
+.갈래:hover{background:var(--올린면)}
+.갈래:focus-visible{outline:2px solid var(--지시); outline-offset:1px}
+.갈래[aria-pressed="false"]{opacity:.36}
+.갈래 .알{width:11px; height:11px; border-radius:50%; flex:0 0 auto}
+.갈래 .수2{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--보조); font-variant-numeric:tabular-nums}
+
+.상세{padding:16px 20px; flex:1}
+.상세 .비었을때{font-size:12.5px; color:var(--보조); line-height:1.65; margin:0}
+.점이름{font-family:'IBM Plex Mono',monospace; font-size:13.5px; line-height:1.35; margin:0 0 3px; word-break:break-all}
+.점갈래{font-size:11px; color:var(--보조); margin:0 0 11px; display:flex; align-items:center; gap:6px}
+.점갈래 .알{width:8px; height:8px; border-radius:50%}
+.점설명{font-size:12.5px; line-height:1.65; margin:0 0 13px; color:var(--잉크)}
+.쪽지표{display:grid; grid-template-columns:auto 1fr; gap:5px 12px; font-size:12px; margin:0 0 13px}
+.쪽지표 dt{color:var(--보조)}
+.쪽지표 dd{margin:0; font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums}
+.이웃딱지{font-size:10.5px; letter-spacing:.09em; color:var(--보조); text-transform:uppercase; margin:0 0 7px; font-weight:600}
+.이웃{margin:0; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:4px}
+.이웃 button{
+  background:var(--올린면); border:1px solid var(--테두리); border-radius:20px;
+  padding:3px 9px; font:inherit; font-size:11px; cursor:pointer; color:var(--잉크);
+  font-family:'IBM Plex Mono',monospace; max-width:100%; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap;
+}
+.이웃 button:hover{border-color:var(--실진)}
+.닫기{
+  background:none; border:1px solid var(--테두리); border-radius:6px; cursor:pointer;
+  font:inherit; font-size:11.5px; color:var(--보조); padding:4px 10px; margin-top:4px;
+}
+.닫기:hover{color:var(--잉크); border-color:var(--실진)}
+
+.발{padding:13px 20px 18px; font-size:11px; color:var(--보조); line-height:1.6; border-top:1px solid var(--테두리)}
+.발 b{color:var(--잉크); font-weight:500}
+
+/* ── 그물판 ─────────────────────────────── */
+.그물{position:relative; overflow:hidden; background:var(--종이)}
+#판{display:block; width:100%; height:100%; cursor:grab}
+#판.끄는중{cursor:grabbing}
+.쪽지{
+  position:absolute; pointer-events:none; z-index:5;
+  background:var(--올린면); border:1px solid var(--테두리); border-radius:8px;
+  padding:8px 11px; box-shadow:var(--그림자); max-width:280px;
+  font-size:12px; line-height:1.5; opacity:0; transition:opacity .12s;
+}
+.쪽지.보임{opacity:1}
+.쪽지 b{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; display:block; margin-bottom:3px; word-break:break-all}
+.쪽지 span{color:var(--보조); font-size:11.5px}
+.단추들{position:absolute; right:14px; top:14px; display:flex; gap:6px; z-index:4}
+.단추{
+  background:var(--올린면); border:1px solid var(--테두리); border-radius:7px;
+  padding:6px 11px; font:inherit; font-size:11.5px; cursor:pointer; color:var(--잉크);
+  box-shadow:var(--그림자);
+}
+.단추:hover{border-color:var(--실진)}
+.단추:focus-visible{outline:2px solid var(--지시); outline-offset:1px}
+.안내{
+  position:absolute; left:14px; bottom:14px; font-size:11px; color:var(--보조);
+  background:color-mix(in srgb, var(--종이) 84%, transparent); padding:5px 10px;
+  border-radius:6px; z-index:4; pointer-events:none;
+}
+
+@media (max-width:860px){
+  .판{grid-template-columns:1fr; grid-template-rows:1fr auto; height:100dvh}
+  .옆{grid-row:2; border-right:0; border-top:1px solid var(--테두리); max-height:47dvh}
+  .그물{grid-row:1}
+  .상세{flex:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="판">
+  <aside class="옆">
+    <div class="머리">
+      <h1 class="이름">SYNK 기억 그물</h1>
+      <p class="한줄">회사의 뇌에 쌓인 판정과, 그것들이 서로를 인용한 자국.</p>
+    </div>
+
+    <div class="셈">
+      <div><span class="수" id="셈점">0</span><span class="수딱지">판정</span></div>
+      <div><span class="수" id="셈선">0</span><span class="수딱지">이어진 자국</span></div>
+    </div>
+
+    <div class="칸">
+      <p class="칸딱지">찾기</p>
+      <div class="찾기">
+        <svg class="돋보기" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5 14 14" stroke-linecap="round"/>
+        </svg>
+        <input id="찾기칸" type="search" placeholder="이름·설명으로 찾기" autocomplete="off" aria-label="판정 찾기">
+      </div>
+      <ul class="맞음" id="맞음"></ul>
+    </div>
+
+    <div class="칸">
+      <p class="칸딱지">실 넷 · 눌러서 켜고 끄기</p>
+      <div class="범례" id="범례"></div>
+    </div>
+
+    <div class="상세" id="상세">
+      <p class="비었을때">점을 누르면 그 판정이 무엇이고 어디에 이어졌는지 여기 뜹니다. 큰 점일수록 다른 판정이 많이 인용한 것입니다.</p>
+    </div>
+
+    <div class="발">
+      <b id="잰날">—</b> 기준 · 상주 <b id="셈상주">0</b>벌은 세션마다 실리고, 나머지는 보존 서가에 있습니다.
+    </div>
+  </aside>
+
+  <div class="그물">
+    <canvas id="판"></canvas>
+    <div class="단추들">
+      <button class="단추" id="맞추기" type="button">전체 보기</button>
+      <button class="단추" id="테마" type="button">밤/낮</button>
+    </div>
+    <div class="쪽지" id="쪽지" role="status"></div>
+    <p class="안내">끌어서 옮기고, 굴려서 확대. 점을 누르면 이어진 곳만 밝아집니다.</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script type="application/json" id="자료">/*__DATA__*/</script>
+<script>
+(function(){
+'use strict';
+const 자료 = JSON.parse(document.getElementById('자료').textContent);
+
+const 갈래표 = {
+  project:   {이름:'일감',        토큰:'--일감면', 글:'--일감'},
+  feedback:  {이름:'유호님 지시', 토큰:'--지시면', 글:'--지시'},
+  reference: {이름:'참고',        토큰:'--참고면', 글:'--참고'},
+  user:      {이름:'유호님 자신', 토큰:'--유호면', 글:'--유호'},
+};
+const 기본갈래 = {이름:'그 밖', 토큰:'--실진', 글:'--보조'};
+const 갈래정보 = t => 갈래표[t] || 기본갈래;
+const 색 = 이름 => getComputedStyle(document.documentElement).getPropertyValue(이름).trim();
+
+/* ── 자료 정리 ─────────────────────────── */
+const 점들 = 자료.nodes.map(n => Object.assign({}, n));
+const 색인 = new Map(점들.map(n => [n.id, n]));
+const 선들 = 자료.edges.map(([s,t,k]) => ({source:색인.get(s), target:색인.get(t), k}));
+const 이웃 = new Map(점들.map(n => [n.id, new Set()]));
+for (const e of 선들){ 이웃.get(e.source.id).add(e.target.id); 이웃.get(e.target.id).add(e.source.id); }
+
+const 반지름 = n => 3.2 + Math.sqrt(n.in) * 2.9;
+점들.forEach(n => { n.r = 반지름(n); });
+
+document.getElementById('셈점').textContent = 점들.length.toLocaleString('ko-KR');
+document.getElementById('셈선').textContent = 선들.length.toLocaleString('ko-KR');
+document.getElementById('셈상주').textContent = 점들.filter(n => n.live === 1).length;
+document.getElementById('잰날').textContent = 자료.잰날;
+
+/* ── 자리 잡기: 화면에 뜨기 전에 미리 굳힌다 ── */
+const 폭0 = 1600, 높0 = 1150;
+const 힘 = d3.forceSimulation(점들)
+  .force('선', d3.forceLink(선들).id(d => d.id).distance(l => 62 + 34 / Math.sqrt(l.source.in + l.target.in + 2)).strength(0.3))
+  .force('밀침', d3.forceManyBody().strength(d => -150 - d.r * 22).distanceMax(900))
+  // 약한 중심 인력 — 외톨이가 화면 밖으로 달아나 나머지를 한쪽에 몰지 않게 한다
+  .force('가로', d3.forceX(폭0/2).strength(0.035))
+  .force('세로', d3.forceY(높0/2).strength(0.045))
+  .force('겹침', d3.forceCollide().radius(d => d.r + 9).iterations(3))
+  .stop();
+for (let i = 0; i < 600; i++) 힘.tick();
+
+/* ── 그리기 ─────────────────────────────── */
+const 판 = document.getElementById('판');
+const 붓 = 판.getContext('2d');
+let 폭 = 0, 높 = 0, 배율 = window.devicePixelRatio || 1;
+let 변환 = d3.zoomIdentity;
+let 고른점 = null, 스친점 = null;
+let 켠갈래 = new Set(Object.keys(갈래표).concat(['?']));
+let 찾은집합 = null;
+
+function 크기맞춤(){
+  const r = 판.parentElement.getBoundingClientRect();
+  폭 = r.width; 높 = r.height;
+  판.width = Math.round(폭 * 배율); 판.height = Math.round(높 * 배율);
+  붓.setTransform(배율, 0, 0, 배율, 0, 0);
+}
+
+function 보임(n){
+  if (!켠갈래.has(n.t)) return false;
+  if (찾은집합 && !찾은집합.has(n.id)) return false;
+  return true;
+}
+function 강조집합(){
+  if (고른점) { const s = new Set(이웃.get(고른점.id)); s.add(고른점.id); return s; }
+  if (스친점) { const s = new Set(이웃.get(스친점.id)); s.add(스친점.id); return s; }
+  return null;
+}
+
+function 그리기(){
+  붓.clearRect(0, 0, 폭, 높);
+  const 강 = 강조집합();
+  const 실색 = 색('--실'), 실진색 = 색('--실진');
+  const k = 변환.k;
+
+  붓.save();
+  붓.translate(변환.x, 변환.y); 붓.scale(k, k);
+
+  // 실(선)
+  붓.lineWidth = 0.7 / k;
+  for (const e of 선들){
+    const a = e.source, b = e.target;
+    if (!보임(a) || !보임(b)) continue;
+    const 밝음 = 강 && (강.has(a.id) && 강.has(b.id));
+    if (강 && !밝음) { 붓.globalAlpha = 0.07; 붓.strokeStyle = 실색; }
+    else if (밝음)   { 붓.globalAlpha = 0.85; 붓.strokeStyle = 실진색; 붓.lineWidth = 1.3 / k; }
+    else             { 붓.globalAlpha = 0.5; 붓.strokeStyle = 실색; }
+    붓.beginPath(); 붓.moveTo(a.x, a.y); 붓.lineTo(b.x, b.y); 붓.stroke();
+    붓.lineWidth = 0.7 / k;
+  }
+  붓.globalAlpha = 1;
+
+  // 점
+  for (const n of 점들){
+    if (!보임(n)) continue;
+    const 밝음 = !강 || 강.has(n.id);
+    붓.globalAlpha = 밝음 ? 1 : 0.16;
+    붓.beginPath(); 붓.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    붓.fillStyle = 색(갈래정보(n.t).토큰); 붓.fill();
+    if (n === 고른점){
+      붓.lineWidth = 2.4 / k; 붓.strokeStyle = 색('--잉크'); 붓.stroke();
+    } else if (n.live === 1 && 밝음){
+      붓.lineWidth = 1.1 / k; 붓.strokeStyle = 색('--종이'); 붓.stroke();
+    }
+  }
+  붓.globalAlpha = 1;
+
+  // 이름 — 큰 점에만, 그리고 고르거나 스친 것
+  붓.textAlign = 'center'; 붓.textBaseline = 'top';
+  const 글크기 = Math.max(9.5, 11.5 / Math.sqrt(k));
+  붓.font = '500 ' + 글크기 + 'px "IBM Plex Mono", ui-monospace, monospace';
+  const 이름문턱 = k > 2.2 ? 1 : (k > 1.5 ? 6 : (k > 1.0 ? 14 : 24));
+  const 놓인칸 = [];   // 이미 이름이 앉은 자리 — 겹치면 뒤엣것을 접는다
+  for (const n of 점들){
+    if (!보임(n)) continue;
+    const 특별 = n === 고른점 || n === 스친점 || (강 && 강.has(n.id) && k > 0.75);
+    if (!특별 && n.in < 이름문턱) continue;
+    if (!특별){
+      const 반폭 = (n.id.length * 글크기 * 0.3), 위 = n.y + n.r, 아래 = 위 + 글크기 * 1.2;
+      const 겹침 = 놓인칸.some(c => Math.abs(c.x - n.x) < (c.w + 반폭) && 위 < c.y1 && 아래 > c.y0);
+      if (겹침) continue;
+      놓인칸.push({x:n.x, w:반폭, y0:위, y1:아래});
+    }
+    붓.globalAlpha = 특별 ? 1 : (강 ? 0.2 : 0.78);
+    붓.lineWidth = 3.2 / k; 붓.strokeStyle = 색('--종이'); 붓.lineJoin = 'round';
+    붓.strokeText(n.id, n.x, n.y + n.r + 3 / k);
+    붓.fillStyle = 색('--잉크');
+    붓.fillText(n.id, n.x, n.y + n.r + 3 / k);
+  }
+  붓.globalAlpha = 1;
+  붓.restore();
+}
+
+/* ── 옮기기·확대 ─────────────────────────── */
+const 확대 = d3.zoom().scaleExtent([0.22, 7]).on('zoom', ev => { 변환 = ev.transform; 그리기(); });
+d3.select(판).call(확대);
+판.addEventListener('pointerdown', () => 판.classList.add('끄는중'));
+window.addEventListener('pointerup', () => 판.classList.remove('끄는중'));
+
+function 전체맞춤(애니 = false){
+  const xs = 점들.map(n => n.x), ys = 점들.map(n => n.y);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const 여백 = 54;
+  const s = Math.min((폭 - 여백*2) / (x1 - x0), (높 - 여백*2) / (y1 - y0), 1.6);
+  const t = d3.zoomIdentity.translate(폭/2 - s*(x0+x1)/2, 높/2 - s*(y0+y1)/2).scale(s);
+  const 대상 = d3.select(판);
+  (애니 && !matchMedia('(prefers-reduced-motion: reduce)').matches
+    ? 대상.transition().duration(520) : 대상).call(확대.transform, t);
+}
+
+function 날아가기(n){
+  const s = Math.max(1.9, 변환.k);
+  const t = d3.zoomIdentity.translate(폭/2 - s*n.x, 높/2 - s*n.y).scale(s);
+  const 대상 = d3.select(판);
+  (matchMedia('(prefers-reduced-motion: reduce)').matches ? 대상 : 대상.transition().duration(520))
+    .call(확대.transform, t);
+}
+
+/* ── 고르기·스치기 ───────────────────────── */
+const 나무 = d3.quadtree().x(d => d.x).y(d => d.y).addAll(점들);
+function 가까운점(mx, my){
+  const [x, y] = 변환.invert([mx, my]);
+  const n = 나무.find(x, y, 34 / 변환.k);
+  return (n && 보임(n) && Math.hypot(n.x - x, n.y - y) <= n.r + 9 / 변환.k) ? n : null;
+}
+const 쪽지 = document.getElementById('쪽지');
+판.addEventListener('mousemove', ev => {
+  const r = 판.getBoundingClientRect();
+  const mx = ev.clientX - r.left, my = ev.clientY - r.top;
+  const n = 가까운점(mx, my);
+  판.style.cursor = n ? 'pointer' : '';
+  if (n !== 스친점){ 스친점 = n; 그리기(); }
+  if (n){
+    쪽지.innerHTML = '<b></b><span></span>';
+    쪽지.querySelector('b').textContent = n.id;
+    쪽지.querySelector('span').textContent = 갈래정보(n.t).이름 + ' · 인용 ' + n.in + '회 · ' + n.kb + 'KB';
+    쪽지.classList.add('보임');
+    const 폭쪽 = 쪽지.offsetWidth, 높쪽 = 쪽지.offsetHeight;
+    쪽지.style.left = Math.min(mx + 14, 폭 - 폭쪽 - 8) + 'px';
+    쪽지.style.top = Math.min(my + 14, 높 - 높쪽 - 8) + 'px';
+  } else 쪽지.classList.remove('보임');
+});
+판.addEventListener('mouseleave', () => { 스친점 = null; 쪽지.classList.remove('보임'); 그리기(); });
+판.addEventListener('click', ev => {
+  const r = 판.getBoundingClientRect();
+  const n = 가까운점(ev.clientX - r.left, ev.clientY - r.top);
+  고르기(n);
+});
+
+/* ── 상세 ───────────────────────────────── */
+const 상세 = document.getElementById('상세');
+function 고르기(n, 날기){
+  고른점 = n;
+  if (!n){
+    상세.innerHTML = '<p class="비었을때">점을 누르면 그 판정이 무엇이고 어디에 이어졌는지 여기 뜹니다. 큰 점일수록 다른 판정이 많이 인용한 것입니다.</p>';
+    그리기(); return;
+  }
+  if (날기) 날아가기(n);
+  const g = 갈래정보(n.t);
+  const 자리 = n.live === 1 ? '상주 (세션마다 실린다)' : '보존 서가';
+  const 이웃들 = [...이웃.get(n.id)].sort((a,b) => (색인.get(b).in||0) - (색인.get(a).in||0));
+
+  상세.innerHTML = '';
+  const 제 = document.createElement('p'); 제.className = '점이름'; 제.textContent = n.id; 상세.appendChild(제);
+  const 갈 = document.createElement('p'); 갈.className = '점갈래';
+  const 알 = document.createElement('span'); 알.className = '알'; 알.style.background = 'var(' + g.토큰 + ')';
+  갈.appendChild(알); 갈.appendChild(document.createTextNode(g.이름 + ' · ' + 자리)); 상세.appendChild(갈);
+  if (n.d){ const 설 = document.createElement('p'); 설.className = '점설명'; 설.textContent = n.d; 상세.appendChild(설); }
+
+  const 표 = document.createElement('dl'); 표.className = '쪽지표';
+  [['인용된 횟수', n.in + '회'], ['가리키는 곳', n.out + '곳'], ['글 길이', n.kb + 'KB'],
+   ['마지막으로 고친 날', n.days === 0 ? '오늘' : n.days + '일 전']].forEach(([k, v]) => {
+    const dt = document.createElement('dt'); dt.textContent = k;
+    const dd = document.createElement('dd'); dd.textContent = v;
+    표.appendChild(dt); 표.appendChild(dd);
+  });
+  상세.appendChild(표);
+
+  if (이웃들.length){
+    const 딱 = document.createElement('p'); 딱.className = '이웃딱지';
+    딱.textContent = '이어진 곳 ' + 이웃들.length; 상세.appendChild(딱);
+    const ul = document.createElement('ul'); ul.className = '이웃';
+    이웃들.slice(0, 24).forEach(id => {
+      const li = document.createElement('li');
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = id;
+      b.addEventListener('click', () => 고르기(색인.get(id), true));
+      li.appendChild(b); ul.appendChild(li);
+    });
+    상세.appendChild(ul);
+  }
+  const 닫 = document.createElement('button'); 닫.className = '닫기'; 닫.type = 'button';
+  닫.textContent = '선택 풀기';
+  닫.addEventListener('click', () => 고르기(null));
+  상세.appendChild(닫);
+  그리기();
+}
+
+/* ── 범례 ───────────────────────────────── */
+const 범례 = document.getElementById('범례');
+Object.entries(갈래표).forEach(([키, g]) => {
+  const 수 = 점들.filter(n => n.t === 키).length;
+  if (!수) return;
+  const b = document.createElement('button');
+  b.className = '갈래'; b.type = 'button'; b.setAttribute('aria-pressed', 'true');
+  const 알 = document.createElement('span'); 알.className = '알'; 알.style.background = 'var(' + g.토큰 + ')';
+  const 글 = document.createElement('span'); 글.textContent = g.이름;
+  const 수칸 = document.createElement('span'); 수칸.className = '수2'; 수칸.textContent = 수;
+  b.append(알, 글, 수칸);
+  b.addEventListener('click', () => {
+    const 켬 = b.getAttribute('aria-pressed') === 'true';
+    b.setAttribute('aria-pressed', 켬 ? 'false' : 'true');
+    if (켬) 켠갈래.delete(키); else 켠갈래.add(키);
+    if (고른점 && !보임(고른점)) 고르기(null); else 그리기();
+  });
+  범례.appendChild(b);
+});
+
+/* ── 찾기 ───────────────────────────────── */
+const 찾기칸 = document.getElementById('찾기칸');
+const 맞음 = document.getElementById('맞음');
+찾기칸.addEventListener('input', () => {
+  const q = 찾기칸.value.trim().toLowerCase();
+  맞음.innerHTML = '';
+  if (!q){ 찾은집합 = null; 그리기(); return; }
+  const 맞은것 = 점들.filter(n => n.id.toLowerCase().includes(q) || (n.d && n.d.toLowerCase().includes(q)));
+  찾은집합 = new Set(맞은것.map(n => n.id));
+  맞은것.sort((a,b) => b.in - a.in).slice(0, 40).forEach(n => {
+    const li = document.createElement('li');
+    const b = document.createElement('button'); b.type = 'button';
+    const 알 = document.createElement('span'); 알.className = '알'; 알.style.background = 'var(' + 갈래정보(n.t).토큰 + ')';
+    const 글 = document.createElement('span'); 글.className = '글'; 글.textContent = n.id;
+    b.append(알, 글);
+    b.addEventListener('click', () => { 찾은집합 = null; 그리기(); 고르기(n, true); });
+    li.appendChild(b); 맞음.appendChild(li);
+  });
+  if (!맞은것.length){
+    const li = document.createElement('li');
+    const p = document.createElement('p');
+    p.style.cssText = 'font-size:12px;color:var(--보조);margin:6px 2px';
+    p.textContent = '맞는 판정이 없습니다.';
+    li.appendChild(p); 맞음.appendChild(li);
+  }
+  그리기();
+});
+
+/* ── 단추 ───────────────────────────────── */
+document.getElementById('맞추기').addEventListener('click', () => 전체맞춤(true));
+document.getElementById('테마').addEventListener('click', () => {
+  const 뿌리 = document.documentElement;
+  const 지금 = 뿌리.getAttribute('data-theme')
+    || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  뿌리.setAttribute('data-theme', 지금 === 'dark' ? 'light' : 'dark');
+  그리기();
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', 그리기);
+window.addEventListener('resize', () => { 크기맞춤(); 그리기(); });
+
+크기맞춤();
+전체맞춤(false);
+그리기();
+})();
+</script>
