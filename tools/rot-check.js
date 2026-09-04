@@ -820,7 +820,27 @@ function 이름부름Section(뿌리 = ROOT) {
  *      (원칙 5 · 실측 84ms). 그쪽 요약줄 한 줄만 읽는다. 못 읽으면 0건이 아니라 «못 잼»이다.
  *   ㉢ 이름만 남은 검사기 — ③ 이 이미 셌다. 여기서 다시 세지 않고 그 값을 옮긴다. */
 function 남은손Section(뿌리 = ROOT) {
-  const r = { 검수: null, codex: null };
+  const r = { 검수: null, codex: null, 예약: null };
+
+  /* ㉢ 예약 등록 — 🔴 **이 자는 「등록됐나」를 원리상 못 본다.**
+   *   폴더(`~/.claude/scheduled-tasks/<이름>/SKILL.md`)는 파일로 남지만 «등록»은 하네스 안에만 있고,
+   *   SKILL.md 머리말에도 언제 도는지가 안 적힌다(name·description 뿐). 그래서 여기서 하는 일은 하나다 —
+   *   **폴더가 있으면 「되읽어 보라」고 말한다.**
+   * 🔴 왜 그 한 줄이 필요한가: 등록은 **두 번 전량 증발했다**(09-01 일곱 중 0 · 09-04 아홉 중 0).
+   *   폴더가 온전해도 아무 일도 안 일어나고 화면에 아무 표시도 안 뜬다 — 조용한 죽음이라 몇 주가 지나도 모른다.
+   *   09-04 에 증발해 있던 아홉 안에 **부가가치세 폐업확정신고 기한 알림(09-25)**이 들어 있었다.
+   *   무실적이어도 신고해야 가산세가 안 붙는 자리라, 안 울면 돈이 나간다. */
+  try {
+    const 방 = path.join(require('os').homedir(), '.claude', 'scheduled-tasks');
+    if (fs.existsSync(방)) {
+      const 폴더 = fs.readdirSync(방, { withFileTypes: true })
+        .filter((d) => d.isDirectory() && fs.existsSync(path.join(방, d.name, 'SKILL.md')))
+        .map((d) => d.name);
+      r.예약 = { 측정: true, 폴더: 폴더.length };
+    } else r.예약 = { 측정: false, 사유: '예약 폴더 자리가 없다' };
+  } catch (e) {
+    r.예약 = { 측정: false, 사유: `예약 폴더를 못 읽었다: ${String((e && e.message) || e).slice(0, 60)}` };
+  }
 
   // ㉠ 검수 꾸러미
   const 꾸러미 = path.join(뿌리, 'docs', '_ops', '검수꾸러미');
@@ -1399,6 +1419,14 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
     }
     if (이름.ok && 이름.value.측정 && 이름.value.없는것.length) {
       조각.push(`이름만 남은 검사기 ${이름.value.없는것.length}종(위 ③)`);
+    }
+    /* 예약 — 이 자는 「등록됐나」를 원리상 못 본다(위 남은손Section ㉢ 머리말). 되읽어 보라고만 말한다. */
+    if (v.예약 && v.예약.측정 && v.예약.폴더) {
+      조각.push(`예약 폴더 ${v.예약.폴더}개 — 🔴 **등록됐는지는 이 자가 못 본다**(하네스 안에만 있다).`
+        + '\n        `list_scheduled_tasks` 로 되읽어라 — 등록은 **두 번 전량 증발했다**(09-01 일곱 중 0 · 09-04 아홉 중 0).'
+        + '\n        09-04 에 증발해 있던 아홉 안에 **부가세 폐업확정신고 기한 알림**이 있었다. 안 울면 가산세가 붙는다.');
+    } else if (v.예약 && !v.예약.측정) {
+      조각.push(`예약 폴더 **못 잼** — ${v.예약.사유}`);
     }
     if (조각.length) notes.push({ kind: '남은 손(운영에서 반복되는 것)', text: 조각.join('\n      · ') });
   }
