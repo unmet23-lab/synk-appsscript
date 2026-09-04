@@ -45,6 +45,8 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+/* 집안 표(누가 누구와 남남인가)는 여기서 안 쥔다 — 정본은 `tools/모델정책.js` 하나다. */
+const 정책 = require('./모델정책.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const 장부경로 = () => process.env.SYNK_OUTSIDE_LEDGER || path.join(ROOT, 'docs', '_ops', '밖의사실.jsonl');
@@ -100,10 +102,19 @@ function 요약() {
       b.접음 = { 사유: r.사유 || '', 시각: r.시각 };
     }
   }
-  const 목록 = [...건.values()].map((b) => ({
-    ...b,
-    상태: b.접음 ? '접음' : b.판정 ? '판정완료' : b.반박.length ? '반박받음' : '열림',
-  }));
+  /* 🔑 «둘에게 물었다»가 뜻을 가지려면 그 둘이 남남이어야 한다(2026-09-05 · 유호 「조사원도 정리하자」).
+   *   집안 표는 `tools/모델정책.js` 하나가 쥔다 — 여기 복사하면 둘째 정본이 되고, 갈리는 쪽은 늘 느슨한 쪽이다.
+   *   ⚠ 집안을 모르는 조사원은 «남남»으로 세지 않는다. 모르는 것을 「다르다」로 세면 한 벌이 둘로 부푼다. */
+  const 목록 = [...건.values()].map((b) => {
+    const 집안들 = [...new Set(b.반박.map((r) => 정책.집안가르기(r.조사원)).filter(Boolean))];
+    return {
+      ...b,
+      집안들,
+      집안모름: b.반박.filter((r) => !정책.집안가르기(r.조사원)).map((r) => r.조사원),
+      남남인가: 집안들.length >= 2,
+      상태: b.접음 ? '접음' : b.판정 ? '판정완료' : b.반박.length ? '반박받음' : '열림',
+    };
+  });
   return {
     목록,
     파손,
@@ -164,6 +175,10 @@ function 목록출력(s) {
       if (b.걸린것) console.log(`      걸린 것: ${b.걸린것}${b.기한 ? ` · 기한 ${b.기한}` : ''}`);
       if (b.내답) console.log(`      내 답:   ${b.내답}`);
       for (const r of b.반박) console.log(`      ↩ ${r.조사원}: ${r.결과}${r.링크 ? ` (${r.링크})` : ''}`);
+      if (b.반박.length && !b.남남인가) {
+        const 본것 = b.집안들.join('·') || `집안 미상(${b.집안모름.join('·')})`;
+        console.log(`      ⚠ 조사원이 «한 집안»뿐이다(${본것}) — 같은 집안 둘은 같은 사각을 두 번 본다. 정본 §1-5 는 남남 둘이다`);
+      }
       if (b.판정) console.log(`      ⚖ ${b.판정.결론} — ${b.판정.사유}`);
       if (b.접음) console.log(`      🗄 ${b.접음.사유}`);
     }
@@ -284,6 +299,13 @@ function main() {
     const 뒤 = 요약().목록.find((x) => x.키 === 키);
     console.log(`✅ ${종류} 적었다 [${키}] — 상태: ${뒤.상태}`);
     if (뒤.상태 === '반박받음') console.log('   아직 판정이 없다: --판정 <키> --결론 "..." --사유 "왜"');
+    /* 🚫 막지 않는다 — 「조용히 접지 않는다」의 반대편 실수를 하지 않기 위해서다. 급할 때 한 벌로 판정하는 것은
+     *   유호님 몫이고, 이 자가 파는 것은 그렇게 내린 판정이 «장부에서 그렇게 보이는 것» 하나다. */
+    if (뒤.반박.length && !뒤.남남인가) {
+      const 본것 = 뒤.집안들.join('·') || `집안 미상(${뒤.집안모름.join('·')})`;
+      console.log(`   ⚠ 아직 «한 집안»만 봤다(${본것}) — 정본(docs/AI_스택_가이드.md §1-5)은 남남 둘을 요구한다.`);
+      console.log(`      다른 집안 한 벌: ${뒤.집안들.includes('openai') ? '제미나이 Deep Research' : 'ChatGPT Deep Research 또는 --조사원 codex'}`);
+    }
     return;
   }
 
