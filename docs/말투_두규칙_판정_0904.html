@@ -1,0 +1,297 @@
+<title>말투 두 규칙, 82곳</title>
+<meta name="description" content="글 검사기가 낸 82곳을 다 열어 본 판정 재료">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+/* 서체 — 낫표 「 」 교정은 브랜드 킷 정본 그대로(docs/디자인_토큰.json 서체.낫표교정) */
+@font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+
+:root{
+  /* SYNK 킷 — docs/디자인_토큰.json 에서 가져온 값. 새 색을 짓지 않는다. */
+  --paper:#FBF7F0; --oat:#EDE7DC; --stone:#C7BFB2;
+  --ink:#2B2320; --ink-2:#6B615B; --ink-3:#8F847C;
+  --coral:#F96859; --coral-3:#AE322A; --wash:#FEF0E9;
+  --lapis:#3D6BC9; --meadow:#7DB45A; --butter:#F5C445;
+  --bg:var(--paper); --card:#FFFFFF; --line:var(--stone);
+  --본문:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --옛:'Gowun Batang',var(--본문);
+  --자:ui-monospace,'Cascadia Mono','SFMono-Regular',Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#080605; --oat:#1C1714; --stone:#4A413B;
+    --ink:#F3EDE4; --ink-2:#B9AEA4; --ink-3:#8F847C;
+    --coral:#FD9C87; --coral-3:#FBB7A3; --wash:#241713;
+    --lapis:#7FA3E8; --meadow:#A3CE86; --butter:#F5C445;
+    --bg:var(--paper); --card:#141010; --line:#332B26;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#080605; --oat:#1C1714; --stone:#4A413B;
+  --ink:#F3EDE4; --ink-2:#B9AEA4; --ink-3:#8F847C;
+  --coral:#FD9C87; --coral-3:#FBB7A3; --wash:#241713;
+  --lapis:#7FA3E8; --meadow:#A3CE86; --butter:#F5C445;
+  --bg:var(--paper); --card:#141010; --line:#332B26;
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--본문);
+  line-height:1.75;-webkit-font-smoothing:antialiased;margin:0;
+  padding:clamp(28px,5vw,64px) clamp(18px,5vw,40px) 96px;}
+main{max-width:47rem;margin:0 auto;display:flex;flex-direction:column;gap:clamp(30px,5vh,52px)}
+
+.eyebrow{font-family:var(--자);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 10px}
+h1{font-family:var(--옛);font-size:clamp(29px,5.6vw,44px);font-weight:700;line-height:1.24;
+  letter-spacing:-.02em;margin:0;text-wrap:balance}
+.lede{font-size:clamp(16px,2.1vw,18.5px);color:var(--ink-2);margin:14px 0 0;max-width:38rem}
+.lede b{color:var(--ink)}
+
+h2{font-family:var(--옛);font-size:clamp(20px,3vw,25px);font-weight:700;letter-spacing:-.015em;
+  margin:0 0 4px;text-wrap:balance}
+section>p{margin:0 0 14px;max-width:40rem}
+section>p:last-child{margin-bottom:0}
+
+/* ── 분모 띠 — 82가 어떻게 갈리는지 한 줄로 ───────────────── */
+.bar{display:flex;height:52px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin:18px 0 10px}
+.bar>div{display:grid;place-items:center;font-family:var(--자);font-size:12.5px;letter-spacing:.04em;
+  color:#2B2320;font-weight:700}
+.bar .b1{flex:42;background:var(--butter)}
+.bar .b2{flex:40;background:var(--lapis);color:#FBF7F0}
+.barkey{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:14px;color:var(--ink-2);margin:0}
+.barkey span{display:flex;align-items:center;gap:7px}
+.barkey i{width:11px;height:11px;border-radius:3px;flex:none}
+
+/* ── 까닭 넷 ───────────────────────────────────────────── */
+.reasons{display:flex;flex-direction:column;gap:26px;margin-top:6px}
+.reason{display:grid;grid-template-columns:2.1rem 1fr;gap:0 14px;align-items:start}
+.reason .n{font-family:var(--자);font-size:13px;font-weight:700;color:var(--coral-3);
+  padding-top:.32em;font-variant-numeric:tabular-nums}
+.reason h3{font-size:17px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em}
+.reason p{margin:0;color:var(--ink-2)}
+.reason .ev{grid-column:2;margin-top:11px;border-left:3px solid var(--stone);
+  padding:2px 0 2px 15px;font-size:14.5px;color:var(--ink-2);background:transparent}
+.reason .ev .src{display:block;font-family:var(--자);font-size:11px;letter-spacing:.06em;
+  color:var(--ink-3);margin-bottom:5px}
+.reason .ev em{font-style:normal;color:var(--coral-3);font-weight:700}
+.reason .ev p{margin:0 0 3px;color:var(--ink)}
+
+/* ── 고르실 것 셋 ──────────────────────────────────────── */
+.picks{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.pick{background:var(--card);border:1px solid var(--line);border-radius:11px;
+  padding:17px 19px;display:grid;grid-template-columns:1.7rem 1fr;gap:0 12px}
+.pick.rec{border-color:var(--coral);background:var(--wash)}
+.pick .k{font-family:var(--자);font-size:15px;font-weight:700;color:var(--coral-3);padding-top:.05em}
+.pick h3{font-size:16.5px;margin:0 0 5px;font-weight:700;letter-spacing:-.01em}
+.pick p{margin:0;font-size:14.5px;color:var(--ink-2)}
+.pick .tag{display:inline-block;font-family:var(--자);font-size:10.5px;letter-spacing:.1em;
+  background:var(--coral);color:#FBF7F0;border-radius:4px;padding:2px 7px;margin-left:8px;
+  vertical-align:2px;font-weight:700}
+
+/* ── 전량 82건 ─────────────────────────────────────────── */
+details{border-top:1px solid var(--line)}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;
+  gap:14px;padding:13px 2px;font-size:15px;font-weight:700;min-height:46px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';font-family:var(--자);color:var(--ink-3);font-size:17px;flex:none}
+details[open] summary::after{content:'\2212'}
+summary:focus-visible{outline:2px solid var(--lapis);outline-offset:2px}
+.fname{font-family:var(--자);font-size:13px;font-weight:400;color:var(--ink-2);
+  overflow-wrap:anywhere}
+.cnt{font-family:var(--자);font-size:12px;color:var(--ink-3);flex:none;font-variant-numeric:tabular-nums}
+ol.cases{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:15px}
+ol.cases li{display:flex;flex-direction:column;gap:6px}
+.meta{display:flex;align-items:center;gap:9px}
+.rule{font-family:var(--자);font-size:10.5px;letter-spacing:.06em;border-radius:4px;padding:2px 7px;
+  background:var(--oat);color:var(--ink-2);flex:none}
+.rule.factListParagraph{background:var(--wash);color:var(--coral-3)}
+.ln{font-family:var(--자);font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.quote{border-left:2px solid var(--line);padding-left:14px;font-size:14.5px;color:var(--ink-3)}
+.quote p{margin:0 0 2px}
+.quote p.here{color:var(--ink);background:linear-gradient(transparent 62%,var(--wash) 62%)}
+
+.foot{font-size:13.5px;color:var(--ink-3);border-top:1px solid var(--line);padding-top:18px}
+.foot code{font-family:var(--자);font-size:12.5px;background:var(--oat);padding:1px 6px;border-radius:4px;
+  color:var(--ink-2)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<main>
+  <header>
+    <p class="eyebrow">말투 · 2026-09-04</p>
+    <h1>82곳을 다 열어 봤습니다</h1>
+    <p class="lede">유호님이 「내일 이어서」 하신 그 자리입니다. 한 줄씩 갈라 보니 <b>고칠 흠은 거의 없고,
+      자에 뚫린 구멍이 넷</b>이었습니다. 고칠 것은 글이 아니라 자로 보입니다 — 판정은 유호님 몫입니다.</p>
+  </header>
+
+  <section>
+    <h2>82곳이 어디에 있나</h2>
+    <div class="bar">
+      <div class="b1">홍보물 42</div>
+      <div class="b2">읽는 글 40</div>
+    </div>
+    <p class="barkey">
+      <span><i style="background:var(--butter)"></i>인쇄물·슬라이드·홈페이지 — <b>보는</b> 것</span>
+      <span><i style="background:var(--lapis)"></i>기업철학·강사공고·강사훈련 — <b>읽는</b> 것</span>
+    </p>
+    <p>자를 두 벌로 가른 것은 유호님이 09-03 에 정하신 것입니다. 그날 「짧은 문단」과 「문장형 제목」 둘을
+      홍보물 쪽에서 껐습니다. <b>이번 두 규칙도 같은 성격인데 그때 안 껐습니다.</b></p>
+  </section>
+
+  <section>
+    <h2>왜 이렇게 많이 걸렸나</h2>
+    <div class="reasons">
+
+      <div class="reason">
+        <span class="n">01</span>
+        <div>
+          <h3>까닭이 «다음 문단»에 있습니다</h3>
+          <p>검사기는 문단 하나 «안»에서만 「그래서·때문에」를 찾습니다. SYNK 글은 할 말을 먼저 못 박고
+            까닭을 다음 문단에 둡니다. 그 사이를 검사기가 못 넘습니다.</p>
+        </div>
+        <div class="ev">
+          <span class="src">강사훈련_온라인자료_v1.md 52행</span>
+          <p><b>30분 × 2회입니다. 1주차에 30분, 2주차에 30분.</b> 사이를 일부러 벌립니다. <em>← 여기가 걸렸습니다</em></p>
+          <p>까닭은 하나입니다. 우리가 보는 것은 1회차의 점수가 아니라, 1회차에 지적받은 것을…</p>
+        </div>
+      </div>
+
+      <div class="reason">
+        <span class="n">02</span>
+        <div>
+          <h3>검사기가 모르는 이음말이 있습니다</h3>
+          <p>이음말 목록에 「그래서·때문·니까·려면」은 있는데 <b>「~라서」와 「~이라」가 없습니다.</b>
+            둘 다 까닭을 잇는 말인데 검사기 눈에 안 보입니다.</p>
+        </div>
+        <div class="ev">
+          <span class="src">SYNK_이야기.html 176행</span>
+          <p>1년 504만₮. 길 A 의 8~11배 아래<em>라서</em> 차액 약 3,600만~5,080만₮이 가족 주머니에 남습니다.</p>
+          <p style="color:var(--ink-3);margin-top:6px">트랙에 흠의 본보기로 적혀 있던 옛 문장(「8~11배 아래입니다. 차액이 남습니다.」)은
+            <b>이미 고쳐졌습니다.</b> 고친 판이 또 걸린 것입니다.</p>
+        </div>
+      </div>
+
+      <div class="reason">
+        <span class="n">03</span>
+        <div>
+          <h3>인쇄물 문구는 09-03 에 이미 «일부러»로 판정했습니다</h3>
+          <p>히어로 문구·카드 글귀에는 「그래서」를 붙일 자리가 없습니다. 붙이면 힘이 빠집니다.
+            42곳이 이 갈래입니다.</p>
+        </div>
+        <div class="ev">
+          <span class="src">홈페이지_시안/병합판.html 88행</span>
+          <p>정원은 16명,<br>선생님은 17명입니다.</p>
+        </div>
+      </div>
+
+      <div class="reason">
+        <span class="n">04</span>
+        <div>
+          <h3>표를 문단으로 읽습니다</h3>
+          <p>브로셔의 표는 글자만 뽑으면 칸이 이어 붙어 한 문단이 됩니다. 사람이 보는 화면에는
+            그런 문단이 없습니다.</p>
+        </div>
+        <div class="ev">
+          <span class="src">발표물/_src_03_상담브로셔_A4_12쪽.html 782행</span>
+          <p><em>학부모 화면</em> 부모님이 앱에서 여실 화면은 셋입니다. 리포트 · 소식 · 우리 아이. 지금 짓고 있습니다.</p>
+          <p style="color:var(--ink-3);margin-top:6px">앞의 「학부모 화면」은 표의 제목 칸입니다.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>유호님이 고르실 것</h2>
+    <div class="picks">
+      <div class="pick rec">
+        <span class="k">㉠</span>
+        <div>
+          <h3>두 규칙을 홍보물에서 끈다<span class="tag">권고</span></h3>
+          <p>42곳이 그 자리에서 조용해집니다. 09-03 에 하신 판정을 마저 하는 것이고,
+            새 판정이 아닙니다. 읽는 글 40곳은 그대로 잽니다.</p>
+        </div>
+      </div>
+      <div class="pick rec">
+        <span class="k">㉡</span>
+        <div>
+          <h3>㉠ 에 더해 이음말 둘을 검사기에 넣는다<span class="tag">권고</span></h3>
+          <p>「~라서」·「~이라」를 이음말 목록에 더합니다. 그러면 까닭이 있는데 걸린 곳이 빠집니다.
+            ⚠ 몇 곳이 빠지는지는 <b>넣어 봐야 압니다 — 아직 안 재봤습니다.</b>
+            그리고 그 목록이 검사기 안에 있어서, 설정으로 덮을 수 있는지도 안 재봤습니다.</p>
+        </div>
+      </div>
+      <div class="pick">
+        <span class="k">㉢</span>
+        <div>
+          <h3>그대로 두고 82곳을 한 줄씩 고친다</h3>
+          <p>자를 안 건드리는 길입니다. 다만 위 넷을 글로 맞추려면 인쇄물 문구에 「그래서」를 넣고
+            선언과 까닭을 한 문단에 눌러 담아야 합니다. 글이 늘어집니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>홍보물 42곳 — 보는 것</h2>
+    <p style="color:var(--ink-2);font-size:14.5px">형광 줄이 검사기가 지목한 자리입니다. 위아래는 앞뒤 문장입니다.</p>
+    
+  <details>
+    <summary><span class="fname">발표물/_src_03_상담브로셔_A4_12쪽.html</span><span class="cnt">13</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">105행</span></div><div class="quote"><p class="">핀란드 ‘움직이는 학교(Liikkuva koulu)’</p><p class="here">PISA 최상위권을 오랫동안 지켜온 핀란드가 국가 차원에서 전국으로 확산시킨 프로그램입니다.</p><p class="">핵심 원리는 단 하나입니다. 신체 활동과 정규 수업을 하나의 흐름으로 통합하는 것.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">174행</span></div><div class="quote"><p class="">THE METHOD 04</p><p class="here">“워밍업부터</p><p class="">이미 한국어 수업입니다 ”</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">179행</span></div><div class="quote"><p class="here">일반적인 워밍업은 몸을 푸는 준비 단계일 뿐입니다. SYNK LAB의 K컬처 워밍업은 다릅니다.</p><p class="">처음부터 끝까지 100% 한국어로 진행되는 K컬처 신체활동 입니다.</p><p class="">K팝 댄스, K드라마 장면 연기, K뷰티 체험, K보컬 프로그램. 모든 지시와 표현이 한국어입니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">243행</span></div><div class="quote"><p class="here">그리고 뇌가 가장 활성화된 바로 그 순간, 정규 한국어 수업이 시작됩니다.</p><p class="">수업과 연결된 짧고 집중된 한 번의 신체활동만으로도 충분합니다.</p><p class="">짧고 강한 운동 직후에 새 단어를 20% 더 빨리 익혔다는 무작위 실험(Winter 외 2007)과</p><p class="">학교 신체활동을 다룬 무작위 실험 17개를 모은 2025년 메타분석이 그렇게 보고했습니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">357행</span></div><div class="quote"><p class="">하나의 사이클 위에서 돕니다</p><p class="here">Learn → Plan → Experience → Record.</p><p class="">배우고, 방향을 정하고, 몸으로 겪고, 기록으로 남깁니다. 이 네 단어가 SYNK 설명의 전부입니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">415행</span></div><div class="quote"><p class="">3</p><p class="here">「싱크 포트폴리오」 - 성장이 증거로 쌓입니다</p><p class="">졸업할 때 아이는 자격증 한 장이 아니라 실제 포트폴리오와 자신만의 계획을 함께 들고 나갑니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">766행</span></div><div class="quote"><p class="">앱 게임화 포인트·오늘의 도전·오늘의 성장·스트릭, 반 전체 레이드, 월간 리포트카드,</p><p class="here">그리고 «공부로만 자라는» 성장 체계(포인트와 문법 숙달 게이트). 실제로 돌아가고 있습니다.</p><p class="">자기 가이드 몽글·까몽·마린 셋 중 하나를 아이가 고릅니다. 생김새가 아니라</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">774행</span></div><div class="quote"><p class="">또렷해지고, 밝아집니다. 단계도 숫자도 없습니다. 개원과 함께 엽니다.</p><p class="here">말하기 숙제 앱 아이가 말한 것을 앱이 받아 적고, 틀린 곳을 고쳐 답장하는 통로.</p><p class="">지금 짓고 있습니다 . 개원과 함께 엽니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">782행</span></div><div class="quote"><p class="">아침 8시 원장 브리핑 메일 · 하루 2회 포인트 재계산 · 매주 재등록·미납 점검 · 매월 성장 스냅샷.</p><p class="here">학부모 화면 부모님이 앱에서 여실 화면은 셋입니다. 리포트 · 소식 · 우리 아이. 지금 짓고 있습니다.</p><p class="">수업 기록 소그룹 발화 기록부터 결석한 학생의 복귀 관리까지 시스템이 따라갑니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">845행</span></div><div class="quote"><p class="here">둘. 급수도, 기간도 약속하지 않습니다</p><p class="">승급은 기간이 아니라 도달 로 정합니다. “몇 개월이면 몇 급”이라고 말씀드리는 순간</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">857행</span></div><div class="quote"><p class="here">셋. 아이의 사진·영상은 언제나 동의가 먼저입니다</p><p class="">학생의 사진과 영상은 사전 동의를 받고 사용하며, 언제든 철회하실 수 있습니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">860행</span></div><div class="quote"><p class="">셋. 아이의 사진·영상은 언제나 동의가 먼저입니다</p><p class="here">학생의 사진과 영상은 사전 동의를 받고 사용하며, 언제든 철회하실 수 있습니다.</p><p class="">동의하지 않으셔도 모든 경험은 똑같이 제공됩니다. 동의 여부가 아이의 수업에 영향을 주지 않습니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">1002행</span></div><div class="quote"><p class="here">정원은 16명,</p><p class="">선생님은 17명입니다</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">SYNK_이야기.html</span><span class="cnt">7</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">154행</span></div><div class="quote"><p class="">같은 목적지, 값이 다른 두 길</p><p class="here">아이가 한국 대학으로 가는 길은 사실상 둘이고, 목적지는 같습니다. TOPIK 4급. 대학 입학과 졸업, 아르바이트 시간, 졸업 후 구직비자까지 전부 이 급수 하나에 묶여 있습니다. 다른 것은 어디서, 얼마에, 무엇을 받으며 가느냐입니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">163행</span></div><div class="quote"><p class="">길 A · 서울 어학당 대학 부설 한국어 연수 · 1년</p><p class="here">1년 4,100만~5,580만₮. 학비 400~744만원에 서울 생활비가 월 약 120만원이라, 수업료보다 서울에서 «사는 값»이 더 큽니다. 몽골 국적은 1년 4학기 등록이 의무라, 반년만 다녀 보는 선택지도 없습니다.</p><p class="">그리고 그 돈을 다 내도 받는 것은 「4급 과정 수료증」 입니다. TOPIK 이 아닙니다. 어학당엔 급수를 발급할 권한이 없고, 그 종이는 그 대학의 입학 심사에서만 통합니다. 못 따도 돌려주는 것은 없습니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">176행</span></div><div class="quote"><p class="">길 B · 몽골에서 SYNK 울란바토르 · 집에서 다니는 1년</p><p class="here">1년 504만₮. 길 A 의 8~11배 아래라서 차액 약 3,600만~5,080만₮이 가족 주머니에 남습니다. 서울 월세도, 낯선 도시에 혼자 보내는 걱정도 없습니다.</p><p class="">받는 것은 TOPIK 실물 4급 입니다. 국가가 발급하고, 모든 대학과 출입국(아르바이트·구직비자)에서 통하는 증서입니다. 그리고 SYNK 는 이 급수를 «보장»합니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">239행</span></div><div class="quote"><p class="">집에서 학원 (비자 없음)</p><p class="here">1년 504만₮. 게임처럼 배우고, 나만의 선생님이 매일 곁에 있습니다. 연말에 TOPIK 4급 을 땁니다. SYNK 가 보장하는 그 급수입니다.</p><p class="">2년째 · 서울</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">246행</span></div><div class="quote"><p class="">대학 1학년 (D-2 비자 · 관문 한 번)</p><p class="here">어학연수 없이 바로 학부로 갑니다. 4급이 있어서 첫 학기부터 아르바이트 주중 30시간 + 주말·방학 무제한 입니다. 최저시급 주중분만 월 약 134만원입니다.</p><p class="">3년째 · 서울</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">328행</span></div><div class="quote"><p class="">① 입학</p><p class="here">연세대·고려대 일반학과는 입학 요건이 4급 입니다. 서울대·고려대는 3급으로 들어가도 졸업에 4급 을 요구합니다. 3급은 입학표일 뿐입니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">372행</span></div><div class="quote"><p class="here">&quot;1년에 TOPIK 3~4급을 보장합니다.</p><p class="">못 지키면 게임 앱의 유료 수강 기능을, 취득할 때까지 무료로 엽니다.&quot;</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">발표물/_src_02_학부모_안내문_A4_kr.html</span><span class="cnt">7</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">13행</span></div><div class="quote"><p class="here">정원은 16명,</p><p class="">선생님은 17명입니다</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">24행</span></div><div class="quote"><p class="here">SYNK LAB은 2027년 2월 25일 문을 엽니다. 2월 11일부터 무료 체험 2주.</p><p class="">이 안내문은 개원 전에 미리 보내드리는 소개입니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">95행</span></div><div class="quote"><p class="">TOPIK 준비, 끝까지 함께합니다</p><p class="here">가장 궁금하신 것부터 말씀드립니다. 자격증 합격은 저희에게 자랑이 아니라 기본입니다.</p><p class="">커리큘럼 여섯 레벨이 TOPIK 급수에 맞춰 짜여 있고, 매일의 숙제가 급수를 향해 쌓입니다.</p><p class="">TOPIK이 있어야 한국 유학과 취업의 길이 열립니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">202행</span></div><div class="quote"><p class="here">K컬처 워밍업 - 몸으로 수업을 엽니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">223행</span></div><div class="quote"><p class="">「싱크 크루」 프로젝트 - 아이만의 이야기를 만듭니다.</p><p class="here">시즌마다 팀이 K컬처 프로젝트 하나를 기획하고, 도전하고, 다시 도전하고, 완성합니다.</p><p class="">예: 울란바토르 한국어 소개 영상, K컬처 공연. 이 과정 전체가 아이의 진짜 경험이 됩니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">238행</span></div><div class="quote"><p class="here">「나침반」 세션 - 목적을 찾습니다.</p><p class="">“왜 한국어를 배우는가”, “5년 뒤 나는 어떤 사람이 될까”를 아이가 직접 씁니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">347행</span></div><div class="quote"><p class="">SYNK PROMISE</p><p class="here">합격은 기본으로 챙깁니다. 그리고 그 위에, 아이가 꿈꾸는 삶을 AI 시대에 어떻게 이룰 수 있을지</p><p class="">함께 고민하고, 연구하고, 길을 보여드립니다. 그것이 저희가 궁극적으로 추구하는 가치입니다.</p><p class="">자세한 내용은 상담에서 안내해 드립니다.</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">홈페이지_시안/병합판.html</span><span class="cnt">5</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">88행</span></div><div class="quote"><p class="here">00</p><p class="">정원은 16명,</p><p class="">선생님은 17명입니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">183행</span></div><div class="quote"><p class="">03</p><p class="here">앉아서 외우게 하지 않습니다</p><p class="">매일 100% 한국어 K-컬처 워밍업으로 몸을 깨우고 수업에 들어가는 하루입니다. 문을 열기 전에 그 하루부터 지어 놓았습니다. 팀으로 완성하는 프로젝트, 반 레이드, 무대가 있고, 여기에 한국인 원어민 회화와 글로벌 영어를 더한 등록도 함께 엽니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">242행</span></div><div class="quote"><p class="">16명 소그룹 정규 수업</p><p class="here">전 반 정원 16명. 처음부터 시작하는 레벨이 있어 한국어를 하나도 몰라도 됩니다. 팀으로 완성하는 프로젝트, 반 레이드, 무대를 수업의 일부로 설계했습니다. 개원과 함께 엽니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">311행</span></div><div class="quote"><p class="">매일 숙제</p><p class="here">하루 한 번, 부담 없는 크기로. 쓴 문장은 그대로 두지 않습니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">415행</span></div><div class="quote"><p class="here">2027년 2월에 문을 엽니다. 지금은 사전 상담·사전 등록 단계입니다.</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">홈페이지_시안/병합판_자립형.html</span><span class="cnt">5</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">87행</span></div><div class="quote"><p class="here">00</p><p class="">정원은 16명,</p><p class="">선생님은 17명입니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">182행</span></div><div class="quote"><p class="">03</p><p class="here">앉아서 외우게 하지 않습니다</p><p class="">매일 100% 한국어 K-컬처 워밍업으로 몸을 깨우고 수업에 들어가는 하루입니다. 문을 열기 전에 그 하루부터 지어 놓았습니다. 팀으로 완성하는 프로젝트, 반 레이드, 무대가 있고, 여기에 한국인 원어민 회화와 글로벌 영어를 더한 등록도 함께 엽니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">241행</span></div><div class="quote"><p class="">16명 소그룹 정규 수업</p><p class="here">전 반 정원 16명. 처음부터 시작하는 레벨이 있어 한국어를 하나도 몰라도 됩니다. 팀으로 완성하는 프로젝트, 반 레이드, 무대를 수업의 일부로 설계했습니다. 개원과 함께 엽니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">310행</span></div><div class="quote"><p class="">매일 숙제</p><p class="here">하루 한 번, 부담 없는 크기로. 쓴 문장은 그대로 두지 않습니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">414행</span></div><div class="quote"><p class="here">2027년 2월에 문을 엽니다. 지금은 사전 상담·사전 등록 단계입니다.</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">홍보_트리오_정본_v1.md</span><span class="cnt">2</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">107행</span></div><div class="quote"><p class="">&gt; ② 혼자 외운 단어는 시험에 남고, 크루와 만든 무대는 너한테 남는다. / 오늘 뭐부터 스스로 시작해볼까? 👾</p><p class="">&gt; ③ 레이드는 혼자 깨는 게 아니야. 마음을 끄는 크루가 끝까지 간다. / 오늘 네 팀에 한마디 건네볼까? 💬</p><p class="here"><b>(b) 앱·포스터용 1문단</b></p><p class="">&gt; 질문하는 힘, 스스로 하는 힘, 마음을 끄는 힘. SYNK 크루가 한국어와 함께 기르는 세 가지다. 왜 배우는지 스스로 정하고, 시키지 않아도 먼저 움직이고, 크루와 호흡을 맞춰 무대를 완성한다. 어제의 나보다 한 걸음. 그거면 된다.</p><p class="">### 5-5. 몽골어 병기본</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">176행</span></div><div class="quote"><p class="">| Ⓐ | <b>정원은 16명, 선생님은 17명입니다</b> - 바로 아래 설명 줄 <b>「학생마다 자기만의 선생님이 한 명씩 있습니다」</b> | <b>큰 자리</b>(표지 · 히어로 · h1) · 발표물 · 홈페이지 첫 화면 · 캐러셀 표지 · 강사공고 · 로드맵 | mn 「Элсэлтийн хязгаар 16, багш 17.」 · en 「Sixteen students. Seventeen teachers.」 |</p><p class="">| Ⓔ | <b>선생님이 학생보다 많은 학원.</b> | <b>짧은 자리</b> - 소개글(인스타 · 페북 · 유튜브 · 텔레그램) · 메타 설명 · 명함 · 전단 한 줄 · 캡션 마무리 | mn 「Багш нь сурагчаасаа олон сургууль.」 · en 「A school with more teachers than students.」 ⚠ 감수 전 · 검문기(Gemini) 크레딧 소진으로 검문 전 |</p><p class="here"><b>규칙 셋</b></p><p class="">1. 둘 다 «17»을 세는 훅이라 <b>설명 줄이 반드시 따라온다</b>. 「학생마다 자기만의 선생님이 한 명씩 있습니다」(주어는 사람 · 결정 09-02 · `human-commands-ai-voice`). 훅은 AI 를 세어도 되고, 설명은 사람이 주어다.</p><p class="">2. <b>한 지면에 둘을 나란히 두지 않는다</b>. 같은 값을 두 번 말하는 꼴이다. 큰 자리는 Ⓐ, 짧은 자리는 Ⓔ.</p><p class="">3. 09-02 저녁 판 「정원은 16명, 선생님은 AI 열여섯을 부립니다」는 <b>늘어져 기각</b>(유호 「짜친다」). §6 과 같은 결로 재사용 금지. 「선생님은 한 분, 눈은 열일곱」·「열일곱 중 열여섯은 밤에도 깨어 있습니다」는 후보로만 남는다(채택 안 됨).</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">발표물/_src_05_커리큘럼_로드맵_A3.html</span><span class="cnt">2</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">343행</span></div><div class="quote"><p class="here">승급은 기간이 아니라 도달제 입니다</p><p class="">8주차 승급 평가를 통과하면 다음 관문으로 올라갑니다. 아직이면 ‘다시 도전’으로 한 바퀴 더 단단하게 다집니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">767행</span></div><div class="quote"><p class="here">시즌 이름은 1시즌 「첫 목소리」만 확정입니다. 2~6시즌 이름은 정해지는 대로 시즌 달력과 함께 안내합니다. ·</p><p class="">휴업 4주의 정확한 주차는 확정 전이라 비워 두었습니다(몽골 공휴일 날짜를 임의로 적지 않습니다). ·</p><p class="">6개월권은 8주 × 3시즌 + 버퍼 2주로 결제 만료와 시즌 종료가 맞물립니다.</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">발표물/_src_01_설명회_덱_16x9.html</span><span class="cnt">1</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">544행</span></div><div class="quote"><p class="">없음 새 장 필요 · 자기 가이드 셋 (몽글·까몽·마린) ▷ 37~44 “첫 주에 아이는 두 가지를 정합니다” · 한국어 이름 + 가이드. 대응 화면이 없다</p><p class="here">09 몸이 깨어날 때 ▷ 45~47 “매 수업은 100% 한국어로 몸을 움직이는 K컬처 활동으로 엽니다”</p><p class="">10 팀으로 만든 진짜 경험 ▷ 48~49 “크루는 함께 배우는 우리 반 팀의 이름입니다”</p></div></li></ol>
+  </details>
+  </section>
+
+  <section>
+    <h2>읽는 글 40곳</h2>
+    
+  <details>
+    <summary><span class="fname">강사훈련_온라인자료_v1.md</span><span class="cnt">29</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">52행</span></div><div class="quote"><p class="">## 0-2. 시연 한 시간은 «한 번에 60분»이 아닙니다</p><p class="here"><b>30분 × 2회입니다. 1주차에 30분, 2주차에 30분.</b> 사이를 일부러 벌립니다.</p><p class="">까닭은 하나입니다. 우리가 보는 것은 <b>1회차의 점수가 아니라, 1회차에 지적받은 것을 2회차에 얼마나 고쳤는가</b>입니다.</p><p class="">한 시간을 붙여서 하면 고칠 시간이 0이 되어 그 축이 사라집니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">132행</span></div><div class="quote"><p class="">## 장면 1 - 조용한 학생</p><p class="here">수요일 오후 반. 열여섯 명이 있습니다. 수업은 잘 굴러갔습니다. 아무 일도 없었습니다.</p><p class="">그런데 그중 한 명은 오늘 한 마디도 하지 않았습니다.</p><p class="">교실이 조용하면 잘 굴러가는 것처럼 보이기 때문에, <b>그 학생은 아무도 모르게 멀어집니다.</b></p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">147행</span></div><div class="quote"><p class="">## 장면 2 - 종이 한 장</p><p class="here">학생이 어젯밤에 집에서 숙제를 했습니다. 앱으로 혼자 했습니다.</p><p class="">다음 날 아침, 그 학생이 교실에 들어오면 조 가운데에 종이 한 장이 놓여 있습니다.</p><p class="">거기에 <b>어젯밤 자기가 쓴 문장이 활자로 인쇄되어</b> 있습니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">149행</span></div><div class="quote"><p class="">학생이 어젯밤에 집에서 숙제를 했습니다. 앱으로 혼자 했습니다.</p><p class="here">다음 날 아침, 그 학생이 교실에 들어오면 조 가운데에 종이 한 장이 놓여 있습니다.</p><p class="">거기에 <b>어젯밤 자기가 쓴 문장이 활자로 인쇄되어</b> 있습니다.</p><p class="">「어제 이 문장이 잘 됐어요. 「…」」 / 「여기가 헷갈렸어요. 「…」」 / 「다음에 맞힐 문제」.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">161행</span></div><div class="quote"><p class="">## 장면 3 - 이름 없는 땅</p><p class="here">학생이 앱을 열면 「이름 없는 땅」이 있습니다.</p><p class="">이곳의 것들은 아직 이름이 없어 흐릿하고 조용합니다. <b>한국어로 부르면 또렷해지고 소리가 돌아옵니다.</b></p><p class="">학원에서 가장 중요한 행동은 <b>말하기</b>입니다. 그래서 말하기가 그대로 세계를 바꾸는 행위가 되도록 짰습니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">166행</span></div><div class="quote"><p class="">학원에서 가장 중요한 행동은 <b>말하기</b>입니다. 그래서 말하기가 그대로 세계를 바꾸는 행위가 되도록 짰습니다.</p><p class="here">가이드는 셋입니다. <b>몽글 · 까몽 · 마린.</b> 학생이 등록 첫 주에 하나를 고릅니다.</p><p class="">셋은 외모가 아니라 <b>학생을 대하는 방식</b>으로 갈립니다: 몽글은 같이 하고, 까몽은 지켜보고, 마린은 임무를 줍니다.</p><p class="">셋 다 말은 하지 않습니다. 말은 말풍선이 하고, 소리는 효과음이 합니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">166행</span></div><div class="quote"><p class="">학원에서 가장 중요한 행동은 <b>말하기</b>입니다. 그래서 말하기가 그대로 세계를 바꾸는 행위가 되도록 짰습니다.</p><p class="here">가이드는 셋입니다. <b>몽글 · 까몽 · 마린.</b> 학생이 등록 첫 주에 하나를 고릅니다.</p><p class="">셋은 외모가 아니라 <b>학생을 대하는 방식</b>으로 갈립니다: 몽글은 같이 하고, 까몽은 지켜보고, 마린은 임무를 줍니다.</p><p class="">셋 다 말은 하지 않습니다. 말은 말풍선이 하고, 소리는 효과음이 합니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">205행</span></div><div class="quote"><p class="">## 1-3. 마지막 문장</p><p class="here"><b>먼저 이름 하나를 풀어 둡니다.</b> 「<b>나만의 선생님</b>」은 <b>학생 한 명을 깊이 아는 일</b>의 이름입니다. 그 학생이 어제 어디서 멈췄는지, 무엇을 자꾸 틀리는지, 어떤 소리를 어려워하는지를 압니다. 주어는 사람이고 시스템은 그 손발입니다.</p><p class="">학생 한 명의 기록만 모아서 그 학생을 이해하는 앱 안의 자리입니다. 사람 수에 세지 않습니다.</p><p class="">&gt; <b>학생 열여섯 명에게는 각자를 이해하는 시스템이 하나씩 생깁니다.</b></p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">205행</span></div><div class="quote"><p class="">## 1-3. 마지막 문장</p><p class="here"><b>먼저 이름 하나를 풀어 둡니다.</b> 「<b>나만의 선생님</b>」은 <b>학생 한 명을 깊이 아는 일</b>의 이름입니다. 그 학생이 어제 어디서 멈췄는지, 무엇을 자꾸 틀리는지, 어떤 소리를 어려워하는지를 압니다. 주어는 사람이고 시스템은 그 손발입니다.</p><p class="">학생 한 명의 기록만 모아서 그 학생을 이해하는 앱 안의 자리입니다. 사람 수에 세지 않습니다.</p><p class="">&gt; <b>학생 열여섯 명에게는 각자를 이해하는 시스템이 하나씩 생깁니다.</b></p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">216행</span></div><div class="quote"><p class=""># 2. 프로의 계약</p><p class="here">정본은 <b>「SYNK 크루 핸드북」 v6</b>(2026-08-26)입니다. 입사 첫 주에 함께 읽고 <b>열람 확인서에 서명</b>합니다.</p><p class="">이 절은 그 문서에서 <b>선생님이 지금 알아야 하는 부분</b>만 옮긴 것입니다.</p><p class="">## 2-1. 다섯 개의 교환</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">301행</span></div><div class="quote"><p class="">크루 핸드북에는 <b>「매일 하는 것은 셋 … 합쳐서 하루 3분을 넘지 않습니다」</b>라고 적혀 있습니다. 출석 1탭 + 차시 마감 30초 + 관찰 한 줄 1분을 말한 것입니다.</p><p class="here"><b>그런데 실제로 세어 보면 그보다 큽니다.</b></p><p class="">| 셈 | 값 | 비고 |</p><p class="">|---|---|---|</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">341행</span></div><div class="quote"><p class="">## 3-0. 왜 이것을 가장 크게 다루나</p><p class="here">학생은 자기 실력이 어떤지를 <b>선생님의 말투에서</b> 가져갑니다.</p><p class="">「부족하다」는 말을 들은 학생은 자기가 부족한 사람이라고 배웁니다. 그건 한국어 수업이 아닙니다.</p><p class="">그래서 저희는 <b>낱말 목록</b>과 <b>문장 모양</b> 두 가지를 다 잠급니다. 낱말만 지켜서는 안 됩니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">422행</span></div><div class="quote"><p class="">## 3-4. 낱말은 0개인데 위반인 문장 - 아홉 줄</p><p class="here"><b>금칙어 목록은 바닥이지 천장이 아닙니다.</b> 아래 아홉 줄은 전부 금칙어가 0개인데 전부 위반입니다.</p><p class="">*(아래에 나오는 <b>Lv</b>은 우리 학원 안의 반 단계입니다. 6-5에 Lv1~Lv6이 각각 어느 수준인지 표로 적었습니다.)*</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">490행</span></div><div class="quote"><p class="">| <b>숫자를 말로 확정해 주지 않습니다</b> | 값이 「운영 검증 후 확정」 상태입니다. 앱 화면이 실시간으로 표시하니 화면을 가리키는 말로 합니다 |</p><p class="">| 캐릭터 진화의 <b>임계 숫자를 학생에게 말하지 않습니다</b> | <b>임계 자체가 없습니다.</b> 7단계 임계 포인트는 2026-08-26에 은퇴했고, 뒤를 잇는 <b>세 축</b>(곁에 온다 · 또렷해진다 · 밝아진다)에는 임계 숫자라는 것이 «아예 없습니다». 말할 숫자가 없으니 숫자를 말하지 않습니다. 정본 = 집필 규범 §4 · `docs/함께한날_설계_v1.md` |</p><p class="here"><b>「왜 아직 진화 안 했어요?」 대응:</b> 「그건 곧 없어져요. 대신 몽글이가 네 쪽으로 오는 걸 봐요 - 이번 주에 벌써 한 뼘 왔어요.」 (단계 이야기를 이어받지 않고, 숫자도 남은 양도 말하지 않습니다)</p><p class="">🔑 <b>재촉으로 쓰지 않습니다.</b> 「안 오면 멀어져요」는 금지입니다. 세 축은 뒤로 가지 않습니다.</p><p class="">&gt; ⚠ <b>「조금만 더 쌓이면 돼요」도 지금은 쓰지 않습니다.</b> 넘을 임계가 없어졌기 때문에, 「조금만 더」가 <b>무엇까지 남았다는 말인지 가리킬 것이 없습니다.</b></p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">563행</span></div><div class="quote"><p class="">&gt; <b>몸·뇌 깨우기 → 활성화된 뇌로 체계적 학습 → 장기 기억 전환</b></p><p class="here">워밍업은 <b>수업의 1단계</b>입니다.</p><p class="">②숙제 서클이 몸의 각성을 말의 각성으로 잇고, ③ 시작에서 그 소재를 오늘 학습으로 잇습니다.</p><p class=""><b>준비할 것:</b> 오프닝에서 워밍업 소재(오늘 K-팝/드라마/놀이)를 오늘 표현과 잇는 <b>문장 하나</b>를 미리 준비합니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">593행</span></div><div class="quote"><p class="">&gt; <b>어젯밤 앱에서 혼자 한 숙제를, 다음 날 수업 첫 20분에 조원 3명 앞에서 말로 한 번 더 해 보게 한다.</b></p><p class="here"><b>매일 같은 의식이라 설명이 0분입니다.</b> 재료는 어젯밤 앱 숙제입니다.</p><p class="">학생 폰은 0대이고, 학생이 외울 것도 0개입니다. 종이가 전부 알려 줍니다.</p><p class="">## 5-1. 20분 창 - 안쪽 시간표</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">593행</span></div><div class="quote"><p class="">&gt; <b>어젯밤 앱에서 혼자 한 숙제를, 다음 날 수업 첫 20분에 조원 3명 앞에서 말로 한 번 더 해 보게 한다.</b></p><p class="here"><b>매일 같은 의식이라 설명이 0분입니다.</b> 재료는 어젯밤 앱 숙제입니다.</p><p class="">학생 폰은 0대이고, 학생이 외울 것도 0개입니다. 종이가 전부 알려 줍니다.</p><p class="">## 5-1. 20분 창 - 안쪽 시간표</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">607행</span></div><div class="quote"><p class="">| 15:00 | <b>끝 신호 3초</b> | 📢발표가 조 마무리 한 문장 → <b>종이를 뒤집어</b> 조 가운데 |</p><p class="">| 15:00~20:00 | <b>전환 5분</b> | 자기 칸을 뜯어 교재 앞장에 끼우고 교재를 폅니다. <b>폰 전면 금지 시작</b> |</p><p class="here"><b>서클 본체 = 15분 · 전환 포함 = 20분입니다.</b></p><p class="">### ⚠ 학생 앞에서 낼 말은 «종이에 적힌 이름»입니다</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">737행</span></div><div class="quote"><p class="">## 6-4. 한자어 - 어원 묶음 카드</p><p class="here"><b>뿌리 음절 + 뜻 + 예시</b>를 한 장에 묶습니다.</p><p class="">&gt; <b>생 = 살다 → 생활 · 학생 · 인생</b></p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">743행</span></div><div class="quote"><p class="">### ⛔ 카드에 한자 글자를 쓰지 않습니다</p><p class="here"><b>학생도 선생님도 한자권이 아닙니다.</b> 카드에 쓰는 문자는 <b>한글 · 몽골어 · 영어 셋뿐</b>입니다.</p><p class="">이건 취향이 아니라 확정 규칙이고, 코드에도 검사가 들어가 있습니다.</p><p class="">## 6-5. 레벨 표기 - 이것만 씁니다</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">750행</span></div><div class="quote"><p class="">### 먼저 「Lv」가 무엇인지</p><p class="here"><b>Lv = 우리 학원 안의 반 단계입니다. TOPIK 급수와 같은 자가 아닙니다.</b></p><p class="">정본(커리큘럼 정본 v1.2)의 대응은 이렇습니다.</p><p class="">| SYNK | <b>Lv1</b> | <b>Lv2</b> | <b>Lv3</b> | <b>Lv4</b> | <b>Lv5</b> | <b>Lv6</b> |</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">750행</span></div><div class="quote"><p class="">### 먼저 「Lv」가 무엇인지</p><p class="here"><b>Lv = 우리 학원 안의 반 단계입니다. TOPIK 급수와 같은 자가 아닙니다.</b></p><p class="">정본(커리큘럼 정본 v1.2)의 대응은 이렇습니다.</p><p class="">| SYNK | <b>Lv1</b> | <b>Lv2</b> | <b>Lv3</b> | <b>Lv4</b> | <b>Lv5</b> | <b>Lv6</b> |</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">779행</span></div><div class="quote"><p class="">| <b>학습 대상(문법·어휘·본문)은 한국어</b>로 다룹니다 | <b>운영·지시문에서 몽골어를 어디까지 허용하는가</b>(특히 Lv1~2) |</p><p class="">| 워밍업은 <b>100% 한국어</b>입니다 | |</p><p class="here"><b>지금 지어내지 않습니다.</b> 정해지면 「레벨별 매개 언어 허용표」로 이 칸을 채웁니다. → [확인 필요 #7]</p><p class="">---</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">985행</span></div><div class="quote"><p class="">## 8-6. 관찰 한 줄을 어디에 쓰나 - 정직하게</p><p class="here"><b>입력 화면이 아직 없습니다. 지금 코드는 0줄입니다.</b></p><p class="">「짓지 않는 것」이 지금의 판정이고, 몇 가지 선행 결정을 기다리고 있습니다. → [확인 필요 #9]</p><p class=""><b>그래서 12월 파일럿에서는 종이나 임시 통로로 씁니다.</b> 화면이 서면 그때 화면으로 바꿉니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">1064행</span></div><div class="quote"><p class="">## 9-4. 급여가 오르는 여덟 갈래</p><p class="here"><b>셋은 학원이 크면 함께 오르고, 다섯은 선생님의 성과로 오릅니다.</b> 둘을 섞어 말하지 않습니다.</p><p class="">| | 갈래 | 무엇으로 열리나 |</p><p class="">|:--:|---|---|</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">1182행</span></div><div class="quote"><p class="">### 왜 실제 학생 수업에서 시연하지 않나</p><p class="here">파일럿에는 <b>진짜 학생</b>이 있습니다. 준비가 덜 된 상태로 학생 앞에 서면 <b>그 학생의 첫 경험이 나빠집니다.</b></p><p class="">파일럿은 시스템 리허설이지 연습장이 아닙니다.</p><p class="">## 10-2. 🔑 축은 점수가 아니라 «개선폭»입니다</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">1237행</span></div><div class="quote"><p class="">| 7 | <b>모의수업 피드백 리포트 2장</b>(1회차 · 2회차) - <b>2회차 시연에는 1회차 것을 가져오십니다</b> |</p><p class="">| 8 | 외울 것 목록 (아래 10-5) |</p><p class="here"><b>7번이 이 훈련의 서명입니다.</b> 동료와 비교한 순위표가 아니라 <b>「어제의 나」 두 장</b>입니다.</p><p class="">학생에게 요구하는 것을 선생님에게 먼저 합니다.</p><p class="">## 10-5. 안 보고 말할 수 있어야 하는 것</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">1348행</span></div><div class="quote"><p class="">### 🔑 다섯은 «두 축»입니다 - 이것을 먼저 보십시오</p><p class="here"><b>ⓐⓑⓒ 는 「내용이 어디서 왔나」를 묻습니다. 문장마다 반드시 하나 고릅니다.</b></p><p class=""><b>ⓓⓔ 는 「무엇을 잘못했나」를 묻습니다. 잘못이 없으면 아무것도 안 고릅니다.</b></p><p class="">| 축 | 기호 | 갈래 | 뜻 |</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">1537행</span></div><div class="quote"><p class=""># 본문에서 내린 문서 작업 뒷사정  *(내부용 - 지원자에게 안 나갑니다)*</p><p class="here"><b>나가는 범위 «안»에 있었던 ⚠ 셋입니다. 내용은 [확인 필요] #11·#12·#13에 같은 벌로 서 있고, 여기에 원문 그대로 둡니다.</b></p><p class="">| 어디에 있었나 | 원문 |</p><p class="">|---|---|</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">기업철학_홈페이지_v1.md</span><span class="cnt">6</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">28행</span></div><div class="quote"><p class="">## 우리의 답 - 사람에게 남는 세 가지 힘</p><p class="here">사람에게 끝까지 남는 것은 무엇인가. 우리는 세 가지라고 믿습니다. <b>질문하는 힘, 스스로 하는 힘, 마음을 끄는 힘.</b></p><p class=""><b>① 질문하는 힘 - 무엇이 진짜 문제인지 스스로 묻고 정의하는 힘.</b></p><p class="">AI는 답을 줍니다. 그러나 무엇을 물을지는 정해 주지 않습니다. 잘못된 질문에 완벽한 답을 받는 것만큼 위태로운 일은 없습니다. 세상과 자기 자신에게 진심으로 반응해 본 사람만이 무엇이 진짜 문제인지 알아봅니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">31행</span></div><div class="quote"><p class="">사람에게 끝까지 남는 것은 무엇인가. 우리는 세 가지라고 믿습니다. <b>질문하는 힘, 스스로 하는 힘, 마음을 끄는 힘.</b></p><p class=""><b>① 질문하는 힘 - 무엇이 진짜 문제인지 스스로 묻고 정의하는 힘.</b></p><p class="here">AI는 답을 줍니다. 그러나 무엇을 물을지는 정해 주지 않습니다. 잘못된 질문에 완벽한 답을 받는 것만큼 위태로운 일은 없습니다. 세상과 자기 자신에게 진심으로 반응해 본 사람만이 무엇이 진짜 문제인지 알아봅니다.</p><p class=""><b>② 스스로 하는 힘 - 시키지 않아도 먼저 움직이고 끝까지 해내는 힘.</b></p><p class="">누구나 무엇이든 만들 수 있게 된 시대에, 실제로 만들어 본 사람과 그렇지 않은 사람의 거리는 오히려 더 멀어졌습니다. 직접 기획하고, 부딪히고, 넘어졌다 다시 도전해 완성해 본 경험에서만 자랍니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">37행</span></div><div class="quote"><p class="">누구나 무엇이든 만들 수 있게 된 시대에, 실제로 만들어 본 사람과 그렇지 않은 사람의 거리는 오히려 더 멀어졌습니다. 직접 기획하고, 부딪히고, 넘어졌다 다시 도전해 완성해 본 경험에서만 자랍니다.</p><p class=""><b>③ 마음을 끄는 힘 - 여럿의 생각을 하나로 모아 해내며 자신감과 사람을 함께 얻는 힘.</b></p><p class="here">상대의 입장에서 느끼고, 호흡을 맞추고, 생각이 부딪힐 때 대화로 풀어 신뢰를 남기는 능력입니다. 신뢰는 오직 사람에게만 쌓입니다. 정보가 아니라 관계의 언어입니다.</p><p class="">이 세 가지에는 하나의 공통점이 있습니다. 오직 <b>사람이 직접 몸으로 겪은 경험에서만 자란다</b>는 것입니다. 데이터로 학습되지 않고, 요약으로 전달되지 않습니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">39행</span></div><div class="quote"><p class=""><b>③ 마음을 끄는 힘 - 여럿의 생각을 하나로 모아 해내며 자신감과 사람을 함께 얻는 힘.</b></p><p class="">상대의 입장에서 느끼고, 호흡을 맞추고, 생각이 부딪힐 때 대화로 풀어 신뢰를 남기는 능력입니다. 신뢰는 오직 사람에게만 쌓입니다. 정보가 아니라 관계의 언어입니다.</p><p class="here">이 세 가지에는 하나의 공통점이 있습니다. 오직 <b>사람이 직접 몸으로 겪은 경험에서만 자란다</b>는 것입니다. 데이터로 학습되지 않고, 요약으로 전달되지 않습니다.</p><p class="">그리고 이 세 힘의 뿌리에는 SYNK가 오래 붙들어 온 세 단어가 있습니다. <b>감응력</b>(세상과 순간에 진심으로 반응하고 감동하는 힘), <b>협응력</b>(몸과 마음, 사람과 사람이 맞춰 움직이는 힘), <b>공감능력</b>(타인의 마음을 느끼고 연결되는 힘). AI는 계산하지만 감동하지 않습니다. 무엇에 감응하는지 아는 사람이 던질 질문을 찾아내고, 협응과 공감을 몸으로 겪어 본 사람이 끝내 마음을 얻습니다. 그리고 그 경험들이 겹겹이 쌓여, 어떤 스펙보다 오래 남는 <b>나만의 이야기</b>가 됩니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">55행</span></div><div class="quote"><p class="">- <b>매주 몽골어로 나가는 자녀 리포트</b>: 자녀가 이번 주 무엇을 얼마나 했는지, 학부모님의 언어로 도착합니다. 장치는 만들어 두었고, 개원과 동시에 작동합니다.</p><p class="">- <b>게임처럼 이어지는 매일의 학습 루틴</b>: 출석과 도전이 포인트와 「오늘의 도전」·「오늘의 성장」으로 쌓입니다. 그 위에 아이가 고른 <b>가이드가 곁에 오고, 또렷해지고, 밝아지는</b> 층을 짓고 있습니다.</p><p class="here">한 반의 모든 아이를 똑같이 아는 것은 사람에게 불가능했습니다. 우리는 그 불가능을 시스템으로 풀어 갑니다. 아이가 매일 말하고 쓴 것이 쌓여 아이를 점점 더 깊이 이해하게 되고, 그 이해가 <b>우리 아이만을 위한, 가장 능률이 오르는 학습</b>으로 돌아오도록. 그 이해를 쥐는 것은 선생님입니다. 학생마다 자기만의 선생님이 한 명씩 있어, 아이마다 다른 숙제와 기록이 쌓여 갑니다. 경험을 설계하고, 방향을 잡아 주고, 마음을 만나는 것은 사람의 일이고, 기억하고 골라 돌려주는 일은 그 곁의 열여섯이 맡습니다.</p><p class="">좋은 교육의 증거는 감동적인 말이 아니라 눈에 보이는 기록이라고 믿습니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">129행</span></div><div class="quote"><p class="">아이들은 이미 AI와 함께 삽니다. 금지는 통하지 않고, 통해도 정작 가르쳐야 할 것을 못 가르치게 만듭니다.</p><p class="">그래서 저희는 입학 첫 주부터 네 낱말을 가르치도록 수업을 지어 놓았습니다. <b>맡기기 · 부탁하기 · 가려보기 · 책임지기.</b></p><p class="here">무엇을 AI에게 맡겨도 되고, 무엇은 스스로 해야 실력이 남는지를 숙제마다 아이가 직접 가릅니다.</p><p class="">AI를 가장 잘 쓰는 회사가 아이에게 주고 싶은 것은 AI가 아니라 <b>AI 앞에서의 그 판단력</b>입니다.</p><p class="">한국어가 늘고 나서도 남는 배움이라고 믿습니다. *(학부모 안내 한 장이 따로 준비되어 있습니다.)*</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">강사공고_정본_v1.md</span><span class="cnt">4</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">114행</span></div><div class="quote"><p class="">들어오실 때 필요한 것은 4급이지만, 그것으로 멈추지 않습니다. <b>맡을 수 있는 레벨이 단계로 열리고, 그 단계가 급여와 이어집니다.</b></p><p class="here">먼저 눈금을 하나 말씀드립니다. SYNK는 <b>학생 수준을 Lv1(처음 배우는 단계)부터 Lv6(가장 높은 단계)까지 여섯으로</b> 나눕니다. 아래의 Lv은 모두 <b>학생 레벨</b>이고, <b>TOPIK 급수와는 다른 눈금</b>입니다.</p><p class="">| 단계 | 맡는 학생 레벨 | 여는 조건 |</p><p class="">|---|---|---|</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">254행</span></div><div class="quote"><p class="">&gt; ④ 틀린 것은 <b>「다음에 맞힐 문제」</b>라고 말합니다.</p><p class="">&gt; ⑤ <b>조용한 학생을 먼저</b> 지명하고, 짧은 문장부터 시작합니다.</p><p class="here"><b>지원서와 관찰 과제는 한국어로 써 주세요. 문법과 철자는 채점하지 않습니다.</b> 저희가 보는 것은 글솜씨가 아니라 «무엇을 보셨는가»입니다.</p><p class="">면접과 모의수업 장소는 `[확인 필요 · 면접·모의수업 장소]` 입니다.</p></div></li><li><div class="meta"><span class="rule endingRepeat">같은 끝</span><span class="ln">269행</span></div><div class="quote"><p class="">| <b>12월 7일 ~ 12월 21일</b> | <b>저희가 마련한 자리에서 직접 시연하십니다. 1주차에 30분, 2주차에 30분.</b> 1회차에 들으신 것을 2회차에 고쳐 오시는 것이 이 자리의 전부입니다. 그래서 두 번을 이어서 하지 않고 사이를 둡니다 | 파일럿 2주 중 · <b>장소는 따로 안내드립니다</b> |</p><p class="">| <b>2027년 2월 25일</b> | <b>개원 · 계약 발효</b>(개원일에 시작하시는 네 분) | |</p><p class="here"><b>시연 두 번(각 30분 · 합쳐 1시간)에 15,000₮를 드립니다.</b> 시간당 15,000₮ 기준입니다.</p><p class=""><b>그 앞의 10~11월 온라인 숙지 구간은 각자 익히시는 시간이라 급여가 없습니다.</b> 미리 말씀드립니다.</p><p class="">- 온라인 시험 둘을 통과하셔야 시연 자리에 서실 수 있습니다.</p></div></li><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">269행</span></div><div class="quote"><p class="">| <b>12월 7일 ~ 12월 21일</b> | <b>저희가 마련한 자리에서 직접 시연하십니다. 1주차에 30분, 2주차에 30분.</b> 1회차에 들으신 것을 2회차에 고쳐 오시는 것이 이 자리의 전부입니다. 그래서 두 번을 이어서 하지 않고 사이를 둡니다 | 파일럿 2주 중 · <b>장소는 따로 안내드립니다</b> |</p><p class="">| <b>2027년 2월 25일</b> | <b>개원 · 계약 발효</b>(개원일에 시작하시는 네 분) | |</p><p class="here"><b>시연 두 번(각 30분 · 합쳐 1시간)에 15,000₮를 드립니다.</b> 시간당 15,000₮ 기준입니다.</p><p class=""><b>그 앞의 10~11월 온라인 숙지 구간은 각자 익히시는 시간이라 급여가 없습니다.</b> 미리 말씀드립니다.</p><p class="">- 온라인 시험 둘을 통과하셔야 시연 자리에 서실 수 있습니다.</p></div></li></ol>
+  </details>
+  <details>
+    <summary><span class="fname">정본/SYNK/SYNK 기업소개서.txt</span><span class="cnt">1</span></summary>
+    <ol class="cases"><li><div class="meta"><span class="rule factListParagraph">까닭 없음</span><span class="ln">157행</span></div><div class="quote"><p class="">기간도 못 박아 두었습니다. 1시즌 = 8주 = 교재 1권 = 40차시이고, 6시즌이면 수업 48주에 휴업 4주를 더해 12개월이기 때문에 <b>학원이 제공할 수 있는 최대 기간이 이 1년입니다.</b> 1년 이상 제공할 커리큘럼은 없습니다.</p><p class="here">교재는 문법 시냅스 코어 6권과 회화 시냅스 톡 2권, 원고가 모두 완성됐습니다. 원어민 검수는 아직입니다. 「검수 완료」라고는 쓰지 않습니다.</p><p class="">### 넷. 학생 손에 닿는 앱</p></div></li></ol>
+  </details>
+  </section>
+
+  <p class="foot">잰 자 = <code>node tools/글검사.js --json --전량</code> · 82 = 같은 끝 42 + 까닭 없음 40 ·
+    전체 지적 99건 중 나머지 17건(긴 문장 6 · 명사 쌓기 5 · 제목 건너뜀 2 · 의 겹침 2 · 어려운 낱말 1 · 긴 줄표 1)은
+    이 판정 밖입니다. 갈래를 가른 자 = <code>tools/lib/대외문안.js</code> 의 <code>홍보물인가()</code>.</p>
+</main>
