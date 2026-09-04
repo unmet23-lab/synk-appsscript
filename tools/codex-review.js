@@ -2292,6 +2292,51 @@ function 심문결과읽기(경로) {
   try { return fs.readFileSync(경로, 'utf8').trim(); } catch (_) { return ''; }
 }
 
+/* ■ 제미나이 심문 한 회차 (2026-09-04 · 유호 확정 「아스트라 한벌 + 제미나이 한 벌로 가자」)
+ *
+ * 🔑 **codex 자리와 «같은 파일»에 같은 모양으로 떨어뜨린다.** 그래야 이어받기·형식 검사·장부·
+ *   처분표가 벤더를 몰라도 그대로 돈다(경로에 이미 모델 이름과 효력이 박혀 있어 안 겹친다).
+ *   결과 파일에 담는 것은 **산문 그대로**다 — 스키마를 씌우지 않는다. 심문 결과의 잣대가
+ *   `심문형식통과`(등급 표기 또는 「지적 0건」)라서, 벤더마다 다른 형식을 만들면 그 잣대가 갈린다.
+ *
+ * 🔴 **실패는 「지적 0건」이 아니라 «확인 불가»다.** 검수의 둘째 벤더는 실패해도 codex 회차가
+ *   게이트를 지지만, 심문은 편성 두 벌이 곧 게이트라서 한 벌이 죽으면 **동결 판정의 분모가 바뀐다.**
+ *   그래서 조용히 넘기지 않고 던진다 — 부르는 쪽이 그 회차를 실패로 적는다.
+ *
+ * ⚠ 시간 상한을 따로 둔다: 검수 diff 는 5분이면 되지만 심문은 문서 전문을 읽고 공격하는 일이라
+ *   더 길다. 그래도 무한은 아니다 — 안 끝나는 회차는 「돌고 있다」와 「죽었다」가 같은 얼굴이다. */
+function gemini심문한회(프롬프트, timeoutMs, 결과, i, 총, 픽) {
+  const 라벨 = `설계 심문 ${i}/${총}(gemini · ${픽.model}/${픽.thinking_level || '기본'})`;
+  const 원본 = `${결과}.gemini.json`;            // 서빙 모델·사용량이 든 원 응답 — 결과 옆에 남긴다
+  fs.mkdirSync(path.dirname(결과), { recursive: true });
+  try {
+    execFileSync(process.execPath,
+      [제미나이호출경로, '--model', 픽.model,
+        ...(픽.thinking_level ? ['--thinking', 픽.thinking_level] : []),
+        '-o', 원본, '--timeout', String(Math.min(timeoutMs, 900000))],
+      자식옵션({
+        cwd: 대상ROOT, input: 프롬프트, encoding: 'utf8', timeout: timeoutMs,
+        stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 16 * 1024 * 1024,
+      }));
+  } catch (e) {
+    const 끝줄 = String((e && e.stderr) || (e && e.message) || e).trim().split('\n').filter(Boolean).slice(-2).join(' / ');
+    throw 확인불가(`${라벨} 실패: ${끝줄 || '(원인 줄 없음)'}`);
+  }
+  let r;
+  try { r = JSON.parse(fs.readFileSync(원본, 'utf8')); } catch (e) {
+    throw 확인불가(`${라벨} 응답을 못 읽었다(${e.message}) — ${path.relative(ROOT, 원본).replace(/\\/g, '/')}`);
+  }
+  if (!r || !String(r.text || '').trim()) throw 확인불가(`${라벨} 가 빈 답을 냈다 — 확인 불가이므로 동결 불가다`);
+  /* «무엇이 답했나»를 눈에 보이게 남긴다 — 픽과 다른 모델이 답하면 그 회차의 조건이 우리가 적은 것과
+   * 다르다(제미나이 CLI 가 픽을 무시하고 다른 판으로 서빙한 실측이 있다 · 기억 subscription-cli-review-lanes). */
+  if (r.modelVersion && !String(r.modelVersion).startsWith(픽.model)) {
+    console.error(`   ⚠ 제미나이 서빙 모델이 픽과 다르다 — 픽 ${픽.model} · 답한 것 ${r.modelVersion}`);
+  }
+  console.log(`  ${라벨} — 답한 모델 ${r.modelVersion || '(안 알려준다)'}`);
+  fs.writeFileSync(결과, String(r.text).trim() + '\n', 'utf8');
+  return r;
+}
+
 /* 🔴 2026-08-29 — **효력이 이름에 없어서 「깊이를 올렸는데 옛 결과를 이어받는」 일이 났다.**
  *   유호님이 심문을 `high` → `xhigh` 로 올린 그 자리에서 실측됐다: 편성 줄은 「1회 luna/xhigh」라
  *   찍혔는데 codex 호출이 **0회**였고, `…-luna-1.md`(high 로 돈 것)를 그대로 결과로 냈다.
@@ -2387,7 +2432,10 @@ function 심문실행(argv, timeoutMs) {
    * ⚠ 08-30 이전엔 이 주석이 「luna/high ×2」라 적혀 있었고 그 사이 편성이 두 번 바뀌었다.
    * 조합 검사를 전부 **지금** 한다 — 마지막 런에서 오타를 알면 앞 런들의 시간이 통째로 버려진다. */
   const 런들 = 정책.심문런들(argv);
-  런들.forEach((p) => 모델플래그(p));
+  /* 🔴 09-04 — 편성에 제미나이 자리가 생겼다(유호 확정). `모델플래그` 는 **코덱스 조합 검사**라
+   *   제미나이 픽을 넣으면 「모르는 코덱스 모델」로 거절한다. 코덱스 자리에만 먹인다.
+   *   ⚠ 제미나이 쪽 조합(사고 수준)은 `제미나이설정()` 이 이미 걸렀고, 실제 거절은 호출 때 난다. */
+  런들.filter((p) => p.벤더 !== 'gemini').forEach((p) => 모델플래그(p));
   const 회차 = 런들.length;
   const 절대 = path.resolve(대상);
   /* 프롬프트를 **루프 밖에서 한 번** 만든다 — 회차 사이에 금지목록·대상문서가 바뀌면 그 두 회차는
@@ -2442,9 +2490,18 @@ function 심문실행(argv, timeoutMs) {
       이어받음 = true;
       console.log(`  ↩ 심문 ${i}/${회차} 이어받음 — 이미 끝난 회차다(codex 호출 0 · ${path.relative(ROOT, 결과).replace(/\\/g, '/')}).`);
     } else {
-      console.log(`설계 심문 ${i}/${회차} — ${대상} (지문 ${지문}) · ${모델설정.분석.model}/${모델설정.분석.effort}`);
-      codex(['exec', ...잠금플래그, ...모델플래그(모델설정.분석), '--ephemeral', '-o', 결과, '-'],
-        프롬프트, timeoutMs, `설계 심문 ${i}/${회차}(${모델설정.분석.model})`);
+      const 벤더 = 모델설정.분석.벤더 === 'gemini' ? 'gemini' : 'codex';
+      console.log(`설계 심문 ${i}/${회차} — ${대상} (지문 ${지문}) · ${벤더 === 'codex' ? '' : '[제미나이] '}${모델설정.분석.model}/${모델설정.분석.effort}`);
+      /* 🔑 **프롬프트는 벤더마다 «같은 한 벌»이다**(09-04). 심문 프롬프트는 문서 전문·철학 게이트·
+       *   금지목록을 전부 안에 담고 저장소를 안 돈다 — 그래서 제미나이도 그대로 받는다.
+       *   벤더마다 프롬프트를 갈면 그 순간 「같은 문서를 두 집안이 봤다」가 아니라 «서로 다른 심문 둘»이
+       *   되고, 합쳐 읽는 순간 조건 통제가 깨진다(F281 · 두 회차 사이 프롬프트를 얼려 두는 그 이유). */
+      if (벤더 === 'gemini') {
+        gemini심문한회(프롬프트, timeoutMs, 결과, i, 회차, 모델설정.분석);
+      } else {
+        codex(['exec', ...잠금플래그, ...모델플래그(모델설정.분석), '--ephemeral', '-o', 결과, '-'],
+          프롬프트, timeoutMs, `설계 심문 ${i}/${회차}(${모델설정.분석.model})`);
+      }
       내용 = 심문결과읽기(결과);
       if (!내용) throw 확인불가(`심문 ${i}/${회차} 가 빈 출력을 냈다 — 확인 불가이므로 동결 불가다`);
       if (!심문형식통과(내용)) {
