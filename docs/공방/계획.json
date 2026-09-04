@@ -320,66 +320,75 @@
         "것들": [
           {
             "이름": "재생",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_재생",
             "규격": "부품",
-            "지시": "A right-pointing triangle play symbol cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+            "지시": "A right-pointing triangle play symbol cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread.",
+            "파일": "공방_재생.png"
           },
           {
             "이름": "멈춤",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_멈춤",
             "규격": "부품",
-            "지시": "Two short vertical bars side by side, a pause symbol cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+            "지시": "Two short vertical bars side by side, a pause symbol cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread.",
+            "파일": "공방_멈춤.png"
           },
           {
             "이름": "다음으로",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_다음으로",
             "규격": "부품",
-            "지시": "A right-pointing triangle with a short vertical bar beside it, a skip-forward symbol cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+            "지시": "A right-pointing triangle with a short vertical bar beside it, a skip-forward symbol cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread.",
+            "파일": "공방_다음으로.png"
           },
           {
             "이름": "이전으로",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_이전으로",
             "규격": "부품",
-            "지시": "A left-pointing triangle with a short vertical bar beside it, a skip-back symbol cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+            "지시": "A left-pointing triangle with a short vertical bar beside it, a skip-back symbol cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread.",
+            "파일": "공방_이전으로.png"
           },
           {
             "이름": "찾기",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_찾기",
             "규격": "부품",
-            "지시": "A magnifying glass whose round rim is cut from warm coral wool felt and whose lens is pale cream felt, the short handle a twist of coral cord."
+            "지시": "A magnifying glass whose round rim is cut from warm coral wool felt and whose lens is pale cream felt, the short handle a twist of coral cord.",
+            "파일": "공방_찾기.png"
           },
           {
             "이름": "설정",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_설정",
             "규격": "부품",
-            "지시": "A cogwheel with eight rounded teeth cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+            "지시": "A cogwheel with eight rounded teeth cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread.",
+            "파일": "공방_설정.png"
           },
           {
             "이름": "사람",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_사람",
             "규격": "부품",
-            "지시": "A simple person icon — a round head above a rounded shoulder shape cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+            "지시": "A simple person icon — a round head above a rounded shoulder shape cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread.",
+            "파일": "공방_사람.png"
           },
           {
             "이름": "집",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_집",
             "규격": "부품",
-            "지시": "A simple house shape with a pitched roof cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+            "지시": "A simple house shape with a pitched roof cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread.",
+            "파일": "공방_집.png"
           },
           {
             "이름": "책",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_책",
             "규격": "부품",
-            "지시": "A small open book sewn from wool felt, the covers warm coral and the pages pale cream, seen straight on from above."
+            "지시": "A small open book sewn from wool felt, the covers warm coral and the pages pale cream, seen straight on from above.",
+            "파일": "공방_책.png"
           },
           {
             "이름": "별점",
@@ -529,7 +538,7 @@
             "지시": "A small camera sewn from warm coral wool felt with a round cream felt lens and a tiny butter yellow felt shutter button."
           }
         ],
-        "상태": "0/30"
+        "상태": "9/30"
       },
       {
         "이름": "말풍선·표시",
@@ -1184,6 +1193,64 @@
           }
         ],
         "상태": "0/12"
+      },
+      {
+        "이름": "다시 굽기 (4K)",
+        "쓰는 곳": "이미 낮은 해상도로 구워 둔 장면·배경",
+        "상태": "0/7",
+        "_도구": "🔑 이 묶음은 밤굽기가 안 굽는다 — 지시문을 «자기 도구»가 정본으로 들기 때문이다(한 값을 두 곳이 알면 갈린다). 라디오 무대는 `node tools/라디오무대굽기.js --다시` 로 굽는다(기본이 4K · 일곱 장 2,352원).",
+        "_왜": "유호 확정 09-05 「기존 라디오 배경같은것도 전부 일감에 넣어줘. 4K로 제대로 하자」. ⚠ 마스코트·NPC 같은 캐릭터는 뺀다 — 다시 구우면 「닮았지만 다른 것」이 되어 정본이 흔들린다.",
+        "것들": [
+          {
+            "이름": "라디오 무대 · 시티팝 — 노을 휴양지",
+            "상태": "다시 굽는다",
+            "파일": "docs/라디오/무대/citypop.png",
+            "지금": "2752x1536",
+            "목표": "4K 16:9"
+          },
+          {
+            "이름": "라디오 무대 · 차분 — 밤의 호수",
+            "상태": "다시 굽는다",
+            "파일": "docs/라디오/무대/calm.png",
+            "지금": "2752x1536",
+            "목표": "4K 16:9"
+          },
+          {
+            "이름": "라디오 무대 · 전자 — 밤의 네온 항구",
+            "상태": "다시 굽는다",
+            "파일": "docs/라디오/무대/house.png",
+            "지금": "2752x1536",
+            "목표": "4K 16:9"
+          },
+          {
+            "이름": "라디오 무대 · 도시 — 비 갠 저녁의 골목 옥상",
+            "상태": "다시 굽는다",
+            "파일": "docs/라디오/무대/city.png",
+            "지금": "2752x1536",
+            "목표": "4K 16:9"
+          },
+          {
+            "이름": "라디오 무대 · 드림코어 — 구름 위의 계단",
+            "상태": "다시 굽는다",
+            "파일": "docs/라디오/무대/dream_sky.png",
+            "지금": "2752x1536",
+            "목표": "4K 16:9"
+          },
+          {
+            "이름": "라디오 무대 · 드림코어 — 끝없는 거울 물",
+            "상태": "다시 굽는다",
+            "파일": "docs/라디오/무대/dream_water.png",
+            "지금": "2752x1536",
+            "목표": "4K 16:9"
+          },
+          {
+            "이름": "라디오 무대 · 드림코어 — 빛나는 들판",
+            "상태": "다시 굽는다",
+            "파일": "docs/라디오/무대/dream_field.png",
+            "지금": "2752x1536",
+            "목표": "4K 16:9"
+          }
+        ]
       }
     ]
   },
