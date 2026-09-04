@@ -124,14 +124,24 @@ async function main() {
     try { schema = JSON.parse(fs.readFileSync(path.resolve(스키마경로), 'utf8')); }
     catch (e) { console.error(`실행 오류: 스키마를 못 읽었다 — ${e.message}`); process.exit(1); }
   }
-  /* 🔑 이 통로는 **글 전용**이다(몽골어 검문 · 검수 러너의 gemini 회차) — 그래서 「글」 열쇠(공짜 몫).
-   * 그림·음악·목소리는 여기를 안 지나간다(각자 「돈」 열쇠를 쓴다 · 유호 확정 09-03). */
-  const key = 정책.제미나이키('글');
-  if (!key) { console.error('확인 불가: ' + 정책.제미나이키안내('글')); process.exit(2); }
+  /* 🚪 **창구를 부르는 쪽이 고른다** (2026-09-04 · 그날 실측이 이 문을 열게 했다).
+   *   기본은 「글」(AI Studio · 공짜 몫)이다 — 몽골어 검문과 검수 둘째 눈처럼 **자주·가볍게** 도는 일.
+   *   🔴 그런데 공짜 몫은 **하루 20발**이고, 09-04 «첫» 설계 심문이 정확히 거기서 죽었다:
+   *     `Quota exceeded ... generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash`.
+   *     심문은 문서 전문을 통째로 보내는 «무겁고 드문» 호출이라, 이 몫에 얹으면 그날 다른 일이 다 막힌다.
+   *   ⇒ 무거운 자리는 `--용도 돈`(Vertex AI · 크레딧 ₩435,523 · ⏰시한 2026-11-13)으로 부른다.
+   *   ⚠ 「돈」은 잔액이 닳는다 — **자주 도는 자리를 여기로 옮기지 않는다**(마르면 카드로 넘어간다).
+   *   🚫 그림·음악·목소리는 여기를 안 지나간다(각자 제 통로에서 「돈」을 쓴다 · 유호 확정 09-03). */
+  const 용도 = 인자(argv, '--용도') || '글';
+  if (용도 !== '글' && 용도 !== '돈') {
+    console.error(`실행 오류: --용도 는 글|돈 중 하나다 — 받은 값 "${용도}"`); process.exit(1);
+  }
+  const key = 정책.제미나이키(용도);
+  if (!key) { console.error('확인 불가: ' + 정책.제미나이키안내(용도)); process.exit(2); }
   const prompt = fs.readFileSync(0, 'utf8');
   if (!prompt.trim()) { console.error('실행 오류: stdin 프롬프트가 비었다'); process.exit(1); }
   try {
-    const r = await 제미나이(key, model, prompt, { schema, thinking, timeoutMs, 상세: true });
+    const r = await 제미나이(key, model, prompt, { schema, thinking, timeoutMs, 용도, 상세: true });
     fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
     fs.writeFileSync(out, JSON.stringify(r), 'utf8');
     if (r.modelVersion && !String(r.modelVersion).startsWith(model)) {
