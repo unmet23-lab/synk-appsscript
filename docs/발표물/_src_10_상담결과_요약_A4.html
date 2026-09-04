@@ -79,13 +79,20 @@ html,body{
 
 .sheet{
   width:210mm; height:297mm; display:flex; flex-direction:column;
-  overflow:hidden;
-  /* 🔑 펠트 천 — 색이 아니라 «결»이다(제미나이로 굽고 브랜드 색으로 재염색 · 09-05).
-     밝기 진폭 ±5.9/255 라 눈에는 보이되 그 위 글자를 안 방해한다. */
+  overflow:hidden; position:relative;
   background-color:var(--paper);
-  background-image:var(--천-종이);
-  background-size:cover; background-position:center;
 }
+/* 🔴 종이 바탕 펠트는 **따로 깐 층**이다 — `.sheet` 자신의 background-image 로 두면
+   화면에는 나오는데 **인쇄본에서 통째로 사라진다**(09-05 실측: 화면 1.59% · PDF 0.00%).
+   `.sheet` 가 쪽과 정확히 같은 크기(210×297mm · @page margin:0)라 크롬이 인쇄할 때
+   그 배경을 캔버스 쪽으로 넘기고 버리는 것으로 보인다. 어두운 카드는 쪽보다 작아서 살아남았다.
+   ⇒ 쪽과 크기가 같은 요소에는 배경 그림을 직접 주지 않는다. 안쪽에 한 층을 깐다.
+   🔑 그리고 자는 «화면»이 아니라 «인쇄본»에 댄다 — 종이가 진짜다. */
+.sheet::before{
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:var(--천-종이); background-size:cover; background-position:center;
+}
+.sheet > *{ position:relative; z-index:1; }
 
 /* ══ 머리 반전면 ══════════════════════════════════════ */
 .hero{
@@ -112,7 +119,7 @@ html,body{
 
 /* ══ 한 단 흐름 ═══════════════════════════════════════
    v2 의 2단을 접었다. 여백이 이 지면의 주된 재료다 — 칸 사이 간격이 위계를 진다. */
-.pad{ padding:8mm 14mm 0; display:flex; flex-direction:column; flex:1 1 auto; min-height:0; gap:5.4mm; }
+.pad{ padding:7mm 14mm 0; display:flex; flex-direction:column; flex:1 1 auto; min-height:0; gap:4.2mm; }
 
 .lbl{ font-size:2.5mm; font-weight:800; letter-spacing:.03em; color:var(--navy-3); }
 .lbl .ko{ color:var(--navy-3); font-weight:500; }
@@ -130,9 +137,9 @@ html,body{
 .hero2{
   background-color:var(--navy-2); color:var(--cream);
   background-image:var(--천-어둠); background-size:cover; background-position:center 70%;
-  border-radius:2.6mm; padding:8mm 9mm 8.4mm; display:flex; gap:7mm; align-items:center;
+  border-radius:2.6mm; padding:6.6mm 9mm 7mm; display:flex; gap:7mm; align-items:center;
 }
-.hero2 .코{ width:34mm; flex:0 0 auto; }
+.hero2 .코{ width:31mm; flex:0 0 auto; }
 .hero2 .코 img{ width:100%; display:block; }
 .hero2 .속{ flex:1 1 auto; min-width:0; }
 .hero2 .lbl{ color:var(--cream-3); }
@@ -142,8 +149,8 @@ html,body{
 .hero2 .mn{ color:rgba(228,228,231,.5); }
 
 /* 몇 시즌 걸리나 — 폼폼 위에 얹은 한 자리 숫자(유호 확정 09-04 「히어로 번호는 폼폼」) */
-.tally{ display:flex; align-items:center; gap:4mm; margin-top:5mm;
-  border-top:.3mm solid rgba(228,228,231,.24); padding-top:4.6mm; }
+.tally{ display:flex; align-items:center; gap:4mm; margin-top:4mm;
+  border-top:.3mm solid rgba(228,228,231,.24); padding-top:3.8mm; }
 .히어로수{ width:19mm; height:19mm; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
   font-size:10.4mm; font-weight:800; color:var(--navy-2); line-height:1; }
 .tally .말{ font-size:3.8mm; font-weight:800; line-height:1.4; }
