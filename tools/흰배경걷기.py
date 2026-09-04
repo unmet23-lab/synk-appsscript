@@ -63,7 +63,28 @@ def 흰그림자다듬기(원px, ap, w, h, 바닥, 채도문):
     return 민수
 
 
-def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=218, 채도문=22):
+def 구멍걷기(원px, ap, w, h, 문):
+    """물체에 «둘러싸인» 배경을 걷는다 — 가위 손잡이 안, 실 고리 안.
+
+    왜(09-05 실물): floodfill 은 테두리에서 번지므로 물체가 감싼 구멍에는 못 들어간다.
+      그래서 손 도구 여섯 중 바늘과실·가위의 구멍 안쪽이 흰 조각으로 남았다.
+    어떻게: 배경이 순백(255)이라, 아직 살아 있는 픽셀 중 «거의 순백이고 색이 없는» 것을
+      지운다. 물체 쪽 흰 하이라이트는 이 문턱(기본 238)보다 어둡거나 색을 띤다.
+    ⚠ 흰 물건은 못 찍는 규격이라 성립하는 방법이다 — 배경이 흰색이 아니면 이 함수를 끈다.
+    """
+    센다 = 0
+    for y in range(h):
+        for x in range(w):
+            if ap[x, y] == 0:
+                continue
+            r, g, b = 원px[x, y]
+            if min(r, g, b) >= 문 and max(r, g, b) - min(r, g, b) <= 8:
+                ap[x, y] = 0
+                센다 += 1
+    return 센다
+
+
+def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=218, 채도문=22, 구멍문=238):
     원 = Image.open(경로).convert('RGB')
     w, h = 원.size
     tmp = 원.copy()
@@ -87,6 +108,7 @@ def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=21
               f'배경이 흰색이 아니거나 물건이 테두리에 닿아 있다.')
 
     민수 = 흰그림자다듬기(원.load(), ap, w, h, 흰바닥, 채도문) if 흰바닥 > 0 else 0
+    구멍수 = 구멍걷기(원.load(), ap, w, h, 구멍문) if 구멍문 > 0 else 0
     알파 = 알파.filter(ImageFilter.GaussianBlur(부드럼))
     out = 원.convert('RGBA')
     out.putalpha(알파)
@@ -105,7 +127,8 @@ def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=21
             out = 판
 
     out.save(출력)
-    print(f'   ✅ {os.path.basename(출력)}  배경 {지운수 * 100 // (w * h)}% · 흰그림자 {민수:,}점 · {out.size[0]}×{out.size[1]}')
+    print(f'   ✅ {os.path.basename(출력)}  배경 {지운수 * 100 // (w * h)}% · 구멍 {구멍수:,}점'
+          f'{f" · 흰그림자 {민수:,}점" if 민수 else ""} · {out.size[0]}×{out.size[1]}')
     return 지운수 > 0
 
 
@@ -124,6 +147,9 @@ def main():
                          '흰 바닥에서 찍으면 그림자도 흰색이라 배경만 걷으면 흰 덩어리가 남는다. 0 이면 안 한다')
     ap.add_argument('--채도문', type=int, default=22,
                     help='RGB 최대-최소가 이 값을 넘으면 «색이 있는 것»이라 흰그림자 다듬기에서 뺀다(물체 보호)')
+    ap.add_argument('--구멍문', type=int, default=238,
+                    help='물체에 둘러싸인 «거의 순백» 자리를 걷는 문턱(0~255). 가위 손잡이 안·실 고리 안이 '
+                         '이걸로 걷힌다. 0 이면 안 한다(배경이 흰색이 아닌 그림)')
     a = ap.parse_args()
 
     파일들 = sorted(glob.glob(a.입력)) if any(c in a.입력 for c in '*?[') else [a.입력]
@@ -137,7 +163,7 @@ def main():
     산것 = 0
     for p in 파일들:
         out = a.출력 or (os.path.splitext(p)[0] + '_누끼.png')
-        if 걷는다(p, out, a.임계, a.여백, a.정사각, a.부드럼, a.흰바닥, a.채도문):
+        if 걷는다(p, out, a.임계, a.여백, a.정사각, a.부드럼, a.흰바닥, a.채도문, a.구멍문):
             산것 += 1
     print(f'■ 합계 {len(파일들)}장 = 걷힘 {산것} + 못 걷음 {len(파일들) - 산것}')
 
