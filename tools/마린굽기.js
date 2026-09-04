@@ -81,17 +81,52 @@ slight three-quarter turn. Plain seamless soft background in a neutral tone, sof
 focus, no scenery. Square framing with generous empty space around the character.`;
 
 /* 🔑 09-05 — 유호님이 «정면을 본 마린»을 부르셨다. 위 상수는 `three-quarter turn`(비스듬)이라
- *   그 자리를 갈아야 한다. 정면은 마스코트 기본판의 자세이기도 하다(앱 화면·카드가 정면을 쓴다). */
-const 정면카메라 = `Photographed with a 50mm macro lens, shallow depth of field, soft studio
-light from the upper left, gentle rim light. The character stands centred and faces the
-camera DIRECTLY, perfectly straight on, fully frontal and symmetrical — both lenses level,
-both tiny arms visible at its sides, no turn of the body at all. Full body visible.
-Plain seamless soft background in a neutral tone, softly out of focus, no scenery.
-Square framing with generous empty space around the character.`;
+ *   그 자리를 갈아야 한다. 정면은 마스코트 기본판의 자세이기도 하다(앱 화면·카드가 정면을 쓴다).
+ * 🔴 09-05 첫 판 실패 — 유호님이 「왜 정면을 안 보고 있지?」로 잡으셨다. 까닭은 문면 «순서»다.
+ *   조립이 [재질 … 카메라 … ] 라서 맨 앞 `재질`(“photographed on a table”)이 장면을 먼저
+ *   세우고, 다섯째에 온 정면 지시가 그 장면에 얹혔다. 증거 = 「배경은 민무늬」라고 썼는데도
+ *   나무 탁자가 그대로 나왔다. ⇒ 야자수 때와 같은 규율(「하나만, 세게, 맨 앞에」)을 건다:
+ *     ⓐ 카메라를 맨 «앞»으로 (아래 조립에서 카메라덮기가 있으면 선두)
+ *     ⓑ 탁자를 부르는 `재질` 을 정면판에서는 `정면재질` 로 갈아 낸다(두 장면이 안 싸우게)
+ *     ⓒ 비스듬을 «금지»로도 못 박는다 — 금지 덩어리는 이미 잘 먹는 것이 확인됐다. */
+const 정면카메라 = `CAMERA AND POSE — THIS IS THE MOST IMPORTANT INSTRUCTION:
+A dead-on, perfectly frontal portrait. The camera is exactly at the character's own height,
+exactly on its centre line. The character faces the lens straight on, square to the camera.
+The picture is bilaterally symmetrical: mirror the left half onto the right half and it
+matches. Both lenses are the SAME size, at the SAME height, equally far from the centre.
+Both stubby arms hang at the sides, equally visible, equally foreshortened. We see the FRONT
+of the body only — no side of the body, no side of the helmet, no cheek, no shoulder turned
+towards us. The head does not tilt and does not rotate.
+Photographed with a 50mm macro lens on a plain seamless studio backdrop in a soft neutral
+tone, shallow depth of field, soft even light from the front with a gentle rim light.
+Full body visible, standing upright, centred. Square framing with generous empty space.`;
+
+/* 정면판 전용 재질 — 위 `재질` 과 한 글자만 다르다: “on a table” → 이음매 없는 배경천.
+ *   같은 말을 두 곳이 다르게 하면 «앞의 것»이 이긴다는 것을 09-05 에 실측했다. */
+const 정면재질 = `A handmade needle-felted wool character, a real miniature doll photographed
+against a plain seamless studio backdrop. Made entirely of textile: felted merino wool,
+wet-felted sheets with visible scissor-cut edges, embroidery floss, running stitch, french
+knots. Visible fibre fuzz and soft handmade irregularity. Nothing is plastic, glass, metal or
+digital — even the armour plates are stiff felt sheets, even the lens is a smooth felt disc
+with a stitched rim. Award-winning fibre art.`;
 
 const 금지 = `NO human face, no human skin, no eyes, no mouth, no nose, no hair.
 No text, no letters, no numbers, no logo, no watermark, no weapons of any kind, no gun,
 no blade, no blood, no menace. Nothing scary. Do not show the table edge or the studio.
+Do not make it look male or female — it must read as neither.`;
+
+/* 정면판 전용 금지 — 위 금지에 «비스듬 금지»를 얹는다. 금지 덩어리는 얼굴·무기를 실제로
+ *   막아 왔으니(60장 전량) 각도도 여기에 걸면 먹는다. 탁자 금지도 여기서 한 번 더 못 박는다. */
+const 정면금지 = `NO human face, no human skin, no eyes, no mouth, no nose, no hair.
+No text, no letters, no numbers, no logo, no watermark, no weapons of any kind, no gun,
+no blade, no blood, no menace. Nothing scary.
+NO three-quarter view, NO side view, NO angled view, NO turned body, NO tilted head,
+NO twisted torso, NO profile. Not a casual snapshot — a straight catalogue front view.
+The helmet COVERS THE WHOLE HEAD like a smooth closed dome. Nothing of a head shows below
+it — no face, no chin, no cheeks, no jaw, no neck, no stitch or mark that could read as a
+mouth or a nose. The ONLY features anywhere on this character are the two glowing lenses
+set into the helmet itself.
+Do not show a table, a tabletop, a wooden surface, a floor, a room, a wall or any scenery.
 Do not make it look male or female — it must read as neither.`;
 
 /* ── 다섯 판 — 색과 차림을 갈라 유호님이 고르실 재료를 만든다 ── */
@@ -732,8 +767,12 @@ async function main() {
   const 대상 = 하나 ? 판들.filter((_, i) => i + 1 === 하나) : 판들;
   if (!대상.length) { console.error(`--판 은 1~${판들.length} 다`); process.exit(1); }
 
-  const 게이트 = await 배치게이트({ 장수: 대상.length, 크기: '2K' });
-  if (게이트 && 게이트.멈춤) { console.error(게이트.사유); process.exit(2); }
+  /* 🔴 09-05 — 이 두 줄이 «양쪽 다» 어긋나 있었다. 옆 셋(공방·라디오무대·펠트색)은 맞게 부른다.
+   *   ⓐ `배치게이트(장수, 크기)` 는 자리 인자인데 꾸러미를 줘서 장수가 객체로 들어갔다
+   *      ⇒ 값 안내가 `[object Object]장 × 1K ≈ $NaN` 으로 찍혔다(크기 '2K' 도 안 먹었다).
+   *   ⓑ 게이트는 참/거짓을 돌려주는데 `.멈춤` 을 봤다 ⇒ 언제나 undefined 라 **막힌 적이 없다.**
+   *      게이트가 「한 장도 안 굽는다(0원)」를 찍어도 그대로 구우러 갔다. 거짓 초록의 그 무늬다. */
+  if (!(await 배치게이트(대상.length, '2K'))) { process.exitCode = 3; return; }
 
   fs.mkdirSync(낼곳, { recursive: true });
   const k = 키();
@@ -744,7 +783,12 @@ async function main() {
   for (const [i, 판] of 대상.entries()) {
     const 저장경로 = path.join(낼곳, `${판.이름}.png`);
     if (fs.existsSync(저장경로) && !다시) { 건너뜀 += 1; console.log(`⏭  ${판.이름} — 이미 있다(--다시 면 다시 굽는다)`); continue; }
-    const 지시 = [재질, 판.몸덮기 || 몸, 판.성격덮기 || 성격, 판.옷, 판.카메라덮기 || 카메라, 금지].join('\n\n');
+    /* 🔴 09-05 — 「카메라덮기」가 있는 판(= 정면판)은 조립 «순서»가 다르다. 카메라가 맨 앞에
+     *   서야 장면이 그 말대로 세워진다. 뒤에 두면 앞의 `재질`(탁자)이 이긴다는 것을 실측했다.
+     *   그 판은 재질·금지도 정면 전용으로 갈아 낀다(같은 말을 두 곳이 다르게 하지 않도록). */
+    const 지시 = 판.카메라덮기
+      ? [판.카메라덮기, 정면재질, 판.몸덮기 || 몸, 판.성격덮기 || 성격, 판.옷, 정면금지].join('\n\n')
+      : [재질, 판.몸덮기 || 몸, 판.성격덮기 || 성격, 판.옷, 카메라, 금지].join('\n\n');
     /* 🔴 09-05 실측 — 열 장을 연달아 던지자 넷째에서 `429 RESOURCE_EXHAUSTED` 가 났다.
      *   크레딧이 마른 것이 아니라 **분당 몫**에 걸린 것이다(그때 크레딧은 99.6% 남아 있었다).
      *   ⇒ 사이를 띄운다. 값이 아니라 «시간»을 쓰는 쪽이 싸다.
