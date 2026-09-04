@@ -61,6 +61,10 @@
   --paper:#FBF7F0; --navy:#262626; --navy-2:#08090C; --navy-3:#373737;
   --cream:#E4E4E7; --cream-3:#D1D2D4;
   --hair:rgba(55,55,55,.22);
+  /* 🔑 펠트 천은 «변수로 한 번만» 심는다 — 두 곳에 자리표를 두면 같은 그림이 두 번 박혀
+     지면이 두 배가 된다(09-05 실측: 383KB → 1.2MB). */
+  --천-종이:url("@@펠트종이@@");
+  --천-어둠:url("@@펠트어둠@@");
 }
 *{ box-sizing:border-box; margin:0; padding:0; }
 
@@ -75,12 +79,18 @@ html,body{
 
 .sheet{
   width:210mm; height:297mm; display:flex; flex-direction:column;
-  overflow:hidden; background-color:var(--paper);
+  overflow:hidden;
+  /* 🔑 펠트 천 — 색이 아니라 «결»이다(제미나이로 굽고 브랜드 색으로 재염색 · 09-05).
+     밝기 진폭 ±5.9/255 라 눈에는 보이되 그 위 글자를 안 방해한다. */
+  background-color:var(--paper);
+  background-image:var(--천-종이);
+  background-size:cover; background-position:center;
 }
 
 /* ══ 머리 반전면 ══════════════════════════════════════ */
 .hero{
   background-color:var(--navy-2); color:var(--cream);
+  background-image:var(--천-어둠); background-size:cover; background-position:center 30%;
   padding:6mm 14mm 5.6mm; position:relative; overflow:hidden; flex:0 0 auto;
 }
 .hero::after{
@@ -119,6 +129,7 @@ html,body{
    여기 담기는 것 셋: 학생 본인의 말 · 목표까지 몇 시즌 · 마스코트. */
 .hero2{
   background-color:var(--navy-2); color:var(--cream);
+  background-image:var(--천-어둠); background-size:cover; background-position:center 70%;
   border-radius:2.6mm; padding:8mm 9mm 8.4mm; display:flex; gap:7mm; align-items:center;
 }
 .hero2 .코{ width:34mm; flex:0 0 auto; }
@@ -154,12 +165,12 @@ html,body{
       부품을 쓸 때는 칸 비율을 부품 비율(1:1)에 맞춘다 — 부품을 칸에 늘리지 않는다. */
 .way .band{ display:flex; gap:1.4mm; margin-top:3mm; position:relative; }
 .way .band::before{
-  content:''; position:absolute; left:6%; right:6%; top:1.6mm; height:.3mm;
+  content:''; position:absolute; left:6%; right:6%; top:2mm; height:.3mm;
   background-color:var(--hair);
 }
 .way .band .c{ flex:1 1 0; text-align:center; position:relative; }
-.way .band .매듭{ width:3.2mm; height:3.2mm; display:block; margin:0 auto; }
-.way .band .c.j .매듭{ width:4.2mm; height:4.2mm; }   /* 과녁 구간은 매듭이 굵다 — 색이 아니라 크기가 구분을 진다(흑백 재복사 생존) */
+.way .band .매듭{ width:4mm; height:4mm; display:block; margin:0 auto; }
+.way .band .c.j .매듭{ width:5.2mm; height:5.2mm; }   /* 과녁 구간은 매듭이 굵다 — 색이 아니라 크기가 구분을 진다(흑백 재복사 생존) */
 .way .band .c .l{ font-size:2.3mm; font-weight:800; margin-top:1.4mm; }
 .way .band .c.j .l{ color:var(--navy); }
 .way .band .c .g{ font-size:2mm; color:var(--navy-3); margin-top:.2mm; }
