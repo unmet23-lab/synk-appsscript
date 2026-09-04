@@ -117,10 +117,15 @@ jobs:
         run: |
           set -o pipefail
           # ⚠ 변수명은 ASCII 로만 둔다 — bash 는 한글 식별자를 «구문 오류»로 죽인다(2026-08-20 실측).
-          if node --test tests/*.test.js 2>&1 | tee /tmp/synk-test.txt; then
+          # 🔴 rc 는 파이프라인 «바로 뒤»에서 잡는다. 앞선 판은 `if PIPE; then exit 0; fi` 뒤에서
+          #    `rc=$?` 를 읽었는데, 그 자리의 $? 는 파이프라인이 아니라 **if 문 자체**의 값이고
+          #    「조건 거짓 + else 없음」인 if 문은 0 을 낸다 ⇒ 깨진 검사가 있어도 `exit 0` 이었다.
+          #    실측(2026-09-05): 이 저장소의 검사 다섯이 깨진 채로 run 33913905109 가 success 를 받았다.
+          rc=0
+          node --test tests/*.test.js 2>&1 | tee /tmp/synk-test.txt || rc=$?
+          if [ "$rc" -eq 0 ]; then
             exit 0
           fi
-          rc=$?
           echo "::group::🔴 깨진 검사만 다시 — 분모와 함께 읽는다(F207)"
           grep -E "^# (tests|pass|fail|skipped|todo) " /tmp/synk-test.txt || true
           echo "--- not ok ---"
