@@ -73,10 +73,14 @@ jobs:
 
             const 응답벤더 = [...응답.keys()];
             const 짚은벤더 = 응답벤더.filter((v) => 응답.get(v).짚음);
+            /* 🔴 09-05: 문턱을 «응답한 벤더 수에 맞춘다». 옛 판은 「둘 이상」을 못박아, 깃허브에
+             *   벤더가 하나뿐인 지금은 그 하나가 P0 를 짚어도 영원히 pending 이었다 — 짚은 말을
+             *   들고도 도장이 안 서면 자가 없는 것과 같다. 벤더가 늘면 문턱도 저절로 올라간다. */
+            const 문턱 = Math.min(2, 응답벤더.length);
             let state, 설명;
-            if (응답벤더.length < 2) { state = 'pending'; 설명 = `응답 벤더 ${응답벤더.length}/2 — 아직 못 셌다(봇 침묵 = 미확인)`; }
-            else if (짚은벤더.length >= 2) { state = 'failure'; 설명 = `P0/P1 합의 — ${짚은벤더.join('+')} 가 짚었다. 사람이 본다`; }
-            else { state = 'success'; 설명 = `응답 ${응답벤더.length} · P0/P1 을 둘 이상이 짚지 않았다${짚은벤더.length ? ` (단독: ${짚은벤더.join(',')})` : ''}`; }
+            if (응답벤더.length < 1) { state = 'pending'; 설명 = '응답 벤더 0 — 아직 못 셌다(봇 침묵 = 미확인)'; }
+            else if (짚은벤더.length >= 문턱) { state = 'failure'; 설명 = `P0/P1 — ${짚은벤더.join('+')} 가 짚었다(문턱 ${문턱}/응답 ${응답벤더.length}). 사람이 본다`; }
+            else { state = 'success'; 설명 = `응답 ${응답벤더.length} · P0/P1 을 ${문턱} 이상이 짚지 않았다${짚은벤더.length ? ` (단독: ${짚은벤더.join(',')})` : ''}`; }
 
             await github.rest.repos.createCommitStatus({ owner, repo, sha: pr.head.sha, state, context: 'SYNK/검수합의', description: 설명.slice(0, 140) });
 
