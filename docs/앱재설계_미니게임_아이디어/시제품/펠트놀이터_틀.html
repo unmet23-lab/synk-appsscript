@@ -1,0 +1,325 @@
+<title>펠트 놀이터</title>
+<style>
+  @font-face{font-family:'SUIT';font-weight:500;src:url(/*FONT_SUIT_M*/) format('truetype');font-display:swap}
+  @font-face{font-family:'SUIT';font-weight:600;src:url(/*FONT_SUIT_SB*/) format('truetype');font-display:swap}
+  @font-face{font-family:'SUIT';font-weight:800;src:url(/*FONT_SUIT_XB*/) format('truetype');font-display:swap}
+  @font-face{font-family:'Inter Tight';font-weight:500;src:url(/*FONT_INTER_M*/) format('truetype');font-display:swap}
+  :root{
+    --ink-deep:#080605; --ink:#2B2320; --paper:#FBF7F0; --stitch:#F0E3C8;
+    --oat:#EDE7DC; --stone:#C7BFB2; --ash:#8D857A; --deep-wool:#575046;
+    --coral:#F96859; --coral-soft:#FBB7A3; --coral-3:#AE322A; --coral-rim:#941F19; --coral-wash:#FEF0E9;
+    --lapis:#3D6BC9; --lapis-soft:#C5D6F5; --lapis-deep:#24448C;
+    --meadow:#7DB45A; --meadow-soft:#D3E8BE; --meadow-deep:#3F6B2E;
+    --butter:#F5C445; --butter-soft:#FFEBB0; --butter-deep:#7E5A10;
+    --shadow:rgba(8,9,12,.45);
+    --r-outer:22px; --pad:14px; --r-inner:8px;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--ink-deep);color:var(--paper);
+    font-family:'SUIT','Inter Tight','Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif;font-weight:500;
+    -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+  body{min-height:100dvh;display:flex;justify-content:center;padding:14px 10px 40px}
+  #app{width:100%;max-width:430px;display:flex;flex-direction:column;gap:12px}
+  header{display:flex;align-items:baseline;justify-content:space-between;padding:4px 6px 0}
+  header h1{font-size:20px;font-weight:800;margin:0;letter-spacing:-.01em}
+  header .sub{font-size:12px;color:var(--ash);letter-spacing:.04em}
+  nav.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  nav.tabs button{appearance:none;border:1.5px dashed var(--stitch);background:var(--ink);color:var(--stone);border-radius:14px;
+    padding:9px 4px;font:inherit;font-size:12.5px;font-weight:600;min-height:44px;cursor:pointer;line-height:1.15;transition:transform .18s,background .18s,color .18s}
+  nav.tabs button[aria-selected="true"]{background:var(--coral);color:var(--ink-deep);border-style:solid;border-color:var(--coral-soft)}
+  nav.tabs button:focus-visible{outline:2px solid var(--lapis-soft);outline-offset:2px}
+  nav.tabs button:active{transform:scale(.97)}
+  #stage{position:relative;width:100%;aspect-ratio:3/4;border-radius:var(--r-outer);overflow:hidden;
+    border:2px dashed var(--stitch);background:var(--ink);touch-action:none;user-select:none;-webkit-user-select:none;
+    box-shadow:0 18px 40px -20px var(--shadow)}
+  #stage .cloth{position:absolute;inset:0;background-size:520px auto;background-repeat:repeat;opacity:.96}
+  #hint{margin:0;padding:0 8px;font-size:14px;line-height:1.5;color:var(--stone);min-height:22px;text-wrap:balance}
+  #hint b{color:var(--paper);font-weight:600}
+  #note{border-radius:var(--r-outer);border:1.5px dashed var(--stitch);background:var(--ink);padding:var(--pad) 16px;font-size:13px;line-height:1.55;color:var(--stone)}
+  #note h2{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--butter);letter-spacing:.04em}
+  #note ul{margin:0;padding-left:18px}
+  #note li{margin:2px 0}
+  .chip{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12.5px;font-weight:600;line-height:1.3}
+  .chip.lapis{background:var(--lapis);color:var(--paper)}
+  .chip.meadow{background:var(--meadow);color:var(--ink-deep)}
+  .chip.butter{background:var(--butter);color:var(--ink-deep)}
+  .felt-btn{appearance:none;border:none;border-radius:16px;background:var(--coral);color:var(--ink-deep);font:inherit;font-weight:700;font-size:15px;
+    padding:12px 18px;min-height:44px;cursor:pointer;box-shadow:0 6px 0 var(--coral-rim);transition:transform .12s,box-shadow .12s}
+  .felt-btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--coral-rim)}
+  .felt-btn.quiet{background:var(--oat);color:var(--ink);box-shadow:0 6px 0 var(--stone)}
+  .felt-btn.quiet:active{box-shadow:0 2px 0 var(--stone)}
+  .felt-btn:focus-visible{outline:2px solid var(--lapis-soft);outline-offset:2px}
+  .bubble{position:absolute;left:8%;right:8%;top:5%;padding:14px 16px 18px;border-radius:16px;background:var(--paper);color:var(--ink);
+    border:1.5px solid var(--stitch);font-size:19px;font-weight:600;text-align:center;line-height:1.35;box-shadow:0 10px 24px -14px var(--shadow)}
+  .bubble .blank{display:inline-block;min-width:2.2em;border-bottom:3px solid var(--coral);color:var(--coral-3);padding:0 4px;font-weight:800}
+  .bubble .blank.filled{border-bottom-color:var(--meadow);color:var(--meadow-deep)}
+  .bubble small{display:block;font-size:12px;font-weight:500;color:var(--ash);margin-top:4px}
+  .sprite{position:absolute;pointer-events:none;will-change:transform}
+  .target img,.bow img,.arrow img,.zip-handle img,.jamo img,.pin img,.mole img,.mound,.burst img,.stamp,.sprite,.pile img{mix-blend-mode:multiply}
+  .target img,.bow img,.arrow img,.zip-handle img,.pin img,.mole img{filter:none}
+  .target{position:absolute;width:88px;height:100px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:none}
+  .target img{width:88px;height:88px;object-fit:contain;filter:drop-shadow(0 6px 6px var(--shadow))}
+  .target span{position:absolute;top:26px;font-size:15px;font-weight:800;color:var(--ink);letter-spacing:.02em}
+  .target.hit img{animation:wob .5s ease-out 1}
+  @keyframes wob{0%{transform:rotate(0)}30%{transform:rotate(-9deg)}60%{transform:rotate(7deg)}100%{transform:rotate(0)}}
+  .bow{position:absolute;width:150px;height:150px;left:6%;bottom:8%;transform-origin:50% 50%;pointer-events:none}
+  .bow img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 8px var(--shadow))}
+  .string{position:absolute;height:3px;background:var(--stitch);transform-origin:0 50%;left:0;top:0;border-radius:2px;opacity:.9}
+  .arrow{position:absolute;width:64px;height:64px;transform-origin:50% 50%;pointer-events:none}
+  .arrow img{width:100%;height:100%;object-fit:contain}
+  .burst{position:absolute;width:40px;height:40px;pointer-events:none;animation:burst .55s ease-out forwards}
+  @keyframes burst{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.1);opacity:0}}
+  .stamp{position:absolute;left:50%;top:50%;width:190px;transform:translate(-50%,-50%) scale(.6) rotate(-8deg);opacity:0;animation:stamp .35s cubic-bezier(.2,.9,.3,1.2) forwards;pointer-events:none}
+  @keyframes stamp{to{transform:translate(-50%,-50%) scale(1) rotate(-8deg);opacity:1}}
+  .toast{position:absolute;left:10%;right:10%;bottom:6%;padding:10px 14px;border-radius:14px;background:var(--lapis);color:var(--paper);font-size:14px;font-weight:600;text-align:center;
+    opacity:0;transform:translateY(6px);transition:opacity .2s,transform .2s;pointer-events:none}
+  .toast.on{opacity:1;transform:translateY(0)}
+  .toast.meadow{background:var(--meadow);color:var(--ink-deep)}
+  /* 지퍼 */
+  .zip-word{position:absolute;left:8%;right:8%;top:14%;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .zip-row{position:relative;display:flex;gap:0;align-items:stretch}
+  .tile{background:var(--paper);color:var(--ink);border:2px solid var(--stitch);border-radius:14px;padding:18px 20px;font-size:40px;font-weight:800;line-height:1;min-width:96px;text-align:center;
+    box-shadow:0 8px 20px -12px var(--shadow);position:relative;transition:transform .3s}
+  .tile.l{border-top-right-radius:4px;border-bottom-right-radius:4px}
+  .tile.r{border-top-left-radius:4px;border-bottom-left-radius:4px}
+  .seam{width:14px;position:relative}
+  .seam::before{content:"";position:absolute;left:5px;top:0;bottom:0;border-left:3px dashed var(--stitch);opacity:.9}
+  .zip-handle{position:absolute;left:50%;width:56px;height:56px;transform:translate(-50%,-50%);cursor:grab;touch-action:none;z-index:3}
+  .zip-handle img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 6px var(--shadow))}
+  .sound-band{margin-top:6px;padding:10px 16px;border-radius:12px;background:var(--ink-deep);border:1.5px dashed var(--stitch);color:var(--butter);font-family:'Inter Tight','SUIT',sans-serif;font-size:22px;font-weight:500;letter-spacing:.06em;min-width:200px;text-align:center;min-height:46px}
+  .jamo{position:absolute;width:42px;height:42px;top:50%;transform:translate(-50%,-50%);transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s;z-index:2}
+  .jamo img{width:100%;height:100%;object-fit:contain}
+  .rule{position:absolute;left:8%;right:8%;bottom:20%;text-align:center}
+  .rule .chip{font-size:13.5px}
+  .ctrl{position:absolute;left:0;right:0;bottom:5%;display:flex;justify-content:center;gap:10px;padding:0 8%}
+  /* 다이얼 */
+  .dial-wrap{position:absolute;left:50%;top:52%;width:230px;height:230px;transform:translate(-50%,-50%)}
+  .dial{position:absolute;inset:0;transform-origin:50% 50%;cursor:grab;touch-action:none}
+  .dial img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 10px 14px var(--shadow))}
+  .dial .knob{position:absolute;left:50%;top:9%;width:26px;height:26px;transform:translateX(-50%);border-radius:50%;background:var(--coral);border:3px solid var(--paper)}
+  .dial-label{position:absolute;font-size:14.5px;font-weight:700;color:var(--paper);background:var(--ink);border:1.5px dashed var(--stitch);padding:5px 10px;border-radius:999px;transform:translate(-50%,-50%);transition:background .2s,color .2s}
+  .dial-label.on{background:var(--butter);color:var(--ink-deep);border-style:solid}
+  .npc{position:absolute;right:7%;top:6%;width:112px;height:112px;border-radius:50%;overflow:hidden;border:2px solid var(--stitch);background:var(--oat)}
+  .npc img{width:100%;height:100%;object-fit:cover;transition:opacity .25s}
+  .scene{position:absolute;left:7%;top:8%;width:55%;color:var(--paper);font-size:15px;line-height:1.4}
+  .scene b{color:var(--butter);font-weight:700}
+  .scene .say{margin-top:8px;font-size:22px;font-weight:800;color:var(--paper)}
+  .field{position:absolute;left:7%;right:7%;bottom:14%;display:flex;gap:8px}
+  .field input{flex:1;min-width:0;font:inherit;font-size:16px;font-weight:600;padding:12px 14px;border-radius:14px;border:2px solid var(--stitch);background:var(--paper);color:var(--ink);min-height:44px}
+  .field input:focus{outline:2px solid var(--lapis);outline-offset:1px}
+  /* 쪽지 */
+  .note-paper{position:absolute;left:50%;top:44%;width:78%;transform:translate(-50%,-50%);perspective:800px}
+  .note-inner{background:var(--paper);color:var(--ink);border-radius:8px;padding:34px 20px 22px;font-size:18px;font-weight:600;line-height:1.45;text-align:center;
+    box-shadow:0 14px 30px -14px var(--shadow);transform-origin:50% 0;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+  .note-inner.fold{transform:rotateX(-88deg);opacity:.9}
+  .note-inner small{display:block;margin-top:8px;font-size:13px;font-weight:500;color:var(--ash)}
+  .pin{position:absolute;left:50%;top:-28px;width:64px;height:64px;transform:translateX(-50%);pointer-events:none}
+  .pin img{width:100%;height:100%;object-fit:contain}
+  .want{position:absolute;left:50%;top:9%;transform:translateX(-50%)}
+  /* 두더지 */
+  .mole-grid{position:absolute;left:8%;right:8%;top:22%;display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px}
+  .hole{position:relative;height:96px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;border-radius:0 0 40px 40px}
+  .hole .mound{position:absolute;bottom:0;width:100%;height:46px;object-fit:contain;object-position:bottom;z-index:2;pointer-events:none}
+  .mole{position:absolute;bottom:10px;width:76px;height:76px;transform:translateY(90px);transition:transform .22s cubic-bezier(.2,.8,.2,1);cursor:pointer;touch-action:manipulation;z-index:1}
+  .mole img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 5px 6px var(--shadow))}
+  .mole span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:var(--ink);padding-bottom:6px}
+  .mole.up{transform:translateY(0)}
+  .mole.hit{transform:translateY(90px) scale(.8)}
+  .word-cue{position:absolute;left:8%;right:8%;top:5%;display:flex;align-items:center;justify-content:center;gap:10px}
+  .pile{position:absolute;left:8%;right:8%;bottom:6%;height:44px;display:flex;flex-wrap:wrap;gap:2px;align-content:flex-end}
+  .pile img{width:22px;height:22px;object-fit:contain}
+  .hidden{display:none!important}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+<div id="app">
+  <header><h1>펠트 놀이터</h1><span class="sub">만져 보는 시제품 다섯 · 2026-09-05</span></header>
+  <nav class="tabs" role="tablist" aria-label="시제품 고르기"></nav>
+  <div id="stage" aria-live="polite"></div>
+  <p id="hint"></p>
+  <section id="note" hidden><h2>이 판이 남기는 것</h2><ul></ul></section>
+</div>
+<script>
+const A = /*ASSETS_JSON*/{};
+const $ = (s, r) => (r || document).querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const buzz = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+const snd = {}; function play(k, vol) { try { if (!A[k]) return; const a = snd[k] || (snd[k] = new Audio(A[k])); a.currentTime = 0; a.volume = vol == null ? .9 : vol; a.play().catch(() => {}); } catch (e) {} }
+const stage = $('#stage'), hint = $('#hint'), note = $('#note');
+function setHint(h) { hint.innerHTML = h; }
+function setNote(items) { const ul = $('ul', note); ul.innerHTML = ''; if (!items || !items.length) { note.hidden = true; return; } items.forEach((t) => ul.appendChild(el('li', null, t))); note.hidden = false; }
+function toast(text, kind) { let t = $('.toast', stage); if (!t) { t = el('div', 'toast'); stage.appendChild(t); } t.className = 'toast ' + (kind || '') ; t.textContent = text; requestAnimationFrame(() => t.classList.add('on')); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1900); }
+function burstAt(x, y, key, n) { for (let i = 0; i < (n || 6); i++) { const b = el('div', 'burst'); const ang = Math.random() * Math.PI * 2, d = 40 + Math.random() * 50; b.style.setProperty('--dx', Math.cos(ang) * d + 'px'); b.style.setProperty('--dy', Math.sin(ang) * d - 20 + 'px'); b.style.left = (x - 20) + 'px'; b.style.top = (y - 20) + 'px'; const im = el('img'); im.src = A[key] || A['반짝임']; im.style.width = '100%'; im.style.height = '100%'; im.style.objectFit = 'contain'; b.appendChild(im); stage.appendChild(b); setTimeout(() => b.remove(), 600); } }
+function stamp(key) { const s = el('img', 'stamp'); s.src = A[key] || A['참잘했어요']; stage.appendChild(s); play('fx_achieve'); buzz([30, 40, 60]); return s; }
+function cloth(key) { const c = el('div', 'cloth'); c.style.backgroundImage = 'url(' + A[key] + ')'; stage.appendChild(c); }
+function rect() { return stage.getBoundingClientRect(); }
+function ptr(e) { const r = rect(); const p = e.touches ? e.touches[0] : e; return { x: p.clientX - r.left, y: p.clientY - r.top }; }
+
+/* ───────────── 1. 조사 활쏘기 ───────────── */
+function 활쏘기() {
+  cloth('바탕_메도우');
+  const 문장들 = [
+    { 앞: '저', 뒤: ' 학생이에요', 답: '은/는', 채움: '저는', 힌트: '「저」처럼 말하는 사람 자신을 소개할 땐 은/는' },
+    { 앞: '친구', 뒤: ' 왔어요', 답: '이/가', 채움: '친구가', 힌트: '「왔어요」의 주인공은 이/가' },
+    { 앞: '물', 뒤: ' 마셔요', 답: '을/를', 채움: '물을', 힌트: '마시는 «것»은 을/를' },
+    { 앞: '오늘', 뒤: ' 날씨가 좋아요', 답: '은/는', 채움: '오늘은', 힌트: '「오늘」을 앞에 내세우면 은/는' },
+    { 앞: '사과', 뒤: ' 먹어요', 답: '을/를', 채움: '사과를', 힌트: '먹는 «것»은 을/를' },
+  ];
+  const 쌍 = ['은/는', '이/가', '을/를'];
+  let i = 0, 맞음 = 0, 머뭇들 = [], 발수 = 0;
+  const bubble = el('div', 'bubble'); stage.appendChild(bubble);
+  const targets = 쌍.map((t, k) => { const d = el('div', 'target'); const im = el('img'); im.src = A['깃발']; d.appendChild(im); d.appendChild(el('span', null, t)); d.dataset.pair = t; d._k = k; stage.appendChild(d); return d; });
+  const bow = el('div', 'bow'); const bim = el('img'); bim.src = A['화살']; bow.appendChild(bim); stage.appendChild(bow);
+  const string = el('div', 'string'); stage.appendChild(string); string.style.display = 'none';
+  const toastEl = el('div', 'toast'); stage.appendChild(toastEl);
+  let t0 = performance.now(), flying = false, dragging = false, dragStart = 0, aim = null;
+  function bowCenter() { const r = rect(); return { x: r.width * 0.06 + 75, y: r.height * 0.92 - 75 }; }
+  function 보여주기() { const s = 문장들[i]; bubble.innerHTML = s.앞 + ' <span class="blank">___</span>' + s.뒤 + '<small>빈칸에 맞는 깃발을 겨눠서 쏘세요 · ' + (i + 1) + '/' + 문장들.length + '</small>'; }
+  function frame(now) { if (!stage.contains(bubble)) return; const r = rect(); const t = (now - t0) / 1000; targets.forEach((d, k) => { const y = r.height * (0.26 + k * 0.15); const amp = r.width * 0.28, cx = r.width * 0.5 + Math.sin(t * (0.35 + k * 0.12) + k) * amp; d.style.transform = 'translate(' + (cx - 44) + 'px,' + (y - 50) + 'px)'; d._c = { x: cx, y: y - 12 }; }); requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+  function down(e) { if (flying) return; dragging = true; dragStart = performance.now(); aim = ptr(e); string.style.display = 'block'; move(e); e.preventDefault(); }
+  function move(e) { if (!dragging) return; aim = ptr(e); const c = bowCenter(); const dx = aim.x - c.x, dy = aim.y - c.y; const ang = Math.atan2(dy, dx); bow.style.transform = 'rotate(' + (ang * 180 / Math.PI - 45) + 'deg)'; const len = Math.min(120, Math.hypot(dx, dy)); string.style.left = c.x + 'px'; string.style.top = c.y + 'px'; string.style.width = len + 'px'; string.style.transform = 'rotate(' + (ang * 180 / Math.PI + 180) + 'deg)'; }
+  function up(e) { if (!dragging) return; dragging = false; string.style.display = 'none'; const held = performance.now() - dragStart; 머뭇들.push(held); const c = bowCenter(); const dx = c.x - aim.x, dy = c.y - aim.y; const d = Math.hypot(dx, dy); if (d < 14) return; shoot(dx / d, dy / d); }
+  function shoot(ux, uy) { flying = true; 발수++; const a = el('div', 'arrow'); const im = el('img'); im.src = A['화살']; a.appendChild(im); stage.appendChild(a); const c = bowCenter(); let x = c.x, y = c.y; const sp = 11; const ang = Math.atan2(uy, ux) * 180 / Math.PI; buzz(12); play('fx_notify', .35);
+    function fly() { x += ux * sp; y += uy * sp; a.style.transform = 'translate(' + (x - 32) + 'px,' + (y - 32) + 'px) rotate(' + (ang - 45) + 'deg)'; const r = rect(); for (const t of targets) { if (t._c && Math.hypot(t._c.x - x, t._c.y - y) < 40) return hit(t, x, y, a); } if (x < -60 || x > r.width + 60 || y < -60 || y > r.height + 60) { a.remove(); flying = false; toast('빗나갔어요 · 다시 겨눠 봐요'); return; } requestAnimationFrame(fly); }
+    requestAnimationFrame(fly); }
+  function hit(t, x, y, a) { const s = 문장들[i]; a.remove(); t.classList.add('hit'); setTimeout(() => t.classList.remove('hit'), 520); buzz(35);
+    if (t.dataset.pair === s.답) { 맞음++; play('fx_earn'); burstAt(x, y, '반짝임', 7); bubble.innerHTML = s.채움.replace(s.앞, s.앞 + '<span class="blank filled">') + '</span>' + s.뒤 + '<small>맞았어요</small>'; setTimeout(() => { i++; flying = false; if (i >= 문장들.length) return 끝(); 보여주기(); }, 900); }
+    else { toast(s.힌트); setTimeout(() => { flying = false; }, 500); } }
+  function 끝() { stamp('참잘했어요'); const avg = 머뭇들.length ? Math.round(머뭇들.reduce((a, b) => a + b, 0) / 머뭇들.length) : 0; setHint('<b>다섯 문장 끝.</b> 화살은 맞는 깃발을 «겨누는» 것이 판단입니다. 시계·점수는 안 보입니다.'); setNote(['기록 = quiz.answered × 5 (문장 · 고른 조사 · 시위를 당긴 채 «머뭇»한 시간)', '이 판에서 잰 것 — 맞음 ' + 맞음 + '/5 · 쏜 화살 ' + 발수 + '발 · 머뭇 평균 ' + (avg / 1000).toFixed(1) + '초 (학생 화면에는 안 나오는 값)', '엔진이 읽어 바꾸는 것 — 조사별 오류 분포 → 다음 문항의 조사 자리 · 머뭇 시간 → ㉡ 결정 지연 축']); stage.removeEventListener('pointerdown', down); }
+  stage.addEventListener('pointerdown', down); stage.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  보여주기(); setHint('활시위를 <b>당겨서</b> 깃발을 겨누고 놓으세요. 깃발이 천천히 움직입니다.'); setNote(null);
+  return () => { stage.removeEventListener('pointerdown', down); stage.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); };
+}
+
+/* ───────────── 2. 소리 지퍼 ───────────── */
+function 지퍼() {
+  cloth('바탕_버터');
+  const 낱말들 = [
+    { 왼: '먹', 오: '었어요', 소리: '[머거써요]', 규칙: '연음 · 받침 ㄱ이 다음 소리로 넘어가요', 자모: '자_ㄱ', 이동: true, wav: '소_먹었어요' },
+    { 왼: '좋', 오: '네요', 소리: '[존네요]', 규칙: '비음화 · ㅎ 뒤에 ㄴ이 오면 [ㄴ]으로', 자모: '자_ㅎ', 자모끝: '자_ㄴ', wav: '소_좋네요' },
+    { 왼: '책', 오: '상', 소리: '[책쌍]', 규칙: '경음화 · ㄱ 받침 뒤 ㅅ은 [ㅆ]으로', 자모: '자_ㅅ', 자모끝: '자_ㄲ', wav: '소_책상' },
+  ];
+  let i = 0, 재청취 = 0, 지퍼시간 = [];
+  const wrap = el('div', 'zip-word'); stage.appendChild(wrap);
+  const row = el('div', 'zip-row'); const L = el('div', 'tile l'), seam = el('div', 'seam'), R = el('div', 'tile r'); row.append(L, seam, R); wrap.appendChild(row);
+  const band = el('div', 'sound-band', '…'); wrap.appendChild(band);
+  const handle = el('div', 'zip-handle'); const him = el('img'); him.src = A['매듭끈']; handle.appendChild(him); row.appendChild(handle);
+  const jamo = el('div', 'jamo'); const jim = el('img'); jamo.appendChild(jim); row.appendChild(jamo);
+  const rule = el('div', 'rule'); stage.appendChild(rule);
+  const ctrl = el('div', 'ctrl'); const again = el('button', 'felt-btn quiet', '다시 듣기'); const next = el('button', 'felt-btn', '다음 낱말'); ctrl.append(again, next); stage.appendChild(ctrl); next.disabled = true; again.disabled = true;
+  let prog = 0, dragging = false, y0 = 0, done = false, t0 = 0;
+  function 놓기() { const w = 낱말들[i]; L.textContent = w.왼; R.textContent = w.오; band.textContent = '…'; rule.innerHTML = ''; prog = 0; done = false; handle.style.top = '0%'; jamo.style.opacity = 1; jim.src = A[w.자모]; jamo.style.left = '38%'; jamo.style.transform = 'translate(-50%,-50%)'; L.style.transform = R.style.transform = ''; next.disabled = true; again.disabled = true; }
+  function render() { const w = 낱말들[i]; handle.style.top = (prog * 100) + '%'; const shown = Math.round(w.소리.length * prog); band.textContent = prog > 0.05 ? w.소리.slice(0, shown) : '…'; if (w.이동) { jamo.style.left = (38 + prog * 26) + '%'; } else { jamo.style.transform = 'translate(-50%,-50%) rotate(' + (prog * 360) + 'deg)'; if (prog > 0.6 && w.자모끝) jim.src = A[w.자모끝]; } L.style.transform = 'translateX(' + (-prog * 6) + 'px)'; R.style.transform = 'translateX(' + (prog * 6) + 'px)'; }
+  function down(e) { if (done) return; dragging = true; y0 = ptr(e).y - prog * row.clientHeight; t0 = performance.now(); e.preventDefault(); }
+  function move(e) { if (!dragging) return; const y = ptr(e).y; prog = Math.max(0, Math.min(1, (y - y0) / row.clientHeight)); render(); if (prog >= 1) 완료(); }
+  function up() { dragging = false; if (!done && prog < 1) { prog = 0; render(); } }
+  function 완료() { if (done) return; done = true; dragging = false; const w = 낱말들[i]; 지퍼시간.push(performance.now() - t0); buzz([20, 30, 20]); play(w.wav, 1); band.textContent = w.소리; rule.innerHTML = '<span class="chip lapis">' + w.규칙 + '</span>'; burstAt(rect().width / 2, rect().height * 0.36, '별', 5); next.disabled = false; again.disabled = false; }
+  again.addEventListener('click', () => { 재청취++; play(낱말들[i].wav, 1); });
+  next.addEventListener('click', () => { i++; if (i >= 낱말들.length) return 끝(); 놓기(); });
+  function 끝() { rule.innerHTML = ''; ctrl.innerHTML = ''; handle.classList.add('hidden'); jamo.classList.add('hidden'); let k = 0;
+    const 안내 = el('div', 'rule'); 안내.style.bottom = '30%'; stage.appendChild(안내);
+    const 듣 = el('button', 'felt-btn quiet', '듣기'); const mic = el('button', 'felt-btn', '따라 말하기'); ctrl.append(듣, mic);
+    function 보임() { const w = 낱말들[k]; L.textContent = w.왼; R.textContent = w.오; band.textContent = w.소리; 안내.innerHTML = '<span class="chip butter">' + (k + 1) + '/3 · 「' + w.왼 + w.오 + '」를 ' + w.소리 + ' 로 읽어요</span>'; mic.disabled = false; mic.textContent = '따라 말하기'; play(w.wav, 1); }
+    듣.addEventListener('click', () => play(낱말들[k].wav, 1));
+    mic.addEventListener('click', () => { mic.disabled = true; mic.textContent = '듣고 있어요 …'; buzz(15); setTimeout(() => { k++; if (k >= 낱말들.length) { stamp('도장'); mic.textContent = '녹음 끝 (시제품)'; const avg = Math.round(지퍼시간.reduce((a, b) => a + b, 0) / 지퍼시간.length); setHint('<b>세 낱말 끝.</b> 앱에서는 「따라 말하기」에서 진짜 녹음이 되고 그 소리가 발음 데이터로 남습니다.'); setNote(['기록 = quiz.answered × 3 (경계 · 지퍼를 당긴 시간) · choice.selected (다시 듣기 ' + 재청취 + '번) · submission.created × 3 (녹음 → 발음 규격 HW306·311·318 칸)', '이 판에서 잰 것 — 지퍼 당김 평균 ' + (avg / 1000).toFixed(1) + '초 · 다시 듣기 ' + 재청취 + '번', '엔진이 읽어 바꾸는 것 — 규칙별 약점(연음·비음화·경음화) → 다음 낱말 셋 · 재청취 성향 → ㉡']); return; } 보임(); }, 2500); });
+    setHint('낱말이 <b>하나씩</b> 나옵니다. 「듣기」로 Sohee 소리를 듣고, 「따라 말하기」를 누른 뒤 <b>소리 나는 대로</b> 읽으세요.');
+    보임(); }
+  handle.addEventListener('pointerdown', down); stage.addEventListener('pointermove', move); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  놓기(); render(); setHint('매듭 손잡이를 <b>아래로 당겨</b> 두 소리 사이를 여세요. 끝까지 내리면 Sohee 목소리가 들립니다.'); setNote(null);
+  return () => { handle.removeEventListener('pointerdown', down); stage.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); };
+}
+
+/* ───────────── 3. 존댓말 다이얼 ───────────── */
+function 다이얼() {
+  cloth('바탕_라피스');
+  const 장면들 = [
+    { 누구: '교수님', 그림: 'npc_prof_calm', 좋음: 'npc_prof_win', 갸웃: 'npc_prof_lean', 반말: '내일 못 가', 정답: 2, 검사: (s) => /습니다|ㅂ니다|겠습니다/.test(s) ? 2 : /요[.!]?$/.test(s.trim()) ? 1 : 0 },
+    { 누구: '알바 동료(친구)', 그림: '까몽_본체', 좋음: '까몽_윙크', 갸웃: '까몽_본체', 반말: '내일 못 가', 정답: 0, 검사: (s) => /습니다|ㅂ니다/.test(s) ? 2 : /요[.!]?$/.test(s.trim()) ? 1 : 0 },
+    { 누구: '팀장님', 그림: 'npc_lead_calm', 좋음: 'npc_lead_win', 갸웃: 'npc_lead_lean', 반말: '보고서 다 했어', 정답: 1, 검사: (s) => /습니다|ㅂ니다/.test(s) ? 2 : /요[.!]?$/.test(s.trim()) ? 1 : 0 },
+  ];
+  const 눈금 = ['반말', '해요', '합쇼']; const 각 = [-62, 0, 62]; const 끝맺음 = ['-어/-아 (반말)', '-어요/-아요', '-습니다/-ㅂ니다']; const 예문 = { '내일 못 가': ['내일 못 가', '내일 못 가요', '내일 못 갑니다'], '보고서 다 했어': ['보고서 다 했어', '보고서 다 했어요', '보고서 다 했습니다'] };
+  let i = 0, ang = 0, cur = 1, 돌림수 = 0, 과공 = 0, 과소 = 0;
+  const scene = el('div', 'scene'); const npc = el('div', 'npc'); const nim = el('img'); npc.appendChild(nim); stage.append(scene, npc);
+  const wrap = el('div', 'dial-wrap'); const plate = el('div'); plate.style.cssText='position:absolute;inset:6%;border-radius:50%;background:var(--paper);border:2px solid var(--stitch);box-shadow:0 10px 24px -12px var(--shadow)'; wrap.appendChild(plate); const dial = el('div', 'dial'); const dim = el('img'); dim.src = A['원판']; dial.appendChild(dim); dial.appendChild(el('div', 'knob')); wrap.appendChild(dial); stage.appendChild(wrap);
+  const labels = 눈금.map((t, k) => { const l = el('div', 'dial-label', t); const r = 150, a = (각[k] - 90) * Math.PI / 180; l.style.left = (115 + Math.cos(a) * r) + 'px'; l.style.top = (115 + Math.sin(a) * r) + 'px'; l.style.cursor = 'pointer'; l.setAttribute('role', 'button'); wrap.appendChild(l); return l; });
+  labels.forEach((l, j) => l.addEventListener('click', () => { setAng(각[j]); 힌트(); }));
+  function 힌트() { const s = 장면들[i]; rule.innerHTML = '<span class="chip lapis">지금 눈금 = ' + 눈금[cur] + ' · 문장 끝을 「' + 끝맺음[cur] + '」로</span>'; }
+  const field = el('div', 'field'); const inp = el('input'); inp.placeholder = '그 격으로 고쳐 쓰기'; inp.setAttribute('autocomplete', 'off'); const send = el('button', 'felt-btn', '보내기'); field.append(inp, send); stage.appendChild(field);
+  const rule = el('div', 'rule'); rule.style.bottom = '30%'; stage.appendChild(rule);
+  function 놓기() { const s = 장면들[i]; nim.src = A[s.그림]; scene.innerHTML = '<b>' + s.누구 + '</b>께 말해요<div class="say">「' + s.반말 + '」</div><div style="margin-top:8px;font-size:12.5px;line-height:1.45;color:var(--stone)">① 눈금(반말·해요·합쇼)을 <b style="color:var(--paper)">누르거나</b> 다이얼을 돌려 격을 고르고<br>② 아래 칸의 문장 <b style="color:var(--paper)">끝</b>을 그 격으로 고쳐 「보내기」</div>'; inp.value = s.반말; rule.innerHTML = ''; setAng(0); 힌트(); }
+  function setAng(a) { ang = Math.max(-90, Math.min(90, a)); dial.style.transform = 'rotate(' + ang + 'deg)'; let k = 0, best = 999; 각.forEach((v, j) => { if (Math.abs(v - ang) < best) { best = Math.abs(v - ang); k = j; } }); if (k !== cur) { cur = k; buzz(15); play('fx_earn', .3); 돌림수++; } labels.forEach((l, j) => l.classList.toggle('on', j === cur)); }
+  let dragging = false, a0 = 0, start = 0;
+  function angOf(e) { const r = wrap.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return Math.atan2(p.clientY - (r.top + r.height / 2), p.clientX - (r.left + r.width / 2)) * 180 / Math.PI; }
+  function down(e) { dragging = true; a0 = angOf(e); start = ang; e.preventDefault(); }
+  function move(e) { if (!dragging) return; let d = angOf(e) - a0; if (d > 180) d -= 360; if (d < -180) d += 360; setAng(start + d); }
+  function up() { if (!dragging) return; dragging = false; setAng(각[cur]); 힌트(); }
+  send.addEventListener('click', () => { const s = 장면들[i]; const text = inp.value.trim(); if (!text) { toast('한 줄 써 주세요'); return; } const got = s.검사(text); if (cur > s.정답) 과공++; if (cur < s.정답) 과소++;
+    if (text === s.반말 && cur !== 0) { toast('문장 끝을 아직 안 고쳤어요 · 예: ' + ((예문[s.반말] || [])[cur] || '')); return; }
+    if (cur === s.정답 && got === s.정답) { nim.src = A[s.좋음]; rule.innerHTML = '<span class="chip meadow">격이 맞아요 · 규칙으로 본 자리예요</span>'; play('fx_achieve'); buzz([20, 30, 40]); burstAt(rect().width * 0.8, rect().height * 0.2, '별', 5); }
+    else if (cur === s.정답) { nim.src = A[s.갸웃]; rule.innerHTML = '<span class="chip lapis">눈금은 맞는데 문장 끝이 «' + 눈금[cur] + '»가 아니에요</span>'; }
+    else { nim.src = A[s.갸웃]; rule.innerHTML = '<span class="chip lapis">' + s.누구 + '께는 «' + 눈금[s.정답] + '»가 맞아요 · 한 칸 ' + (cur > s.정답 ? '내려' : '올려') + ' 보세요</span>'; }
+    setTimeout(() => { i++; if (i >= 장면들.length) return 끝(); 놓기(); }, 1400); });
+  function 끝() { stamp('참잘했어요'); field.classList.add('hidden'); setHint('<b>세 장면 끝.</b> 다이얼 눈금 자체가 값이고, 고쳐 쓴 문장은 서버가 채점합니다.'); setNote(['기록 = choice.selected × 3 (다이얼 눈금 · 장면) · submission.created × 3 (고쳐 쓴 문장)', '이 판에서 잰 것 — 눈금 바꾼 횟수 ' + 돌림수 + ' · 과공(한 칸 위) ' + 과공 + ' · 과소(한 칸 아래) ' + 과소, '엔진이 읽어 바꾸는 것 — 과공이면 동료·반말 장면을, 과소면 합쇼 장면을 더 준다']); }
+  dial.addEventListener('pointerdown', down); window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  놓기(); setHint('상대에게 맞는 격을 <b>눈금을 눌러</b> 고르고(다이얼을 돌려도 됩니다), 아래 문장의 <b>끝</b>만 그 격으로 고쳐 보내세요.'); setNote(null);
+  return () => { dial.removeEventListener('pointerdown', down); window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+}
+
+/* ───────────── 4. 하숙집 쪽지 ───────────── */
+function 쪽지() {
+  cloth('바탕_누빔');
+  const 쪽지들 = [
+    { 글: '오늘 저녁 같이 먹을래요?', 요구: '거절 + 이유 한 마디', 검사: (s) => /못|안 |안가|다음|미안|죄송|괜찮/.test(s) },
+    { 글: '내일 아침에 물이 안 나와요.', 요구: '부탁 또는 제안', 검사: (s) => /주세요|줄래|주실|할까요|어때요|어떨까|부탁/.test(s) },
+  ];
+  let i = 0, 직접 = 0, 간접 = 0;
+  const want = el('div', 'want'); stage.appendChild(want);
+  const paper = el('div', 'note-paper'); const inner = el('div', 'note-inner'); const pin = el('div', 'pin'); const pim = el('img'); pim.src = A['시침핀꽂이']; pin.appendChild(pim); paper.append(inner, pin); stage.appendChild(paper);
+  const field = el('div', 'field'); const inp = el('input'); inp.placeholder = '한 줄로 답장'; inp.setAttribute('autocomplete', 'off'); const send = el('button', 'felt-btn', '붙이기'); field.append(inp, send); stage.appendChild(field);
+  function 놓기() { const z = 쪽지들[i]; inner.classList.remove('fold'); inner.innerHTML = '하숙집 아주머니<br>「' + z.글 + '」<small>' + (i + 1) + '/' + 쪽지들.length + ' · 답장은 한 줄</small>'; want.innerHTML = '<span class="chip lapis">이번 쪽지가 바라는 것 · ' + z.요구 + '</span>'; inp.value = ''; }
+  send.addEventListener('click', () => { const z = 쪽지들[i]; const text = inp.value.trim(); if (!text) { toast('한 줄 써 주세요'); return; } const ok = z.검사(text); if (/못|안/.test(text)) 직접++; if (/다음|괜찮|미안/.test(text)) 간접++; inner.classList.add('fold'); buzz(20); play('fx_notify', .5);
+    setTimeout(() => { inner.classList.remove('fold'); inner.innerHTML = '내 답장<br>「' + text + '」<small>' + (ok ? '바라는 말이 들어갔어요' : '바라는 말(' + z.요구 + ')이 안 보여요 · 그래도 보냈어요') + '</small>'; if (ok) { play('fx_earn'); burstAt(rect().width / 2, rect().height * 0.4, '하트', 5); } }, 520);
+    setTimeout(() => { i++; if (i >= 쪽지들.length) return 끝(); 놓기(); }, 2100); });
+  function 끝() { stamp('도장'); field.classList.add('hidden'); setHint('<b>두 장 끝.</b> 매일 20초. 쪽지가 바라는 말이 규칙이고, 문장은 서버가 봅니다.'); setNote(['기록 = submission.created × 2 (한 줄 답장 · 쪽지 종류)', '이 판에서 잰 것 — 직접 표현(못·안) ' + 직접 + ' · 간접 표현(다음에·괜찮아요) ' + 간접, '엔진이 읽어 바꾸는 것 — 간접 성향이 강하면 «직접 말하기» 장면을, 반대면 «부드럽게» 장면을']); }
+  놓기(); setHint('문에 붙은 쪽지에 <b>한 줄</b>로 답하세요. 쪽지마다 바라는 말이 하나 숨어 있습니다.'); setNote(null);
+  return () => {};
+}
+
+/* ───────────── 5. 받침 두더지(킬링타임) ───────────── */
+function 두더지() {
+  cloth('바탕_버터');
+  const 판들 = [
+    { wav: '소_좋네요', 글: '좋네요', 정답: '존', 후보: ['존', '좋', '졸', '준', '종', '젓'] },
+    { wav: '소_책상', 글: '책상', 정답: '쌍', 후보: ['쌍', '상', '삼', '산', '창', '쌀'] },
+    { wav: '소_먹었어요', 글: '먹었어요', 정답: '머', 후보: ['머', '먹', '멋', '멍', '무', '모'] },
+  ];
+  let i = 0, 맞음 = 0, 헛침 = 0, 살아 = true, 타이머 = [];
+  const cue = el('div', 'word-cue'); const lis = el('button', 'felt-btn', '소리 듣기'); const chip = el('span', 'chip butter', '첫소리를 «탁» 치세요'); cue.append(lis, chip); stage.appendChild(cue);
+  const grid = el('div', 'mole-grid'); stage.appendChild(grid);
+  const holes = []; for (let k = 0; k < 6; k++) { const h = el('div', 'hole'); const m = el('div', 'mole'); const mi = el('img'); mi.src = A['폼폼']; m.appendChild(mi); m.appendChild(el('span', null, '')); const mound = el('img', 'mound'); mound.src = A['폼폼방울']; h.append(m, mound); grid.appendChild(h); holes.push({ h, m, span: $('span', m) }); }
+  const pile = el('div', 'pile'); stage.appendChild(pile);
+  function 시작판() { const p = 판들[i]; chip.textContent = '「' + p.글 + '」 첫소리(둘째)는? 탁 치세요'; if (i === 1) chip.textContent = '「' + p.글 + '」 뒷소리는? 탁 치세요'; play(p.wav, 1); let n = 0; 타이머.forEach(clearTimeout); 타이머 = [];
+    const 순서 = p.후보.slice().sort(() => Math.random() - .5);
+    function pop() { if (!살아 || 판들[i] !== p) return; holes.forEach((o) => o.m.classList.remove('up')); const idx = n % 6; const k = Math.floor(Math.random() * 6); const other = holes.filter((_, j) => j !== k)[Math.floor(Math.random() * 5)]; holes[k].span.textContent = 순서[idx] === p.정답 ? p.정답 : (Math.random() < .5 ? p.정답 : 순서[idx]); other.span.textContent = 순서[(idx + 1) % 6] === p.정답 ? 순서[(idx + 2) % 6] : 순서[(idx + 1) % 6]; holes[k].m.dataset.v = holes[k].span.textContent; other.m.dataset.v = other.span.textContent; holes[k].m.classList.add('up'); other.m.classList.add('up'); n++; 타이머.push(setTimeout(pop, 1100)); }
+    pop(); }
+  holes.forEach((o) => { o.m.addEventListener('pointerdown', (e) => { if (!o.m.classList.contains('up')) return; const p = 판들[i]; const r = o.m.getBoundingClientRect(), s = rect(); const x = r.left - s.left + r.width / 2, y = r.top - s.top + r.height / 2; o.m.classList.remove('up'); o.m.classList.add('hit'); setTimeout(() => o.m.classList.remove('hit'), 250);
+      if (o.m.dataset.v === p.정답) { 맞음++; buzz(45); play('fx_achieve', .8); burstAt(x, y, '폭죽', 8); const h = el('img'); h.src = A['하트']; pile.appendChild(h); 타이머.forEach(clearTimeout); i++; if (i >= 판들.length) return 끝(); setTimeout(시작판, 700); }
+      else { 헛침++; buzz(10); burstAt(x, y, '반짝임', 3); } }); });
+  lis.addEventListener('click', () => { if (!lis.dataset.on) { lis.dataset.on = 1; lis.textContent = '다시 듣기'; 시작판(); } else play(판들[i].wav, 1); });
+  function 끝() { 살아 = false; stamp('참잘했어요'); chip.textContent = '세 낱말 다 잡았어요'; setHint('<b>끝.</b> 학습층은 «들린 소리와 같은 글자를 치는 것» 하나뿐이고, 나머지는 손맛입니다.'); setNote(['기록 = quiz.answered × 3 (낱말 · 친 글자 · 맞기까지 헛친 수) — 성향 축 0 · 학습층 최소', '이 판에서 잰 것 — 맞음 ' + 맞음 + '/3 · 헛침 ' + 헛침 + ' (하트 더미가 숫자 대신 남는다)', '앱에서는 햅틱·효과음·조각 튐이 여기 붙습니다(새 효과음은 사운드킷 통로 → 유호님 시청)']); }
+  setHint('「<b>소리 듣기</b>」를 누른 뒤, 들린 소리와 같은 글자가 올라오면 <b>탁</b> 치세요.'); setNote(null);
+  return () => { 살아 = false; 타이머.forEach(clearTimeout); };
+}
+
+/* ───────────── 탭 ───────────── */
+const 게임들 = [
+  { 이름: '조사\n활쏘기', 시작: 활쏘기 }, { 이름: '소리\n지퍼', 시작: 지퍼 }, { 이름: '존댓말\n다이얼', 시작: 다이얼 }, { 이름: '하숙집\n쪽지', 시작: 쪽지 }, { 이름: '받침\n두더지', 시작: 두더지 },
+];
+let 현재 = null, 정리 = null;
+const nav = $('nav.tabs');
+게임들.forEach((g, k) => { const b = el('button', null, g.이름.replace('\n', '<br>')); b.setAttribute('role', 'tab'); b.addEventListener('click', () => 열기(k)); nav.appendChild(b); });
+function 열기(k) { if (정리) { try { 정리(); } catch (e) {} } stage.innerHTML = ''; [...nav.children].forEach((b, j) => b.setAttribute('aria-selected', j === k ? 'true' : 'false')); 현재 = k; 정리 = 게임들[k].시작(); try { localStorage.setItem('펠트놀이터.탭', String(k)); } catch (e) {} }
+let first = 0; try { first = Number(localStorage.getItem('펠트놀이터.탭')) || 0; } catch (e) {}
+열기(Math.min(4, Math.max(0, first)));
+</script>
