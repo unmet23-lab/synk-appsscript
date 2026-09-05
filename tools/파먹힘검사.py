@@ -18,21 +18,28 @@ floodfill 이 물건 안으로 파고든 것이다. 인계문 ④가 미리 적�
 import glob
 import json
 import os
+import sys
 
 import numpy as np
 from PIL import Image
 from scipy import ndimage
 
-계획 = json.load(open('docs/공방/계획.json', encoding='utf-8'))
 규격 = {}
-for m in 계획['제미나이']['묶음']:
-    for it in m.get('것들', []):
-        쇠 = it.get('쇠') or os.path.splitext(str(it.get('파일', '')))[0]
-        if 쇠:
-            규격[쇠] = (it.get('규격') or ('천' if m['이름'].startswith('천') else '부품'), m['이름'])
+try:
+    # ⚠ 굽기 배치가 도는 동안에는 이 파일이 계속 다시 써진다 — 못 읽어도 검사는 이어간다.
+    계획 = json.load(open('docs/공방/계획.json', encoding='utf-8'))
+    for m in 계획['제미나이']['묶음']:
+        for it in m.get('것들', []):
+            쇠 = it.get('쇠') or os.path.splitext(str(it.get('파일', '')))[0]
+            if 쇠:
+                규격[쇠] = (it.get('규격') or ('천' if m['이름'].startswith('천') else '부품'), m['이름'])
+except Exception as e:
+    print('⚠ 계획.json 을 못 읽었다(%s) — 규격을 모른 채 전부 「부품」으로 본다' % type(e).__name__)
 
-파일들 = sorted(glob.glob('docs/Loom_자산/구움/공방_*.avif') +
-               glob.glob('docs/Loom_자산/구움/공방_*.webp'))
+# 인자로 글롭을 주면 그것을 본다. 없으면 공방 자산만(기본).
+글롭들 = sys.argv[1:] or ['docs/Loom_자산/구움/공방_*.avif',
+                        'docs/Loom_자산/구움/공방_*.webp']
+파일들 = sorted({f for g in 글롭들 for f in glob.glob(g, recursive=True)})
 후보, 잰것 = [], 0
 for f in 파일들:
     쇠 = os.path.splitext(os.path.basename(f))[0]
@@ -59,10 +66,20 @@ for f in 파일들:
     if 몫 >= 1.0:
         후보.append((쇠, round(몫, 1), int(수2), 묶))
 
-후보.sort(key=lambda x: -x[1])
+"""🔑 갈라 세우는 축은 «빈자리 몫»이 아니라 «구멍 개수»다(09-05 실측으로 바로잡았다).
+
+고리·도장처럼 가운데가 비는 물건은 빈자리가 60% 라도 구멍이 두세 개뿐이라 정상이다.
+파먹힘은 반대다 — 잘게 흩어져 수십·수백 개가 된다(북마크 870 · 달력 139).
+그래서 구멍 개수로 줄을 세우고, 스무 개를 넘는 것만 «되볼 것»으로 낸다.
+"""
+문턱 = 20
+후보.sort(key=lambda x: -x[2])
+되볼것 = [x for x in 후보 if x[2] >= 문턱]
 print('■ 부품·장면 %d장을 쟀다 (천 제외)' % 잰것)
 print('■ 윤곽 안에 빈자리가 1%% 이상인 것 : %d장' % len(후보))
-print('   구멍수가 크면 「잘게 파먹힘」 · 작으면 「설계된 구멍」일 수 있다 — 눈으로 되본다')
+print('■ 그중 구멍이 %d개를 넘어 «잘게 파먹힌» 무늬 : %d장 ← 눈으로 되본다' % (문턱, len(되볼것)))
+print('   (고리·도장처럼 가운데가 비는 물건은 빈자리가 커도 구멍이 두셋뿐이라 여기 안 든다)')
+후보 = 되볼것
 print('')
 print('   %-24s %7s %7s  %s' % ('이름', '빈자리%', '구멍수', '묶음'))
 for x in 후보:
