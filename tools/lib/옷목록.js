@@ -43,6 +43,13 @@ const 마스코트들 = [
       'they are wraps and covers that follow the bell. No sleeve, no cuff, no hand and no foot ' +
       'appears anywhere in the picture. Anything carried hangs from a strap over the body. ' +
       'Head pieces sit on the top curve of the dome. ',
+    /* 🔴 초록 판 전용 표식 — 몸의 «색»을 한 마디도 말하지 않는다(09-06 실측).
+       색을 말하면 그 부분만 제 색으로 남고, 그것이 옷으로 잡혀 조각에 몸이 섞인다
+       (까몽의 앞발과 코랄 꼬리주걱이 그렇게 섞였다). */
+    초록표식:
+      'The character is a small felt doll shaped like a tiny ghost: one continuous bell from the ' +
+      'top of the head to a scalloped hem, no neck, no shoulders, no arms and no legs. ' +
+      'Its clothes are cut without sleeves and without trouser legs. ',
   },
   {
     이름: '까몽',
@@ -61,6 +68,12 @@ const 마스코트들 = [
       'long fur still fluffs out around every edge of it. ' +
       'The two ears, the two front paws and the coral tail paddle are never covered or hidden — ' +
       'they always stay fully visible, because they are what makes it this creature. ',
+    초록표식:
+      'The character is a small round fluffy creature seen from DIRECTLY ABOVE, lying spread out ' +
+      'flat — keep that top-down view. It has two short triangular ears, two small front paws ' +
+      'reaching out to the sides, and a slim tail ending in a rounded paddle. ' +
+      'EVERY part of the creature itself is that same flat colour — its fur, its ears, its paws, ' +
+      'its tail and the paddle at the end of it. Nothing of its body keeps another colour. ',
   },
   {
     이름: '마린',
@@ -75,6 +88,11 @@ const 마스코트들 = [
       'garments fit the small body below it, which means body garments are small and short. ' +
       'The two lenses stay clearly visible and equally bright — nothing dims them, darkens them ' +
       'or hides one of them. ',
+    초록표식:
+      'The character is a tiny felt doll whose rounded helmet is about three quarters of its ' +
+      'height, over a very small body with a scalloped hem, stubby arms and two round feet. ' +
+      'EVERY part of the doll itself is that same flat colour — the helmet, the body, the arms ' +
+      'and the feet. Only its two glowing lenses keep their own colour. ',
   },
 ];
 
