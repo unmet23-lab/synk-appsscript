@@ -116,11 +116,22 @@ const 컷들 = [
     /* 🔴 09-05 1차 — 「카메라가 천천히 빠지며 여백을 드러낸다」를 넣었더니 둘이 화면의 15% 가 됐다.
      *   명품의 여백은 «주인공이 보이는» 여백이지 빈 화면이 아니다(결정.md 09-05 엔딩 문법 ⑤ 주석).
      *   ⇒ 카메라를 거의 세운다. */
+    /* 🔴 유호 제안 09-05 「배경 뒤에 한국어 관련 오브제를 넣으면 간접적으로 명품느낌으로 어필」.
+     *   밑그림에 실물 자수 글자 「가」를 넣어 두었으므로, 지시문은 그것을 «지키라»고만 말한다.
+     *   🚫 글자를 만들라고 시키지 않는다 — 시키는 순간 깨진 자모가 나온다. */
     지시: 'The coral felt character and the charcoal felt cat rest side by side on warm pale wood in a '
-      + 'sunlit room, filling the frame the way they already do. The camera holds almost still, drifting '
-      + 'only a hair. They stay exactly as they are, breathing almost imperceptibly. Warm afternoon light, '
-      + 'extremely shallow depth of field, muted warm palette, fine film grain.',
-    막을것: 'zooming out, pulling back, wide shot, characters shrinking, changing shape',
+      + 'sunlit room, filling the frame the way they already do. A small dark felt board leans against the '
+      + 'wall behind them on the left; whatever is stitched on that board must stay pixel for pixel as it '
+      + 'already is — do not redraw it, do not reinterpret its shape. The camera holds almost still, '
+      + 'drifting only a hair. Everything stays as it is, breathing almost imperceptibly. Warm afternoon '
+      + 'light, extremely shallow depth of field, muted warm palette.',
+    /* 🔴 09-05 에 이 자리에서 두 번 넘어졌다.
+     *   ① 「embroidered mark」·「adding letters」 → 구글 안전 필터가 통째로 막았다(돈은 안 나갔다).
+     *   ② 「stitched **coral** pattern」 → 저쪽이 coral 을 «색»이 아니라 «산호»로 읽어 자수 「가」를
+     *      산호 가지로 다시 그렸다. 🔑 우리 브랜드에서 coral 은 색 이름이지만 영어로는 산호다 —
+     *      지시문에 브랜드 색 이름을 그대로 쓰지 않는다. */
+    막을것: 'zooming out, pulling back, wide shot, characters shrinking, changing shape, '
+      + 'coral, coral reef, branches, plant, tree, redrawing the stitched shape',
   },
 ];
 
@@ -141,9 +152,13 @@ function 그림준비(이름, 경로직접) {
     쓸것 = 사천 || path.join(뿌리, 이름.startsWith('까몽') ? 마스코트.까몽경로('본체') : 마스코트.경로('본체'));
   }
   if (!fs.existsSync(쓸것)) throw new Error(`첫 프레임 그림이 없다: ${쓸것}`);
-  const 줄인것 = path.join(os.tmpdir(), `synk_첫프레임_${path.basename(쓸것, '.png')}_1440.png`);
+  /* 🔴 09-05 유호 「화면이 지지직거리는 느낌」 — 정사각 그림을 그대로 주면 저쪽이 16:9 화면에
+   *   맞추면서 좌우 빈 자리의 «경계»를 세로선으로 남긴다(컷5·7·8 전부에 하나씩 있었다).
+   *   ⇒ 여기서 16:9 판으로 만들어 준다. 바탕은 크림 단색이라 저쪽이 방으로 잘 채운다. */
+  const 줄인것 = path.join(os.tmpdir(), `synk_첫프레임_${path.basename(쓸것, '.png')}_16x9.png`);
   if (!fs.existsSync(줄인것)) {
-    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', 쓸것, '-vf', 'scale=1440:-1', 줄인것]);
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', 쓸것,
+      '-vf', 'scale=-1:820,pad=1920:1080:(ow-iw)/2:(oh-ih)-90:color=0xE8DCC8', 줄인것]);
   }
   return { 파일: 줄인것, 출처: 쓸것 };
 }
