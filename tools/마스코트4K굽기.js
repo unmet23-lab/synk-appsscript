@@ -277,11 +277,69 @@ The character is asleep or powered down.`) },
 bright BUTTER-YELLOW CURVE has lit up: a smooth arc bending UPWARD at its ends, like the
 letter U, drawn in light. Think of a screen showing a smiling eye. The curve is thick, clean
 and glowing; everything else inside the lens is dark. Both curves match exactly.`) },
-  { 누구: '마린', 이름: '마린_웃음b_아치렌즈', 카메라: 마린카메라, 참조: '마린_본체.png',
-    얼굴: 마린얼굴(`each lens is no longer a circle — it has become a thick ARCH of glowing
-butter-yellow felt, a wide upside-down U with a flat bottom and a rounded top, like an eye
-squeezed shut in a smile. The navy felt is cut in that same arch shape around each one. Both
-arches match exactly and glow evenly.`) },
+  /* 🔴 09-05 재시도 — 첫 b 는 문면대로 안 나왔다. 「아치 덩어리」를 부탁했는데 «노란 면에 곡선이
+   *   파인» 판이 나와서, 갈라 놓으려던 a 와 거의 같아졌다(유호님이 그 어긋남을 짚으셨다).
+   *   까닭 = 「arch」라는 낱말만으로는 «덩어리»가 안 선다. 모델이 «면 + 무늬»로 읽었다.
+   *   ⇒ ⓐ 얼굴을 맨 앞으로(얼굴먼저) ⓑ «구멍 없는 통짜»를 못 박고 «무늬·선·구멍 금지»를 적는다
+   *     ⓒ 무엇과 닮았는지를 실물로 준다(무지개 조각 · 다리 놓은 모양). */
+  { 누구: '마린', 이름: '마린_웃음b2_통짜아치', 카메라: 마린카메라, 참조: '마린_본체.png', 얼굴먼저: true,
+    얼굴: `FACE — THIS IS WHAT THE WHOLE PICTURE IS ABOUT:
+Two glowing BUTTER-YELLOW shapes where the eyes are, and each one is a SOLID ARCH.
+
+🔴 What "arch" means here — read it as a shape cut from felt, not as a pattern:
+Take a thick rainbow band. Lay it down so it curves UPWARD in the middle and its two ends
+point down. That whole band is one solid piece of glowing butter-yellow felt. That is the eye.
+It is a bridge, a croissant, a smile drawn with a fat brush — one continuous stroke of yellow,
+thick in the middle, tapering slightly at the two ends.
+
+🔴 What it must NOT be: NOT a yellow panel with a line or curve drawn inside it. NOT a yellow
+square, circle or rounded rectangle with a groove, notch or dark mark on it. NOT an outline.
+There is NO hole, NO cut-out, NO dark shape anywhere inside the yellow. The yellow is one
+unbroken solid mass and the navy is simply everywhere the yellow is not.
+
+Both arches are identical, level with each other, set wide apart, and glow evenly.
+No pupils, no eyelids, no eyebrows, no mouth. Nothing else on the face.
+The navy felt is cut in that same arch outline around each one, rising softly against its edge.` },
+  /* 🔴 09-05 셋째 판 — 유호님이 「웃음을 조금 더 다른 느낌으로」를 부르셨다. 앞의 넷은
+   *   «아치 계열»에서만 갈렸다(곡선 파임 · 통짜 아치 · 눌린 타원 · 별). 결을 아예 다른 데서
+   *   찾는다: 몽글이 쓰는 ∧ 문법 · 물결 · 빛이 하나 더 뜨는 것 · 꽃(마린의 반전). */
+  { 누구: '마린', 이름: '마린_웃음e_갈매기', 카메라: 마린카메라, 참조: '마린_본체.png', 얼굴먼저: true,
+    얼굴: `FACE — THIS IS WHAT THE WHOLE PICTURE IS ABOUT:
+Two glowing BUTTER-YELLOW shapes where the eyes are, and each is a CARET — the letter A
+without its crossbar, or a rooftop: two straight thick strokes of solid yellow felt meeting at
+a point on top, open at the bottom. Sharp, simple, cheerful.
+🔴 Solid yellow throughout — no hole, no dark line, no groove inside the yellow.
+This is the exact shape the coral ghost mascot uses for its happy eyes, so the two characters
+read as made by the same hand. Both carets identical, level, wide apart.
+No pupils, no eyelids, no eyebrows, no mouth. The navy felt is cut in that same caret outline
+around each one.` },
+  { 누구: '마린', 이름: '마린_웃음f_물결', 카메라: 마린카메라, 참조: '마린_본체.png', 얼굴먼저: true,
+    얼굴: `FACE — THIS IS WHAT THE WHOLE PICTURE IS ABOUT:
+Two glowing BUTTER-YELLOW shapes where the eyes are, and each is a thick WAVY LINE — a tilde ~
+drawn with a fat brush: it rises, dips, and rises again, one continuous solid stroke of yellow
+felt lying horizontally. Playful and relaxed, the way a cartoon draws a contented eye.
+🔴 Solid yellow throughout — no hole, no dark line inside it. Both waves identical, level,
+wide apart, and they wave in the same direction.
+No pupils, no eyelids, no eyebrows, no mouth. The navy felt is cut in that same wavy outline.` },
+  { 누구: '마린', 이름: '마린_웃음g_아래빛', 카메라: 마린카메라, 참조: '마린_본체.png', 얼굴먼저: true,
+    얼굴: `FACE — THIS IS WHAT THE WHOLE PICTURE IS ABOUT:
+The two lenses are still FULL ROUND circles of glowing butter-yellow, exactly as at rest — but
+BELOW each one, on the navy felt, a small separate crescent of the same butter-yellow light has
+appeared, curving upward like the fold that forms under a smiling eye.
+So each eye is TWO pieces: the round lens above, and a smaller thin crescent below it, with a
+band of navy between them. The crescent is clearly smaller than the lens, about one third as
+tall. Both eyes match exactly.
+🔴 Both pieces are solid yellow — no holes, no dark lines inside them.
+No pupils, no eyelids, no eyebrows, no mouth.` },
+  { 누구: '마린', 이름: '마린_웃음h_꽃눈', 카메라: 마린카메라, 참조: '마린_본체.png', 얼굴먼저: true,
+    얼굴: `FACE — THIS IS WHAT THE WHOLE PICTURE IS ABOUT:
+Each lens has bloomed into a small FLOWER of glowing butter-yellow felt — five soft rounded
+petals around a slightly deeper golden centre, like a daisy cut from felt. Roughly the same
+overall size as a resting lens, so the face does not grow.
+This is the one expression where the character's soft spot shows: it carries a flower in its
+pouch, and when it is truly delighted the flower turns up in its eyes too.
+🔴 Solid felt petals — no outline drawing, no dark lines, no stamens, no leaves.
+Both flowers identical, level, wide apart. No pupils, no eyelids, no eyebrows, no mouth.` },
   { 누구: '마린', 이름: '마린_웃음c_눌린타원', 카메라: 마린카메라, 참조: '마린_본체.png',
     얼굴: 마린얼굴(`each lens has been SQUASHED vertically into a wide flat ellipse, about half
 as tall as it is wide, and the whole ellipse curves gently upward at its outer end — the shape
@@ -302,11 +360,14 @@ Both match exactly.`) },
   { 누구: '마린', 이름: '마린_놀람', 카메라: 마린카메라, 참조: '마린_본체.png', 얼굴먼저: true,
     얼굴: `FACE — THIS IS WHAT THE WHOLE PICTURE IS ABOUT:
 Two glowing BUTTER-YELLOW lenses, and they have BLOWN WIDE OPEN in shock.
-🔴 SIZE, measured against the helmet: each lens is about HALF the helmet's width. The two
-lenses plus the gap between them fill almost the entire front of the helmet, leaving only a
-thin navy rim around the outside and a narrow navy bridge between them. They are enormous —
-roughly twice the diameter of a resting lens. If a viewer cannot tell at a glance that the
-eyes got much bigger, this picture has failed.
+🔴 SIZE — push this as far as it goes. Each lens is a HUGE dome, more than half the helmet's
+width, and the two of them TAKE OVER THE WHOLE FACE: they run from just inside one edge of the
+helmet to just inside the other, and from near its top down to near its bottom. What is left of
+the navy is only a narrow outline around them and a thin bridge between them — the helmet reads
+as two giant glowing eyes with a little navy frame, nothing else.
+They are far bigger than any other expression this character has. Put this picture beside the
+reference and the eyes must be the FIRST thing anyone notices. Bigger is right here; if you are
+unsure, make them bigger still.
 They glow hot and bright, spilling light onto the navy felt around them.
 No pupils, no eyelids, no eyebrows, no mouth. Both exactly level, exactly the same size.
 Each lens is still SET INTO the felt with the navy rising against its rim, and 🔴 even at this
