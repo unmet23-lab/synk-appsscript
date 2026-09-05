@@ -145,9 +145,9 @@ def 겹쳐맞춘다(옷: Image.Image, 옮긴: Image.Image, 판=384):
     W = 판
     I = np.asarray(옮긴.convert('L').resize((W, W), Image.LANCZOS)).astype(np.float32)
     I2 = I * I
-    한계 = int(W * 0.08)
+    한계 = int(W * 0.12)
     제일 = None
-    for s in np.arange(0.90, 1.115, 0.025):
+    for s in np.arange(0.80, 1.20, 0.025):
         n = max(8, int(W * s))
         if n > W:                                   # 판보다 큰 조각은 못 놓는다
             continue
@@ -222,7 +222,8 @@ def 가릴까(옷: Image.Image, 몸: Image.Image, 멀기=250):
       · 겨울 델(짙은 남색) : 오려내야 한다. 안 하면 깃의 뒤쪽 안벽이 머리 앞으로 나와 그릇이 된다.
       · 목도리(코랄·크림)  : 오려내면 안 된다. 몽글 몸도 코랄이라 목도리가 통째로 지워졌다(실측).
     ⇒ 두 으뜸색이 충분히 멀 때만 켠다. 사람이 옷마다 손으로 켜면 예순 벌에 사람이 붙는다.
-    🔴 문턱 250 은 실측으로 잡았다(09-06): 겨울 델 400(켜야 한다) · 목도리 144(끄야 한다).
+    🔴 문턱 180 은 실측으로 잡았다(09-06): 겨울 델 400 · SYNK 후드 212(둘 다 켜야 한다) ·
+      목도리 144(꺼야 한다 — 몸과 같은 코랄이라 켜면 통째로 지워진다).
     """
     c1, c2 = 으뜸색(옷), 으뜸색(몸)
     if c1 is None or c2 is None:
@@ -384,7 +385,7 @@ def main():
     ap.add_argument('--몸', default='docs/캐릭터/정본_4K/몽글_본체.png')
     ap.add_argument('--눈', default='검정', choices=['검정', '버터'])
     ap.add_argument('--층', help='자리를 맞춘 «옷만» 층도 따로 낸다(앱이 쓸 조각)')
-    ap.add_argument('--확신문턱', type=float, default=0.55,
+    ap.add_argument('--확신문턱', type=float, default=0.75,
                     help='겹친 점수가 이보다 낮으면 3 으로 끝난다 — 그 장은 옷만 뜨기를 다시 한다')
     ap.add_argument('--가리기', default='자동', choices=['자동', '켬', '끔'],
                     help='몸이 앞인 자리를 옷에서 덜어낼지. 자동 = 옷과 몸의 으뜸색이 멀 때만 켠다')
