@@ -49,12 +49,19 @@ const 마스코트들 = [
     이름: '몽글',
     참조: 마스코트.경로('본체'),
     표식:
-      'The character is a coral needle-felted wool ghost doll: one continuous bell silhouette, ' +
-      'a domed head flowing into the body with no neck, a scalloped bottom hem of five soft ' +
-      'scallops with one line of cream running stitch along it, and exactly two small round ' +
-      'glossy black bead eyes set wide apart. It has no arms and no legs. ' +
-      'Because it has no arms, anything carried hangs from a strap over the body — nothing is ' +
-      'held in a hand. Head pieces sit on the top curve of the dome. ',
+      /* 🔴 09-06 실측으로 세 줄이 늘었다 — 겨울 델 시험에서 팔이 생기고 머리가 작아졌다.
+       *   「팔이 없다」만으로는 부족했다: «종 하나»라는 실루엣과 «그래서 옷을 어떻게 짓나»를
+       *   같이 말해야 모델이 몸을 다시 짜지 않는다. */
+      'The character is a coral needle-felted wool ghost doll. Its whole silhouette is ONE ' +
+      'continuous bell falling from the top of the head all the way to the hem: no neck, no ' +
+      'shoulders, no waist, no arms and no legs anywhere. The head is a smooth dome and it is ' +
+      'about half of the doll\'s whole height. The bottom hem is scalloped into five soft ' +
+      'scallops with one line of cream running stitch along it, and the face has exactly two ' +
+      'small round glossy black bead eyes set wide apart. ' +
+      'Because it has no arms, its clothes are cut WITHOUT sleeves and without trouser legs — ' +
+      'they are wraps and covers that follow the bell. No sleeve, no cuff, no hand and no foot ' +
+      'appears anywhere in the picture. Anything carried hangs from a strap over the body. ' +
+      'Head pieces sit on the top curve of the dome. ',
   },
   {
     이름: '까몽',
@@ -117,8 +124,8 @@ const 옷들 = [
     'falls in soft folds.' },
   { 이름: '겨울 델', 라인: '델', 가림: '아주큼', 설명:
     'It wears a winter Mongolian deel: a thick padded wrap robe of deep lapis-blue felt crossing ' +
-    'right over left, with a wide band of cream lambswool trimming the collar, the cuffs and the ' +
-    'front edge, and three coral knot buttons at the shoulder. The padding gives it real weight ' +
+    'right over left, with a wide band of cream lambswool trimming the collar and the front ' +
+    'edge, and three coral knot buttons at the shoulder. The padding gives it real weight ' +
     'and the folds are deep and soft.' },
   { 이름: '허리띠', 라인: '델', 가림: '큼', 설명:
     'A wide Mongolian sash (bus) of butter-yellow felt is wound twice around its waist and knotted ' +
@@ -132,7 +139,7 @@ const 옷들 = [
   { 이름: '저고리', 라인: '한복', 가림: '큼', 설명:
     'It wears a hanbok jeogori jacket: short, cut from soft chalk-white felt, crossing at the ' +
     'front with a wide coral collar band (git) and a long coral ribbon (goreum) tied in one loose ' +
-    'bow that hangs down. The sleeves are wide and rounded.' },
+    'bow that hangs down. It is short and softly rounded, ending high on the body.' },
   { 이름: '치마', 라인: '한복', 가림: '아주큼', 설명:
     'It wears a hanbok chima skirt: a full high-waisted wrap skirt of soft lapis-blue felt ' +
     'gathered into a wide cream band across the chest, falling in many soft vertical folds all ' +
@@ -172,7 +179,7 @@ const 옷들 = [
     'felt with a single cream embroidered bar across it. Quiet and neat, not military.' },
   { 이름: '2급 배지 코트', 라인: '성과', 가림: '아주큼', 설명:
     'It wears a short open coat of soft chalk-white felt with a rounded collar and a wider ' +
-    'lapis-blue band along the front edges and the cuffs. On the left chest is one small round ' +
+    'lapis-blue band along the front edges and around the bottom hem. On the left chest is one small round ' +
     'badge of coral felt with two cream embroidered bars across it. Quiet and neat, not military.' },
   { 이름: '3급 왕관', 라인: '성과', 가림: '작음', 설명:
     'A small soft crown of butter-yellow felt sits on its head — five rounded points, each tipped ' +
