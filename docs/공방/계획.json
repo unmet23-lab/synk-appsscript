@@ -1839,7 +1839,7 @@
       {
         "이름": "자리 배경 — 학생",
         "쓰는 곳": "앱 「살아 있는 자리」 배경 고르기(옷처럼 고른다) · 릴 배경 · 라디오 무대",
-        "상태": "3/14",
+        "상태": "4/14",
         "것들": [
           {
             "이름": "내 방 낮",
@@ -1867,10 +1867,11 @@
           },
           {
             "이름": "교실",
-            "상태": "아직",
+            "상태": "구웠다",
             "규격": "장면",
             "지시": "A small classroom built from wool felt, a few low desks facing a cream felt board, a window on the left letting in soft daylight.",
-            "쇠": "공방_교실"
+            "쇠": "공방_교실",
+            "파일": "공방_교실.png"
           },
           {
             "이름": "복도",
@@ -6359,6 +6360,2151 @@
             ],
             "_옛판": "docs/캐릭터/펠트패치_0815/체리.png",
             "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          }
+        ]
+      },
+      {
+        "이름": "옛 판 4K 옮기기 2차",
+        "쓰는 곳": "지면·앱·발표물이 이미 부르는 자리 — 그 자산을 4K 로 갈아 끼운다",
+        "_결": "🔴 옛 판을 «참조»로 주고 「그대로, 더 크고 또렷하게」만 시킨다(09-05 밤 로고 다섯에서 검증). 🔴 옛 판은 굽기가 «끝난 뒤»에 지운다 — 참조가 곧 그 파일이라 먼저 지우면 한 장도 못 굽는다.",
+        "상태": "0/184",
+        "것들": [
+          {
+            "이름": "synkbrief (4K)",
+            "상태": "아직",
+            "쇠": "synkbrief_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/synkbrief.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/synkbrief.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "synkbrief_배너 (4K)",
+            "상태": "아직",
+            "쇠": "synkbrief_배너_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/synkbrief_배너.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/synkbrief_배너.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "synklab (4K)",
+            "상태": "아직",
+            "쇠": "synklab_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/synklab.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/synklab.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "synklab_배너 (4K)",
+            "상태": "아직",
+            "쇠": "synklab_배너_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/synklab_배너.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/synklab_배너.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "synklab_커버 (4K)",
+            "상태": "아직",
+            "쇠": "synklab_커버_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/synklab_커버.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/synklab_커버.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "synklab커버 (4K)",
+            "상태": "아직",
+            "쇠": "synklab커버_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/synklab커버.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/synklab커버.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "yuhobuilds_배너 (4K)",
+            "상태": "아직",
+            "쇠": "yuhobuilds_배너_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/yuhobuilds_배너.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/yuhobuilds_배너.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "밤 (4K)",
+            "상태": "아직",
+            "쇠": "밤_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/밤.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/밤.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "밤_안내선 (4K)",
+            "상태": "아직",
+            "쇠": "밤_안내선_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/밤_안내선.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/밤_안내선.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "밤기호 (4K)",
+            "상태": "아직",
+            "쇠": "밤기호_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/밤기호.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/밤기호.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "밤기호_안내선 (4K)",
+            "상태": "아직",
+            "쇠": "밤기호_안내선_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/밤기호_안내선.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/밤기호_안내선.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "양모 (4K)",
+            "상태": "아직",
+            "쇠": "양모_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/양모.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/양모.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "양모_안내선 (4K)",
+            "상태": "아직",
+            "쇠": "양모_안내선_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/SHIFT/배너/양모_안내선.png"
+            ],
+            "_옛판": "docs/SHIFT/배너/양모_안내선.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "synkbrief_프로필 (4K)",
+            "상태": "아직",
+            "쇠": "synkbrief_프로필_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/synkbrief_프로필.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/synkbrief_프로필.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "synklab_프로필 (4K)",
+            "상태": "아직",
+            "쇠": "synklab_프로필_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/synklab_프로필.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/synklab_프로필.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "yuhobuilds_프로필 (4K)",
+            "상태": "아직",
+            "쇠": "yuhobuilds_프로필_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/yuhobuilds_프로필.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/yuhobuilds_프로필.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "도장꽉 (4K)",
+            "상태": "아직",
+            "쇠": "도장꽉_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/도장꽉.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/도장꽉.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "도장밤 (4K)",
+            "상태": "아직",
+            "쇠": "도장밤_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/도장밤.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/도장밤.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "도장양모 (4K)",
+            "상태": "아직",
+            "쇠": "도장양모_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/도장양모.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/도장양모.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "몽글밤 (4K)",
+            "상태": "아직",
+            "쇠": "몽글밤_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/몽글밤.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/몽글밤.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "몽글양모 (4K)",
+            "상태": "아직",
+            "쇠": "몽글양모_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/몽글양모.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/몽글양모.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "몽글코랄 (4K)",
+            "상태": "아직",
+            "쇠": "몽글코랄_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/몽글코랄.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/몽글코랄.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "몽글크게 (4K)",
+            "상태": "아직",
+            "쇠": "몽글크게_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/몽글크게.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/몽글크게.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "밤워드마크 (4K)",
+            "상태": "아직",
+            "쇠": "밤워드마크_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/밤워드마크.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/밤워드마크.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "코랄기호 (4K)",
+            "상태": "아직",
+            "쇠": "코랄기호_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/SHIFT/프로필/코랄기호.png"
+            ],
+            "_옛판": "docs/SHIFT/프로필/코랄기호.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "OG카드_마스터 (4K)",
+            "상태": "아직",
+            "쇠": "OG카드_마스터_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/tools/OG카드_마스터.png"
+            ],
+            "_옛판": "docs/tools/OG카드_마스터.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "썸네일 (4K)",
+            "상태": "아직",
+            "쇠": "썸네일_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/라디오/썸네일.png"
+            ],
+            "_옛판": "docs/라디오/썸네일.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "calm (4K)",
+            "상태": "아직",
+            "쇠": "calm_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/라디오/배경/calm.png"
+            ],
+            "_옛판": "docs/라디오/배경/calm.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "city (4K)",
+            "상태": "아직",
+            "쇠": "city_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/라디오/배경/city.png"
+            ],
+            "_옛판": "docs/라디오/배경/city.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "citypop (4K)",
+            "상태": "아직",
+            "쇠": "citypop_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/라디오/배경/citypop.png"
+            ],
+            "_옛판": "docs/라디오/배경/citypop.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "dream_field (4K)",
+            "상태": "아직",
+            "쇠": "dream_field_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/라디오/배경/dream_field.png"
+            ],
+            "_옛판": "docs/라디오/배경/dream_field.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "dream_sky (4K)",
+            "상태": "아직",
+            "쇠": "dream_sky_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/라디오/배경/dream_sky.png"
+            ],
+            "_옛판": "docs/라디오/배경/dream_sky.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "dream_water (4K)",
+            "상태": "아직",
+            "쇠": "dream_water_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/라디오/배경/dream_water.png"
+            ],
+            "_옛판": "docs/라디오/배경/dream_water.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "house (4K)",
+            "상태": "아직",
+            "쇠": "house_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/라디오/배경/house.png"
+            ],
+            "_옛판": "docs/라디오/배경/house.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "기본 (4K)",
+            "상태": "아직",
+            "쇠": "기본_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/라디오/배경/기본.png"
+            ],
+            "_옛판": "docs/라디오/배경/기본.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "_판정지면 (4K)",
+            "상태": "아직",
+            "쇠": "_판정지면_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/캐릭터/NPC공방_0824/_몸색시안/_판정지면.png"
+            ],
+            "_옛판": "docs/캐릭터/NPC공방_0824/_몸색시안/_판정지면.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "boss_ButterSoft_섬유강제 (4K)",
+            "상태": "아직",
+            "쇠": "boss_ButterSoft_섬유강제_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/NPC공방_0824/_몸색시안/boss_ButterSoft_섬유강제.png"
+            ],
+            "_옛판": "docs/캐릭터/NPC공방_0824/_몸색시안/boss_ButterSoft_섬유강제.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "boss_ButterSoft_정본 (4K)",
+            "상태": "아직",
+            "쇠": "boss_ButterSoft_정본_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/NPC공방_0824/_몸색시안/boss_ButterSoft_정본.png"
+            ],
+            "_옛판": "docs/캐릭터/NPC공방_0824/_몸색시안/boss_ButterSoft_정본.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "insp_PopSoft_섬유강제 (4K)",
+            "상태": "아직",
+            "쇠": "insp_PopSoft_섬유강제_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/NPC공방_0824/_몸색시안/insp_PopSoft_섬유강제.png"
+            ],
+            "_옛판": "docs/캐릭터/NPC공방_0824/_몸색시안/insp_PopSoft_섬유강제.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "insp_PopSoft_정본 (4K)",
+            "상태": "아직",
+            "쇠": "insp_PopSoft_정본_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/NPC공방_0824/_몸색시안/insp_PopSoft_정본.png"
+            ],
+            "_옛판": "docs/캐릭터/NPC공방_0824/_몸색시안/insp_PopSoft_정본.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "lead_MeadowSoft_섬유강제 (4K)",
+            "상태": "아직",
+            "쇠": "lead_MeadowSoft_섬유강제_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/NPC공방_0824/_몸색시안/lead_MeadowSoft_섬유강제.png"
+            ],
+            "_옛판": "docs/캐릭터/NPC공방_0824/_몸색시안/lead_MeadowSoft_섬유강제.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "lead_MeadowSoft_정본 (4K)",
+            "상태": "아직",
+            "쇠": "lead_MeadowSoft_정본_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/NPC공방_0824/_몸색시안/lead_MeadowSoft_정본.png"
+            ],
+            "_옛판": "docs/캐릭터/NPC공방_0824/_몸색시안/lead_MeadowSoft_정본.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "prof_LapisSoft_섬유강제 (4K)",
+            "상태": "아직",
+            "쇠": "prof_LapisSoft_섬유강제_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/NPC공방_0824/_몸색시안/prof_LapisSoft_섬유강제.png"
+            ],
+            "_옛판": "docs/캐릭터/NPC공방_0824/_몸색시안/prof_LapisSoft_섬유강제.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "prof_LapisSoft_정본 (4K)",
+            "상태": "아직",
+            "쇠": "prof_LapisSoft_정본_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/NPC공방_0824/_몸색시안/prof_LapisSoft_정본.png"
+            ],
+            "_옛판": "docs/캐릭터/NPC공방_0824/_몸색시안/prof_LapisSoft_정본.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "_대조_글자공방_0820 (4K)",
+            "상태": "아직",
+            "쇠": "_대조_글자공방_0820_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/글자공방_0820/_대조_글자공방_0820.png"
+            ],
+            "_옛판": "docs/캐릭터/글자공방_0820/_대조_글자공방_0820.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "라벨태그_v1 (4K)",
+            "상태": "아직",
+            "쇠": "라벨태그_v1_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/글자공방_0820/라벨태그_v1.png"
+            ],
+            "_옛판": "docs/캐릭터/글자공방_0820/라벨태그_v1.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "레터프레스_v1 (4K)",
+            "상태": "아직",
+            "쇠": "레터프레스_v1_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/글자공방_0820/레터프레스_v1.png"
+            ],
+            "_옛판": "docs/캐릭터/글자공방_0820/레터프레스_v1.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "자수글자_v1 (4K)",
+            "상태": "아직",
+            "쇠": "자수글자_v1_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/글자공방_0820/자수글자_v1.png"
+            ],
+            "_옛판": "docs/캐릭터/글자공방_0820/자수글자_v1.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "남색1_아주짙게 (4K)",
+            "상태": "아직",
+            "쇠": "남색1_아주짙게_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/남색1_아주짙게.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/남색1_아주짙게.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "남색2_연한하늘 (4K)",
+            "상태": "아직",
+            "쇠": "남색2_연한하늘_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/남색2_연한하늘.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/남색2_연한하늘.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "남색3_노랑목도리 (4K)",
+            "상태": "아직",
+            "쇠": "남색3_노랑목도리_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/남색3_노랑목도리.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/남색3_노랑목도리.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "남색4_어깨배지 (4K)",
+            "상태": "아직",
+            "쇠": "남색4_어깨배지_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/남색4_어깨배지.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/남색4_어깨배지.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "남색5_세월자국 (4K)",
+            "상태": "아직",
+            "쇠": "남색5_세월자국_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/남색5_세월자국.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/남색5_세월자국.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "노랑1_진한골드 (4K)",
+            "상태": "아직",
+            "쇠": "노랑1_진한골드_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/노랑1_진한골드.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/노랑1_진한골드.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "노랑2_연한크림노랑 (4K)",
+            "상태": "아직",
+            "쇠": "노랑2_연한크림노랑_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/노랑2_연한크림노랑.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/노랑2_연한크림노랑.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "노랑3_목도리 (4K)",
+            "상태": "아직",
+            "쇠": "노랑3_목도리_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/노랑3_목도리.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/노랑3_목도리.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "노랑4_어깨배지 (4K)",
+            "상태": "아직",
+            "쇠": "노랑4_어깨배지_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/노랑4_어깨배지.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/노랑4_어깨배지.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "노랑5_세월자국 (4K)",
+            "상태": "아직",
+            "쇠": "노랑5_세월자국_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/노랑5_세월자국.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/노랑5_세월자국.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "눈둘A_남색 (4K)",
+            "상태": "아직",
+            "쇠": "눈둘A_남색_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/눈둘A_남색.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/눈둘A_남색.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "눈둘B_강철회색 (4K)",
+            "상태": "아직",
+            "쇠": "눈둘B_강철회색_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/눈둘B_강철회색.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/눈둘B_강철회색.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "눈둘C_남색_큰눈 (4K)",
+            "상태": "아직",
+            "쇠": "눈둘C_남색_큰눈_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/눈둘C_남색_큰눈.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/눈둘C_남색_큰눈.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "눈둘D_회색_작은눈 (4K)",
+            "상태": "아직",
+            "쇠": "눈둘D_회색_작은눈_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/눈둘D_회색_작은눈.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/눈둘D_회색_작은눈.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린10_청록미래 (4K)",
+            "상태": "아직",
+            "쇠": "마린10_청록미래_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린10_청록미래.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린10_청록미래.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린11_가죽베테랑 (4K)",
+            "상태": "아직",
+            "쇠": "마린11_가죽베테랑_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린11_가죽베테랑.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린11_가죽베테랑.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린12_망토지휘 (4K)",
+            "상태": "아직",
+            "쇠": "마린12_망토지휘_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린12_망토지휘.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린12_망토지휘.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린13_배낭정찰 (4K)",
+            "상태": "아직",
+            "쇠": "마린13_배낭정찰_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린13_배낭정찰.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린13_배낭정찰.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린14_목록판체크 (4K)",
+            "상태": "아직",
+            "쇠": "마린14_목록판체크_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린14_목록판체크.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린14_목록판체크.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린15_호루라기교관 (4K)",
+            "상태": "아직",
+            "쇠": "마린15_호루라기교관_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린15_호루라기교관.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린15_호루라기교관.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린16_렌즈둘 (4K)",
+            "상태": "아직",
+            "쇠": "마린16_렌즈둘_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린16_렌즈둘.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린16_렌즈둘.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린17_돔머리전체 (4K)",
+            "상태": "아직",
+            "쇠": "마린17_돔머리전체_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린17_돔머리전체.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린17_돔머리전체.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린18_큰헬멧작은몸 (4K)",
+            "상태": "아직",
+            "쇠": "마린18_큰헬멧작은몸_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린18_큰헬멧작은몸.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린18_큰헬멧작은몸.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린19_후드형 (4K)",
+            "상태": "아직",
+            "쇠": "마린19_후드형_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린19_후드형.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린19_후드형.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린1_강철회색 (4K)",
+            "상태": "아직",
+            "쇠": "마린1_강철회색_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린1_강철회색.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린1_강철회색.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린20_미니멀띠하나 (4K)",
+            "상태": "아직",
+            "쇠": "마린20_미니멀띠하나_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린20_미니멀띠하나.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린20_미니멀띠하나.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린21_훈장계급 (4K)",
+            "상태": "아직",
+            "쇠": "마린21_훈장계급_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린21_훈장계급.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린21_훈장계급.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린22_바이저올림 (4K)",
+            "상태": "아직",
+            "쇠": "마린22_바이저올림_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린22_바이저올림.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린22_바이저올림.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린23_군용무늬 (4K)",
+            "상태": "아직",
+            "쇠": "마린23_군용무늬_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린23_군용무늬.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린23_군용무늬.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린2_올리브야전 (4K)",
+            "상태": "아직",
+            "쇠": "마린2_올리브야전_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린2_올리브야전.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린2_올리브야전.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린3_남색정예 (4K)",
+            "상태": "아직",
+            "쇠": "마린3_남색정예_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린3_남색정예.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린3_남색정예.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린4_모래사막 (4K)",
+            "상태": "아직",
+            "쇠": "마린4_모래사막_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린4_모래사막.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린4_모래사막.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린5_흰눈설원 (4K)",
+            "상태": "아직",
+            "쇠": "마린5_흰눈설원_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린5_흰눈설원.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린5_흰눈설원.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린6_코랄형제 (4K)",
+            "상태": "아직",
+            "쇠": "마린6_코랄형제_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린6_코랄형제.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린6_코랄형제.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린7_먹색금장 (4K)",
+            "상태": "아직",
+            "쇠": "마린7_먹색금장_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린7_먹색금장.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린7_먹색금장.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린8_구조대 (4K)",
+            "상태": "아직",
+            "쇠": "마린8_구조대_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린8_구조대.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린8_구조대.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린9_보라우주 (4K)",
+            "상태": "아직",
+            "쇠": "마린9_보라우주_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/마린9_보라우주.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/마린9_보라우주.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유A_크림 (4K)",
+            "상태": "아직",
+            "쇠": "소유A_크림_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유A_크림.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유A_크림.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유B_민트 (4K)",
+            "상태": "아직",
+            "쇠": "소유B_민트_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유B_민트.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유B_민트.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유C_버터노랑 (4K)",
+            "상태": "아직",
+            "쇠": "소유C_버터노랑_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유C_버터노랑.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유C_버터노랑.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유D_라벤더 (4K)",
+            "상태": "아직",
+            "쇠": "소유D_라벤더_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유D_라벤더.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유D_라벤더.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유E_체리 (4K)",
+            "상태": "아직",
+            "쇠": "소유E_체리_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유E_체리.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유E_체리.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유F_남색_목도리 (4K)",
+            "상태": "아직",
+            "쇠": "소유F_남색_목도리_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유F_남색_목도리.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유F_남색_목도리.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유G_회색_어깨배지 (4K)",
+            "상태": "아직",
+            "쇠": "소유G_회색_어깨배지_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유G_회색_어깨배지.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유G_회색_어깨배지.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유H_남색_안테나 (4K)",
+            "상태": "아직",
+            "쇠": "소유H_남색_안테나_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유H_남색_안테나.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유H_남색_안테나.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유I_회색_세월자국 (4K)",
+            "상태": "아직",
+            "쇠": "소유I_회색_세월자국_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유I_회색_세월자국.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유I_회색_세월자국.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "소유J_남색_작은주머니 (4K)",
+            "상태": "아직",
+            "쇠": "소유J_남색_작은주머니_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/소유J_남색_작은주머니.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/소유J_남색_작은주머니.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면1a_꽃주머니 (4K)",
+            "상태": "아직",
+            "쇠": "정면1a_꽃주머니_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면1a_꽃주머니.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면1a_꽃주머니.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면1b_꽃주머니_노랑꽃 (4K)",
+            "상태": "아직",
+            "쇠": "정면1b_꽃주머니_노랑꽃_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면1b_꽃주머니_노랑꽃.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면1b_꽃주머니_노랑꽃.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면1c_꽃주머니_민트꽃 (4K)",
+            "상태": "아직",
+            "쇠": "정면1c_꽃주머니_민트꽃_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면1c_꽃주머니_민트꽃.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면1c_꽃주머니_민트꽃.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면1d_꽃주머니_큰눈 (4K)",
+            "상태": "아직",
+            "쇠": "정면1d_꽃주머니_큰눈_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면1d_꽃주머니_큰눈.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면1d_꽃주머니_큰눈.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면1e_꽃주머니_짙은남색 (4K)",
+            "상태": "아직",
+            "쇠": "정면1e_꽃주머니_짙은남색_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면1e_꽃주머니_짙은남색.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면1e_꽃주머니_짙은남색.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면3a_남색_민무늬 (4K)",
+            "상태": "아직",
+            "쇠": "정면3a_남색_민무늬_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면3a_남색_민무늬.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면3a_남색_민무늬.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면3b_남색_노랑테 (4K)",
+            "상태": "아직",
+            "쇠": "정면3b_남색_노랑테_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면3b_남색_노랑테.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면3b_남색_노랑테.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면3c_남색_노랑배지 (4K)",
+            "상태": "아직",
+            "쇠": "정면3c_남색_노랑배지_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면3c_남색_노랑배지.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면3c_남색_노랑배지.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면3d_남색_노랑눈 (4K)",
+            "상태": "아직",
+            "쇠": "정면3d_남색_노랑눈_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면3d_남색_노랑눈.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면3d_남색_노랑눈.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면3e_남색_노랑어깨 (4K)",
+            "상태": "아직",
+            "쇠": "정면3e_남색_노랑어깨_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면3e_남색_노랑어깨.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면3e_남색_노랑어깨.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면4a_민트_민무늬 (4K)",
+            "상태": "아직",
+            "쇠": "정면4a_민트_민무늬_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면4a_민트_민무늬.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면4a_민트_민무늬.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면4b_민트_노랑테 (4K)",
+            "상태": "아직",
+            "쇠": "정면4b_민트_노랑테_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면4b_민트_노랑테.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면4b_민트_노랑테.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면4c_민트_노랑배지 (4K)",
+            "상태": "아직",
+            "쇠": "정면4c_민트_노랑배지_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면4c_민트_노랑배지.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면4c_민트_노랑배지.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면4d_민트_꽃주머니 (4K)",
+            "상태": "아직",
+            "쇠": "정면4d_민트_꽃주머니_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면4d_민트_꽃주머니.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면4d_민트_꽃주머니.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면4e_민트_진하게 (4K)",
+            "상태": "아직",
+            "쇠": "정면4e_민트_진하게_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면4e_민트_진하게.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면4e_민트_진하게.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면5a_버터_민무늬 (4K)",
+            "상태": "아직",
+            "쇠": "정면5a_버터_민무늬_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면5a_버터_민무늬.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면5a_버터_민무늬.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면5b_버터_남색테 (4K)",
+            "상태": "아직",
+            "쇠": "정면5b_버터_남색테_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면5b_버터_남색테.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면5b_버터_남색테.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면5c_버터_남색배지 (4K)",
+            "상태": "아직",
+            "쇠": "정면5c_버터_남색배지_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면5c_버터_남색배지.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면5c_버터_남색배지.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면5d_버터_꽃주머니 (4K)",
+            "상태": "아직",
+            "쇠": "정면5d_버터_꽃주머니_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면5d_버터_꽃주머니.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면5d_버터_꽃주머니.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "정면5e_버터_진하게 (4K)",
+            "상태": "아직",
+            "쇠": "정면5e_버터_진하게_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/정면5e_버터_진하게.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/정면5e_버터_진하게.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "초록1_진한세이지 (4K)",
+            "상태": "아직",
+            "쇠": "초록1_진한세이지_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/초록1_진한세이지.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/초록1_진한세이지.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "초록2_아주연한민트 (4K)",
+            "상태": "아직",
+            "쇠": "초록2_아주연한민트_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/초록2_아주연한민트.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/초록2_아주연한민트.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "초록3_목도리 (4K)",
+            "상태": "아직",
+            "쇠": "초록3_목도리_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/초록3_목도리.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/초록3_목도리.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "초록4_어깨배지 (4K)",
+            "상태": "아직",
+            "쇠": "초록4_어깨배지_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/초록4_어깨배지.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/초록4_어깨배지.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "초록5_노랑조합 (4K)",
+            "상태": "아직",
+            "쇠": "초록5_노랑조합_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/초록5_노랑조합.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/초록5_노랑조합.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "큰헬멧A_남색정예 (4K)",
+            "상태": "아직",
+            "쇠": "큰헬멧A_남색정예_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/큰헬멧A_남색정예.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/큰헬멧A_남색정예.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "큰헬멧B_강철회색 (4K)",
+            "상태": "아직",
+            "쇠": "큰헬멧B_강철회색_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/큰헬멧B_강철회색.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/큰헬멧B_강철회색.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "큰헬멧C_코랄형제 (4K)",
+            "상태": "아직",
+            "쇠": "큰헬멧C_코랄형제_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/큰헬멧C_코랄형제.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/큰헬멧C_코랄형제.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "큰헬멧D_올리브야전 (4K)",
+            "상태": "아직",
+            "쇠": "큰헬멧D_올리브야전_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/큰헬멧D_올리브야전.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/큰헬멧D_올리브야전.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "큰헬멧E_목록판 (4K)",
+            "상태": "아직",
+            "쇠": "큰헬멧E_목록판_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/큰헬멧E_목록판.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/큰헬멧E_목록판.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "큰헬멧F_흰눈설원 (4K)",
+            "상태": "아직",
+            "쇠": "큰헬멧F_흰눈설원_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/큰헬멧F_흰눈설원.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/큰헬멧F_흰눈설원.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "큰헬멧G_큰렌즈 (4K)",
+            "상태": "아직",
+            "쇠": "큰헬멧G_큰렌즈_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/큰헬멧G_큰렌즈.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/큰헬멧G_큰렌즈.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "큰헬멧H_망토 (4K)",
+            "상태": "아직",
+            "쇠": "큰헬멧H_망토_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린_후보/큰헬멧H_망토.png"
+            ],
+            "_옛판": "docs/캐릭터/마린_후보/큰헬멧H_망토.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린_눈감음 (4K)",
+            "상태": "아직",
+            "쇠": "마린_눈감음_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0826/마린_눈감음.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0826/마린_눈감음.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린_눈웃음 (4K)",
+            "상태": "아직",
+            "쇠": "마린_눈웃음_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0826/마린_눈웃음.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0826/마린_눈웃음.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마린_본체 (4K)",
+            "상태": "아직",
+            "쇠": "마린_본체_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0826/마린_본체.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0826/마린_본체.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_우리색_z000 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_우리색_z000_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_우리색_z000.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_우리색_z000.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_우리색_z045 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_우리색_z045_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_우리색_z045.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_우리색_z045.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_우리색_z090 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_우리색_z090_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_우리색_z090.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_우리색_z090.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_우리색_z135 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_우리색_z135_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_우리색_z135.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_우리색_z135.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_우리색_z180 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_우리색_z180_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_우리색_z180.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_우리색_z180.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_우리색_z225 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_우리색_z225_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_우리색_z225.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_우리색_z225.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_우리색_z270 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_우리색_z270_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_우리색_z270.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_우리색_z270.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_우리색_z315 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_우리색_z315_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_우리색_z315.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_우리색_z315.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_정면 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_정면_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_정면.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_정면.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_미니_프라이머_z000 (4K)",
+            "상태": "아직",
+            "쇠": "hell_미니_프라이머_z000_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_미니_프라이머_z000.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_미니_프라이머_z000.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "hell_우리색_z045 (4K)",
+            "상태": "아직",
+            "쇠": "hell_우리색_z045_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/hell_우리색_z045.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/hell_우리색_z045.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_우리색_z000 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_우리색_z000_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_우리색_z000.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_우리색_z000.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_우리색_z045 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_우리색_z045_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_우리색_z045.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_우리색_z045.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_우리색_z090 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_우리색_z090_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_우리색_z090.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_우리색_z090.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_우리색_z135 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_우리색_z135_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_우리색_z135.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_우리색_z135.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_우리색_z180 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_우리색_z180_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_우리색_z180.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_우리색_z180.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_우리색_z225 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_우리색_z225_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_우리색_z225.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_우리색_z225.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_우리색_z270 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_우리색_z270_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_우리색_z270.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_우리색_z270.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_우리색_z315 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_우리색_z315_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_우리색_z315.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_우리색_z315.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_정면 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_정면_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_정면.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_정면.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_미니_프라이머_z000 (4K)",
+            "상태": "아직",
+            "쇠": "primey_미니_프라이머_z000_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_미니_프라이머_z000.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_미니_프라이머_z000.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_우리색_z000 (4K)",
+            "상태": "아직",
+            "쇠": "primey_우리색_z000_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_우리색_z000.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_우리색_z000.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_우리색_z045 (4K)",
+            "상태": "아직",
+            "쇠": "primey_우리색_z045_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_우리색_z045.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_우리색_z045.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_우리색_z090 (4K)",
+            "상태": "아직",
+            "쇠": "primey_우리색_z090_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_우리색_z090.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_우리색_z090.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_우리색_z135 (4K)",
+            "상태": "아직",
+            "쇠": "primey_우리색_z135_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_우리색_z135.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_우리색_z135.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_우리색_z180 (4K)",
+            "상태": "아직",
+            "쇠": "primey_우리색_z180_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_우리색_z180.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_우리색_z180.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_우리색_z225 (4K)",
+            "상태": "아직",
+            "쇠": "primey_우리색_z225_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_우리색_z225.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_우리색_z225.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_우리색_z270 (4K)",
+            "상태": "아직",
+            "쇠": "primey_우리색_z270_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_우리색_z270.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_우리색_z270.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_우리색_z315 (4K)",
+            "상태": "아직",
+            "쇠": "primey_우리색_z315_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_우리색_z315.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_우리색_z315.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_우리색_얼굴 (4K)",
+            "상태": "아직",
+            "쇠": "primey_우리색_얼굴_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_우리색_얼굴.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_우리색_얼굴.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_프라이머_z000 (4K)",
+            "상태": "아직",
+            "쇠": "primey_프라이머_z000_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_프라이머_z000.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_프라이머_z000.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_프라이머_z045 (4K)",
+            "상태": "아직",
+            "쇠": "primey_프라이머_z045_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_프라이머_z045.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_프라이머_z045.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_프라이머_z090 (4K)",
+            "상태": "아직",
+            "쇠": "primey_프라이머_z090_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_프라이머_z090.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_프라이머_z090.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_프라이머_z315 (4K)",
+            "상태": "아직",
+            "쇠": "primey_프라이머_z315_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_프라이머_z315.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_프라이머_z315.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_해석_까몽 (4K)",
+            "상태": "아직",
+            "쇠": "primey_해석_까몽_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_해석_까몽.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_해석_까몽.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_해석_몽글 (4K)",
+            "상태": "아직",
+            "쇠": "primey_해석_몽글_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_해석_몽글.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_해석_몽글.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_해석_우주복까몽 (4K)",
+            "상태": "아직",
+            "쇠": "primey_해석_우주복까몽_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_해석_우주복까몽.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_해석_우주복까몽.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_해석_우주복몽글 (4K)",
+            "상태": "아직",
+            "쇠": "primey_해석_우주복몽글_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_해석_우주복몽글.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_해석_우주복몽글.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "primey_해석_우주복몽글_해골뺌 (4K)",
+            "상태": "아직",
+            "쇠": "primey_해석_우주복몽글_해골뺌_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/마린공방_0827/primey_해석_우주복몽글_해골뺌.png"
+            ],
+            "_옛판": "docs/캐릭터/마린공방_0827/primey_해석_우주복몽글_해골뺌.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "속수집오브 (4K)",
+            "상태": "아직",
+            "쇠": "속수집오브_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/명품판_0814/속수집오브.png"
+            ],
+            "_옛판": "docs/캐릭터/명품판_0814/속수집오브.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "아이콘_기록_파생 (4K)",
+            "상태": "아직",
+            "쇠": "아이콘_기록_파생_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/명품판_0814/아이콘_기록_파생.png"
+            ],
+            "_옛판": "docs/캐릭터/명품판_0814/아이콘_기록_파생.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "아이콘_달력_파생 (4K)",
+            "상태": "아직",
+            "쇠": "아이콘_달력_파생_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/명품판_0814/아이콘_달력_파생.png"
+            ],
+            "_옛판": "docs/캐릭터/명품판_0814/아이콘_달력_파생.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "아이콘_숙제_파생 (4K)",
+            "상태": "아직",
+            "쇠": "아이콘_숙제_파생_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/명품판_0814/아이콘_숙제_파생.png"
+            ],
+            "_옛판": "docs/캐릭터/명품판_0814/아이콘_숙제_파생.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "아이콘_재생_파생 (4K)",
+            "상태": "아직",
+            "쇠": "아이콘_재생_파생_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/명품판_0814/아이콘_재생_파생.png"
+            ],
+            "_옛판": "docs/캐릭터/명품판_0814/아이콘_재생_파생.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "종이비행기 (4K)",
+            "상태": "아직",
+            "쇠": "종이비행기_4K",
+            "규격": "장면",
+            "참조": [
+              "docs/캐릭터/명품판_0814/종이비행기.png"
+            ],
+            "_옛판": "docs/캐릭터/명품판_0814/종이비행기.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "워프_민망 (4K)",
+            "상태": "아직",
+            "쇠": "워프_민망_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/표정워프_0902/워프_민망.png"
+            ],
+            "_옛판": "docs/캐릭터/표정워프_0902/워프_민망.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "워프_윙크 (4K)",
+            "상태": "아직",
+            "쇠": "워프_윙크_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/표정워프_0902/워프_윙크.png"
+            ],
+            "_옛판": "docs/캐릭터/표정워프_0902/워프_윙크.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "워프_윙크좌 (4K)",
+            "상태": "아직",
+            "쇠": "워프_윙크좌_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/표정워프_0902/워프_윙크좌.png"
+            ],
+            "_옛판": "docs/캐릭터/표정워프_0902/워프_윙크좌.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "워프_으쓱 (4K)",
+            "상태": "아직",
+            "쇠": "워프_으쓱_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/표정워프_0902/워프_으쓱.png"
+            ],
+            "_옛판": "docs/캐릭터/표정워프_0902/워프_으쓱.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "워프_졸림 (4K)",
+            "상태": "아직",
+            "쇠": "워프_졸림_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/표정워프_0902/워프_졸림.png"
+            ],
+            "_옛판": "docs/캐릭터/표정워프_0902/워프_졸림.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마스코트_웃음 (4K)",
+            "상태": "아직",
+            "쇠": "마스코트_웃음_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/홈페이지_시안/마스코트_웃음.webp"
+            ],
+            "_옛판": "docs/홈페이지_시안/마스코트_웃음.webp",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "마스코트_점눈 (4K)",
+            "상태": "아직",
+            "쇠": "마스코트_점눈_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/홈페이지_시안/마스코트_점눈.webp"
+            ],
+            "_옛판": "docs/홈페이지_시안/마스코트_점눈.webp",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          },
+          {
+            "이름": "FB_첫게시물_카드_v3 (4K)",
+            "상태": "아직",
+            "쇠": "FB_첫게시물_카드_v3_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/홍보물/FB_첫게시물_카드_v3.png"
+            ],
+            "_옛판": "docs/홍보물/FB_첫게시물_카드_v3.png",
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+          }
+        ]
+      },
+      {
+        "이름": "명품 글자",
+        "쓰는 곳": "표지·간판·수료증·앱 첫 화면 — 크게 뜨는 자리",
+        "_결": "🔑 땀은 안 넣는다(유호 판정 09-05 「스티치가 약간 거슬린다」) — 한글은 획이 가늘어 땀이 글자를 덮는다. 자수 글자(실이 곧 글자)만 예외. 색은 코랄 하나로 먼저 굽는다 — 색 갈래는 오려 만드는 통로가 0원으로 낸다.",
+        "상태": "0/15",
+        "것들": [
+          {
+            "이름": "함께 자라요",
+            "상태": "아직",
+            "쇠": "공방_글자_함께자라요",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean phrase 함께 자라요 (four syllable blocks: 함 께 자 라 요, with a space between 께 and 자), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "SYNK LAB (자수)",
+            "상태": "아직",
+            "쇠": "공방_글자_신크랩",
+            "규격": "부품",
+            "지시": "The five latin letters S Y N K and the three letters L A B, reading SYNK LAB in two words embroidered on a piece of pale cream wool felt, worked in dense satin stitch with lapis blue thread so each letter sits slightly raised above the cloth, the individual stitches clearly visible across the letter strokes. The letters are bold, upright and evenly spaced. Nothing else on the cloth — no border, no other marks. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "오늘",
+            "상태": "아직",
+            "쇠": "공방_글자_오늘",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean word 오늘 (two syllable blocks: 오, 늘), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "숙제",
+            "상태": "아직",
+            "쇠": "공방_글자_숙제",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean word 숙제 (two syllable blocks: 숙, 제), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "친구",
+            "상태": "아직",
+            "쇠": "공방_글자_친구",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean word 친구 (two syllable blocks: 친, 구), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "가게",
+            "상태": "아직",
+            "쇠": "공방_글자_가게",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean word 가게 (two syllable blocks: 가, 게), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "옷장",
+            "상태": "아직",
+            "쇠": "공방_글자_옷장",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean word 옷장 (two syllable blocks: 옷, 장), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "나",
+            "상태": "아직",
+            "쇠": "공방_글자_나",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the single Korean syllable 나, cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "잘했어요",
+            "상태": "아직",
+            "쇠": "공방_글자_잘했어요",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean phrase 잘했어요 (four syllable blocks: 잘 했 어 요), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "참 잘했어요",
+            "상태": "아직",
+            "쇠": "공방_글자_참잘했어요",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean phrase 참 잘했어요 (five syllable blocks: 참 잘 했 어 요, with a space after 참), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "축하해요",
+            "상태": "아직",
+            "쇠": "공방_글자_축하해요",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean phrase 축하해요 (four syllable blocks: 축 하 해 요), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "고마워요",
+            "상태": "아직",
+            "쇠": "공방_글자_고마워요",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean phrase 고마워요 (four syllable blocks: 고 마 워 요), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "수료",
+            "상태": "아직",
+            "쇠": "공방_글자_수료",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean word 수료 (two syllable blocks: 수, 료), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "한국어 교실",
+            "상태": "아직",
+            "쇠": "공방_글자_한국어교실",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean phrase 한국어 교실 (five syllable blocks: 한 국 어 교 실, with a space after 어), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
+          },
+          {
+            "이름": "안녕하세요",
+            "상태": "아직",
+            "쇠": "공방_글자_안녕하세요",
+            "규격": "부품",
+            "지시": "Korean hangul characters spelling the Korean greeting 안녕하세요 (five syllable blocks: 안 녕 하 세 요), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
           }
         ]
       }
