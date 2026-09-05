@@ -54,7 +54,16 @@ const 갈래들 = [
     뿌리: ['docs/캐릭터/펠트패치_0815'] },
 ];
 
-const 그림확장 = /\.(png|webp|jpe?g)$/i;
+/* 🔴 **AVIF 를 빠뜨리면 새 자산이 «이름만» 뜬다**(09-05 실물).
+ *   09-05 에 담는 꼴이 WebP 에서 AVIF 로 갔는데(같은 품질에 36% 작다) 이 목록이 안 따라와,
+ *   그날 구운 32장이 지면에서 그림 없는 이름표로만 보였다. 지면은 «눈으로 고르는 판»이라
+ *   그림이 없으면 지면이 아니다. */
+const 그림확장 = /\.(avif|png|webp|jpe?g)$/i;
+
+/* 같은 물건이 여러 꼴로 있을 때 무엇을 싣나 — «담은 것»이 정본이고 png 는 원본이다.
+ *   원본 PNG 는 일부러 안 지우므로(다른 임계로 다시 걷을 수 있어야 한다) 둘 다 잡힌다.
+ *   그대로 두면 한 물건이 두 칸을 먹으므로 여기서 하나로 줄인다. */
+const 꼴순위 = { avif: 3, webp: 2, png: 1, jpg: 0, jpeg: 0 };
 
 function 훑기(뿌리) {
   const 방 = path.join(ROOT, 뿌리);
@@ -68,11 +77,19 @@ function 훑기(뿌리) {
         const rel = path.relative(나갈방, p).replace(/\\/g, '/');
         나온것.push({ 이름: e.name.replace(그림확장, ''), 경로: rel,
           방: path.relative(ROOT, path.dirname(p)).replace(/\\/g, '/'),
+          꼴: (e.name.split('.').pop() || '').toLowerCase(),
           바이트: fs.statSync(p).size });
       }
     }
   })(방);
-  return 나온것;
+
+  const 고른것 = new Map();          // Map 은 넣은 차례를 지키므로 정렬이 안 흔들린다
+  for (const x of 나온것) {
+    const 열쇠 = `${x.방}/${x.이름}`;
+    const 먼저 = 고른것.get(열쇠);
+    if (!먼저 || (꼴순위[x.꼴] || 0) > (꼴순위[먼저.꼴] || 0)) 고른것.set(열쇠, x);
+  }
+  return [...고른것.values()];
 }
 
 /* ── 지면 껍데기 — 어두운 무대. 펠트는 어두운 바닥에서 결이 산다 ──────────────── */
