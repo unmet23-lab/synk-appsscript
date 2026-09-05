@@ -23,7 +23,7 @@ import argparse
 import sys
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 from scipy import ndimage
 
 
@@ -147,6 +147,35 @@ def 옷상자(옮긴: Image.Image, 몸: Image.Image, 문턱=46):
     return int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
 
 
+def 으뜸색(im: Image.Image, 알파쓰기=True):
+    """그림에서 가장 흔한 색(16단계로 뭉쳐서). 결이 있어 픽셀마다 다르므로 뭉쳐야 잡힌다."""
+    a = np.asarray(im.convert('RGBA'))
+    쓸것 = a[a[:, :, 3] > 200][:, :3] if 알파쓰기 else a.reshape(-1, 4)[:, :3]
+    if len(쓸것) == 0:
+        return None
+    q = (쓸것 // 16 * 16 + 8).astype(np.int32)
+    키 = q[:, 0] * 65536 + q[:, 1] * 256 + q[:, 2]
+    값, 수 = np.unique(키, return_counts=True)
+    k = int(값[수.argmax()])
+    return np.array([k // 65536, (k // 256) % 256, k % 256], dtype=np.int16)
+
+
+def 가릴까(옷: Image.Image, 몸: Image.Image, 멀기=250):
+    """«몸이 앞인 자리»를 오려낼지 스스로 정한다 (09-06 신설).
+
+    🔴 왜 자동인가 — 오려내기는 옷과 몸의 색이 «다를 때만» 안전하다:
+      · 겨울 델(짙은 남색) : 오려내야 한다. 안 하면 깃의 뒤쪽 안벽이 머리 앞으로 나와 그릇이 된다.
+      · 목도리(코랄·크림)  : 오려내면 안 된다. 몽글 몸도 코랄이라 목도리가 통째로 지워졌다(실측).
+    ⇒ 두 으뜸색이 충분히 멀 때만 켠다. 사람이 옷마다 손으로 켜면 예순 벌에 사람이 붙는다.
+    🔴 문턱 250 은 실측으로 잡았다(09-06): 겨울 델 400(켜야 한다) · 목도리 144(끄야 한다).
+    """
+    c1, c2 = 으뜸색(옷), 으뜸색(몸)
+    if c1 is None or c2 is None:
+        return False, None
+    거리 = int(np.abs(c1 - c2).sum())
+    return 거리 >= 멀기, 거리
+
+
 def 몸이앞인곳(옮긴: Image.Image, 몸: Image.Image, 문턱=46):
     """씌워 구운 그림에서 «몸이 옷보다 앞에 서 있는» 자리.
 
@@ -177,7 +206,7 @@ def 몸이앞인곳(옮긴: Image.Image, 몸: Image.Image, 문턱=46):
 
 # ── 본 일 ─────────────────────────────────────────────────────────────────
 
-def 앉힌다(옷경로, 씌운경로, 몸경로, 눈결='검정', 가리기=False):
+def 앉힌다(옷경로, 씌운경로, 몸경로, 눈결='검정', 가리기='자동'):
     몸 = Image.open(몸경로).convert('RGBA')
     씌운 = Image.open(씌운경로).convert('RGB')
     옷 = Image.open(옷경로).convert('RGBA')
@@ -213,18 +242,24 @@ def 앉힌다(옷경로, 씌운경로, 몸경로, 눈결='검정', 가리기=Fal
     #   목도리가 통째로 사라졌다(몽글 몸도 코랄이라 「몸이 앞」으로 읽혔다).
     #   ⇒ 대신 굽는 쪽에서 막는다 — 「본보기에서 몸에 가려 안 보이는 부분은 아예 그리지 마라」.
     #   이 손잡이는 그래도 안벽이 남는 장에 «사람이 보고» 쓰는 예비다.
-    앞선몸 = 몸이앞인곳(옮긴, 몸) if 가리기 else None
+    켤까, 색거리 = 가릴까(옷, 몸)
+    켠다 = 켤까 if 가리기 == '자동' else (가리기 == '켬')
+    앞선몸 = 몸이앞인곳(옮긴, 몸) if 켠다 else None
     if 앞선몸 is not None:
-        a = np.asarray(층).copy()
-        a[:, :, 3] = np.where(앞선몸, 0, a[:, :, 3])
-        층 = Image.fromarray(a, 'RGBA')
+        # 🔑 가장자리를 흐린다 — 딱 잘라내면 깃 위에 계단 무늬가 남는다(09-06 실측).
+        마스크 = Image.fromarray((앞선몸 * 255).astype(np.uint8), 'L')
+        마스크 = 마스크.filter(ImageFilter.GaussianBlur(9))
+        a = np.asarray(층).astype(np.float32).copy()
+        a[:, :, 3] *= (1.0 - np.asarray(마스크).astype(np.float32) / 255.0)
+        층 = Image.fromarray(a.clip(0, 255).astype(np.uint8), 'RGBA')
 
     판 = 몸.copy()
     판.alpha_composite(층)
     잰것 = {'눈 배율': round(배율b, 3),
             '씌운 눈': [(round(x), round(y)) for x, y in 씌운눈],
             '정본 눈': [(round(x), round(y)) for x, y in 정본눈],
-            '옷 과녁': 과녁, '뜬 옷 상자': 옷칸}
+            '옷 과녁': 과녁, '뜬 옷 상자': 옷칸,
+            '가리기': f"{'켬' if 켠다 else '끔'}(색 거리 {색거리})"}
     return 판, 층, 잰것
 
 
@@ -234,8 +269,8 @@ def main():
     ap.add_argument('--몸', default='docs/캐릭터/정본_4K/몽글_본체.png')
     ap.add_argument('--눈', default='검정', choices=['검정', '버터'])
     ap.add_argument('--층', help='자리를 맞춘 «옷만» 층도 따로 낸다(앱이 쓸 조각)')
-    ap.add_argument('--가리기', action='store_true',
-                    help='몸이 앞인 자리를 옷에서 덜어낸다 — 옷과 몸의 색이 다를 때만 쓴다(같으면 옷이 지워진다)')
+    ap.add_argument('--가리기', default='자동', choices=['자동', '켬', '끔'],
+                    help='몸이 앞인 자리를 옷에서 덜어낼지. 자동 = 옷과 몸의 으뜸색이 멀 때만 켠다')
     a = ap.parse_args()
     판, 층, 잰것 = 앉힌다(a.옷, a.씌운, a.몸, a.눈, a.가리기)
     판.save(a.낼곳)
