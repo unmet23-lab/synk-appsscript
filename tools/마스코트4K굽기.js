@@ -276,11 +276,14 @@ No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.` },
 
   { 누구: '몽글', 이름: '몽글_으쓱', 카메라: 몽글카메라, 참조: '몽글_본체.png', 얼굴먼저: true,
     얼굴: `FACE: exactly two closed eyes and nothing else. Each eye is a SHORT, nearly FLAT line
-of dark brown embroidery thread stitched into the felt — almost a straight dash, with only the
-slightest downward tilt at its outer end. A breezy "who, me?" shrug.
-🔴 These lines must read as clearly DIFFERENT from the other closed-eye faces: they are much
-SHORTER than a sleepy eye and much FLATTER than a sleeping curve — nearly horizontal dashes,
-not arcs. Do not draw a smile, do not draw a caret ^, do not draw a deep curve.
+of dark brown embroidery thread stitched into the felt in a clean UPWARD-OPENING curve — the
+arc bows downward at its middle and lifts at both ends, opening toward the top of the head like
+the letter U or a shallow bowl. It is exactly the caret "^" of a smiling eye turned upside
+down. Both identical, both level with each other.
+🔴 These must read as clearly DIFFERENT from the other closed-eye faces on this doll: NOT a
+straight dash (that is the concentrating face), NOT an arc that bulges upward (that is the
+sleeping and relieved face), NOT a caret ^ (that is the smiling face). The curve opens UPWARD
+and only upward.
 The two sit at exactly the same height, level with each other, in the upper third of the doll,
 set wide apart with a gap of about one third of the doll's width. No beads anywhere.
 No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.` },
