@@ -211,13 +211,13 @@ test('제미나이 키는 파일에서만 읽고, 모르는 토큰 여럿이면 
     const f = path.join(d, 'k.txt');
     fs.writeFileSync(f, '﻿설명 텍스트\nAQ.abc123\n');
     process.env.GEMINI_KEY_PATH_FREE = f;
-    assert.strictEqual(정책.제미나이키(), 'AQ.abc123', '아는 접두어(AQ.)를 못 골랐다');
+    assert.strictEqual(정책.제미나이키('글'), 'AQ.abc123', '아는 접두어(AQ.)를 못 골랐다');
     fs.writeFileSync(f, 'tok1 tok2\n');
-    assert.strictEqual(정책.제미나이키(), null, '모르는 토큰 여럿인데 아무거나 집었다');
+    assert.strictEqual(정책.제미나이키('글'), null, '모르는 토큰 여럿인데 아무거나 집었다');
     fs.writeFileSync(f, '단일토큰\n');
-    assert.strictEqual(정책.제미나이키(), '단일토큰');
+    assert.strictEqual(정책.제미나이키('글'), '단일토큰');
     process.env.GEMINI_KEY_PATH_FREE = path.join(d, '없는파일.txt');
-    assert.strictEqual(정책.제미나이키(), null, '없는 파일인데 null 이 아니다');
+    assert.strictEqual(정책.제미나이키('글'), null, '없는 파일인데 null 이 아니다');
   } finally {
     if (이전 === undefined) delete process.env.GEMINI_KEY_PATH_FREE;
     else process.env.GEMINI_KEY_PATH_FREE = 이전;
@@ -226,8 +226,11 @@ test('제미나이 키는 파일에서만 읽고, 모르는 토큰 여럿이면 
 
 /* 🔑 열쇠가 «둘»이다 — 유호 확정 2026-09-03 「글은 공짜, 그림은 유료」.
  *   까닭은 실물이다: 09-02 저녁 그림 한 번 구운 크레딧 소진(−₩56)이 **글 검문까지** 멈춰 세웠다.
- *   여기서 지키는 것은 «기본이 싼 쪽인가» — 용도를 안 주면 공짜로 가야 실수의 방향이 「돈이 샌다」가 아니다. */
-test('🔴 용도를 안 주면 «글»(공짜 몫) 열쇠다 · 공짜가 없다고 유료로 넘어가지 않는다(폴백 금지)', () => {
+ *   (09-03 판) 여기서 지키던 것은 «기본이 싼 쪽인가»였다.
+ * 🔄 09-05 밤 — 기본이 «돈»(Vertex · 크레딧)으로 뒤집혔다(유호 확정 「앞으로 제미나이 열쇠는 vertex로해야해 ·
+ *   3.1 pro 기능 · 무료크레딧도 지금 있고」 · 결정.md 09-05). 공짜 문은 하루 몫에 막혀 저녁마다 죽었고 크레딧은 안 쓰면
+ *   증발한다. 지키는 것은 이제 «기본이 돈인가»와 «어느 쪽이 없어도 다른 쪽으로 조용히 넘어가지 않는가»다. */
+test('🔴 용도를 안 주면 «돈»(Vertex · 크레딧) 열쇠다(유호 확정 09-05 밤) · 어느 쪽이 없어도 다른 쪽으로 넘어가지 않는다(폴백 금지)', () => {
   const fs = require('node:fs');
   const os = require('node:os');
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gk2-'));
@@ -240,13 +243,19 @@ test('🔴 용도를 안 주면 «글»(공짜 몫) 열쇠다 · 공짜가 없�
     fs.writeFileSync(돈f, 'AQ.paid\n');
     process.env.GEMINI_KEY_PATH_FREE = 글f;
     process.env.GEMINI_KEY_PATH = 돈f;
-    assert.strictEqual(정책.제미나이키(), 'AQ.free', '기본이 공짜 쪽이 아니다');
+    assert.strictEqual(정책.기본용도(), '돈', '기본 용도가 돈(Vertex)이 아니다 — 유호 확정 09-05 밤');
+    assert.strictEqual(정책.제미나이키(), 'AQ.paid', '기본이 돈(Vertex) 쪽이 아니다 — 유호 확정 09-05 밤 「앞으로 제미나이 열쇠는 vertex로」');
     assert.strictEqual(정책.제미나이키('글'), 'AQ.free');
     assert.strictEqual(정책.제미나이키('돈'), 'AQ.paid');
     // 🚫 폴백 금지 — 공짜가 없다고 유료로 넘어가면 「글은 공짜」가 거짓이 되고 아무도 그걸 모른다.
     process.env.GEMINI_KEY_PATH_FREE = path.join(d, '없다.txt');
     assert.strictEqual(정책.제미나이키('글'), null, '공짜 열쇠가 없을 때 유료로 넘어갔다');
     assert.strictEqual(정책.제미나이키('돈'), 'AQ.paid', '돈 열쇠까지 같이 죽으면 안 된다');
+    // 🚫 반대 방향도 금지(09-05) — 기본(돈) 열쇠가 없다고 공짜 열쇠로 조용히 넘어가면 어느 문으로 갔는지 아무도 모른다.
+    process.env.GEMINI_KEY_PATH_FREE = 글f;
+    process.env.GEMINI_KEY_PATH = path.join(d, '없다2.txt');
+    assert.strictEqual(정책.제미나이키(), null, '돈 열쇠가 없을 때 공짜로 넘어갔다');
+    assert.strictEqual(정책.제미나이키('글'), 'AQ.free', '글 열쇠는 따로 살아 있어야 한다(옵트인 예비)');
     assert.match(정책.제미나이키안내('글'), /만드는 법/, '없다고만 말하면 사람이 다음 수를 모른다');
     assert.throws(() => 정책.제미나이키('아무거나'), /용도/, '모르는 용도가 조용히 통과하면 안 된다');
   } finally {
@@ -341,9 +350,11 @@ test('심문 편성 = GPT 한 벌 + 제미나이 한 벌 — 코덱스 자리는
   assert.strictEqual(제[0].effort, g.thinking_level, '제미나이 심문 자리의 사고 수준이 픽과 갈렸다');
   assert.strictEqual(제[0].model, 'gemini-3.1-pro-preview',
     '심문 제미나이 자리가 3.1 Pro 가 아니다 — 유호 확정 09-05 「ⓐ로 가자 3.1 Pro로 바꿔줘」');
-  /* 🔴 기본 픽은 따라 움직이면 안 된다 — 공짜 문(AI Studio)으로 도는 자리는 3.1 Pro 가 무료 등급이 없어 죽는다. */
+  /* 🔴 기본 픽은 따라 움직이면 안 된다 — 09-05 밤부터 기본 문이 Vertex(크레딧)라 죽지는 않지만, 3.1 Pro 는 flash 의
+   *   약 3배 값이다(1M 토큰당 입력 $2 vs $0.75 · 출력 $12 vs $3.75 · 구글 가격표 09-05 실측). 자주 도는 검문·검수 둘째 눈을
+   *   거기 태우면 크레딧(₩435,523)이 빨리 마른다. */
   assert.strictEqual(정책.제미나이설정().model, 'gemini-3.8-flash',
-    '심문을 최상으로 올리면서 기본 픽까지 끌려갔다 — 몽골어 검문·검수 둘째 눈이 공짜 문에서 죽는다');
+    '심문을 최상으로 올리면서 기본 픽까지 끌려갔다 — 몽골어 검문·검수 둘째 눈이 3배 값으로 돌아 크레딧이 빨리 마른다');
   /* 🔴 코덱스 효력 낱말이 제미나이 자리에 실리면 벤더가 400 을 낸다(사고 수준은 low·medium·high 뿐). */
   assert.ok(['low', 'medium', 'high'].includes(제[0].effort),
     `제미나이 자리에 코덱스 효력이 실렸다 — "${제[0].effort}" 는 사고 수준이 아니다`);
@@ -612,7 +623,7 @@ test('🔑 «돈» 문의 프로젝트·위치는 env 로 덮을 수 있다 — 
 
 test('🔑 두 문은 서로 다르다 · 모르는 용도는 거절한다', () => {
   assert.notStrictEqual(정책.제미나이문('글').base, 정책.제미나이문('돈').base, '둘이 같아졌다 — 통째 교체가 들어왔다는 뜻이다');
-  assert.strictEqual(정책.제미나이문().base, 정책.제미나이문('글').base, '기본은 글이다');
+  assert.strictEqual(정책.제미나이문().base, 정책.제미나이문('돈').base, '기본은 돈(Vertex)이다 — 유호 확정 09-05 밤');
   assert.throws(() => 정책.제미나이문('그림'), /용도는/, '모르는 용도를 조용히 글로 접으면 「돈 문으로 돌렸다」고 믿는 상태가 생긴다');
 });
 
