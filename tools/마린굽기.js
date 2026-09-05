@@ -115,6 +115,94 @@ No text, no letters, no numbers, no logo, no watermark, no weapons of any kind, 
 no blade, no blood, no menace. Nothing scary. Do not show the table edge or the studio.
 Do not make it look male or female — it must read as neither.`;
 
+/* ══ 확정 묶음(09-05) — 여기서부터는 «후보 놀이»가 아니라 정본을 고르는 판이다 ═══════════
+ *
+ * 무엇이 이미 정해졌나(더 안 묻는다):
+ *   큰 헬멧 + 작은 몸 · 렌즈 둘 · 정면 · 목도리 없음 · 몸은 남색(청금석) · 렌즈는 버터 노랑.
+ *   남색은 유호 확정 09-05(결정 원장) — 까몽이 무채 자리를 가져갔으므로 마린까지 회색이면
+ *   셋 중 둘이 같은 축에 선다. 버터 렌즈도 같은 결정에 함께 섰다.
+ *
+ * 그래서 이 스물은 «아직 안 정한 둘»만 격자로 가른다 — 헬멧 모양 5 × 몸 장식 4.
+ * 축이 둘뿐이라 유호님이 「3번 헬멧에 2번 장식」으로 고르실 수 있다.
+ *
+ * 🔑 규격을 몽글·까몽 정본에 맞춘다(09-05 그날 정본이 4K 로 섰다):
+ *   4K · 순백 바닥 · 그림자 0 · 떠 있음 ⇒ `흰배경걷기` 로 투명하게 만들고 `마스코트틀맞추기`
+ *   로 같은 틀에 넣으면 셋이 나란히 선다. 마린만 2K 에 나무 탁자면 그게 안 된다. */
+
+const 확정재질 = `A handmade needle-felted wool character, a real miniature doll photographed
+against a plain seamless studio backdrop. Made entirely of textile: felted merino wool,
+wet-felted sheets with visible scissor-cut edges, embroidery floss, running stitch, french
+knots. Visible fibre fuzz and soft handmade irregularity, with fine stray hairs catching the
+light along the top edge. Nothing is plastic, glass, metal or digital — even the armour plates
+are stiff felt sheets, even the lenses are smooth felt discs with stitched rims.
+Museum-quality fibre-art photography, extremely high detail in the wool fibres and stitching.`;
+
+const 확정카메라 = `CAMERA AND POSE — THIS IS THE MOST IMPORTANT INSTRUCTION:
+A dead-on, perfectly frontal product photograph. The camera sits exactly at the doll's own
+height and exactly on its centre line. The doll faces the lens straight on, square to the
+camera. The picture is bilaterally symmetrical: mirror the left half onto the right half and
+it matches. Both lenses are the SAME size, at the SAME height, equally far from the centre.
+Both stubby arms hang at the sides, equally visible. We see the FRONT of the body only — no
+side of the body, no side of the helmet, no turn, no tilt, no rotation.
+The doll FLOATS in mid air, weightless, with nothing under it — no table, no surface, no
+ground, and NO CAST SHADOW anywhere in the frame.
+Photographed with a 50mm macro lens, soft even light from the front with a gentle rim light
+along the top edge. Full body visible, standing upright, centred, with generous empty space.
+
+BACKGROUND: one single flat PURE WHITE field filling the entire frame edge to edge, perfectly
+even. No gradient, no vignette, no panels, no rectangles, no patches, no seams, no texture,
+no scenery, no shadow. Nothing but white behind and around the doll.`;
+
+/* 🔴 09-05 유호 교정 「옆모습 보면 눈이 너무 튀어나왔어」는 몽글·까몽에서 나왔지만 마린도 같다 —
+ *   렌즈가 헬멧 «위에 얹힌 단추»가 되면 안 된다. 몽글·까몽에 먹힌 문면을 그대로 가져온다. */
+const 확정얼굴 = `EXPRESSION: completely deadpan and unreadable — this character never changes
+expression. Instead of eyes it has TWO round LENSES side by side, set into the front of the
+helmet where eyes would be, both glowing from within with the same calm warm BUTTER-YELLOW
+light (#F5C445 — soft golden, not orange and not lemon). They are simple glowing circles, not
+cartoon eyes — no pupils, no eyelids, no eyebrows, no expression of any kind. No mouth.
+
+SIZE: each lens is about ONE QUARTER of the helmet's width. The two lenses plus the gap
+between them span roughly THREE QUARTERS of the helmet's width. Big and calm.
+
+HOW THE LENS SITS — read this carefully: each lens is SET DEEP INTO the felt of the helmet,
+not glued on top of it. It is sunk in so that LESS THAN HALF of its curve shows — a shallow
+disc, not a bead. The felt rises in a soft stitched ring right up against its rim, slightly
+overlapping the edge all the way around. 🔴 THE LENS NEVER BREAKS THE OUTLINE OF THE HELMET —
+at every angle its silhouette stays well inside the helmet's silhouette, never bulging out
+past the edge, never reading as a button stuck on the side.
+
+BOTH LENSES GLOW THE SAME: equally bright, equally wide, equally saturated. Neither falls into
+shadow. Posture perfectly upright, disciplined, standing at attention. Serious, dutiful,
+quietly warm underneath.`;
+
+const 확정금지 = `NO human face, no human skin, no eyes, no mouth, no nose, no hair.
+No text, no letters, no numbers, no logo, no watermark, no weapons of any kind, no gun,
+no blade, no blood, no menace. Nothing scary. No scarf of any kind.
+NO three-quarter view, NO side view, NO angled view, NO turned body, NO tilted head,
+NO twisted torso, NO profile. Not a casual snapshot — a straight catalogue front view.
+The helmet COVERS THE WHOLE HEAD like a smooth closed dome. Nothing of a head shows below
+it — no face, no chin, no cheeks, no jaw, no neck, no stitch or mark that could read as a
+mouth or a nose. The ONLY features anywhere on this character are the two glowing lenses.
+Do not show a table, a tabletop, a wooden surface, a floor, a room, a wall or any scenery.
+Do not make it look male or female — it must read as neither.`;
+
+/* 헬멧 다섯 — 실루엣만 가른다(색·렌즈·비율은 위에서 고정됐다). */
+const 헬멧들 = {
+  민돔: 'The helmet is one perfectly smooth unbroken dome of navy felt, seamless, with no seam line, no rim, no brim and no rivets. Absolutely clean.',
+  이음선: 'The helmet is a navy felt dome with ONE fine cream running-stitch seam running from the crown straight down the centre front, like a hand-sewn cap. Nothing else on the helmet.',
+  땀테두리: 'The helmet is a navy felt dome edged all the way around its bottom rim with a neat line of cream blanket stitch, the kind that finishes a piece of hand-cut felt. No brim, no seam on top.',
+  짧은챙: 'The helmet is a navy felt dome with a SHORT stiff brim of the same navy felt curving out over the lenses, like a small cap peak. Just wide enough to read, not a wide hat.',
+  목덜미: 'The helmet is a navy felt dome whose back and sides come down a little longer, softly covering where a neck would be, so the head reads as one continuous rounded shape. Front stays open and clean.',
+};
+
+/* 몸 장식 넷 — 유호님이 좋게 보신 «꽃 주머니»를 축 하나로 살린다. */
+const 장식들 = {
+  민무늬: 'The small navy body is completely plain — no pockets, no badges, no piping. Only one fine cream running stitch along the scalloped bottom hem.',
+  꽃주머니: 'On the front of the small navy body sits ONE small oatmeal felt pouch with a rounded flap, and peeking out of it one tiny cream felt flower with a green stem. Everything else regulation neat.',
+  어깨배지: 'ONE small round butter-yellow felt badge is stitched onto the shoulder of the small navy body, the only mark of rank anywhere. Everything else plain.',
+  가슴선: 'ONE clean horizontal line of cream running stitch crosses the chest of the small navy body, like a sewn-on strap. Nothing else — no pockets, no badges.',
+};
+
 /* 정면판 전용 금지 — 위 금지에 «비스듬 금지»를 얹는다. 금지 덩어리는 얼굴·무기를 실제로
  *   막아 왔으니(60장 전량) 각도도 여기에 걸면 먹는다. 탁자 금지도 여기서 한 번 더 못 박는다. */
 const 정면금지 = `NO human face, no human skin, no eyes, no mouth, no nose, no hair.
@@ -751,7 +839,325 @@ the mint version of the flower-pouch idea. No scarf.`,
 and two warm butter-yellow glowing lenses that glow strongly against the green. Plain body,
 one fine cream stitch line. No scarf.`,
   },
+
+  /* 🔑 09-05 — 유호님이 「우리가 쓰는 버터 노란색으로도」를 부르셨다(전체 20장).
+   *   위 두 결(남색·민트)은 «노랑»을 악센트로 다섯 자리에 넣어 물었다. 몸이 버터가 되면 그
+   *   물음이 성립하지 않는다(노랑 위의 노랑은 안 보인다). ⇒ 악센트 자리를 «남색»이 맡는다.
+   *   그러면 다섯 갈래(없음·눈테·배지·주머니·진하게)는 그대로라 줄끼리 견줄 수 있다.
+   *   킷 값 = Butter #F5C445 · Soft #FFEBB0 · Deep #7E5A10(DESIGN.md 보상 실). */
+  {
+    이름: '정면5a_버터_민무늬', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Butter.png', 'ButterSoft.png', 'Chalk.png', 'Lapis.png'],
+    옷: `Warm butter-yellow felt, the colour of soft golden custard, with the huge helmet and
+two cool pale-blue glowing lenses that read clearly against the yellow. Absolutely minimal —
+no badges, no pouches, no scarf, only one fine cream running stitch along the helmet rim.`,
+  },
+  {
+    이름: '정면5b_버터_남색테', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Butter.png', 'Lapis.png', 'Chalk.png', 'ButterSoft.png'],
+    옷: `Warm butter-yellow felt with the huge helmet and two cream-white glowing lenses, each
+ringed by a thick DEEP NAVY stitched rim. A matching thin navy line along the bottom hem of
+the tiny body. No scarf.`,
+  },
+  {
+    이름: '정면5c_버터_남색배지', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Butter.png', 'LapisDeep.png', 'Chalk.png', 'ButterSoft.png'],
+    옷: `Warm butter-yellow felt with the huge helmet and two cool pale-blue glowing lenses.
+One small round DEEP NAVY felt badge stitched onto the shoulder of the tiny body, the only
+mark of rank anywhere. Everything else plain. No scarf.`,
+  },
+  {
+    이름: '정면5d_버터_꽃주머니', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['Butter.png', 'Chalk.png', 'Meadow.png', 'ButterSoft.png'],
+    옷: `Warm butter-yellow felt with the huge helmet and two cream-white glowing lenses. On the
+front of the tiny body sits one small cream felt pouch with a rounded flap, and peeking out of
+it one tiny felt flower with a green stem. Everything else regulation neat. No scarf.`,
+  },
+  {
+    이름: '정면5e_버터_진하게', 몸덮기: 큰헬멧몸, 성격덮기: 렌즈둘성격, 카메라덮기: 정면카메라,
+    참조: ['ButterDeep.png', 'Butter.png', 'Chalk.png', 'Lapis.png'],
+    옷: `Deeper honey-gold felt, richer and more grounded than a pale butter, with the huge
+helmet and two cream-white glowing lenses that glow strongly against the gold. Plain body,
+one fine cream stitch line. No scarf.`,
+  },
+
+  /* ── 확정 격자 20 (헬멧 5 × 장식 4) — 위 §확정 묶음 머리말 참조 ───────────────────── */
+  ...Object.entries(헬멧들).flatMap(([헬멧이름, 헬멧], hi) =>
+    Object.entries(장식들).map(([장식이름, 장식], di) => ({
+      이름: `확정${hi + 1}${'abcd'[di]}_${헬멧이름}_${장식이름}`,
+      확정: true, 크기: '4K',
+      몸덮기: 큰헬멧몸, 성격덮기: 확정얼굴, 카메라덮기: 확정카메라,
+      참조: ['Lapis.png', 'LapisDeep.png', 'Butter.png', 'Chalk.png'],
+      옷: `Deep NAVY felt throughout (kit Lapis #3D6BC9 — a true deep blue, not black and not
+purple), with the oversized helmet and two glowing butter-yellow lenses.
+HELMET: ${헬멧}
+BODY: ${장식}`,
+    })),
+  ),
+
+  /* ── 확정 덧판 3 (09-05) — 유호님이 «옛 2K 판» 셋을 짚으셨다(「이 나머지도 하나씩 띄워줘」).
+   *   그 셋은 탁자·베이지 배경이라 배경을 못 걷어 정본 규격이 아니다. 같은 생김새를 확정 규격
+   *   (4K · 순백 · 그림자 0)으로 옮겨 심는다 — 고르시면 그대로 정본이 되도록. */
+  {
+    이름: '확정6a_두색_밝은파랑', 확정: true, 크기: '4K',
+    몸덮기: 큰헬멧몸, 성격덮기: 확정얼굴, 카메라덮기: 확정카메라,
+    참조: ['Lapis.png', 'Oat.png', 'Chalk.png', 'Butter.png'],
+    옷: `TWO-TONE — this one is not navy all over. The oversized helmet is a BRIGHT MID-BLUE
+felt (kit Lapis #3D6BC9, clearly lighter than navy), with one fine seam running over the crown
+and a line of cream running stitch around its lower rim. The small body underneath is a warm
+OATMEAL cream felt, a completely different colour from the helmet, with visible cream stitching
+down its sides. On the front of that oatmeal body sits one oatmeal pouch with a rounded flap,
+and peeking out of it one tiny white felt flower with a green stem.`,
+  },
+  {
+    이름: '확정6b_어깨끈주머니', 확정: true, 크기: '4K',
+    몸덮기: 큰헬멧몸, 성격덮기: 확정얼굴, 카메라덮기: 확정카메라,
+    참조: ['LapisDeep.png', 'Lapis.png', 'Oat.png', 'Butter.png'],
+    옷: `Deep NAVY felt throughout, with one perfectly smooth unbroken helmet dome — no seam,
+no rim, no stitching anywhere on the helmet.
+LENSES sit FLUSH in the felt with NO stitched rim around them — just two clean glowing discs.
+BODY: a small oatmeal felt satchel hangs on the front from a thin oatmeal SHOULDER STRAP that
+crosses the chest, with a rounded flap and a tiny stitched knot; one small white felt flower
+with a green stem peeks out beside it.`,
+  },
+  {
+    이름: '확정6c_노랑테_크림렌즈', 확정: true, 크기: '4K',
+    몸덮기: 큰헬멧몸, 성격덮기: 확정얼굴, 카메라덮기: 확정카메라,
+    참조: ['LapisDeep.png', 'Butter.png', 'Chalk.png', 'Lapis.png'],
+    옷: `Deep NAVY felt throughout, with the oversized helmet coming down at the sides so it
+frames the lens area like a hood.
+LENSES — override the colour above: each lens is a soft CREAM-WHITE felt disc, and each is
+ringed by a thick BUTTER-YELLOW blanket stitch that goes all the way around. The cream centre
+and the yellow ring are what make this one different.
+BODY: plain navy, with one thin butter-yellow line of stitching across the very bottom of each
+foot. Nothing else.`,
+  },
+  /* 🔑 09-05 — 확정6a(두 색)가 «몸과 머리가 갈려» 작게 줄여도 안 뭉개진다는 것이 견줌에서
+   *   드러났다. 다만 헬멧이 밝은 파랑이라 코랄·검정과의 대비가 남색보다 약하다(색 판정의 근거).
+   *   ⇒ 둘을 다 가지는 판 = «짙은 남색 헬멧 + 크림 몸». 격자에 없던 자리다. */
+  {
+    이름: '확정7_남색헬멧_크림몸', 확정: true, 크기: '4K',
+    몸덮기: 큰헬멧몸, 성격덮기: 확정얼굴, 카메라덮기: 확정카메라,
+    참조: ['LapisDeep.png', 'Oat.png', 'Chalk.png', 'Butter.png'],
+    옷: `TWO-TONE — this one is not one colour all over. The oversized helmet is DEEP NAVY felt
+(kit Lapis Deep #24448C — a dark, serious blue, clearly darker than a mid blue), with one fine
+seam running over the crown and a line of cream running stitch around its lower rim. The small
+body underneath is a warm OATMEAL cream felt, a completely different and much lighter colour
+than the helmet, with visible cream stitching down its sides — so the head and the body read as
+two clearly separate blocks even at a very small size. On the front of that oatmeal body sits
+one oatmeal pouch with a rounded flap, and peeking out of it one tiny white felt flower with a
+green stem.`,
+  },
+
+  /* 🏭 09-05 유호 지시 「공장에서 발주넣기 편하도록 자수를 최소화 해보는거 어때?」
+   *   봉제 공장에서 값을 올리는 것은 셋이고 결이 다르다:
+   *     · 자수(선) = «스티치 개수»로 값이 매겨진다 ⇒ 선이 길수록 그대로 비싸진다
+   *     · 재단(색면) = 조각을 잘라 꿰매는 것이라 «싸다» ⇒ 두 색은 값이 거의 안 오른다
+   *     · 작은 부품(꽃·주머니) = 기계가 못 해서 «사람이 손으로» 붙인다 ⇒ 제일 비싸다
+   *   그래서 두 단계로 걷어 견준다 — 선만 뺀 판(부품은 남김)과 선·부품 다 뺀 판. */
+  {
+    이름: '확정8a_두색_선없음', 확정: true, 크기: '4K',
+    몸덮기: 큰헬멧몸, 성격덮기: 확정얼굴, 카메라덮기: 확정카메라,
+    참조: ['LapisDeep.png', 'Oat.png', 'Chalk.png', 'Butter.png'],
+    옷: `TWO-TONE, and DELIBERATELY FREE OF STITCHING. The oversized helmet is DEEP NAVY felt
+(kit Lapis Deep #24448C), one perfectly smooth unbroken dome — no seam over the crown, no
+stitched rim, no blanket stitch, no running stitch, no visible thread anywhere on the helmet.
+The small body underneath is warm OATMEAL cream felt, a completely different and much lighter
+colour, also with NO stitching down its sides. The two colours meet in one clean edge — the
+colour change alone separates head from body, no thread is needed to mark it.
+On the front of the oatmeal body sits one oatmeal pouch with a rounded flap and one tiny white
+felt flower with a green stem. The pouch has NO stitched outline either — it is a clean cut
+shape of felt laid on.`,
+  },
+  {
+    이름: '확정8b_두색_선없음_민몸', 확정: true, 크기: '4K',
+    몸덮기: 큰헬멧몸, 성격덮기: 확정얼굴, 카메라덮기: 확정카메라,
+    참조: ['LapisDeep.png', 'Oat.png', 'Chalk.png', 'Butter.png'],
+    옷: `TWO-TONE, and as SIMPLE AS IT CAN POSSIBLY BE. The oversized helmet is DEEP NAVY felt
+(kit Lapis Deep #24448C), one perfectly smooth unbroken dome — no seam, no rim, no stitching,
+no visible thread anywhere. The small body underneath is warm OATMEAL cream felt, a completely
+different and much lighter colour, also perfectly plain. The two colours meet in one clean
+edge and that is the only division on the whole figure.
+NO pouch, NO flower, NO badge, NO pocket, NO strap, NO stitching of any kind. Nothing is laid
+on top of anything. The entire character is exactly three shapes: a navy helmet, a cream body
+with two little arms and two little feet, and two glowing lenses.`,
+  },
+
+  /* 🍼 09-05 유호 지시 「가운데 버전을 조금 더 귀엽게 만들어줄수있어?」
+   *   「귀엽게」를 손잡이로 바꾼다 — 형용사는 안 서기 때문이다(오늘 세 번 밟았다).
+   *   아기처럼 보이게 하는 것은 정해져 있다(아기 도식):
+   *     ⓐ 눈이 얼굴 «아래쪽»에 있다 — 지금 판은 눈이 헬멧 위쪽에 붙어 있다
+   *     ⓑ 눈이 크다 · ⓒ 머리가 몸에 비해 크다 · ⓓ 팔다리가 짧고 뭉툭하다
+   *   축을 둘로 갈라 굽고(눈 · 몸), 합친 판과 더 센 판을 붙여 네 단계로 견준다. */
+  {
+    이름: '귀엽1_눈크게아래로', 확정: true, 크기: '4K',
+    몸덮기: 큰헬멧몸, 카메라덮기: 확정카메라,
+    참조: ['LapisDeep.png', 'Oat.png', 'Chalk.png', 'Butter.png'],
+    성격덮기: `EXPRESSION: completely deadpan and unreadable. Instead of eyes it has TWO round
+LENSES side by side, glowing with a calm warm BUTTER-YELLOW light (#F5C445). Simple glowing
+circles — no pupils, no eyelids, no eyebrows, no mouth, no expression of any kind.
+
+SIZE AND PLACEMENT — this is what makes it read as a baby:
+· Each lens is about ONE THIRD of the helmet's width. They are BIG.
+· They sit LOW on the helmet — their centres are about TWO THIRDS of the way down the helmet's
+  height, close to its bottom edge, not up in the middle. A baby's eyes sit low in its face.
+· They are set wide: the two lenses plus the gap between them span most of the helmet's width.
+· Both are exactly level, exactly the same size, equally bright.
+
+Each lens is SET INTO the felt, sunk so LESS THAN HALF of its curve shows, with the felt
+rising softly against its rim. 🔴 The lens never breaks the outline of the helmet.
+Posture upright, standing at attention. Serious and dutiful, quietly warm underneath.`,
+    옷: `TWO-TONE and FREE OF STITCHING. The oversized helmet is DEEP NAVY felt (kit Lapis Deep
+#24448C), one perfectly smooth unbroken dome — no seam, no rim, no visible thread anywhere.
+The small body underneath is warm OATMEAL cream felt, much lighter, also unstitched; the two
+colours meet in one clean edge. On the front of the body sits one oatmeal pouch with a rounded
+flap (no stitched outline) and one tiny white felt flower with a green stem.`,
+  },
+  {
+    이름: '귀엽2_머리더크게', 확정: true, 크기: '4K',
+    성격덮기: 확정얼굴, 카메라덮기: 확정카메라,
+    참조: ['LapisDeep.png', 'Oat.png', 'Chalk.png', 'Butter.png'],
+    몸덮기: `BODY SHAPE — exaggerated baby proportions, pushed further than usual:
+The rounded helmet takes up nearly TWO THIRDS of the whole figure's height. Under it the body
+is very SMALL, SHORT and ROUND — a squat little dumpling, wider than it is tall, with a gently
+scalloped hem. The two arms are very short and stubby, like little mittens, barely longer than
+they are wide. The two feet are small and round and set close together. Nothing about the body
+is long or slim. It is a soft doll wearing gear, NOT a robot and NOT a human figure.
+Cute and huggable first, soldier second.`,
+    옷: `TWO-TONE and FREE OF STITCHING. The oversized helmet is DEEP NAVY felt (kit Lapis Deep
+#24448C), one perfectly smooth unbroken dome — no seam, no rim, no visible thread anywhere.
+The small body underneath is warm OATMEAL cream felt, much lighter, also unstitched; the two
+colours meet in one clean edge. On the front of the body sits one oatmeal pouch with a rounded
+flap (no stitched outline) and one tiny white felt flower with a green stem.`,
+  },
 ];
+
+/* 셋째·넷째는 위 둘을 합친 것이라 «같은 문면»을 다시 안 쓴다 — 두 곳이 같은 말을 들면 갈린다. */
+판들.push(
+  {
+    이름: '귀엽3_둘다', 확정: true, 크기: '4K',
+    카메라덮기: 확정카메라,
+    참조: ['LapisDeep.png', 'Oat.png', 'Chalk.png', 'Butter.png'],
+    성격덮기: 판들.find((p) => p.이름 === '귀엽1_눈크게아래로').성격덮기,
+    몸덮기: 판들.find((p) => p.이름 === '귀엽2_머리더크게').몸덮기,
+    옷: 판들.find((p) => p.이름 === '귀엽1_눈크게아래로').옷,
+  },
+  {
+    이름: '귀엽4_더세게', 확정: true, 크기: '4K',
+    카메라덮기: 확정카메라,
+    참조: ['LapisDeep.png', 'Oat.png', 'Chalk.png', 'Butter.png'],
+    성격덮기: `EXPRESSION: completely deadpan and unreadable. Instead of eyes it has TWO round
+LENSES side by side, glowing with a calm warm BUTTER-YELLOW light (#F5C445). Simple glowing
+circles — no pupils, no eyelids, no eyebrows, no mouth, no expression of any kind.
+
+SIZE AND PLACEMENT — pushed as far as it can go while staying tasteful:
+· Each lens is about TWO FIFTHS of the helmet's width. They are very big and take over the face.
+· They sit LOW — their centres are about THREE QUARTERS of the way down the helmet's height,
+  almost at its bottom edge.
+· Together with the gap they span almost the whole width of the helmet, leaving only a thin
+  navy margin at each side.
+· Both exactly level, exactly the same size, equally bright.
+
+Each lens is SET INTO the felt, sunk so LESS THAN HALF of its curve shows.
+🔴 The lens never breaks the outline of the helmet.
+Posture upright, standing at attention. Serious and dutiful, quietly warm underneath.`,
+    몸덮기: `BODY SHAPE — the most exaggerated baby proportions of all:
+The rounded helmet takes up nearly THREE QUARTERS of the whole figure's height, so the doll is
+almost all head. Under it peeks a tiny SHORT ROUND body, clearly wider than it is tall, with a
+softly scalloped hem. The arms are tiny stubs. The feet are two small round bumps set close
+together, barely showing. Nothing is long or slim anywhere. It is a soft doll wearing gear,
+NOT a robot and NOT a human figure. Cute and huggable first, soldier second.`,
+    옷: 판들.find((p) => p.이름 === '귀엽1_눈크게아래로').옷,
+  },
+);
+
+/* 😠 09-05 유호 지시 「눈을 좀 무섭게 해보는건 어떨까? 반전매력으로 꽃이 있어서 괜찮을것같은데」
+ *   결을 고른다 — 마린은 «무표정한 다정이»(가이드_정본 §성격)라 «화난» 눈이 아니라 «엄격한»
+ *   눈이어야 한다. 처음 결(스파르타 선생님 · 우주해병)과도 그쪽이 이어진다.
+ *   🔴 학생 접점이라 상한이 있다: 위협이 아니라 «규율»까지. 그래서 금지 문면의
+ *      「nothing scary」는 「stern, never threatening」으로 낮춰 갈아 낀다(빼지 않는다).
+ *   몸·주머니·꽃은 «그대로» 둔다 — 반전이 성립하려면 무서운 눈 옆에 꽃이 있어야 한다. */
+const 엄격금지 = 확정금지
+  .replace('no blade, no blood, no menace. Nothing scary.',
+    'no blade, no blood. The look is STERN and disciplined — never threatening, never cruel, never evil; a strict teacher, not a villain.');
+
+const 무섭바탕 = {
+  확정: true, 크기: '4K', 카메라덮기: 확정카메라, 금지덮기: 엄격금지,
+  참조: ['LapisDeep.png', 'Oat.png', 'Chalk.png', 'Butter.png'],
+  몸덮기: 판들.find((p) => p.이름 === '귀엽2_머리더크게').몸덮기,
+  옷: 판들.find((p) => p.이름 === '귀엽1_눈크게아래로').옷,
+};
+
+const 엄격얼굴 = (모양) => `EXPRESSION: completely deadpan and unreadable, but STERN.
+Instead of eyes it has TWO LENSES side by side, glowing with a warm BUTTER-YELLOW light
+(#F5C445). No pupils, no eyelids, no eyebrows, no mouth.
+
+SHAPE — this is the whole point of this version: ${모양}
+
+PLACEMENT: the two lenses sit LOW on the helmet, their centres about two thirds of the way
+down its height, set wide apart, exactly level with each other and exactly the same size and
+brightness. Together they span most of the helmet's width.
+
+Each lens is SET INTO the felt, sunk so LESS THAN HALF of its curve shows, with the felt
+rising softly against its rim. 🔴 The lens never breaks the outline of the helmet.
+Posture upright, standing at attention. Strict and dutiful, quietly warm underneath.`;
+
+판들.push(
+  { ...무섭바탕, 이름: '엄격1_눈꼬리', 성격덮기: 엄격얼굴(
+    `each lens is a rounded shape whose OUTER top corner is drawn UP into a soft point, like an
+almond tilted upward — the inner edge stays low and round, the outer edge lifts. The pair
+therefore slants outward and upward, which reads as a firm, no-nonsense look. The felt of the
+helmet is cut in that same tilted shape around each lens.`) },
+  { ...무섭바탕, 이름: '엄격2_가로슬릿', 성격덮기: 엄격얼굴(
+    `each lens is a NARROW HORIZONTAL SLIT — a long thin capsule shape with rounded ends, about
+three times wider than it is tall, like a visor slot. Calm, machine-like and unreadable. The
+felt is cut in that same long thin shape around each slit.`) },
+  { ...무섭바탕, 이름: '엄격3_내려보는눈', 성격덮기: 엄격얼굴(
+    `each lens has a FLAT, straight TOP edge and a fully ROUND bottom — a half-moon lying with
+its flat side up, as if the eye were half-lidded and looking down at you. Steady and appraising.
+The felt is cut in that same half-moon shape around each lens.`) },
+  { ...무섭바탕, 이름: '엄격4_살짝만', 성격덮기: 엄격얼굴(
+    `each lens is still basically ROUND and big, but its top edge is very slightly flattened and
+its outer corner lifts just a little — barely enough to notice. Almost the friendly round eye,
+with one degree of firmness added. This is the gentlest version.`) },
+);
+
+/* 🟦 09-05 유호 지시 「엄격한 버전을 여러개 만들어줘 아까 하늘색?파란색 느낌도 예쁘던데
+ *   여러버전으로 10개 만드러줘」
+ *   색 5 × 눈 2 = 10. 색을 넉넉히 두는 까닭 = 유호님 관심이 그쪽이다(「하늘색?파란색」).
+ *   눈은 앞 네 결 중 살아남은 둘만 쓴다 — 반달(단단하되 안 무섭다)과 눈꼬리 약하게. */
+const 헬멧색들 = {
+  짙은남색: 'a DEEP NAVY felt (kit Lapis Deep #24448C) — dark, serious, almost the colour of a night sky',
+  진한파랑: 'a RICH DARK BLUE felt, clearly lighter than navy but still deep — the blue of well-worn denim',
+  청금석: 'a CLEAR MID BLUE felt (kit Lapis #3D6BC9) — a bright, confident cornflower blue',
+  연한하늘: 'a SOFT LIGHT SKY-BLUE felt, gentle and pale, clearly lighter than a mid blue but still obviously blue against the cream body',
+  아주연한: 'a VERY PALE POWDER-BLUE felt (kit Lapis Soft #C5D6F5) — the palest blue that still reads as blue, almost a tint',
+};
+const 엄격눈들 = {
+  반달: `each lens has a FLAT, straight TOP edge and a fully ROUND bottom — a half-moon lying
+with its flat side up, as if the eye were half-lidded and looking down at you. Steady and
+appraising. The felt is cut in that same half-moon shape around each lens.`,
+  눈꼬리: `each lens is a rounded shape whose OUTER top corner lifts into a soft point — an
+almond tilted gently upward, with the inner edge staying low and round. Just enough slant to
+read as firm; not angry, not a scowl. The felt is cut in that same tilted shape around it.`,
+};
+
+판들.push(
+  ...Object.entries(헬멧색들).flatMap(([색이름, 색], ci) =>
+    Object.entries(엄격눈들).map(([눈이름, 눈], ei) => ({
+      ...무섭바탕,
+      이름: `색눈${ci + 1}${'ab'[ei]}_${색이름}_${눈이름}`,
+      성격덮기: 엄격얼굴(눈),
+      옷: `TWO-TONE and FREE OF STITCHING. The oversized helmet is ${색}, one perfectly smooth
+unbroken dome — no seam, no rim, no stitched edge, no visible thread anywhere on it.
+The small body underneath is warm OATMEAL cream felt, clearly lighter and warmer than the
+helmet, also completely unstitched; the two colours meet in one clean edge, and that colour
+change alone separates head from body.
+On the front of the body sits one oatmeal pouch with a rounded flap (no stitched outline) and
+one tiny white felt flower with a green stem peeking out of it.`,
+    })),
+  ),
+);
 
 function 참조경로(파일들) {
   return 파일들.map((f) => {
@@ -764,7 +1170,10 @@ function 참조경로(파일들) {
 async function main() {
   const argv = process.argv.slice(2);
   const 하나 = argv.includes('--판') ? Number(argv[argv.indexOf('--판') + 1]) : null;
-  const 대상 = 하나 ? 판들.filter((_, i) => i + 1 === 하나) : 판들;
+  const 확정만 = argv.includes('--확정');   // 정본을 고르는 스무 판만 (4K)
+  const 대상 = 하나 ? 판들.filter((_, i) => i + 1 === 하나)
+    : 확정만 ? 판들.filter((p) => p.확정)
+      : 판들;
   if (!대상.length) { console.error(`--판 은 1~${판들.length} 다`); process.exit(1); }
 
   /* 🔴 09-05 — 이 두 줄이 «양쪽 다» 어긋나 있었다. 옆 셋(공방·라디오무대·펠트색)은 맞게 부른다.
@@ -772,7 +1181,10 @@ async function main() {
    *      ⇒ 값 안내가 `[object Object]장 × 1K ≈ $NaN` 으로 찍혔다(크기 '2K' 도 안 먹었다).
    *   ⓑ 게이트는 참/거짓을 돌려주는데 `.멈춤` 을 봤다 ⇒ 언제나 undefined 라 **막힌 적이 없다.**
    *      게이트가 「한 장도 안 굽는다(0원)」를 찍어도 그대로 구우러 갔다. 거짓 초록의 그 무늬다. */
-  if (!(await 배치게이트(대상.length, '2K'))) { process.exitCode = 3; return; }
+  /* 판마다 크기가 다를 수 있다(확정 묶음은 4K). 값은 «비싼 쪽»으로 알린다 — 게이트가 덜 부르면
+   *   그건 안심시키는 거짓말이 된다. */
+  const 큰크기 = 대상.some((p) => p.크기 === '4K') ? '4K' : '2K';
+  if (!(await 배치게이트(대상.length, 큰크기))) { process.exitCode = 3; return; }
 
   fs.mkdirSync(낼곳, { recursive: true });
   const k = 키();
@@ -786,9 +1198,11 @@ async function main() {
     /* 🔴 09-05 — 「카메라덮기」가 있는 판(= 정면판)은 조립 «순서»가 다르다. 카메라가 맨 앞에
      *   서야 장면이 그 말대로 세워진다. 뒤에 두면 앞의 `재질`(탁자)이 이긴다는 것을 실측했다.
      *   그 판은 재질·금지도 정면 전용으로 갈아 낀다(같은 말을 두 곳이 다르게 하지 않도록). */
-    const 지시 = 판.카메라덮기
-      ? [판.카메라덮기, 정면재질, 판.몸덮기 || 몸, 판.성격덮기 || 성격, 판.옷, 정면금지].join('\n\n')
-      : [재질, 판.몸덮기 || 몸, 판.성격덮기 || 성격, 판.옷, 카메라, 금지].join('\n\n');
+    const 지시 = 판.확정
+      ? [확정카메라, 확정재질, 판.몸덮기, 판.성격덮기, 판.옷, 판.금지덮기 || 확정금지].join('\n\n')
+      : 판.카메라덮기
+        ? [판.카메라덮기, 정면재질, 판.몸덮기 || 몸, 판.성격덮기 || 성격, 판.옷, 정면금지].join('\n\n')
+        : [재질, 판.몸덮기 || 몸, 판.성격덮기 || 성격, 판.옷, 카메라, 금지].join('\n\n');
     /* 🔴 09-05 실측 — 열 장을 연달아 던지자 넷째에서 `429 RESOURCE_EXHAUSTED` 가 났다.
      *   크레딧이 마른 것이 아니라 **분당 몫**에 걸린 것이다(그때 크레딧은 99.6% 남아 있었다).
      *   ⇒ 사이를 띄운다. 값이 아니라 «시간»을 쓰는 쪽이 싸다.
@@ -802,7 +1216,7 @@ async function main() {
     let 시도 = 0;
     for (;;) {
       try {
-        const r = await 한컷({ 이름: 판.이름, 지시, 참조: 참조경로(판.참조), 비율: '1:1', 크기: '2K', 저장경로, k });
+        const r = await 한컷({ 이름: 판.이름, 지시, 참조: 참조경로(판.참조), 비율: '1:1', 크기: 판.크기 || '2K', 저장경로, k });
         console.log(`✅ ${판.이름} — ${r && r.초 ? r.초 + '초 · ' : ''}${저장경로}`);
         구움 += 1; 연속실패 = 0;
         break;

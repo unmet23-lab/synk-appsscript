@@ -173,6 +173,43 @@ curved line of bright APPLE-GREEN thread stitched into the fur. ${설명} No bla
 There is only the faintest hint of a dark nose in the fur. No mouth, no whiskers, no eyebrows,
 no blush, no other feature.`;
 
+/* ── 마린 (2026-09-05 신설) ──────────────────────────────────────────
+ *
+ * 🔑 생김새는 «이미 정해졌다» — 유호 확정 09-05 「이거로 가자」(결정 원장). 그래서 여기서는
+ *   생김새를 다시 묻지 않고 «표정만» 만든다. 고르는 일은 `tools/마린굽기.js` 가 했고 그 문은
+ *   닫혔다. 참조는 언제나 정본(`docs/캐릭터/정본_4K/마린_본체.png`) 하나다.
+ *
+ * 🔑 마린은 눈이 «렌즈»라 감기지 않는다. 그래서 표정을 «빛과 모양»으로 낸다 —
+ *   가이드_정본 440줄이 그렇게 세워 두었다(「렌즈 밝기 2단 · 몰래 기쁨(렌즈 잔반짝)」).
+ *   그 자리를 여기서 실물로 채운다. */
+const 마린정본 = path.join(ROOT, 'docs/캐릭터/정본_4K');
+
+const 마린카메라 = 몽글카메라;          // 정면 규칙이 같다 — 한 값을 두 곳이 들지 않는다
+const 마린카메라34 = 몽글카메라34;
+
+const 마린몸 = `WHAT IT IS: a handmade needle-felted wool doll — a tiny soldier in an oversized
+helmet. The DEEP NAVY felt helmet is a smooth rounded dome that takes up about SIX TENTHS of
+the whole figure's height, coming down at the sides to wrap around the eye area; one fine seam
+runs over its crown and there is no other stitching on it. Under the helmet is a SMALL, SHORT,
+ROUND body of warm OATMEAL cream felt — wider than it is tall, with two very short stubby arms
+like little mittens and two small round feet set close together. An oatmeal pouch with a
+rounded flap hangs on a thin shoulder strap across the front, and one tiny white felt flower
+with a green stem peeks out of it. The body has no stitching.
+
+MATERIAL: felted merino wool with visible fibre fuzz and fine stray hairs. Nothing is plastic,
+glass, metal or digital — the lenses are smooth felt discs. No scarf of any kind.`;
+
+const 마린빛 = 몽글빛;
+
+/* 렌즈 하나만 갈아 낀다 — 나머지는 위에서 고정됐다. */
+const 마린얼굴 = (렌즈) => `FACE: exactly two LENSES and nothing else — no pupils, no eyelids,
+no eyebrows, no mouth, no nose. They sit LOW on the helmet, wide apart, exactly level with each
+other and exactly the same size and brightness, and the navy felt of the helmet wraps around
+each one in a raised ring. Each lens is SET INTO the felt, sunk so LESS THAN HALF of its curve
+shows; 🔴 it never breaks the outline of the helmet.
+
+THE LENSES THIS TIME: ${렌즈}`;
+
 /* ── 판들 ───────────────────────────────────────────────────────── */
 
 const 판들 = [
@@ -224,11 +261,71 @@ no blush, no other feature.` },
     얼굴: 까몽눈선('Both are short, nearly flat, slightly downturned green lines — a breezy "who, me?" shrug. They sit level with each other.') },
   { 누구: '까몽', 이름: '까몽_졸림', 카메라: 까몽카메라, 참조: '까몽_졸림.png',
     얼굴: 까몽눈선('Both are long, low, almost straight green lines with only the faintest downward sag — heavy-lidded and sleepy. They sit level with each other.') },
+
+  /* 마린 9 — 본체는 이미 정본으로 서 있으므로 굽지 않는다(참조로만 쓴다). */
+  { 누구: '마린', 이름: '마린_눈감음', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`both are SWITCHED OFF and dark — two flat matte NAVY felt discs, the same
+navy as the helmet, with no glow at all. Only the raised felt ring shows where each lens is.
+The character is asleep or powered down.`) },
+  /* 🔴 09-05 유호 교정 「마린은 웃는걸 저렇게 하는게 아니라 다른 방법을 찾아줘. 지금 버전은
+   *   이상하다」. 첫 판은 «렌즈의 아래 반만 켰다» — 그러니 웃는 게 아니라 «반쯤 꺼진» 것으로
+   *   읽혔고 졸림과도 헷갈렸다. 렌즈로 웃음을 내는 길을 넷으로 갈라 견준다.
+   *   ⚠ 고를 때까지 `마린_눈웃음` 은 «비워 둔다» — 이상한 판을 정본에 세워 두면 그것이
+   *     다음 사고다(조용한 폴백 금지와 같은 규율). */
+  { 누구: '마린', 이름: '마린_웃음a_곡선뜸', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`the round lens glass itself has gone DARK — and inside each one, a single
+bright BUTTER-YELLOW CURVE has lit up: a smooth arc bending UPWARD at its ends, like the
+letter U, drawn in light. Think of a screen showing a smiling eye. The curve is thick, clean
+and glowing; everything else inside the lens is dark. Both curves match exactly.`) },
+  { 누구: '마린', 이름: '마린_웃음b_아치렌즈', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`each lens is no longer a circle — it has become a thick ARCH of glowing
+butter-yellow felt, a wide upside-down U with a flat bottom and a rounded top, like an eye
+squeezed shut in a smile. The navy felt is cut in that same arch shape around each one. Both
+arches match exactly and glow evenly.`) },
+  { 누구: '마린', 이름: '마린_웃음c_눌린타원', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`each lens has been SQUASHED vertically into a wide flat ellipse, about half
+as tall as it is wide, and the whole ellipse curves gently upward at its outer end — the shape
+a real eye makes when someone smiles hard. They glow BRIGHTER than usual, a warm happy
+butter-yellow. Both match exactly.`) },
+  { 누구: '마린', 이름: '마린_웃음d_별반짝', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`each lens is still round but noticeably SMALLER than usual, and blazing
+BRIGHT butter-yellow, with a clear four-pointed star of light flaring out from its centre and a
+warm halo spilling onto the navy felt around it. The eyes have crinkled small with delight.
+Both match exactly.`) },
+  { 누구: '마린', 이름: '마린_좌34', 카메라: 마린카메라34('left'), 참조: '마린_본체.png',
+    얼굴: 마린얼굴('both are full round butter-yellow circles, calm and steady, evenly bright; the far lens reads as a slightly narrower ellipse because of the turn.') },
+  { 누구: '마린', 이름: '마린_우34', 카메라: 마린카메라34('right'), 참조: '마린_본체.png',
+    얼굴: 마린얼굴('both are full round butter-yellow circles, calm and steady, evenly bright; the far lens reads as a slightly narrower ellipse because of the turn.') },
+  { 누구: '마린', 이름: '마린_놀람', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`both are STRETCHED WIDE — noticeably bigger and rounder than usual, about
+one and a third times their normal size, and glowing brighter, a hot bright butter-yellow that
+spills a little light onto the navy felt around them. Startled.`) },
+  { 누구: '마린', 이름: '마린_집중', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`each has narrowed into a NARROW HORIZONTAL SLIT — a long thin capsule with
+rounded ends, about three times wider than it is tall, still glowing butter-yellow but focused
+and hard. Both identical. This is the look it wears when it is being strict.`) },
+  { 누구: '마린', 이름: '마린_몰래기쁨', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`both are still full round circles but glowing ONE STEP BRIGHTER than usual —
+warmer, softer, with a faint halo of light on the navy felt around each. The shape has not
+changed at all; only the light has. A quiet, secret happiness that the face itself never admits
+to.`) },
+  { 누구: '마린', 이름: '마린_민망', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`they do NOT match. One is a full round butter-yellow circle; the other has
+shrunk to about two thirds of that size and dimmed a little, as if flinching away. Caught out
+and embarrassed.`) },
+  { 누구: '마린', 이름: '마린_졸림', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`each is only HALF lit — the lower half of the circle glows a dim, tired
+butter-yellow while the upper half has gone dark navy, as if a lid had come halfway down. Both
+match. Heavy and sleepy, about to switch off.`) },
 ];
 
+const 몸들 = { 몽글: 몽글몸, 까몽: 까몽몸, 마린: 마린몸 };
+const 빛들 = { 몽글: 몽글빛, 까몽: 까몽빛, 마린: 마린빛 };
+const 정본폴더들 = { 몽글: 몽글정본, 까몽: 까몽정본, 마린: 마린정본 };
+
 function 지시조립(판) {
-  const 몸 = 판.누구 === '몽글' ? 몽글몸 : 까몽몸;
-  const 빛 = 판.누구 === '몽글' ? 몽글빛 : 까몽빛;
+  const 몸 = 몸들[판.누구];
+  const 빛 = 빛들[판.누구];
   /* 🔴 09-05 실측 — 까몽_좌34 가 «회색 바닥에 그림자»로 나왔다. 견본 그림의 배경이 그렇기
    *   때문이다. 견본은 힘이 세서, 쓰라고 준 것 말고도 따라온다. ⇒ 무엇을 «안» 보는지 적는다. */
   const 같은것 = `Reproduce THIS EXACT character — the one in the reference image — at much
@@ -241,7 +338,7 @@ its shadow. Those belong to the old photograph, not to this one.`;
 }
 
 function 참조경로(판) {
-  const p = path.join(판.누구 === '몽글' ? 몽글정본 : 까몽정본, 판.참조);
+  const p = path.join(정본폴더들[판.누구], 판.참조);
   if (!fs.existsSync(p)) throw new Error(`참조 없음 — ${p}`);
   return [p];
 }
@@ -255,7 +352,7 @@ async function main() {
   let 대상 = 판들;
   if (누구) 대상 = 대상.filter((p) => p.누구 === 누구);
   if (하나) 대상 = 판들.filter((_, i) => i + 1 === 하나);
-  if (!대상.length) { console.error(`고를 판이 없다 — --누구 는 몽글·까몽 · --판 은 1~${판들.length}`); process.exit(1); }
+  if (!대상.length) { console.error(`고를 판이 없다 — --누구 는 몽글·까몽·마린 · --판 은 1~${판들.length}`); process.exit(1); }
 
   if (!(await 배치게이트(대상.length, '4K'))) { process.exitCode = 3; return; }
 
