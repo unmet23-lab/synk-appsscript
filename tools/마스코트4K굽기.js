@@ -605,12 +605,21 @@ Relieved, letting the breath out.`) },
    *     별눈 = 진화 · 생애 첫 순간 · 시즌 완주 (하루 한 번 · 토큰 「언제」가 그렇게 못 박았다)
    * 🔑 마린은 기쁨에 «꽃»이 핀다. 몽글은 «별»이라 둘이 안 겹친다. */
   { 누구: '몽글', 이름: '몽글_기쁨', 카메라: 몽글카메라, 참조: '몽글_눈웃음.png',
+    /* 🔴 09-05 밤 재판정 — 유호 「기쁨 눈웃음이랑 더 벌려서 다시 구워줘」.
+     *   첫 판은 눈웃음과 «같은 ^^ 모양»이고 크기·굵기만 달라, 나란히 놓아야 겨우 갈렸다.
+     *   ⇒ 축을 둘 바꾼다: ⓐ봉우리를 훨씬 «가파르고 높게»(완만한 ^ 가 아니라 뾰족한 ∧)
+     *     ⓑ 눈 아래 «반짝임 점»을 더한다 — 몽글에 없던 표시라 그 자체로 갈린다.
+     *   ⚠ 점은 «별»이 아니다 — 별은 별눈이 쥔 자리다(진화·시즌 완주). 여기는 작은 땀 하나. */
     얼굴: 몽글눈(`Each eye is a single line of dark brown embroidery thread stitched into the
-felt in an UPWARD peak — the same caret "^" shape as the doll's smiling face, but MUCH BIGGER
-and BOLDER: each stroke is clearly longer, the peak rises noticeably higher, and the thread is
-worked thick so the line reads as a plump raised ridge rather than a thin stitch. Each stroke
-also curls up a little at both of its outer tips. A wider, warmer, more delighted version of
-the same smile. Both identical, both level with each other.`) },
+felt in a SHARP, TALL, STEEP peak — a narrow pointed chevron, much more acute and much higher
+than the gentle wide caret of the doll's ordinary smiling face, as if the eyes were squeezed
+shut with delight. The thread is worked thick so each line reads as a raised ridge.
+Just below and a little to the OUTER side of each peak sits ONE SMALL CREAM-WHITE STITCHED
+DOT — a single tiny bright speck of thread, like a glint of joy sparkling beside the eye.
+The dots are small, clearly smaller than an eye, and there is exactly one beside each eye.
+Both eyes identical, both level with each other.
+🔴 The dots are flat stitched specks, NOT eyes, NOT beads, NOT stars, NOT tears. Nothing else
+on the face.`) },
   { 누구: '몽글', 이름: '몽글_별눈', 카메라: 몽글카메라, 참조: '몽글_본체.png',
     얼굴: 몽글눈(`Each eye is a small five-pointed STAR made of butter-yellow wool felt, cut out
 and appliqued onto the face where the eye would sit, with its edge hand stitched in cream
