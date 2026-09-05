@@ -133,7 +133,7 @@ def 구멍걷기(원px, ap, w, h, 문):
     return 센다
 
 
-def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=218, 채도문=22, 구멍문=238, 조각몫=2.0):
+def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=218, 채도문=22, 구멍문=238, 조각몫=2.0, 그대로=False):
     원 = Image.open(경로).convert('RGB')
     w, h = 원.size
     tmp = 원.copy()
@@ -164,7 +164,12 @@ def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=21
     out = 원.convert('RGBA')
     out.putalpha(알파)
 
-    bb = 알파.point(lambda v: 255 if v > 8 else 0).getbbox()
+    # 🔴 «그대로» — 네모를 안 자른다 (2026-09-06 신설 · 옷 겹쳐 입히기가 요구한다).
+    #   왜: 뜬 옷을 마스코트 «위에 얹으려면» 둘이 같은 네모 안에서 같은 자리에 있어야 한다.
+    #   물건에 딱 맞춰 자르는 순간 그 자리가 사라지고, 얹을 때 손으로 맞춰야 한다
+    #   (손으로 맞추면 옷 예순 벌마다 사람이 붙는다 — 그건 통로가 아니다).
+    #   기본값은 그대로 «자른다» — 부품·지면 쪽 소비자가 잘린 것을 전제로 서 있다.
+    bb = None if 그대로 else 알파.point(lambda v: 255 if v > 8 else 0).getbbox()
     if bb:
         out = out.crop(bb)
         if 정사각:
@@ -191,6 +196,8 @@ def main():
     ap.add_argument('--임계', type=int, default=62,
                     help='배경으로 번지는 관대함(0~255). 높을수록 옅은 후광까지 먹는다. 09-05 실측 기본 62')
     ap.add_argument('--여백', type=int, default=8, help='잘라낸 뒤 사방에 남길 빈 자리(px)')
+    ap.add_argument('--그대로', action='store_true',
+                    help='네모를 안 자르고 원본 크기 그대로 낸다 — 마스코트 위에 «얹을» 때 자리가 맞아야 한다')
     ap.add_argument('--정사각', action='store_true',
                     help='정사각 판에 가운데로 앉힌다 — UI 칸이 가로로 길 때 contain 이 점으로 줄이는 것을 막는다')
     ap.add_argument('--부드럼', type=float, default=0.8, help='가장자리 계단 다듬기(가우시안 반지름)')
@@ -218,7 +225,7 @@ def main():
     산것 = 0
     for p in 파일들:
         out = a.출력 or (os.path.splitext(p)[0] + '_누끼.png')
-        if 걷는다(p, out, a.임계, a.여백, a.정사각, a.부드럼, a.흰바닥, a.채도문, a.구멍문, a.조각몫):
+        if 걷는다(p, out, a.임계, a.여백, a.정사각, a.부드럼, a.흰바닥, a.채도문, a.구멍문, a.조각몫, a.그대로):
             산것 += 1
     print(f'■ 합계 {len(파일들)}장 = 걷힘 {산것} + 못 걷음 {len(파일들) - 산것}')
 
