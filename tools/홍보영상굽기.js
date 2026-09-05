@@ -27,7 +27,7 @@ const 마스코트 = require(path.join(__dirname, 'lib', '마스코트자산.js'
 
 const 뿌리 = path.join(__dirname, '..');
 const 낼곳 = path.join(뿌리, '영상', 'out', '홍보_4K_v2');
-const 프로젝트 = process.env.SYNK_VERTEX_PROJECT || 'gen-lang-client-0106203750';
+const 프로젝트 = 정책.벌텍스프로젝트(); // 🔑 정본은 모델정책.js 하나 — 계정을 옮기면 거기 한 곳만 바뀐다
 const 위치 = 'us-central1';
 const 모델 = process.env.SYNK_VEO_MODEL || 'veo-3.1-generate-001';
 
