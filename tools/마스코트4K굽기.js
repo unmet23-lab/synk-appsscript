@@ -299,11 +299,18 @@ Both match exactly.`) },
   /* 🔴 09-05 실측 — 첫 판의 «놀람»이 «몰래기쁨»과 거의 같아 보였다. 둘 다 «밝아지는» 판이라
    *   빛만으로는 안 갈린다. ⇒ 놀람은 «크기»로, 몰래기쁨은 «빛»으로 갈래를 나눈다.
    *   놀람은 렌즈가 두 배 가까이 커져 헬멧을 거의 채우고, 몰래기쁨은 크기를 «절대» 안 바꾼다. */
-  { 누구: '마린', 이름: '마린_놀람', 카메라: 마린카메라, 참조: '마린_본체.png',
-    얼굴: 마린얼굴(`both have BLOWN WIDE OPEN — nearly TWICE their normal diameter, so big that
-they almost fill the front of the helmet and leave only a thin navy margin between and around
-them. They glow a hot bright butter-yellow. The size is the point: this is unmistakably a
-startled face, and it must not be confused with a merely brighter one.`) },
+  { 누구: '마린', 이름: '마린_놀람', 카메라: 마린카메라, 참조: '마린_본체.png', 얼굴먼저: true,
+    얼굴: `FACE — THIS IS WHAT THE WHOLE PICTURE IS ABOUT:
+Two glowing BUTTER-YELLOW lenses, and they have BLOWN WIDE OPEN in shock.
+🔴 SIZE, measured against the helmet: each lens is about HALF the helmet's width. The two
+lenses plus the gap between them fill almost the entire front of the helmet, leaving only a
+thin navy rim around the outside and a narrow navy bridge between them. They are enormous —
+roughly twice the diameter of a resting lens. If a viewer cannot tell at a glance that the
+eyes got much bigger, this picture has failed.
+They glow hot and bright, spilling light onto the navy felt around them.
+No pupils, no eyelids, no eyebrows, no mouth. Both exactly level, exactly the same size.
+Each lens is still SET INTO the felt with the navy rising against its rim, and 🔴 even at this
+size it never breaks the outline of the helmet.` },
   { 누구: '마린', 이름: '마린_집중', 카메라: 마린카메라, 참조: '마린_본체.png',
     얼굴: 마린얼굴(`each has narrowed into a NARROW HORIZONTAL SLIT — a long thin capsule with
 rounded ends, about three times wider than it is tall, still glowing butter-yellow but focused
@@ -342,6 +349,18 @@ the same one. Only the expression is as described below.
 🔴 Use the reference ONLY for the character's shape, colour and markings. IGNORE the
 reference's background completely — ignore its surface, its floor, its wall, its grey tone and
 its shadow. Those belong to the old photograph, not to this one.`;
+  /* 🔴 09-05 — 「맨 앞에 선 덩어리가 장면을 정한다」를 얼굴에도 쓴다. 눈 «크기»가 요점인 판
+   *   (놀람)에서 얼굴이 다섯째에 있으면, 앞의 「참조와 같게」가 이겨서 크기가 안 변한다.
+   *   실측: 「두 배 가까이 키워라」고 썼는데 렌즈 몫이 15.68% → 16.62% 로 6%만 늘었다.
+   *   ⇒ `얼굴먼저` 인 판은 얼굴을 카메라 바로 뒤로 올리고, 참조에게 «얼굴만은 따르지 마라»를
+   *     같이 못 박는다. 참조는 힘이 세서 시키지 않은 것까지 데려온다(배경·조명에서 두 번 겪었다). */
+  if (판.얼굴먼저) {
+    const 얼굴빼고같게 = 같은것 + `\n🔴 ONE EXCEPTION: do NOT copy the EYES from the reference.
+The reference shows this character's resting face; this picture needs the face described above,
+and the difference in the eyes must be obvious at a glance. Body, colour and silhouette follow
+the reference exactly — the eyes do not.`;
+    return [판.카메라, 판.얼굴, 배경, 얼굴빼고같게, 몸, 빛, 금지].join('\n\n');
+  }
   return [판.카메라, 배경, 같은것, 몸, 판.얼굴, 빛, 금지].join('\n\n');
 }
 
