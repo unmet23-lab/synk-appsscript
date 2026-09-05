@@ -45,9 +45,14 @@ def 눈들(im: Image.Image, 결='검정'):
     밝기 = a.mean(axis=2)
     채도 = a.max(axis=2) - a.min(axis=2)
 
+    r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
     if 결 == '버터':
-        r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
         골 = (r > 190) & (g > 150) & (b < 150) & (r - b > 70)
+    elif 결 == '초록':
+        # 🔴 까몽은 몸이 짙은 숯빛이라 «어두운 곳»으로 눈을 찾으면 몸 전체가 걸린다(09-06 실측:
+        #   모자를 씌운 컷에서 눈을 한 번도 못 찾았다). 까몽의 표식은 «사과빛 초록 홍채»이고
+        #   그 색은 몸에도 옷에도 없다 — 그것으로 찾는다.
+        골 = (g > 90) & (g - r > 15) & (g - b > 20)
     else:
         골 = (밝기 < 70) & (채도 < 60)
     if 알파 is not None:
@@ -383,7 +388,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('옷'); ap.add_argument('씌운'); ap.add_argument('낼곳')
     ap.add_argument('--몸', default='docs/캐릭터/정본_4K/몽글_본체.png')
-    ap.add_argument('--눈', default='검정', choices=['검정', '버터'])
+    ap.add_argument('--눈', default='검정', choices=['검정', '버터', '초록'])
     ap.add_argument('--층', help='자리를 맞춘 «옷만» 층도 따로 낸다(앱이 쓸 조각)')
     ap.add_argument('--확신문턱', type=float, default=0.75,
                     help='겹친 점수가 이보다 낮으면 3 으로 끝난다 — 그 장은 옷만 뜨기를 다시 한다')
