@@ -26,6 +26,13 @@ let 옮김 = 0;
 let 건너뜀 = 0;
 const 빠진것 = [];
 
+/* 🔑 `--공방만` — 공방 펠트 요소만 옮긴다(2026-09-05).
+ *   왜 필요한가: ① 컷맞추기가 죽으면 그 뒤 절이 «하나도» 안 돈다. 09-05 에 실제로 밟았다
+ *   (「몽글 눈자리가 몸의 101.5% 다」). 그건 그 트랙이 고칠 일인데, 그 사이 공방 요소를
+ *   영상에 못 넣는 것은 다른 병이다. 그래서 갈라 돌 수 있게 둔다.
+ *   ⚠ 영상을 굽기 «전»에는 깃발 없이 전량을 돌린다 — 이 깃발은 «공방만 급할 때»의 문이다. */
+const 공방만 = process.argv.includes('--공방만');
+
 function 복사(원본절대, 목적상대) {
   const 목적 = path.join(공개, 목적상대);
   if (!fs.existsSync(원본절대)) {
@@ -49,7 +56,7 @@ function 복사(원본절대, 목적상대) {
  *   ⚠ 전엔 이 자리가 `복사()` 두 벌이었다. 그대로 두면 «어느 게 public 에 놓이나»의 주인이 둘이 되고,
  *     다음 세션이 복사 쪽을 집는다(이 저장소가 가장 자주 앓는 병이다). 그래서 **지웠다.**
  *   컷 목록·경로는 여전히 마스코트자산.js 창구가 쥔다(컷맞추기가 그것을 부른다). */
-{
+if (!공방만) {
   const r = require('child_process').spawnSync(process.execPath, [path.join(__dirname, '컷맞추기.js')], { encoding: 'utf8' });
   if (r.status !== 0) {
     throw new Error(`컷맞추기 실패 — 가이드 그림이 안 놓였다
@@ -62,7 +69,7 @@ ${r.stdout || ''}${r.stderr || ''}`);
 /* ── ①-c 4D 깊이 격자 ─────────────────────────────────────────────────────
    그림이 바뀌면 깊이도 바뀐다 — 누끼를 다시 굽거나 가이드를 더하면 여기가 자동으로 따라온다.
    산출은 `public/깊이/` — git 밖이다(그림에서 다시 나오므로 「없는 것은 낡을 수 없다」). */
-{
+if (!공방만) {
   const r = require('child_process').spawnSync(process.execPath, [path.join(__dirname, '깊이뽑기.js')], {
     encoding: 'utf8',
   });
@@ -210,6 +217,42 @@ for (const 가이드 of ['몽글', '까몽']) {
     else 빠진것.push(`옹알이(${가이드}) ${옹알이이름[i]}`);
   }
   fs.rmSync(임시, { recursive: true, force: true });
+}
+
+/* ── ④ 공방 펠트 요소 ──────────────────────────────────────────────────────
+ * 유호 확정 09-05 「영상에도 삽입해서 쓸수있게」.
+ * 🔑 **여기서 «무엇이 있나»를 새로 정하지 않는다** — 정본은 `docs/공방/계획.json` 과
+ *   `docs/Loom_자산/구움/` 이고, 이 절은 옮기고 «목록만 파생»한다(폰트벌.json 과 같은 규율).
+ *   자산이 늘어도 이 코드를 안 고친다.
+ * ⚠ 원본 PNG 는 안 옮긴다(한 장 5~19MB). 다듬어 담은 판(.avif/.webp)만 간다 —
+ *   AVIF 는 Remotion 이 크롬으로 렌더하므로 그대로 읽힌다(09-05 실측).
+ * ⚠ 「다시 굽기」 묶음처럼 파일이 다른 폴더에 사는 것은 조용히 건너뛴다(경로가 안 맞으면 넘어간다). */
+{
+  const 계획경로 = path.join(저장소, 'docs', '공방', '계획.json');
+  const 굽는방 = path.join(저장소, 'docs', 'Loom_자산', '구움');
+  const 목록 = [];
+  if (fs.existsSync(계획경로)) {
+    const 계획 = JSON.parse(fs.readFileSync(계획경로, 'utf8'));
+    for (const 통로 of Object.values(계획)) {
+      if (!통로 || typeof 통로 !== 'object' || !Array.isArray(통로.묶음)) continue;
+      for (const 묶 of 통로.묶음) {
+        for (const 것 of 묶.것들 || []) {
+          const 파일 = String(것.파일 || '');
+          if (것.상태 !== '구웠다' || !파일) continue;
+          if (!/[.](avif|webp)$/i.test(파일)) continue;          // 아직 안 다듬은 원본은 건너뛴다
+          const 원 = path.join(굽는방, path.basename(파일));
+          if (!fs.existsSync(원)) continue;
+          복사(원, `공방/${path.basename(파일)}`);
+          목록.push({ 이름: 것.이름, 묶음: 묶.이름, 파일: `공방/${path.basename(파일)}` });
+        }
+      }
+    }
+  }
+  fs.mkdirSync(path.join(공개, '공방'), { recursive: true });
+  fs.writeFileSync(path.join(공개, '공방', '목록.json'),
+    JSON.stringify({ _파생: '자산모으기.js ④ 가 docs/공방/계획.json 에서 뽑는다 — 손으로 고치지 않는다',
+      벌: 목록 }, null, 2) + String.fromCharCode(10), 'utf8');
+  console.log(`공방 펠트 요소 ${목록.length}종 — public/공방/ · 목록.json`);
 }
 
 /* ── 보고 — 「합계 = 갈래 + 갈래」로 센다 ───────────────────────────────── */
