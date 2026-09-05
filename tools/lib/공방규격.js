@@ -51,6 +51,27 @@ const 규격표 = {
     'upper right open and empty so type can be set there. ' +
     'Every wool fibre is resolved. Calm, quiet, expensive-looking craft photography. ' +
     'No text, no watermark, no props, no hands.',
+  /* 🔴 «자리» — 물건이 아니라 «공간»을 그린다 (2026-09-05 신설 · 유호 지시 「자리 규격 만들어서」).
+   *   왜 넷째가 필요했나: 자리 배경 열넷을 «장면» 규격으로 구웠더니 「옷 가게 안」이 방이 아니라
+   *   «스웨터 한 장이 종이 위에 놓인 정물»로 나왔다. 장면 규격의 첫 낱말이
+   *   "a single handmade object resting on a paper surface" 라, 모델이 «공간»을 물건 하나로 접었다.
+   *   (내 방 낮·밤이 방으로 나온 것은 지시문에 가구가 여럿 적혀 있어 물건 하나로 못 접은 덕이다.)
+   *   ⇒ 「물건 하나」와 「종이 위」를 지우고, 방 안을 «들여다보는» 시점으로 바꾼다.
+   *
+   *   ⚠ 마스코트가 그 위에 «합성»되어 서므로 아래 셋이 규격에 박혀 있다:
+   *     ①사람·동물·인형을 안 그린다 — 그리면 몽글 옆에 닮은 다른 것이 서고, 그건 정본을 흔든다
+   *       (라디오 무대 규약과 같은 자리 · 결정.md 09-02).
+   *     ②아래 3분의 1을 비운다 — 거기가 마스코트가 설 바닥이다.
+   *     ③정면에서 조금만 내려다본다 — 눈높이가 매번 갈리면 자리끼리 한 앱으로 안 읽힌다. */
+  자리:
+    'A photograph looking into a small handmade room or place built entirely from wool felt and ' +
+    'soft fabric, like a doll house interior seen from the front and very slightly above. ' +
+    'The whole space fills the frame — walls, floor and the things that belong there — so it ' +
+    'reads as a place you could walk into, not as one object on a table. ' +
+    'The lower third of the floor is left open and empty. ' +
+    'No people, no animals, no dolls, no figures of any kind are anywhere in the picture. ' +
+    'Soft daylight from one side, gentle and even, every wool fibre resolved. ' +
+    'Calm, quiet, expensive-looking craft photography. No text, no watermark, no hands.',
 };
 
 module.exports = { 규격표 };
