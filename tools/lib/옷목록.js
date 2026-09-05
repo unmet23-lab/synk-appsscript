@@ -47,7 +47,10 @@ const 마스코트들 = [
   {
     이름: '까몽',
     참조: 마스코트.까몽경로('본체'),
-    눈: '검정',
+    /* 🔴 까몽만 «초록»이다(09-06 실측) — 몸이 짙은 숯빛이라 「어두운 곳」으로 눈을 찾으면
+       몸과 앞발이 걸린다(목도리 컷에서 앞발 둘을 눈으로 물었고, 모자 컷은 아예 못 찾았다).
+       까몽의 표식은 사과빛 초록 홍채이고 그 색은 몸에도 옷에도 없다. */
+    눈: '초록',
     표식:
       'The character is a very small round creature of long soft charcoal-brown fur, with two ' +
       'short triangular ears, two small dark front paws reaching out to the sides, and a slim ' +

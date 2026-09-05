@@ -9,13 +9,15 @@
  *   ⇒ 옷을 «조각»으로 만들면 조합도 표정도 공짜가 된다.
  *
  * ■ 세 걸음 (한 벌에 두 장 = 672원)
- *   ① 씌워 굽는다        규격 「입힘」 + 그 마스코트의 정본을 참조로. 몸에 맞게 접히고 빛이 맞는다.
- *   ② 옷만 다시 굽는다   ①을 참조로 주고 「옷만, 같은 자리 같은 크기, 몸에 가린 부분은 아예 그리지 마라」.
- *   ③ 자리를 맞춘다      `tools/옷자리맞추기.py` — 두 눈을 기준으로 정본 몸 위 «맞는 자리»에 앉힌다(0원).
+ *   ① 씌워 굽는다      규격 「입힘」 + 그 마스코트의 정본을 참조로. **보여주는 그림**이다(옷 가게·차림 카드).
+ *   ② 초록 몸에 굽는다  같은 옷을 «몸이 단색 초록인» 마스코트에 입혀 한 장 더 굽는다. **조각을 뜨는 그림**이다.
+ *   ③ 떼어 앉힌다      `tools/옷초록떼기.py` — 초록이 아닌 곳이 곧 옷이다(0원).
  *
- * ■ 안 하는 것
- *   자르지 않는다. 09-05 의 「오려 얹기」는 다 구운 그림을 잘라 술이 잘리고 색이 흐려졌다.
- *   여기서는 모델이 가장자리를 «다시 그린다».
+ * ■ 왜 초록인가 (09-06 새벽 · 네 길을 실물로 태운 끝)
+ *   ⓐ옷만 굽기 = 몸을 모른 채 구워 잘린 모양(유호 반려) · ⓑ오려 얹기 = 술이 잘리고 색이 흐려짐(유호 반려)
+ *   ⓒ씌워 굽고 옷만 다시 굽기 = 21벌 중 8벌이 프레임을 바꾸거나 딴 조각을 붙였다
+ *   ⓓ정본과의 차이로 떼기 = 그늘진 크림이 코랄과 가까워 구멍이 뚫린다
+ *   ⓔ초록 몸 = 가를 것이 없다. 덤으로 «가림»도 공짜다(몸이 앞을 가린 자리는 애초에 안 그려진다).
  *
  * 쓰는 법:
  *   node tools/옷굽기.js --목록                       # 무엇을 구울지만 본다(0원)
@@ -56,8 +58,23 @@ function 말(줄) {
 
 /* ── 지시문 ───────────────────────────────────────────────────────────── */
 
-/** ② 옷만 뜨는 지시문. 🔴 「가린 부분은 아예 그리지 마라」가 이 문장의 급소다 —
- *  없으면 고리의 뒤쪽 안벽까지 그려져서, 얹었을 때 옷이 «그릇»처럼 머리 앞으로 나온다(09-06 실측). */
+/** ② 초록 몸 지시문 — 몸만 단색 초록으로 바꾸고 같은 옷을 입힌다.
+ *  🔑 눈은 검은 구슬 그대로 둔다. 자리를 두 눈으로 잡기 때문이다(눈이 없으면 앉힐 데를 모른다). */
+const 초록지시 = (표식, 설명) =>
+  'The character is EXACTLY the felt character in the reference photograph — the same silhouette, ' +
+  'the same size, the same pose, the same camera angle, the same eyes in the same place. ' +
+  'ONE THING IS CHANGED: its own body is dyed a flat uniform bright CHROMA GREEN (#00B140), the ' +
+  'same green everywhere, with no heathering, no pattern, no stitching and no shading variation — ' +
+  'a plain green body. Its eyes keep their real colour and stay exactly as they are. ' +
+  'Nothing else about it changes. ' + 표식 + 설명 + ' ' +
+  'The garment keeps its own real colours — only the body is green. ' +
+  'Macro product photograph against a plain flat pure white background, the whole character ' +
+  'floating in empty space with no ground and no cast shadow on any surface. ' +
+  'Studio lighting: broad soft diffused light from every side with one gentle key from the upper ' +
+  'left. Every wool fibre is resolved. No text, no watermark, no hands, no second character. ' +
+  'Tack sharp, medium format macro, photorealistic craft object.';
+
+/** (옛 길 · 안 쓴다) 옷만 뜨는 지시문 — 21벌 중 8벌이 프레임을 바꿔 09-06 에 초록 길로 갈았다. */
 const 옷만지시 = (옷이름, 설명) =>
   `The reference photograph shows a small handmade felt character wearing ${옷이름}. ` +
   `Show ONLY that garment, with the character completely removed from the picture. ${설명} ` +
@@ -92,8 +109,7 @@ function 고른다() {
         ...옷,
         쇠,
         씌운: path.join(낼방, '씌움', `${쇠}.png`),
-        옷만: path.join(낼방, '조각', `${쇠}_옷만.png`),
-        누끼: path.join(낼방, '조각', `${쇠}_옷만_누끼.png`),
+        초록: path.join(낼방, '초록', `${쇠}_초록.png`),
         층: path.join(낼방, '층', `${쇠}.png`),
         얹음: path.join(낼방, '얹음', `${쇠}.png`),
       });
@@ -127,22 +143,18 @@ function 파이썬(인자들) {
   return { ok: r.status === 0, 코드: r.status, 글: `${r.stdout || ''}${r.stderr || ''}`.trim() };
 }
 
-/** 흰 배경을 걷고 자리를 맞춘다(0원). 자리 맞추기가 3 이면 «확신이 낮다» = 옷만 뜨기가 잘못됐다. */
-function 다듬어앉힌다(x) {
-  const 걷기 = 파이썬(['tools/흰배경걷기.py', x.옷만, '--출력', x.누끼,
-    '--흰바닥', '254', '--임계', '50', '--조각몫', '0', '--그대로']);
-  if (!걷기.ok) return { ok: false, 왜: `흰 배경을 못 걷었다: ${걷기.글.slice(-140)}` };
-  const 맞춤 = 파이썬(['tools/옷자리맞추기.py', x.누끼, x.씌운, x.얹음,
-    '--몸', path.join(루트, x.마스코트.참조), '--눈', x.마스코트.눈, '--층', x.층]);
-  const 점 = (맞춤.글.match(/겹침: 배율 ([\d.]+) · 점수 ([\d.]+)/) || [])[2];
-  if (맞춤.코드 === 3) return { ok: false, 낮음: true, 점, 왜: `확신이 낮다(${점})` };
-  if (!맞춤.ok) return { ok: false, 왜: `자리를 못 맞췄다: ${맞춤.글.slice(-140)}` };
+/** 초록 그림에서 옷을 떼어 정본 몸 자리에 앉힌다(0원). */
+function 떼어앉힌다(x) {
+  const r = 파이썬(['tools/옷초록떼기.py', x.초록, x.층,
+    '--몸', path.join(루트, x.마스코트.참조), '--눈', x.마스코트.눈, '--얹음', x.얹음]);
+  if (!r.ok) return { ok: false, 왜: r.글.slice(-140) };
+  const 점 = (r.글.match(/옷 ([\d,]+)점/) || [])[1];
   return { ok: true, 점 };
 }
 
 /* ── 본 일 ────────────────────────────────────────────────────────────── */
 (async () => {
-  for (const d of ['씌움', '조각', '층', '얹음']) fs.mkdirSync(path.join(낼방, d), { recursive: true });
+  for (const d of ['씌움', '초록', '층', '얹음']) fs.mkdirSync(path.join(낼방, d), { recursive: true });
   const 굽을것 = 고른다();
 
   if (목록만) {
@@ -184,41 +196,39 @@ function 다듬어앉힌다(x) {
       await 잔다(45000);
     }
 
-    // ② 옷만 다시 굽는다
-    if (!fs.existsSync(x.옷만)) {
-      말(`■ ${머리} — ② 옷만 뜨기`);
+    // ② 초록 몸에 같은 옷을 입혀 굽는다 — 조각을 뜨는 그림
+    if (!fs.existsSync(x.초록)) {
+      말(`■ ${머리} — ② 초록 몸`);
       const r = await 한장({
-        이름: `${x.이름} 옷만`,
-        지시: 옷만지시(x.이름, x.설명),
-        비율: '1:1', 크기: '4K', 참조: [x.씌운], 저장경로: x.옷만,
-      }, `${x.이름} 옷만`);
+        이름: `${x.이름} 초록`,
+        지시: 초록지시(x.마스코트.표식, x.설명),
+        비율: '1:1', 크기: '4K', 참조: [path.join(루트, x.마스코트.참조)], 저장경로: x.초록,
+      }, `${x.이름} 초록`);
       if (r === '돈벽') break;
       if (!r) { 실패++; if (++연속막힘 >= 3) { 말('🔴 세 판 잇달아 막혔다 — 그만둔다.'); break; } continue; }
       연속막힘 = 0;
     }
 
-    // ③ 흰 배경을 걷고 자리를 맞춘다 (0원)
-    let 결과 = 다듬어앉힌다(x);
-
-    /* 🔑 확신이 낮으면 «옷만 뜨기»를 한 번 다시 굽는다(336원). 자리가 아니라 그림이 잘못된 것이다 —
-     *   ② 가 물체를 프레임 가득 키워 그리거나 딴 조각을 붙여 낸 장이 그렇다(09-06 실측).
-     *   한 번만 다시 던진다. 두 번째도 낮으면 사람이 본다(조용히 넘어가지 않는다). */
-    if (!결과.ok && 결과.낮음) {
-      말(`   ⚠ ${x.이름} — ${결과.왜} · 옷만 뜨기를 한 번 다시 굽는다`);
-      try { fs.unlinkSync(x.옷만); } catch { /* 없으면 그만 */ }
+    // ③ 초록에서 떼어 앉힌다 (0원)
+    let 결과 = 떼어앉힌다(x);
+    /* 🔑 한 번 다시 굽는다(336원) — 초록이 흐리게 나오거나 눈을 못 찾은 장이 그렇다.
+     *   두 번째도 안 되면 사람이 본다(조용히 넘어가지 않는다). */
+    if (!결과.ok) {
+      말(`   ⚠ ${x.이름} — ${결과.왜} · 초록 몸을 한 번 다시 굽는다`);
+      try { fs.unlinkSync(x.초록); } catch { /* 없으면 그만 */ }
       await 잔다(45000);
       const r2 = await 한장({
-        이름: `${x.이름} 옷만(다시)`,
-        지시: 옷만지시(x.이름, x.설명),
-        비율: '1:1', 크기: '4K', 참조: [x.씌운], 저장경로: x.옷만,
-      }, `${x.이름} 옷만(다시)`);
+        이름: `${x.이름} 초록(다시)`,
+        지시: 초록지시(x.마스코트.표식, x.설명),
+        비율: '1:1', 크기: '4K', 참조: [path.join(루트, x.마스코트.참조)], 저장경로: x.초록,
+      }, `${x.이름} 초록(다시)`);
       if (r2 === '돈벽') break;
-      if (r2) 결과 = 다듬어앉힌다(x);
+      if (r2) 결과 = 떼어앉힌다(x);
     }
     if (!결과.ok) { 말(`🔴 ${머리} — ${결과.왜} · 아침에 사람이 본다`); 실패++; continue; }
 
     됨++;
-    말(`✅ ${머리} — 조각까지 났다 (겹침 ${결과.점} · 누적 ${(됨 * 2 * 장당).toLocaleString()}원)`);
+    말(`✅ ${머리} — 조각까지 났다 (옷 ${결과.점}점 · 누적 ${(됨 * 2 * 장당).toLocaleString()}원)`);
     if (i < 할것.length - 1) await 잔다(45000);
   }
 
