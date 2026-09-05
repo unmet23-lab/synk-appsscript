@@ -19,9 +19,9 @@
  * 이미지 라이브러리가 없는 저장소라 크롬 canvas 를 계산기로 쓴다(브랜드렌더린트가 쓰는 그 크롬).
  *
  * 쓰기:
- *   node tools/마스코트누끼.js                 # 펠트코랄_0815 전체
+ *   node tools/마스코트누끼.js                 # 현행 정본 폴더 전체(정본_4K · 주인 = lib/마스코트자산.js)
  *   node tools/마스코트누끼.js 본체.png 본체놀람.png
- *   node tools/마스코트누끼.js --입력 docs/캐릭터/펠트코랄_0815 --출력 docs/캐릭터/펠트코랄_0815/누끼 재염색_본체.png
+ *   node tools/마스코트누끼.js --입력 docs/캐릭터/정본_4K --출력 docs/캐릭터/정본_4K/누끼 재염색_본체.png
  * 나가는 값: 0=전부 성공 · 1=일부 실패 · 2=크롬 없음(안 돌렸다 — 통과 아님)
  */
 const { execFileSync } = require('child_process');
@@ -131,7 +131,7 @@ function main() {
   if (!fs.existsSync(SRC_DIR)) { console.error(`원본 폴더가 없다: ${SRC_DIR}`); process.exit(2); }
   /* 「원본은 안 건드린다」를 프로즈가 아니라 기계로 지킨다 — 같은 폴더면 이름이 같아 덮어쓴다. */
   if (path.resolve(SRC_DIR) === path.resolve(OUT_DIR)) {
-    console.error('입력과 출력이 같은 폴더다 — 원본을 덮어쓴다. 하위 폴더를 지정한다(예: --출력 docs/캐릭터/펠트코랄_0815/누끼)');
+    console.error('입력과 출력이 같은 폴더다 — 원본을 덮어쓴다. 하위 폴더를 지정한다(예: --출력 docs/캐릭터/정본_4K/누끼)');
     process.exit(2);
   }
 
