@@ -119,8 +119,19 @@ def main():
         print(f'   ✅ [{묶}] {것["이름"]} → {os.path.basename(담을것)} '
               f'{im.size[0]}x{im.size[1]} {os.path.getsize(담을것) // 1024}KB')
 
-    io.open(계획경로, 'w', encoding='utf-8', newline='').write(
-        json.dumps(계획, ensure_ascii=False, indent=2) + '\n')
+    # 🔴 **장부는 «옆에 다 쓰고 나서» 바꿔 낀다**(09-05 실사고).
+    #   전에는 `open(계획경로,'w')` 였는데, 그 한 줄은 «여는 순간» 파일을 0바이트로 만든다.
+    #   09-05 16:45 에 이 뒤처리가 도중에 죽으면서 계획.json 이 0바이트로 남았고,
+    #   그것을 다시 읽으려던 밤굽기가 따라 죽어 굽기 배치가 통째로 끊겼다.
+    #   글자를 «먼저» 다 만들고, 임시 파일에 적고, os.replace 로 한 번에 바꿔 낀다.
+    #   os.replace 는 윈도에서도 원자적이라, 죽어도 옛 장부가 그대로 남는다.
+    글자 = json.dumps(계획, ensure_ascii=False, indent=2) + '\n'
+    임시 = 계획경로 + '.tmp'
+    with io.open(임시, 'w', encoding='utf-8', newline='') as f:
+        f.write(글자)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(임시, 계획경로)
     print(f'■ 합계 {len(할것)}장 = 담음 {산것} + 실패 {실패} · 계획.json 의 파일 이름도 함께 옮겼다')
 
 
