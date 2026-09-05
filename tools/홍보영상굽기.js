@@ -138,14 +138,27 @@ const 새토큰 = async () => (await 정책.제미나이헤더('돈')).authoriza
 
 /** 시작된 작업을 되찾아 받는다. 401 로 놓친 것도 이 이름만 있으면 다시 받을 수 있다(돈을 두 번 안 낸다). */
 async function 받아내기(작업이름, 컷) {
-  for (let i = 1; i <= 60; i++) {
+  let 끊김 = 0;
+  for (let i = 1; i <= 90; i++) {
     await 잠깐(10000);
-    const t = await 새토큰();
-    const p = await fetch(`${밑}:fetchPredictOperation`, {
-      method: 'POST', headers: { authorization: `Bearer ${t}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ operationName: 작업이름 }),
-    });
-    const o = await p.json().catch(() => ({}));
+    /* 🔴 09-05 실측 — 폴링 도중 `fetch failed`(망이 잠깐 끊김) 하나로 배치 전체가 죽었다.
+     *   그때 컷1 은 이미 시작돼 값이 나간 뒤였다. 망 오류는 «그 컷의 실패»가 아니라 «잠깐»이므로
+     *   여기서 삼키고 다시 묻는다. 연달아 6번(1분) 끊기면 그때 손을 든다. */
+    let t; let p; let o;
+    try {
+      t = await 새토큰();
+      p = await fetch(`${밑}:fetchPredictOperation`, {
+        method: 'POST', headers: { authorization: `Bearer ${t}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ operationName: 작업이름 }),
+      });
+      o = await p.json().catch(() => ({}));
+      끊김 = 0;
+    } catch (e) {
+      끊김 += 1;
+      process.stdout.write(`   …망이 끊겼다(${끊김}/6) 다시 묻는다\r`);
+      if (끊김 >= 6) return { 실패: `망이 1분 넘게 끊겼다: ${e.message}`, 작업: 작업이름 };
+      continue;
+    }
     if (!p.ok) return { 실패: `폴링 ${p.status} ${(o.error && o.error.message || '').slice(0, 90)}`, 작업: 작업이름 };
     if (!o.done) { process.stdout.write(`   …${i * 10}초\r`); continue; }
     if (o.error) return { 실패: JSON.stringify(o.error).slice(0, 300), 작업: 작업이름 };
@@ -232,8 +245,14 @@ async function 굽기(컷) {
 
   const 결과 = [];
   for (const 컷 of 굽을것) {
+    /* 이미 구운 컷은 건너뛴다 — 죽은 배치를 다시 돌릴 때 «낸 돈을 또 내는» 것을 막는다. */
+    const 이미 = path.join(낼곳, `컷${컷.번호}_${컷.이름}.mp4`);
+    if (fs.existsSync(이미)) { console.log(`\n✓ 컷${컷.번호} ${컷.이름} — 이미 있다(안 굽는다)`); 결과.push({ 컷: 컷.번호, 파일: 이미 }); continue; }
+
     console.log(`\n▶ 컷${컷.번호} ${컷.이름}`);
-    const r = await 굽기(컷);
+    /* 한 컷이 망 때문에 죽어도 배치 전체를 세우지 않는다 — 남은 컷은 계속 굽는다. */
+    let r;
+    try { r = await 굽기(컷); } catch (e) { r = { 실패: e.message }; }
     if (r.실패) { console.log(`   🔴 ${r.실패}`); 결과.push({ 컷: 컷.번호, 실패: r.실패 }); continue; }
     console.log(`   ✅ ${path.basename(r.파일)}  (${r.메가} MB)`);
     결과.push({ 컷: 컷.번호, 파일: r.파일 });
