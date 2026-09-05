@@ -13,8 +13,12 @@
 🔑 **땀(블랭킷 스티치)은 기본으로 안 넣는다**(09-05 실측). 숫자처럼 획이 굵으면 살지만
    한글은 획이 가늘어 땀이 글자를 덮어 «빗금»처럼 읽힌다. 큰 글자에만 `--땀` 으로 켠다.
 
-🔑 **천을 «줄여» 쓴다.** 4096px 천을 그대로 잘라 쓰면 결이 하나도 안 보인다(첫 판의 병).
-   `--천배율` 이 그 손잡이고, 0.22 면 4096px 천이 900px 로 줄어 결이 촘촘해진다.
+🔑 **천을 «줄여서 이어 붙여» 쓴다.** 4096px 천을 그대로 잘라 쓰면 결이 하나도 안 보인다(첫 판의 병).
+   `--천배율` 이 그 손잡이고, 0.12 면 4096px 천이 491px 로 줄어 결이 촘촘해진다.
+   ⚠ 09-05 저녁에 고친 자리 — 옛 판은 줄인 크기와 «글자 폭» 중 큰 쪽을 썼다. 그래서 긴 글귀일수록
+   천이 덜 줄어 결이 굵어졌고, 「함께 자라요」가 라피스 천에서 «긁힌 금속»처럼 보였다.
+   지금은 줄인 조각을 거울로 이어 붙여 채우므로 배율이 길이와 무관하게 산다.
+   ⚠ 배율은 글자 크기에 «비례»한다(크기 200 기준). 안 그러면 같은 글귀가 크기마다 다른 재질로 읽힌다.
 
 ⚠ 짧은 낱말·제목처럼 «명품이어야 하는 자리»는 이 도구 말고 제미나이로 굽는다
    (`node tools/공방굽기.js`). 이 도구는 «어떤 글자든 되는» 쪽을 맡는다.
@@ -100,33 +104,61 @@ def 땀박기(글자, 마스크, 간격, 길이, 굵기, 실=(244, 232, 208)):
     return 글자
 
 
-def 펠트글자(글, 천경로, 크기=200, 여백=44, 천배율=0.22, 땀=False, 폰트=폰트기본):
+def 천깔기(천경로, W, H, 천배율):
+    """천을 «배율대로» 줄인 뒤 이어 붙여 W×H 를 채운다.
+
+    🔑 09-05 실측으로 고친 자리 — 옛 판은 `max(줄인 크기, 글자 크기)` 였다.
+       그러면 긴 글귀일수록 천이 덜 줄어(글자 폭이 이겨서) 결이 굵어진다.
+       「함께 자라요」(1009px)가 라피스 천에서 «긁힌 금속»처럼 보인 까닭이 이것이다.
+       배율이 진짜 손잡이가 되려면 줄인 조각을 «타일»로 깔아야 한다.
+    🔑 이어 붙일 때 한 칸씩 뒤집는다(거울 타일) — 그냥 반복하면 이음매가 격자로 읽힌다.
+    """
+    천 = Image.open(천경로).convert('RGB')
+    tw = max(int(천.width * 천배율), 8)
+    th = max(int(천.height * 천배율), 8)
+    조각 = 천.resize((tw, th), Image.LANCZOS)
+    좌우 = 조각.transpose(Image.FLIP_LEFT_RIGHT)
+    상하 = 조각.transpose(Image.FLIP_TOP_BOTTOM)
+    양쪽 = 좌우.transpose(Image.FLIP_TOP_BOTTOM)
+    깐다 = Image.new('RGB', (W + tw * 2, H + th * 2))
+    for j, y in enumerate(range(0, H + th * 2, th)):
+        for i, x in enumerate(range(0, W + tw * 2, tw)):
+            깐다.paste([[조각, 좌우], [상하, 양쪽]][j % 2][i % 2], (x, y))
+    ox = random.randint(0, tw) if tw > 1 else 0
+    oy = random.randint(0, th) if th > 1 else 0
+    return 깐다.crop((ox, oy, ox + W, oy + H))
+
+
+def 펠트글자(글, 천경로, 크기=200, 여백=44, 천배율=0.12, 땀=False, 폰트=폰트기본):
     f = ImageFont.truetype(폰트, 크기)
     bb = ImageDraw.Draw(Image.new('L', (8, 8))).textbbox((0, 0), 글, font=f)
     W, H = bb[2] - bb[0] + 여백 * 2, bb[3] - bb[1] + 여백 * 2
     깔끔 = Image.new('L', (W, H), 0)
     ImageDraw.Draw(깔끔).text((여백 - bb[0], 여백 - bb[1]), 글, font=f, fill=255)
-    마스크 = 보풀(깔끔)
 
-    천 = Image.open(천경로).convert('RGB')
-    작게 = (max(int(천.width * 천배율), W), max(int(천.height * 천배율), H))
-    천 = 천.resize(작게, Image.LANCZOS)
-    ox = random.randint(0, max(천.width - W, 0))
-    oy = random.randint(0, max(천.height - H, 0))
-    천 = 천.crop((ox, oy, ox + W, oy + H))
+    # 🔑 보풀·입체는 «글자 크기에 비례»한다. 옛 판은 200px 기준 상수라
+    #    큰 글자에서 잡음 알갱이가 톱니로, 작은 글자에서 입체가 과하게 보였다.
+    자 = 크기 / 200.0
+    마스크 = 보풀(깔끔, 세기=1.6 * 자, 성김=max(int(round(2 * 자)), 1), 힘=0.75)
+
+    # 🔑 배율도 글자 크기에 비례한다 — 안 그러면 큰 글자일수록 결이 상대적으로 작아져
+    #    같은 글귀가 크기마다 다른 재질로 읽힌다. 기준은 «크기 200에서 0.12».
+    천 = 천깔기(천경로, W, H, 천배율 * 자)
 
     검정 = Image.new('RGB', (W, H), (0, 0, 0))
     글자 = Image.composite(천, 검정, 마스크).convert('RGBA')
     글자.putalpha(마스크)
 
+    밀기 = max(3 * 자, 1.0)
     밝은테 = ImageChops.subtract(마스크, 마스크.transform(
-        (W, H), Image.AFFINE, (1, 0, 3, 0, 1, 3), Image.BILINEAR))
+        (W, H), Image.AFFINE, (1, 0, 밀기, 0, 1, 밀기), Image.BILINEAR))
     그늘테 = ImageChops.subtract(마스크, 마스크.transform(
-        (W, H), Image.AFFINE, (1, 0, -3, 0, 1, -4), Image.BILINEAR))
+        (W, H), Image.AFFINE, (1, 0, -밀기, 0, 1, -밀기 * 1.33), Image.BILINEAR))
+    번짐 = max(2 * 자, 1.0)
     빛 = Image.new('RGBA', (W, H), (255, 255, 255, 0))
-    빛.putalpha(밝은테.filter(ImageFilter.GaussianBlur(2)).point(lambda v: int(v * 0.30)))
+    빛.putalpha(밝은테.filter(ImageFilter.GaussianBlur(번짐)).point(lambda v: int(v * 0.30)))
     어둠 = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    어둠.putalpha(그늘테.filter(ImageFilter.GaussianBlur(2)).point(lambda v: int(v * 0.34)))
+    어둠.putalpha(그늘테.filter(ImageFilter.GaussianBlur(번짐)).point(lambda v: int(v * 0.34)))
     글자.alpha_composite(빛)
     글자.alpha_composite(어둠)
 
@@ -136,9 +168,10 @@ def 펠트글자(글, 천경로, 크기=200, 여백=44, 천배율=0.22, 땀=Fals
         글자.putalpha(ImageChops.lighter(글자.getchannel('A'), 마스크))
 
     그늘 = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    그늘.putalpha(마스크.filter(ImageFilter.GaussianBlur(7)).point(lambda v: int(v * 0.40)))
+    그늘.putalpha(마스크.filter(ImageFilter.GaussianBlur(max(7 * 자, 2)))
+                 .point(lambda v: int(v * 0.40)))
     바닥 = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    바닥.paste(그늘, (3, 6), 그늘)
+    바닥.paste(그늘, (int(round(3 * 자)), int(round(6 * 자))), 그늘)
     바닥.alpha_composite(글자)
     return 바닥
 
@@ -149,8 +182,9 @@ def main():
     ap.add_argument('--천', default='공방_라피스펠트.webp', help=f'{방} 안의 천 파일 이름')
     ap.add_argument('--낼곳', help='낼 파일 경로(기본 = 글자.png)')
     ap.add_argument('--크기', type=int, default=200, help='글자 크기(px). 기본 200')
-    ap.add_argument('--천배율', type=float, default=0.22,
-                    help='천을 이 배율로 줄여 쓴다. 작을수록 결이 촘촘하다. 기본 0.22')
+    ap.add_argument('--천배율', type=float, default=0.12,
+                    help='천을 이 배율로 줄여 쓴다(크기 200 기준 · 크기에 비례해 따라온다). '
+                         '작을수록 결이 촘촘하다. 기본 0.12')
     ap.add_argument('--땀', action='store_true',
                     help='테두리에 블랭킷 스티치를 박는다. ⚠ 한글은 획이 가늘어 글자를 덮는다 — 큰 글자에만')
     ap.add_argument('--폰트', default=폰트기본)
