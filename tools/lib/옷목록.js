@@ -139,14 +139,15 @@ const 공용 = [
 
 /* ── 성과 옷 넷 더 — 출석 셋 + 첫 목소리 (유호 확정 09-06 「자라는 식물로 가자」) ──── */
 const 성과더 = [
-  { 이름: '한 달 출석 새싹', 갈래: '악세', 성과: true, 설명:
+  { 이름: '한 달 출석 새싹', 갈래: '악세', 성과: true, 바탕: '자홍', 설명:
     'One small brooch is pinned on the front of its body — a single green felt sprout with two ' +
     'tiny rounded leaves rising from a chalk-white felt disc, edged in cream blanket stitch.' },
-  { 이름: '3개월 출석 잎망토', 갈래: '의상', 성과: true, 설명:
+  /* 🔴 옷 자체가 초록이라 «초록 몸»으로 구우면 옷까지 걷힌다 — 이 둘만 자홍 몸으로 굽는다. */
+  { 이름: '3개월 출석 잎망토', 갈래: '의상', 성과: true, 바탕: '자홍', 설명:
     'It wears a short shoulder cape of soft meadow-green felt fastened at the throat with one ' +
     'cream cord, its lower edge cut into three broad rounded leaf shapes, each with one line of ' +
     'cream running stitch down its middle like a leaf vein.' },
-  { 이름: '6개월 출석 화관', 갈래: '악세', 성과: true, 설명:
+  { 이름: '6개월 출석 화관', 갈래: '악세', 성과: true, 바탕: '자홍', 설명:
     'A soft flower crown rests on its head — a ring of meadow-green felt leaves with five small ' +
     'open flowers worked in coral and butter-yellow felt, each with a centre of tiny cream beads. ' +
     'The ring follows the curve of the head.' },

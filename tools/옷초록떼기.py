@@ -31,6 +31,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from 옷자리맞추기 import 눈들, 눈에서_옮김  # noqa: E402
 
 
+def 자홍인가(a):
+    """크로마 자홍 = 붉음과 파랑이 초록보다 뚜렷이 세다. 초록 옷(잎·새싹)을 안 먹는다."""
+    r, g, b = a[:, :, 0].astype(np.int16), a[:, :, 1].astype(np.int16), a[:, :, 2].astype(np.int16)
+    return (r - g > 14) & (b - g > 14) & (np.maximum(r, b) > 40)
+
+
 def 초록인가(a):
     """크로마 초록 = 초록이 다른 둘보다 뚜렷이 세고, 색이 확실히 있다.
     잎사귀 초록(#7FA86A 계열)은 초록이 덜 세고 붉은빛이 남아 여기 안 걸린다."""
@@ -40,7 +46,7 @@ def 초록인가(a):
     return (g - r > 14) & (g - b > 14) & (g > 40)
 
 
-def 떼어낸다(초록경로, 몸경로, 눈결='검정'):
+def 떼어낸다(초록경로, 몸경로, 눈결='검정', 바탕='초록'):
     몸 = Image.open(몸경로).convert('RGBA')
     초록 = Image.open(초록경로).convert('RGB')
 
@@ -55,7 +61,8 @@ def 떼어낸다(초록경로, 몸경로, 눈결='검정'):
 
     a = np.asarray(초록)
     흰 = (a > 244).all(axis=2)
-    옷 = ~초록인가(a) & ~흰
+    바탕인가 = 자홍인가 if 바탕 == '자홍' else 초록인가
+    옷 = ~바탕인가(a) & ~흰
     # 🔴 눈은 초록이 아니라 «옷»으로 잡힌다(09-06 실측 · 첫 목소리 목도리에 검은 구슬 넷이 떴다).
     #   눈 자리는 이미 알고 있으니 그 둘레를 통째로 뺀다. 옷이 눈을 가리는 컷(안경·모자)에서도
     #   가려진 부분은 어차피 옷 쪽 픽셀이라 옷 덩어리에 붙어 살아남는다.
@@ -79,8 +86,13 @@ def 떼어낸다(초록경로, 몸경로, 눈결='검정'):
     알파 = Image.fromarray((옷 * 255).astype(np.uint8), 'L').filter(ImageFilter.GaussianBlur(1.6))
     # 🔑 남은 초록 기운을 눌러 준다(de-spill) — 초록이 다른 둘보다 세면 그만큼만 깎아 회색으로 당긴다
     rgb = np.asarray(초록).astype(np.float32)
-    넘침 = np.maximum(rgb[:, :, 1] - np.maximum(rgb[:, :, 0], rgb[:, :, 2]), 0)
-    rgb[:, :, 1] -= 넘침
+    if 바탕 == '자홍':
+        넘침 = np.maximum(np.minimum(rgb[:, :, 0], rgb[:, :, 2]) - rgb[:, :, 1], 0)
+        rgb[:, :, 0] -= 넘침
+        rgb[:, :, 2] -= 넘침
+    else:
+        넘침 = np.maximum(rgb[:, :, 1] - np.maximum(rgb[:, :, 0], rgb[:, :, 2]), 0)
+        rgb[:, :, 1] -= 넘침
     층0 = Image.fromarray(rgb.clip(0, 255).astype(np.uint8), 'RGB').convert('RGBA')
     층0.putalpha(알파)
 
@@ -98,9 +110,11 @@ def main():
     ap.add_argument('초록'); ap.add_argument('낼곳')
     ap.add_argument('--몸', default='docs/캐릭터/정본_4K/몽글_본체.png')
     ap.add_argument('--눈', default='검정', choices=['검정', '버터', '초록'])
+    ap.add_argument('--바탕', default='초록', choices=['초록', '자홍'],
+                    help='몸을 어떤 색으로 구웠나. 옷 자체가 초록이면 자홍으로 굽고 여기도 자홍을 준다')
     ap.add_argument('--얹음', help='몸 위에 얹은 미리보기도 낸다')
     a = ap.parse_args()
-    층, 몸, 칸수 = 떼어낸다(a.초록, a.몸, a.눈)
+    층, 몸, 칸수 = 떼어낸다(a.초록, a.몸, a.눈, a.바탕)
     층.save(a.낼곳)
     if a.얹음:
         판 = 몸.copy()
