@@ -35,6 +35,17 @@ try:
 except ImportError:
     sys.exit('Pillow 가 없다 — python -m pip install pillow')
 
+# 🔴 **화면에 찍는 자리에서 죽지 않게 한다**(09-05 실물).
+#   다듬기가 첫 장에서 넘어졌다. 그림이 아니라 «✅ 를 찍는 print» 가 터진 것이다 —
+#   윈도 콘솔의 기본 글자표(cp949)에 그 글자가 없어 UnicodeEncodeError 로 죽었다.
+#   밤굽기.js 가 부를 때는 안 죽었다(출력이 파이프로 가 콘솔 글자표를 안 탄다). 즉
+#   «어디서 부르느냐»에 따라 갈리는 자리라, 부르는 쪽마다 환경을 챙기는 대신 여기서 못 박는다.
+for 흐름 in (sys.stdout, sys.stderr):
+    try:
+        흐름.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass  # 파이프로 이미 UTF-8 이면 할 일이 없다
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 방 = os.path.join(ROOT, 'docs', 'Loom_자산', '구움')
 계획경로 = os.path.join(ROOT, 'docs', '공방', '계획.json')
