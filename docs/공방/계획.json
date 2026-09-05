@@ -1839,7 +1839,7 @@
       {
         "이름": "자리 배경 — 학생",
         "쓰는 곳": "앱 「살아 있는 자리」 배경 고르기(옷처럼 고른다) · 릴 배경 · 라디오 무대",
-        "상태": "5/14",
+        "상태": "12/14",
         "것들": [
           {
             "이름": "내 방 낮",
@@ -1883,52 +1883,59 @@
           },
           {
             "이름": "운동장",
-            "상태": "아직",
+            "상태": "구웠다",
             "규격": "장면",
             "지시": "A small schoolyard of wool felt seen from a low angle, meadow green ground, a simple goal frame of grey felt and a pale sky above.",
-            "쇠": "공방_운동장"
+            "쇠": "공방_운동장",
+            "파일": "공방_운동장.png"
           },
           {
             "이름": "우편함 앞",
-            "상태": "아직",
+            "상태": "구웠다",
             "규격": "장면",
             "지시": "A single letterbox of coral wool felt standing on a short post at a garden gate, one cream felt envelope just visible in its slot.",
-            "쇠": "공방_우편함앞"
+            "쇠": "공방_우편함앞",
+            "파일": "공방_우편함앞.png"
           },
           {
             "이름": "창가 책상",
-            "상태": "아직",
+            "상태": "구웠다",
             "규격": "장면",
             "지시": "A wooden desk of felt set under a bright window, an open notebook and a mug on it, soft daylight pooling across the surface.",
-            "쇠": "공방_창가책상"
+            "쇠": "공방_창가책상",
+            "파일": "공방_창가책상.png"
           },
           {
             "이름": "눈 오는 창",
-            "상태": "아직",
+            "상태": "구웠다",
             "규격": "장면",
             "지시": "A window of wool felt seen from inside, cream felt snowflakes drifting past the dark blue pane, the sill dusted with white felt snow.",
-            "쇠": "공방_눈오는창"
+            "쇠": "공방_눈오는창",
+            "파일": "공방_눈오는창.png"
           },
           {
             "이름": "봄 들판",
-            "상태": "아직",
+            "상태": "구웠다",
             "규격": "장면",
             "지시": "A wide field built from meadow green wool felt with scattered small coral and butter felt flowers, a pale warm sky above.",
-            "쇠": "공방_봄들판"
+            "쇠": "공방_봄들판",
+            "파일": "공방_봄들판.png"
           },
           {
             "이름": "여름 바다",
-            "상태": "아직",
+            "상태": "구웠다",
             "규격": "장면",
             "지시": "A calm sea of layered lapis and pale blue wool felt meeting a sandy shore of oatmeal felt, a bright open sky above.",
-            "쇠": "공방_여름바다"
+            "쇠": "공방_여름바다",
+            "파일": "공방_여름바다.png"
           },
           {
             "이름": "가을 언덕",
-            "상태": "아직",
+            "상태": "구웠다",
             "규격": "장면",
             "지시": "A low rolling hill of wool felt in warm ochre and rust tones, three small bare trees of brown felt on its ridge, a soft pale sky.",
-            "쇠": "공방_가을언덕"
+            "쇠": "공방_가을언덕",
+            "파일": "공방_가을언덕.png"
           },
           {
             "이름": "차강사르 게르",
@@ -2499,7 +2506,7 @@
         "이름": "옛 판 4K 옮기기",
         "쓰는 곳": "지면·앱·발표물이 이미 부르는 자리 — 그 자산을 4K 로 갈아 끼운다",
         "_결": "🔴 옛 판을 «참조»로 주고 「그대로, 더 크고 또렷하게」만 시킨다(09-05 밤 로고 다섯에서 검증). 🔴 옛 판은 굽기가 «끝난 뒤»에 지운다 — 참조가 곧 그 파일이라 먼저 지우면 한 장도 못 굽는다.",
-        "상태": "0/351",
+        "상태": "1/351",
         "것들": [
           {
             "이름": "단추민판 (4K)",
@@ -2602,14 +2609,15 @@
           },
           {
             "이름": "단추숫자_09 (4K)",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "단추숫자_09_4K",
             "규격": "부품",
             "참조": [
               "docs/Loom_자산/구움/단추숫자_09.png"
             ],
             "_옛판": "docs/Loom_자산/구움/단추숫자_09.png",
-            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
+            "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved.",
+            "파일": "단추숫자_09_4K.png"
           },
           {
             "이름": "단추숫자_10 (4K)",
@@ -8393,119 +8401,6 @@
             ],
             "_옛판": "docs/홍보물/FB_첫게시물_카드_v3.png",
             "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved."
-          }
-        ]
-      },
-      {
-        "이름": "명품 글자",
-        "쓰는 곳": "표지·간판·수료증·앱 첫 화면 — 크게 뜨는 자리",
-        "_결": "🔑 땀은 안 넣는다(유호 판정 09-05 「스티치가 약간 거슬린다」) — 한글은 획이 가늘어 땀이 글자를 덮는다. 자수 글자(실이 곧 글자)만 예외. 색은 코랄 하나로 먼저 굽는다 — 색 갈래는 오려 만드는 통로가 0원으로 낸다.",
-        "상태": "0/15",
-        "것들": [
-          {
-            "이름": "함께 자라요",
-            "상태": "아직",
-            "쇠": "공방_글자_함께자라요",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean phrase 함께 자라요 (four syllable blocks: 함 께 자 라 요, with a space between 께 and 자), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "SYNK LAB (자수)",
-            "상태": "아직",
-            "쇠": "공방_글자_신크랩",
-            "규격": "부품",
-            "지시": "The five latin letters S Y N K and the three letters L A B, reading SYNK LAB in two words embroidered on a piece of pale cream wool felt, worked in dense satin stitch with lapis blue thread so each letter sits slightly raised above the cloth, the individual stitches clearly visible across the letter strokes. The letters are bold, upright and evenly spaced. Nothing else on the cloth — no border, no other marks. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "오늘",
-            "상태": "아직",
-            "쇠": "공방_글자_오늘",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean word 오늘 (two syllable blocks: 오, 늘), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "숙제",
-            "상태": "아직",
-            "쇠": "공방_글자_숙제",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean word 숙제 (two syllable blocks: 숙, 제), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "친구",
-            "상태": "아직",
-            "쇠": "공방_글자_친구",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean word 친구 (two syllable blocks: 친, 구), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "가게",
-            "상태": "아직",
-            "쇠": "공방_글자_가게",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean word 가게 (two syllable blocks: 가, 게), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "옷장",
-            "상태": "아직",
-            "쇠": "공방_글자_옷장",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean word 옷장 (two syllable blocks: 옷, 장), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "나",
-            "상태": "아직",
-            "쇠": "공방_글자_나",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the single Korean syllable 나, cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "잘했어요",
-            "상태": "아직",
-            "쇠": "공방_글자_잘했어요",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean phrase 잘했어요 (four syllable blocks: 잘 했 어 요), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "참 잘했어요",
-            "상태": "아직",
-            "쇠": "공방_글자_참잘했어요",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean phrase 참 잘했어요 (five syllable blocks: 참 잘 했 어 요, with a space after 참), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "축하해요",
-            "상태": "아직",
-            "쇠": "공방_글자_축하해요",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean phrase 축하해요 (four syllable blocks: 축 하 해 요), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "고마워요",
-            "상태": "아직",
-            "쇠": "공방_글자_고마워요",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean phrase 고마워요 (four syllable blocks: 고 마 워 요), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "수료",
-            "상태": "아직",
-            "쇠": "공방_글자_수료",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean word 수료 (two syllable blocks: 수, 료), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "한국어 교실",
-            "상태": "아직",
-            "쇠": "공방_글자_한국어교실",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean phrase 한국어 교실 (five syllable blocks: 한 국 어 교 실, with a space after 어), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
-          },
-          {
-            "이름": "안녕하세요",
-            "상태": "아직",
-            "쇠": "공방_글자_안녕하세요",
-            "규격": "부품",
-            "지시": "Korean hangul characters spelling the Korean greeting 안녕하세요 (five syllable blocks: 안 녕 하 세 요), cut by hand from warm coral wool felt and laid side by side in a row, reading left to right. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the enclosed counters stay wide open and clearly visible. The characters are the only things in the frame and none of them touch each other. Macro product photograph, floating in empty space against a plain flat pure white background. The pieces are NOT resting on any surface — no ground, no table, no contact point, and therefore no cast shadow, no drop shadow, no grey pooling and no reflection. Studio lighting: broad soft diffused light from every side with one gentle key from the upper left. The white behind and around is perfectly clean and identical in every corner. Generous empty margin on all four sides. Every wool fibre is resolved — you can count the strands and see how the nap catches light. No watermark, no props, no hands, no extra text. Tack sharp, medium format macro, photorealistic craft object."
           }
         ]
       }
