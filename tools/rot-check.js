@@ -1109,6 +1109,7 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
   const 상주 = attempt('상주총량', () => 상주Section());
   const 게이트 = attempt('게이트초', () => 게이트Section());
   const 밤굽기 = attempt('밤굽기도장', () => 밤굽기Section());
+  const 트랙수 = attempt('트랙수대조', () => require('./lib/트랙수대조.js').대조하기(ROOT));
 
   const red = [];
   const warn = [];
@@ -1120,6 +1121,19 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
     // `배포:true`·`장부:true` = 각자 스로틀로 따로 도는 항목(F244). 문구가 아니라 이 표식으로
     // 고른다 — 앵커는 문구가 바뀌면 죽고, 죽으면 그 절만 조용히 리포트에서 빠진다.
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}`, 배포: s === dep, 장부: s === 장부 });
+  }
+
+  /* 트랙에 적힌 «수»가 그 수의 정본과 어긋나나 — 자가 없으면 수는 조용히 낡는다.
+     09-05 실측: 말투 분모가 82 → 99 로, crewcard 배포 지문이 **세 번째로** 낡아 있었고
+     둘 다 되잴 자가 없어 아무도 못 알았다. 자 = `tools/lib/트랙수대조.js`(유호 지시 09-05).
+     🔴 «못잼»을 침묵시키지 않는다 — 무늬가 죽으면 「어긋남 0」이라는 거짓 초록이 난다. */
+  if (트랙수.ok) {
+    for (const x of 트랙수.value.어긋남) {
+      red.push({ kind: '트랙 수 낡음', text: `${x.이름} — 트랙 ${x.트랙값} ≠ 참 ${x.참값} · ${x.뜻}` });
+    }
+    for (const x of 트랙수.value.못잼) {
+      notes.push({ kind: '트랙 수 못잼', text: `${x.이름} — ${x.사유}` });
+    }
   }
 
   if (절단.ok && 절단.value.present) {
