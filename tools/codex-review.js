@@ -2296,8 +2296,13 @@ function 금지목록(경로) {
   if (!fs.existsSync(p)) {
     throw 확인불가(`memory 인덱스를 못 찾았다: ${p}\n  (SYNK_MEMORY_INDEX 로 경로를 줄 수 있다. 닫힌 결정 없이 도는 심문은 재제안을 물어 온다.)`);
   }
-  const 줄 = fs.readFileSync(p, 'utf8').split('\n').filter((l) => l.includes('🚫'));
-  if (!줄.length) throw 확인불가(`memory 인덱스에 🚫 줄이 0건이다: ${p} — 추출이 깨졌다고 본다`);
+  /* 🔑 [2026-09-05] 색인이 둘로 갈렸다 — 09-03 에 상주 색인(MEMORY.md)의 🚫 줄을 «전부» 보존 서가(같은 폴더의
+   *   지도.md)로 보냈다. 그날부터 이 검사가 「0건」으로 죽어 심문이 한 발도 안 나갔다(09-04 22:21 v2 심문 · 코드 2).
+   *   그래서 둘을 합쳐 읽는다. 지도.md 는 «있을 때만» — 시험 픽스처와 옛 기계엔 없다(없으면 종전과 같다). */
+  const 읽기 = (f) => (fs.existsSync(f) ? fs.readFileSync(f, 'utf8').split('\n').filter((l) => l.includes('🚫')) : []);
+  const 서가 = path.join(path.dirname(p), '지도.md');
+  const 줄 = [...읽기(p), ...읽기(서가)];
+  if (!줄.length) throw 확인불가(`memory 인덱스에 🚫 줄이 0건이다: ${p} (+ ${서가}) — 추출이 깨졌다고 본다`);
   return 줄.join('\n');
 }
 
