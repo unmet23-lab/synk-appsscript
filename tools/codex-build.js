@@ -690,8 +690,14 @@ function main(argv) {
       const 몸 = `발주 ${장부행.발주.경로} · 지문 ${지문} · 모델 ${실행설정.model}/${실행설정.effort}\n시험: ${시험결과줄(기록.시험)}`
         + (이어받은.length ? `\n⏭ 이 커밋의 ${이어받은.length}개는 «앞 회차가 짓다 만 것»을 이어받은 것이다(이번 라운드가 새로 지은 것이 아니다): ${이어받은.join(' · ')}` : '')
         + `\n\nCo-Authored-By: Codex ${실행설정.model} <noreply@openai.com>`;
+      /* 🔑 커밋 이름은 «기계 것»이다 — 이 커밋을 지은 것은 실행자이고 사람의 전역 git 이름을 빌릴 이유가 없다.
+       *   09-05 실측: CI 모사(빈 HOME)에서 전역 이름이 없어 커밋이 죽고, 시험 하나가 「커밋 실패」로 빨갔다.
+       *   저장소에 이름이 있으면 그대로 쓰고(로컬 규약 존중), 없을 때만 실행자 이름을 «이 커밋에만» 준다. */
+      const 이름있나 = (키) => { try { return git(wt, ['config', '--get', 키]).length > 0; } catch (_) { return false; } };
+      const 이름옵션 = (이름있나('user.name') && 이름있나('user.email')) ? []
+        : ['-c', 'user.name=codex 실행자', '-c', 'user.email=codex-executor@synk.local'];
       try {
-        git(wt, ['commit', '-q', '-m', 제목, '-m', 몸, '--', ...파일들]);
+        git(wt, [...이름옵션, 'commit', '-q', '-m', 제목, '-m', 몸, '--', ...파일들]);
         기록.sha = git(wt, ['rev-parse', 'HEAD']);
         console.log(`④ 커밋 ${기록.sha.slice(0, 9)} (${가지}) · 파일 ${파일들.length}개`);
       } catch (e) {
