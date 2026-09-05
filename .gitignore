@@ -235,3 +235,6 @@ upload_screens/
 # 밖에서 받아 오는 큰 것 — 다시 받는 통로 = node tools/외부도구받기.js (2026-09-03)
 tools/vendor/pdfcpu/
 docs/어휘/*.csv
+
+# 옷 조각 굽기 산출물 — 4K PNG 라 한 장이 20MB 다. 정본은 재굽기로 다시 난다.
+docs/Loom_자산/옷/
