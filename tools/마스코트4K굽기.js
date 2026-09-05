@@ -296,10 +296,14 @@ Both match exactly.`) },
     얼굴: 마린얼굴('both are full round butter-yellow circles, calm and steady, evenly bright; the far lens reads as a slightly narrower ellipse because of the turn.') },
   { 누구: '마린', 이름: '마린_우34', 카메라: 마린카메라34('right'), 참조: '마린_본체.png',
     얼굴: 마린얼굴('both are full round butter-yellow circles, calm and steady, evenly bright; the far lens reads as a slightly narrower ellipse because of the turn.') },
+  /* 🔴 09-05 실측 — 첫 판의 «놀람»이 «몰래기쁨»과 거의 같아 보였다. 둘 다 «밝아지는» 판이라
+   *   빛만으로는 안 갈린다. ⇒ 놀람은 «크기»로, 몰래기쁨은 «빛»으로 갈래를 나눈다.
+   *   놀람은 렌즈가 두 배 가까이 커져 헬멧을 거의 채우고, 몰래기쁨은 크기를 «절대» 안 바꾼다. */
   { 누구: '마린', 이름: '마린_놀람', 카메라: 마린카메라, 참조: '마린_본체.png',
-    얼굴: 마린얼굴(`both are STRETCHED WIDE — noticeably bigger and rounder than usual, about
-one and a third times their normal size, and glowing brighter, a hot bright butter-yellow that
-spills a little light onto the navy felt around them. Startled.`) },
+    얼굴: 마린얼굴(`both have BLOWN WIDE OPEN — nearly TWICE their normal diameter, so big that
+they almost fill the front of the helmet and leave only a thin navy margin between and around
+them. They glow a hot bright butter-yellow. The size is the point: this is unmistakably a
+startled face, and it must not be confused with a merely brighter one.`) },
   { 누구: '마린', 이름: '마린_집중', 카메라: 마린카메라, 참조: '마린_본체.png',
     얼굴: 마린얼굴(`each has narrowed into a NARROW HORIZONTAL SLIT — a long thin capsule with
 rounded ends, about three times wider than it is tall, still glowing butter-yellow but focused
@@ -309,9 +313,13 @@ and hard. Both identical. This is the look it wears when it is being strict.`) }
 warmer, softer, with a faint halo of light on the navy felt around each. The shape has not
 changed at all; only the light has. A quiet, secret happiness that the face itself never admits
 to.`) },
+  /* 🔴 09-05 실측 — 첫 판의 «민망»은 두 렌즈가 거의 같게 나왔다. 「two thirds」로는 안 섰다.
+   *   ⇒ 차이를 «절반»으로 벌리고, 어느 쪽이 작아지는지를 그림 기준으로 못 박는다. */
   { 누구: '마린', 이름: '마린_민망', 카메라: 마린카메라, 참조: '마린_본체.png',
-    얼굴: 마린얼굴(`they do NOT match. One is a full round butter-yellow circle; the other has
-shrunk to about two thirds of that size and dimmed a little, as if flinching away. Caught out
+    얼굴: 마린얼굴(`they must NOT match, and the difference has to be obvious at a glance.
+The lens on the LEFT side of the picture is a full round butter-yellow circle at normal size.
+The lens on the RIGHT side has shrunk to HALF that diameter and dimmed to a dull ochre, as if
+it were flinching away and looking aside. One big and bright, one small and dim — caught out
 and embarrassed.`) },
   { 누구: '마린', 이름: '마린_졸림', 카메라: 마린카메라, 참조: '마린_본체.png',
     얼굴: 마린얼굴(`each is only HALF lit — the lower half of the circle glows a dim, tired
