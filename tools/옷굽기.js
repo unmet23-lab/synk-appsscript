@@ -61,18 +61,24 @@ function 말(줄) {
 /** ② 초록 몸 지시문 — 몸만 단색 초록으로 바꾸고 같은 옷을 입힌다.
  *  🔑 눈은 검은 구슬 그대로 둔다. 자리를 두 눈으로 잡기 때문이다(눈이 없으면 앉힐 데를 모른다). */
 const 초록지시 = (표식, 설명) =>
-  'The character is EXACTLY the felt character in the reference photograph — the same silhouette, ' +
-  'the same size, the same pose, the same camera angle, the same eyes in the same place. ' +
-  'ONE THING IS CHANGED: its own body is dyed a flat uniform bright CHROMA GREEN (#00B140), the ' +
-  'same green everywhere, with no heathering, no pattern, no stitching and no shading variation — ' +
-  'a plain green body. Its eyes keep their real colour and stay exactly as they are. ' +
-  'Nothing else about it changes. ' + 표식 + 설명 + ' ' +
-  'The garment keeps its own real colours — only the body is green. ' +
-  'Macro product photograph against a plain flat pure white background, the whole character ' +
-  'floating in empty space with no ground and no cast shadow on any surface. ' +
-  'Studio lighting: broad soft diffused light from every side with one gentle key from the upper ' +
-  'left. Every wool fibre is resolved. No text, no watermark, no hands, no second character. ' +
-  'Tack sharp, medium format macro, photorealistic craft object.';
+  /* 🔴 09-06 실측 — 「몸을 초록으로」를 앞에 세웠더니 그 말이 옷 지시를 덮었다.
+     왕관·밀짚모자·학생 가방·새싹 넷이 «옷 없는 초록 몸»으로 나왔다(작은 악세일수록 잘 밀린다).
+     ⇒ 옷을 맨 앞에 세우고, 끝에서 한 번 더 못 박는다. 초록은 «곁들이는 조건»으로 내린다. */
+  `A small handmade felt character is WEARING something, and that garment is the point of this ` +
+  `picture. ${설명} ` +
+  `${표식}` +
+  `The character itself is EXACTLY the one in the reference photograph — the same silhouette, ` +
+  `the same size, the same pose, the same camera angle, the same eyes in the same place — ` +
+  `with ONE difference: its own wool is dyed a flat uniform bright CHROMA GREEN (#00B140), the ` +
+  `same green everywhere, with no heathering, no pattern and no shading variation. ` +
+  `Its eyes keep their real colour and stay exactly as they are. ` +
+  `🔴 The GARMENT keeps all of its own real colours and is clearly, fully visible — only the ` +
+  `character's own body is green. Do not leave the garment out. ` +
+  `Macro product photograph against a plain flat pure white background, the whole character ` +
+  `floating in empty space with no ground and no cast shadow on any surface. ` +
+  `Studio lighting: broad soft diffused light from every side with one gentle key from the upper ` +
+  `left. Every wool fibre is resolved. No text, no watermark, no hands, no second character. ` +
+  `Tack sharp, medium format macro, photorealistic craft object.`;
 
 /** (옛 길 · 안 쓴다) 옷만 뜨는 지시문 — 21벌 중 8벌이 프레임을 바꿔 09-06 에 초록 길로 갈았다. */
 const 옷만지시 = (옷이름, 설명) =>
