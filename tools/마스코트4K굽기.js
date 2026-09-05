@@ -480,26 +480,71 @@ match. Heavy and sleepy, about to switch off.`) },
    * ⚠ 마린 집중은 이미 위에 있어 여기서 뺀다(17장). */
 
   { 누구: '몽글', 이름: '몽글_집중', 카메라: 몽글카메라, 참조: '몽글_본체.png',
-    얼굴: 몽글눈(`Each eye is a NARROW HORIZONTAL SLIT of dark brown embroidery thread — a long
-thin capsule with rounded ends, about three times wider than it is tall. Both identical.
-Narrowed in concentration, watching one thing closely.`) },
+    /* 🔴 09-05 밤 재판정 — 「슬릿(찢어진 틈)」이라 시켰더니 «뭉개진 갈색 자국»이 났다(애벌레처럼).
+     *   몽글의 눈은 «검은 구슬» 아니면 «수놓은 실선» 둘뿐이다 — 눈웃음(^^)·안도가 그 문법이라
+     *   깨끗한데, 슬릿은 그 밖이라 인형이 아닌 것이 됐다. ⇒ 실선으로 되돌린다. */
+    얼굴: 몽글눈(`Each eye is ONE SINGLE STRAIGHT HORIZONTAL LINE of dark brown embroidery
+thread stitched into the felt — a clean flat stroke like a dash, perfectly level, with no curve
+at all and no thickening anywhere along it. Same length and same weight as the stitched curves
+of a sleeping eye, just straight instead of curved. Both identical, both level with each other.
+Concentrating, watching one thing closely.
+🔴 These are STITCHES, not eyes squeezed shut: flat embroidery thread lying on the wool. No
+bead, no eyeball, no white, no socket, no dent, no smudge, nothing three-dimensional.`) },
   { 누구: '몽글', 이름: '몽글_응원', 카메라: 몽글카메라, 참조: '몽글_본체.png',
     /* 🔴 09-05 재판정 — 첫 판에서 응원·감동·뾰로통 셋이 「크게 뜬 검은 눈」으로 서로 닮았다.
      *   ⇒ 셋에 «축»을 하나씩 더해 벌린다: 응원=위를 본다 · 감동=물방울이 맺힌다 · 뾰로통=완전히 옆. */
-    얼굴: 몽글눈(`Each eye is a LARGE perfectly round glossy black bead, noticeably bigger than
-usual, and BOTH ARE LOOKING UPWARD — each bead is pushed toward the TOP of its socket so a
-crescent of felt shows underneath it, the gaze lifted up and away from the viewer as if looking
-up at someone cheering them on. Two white highlights in each, placed high. Both identical.`) },
+    /* 🔴 09-05 밤 유호 교정 「너무 징그러운 느낌이 강한데?」 — 앞 판이 구슬을 «소켓 안에서»
+     *   밀라고 시켰더니 모델이 빈자리를 «흰 살»로 채웠다. 몽글은 검은 구슬 하나가 눈 «전체»라
+     *   흰자가 없는데, 없던 흰자가 생기니 인형이 갑자기 사람 눈을 가진 꼴이 됐다.
+     *   (까몽은 원래 흰자가 있고 마린은 렌즈라 같은 지시가 통했다 — 몽글만 문법이 다르다.)
+     *   ⇒ 시선을 «움직이지» 않는다. 크기와 빛으로만 감정을 낸다. */
+    /* 🔴 09-05 밤 재판정 — 흰자는 없어졌지만 «본체와 구분이 안 됐다»(크기 차이가 안 읽힌다).
+     *   ⇒ 훨씬 더 크게 키우고 간격도 좁혀, 얼굴 전체가 «눈으로 가득 찬» 인상이 되게 한다. */
+    얼굴: 몽글눈(`Each eye is a round glossy black bead that is MUCH BIGGER than usual — nearly
+twice the normal diameter, big enough that the two beads dominate the face — and the pair sits
+a little CLOSER together than usual. Each bead carries two bright white highlights set high, so
+they look lit up from within. Wide-eyed, thrilled, cheering someone on. Both identical.
+🔴 ABSOLUTELY NO WHITE OF THE EYE anywhere: no sclera, no eyeball, no crescent or sliver of
+white or pale felt beside, above or below either bead. The bead IS the whole eye, seated tight
+in the wool with the felt closing right up against its rim on every side. Do not move the beads
+off-centre and do not squash or reshape them — they stay perfectly round.`) },
   { 누구: '몽글', 이름: '몽글_감동', 카메라: 몽글카메라, 참조: '몽글_본체.png',
-    얼굴: 몽글눈(`Each eye is a large round glossy black bead, and ONE SINGLE CLEAR TEARDROP is
-sitting on the felt just below each eye — a small round bead of water catching the light,
-resting on the wool without running down. The eyes themselves are wet and shining with a wide
-soft highlight across the upper half. Both identical. Moved to tears, but the face is calm.`) },
+    /* 🔴 09-05 밤 재판정 — 첫 판의 눈물이 «유리 구슬»처럼 크고 딱딱해 펠트 위에서 이질적이었다.
+     *   ⇒ 작고 옅게, 양모에 스며드는 물기로 낮춘다. */
+    /* 🔴 09-05 밤 세 번째 — 눈물 크기를 «중간»으로 잡는다(유호 「중간으로 한번 더」).
+     *   첫 판 = 유리 구슬처럼 크고 딱딱해 펠트 위에서 이질적이었다.
+     *   둘째 판 = 너무 옅어 거의 안 보였다(감동으로 안 읽힌다).
+     *   ⇒ 크기는 구슬의 절반, 모양은 또렷한 물방울, 다만 «유리 반사»가 아니라 «양모에 앉은 물». */
+    얼굴: 몽글눈(`Each eye is a round glossy black bead of the usual size, and one clear
+teardrop rests on the wool just below each eye. The drop is about HALF the width of the bead —
+small but plainly visible as a drop, with a rounded top and a slightly pointed bottom. Its edge
+is soft where it meets the fibres, as if real water were sitting on wool, and it catches one
+gentle soft highlight rather than a hard glassy glint. The beads themselves are wet and shining.
+Both identical. The face stays calm and gentle.`) },
   { 누구: '몽글', 이름: '몽글_뾰로통', 카메라: 몽글카메라, 참조: '몽글_본체.png',
-    얼굴: 몽글눈(`Both eyes are looking HARD to one side — each bead is jammed all the way
-against the LEFT edge of its socket, so far over that a wide crescent of bare felt shows on the
-right side of each eye. The gaze is aimed completely off the frame to the left, refusing to
-look at the viewer, and both beads sit slightly lower than usual. Sulking in a playful way.`) },
+    /* 🔴 09-05 밤 유호 교정 「너무 징그러운 느낌이 강한데?」 — 위 응원과 같은 병이었다.
+     *   구슬을 «옆으로» 밀라고 시켰더니 반대편에 흰 살이 생겼다.
+     *   ⇒ 시선 대신 «자리와 크기»로 낸다: 눈을 조금 아래·조금 가깝게 두면 미간이 좁아져
+     *     찡그린 것처럼 읽힌다. 흰자는 한 점도 만들지 않는다. */
+    /* 🔴 09-05 밤 두 번째 재판정 — 구슬을 옮기니 흰자가 났고(첫 판), 작게 하니 한쪽이
+     *   뭉개졌다(둘째 판). 구슬을 만지는 길이 두 번 다 실패했다.
+     *   ⇒ 실선으로 간다. 겹치지 않게 셋을 갈라 둔다: 집중=곧은 수평선 · 안도=휜 얕은 호 ·
+     *     뾰로통=바깥으로 «처진» 짧은 선(안쪽 끝이 높고 바깥 끝이 낮다). */
+    /* 🔴 09-05 밤 세 번째 — 유호 교정 「입만 빼고 >< 로 하면 될것같은데?」.
+     *   앞 판의 «눈 모양»은 유호님이 좋다 하셨고 «입»만 탈이었다. 입을 부른 것은 문면에 넣은
+     *   감정 낱말(frown·unhappy)로 보인다 — 얼굴 전체를 찡그리게 만들면서 없던 입까지 그렸다.
+     *   ⇒ 감정 낱말을 전부 빼고 «모양»만 말한다. 그리고 입 금지를 눈 틀 밖에서 한 번 더 못 박는다. */
+    얼굴: 몽글눈(`Each eye is made of TWO SHORT STRAIGHT STITCHES of dark brown embroidery
+thread that meet at a point, and the point faces INWARD toward the middle of the face: the eye
+on the left forms a ">" shape and the eye on the right forms a "<" shape. Think of the caret
+"^" of a smiling eye rotated a quarter turn so it lies on its side. The two mirror each other
+exactly, same size, same thickness, level with each other.
+🔴 EXACTLY TWO MARKS ON THE ENTIRE FACE AND NOTHING ELSE. There is NO MOUTH of any kind —
+no line, no stitch, no curve, no dash, no dot anywhere below the eyes or between them. The felt
+below the eyes is completely bare and smooth. No nose, no eyebrows, no blush, no cheeks, no
+teeth, no tongue. Do not add any facial feature that is not one of these two stitched marks.
+🔴 These are flat STITCHES lying on the wool — no bead, no eyeball, no white, no socket,
+no dent, nothing three-dimensional.`) },
   { 누구: '몽글', 이름: '몽글_궁금함', 카메라: 몽글카메라, 참조: '몽글_본체.png',
     얼굴: 몽글눈(`The two eyes do NOT match in size. One is a large round glossy black bead
 opened wide; the other is clearly smaller, the same round bead shrunk. Curious, head-tilting
