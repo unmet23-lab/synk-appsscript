@@ -2198,6 +2198,197 @@
             "쇠": "공방_반짝큰"
           }
         ]
+      },
+      {
+        "이름": "부품 색 갈래 2차",
+        "쓰는 곳": "앱 UI·지면·PPT — 신호를 나르는 부품 다섯을 브랜드 여섯 색으로 채운다",
+        "_결": "🔴 09-05 실측: 색 갈래가 있는 부품은 5종뿐이고 163종이 한 색이었다. 재염색으로 만들지 않는다(유호 09-05).",
+        "상태": "0/18",
+        "것들": [
+          {
+            "이름": "단추 코랄",
+            "상태": "아직",
+            "쇠": "공방_단추_코랄",
+            "규격": "부품",
+            "지시": "A single round button cut from warm coral wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame."
+          },
+          {
+            "이름": "단추 자주",
+            "상태": "아직",
+            "쇠": "공방_단추_자주",
+            "규격": "부품",
+            "지시": "A single round button cut from deep plum wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame."
+          },
+          {
+            "이름": "매듭점 버터",
+            "상태": "아직",
+            "쇠": "공방_매듭점_버터",
+            "규격": "부품",
+            "지시": "A small trefoil knot tied from thick butter yellow wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame."
+          },
+          {
+            "이름": "매듭점 무채",
+            "상태": "아직",
+            "쇠": "공방_매듭점_무채",
+            "규격": "부품",
+            "지시": "A small trefoil knot tied from thick warm grey wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame."
+          },
+          {
+            "이름": "매듭점 자주",
+            "상태": "아직",
+            "쇠": "공방_매듭점_자주",
+            "규격": "부품",
+            "지시": "A small trefoil knot tied from thick deep plum wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame."
+          },
+          {
+            "이름": "폼폼 코랄",
+            "상태": "아직",
+            "쇠": "공방_폼폼_코랄",
+            "규격": "부품",
+            "지시": "A round pom-pom of warm coral wool yarn, dense and fluffy, its cut fibres standing out evenly in every direction so the edge reads as soft fuzz rather than a hard circle. Seen straight on from the front. Nothing else in frame."
+          },
+          {
+            "이름": "폼폼 무채",
+            "상태": "아직",
+            "쇠": "공방_폼폼_무채",
+            "규격": "부품",
+            "지시": "A round pom-pom of warm grey wool yarn, dense and fluffy, its cut fibres standing out evenly in every direction so the edge reads as soft fuzz rather than a hard circle. Seen straight on from the front. Nothing else in frame."
+          },
+          {
+            "이름": "폼폼 자주",
+            "상태": "아직",
+            "쇠": "공방_폼폼_자주",
+            "규격": "부품",
+            "지시": "A round pom-pom of deep plum wool yarn, dense and fluffy, its cut fibres standing out evenly in every direction so the edge reads as soft fuzz rather than a hard circle. Seen straight on from the front. Nothing else in frame."
+          },
+          {
+            "이름": "체크 표시 코랄",
+            "상태": "아직",
+            "쇠": "공방_체크표시_코랄",
+            "규격": "부품",
+            "지시": "A bold check mark tick cut from warm coral wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+          },
+          {
+            "이름": "체크 표시 라피스",
+            "상태": "아직",
+            "쇠": "공방_체크표시_라피스",
+            "규격": "부품",
+            "지시": "A bold check mark tick cut from lapis blue wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+          },
+          {
+            "이름": "체크 표시 메도우",
+            "상태": "아직",
+            "쇠": "공방_체크표시_메도우",
+            "규격": "부품",
+            "지시": "A bold check mark tick cut from meadow green wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+          },
+          {
+            "이름": "체크 표시 버터",
+            "상태": "아직",
+            "쇠": "공방_체크표시_버터",
+            "규격": "부품",
+            "지시": "A bold check mark tick cut from butter yellow wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+          },
+          {
+            "이름": "체크 표시 자주",
+            "상태": "아직",
+            "쇠": "공방_체크표시_자주",
+            "규격": "부품",
+            "지시": "A bold check mark tick cut from deep plum wool felt, its edges hand stitched with small even blanket stitches in cream thread."
+          },
+          {
+            "이름": "완료 도장 코랄",
+            "상태": "아직",
+            "쇠": "공방_완료도장_코랄",
+            "규격": "부품",
+            "지시": "A round rubber-stamp mark pressed in warm coral ink onto pale cream felt, its edge slightly broken the way a hand stamp prints unevenly."
+          },
+          {
+            "이름": "완료 도장 메도우",
+            "상태": "아직",
+            "쇠": "공방_완료도장_메도우",
+            "규격": "부품",
+            "지시": "A round rubber-stamp mark pressed in meadow green ink onto pale cream felt, its edge slightly broken the way a hand stamp prints unevenly."
+          },
+          {
+            "이름": "완료 도장 버터",
+            "상태": "아직",
+            "쇠": "공방_완료도장_버터",
+            "규격": "부품",
+            "지시": "A round rubber-stamp mark pressed in butter yellow ink onto pale cream felt, its edge slightly broken the way a hand stamp prints unevenly."
+          },
+          {
+            "이름": "완료 도장 무채",
+            "상태": "아직",
+            "쇠": "공방_완료도장_무채",
+            "규격": "부품",
+            "지시": "A round rubber-stamp mark pressed in warm grey ink onto pale cream felt, its edge slightly broken the way a hand stamp prints unevenly."
+          },
+          {
+            "이름": "완료 도장 자주",
+            "상태": "아직",
+            "쇠": "공방_완료도장_자주",
+            "규격": "부품",
+            "지시": "A round rubber-stamp mark pressed in deep plum ink onto pale cream felt, its edge slightly broken the way a hand stamp prints unevenly."
+          }
+        ]
+      },
+      {
+        "이름": "글자 시험",
+        "쓰는 곳": "표지·제목 — 되면 명품 글자를 굽고, 안 되면 오려 만드는 쪽이 유일한 길로 확정된다",
+        "_결": "🔑 두 장만 던져 잰다. 이미지 모델이 한글 자모를 흘리는 것은 흔하다.",
+        "상태": "0/2",
+        "것들": [
+          {
+            "이름": "펠트 글자 · 한국어",
+            "상태": "아직",
+            "쇠": "공방_글자_한국어",
+            "규격": "부품",
+            "지시": "Three Korean hangul characters spelling the word 한국어, each character cut by hand from warm coral wool felt and laid side by side in a row, reading left to right: first 한, then 국, then 어. Each character is a single flat felt shape, its outline hand stitched all the way round with small even blanket stitches in cream thread. The letterforms are thick, geometric and evenly weighted like a bold sans-serif. The three characters are the only things in the frame and none of them touch each other."
+          },
+          {
+            "이름": "자수 글자 · SYNK",
+            "상태": "아직",
+            "쇠": "공방_글자_SYNK",
+            "규격": "부품",
+            "지시": "The four latin letters S Y N K embroidered in a row on a piece of pale cream wool felt, worked in dense satin stitch with lapis blue thread so each letter sits slightly raised above the cloth, the individual stitches clearly visible across the letter strokes. The letters are bold, upright and evenly spaced, reading SYNK from left to right. Nothing else on the cloth — no border, no other marks."
+          }
+        ]
+      },
+      {
+        "이름": "옷입히기 시험",
+        "쓰는 곳": "옷입히기 75장을 어느 길로 구울지 가른다 — 굽기 전에 재는 자",
+        "_결": "🔑 같은 목도리를 세 길로 굽는다. 이긴 길로 나머지 72장을 던진다.",
+        "상태": "0/3",
+        "것들": [
+          {
+            "이름": "ⓐ 목도리만 (참조 없이)",
+            "상태": "아직",
+            "쇠": "공방_옷시험_a_참조없이",
+            "규격": "부품",
+            "지시": "A chunky hand-knitted winter scarf in cream and coral stripes, its ends finished with short tassels, the wool thick and soft so the ribbing stands out clearly. The scarf is laid out on its own, curved into a soft horseshoe shape as if about to be put around a neck. No wearer, no mannequin, no body of any kind in the frame."
+          },
+          {
+            "이름": "ⓑ 목도리만 (몽글 참조)",
+            "상태": "아직",
+            "쇠": "공방_옷시험_b_참조",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/정본_4K/몽글_본체.png"
+            ],
+            "지시": "A chunky hand-knitted winter scarf in cream and coral stripes, its ends finished with short tassels, the wool thick and soft so the ribbing stands out clearly. Size and curve it so that it would fit exactly around the neck of the felt character in the reference image, matching that character proportions. Show ONLY the scarf — the character itself must NOT appear anywhere in the picture."
+          },
+          {
+            "이름": "ⓒ 몽글이 두른 채",
+            "상태": "아직",
+            "쇠": "공방_옷시험_c_입힌채",
+            "규격": "부품",
+            "참조": [
+              "docs/캐릭터/정본_4K/몽글_본체.png"
+            ],
+            "지시": "The exact felt character from the reference image, unchanged in shape, colour and face, now wearing a scarf around its neck. A chunky hand-knitted winter scarf in cream and coral stripes, its ends finished with short tassels, the wool thick and soft so the ribbing stands out clearly. Keep the character identical to the reference — same body, same eyes, same wool texture. Only the scarf is added."
+          }
+        ]
       }
     ]
   },

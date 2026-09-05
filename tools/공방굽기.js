@@ -50,7 +50,10 @@ function 고른다() {
   for (const [통로, 묶음들] of Object.entries(계획)) {
     if (통로.startsWith('_') || !묶음들.묶음) continue;
     for (const 묶 of 묶음들.묶음) {
-      if (인자.묶음 && 묶.이름 !== 인자.묶음) continue;
+      /* 🔑 묶음은 «쉼표로 여럿» 줄 수 있다(09-05 저녁). 계획에는 여러 트랙이 각자
+       *   구울 것을 넣어 두므로, 이름 없이 던지면 남의 몫까지 함께 나간다 —
+       *   그날 계획에 「아직」이 93장(31,248원) 있었고 그중 내 몫은 23장이었다. */
+      if (인자.묶음 && !String(인자.묶음).split(',').map((s) => s.trim()).includes(묶.이름)) continue;
       for (const 것 of 묶.것들 || []) {
         if (것.상태 !== '아직') continue;
         if (인자.것 && !String(인자.것).split(',').some((s) => 것.이름.includes(s.trim()))) continue;
