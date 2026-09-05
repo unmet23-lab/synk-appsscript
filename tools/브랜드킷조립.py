@@ -12,6 +12,7 @@ import datetime
 import io
 import json
 import os
+import subprocess
 import sys
 
 if hasattr(sys.stdout, 'buffer'):
@@ -25,11 +26,30 @@ except ImportError:
 뿌리 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 토큰경로 = os.path.join(뿌리, 'docs', '디자인_토큰.json')
 패치뿌리 = os.path.join(뿌리, 'docs', '캐릭터', '펠트패치_0815')
-# 마스코트 그림 = «지금 정본» — 토큰 정본사진.평상복(펠트 코랄 · 유호 픽 08-15 ㉠재염색)을 그대로 싣는다.
-# ⚠구판(펠트코랄_0815/재염색_본체.png 체리 젤리 · 그 누끼)을 쓰지 않는다 — 유호 교정 08-15 「적용 제대로」.
+# 마스코트 그림 = «지금 정본» — 토큰 정본사진.평상복(정본_4K)을 그대로 싣는다.
 #   경로를 하드코딩하지 않고 토큰에서 읽으므로 정본이 갈리면 재조립이 따라간다(F472 문법).
-펠트표정 = ['재염색_눈웃음.png', '재염색_눈감음.png']   # 평상복 정본 사진과 같은 폴더의 표정판
+# 🔴 2026-09-05 수리 — 표정 두 장의 «파일 이름»이 여기 손으로 적혀 있었다(`재염색_눈웃음.png`·
+#   `재염색_눈감음.png`). 그 이름은 그날 정본에서 내려간 옛 세트의 것이라(유호 「색 표현이
+#   싸구려 같아」) 정본_4K 에는 없는 파일이고, 아래 조립이 `os.path.exists` 로 감싸 있어서
+#   **표정 두 장이 소리 없이 빠질 참이었다** — 오류도 안 나고 지면만 조용히 얇아진다.
+#   ⇒ 이름을 여기 안 적는다. 컷 어휘의 주인(`tools/lib/마스코트자산.js`)에게 «어느 파일인가»를
+#     묻고, 없으면 던진다(홈페이지 시안 굽기와 같은 규율).
+펠트표정어휘 = ['눈웃음', '눈감음']   # «감정»이 아니라 그림 컷 이름 — 모듈이 파일로 옮겨 준다
 출력 = os.path.join(뿌리, 'docs', '브랜드킷.html')
+
+
+def 정본컷경로(컷: str) -> str:
+    """마스코트자산 모듈에 «어느 파일인가»를 묻는다 — 경로도 파일 이름도 여기 안 적는다."""
+    모듈 = os.path.join(뿌리, 'tools', 'lib', '마스코트자산.js').replace(os.sep, '/')
+    r = subprocess.run(
+        ['node', '-e', f"const a=require({모듈!r});process.stdout.write(a.경로({컷!r},{{누끼:true}}));"],
+        capture_output=True, text=True, encoding='utf-8')
+    if r.returncode != 0 or not (r.stdout or '').strip():
+        raise SystemExit(f'마스코트자산 모듈이 컷 「{컷}」의 경로를 안 준다: ' + (r.stderr or '').strip())
+    p = os.path.join(뿌리, (r.stdout or '').strip().replace('/', os.sep))
+    if not os.path.exists(p):
+        raise SystemExit(f'모듈이 준 경로에 파일이 없다: {p}')
+    return p
 
 
 def 럼(hexv):
@@ -130,11 +150,15 @@ def main():
         f'<b>{esc(d["이름"])}</b><code>{d["hex"]}</code></div>'
         for d in 마.get('평상복램프', []))
     정본사진 = os.path.join(뿌리, 펠트['정본사진']['평상복'].replace('/', os.sep))
-    마컷 = png_uri(정본사진, 최대변=460) if os.path.exists(정본사진) else None
+    if not os.path.exists(정본사진):
+        raise SystemExit(f'토큰이 가리키는 평상복 정본이 없다: {정본사진}')
+    마컷 = png_uri(정본사진, 최대변=460)
+    # 꼬리말이 가리키는 폴더도 토큰에서 «파생»한다 — 손으로 적으면 정본이 갈리는 날 거짓말이 된다.
+    마스코트정본폴더 = os.path.dirname(펠트['정본사진']['평상복'])
     표정컷 = ''.join(
-        f'<img src="{png_uri(os.path.join(os.path.dirname(정본사진), n), 최대변=150)}" alt="" '
+        f'<img src="{png_uri(정본컷경로(컷), 최대변=150)}" alt="" '
         f'style="width:104px;border-radius:12px">'
-        for n in 펠트표정 if os.path.exists(os.path.join(os.path.dirname(정본사진), n)))
+        for 컷 in 펠트표정어휘)
 
     # ── 펠트 패치 (역할 장부에서 — 노출층/무대 뒤를 갈라서) ────────────────
     # 🔴 천은 «구운 실물»이라 색표처럼 걷어낼 수 없다 — 감추면 「천이 다 있다」로 읽힌다.
@@ -353,7 +377,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 
 <footer>정본 사슬 — 색·서체·감각·사운드·재질 값: docs/디자인_토큰.json · 규칙 전문: DESIGN.md · 컨셉: docs/디자인_컨셉_정본_v1.md ·
 로고 도형: docs/발표물/_브랜드킷.md §3 · 재질 역할 장부: docs/캐릭터/펠트패치_0815/라이브러리.json ·
-마스코트 렌더 정본: docs/캐릭터/펠트코랄_0815</footer>
+마스코트 렌더 정본: {마스코트정본폴더}</footer>
 </body></html>'''
 
     with open(출력, 'w', encoding='utf-8') as f:
@@ -383,6 +407,18 @@ def _룸입히기(경로):
             print('   ' + 줄.strip())
     if r.returncode != 0:
         raise SystemExit(f'🔴 Loom 얹기 실패(rc={r.returncode}) — 부품 없이 굽힌 판을 남기지 않는다')
+
+    # 🔴 2026-09-05 — 서체를 여기서 «같이» 심는다. 그전엔 이 도구가 지면을 새로 쓰면서 심긴 SUIT 를
+    #   날렸고, 다시 심는 것은 사람 손에 맡겨져 있었다(그래서 재조립할 때마다 `tests/지면폰트.test.js`
+    #   ④⑦ 이 빨개졌다). 굽는 자가 자기 산출물을 완성하지 않으면 그 빈칸은 매번 사람이 메워야 한다.
+    통로2 = os.path.join(뿌리, 'tools', 'lib', '브랜드폰트.js')
+    r2 = subprocess.run(['node', 통로2, '--심기', 경로], capture_output=True,
+                        text=True, encoding='utf-8', errors='replace')
+    for 줄 in ((r2.stdout or '') + (r2.stderr or '')).strip().splitlines():
+        if 줄.strip():
+            print('   ' + 줄.strip())
+    if r2.returncode != 0:
+        raise SystemExit(f'🔴 서체 심기 실패(rc={r2.returncode}) — 서체 없는 판을 남기지 않는다')
 
 
 if __name__ == '__main__':
