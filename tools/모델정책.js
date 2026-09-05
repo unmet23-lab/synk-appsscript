@@ -1291,7 +1291,21 @@ const 제미나이문들 = {
  *   배포 통로(clasp)가 늘 살려 두는 자격이라 따로 갱신할 것이 없고, 권한에 `cloud-platform` 이 들어 있다.
  *   🔑 사본을 만들지 않는다 — 만들면 clasp 갱신 때 둘이 갈리고 갈린 쪽은 조용하다.
  *   ⚠ 되살리는 법은 하나: `npx clasp login`(유호님 손 · 브라우저 동의 한 번). 그 절차를 오류문이 직접 말한다. */
-const 벌텍스프로젝트 = () => process.env.SYNK_VERTEX_PROJECT || 'gen-lang-client-0106203750';
+/** 굽기가 쓸 «다른 계정»의 자격 파일. 있으면 그것을, 없으면 clasp 자격으로 되돌아간다.
+ *  🔑 배포(clasp)와 굽기(Vertex)의 계정을 가르는 자리다 — `~/.clasprc.json` 을 갈아끼우면 배포가 죽으므로
+ *     계정을 옮길 때는 이 파일만 새로 받는다(tools/구글계정붙이기.js · 09-06 신설). */
+function 붙인자격() {
+  const os = require('os');
+  const path = require('path');
+  if (process.env.SYNK_VERTEX_OAUTH) return process.env.SYNK_VERTEX_OAUTH;
+  const 붙인것 = path.join(os.homedir(), '.synk-vertex-oauth.json');
+  return fs.existsSync(붙인것) ? 붙인것 : path.join(os.homedir(), '.clasprc.json');
+}
+/** 그 자격 파일이 「어느 프로젝트로 가라」고 적어 둔 값(tools/구글계정세우기.js 가 적는다). */
+function 붙인프로젝트() {
+  try { return JSON.parse(fs.readFileSync(붙인자격(), 'utf8')).프로젝트 || null; } catch { return null; }
+}
+const 벌텍스프로젝트 = () => process.env.SYNK_VERTEX_PROJECT || 붙인프로젝트() || 'gen-lang-client-0106203750';
 const 벌텍스위치 = () => process.env.SYNK_VERTEX_LOCATION || 'global'; // 리전 문은 10% 비싸다 — 전역이 기본
 
 /** Vertex 용 access token. 1시간짜리라 임시 파일에 캐시해 프로세스들이 나눠 쓴다(값은 어디에도 안 적는다). */
@@ -1304,10 +1318,10 @@ async function 벌텍스토큰() {
     if (c && c.token && c.expiry > Date.now() + 120_000) return c.token;
   } catch { /* 없거나 깨졌으면 새로 만든다 */ }
 
-  const 자격경로 = process.env.SYNK_VERTEX_OAUTH || path.join(os.homedir(), '.clasprc.json');
+  const 자격경로 = 붙인자격();
   if (!fs.existsSync(자격경로)) {
     throw 확인불가(`Vertex 토큰의 뿌리(구글 로그인)를 못 찾았다: ${자격경로}\n`
-      + `   되살리는 법: npx clasp login — 브라우저가 한 번 열리고 그 뒤로는 자동이다.`);
+      + `   되살리는 법: node tools/구글계정붙이기.js --계정 <메일주소> — 브라우저가 한 번 열리고 그 뒤로는 자동이다.`);
   }
   const j = JSON.parse(fs.readFileSync(자격경로, 'utf8'));
   const t = (j.tokens && j.tokens.default) || j;
