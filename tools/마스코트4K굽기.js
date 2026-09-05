@@ -182,6 +182,19 @@ const 판들 = [
   { 누구: '몽글', 이름: '몽글_눈웃음', 카메라: 몽글카메라,          얼굴: 몽글눈웃음, 참조: '재염색_눈웃음.png' },
   { 누구: '몽글', 이름: '몽글_좌34',   카메라: 몽글카메라34('left'),  얼굴: 몽글눈뜸,   참조: '재염색_좌34.png' },
   { 누구: '몽글', 이름: '몽글_우34',   카메라: 몽글카메라34('right'), 얼굴: 몽글눈뜸,   참조: '재염색_우34.png' },
+  /* 🔴 09-05 — 첫 배치에서 «빠뜨렸다». 옛 정본의 몽글 표정은 여섯인데(마스코트자산.js 의 `표정`)
+   *   다섯만 구웠다. 그대로 정본을 갈면 `경로('놀람')` 이 없는 파일을 가리킨다.
+   *   옛 놀람은 «합성물»이었다 — 본체의 구슬을 1.35배로 키워 얹은 판이라 배경판이 아예 없었다.
+   *   이제는 그것도 제대로 굽는다. 그래서 이 자리부터 놀람이 «합성물이 아니게» 된다. */
+  { 누구: '몽글', 이름: '몽글_놀람', 카메라: 몽글카메라, 참조: '재염색_본체.png',
+    얼굴: `FACE: exactly two eyes and nothing else. Each eye is a perfectly round glossy BLACK
+bead, smooth and shiny like polished glass with one tiny white highlight. STARTLED — the beads
+are noticeably LARGER than usual, about one and a third times their normal size, which is what
+makes the doll read as surprised. Nothing else about the face changes.
+${눈박힘}
+The two beads sit at exactly the same height, level with each other, in the upper third of the
+doll. They are set WIDE APART — the gap between them is about one third of the doll's full
+width. No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.` },
 
   /* 까몽 10 */
   { 누구: '까몽', 이름: '까몽_본체', 카메라: 까몽카메라, 참조: '까몽_본체.png',
