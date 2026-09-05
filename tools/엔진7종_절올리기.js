@@ -45,7 +45,12 @@ function 장부읽기() {
 }
 function 장부쓰기(j) {
   fs.mkdirSync(낼곳, { recursive: true });
-  fs.writeFileSync(장부경로, JSON.stringify(j, null, 2), 'utf8');
+  /* 🔴 [09-05] 절 여럿을 동시에 돌리면 두 프로세스가 같은 순간 장부를 열다 윈도가 막는다(§15 · EUNKNOWN -4094).
+   *   결과 파일은 이미 섰는데 장부만 못 써 «끝»이 비는 자리라, 잠깐 쉬고 세 번까지 다시 쓴다. */
+  for (let 회 = 0; ; 회++) {
+    try { fs.writeFileSync(장부경로, JSON.stringify(j, null, 2), 'utf8'); return; }
+    catch (e) { if (회 >= 3) throw e; const t = Date.now() + 120 * (회 + 1); while (Date.now() < t) { /* 잠깐 */ } }
+  }
 }
 
 /* 🔑 지시문은 «한 벌»이다 — 절마다 갈면 절끼리 견줄 수 없다(09-03 F045 조건 통제). */
