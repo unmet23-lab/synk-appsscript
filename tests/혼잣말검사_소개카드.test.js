@@ -51,3 +51,24 @@ test('🔴 대사 「너는 100점, 최고야!」 — 숫자·점수·평가어�
   assert.strictEqual(r.status, 1, '종료코드 1 이어야 한다\n' + r.stdout + r.stderr);
   assert.match(r.stderr, /소개카드 .*: 잘했을때 (숫자|점수·등급|평가어)/);
 });
+
+/* 6회차 심문(아스트라) — 대사 칸만 고치고 목록 칸·파일 부재·카드 수를 안 봤다 */
+test('🔴 목록 칸 「이런너에게: 반에서 1등 하고 싶은 너」 — 숫자·남과의 비교로 빨개진다', () => {
+  const p = 사본((j) => { j.카드[2].이런너에게 = ['반에서 1등 하고 싶은 너']; });
+  const r = 돌리기(p);
+  assert.strictEqual(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /소개카드 .*: 이런너에게 (숫자|남과의 비교)/);
+});
+
+test('🔴 카드가 셋 가운데 둘뿐이면 빨개진다 — 「없다」는 「안 재봤다」가 아니다', () => {
+  const p = 사본((j) => { j.카드 = j.카드.slice(0, 2); });
+  const r = 돌리기(p);
+  assert.strictEqual(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /소개카드: 셋이 한 장씩이어야 한다/);
+});
+
+test('🔴 정본 파일이 없으면 빨개진다 — 검사 생략은 통과가 아니다', () => {
+  const r = 돌리기(path.join(os.tmpdir(), 'synk-없는-소개글', '소개글_정본.json'));
+  assert.strictEqual(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /소개카드: 정본 파일이 없다/);
+});
