@@ -26,7 +26,7 @@ const 정책 = require(path.join(__dirname, '모델정책.js'));
 const 마스코트 = require(path.join(__dirname, 'lib', '마스코트자산.js'));
 
 const 뿌리 = path.join(__dirname, '..');
-const 낼곳 = path.join(뿌리, '영상', 'out', '홍보_4K');
+const 낼곳 = path.join(뿌리, '영상', 'out', '홍보_4K_v2');
 const 프로젝트 = process.env.SYNK_VERTEX_PROJECT || 'gen-lang-client-0106203750';
 const 위치 = 'us-central1';
 const 모델 = process.env.SYNK_VEO_MODEL || 'veo-3.1-generate-001';
@@ -41,49 +41,90 @@ const 환율 = 1452;             // ₩435,523 = $300 (크레딧 실측에서 �
  * 결의 기준 = 「누가 봐도 명품」(유호 09-05). 그래서 넷을 지킨다:
  *   ① 느린 카메라 하나만  ② 얕은 심도  ③ 따뜻한 자연광 하나  ④ 넉넉한 여백
  * 🚫 글자는 굽지 않는다 — AI 가 만든 한글은 깨진 자모가 섞이고, 그게 그대로 싸구려 신호다.
- *    글자·로고는 편집에서 «진짜 서체»로 얹는다. */
+ *    글자·로고는 편집에서 «진짜 서체»로 얹는다.
+ *
+ * 🔴 v2 (유호 09-05 「몽글이 까몽이를 만드는 과정을 보여주면서 생명력을 불어넣는 느낌」)
+ *   옛 판은 넷뿐이라 조각을 두 번씩 썼고 「똑같은 장면만 나온다」는 지적을 받았다.
+ *   여덟으로 늘려 **한 장면도 두 번 쓰지 않는다.** 그리고 순서가 곧 이야기다:
+ *     양모 → 찌르기 → 형태 → 눈(생명이 깃드는 순간) → 몽글 → 검은 양모 → 까몽 → 둘이 나란히
+ *
+ * 🔴 입을 못 만들게 막는다 — v1 에서 몽글이에게 없던 입이 생겼다.
+ *   지시문의 「no mouth」만으로는 샜다. 그래서 negativePrompt 로 한 번 더 막는다(아래 굽기()). */
 const 컷들 = [
   {
-    번호: 1, 이름: '아침',
-    지시: 'Cinematic slow dolly-in through a quiet sunlit studio at dawn. Warm morning light rakes '
-      + 'across a cream wool-felt wall, catching individual fibres. A single pale-wood desk holds a small '
-      + 'felt notebook and a brass pen. Dust motes drift slowly through the light beam. Extremely shallow '
-      + 'depth of field, anamorphic lens, muted warm palette, fine film grain, unhurried. '
-      + 'Generous empty space. No text, no letters, no people.',
+    번호: 1, 이름: '양모',
+    지시: 'Extreme macro: a soft mound of coral-pink carded wool roving resting on natural linen. '
+      + 'Warm raking morning light makes the loose fibres glow at the edges. Very slow push-in. '
+      + 'Extremely shallow depth of field, tactile, muted warm palette, fine film grain. Nothing has been '
+      + 'made yet — just raw material waiting.',
   },
   {
-    번호: 2, 이름: '마스코트',
-    그림: '본체',          // 정본 마스코트를 첫 프레임으로 넣는다
-    지시: 'The camera slowly orbits a small coral wool-felt character resting on warm pale wood. '
-      + 'Soft window light from the left. Fine needle-felted fibres catch the light along its edge. '
-      + 'It breathes gently and blinks once, calm and still. Extremely shallow depth of field, '
-      + 'cinematic, muted warm palette, fine film grain. No text, no letters.',
+    번호: 2, 이름: '찌르기',
+    지시: 'Macro, slow motion: a slim felting needle punches rhythmically down into a mound of coral wool. '
+      + 'With each stroke the fibres compress and tangle a little tighter. Warm side light, dust of fibre '
+      + 'in the air. Extremely shallow depth of field, patient and artisanal, fine film grain.',
   },
   {
-    번호: 3, 이름: '손길',
-    지시: 'Macro shot of strands of coral and cream wool roving, a slim felting needle and a few small '
-      + 'felt shapes arranged on natural linen. Warm raking side light. Very slow push-in. Extremely '
-      + 'shallow depth of field, tactile and artisanal, muted warm palette, fine film grain. '
-      + 'No text, no letters, no people, no hands.',
+    번호: 3, 이름: '형태',
+    지시: 'Macro: a rounded dome of densely needle-felted coral wool slowly takes shape on linen as a '
+      + 'felting needle smooths its surface. The form is completely blank — no eyes, no face, nothing on '
+      + 'it yet. Slow rotation, warm light, extremely shallow depth of field, fine film grain.',
   },
   {
-    번호: 4, 이름: '여백',
-    지시: 'Slow pull-back from a calm minimal studio interior. Late afternoon light falls through a tall '
-      + 'window across cream felt panels and pale wood. The room is quiet and almost empty, with generous '
-      + 'negative space on the right side of the frame. Cinematic, muted warm palette, fine film grain, '
-      + 'patient and expensive-looking. No text, no letters, no people.',
+    번호: 4, 이름: '눈',
+    지시: 'Extreme macro, slow motion: two tiny glossy black bead eyes are pressed one by one into a smooth '
+      + 'coral wool-felt dome. Warm light catches the glass as each bead settles into the fibre. This is the '
+      + 'moment it becomes alive. Only the two round black beads are added and nothing else. '
+      + 'Extremely shallow depth of field, quiet and reverent, fine film grain.',
+  },
+  {
+    번호: 5, 이름: '몽글',
+    그림: '몽글_본체',
+    지시: 'The small coral wool-felt character sits still on warm pale wood, then blinks once, very gently, '
+      + 'and settles. Its face has ONLY two small round black bead eyes and a completely smooth blank felt '
+      + 'surface everywhere else. Soft window light from the left, extremely shallow depth of field, '
+      + 'calm and quietly alive, fine film grain.',
+  },
+  {
+    번호: 6, 이름: '검은양모',
+    지시: 'Extreme macro: a mound of charcoal-black carded wool roving on natural linen beside a felting '
+      + 'needle. Warm raking light picks out individual dark fibres against the pale cloth. Very slow '
+      + 'push-in. Extremely shallow depth of field, tactile, fine film grain. A second one is about to begin.',
+  },
+  {
+    번호: 7, 이름: '까몽',
+    그림: '까몽_본체',
+    지시: 'The small charcoal wool-felt cat sits on warm pale wood, its round green eyes catching the light, '
+      + 'then it turns its head very slightly and its tail sways once. Its face has only the two round eyes '
+      + 'and soft dark fur, nothing else. Soft window light, extremely shallow depth of field, '
+      + 'calm and quietly alive, fine film grain.',
+  },
+  {
+    번호: 8, 이름: '둘이',
+    그림파일: 'C:/Users/q1212/AppData/Local/Temp/claude/C--Users-q1212-Documents-SYNK-appsscript/'
+      + '9e3b0927-233a-4298-a186-4675af4e307b/scratchpad/둘이나란히.png',
+    지시: 'The coral felt character and the charcoal felt cat rest side by side on warm pale wood in a '
+      + 'sunlit room. The camera pulls back very slowly, revealing calm empty space around them. '
+      + 'They stay still, breathing gently. Warm afternoon light, extremely shallow depth of field, '
+      + 'muted warm palette, fine film grain, generous negative space.',
   },
 ];
 
 const 잠깐 = (ms) => new Promise((s) => setTimeout(s, ms));
 const 밑 = `https://${위치}-aiplatform.googleapis.com/v1/projects/${프로젝트}/locations/${위치}/publishers/google/models/${모델}`;
 
-/** 마스코트 정본을 영상에 넣을 수 있는 크기로 줄인다(4096²·18MB 는 요청에 싣기엔 크다). */
-function 그림준비(표정) {
-  const 원본 = path.join(뿌리, 마스코트.경로(표정));
-  const 사천 = path.join(뿌리, 'docs', '캐릭터', '정본_4K_후보', `몽글_${표정}.png`);
-  const 쓸것 = fs.existsSync(사천) ? 사천 : 원본;   // 4K 판이 있으면 그쪽이 낫다
-  const 줄인것 = path.join(os.tmpdir(), `synk_마스코트_${표정}_1440.png`);
+/** 첫 프레임에 넣을 그림을 영상이 받을 수 있는 크기로 줄인다(4096²·18MB 는 요청에 싣기엔 크다).
+ *  이름(`몽글_본체`)이면 정본 4K 판을 찾아 쓰고, 통째 경로를 주면 그 파일을 쓴다. */
+function 그림준비(이름, 경로직접) {
+  let 쓸것 = 경로직접;
+  if (!쓸것) {
+    const 사천 = path.join(뿌리, 'docs', '캐릭터', '정본_4K_후보', `${이름}.png`);
+    // 4K 판이 없으면 마스코트 창구가 아는 정본으로 내려간다(경로를 여기 새로 적지 않는다).
+    쓸것 = fs.existsSync(사천) ? 사천
+      : path.join(뿌리, 이름.startsWith('까몽') ? 마스코트.까몽경로('본체') : 마스코트.경로('본체'));
+  }
+  if (!fs.existsSync(쓸것)) throw new Error(`첫 프레임 그림이 없다: ${쓸것}`);
+  const 줄인것 = path.join(os.tmpdir(), `synk_첫프레임_${path.basename(쓸것, '.png')}_1440.png`);
   if (!fs.existsSync(줄인것)) {
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', 쓸것, '-vf', 'scale=1440:-1', 줄인것]);
   }
@@ -128,12 +169,16 @@ async function 굽기(컷) {
   const parameters = {
     sampleCount: 1, durationSeconds: 컷길이, aspectRatio: '16:9',
     resolution: '4k', generateAudio: false, personGeneration: 'dont_allow',
+    /* 🔴 v1 에서 몽글이에게 «없던 입»이 생겼다(유호 09-05 지적). 지시문의 no mouth 만으로는 샜다.
+     *   여기서 한 번 더 막는다 — 얼굴에 눈 말고 아무것도 안 생기게. */
+    negativePrompt: 'mouth, lips, teeth, smile, tongue, nose, nostrils, eyebrows, eyelashes, '
+      + 'face features, text, letters, words, watermark, subtitles, logo',
   };
   const instance = { prompt: 컷.지시 };
-  if (컷.그림) {
-    const g = 그림준비(컷.그림);
+  if (컷.그림 || 컷.그림파일) {
+    const g = 그림준비(컷.그림, 컷.그림파일);
     instance.image = { bytesBase64Encoded: fs.readFileSync(g.파일).toString('base64'), mimeType: 'image/png' };
-    console.log(`   🧸 첫 프레임에 정본 마스코트를 넣는다: ${path.basename(g.출처)}`);
+    console.log(`   🧸 첫 프레임: ${path.basename(g.출처)}`);
   }
 
   const r = await fetch(`${밑}:predictLongRunning`, {
