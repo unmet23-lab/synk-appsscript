@@ -72,6 +72,42 @@ const 규격표 = {
     'No people, no animals, no dolls, no figures of any kind are anywhere in the picture. ' +
     'Soft daylight from one side, gentle and even, every wool fibre resolved. ' +
     'Calm, quiet, expensive-looking craft photography. No text, no watermark, no hands.',
+  /* 🔴 «입힘» — 마스코트에게 옷·장식을 «씌운 채» 굽는다 (2026-09-05 밤 신설 · 유호 확정
+   *   「오려얹은거는 매우 별로다. 씌운 채가 정말 자연스럽고 좋아」 · 결정.md 09-05).
+   *
+   *   왜 다섯째가 필요했나 — 네 길을 실물로 견줬다(인계문 `docs/_ops/인계_옷입히기_0905.md` §①):
+   *     ⓐ옷만 굽기 = 펼쳐진 모양 · 몸과 크기가 무관 ⓑ참조 주고 옷만 = 목 고리까지는 나오나
+   *     «두른» 것이 아니라 잘린 모양 ⓒ씌운 채 = ✅ 감김·조명·그림자·각도가 몸을 따라 온다
+   *     ⓓ씌우고 옷만 오려 얹기 = 🚫 색이 흐려지고 술이 잘린다(도구 둘은 남았으나 안 쓴다).
+   *   ⇒ 굵기·조명·각도 셋은 «어떤 몸에 감기는지»를 봐야 나온다. 그래서 참조가 필수다.
+   *
+   *   🔴 급소 = **가리는 넓이가 늘수록 마스코트가 더 다시 그려진다**(09-05 실측).
+   *     꽃 머리핀·선글라스는 거의 그대로인데, 목도리는 눈이 뚜렷이 커지고 몸이 넓어진다.
+   *     아래 «지키는 문장»이 그래서 규격에 박혀 있다. 그래도 완전히는 안 지켜진다.
+   *   ⚠ 재는 자는 «얼굴을 크게 잘라 원본과 견주기» 하나다 — 수치로 재려고 crop·resize 하면
+   *     픽셀이 어긋나 거짓 수가 나온다(09-05 밤에 「몸의 9.6%만 원본」이라는 틀린 수를 한 번 냈다).
+   *   ⚠ 이 규격은 «셋에게 공통인 것»만 든다. 마스코트마다 다른 표식(몽글의 가리비 밑단,
+   *     까몽의 사과빛 홍채, 마린의 버터빛 렌즈)은 항목의 `지시` 가 든다 —
+   *     `tools/옷입히기계획.js` 가 마스코트별로 그 줄을 붙여 낸다. */
+  입힘:
+    'The character in the reference image is wearing the garment described above, and the ' +
+    'picture shows the whole character wearing it. ' +
+    'The character is EXACTLY the felt character in the reference image — the same silhouette, ' +
+    'the same body colour and wool texture, the same eyes in the same position, at the same ' +
+    'spacing and the same small size. Do not redraw it, do not restyle it, do not enlarge the ' +
+    'eyes, do not widen or resize the body. Only the garment is added. ' +
+    'Keep the SAME camera angle and the SAME pose as the reference photograph — if the reference ' +
+    'looks straight down at the character, this picture looks straight down too; if it faces the ' +
+    'character head on, this one faces it head on. Do not turn, tilt or re-pose the character. ' +
+    'The garment is really worn, not pasted on: it wraps and presses softly into the wool where ' +
+    'it touches, it follows the curve of the body underneath, it is lit by the same light as the ' +
+    'character, and it casts a small soft contact shadow on the wool along its own edge. ' +
+    'Macro product photograph against a plain flat pure white background, the whole character ' +
+    'floating in empty space with no ground, no table and no cast shadow on any surface. ' +
+    'Studio lighting: broad soft diffused light from every side with one gentle key from the ' +
+    'upper left. Every wool fibre is resolved. ' +
+    'No text, no watermark, no props, no hands, no second character. ' +
+    'Tack sharp, medium format macro, photorealistic craft object.',
 };
 
 module.exports = { 규격표 };
