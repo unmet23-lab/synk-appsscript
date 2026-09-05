@@ -24,7 +24,7 @@
    (`node tools/공방굽기.js`). 이 도구는 «어떤 글자든 되는» 쪽을 맡는다.
 
 쓰기:
-  python tools/펠트글자.py "함께 자라요" --천 공방_라피스펠트.webp --낼곳 out.png
+  python tools/펠트글자.py "함께 자라요" --천 공방_라피스펠트.avif --낼곳 out.png
   python tools/펠트글자.py "한국어" --크기 300 --땀
   python tools/펠트글자.py --천목록
 """
@@ -185,7 +185,7 @@ def 펠트글자(글, 천경로, 크기=200, 여백=44, 천배율=0.12, 땀=Fals
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('글', nargs='?', help='만들 글자·낱말')
-    ap.add_argument('--천', default='공방_라피스펠트.webp', help=f'{방} 안의 천 파일 이름')
+    ap.add_argument('--천', default='공방_라피스펠트.avif', help=f'{방} 안의 천 파일 이름')
     ap.add_argument('--낼곳', help='낼 파일 경로(기본 = 글자.png)')
     ap.add_argument('--크기', type=int, default=200, help='글자 크기(px). 기본 200')
     ap.add_argument('--천배율', type=float, default=0.12,
