@@ -58,6 +58,10 @@ const 마스코트들 = [
        몸과 앞발이 걸린다(목도리 컷에서 앞발 둘을 눈으로 물었고, 모자 컷은 아예 못 찾았다).
        까몽의 표식은 사과빛 초록 홍채이고 그 색은 몸에도 옷에도 없다. */
     눈: '초록',
+    /* 🔴 까몽만 몸을 «자홍»으로 굽는다(09-06 실측). 까몽의 눈은 사과빛 «초록» 홍채라,
+       몸까지 초록으로 구우면 눈을 찾는 자가 몸과 눈을 못 가른다 — 21벌이 통째로 어긋났다.
+       자홍 몸이면 초록 홍채가 그대로 도드라진다. */
+    바탕: '자홍',
     표식:
       'The character is a very small round creature of long soft charcoal-brown fur, with two ' +
       'short triangular ears, two small dark front paws reaching out to the sides, and a slim ' +
