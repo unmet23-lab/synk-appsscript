@@ -98,17 +98,21 @@ const 컷들 = [
   },
   {
     번호: 7, 이름: '까몽',
-    그림: '까몽_본체',
+    /* 🔴 09-05 유호 「까몽이가 너무 무섭게 나왔어 · 웃고 있었으면 좋겠어」 — 동그란 눈 정본은
+     *   영상에서 노려보는 얼굴로 읽혔다. 정본에 «웃는 눈» 판이 따로 있으므로 그것을 넣는다
+     *   (표정을 만들라고 시키지 않는다 — 시키면 우리 얼굴이 아닌 것이 나온다). */
+    그림: '까몽_눈웃음',
     /* 🔴 09-05 1차 — 「고개를 돌리고 꼬리를 흔든다」를 넣었더니 뒤로 갈수록 «진짜 고양이»가 됐다
      *   (긴 몸 · 앉은 자세 · 코와 입까지). 정본 까몽이는 둥근 털뭉치다. ⇒ 움직임을 카메라에만 주고
      *   형태를 바꾸지 말라고 못 박는다. */
     지시: 'The small charcoal wool-felt cat sits perfectly still on warm pale wood while the camera drifts '
       + 'around it very slowly. It stays exactly as it is: a small round ball of dark needle-felted wool '
-      + 'with two round green glass eyes, small pointed ears and one slim tail. It does not change shape, '
-      + 'does not stand up, does not become a realistic cat. Soft window light, extremely shallow depth of '
-      + 'field, fine film grain.',
+      + 'with two happy curved green stitched eyes, small pointed ears and one slim tail. Its eyes stay '
+      + 'curved and smiling the whole time and never open into round eyes. It looks warm and content. '
+      + 'It does not change shape, does not stand up, does not become a realistic cat. Soft window light, '
+      + 'extremely shallow depth of field.',
     막을것: 'realistic cat, real cat, cat nose, cat mouth, whiskers, elongated body, standing up, '
-      + 'changing shape, morphing',
+      + 'changing shape, morphing, round open eyes, staring, scary, menacing',
   },
   {
     번호: 8, 이름: '둘이',
