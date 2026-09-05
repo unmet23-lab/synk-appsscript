@@ -108,11 +108,15 @@ const 컷들 = [
     지시: 'The small charcoal wool-felt cat sits perfectly still on warm pale wood while the camera drifts '
       + 'around it very slowly. It stays exactly as it is: a small round ball of dark needle-felted wool '
       + 'with two happy curved green stitched eyes, small pointed ears and one slim tail. Its eyes stay '
-      + 'curved and smiling the whole time and never open into round eyes. It looks warm and content. '
-      + 'It does not change shape, does not stand up, does not become a realistic cat. Soft window light, '
-      + 'extremely shallow depth of field.',
-    막을것: 'realistic cat, real cat, cat nose, cat mouth, whiskers, elongated body, standing up, '
-      + 'changing shape, morphing, round open eyes, staring, scary, menacing',
+      + 'curved and smiling the whole time and never open into round eyes. Its face has ONLY those two '
+      + 'curved stitched eyes — the rest of the face is plain dark fur with nothing on it at all. '
+      + 'It looks warm and content. It does not change shape, does not stand up, does not become a '
+      + 'realistic cat. Soft window light, extremely shallow depth of field.',
+    /* 🔴 09-05 — 코 있는 정본으로 구웠더니 코가 그대로 나왔고 «수염»까지 생겼다.
+     *   whiskers 를 이미 막았는데도 나왔으므로 같은 뜻을 여러 낱말로 겹쳐 막는다. */
+    막을것: 'realistic cat, real cat, cat nose, nose, snout, muzzle, cat mouth, whiskers, whisker lines, '
+      + 'stitched lines on cheeks, elongated body, standing up, changing shape, morphing, '
+      + 'round open eyes, staring, scary, menacing',
   },
   {
     번호: 8, 이름: '둘이',
@@ -123,12 +127,14 @@ const 컷들 = [
     /* 🔴 유호 제안 09-05 「배경 뒤에 한국어 관련 오브제를 넣으면 간접적으로 명품느낌으로 어필」.
      *   밑그림에 실물 자수 글자 「가」를 넣어 두었으므로, 지시문은 그것을 «지키라»고만 말한다.
      *   🚫 글자를 만들라고 시키지 않는다 — 시키는 순간 깨진 자모가 나온다. */
-    지시: 'The coral felt character and the charcoal felt cat rest side by side on warm pale wood in a '
-      + 'sunlit room, filling the frame the way they already do. A small dark felt board leans against the '
-      + 'wall behind them on the left; whatever is stitched on that board must stay pixel for pixel as it '
-      + 'already is — do not redraw it, do not reinterpret its shape. The camera holds almost still, '
-      + 'drifting only a hair. Everything stays as it is, breathing almost imperceptibly. Warm afternoon '
-      + 'light, extremely shallow depth of field, muted warm palette.',
+    /* 🔴 09-05 유호 확정 — 「새로선은 걷되 통통 튀는거로 · 저 뒤에 [가] 이건 빼주고 · 배경은
+     *   라디오에 쓰이는 배경 중 하나를 골라서 배치」. 밑그림이 이미 펠트 노을 무대(citypop)이므로
+     *   지시문은 그 무대를 «지키라»고만 말하고, 움직임은 «가볍게 튀는 것»에만 준다. */
+    지시: 'The coral felt character and the charcoal felt cat stand side by side on a handmade wool-felt '
+      + 'beach diorama at sunset, with felt palm trees and a felt sun behind them. Keep the whole set '
+      + 'exactly as it is — same colours, same shapes, same layout. They bob very gently up and down, '
+      + 'light and playful, as if breathing. The camera holds almost still, drifting only a hair. '
+      + 'Warm sunset light, extremely shallow depth of field, muted warm palette.',
     /* 🔴 09-05 에 이 자리에서 두 번 넘어졌다.
      *   ① 「embroidered mark」·「adding letters」 → 구글 안전 필터가 통째로 막았다(돈은 안 나갔다).
      *   ② 「stitched **coral** pattern」 → 저쪽이 coral 을 «색»이 아니라 «산호»로 읽어 자수 「가」를
