@@ -1006,7 +1006,7 @@
             "쇠": "공방_가방",
             "규격": "장면",
             "지시": "A small satchel sewn from warm coral wool felt with a cream felt buckle strap and a short shoulder handle.",
-            "파일": "공방_가방.png"
+            "파일": "공방_가방.avif"
           },
           {
             "이름": "열쇠",
@@ -1014,7 +1014,7 @@
             "쇠": "공방_열쇠",
             "규격": "장면",
             "지시": "An old fashioned brass key lying beside a small tag of warm coral wool felt tied to it with cream cord.",
-            "파일": "공방_열쇠.png"
+            "파일": "공방_열쇠.avif"
           },
           {
             "이름": "탁상시계",
@@ -1022,7 +1022,7 @@
             "쇠": "공방_탁상시계",
             "규격": "장면",
             "지시": "A small round table clock with a pale cream felt face, warm coral felt rim and two little brass bells on top.",
-            "파일": "공방_탁상시계.png"
+            "파일": "공방_탁상시계.avif"
           },
           {
             "이름": "편지봉투",
@@ -1030,7 +1030,7 @@
             "쇠": "공방_편지봉투",
             "규격": "장면",
             "지시": "A closed envelope sewn from pale cream wool felt, its flap sealed with a small round coral felt seal.",
-            "파일": "공방_편지봉투.png"
+            "파일": "공방_편지봉투.avif"
           },
           {
             "이름": "지도",
@@ -1038,7 +1038,7 @@
             "쇠": "공방_지도",
             "규격": "장면",
             "지시": "A folded paper map lying open, its printed lines simple and abstract, one small coral felt pin pushed into it.",
-            "파일": "공방_지도.png"
+            "파일": "공방_지도.avif"
           },
           {
             "이름": "나침반",
@@ -1046,7 +1046,7 @@
             "쇠": "공방_나침반",
             "규격": "장면",
             "지시": "A brass pocket compass lying open, its face pale cream with one coral felt needle pointing north.",
-            "파일": "공방_나침반.png"
+            "파일": "공방_나침반.avif"
           },
           {
             "이름": "졸업모",
@@ -1054,7 +1054,7 @@
             "쇠": "공방_졸업모",
             "규격": "장면",
             "지시": "A graduation cap sewn from deep lapis blue wool felt with a butter yellow cord tassel hanging from one corner.",
-            "파일": "공방_졸업모.png"
+            "파일": "공방_졸업모.avif"
           },
           {
             "이름": "찻잔",
@@ -1062,7 +1062,7 @@
             "쇠": "공방_찻잔",
             "규격": "장면",
             "지시": "A small cup and saucer sewn from pale cream wool felt with a warm coral felt rim, a tiny cream felt steam curl rising from it.",
-            "파일": "공방_찻잔.png"
+            "파일": "공방_찻잔.avif"
           },
           {
             "이름": "공책과 연필",
@@ -1070,7 +1070,7 @@
             "쇠": "공방_공책과연필",
             "규격": "장면",
             "지시": "A closed notebook bound in warm coral wool felt with a cream elastic band, one short wooden pencil resting on top.",
-            "파일": "공방_공책과연필.png"
+            "파일": "공방_공책과연필.avif"
           },
           {
             "이름": "연필꽂이",
@@ -1078,24 +1078,26 @@
             "쇠": "공방_연필꽂이",
             "규격": "장면",
             "지시": "A short cylindrical cup sewn from meadow green wool felt holding three wooden pencils of different heights.",
-            "파일": "공방_연필꽂이.png"
+            "파일": "공방_연필꽂이.avif"
           },
           {
             "이름": "작은 상자",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_작은상자",
             "규격": "장면",
-            "지시": "A small open gift box of warm coral wool felt with its lid resting beside it and a cream ribbon loosely trailing."
+            "지시": "A small open gift box of warm coral wool felt with its lid resting beside it and a cream ribbon loosely trailing.",
+            "파일": "공방_작은상자.avif"
           },
           {
             "이름": "벽시계",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_벽시계",
             "규격": "장면",
-            "지시": "A round wall clock with a pale cream felt face, a thick warm coral felt rim and two coral felt hands, hanging on a nail."
+            "지시": "A round wall clock with a pale cream felt face, a thick warm coral felt rim and two coral felt hands, hanging on a nail.",
+            "파일": "공방_벽시계.avif"
           }
         ],
-        "상태": "10/12"
+        "상태": "12/12"
       },
       {
         "이름": "손 도구 2차",
@@ -1103,48 +1105,54 @@
         "것들": [
           {
             "이름": "뜨개바늘",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_뜨개바늘",
             "규격": "부품",
-            "지시": "Two wooden knitting needles crossed at a shallow angle with a few loops of warm coral wool yarn still on one of them."
+            "지시": "Two wooden knitting needles crossed at a shallow angle with a few loops of warm coral wool yarn still on one of them.",
+            "파일": "공방_뜨개바늘.avif"
           },
           {
             "이름": "단추함",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_단추함",
             "규격": "부품",
-            "지시": "A small shallow tin lying open, filled with mixed buttons in coral, lapis, butter and cream, a few spilling over the rim."
+            "지시": "A small shallow tin lying open, filled with mixed buttons in coral, lapis, butter and cream, a few spilling over the rim.",
+            "파일": "공방_단추함.avif"
           },
           {
             "이름": "실 상자",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_실상자",
             "규격": "부품",
-            "지시": "A small wooden box holding six spools of wool yarn in coral, lapis, meadow, butter, cream and grey, seen from above."
+            "지시": "A small wooden box holding six spools of wool yarn in coral, lapis, meadow, butter, cream and grey, seen from above.",
+            "파일": "공방_실상자.avif"
           },
           {
             "이름": "패턴 종이",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_패턴종이",
             "규격": "부품",
-            "지시": "A sheet of thin brown pattern paper with simple pencil outlines and small notch marks, one corner curling."
+            "지시": "A sheet of thin brown pattern paper with simple pencil outlines and small notch marks, one corner curling.",
+            "파일": "공방_패턴종이.avif"
           },
           {
             "이름": "줄자",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_줄자",
             "규격": "부품",
-            "지시": "A soft cloth tape measure in pale cream with fine printed markings, loosely curled into a relaxed loop."
+            "지시": "A soft cloth tape measure in pale cream with fine printed markings, loosely curled into a relaxed loop.",
+            "파일": "공방_줄자.avif"
           },
           {
             "이름": "다리미",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_다리미",
             "규격": "부품",
-            "지시": "A small old fashioned iron with a dark metal body and a pale wooden handle, standing on its heel."
+            "지시": "A small old fashioned iron with a dark metal body and a pale wooden handle, standing on its heel.",
+            "파일": "공방_다리미.avif"
           }
         ],
-        "상태": "0/6"
+        "상태": "6/6"
       },
       {
         "이름": "빈 자리 그림",
@@ -1152,34 +1160,38 @@
         "것들": [
           {
             "이름": "빈 바구니",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_빈바구니",
             "규격": "장면",
-            "지시": "An empty woven basket seen slightly from above, its weave open and its inside in soft shadow."
+            "지시": "An empty woven basket seen slightly from above, its weave open and its inside in soft shadow.",
+            "파일": "공방_빈바구니.avif"
           },
           {
             "이름": "빈 실패",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_빈실패",
             "규격": "장면",
-            "지시": "A bare wooden spool with no yarn on it, lying on its side, one short cream thread end still caught in the notch."
+            "지시": "A bare wooden spool with no yarn on it, lying on its side, one short cream thread end still caught in the notch.",
+            "파일": "공방_빈실패.avif"
           },
           {
             "이름": "접힌 종이",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_접힌종이",
             "규격": "장면",
-            "지시": "A single sheet of cream paper folded once and lying closed, its fold soft and slightly uneven."
+            "지시": "A single sheet of cream paper folded once and lying closed, its fold soft and slightly uneven.",
+            "파일": "공방_접힌종이.avif"
           },
           {
             "이름": "닫힌 책",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_닫힌책",
             "규격": "장면",
-            "지시": "A small closed book bound in pale grey wool felt with no title, lying flat."
+            "지시": "A small closed book bound in pale grey wool felt with no title, lying flat.",
+            "파일": "공방_닫힌책.avif"
           }
         ],
-        "상태": "0/4"
+        "상태": "4/4"
       },
       {
         "이름": "캐러셀 부품",
@@ -1188,145 +1200,157 @@
         "것들": [
           {
             "이름": "먹색 펠트",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_먹색펠트",
             "규격": "천",
-            "지시": "The cloth is densely needle-felted wool in a deep charcoal, almost black but still warm, the colour of a well-used cast iron pan."
+            "지시": "The cloth is densely needle-felted wool in a deep charcoal, almost black but still warm, the colour of a well-used cast iron pan.",
+            "파일": "공방_먹색펠트.avif"
           },
           {
             "이름": "짙은 회색 펠트",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_짙은회색펠트",
             "규격": "천",
-            "지시": "The cloth is densely needle-felted wool in a deep slate grey, the grey of wet stone."
+            "지시": "The cloth is densely needle-felted wool in a deep slate grey, the grey of wet stone.",
+            "파일": "공방_짙은회색펠트.avif"
           },
           {
             "이름": "진행 점 켜짐",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_진행점켜짐",
             "규격": "부품",
-            "지시": "A small round pompom of warm coral felted wool, plump and evenly fuzzy, seen straight on."
+            "지시": "A small round pompom of warm coral felted wool, plump and evenly fuzzy, seen straight on.",
+            "파일": "공방_진행점켜짐.avif"
           },
           {
             "이름": "진행 점 꺼짐",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_진행점꺼짐",
             "규격": "부품",
-            "지시": "A small round pompom of pale grey felted wool, plump and evenly fuzzy, seen straight on."
+            "지시": "A small round pompom of pale grey felted wool, plump and evenly fuzzy, seen straight on.",
+            "파일": "공방_진행점꺼짐.avif"
           },
           {
             "이름": "구분 띠 스티치",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_구분띠스티치",
             "규격": "부품",
             "비율": "16:9",
-            "지시": "A single long horizontal line of large hand running stitches in cream wool thread on nothing, the thread lying in a straight row with even gaps, spanning the full width of the frame."
+            "지시": "A single long horizontal line of large hand running stitches in cream wool thread on nothing, the thread lying in a straight row with even gaps, spanning the full width of the frame.",
+            "파일": "공방_구분띠스티치.avif"
           },
           {
             "이름": "구분 띠 리본",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_구분띠리본",
             "규격": "부품",
             "비율": "16:9",
-            "지시": "A long narrow strip of warm coral wool felt lying flat and straight across the frame, its cut edges showing raw felted fibre."
+            "지시": "A long narrow strip of warm coral wool felt lying flat and straight across the frame, its cut edges showing raw felted fibre.",
+            "파일": "공방_구분띠리본.avif"
           },
           {
             "이름": "모서리 접힘",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_모서리접힘",
             "규격": "부품",
-            "지시": "A single corner of pale cream wool felt folded back on itself, as if the corner of a page had been turned down."
+            "지시": "A single corner of pale cream wool felt folded back on itself, as if the corner of a page had been turned down.",
+            "파일": "공방_모서리접힘.avif"
           },
           {
             "이름": "북마크",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_북마크",
             "규격": "부품",
-            "지시": "A narrow bookmark ribbon of butter yellow wool felt with a notched V cut at its lower end, hanging straight."
+            "지시": "A narrow bookmark ribbon of butter yellow wool felt with a notched V cut at its lower end, hanging straight.",
+            "파일": "공방_북마크.avif"
           },
           {
             "이름": "큰 따옴표",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_큰따옴표",
             "규격": "부품",
-            "지시": "A pair of large opening quotation marks cut from cream wool felt as two thick comma shapes, side by side."
+            "지시": "A pair of large opening quotation marks cut from cream wool felt as two thick comma shapes, side by side.",
+            "파일": "공방_큰따옴표.avif"
           },
           {
             "이름": "대문 모서리 장식",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_대문모서리장식",
             "규격": "부품",
-            "지시": "An ornate corner piece of cream wool felt shaped like a quarter frame, its inner edge scalloped and blanket stitched in coral thread."
+            "지시": "An ornate corner piece of cream wool felt shaped like a quarter frame, its inner edge scalloped and blanket stitched in coral thread.",
+            "파일": "공방_대문모서리장식.avif"
           },
           {
             "이름": "끝 매듭",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_끝매듭",
             "규격": "부품",
-            "지시": "A single tight knot tied in thick cream wool cord, both short ends trailing downward, marking the end of something."
+            "지시": "A single tight knot tied in thick cream wool cord, both short ends trailing downward, marking the end of something.",
+            "파일": "공방_끝매듭.avif"
           },
           {
             "이름": "넘김 손가락",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_넘김손가락",
             "규격": "부품",
-            "지시": "A simple hand shape of pale cream wool felt with the index finger extended, pointing to the right, the edges blanket stitched."
+            "지시": "A simple hand shape of pale cream wool felt with the index finger extended, pointing to the right, the edges blanket stitched.",
+            "파일": "공방_넘김손가락.avif"
           }
         ],
-        "상태": "0/12"
+        "상태": "12/12"
       },
       {
         "이름": "다시 굽기 (4K)",
         "쓰는 곳": "이미 낮은 해상도로 구워 둔 장면·배경",
-        "상태": "0/7",
+        "상태": "7/7",
         "_도구": "🔑 이 묶음은 밤굽기가 안 굽는다 — 지시문을 «자기 도구»가 정본으로 들기 때문이다(한 값을 두 곳이 알면 갈린다). 라디오 무대는 `node tools/라디오무대굽기.js --다시` 로 굽는다(기본이 4K · 일곱 장 2,352원).",
         "_왜": "유호 확정 09-05 「기존 라디오 배경같은것도 전부 일감에 넣어줘. 4K로 제대로 하자」. ⚠ 마스코트·NPC 같은 캐릭터는 뺀다 — 다시 구우면 「닮았지만 다른 것」이 되어 정본이 흔들린다.",
         "것들": [
           {
             "이름": "라디오 무대 · 시티팝 — 노을 휴양지",
-            "상태": "다시 굽는다",
+            "상태": "구웠다",
             "파일": "docs/라디오/무대/citypop.png",
             "지금": "2752x1536",
             "목표": "4K 16:9"
           },
           {
             "이름": "라디오 무대 · 차분 — 밤의 호수",
-            "상태": "다시 굽는다",
+            "상태": "구웠다",
             "파일": "docs/라디오/무대/calm.png",
             "지금": "2752x1536",
             "목표": "4K 16:9"
           },
           {
             "이름": "라디오 무대 · 전자 — 밤의 네온 항구",
-            "상태": "다시 굽는다",
+            "상태": "구웠다",
             "파일": "docs/라디오/무대/house.png",
             "지금": "2752x1536",
             "목표": "4K 16:9"
           },
           {
             "이름": "라디오 무대 · 도시 — 비 갠 저녁의 골목 옥상",
-            "상태": "다시 굽는다",
+            "상태": "구웠다",
             "파일": "docs/라디오/무대/city.png",
             "지금": "2752x1536",
             "목표": "4K 16:9"
           },
           {
             "이름": "라디오 무대 · 드림코어 — 구름 위의 계단",
-            "상태": "다시 굽는다",
+            "상태": "구웠다",
             "파일": "docs/라디오/무대/dream_sky.png",
             "지금": "2752x1536",
             "목표": "4K 16:9"
           },
           {
             "이름": "라디오 무대 · 드림코어 — 끝없는 거울 물",
-            "상태": "다시 굽는다",
+            "상태": "구웠다",
             "파일": "docs/라디오/무대/dream_water.png",
             "지금": "2752x1536",
             "목표": "4K 16:9"
           },
           {
             "이름": "라디오 무대 · 드림코어 — 빛나는 들판",
-            "상태": "다시 굽는다",
+            "상태": "구웠다",
             "파일": "docs/라디오/무대/dream_field.png",
             "지금": "2752x1536",
             "목표": "4K 16:9"
@@ -1341,183 +1365,277 @@
         "것들": [
           {
             "이름": "둥근 선글라스",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_둥근선글라스",
             "규격": "부품",
-            "지시": "A pair of round sunglasses with thick warm coral wool felt frames and dark charcoal felt lenses, the bridge a short felt strip, hand stitched around the rims in cream thread. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A pair of round sunglasses with thick warm coral wool felt frames and dark charcoal felt lenses, the bridge a short felt strip, hand stitched around the rims in cream thread. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_둥근선글라스.avif"
           },
           {
             "이름": "사각 선글라스",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_사각선글라스",
             "규격": "부품",
-            "지시": "A pair of chunky square sunglasses with deep charcoal wool felt frames and slightly shiny dark lenses, softly rounded corners. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A pair of chunky square sunglasses with deep charcoal wool felt frames and slightly shiny dark lenses, softly rounded corners. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_사각선글라스.avif"
           },
           {
             "이름": "하트 선글라스",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_하트선글라스",
             "규격": "부품",
-            "지시": "A pair of heart shaped sunglasses with butter yellow wool felt frames and soft pink tinted felt lenses, playful and cute. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A pair of heart shaped sunglasses with butter yellow wool felt frames and soft pink tinted felt lenses, playful and cute. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_하트선글라스.avif"
           },
           {
             "이름": "별 선글라스",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_별선글라스",
             "규격": "부품",
-            "지시": "A pair of star shaped sunglasses with lapis blue wool felt frames and pale silver felt lenses. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A pair of star shaped sunglasses with lapis blue wool felt frames and pale silver felt lenses. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_별선글라스.avif"
           },
           {
             "이름": "헤드폰 코랄",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_헤드폰코랄",
             "규격": "부품",
-            "지시": "A pair of over-ear headphones sewn from warm coral wool felt, plump round ear cups and a padded headband arching between them, a tiny cream stitch detail on each cup. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A pair of over-ear headphones sewn from warm coral wool felt, plump round ear cups and a padded headband arching between them, a tiny cream stitch detail on each cup. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_헤드폰코랄.avif"
           },
           {
             "이름": "헤드폰 라피스",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_헤드폰라피스",
             "규격": "부품",
-            "지시": "A pair of over-ear headphones sewn from deep lapis blue wool felt with butter yellow felt ear cushions and a padded headband. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A pair of over-ear headphones sewn from deep lapis blue wool felt with butter yellow felt ear cushions and a padded headband. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_헤드폰라피스.avif"
           },
           {
             "이름": "이어폰",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_이어폰",
             "규격": "부품",
-            "지시": "A pair of small round earbuds of cream wool felt joined by a thin coral cord that loops down between them. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A pair of small round earbuds of cream wool felt joined by a thin coral cord that loops down between them. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_이어폰.avif"
           },
           {
             "이름": "버킷햇",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_버킷햇",
             "규격": "부품",
-            "지시": "A soft bucket hat sewn from meadow green wool felt with a wide floppy brim and one row of cream running stitch around the crown. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A soft bucket hat sewn from meadow green wool felt with a wide floppy brim and one row of cream running stitch around the crown. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_버킷햇.avif"
           },
           {
             "이름": "비니",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_비니",
             "규격": "부품",
-            "지시": "A snug knitted beanie in warm coral wool with a folded brim and a small cream pompom on top. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A snug knitted beanie in warm coral wool with a folded brim and a small cream pompom on top. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_비니.avif"
           },
           {
             "이름": "야구모자",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_야구모자",
             "규격": "부품",
-            "지시": "A small baseball cap of lapis blue wool felt with a curved brim and a butter yellow felt star patch on the front. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A small baseball cap of lapis blue wool felt with a curved brim and a butter yellow felt star patch on the front. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_야구모자.avif"
           },
           {
             "이름": "파티 고깔",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_파티고깔",
             "규격": "부품",
-            "지시": "A cone shaped party hat of butter yellow wool felt with coral polka dots and a cream pompom at its tip, a thin cord chin strap hanging. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A cone shaped party hat of butter yellow wool felt with coral polka dots and a cream pompom at its tip, a thin cord chin strap hanging. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_파티고깔.avif"
           },
           {
             "이름": "꽃 머리핀",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_꽃머리핀",
             "규격": "부품",
-            "지시": "A small hair clip topped with a five petal flower of warm coral wool felt, its centre a cluster of cream french knots. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A small hair clip topped with a five petal flower of warm coral wool felt, its centre a cluster of cream french knots. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_꽃머리핀.avif"
           },
           {
             "이름": "별 머리핀",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_별머리핀",
             "규격": "부품",
-            "지시": "A small hair clip topped with a plump butter yellow felt star, blanket stitched around its edge in cream thread. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A small hair clip topped with a plump butter yellow felt star, blanket stitched around its edge in cream thread. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_별머리핀.avif"
           },
           {
             "이름": "나비넥타이",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_나비넥타이",
             "규격": "부품",
-            "지시": "A plump bow tie sewn from warm coral wool felt with a narrow cream felt band around its centre knot. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A plump bow tie sewn from warm coral wool felt with a narrow cream felt band around its centre knot. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_나비넥타이.avif"
           },
           {
             "이름": "목도리",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_목도리",
             "규격": "부품",
-            "지시": "A short knitted scarf in cream and coral stripes with small tassels at both ends, lying in a soft loose curve as if wrapped around a neck. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A short knitted scarf in cream and coral stripes with small tassels at both ends, lying in a soft loose curve as if wrapped around a neck. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_목도리.avif"
           },
           {
             "이름": "머플러 매듭",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_머플러매듭",
             "규격": "부품",
-            "지시": "A chunky knitted scarf in lapis blue wool tied in one soft loop, the two ends hanging down. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A chunky knitted scarf in lapis blue wool tied in one soft loop, the two ends hanging down. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_머플러매듭.avif"
           },
           {
             "이름": "야자수 잎",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_야자수잎",
             "규격": "부품",
-            "지시": "A single tropical palm frond cut from meadow green wool felt, its fronds notched along both sides, hand stitched down the central rib. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A single tropical palm frond cut from meadow green wool felt, its fronds notched along both sides, hand stitched down the central rib. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_야자수잎.avif"
           },
           {
             "이름": "담요",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_담요",
             "규격": "부품",
-            "지시": "A small folded blanket of cream wool felt with a coral stripe along one edge, softly draped as if resting on shoulders. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A small folded blanket of cream wool felt with a coral stripe along one edge, softly draped as if resting on shoulders. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_담요.avif"
           },
           {
             "이름": "네온 링",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_네온링",
             "규격": "부품",
-            "지시": "A glowing ring of soft neon pink light, its edge slightly fuzzy like felt fibre catching the glow, on pure white. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A glowing ring of soft neon pink light, its edge slightly fuzzy like felt fibre catching the glow, on pure white. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_네온링.avif"
           },
           {
             "이름": "구름 조각",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_꾸밈_구름조각",
             "규격": "부품",
-            "지시": "A small fluffy cloud of pale cream felted wool, plump and evenly fuzzy, as if it could rest under someone. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame."
+            "지시": "A small fluffy cloud of pale cream felted wool, plump and evenly fuzzy, as if it could rest under someone. Seen straight on from the front, flat and symmetrical, as if made to be placed onto a face or head. Nothing else in frame.",
+            "파일": "공방_꾸밈_구름조각.avif"
           }
         ],
-        "상태": "0/20"
+        "상태": "20/20"
+      },
+      {
+        "이름": "부품 색 갈래",
+        "쓰는 곳": "앱 UI·지면·PPT — 같은 부품을 신호에 맞는 색으로 골라 쓴다(코랄만 반복되는 병의 처방)",
+        "_결": "🔴 재염색(tools/펠트색갈이.py)으로 만들지 않는다. 게인을 곱하는 방식이라 ⓐ양모가 품은 색 폭이 한 방향으로 눌리고 ⓑ코랄의 갈색 그림자까지 물들어 플라스틱처럼 읽힌다(유호 09-05 「색 표현이 좀 싸구려같아」). 그 색 양모는 그 색으로 찍어야 그림자가 청회색으로 앉는다.",
+        "상태": "12/12",
+        "것들": [
+          {
+            "이름": "단추 라피스",
+            "상태": "구웠다",
+            "쇠": "공방_단추_라피스",
+            "규격": "부품",
+            "지시": "A single round button cut from lapis blue wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame.",
+            "파일": "공방_단추_라피스.avif"
+          },
+          {
+            "이름": "단추 메도우",
+            "상태": "구웠다",
+            "쇠": "공방_단추_메도우",
+            "규격": "부품",
+            "지시": "A single round button cut from meadow green wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame.",
+            "파일": "공방_단추_메도우.avif"
+          },
+          {
+            "이름": "단추 버터",
+            "상태": "구웠다",
+            "쇠": "공방_단추_버터",
+            "규격": "부품",
+            "지시": "A single round button cut from butter yellow wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame.",
+            "파일": "공방_단추_버터.avif"
+          },
+          {
+            "이름": "단추 무채",
+            "상태": "구웠다",
+            "쇠": "공방_단추_무채",
+            "규격": "부품",
+            "지시": "A single round button cut from warm grey wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame.",
+            "파일": "공방_단추_무채.avif"
+          },
+          {
+            "이름": "매듭점 코랄",
+            "상태": "구웠다",
+            "쇠": "공방_매듭점_코랄",
+            "규격": "부품",
+            "지시": "A small trefoil knot tied from thick warm coral wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame.",
+            "파일": "공방_매듭점_코랄.avif"
+          },
+          {
+            "이름": "매듭점 라피스",
+            "상태": "구웠다",
+            "쇠": "공방_매듭점_라피스",
+            "규격": "부품",
+            "지시": "A small trefoil knot tied from thick lapis blue wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame.",
+            "파일": "공방_매듭점_라피스.avif"
+          },
+          {
+            "이름": "매듭점 메도우",
+            "상태": "구웠다",
+            "쇠": "공방_매듭점_메도우",
+            "규격": "부품",
+            "지시": "A small trefoil knot tied from thick meadow green wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame.",
+            "파일": "공방_매듭점_메도우.avif"
+          },
+          {
+            "이름": "폼폼 라피스",
+            "상태": "구웠다",
+            "쇠": "공방_폼폼_라피스",
+            "규격": "부품",
+            "지시": "A round pom-pom of lapis blue wool yarn, dense and fluffy, its cut fibres standing out evenly in every direction so the edge reads as soft fuzz rather than a hard circle. Seen straight on from the front. Nothing else in frame.",
+            "파일": "공방_폼폼_라피스.avif"
+          },
+          {
+            "이름": "폼폼 메도우",
+            "상태": "구웠다",
+            "쇠": "공방_폼폼_메도우",
+            "규격": "부품",
+            "지시": "A round pom-pom of meadow green wool yarn, dense and fluffy, its cut fibres standing out evenly in every direction so the edge reads as soft fuzz rather than a hard circle. Seen straight on from the front. Nothing else in frame.",
+            "파일": "공방_폼폼_메도우.avif"
+          },
+          {
+            "이름": "폼폼 버터",
+            "상태": "구웠다",
+            "쇠": "공방_폼폼_버터",
+            "규격": "부품",
+            "지시": "A round pom-pom of butter yellow wool yarn, dense and fluffy, its cut fibres standing out evenly in every direction so the edge reads as soft fuzz rather than a hard circle. Seen straight on from the front. Nothing else in frame.",
+            "파일": "공방_폼폼_버터.avif"
+          },
+          {
+            "이름": "체크 표시 무채",
+            "상태": "구웠다",
+            "쇠": "공방_체크표시_무채",
+            "규격": "부품",
+            "지시": "A bold check mark tick cut from warm grey wool felt, its edges hand stitched with small even blanket stitches in cream thread.",
+            "파일": "공방_체크표시_무채.avif"
+          },
+          {
+            "이름": "완료 도장 라피스",
+            "상태": "구웠다",
+            "쇠": "공방_완료도장_라피스",
+            "규격": "부품",
+            "지시": "A round rubber-stamp mark pressed in lapis blue ink onto pale cream felt, its edge slightly broken the way a hand stamp prints unevenly.",
+            "파일": "공방_완료도장_라피스.avif"
+          }
+        ]
       }
     ]
   },
   "블렌더": {
     "_왜 이쪽인가": "재현이 필요하고 UI 에 정확히 앉아야 하는 것. 씨앗이 고정돼 언제든 같은 그림이 다시 나온다. 돈 0.",
     "_한도": "한 장 2~3분 · 램 16GB 한 대 · 전량이면 8시간. 밤 배치로만 돌린다.",
-    "묶음": [
-      {
-        "이름": "부품 색 갈래",
-        "쓰는 곳": "앱 UI · 지면 부품",
-        "상태": "재염색이 한다(굽지 않는다)",
-        "메모": "🔴 여기가 유호님이 09-05 에 짚으신 «맨날 똑같은 코랄»의 자리다. 색은 42개인데 부품 자산이 9종뿐이고 색 갈래가 없다.",
-        "것들": [
-          {
-            "이름": "단추민판 — 라피스·메도우·버터·무채",
-            "상태": "재염색"
-          },
-          {
-            "이름": "매듭점 — 코랄·라피스·메도우",
-            "상태": "재염색"
-          },
-          {
-            "이름": "폼폼민방울 — 라피스·메도우·버터",
-            "상태": "재염색"
-          },
-          {
-            "이름": "체크 — 메도우(완료)·무채(대기)",
-            "상태": "재염색"
-          },
-          {
-            "이름": "도장 — 코랄·라피스",
-            "상태": "재염색"
-          }
-        ],
-        "_왜 안 굽나": "09-05 실측: 이미 구운 판에 `python tools/펠트색갈이.py <입력> <출력> --목표 \"#색\" --색상만` 을 걸면 돈 0원·한 장 3초로 색 갈래가 나온다. 굽는 일이 아니라 «후처리»다. 🔑 --색상만 을 반드시 준다 — 킷 색을 그대로 목표로 주면 원본보다 채도가 확 올라 쨍해진다(유호 지적 09-05 「너무 쨍한데? 잘 안보일정도야」)."
-      }
-    ],
+    "묶음": [],
     "_지위": "⚠ 예비 통로다(유호 확정 09-05) — 제미나이를 못 쓸 때만 온다. 이미 구운 부품 9종은 계속 쓴다."
   }
 }
