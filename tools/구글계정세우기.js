@@ -61,7 +61,10 @@ async function 부르기(주소, { tok, 청구지, 방법 = 'GET', 몸 } = {}) {
 
   // ── ② 프로젝트 먼저 찾는다(청구지로 쓸 자리가 있어야 결제 조회가 된다)
   let 프로젝트 = 고른프로젝트;
-  const 프목 = await 부르기('https://cloudresourcemanager.googleapis.com/v1/projects?filter=lifecycleState:ACTIVE', { tok });
+  // 🔴 닭과 달걀: 목록을 보려면 청구지가 있어야 하고, 청구지는 프로젝트다.
+  //    ⇒ 첫 판은 «아는 프로젝트»를 청구지로 준다(--프로젝트 또는 앞서 적어 둔 값). 그것도 없으면 화면으로 한 번 읽어야 한다.
+  const 청구지 = 고른프로젝트 || (() => { try { return JSON.parse(fs.readFileSync(자격파일, 'utf8')).프로젝트 || undefined; } catch { return undefined; } })();
+  const 프목 = await 부르기('https://cloudresourcemanager.googleapis.com/v1/projects?filter=lifecycleState:ACTIVE', { tok, 청구지 });
   const 있는것 = (프목.답.projects || []).map((p) => ({ id: p.projectId, 번호: p.projectNumber, 이름: p.name }));
   if (프목.ok) {
     console.log(`\n📦 프로젝트 ${있는것.length}개`);
