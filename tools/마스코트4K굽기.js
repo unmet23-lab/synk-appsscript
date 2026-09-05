@@ -484,17 +484,22 @@ match. Heavy and sleepy, about to switch off.`) },
 thin capsule with rounded ends, about three times wider than it is tall. Both identical.
 Narrowed in concentration, watching one thing closely.`) },
   { 누구: '몽글', 이름: '몽글_응원', 카메라: 몽글카메라, 참조: '몽글_본체.png',
+    /* 🔴 09-05 재판정 — 첫 판에서 응원·감동·뾰로통 셋이 「크게 뜬 검은 눈」으로 서로 닮았다.
+     *   ⇒ 셋에 «축»을 하나씩 더해 벌린다: 응원=위를 본다 · 감동=물방울이 맺힌다 · 뾰로통=완전히 옆. */
     얼굴: 몽글눈(`Each eye is a LARGE perfectly round glossy black bead, noticeably bigger than
-usual and opened wide, each with TWO white highlights instead of one — bright, expectant,
-leaning into the moment. Both identical.`) },
+usual, and BOTH ARE LOOKING UPWARD — each bead is pushed toward the TOP of its socket so a
+crescent of felt shows underneath it, the gaze lifted up and away from the viewer as if looking
+up at someone cheering them on. Two white highlights in each, placed high. Both identical.`) },
   { 누구: '몽글', 이름: '몽글_감동', 카메라: 몽글카메라, 참조: '몽글_본체.png',
-    얼굴: 몽글눈(`Each eye is a large round glossy black bead with a WIDE soft white highlight
-across the upper half and a faint wet glimmer pooling along the lower rim, as if brimming.
-Both identical. Moved, on the edge of tears but not crying.`) },
+    얼굴: 몽글눈(`Each eye is a large round glossy black bead, and ONE SINGLE CLEAR TEARDROP is
+sitting on the felt just below each eye — a small round bead of water catching the light,
+resting on the wool without running down. The eyes themselves are wet and shining with a wide
+soft highlight across the upper half. Both identical. Moved to tears, but the face is calm.`) },
   { 누구: '몽글', 이름: '몽글_뾰로통', 카메라: 몽글카메라, 참조: '몽글_본체.png',
-    얼굴: 몽글눈(`Each eye is a round glossy black bead pushed to ONE SIDE — both beads sit
-against the left edge of where an eye would be, looking away to the side, and both sit slightly
-LOWER than usual. Sulking in a playful way, not sad.`) },
+    얼굴: 몽글눈(`Both eyes are looking HARD to one side — each bead is jammed all the way
+against the LEFT edge of its socket, so far over that a wide crescent of bare felt shows on the
+right side of each eye. The gaze is aimed completely off the frame to the left, refusing to
+look at the viewer, and both beads sit slightly lower than usual. Sulking in a playful way.`) },
   { 누구: '몽글', 이름: '몽글_궁금함', 카메라: 몽글카메라, 참조: '몽글_본체.png',
     얼굴: 몽글눈(`The two eyes do NOT match in size. One is a large round glossy black bead
 opened wide; the other is clearly smaller, the same round bead shrunk. Curious, head-tilting
@@ -506,29 +511,35 @@ line stops a little short so a sliver of gap remains at both ends. Relieved, let
 out. Both identical.`) },
 
   { 누구: '까몽', 이름: '까몽_집중', 카메라: 까몽카메라, 참조: '까몽_본체.png',
-    얼굴: 까몽눈선('Each is a NARROW HORIZONTAL SLIT rather than a curve — a long thin capsule with rounded ends, about three times wider than tall, still bright apple-green. Narrowed in concentration, watching one thing closely.') },
+    /* 🔴 09-05 재판정 — 까몽에서 집중과 안도가 둘 다 「가는 선」이라 닮았다.
+     *   ⇒ 집중은 «훨씬 더» 가늘고 곧게, 안도는 «훨씬 더» 얕고 짧게 갈라 둔다. */
+    얼굴: 까몽눈선('Each is an EXTREMELY NARROW HORIZONTAL SLIT — a straight hard line, about six times wider than it is tall, with no curve at all, glowing sharp apple-green. Like a lens stopped down to a crack. Tense and focused, locked onto one thing.') },
   { 누구: '까몽', 이름: '까몽_응원', 카메라: 까몽카메라, 참조: '까몽_본체.png',
-    얼굴: 까몽눈뜸('Both are opened WIDER than usual and slightly larger, each with two white highlights instead of one — bright and expectant, leaning into the moment.') },
+    얼굴: 까몽눈뜸('BOTH ARE LOOKING UPWARD — each green iris and black pupil is pushed to the TOP of the eye so a clear crescent of white shows underneath, the gaze lifted up and away as if looking up at someone cheering them on. Two white glints in each, placed high.') },
   { 누구: '까몽', 이름: '까몽_감동', 카메라: 까몽카메라, 참조: '까몽_본체.png',
-    얼굴: 까몽눈뜸('Both are wide open with a broad soft white highlight across the upper half and a faint wet glimmer pooling along the lower rim, as if brimming. Moved, on the edge of tears but not crying.') },
+    얼굴: 까몽눈뜸('ONE SINGLE CLEAR TEARDROP sits on the fur just below each eye — a small round bead of water catching the light, resting there without running down. The eyes themselves are wet and shining with a broad soft highlight across the upper half. Moved to tears, but the face is calm.') },
   { 누구: '까몽', 이름: '까몽_뾰로통', 카메라: 까몽카메라, 참조: '까몽_본체.png',
-    얼굴: 까몽눈뜸('Both pupils are pushed to ONE SIDE — looking away to the left — and both eyes sit slightly lower than usual. Sulking in a playful way, not sad.') },
+    얼굴: 까몽눈뜸('Both are looking HARD to one side — each green iris and black pupil is jammed all the way against the LEFT edge of the eye, so far over that a wide crescent of white shows on the right of each. The gaze is aimed completely off the frame, refusing to look at the viewer. Sulking in a playful way.') },
   { 누구: '까몽', 이름: '까몽_궁금함', 카메라: 까몽카메라, 참조: '까몽_본체.png',
     얼굴: 까몽눈뜸('The two do NOT match in size — one is opened wide and large, the other is clearly smaller. Curious, head-tilting interest. Both are open, neither closed.') },
   { 누구: '까몽', 이름: '까몽_안도', 카메라: 까몽카메라, 참조: '까몽_본체.png',
-    얼굴: 까몽눈선('Each is a SHALLOW curve arcing gently downward — much flatter and softer than a sleeping eye, the tension gone out of it, each line stopping a little short so a sliver of gap remains at both ends. Relieved, letting the breath out.') },
+    얼굴: 까몽눈선('Each is a WIDE SHALLOW downward arc, soft and loose — clearly curved, not a straight line, and noticeably SHORTER than a full closed eye so bare fur shows at both ends. The stroke thins out toward each tip as if drawn with a relaxed hand. All tension gone. Relieved, letting the breath out.') },
 
   { 누구: '마린', 이름: '마린_응원', 카메라: 마린카메라, 참조: '마린_본체.png',
-    얼굴: 마린얼굴(`each is opened WIDE and glowing a brighter butter-yellow than usual, with two
-small white glints instead of one. Both match. Bright and expectant, leaning into the moment.`) },
+    얼굴: 마린얼굴(`the bright core of each lens is pushed to the TOP of the circle, LOOKING
+UPWARD, with the lower part of the lens dimmer — the gaze lifted up and away as if looking up
+at someone cheering them on. Glowing a brighter butter-yellow than usual, two small white
+glints in each, placed high. Both match.`) },
   { 누구: '마린', 이름: '마린_감동', 카메라: 마린카메라, 참조: '마린_본체.png',
-    얼굴: 마린얼굴(`each glows warm butter-yellow with a WIDE soft sheen across the upper half and
-a faint wet shimmer gathering along the lower rim, as if the lens were brimming. Both match.
-Moved, on the edge of tears but not crying.`) },
+    얼굴: 마린얼굴(`ONE SINGLE CLEAR TEARDROP is sitting on the felt just below each lens — a
+small round bead of water catching the light, resting there without running down. The lenses
+themselves glow warm butter-yellow with a wide wet sheen across the upper half. Both match.
+Moved to tears, but the face is calm.`) },
   { 누구: '마린', 이름: '마린_뾰로통', 카메라: 마린카메라, 참조: '마린_본체.png',
-    얼굴: 마린얼굴(`each glow is pushed to ONE SIDE of the lens — the bright core sits against the
-left edge of both circles, looking away — and both sit slightly lower than usual. Sulking in a
-playful way, not sad.`) },
+    얼굴: 마린얼굴(`both are looking HARD to one side — the bright core of each lens is jammed
+all the way against the LEFT edge of its circle, so far over that the whole right half of each
+lens has gone dim navy. The gaze is aimed completely off the frame to the left, refusing to
+look at the viewer. Sulking in a playful way.`) },
   { 누구: '마린', 이름: '마린_궁금함', 카메라: 마린카메라, 참조: '마린_본체.png',
     얼굴: 마린얼굴(`the two do NOT match in size — one lens is opened wide and large, the other is
 clearly smaller, both still glowing butter-yellow. Curious, head-tilting interest.`) },
