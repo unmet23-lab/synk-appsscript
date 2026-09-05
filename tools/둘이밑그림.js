@@ -17,18 +17,25 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const 뿌리 = path.join(__dirname, '..');
-const 정본방 = path.join(뿌리, 'docs', '캐릭터', '정본_4K_후보');
+/* 🔴 09-05 오후에 옆 세션이 `정본_4K_후보` 를 `정본_4K` 로 승격시키면서 누끼 판을 걷었다.
+ *   그래서 폴더를 «찾고», 누끼가 없으면 `tools/마스코트누끼.js` 로 그 자리에서 만든다. */
+const 후보방 = ['정본_4K', '정본_4K_후보'].map((n) => path.join(뿌리, 'docs', '캐릭터', n));
+const 정본방 = 후보방.find((p) => fs.existsSync(p));
 const 낼곳 = path.join(뿌리, '영상', 'out', '홍보_4K_v2', '_밑그림');
 
 /* 실제 파일 이름을 «읽어서» 쓴다 — 이름을 코드에 박으면 한글 정규화 차이로 못 찾는 일이 있다. */
 function 찾기(누구) {
-  const 목록 = fs.readdirSync(정본방);
-  const 것 = 목록.find((n) => {
-    const s = n.normalize('NFC');
-    return s.includes(누구) && s.includes('본체') && s.includes('누끼');
-  });
-  if (!것) throw new Error(`${누구} 누끼 판을 못 찾았다 — ${정본방}`);
-  return path.join(정본방, 것);
+  if (!정본방) throw new Error(`정본 4K 폴더를 못 찾았다: ${후보방.join(' · ')}`);
+  for (const 방 of [path.join(정본방, '누끼'), 정본방]) {
+    if (!fs.existsSync(방)) continue;
+    const 것 = fs.readdirSync(방).find((n) => {
+      const s = n.normalize('NFC');
+      return s.includes(누구) && s.includes('본체');
+    });
+    if (것) return path.join(방, 것);
+  }
+  throw new Error(`${누구} 본체를 못 찾았다 — 누끼가 없으면 먼저: `
+    + `node tools/마스코트누끼.js --입력 docs/캐릭터/정본_4K --출력 docs/캐릭터/정본_4K/누끼 ${누구}_본체.png`);
 }
 
 (async () => {

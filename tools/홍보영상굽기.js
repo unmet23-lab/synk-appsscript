@@ -80,10 +80,15 @@ const 컷들 = [
   {
     번호: 5, 이름: '몽글',
     그림: '몽글_본체',
-    지시: 'The small coral wool-felt character sits still on warm pale wood, then blinks once, very gently, '
-      + 'and settles. Its face has ONLY two small round black bead eyes and a completely smooth blank felt '
-      + 'surface everywhere else. Soft window light from the left, extremely shallow depth of field, '
-      + 'calm and quietly alive, fine film grain.',
+    /* 🔴 09-05 1차에서 「blinks once」를 넣었더니 눈을 감는 3~5초 구간에서 «검은 구슬이 사라지고
+     *   볼록한 혹 두 개»가 됐다. 정본의 눈감음과 다른 얼굴이다. ⇒ 눈은 아예 안 감기게 못 박고,
+     *   생명감은 «몸의 미세한 숨»과 «카메라»로 낸다. */
+    지시: 'The small coral wool-felt character sits on warm pale wood. The camera drifts around it very '
+      + 'slowly while it breathes almost imperceptibly, alive but perfectly composed. Its two glossy round '
+      + 'black bead eyes stay wide open the entire time and never close, never blink. Its face has ONLY '
+      + 'those two black bead eyes and smooth blank felt everywhere else. Soft window light from the left, '
+      + 'extremely shallow depth of field, fine film grain.',
+    막을것: 'blinking, closed eyes, eyelids, winking, eyes disappearing',
   },
   {
     번호: 6, 이름: '검은양모',
@@ -94,19 +99,28 @@ const 컷들 = [
   {
     번호: 7, 이름: '까몽',
     그림: '까몽_본체',
-    지시: 'The small charcoal wool-felt cat sits on warm pale wood, its round green eyes catching the light, '
-      + 'then it turns its head very slightly and its tail sways once. Its face has only the two round eyes '
-      + 'and soft dark fur, nothing else. Soft window light, extremely shallow depth of field, '
-      + 'calm and quietly alive, fine film grain.',
+    /* 🔴 09-05 1차 — 「고개를 돌리고 꼬리를 흔든다」를 넣었더니 뒤로 갈수록 «진짜 고양이»가 됐다
+     *   (긴 몸 · 앉은 자세 · 코와 입까지). 정본 까몽이는 둥근 털뭉치다. ⇒ 움직임을 카메라에만 주고
+     *   형태를 바꾸지 말라고 못 박는다. */
+    지시: 'The small charcoal wool-felt cat sits perfectly still on warm pale wood while the camera drifts '
+      + 'around it very slowly. It stays exactly as it is: a small round ball of dark needle-felted wool '
+      + 'with two round green glass eyes, small pointed ears and one slim tail. It does not change shape, '
+      + 'does not stand up, does not become a realistic cat. Soft window light, extremely shallow depth of '
+      + 'field, fine film grain.',
+    막을것: 'realistic cat, real cat, cat nose, cat mouth, whiskers, elongated body, standing up, '
+      + 'changing shape, morphing',
   },
   {
     번호: 8, 이름: '둘이',
-    그림파일: 'C:/Users/q1212/AppData/Local/Temp/claude/C--Users-q1212-Documents-SYNK-appsscript/'
-      + '9e3b0927-233a-4298-a186-4675af4e307b/scratchpad/둘이나란히.png',
+    그림파일: path.join(__dirname, '..', '영상', 'out', '홍보_4K_v2', '_밑그림', '둘이나란히.png'),
+    /* 🔴 09-05 1차 — 「카메라가 천천히 빠지며 여백을 드러낸다」를 넣었더니 둘이 화면의 15% 가 됐다.
+     *   명품의 여백은 «주인공이 보이는» 여백이지 빈 화면이 아니다(결정.md 09-05 엔딩 문법 ⑤ 주석).
+     *   ⇒ 카메라를 거의 세운다. */
     지시: 'The coral felt character and the charcoal felt cat rest side by side on warm pale wood in a '
-      + 'sunlit room. The camera pulls back very slowly, revealing calm empty space around them. '
-      + 'They stay still, breathing gently. Warm afternoon light, extremely shallow depth of field, '
-      + 'muted warm palette, fine film grain, generous negative space.',
+      + 'sunlit room, filling the frame the way they already do. The camera holds almost still, drifting '
+      + 'only a hair. They stay exactly as they are, breathing almost imperceptibly. Warm afternoon light, '
+      + 'extremely shallow depth of field, muted warm palette, fine film grain.',
+    막을것: 'zooming out, pulling back, wide shot, characters shrinking, changing shape',
   },
 ];
 
@@ -118,10 +132,13 @@ const 밑 = `https://${위치}-aiplatform.googleapis.com/v1/projects/${프로젝
 function 그림준비(이름, 경로직접) {
   let 쓸것 = 경로직접;
   if (!쓸것) {
-    const 사천 = path.join(뿌리, 'docs', '캐릭터', '정본_4K_후보', `${이름}.png`);
+    /* 🔴 09-05 오후에 옆 세션이 `정본_4K_후보` 를 `정본_4K` 로 승격시켰다. 둘 다 본다 —
+     *   이름을 하나만 박으면 그날 이후로 조용히 옛 마스코트로 내려간다. */
+    const 사천 = ['정본_4K', '정본_4K_후보']
+      .map((방) => path.join(뿌리, 'docs', '캐릭터', 방, `${이름}.png`))
+      .find((p) => fs.existsSync(p));
     // 4K 판이 없으면 마스코트 창구가 아는 정본으로 내려간다(경로를 여기 새로 적지 않는다).
-    쓸것 = fs.existsSync(사천) ? 사천
-      : path.join(뿌리, 이름.startsWith('까몽') ? 마스코트.까몽경로('본체') : 마스코트.경로('본체'));
+    쓸것 = 사천 || path.join(뿌리, 이름.startsWith('까몽') ? 마스코트.까몽경로('본체') : 마스코트.경로('본체'));
   }
   if (!fs.existsSync(쓸것)) throw new Error(`첫 프레임 그림이 없다: ${쓸것}`);
   const 줄인것 = path.join(os.tmpdir(), `synk_첫프레임_${path.basename(쓸것, '.png')}_1440.png`);
@@ -185,7 +202,8 @@ async function 굽기(컷) {
     /* 🔴 v1 에서 몽글이에게 «없던 입»이 생겼다(유호 09-05 지적). 지시문의 no mouth 만으로는 샜다.
      *   여기서 한 번 더 막는다 — 얼굴에 눈 말고 아무것도 안 생기게. */
     negativePrompt: 'mouth, lips, teeth, smile, tongue, nose, nostrils, eyebrows, eyelashes, '
-      + 'face features, text, letters, words, watermark, subtitles, logo',
+      + 'face features, text, letters, words, watermark, subtitles, logo'
+      + (컷.막을것 ? `, ${컷.막을것}` : ''),   // 그 컷만의 금지 — 컷 정의 옆에 까닭을 적어 둔다
   };
   const instance = { prompt: 컷.지시 };
   if (컷.그림 || 컷.그림파일) {
