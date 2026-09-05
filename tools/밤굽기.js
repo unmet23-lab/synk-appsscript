@@ -24,10 +24,18 @@
  *
  * ■ 🔑 세션에서 떼어 띄운다 — 안 그러면 세션이 죽을 때 같이 죽는다
  *   09-05 저녁에 실제로 밟았다: 22장 배치가 14장에서 세션과 함께 끊겼다(exit 4).
- *   PowerShell 에서:
- *     $p = Start-Process -FilePath (Get-Command node).Source `
- *            -ArgumentList "tools/밤굽기.js","--돈","50000" -WindowStyle Hidden `
- *            -RedirectStandardOutput "<로그>" -RedirectStandardError "<에러>" -PassThru
+ *   🔴 **`Start-Process` 는 못 뗀다**(규칙 `.claude/rules/bake-tools.md`). 이 머리말이 09-05 낮까지
+ *      그것을 권했고, 같은 날 배치 «둘»이 그대로 끊겼다 — 40장이 4장에서(12:15), 36장이 21장에서(13:18).
+ *      둘 다 예외 한 줄 없이 사라졌다. 아래 uncaughtException 그물에 안 걸린 것이 그 증거다.
+ *      떼어졌는지 재는 자 = **부모가 `WmiPrvSE.exe` 인가**(`Get-CimInstance Win32_Process`).
+ *   PowerShell 에서 (WMI `CreateFlags=520` = 콘솔에서 완전히 뗌 · 밤샘_0902 와 같은 규약):
+ *     $로그 = "$env:TEMP\synk-밤굽기\밤굽기-$(Get-Date -Format 'yyyyMMdd-HHmm').log"
+ *     $si = ([WMIClass]'Win32_ProcessStartup').CreateInstance()
+ *     $si.CreateFlags = 520; $si.ShowWindow = 0
+ *     ([WMIClass]'Win32_Process').Create(
+ *       '"C:\Program Files\nodejs\node.exe" "C:\...\tools\밤굽기.js" --돈 50000 --로그 "' + $로그 + '"',
+ *       'C:\Users\q1212\Documents\SYNK-appsscript', $si)
+ *   ⚠ WMI 는 출력을 파일로 돌려주지 못한다 — 그래서 `--로그` 를 «반드시» 준다(안 주면 기본 경로로 간다).
  *   띄운 «직후» `docs/_ops/트랙.md` 에 「돌고 있음 + 로그 절대경로」를 적는다 —
  *   안 적으면 옆 세션이 주인 없는 미커밋으로 읽고 걷어 간다(08-25 실물).
  *
