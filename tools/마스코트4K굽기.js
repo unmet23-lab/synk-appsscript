@@ -108,6 +108,17 @@ the top edge. Shallow depth of field so the fibre detail on the front of the dol
 sharp. Museum-quality fibre-art photography, extremely high detail in the wool fibres and the
 stitching.`;
 
+/* 몽글용 «설명을 끼우는» 얼굴 틀 (2026-09-05 · 감정 여섯을 넣으면서 지었다).
+ *   까몽에는 `까몽눈뜸(설명)`·`까몽눈선(설명)` 이, 마린에는 `마린얼굴(설명)` 이 있었는데
+ *   몽글만 «상수 셋»뿐이라 새 표정마다 긴 문면을 통째로 다시 써야 했다. 셋이 같은 규율을 쓰게 한다.
+ * ⚠ 아래 상수 셋(눈뜸·눈감음·눈웃음)은 «부르는 자리가 이미 여럿»이라 그대로 둔다 — 함수로 바꾸면
+ *   그 자리가 전부 깨진다(한 값을 두 곳이 아는 병을 피하려다 더 큰 것을 부순다). */
+const 몽글눈 = (설명) => `FACE: exactly two eyes and nothing else. ${설명}
+${눈박힘}
+The two sit at exactly the same height, level with each other, in the upper third of the doll,
+set WIDE APART — the gap between them is about one third of the doll's full width.
+No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.`;
+
 const 몽글눈뜸 = `FACE: exactly two eyes and nothing else. Each eye is a small perfectly round
 glossy BLACK bead, smooth and shiny like polished glass with one tiny white highlight.
 ${눈박힘}
@@ -454,6 +465,77 @@ and embarrassed.`) },
     얼굴: 마린얼굴(`each is only HALF lit — the lower half of the circle glows a dim, tired
 butter-yellow while the upper half has gone dark navy, as if a lid had come halfway down. Both
 match. Heavy and sleepy, about to switch off.`) },
+
+  /* ── 감정 여섯 · 워프를 실물 컷으로 (2026-09-05 · 유호 지시 「남은 여섯도 굽자」) ──────
+   * 🔑 왜 굽나 — 토큰이 직접 말한다: 「몽글에서는 컷이 없어 «워프»(2D 변형)로 내던 감정이다.
+   *   마린은 렌즈가 가로로 가늘어지는 실물 컷을 가진 첫 캐릭터다.」 워프는 한 얼굴을 비틀어
+   *   다른 감정인 척하는 임시 방편이라, 학생에게는 같은 얼굴이 조금씩 일그러진 것으로 읽힌다.
+   * 🔑 **몸짓은 이미 서 있다** — `docs/캐릭터/캐릭터_생명감_설계.md` 가 집중=전부 정지,
+   *   응원=몸 기울여 앞으로, 감동=몸 떨림, 뾰로통=팔짱꼴 기울기로 못 박아 뒀다.
+   *   여기서 채우는 것은 그 몸짓이 «쓸 얼굴»이다. 둘이 만나야 살아 있는 자리가 된다.
+   * 🔑 셋 다 눈만으로 감정을 가른다(입·눈썹이 없다) — 그래서 여섯을 «눈의 형태»로 갈랐다:
+   *   집중=가로 슬릿 · 응원=위로 크게 뜬 기대 · 감동=크고 촉촉 · 뾰로통=옆으로 미끄러짐 ·
+   *   궁금함=좌우 크기 다름 · 안도=힘 풀린 얕은 호. 잠자는 «눈감음»과 «안도»가 겹치지 않게,
+   *   안도는 호를 얕게 두고 살짝 벌어진 채로 둔다.
+   * ⚠ 마린 집중은 이미 위에 있어 여기서 뺀다(17장). */
+
+  { 누구: '몽글', 이름: '몽글_집중', 카메라: 몽글카메라, 참조: '몽글_본체.png',
+    얼굴: 몽글눈(`Each eye is a NARROW HORIZONTAL SLIT of dark brown embroidery thread — a long
+thin capsule with rounded ends, about three times wider than it is tall. Both identical.
+Narrowed in concentration, watching one thing closely.`) },
+  { 누구: '몽글', 이름: '몽글_응원', 카메라: 몽글카메라, 참조: '몽글_본체.png',
+    얼굴: 몽글눈(`Each eye is a LARGE perfectly round glossy black bead, noticeably bigger than
+usual and opened wide, each with TWO white highlights instead of one — bright, expectant,
+leaning into the moment. Both identical.`) },
+  { 누구: '몽글', 이름: '몽글_감동', 카메라: 몽글카메라, 참조: '몽글_본체.png',
+    얼굴: 몽글눈(`Each eye is a large round glossy black bead with a WIDE soft white highlight
+across the upper half and a faint wet glimmer pooling along the lower rim, as if brimming.
+Both identical. Moved, on the edge of tears but not crying.`) },
+  { 누구: '몽글', 이름: '몽글_뾰로통', 카메라: 몽글카메라, 참조: '몽글_본체.png',
+    얼굴: 몽글눈(`Each eye is a round glossy black bead pushed to ONE SIDE — both beads sit
+against the left edge of where an eye would be, looking away to the side, and both sit slightly
+LOWER than usual. Sulking in a playful way, not sad.`) },
+  { 누구: '몽글', 이름: '몽글_궁금함', 카메라: 몽글카메라, 참조: '몽글_본체.png',
+    얼굴: 몽글눈(`The two eyes do NOT match in size. One is a large round glossy black bead
+opened wide; the other is clearly smaller, the same round bead shrunk. Curious, head-tilting
+interest. Both are open beads — neither is closed.`) },
+  { 누구: '몽글', 이름: '몽글_안도', 카메라: 몽글카메라, 참조: '몽글_본체.png',
+    얼굴: 몽글눈(`Each eye is a single SHALLOW curved line of dark brown thread arcing gently
+downward — much flatter and softer than a sleeping eye, the tension gone out of it, and each
+line stops a little short so a sliver of gap remains at both ends. Relieved, letting the breath
+out. Both identical.`) },
+
+  { 누구: '까몽', 이름: '까몽_집중', 카메라: 까몽카메라, 참조: '까몽_본체.png',
+    얼굴: 까몽눈선('Each is a NARROW HORIZONTAL SLIT rather than a curve — a long thin capsule with rounded ends, about three times wider than tall, still bright apple-green. Narrowed in concentration, watching one thing closely.') },
+  { 누구: '까몽', 이름: '까몽_응원', 카메라: 까몽카메라, 참조: '까몽_본체.png',
+    얼굴: 까몽눈뜸('Both are opened WIDER than usual and slightly larger, each with two white highlights instead of one — bright and expectant, leaning into the moment.') },
+  { 누구: '까몽', 이름: '까몽_감동', 카메라: 까몽카메라, 참조: '까몽_본체.png',
+    얼굴: 까몽눈뜸('Both are wide open with a broad soft white highlight across the upper half and a faint wet glimmer pooling along the lower rim, as if brimming. Moved, on the edge of tears but not crying.') },
+  { 누구: '까몽', 이름: '까몽_뾰로통', 카메라: 까몽카메라, 참조: '까몽_본체.png',
+    얼굴: 까몽눈뜸('Both pupils are pushed to ONE SIDE — looking away to the left — and both eyes sit slightly lower than usual. Sulking in a playful way, not sad.') },
+  { 누구: '까몽', 이름: '까몽_궁금함', 카메라: 까몽카메라, 참조: '까몽_본체.png',
+    얼굴: 까몽눈뜸('The two do NOT match in size — one is opened wide and large, the other is clearly smaller. Curious, head-tilting interest. Both are open, neither closed.') },
+  { 누구: '까몽', 이름: '까몽_안도', 카메라: 까몽카메라, 참조: '까몽_본체.png',
+    얼굴: 까몽눈선('Each is a SHALLOW curve arcing gently downward — much flatter and softer than a sleeping eye, the tension gone out of it, each line stopping a little short so a sliver of gap remains at both ends. Relieved, letting the breath out.') },
+
+  { 누구: '마린', 이름: '마린_응원', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`each is opened WIDE and glowing a brighter butter-yellow than usual, with two
+small white glints instead of one. Both match. Bright and expectant, leaning into the moment.`) },
+  { 누구: '마린', 이름: '마린_감동', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`each glows warm butter-yellow with a WIDE soft sheen across the upper half and
+a faint wet shimmer gathering along the lower rim, as if the lens were brimming. Both match.
+Moved, on the edge of tears but not crying.`) },
+  { 누구: '마린', 이름: '마린_뾰로통', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`each glow is pushed to ONE SIDE of the lens — the bright core sits against the
+left edge of both circles, looking away — and both sit slightly lower than usual. Sulking in a
+playful way, not sad.`) },
+  { 누구: '마린', 이름: '마린_궁금함', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`the two do NOT match in size — one lens is opened wide and large, the other is
+clearly smaller, both still glowing butter-yellow. Curious, head-tilting interest.`) },
+  { 누구: '마린', 이름: '마린_안도', 카메라: 마린카메라, 참조: '마린_본체.png',
+    얼굴: 마린얼굴(`each has softened into a WIDE SHALLOW arc of dim butter-yellow light, flatter
+and gentler than the sleepy half-lit look, with the tension gone out of it. Both match.
+Relieved, letting the breath out.`) },
 ];
 
 const 몸들 = { 몽글: 몽글몸, 까몽: 까몽몸, 마린: 마린몸 };
