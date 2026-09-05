@@ -32,7 +32,41 @@ try:
 except ImportError:
     sys.exit('Pillow 가 없다 — python -m pip install pillow')
 
+try:                                    # 떨어진 조각 걷기에만 쓴다 — 없으면 그 단계만 건너뛴다
+    import numpy as np
+    from scipy import ndimage
+except ImportError:
+    np = ndimage = None
+
 표식 = (255, 0, 255)   # 배경으로 번진 자리를 찍는 색(원본에 있을 리 없는 자홍)
+
+
+def 남은조각걷기(알파, 몫문):
+    """배경을 걷고도 «본체와 떨어져» 남은 흰 조각을 지운다 (09-05 실물).
+
+    왜 남나: 이 도구는 «가장자리에서 번져 들어간 곳»만 배경으로 본다. 그래서 물건과
+      떨어져 있으면서 번짐이 닿지 못한 조각은 살아남는다. 흰 지면에서는 안 보이다가
+      마스코트 위나 색 있는 배경에 얹으면 드러난다 — 그때는 이미 쓰인 뒤다.
+      09-05 실측: 오늘 구운 32장 중 10장에 남았고, 비니가 본체의 2.65%(18조각)로 가장 컸다.
+    🔑 «두 번째로 큰 덩어리»를 지우지 않는다 — 이어폰의 폼폼 둘처럼 원래 여러 덩어리인
+      물건이 있다. 그래서 «개수»가 아니라 «본체 대비 몫»으로 가른다.
+    """
+    if ndimage is None:
+        print('   ⚠ scipy 가 없어 떨어진 조각 걷기를 건너뛴다 — python -m pip install scipy')
+        return 0, 알파
+    a = np.array(알파)
+    있다 = a > 8
+    표, 수 = ndimage.label(있다, structure=np.ones((3, 3), dtype=bool))
+    if 수 <= 1:
+        return 0, 알파
+    크기 = ndimage.sum(있다, 표, range(1, 수 + 1))
+    문턱 = 크기.max() * 몫문 / 100.0
+    지울것 = [i + 1 for i, c in enumerate(크기) if c < 문턱]
+    if not 지울것:
+        return 0, 알파
+    지움 = np.isin(표, 지울것)
+    a[지움] = 0
+    return int(지움.sum()), Image.fromarray(a, 'L')
 
 
 def 흰그림자다듬기(원px, ap, w, h, 바닥, 채도문):
@@ -84,7 +118,7 @@ def 구멍걷기(원px, ap, w, h, 문):
     return 센다
 
 
-def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=218, 채도문=22, 구멍문=238):
+def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=218, 채도문=22, 구멍문=238, 조각몫=2.0):
     원 = Image.open(경로).convert('RGB')
     w, h = 원.size
     tmp = 원.copy()
@@ -109,6 +143,8 @@ def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=21
 
     민수 = 흰그림자다듬기(원.load(), ap, w, h, 흰바닥, 채도문) if 흰바닥 > 0 else 0
     구멍수 = 구멍걷기(원.load(), ap, w, h, 구멍문) if 구멍문 > 0 else 0
+    # 🔑 흐리기 «전»에 지운다 — 흐린 뒤에는 조각의 테두리가 번져 덩어리 경계가 뭉갠다
+    조각수, 알파 = 남은조각걷기(알파, 조각몫) if 조각몫 > 0 else (0, 알파)
     알파 = 알파.filter(ImageFilter.GaussianBlur(부드럼))
     out = 원.convert('RGBA')
     out.putalpha(알파)
@@ -128,7 +164,8 @@ def 걷는다(경로, 출력, 임계, 여백, 정사각, 부드럼, 흰바닥=21
 
     out.save(출력)
     print(f'   ✅ {os.path.basename(출력)}  배경 {지운수 * 100 // (w * h)}% · 구멍 {구멍수:,}점'
-          f'{f" · 흰그림자 {민수:,}점" if 민수 else ""} · {out.size[0]}×{out.size[1]}')
+          f'{f" · 흰그림자 {민수:,}점" if 민수 else ""}'
+          f'{f" · 떨어진 조각 {조각수:,}점" if 조각수 else ""} · {out.size[0]}×{out.size[1]}')
     return 지운수 > 0
 
 
@@ -147,6 +184,9 @@ def main():
                          '흰 바닥에서 찍으면 그림자도 흰색이라 배경만 걷으면 흰 덩어리가 남는다. 0 이면 안 한다')
     ap.add_argument('--채도문', type=int, default=22,
                     help='RGB 최대-최소가 이 값을 넘으면 «색이 있는 것»이라 흰그림자 다듬기에서 뺀다(물체 보호)')
+    ap.add_argument('--조각몫', type=float, default=2.0,
+                    help='본체의 이 %% 미만인 «떨어진 덩어리»를 지운다. 0 이면 안 한다. '
+                         '09-05 실측 2.0 에서 비니의 흰 실선 18조각이 걷히고 이어폰의 폼폼 둘은 남았다')
     ap.add_argument('--구멍문', type=int, default=238,
                     help='물체에 둘러싸인 «거의 순백» 자리를 걷는 문턱(0~255). 가위 손잡이 안·실 고리 안이 '
                          '이걸로 걷힌다. 0 이면 안 한다(배경이 흰색이 아닌 그림)')
@@ -163,7 +203,7 @@ def main():
     산것 = 0
     for p in 파일들:
         out = a.출력 or (os.path.splitext(p)[0] + '_누끼.png')
-        if 걷는다(p, out, a.임계, a.여백, a.정사각, a.부드럼, a.흰바닥, a.채도문, a.구멍문):
+        if 걷는다(p, out, a.임계, a.여백, a.정사각, a.부드럼, a.흰바닥, a.채도문, a.구멍문, a.조각몫):
             산것 += 1
     print(f'■ 합계 {len(파일들)}장 = 걷힘 {산것} + 못 걷음 {len(파일들) - 산것}')
 
