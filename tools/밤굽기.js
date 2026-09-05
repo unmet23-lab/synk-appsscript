@@ -80,6 +80,18 @@ const 말 = (s) => {
   try { fs.appendFileSync(로그경로, 줄 + String.fromCharCode(10), 'utf8'); } catch { /* 로그가 막혀도 굽기는 계속한다 */ }
 };
 
+/* 🔴 **죽는 이유를 로그에 남긴다**(09-05 실물).
+ *   40장 배치가 넷째 장 뒤에 «조용히» 죽었다. 로그에는 오류가 없었는데, 그건 예외 문면이
+ *   stderr 로 가고 나는 stdout 만 파일로 돌렸기 때문이다 — 즉 «없어서 안 보인 것»이 아니라
+ *   «다른 곳으로 가서 안 보인 것»이다. 여기서 붙잡아 같은 로그에 적는다. */
+for (const 갈래 of ['uncaughtException', 'unhandledRejection']) {
+  process.on(갈래, (e) => {
+    말(`🔴 ${갈래} — ${(e && e.stack) || e}`);
+    process.exit(1);
+  });
+}
+process.on('exit', (코드) => { if (코드 !== 0) 말(`■ 프로세스가 코드 ${코드} 로 끝났다`); });
+
 function 계획읽기() { return JSON.parse(fs.readFileSync(계획경로, 'utf8')); }
 
 /** 굽을 것을 고른다. 계획을 «그때그때» 다시 읽으므로 도중에 손으로 고쳐도 따라온다. */
