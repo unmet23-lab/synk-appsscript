@@ -73,7 +73,12 @@ def main():
             if a.묶음 and m['이름'] != a.묶음:
                 continue
             for x in m.get('것들', []):
-                if x.get('상태') == '구웠다' and str(x.get('파일', '')).endswith('.png'):
+                파일 = str(x.get('파일', ''))
+                # 🔑 «구움 방에 든 것»만 다듬는다 — 파일 칸에 «/» 가 있으면 저장소의 다른 자리를
+                #   가리키는 것이고(라디오 무대 `docs/라디오/무대/*.png` 가 그렇다), 그런 그림은
+                #   방송이 원본 그대로 읽으므로 걷거나 AVIF 로 담을 대상이 아니다.
+                #   09-05 실물: 이 걸림돌이 없어 라디오 무대 7장이 매번 「원본이 없다」로 빨개졌다.
+                if x.get('상태') == '구웠다' and 파일.endswith('.png') and '/' not in 파일 and '\\' not in 파일:
                     할것.append((m['이름'], x, x.get('규격') or '부품'))
 
     if not 할것:
