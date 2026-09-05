@@ -96,6 +96,17 @@ const 규격표 = {
     'the same body colour and wool texture, the same eyes in the same position, at the same ' +
     'spacing and the same small size. Do not redraw it, do not restyle it, do not enlarge the ' +
     'eyes, do not widen or resize the body. Only the garment is added. ' +
+    /* 🔴 09-06 실측이 부른 두 줄 — 「옷만 더한다」로는 이 둘을 못 막았다.
+     *   ① 겨울 델 시험에서 **몽글에게 팔이 생겼다.** 지시문에 「소맷부리」가 있었고,
+     *      소매가 있으려면 팔이 있어야 하니 모델이 팔과 손을 만들어 줬다.
+     *   ② 같은 장에서 **머리가 작아지고 몸이 넓어졌다.** 원본은 머리부터 밑단까지 한 줄기인데
+     *      「작은 머리 + 넓은 몸통」으로 갈렸다. 옷이 몸을 다시 짜게 둔 자리다. */
+    'The character keeps exactly the body it has in the reference and gains no new body part: ' +
+    'no arm, no hand, no leg and no foot appears that is not already there. If the garment would ' +
+    'normally have sleeves but this character has no arms, it is made WITHOUT sleeves; if it ' +
+    'would normally have trouser legs, it is made as a wrap or skirt instead. ' +
+    'Keep the same proportions as the reference: the head takes up the same share of the whole ' +
+    'height, and the body is no wider and no shorter than it is there. ' +
     'Keep the SAME camera angle and the SAME pose as the reference photograph — if the reference ' +
     'looks straight down at the character, this picture looks straight down too; if it faces the ' +
     'character head on, this one faces it head on. Do not turn, tilt or re-pose the character. ' +
