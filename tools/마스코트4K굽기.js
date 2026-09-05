@@ -595,6 +595,29 @@ clearly smaller, both still glowing butter-yellow. Curious, head-tilting interes
     얼굴: 마린얼굴(`each has softened into a WIDE SHALLOW arc of dim butter-yellow light, flatter
 and gentler than the sleepy half-lit look, with the tension gone out of it. Both match.
 Relieved, letting the breath out.`) },
+
+  /* ── 몽글의 «기쁨» 두 층 (2026-09-05 밤 · 유호 「ㄹ」= 둘 다 만든다) ────────────────
+   * 감정표가 이 둘을 비워 두고 있었다: 기쁨은 눈웃음으로 «덮여» 있었고(임시대체), 별눈은
+   * 컷 자체가 0이었다. 별눈이 퇴역한 까닭은 어휘가 나빠서가 아니라 옛 몸(유리 렌더)이
+   * 걷힐 때 딸려 삭제됐고 펠트 판을 안 만들어서다 — 즉 «만들면 되는» 자리였다.
+   * 🔑 두 층은 «세기»가 아니라 «자리»가 다르다:
+   *     기쁨 = 앱 켬 · 제출 완료 · 무오류 첫 열람 (자주)
+   *     별눈 = 진화 · 생애 첫 순간 · 시즌 완주 (하루 한 번 · 토큰 「언제」가 그렇게 못 박았다)
+   * 🔑 마린은 기쁨에 «꽃»이 핀다. 몽글은 «별»이라 둘이 안 겹친다. */
+  { 누구: '몽글', 이름: '몽글_기쁨', 카메라: 몽글카메라, 참조: '몽글_눈웃음.png',
+    얼굴: 몽글눈(`Each eye is a single line of dark brown embroidery thread stitched into the
+felt in an UPWARD peak — the same caret "^" shape as the doll's smiling face, but MUCH BIGGER
+and BOLDER: each stroke is clearly longer, the peak rises noticeably higher, and the thread is
+worked thick so the line reads as a plump raised ridge rather than a thin stitch. Each stroke
+also curls up a little at both of its outer tips. A wider, warmer, more delighted version of
+the same smile. Both identical, both level with each other.`) },
+  { 누구: '몽글', 이름: '몽글_별눈', 카메라: 몽글카메라, 참조: '몽글_본체.png',
+    얼굴: 몽글눈(`Each eye is a small five-pointed STAR made of butter-yellow wool felt, cut out
+and appliqued onto the face where the eye would sit, with its edge hand stitched in cream
+thread. The stars are plump and soft with gently rounded points, not sharp. Both identical,
+both level with each other, sitting flat against the wool.
+🔴 The star IS the whole eye — no black bead behind or beside it, no eyeball, no white of the
+eye, no socket. Nothing else on the face.`) },
 ];
 
 const 몸들 = { 몽글: 몽글몸, 까몽: 까몽몸, 마린: 마린몸 };
