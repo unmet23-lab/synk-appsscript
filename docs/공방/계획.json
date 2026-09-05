@@ -2140,14 +2140,15 @@
       {
         "이름": "영상 삽입 조각",
         "쓰는 곳": "09-05 확정 «영상에도 삽입» — Remotion 릴·홍보영상 위에 얹는다",
-        "상태": "1/12",
+        "상태": "2/12",
         "것들": [
           {
             "이름": "코너 왼위",
-            "상태": "아직",
+            "상태": "구웠다",
             "규격": "부품",
             "지시": "A quarter corner ornament cut from cream wool felt, its two straight edges meeting at a clean right angle opening down and right, the curved outer edge blanket stitched in coral thread.",
-            "쇠": "공방_코너왼위"
+            "쇠": "공방_코너왼위",
+            "파일": "공방_코너왼위.png"
           },
           {
             "이름": "코너 오른위",
@@ -2384,7 +2385,7 @@
         "이름": "글자 시험",
         "쓰는 곳": "표지·제목 — 되면 명품 글자를 굽고, 안 되면 오려 만드는 쪽이 유일한 길로 확정된다",
         "_결": "🔑 두 장만 던져 잰다. 이미지 모델이 한글 자모를 흘리는 것은 흔하다.",
-        "상태": "2/2",
+        "상태": "2/3",
         "것들": [
           {
             "이름": "펠트 글자 · 한국어",
@@ -2392,7 +2393,8 @@
             "쇠": "공방_글자_한국어",
             "규격": "부품",
             "지시": "Three Korean hangul characters spelling the word 한국어, each character cut by hand from warm coral wool felt and laid side by side in a row, reading left to right: first 한, then 국, then 어. Each character is a single flat felt shape, its outline hand stitched all the way round with small even blanket stitches in cream thread. The letterforms are thick, geometric and evenly weighted like a bold sans-serif. The three characters are the only things in the frame and none of them touch each other.",
-            "파일": "공방_글자_한국어.avif"
+            "파일": "공방_글자_한국어.avif",
+            "땀있음판": "공방_글자_한국어.avif"
           },
           {
             "이름": "자수 글자 · SYNK",
@@ -2401,6 +2403,14 @@
             "규격": "부품",
             "지시": "The four latin letters S Y N K embroidered in a row on a piece of pale cream wool felt, worked in dense satin stitch with lapis blue thread so each letter sits slightly raised above the cloth, the individual stitches clearly visible across the letter strokes. The letters are bold, upright and evenly spaced, reading SYNK from left to right. Nothing else on the cloth — no border, no other marks.",
             "파일": "공방_글자_SYNK.avif"
+          },
+          {
+            "이름": "펠트 글자 · 한국어 (땀 없이)",
+            "상태": "아직",
+            "쇠": "공방_글자_한국어_땀없이",
+            "규격": "부품",
+            "_왜": "유호 09-05 저녁 「스티치가 약간 거슬린다」. 한글은 획이 가늘어 땀이 글자를 덮는다 — 오려 만드는 도구(tools/펠트글자.py)는 처음부터 땀을 기본에서 뺐는데 굽는 쪽 지시문에 도로 들어가 있었다.",
+            "지시": "Three Korean hangul characters spelling the word 한국어, each character cut by hand from warm coral wool felt and laid side by side in a row, reading left to right: first 한, then 국, then 어. Each character is a single flat piece of felt with a clean hand-cut edge — no stitching of any kind, no thread, no embroidery, nothing sewn along the outline. The cut edge is slightly soft and fuzzy the way wool felt is when scissors leave it. The letterforms are thick, geometric and evenly weighted like a bold sans-serif, and the counters (the enclosed holes in 한 and 어) stay wide open and clearly visible. The three characters are the only things in the frame and none of them touch each other."
           }
         ]
       },
