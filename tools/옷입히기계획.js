@@ -178,16 +178,16 @@ const 옷들 = [
     'A small soft crown of butter-yellow felt sits on its head — five rounded points, each tipped ' +
     'with a tiny cream bead, and one line of cream running stitch around the band. The crown is ' +
     'soft and slightly squashy, clearly hand-sewn, not metal.' },
-  /* 🔴 출석 셋의 «생김새»는 유호님 확정 «전»이다(트랙 §0-공방). 아래는 초안이고 결은 하나다 —
-   *   출석은 «쌓임»이라 자라는 식물로 잰다(새싹 → 잎 → 꽃). 유호님이 다른 결을 고르시면 여기만 고친다. */
-  { 이름: '한 달 출석 새싹', 라인: '성과', 초안: true, 가림: '작음', 설명:
+  /* ✅ 출석 셋의 생김새 = **자라는 식물 한 줄**(유호 확정 09-06 「자라는 식물로 가자」).
+   *   출석은 «쌓임»이라 자라는 것이 결에 맞고, 셋이 서로 다른 자리(가슴·어깨·머리)에 앉아 겹치지 않는다. */
+  { 이름: '한 달 출석 새싹', 라인: '성과', 가림: '작음', 설명:
     'One small brooch is pinned on the front of its body — a single green felt sprout with two ' +
     'tiny rounded leaves rising from a chalk-white felt disc, edged in cream blanket stitch.' },
-  { 이름: '3개월 출석 잎망토', 라인: '성과', 초안: true, 가림: '큼', 설명:
+  { 이름: '3개월 출석 잎망토', 라인: '성과', 가림: '큼', 설명:
     'It wears a short shoulder cape of soft meadow-green felt fastened at the throat with one ' +
     'cream cord, its lower edge cut into three broad rounded leaf shapes, each with one line of ' +
     'cream running stitch down its middle like a leaf vein.' },
-  { 이름: '6개월 출석 화관', 라인: '성과', 초안: true, 가림: '작음', 설명:
+  { 이름: '6개월 출석 화관', 라인: '성과', 가림: '작음', 설명:
     'A soft flower crown rests on its head — a ring of meadow-green felt leaves with five small ' +
     'open flowers worked in coral and butter-yellow felt, each with a centre of tiny cream beads. ' +
     'The ring follows the curve of the head.' },
@@ -232,7 +232,6 @@ function 옷항목들() {
         규격: '입힘',
         지시: m.표식 + 옷.설명,
         참조: [m.참조],
-        ...(옷.초안 ? { 메모: '생김새 초안 — 유호님 확정 전(출석 셋)' } : {}),
       });
     }
   }
@@ -278,7 +277,14 @@ function 굽는중() {
   return 줄 ? 줄.split(',').filter(Boolean) : [];
 }
 
+/* 🔑 시험 굽기가 «같은 문장»을 쓰게 창구를 낸다 — 지시문을 시험 쪽에 다시 적으면
+ *   그 순간 두 곳이 한 값을 알게 되고, 시험에서 통과한 문장과 실제로 굽는 문장이 갈린다
+ *   (기억 constant-known-in-two-places). 계획에 넣기 «전»에도 이 창구로 꺼내 쓴다. */
+module.exports = { 묶음들, 옷들, 마스코트들, 가게물건 };
+
 /* ── 실행 ─────────────────────────────────────────────────────────────── */
+
+if (require.main !== module) return;
 
 const 인자 = process.argv.slice(2);
 const 넣나 = 인자.includes('--넣기');
