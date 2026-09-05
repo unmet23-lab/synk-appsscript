@@ -40,7 +40,13 @@ const path = require('path');
 const { 키, 한컷, 배치게이트 } = require('./lib/이미지굽기');
 
 const ROOT = path.join(__dirname, '..');
-const 몽글정본 = path.join(ROOT, 'docs/캐릭터/펠트코랄_0815');
+/* 🔴 09-05 저녁 — 몽글 참조를 «옛 세대»에서 정본_4K 로 옮겼다(유호 「몽글이 표정 넷도 만들어줘」).
+ *   그전에는 `펠트코랄_0815`(사진 세대)를 참조로 삼았는데, 그 판은 그날 정본에서 내려갔다.
+ *   옛 몸을 참조로 새 표정을 구우면 «옛 몸에 새 얼굴»이 나오고, 그것이 정본에 서면 같은
+ *   캐릭터가 두 몸을 갖는다. 마린이 처음부터 정본_4K 를 참조하는 것과 같은 규율이다.
+ *   ⚠ 까몽은 아직 옛 폴더를 본다 — 까몽 10컷이 이미 다 서 있어 다시 구울 일이 없어서
+ *     건드리지 않았다. 까몽을 다시 구울 날이 오면 여기도 같이 옮긴다. */
+const 몽글정본 = path.join(ROOT, 'docs/캐릭터/정본_4K');
 const 까몽정본 = path.join(ROOT, 'docs/캐릭터/친구공방_0825');
 const 낼곳 = path.join(ROOT, 'docs/캐릭터/정본_4K_후보');
 
@@ -214,16 +220,16 @@ THE LENSES THIS TIME: ${렌즈}`;
 
 const 판들 = [
   /* 몽글 5 */
-  { 누구: '몽글', 이름: '몽글_본체',   카메라: 몽글카메라,          얼굴: 몽글눈뜸,   참조: '재염색_본체.png' },
-  { 누구: '몽글', 이름: '몽글_눈감음', 카메라: 몽글카메라,          얼굴: 몽글눈감음, 참조: '재염색_눈감음.png' },
-  { 누구: '몽글', 이름: '몽글_눈웃음', 카메라: 몽글카메라,          얼굴: 몽글눈웃음, 참조: '재염색_눈웃음.png' },
-  { 누구: '몽글', 이름: '몽글_좌34',   카메라: 몽글카메라34('left'),  얼굴: 몽글눈뜸,   참조: '재염색_좌34.png' },
-  { 누구: '몽글', 이름: '몽글_우34',   카메라: 몽글카메라34('right'), 얼굴: 몽글눈뜸,   참조: '재염색_우34.png' },
+  { 누구: '몽글', 이름: '몽글_본체',   카메라: 몽글카메라,          얼굴: 몽글눈뜸,   참조: '몽글_본체.png' },
+  { 누구: '몽글', 이름: '몽글_눈감음', 카메라: 몽글카메라,          얼굴: 몽글눈감음, 참조: '몽글_눈감음.png' },
+  { 누구: '몽글', 이름: '몽글_눈웃음', 카메라: 몽글카메라,          얼굴: 몽글눈웃음, 참조: '몽글_눈웃음.png' },
+  { 누구: '몽글', 이름: '몽글_좌34',   카메라: 몽글카메라34('left'),  얼굴: 몽글눈뜸,   참조: '몽글_좌34.png' },
+  { 누구: '몽글', 이름: '몽글_우34',   카메라: 몽글카메라34('right'), 얼굴: 몽글눈뜸,   참조: '몽글_우34.png' },
   /* 🔴 09-05 — 첫 배치에서 «빠뜨렸다». 옛 정본의 몽글 표정은 여섯인데(마스코트자산.js 의 `표정`)
    *   다섯만 구웠다. 그대로 정본을 갈면 `경로('놀람')` 이 없는 파일을 가리킨다.
    *   옛 놀람은 «합성물»이었다 — 본체의 구슬을 1.35배로 키워 얹은 판이라 배경판이 아예 없었다.
    *   이제는 그것도 제대로 굽는다. 그래서 이 자리부터 놀람이 «합성물이 아니게» 된다. */
-  { 누구: '몽글', 이름: '몽글_놀람', 카메라: 몽글카메라, 참조: '재염색_본체.png',
+  { 누구: '몽글', 이름: '몽글_놀람', 카메라: 몽글카메라, 참조: '몽글_본체.png',
     얼굴: `FACE: exactly two eyes and nothing else. Each eye is a perfectly round glossy BLACK
 bead, smooth and shiny like polished glass with one tiny white highlight. STARTLED — the beads
 are noticeably LARGER than usual, about one and a third times their normal size, which is what
@@ -232,6 +238,61 @@ ${눈박힘}
 The two beads sit at exactly the same height, level with each other, in the upper third of the
 doll. They are set WIDE APART — the gap between them is about one third of the doll's full
 width. No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.` },
+
+  /* 🔴 몽글 표정 넷 (09-05 저녁 신설 · 유호 「몽글이 표정 넷도 만들어줘」)
+   *
+   * 왜 늦었나: 몽글은 «펠트 실물 사진» 세대라 새 표정을 만들려면 실물을 다시 만들어 다시
+   *   찍어야 했다. 그래서 앱 표정이 몽글 5 · 까몽 9 로 갈렸고, 학생이 주인공(몽글)을 고르면
+   *   반응이 제일 얇았다. 09-05 판올림으로 몽글도 굽는 세대가 되어 그 벽이 사라졌다.
+   *
+   * 🔑 넷은 까몽의 같은 표정과 «짝»이 되게 지었다 — 어휘만 몽글 것으로 옮긴다:
+   *   까몽은 초록 실선·초록 홍채, 몽글은 **짙은 갈색 자수실**과 **검은 구슬**이다.
+   * ⚠ 으쓱은 옛 워프 통로에서 «변화가 안 읽힌다»로 한 번 반려됐다(유호 09-0x). 그래서
+   *   졸림과 «서로» 다르게 못 박는다 — 으쓱은 짧고 평평, 졸림은 길고 낮다. 그 대비를
+   *   지시문 안에서 직접 말한다(하나만 보고 지으면 둘이 같아진다).
+   * 🔑 넷 다 `얼굴먼저` 다 — 참조가 본체(구슬 눈)라, 얼굴을 뒤에 두면 「참조와 같게」가
+   *   이겨서 눈이 안 바뀐다(마린 표정에서 실측한 자리). */
+  { 누구: '몽글', 이름: '몽글_윙크', 카메라: 몽글카메라, 참조: '몽글_본체.png', 얼굴먼저: true,
+    얼굴: `FACE: exactly two eyes and nothing else, and they do NOT match. The doll's RIGHT eye
+(on the LEFT side of the picture as we look at it) is CLOSED — a single curved line of dark
+brown embroidery thread stitched into the felt, curving gently DOWNWARD. The OTHER eye is fully
+OPEN — a small perfectly round glossy BLACK bead, smooth and shiny like polished glass with one
+tiny white highlight. A wink.
+${눈박힘}
+The two sit at exactly the same height, level with each other, in the upper third of the doll,
+set wide apart with a gap of about one third of the doll's width.
+No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.` },
+
+  { 누구: '몽글', 이름: '몽글_으쓱', 카메라: 몽글카메라, 참조: '몽글_본체.png', 얼굴먼저: true,
+    얼굴: `FACE: exactly two closed eyes and nothing else. Each eye is a SHORT, nearly FLAT line
+of dark brown embroidery thread stitched into the felt — almost a straight dash, with only the
+slightest downward tilt at its outer end. A breezy "who, me?" shrug.
+🔴 These lines must read as clearly DIFFERENT from the other closed-eye faces: they are much
+SHORTER than a sleepy eye and much FLATTER than a sleeping curve — nearly horizontal dashes,
+not arcs. Do not draw a smile, do not draw a caret ^, do not draw a deep curve.
+The two sit at exactly the same height, level with each other, in the upper third of the doll,
+set wide apart with a gap of about one third of the doll's width. No beads anywhere.
+No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.` },
+
+  { 누구: '몽글', 이름: '몽글_졸림', 카메라: 몽글카메라, 참조: '몽글_본체.png', 얼굴먼저: true,
+    얼굴: `FACE: exactly two closed eyes and nothing else. Each eye is a LONG, LOW, almost
+straight line of dark brown embroidery thread with only the faintest downward sag in the middle
+— heavy-lidded and sleepy.
+🔴 These lines are noticeably LONGER than a shrug dash and sit LOWER on the face, closer to the
+middle of the head. They are long and drooping, not short and crisp.
+The two sit at exactly the same height, level with each other, set wide apart with a gap of
+about one third of the doll's width. No beads anywhere.
+No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.` },
+
+  { 누구: '몽글', 이름: '몽글_민망', 카메라: 몽글카메라, 참조: '몽글_본체.png', 얼굴먼저: true,
+    얼굴: `FACE: exactly two eyes and nothing else, and they do NOT match. One eye is fully OPEN
+— a small perfectly round glossy BLACK bead with one tiny white highlight. The OTHER eye is
+SQUEEZED SMALLER — a short, tight curve of dark brown embroidery thread, pinched as if caught
+out and looking away. Embarrassed, flustered.
+${눈박힘}
+The two sit at exactly the same height, level with each other, in the upper third of the doll,
+set wide apart with a gap of about one third of the doll's width.
+No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.` },
 
   /* 까몽 10 */
   { 누구: '까몽', 이름: '까몽_본체', 카메라: 까몽카메라, 참조: '까몽_본체.png',
