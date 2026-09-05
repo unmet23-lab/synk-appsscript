@@ -2203,35 +2203,39 @@
         "이름": "부품 색 갈래 2차",
         "쓰는 곳": "앱 UI·지면·PPT — 신호를 나르는 부품 다섯을 브랜드 여섯 색으로 채운다",
         "_결": "🔴 09-05 실측: 색 갈래가 있는 부품은 5종뿐이고 163종이 한 색이었다. 재염색으로 만들지 않는다(유호 09-05).",
-        "상태": "0/18",
+        "상태": "4/18",
         "것들": [
           {
             "이름": "단추 코랄",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_단추_코랄",
             "규격": "부품",
-            "지시": "A single round button cut from warm coral wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame."
+            "지시": "A single round button cut from warm coral wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame.",
+            "파일": "공방_단추_코랄.png"
           },
           {
             "이름": "단추 자주",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_단추_자주",
             "규격": "부품",
-            "지시": "A single round button cut from deep plum wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame."
+            "지시": "A single round button cut from deep plum wool felt, a smaller felt disc stitched on top of a slightly larger one, four small holes at its centre, the rim hand stitched with small even blanket stitches in cream thread. Seen straight on from the front, flat and round. Nothing else in frame.",
+            "파일": "공방_단추_자주.png"
           },
           {
             "이름": "매듭점 버터",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_매듭점_버터",
             "규격": "부품",
-            "지시": "A small trefoil knot tied from thick butter yellow wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame."
+            "지시": "A small trefoil knot tied from thick butter yellow wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame.",
+            "파일": "공방_매듭점_버터.png"
           },
           {
             "이름": "매듭점 무채",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_매듭점_무채",
             "규격": "부품",
-            "지시": "A small trefoil knot tied from thick warm grey wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame."
+            "지시": "A small trefoil knot tied from thick warm grey wool yarn, its three loops even and plump, soft fuzzy fibres catching the light along the cord. Seen straight on from the front. Nothing else in frame.",
+            "파일": "공방_매듭점_무채.png"
           },
           {
             "이름": "매듭점 자주",
