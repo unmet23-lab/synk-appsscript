@@ -36,6 +36,7 @@
  *   node tools/밤굽기.js --돈 30000 --묶음 "숫자"
  *   node tools/밤굽기.js --돈 20000 --크기 4K    # 큰 그림처럼 크게 쓸 것
  *   node tools/밤굽기.js --재본다                 # 0원. 무엇을 얼마에 굽는지만 본다
+ *   node tools/밤굽기.js --로그 <경로>            # 기본은 임시 폴더의 밤굽기-<날짜시각>.log
  */
 'use strict';
 const fs = require('fs');
@@ -65,7 +66,19 @@ const 기다림 = [120, 300, 600];                   // 몫 벽에 걸렸을 때
 
 const 잔다 = (초) => new Promise((r) => setTimeout(r, 초 * 1000));
 const 이제 = () => new Date().toTimeString().slice(0, 8);
-const 말 = (s) => console.log(`[${이제()}] ${s}`);
+
+/* 🔴 **로그는 파일에 «즉시» 쓴다**(09-05 실물).
+ *   그 전에는 화면 출력을 `cmd > 파일` 로 돌렸는데, 프로그램이 끝날 때까지 한 글자도 안 쌓였다.
+ *   그래서 114장 배치가 스무 장을 남기고 멈췄을 때 **왜 멈췄는지 못 봤다.**
+ *   긴 배치는 「도는 동안 볼 수 있어야」 자다 — appendFileSync 로 그 자리에서 적는다. */
+const 로그경로 = 인자.로그 || path.join(require('os').tmpdir(), 'synk-밤굽기',
+  `밤굽기-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')}.log`);
+fs.mkdirSync(path.dirname(로그경로), { recursive: true });
+const 말 = (s) => {
+  const 줄 = `[${이제()}] ${s}`;
+  console.log(줄);
+  try { fs.appendFileSync(로그경로, 줄 + String.fromCharCode(10), 'utf8'); } catch { /* 로그가 막혀도 굽기는 계속한다 */ }
+};
 
 function 계획읽기() { return JSON.parse(fs.readFileSync(계획경로, 'utf8')); }
 
