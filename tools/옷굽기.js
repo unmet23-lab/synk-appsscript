@@ -60,7 +60,9 @@ function 말(줄) {
 
 /** ② 초록 몸 지시문 — 몸만 단색 초록으로 바꾸고 같은 옷을 입힌다.
  *  🔑 눈은 검은 구슬 그대로 둔다. 자리를 두 눈으로 잡기 때문이다(눈이 없으면 앉힐 데를 모른다). */
-const 초록지시 = (표식, 설명) =>
+const 바탕색 = { 초록: 'bright CHROMA GREEN (#00B140)', 자홍: 'bright CHROMA MAGENTA (#D6009A)' };
+
+const 초록지시 = (표식, 설명, 바탕 = '초록') =>
   /* 🔴 09-06 실측 — 「몸을 초록으로」를 앞에 세웠더니 그 말이 옷 지시를 덮었다.
      왕관·밀짚모자·학생 가방·새싹 넷이 «옷 없는 초록 몸»으로 나왔다(작은 악세일수록 잘 밀린다).
      ⇒ 옷을 맨 앞에 세우고, 끝에서 한 번 더 못 박는다. 초록은 «곁들이는 조건»으로 내린다. */
@@ -69,11 +71,11 @@ const 초록지시 = (표식, 설명) =>
   `${표식}` +
   `The character itself is EXACTLY the one in the reference photograph — the same silhouette, ` +
   `the same size, the same pose, the same camera angle, the same eyes in the same place — ` +
-  `with ONE difference: its own wool is dyed a flat uniform bright CHROMA GREEN (#00B140), the ` +
-  `same green everywhere, with no heathering, no pattern and no shading variation. ` +
+  `with ONE difference: its own wool is dyed a flat uniform ${바탕색[바탕]}, the ` +
+  `same colour everywhere, with no heathering, no pattern and no shading variation. ` +
   `Its eyes keep their real colour and stay exactly as they are. ` +
   `🔴 The GARMENT keeps all of its own real colours and is clearly, fully visible — only the ` +
-  `character's own body is green. Do not leave the garment out. ` +
+  `character's own body is that flat colour. Do not leave the garment out. ` +
   `Macro product photograph against a plain flat pure white background, the whole character ` +
   `floating in empty space with no ground and no cast shadow on any surface. ` +
   `Studio lighting: broad soft diffused light from every side with one gentle key from the upper ` +
@@ -152,7 +154,8 @@ function 파이썬(인자들) {
 /** 초록 그림에서 옷을 떼어 정본 몸 자리에 앉힌다(0원). */
 function 떼어앉힌다(x) {
   const r = 파이썬(['tools/옷초록떼기.py', x.초록, x.층,
-    '--몸', path.join(루트, x.마스코트.참조), '--눈', x.마스코트.눈, '--얹음', x.얹음]);
+    '--몸', path.join(루트, x.마스코트.참조), '--눈', x.마스코트.눈, '--얹음', x.얹음,
+    '--바탕', x.바탕 || '초록']);
   if (!r.ok) return { ok: false, 왜: r.글.slice(-140) };
   const 점 = (r.글.match(/옷 ([\d,]+)점/) || [])[1];
   return { ok: true, 점 };
@@ -207,7 +210,7 @@ function 떼어앉힌다(x) {
       말(`■ ${머리} — ② 초록 몸`);
       const r = await 한장({
         이름: `${x.이름} 초록`,
-        지시: 초록지시(x.마스코트.표식, x.설명),
+        지시: 초록지시(x.마스코트.표식, x.설명, x.바탕 || '초록'),
         비율: '1:1', 크기: '4K', 참조: [path.join(루트, x.마스코트.참조)], 저장경로: x.초록,
       }, `${x.이름} 초록`);
       if (r === '돈벽') break;
@@ -225,7 +228,7 @@ function 떼어앉힌다(x) {
       await 잔다(45000);
       const r2 = await 한장({
         이름: `${x.이름} 초록(다시)`,
-        지시: 초록지시(x.마스코트.표식, x.설명),
+        지시: 초록지시(x.마스코트.표식, x.설명, x.바탕 || '초록'),
         비율: '1:1', 크기: '4K', 참조: [path.join(루트, x.마스코트.참조)], 저장경로: x.초록,
       }, `${x.이름} 초록(다시)`);
       if (r2 === '돈벽') break;
