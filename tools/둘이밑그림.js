@@ -62,9 +62,11 @@ function 찾기(누구) {
   let 필터;
   if (무대있나) {
     입력.push('-i', 무대);
+    /* 🔴 620px 로 놓았더니 저쪽이 카메라를 빼서 결과에서는 화면의 20% 가 됐다(09-05).
+     *   밑그림에서 «크게» 놓아야 그만큼 덜 빠진다. 780px = 화면 높이의 72%. */
     필터 = '[2:v]scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080[bg];'
-      + '[0:v]scale=-1:620[a];[1:v]scale=-1:590[b];'
-      + '[bg][a]overlay=x=390:y=400[t];[t][b]overlay=x=1075:y=425';
+      + '[0:v]scale=-1:780[a];[1:v]scale=-1:740[b];'
+      + '[bg][a]overlay=x=250:y=255[t];[t][b]overlay=x=1010:y=290';
   } else {
     필터 = 'color=c=0xE8DCC8:s=1920x1080[bg];'
       + '[0:v]scale=-1:700[a];[1:v]scale=-1:670[b];'

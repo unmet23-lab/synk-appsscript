@@ -132,16 +132,17 @@ const 컷들 = [
      *   지시문은 그 무대를 «지키라»고만 말하고, 움직임은 «가볍게 튀는 것»에만 준다. */
     지시: 'The coral felt character and the charcoal felt cat stand side by side on a handmade wool-felt '
       + 'beach diorama at sunset, with felt palm trees and a felt sun behind them. Keep the whole set '
-      + 'exactly as it is — same colours, same shapes, same layout. They bob very gently up and down, '
-      + 'light and playful, as if breathing. The camera holds almost still, drifting only a hair. '
-      + 'Warm sunset light, extremely shallow depth of field, muted warm palette.',
+      + 'exactly as it is — same colours, same shapes, same layout, same framing. The two of them stay '
+      + 'large in the frame, filling it the way they already do. They bob very gently up and down, light '
+      + 'and playful, as if breathing. They rest directly on the sand with nothing holding them up. '
+      + 'The camera holds completely still. Warm sunset light, extremely shallow depth of field.',
     /* 🔴 09-05 에 이 자리에서 두 번 넘어졌다.
      *   ① 「embroidered mark」·「adding letters」 → 구글 안전 필터가 통째로 막았다(돈은 안 나갔다).
      *   ② 「stitched **coral** pattern」 → 저쪽이 coral 을 «색»이 아니라 «산호»로 읽어 자수 「가」를
      *      산호 가지로 다시 그렸다. 🔑 우리 브랜드에서 coral 은 색 이름이지만 영어로는 산호다 —
      *      지시문에 브랜드 색 이름을 그대로 쓰지 않는다. */
     막을것: 'zooming out, pulling back, wide shot, characters shrinking, changing shape, '
-      + 'coral, coral reef, branches, plant, tree, redrawing the stitched shape',
+      + 'stick, rod, pole, skewer, stand, mount, wire, characters floating above the ground',
   },
 ];
 
