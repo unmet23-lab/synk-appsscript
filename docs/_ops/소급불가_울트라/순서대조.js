@@ -1,9 +1,13 @@
 /* 헤더보정_ 를 걸어도 «안전한가»를 재는 자
  * 위험 = 코드 i번째 칸 이름 ≠ 라이브 i번째 칸 이름 (덮어쓰면 그 열의 데이터가 엉뚱한 이름 밑에 놓인다) */
 const fs = require('fs');
+const path = require('path');
+/* 09-07 — 어느 폴더에서 불러도 돌게 뿌리를 스스로 찾는다(짝 = 같은 폴더의 헤더대조.js). */
+const 여기 = __dirname;
+const ROOT = path.resolve(여기, '..', '..', '..');
 let src = '';
-for (const f of fs.readdirSync('.').filter(f => /\.js$/.test(f) && !/^_/.test(f))) src += fs.readFileSync(f, 'utf8');
-const live = JSON.parse(fs.readFileSync('docs/_ops/소급불가_울트라/라이브시트_헤더.json', 'utf8'));
+for (const f of fs.readdirSync(ROOT).filter(f => /\.js$/.test(f) && !/^_/.test(f))) src += fs.readFileSync(path.join(ROOT, f), 'utf8');
+const live = JSON.parse(fs.readFileSync(path.join(여기, '라이브시트_헤더.json'), 'utf8'));
 
 function get(key) {
   const m = new RegExp('const\\s+' + key + '\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*;').exec(src);

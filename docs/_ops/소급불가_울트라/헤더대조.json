@@ -1,5 +1,30 @@
 [
  {
+  "key": "HW_FEEDBACK_HEADERS",
+  "tab": "hw_feedback",
+  "code_cols": 24,
+  "live_cols": 12,
+  "rows": 2,
+  "missing": [
+   "숙제ID",
+   "오류태그",
+   "재작성원본",
+   "다시쓰기URL",
+   "숙제문항",
+   "급수",
+   "model",
+   "prompt_ver",
+   "schema_ver",
+   "발행경로",
+   "확인자",
+   "확인시각",
+   "확인지문"
+  ],
+  "extra": [
+   "🔒 Row ID"
+  ]
+ },
+ {
   "key": "VOICE_LOG_HEADERS",
   "tab": "voice_log",
   "code_cols": 18,
@@ -22,25 +47,20 @@
   "extra": []
  },
  {
-  "key": "HW_FEEDBACK_HEADERS",
-  "tab": "hw_feedback",
-  "code_cols": 20,
-  "live_cols": 12,
-  "rows": 2,
+  "key": "QUIZ_LOG_HEADERS",
+  "tab": "quiz_log",
+  "code_cols": 17,
+  "live_cols": 11,
+  "rows": 1,
   "missing": [
-   "숙제ID",
-   "오류태그",
-   "재작성원본",
-   "다시쓰기URL",
-   "숙제문항",
    "급수",
-   "model",
-   "prompt_ver",
-   "schema_ver"
+   "schema_ver",
+   "시도",
+   "문항지문",
+   "스냅샷지연초",
+   "응답시각ms"
   ],
-  "extra": [
-   "🔒 Row ID"
-  ]
+  "extra": []
  },
  {
   "key": "TALK_LOG_HEADERS",
@@ -56,14 +76,13 @@
   "extra": []
  },
  {
-  "key": "QUIZ_LOG_HEADERS",
-  "tab": "quiz_log",
-  "code_cols": 13,
-  "live_cols": 11,
+  "key": "EXIT_LOG_HEADERS",
+  "tab": "exit_log",
+  "code_cols": 8,
+  "live_cols": 7,
   "rows": 1,
   "missing": [
-   "급수",
-   "schema_ver"
+   "이름_몽골"
   ],
   "extra": []
  },
@@ -676,15 +695,6 @@
   "extra": [
    "🔒 Row ID"
   ]
- },
- {
-  "key": "EXIT_LOG_HEADERS",
-  "tab": "exit_log",
-  "code_cols": 7,
-  "live_cols": 7,
-  "rows": 1,
-  "missing": [],
-  "extra": []
  },
  {
   "key": "ABSENCE_FOLLOWUP_HEADERS",
