@@ -52,6 +52,18 @@ function consultPace_(goalLv, dueRaw, hoursRaw, now) {
  * ⚠ TOPIK목표는 여기 없다 — 이미 DU125(상담목표)에 기한과 함께 들어가 있다(같은 값 두 열 금지). */
 const CAREER_HEADS_ = ['졸업후진로', '희망진학과정', '목표비자', '관심전공'];
 const CAREER_SRC_ = ['졸업후진로', '희망진학과정', '졸업후목표비자', '관심전공분야']; // 상담시트 헤더명(같지 않은 둘이 있다)
+/* [v9.318] 입학 시즌 — 「이 학생은 몇 기인가」를 적는 칸. 헤더 하나 · 값 = **첫 반배정이 속한 시즌의 키**('yyyy-MM-dd' ·
+ *   app_state 「시즌시작일」·groups A열과 같은 키). 시즌 «식별자» 규격이 따로 없어(exit_log 머리말) 엔진이 이미 쓰는 그 키를 그대로 쓴다 —
+ *   「1기」 같은 이름표는 여기 안 적는다(같은 값을 두 곳이 알면 갈린다 · 1기 = 2026-11-30 은 판매 설계가 안다).
+ *   ■ 소급 불가 — 1기 첫 수업(2026-12-05) 뒤에는 「그때 어느 시즌으로 들어왔나」를 복원할 길이 없다. 등록일로는 못 센다:
+ *     같은 날 등록해도 개강반이 다르면 기수가 다르다(학생ID 정본 v2 정정 ③ · 브랜드 v2 ㉢-1 · 심문 09-07 P0-1).
+ *   ■ 한 번 적히면 코드는 다시 안 쓴다(선점 · 입학시즌값_) — 사람이 손으로 고친 값이 다음 아침에 덮이지 않게.
+ *     빈칸 = «모른다»이지 「미정」이 아니다 — 빈칸에 낱말을 채우지 않는다(읽는 쪽이 빈칸을 세어 보이게 한다 · 입학시즌명단_).
+ *   ■ 자리는 이름으로 찾는다(profilesBlockAt_ · 라이브에 코드가 모르는 열이 자란다). 열 서식은 쓰기 «앞»에 '@'(텍스트)로 굳힌다 —
+ *     '2026-11-30' 을 시트가 날짜로 삼키면 groups A열에서 겪은 그 오염(v9.132)이 여기서 되풀이된다.
+ *   ■ 값의 원천은 둘 — ①groups(조 편성)의 그 학생 첫 시즌(가장 정확) ②없으면 오늘의 시즌 후보(시즌후보_ · 다가오는 시즌 포함).
+ *     둘 다 없으면 빈칸으로 두고 다음 아침에 다시 본다. 「1기만 보여 줘」는 이 칸을 키로 거른다(입학시즌명단_). */
+const ENTRY_SEASON_HEADS_ = ['입학시즌'];
 /* ⚠ **이 블록에는 고정 열 번호가 없다.** 처음엔 EA131로 박았다가 두 번 연속 틀렸다:
  *   ① 「DT128 다음이니 129」로 셌는데 129는 오늘의만남(v9.99)·130은 대화폼URL(SHARED4)이 주인이었다
  *      → 회귀(tests/수집.test.js 선점 구간 — ⚠삭제됨 08-19 e75fc7fc)가 잡았다.
@@ -138,6 +150,72 @@ function profilesBlockWrite_(dst, start, heads, rows, stateKey, label, lastNow, 
   const tail = lastNow - 1 - rows.length - holdCnt;
   if (tail > 0) dst.getRange(rows.length + holdCnt + 2, start, tail, heads.length).clearContent();
   return true;
+}
+
+/* ── [v9.318] 입학 시즌 — 순수 함수 셋 + 읽는 자리 하나 (시험 = tests/입학시즌.test.js) ──
+ *
+ * 시즌 후보 — app_state 「시즌시작일」이 가리키는 시즌이 아직 안 끝났으면 그 키, 끝났으면 ''.
+ *   «다가오는» 시즌도 후보다(오늘 < 시작일) — 1기는 11월에 반배정이 나고 12-05 에 시작하므로, 시작 «전»에 키가 서야
+ *   11-27(모집 마감) 에 라이브 시트에서 잴 수 있다. 끝난 시즌은 후보가 아니다 — 시즌이 끝난 뒤 새 시작일을 안 박은 사이에
+ *   들어온 학생에게 지난 시즌 키를 붙이지 않는다(빈칸으로 두고 다음 아침에 다시 본다). */
+function 시즌후보_(start, now, weeks, tz) {
+  if (!(start instanceof Date) || isNaN(start.getTime())) return '';
+  const end = start.getTime() + (Number(weeks) || 0) * 7 * 86400000;
+  if (!(now instanceof Date) || now.getTime() >= end) return '';
+  return Utilities.formatDate(start, tz, 'yyyy-MM-dd');
+}
+/* 조 편성(groups)에서 학생마다 «가장 이른» 시즌 키 — 반배정 뒤 조 편성이 돌면 그 행이 입학 시즌의 가장 정확한 증거다.
+ *   시즌 셀은 seasonKeyOf_ 로 접어 읽는다(시트가 날짜로 삼킨 옛 행도 같은 글자로) · 꼴이 yyyy-MM-dd 가 아닌 것은 안 센다 ·
+ *   시연 행(DEMO-)은 뺀다. rows = groups 의 앞 세 칸(시즌 · class_name · student_id). */
+function 조편성첫시즌맵_(rows, tz) {
+  const m = {};
+  (rows || []).forEach(r => {
+    const key = seasonKeyOf_(r[0], tz);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return;
+    const sid = String(r[2] == null ? '' : r[2]).trim();
+    if (!sid || sid.indexOf('DEMO-') === 0) return;
+    if (!m[sid] || key < m[sid]) m[sid] = key;
+  });
+  return m;
+}
+/* 입학 시즌 값 하나 — 순서가 곧 규칙이다.
+ *   ① 이미 적힌 값이 있으면 그대로(선점 · 손으로 고친 값을 코드가 덮지 않는다)
+ *   ② 반(class_name)이 비었으면 '' — 반배정 «전»은 아직 입학이 아니다
+ *   ③ 조 편성에 그 학생의 첫 시즌이 있으면 그것 — 가장 정확한 증거
+ *   ④ 아니면 오늘의 시즌 후보(시즌후보_) — 없으면 '' (빈칸 = 모른다 · 낱말을 채우지 않는다) */
+function 입학시즌값_(기존, 반, 조편성첫시즌, 후보) {
+  const k = String(기존 == null ? '' : 기존).trim();
+  if (k) return k;
+  if (!String(반 == null ? '' : 반).trim()) return '';
+  if (조편성첫시즌) return String(조편성첫시즌);
+  return 후보 ? String(후보) : '';
+}
+/* 「1기만 보여 줘」 — profiles 를 입학시즌 키로 묶어 원장에게 글로 낸다(읽기 전용 · 이름은 원장의 시트 안에서만 · 밖으로 안 나간다).
+ *   빈칸(모른다)도 한 묶음으로 «보이게» 센다 — 안 보이면 아무도 안 채운다(점수 0 을 눈에 보이게 하는 규율과 같은 결 · 브랜드 v2 ㉠-3). */
+function 입학시즌명단_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return '🎓 입학 시즌별 명단 — profiles 에 학생 행이 없습니다.';
+  const w = pf.getLastColumn();
+  const hdr = pf.getRange(1, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
+  const rows = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
+  return 입학시즌명단글_(rows, hdr.indexOf(ENTRY_SEASON_HEADS_[0]), ss.getSpreadsheetTimeZone());
+}
+function 입학시즌명단글_(rows, col, tz) {
+  const 묶음 = {}; let n = 0;
+  (rows || []).forEach(r => {
+    if (!r[0] || String(r[3] || '') !== 'student' || String(r[0]).indexOf('DEMO-') === 0) return;
+    const key = col >= 0 ? seasonKeyOf_(r[col], tz) : '';
+    const k = key || '(빈칸 · 모른다)';
+    (묶음[k] = 묶음[k] || []).push(String(r[1] || '') + (r[4] ? ' (' + r[4] + ')' : ''));
+    n++;
+  });
+  const keys = Object.keys(묶음).sort();
+  const L = ['🎓 입학 시즌별 명단 — 학생 ' + n + '명' +
+    (col < 0 ? ' · ⚠ 「입학시즌」 칸이 아직 없다(아침 동기화 syncProfiles 가 세운다)' : '')];
+  keys.forEach(k => { L.push('\n■ ' + k + ' — ' + 묶음[k].length + '명'); 묶음[k].forEach(s => L.push('· ' + s)); });
+  if (!keys.length) L.push('(학생 없음)');
+  return L.join('\n');
 }
 
 /* [함께한날 막1] 퇴소 스냅샷의 승계 열 목록 — 절단 수리의 심장. 구판은 전 열 JSON.slice(49500)이라 카드
@@ -253,6 +331,20 @@ function syncProfiles() {
   const demoStu = []; // [v9.42] DEMO- 학생 행 보존 — 상담시트에 없는 시연용 로스터가 매일 아침 삭제되지 않게(급감 가드 분모에서도 제외)
   const existingStu = []; // [v9.34] {id,row} — 기존 학생의 물리 행 순서(행 안정화의 기준)
   let prevStudentCnt = 0; // [v9.19] 부분 축소 방어용 — 기존 학생 수
+  /* [v9.318] 입학시즌 — 이미 적힌 값을 학생 번호로 미리 걷어 둔다(행이 지워지고 밀리기 «전»에 · keep 과 같은 자리).
+   *   자리는 이름으로 찾고(profilesBlockAt_) 없으면 빈 맵이다 · Date 로 삼켜진 옛 값은 seasonKeyOf_ 로 접는다. */
+  const 입학맵 = {};
+  const 입학열0 = profilesBlockAt_(dst, ENTRY_SEASON_HEADS_);
+  if (dstLast >= 2 && 입학열0 <= dst.getLastColumn()) {
+    const tz0 = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+    const ids0 = dst.getRange(2, 1, dstLast - 1, 1).getValues();
+    dst.getRange(2, 입학열0, dstLast - 1, 1).getValues().forEach((v, i) => {
+      const id0 = String(ids0[i][0] || '').trim();
+      if (!id0) return;
+      const k0 = seasonKeyOf_(v[0], tz0);
+      if (k0) 입학맵[id0] = k0;
+    });
+  }
   if (dstLast >= 2) {
     dst.getRange(2, 1, dstLast - 1, 26).getValues().forEach((r, i) => {
       if (!r[0]) return;
@@ -469,6 +561,21 @@ function syncProfiles() {
      * 시작 열은 상수가 아니라 **이름으로 찾는다**(라이브에 코드가 모르는 열이 자라기 때문 · 위 주석). */
     profilesBlockWrite_(dst, profilesBlockAt_(dst, CAREER_HEADS_), CAREER_HEADS_,
       ordered.map(e => e.career || ['', '', '', '']), '진로열충돌', '진로 4열', lastNow, demoStu.length);
+
+    /* [v9.318] 입학 시즌 한 칸 — 위 두 블록과 **같은 통로**(이름 해석 · 점거 가드 · tail-clear · 데모 보존). 값 규칙은 입학시즌값_ 하나가 진다.
+     *   🔴 서식을 «먼저» 텍스트로 굳힌다 — 쓰고 나서 굳히면 이미 날짜로 삼켜진 뒤다(groups A열 v9.132 와 같은 순서: 읽기→서식→쓰기).
+     *   기존 값은 입학맵(위 · 행 정리 «전»에 걷었다)에서, 첫 시즌은 groups 에서, 후보는 오늘의 시즌시작일에서 온다. */
+    const 입학열 = profilesBlockAt_(dst, ENTRY_SEASON_HEADS_);
+    if (dst.getMaxColumns() < 입학열) dst.insertColumnsAfter(dst.getMaxColumns(), 입학열 - dst.getMaxColumns());
+    if (dst.getRange(2, 입학열).getNumberFormat() !== '@') dst.getRange(1, 입학열, dst.getMaxRows(), 1).setNumberFormat('@');
+    const ssE = SpreadsheetApp.getActiveSpreadsheet();
+    const tzE = ssE.getSpreadsheetTimeZone();
+    const gsE = ssE.getSheetByName('groups');
+    const 첫시즌 = 조편성첫시즌맵_(gsE && gsE.getLastRow() >= 2 ? gsE.getRange(2, 1, gsE.getLastRow() - 1, 3).getValues() : [], tzE);
+    const 후보 = 시즌후보_(seasonStartOf_(ssE), now, SEASON_WEEKS, tzE);
+    profilesBlockWrite_(dst, 입학열, ENTRY_SEASON_HEADS_,
+      ordered.map(e => [입학시즌값_(입학맵[e.id] || '', e.main[4], 첫시즌[e.id] || '', 후보)]),
+      '입학시즌열충돌', '입학 시즌', lastNow, demoStu.length);
   }
   setState(ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']), '동기화보류_상태', ''); // [v9.22] 정상 동기화 → 보류 알림 재무장
   // [v9.50·F4] 신규 학생 웰컴 스토리 대기열 — 등록 감지 즉시 큐에 넣고, 학부모 이메일(§1-3)이 채워진 아침에 welcomeStoryBatch_가 발송

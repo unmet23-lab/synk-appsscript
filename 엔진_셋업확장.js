@@ -4650,6 +4650,7 @@ function menuSetupVoiceMissions() { menuRun_(setupVoiceMissions); } // [v9.278] 
 function menuVoiceSweep() { menuRun_(voiceSweepNow_); }
 function menuStudentIdCounterInit() { menuRun_(학생ID카운터세우기); } // [2026-09-02 · 학생ID 종단 ㉠] 채번 바닥 세우기 — 개원 전 1회 · 멱등(있으면 값만 보여 준다 · 절대 낮추지 않는다)
 function menuStudentIdStatus() { menuRun_(학생ID현황_); }           // [2026-09-02 · 학생ID 종단 §7] 개원 전 첫 작업의 자 — 읽기 전용(상담시트 BH 보유 행 · exit_log 행 · 카운터)
+function menuEntrySeasonRoster() { menuRun_(입학시즌명단_); }       // [v9.318] 「1기만 보여 줘」 — profiles 「입학시즌」 칸으로 묶은 명단(빈칸도 한 묶음으로 보인다 · 읽기 전용 · 엔진_운영배치.js)
 // [v9.280] 숙제 뱅크 재반영 — setupHomework 는 bootstrap·preflight(개수 «일치»면 스킵)에서만 돌아서,
 //   문항을 고쳐 배포해도 시트의 «저장된 행 210»은 옛 판 그대로다(menuSetupOnboarding 과 같은 결의 자리).
 //   순서 정본 = 뱅크 머리 주석: 재세움(다른 유형 보존) → 몽골어 큐레이션 재주입(멱등 upsert) → 잔여 초벌 번역(빈칸만).
@@ -5253,6 +5254,7 @@ function onOpen() {
       .addItem('🩹 시트 자기치유', 'menuSelfHeal')
       .addSeparator()
       .addItem('🔎 학생ID 현황 보기', 'menuStudentIdStatus')
+      .addItem('🎓 입학 시즌별 명단 보기(「1기만 보여 줘」)', 'menuEntrySeasonRoster')
       .addItem('📊 수집 커버리지 보기', 'menuDataCoverage')
       .addItem('🔎 이수율 조인 진단', 'menuLectureJoinDiag')
       .addItem('🔎 대화 수집 점검(밤 배치 확인·머리글 치유)', 'menuTalkLogCheck');
