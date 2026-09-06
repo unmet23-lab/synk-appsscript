@@ -121,6 +121,35 @@ function 자율일완주_(묶음, 제출들, 옵션) {
   return { 판정: 판정, 찬수: 찬수, 항목수: 세는.length, 빈항목: 빈.map(function (a) { return a.항목ID; }), 미집계: 미집계 };
 }
 
+/* 발행 뒤 불변 — 한 번 항목이 실린 묶음은 재실행이 갈아 끼우지 않는다(심문 2회차 아스트라 P0: 같은 배정ID 를 나중 내용으로
+ * 교체하면 오프라인에서 먼저 푼 제출이 다른 문항에 붙는다). 다시 지어도 되는 것은 «항목이 0 인 행»(공급실패:전부)뿐이다. */
+function 자율일다시지을까_(기존묶음) {
+  if (!기존묶음) return true;
+  return !((기존묶음.항목 || []).length > 0);
+}
+
+/* AI 가 지은 굳히기 문항 거르기 — 「응답이 왔다」와 「낼 수 있다」는 다르다(심문 2회차 아스트라 P1 · 제미나이 P0).
+ *   ① 빈칸 ___ 이 정확히 하나 · 보기 넷 · 정답 자리 0~3 · 보기가 서로 다르다
+ *   ② 🔴 진단 문항의 문장과 같으면 뺀다 — 진단 문항은 자(ruler)라 연습에 나오면 자가 죽는다(진단문장 = 진단 은행의 문장 목록)
+ *   ③ 검문(AI 둘째 눈 · 「정답이 하나뿐인가」)이 아니라고 한 것은 뺀다 — 검문 결과가 없으면(호출 실패) 그 문항은 «안 낸다»(조용히 통과시키지 않는다)
+ * 걸러서 8 이 안 되면 그만큼 공급실패로 적힌다(§③-㉢). */
+function 자율일문항거르기_(문항들, 진단문장, 검문) {
+  const 진단 = {};
+  (진단문장 || []).forEach(function (s) { 진단[String(s).replace(/\s+/g, ' ').trim()] = 1; });
+  const 본 = {};
+  return (문항들 || []).filter(function (q, i) {
+    if (!q || typeof q.문장 !== 'string' || !Array.isArray(q.보기) || q.보기.length !== 4) return false;
+    if ((q.문장.match(/___/g) || []).length !== 1) return false;
+    if (!(q.정답 >= 0 && q.정답 <= 3)) return false;
+    if (new Set(q.보기.map(function (o) { return String(o).trim(); })).size !== 4) return false;
+    const 키 = q.문장.replace(/\s+/g, ' ').trim();
+    if (진단[키] || 본[키]) return false;
+    본[키] = 1;
+    if (검문 && 검문[i] !== true) return false;
+    return true;
+  });
+}
+
 /* 월요일 한 줄 — 공급 실패가 0 이 아니면 그것이 «먼저» 온다(우리 고장이 학생 이름 뒤에 안 숨게 · 설계 §④-㉠).
  * 판정들 = [{ 이름, 판정 }] */
 function 자율일한줄_(판정들, 자율일) {
@@ -221,8 +250,18 @@ function 자율일재료생성_(주) {
   try {
     const j = aiCall_(apiKey, AUTO_GEN_SYSTEM_, user, schema, 4096);
     if (!문형없음) {
-      out.굳히기문항 = (j.drill || []).filter(function (q) { return q && q.sentence && Array.isArray(q.options) && q.options.length === 4 && q.answer >= 0 && q.answer <= 3; })
-        .map(function (q) { return { 문장: q.sentence, 보기: q.options, 정답: q.answer, 판: 판, 목표: q.target }; });
+      const 초벌 = (j.drill || []).map(function (q) { return q && { 문장: String(q.sentence || ''), 보기: q.options, 정답: q.answer, 판: 판, 목표: q.target }; });
+      // 둘째 눈 — 「정답이 하나뿐인가 · 보기 넷이 같은 자리의 어미인가」를 따로 묻는다. 실패하면 검문 없음 = 전부 안 낸다(공급실패로 남는다)
+      let 검문 = null;
+      try {
+        const k = aiCall_(apiKey, '한국어 문법 문항 검문관. 문항마다 «정답이 하나뿐인가»만 본다 — 보기 중 둘 이상이 자연스럽게 들어가면 false. 문법 설명은 쓰지 않는다.',
+          JSON.stringify(초벌.map(function (q) { return { s: q.문장, o: q.보기, a: q.정답 }; })),
+          { type: 'object', additionalProperties: false, required: ['ok'], properties: { ok: { type: 'array', items: { type: 'boolean' } } } }, 1024);
+        검문 = Array.isArray(k.ok) && k.ok.length === 초벌.length ? k.ok : null;
+      } catch (eK) { 검문 = null; }
+      const 진단문장 = typeof 진단문장목록_ === 'function' ? 진단문장목록_() : [];
+      out.굳히기문항 = 자율일문항거르기_(초벌, 진단문장, 검문 || 초벌.map(function () { return false; }));
+      if (!검문) out.오류 = '검문 실패 — 굳히기 안 냄';
     }
     out.낭독 = (j.read || []).filter(function (s) { return s && s.sentence; }).map(function (s) { return { 문장: s.sentence, 목표: s.target, 판: 판 }; });
     out.답하기 = (j.answer || []).filter(function (s) { return s && s.question; }).map(function (s) { return { 물음: s.question, 목표: s.target, 판: 판 }; });
@@ -336,6 +375,7 @@ function sundayBundleBatch_() {
     if (묶음.공급상태.indexOf('공급실패') === 0) 실패++;
     묶음들.push(묶음);
     const 있음 = 기존[묶음.배정ID];
+    if (있음 && !자율일다시지을까_(있음.묶음)) { 묶음들[묶음들.length - 1] = 있음.묶음; return; }   // 발행 뒤 불변 — 이미 실린 묶음은 그대로(다리도 그것을 보낸다)
     if (있음) 갱신.push({ row: 있음.row, 값: 자율일행값_(묶음, nowStr) });
     else 새행.push(자율일행값_(묶음, nowStr));
   });
@@ -395,10 +435,12 @@ function sundayBundleJudge_() {
     if (e.묶음.자율일 !== 자율일) return false;
     return dow === 1 ? !e.묶음.완주판정 : /^(빈날|부분)$/.test(e.묶음.완주판정);
   });
-  if (!대상.length) return;
   const 이름 = {};
   const pf = ss.getSheetByName('profiles');
   if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 2).getValues().forEach(function (r) { if (r[0]) 이름[String(r[0]).trim()] = String(r[1] || '').trim(); });
+  // 배치가 아예 안 돈 날 — 1기 학생인데 그 자율일 행이 없으면 «공급실패(미배정)»다(심문 2회차 아스트라 P1 · 전원 미공급과 「집계할 학생 없음」이 같은 얼굴이 되지 않게)
+  const 미배정 = dow === 1 ? 자율일학생들_(ss).filter(function (s) { return !기존[s.sid + '|' + 자율일]; }) : [];
+  if (!대상.length && !미배정.length) return;
   const 퀴즈제출 = 자율일퀴즈제출_(ss, 자율일, tz);
   const 진단제출 = 자율일진단제출_(ss, 주, 자율일, tz);
   const 말하기 = 자율일말하기제출_(자율일);               // null = talk 답이 없다 → 미집계
@@ -417,7 +459,9 @@ function sundayBundleJudge_() {
     판정들.push({ 이름: 이름[b.학생ID] || b.학생ID, 판정: 판정 });
   });
   if (dow === 1) {
-    const 줄 = 자율일한줄_(판정들, 자율일) + (말하기 ? '' : '\n(낭독·답하기는 talk 답이 없어 이번 셈에서 뺐습니다 — SUNDAY_PROGRESS_URL 미배선)');
+    미배정.forEach(function (s) { 판정들.push({ 이름: s.name, 판정: '공급실패' }); });
+    const 줄 = 자율일한줄_(판정들, 자율일) + (미배정.length ? '\n(공급 실패 중 ' + 미배정.length + '명은 묶음 행 자체가 없다 — 토요일 밤 배치가 안 돌았거나 1기 반이 그때 비어 있었다)' : '') +
+      (말하기 ? '' : '\n(낭독·답하기는 talk 답이 없어 이번 셈에서 뺐습니다 — SUNDAY_PROGRESS_URL 미배선)');
     adminMail('[SYNK] 자율일 한 줄 — ' + 자율일, 줄);
     Logger.log(줄);
   }

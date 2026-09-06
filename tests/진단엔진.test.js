@@ -118,6 +118,13 @@ test('오류로 뺀 문항은 분모에서 빠진다 — 여섯이 다섯이 되
   assert.equal(r.경로[0].분모, 5); assert.equal(r.경로[0].맞힌, 4); assert.equal(r.경로[0].통과, true);
 });
 
+test('진단 문장 목록 — 은행의 문장 전부(급 둘 × 회차 셋 × 여섯)가 서로 다르고 정답은 안 낸다 · 자율일 굳히기의 제외 목록', () => {
+  const 목록 = C.진단문장목록_();
+  assert.equal(목록.length, 2 * 3 * 6);
+  assert.equal(new Set(목록).size, 목록.length, '진단 문장이 겹친다 — 같은 문장이 두 회차에 있으면 외운 것을 잰다');
+  목록.forEach((s) => assert.equal(typeof s, 'string'));
+});
+
 test('진단코드는 여섯 자리다', () => {
   assert.equal(C.진단코드_(0), '100000'); assert.equal(C.진단코드_(0.999999).length, 6);
   assert.match(C.진단코드_(), /^\d{6}$/);
