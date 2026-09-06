@@ -163,3 +163,17 @@ test('[입학시즌] 원장 메뉴가 명단 함수를 부른다 — 「1기만 
   assert.ok(code.includes("'menuEntrySeasonRoster'"), '점검·진단 메뉴에 입학 시즌 명단 항목이 없다');
   assert.ok(/function menuEntrySeasonRoster\(\)\s*\{\s*menuRun_\(입학시즌명단_\);/.test(code), 'menuEntrySeasonRoster 가 입학시즌명단_ 을 menuRun_ 으로 안 부른다');
 });
+
+/* ───────────────────── ⑥ 회화 앱 명단으로 동봉 ───────────────────── */
+test('[입학시즌] 명부 스윕이 이 칸을 회화 앱 명단에 동봉한다 — 급수와 같은 규율(이름으로 찾고 · 없으면 열을 안 싣는다)', () => {
+  const 스윕 = section('function 명부스윕_()', 'function dailyBackup()');
+  const iLv = 스윕.indexOf("const 급수칸 = 전머리.indexOf('현재급수') + 1");
+  const iEs = 스윕.indexOf('const 입학칸 = 전머리.indexOf(ENTRY_SEASON_HEADS_[0]) + 1');
+  assert.ok(iLv > -1 && iEs > -1, '급수 동봉 또는 입학시즌 동봉 줄이 없다');
+  assert.ok(iEs > iLv, '입학시즌 동봉이 급수 동봉보다 앞에 있다 — 서버가 아홉째 칸을 급수로 읽는 옛 판과 자리가 어긋난다');
+  assert.ok(스윕.includes('if (입학칸 > 0) {'), '칸이 없을 때 열을 «아예 안 싣는» 갈래가 없다 — 빈 열을 실으면 서버가 빈 값을 지시로 읽는다');
+  assert.ok(!/입학칸\s*=\s*\d+/.test(스윕), '입학시즌 열을 고정 번호로 읽는다 — 라이브에는 코드가 모르는 열이 자란다');
+  const iPush = 스윕.indexOf('표.forEach((r, i) => r.push(String(입학들[i][0]');
+  const iSend = 스윕.indexOf('const 몸통 = { 표: [머리].concat(몸) }');
+  assert.ok(iPush > -1 && iSend > -1 && iPush < iSend, '동봉이 몸통을 만들기 «뒤»에 있다 — 그러면 서버로 안 간다');
+});
