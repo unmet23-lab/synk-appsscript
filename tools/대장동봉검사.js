@@ -75,8 +75,18 @@ const 방아쇠목록 = [
 
 const 말 = (s) => process.stderr.write(s + '\n');
 
+/* ☠️ **`maxBuffer` 를 손으로 준다** — 안 주면 node 기본이 1MiB 이고, 그 위는 읽기가 «실패»한다.
+ *   2026-09-07 실측: 화면(`docs/이해대장.html`)이 1,011,642 → 1,168,535 바이트로 1MiB 를 넘자
+ *   `git show :docs/이해대장.html` 이 ENOBUFS 로 죽었다. 그러면 `판본()` 이 그 예외를 삼켜 `null` 을
+ *   내고, 이 게이트는 화면을 **「없다」**로 읽어 커밋을 막는다 — 화면은 멀쩡히 스테이징돼 있는데도.
+ *   🔑 이 실패의 모양이 나쁘다: 「안 담았다」와 「너무 커서 못 읽었다」가 **같은 문장**으로 나와,
+ *      시키는 대로 다시 그려 담아도 영원히 같은 자리에서 막힌다(그 자리를 한 번 돌았다).
+ *   그리고 이 게이트는 pre-commit 이라 **모든 세션의 커밋**이 여기서 선다 — 크기가 늘어난 날
+ *   저장소 전체가 멈춘다. 화면은 앞으로도 커지므로 넉넉히 준다. */
 function git(args) {
-  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  return execFileSync('git', args, {
+    cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024,
+  });
 }
 
 /* ☠️ `-z` 인 이유는 옆 게이트와 같다 — 기본 출력은 비ASCII 경로를 `"\353\217..."` 로 이스케이프해서
