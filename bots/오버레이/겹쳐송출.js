@@ -158,8 +158,99 @@ function ffmpeg띄우기() {
   return p;
 }
 
+/* ── ④-2 채팅 감시 — «처음 말을 건 사람»에게 인사한다 ─────────────────────────
+   (유호 지시 2026-09-06 「이런 반응을 캐치해서 인사같은거 하게 못만드나?」)
+
+   🔑 유튜브는 «누가 들어왔는지»를 안 알려준다. 시청자 수는 숫자로만 오고 누구인지는 안 온다.
+      그래서 「들어왔을 때」의 실체는 **「채팅에 처음 말했을 때」**다. 그 사람의 유튜브 이름만
+      화면에 오른다 — 실명·학생코드는 층의 판정기가 사건째로 버린다(§3 철칙).
+
+   🔑 방송을 «켜기 전»에도 채팅방은 열려 있다(09-06 실측 — 미리보기 단계에서 읽혔다).
+      그래서 유호님이 관제실 채팅에 한 마디 쓰면 그 자리에서 인사가 뜬다.
+
+   ⚠ 쿼터 — 채팅 한 번 읽기가 하루 한도(10,000)를 먹는다. 유튜브가 「1초마다 물어라」고 답해도
+      그대로 따르면 하루치를 몇 시간에 태운다. 그래서 최소 간격을 따로 두고 그것을 지킨다.
+   ⚠ 켜지는 조건 = 열쇠 파일에 RADIO_YT_CLIENT_ID·SECRET·REFRESH_TOKEN 이 있을 때만.
+      없으면 조용히 안 돈다(송출은 그대로 산다). */
+function 자격읽기() {
+  try {
+    const 표 = {};
+    for (const 줄 of fs.readFileSync(열쇠파일, 'utf8').split(/\r?\n/)) {
+      const m = 줄.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+      if (m) 표[m[1]] = m[2].trim();
+    }
+    if (표.RADIO_YT_CLIENT_ID && 표.RADIO_YT_CLIENT_SECRET && 표.RADIO_YT_REFRESH_TOKEN) return 표;
+  } catch { /* 없으면 안 돈다 */ }
+  return null;
+}
+
+async function 채팅감시(사건넣기) {
+  const 자격 = 자격읽기();
+  if (!자격) { 말('채팅 감시는 안 켠다 — 열쇠 파일에 유튜브 자격이 없다'); return; }
+  const 최소간격 = Math.max(3000, Number(값('--채팅간격', '10000')));
+  let 토큰 = null, 토큰끝 = 0, 채팅id = null, 쪽표 = null;
+  const 인사한사람 = new Set();
+  let 첫바퀴 = true;
+
+  const 새토큰 = async () => {
+    if (토큰 && Date.now() < 토큰끝) return 토큰;
+    const r = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: 자격.RADIO_YT_CLIENT_ID, client_secret: 자격.RADIO_YT_CLIENT_SECRET,
+        refresh_token: 자격.RADIO_YT_REFRESH_TOKEN, grant_type: 'refresh_token' }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!j.access_token) throw new Error('유튜브 토큰 갱신 실패 ' + r.status);
+    토큰 = j.access_token; 토큰끝 = Date.now() + (j.expires_in - 120) * 1000;
+    return 토큰;
+  };
+  const yt = async (길) => {
+    const r = await fetch(`https://www.googleapis.com/youtube/v3/${길}`, { headers: { authorization: `Bearer ${await 새토큰()}` } });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(`${r.status} ${String(j.error?.message || '').slice(0, 140)}`);
+    return j;
+  };
+  /* 어느 방송의 채팅인지는 «지금 살아 있는 것»에서 스스로 찾는다 — 방송 자리가 바뀌어도
+     유닛을 고칠 일이 없다(끝난 자리는 되살릴 수 없어서 자리는 종종 바뀐다 · 09-06). */
+  const 채팅찾기 = async () => {
+    const b = await yt('liveBroadcasts?part=id,snippet,status&mine=true&maxResults=10');
+    const 산것 = (b.items || []).find((x) => ['ready', 'testing', 'live'].includes(x.status?.lifeCycleStatus) && x.snippet?.liveChatId);
+    if (!산것) return null;
+    말(`채팅방을 찾았다 — 방송 ${산것.id} (${산것.status.lifeCycleStatus})`);
+    return 산것.snippet.liveChatId;
+  };
+
+  for (;;) {
+    try {
+      if (!채팅id) { 채팅id = await 채팅찾기(); 쪽표 = null; 첫바퀴 = true; }
+      if (!채팅id) { await 잠깐(60000); continue; }
+      const 답 = await yt(`liveChat/messages?liveChatId=${채팅id}&part=snippet,authorDetails&maxResults=200`
+        + (쪽표 ? `&pageToken=${쪽표}` : ''));
+      쪽표 = 답.nextPageToken || null;
+      for (const 말한것 of 답.items || []) {
+        const 누구 = 말한것.authorDetails?.channelId;
+        const 이름 = 말한것.authorDetails?.displayName;
+        if (!누구 || !이름 || 인사한사람.has(누구)) continue;
+        인사한사람.add(누구);
+        /* 첫 바퀴는 «이미 쌓여 있던 말»이라 인사하지 않는다 — 켜자마자 옛 사람들에게
+           우르르 인사하면 그건 반응이 아니라 소음이다. 이름만 적어 두고 넘어간다. */
+        if (첫바퀴) continue;
+        await 사건넣기({ 종류: '인사', 닉네임: 이름 });
+        말('처음 말을 건 사람에게 인사했다:', 이름);
+        await 잠깐(5000);   // 여럿이 한꺼번에 말해도 인사가 겹쳐 쌓이지 않게
+      }
+      첫바퀴 = false;
+      await 잠깐(Math.max(최소간격, Number(답.pollingIntervalMillis) || 0));
+    } catch (e) {
+      말('채팅 감시 헛돌았다:', e.message);
+      if (/liveChatNotFound|forbidden|404|403/i.test(e.message)) 채팅id = null;
+      await 잠깐(30000);
+    }
+  }
+}
+
 /* ── ④ 사건 문 — 봇이 여기로 던지면 층이 받는다 ──────────────────────────────── */
-function 사건문세우기(부르기) {
+function 사건문세우기(사건넣기) {
   http.createServer((req, res) => {
     if (req.method === 'GET') { res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' }); return res.end('겹쳐송출 돌고 있다\n'); }
     let 몸 = '';
@@ -167,10 +258,7 @@ function 사건문세우기(부르기) {
     req.on('end', async () => {
       let 사건; try { 사건 = JSON.parse(몸); } catch { res.writeHead(400); return res.end('json 아니다'); }
       try {
-        await 부르기('Runtime.evaluate', {
-          expression: `(() => { const 문 = new BroadcastChannel('라디오오버레이');`
-            + ` 문.postMessage(${JSON.stringify(사건)}); setTimeout(() => 문.close(), 1000); })()`,
-        });
+        await 사건넣기(사건);
         말('사건 넣었다:', 사건.종류, 사건.닉네임 || '');
         res.writeHead(200); res.end('받았다');
       } catch (e) { 말('사건 실패:', e.message); res.writeHead(500); res.end(e.message); }
@@ -194,7 +282,14 @@ function 사건문세우기(부르기) {
 
   const ff = ffmpeg띄우기();
   ff.on('exit', (코드) => { 말('ffmpeg 끝 · 코드', 코드); process.exit(코드 || 0); });
-  사건문세우기(부르기);
+
+  /* 사건은 «한 문»으로만 들어간다 — 사람이 손으로 던지든, 채팅 감시가 스스로 던지든 같은 길이다. */
+  const 사건넣기 = (사건) => 부르기('Runtime.evaluate', {
+    expression: `(() => { const 문 = new BroadcastChannel('라디오오버레이');`
+      + ` 문.postMessage(${JSON.stringify(사건)}); setTimeout(() => 문.close(), 1000); })()`,
+  });
+  사건문세우기(사건넣기);
+  채팅감시(사건넣기).catch((e) => 말('채팅 감시가 죽었다:', e.message));
 
   let 뜨는중 = false, 막힘 = false, 센것 = 0, 다시쓴것 = 0, 실패 = 0, 마지막장 = null;
   ff.stdin.on('drain', () => { 막힘 = false; });
