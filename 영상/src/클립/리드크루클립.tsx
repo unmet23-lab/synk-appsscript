@@ -225,6 +225,12 @@ const 자막: React.FC<{ 장면: 장면 }> = ({ 장면 }) => {
             letterSpacing: 트래킹.본문,
             lineHeight: 1.5,
             wordBreak: "keep-all",
+            /* 🔴 가운데 정렬을 «여기서» 못 박는다(유호 지적 09-07 「몽골어가 중심이 왼쪽으로
+               치우친것같은데?」 · 실측 09-5: 한국어 두 줄은 화면 가운데에서 +1px 인데 몽골어는
+               −85px·−172px 이고 두 줄의 왼쪽 끝이 안전여백(170)에 딱 붙어 있었다 = 왼쪽 정렬).
+               부모에 `textAlign: center` 가 있어도 이 자리까지 안 닿았다. 상속에 기대지 않는다 —
+               한국어는 `어절드러내기` 가 제 안에서 가운데를 잡는데 몽골어만 맨 div 라 갈렸다. */
+            textAlign: "center",
           }}
         >
           {장면.몽골어}
@@ -380,6 +386,7 @@ const 훅자막: React.FC<{ 글: string; 몽골어?: string }> = ({ 글, 몽골�
               lineHeight: 1.45,
               marginTop: 율.칸,
               wordBreak: "keep-all",
+              textAlign: "center", /* 장면 자막과 같은 까닭 — 위 주석 참조 */
             }}
           >
             {몽골어}
