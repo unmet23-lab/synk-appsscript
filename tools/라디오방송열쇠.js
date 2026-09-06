@@ -72,10 +72,42 @@ function ssh(명령, 넣을것) {
     { input: 넣을것 || '', encoding: 'utf8' });
 }
 
+/* 공개 범위 셋 — 뜻을 헷갈리면 사고가 난다.
+ *   private   비공개   : 만든 사람만. 링크를 줘도 남은 못 본다.
+ *   unlisted  일부공개 : **링크를 아는 사람은 누구나 본다.** 채널 목록·검색에는 안 뜬다.
+ *   public    공개     : 채널에 뜨고 검색에도 걸린다.
+ * ⚠ 「일부공개」는 «안전»이 아니라 «안 띄움»이다 — 링크가 퍼지면 누구나 본다. */
+const 공개범위표 = { private: '비공개', unlisted: '일부공개', public: '공개' };
+
 (async () => {
   const env = 환경읽기();
   const tok = await 토큰(env);
   const 받기 = process.argv.includes('--받기');
+
+  const i = process.argv.indexOf('--공개범위');
+  if (i > -1) {
+    const 값 = process.argv[i + 1];
+    if (!공개범위표[값]) { console.error(`\n🔴 모르는 값 "${값}" — private · unlisted · public 중 하나\n`); process.exit(1); }
+    const 목 = await yt(tok, 'GET', 'liveBroadcasts?part=id,snippet,status&mine=true&maxResults=25');
+    const 방송 = (목.items || []).find((b) => b.snippet?.title === 방송제목 && b.status?.lifeCycleStatus !== 'complete');
+    if (!방송) { console.error('\n🔴 바꿀 방송을 못 찾았다\n'); process.exit(1); }
+    console.log(`\n방송 「${방송.snippet.title}」 · 지금 ${공개범위표[방송.status.privacyStatus] || 방송.status.privacyStatus} → ${공개범위표[값]}`);
+    const r = await yt(tok, 'PUT', 'liveBroadcasts?part=id,status', {
+      id: 방송.id,
+      status: { privacyStatus: 값, selfDeclaredMadeForKids: false },
+    });
+    console.log(`  ✅ 바뀌었다 · 지금 = ${공개범위표[r.status?.privacyStatus] || r.status?.privacyStatus}`);
+    // 되읽기 — 응답이 아니라 목록으로 잰다
+    const 다시 = await yt(tok, 'GET', `liveBroadcasts?part=id,status&id=${방송.id}`);
+    const s = 다시.items?.[0]?.status;
+    console.log(`  되읽기: ${공개범위표[s?.privacyStatus] || s?.privacyStatus} · 단계 ${s?.lifeCycleStatus}`);
+    console.log(`\n  보는 곳 = https://www.youtube.com/watch?v=${방송.id}`);
+    if (s?.lifeCycleStatus !== 'live') {
+      console.log(`  🔴 아직 «시작 전»(${s?.lifeCycleStatus})이라 그 주소는 안 열린다 — 「라이브 시작」이 따로 필요하다.`);
+      console.log(`     관제실 = https://studio.youtube.com/video/${방송.id}/livestreaming\n`);
+    } else console.log('');
+    return;
+  }
 
   // ① 이미 있는 스트림을 먼저 본다(1유닛) — 겹쳐 만들지 않는다
   const 있는것 = await yt(tok, 'GET', 'liveStreams?part=id,snippet,cdn,status&mine=true&maxResults=25');
