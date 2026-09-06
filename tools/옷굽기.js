@@ -76,6 +76,14 @@ const 초록지시 = (표식, 설명, 바탕 = '초록') =>
   `Its eyes keep their real colour and stay exactly as they are. ` +
   `🔴 The GARMENT keeps all of its own real colours and is clearly, fully visible — only the ` +
   `character's own body is that flat colour. Do not leave the garment out. ` +
+  /* 🔴 09-06 실측 — 일곱 벌이 «크기»에서 어긋났다. 모자·왕관이 몸보다 크게 그려지거나
+     캐릭터가 화면에서 작아졌다. 그래서 크기를 두 가지로 못 박는다: 옷은 몸에 맞고,
+     캐릭터는 화면을 늘 같은 만큼 채운다. */
+  `🔴 SIZE — the garment is made to FIT this character: it is in scale with its body, the way a ` +
+  `real doll's clothes are. A hat sits on the head without being wider than the head; a crown is ` +
+  `small enough to rest on it. Nothing is oversized. ` +
+  `The character fills the frame the same way it does in the reference photograph — the same ` +
+  `distance, the same crop. Do not zoom out and do not shrink it. ` +
   `Macro product photograph against a plain flat pure white background, the whole character ` +
   `floating in empty space with no ground and no cast shadow on any surface. ` +
   `Studio lighting: broad soft diffused light from every side with one gentle key from the upper ` +
