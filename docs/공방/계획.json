@@ -6792,6 +6792,304 @@
           }
         ],
         "_걷음": "유호 확정 09-06 「넣자. 4K로 전부 통일하자」 — 「쓰는 자산」만 4K 로 옮긴다. 비교용 대조판·안내선·그릇만·색 고르던 시안·퍼프로브 시험판·명품판_0814·홈페이지 시안은 쓰는 그림이 아니라 뺐다. SHIFT 배너·프로필·낱개는 소셜 계정에 실제로 걸리므로 남겼다."
+      },
+      {
+        "이름": "지면 부품 최신화",
+        "쓰는 곳": "문서 지면 전량 · 앱 화면 · 캐러셀",
+        "상태": "아직",
+        "_크기": "4K",
+        "_왜": "배선 정본 docs/Loom_자산/구운재질.json 이 09-04 판에서 멈춰 있고, 규격 키 47 중 21개는 원본 PNG 가 폴더에 없어 그 JSON 안 base64 가 유일한 사본이다. 이 묶음이 그 21개와 절번호 자수 열둘을 «규격 키와 같은 이름»으로 다시 구워, 구운 자산이 그대로 배선되게 한다. 유호 지시 09-07 「전부 다 정리해서 굽기 일감에 등록해줘」.",
+        "_결": "① 이름이 곧 배선이다 — 쇠를 tools/룸자산화.py 의 규격 키와 «글자 단위로» 같게 뒀다. 굽고 나면 python tools/룸자산화.py 한 번으로 지면 전량에 닿는다. ② 유리·레진은 안 굽는다(09-03 확정). 표지 장면 「합주」도 펠트 구슬 셋으로 다시 세운다. ③ 숫자가 박힌 그릇은 안 굽는다 — 지면이 숫자를 글자로 얹어서 둘로 겹친다(폼폼·와펜이 그 자리).",
+        "것들": [
+          {
+            "이름": "절번호 단추 01",
+            "쇠": "단추숫자_01",
+            "파일": "단추숫자_01.avif",
+            "2K판": "단추숫자_01.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"01\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 02",
+            "쇠": "단추숫자_02",
+            "파일": "단추숫자_02.avif",
+            "2K판": "단추숫자_02.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"02\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 03",
+            "쇠": "단추숫자_03",
+            "파일": "단추숫자_03.avif",
+            "2K판": "단추숫자_03.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"03\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 04",
+            "쇠": "단추숫자_04",
+            "파일": "단추숫자_04.avif",
+            "2K판": "단추숫자_04.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"04\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 05",
+            "쇠": "단추숫자_05",
+            "파일": "단추숫자_05.avif",
+            "2K판": "단추숫자_05.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"05\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 06",
+            "쇠": "단추숫자_06",
+            "파일": "단추숫자_06.avif",
+            "2K판": "단추숫자_06.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"06\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 07",
+            "쇠": "단추숫자_07",
+            "파일": "단추숫자_07.avif",
+            "2K판": "단추숫자_07.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"07\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 08",
+            "쇠": "단추숫자_08",
+            "파일": "단추숫자_08.avif",
+            "2K판": "단추숫자_08.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"08\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 09",
+            "쇠": "단추숫자_09",
+            "파일": "단추숫자_09.avif",
+            "2K판": "단추숫자_09.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"09\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 10",
+            "쇠": "단추숫자_10",
+            "파일": "단추숫자_10.avif",
+            "2K판": "단추숫자_10.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"10\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 11",
+            "쇠": "단추숫자_11",
+            "파일": "단추숫자_11.avif",
+            "2K판": "단추숫자_11.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"11\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "절번호 단추 12",
+            "쇠": "단추숫자_12",
+            "파일": "단추숫자_12.avif",
+            "2K판": "단추숫자_12.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC), the numeral \"12\" embroidered on its raised centre in dark ink-brown thread (#2B2320) with visible chain-stitch texture, two small stitch holes, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "표지 장면 — 펠트 삼중주",
+            "쇠": "합주",
+            "파일": "합주.avif",
+            "2K판": "합주.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "Three needle-felted wool spheres of different sizes resting together on a soft wool surface, one coral (#F96859), one cream (#FBF7F0), one deep warm grey (#575046), each with a running stitch of pale thread (#F0E3C8) curving across it, arranged as a small still life with the coral one slightly forward, no glass, no resin, no transparency, entirely opaque matte wool, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "체크 자수",
+            "쇠": "요소_체크",
+            "파일": "요소_체크.avif",
+            "2K판": "요소_체크.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A check mark embroidered in deep warm grey thread on a small square of cream felt, the stitches clearly raised, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "별 자수",
+            "쇠": "요소_별",
+            "파일": "요소_별.avif",
+            "2K판": "요소_별.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A five-pointed star embroidered in warm butter-yellow thread (#F5C445) on cream felt, satin stitch filling it solidly, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "하트 자수",
+            "쇠": "요소_하트",
+            "파일": "요소_하트.avif",
+            "2K판": "요소_하트.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A small heart embroidered in coral thread (#F96859) on cream felt, satin stitch, slightly plump, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "말풍선",
+            "쇠": "요소_말풍선",
+            "파일": "요소_말풍선.avif",
+            "2K판": "요소_말풍선.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A speech bubble cut from cream felt with a blanket-stitched edge in pale thread, one small tail at the lower left, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "탭 자수 — 집",
+            "쇠": "요소_탭집",
+            "파일": "요소_탭집.avif",
+            "2K판": "요소_탭집.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A simple house outline embroidered in deep warm grey thread on cream felt, back stitch, geometric and flat, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "탭 자수 — 책",
+            "쇠": "요소_탭책",
+            "파일": "요소_탭책.avif",
+            "2K판": "요소_탭책.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "An open book outline embroidered in deep warm grey thread on cream felt, back stitch, geometric and flat, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "탭 자수 — 차트",
+            "쇠": "요소_탭차트",
+            "파일": "요소_탭차트.avif",
+            "2K판": "요소_탭차트.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "Three rising bars embroidered in deep warm grey thread on cream felt, back stitch, geometric and flat, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "탭 자수 — 사람",
+            "쇠": "요소_탭사람",
+            "파일": "요소_탭사람.avif",
+            "2K판": "요소_탭사람.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A simple person silhouette embroidered in deep warm grey thread on cream felt, back stitch, geometric and flat, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "도장",
+            "쇠": "요소_도장",
+            "파일": "요소_도장.avif",
+            "2K판": "요소_도장.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A round felt stamp pressed into cream wool leaving a coral (#F96859) circular impression with a soft edge, as if newly stamped, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "게이지 고리",
+            "쇠": "요소_게이지",
+            "파일": "요소_게이지.avif",
+            "2K판": "요소_게이지.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A ring of coral wool yarn (#F96859) coiled into a closed circle on cream felt, the coil open at the top like a progress ring, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "소리 띠 ① 대기",
+            "쇠": "요소_녹음대기",
+            "파일": "요소_녹음대기.avif",
+            "2K판": "요소_녹음대기.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A horizontal band of cream felt with a flat row of short even stitches across its middle, quiet and still, wide landscape shape, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "소리 띠 ② 도는 중",
+            "쇠": "요소_녹음중",
+            "파일": "요소_녹음중.avif",
+            "2K판": "요소_녹음중.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A horizontal band of cream felt with a row of stitches rising and falling like a waveform in coral thread (#F96859), wide landscape shape, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "소리 띠 ③ 맺음",
+            "쇠": "요소_녹음맺음",
+            "파일": "요소_녹음맺음.avif",
+            "2K판": "요소_녹음맺음.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A horizontal band of cream felt with a row of stitches ending in a small knot at the right, thread trimmed, wide landscape shape, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "놓인 바늘",
+            "쇠": "요소_내려놓은바늘",
+            "파일": "요소_내려놓은바늘.avif",
+            "2K판": "요소_내려놓은바늘.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A sewing needle laid down on cream felt with a length of pale thread (#F0E3C8) still trailing from its eye, entirely neutral colours, wide landscape shape, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "털뭉치",
+            "쇠": "요소_폼폼",
+            "파일": "요소_폼폼.avif",
+            "2K판": "요소_폼폼.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A small round wool pom-pom in coral (#F96859), fluffy and light, no numeral or marking on it at all, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "시침핀",
+            "쇠": "요소_시침핀",
+            "파일": "요소_시침핀.avif",
+            "2K판": "요소_시침핀.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A pin with a small round felt head in coral pushed into cream felt at a slight angle, casting a soft short shadow, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "원형 배지",
+            "쇠": "요소_와펜",
+            "파일": "요소_와펜.avif",
+            "2K판": "요소_와펜.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A round embroidered patch badge in coral wool with a merrowed border in pale thread, a check mark embroidered at its centre, no numeral, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "꽃 매듭",
+            "쇠": "요소_매듭",
+            "파일": "요소_매듭.avif",
+            "2K판": "요소_매듭.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A decorative knot of pale wool yarn (#F0E3C8) tied into four looped petals, resting on cream felt, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "링크 땀점 — 무채",
+            "쇠": "땀점",
+            "파일": "땀점.avif",
+            "2K판": "땀점.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single running-stitch tack of thread on cream felt, one short raised stitch in deep warm grey (#575046), extremely simple, the smallest possible mark, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          }
+        ]
       }
     ]
   },
