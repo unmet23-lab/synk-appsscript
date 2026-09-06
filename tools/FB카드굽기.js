@@ -85,6 +85,24 @@ function 심기(상대경로, 폭) {
   return { uri: `data:image/webp;base64,${b64}`, KB: Math.round(b64.length * 0.75 / 1024) };
 }
 
+/** 「안녕하세요」를 «구운 펠트 천에서 오려» 만든다 — 디지털 서체 대신(유호 지적 09-07
+ *  「우리 글자 구운건 언제 쓰려고?」). 오리는 자 = tools/펠트글자.py(09-05 유호 확정 통로).
+ *  천은 바탕과 반대로 고른다 — 밝은 바탕에는 먹색 글자, 어두운 바탕에는 모래 글자. */
+function 펠트글자(글, 천, 크기, 자간 = 0.05) {
+  const 낼곳 = path.join(os.tmpdir(), `synk-글자-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.png`);
+  const r = spawnSync('python', [path.join(루트, 'tools', '펠트글자.py'), 글,
+    '--천', 천, '--크기', String(크기), '--자간', String(자간), '--낼곳', 낼곳],
+    { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' }, timeout: 300000 });
+  if (!fs.existsSync(낼곳)) {
+    throw new Error(`펠트글자.py 가 «${글}» 를 못 냈다: ${(r.stderr || r.stdout || '').split('\n').slice(-3).join(' ')}`);
+  }
+  const b64 = fs.readFileSync(낼곳).toString('base64');
+  const png = fs.readFileSync(낼곳);
+  const 폭 = png.readUInt32BE(16), 높 = png.readUInt32BE(20);
+  fs.unlinkSync(낼곳);
+  return { uri: `data:image/png;base64,${b64}`, 폭, 높, KB: Math.round(b64.length * 0.75 / 1024) };
+}
+
 /* ── 지면 ──────────────────────────────────────────────────────────────── */
 function 지면짓기() {
   /* 🔴 바탕은 «띠»가 아니라 «천»이어야 한다 — `DK1_띠_잉크천` 은 이름 그대로 가로 밴드라
@@ -97,7 +115,15 @@ function 지면짓기() {
                         : 'docs/Loom_자산/구움/공방_먹색펠트.png', 1400);
   /* --몽글 로 다른 판을 물릴 수 있다 — 가장자리 처방을 견줄 때 쓴다(09-07). */
   const 몽글 = 심기(인자['몽글'] || 'docs/캐릭터/정본_4K/몽글_본체.png', 1000);
-  const 잰것 = { 바탕이름: 라이트 ? '모래펠트' : '먹색펠트', 바탕: 바탕.KB, 몽글: 몽글.KB };
+  /* 인사말은 오려 만든 펠트 글자다. 천은 바탕과 반대로 골라 읽히게 한다. */
+  const 인사천 = 라이트 ? '공방_먹색펠트.png' : '공방_모래펠트.png';
+  /* 🔑 자간 0.05 — 보풀이 획 밖으로 번져서, 폰트가 알맞다고 보는 간격이 펠트에서는 붙어
+     보인다(09-07 첫 판에서 「녕」 받침이 「하」에 닿았다). */
+  const 인사 = 펠트글자('안녕하세요', 인사천, 200, 0.05);
+  const 인사폭 = 580;                                    // 카드 위 실제 폭(px)
+  const 인사높 = Math.round(인사.높 * 인사폭 / 인사.폭);
+  const 잰것 = { 바탕이름: 라이트 ? '모래펠트' : '먹색펠트', 바탕: 바탕.KB,
+              몽글: 몽글.KB, 인사천: 인사천.replace('공방_', '').replace('.png', ''), 인사: 인사.KB };
 
   /* 🚫 원판(젤리)의 «빛 점 아치»는 옮기지 않았다. 그건 네온 문법이고, 펠트에서 그 자리를
      채울 구운 부품(매듭점·반짝임)은 낱개가 커서 열둘을 늘어놓으면 시끄럽다.
@@ -129,10 +155,10 @@ body{position:relative;background:${라이트 ? 색('Paper') : 색('Ink Deep')};
 /* 로고 — viewBox 181×128 이라 높이는 폭의 0.707 배다(폭 150 → 높이 106). */
 .로고{position:absolute;top:64px;left:50%;transform:translateX(-50%);width:150px;display:block}
 
-/* 인사말 */
-.인사{position:absolute;top:198px;left:0;right:0;text-align:center;
-  font-weight:900;font-size:92px;letter-spacing:-.045em;color:${라이트 ? 색('Ink') : 색('Paper')}}
-.로마{position:absolute;top:310px;left:0;right:0;text-align:center;
+/* 인사말 — 오려 만든 펠트 글자(그림이다. 서체가 아니다). */
+.인사{position:absolute;top:190px;left:50%;transform:translateX(-50%);
+  width:${인사폭}px;height:${인사높}px;display:block}
+.로마{position:absolute;top:${190 + 인사높 + 18}px;left:0;right:0;text-align:center;
   font-family:'DM Mono',ui-monospace,Consolas,monospace;
   font-size:23px;letter-spacing:.34em;color:${라이트 ? 색('Deep Wool') : 색('Ash Wool')}}
 
@@ -156,7 +182,7 @@ body{position:relative;background:${라이트 ? 색('Paper') : 색('Ink Deep')};
 
 ${로고.워드마크({ 판: 라이트 ? '라이트' : '다크', 표현: '펠트', 클래스: '로고' })}
 
-<div class="인사">안녕하세요</div>
+<img class="인사" src="${인사.uri}" alt="안녕하세요">
 <div class="로마">annyeonghaseyo</div>
 
 <img class="몽글" src="${몽글.uri}" alt="펠트 마스코트 몽글">
@@ -205,7 +231,7 @@ function main() {
   fs.mkdirSync(path.dirname(지면경로), { recursive: true });
   fs.writeFileSync(지면경로, 심은원고, 'utf8');
   console.log(`■ 지면  ${path.relative(루트, 지면경로)}  (${Math.round(심은원고.length / 1024)}KB)`);
-  console.log(`   심은 자산 — ${잰것.바탕이름} ${잰것.바탕}KB · 몽글 ${잰것.몽글}KB`);
+  console.log(`   심은 자산 — ${잰것.바탕이름} ${잰것.바탕}KB · 몽글 ${잰것.몽글}KB · 오린 글자(${잰것.인사천}) ${잰것.인사}KB`);
 
   if (인자['지면만']) { console.log('   (--지면만 이라 굽지 않았다)'); return 0; }
 
