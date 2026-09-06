@@ -909,13 +909,18 @@ function quizSweep_(ss) {
    *   그런데 철학 Ⅲ-2(v1.21)는 「아는가의 판정은 다시 낸 문항의 결과가 한다」라 둘째 답이 곧 판정 재료다. 버리면 소급이 안 된다
    *   (심문 3회차 A3 · 4회차 A3 · 첫 진짜 학생 «전»). 이제 **시도 번호를 달아 전부 남긴다** — 「무엇을 골랐나」는 시도 1 행이 그대로 쥐고,
    *   소비자(aiWeakMap_)는 시도 1 만 읽는다. */
-  const seen = {};
+  const seen = {}, 적재됨 = {};
   const 시도열 = QUIZ_LOG_HEADERS.indexOf('시도') + 1;
   if (ql.getLastRow() >= 2) ql.getRange(2, 2, ql.getLastRow() - 1, 시도열 - 1).getValues().forEach(r => {
     if (!r[0] || !r[1]) return;
     const k = String(r[1]).trim() + '|' + String(r[0]).trim();
     const n = Number(r[시도열 - 2]) || 1; // 옛 행(시도 칸 없음)은 1
     if (n > (seen[k] || 0)) seen[k] = n;
+    /* [v9.312] 이미 적재한 «응답» — 퀴즈ID|sid|제출일|고른답. 적재(아래 setValues) 뒤 포인터 저장만 실패하면 다음 스위프가 같은 원본
+     *   행을 다시 읽는데, 그것은 재제출이 아니라 재처리다(구 코드는 seen 이 조용히 걸렀고, 시도 번호를 달자 둘째 시도로 새 행이 됐다 —
+     *   코덱스 09-06 P1). 폼이 응답 ID 를 안 실어 보내니 «같은 날 · 같은 문항 · 같은 답»을 같은 응답으로 본다. 같은 날 똑같은 답을
+     *   «정말로» 두 번 낸 경우도 하나로 남는다 — 판정 재료가 같으니 잃는 것이 없고, 다른 답이면 시도 N 으로 남는다. */
+    적재됨[k + '|' + dstr(r[8], tz) + '|' + String(r[4] || '').trim()] = 1;
   });
 
   const out = [], badSid = [];
@@ -928,6 +933,9 @@ function quizSweep_(ss) {
     if (!sid || !qid || !ans) return;
     if (!valid.has(sid)) { badSid.push(sid); return; }
     const key = qid + '|' + sid;
+    const 응답키 = key + '|' + dstr(ts, tz) + '|' + String(셀안전_(ans)).trim();
+    if (적재됨[응답키]) return; // [v9.312] 같은 응답의 재처리 — 새 시도가 아니다(위 적재됨 주석)
+    적재됨[응답키] = 1;
     const 시도 = (seen[key] || 0) + 1;
     seen[key] = 시도;
     const meta = qMap[qid + '|' + sid] || qMap[qid] || { cat: '', q: '', a: '' }; // [v9.188] 개인 퀴즈는 (문항ID, 학생) 짝으로 찾는다
@@ -1274,8 +1282,10 @@ function 명단이름_(ss) {
     if (!r[0] || r[3] !== 'student') return;
     담기(r[1]); 담기(r[2]);
   });
-  const ex = ss.getSheetByName('exit_log');   // 퇴소 학생(user_id · 이름 · …) — 없으면 그 층은 0(이름 0 이 아니라 시트 0)
-  if (ex && ex.getLastRow() >= 2) ex.getRange(2, 1, ex.getLastRow() - 1, 2).getValues().forEach(r => { if (r[0]) 담기(r[1]); });
+  /* 퇴소 학생 — exit_log 의 이름 칸 «둘»(B 한글 · H 이름_몽골 · 후자는 v9.312 부터 syncProfiles 가 남긴다). 시트가 없으면 그 층은 0
+   *   (이름 0 이 아니라 시트 0). 코덱스 09-06 P1: 한글·몽골어 표기가 다른 학생이 퇴소하면 profiles 의 C 칸이 사라져 사전에서 빠졌다. */
+  const ex = ss.getSheetByName('exit_log');
+  if (ex && ex.getLastRow() >= 2) ex.getRange(2, 1, ex.getLastRow() - 1, 8).getValues().forEach(r => { if (r[0]) { 담기(r[1]); 담기(r[7]); } });
   return Object.keys(조각);
 }
 
@@ -1401,6 +1411,7 @@ function pushGoldenFixture_() {
     return 'GitHub 업로드 실패(' + code + ') — ' + put.getContentText().slice(0, 200);
   }
   const msg = 'SYNK-talk에 픽스처 ' + r.건수 + '건 올렸습니다(' + r.요약 + ').\n경로: ' + GH_PATH
+    + '\n⚠ ' + GH_OWNER + '/' + GH_REPO + ' 는 공개 저장소라 이 파일은 영구 기록입니다(지워도 이력에 남습니다). 기본 출구는 「📤 픽스처 파일로」(내 드라이브 · 비공개)입니다.' // [v9.312] 코덱스 09-06 P2 — 경고가 0건 갈래에만 있었다
     + '\n이름 살균: 명단 ' + r.살균이름수 + '개 이름과 대조해 ' + r.살균제외 + '건을 뺐습니다(학생이 제 이름을 적은 문장은 밖으로 안 나갑니다 · 유호 확정 09-06).'
     + '\n저쪽에서 채점: node tools/eval-score.js evals/출력_v1.json --fixture ' + GH_PATH;
   Logger.log(msg);

@@ -42,8 +42,9 @@ function 함수(이름, 의존 = {}) {
 const GOLD_HEADERS = JSON.parse(code.match(/const GOLD_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
 const GOLD_VERDICTS = JSON.parse(code.match(/const GOLD_VERDICTS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
 const 역소독_ = 함수('역소독_');
-const 명단이름_ = 불러오기('function 명단이름_(ss)', '/* [vNEXT] 문장에 명단 이름 조각이', '명단이름_', {});
-const 이름살균_ = 불러오기('function 이름살균_(이름들, 글)', '/* [vNEXT] 문항 지문', '이름살균_', {});
+/* 버전 주석을 끝 표식으로 잡지 않는다 — 채번이 [vNEXT] 를 [v9.xxx] 로 바꾸는 순간 시험이 로딩에서 죽는다(09-06 CI 실측 · 코덱스 P2). */
+const 명단이름_ = 함수('명단이름_');
+const 이름살균_ = 함수('이름살균_');
 const FIXTURE_MIN_LEN = Number(code.match(/const FIXTURE_MIN_LEN = (\d+)/)[1]);
 const fixtureDiff_ = 불러오기('function fixtureDiff_(원문, 교정)', '\nfunction 골든픽스처_', 'fixtureDiff_', { FIXTURE_MIN_LEN });
 
@@ -64,7 +65,7 @@ function 골든(ss) {
     FIXTURE_MIN_LEN: Number(code.match(/const FIXTURE_MIN_LEN = (\d+)/)[1]),
     HW_ERROR_TAGS: ['조사', '오류없음'],
   };
-  return 불러오기('function 골든픽스처_()', '/* [vNEXT] 명단의 이름 조각', '골든픽스처_', 의존)();
+  return 함수('골든픽스처_', 의존)();
 }
 const 시트들 = (표) => ({
   getSheetByName: (n) => (표[n] ? 시트흉내({ 첫행: 2, 행들: 표[n] }) : null),
@@ -75,10 +76,12 @@ test('명단 이름 조각 — 어절로 쪼개고 한 글자는 버린다(조�
   const 학생C = (id, 이름, 몽골) => { const r = 학생(id, 이름); r[2] = 몽골; return r; };
   const ss = 시트들({
     profiles: [학생C('S1', '바트 에르덴', 'Бат-Эрдэнэ'), 학생('S2', 'Sarnai'), ['S9', '김', '', 'teacher']],
-    exit_log: [['S7', '냠카', '', '2026-05-01']],     // 퇴소자 — profiles 에서 지워졌지만 teacher_gold 문장은 남는다(보안 검토 09-06)
+    // 퇴소자 — profiles 에서 지워졌지만 teacher_gold 문장은 남는다(보안 검토 09-06) · H 칸 이름_몽골은 v9.312 부터 syncProfiles 가 남긴다(코덱스 P1)
+    exit_log: [['S7', '냠카', '', '2026-05-01', '', '', '', 'Нямка'], ['S8', '옛퇴소', '', '2026-01-01']],
   });
   const 조각 = 명단이름_(ss).sort();
-  assert.deepEqual(조각, ['sarnai', 'бат', 'эрдэнэ', '냠카', '바트', '에르덴']);
+  assert.deepEqual(조각, ['sarnai', 'бат', 'нямка', 'эрдэнэ', '냠카', '바트', '에르덴', '옛퇴소']);
+  assert.equal(이름살균_(조각, 'Нямка гэдэг'), true, '퇴소한 학생의 몽골어 표기(exit_log H 칸)가 사전에 없다');
   assert.equal(이름살균_(조각, '저는 바트예요'), true);
   assert.equal(이름살균_(조각, 'SARNAI 랑 갔어요'), true, '대소문자를 무시해야 한다');
   assert.equal(이름살균_(조각, '제 이름은 Бат입니다'), true, '몽골어 표기(C 칸)가 사전에 없다');

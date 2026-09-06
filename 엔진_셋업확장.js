@@ -5292,7 +5292,7 @@ function onOpen() {
     /* ── 📤 회화 앱으로 — 강사가 손으로 고친 «정답»을 형제 저장소로 넘긴다. */
     const 내보내기 = ui.createMenu('📤 회화 앱으로 보내기')
       .addItem('📤 강사 정답 모음 → 픽스처 파일로', 'menuExportGolden')
-      .addItem('🚀 강사 정답 모음 → SYNK-talk 저장소로 바로', 'menuPushGolden');
+      .addItem('🚀 강사 정답 모음 → SYNK-talk 저장소로 바로(⚠ 공개 저장소 · 이름 살균 뒤 영구 기록)', 'menuPushGolden'); // [v9.312] 기본은 위 「파일로」(내 드라이브)
 
     ui.createMenu('SYNK')
       // 첫 화면에는 «오늘 누를 수 있는 것»만 — 나머지는 갈래 안으로 접었다.

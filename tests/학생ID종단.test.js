@@ -7,7 +7,7 @@
  *   ① 카운터가 «없으면»(키 없음·빈칸) 발급 0건 — 자기초기화 금지(판정 Ⅰ-3). 세우기가 심은 숫자 0 은 «없음»이 아니다(교착 방지).
  *   ② 세우기는 멱등 — 두 번 = 같은 값 · 절대 낮추지 않는다.
  *   ③ 발급은 카운터를 «행에 쓰기 전»에 올린다 — 소스 순서 + 실행(행 쓰기가 죽어도 카운터는 올라가 있다 · 번호는 비지 겹치지 않는다).
- *   ④ EXIT_LOG_HEADERS 정본 한 곳 + 7칸 — 골격·런타임 둘 다 그 상수 · 소비자(복귀창_ r[3]) 가 안 흔들린다.
+ *   ④ EXIT_LOG_HEADERS 정본 한 곳 + 8칸(v9.312 끝에 이름_몽골) — 골격·런타임 둘 다 그 상수 · 소비자(복귀창_ r[3]) 가 안 흔들린다.
  *   ⑤ 재입학 뒤 둘째 퇴소 행이 생긴다(시트 흉내) · 같은 아침 재실행은 두 줄을 안 만든다 · 쓰는 자리 = 급감 가드 뒤·행 삭제 앞.
  *   ⑥ 종료사유 드롭다운 값 여섯(결정.md 08-30) · 500행 1회 적용.
  *
@@ -235,11 +235,11 @@ test('③ 게이트는 그대로 — 이미 있는 ID·무명·다른 처리상�
   assert.deepEqual(학생ID열(판.consult), ['SYNK-002', '', '', 'SYNK-003']);
 });
 
-/* ───────────────── ④ EXIT_LOG_HEADERS 정본 한 곳 · 7칸 · 소비자 불변 ───────────────── */
+/* ───────────────── ④ EXIT_LOG_HEADERS 정본 한 곳 · 8칸 · 소비자 불변 ───────────────── */
 
-test('④ EXIT_LOG_HEADERS — 정본 한 곳 · 7칸 · 옛 5칸은 자리 그대로 · 새 칸은 «끝에»', () => {
+test('④ EXIT_LOG_HEADERS — 정본 한 곳 · 8칸 · 옛 7칸은 자리 그대로 · 새 칸(v9.312 이름_몽골)은 «끝에»', () => {
   assert.equal((code.match(/const EXIT_LOG_HEADERS = \[/g) || []).length, 1, '헤더 정본이 두 곳이다');
-  assert.deepEqual(EXIT_LOG_HEADERS, ['student_id', '이름', '반', '퇴소감지일', '재원일수', '종료사유', '종료일']);
+  assert.deepEqual(EXIT_LOG_HEADERS, ['student_id', '이름', '반', '퇴소감지일', '재원일수', '종료사유', '종료일', '이름_몽골']);
   assert.equal(EXIT_LOG_HEADERS.indexOf('퇴소감지일'), 3, '소비자(복귀창_ r[3])가 집는 자리가 밀렸다');
   const 골격 = section('function sheetSkeleton_()', 'function bootstrapSynk()');
   assert.ok(/\['exit_log', EXIT_LOG_HEADERS[,\]]/.test(골격), '골격이 헤더 정본 상수를 쓰지 않는다');
@@ -308,7 +308,7 @@ test('⑤ 재입학 뒤 다시 퇴소하면 «새 줄»이 생기고(append), �
   assert.equal(사건.exitLog기록자_(ex).size, 1, '기록자 집합이 학생이 아니라 줄을 센다');
 });
 
-test('⑤ syncProfiles — 사건은 퇴소사건필요_ 로 가르고, 쓰는 자리는 급감 가드 «뒤» · 행 삭제 «바로 앞»이며, 7칸으로 append 한다', () => {
+test('⑤ syncProfiles — 사건은 퇴소사건필요_ 로 가르고, 쓰는 자리는 급감 가드 «뒤» · 행 삭제 «바로 앞»이며, 8칸으로 append 한다', () => {
   const body = 코드만(section('function syncProfiles()', 'function dailyBackup()'));
   assert.ok(body.includes('퇴소사건필요_(userId, exitedIds, keep)'), '둘째 사건 규칙(학생 + 마지막 사건 이후)을 안 쓴다');
   assert.ok(!/if \(!exitedIds\.has\(String\(userId\)\)\) \{/.test(body), '옛 영구 차단(exitedIds 에 있으면 영영 건너뜀)이 되살아났다');
@@ -318,8 +318,8 @@ test('⑤ syncProfiles — 사건은 퇴소사건필요_ 로 가르고, 쓰는 �
   assert.ok(i가드 !== -1 && i쓰기 !== -1 && i삭제 !== -1, '앵커를 못 찾았다');
   assert.ok(i가드 < i쓰기, '사건 기입이 급감 가드 «앞»에 있다 — 보류된 아침마다 같은 사건이 한 줄씩 는다');
   assert.ok(i쓰기 < i삭제, '사건 기입이 행 삭제 «뒤»에 있다 — 사이에서 죽으면 사건이 사라진다(안 적힌 사건은 못 되돌린다)');
-  assert.ok(/퇴소사건\.push\(\[userId, row\[0\] \|\| '', row\[3\] \|\| '',\s*Utilities\.formatDate\([\s\S]*?'yyyy-MM-dd'\), tenureDays, '', ''\]\)/.test(body),
-    '사건 행이 7칸(종료사유·종료일 빈칸)이 아니다 — 폭이 다르면 writeIfChanged 가 다른 폭으로 쓴다');
+  assert.ok(/퇴소사건\.push\(\[userId, row\[0\] \|\| '', row\[3\] \|\| '',\s*Utilities\.formatDate\([\s\S]*?'yyyy-MM-dd'\), tenureDays, '', '',\s*row\[1\] \|\| ''\]\)/.test(body),
+    '사건 행이 8칸(종료사유·종료일 빈칸 · 끝에 이름_몽골 = 상담시트 B)이 아니다 — 폭이 다르면 writeIfChanged 가 다른 폭으로 쓴다');
   assert.ok(body.includes('퇴소본것[String(userId)]'), '같은 실행 안 중복 행(상담시트 중복 id) 방어가 없다');
 });
 
