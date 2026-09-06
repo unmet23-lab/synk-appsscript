@@ -19,6 +19,7 @@
      python tools/부품견줌판.py --옛 88212dc57
 """
 import argparse
+import hashlib
 import io
 import json
 import os
@@ -94,6 +95,17 @@ def 판읽기(어디):
     return json.loads(r.stdout.decode('utf-8'))
 
 
+def 열쇠(이름):
+    """부품 이름을 «저장소가 받는 이름»으로 바꾼다.
+
+    🔴 고른 것을 담는 자리는 로마자·숫자와 `_-.~:@+` 만 받는다(09-07 실측: 한글 이름을 주면
+       그 자리에서 거절당한다). 처음 판이 `고르기/<한글 이름>` 이라 저장이 통째로 안 됐다 —
+       화면은 멀쩡했고(브라우저 안 저장은 따로 살아 있었다) 세션만 못 읽는, 조용한 실패였다.
+    이름은 이 표에서 «자리»가 아니라 «글자»로 나온다 — 무리 목록이 바뀌어도 같은 부품은 같은 이름이다.
+    """
+    return 'p' + hashlib.sha1(이름.encode('utf-8')).hexdigest()[:10]
+
+
 def 견본(p, 크기, 테두리=False):
     """부품 하나를 그리는 상자. 몸 위에 접지가 깔린다(두 층일 때)."""
     if not p:
@@ -128,7 +140,7 @@ def 쪽쓰기(옛부품, 새부품, 옛이름, 새이름):
             띠 = ('<span class="띠 갈림">새로 구웠다</span>' if 갈렸나
                   else '<span class="띠 그대로">그대로 뒀다</span>')
             칸들.append(f'''
-      <article class="칸{' 넓게' if 이름 in 큰것 else ''}" data-부품="{이름}">
+      <article class="칸{' 넓게' if 이름 in 큰것 else ''}" data-부품="{이름}" data-키="{열쇠(이름)}">
         <header class="칸머리">
           <h3>{이름.replace('_', ' ')}</h3>
           {띠}
@@ -310,15 +322,18 @@ JS = r'''
 
   document.addEventListener('click', function(e){
     var 단추 = e.target.closest('.픽'); if (!단추) return;
-    var 칸 = 단추.closest('.칸'); var 이름 = 칸.dataset.부품; var 값 = 단추.dataset.값;
+    var 칸 = 단추.closest('.칸'); var 이름 = 칸.dataset.부품;
+    var 키 = 칸.dataset.키; var 값 = 단추.dataset.값;
     판정[이름] = (판정[이름] === 값) ? null : 값;
     if (!판정[이름]) delete 판정[이름];
     칸에그리기(); 셈그리기();
     try { localStorage.setItem('부품판정', JSON.stringify(판정)); } catch(err){}
+    /* 🔴 담는 자리 이름은 로마자·숫자만 받는다 — 한글 이름을 주면 조용히 거절당한다.
+       그래서 «부품 이름»은 칸 안의 값으로 넣고, 자리 이름은 그 이름에서 만든 열쇠를 쓴다. */
     if (저장) {
-      if (판정[이름]) 저장.doc('고르기/' + 이름).set({ 판정: 값, 때: new Date().toISOString() })
-        .catch(function(){});
-      else 저장.doc('고르기/' + 이름).delete().catch(function(){});
+      if (판정[이름]) 저장.doc('picks/' + 키)
+        .set({ 부품: 이름, 판정: 값, 때: new Date().toISOString() }).catch(function(){});
+      else 저장.doc('picks/' + 키).delete().catch(function(){});
     }
   });
 
@@ -327,11 +342,10 @@ JS = r'''
       if (!db) return;
       저장 = db;
       저장줄.textContent = '고른 것이 저장된다 — 세션이 그대로 읽는다';
-      db.collection('고르기').get().then(function(줄들){
+      db.collection('picks').get().then(function(줄들){
         (줄들 || []).forEach(function(줄){
-          var 이름 = (줄.id || '').split('/').pop();
-          var 값 = (줄.data && 줄.data.판정) || 줄.판정;
-          if (이름 && 값) 판정[이름] = 값;
+          var 칸값 = 줄.data || 줄;
+          if (칸값 && 칸값.부품 && 칸값.판정) 판정[칸값.부품] = 칸값.판정;
         });
         칸에그리기(); 셈그리기();
       }).catch(function(){});
