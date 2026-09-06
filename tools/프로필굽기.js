@@ -25,6 +25,9 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { 색, defs, 도장, 기호, 워드마크 } = require('./lib/로고정본.js');
 const 마스코트자산 = require('./lib/마스코트자산.js');
+/* 브랜드 서체(SUIT)는 «굽기»가 지면 안에 싣는다 — 이름만 부르고 안 실으면 막힌 적이 없어
+ * 경고도 안 뜨고 그냥 시스템 고딕으로 떨어진다(tests/지면폰트.test.js ⑦ · 정본 lib/브랜드폰트.js). */
+const 브랜드폰트 = require('./lib/브랜드폰트.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const 낼곳 = path.join(ROOT, 'docs/SHIFT/프로필');
@@ -214,6 +217,7 @@ function 시안(굽힌것) {
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>synkbrief 프로필 — 네 안</title>
+${브랜드폰트.블록()}
 <style>
   /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
   @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
