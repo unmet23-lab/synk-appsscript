@@ -915,21 +915,19 @@ function quizSweep_(ss) {
    *   코덱스 09-06 2차 P1). 응답의 정체는 «폼이 찍은 시각(ms)»이다 — 같은 날 같은 답을 다시 내도, 확신도만 바꿔 내도 시각이 다르니
    *   다른 응답으로 남는다(원신호 보존 · 철학 A-1). 날짜·답으로 가르던 판은 그 둘을 버렸다(3차 P1 4a682b0d875b). 옛 행(응답시각 칸 없음)은
    *   재처리 판정에서 빠진다 — 그 행들의 포인터는 이미 저장돼 있어 다시 읽힐 일이 없다. */
-  const seen = {}, 적재됨 = {}, 구형적재 = {};
+  const seen = {}, 적재됨 = {};
   const 시도칸 = QUIZ_LOG_HEADERS.indexOf('시도'), 응답ms칸 = QUIZ_LOG_HEADERS.indexOf('응답시각ms');
-  const 제출일칸 = QUIZ_LOG_HEADERS.indexOf('제출일'), 고른답칸 = QUIZ_LOG_HEADERS.indexOf('고른답');
   if (ql.getLastRow() >= 2) ql.getRange(2, 1, ql.getLastRow() - 1, QUIZ_LOG_HEADERS.length).getValues().forEach(r => {
     if (!r[1] || !r[2]) return;
     const k = String(r[2]).trim() + '|' + String(r[1]).trim();
     const n = Number(r[시도칸]) || 1; // 옛 행(시도 칸 없음)은 1
     if (n > (seen[k] || 0)) seen[k] = n;
+    /* 응답시각 칸이 없던 판의 행은 재처리 판정에서 빠진다(그 포인터는 이미 저장돼 있어 다시 읽힐 일이 없다). 「옛 판이 적재 뒤 포인터 저장 «전»에
+     *   죽은 채 이 판으로 올라온 첫 스위프」는 날짜·답으로 가리던 판을 4차에 넣었다가 5차(P1 5abb05b259f5)에 뺐다 — 그 자는 같은 날 같은 답을
+     *   «정말로» 다시 낸 학생을 영구히 버린다. 남는 위험은 배포 «그날» 시험 자료 한 줄이 두 번 쌓이는 것뿐이다(실학생 0 · 2027-02 전). */
     const ms = Number(r[응답ms칸]) || 0;
     if (ms) 적재됨[k + '|' + ms] = 1;
-    /* 응답시각 칸이 없던 판의 행 — 날짜·답으로만 가른다. 옛 판이 적재 뒤 포인터 저장 «전»에 죽은 채 이 판으로 올라온 첫 스위프가 그 행을
-     *   다시 읽는 하루를 위한 것이다(4차 P1 209b63ae38f6). 고른답은 셀안전_ 의 접두를 시트가 먹고 원문을 돌려주니 원문끼리 비교한다. */
-    else 구형적재[k + '|' + dstr(r[제출일칸], tz) + '|' + String(r[고른답칸] || '').trim()] = 1;
   });
-  const 오늘 = dstr(new Date(), tz);
 
   const out = [], badSid = [], 재처리 = []; // 재처리 = 로그엔 이미 있는 응답(sid 만 쓴다 · 하루 보상을 다시 태우는 재료)
   rows.forEach(r => {
@@ -944,11 +942,11 @@ function quizSweep_(ss) {
     const 응답ms = ts.getTime();
     const 응답키 = key + '|' + 응답ms;
     const 응답일 = dstr(ts, tz);
-    if (적재됨[응답키] || 구형적재[key + '|' + 응답일 + '|' + ans]) {
-      /* [v9.312] 같은 응답의 재처리 — 로그엔 안 쌓고 하루 보상만 다시 태운다(멱등). 단 «오늘» 응답만이다: 어제 응답의 재처리는 어제 지급을
-       *   오늘 장부(퀴즈응답포인트_ 는 실행일 지급만 본다)로 못 보니 두 번 줄 수 있다(4차 P1 81d7359a93bb). 자정 «직전» 적재·지급 뒤 죽고
-       *   자정 «직후» 다시 도는 그 몇 분의 자리다 — 지급 «전»에 죽은 어제 응답은 보상을 잃는데, 옛 판도 같은 조건에서 잃었다. */
-      if (응답일 === 오늘) 재처리.push(['', sid]);
+    if (적재됨[응답키]) {
+      /* [v9.312] 같은 응답의 재처리 — 로그엔 안 쌓고 하루 보상만 다시 태운다. 두 번 안 주는 것은 퀴즈응답포인트_ 가 «응답 날짜 이후 지급이
+       *   있나»로 가른다(4차 P1 81d7359a93bb · 5차 P1 666dcf2e9104·2f02f57aa807) — 그래서 여기서는 날짜로 거르지 않고 제출일만 실어 보낸다. */
+      const 빈 = []; 빈[1] = sid; 빈[2] = qid; 빈[QUIZ_LOG_HEADERS.indexOf('제출일')] = 응답일;
+      재처리.push(빈);
       return;
     }
     적재됨[응답키] = 1;
@@ -974,7 +972,7 @@ function quizSweep_(ss) {
     out.push(['QL' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid + '-' + qid + (시도 > 1 ? '-' + 시도 : ''), sid, 셀안전_(qid),
       셀안전_(meta.cat), 셀안전_(meta.q), 셀안전_(ans), 셀안전_(meta.a),
       g.ok === null ? '판정보류' : (g.ok ? '정답' : '오답'), // 원칙: 판정 못 해도 행은 남는다
-      셀안전_(conf), dstr(ts, tz), new Date(), lvOf[sid] || 0, SCHEMA_VER, // [v9.187] 급수 스냅샷(0=미정) · [v9.207] schema_ver
+      셀안전_(conf), 응답일, new Date(), lvOf[sid] || 0, SCHEMA_VER, // [v9.187] 급수 스냅샷(0=미정) · [v9.207] schema_ver
       시도, 지문, 지연초, 응답ms]); // [v9.312] 시도 번호 · 문항 지문 · 스냅샷 지연초 · 응답시각ms(재처리를 가르는 정체)
   });
   if (out.length) ql.getRange(ql.getLastRow() + 1, 1, out.length, QUIZ_LOG_HEADERS.length).setValues(out);
@@ -994,22 +992,33 @@ function quizSweep_(ss) {
  *      손해라고 느끼는 순간 그 축이 죽고, 확신도는 quiz_log에서 가장 값비싼 열이다(정답인데 찍음 = 모르는 것).
  *   ② **1일 1회 상한.** 퀴즈는 10초짜리 행동이라 무제한이면 파밍이 되고, 파밍된 응답은 데이터도 오염시킨다.
  *   ③ 지급은 **적재 뒤**에만(위 호출 위치) — 순서가 뒤집히면 "포인트는 받았는데 로그엔 없는" 행이 생긴다.
- * 멱등: 오늘 이미 '퀴즈응답'을 받은 학생은 건너뛴다(sweepFeedbackAck_ 패턴) + DAILY_LIMIT 야간 정정이 2차 그물. */
+ * 멱등: 「응답의 날」 이후에 '퀴즈응답' 지급이 있는 학생은 건너뛴다(v9.312 · 실행일이 아니라 응답일 기준 — 재처리·늦은 적재·자정 경계가 같은 답을 낸다)
+ *   + DAILY_LIMIT 야간 정정이 2차 그물. */
 function 퀴즈응답포인트_(ss, loaded, tz) {
   if (!loaded || !loaded.length) return;
   const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
-  const doneToday = new Set();
+  /* [v9.312] 「하루 1회」의 «하루»는 실행일이 아니라 **응답의 날**이다 — 그래야 재처리(같은 응답을 다시 읽음)와 늦은 적재(어제 답을 오늘 읽음)가
+   *   실행 시각과 무관하게 같은 답을 낸다. 학생마다 지급 날짜들을 모아 두고, 「응답 날짜 이후에 지급이 있나」로 가른다:
+   *   · 어제 지급된 응답을 자정 뒤 다시 읽음 → 어제 지급이 있다 → 안 준다(4차 P1 81d7359a93bb · 5차 P1 666dcf2e9104)
+   *   · 어제 응답을 오늘 처음 적재하다 지급이 죽고 다시 읽음 → 어제 이후 지급이 없다 → 준다(5차 P1 2f02f57aa807)
+   *   · 오늘 이미 받은 학생의 오늘 다른 문항 → 오늘 지급이 있다 → 안 준다(옛 규칙 그대로)
+   *   지급 날짜 비교는 'yyyy-MM-dd' 문자열 비교다(같은 시간대로 접는다). 제출일 칸이 빈 행은 실행일로 본다. */
+  const 지급일 = {};
   const pl = ss.getSheetByName('point_logs');
   if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
-    if (r[1] && r[5] && String(r[3] || '') === '퀴즈응답' &&
-        Utilities.formatDate(asDate_(r[5]), tz, 'yyyy-MM-dd') === today) doneToday.add(String(r[1]).trim());
+    if (!r[1] || !r[5] || String(r[3] || '') !== '퀴즈응답') return;
+    const sid = String(r[1]).trim();
+    (지급일[sid] = 지급일[sid] || []).push(Utilities.formatDate(asDate_(r[5]), tz, 'yyyy-MM-dd'));
   });
+  const 제출일칸 = QUIZ_LOG_HEADERS.indexOf('제출일');
+  const 이번 = {}; // 이 호출 안에서 같은 학생이 3문항을 냈어도 1회
   const grants = [];
   loaded.forEach(row => {
     const sid = String(row[1] || '').trim();
-    // 이 스위프에서 같은 학생이 3문항을 냈어도 1회 — doneToday에 즉시 넣어 루프 안에서도 상한이 선다
-    if (!sid || doneToday.has(sid)) return;
-    doneToday.add(sid);
+    if (!sid || 이번[sid]) return;
+    const 날 = row[제출일칸] ? dstr(row[제출일칸], tz) : today;
+    if ((지급일[sid] || []).some(d => d >= 날)) return;
+    이번[sid] = 1;
     grants.push([sid, PT.퀴즈응답, '퀴즈응답', '시스템']);
   });
   if (grants.length) appendPoints(ss, grants);
