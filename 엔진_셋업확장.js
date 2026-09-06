@@ -5290,9 +5290,10 @@ function onOpen() {
       .addItem('🧹 낡은 강의 자리 걷어내기(레벨 어휘가 바뀌었을 때)', 'menuPruneStaleLectures');
 
     /* ── 📤 회화 앱으로 — 강사가 손으로 고친 «정답»을 형제 저장소로 넘긴다. */
+    /* [v9.313] 공개 저장소로 «바로» 올리는 버튼은 뺐다(유호 위임 09-06 「너의 판단대로」 → 끄는 쪽 · 결정 원장 안전 행) — 함수 `pushGoldenFixture_` 는
+     *   스크립트 속성 GOLDEN_PUBLIC_EXIT=on 뒤에 남아 있다(켜는 날 이 줄 하나를 되살린다). 출구는 「픽스처 파일로」(내 드라이브 · 비공개) 하나다. */
     const 내보내기 = ui.createMenu('📤 회화 앱으로 보내기')
-      .addItem('📤 강사 정답 모음 → 픽스처 파일로', 'menuExportGolden')
-      .addItem('🚀 강사 정답 모음 → SYNK-talk 저장소로 바로(⚠ 공개 저장소 · 이름 살균 뒤 영구 기록)', 'menuPushGolden'); // [v9.312] 기본은 위 「파일로」(내 드라이브)
+      .addItem('📤 강사 정답 모음 → 픽스처 파일로', 'menuExportGolden');
 
     ui.createMenu('SYNK')
       // 첫 화면에는 «오늘 누를 수 있는 것»만 — 나머지는 갈래 안으로 접었다.
