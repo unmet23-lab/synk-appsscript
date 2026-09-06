@@ -58,7 +58,13 @@ function 판대조(계약, 수집소스) {
 const 말 = (s) => process.stderr.write(s + '\n');
 
 function git(args) {
-  return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  /* ☠️ `maxBuffer` 를 손으로 준다 — 형제 게이트가 그 자리에서 저장소를 멈췄다(2026-09-07).
+   *   node 기본은 1MiB 이고, 읽는 파일이 그걸 넘으면 `git show` 가 ENOBUFS 로 죽는다.
+   *   그러면 예외를 삼키는 자리가 「파일이 없다」로 읽어 **모든 세션의 커밋**을 막는다.
+   *   여기 두 파일은 지금 각각 77KB·128KB 라 아직 멀지만, 함정은 크기가 아니라 «빠진 인자»다. */
+  return execFileSync('git', args, {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024,
+  });
 }
 
 /* ☠️ `-z` 인 이유는 옆 게이트와 같다 — 기본 출력은 비ASCII 를 `"\352\263\204…"` 로 이스케이프해서
