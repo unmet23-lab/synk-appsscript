@@ -23,8 +23,12 @@ const ROOT = path.resolve(여기, '..', '..', '..');  // 저장소 뿌리
 const 사진경로 = path.join(여기, '라이브시트_헤더.json');
 const live = JSON.parse(fs.readFileSync(사진경로, 'utf8'));
 
-/* 사진이 언제 뜬 것인가 — git 이 답하고, 못 답하면 파일 시각으로 내려간다(자를 함께 찍는다). */
+/* 사진이 언제 뜬 것인가 — 사진 «안»의 도장이 첫째 자다(09-07 신설).
+ * 🔴 git 커밋 날짜를 첫째 자로 쓰면 «방금 새로 뜬 사진»이 커밋 전이라 옛 날짜를 말한다 —
+ *   09-07 에 그 거짓을 눈으로 봤다(새로 떴는데 「09-03 · 3일 전」으로 찍혔다). */
 function 사진나이() {
+  const 도장 = live && live._뜬때 && live._뜬때.when;
+  if (도장) return { 때: new Date(도장), 자: '사진 안의 도장' };
   try {
     const d = execFileSync('git', ['-C', ROOT, 'log', '-1', '--format=%cI', '--', 사진경로],
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
@@ -35,7 +39,9 @@ function 사진나이() {
 const 나이 = 사진나이();
 const 지난날 = Math.floor((Date.now() - 나이.때.getTime()) / 86400000);
 const 낡음문턱 = 14;
-console.log(`📷 라이브 사진 = ${나이.때.toISOString().slice(0, 10)} · ${지난날}일 전 (자 = ${나이.자})`);
+/* 🔴 `toISOString()` 은 UTC 라 한국 새벽에 뜬 사진이 «어제»로 찍힌다(09-07 에 봤다). 여기 시각으로 적는다. */
+const 날짜 = `${나이.때.getFullYear()}-${String(나이.때.getMonth() + 1).padStart(2, '0')}-${String(나이.때.getDate()).padStart(2, '0')}`;
+console.log(`📷 라이브 사진 = ${날짜} · ${지난날}일 전 (자 = ${나이.자})`);
 if (지난날 >= 낡음문턱) {
   console.log(`🔴 사진이 ${낡음문턱}일을 넘었다 — 아래 「없는 칸」은 그 사이 배포가 세웠을 수 있다.`);
   console.log('   다시 뜨는 법 = 라이브 시트를 열어 탭마다 첫 행을 받아 이 파일을 새로 쓴다(읽기만 · 라이브를 안 만진다).');
@@ -56,7 +62,9 @@ while ((m = re.exec(src))) {
 }
 
 // 라이브 탭 이름 → 헤더
-const liveTabs = Object.entries(live).map(([name, v]) => ({ name, headers: (v.headers || []).map(s => String(s).trim()), rows: v.filled_rows }));
+/* `_` 로 시작하는 키는 탭이 아니라 사진 자신의 쪽지다(`_뜬때`) — 탭으로 세면 대조가 어긋난다. */
+const liveTabs = Object.entries(live).filter(([name]) => !name.startsWith('_'))
+  .map(([name, v]) => ({ name, headers: (v.headers || []).map(s => String(s).trim()), rows: v.filled_rows }));
 
 function score(cols, tab) {
   const set = new Set(tab.headers);
