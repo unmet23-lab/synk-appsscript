@@ -32,7 +32,8 @@ const ROOT = path.resolve(__dirname, '..');
  *  ⚠ 교재연동.js 는 여기 못 넣는다(시도 실측 08-15) — filePushOrder 는 contents_교안 이 8번째라
  *  「ENGINE_FILES = filePushOrder 선두」 가드(safety v9.57)와 충돌한다. 골격이 교재연동의 상수를
  *  쓰려면 상수를 엔진 쪽(엔진_셋업확장)으로 옮기는 쪽이 정본이다(VOICE_LOG_HEADERS 가 그 사례). */
-const ENGINE_FILES = ['Code.js', '엔진_운영배치.js', '엔진_폼리포트.js', '엔진_콘텐츠AI.js', '엔진_셋업확장.js', '엔진_수집.js', '엔진_궤적.js'];
+const ENGINE_FILES = ['Code.js', '엔진_운영배치.js', '엔진_폼리포트.js', '엔진_콘텐츠AI.js', '엔진_셋업확장.js', '엔진_수집.js', '엔진_궤적.js',
+  '엔진_진단.js', '엔진_자율일.js']; // [09-07] 진단·자율일 엔진 — 골격(sheetSkeleton_)이 두 파일의 헤더 상수를 읽으므로 로드 순서 정본에 든다
 
 /** 줄끝 **표기** 접기 — 정의는 `tests/lib/소스검사.js` **한 곳**에 있다. 여기선 쓰기만 한다.
  *

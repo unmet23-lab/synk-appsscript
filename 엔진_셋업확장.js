@@ -204,6 +204,8 @@ function sheetSkeleton_() {
     ['lecture_views', LECTURE_VIEW_HEADERS, 수집표식_], // [v9.106] 수강 이력 — 주말반 승급 판정의 나머지 절반 · [v9.244] 학생이 «무엇을 언제 봤나»
     ['lesson_close', LESSON_CLOSE_HEADERS, 수집표식_], // [v9.91] 차시 마감폼 적재 — 진도 3택·미발화자. 조 편성 침묵 점수·이월 경보·4주차 명단의 공통 원천 · [v9.244] 🔴 #Q100 을 세운 반례 그 자체
     ['hw_feedback', HW_FEEDBACK_HEADERS, 수집표식_], // [v9.49] AI 숙제 첨삭 카드 — aiFeedbackBatch_ 생성. I상태: '노출'=공개(게이트 통과·무인)/'대기'=수동검수 모드/'격리:'·'오류:'=미노출([v9.63]), J학생확인=Glide 전용(스크립트 불가침), K포인트지급=스크립트 전용 · [v9.138] 헤더 정본을 배치와 공유(구 구조는 두 벌이라 갈라졌다) + 수집 4열(숙제ID·오류태그·재작성원본·다시쓰기URL) — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
+    [DIAG_SESSION_TAB_, DIAG_SESSION_HEADERS, 수집표식_], // [진단] 급수 진단 세션 — 문항 스냅샷·정답·첫 시도·AI 산출·기준판(소급 불가 · docs/급수진단_설계_v1.md §⑥) · 진단자는 학생이 아니라 learning_events 에 안 넣는다
+    [AUTO_ASSIGN_TAB_, AUTO_ASSIGN_HEADERS, 수집표식_], // [자율일] 일요일 묶음 — 그날 배정한 판·목표·문항·고리와 완주 판정(docs/자율일_설계_v1.md §③) · 표를 고쳐도 옛 묶음은 옛 판을 쥔다
     ['student_errors', ['날짜','student_id','반','유형','메모','입력자','created_at','상태'], 수집표식_], // [v9.244] 강사가 본 약점 — teacher_gold 와 같은 계급(사람 산출이지만 학습 재료) · [v9.36] 강사 개인 약점 메모(선택 입력) — 리포트·브리핑 노출은 후속(학생 앱 미노출)
     ['onboarding', ['role','제목','안내KO','안내MN','아이콘']], // [v9.38] 역할별 홈 안내 카드(setupOnboarding) — 재건 목록 누락분 보강
     ['system_manifest', ['지표','값','상태']], // [v9.37] buildSystemManifest 출력 — 시트·콘텐츠·트리거·의존성 실측 정본(수동 숫자 대체)
@@ -405,6 +407,10 @@ function 수집도달_() {
      * **두 곳**의 «내용»을 바꾼다(v9.209). 철학 Ⅰ-1 「23유형 기록」이 학생에게 되돌아가는 배선.
      * ([09-04] 셋째였던 «연습 노트»가 걷혀 세 곳 → 두 곳이 됐다.) */
     'hw_feedback': { 소비자: '엔진_콘텐츠AI.js:aiWeakMap_', 층: '제품' },
+    /* [진단] 진단 세션 — 결과 화면(약한 자리 카드)이 읽고, 12-21 판정·무료 연장 판정의 자다(docs/급수진단_설계_v1.md §⑤·§⑥). */
+    '진단세션': { 소비자: '엔진_진단.js:진단결과_', 층: '제품' },
+    /* [자율일] 묶음 — 월요일 판정이 읽고, 다음 주 묶음이 이월(자리 차지)로 되읽는다(docs/자율일_설계_v1.md §④·§③-㉡). */
+    '자율일배정': { 소비자: '엔진_자율일.js:sundayBundleJudge_', 층: '제품' },
     /* [09-04] 연습 노트(`buildFocusNotes_`)가 걷혔다 — 유호 확정 「연습 노트는 걷어줘」.
      * 🔴 **그때 나는 이 시트를 「소비자 0」으로 적었는데 틀렸다**(같은 날 이종 검수 `d6eaa9b5670f` 가 잡았다).
      *   연습 노트는 이 시트의 «유일한» 소비자가 아니라 **셋 중 하나**였다. 남은 둘은 둘 다 살아 있고
@@ -1649,6 +1655,9 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('aiStudioBatch', aiStudioBatch_); // [v9.50] AI 스튜디오 — 오늘의 한 문장·개인 퀴즈(H1/A1/A2/A4)·오류사전(G)·반 브리핑(H5)·리텐션 멘트(E5). 키 없으면 0초 스킵
   safeRun('checkScene', checkScene); // [함께한날 막5·순서는 codex P2] 장면 원장 기입·원장 네 블록·강사 D-1 — 첨삭·대화 배치 «뒤»라 그날의문장·조건문형 재료가 온전하다
   safeRun('sweepLevelTest', sweepLevelTest_); // [v9.50·F1] 레벨 테스트 응답 채점→AI 진단 리포트 발송→leads 편입(폼 미생성이면 0초 스킵)
+  safeRun('diagWriteBatch', diagWriteBatch_); // [진단] 급수 진단 쓰기 문장 태깅 → 약한 자리 카드 메일(키 없으면 0초 스킵 · 카드는 「대기」로 남는다)
+  safeRun('sundayBundle', sundayBundleBatch_); // [자율일] 토요일 밤에만 — 내일이 1기 자율일이면 학생마다 묶음을 짓고 talk 로 보낸다(그 밖의 날 0초)
+  safeRun('sundayBundleJudge', sundayBundleJudge_); // [자율일] 월·화에만 — 어제 묶음의 항목이 찼는지 센다(월요일 아침 판은 weeklyJobs · 여기는 화요일 지각 재집계)
   safeRun('demoMonthEndGuard', function () { // [v9.44] 데모 모드가 월말(28일~)까지 살아 있으면 경고 — 다음 달 1일 실배치가 데모 재적으로 지난달을 정산하는 사고 예방
     const ssD = SpreadsheetApp.getActiveSpreadsheet();
     const stD = ssD.getSheetByName('app_state');
@@ -1683,6 +1692,7 @@ function weeklyJobs() {    // 매주 월 07시
   safeRun('goldenSample', goldenSampleWeekly_); // [v9.147] 강사 교정 정답 모음 무작위 표본 — 2년 뒤 모델 선택의 채점표(소급 불가)
   let lpText = ''; // [v9.86·D] 주간 교안 초안 — 생성은 여기서, 링크 보고는 아래 통합 리포트 섹션으로(메일 순증 0)
   safeRun('lessonPlanDrafts', function () { lpText = lessonPlanDrafts_(); });
+  safeRun('sundayBundleJudge', sundayBundleJudge_); // [자율일] 월 07시 — 어제 자율일 묶음의 완주 판정 + 유호님께 한 줄(docs/자율일_설계_v1.md §④-㉠)
   let silText = ''; // [v9.91] 4주차 침묵 학생 명단 — 시즌 4주차 주에만 값이 생긴다(그 외 주는 섹션 생략)
   safeRun('silentRosterAlert', function () { const ssS = SpreadsheetApp.getActiveSpreadsheet(); silText = silentRosterAlert_(ssS, ssS.getSpreadsheetTimeZone()); });
   // [v9.233] 발화 지수 주간 스냅샷 — 아래 통합 리포트의 「주간 리포트」 섹션(weeklyReport 꼬리)이 이 로그를 읽으므로 섹션 실행보다 먼저 적재한다
@@ -3269,7 +3279,9 @@ function circleSheetOf_(ss, cls, when, tz) {
       group_no: g + 1,
       warmup_question: circleWarmupOf_(b.lessonNo, band0),
       // 좌석 회전 그대로 — 이 배열을 다시 정렬하지 않는다(§3)
-      members: 자리.map(m => circleMemberCard_(m, hw[m.sid] || [], circleBandOf_(lvBy[m.sid], vocab), day))
+      members: 자리.map(m => circleMemberCard_(m, hw[m.sid] || [], circleBandOf_(lvBy[m.sid], vocab), day)),
+      // 종이(HTML)엔 안 실린다(§3 「인쇄 페이로드에 학습자 식별자 0」) — 문서 꼴이 조원 계정에 편집자를 주는 열쇠로만 쓴다
+      member_ids: 자리.map(m => m.sid)
     });
   });
   return {
@@ -3560,9 +3572,105 @@ function circleSheetPreview() {
 
 /* 🖨 오늘 수업 반의 서클 인쇄물을 Drive 에 굽는다 — 기존 SYNK_인쇄 통로(printMonthlyCards)와 같은 폴더.
  * ▶ 수동 실행. 반 이름을 주면 그 반만, 안 주면 오늘 수업하는 반 전부. */
+/* ── 화면 수업용 서클 «문서» 꼴 — 1기 (대응표 §⑤-㉠ ⓐ · 09-07) ───────────────────────────────
+ * 종이(HTML)는 넷이 «읽는» 물건이고 체크 칸은 정적 표시라 학생이 못 누른다(심문 A4 실측). 화면 수업은 조 소회의실 넷이
+ * «같이 쓰는» 한 장이 필요해 구글 문서로 굽는다. 조립 모델은 종이와 같은 `circleSheetOf_` 를 탄다 — 두 벌로 계산하면
+ * 종이와 문서가 갈린다. 다른 것은 «담는 꼴»뿐이다.
+ *   · 확인 칸은 ☐ 글자다 — 학생이 ☑ 로 바꿔 적는다(앱스스크립트가 구글 문서에 «누르는» 칸을 만들 수 없다).
+ *   · 🔴 링크 공개(ANYONE_WITH_LINK)는 안 쓴다 — 학생 이름·문장이 든 파일이라 유호 확정 08-04(학생 파일 공개 공유 폐지 ·
+ *     tests/리포트카드공개.test.js 승인 목록 0)가 막는다. 조원의 구글 계정(profiles email)에 «편집자»로 주고, 계정이 없는
+ *     학생은 굽기 보고가 이름으로 알린다(그 학생은 화면 공유로 읽는다). 문서엔 이름과 문장만 있다(학번 0).
+ *   · 켜는 자리 = app_state 한 칸 `서클문서꼴` — 값 `문서`(전 반) · `문서:반A,반B`(그 반만) · 비면 종이 그대로. 코드를 안 거친다.
+ *   · 종이의 59mm 칸 걷기(`circleFitCard_`)는 문서엔 안 건다 — 문서는 칸이 늘어난다. */
+const CIRCLE_DOC_CHECK = '☐';
+function circleDocModeOf_(값, cls) {
+  const v = String(값 || '').trim();
+  if (!v || v === '종이') return '종이';
+  if (v === '문서') return '문서';
+  if (v.indexOf('문서:') === 0) {
+    const 반들 = v.slice(3).split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    return 반들.indexOf(String(cls || '').trim()) > -1 ? '문서' : '종이';
+  }
+  return '종이';                                  // 모르는 값은 종이 — 조용히 문서로 바꾸지 않는다
+}
+/* 문서 모델 — 종이 `circleGroupPage_` 와 같은 칸·같은 순서(머리 → 학생 칸 → 문장 틀). 글자만 있다(HTML 0). */
+function circleDocModel_(sheet) {
+  return (sheet.groups || []).map(function (grp) {
+    const 꼬리 = grp.group_no + '조 · ' + sheet.session_no + '차시';
+    const 머리 = [
+      { 라벨: '역할', 글: grp.members.map(function (m) { return m.display_name + '(' + m.role + ')'; }).join(' · ') },
+      { 라벨: '말하는 순서', 글: grp.members.map(function (m) { return m.display_name; }).join(' → ') }
+    ];
+    const 질문 = ((grp.warmup_question || {}).text || '');   // 없으면 빈 상자를 안 그린다(§3)
+    const 칸 = grp.members.map(function (m) {
+      const 줄 = [];
+      if (m.kept) 줄.push({ 라벨: CIRCLE_LABELS.kept, 글: m.kept.text, 체크: false });
+      if (m.shaky) {
+        줄.push({ 라벨: CIRCLE_LABELS.shaky, 글: m.shaky.text, 체크: false });
+        if (m.shaky.trend_line) 줄.push({ 라벨: '', 글: m.shaky.trend_line, 체크: false });
+      }
+      if (m.next_one) 줄.push({ 라벨: m.next_one.label, 글: m.next_one.text, 체크: !!m.next_one.check });
+      const 틀 = [];
+      const f = m.frame;
+      if (f) {
+        틀.push({ 라벨: '말할 때', 글: f.kept + ' / ' + f.shaky });
+        틀.push({ 라벨: '물어볼 때', 글: f.asks.join(' / ') });
+        틀.push({ 라벨: '오늘 목표', 글: f.goal + '   옆 사람이 바꿔 말하기: ' + f.echo });
+      }
+      return { 이름: m.display_name, 역할: m.role, 줄: 줄, 틀: 틀 };
+    });
+    return { 제목: 꼬리, 머리: 머리, 질문: 질문, 기록빈칸: '오늘 조에서 나온 질문 한 개 (기록): ', 칸: 칸 };
+  });
+}
+/* 모델 → 구글 문서 본문. 조 하나가 한 쪽(쪽 나눔). */
+function circleDocFill_(body, pages) {
+  pages.forEach(function (p, pi) {
+    if (pi > 0) body.appendPageBreak();
+    body.appendParagraph('숙제 서클 · ' + p.제목).setHeading(DocumentApp.ParagraphHeading.HEADING2);
+    p.머리.forEach(function (h) { body.appendParagraph(h.라벨 + ': ' + h.글); });
+    if (p.질문) body.appendParagraph('오늘의 질문: ' + p.질문).setHeading(DocumentApp.ParagraphHeading.HEADING3);
+    body.appendParagraph(p.기록빈칸 + '________________________');
+    p.칸.forEach(function (k) {
+      body.appendParagraph(k.이름 + ' (' + k.역할 + ')').setHeading(DocumentApp.ParagraphHeading.HEADING3);
+      k.줄.forEach(function (l) {
+        body.appendParagraph((l.체크 ? CIRCLE_DOC_CHECK + ' ' : '') + (l.라벨 ? l.라벨 + ': ' : '') + l.글);
+      });
+      k.틀.forEach(function (t) { body.appendParagraph(t.라벨 + ' — ' + t.글).setItalic(true); });
+    });
+  });
+}
+/* 학생 구글 계정 — profiles user_id → { sid, name, email }(G열 email). 문서 꼴의 편집자 열쇠. */
+function circleStudentEmails_(ss) {
+  const out = {};
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return out;
+  pf.getRange(2, 1, pf.getLastRow() - 1, 7).getValues().forEach(function (r) {
+    if (r[0] && r[3] === 'student') out[String(r[0]).trim()] = { sid: String(r[0]).trim(), name: String(r[1] || '').trim(), email: String(r[6] || '').trim() };
+  });
+  return out;
+}
+/* 굽기 — 문서를 만들어 인쇄 폴더로 옮기고, «이름을 댄 계정»에만 편집을 준다. { file, 못준 } 을 돌려준다(못준 = 계정이 없거나 못 준 학생 이름).
+ * 편집자메일 = [{ sid, name, email }]. 링크 공개는 안 쓴다(위 머리말). */
+function circleSheetDoc_(sheet, folder, name, 편집자메일) {
+  const doc = DocumentApp.create(name);
+  circleDocFill_(doc.getBody(), circleDocModel_(sheet));
+  doc.saveAndClose();
+  const f = DriveApp.getFileById(doc.getId());
+  f.moveTo(folder);
+  const 못준 = [];
+  (편집자메일 || []).forEach(function (m) {
+    if (!m.email) { 못준.push(m.name || m.sid); return; }
+    try { f.addEditor(m.email); } catch (e) { 못준.push((m.name || m.sid) + '(' + m.email + ')'); }
+  });
+  return { file: f, 못준: 못준 };
+}
+
 function printCircleSheets(className, 구운반) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
+  const 꼴상태 = ss.getSheetByName('app_state');   // 서클 문서 꼴 스위치(app_state 「서클문서꼴」) — 없으면 종이
+  const 꼴값 = String(((꼴상태 && getState(꼴상태, '서클문서꼴')) || {}).val || '');
+  const 학생메일 = 꼴값 ? circleStudentEmails_(ss) : {};   // 문서 꼴일 때만 읽는다
   const sc = ss.getSheetByName('schedule');
   const dow = new Date().getDay();
   const list = className ? [String(className)]
@@ -3580,7 +3688,8 @@ function printCircleSheets(className, 구운반) {
     if (!sheet.session_no) { L.push('⚠ ' + c + ': 시즌 기간 밖입니다(setSeasonStart 확인)'); return; }
     if (!sheet.groups.length) { L.push('⚠ ' + c + ': 오늘 출석 확정된 학생이 0명이라 인쇄할 칸이 없습니다'); return; }
     // 🔑 굽기 «전»에 잰다 — `createFile` 뒤에 재면 그건 막는 것이 아니라 이미 나간 종이를 설명하는 것이다
-    const 빠듯 = circleTightOf_(sheet);
+    const 꼴 = circleDocModeOf_(꼴값, c);
+    const 빠듯 = 꼴 === '문서' ? [] : circleTightOf_(sheet);   // 문서는 칸이 늘어나 59mm 걷기를 안 건다
     const 경고 = [];
     if (!sheet.보고.출석확정) 경고.push('출석 확정 행이 0 — 편성 전원을 인쇄했습니다');
     if (!sheet.보고.어휘표) 경고.push("레벨 어휘표가 없습니다 — app_state 에 key='레벨어휘' · value='기초=1,초급=2,중급=4,고급=6' 한 행");
@@ -3599,9 +3708,13 @@ function printCircleSheets(className, 구운반) {
         ') · `node tools/서클조판.js --자수` 로 상수를 다시 재십시오');
       return;
     }
-    const blob = Utilities.newBlob(circleSheetHtml_(sheet), 'text/html',
-      'SYNK_서클_' + c + '_' + day + '.html');
-    const f = folder.createFile(blob);
+    const 편집자 = 꼴 === '문서'
+      ? [].concat.apply([], sheet.groups.map(g => (g.member_ids || []).map(sid => 학생메일[sid] || { sid: sid, name: '', email: '' }))) : [];
+    const 구움 = 꼴 === '문서'
+      ? circleSheetDoc_(sheet, folder, 'SYNK_서클_' + c + '_' + day, 편집자)   // 화면 반 — 조원 계정에 편집자로 준 구글 문서(대응표 §⑤-㉠ ⓐ)
+      : { file: folder.createFile(Utilities.newBlob(circleSheetHtml_(sheet), 'text/html', 'SYNK_서클_' + c + '_' + day + '.html')), 못준: [] };
+    const f = 구움.file;
+    if (구움.못준.length) 경고.push('구글 계정이 없거나 못 준 학생 ' + 구움.못준.length + '명 — 그 학생은 화면 공유로 읽습니다(' + 구움.못준.join(' · ') + ') · profiles email 칸을 확인하십시오');
     // 🔑 «파일이 실제로 생겼다»를 문자열이 아니라 이 배열로 알린다 — 자동 통로가 반환 문자열만 보고
     //   도장을 찍으면, 안 구운 반(⛔·⚠)도 완료로 남아 그날 재시도가 통째로 막힌다(검수 P1 ee142cdd).
     if (구운반) 구운반.push(c);
@@ -3616,7 +3729,7 @@ function printCircleSheets(className, 구운반) {
     if (권한실패.length) 경고.push('강사 열람 권한을 못 준 주소 ' + 권한실패.length + '개 — 그 분은 링크를 열면 「액세스 요청」이 뜹니다(' +
       권한실패.join(' · ') + ') · profiles 의 메일 주소를 확인하십시오');
     L.push('✅ ' + c + ' ' + sheet.session_no + '차시 · ' + sheet.groups.length + '조 ' +
-      sheet.groups.reduce((n, g) => n + g.members.length, 0) + '명 — ' + f.getUrl() +
+      sheet.groups.reduce((n, g) => n + g.members.length, 0) + '명' + (꼴 === '문서' ? ' · 문서(링크로 함께 씀)' : '') + ' — ' + f.getUrl() +
       (경고.length ? '\n   ⚠ ' + 경고.join('\n   ⚠ ') : ''));
   });
   const msg = L.join('\n');
