@@ -79,6 +79,10 @@ const 초록지시 = (표식, 설명, 바탕 = '초록') =>
   `Its eyes keep their real colour and stay exactly as they are. ` +
   `🔴 The GARMENT keeps all of its own real colours and is clearly, fully visible — only the ` +
   `character's own body is that flat colour. Do not leave the garment out. ` +
+  /* 🔴 09-06 저녁 실측 — 까몽 안경 컷에 «아무도 안 시킨 왕관»이 얹혀 나왔다. 조각을 뜨면 그
+     왕관까지 옷으로 딸려 온다. 그 한 벌만이 아니라 통로 전체에 걸리는 자리라 여기서 못 박는다. */
+  `🔴 ONLY that one garment is worn. Nothing else is added to the character — no crown, no hat, ` +
+  `no scarf, no glasses, no bag, no badge beyond what is described in the sentence above. ` +
   /* 🔴 09-06 실측 — 일곱 벌이 «크기»에서 어긋났다. 모자·왕관이 몸보다 크게 그려지거나
      캐릭터가 화면에서 작아졌다. 그래서 크기를 두 가지로 못 박는다: 옷은 몸에 맞고,
      캐릭터는 화면을 늘 같은 만큼 채운다. */
