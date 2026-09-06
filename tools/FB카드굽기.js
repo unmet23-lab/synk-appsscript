@@ -26,7 +26,9 @@
  * 쓰는 법:
  *   node tools/FB카드굽기.js              → docs/홍보물/FB_첫게시물_카드_v4.png + _src 지면
  *   node tools/FB카드굽기.js --지면만     → 지면(HTML)만 짓고 굽지 않는다
+ *   node tools/FB카드굽기.js --라이트    → 밝은 천 판(모래펠트 · 글자는 잉크)
  *   node tools/FB카드굽기.js --out <경로> → 저장 위치
+ *   node tools/FB카드굽기.js --몽글 <경로> → 마스코트 판을 갈아 물린다(견줄 때)
  */
 'use strict';
 const fs = require('fs');
@@ -69,7 +71,7 @@ function ffmpeg() {
 
 /** 그림 한 장을 폭 N 으로 줄여 webp data URI 로. 투명은 지킨다. */
 function 심기(상대경로, 폭) {
-  const src = path.join(루트, 상대경로);
+  const src = path.isAbsolute(상대경로) ? 상대경로 : path.join(루트, 상대경로);
   if (!fs.existsSync(src)) throw new Error(`자산이 없다: ${상대경로}`);
   const 임시 = path.join(os.tmpdir(), `synk-fb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`);
   const r = spawnSync(ffmpeg(), ['-y', '-i', src, '-vf', `scale=${폭}:-1:flags=lanczos`,
@@ -86,10 +88,16 @@ function 심기(상대경로, 폭) {
 /* ── 지면 ──────────────────────────────────────────────────────────────── */
 function 지면짓기() {
   /* 🔴 바탕은 «띠»가 아니라 «천»이어야 한다 — `DK1_띠_잉크천` 은 이름 그대로 가로 밴드라
-     화면에 깔면 위아래로 회색 줄이 생긴다(09-07 첫 판에서 실제로 그렇게 나왔다). */
-  const 바탕 = 심기('docs/Loom_자산/구움/공방_먹색펠트.png', 1400);
-  const 몽글 = 심기('docs/캐릭터/정본_4K/몽글_본체.png', 1000);
-  const 잰것 = { 바탕: 바탕.KB, 몽글: 몽글.KB };
+     화면에 깔면 위아래로 회색 줄이 생긴다(09-07 첫 판에서 실제로 그렇게 나왔다).
+     🔴 그리고 «어두운 천»에서는 몽글의 밝은 잔털이 «오려낸 흰 선»으로 읽힌다(유호 지적 09-07 ·
+     실측: 가장자리에서 안쪽 40칸까지 채도가 45→117 로 서서히 오른다 = 누끼 잔재가 아니라
+     실제 보풀 광채다). 밝은 천에서는 그 잔털이 바탕에 이어져 선이 사라진다. */
+  const 라이트 = !!인자['라이트'];
+  const 바탕 = 심기(라이트 ? 'docs/Loom_자산/구움/공방_모래펠트.png'
+                        : 'docs/Loom_자산/구움/공방_먹색펠트.png', 1400);
+  /* --몽글 로 다른 판을 물릴 수 있다 — 가장자리 처방을 견줄 때 쓴다(09-07). */
+  const 몽글 = 심기(인자['몽글'] || 'docs/캐릭터/정본_4K/몽글_본체.png', 1000);
+  const 잰것 = { 바탕이름: 라이트 ? '모래펠트' : '먹색펠트', 바탕: 바탕.KB, 몽글: 몽글.KB };
 
   /* 🚫 원판(젤리)의 «빛 점 아치»는 옮기지 않았다. 그건 네온 문법이고, 펠트에서 그 자리를
      채울 구운 부품(매듭점·반짝임)은 낱개가 커서 열둘을 늘어놓으면 시끄럽다.
@@ -107,24 +115,26 @@ function 지면짓기() {
 /*@FONTS@*/
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:${W}px;height:${H}px;overflow:hidden}
-body{position:relative;background:${색('Ink Deep')};
+body{position:relative;background:${라이트 ? 색('Paper') : 색('Ink Deep')};
   font-family:'SUIT','Inter Tight',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
 
-/* 바탕 — 구운 먹색 펠트 천. 어둡게 눌러 글자가 읽히게 하고, 결은 남긴다. */
+/* 바탕 — 구운 펠트 천. 글자가 읽히게 눌러 주되 결은 남긴다. */
 .천{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  filter:brightness(.62) saturate(.9)}
+  filter:${라이트 ? 'brightness(1.06) saturate(.92)' : 'brightness(.62) saturate(.9)'}}
 .그늘{position:absolute;inset:0;
-  background:radial-gradient(118% 88% at 50% 50%, rgba(8,6,5,0) 0%, rgba(8,6,5,.86) 88%)}
+  background:${라이트
+    ? 'radial-gradient(118% 88% at 50% 50%, rgba(251,247,240,0) 0%, rgba(251,247,240,.5) 92%)'
+    : 'radial-gradient(118% 88% at 50% 50%, rgba(8,6,5,0) 0%, rgba(8,6,5,.86) 88%)'}}
 
 /* 로고 — viewBox 181×128 이라 높이는 폭의 0.707 배다(폭 150 → 높이 106). */
 .로고{position:absolute;top:64px;left:50%;transform:translateX(-50%);width:150px;display:block}
 
 /* 인사말 */
 .인사{position:absolute;top:198px;left:0;right:0;text-align:center;
-  font-weight:900;font-size:92px;letter-spacing:-.045em;color:${색('Paper')}}
+  font-weight:900;font-size:92px;letter-spacing:-.045em;color:${라이트 ? 색('Ink') : 색('Paper')}}
 .로마{position:absolute;top:310px;left:0;right:0;text-align:center;
   font-family:'DM Mono',ui-monospace,Consolas,monospace;
-  font-size:23px;letter-spacing:.34em;color:${색('Ash Wool')}}
+  font-size:23px;letter-spacing:.34em;color:${라이트 ? 색('Deep Wool') : 색('Ash Wool')}}
 
 /* 마스코트 — 몽글 본체(펠트 정본). 그림자는 자산이 이미 가지고 있다. */
 .몽글{position:absolute;left:50%;top:594px;transform:translate(-50%,-50%);
@@ -132,19 +142,19 @@ body{position:relative;background:${색('Ink Deep')};
 
 /* 숫자 */
 .수{position:absolute;top:838px;left:0;right:0;text-align:center;
-  font-weight:800;font-size:104px;letter-spacing:-.02em;color:${색('Paper')};line-height:1}
-.수 .더{color:${색('Coral')};font-weight:700;margin:0 .1em}
+  font-weight:800;font-size:104px;letter-spacing:-.02em;color:${라이트 ? 색('Ink') : 색('Paper')};line-height:1}
+.수 .더{color:${라이트 ? 색('Coral 3') : 색('Coral')};font-weight:700;margin:0 .1em}
 
 /* 자리·때 */
 .자리{position:absolute;top:968px;left:0;right:0;text-align:center;
   font-family:'Inter Tight',system-ui,sans-serif;font-weight:400;
-  font-size:27px;letter-spacing:.03em;color:${색('Ash Wool')}}
+  font-size:27px;letter-spacing:.03em;color:${라이트 ? 색('Deep Wool') : 색('Ash Wool')}}
 </style></head><body>
 
 <img class="천" src="${바탕.uri}" alt="">
 <div class="그늘"></div>
 
-${로고.워드마크({ 판: '다크', 표현: '펠트', 클래스: '로고' })}
+${로고.워드마크({ 판: 라이트 ? '라이트' : '다크', 표현: '펠트', 클래스: '로고' })}
 
 <div class="인사">안녕하세요</div>
 <div class="로마">annyeonghaseyo</div>
@@ -195,7 +205,7 @@ function main() {
   fs.mkdirSync(path.dirname(지면경로), { recursive: true });
   fs.writeFileSync(지면경로, 심은원고, 'utf8');
   console.log(`■ 지면  ${path.relative(루트, 지면경로)}  (${Math.round(심은원고.length / 1024)}KB)`);
-  console.log(`   심은 자산 — 먹색펠트 ${잰것.바탕}KB · 몽글 ${잰것.몽글}KB`);
+  console.log(`   심은 자산 — ${잰것.바탕이름} ${잰것.바탕}KB · 몽글 ${잰것.몽글}KB`);
 
   if (인자['지면만']) { console.log('   (--지면만 이라 굽지 않았다)'); return 0; }
 
