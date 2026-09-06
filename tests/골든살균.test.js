@@ -72,6 +72,21 @@ const 시트들 = (표) => ({
   getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar',
 });
 
+test('🔒 공개 저장소 출구는 꺼져 있다 — 스위치(GOLDEN_PUBLIC_EXIT=on)가 없으면 픽스처도 안 만들고 밖으로도 안 나간다(유호 위임 09-06 · 결정 안전 행)', () => {
+  let 불림 = 0;
+  const 의존 = {
+    PropertiesService: { getScriptProperties: () => ({ getProperty: () => '' }) },
+    골든픽스처_: () => { 불림++; return { 건수: 1, 요약: '', doc: {} }; },
+    UrlFetchApp: { fetch: () => { 불림++; throw new Error('밖으로 나가면 안 된다'); } },
+  };
+  const 답 = String(함수('pushGoldenFixture_', 의존)());
+  assert.match(답, /꺼져 있습니다/);
+  assert.match(답, /픽스처 파일로/, '안내가 기본 출구(내 드라이브)를 가리켜야 한다');
+  assert.equal(불림, 0, '스위치가 꺼졌는데 픽스처를 만들거나 밖으로 나갔다');
+  assert.equal((code.match(/'menuPushGolden'\)/g) || []).length, 0, '공개 저장소 버튼이 시트 메뉴에 남아 있다');
+  assert.equal((code.match(/'menuExportGolden'\)/g) || []).length, 1, '내 드라이브 버튼(기본 출구)이 메뉴에 없다');
+});
+
 test('명단 이름 조각 — 어절로 쪼개고 한 글자는 버린다(조사·어미와 겹친다) · 몽골어 표기 칸(C)과 퇴소 명단도 든다', () => {
   const 학생C = (id, 이름, 몽골) => { const r = 학생(id, 이름); r[2] = 몽골; return r; };
   const ss = 시트들({

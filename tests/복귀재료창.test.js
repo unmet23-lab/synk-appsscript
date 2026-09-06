@@ -43,7 +43,7 @@ const QUIZ_LOG_HEADERS = JSON.parse(
   code.match(/const QUIZ_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
 const QUIZ_CONFIDENCE = JSON.parse(
   code.match(/const QUIZ_CONFIDENCE = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
-/* [2026-09-02 · 학생ID 종단 ㉡] exit_log 헤더는 정본(엔진_운영배치.js EXIT_LOG_HEADERS · 7칸)에서 뜬다 — 손 사본 5칸이면
+/* [2026-09-02 · 학생ID 종단 ㉡] exit_log 헤더는 정본(엔진_운영배치.js EXIT_LOG_HEADERS · 8칸 · v9.312 끝에 이름_몽골)에서 뜬다 — 손 사본 5칸이면
  *   정본이 늘어도 이 픽스처는 옛 모양으로 초록이라, 「끝에 붙였으니 r[3] 은 안 흔들린다」를 재는 자가 없다. */
 const EXIT_LOG_HEADERS = JSON.parse(
   code.match(/const EXIT_LOG_HEADERS = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
@@ -60,7 +60,7 @@ const 날 = (n) => {
   return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
 };
 
-/** exit_log 한 행 — 정본 헤더 7칸(student_id·이름·반·퇴소감지일·재원일수·종료사유·종료일). 뒤 두 칸은 사람이 적는 칸이라 빈다. */
+/** exit_log 한 행 — 정본 헤더 8칸(student_id·이름·반·퇴소감지일·재원일수·종료사유·종료일·이름_몽골). 종료사유·종료일은 사람이 적는 칸이라 빈다. */
 const 퇴소행 = (sid, 며칠전, 재원 = 60) => {
   const r = new Array(EXIT_LOG_HEADERS.length).fill('');
   r[0] = sid; r[3] = 날(며칠전); r[4] = 재원;

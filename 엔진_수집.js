@@ -1012,16 +1012,21 @@ function 퀴즈응답포인트_(ss, loaded, tz) {
     (지급일[sid] = 지급일[sid] || []).push(Utilities.formatDate(asDate_(r[5]), tz, 'yyyy-MM-dd'));
   });
   const 제출일칸 = QUIZ_LOG_HEADERS.indexOf('제출일');
-  const 이번 = {}; // 이 호출 안에서 같은 학생이 3문항을 냈어도 1회
+  /* [v9.313] 이 호출 안에서 같은 학생·«같은 응답일»은 1회 — 밀린 배치가 어제·오늘 응답을 한 번에 읽으면 날마다 1회(학생 하나로 접으면 어제 몫이
+   *   영영 빈다 · 소넷 검토 09-06). 오래된 응답일부터 돈다: 오늘 몫이 먼저 서면 어제 몫이 「어제 이후 지급 있음」에 걸려 빈다(자정 직후 스위프가
+   *   23:58 답과 00:02 답을 한 번에 읽는 자리). 이 호출에서 준 것도 지급 이력에 넣어 두 번째 재료가 같은 자로 갈리게 한다. */
+  const 이번 = {};
   const grants = [];
-  loaded.forEach(row => {
-    const sid = String(row[1] || '').trim();
-    if (!sid || 이번[sid]) return;
-    const 날 = row[제출일칸] ? dstr(row[제출일칸], tz) : today;
-    if ((지급일[sid] || []).some(d => d >= 날)) return;
-    이번[sid] = 1;
-    grants.push([sid, PT.퀴즈응답, '퀴즈응답', '시스템']);
-  });
+  loaded.map(row => ({ sid: String(row[1] || '').trim(), 날: row[제출일칸] ? dstr(row[제출일칸], tz) : today }))
+    .filter(x => x.sid)
+    .sort((a, b) => (a.날 < b.날 ? -1 : (a.날 > b.날 ? 1 : 0)))
+    .forEach(({ sid, 날 }) => {
+      if (이번[sid + '|' + 날]) return;
+      if ((지급일[sid] || []).some(d => d >= 날)) return;
+      이번[sid + '|' + 날] = 1;
+      지급일[sid] = (지급일[sid] || []).concat(날);
+      grants.push([sid, PT.퀴즈응답, '퀴즈응답', '시스템']);
+    });
   if (grants.length) appendPoints(ss, grants);
 }
 
@@ -1405,6 +1410,13 @@ function checkGoldenPush() {
 }
 
 function pushGoldenFixture_() {
+  /* [v9.313] 공개 출구는 «꺼져» 있다(유호 위임 09-06 「너의 판단대로」 → 끄는 쪽 · 결정 원장 안전 행). 메뉴 버튼도 뺐다(엔진_셋업확장.js).
+   *   켜는 스위치 = 스크립트 속성 GOLDEN_PUBLIC_EXIT=on — 코드 배포 없이 되돌릴 수 있게 남긴 자리다. 이름 살균은 스위치와 무관하게 늘 돈다. */
+  if (String(PropertiesService.getScriptProperties().getProperty('GOLDEN_PUBLIC_EXIT') || '').trim() !== 'on') {
+    return '공개 저장소 출구는 꺼져 있습니다(유호 위임 2026-09-06 · 결정 원장 안전 행).\n'
+      + '기본 출구는 「📤 강사 정답 모음 → 픽스처 파일로」(내 드라이브 · 비공개 파일)입니다.\n'
+      + '켜려면 스크립트 속성 GOLDEN_PUBLIC_EXIT 를 on 으로 — 그래도 이름 살균은 먼저 돕니다.';
+  }
   const token = PropertiesService.getScriptProperties().getProperty(GH_TOKEN_KEY);
   if (!token) return 'GitHub 토큰이 없습니다 — 설정 절차는 docs/골든픽스처_자동전송_설치.md 에 클릭 단위로 있습니다.\n'
     + '(스크립트 속성 이름: ' + GH_TOKEN_KEY + ')';
