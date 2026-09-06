@@ -1130,6 +1130,9 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
   const 게이트 = attempt('게이트초', () => 게이트Section());
   const 밤굽기 = attempt('밤굽기도장', () => 밤굽기Section());
   const 트랙수 = attempt('트랙수대조', () => require('./lib/트랙수대조.js').대조하기(ROOT));
+  /* 트랙이 «색인»에서 «일기»로 부푸는 것을 잰다(유호 확정 09-06 · 옛 「절 ≤5KB」를 갈았다).
+   *   재는 것은 절 전체가 아니라 «불릿 하나»다 — 일감이 많아 절이 큰 것은 죄가 아니다. */
+  const 트랙위생 = attempt('트랙위생', () => require('./트랙위생.js').잰다(fs.readFileSync(path.join(ROOT, 'docs', '_ops', '트랙.md'), 'utf8')));
   const 누구 = attempt('누구에게', 누구에게Section);
 
   const red = [];
@@ -1160,6 +1163,19 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
     for (const x of 트랙수.value.못잼) {
       notes.push({ kind: '트랙 수 못잼', text: `${x.이름} — ${x.사유}` });
     }
+  }
+
+  /* 트랙이 색인에서 일기로 부푸는 자리 — 빨강이 아니라 메모다(막지 않는다 · 자는 `tools/트랙위생.js`). */
+  if (트랙위생.ok) {
+    const w = 트랙위생.value;
+    if (w.부푼불릿.length || w.무거운머리.length) {
+      notes.push({
+        kind: '트랙 위생',
+        text: `부푼 불릿 ${w.부푼불릿.length} · 무거운 절 머리 ${w.무거운머리.length}(불릿 ${w.불릿수} 중) — 재료를 정본 문서로 옮길 자리다 · 전부 보기: node tools/트랙위생.js`,
+      });
+    }
+  } else {
+    notes.push({ kind: '트랙 위생 못잼', text: 트랙위생.err || '자가 안 돌았다' });
   }
 
   if (절단.ok && 절단.value.present) {
