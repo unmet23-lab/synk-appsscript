@@ -232,3 +232,43 @@ test('개명 뒤에도 «안 자랐으면» 조용하다 — 개명 자체가 �
   assert.strictEqual(r.status, 0, r.stderr);
   assert.deepStrictEqual(JSON.parse(r.stdout), []);
 });
+
+/* ── 심문 갈래는 «한 곳»뿐인가 — 2026-09-06 (병렬 자식이 제미나이 픽을 코덱스에 먹이던 자리)
+ *
+ * 무엇을 지키나: **부모의 순차 루프와 병렬 자식이 같은 입구로 벤더를 가르는가.**
+ *   09-06 실물 — 부모는 `벤더 === 'gemini'` 로 갈라 제미나이 통로를 탔는데 자식 경로에만
+ *   그 갈래가 없어서, 제미나이 회차를 동시에 돌리면 자식이 뜨자마자
+ *   「모르는 코덱스 모델 gemini-3.1-pro-preview」로 죽었다.
+ *   결과 손실은 0이다(부모가 순차로 마저 돈다) — 그래서 **아무 데도 안 적히고 시간만 샜다**.
+ *
+ * 🔑 소스 «글자»를 세는 자다. 실행 층에서 두 경로를 다 태우려면 가짜 코덱스와 가짜 제미나이가
+ *   둘 다 필요한데, 이 결함의 무늬는 정확히 «한 판정을 두 곳이 적었다»이므로
+ *   「부르는 자리가 하나인가」를 재는 것이 과녁에 맞는다(memory constant-known-in-two-places).
+ */
+test('🔴 제미나이 심문 통로를 부르는 자리는 하나뿐이다 — 둘이면 한쪽이 반드시 낡는다', () => {
+  const src = fs.readFileSync(path.join(__dirname, '..', 'tools', 'codex-review.js'), 'utf8');
+  const 정의 = (src.match(/function\s+gemini심문한회\s*\(/g) || []).length;
+  assert.strictEqual(정의, 1, 'gemini심문한회 정의가 하나가 아니다');
+  // 정의를 뺀 «호출» 자리를 센다.
+  const 전체 = (src.match(/gemini심문한회\s*\(/g) || []).length;
+  const 호출 = 전체 - 정의;
+  assert.strictEqual(호출, 1,
+    `제미나이 심문을 부르는 자리가 ${호출}곳이다 — 벤더 갈래는 심문벤더한회 하나에만 둔다`);
+  // 그 하나가 심문벤더한회 안에 있는가(밖에서 부르면 갈래가 또 생긴 것이다).
+  const 묶음 = src.slice(src.indexOf('function 심문벤더한회'), src.indexOf('function gemini심문한회'));
+  assert.ok(/gemini심문한회\s*\(/.test(묶음),
+    '유일한 호출이 심문벤더한회 «밖»에 있다 — 갈래가 다시 둘로 벌어졌다');
+});
+
+test('🔴 심문 자식이 죽으면 «사유 0자»로 남기지 않는다 — 사람이 못 읽는 실패는 안 죽은 것과 같다', () => {
+  const src = fs.readFileSync(path.join(__dirname, '..', 'tools', 'codex-review.js'), 'utf8');
+  /* 자는 «그대로 적는 무늬»를 금지한다 — 실패 조각에 `e.message` 를 바로 넣으면
+   *   message 가 빈 오류에서 사유 0자가 된다(그 판이 09-06 실물이었다). */
+  assert.ok(!/실패-\$\{단계\}`,\s*i,\s*String\(\(e && e\.message\)/.test(src),
+    'e.message 를 실패 조각에 그대로 적고 있다 — 빈 message 면 사유 0자가 된다');
+  const i = src.lastIndexOf('런.조각쓰기(방, `실패-${단계}`, i,');
+  assert.ok(i > 0, '자식 실패를 적는 자리를 못 찾았다');
+  const 앞 = src.slice(Math.max(0, i - 900), i);
+  assert.ok(/\.trim\(\)/.test(앞) && /e\.name|e\.code|사유 없는 오류/.test(앞),
+    '빈 사유를 메우는 폴백이 없다 — 이름·코드·로그 자리로 메워야 한다');
+});
