@@ -8,26 +8,23 @@
   --synk-font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --synk-font-mono:'DM Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
 
-  /* 바탕·잉크 (양모) */
   --ground:#FBF7F0;      /* Paper */
-  --surface:transparent; /* 카드는 바탕 위 실땀 테두리로만 선다 */
+  --surface:transparent;
   --surface-2:#EDE7DC;   /* Oat */
   --ink:#2B2320;         /* Ink */
   --ink-2:#575046;       /* Deep Wool */
-  /* 🔴 라이트에서 글자로 설 수 있는 양모 회색은 Deep Wool 하나다 —
-     Ash Wool #8D857A 는 Paper 위 3.41 로 기준 미달(브랜드렌더린트 실측 09-07).
-     그래서 캡션의 위계는 색이 아니라 밀도(크기·자간·대문자)가 진다 — DESIGN.md §1 3규칙. */
-  --ink-3:#575046;       /* Deep Wool */
-  --stitch:#F0E3C8;      /* Stitch — 모든 펠트 오브젝트의 테두리 */
+  /* 🔴 라이트에서 글자로 설 수 있는 양모 회색은 Deep Wool 하나다(Ash Wool 은 Paper 위 3.41 미달).
+     캡션의 위계는 색이 아니라 밀도가 진다 — DESIGN.md §1 3규칙. */
+  --ink-3:#575046;
+  --stitch:#F0E3C8;      /* Stitch */
   --stitch-strong:#C7BFB2;/* Stone */
 
-  /* 주연 = 코랄 (빈칸·신호) */
+  /* 주연 = 코랄 (걷어낼 것·고칠 것) */
   --sig-face:#FEF0E9;    /* Coral Wash */
   --sig-edge:#FBB7A3;    /* Coral Soft */
   --sig-ink:#AE322A;     /* Coral 3 */
-  --sig-rim:#941F19;     /* Rim */
 
-  /* 조연 = 메도우 (이미 선 것) */
+  /* 조연 = 메도우 (살아남는 것) */
   --ok-face:#D3E8BE;     /* Meadow Soft */
   --ok-edge:#7DB45A;     /* Meadow */
   --ok-ink:#3F6B2E;      /* Meadow Deep */
@@ -38,28 +35,18 @@
 
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --ground:#080605;    /* Ink Deep */
-    --surface:#2B2320;   /* Ink — 낮의 글자가 밤의 면이 된다 */
-    --surface-2:#1a1512;
-    --ink:#FBF7F0;       /* Paper */
-    --ink-2:#EDE7DC;     /* Oat */
-    --ink-3:#C7BFB2;     /* Stone */
-    --stitch:#4a3f34;
-    --stitch-strong:#6b5c4c;
-    --sig-face:#AE322A;  /* 다크는 면=Deep · 글자=Soft */
-    --sig-edge:#AE322A;
-    --sig-ink:#FBB7A3;   /* Coral Soft */
-    --sig-rim:#FD9C87;
-    --ok-face:#3F6B2E;
-    --ok-edge:#3F6B2E;
-    --ok-ink:#D3E8BE;    /* Meadow Soft */
+    --ground:#080605; --surface:#2B2320; --surface-2:#1a1512;
+    --ink:#FBF7F0; --ink-2:#EDE7DC; --ink-3:#C7BFB2;
+    --stitch:#4a3f34; --stitch-strong:#6b5c4c;
+    --sig-face:#AE322A; --sig-edge:#AE322A; --sig-ink:#FBB7A3;
+    --ok-face:#3F6B2E; --ok-edge:#3F6B2E; --ok-ink:#D3E8BE;
   }
 }
 :root[data-theme="dark"]{
   --ground:#080605; --surface:#2B2320; --surface-2:#1a1512;
   --ink:#FBF7F0; --ink-2:#EDE7DC; --ink-3:#C7BFB2;
   --stitch:#4a3f34; --stitch-strong:#6b5c4c;
-  --sig-face:#AE322A; --sig-edge:#AE322A; --sig-ink:#FBB7A3; --sig-rim:#FD9C87;
+  --sig-face:#AE322A; --sig-edge:#AE322A; --sig-ink:#FBB7A3;
   --ok-face:#3F6B2E; --ok-edge:#3F6B2E; --ok-ink:#D3E8BE;
 }
 
@@ -67,11 +54,9 @@
 body{
   margin:0; background:var(--ground); color:var(--ink);
   font-family:var(--synk-font); font-weight:500; font-size:var(--step-0);
-  line-height:1.72; letter-spacing:-.011em;
-  -webkit-font-smoothing:antialiased;
+  line-height:1.72; letter-spacing:-.011em; -webkit-font-smoothing:antialiased;
 }
-.wrap{max-width:1020px; margin:0 auto; padding:clamp(2rem,5vw,4.5rem) clamp(1.1rem,4vw,2.5rem) 6rem}
-.prose{max-width:64ch}
+.wrap{max-width:1060px; margin:0 auto; padding:clamp(2rem,5vw,4.5rem) clamp(1.1rem,4vw,2.5rem) 6rem}
 
 h1,h2,h3{font-weight:800; letter-spacing:-.03em; text-wrap:balance; margin:0}
 h1{font-size:var(--step-4); line-height:1.1}
@@ -81,143 +66,79 @@ p{margin:0}
 strong{font-weight:800}
 code,.mono{font-family:var(--synk-font-mono); font-size:.88em; letter-spacing:.01em; color:var(--ink-2)}
 
-.eyebrow{
-  font-size:var(--step--1); font-weight:800; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--ink-3);
-}
+.eyebrow{font-size:var(--step--1); font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3)}
 
-/* ── 머리 ──────────────────────────────────────────────────────────── */
 header{display:flex; flex-direction:column; gap:1.1rem; padding-bottom:2.5rem}
-.sub{font-size:var(--step-1); color:var(--ink-2); max-width:56ch; line-height:1.62}
-.meta{
-  display:flex; flex-wrap:wrap; gap:.4rem 1.4rem; font-size:var(--step--1);
-  color:var(--ink-3); font-family:var(--synk-font-mono); letter-spacing:.01em;
-}
+.sub{font-size:var(--step-1); color:var(--ink-2); max-width:58ch; line-height:1.62}
+.meta{display:flex; flex-wrap:wrap; gap:.4rem 1.4rem; font-size:var(--step--1); color:var(--ink-3); font-family:var(--synk-font-mono)}
 
-/* ── 판정 한 줄 ─────────────────────────────────────────────────────── */
-.verdict{
-  margin:0 0 3.5rem; padding:1.6rem 1.75rem;
-  border:1px solid var(--sig-edge); background:var(--sig-face);
-  display:flex; flex-direction:column; gap:.85rem;
-}
+.verdict{margin:0 0 3rem; padding:1.6rem 1.75rem; border:1px solid var(--sig-edge); background:var(--sig-face); display:flex; flex-direction:column; gap:.85rem}
 .verdict .lede{font-size:var(--step-2); font-weight:800; letter-spacing:-.028em; line-height:1.34; color:var(--sig-ink)}
-.verdict p{font-size:var(--step-0); color:var(--ink); max-width:62ch}
-.verdict .lede em{font-style:normal; border-bottom:2px solid currentColor; padding-bottom:1px}
+.verdict p{font-size:var(--step-0); color:var(--ink); max-width:64ch}
 
-/* ── 셈 셋 ─────────────────────────────────────────────────────────── */
+/* 확정 배너 */
+.locked{margin:0 0 3.5rem; padding:1.25rem 1.5rem; border:1px solid var(--ok-edge); background:var(--ok-face); display:flex; flex-direction:column; gap:.5rem}
+.locked .tag{font-size:var(--step--1); font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ok-ink)}
+.locked p{color:var(--ok-ink); font-weight:500; max-width:64ch}
+.locked b{font-weight:800}
+
 .tally{display:flex; flex-wrap:wrap; gap:0; border:1px solid var(--stitch); margin:0 0 3.5rem}
-.tally div{
-  flex:1 1 8rem; padding:1.05rem 1.25rem;
-  border-right:1px solid var(--stitch); display:flex; align-items:baseline; gap:.6rem;
-}
+.tally div{flex:1 1 9rem; padding:1.05rem 1.25rem; border-right:1px solid var(--stitch); display:flex; align-items:baseline; gap:.6rem}
 .tally div:last-child{border-right:0}
 .tally b{font-size:var(--step-3); font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.04em; line-height:1}
 .tally span{font-size:var(--step--1); color:var(--ink-3); font-weight:500}
 .tally .t-ok b{color:var(--ok-ink)}
-.tally .t-half b{color:var(--ink-2)}
 .tally .t-gap b{color:var(--sig-ink)}
+.tally .t-mid b{color:var(--ink-2)}
 
-/* ── 표 ────────────────────────────────────────────────────────────── */
-.tablewrap{overflow-x:auto; margin:0 0 1rem; border:1px solid var(--stitch)}
-table{border-collapse:collapse; width:100%; min-width:720px; font-size:var(--step-0)}
-thead th{
-  text-align:left; font-size:var(--step--1); font-weight:800; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--ink-3); padding:.85rem 1rem;
-  border-bottom:1px solid var(--stitch-strong); white-space:nowrap;
-}
-tbody td{padding:1.05rem 1rem; border-bottom:1px solid var(--stitch); vertical-align:top}
-tbody tr:last-child td{border-bottom:0}
-td.habit{width:30%; min-width:15rem}
-td.habit b{display:block; font-weight:800; letter-spacing:-.02em; margin-bottom:.25rem}
-td.habit .who{font-size:var(--step--1); color:var(--ink-3); line-height:1.5}
-td.ours{width:44%; min-width:19rem; color:var(--ink-2); line-height:1.6}
-td.mark{width:8.5rem; min-width:8.5rem}
-
-.dot{
-  display:inline-flex; align-items:center; gap:.45rem; white-space:nowrap;
-  font-size:var(--step--1); font-weight:800; letter-spacing:-.005em;
-  padding:.2rem .55rem .2rem .45rem; border:1px solid transparent;
-}
-.dot::before{font-size:1.05em; line-height:1}
-.d-ok{color:var(--ok-ink); background:var(--ok-face); border-color:var(--ok-edge)}
-.d-ok::before{content:"●"}
-.d-half{color:var(--ink-2); background:var(--surface-2); border-color:var(--stitch-strong)}
-.d-half::before{content:"◐"}
-.d-gap{color:var(--sig-ink); background:var(--sig-face); border-color:var(--sig-edge)}
-.d-gap::before{content:"○"}
-
-.tnote{font-size:var(--step--1); color:var(--ink-3); margin:0 0 4rem; max-width:64ch; line-height:1.6}
-
-/* ── 절 머리 ───────────────────────────────────────────────────────── */
 .sec{margin:0 0 1.6rem; padding-top:1.4rem; border-top:2px solid var(--ink); display:flex; flex-direction:column; gap:.5rem}
-.sec p{color:var(--ink-2); max-width:60ch}
+.sec p{color:var(--ink-2); max-width:62ch}
 
-/* ── 빈칸 카드 ─────────────────────────────────────────────────────── */
-.gaps{display:flex; flex-direction:column; gap:1.1rem; margin:0 0 4rem}
-.gap{border:1px solid var(--stitch); background:var(--surface)}
-.gap.urgent{border-color:var(--sig-edge); border-width:1px}
-.gap-head{
-  display:flex; flex-wrap:wrap; align-items:baseline; gap:.55rem 1rem;
-  padding:1.15rem 1.4rem; border-bottom:1px solid var(--stitch);
-}
-.gap.urgent .gap-head{background:var(--sig-face); border-bottom-color:var(--sig-edge)}
-.gap-head .idx{
-  font-family:var(--synk-font-mono); font-size:var(--step--1); font-weight:500;
-  color:var(--ink-3); letter-spacing:.06em;
-}
-.gap.urgent .gap-head .idx{color:var(--sig-ink)}
-.gap-head h3{flex:1 1 16rem}
-.gap.urgent .gap-head h3{color:var(--sig-ink)}
-.flag{
-  font-size:var(--step--1); font-weight:800; letter-spacing:-.005em;
-  padding:.18rem .6rem; border:1px solid var(--sig-edge); color:var(--sig-ink);
-  background:var(--ground); white-space:nowrap;
-}
-.gap-body{display:grid; grid-template-columns:1fr; gap:0}
-.row{display:grid; grid-template-columns:8.5rem 1fr; gap:0 1.4rem; padding:1.05rem 1.4rem; border-bottom:1px solid var(--stitch)}
-.row:last-child{border-bottom:0}
-.row dt{
-  font-size:var(--step--1); font-weight:800; letter-spacing:.06em; text-transform:uppercase;
-  color:var(--ink-3); padding-top:.22rem;
-}
-.row dd{margin:0; color:var(--ink-2); line-height:1.68; max-width:58ch}
-.row dd b{color:var(--ink)}
-.row.build dd{color:var(--ink)}
-.row ol{margin:.35rem 0 0; padding-left:1.15rem; display:flex; flex-direction:column; gap:.55rem}
-.row ol li::marker{color:var(--ink-3); font-family:var(--synk-font-mono); font-size:.85em}
-.row .mine{
-  display:inline-block; font-size:var(--step--1); font-weight:800; color:var(--ok-ink);
-  background:var(--ok-face); border:1px solid var(--ok-edge); padding:.12rem .5rem; margin-bottom:.5rem;
-}
-.row .yours{
-  display:inline-block; font-size:var(--step--1); font-weight:800; color:var(--sig-ink);
-  background:var(--sig-face); border:1px solid var(--sig-edge); padding:.12rem .5rem; margin-bottom:.5rem;
-}
-@media (max-width:640px){
-  .row{grid-template-columns:1fr; gap:.3rem}
-  .row dt{padding-top:0}
-}
+/* ── 항목 카드 ── */
+.items{display:flex; flex-direction:column; gap:1rem; margin:0 0 4rem}
+.item{border:1px solid var(--stitch); background:var(--surface)}
+.item.drop{border-color:var(--sig-edge)}
+.i-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:.5rem .9rem; padding:1rem 1.35rem; border-bottom:1px solid var(--stitch)}
+.item.drop .i-head{background:var(--sig-face); border-bottom-color:var(--sig-edge)}
+.i-head .n{font-family:var(--synk-font-mono); font-size:var(--step--1); color:var(--ink-3); font-variant-numeric:tabular-nums}
+.item.drop .i-head .n{color:var(--sig-ink)}
+.i-head h3{flex:1 1 14rem}
+.item.drop .i-head h3{color:var(--sig-ink)}
+.verd{font-size:var(--step--1); font-weight:800; padding:.18rem .6rem; border:1px solid; white-space:nowrap}
+.v-keep{color:var(--ok-ink); background:var(--ok-face); border-color:var(--ok-edge)}
+.v-fix{color:var(--ink-2); background:var(--surface-2); border-color:var(--stitch-strong)}
+.v-drop{color:var(--sig-ink); background:var(--ground); border-color:var(--sig-edge)}
 
-/* ── SHIFT ─────────────────────────────────────────────────────────── */
-.shift{border:1px solid var(--stitch-strong); padding:1.5rem 1.6rem; margin:0 0 4rem; display:flex; flex-direction:column; gap:1rem}
-.shift ul{margin:0; padding-left:1.1rem; display:flex; flex-direction:column; gap:.45rem; color:var(--ink-2)}
-.shift ul li::marker{color:var(--sig-ink)}
+.rows{display:flex; flex-direction:column}
+.r{display:grid; grid-template-columns:5.5rem 1fr; gap:0 1.2rem; padding:.85rem 1.35rem; border-bottom:1px solid var(--stitch)}
+.r:last-child{border-bottom:0}
+.r dt{font-size:var(--step--1); font-weight:800; letter-spacing:.02em; color:var(--ink-3); padding-top:.16rem; white-space:nowrap}
+.r dd{margin:0; color:var(--ink-2); line-height:1.66; max-width:62ch}
+.r.mine{background:var(--surface-2)}
+.r.mine dt{color:var(--ink)}
+.r.mine dd{color:var(--ink)}
+.r dd b{color:var(--ink); font-weight:800}
+.silent{color:var(--ink-3); font-style:normal}
+@media (max-width:640px){ .r{grid-template-columns:1fr; gap:.25rem} .r dt{padding-top:0} }
 
-/* ── 유호님 자리 ───────────────────────────────────────────────────── */
-.asks{display:flex; flex-direction:column; gap:0; border:1px solid var(--ink); margin:0 0 2.5rem}
-.ask{display:grid; grid-template-columns:2.6rem 1fr; gap:0 1rem; padding:1.15rem 1.35rem; border-bottom:1px solid var(--stitch)}
-.ask:last-child{border-bottom:0}
-.ask .n{
-  font-family:var(--synk-font-mono); font-weight:500; font-size:var(--step-1);
-  color:var(--ink-3); line-height:1.5; font-variant-numeric:tabular-nums;
-}
-.ask .q{font-weight:800; letter-spacing:-.02em; margin-bottom:.28rem}
-.ask .why{font-size:var(--step--1); color:var(--ink-3); line-height:1.6; max-width:58ch}
-.ask .why b{color:var(--sig-ink)}
+/* ── 최종 제안 ── */
+.final{border:2px solid var(--ink); margin:0 0 2.5rem}
+.final-head{padding:1.35rem 1.5rem; border-bottom:1px solid var(--stitch); display:flex; flex-direction:column; gap:.4rem}
+.final-head p{color:var(--ink-2); max-width:60ch}
+.layers{display:flex; flex-direction:column}
+.layer{display:grid; grid-template-columns:9rem 1fr; gap:0 1.3rem; padding:1.15rem 1.5rem; border-bottom:1px solid var(--stitch)}
+.layer:last-child{border-bottom:0}
+.layer dt{font-weight:800; letter-spacing:-.02em; color:var(--ink)}
+.layer dt span{display:block; font-size:var(--step--1); font-weight:500; color:var(--ink-3); letter-spacing:0; margin-top:.15rem}
+.layer dd{margin:0; color:var(--ink-2); line-height:1.66; max-width:60ch}
+.layer dd b{color:var(--ink)}
+@media (max-width:640px){ .layer{grid-template-columns:1fr; gap:.35rem} }
 
-footer{border-top:1px solid var(--stitch); padding-top:1.4rem; font-size:var(--step--1); color:var(--ink-3); line-height:1.7; max-width:64ch}
-footer code{color:var(--ink-3)}
+.ask{border:1px solid var(--sig-edge); background:var(--sig-face); padding:1.35rem 1.5rem; margin:0 0 2.5rem; display:flex; flex-direction:column; gap:.6rem}
+.ask h3{color:var(--sig-ink)}
+.ask p{color:var(--ink); max-width:62ch}
 
+footer{border-top:1px solid var(--stitch); padding-top:1.4rem; font-size:var(--step--1); color:var(--ink-3); line-height:1.7; max-width:66ch}
 a{color:var(--sig-ink); text-underline-offset:3px}
 :focus-visible{outline:2px solid var(--sig-ink); outline-offset:3px}
 </style>
@@ -225,252 +146,228 @@ a{color:var(--sig-ink); text-underline-offset:3px}
 <div class="wrap">
 
 <header>
-  <span class="eyebrow">SYNK LAB · SYNK SHIFT · 브랜드 판정 재료</span>
+  <span class="eyebrow">SYNK LAB · 심문 뒤 둘째 판 · 2026-09-07</span>
   <h1>명품의 습관 열둘</h1>
-  <p class="sub">오래 살아남은 명품 브랜드들이 공통으로 하는 일 열둘을 추리고, SYNK 가 지금 그것을 하고 있는지 하나씩 맞대 봤다.</p>
+  <p class="sub">첫 판을 아스트라와 제미나이에게 심문받았습니다. 열둘을 하나씩 다시 세우고, 두 심문관이 각각 무엇을 고치라 했는지와 제 제안을 나란히 놓았습니다.</p>
   <div class="meta">
-    <span>2026-09-07</span>
-    <span>맞댄 것 = 저장소 실측 · 철학 정본 v1.24 · 명품 눈금 v1</span>
+    <span>심문 결과 = 지적 19건 · 전건 채택 · 기각 0</span>
+    <span>논리 정본 = docs/명품브랜딩_전략_v1.md</span>
   </div>
 </header>
 
 <div class="verdict">
-  <p class="lede">다섯은 이미 하고 있다. 셋은 절반이다. <em>넷이 비어 있다.</em></p>
-  <p>빈 넷 중 <strong>셋은 기준 없이 지금 지을 수 있고</strong>, 하나(누구를 안 받을 것인가)만 유호님이 기준을 주셔야 합니다. 그리고 넷 중 <strong>하나는 시간이 걸려 있습니다</strong> — 「우리 역사를 남기는 자리」는 1기가 시작되면 그 첫날이 다시 오지 않습니다.</p>
+  <p class="lede">열둘 중 넷이 무너졌습니다. 그리고 근거로 든 사례 넷이 사실과 달랐습니다.</p>
+  <p>두 심문관은 서로의 답을 못 봅니다. 그런데도 <strong>같은 곳 셋</strong>을 짚었습니다 — 거절, 「자가 섰다」를 「이미 한다」로 센 것, 그리고 자격증의 「어려움」. 서로 못 보는 둘이 겹쳤다면 그건 한쪽의 취향이 아니라 제 문서의 성질입니다.</p>
+</div>
+
+<div class="locked">
+  <span class="tag">유호님 확정 · 09-07</span>
+  <p><b>거절은 버립니다. 대신 진단력으로 갑니다.</b> 무료 진단에서 「저희와 안 맞습니다」로 돌려보내는 갈래를 만들지 않고, 그 자리에 <b>「이 학생이 지금까지 한국어를 포기했던 이유」의 분석</b>을 놓습니다. 아래 7번이 그 자리입니다.</p>
 </div>
 
 <div class="tally">
-  <div class="t-ok"><b>5</b><span>이미 한다</span></div>
-  <div class="t-half"><b>3</b><span>절반</span></div>
-  <div class="t-gap"><b>4</b><span>비어 있다</span></div>
-  <div class="t-gap"><b>3</b><span>내가 지을 수 있다</span></div>
+  <div class="t-ok"><b>5</b><span>그대로 산다</span></div>
+  <div class="t-mid"><b>3</b><span>고쳐서 산다</span></div>
+  <div class="t-gap"><b>4</b><span>걷어낸다</span></div>
+  <div class="t-mid"><b>1</b><span>새로 든다</span></div>
 </div>
 
 <div class="sec">
   <span class="eyebrow">하나씩</span>
-  <h2>습관 열둘 — 그리고 우리</h2>
-  <p>왼쪽은 그 습관을 실제로 하는 곳이고, 오른쪽은 저장소·정본 문서를 훑어 잰 오늘의 우리입니다.</p>
+  <h2>열둘 — 두 심문관과 제 제안</h2>
+  <p>「말이 없다」는 그 심문관이 동의했다는 뜻이 아니라 <strong>그 항목을 안 봤다</strong>는 뜻입니다. 아스트라는 열넷을, 제미나이는 다섯을 냈습니다.</p>
 </div>
 
-<div class="tablewrap">
-<table>
-  <thead>
-    <tr><th>명품이 하는 일</th><th>오늘의 SYNK</th><th>상태</th></tr>
-  </thead>
-  <tbody>
+<div class="items">
 
-  <tr>
-    <td class="habit"><b>값을 안 내린다</b><span class="who">에르메스·샤넬은 세일을 하지 않는다. 안 팔려도 값을 지킨다 — 한 번 내린 값은 그 물건이 원래 그만큼이었다는 뜻이 되기 때문이다.</span></td>
-    <td class="ours">어제(09-07) 확정하신 것이 정확히 이 문법입니다. 15만원을 그대로 두고 대신 <b>「첫 2주 안에 그만두면 전액 환불」</b>을 걸었습니다 — 값을 깎는 대신 위험을 우리가 졌습니다.</td>
-    <td class="mark"><span class="dot d-ok">한다</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>평생 고쳐 준다</b><span class="who">에르메스는 수십 년 전에 산 가방도 고쳐 준다. 고친 자국이 흠이 아니라 그 물건의 이력이 된다.</span></td>
-    <td class="ours">「1년에 TOPIK 4급, 열심히 했는데도 못 닿으면 수강이 끝난 뒤에도 앱 수업으로 딸 때까지 함께 간다」 — 철학 정본 Ⅲ-2 에 이미 서 있고 대외 문안으로도 나갑니다.</td>
-    <td class="mark"><span class="dot d-ok">한다</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>만든 사람이 물건에 남는다</b><span class="who">에르메스 가방 안쪽에는 그 가방을 만든 장인 한 사람의 표시가 찍혀 있다. 여럿이 나눠 만들지 않고 한 사람이 처음부터 끝까지 만들기 때문에 가능한 일이다.</span></td>
-    <td class="ours">학생이 받는 것 어디에도 <b>「누가 봐줬는지」가 없습니다.</b> 첨삭 답장·주간 리포트·수료증을 전부 훑었는데 사람 이름이 들어가는 자리가 0개입니다.</td>
-    <td class="mark"><span class="dot d-gap">비었다</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>자기 물건을 설명하지 않는다</b><span class="who">롤렉스 광고에는 시계 성능 설명이 없다. 그 시계를 차고 무엇을 한 사람이 있을 뿐이다. 좋다는 말을 파는 쪽이 하면 광고고, 산 쪽이 하면 증거다.</span></td>
-    <td class="ours">우리 대외 글은 전부 <b>「저희는 ~합니다」</b>입니다. 철학 Ⅲ 전문을 봐도 학생이나 학부모의 말이 서는 자리가 없습니다.</td>
-    <td class="mark"><span class="dot d-gap">비었다</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>물건마다 번호가 있고 평생 따라간다</b><span class="who">스타인웨이 피아노는 한 대에 번호가 붙고, 100년 뒤에도 그 번호로 언제 어디서 누가 만들었는지 알 수 있다.</span></td>
-    <td class="ours">학생 번호를 평생 쓰는 설계는 서 있습니다(<code>docs/학생ID_종단_설계.md</code> · 채번은 09-03 에 라이브까지 갔습니다). 다만 그 번호를 <b>읽어 쓰는 쪽이 아직 0</b>이라, 번호는 있는데 그 번호로 무엇을 보여 주는 자리가 없습니다.</td>
-    <td class="mark"><span class="dot d-half">절반</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>자기 역사를 보관한다</b><span class="who">에르메스는 자기가 만든 물건을 모은 보관소를 파리에 두고, 롤렉스는 판 시계의 기록을 100년 넘게 갖고 있다. 「우리는 오래됐다」를 말이 아니라 물건으로 증명한다.</span></td>
-    <td class="ours">1기 첫 수업이 <b>11월 30일</b>인데, 그 첫 기수를 남기는 자리가 0입니다. 저장소의 <code>_archive</code> 는 옛 문서를 치워 두는 곳이지 브랜드 보관소가 아닙니다.</td>
-    <td class="mark"><span class="dot d-gap">비었다</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>파는 쪽이 손님을 고른다</b><span class="who">딥 스프링스 대학은 한 학년이 스물여섯 명이고 지원자 열에 아홉을 돌려보낸다. 에르메스에는 돈이 있어도 못 사는 가방이 있다.</span></td>
-    <td class="ours">개원 전 판매는 「무료 진단 → 제안 → 결제」로 짜여 있는데, 진단 결과에 <b>「저희와 안 맞습니다」 갈래가 없습니다.</b> 정원 16명이라는 숫자는 있지만 그건 자리의 한계이지 고르는 기준이 아닙니다.</td>
-    <td class="mark"><span class="dot d-gap">비었다</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>처음 만나는 순간을 따로 설계한다</b><span class="who">애플은 상자 여는 순간만 전담해 설계했다. 르라보는 향수를 그 자리에서 만들어 라벨에 산 사람 이름과 만든 날짜를 찍어 준다.</span></td>
-    <td class="ours">「첫 5분」이 접점 목록에 자리로는 올라 있는데(명품 눈금 Ⅱ 8번) 값·주소·체험 절차가 아직 안 정해져 실물이 0입니다. 유호님 판정 자리로 걸려 있습니다.</td>
-    <td class="mark"><span class="dot d-half">절반</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>자기 기준을 자기에게 먼저 들이댄다</b><span class="who">미슐랭은 별을 주기만 하지 않고 뺏는다. 뺏기 때문에 그 별이 무겁다.</span></td>
-    <td class="ours">명품 눈금 Ⅰ「최저점」이 이것입니다 — 매주 가장 허술했던 한 순간을 원장이 직접 지명하고 며칠 만에 고쳤는지 잽니다. <b>없으면 「없음」이 아니라 「못 찾은 것」</b>으로 봅니다.</td>
-    <td class="mark"><span class="dot d-ok">한다</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>나쁜 것을 자기 입으로 먼저 말한다</b><span class="who">파타고니아는 2011년 블랙프라이데이에 뉴욕타임스 전면 광고로 「이 재킷을 사지 마세요」를 냈다. 자기 옷이 환경에 지우는 짐을 자기가 셌다.</span></td>
-    <td class="ours">안쪽 문서는 이미 이렇게 씁니다 — 「안 재봤다」를 「없다」로 바꾸지 않는 규칙이 정본에 박혀 있습니다. 그런데 <b>밖으로 나가는 글에는 그 정직함이 0</b>이라, 안과 밖의 목소리가 다릅니다.</td>
-    <td class="mark"><span class="dot d-half">절반</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>만나는 자리 전부가 같은 높이다</b><span class="who">명품 매장은 조명부터 쇼핑백 손잡이까지 밀도가 같다. 하나가 얇으면 그 하나가 그 브랜드의 점수가 된다.</span></td>
-    <td class="ours">명품 눈금 Ⅱ「접점 밀도」가 이것입니다 — 열두 자리에 점수를 매기고 <b>가장 낮은 값</b>을 그날 점수로 씁니다. 평균을 안 냅니다. 오늘 점수는 <b>0</b>입니다(첫 5분·홈페이지가 0~1이라).</td>
-    <td class="mark"><span class="dot d-ok">한다</span></td>
-  </tr>
-
-  <tr>
-    <td class="habit"><b>재료를 남에게 안 맡긴다</b><span class="who">에르메스는 가죽 공장을 샀고, 롤렉스는 시계 안 나사까지 자기가 만든다. 남이 만든 재료로는 남과 다른 물건이 안 나오기 때문이다.</span></td>
-    <td class="ours">학생을 이해하는 엔진도, 화면에 쓰는 펠트 재료도 우리가 짓습니다. 빌려 쓰는 것은 도구(구글·AI 모델)뿐이고, 물건 자체는 우리 것입니다.</td>
-    <td class="mark"><span class="dot d-ok">한다</span></td>
-  </tr>
-
-  </tbody>
-</table>
-</div>
-
-<p class="tnote">「절반」은 신호가 아니라서 색을 안 줬습니다 — 색이 붙은 것은 <span class="dot d-ok" style="padding:0 .3rem">한다</span>와 <span class="dot d-gap" style="padding:0 .3rem">비었다</span> 둘뿐입니다.</p>
-
-<div class="sec">
-  <span class="eyebrow">빈 넷</span>
-  <h2>비어 있는 넷 — 무엇을 지을 수 있나</h2>
-  <p>순서는 급한 순입니다. 첫째만 시간이 걸려 있고, 나머지 셋은 언제 해도 같습니다.</p>
-</div>
-
-<div class="gaps">
-
-  <article class="gap urgent">
-    <div class="gap-head">
-      <span class="idx">빈칸 1</span>
-      <h3>우리 역사를 남기는 자리</h3>
-      <span class="flag">11-30 전에만 가능</span>
-    </div>
-    <dl class="gap-body">
-      <div class="row"><dt>지금</dt><dd>1기 첫 수업이 <b>2026-11-30</b>입니다. 그날이 지나면 「1기의 첫날」은 다시 오지 않는데, 그것을 남기는 장치가 지금 하나도 없습니다.</dd></div>
-      <div class="row"><dt>왜 값 있나</dt><dd>명품 브랜드가 자기 역사를 파는 것은 허영이 아니라 <b>따라 할 수 없는 것이 그것뿐이기 때문</b>입니다. 값도 디자인도 베낄 수 있지만 「우리는 2026년 겨울에 열여섯 명으로 시작했다」는 못 베낍니다. 5년 뒤 이 자리가 있으면 학원 소개가 자랑이 아니라 기록이 됩니다.</dd></div>
-      <div class="row build"><dt>지을 것</dt><dd>
-        <span class="mine">기준 없이 지금 지을 수 있다</span>
-        <ol>
-          <li><b>1기 보관함</b> — 학생 번호마다 그 학생이 만든 것·말한 것·쓴 것을 시간 순으로 쌓는 자리. 숙제·발음·일기는 이미 모이고 있으니 <b>새 그릇을 안 짓고 「보관」 표시만 얹습니다.</b></li>
-          <li><b>첫날 통째로</b> — 1기 첫 수업 하루치를 남깁니다(그날 쓴 문장·그날 화면·그날 소리). 나중에 「우리 1기는 이랬다」가 말이 아니라 물건으로 있습니다.</li>
-          <li><b>번호 새김</b> — 1기 열여섯에게 001~016. 졸업한 뒤에도 그 번호는 그 사람 것입니다. 번호 설계는 이미 서 있어서(빈칸 아님) <b>여기에 붙이기만 하면 됩니다.</b></li>
-        </ol>
-      </dd></div>
-      <div class="row"><dt>크기</dt><dd>이미 도는 것에 얹는 일이라 새로 짓는 코드가 적습니다. 셋을 다 해도 한 세션 안팎으로 봅니다.</dd></div>
+  <article class="item">
+    <div class="i-head"><span class="n">01</span><h3>값을 안 내린다</h3><span class="verd v-keep">그대로 산다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>15만원을 지키고 대신 첫 2주 전액 환불을 걸었다 — 값 대신 위험을 우리가 졌다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>문구가 흐리다. 「첫 2주 안 그만두면」은 <b>「안에」가 빠져</b> 계속 다닌 사람에게 환불한다는 뜻으로도 읽힌다. 확정 문안을 그대로 인용하라</dd></div>
+      <div class="r"><dt>제미나이</dt><dd class="silent">말이 없다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>습관은 그대로 두고 <b>문구만 정본 그대로</b> 씁니다 — 「첫 2주 «안에» 그만두시면 전액 환불, 신청 마감 12-14」. 요약하다 조건을 흐리면 그게 곧 분쟁 자리입니다</dd></div>
     </dl>
   </article>
 
-  <article class="gap">
-    <div class="gap-head">
-      <span class="idx">빈칸 2</span>
-      <h3>만든 사람이 남는다</h3>
-    </div>
-    <dl class="gap-body">
-      <div class="row"><dt>지금</dt><dd>학생이 받는 모든 것에 <b>봐준 사람의 이름이 0건</b>입니다. 저장소를 훑어서 잰 숫자입니다.</dd></div>
-      <div class="row"><dt>왜 값 있나</dt><dd>철학 정본 Ⅲ-7 이 「기술은 뒤에 서고 앞에 남는 것은 사람」이라고 적었는데, <b>지금 그 문장은 문서에만 있습니다.</b> 화면에서 그것을 실제로 하는 방법은 이름 한 줄뿐입니다. 그리고 이 한 줄이 우리와 「그냥 AI 앱」을 가르는 자리이기도 합니다.</dd></div>
-      <div class="row build"><dt>지을 것</dt><dd>
-        <span class="mine">붙이는 일은 내가 한다</span>
-        학생이 받는 것 끝에 한 줄을 답니다 — <b>「이 답장은 ○○ 선생님이 보았습니다」</b>. 시스템이 초안을 쓴 경우에는 그것도 정직하게 갈라 적습니다: 「먼저 시스템이 골랐고, ○○ 선생님이 확인했습니다」. 붙일 자리는 여섯쯤입니다(첨삭 답장 · 주간 리포트 · 시즌 회고 · 수료증 · 진단 결과 · 학부모 소식).
-      </dd></div>
-      <div class="row"><dt>유호님 자리</dt><dd><span class="yours">기준 하나 필요</span> 선생님 이름을 학생에게 보여 줄 것인가. 보여 주면 책임이 사람에게 붙고, 안 보여 주면 이 습관 자체가 안 섭니다.</dd></div>
+  <article class="item">
+    <div class="i-head"><span class="n">02</span><h3>평생 고쳐 준다</h3><span class="verd v-fix">고쳐서 산다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>1년에 TOPIK 4급, 못 닿으면 수강이 끝난 뒤에도 앱 수업으로 함께 간다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>이걸 「평생 수선」으로 분류하면 <b>기간과 범위가 더 넓은 약속처럼 읽힌다.</b> 우리 확정 약속은 그보다 좁다</dd></div>
+      <div class="r"><dt>제미나이</dt><dd class="silent">말이 없다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>이름을 바꿉니다. <b>「평생」이 아니라 「약속한 급수에 닿을 때까지」</b>. 에르메스의 평생 수선을 흉내낸 이름이 우리 약속보다 커서, 이름이 부채를 만들고 있었습니다</dd></div>
     </dl>
   </article>
 
-  <article class="gap">
-    <div class="gap-head">
-      <span class="idx">빈칸 3</span>
-      <h3>우리가 말하지 않고, 남이 말하게 한다</h3>
-    </div>
-    <dl class="gap-body">
-      <div class="row"><dt>지금</dt><dd>대외 글이 전부 우리 목소리입니다. 학생·학부모의 말을 담는 그릇이 없습니다.</dd></div>
-      <div class="row"><dt>왜 값 있나</dt><dd>같은 문장이라도 파는 쪽이 하면 광고고 산 쪽이 하면 증거입니다. 특히 몽골은 <b>입에서 입으로 도는 시장</b>이라(이건 명품 눈금 ①이 이미 적어 둔 판정입니다) 남의 말 한 줄이 광고 열 장보다 셉니다.</dd></div>
-      <div class="row build"><dt>지을 것</dt><dd>
-        <span class="mine">그릇은 내가 짓는다</span>
-        학생·학부모의 말을 <b>이름 없이</b> 모으는 자리. 학생을 알아볼 수 있는 것은 밖으로 안 나가는 것이 우리 안전선이라, 나갈 때는 「1기 · 3개월째 학생」 같은 꼴로만 나갑니다.<br>
-        ⚠ 정직하게 적자면 — <b>지금 지을 수 있는 것은 그릇뿐이고 내용은 학생이 와야 생깁니다.</b> 다만 그릇이 첫날부터 있어야 1기의 말이 안 새어 나갑니다.
-      </dd></div>
-      <div class="row"><dt>크기</dt><dd>중간. 모으는 자리 + 밖으로 낼 때 이름을 지우는 자리 둘입니다.</dd></div>
+  <article class="item">
+    <div class="i-head"><span class="n">03</span><h3>만든 사람이 물건에 남는다 (서명)</h3><span class="verd v-fix">고쳐서 산다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>첨삭에 「누가 봐줬는지」 칸을 세웠다(v9.315)</dd></div>
+      <div class="r"><dt>아스트라</dt><dd><b>P0.</b> 판정이 「멈췄던 길 + 지금 노출」 둘만 봐서, 사람이 확인한 «뒤» 문장이 바뀌어도 서명이 살아 있다. 그러면 서명이 <b>그 사람이 본 적 없는 문장</b>을 가리킨다 — 실제 입력으로 재현했다</dd></div>
+      <div class="r"><dt>제미나이</dt><dd>정본이 「매일의 첨삭은 강사 확인 없이 나간다」고 못 박았는데, 서명을 채우는 구조는 <b>「사람 손을 늘리는 해법」 금지에 걸린다.</b> 1인 창업자가 매일 채우거나 빈칸에 죄책감을 느끼는 구조 자체가 자동화 게이트 탈락이다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>아스트라 것은 <b>이미 고쳤습니다</b>(v9.316 — 서명이 「본 그 문장」에 묶입니다). 제미나이 것은 절반만 맞습니다: 제가 지은 것은 채우기 «강제»가 아니라 이미 사람이 손대는 자리에서만 남기는 기록이라 무인 발행을 안 건드립니다. 다만 <b>1인 학원에서 이름 칸의 값이 낮다는 지적은 옳습니다.</b> 그래서 이 자리의 주인공을 <b>「엔진이 이 학생을 어떻게 알아 가는지 보여 주는 시즌 회고」로 바꿉니다</b> — 장인의 이름 대신, 우리가 이 아이를 아는 정도가 곧 서명입니다</dd></div>
     </dl>
   </article>
 
-  <article class="gap">
-    <div class="gap-head">
-      <span class="idx">빈칸 4</span>
-      <h3>파는 쪽이 고른다</h3>
-    </div>
-    <dl class="gap-body">
-      <div class="row"><dt>지금</dt><dd>무료 진단을 미끼로 쓰기로 했는데, 진단 결과가 「몇 급입니다 → 이 반이 맞습니다」로만 끝납니다. <b>돌려보내는 갈래가 없습니다.</b></dd></div>
-      <div class="row"><dt>왜 값 있나</dt><dd>거절이 있어야 <b>그 앞의 「받았습니다」가 값을 갖습니다.</b> 아무나 받는 곳에 들어간 것은 자랑이 안 됩니다. 그리고 안 맞는 학생 한 명이 첫 기수에 섞이면, 그 한 명의 나쁜 경험이 입으로 도는 시장에서 열 명분이 됩니다 — 이것도 명품 눈금이 이미 적은 원리입니다.</dd></div>
-      <div class="row build"><dt>지을 것</dt><dd>
-        진단 결과에 셋째 갈래를 답니다 — <b>「지금은 저희와 안 맞습니다. 이유는 ○○이고, 대신 이것을 해 보세요.」</b> 돌려보내는 말은 배웅하는 말이라, 이미 서 있는 「끝의 설계」 각본과 같은 결로 씁니다.
-      </dd></div>
-      <div class="row"><dt>유호님 자리</dt><dd><span class="yours">기준을 주셔야 한다</span> <b>무엇이 「안 맞는」 것인가.</b> 이건 제가 지어내면 유호님 학원의 정체성을 제가 정하는 셈이라 안 짓겠습니다. 한 줄만 주시면 나머지(문안·화면·기록)는 제가 세웁니다.</dd></div>
+  <article class="item drop">
+    <div class="i-head"><span class="n">04</span><h3>자기 물건을 설명하지 않는다</h3><span class="verd v-drop">걷어낸다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>롤렉스 광고에는 성능 설명이 없고 착용한 사람만 있다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd><b>사실이 틀렸다.</b> 롤렉스 공식 페이지는 정밀도·방수를 직접 설명한다. 일부 광고 표현을 브랜드 원리로 일반화한 것이다. 게다가 <b>우리 정본의 「기능은 자기를 설명해야 완성」과 정면으로 부딪힌다</b></dd></div>
+      <div class="r"><dt>제미나이</dt><dd class="silent">말이 없다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>걷어냅니다. 그리고 그 자리에 <b>정반대인 우리 규칙을 놓습니다</b> — 「처음 본 사람이 안내 없이 이게 뭔지 알아야 완성이다」. 남의 습관을 들여오다 우리가 이미 정한 것을 밟을 뻔했습니다</dd></div>
+    </dl>
+  </article>
+
+  <article class="item">
+    <div class="i-head"><span class="n">05</span><h3>물건마다 번호가 있고 평생 따라간다</h3><span class="verd v-keep">그대로 산다 · 급함</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>학생 번호 설계는 섰는데 그 번호로 무엇을 보여 주는 자리가 0. 기수 칸도 없다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd><b>P0.</b> 「등록일로 기수를 나중에 계산하면 된다」는 제 정정이 틀렸다. 같은 날 등록해도 <b>다른 개강반에 들어가면 기수가 다르다.</b> 학생 번호 정본도 등록일과 반배정일을 이미 갈라 놨다</dd></div>
+      <div class="r"><dt>제미나이</dt><dd class="silent">말이 없다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>제 정정을 되돌립니다. <b>기수는 소급 불가가 맞습니다.</b> 1기가 시작하기 «전»에 칸을 세워야 하고, 등록일이 아니라 <b>기수 배정과 바뀐 시점을 함께</b> 남깁니다. 제가 이 자리에서 하루에 두 번 뒤집었으므로 근거를 문서에 못 박아 뒀습니다</dd></div>
+    </dl>
+  </article>
+
+  <article class="item">
+    <div class="i-head"><span class="n">06</span><h3>자기 역사를 보관한다</h3><span class="verd v-fix">고쳐서 산다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>1기 첫날을 통째로 남기고, 학생 하나를 시간 순으로 읽는 자리를 만든다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>둘이 틀렸다. ① <b>11월 30일은 수업이 없는 날</b>이다(시즌 시작일이고 첫 수업은 12월 5일) — 그날을 남기면 첫 수업이 빠진 꾸러미를 완료로 찍는다. ② <b>시간 순으로 보여 주는 것만으로는 학생 이해가 안 자란다</b> — 그 기록을 어느 엔진 부품이 언제 읽는지가 없다</dd></div>
+      <div class="r"><dt>제미나이</dt><dd class="silent">말이 없다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>둘 다 받습니다. 보존을 <b>달력 날짜가 아니라 「실제 첫 수업」이라는 표식에 겁니다.</b> 그리고 완료 조건을 「모아 놨다」가 아니라 <b>「그 기록을 엔진이 읽어 무엇이 자랐나」</b>로 바꿉니다 — 역사 보관을 엔진 학습으로 세지 않습니다</dd></div>
+    </dl>
+  </article>
+
+  <article class="item drop">
+    <div class="i-head"><span class="n">07</span><h3>파는 쪽이 손님을 고른다 (거절)</h3><span class="verd v-drop">걷어낸다 · 유호 확정</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>진단 결과에 「저희와 안 맞습니다」 갈래를 단다. 거절이 있어야 「받았습니다」에 값이 생긴다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd><b>P0.</b> 목적이 「교육 적합성」과 「희소성 연출」 사이에서 섞였다. 도울 수 있고 돈도 낼 학생을 빈자리가 있는데 돌려보내면 매출만 준다. 근거로 든 딥 스프링스 수치도 틀렸다(한 학년 26명 → <b>전교 28명·학년 14명</b>)</dd></div>
+      <div class="r"><dt>제미나이</dt><dd><b>P0 · 철학 정면 위반.</b> 궁극 가치가 「한 사람을 깊이 이해해 그 사람만의 길을 낸다」인데, 틀에 안 맞는다고 진단에서 쳐내는 것은 <b>시스템이 학생에게 맞추기를 포기하는 것</b>이다. 게다가 0명 상태에서 배타성을 넣으면 엔진이 다양한 성향을 배울 기회를 처음부터 잃는다</dd></div>
+      <div class="r mine"><dt>확정</dt><dd><b>버립니다</b>(유호님 09-07). 그 자리에 제미나이 안을 놓습니다 — 진단 결과가 「불합격」이 아니라 <b>「이 학생이 지금까지 한국어를 포기했던 이유」의 분석</b>을 내놓습니다. 거절이 아니라 <b>진단력으로 신뢰를 얻습니다</b></dd></div>
+    </dl>
+  </article>
+
+  <article class="item">
+    <div class="i-head"><span class="n">08</span><h3>처음 만나는 순간을 따로 설계한다</h3><span class="verd v-fix">고쳐서 산다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>「첫 5분」에 값·주소·체험 절차가 없어 실물이 0이다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>그 셋만 채우면 <b>학생이 한국어를 한 번도 말하지 않고, 자기에게 돌아오는 것도 못 받은 체험</b>이 완성으로 읽힌다. 판매 정본은 이미 말하기·쓰기 산출이 엔진에 닿는 것, 약점 카드와 첫 처방을 요구하는데 그게 빠졌다</dd></div>
+      <div class="r"><dt>제미나이</dt><dd class="silent">말이 없다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>완료 조건을 바꿉니다. 값·주소·절차는 «준비물»이고, 완료는 <b>「학생이 무엇을 가져갔나, 그리고 다시 열 이유가 생겼나」</b>입니다. 7번의 진단 분석이 바로 그 «가져가는 것»이라 두 자리가 한 물건이 됩니다</dd></div>
+    </dl>
+  </article>
+
+  <article class="item">
+    <div class="i-head"><span class="n">09</span><h3>자기 기준을 자기에게 먼저 들이댄다</h3><span class="verd v-keep">그대로 산다 · 사례만 뺀다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>미슐랭은 별을 주기만 하지 않고 뺏는다. 우리 최저점 눈금이 그것이다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>미슐랭의 별 회수는 <b>남의 식당 재평가</b>이지 미슐랭이 자기에게 같은 자를 댄 사례가 아니다</dd></div>
+      <div class="r"><dt>제미나이</dt><dd>(11번과 함께) 자가 섰다고 ✅를 붙이는 것은 자기기만이다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>습관은 살립니다 — 매주 가장 허술했던 순간을 원장이 직접 지명하는 그 자는 실제로 우리 것입니다. <b>사례만 뺍니다.</b> 남의 이름으로 우리 것을 설명할 필요가 없습니다</dd></div>
+    </dl>
+  </article>
+
+  <article class="item drop">
+    <div class="i-head"><span class="n">10</span><h3>나쁜 것을 자기 입으로 먼저 말한다</h3><span class="verd v-drop">걷어낸다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>파타고니아처럼 밖으로 나가는 글에도 정직함을 넣는다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>그 광고는 <b>소비가 만드는 환경 부담과 감축·수선 행동을 이은 것</b>이지 「신생 브랜드가 미완성을 먼저 말하라」는 근거가 아니다. 반대편 반론(「무명의 자기비판은 불안 신호」)도 고객에게 안 물어본 가설이라, 둘 사이에서 고르면 추측이 추측을 고른다</dd></div>
+      <div class="r"><dt>제미나이</dt><dd class="silent">말이 없다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>걷어냅니다. 대신 <b>「고객이 고르는 데 필요한 것」</b>을 씁니다 — 무엇을 해 드리고 무엇은 안 해 드리는지, 확정한 약속이 무엇인지, 확인된 근거가 무엇인지. 정직함은 «고백»이 아니라 «범위를 정확히 적는 것»입니다</dd></div>
+    </dl>
+  </article>
+
+  <article class="item">
+    <div class="i-head"><span class="n">11</span><h3>만나는 자리 전부가 같은 높이다</h3><span class="verd v-keep">그대로 산다 · 표시만 뗀다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>접점 열둘 중 가장 낮은 값이 그날 점수다. 자가 섰으니 「이미 한다」</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>약속 채택·자의 존재·접점 달성을 같은 완료로 세니, <b>학생 경험이 안 바뀌어도 완료 수가 오른다</b></dd></div>
+      <div class="r"><dt>제미나이</dt><dd><b>점수가 0인데 ✅는 심각한 자기기만.</b> 그렇게 묶어 두면 <b>개원까지 아무도 그 0점을 안 고친다</b></dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>자는 살리고 <b>✅를 뗍니다.</b> 그리고 「자가 섰다」와 「점수가 몇 점이다」를 갈라 적습니다. <b>오늘 점수 0을 원장 화면 앞줄에 세웁니다</b> — 안 보이는 0은 안 고쳐집니다</dd></div>
+    </dl>
+  </article>
+
+  <article class="item drop">
+    <div class="i-head"><span class="n">12</span><h3>재료를 남에게 안 맡긴다</h3><span class="verd v-drop">걷어낸다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>엔진도 화면 재료도 우리가 짓는다. 빌리는 것은 도구뿐이다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>그건 <b>제작 주체의 설명이지 학생에게 더 도움이 된다는 증거가 아니다.</b> 외부 도구로 만든 재료도 포함하면서 「안 맡긴다」를 원칙으로 두면, 같은 결과물을 어느 날은 자체 제작으로 어느 날은 외주로 판정하게 된다. 끝없는 제작 범위를 여는 문이기도 하다</dd></div>
+      <div class="r"><dt>제미나이</dt><dd class="silent">말이 없다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>완료 점수에서 뺍니다. 대신 <b>「수업 품질 · 우리가 고칠 수 있는가 · 기록이 이어지는가」</b> 셋으로 잽니다. 도구를 바꿔도 이 셋이 지켜지면 된 것입니다</dd></div>
+    </dl>
+  </article>
+
+  <article class="item">
+    <div class="i-head"><span class="n">＋</span><h3>남이 말하게 한다 (증언) — 원래 없던 항목</h3><span class="verd v-fix">새로 든다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>학생·학부모의 말을 «이름 없이» 모으는 그릇을 만든다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>「재미있었다」와 <b>실제 한국어 사용의 변화는 다른 증거</b>인데 지금 설계는 둘을 같은 재료로 담는다. 질문 맥락·응답 시점·구체적 경험을 함께 남겨라</dd></div>
+      <div class="r"><dt>제미나이</dt><dd>더 큰 것을 짚었다. <b>이름 없이 «저장»하면 엔진이 그 말을 못 배운다.</b> 학생이 직접 남긴 감상과 목표는 「삶 이해」를 채울 가장 강한 날것 재료인데, <b>밖에 낼 때 가리는 것</b>과 <b>모을 때 끊는 것</b>을 혼동해 귀한 학습 재료를 마케팅 문구로 휘발시키는 조용한 실패다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>제미나이가 맞습니다. <b>모을 때는 학생 번호와 함께, 밖에 낼 때만 가립니다.</b> 그리고 아스트라 말대로 «언제 무엇을 묻고 받은 답인지»를 같이 남겨, 좋은 말 하나로 교육 효과를 주장하지 않게 합니다</dd></div>
     </dl>
   </article>
 
 </div>
 
 <div class="sec">
-  <span class="eyebrow">SYNK SHIFT</span>
-  <h2>자격증은 결이 다르다 — 「어려워야」 값이 있다</h2>
-  <p>물건의 명품성은 좋음에서 오지만, 자격증의 명품성은 <strong>어려움</strong>에서 옵니다.</p>
+  <span class="eyebrow">그리고</span>
+  <h2>SYNK SHIFT — 「어려운 자격증」은 폐기합니다</h2>
 </div>
 
-<div class="shift">
-  <ul>
-    <li>금융 쪽 CFA 자격은 1차 합격률이 40% 안팎입니다. 그 낮음이 그 자격의 값입니다.</li>
-    <li>와인 쪽 마스터 소믈리에는 1969년부터 지금까지 세계를 통틀어 300명이 안 됩니다.</li>
-  </ul>
-  <p>지금 SHIFT 설계(<code>docs/SHIFT/설계_v1.md</code>)를 훑으면 등급·과목·검정 방식은 정하고 있는데 <strong>「합격률」이라는 낱말이 한 번도 안 나옵니다.</strong> 즉 <strong>얼마나 어려울 것인가</strong>를 아직 안 정했습니다.</p>
-  <p>지금 정하실 필요는 없습니다 — 설계가 이미 「검정을 3회 돌려 봐야 나온다」고 적어 두었고 그게 맞습니다. 다만 <strong>방향 한 줄은 지금 못 박을 수 있습니다</strong>: 「응시자가 적다는 이유로 합격선을 낮추지 않는다」. 이걸 지금 안 적어 두면, 첫 검정에서 응시자가 열 명뿐이고 합격이 둘일 때 반드시 낮추고 싶어집니다. 그 순간 자격증의 값이 사라집니다.</p>
+<div class="items">
+  <article class="item drop">
+    <div class="i-head"><span class="n">◈</span><h3>자격증의 명품성은 어려움에서 온다</h3><span class="verd v-drop">걷어낸다</span></div>
+    <dl class="rows">
+      <div class="r"><dt>첫 판</dt><dd>응시자가 적어도 합격선을 낮추지 않는다. 설계에 「합격률」이라는 낱말이 0번 나온다</dd></div>
+      <div class="r"><dt>아스트라</dt><dd>같은 실력의 응시자가 더 많이 붙었다고 시험이 덜 명품이 된다면, <b>교육으로 실력을 높일수록 우리 자격증이 약해지는 모순</b>이다. 그리고 그 설계는 이미 <b>「응시자·합격선 = 공인의 병목」</b>이라고 적어 뒀다 — 낱말 검색으로 공백을 판정할 수 없다</dd></div>
+      <div class="r"><dt>제미나이</dt><dd>우리 목적은 「합격의 과정을 재미있게 · 가장 효율적인 학습」인데, 권위를 위해 인위적 장벽을 세우는 것은 <b>학생의 목표를 방해하는 기성 교육의 문법</b>이다. 본말이 전도됐다</dd></div>
+      <div class="r mine"><dt>내 제안</dt><dd>「어려움」을 버립니다. 남는 것은 하나입니다 — <b>「응시자가 적다고 «기준»을 바꾸지 않는다」.</b> 이건 난도 목표가 아니라 <b>수행 기준의 일관성</b>이고, 문항이 잘못됐거나 회차 난도가 튄 것을 바로잡는 일과는 갈라 적습니다</dd></div>
+    </dl>
+  </article>
 </div>
 
 <div class="sec">
-  <span class="eyebrow">유호님 자리</span>
-  <h2>제가 못 정하는 것 넷</h2>
-  <p>나머지는 답 없이도 제가 짓습니다.</p>
+  <span class="eyebrow">최종 제안</span>
+  <h2>축을 바꿉니다 — 남의 습관이 아니라 우리 엔진이 목소리입니다</h2>
+  <p>열둘을 고쳐 봐야 그건 여전히 「명품 가방 회사가 하는 일 목록」입니다. 두 심문관의 대안을 합쳐, <strong>우리가 학생을 이해하는 세 층 자체가 브랜드의 증거</strong>가 되게 바꾸는 것이 제 제안입니다.</p>
 </div>
 
-<div class="asks">
-  <div class="ask">
-    <span class="n">1</span>
-    <div>
-      <p class="q">1기를 남기는 자리를 지금 지을까요?</p>
-      <p class="why">기준은 필요 없습니다. <b>11월 30일 전에만 가능</b>하다는 것만 시간에 걸려 있습니다. 「해」 한 마디면 짓습니다.</p>
-    </div>
+<div class="final">
+  <div class="final-head">
+    <h3>세 층이 축이 되고, 살아남은 습관 여덟이 그 아래 수단으로 들어갑니다</h3>
+    <p>제미나이에게서 <strong>방향</strong>을, 아스트라에게서 <strong>줄마다 「무엇이 다 된 것인가」를 붙이는 규율</strong>을 가져왔습니다. 방향만 바꾸면 완료가 다시 흐려지고, 표만 고치면 남의 습관을 더 정교하게 흉내낼 뿐입니다.</p>
   </div>
-  <div class="ask">
-    <span class="n">2</span>
-    <div>
-      <p class="q">봐준 선생님 이름을 학생에게 보여 줄까요?</p>
-      <p class="why">보여 주면 책임이 사람에게 붙고 브랜드에 얼굴이 생깁니다. 안 보여 주면 이 습관은 못 섭니다.</p>
+  <dl class="layers">
+    <div class="layer">
+      <dt>㉠ 실력을 안다<span>무엇을 할 수 있고 어디서 막히나</span></dt>
+      <dd>여기에 붙는 것: <b>진단이 「왜 포기했는지」까지 분석해 내놓는다</b>(7번이 온 자리) · <b>첫 만남의 완료는 학생이 가져간 것으로 잰다</b>(8번) · <b>접점 최저점을 원장 앞줄에 세운다</b>(9·11번)</dd>
     </div>
-  </div>
-  <div class="ask">
-    <span class="n">3</span>
-    <div>
-      <p class="q">무엇이 「저희와 안 맞는」 학생입니까?</p>
-      <p class="why">한 줄이면 됩니다. 이것만 제가 지어낼 수 없습니다 — 학원의 정체성이라서요.</p>
+    <div class="layer">
+      <dt>㉡ 사람을 안다<span>어떤 성향이고 어떤 리듬인가</span></dt>
+      <dd>여기에 붙는 것: <b>시즌 회고가 「우리가 이 아이를 이만큼 알게 됐다」를 보여 준다</b>(3번 서명이 옮겨 간 자리) · <b>학생의 말을 번호와 함께 모으고 밖에 낼 때만 가린다</b>(증언)</dd>
     </div>
-  </div>
-  <div class="ask">
-    <span class="n">4</span>
-    <div>
-      <p class="q">「합격선을 나중에 낮추지 않는다」를 지금 못 박을까요?</p>
-      <p class="why">SHIFT 쪽입니다. 지금 적어 두는 값이, 나중에 낮추고 싶어질 때 자기를 막아 주는 데 있습니다.</p>
+    <div class="layer">
+      <dt>㉢ 삶을 안다<span>무엇을 원하고 어디로 가고 싶나</span></dt>
+      <dd>여기에 붙는 것: <b>번호가 졸업 뒤에도 그 사람 것이다</b>(5번 · 기수 칸은 1기 전에) · <b>기록이 엔진에 닿아 무엇이 자랐는지 말할 수 있다</b>(6번 · 「모아 놨다」는 완료가 아니다)</dd>
     </div>
-  </div>
+    <div class="layer">
+      <dt>줄마다 붙는 것<span>아스트라의 규율</span></dt>
+      <dd>확정한 약속 → 이미 있는 실행 통로 → 확인할 증거 → 언제 회수하나 → 추가 비용 → <b>완료 조건</b>. 특히 마지막 칸이 없으면 「자가 섰다」가 다시 「이미 한다」로 둔갑합니다</dd>
+    </div>
+  </dl>
+</div>
+
+<div class="ask">
+  <h3>유호님이 정하실 것 하나</h3>
+  <p>이 축 전환을 <strong>지금 문서로 만들까요</strong>, 아니면 <strong>지금 상태(고친 열둘)로 두고 실제로 짓는 일부터</strong> 할까요? 축을 바꾸면 이 지면과 논리 정본이 한 번 더 갈아엎어지는데, 그건 반나절쯤 걸리는 일이고 학생에게 닿는 것은 아직 없습니다.</p>
 </div>
 
 <footer>
-  잰 것 = 이 저장소 실측(첨삭자 이름 0건 · SHIFT 설계 「합격률」 0건 · 접점 밀도 0점) · 철학 정본 v1.24 · 명품 눈금 v1 · 명품 갭 여덟(08-26).<br>
-  명품 갭 여덟과 겹치는 항목은 이 지면에서 뺐습니다 — 여기 남은 넷은 <strong>그 여덟에 없던 것</strong>입니다.
+  심문 원문 = <code>docs/_ops/심문결과/명품브랜딩_전략_v1-…-astra-xhigh-1.md</code> · <code>…-gemini-high-2.md</code> · 판정 전문 = <code>docs/명품브랜딩_전략_v1.md</code> §⑨ · 일감 = 트랙 §0-명품.<br>
+  ⚠ 아스트라가 스스로 적은 한계: 지면 디자인·라이브 시트·실제 고객 반응은 안 봤고, <strong>명품 사례 전체의 사실 검증은 끝내지 않았다.</strong> 그러니 위에서 ⛔가 안 붙은 사례도 「검증됐다」가 아니라 「아직 안 봤다」입니다.
 </footer>
 
 </div>
