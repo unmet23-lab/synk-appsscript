@@ -263,3 +263,7 @@ docs/Loom_자산/옷/
 # 몽골어 번역 점수 도구 전용 파이썬 방 (2026-09-07)
 .venv-mn/
 .venv-comet/
+
+# 부품 견줌판 — 생성물이다(4MB · base64 두 판). 한 명령으로 되난다:
+#   python tools/부품견줌판.py        (옛것 = git HEAD 판 · 새것 = 지금 구운재질.json)
+docs/Loom_자산/부품_견줌판.html
