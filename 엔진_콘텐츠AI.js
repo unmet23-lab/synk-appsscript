@@ -2509,7 +2509,10 @@ function aiFeedbackBatch_() {
         셀안전_(hwId), hwTagsClean_(card.error_tags), 셀안전_(reDo), hwRedoUrlOf_(hwTpl, sid, fbId),
         // [v9.187] 감사 4칸 — 문항 스냅샷·급수(제출 시점)·출처 2열(문항은 contents 소유 콘텐츠라 소독 불요 — quiz 스냅샷과 동일)
         // [v9.207] schema_ver — 이 행이 어느 계약 규격으로 쓰였는지 행 스스로 들고 있게(A-8 · 소급 불가)
-        문항, Number(stu.lv) || 0, model, pver, SCHEMA_VER]);
+        // [v9.315] 서명 2칸 — 발행경로는 **이 순간에만 참이다**(아래 `상태`는 사람이 덮어쓴다).
+        //   확인자는 빈칸으로 둔다: 지금 카드를 만든 것은 사람이 아니라 배치라, 이름을 적으면 그것이 거짓이다.
+        문항, Number(stu.lv) || 0, model, pver, SCHEMA_VER,
+        gate.ok ? (AI_FEEDBACK_AUTOPUBLISH ? 발행경로_.무인 : 발행경로_.대기) : 발행경로_.격리, '']);
       made++;
       /* [v9.147] 재작성 보상 — **적재에 성공한 뒤에만** 판정한다(수집이 보상보다 앞선다).
        *   준비(hw_feedback·point_logs 각 1회 읽기)는 첫 재작성에서만 일어난다.
@@ -2530,7 +2533,8 @@ function aiFeedbackBatch_() {
         fb.appendRow(['FB' + Utilities.formatDate(new Date(), tz, 'yyyyMMdd') + '-' + fb.getLastRow(), sid,
           dstr(ts, tz), 셀안전_(text), '', '', '', '', '오류:' + String(e.message || e).slice(0, 80), '', '',
           셀안전_(hwId), '', 셀안전_(reDo), '',
-          문항, Number(stu.lv) || 0, model, pver, SCHEMA_VER]); // [v9.187] 실패 행에도 감사 4칸 — 「어느 버전에서 실패가 몰렸나」의 단서 · [v9.207] schema_ver
+          문항, Number(stu.lv) || 0, model, pver, SCHEMA_VER,
+          발행경로_.오류, '']); // [v9.187] 실패 행에도 감사 4칸 — 「어느 버전에서 실패가 몰렸나」의 단서 · [v9.207] schema_ver · [v9.315] 발행경로 = 오류(학생에게 안 나간 행 — 「모른다」와 갈라 둔다)
         전진_(it);
         continue;
       }
