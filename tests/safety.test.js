@@ -1020,6 +1020,7 @@ test('[v9.57] 톱레벨 크로스파일 참조 금지 — 전역 초기화 순�
   // 순서에 따라 ReferenceError로 "프로젝트 전체"(모든 트리거·실행)가 즉사한다 — 07-24 라이브 실사고.
   const rootJs = fs.readdirSync(ROOT).filter((f) => f.endsWith('.js'));
   const topLevel = {}, declared = {};
+  const 어긋난추출 = [];   // [09-06] 아래 «자기 정직» 검사가 채운다
   for (const f of rootJs) {
     const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
     let out = '', depth = 0, st = null;
@@ -1038,9 +1039,25 @@ test('[v9.57] 톱레벨 크로스파일 참조 금지 — 전역 초기화 순�
       else if (c === '}') { depth--; out += ' '; }
       else if (depth === 0) out += c;
     }
+    // 🔴 [09-06] 자기 정직 검사 — 이 추출기는 정규식 리터럴을 모른다. 정규식 안 맨 따옴표(' " `)를
+    //   문자열 시작으로 읽으면 그 뒤 { } 가 안 세어져 «파일 뒤 구간이 통째로 톱레벨에서 사라진다» —
+    //   즉 아래 크로스파일 검사가 반쪽 초록이 된다(증상 없음 · 09-06 실측 Code.js·엔진_콘텐츠AI.js 끝깊이 1).
+    //   정상 파일은 끝 깊이 0 이고 문자열 밖에서 끝난다. 어긋나면 파일 이름·깊이를 대고 빨강을 세운다.
+    //   처방 = 그 파일 정규식 안 따옴표를 \u0027 · \u0022 · \u0060 으로 적는다(동작 동일 · 실물 = Code.js escHtml_).
+    //   기억 regex-quote-desyncs-toplevel-scanner. ⚠ 줄끝 한 줄 주석(//)으로 끝나는 파일은 정상이라 안 센다.
+    if (depth !== 0 || st === "'" || st === '"' || st === '`') {
+      어긋난추출.push(f + '(끝깊이 ' + depth + ' · 끝상태 ' + (st === null ? '없음' : JSON.stringify(st)) + ')');
+    }
     topLevel[f] = out;
     declared[f] = new Set([...out.matchAll(/(?:^|[\s;])(?:const|let|var|function)\s+([A-Za-z_$가-힣][\w$가-힣]*)/g)].map((m) => m[1]));
   }
+  // 🔴 [09-06] 위 자기 정직 검사의 판정 — 어긋난 파일이 하나라도 있으면 아래 크로스파일 검사를
+  //   «돌리기 전에» 멈춘다. 어긋난 채로 통과한 초록은 그 파일 뒤 구간을 안 본 반쪽 초록이라,
+  //   믿으면 다음 사고를 못 막는다(0건이 성공 얼굴 · 기억 zero-is-a-success-face-taxonomy).
+  assert.equal(어긋난추출.length, 0,
+    '톱레벨 추출기가 어긋났다 → ' + 어긋난추출.join(' · ') +
+    ' — 정규식 안 맨 따옴표를 문자열 시작으로 읽어 그 뒤가 톱레벨 검사에서 사라진다. 그 파일 정규식 안 따옴표를 유니코드 이스케이프로 적을 것');
+
   // [v9.135] strict 복원 — 분할 2단계가 유일한 톱레벨 크로스파일 참조(SHEET_SKELETON)를 위해 열어 둔
   // filePushOrder 순방향 허용을 닫는다(골격이 지연 평가 함수로 바뀌어 전제 소멸). 순서가 보증되는
   // 참조라도 톱레벨 크로스파일 참조는 전면 금지. 이 추출기는 { } 안을 못 보는 사각이 있다 —

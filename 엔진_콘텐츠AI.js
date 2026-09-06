@@ -2325,7 +2325,9 @@ function fbQualityGate_(card, srcText) {
   // [v9.65 리뷰 H1] 메타 발언·사과 검사는 AI가 지어내는 칸만 — corrected는 학생 원문 기반이라 사과 단원 숙제
   //   ("늦어서 죄송합니다")·인공지능 주제 숙제가 정당하게 담긴다(금칙어 검사와 같은 원칙). 형식 잔재는 4칸 전체.
   const gen = f.point_mn + '\n' + f.praise + '\n' + f.mission;
-  if (/죄송|미안하지만|AI로서|인공지능|as an AI|I can(?:no|')t|도와드릴 수 없|답변할 수 없/i.test(gen)) return { ok: false, reason: '메타문구' };
+  // 🔴 정규식 안 따옴표는 유니코드 이스케이프로 적는다(맨 ' → \u0027 · 매칭 동작 동일)
+  //   — tests/safety.test.js 「[v9.57] 톱레벨 크로스파일 참조 금지」의 추출기가 정규식을 몰라 맨 따옴표를 문자열 시작으로 읽는다(이 줄 뒤가 검사에서 사라졌었다).
+  if (/죄송|미안하지만|AI로서|인공지능|as an AI|I can(?:no|\u0027)t|도와드릴 수 없|답변할 수 없/i.test(gen)) return { ok: false, reason: '메타문구' };
   if (all.indexOf('```') !== -1 || all.indexOf('{"') !== -1) return { ok: false, reason: '형식잔재' };
   // 브랜드 금칙어(synk-brand "부정 금지") — 학생에게 직접 읽히는 격려 칸(칭찬·미션)만 검사.
   //   고친문장(학생 원문 기반)·오늘의포인트(몽골어 설명)는 제외 — 자기 서술·문법 설명까지 막는 오탐 방지.
