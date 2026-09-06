@@ -66,10 +66,25 @@ function write(rel, body) {
 
 // ── 정본 읽기 + 버전 추출 (require 시에도 읽기만 한다) ──────────────────
 const claudeMd = fs.readFileSync(path.join(REPO, 'CLAUDE.md'), 'utf8');
-const mVer = claudeMd.match(/\*\*(v[\d.]+)\s*·\s*([\d-]+)\*\*/);
+/* 🔴 **꼴이 둘이다 — 하나만 보면 조용히 눈이 먼다**(09-06 실측).
+ *   v11.0 개편이 머리줄의 굵게 표시를 걷으면서(`> v11.0 · 2026-09-02 —`) 굵게만 찾던 이 자가
+ *   「(버전 미검출)」을 내기 시작했다. 그런데 아무도 안 죽는다 — 이식 폴더 머리말에 그 글자가
+ *   그대로 박히고, rot-check 은 그 값으로 낡음을 재므로 **자가 자기 눈이 먼 것을 모른다.**
+ *   ⇒ 굵게 판과 머리줄 판을 둘 다 읽고, 그래도 못 읽으면 «침묵하지 않는다»(아래 `버전확인`). */
+const mVer = claudeMd.match(/\*\*(v[\d.]+)\s*·\s*([\d-]+)\*\*/)
+  || claudeMd.match(/^>\s*\**(v[\d.]+)\s*·\s*([\d-]+)/m);
 const VER = mVer ? mVer[1] : '(버전 미검출)';
 const VER_DATE = mVer ? mVer[2] : '';
 const STAMP = `${VER} · 정본일 ${VER_DATE}`;
+
+/** 버전을 못 읽었으면 **만들지 않는다** — 「미검출」이 박힌 폴더는 낡음을 재는 자를 눈멀게 한다. */
+function 버전확인() {
+  if (mVer) return;
+  console.error('🔴 CLAUDE.md 에서 지침 판을 못 읽었다 — 이식 폴더를 만들지 않는다.');
+  console.error('   찾는 꼴 둘: `**v11.0 · 2026-09-02**`(굵게) 또는 머리줄 `> v11.0 · 2026-09-02 —`');
+  console.error('   그대로 만들면 폴더 머리말에 「(버전 미검출)」이 박히고, rot-check 이 그 값으로 낡음을 잰다.');
+  process.exit(2);
+}
 
 // 생성물 머리말 — 파일이 스스로 「나는 사본이다」라고 말하게 한다
 const banner = (vendor, entry) => `<!-- 이 파일은 생성물이다. 손으로 고치지 말 것. -->
@@ -84,6 +99,7 @@ const banner = (vendor, entry) => `<!-- 이 파일은 생성물이다. 손으로
 `;
 
 function main() {
+  버전확인();                                            // 못 읽으면 여기서 멈춘다(조용한 「미검출」 금지)
   log(`하네스 내보내기 — 정본 ${STAMP}`);
   log(`대상: ${OUT}${DRY ? '  [DRY RUN]' : ''}\n`);
 
