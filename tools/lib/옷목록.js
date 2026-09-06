@@ -115,9 +115,13 @@ const 공용 = [
   { 이름: '몽골 모자', 갈래: '악세', 설명:
     'A small pointed Mongolian hat sits on its head — deep lapis-blue felt with an upturned brim ' +
     'of cream lambswool and a tiny coral knot at the very top. It follows the curve of the head.' },
+  /* 🔴 「눈 앞에 놓인다」만으로는 위에서 내려다본 컷에서 안경이 얼굴에 «누워» 사라진다
+     (09-06 실측 · 까몽에서 세 번 다 안 보였다). 카메라를 향해 «둥글게» 서라고 못 박는다. */
   { 이름: '안경', 갈래: '악세', 설명:
     'A pair of small round spectacles rests in front of its eyes, the thin frame made of coral ' +
-    'felt cord curving around the head, the lenses clear glass so the eyes show fully through them.' },
+    'felt cord curving around the head, the lenses clear glass so the eyes show fully through ' +
+    'them. The spectacles face the camera exactly as the eyes do, so both round frames read as ' +
+    'full circles and stand clearly away from the face — they never lie flat against it.' },
   { 이름: '학생 가방', 갈래: '악세', 설명:
     'A small satchel of butter-yellow felt hangs at its side from one cream strap that crosses ' +
     'over the body, the flap closed with a tiny coral button and one row of cream running stitch ' +
@@ -145,14 +149,21 @@ const 공용 = [
     'BACK off the head and lies folded on its shoulders, so the whole face stays uncovered. ' +
     'There is a kangaroo pocket across the front and the four letters S Y N K embroidered small ' +
     'and neat in lapis-blue thread on the chest. The hoodie is soft and slightly oversized.' },
+  /* 🔴 「open coat」를 쓰면 안 된다 (09-06 실측). 몸통이 따로 없는 몽글·까몽에게는 앞이 열린 코트가
+     «두 짝»으로 떨어져, 가슴 앞에 주머니 두 개가 붕 뜬 모양이 됐다. 팔·몸통이 있는 마린만 멀쩡했다.
+     ⇒ 앞을 여미고 «한 장으로 이어진» 코트라고 못 박는다. */
   { 이름: '1급 배지 코트', 갈래: '의상', 성과: true, 설명:
-    'It wears a short open coat of soft chalk-white felt with a rounded collar and a narrow ' +
-    'lapis-blue band along the front edges. On the left chest is one small round badge of coral ' +
-    'felt with a single cream embroidered bar across it. Quiet and neat, not military.' },
+    'It wears a short coat of soft chalk-white felt that wraps all the way around the body and ' +
+    'meets closed at the front, one continuous piece of felt across the chest — not two separate ' +
+    'panels with a gap between them. It has a rounded collar and a narrow lapis-blue band along ' +
+    'the closed front edge. On the left chest is one small round badge of coral felt with a ' +
+    'single cream embroidered bar across it. Quiet and neat, not military.' },
   { 이름: '2급 배지 코트', 갈래: '의상', 성과: true, 설명:
-    'It wears a short open coat of soft chalk-white felt with a rounded collar and a wider ' +
-    'lapis-blue band along the front edges and around the bottom hem. On the left chest is one ' +
-    'small round badge of coral felt with two cream embroidered bars across it. Quiet and neat.' },
+    'It wears a short coat of soft chalk-white felt that wraps all the way around the body and ' +
+    'meets closed at the front, one continuous piece of felt across the chest — not two separate ' +
+    'panels with a gap between them. It has a rounded collar, a wider lapis-blue band along the ' +
+    'closed front edge and another around the bottom hem. On the left chest is one small round ' +
+    'badge of coral felt with two cream embroidered bars across it. Quiet and neat.' },
   { 이름: '3급 왕관', 갈래: '악세', 성과: true, 설명:
     'A small soft crown of butter-yellow felt sits on its head — five rounded points, each tipped ' +
     'with a tiny cream bead, and one line of cream running stitch around the band. The crown is ' +
@@ -173,10 +184,13 @@ const 성과더 = [
     'A soft flower crown rests on its head — a ring of meadow-green felt leaves with five small ' +
     'open flowers worked in coral and butter-yellow felt, each with a centre of tiny cream beads. ' +
     'The ring follows the curve of the head.' },
+  /* 🔴 「narrow」·「short and straight」를 쓰면 얇은 흰 띠 한 줄로만 나온다(09-06 실측 · 세 번 다).
+     목도리로 읽히려면 «감긴 고리»와 «앞으로 늘어진 두 끝»이 둘 다 보여야 한다. */
   { 이름: '첫 목소리 목도리', 갈래: '악세', 성과: true, 설명:
-    'A soft narrow scarf of chalk-white felt is looped once around its neck, the two ends hanging ' +
-    'short and straight, with one small coral musical note embroidered near the end of the left ' +
-    'side. Plainer and lighter than a winter scarf.' },
+    'A soft scarf of chalk-white felt is wrapped once around its neck so the wrapped loop is ' +
+    'clearly visible, and both ends then hang down the front, side by side, as wide as the loop ' +
+    'itself and long enough to read plainly as a scarf. One small coral musical note is ' +
+    'embroidered near the end of the left side. It is a light scarf, but it is not a thin band.' },
 ];
 
 /* ── 그 아이만의 것 — 가이드 정본 §3-1 ⑦ 「내 물건 셋」에서 왔다 ───────────── */

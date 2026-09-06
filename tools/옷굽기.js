@@ -29,7 +29,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync, spawn } = require('child_process');
 
 const 루트 = path.resolve(__dirname, '..');
 const 굽기 = require('./lib/이미지굽기.js');
@@ -43,6 +43,9 @@ const 장당 = 336;
 const 인자 = process.argv.slice(2);
 const 값 = (k, d = null) => (인자.includes(k) ? 인자[인자.indexOf(k) + 1] : d);
 const 목록만 = 인자.includes('--목록');
+/** 굽지 않고 «떼어 앉히기»만 다시 한다(0원) — 자리 맞추는 자를 고쳤을 때 쓴다. */
+const 떼기만 = 인자.includes('--떼기만');
+const 한번에 = Number(값('--한번에', 4)) || 4;
 const 돈상한 = Number(값('--돈', 0)) || 0;
 const 고른마스코트 = 값('--마스코트');
 const 고른것 = 값('--것');
@@ -159,6 +162,39 @@ function 파이썬(인자들) {
   return { ok: r.status === 0, 코드: r.status, 글: `${r.stdout || ''}${r.stderr || ''}`.trim() };
 }
 
+/** 같은 일을 여러 개 «동시에» 돌린다 — 떼기는 한 장에 25초라 63벌이면 26분이다. */
+function 파이썬비동기(인자들) {
+  return new Promise((끝) => {
+    const p = spawn('python', ['-X', 'utf8', ...인자들],
+      { cwd: 루트, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
+    let 글 = '';
+    p.stdout.on('data', (d) => { 글 += d; });
+    p.stderr.on('data', (d) => { 글 += d; });
+    p.on('close', (코드) => 끝({ ok: 코드 === 0, 코드, 글: 글.trim() }));
+  });
+}
+
+async function 떼기만돈다(할것) {
+  const 있는것 = 할것.filter((x) => fs.existsSync(x.초록));
+  말(`■ 떼어 앉히기만 다시 — ${있는것.length}벌 · 한 번에 ${한번에}개 · 0원`);
+  let 됨 = 0, 실패 = 0;
+  const 줄선것 = [...있는것];
+  const 일꾼 = Array.from({ length: Math.max(1, 한번에) }, async () => {
+    for (;;) {
+      const x = 줄선것.shift();
+      if (!x) return;
+      const r = await 파이썬비동기(['tools/옷초록떼기.py', x.초록, x.층,
+        '--몸', path.join(루트, x.마스코트.참조), '--눈', x.마스코트.눈, '--얹음', x.얹음,
+        '--바탕', x.바탕 || x.마스코트.바탕 || '초록']);
+      const 끝줄 = (r.글.split('\n').pop() || '').trim();
+      if (r.ok) { 됨++; 말(`   [${x.마스코트.이름}] ${x.이름} — ${끝줄.replace(/^\S+\s+\S+\s+—\s+/, '')}`); }
+      else { 실패++; 말(`🔴 [${x.마스코트.이름}] ${x.이름} — ${끝줄.slice(-140)}`); }
+    }
+  });
+  await Promise.all(일꾼);
+  말(`■ 끝 — ${됨}벌 다시 앉혔다 · 실패 ${실패} · 0원`);
+}
+
 /** 초록 그림에서 옷을 떼어 정본 몸 자리에 앉힌다(0원). */
 function 떼어앉힌다(x) {
   const r = 파이썬(['tools/옷초록떼기.py', x.초록, x.층,
@@ -186,8 +222,15 @@ function 떼어앉힌다(x) {
     return;
   }
 
-  const 셀수 = 돈상한 > 0 ? Math.floor(돈상한 / (장당 * 2)) : 굽을것.length;
-  const 할것 = 굽을것.slice(0, 셀수);
+  if (떼기만) { await 떼기만돈다(굽을것); return; }
+
+  /* 🔴 돈 상한은 «아직 안 구운 것»에만 먹인다 (09-06 실측).
+     전에는 목록 앞에서부터 잘랐는데, 앞쪽이 이미 다 구워진 벌이면 상한이 그 자리에서 소진되고
+     정작 구울 것에는 안 닿았다 — 여덟 벌을 시켰더니 이미 난 두 벌을 세고 끝났다. */
+  const 아직 = 굽을것.filter((x) => !fs.existsSync(x.씌운) || !fs.existsSync(x.초록));
+  const 셀수 = 돈상한 > 0 ? Math.floor(돈상한 / (장당 * 2)) : 아직.length;
+  const 할것 = 아직.slice(0, 셀수);
+  if (아직.length === 0) { 말('■ 다 나 있다 — 구울 것이 없다(0원). 조각만 다시 뜨려면 --떼기만'); return; }
   말(`■ 옷 굽기 — ${할것.length}벌 · 약 ${(할것.length * 2 * 장당).toLocaleString()}원`
     + (돈상한 ? ` (상한 ${돈상한.toLocaleString()}원)` : ' (상한 없음)'));
 

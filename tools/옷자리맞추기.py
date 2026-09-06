@@ -115,6 +115,84 @@ def 눈에서_옮김(씌운눈, 정본눈):
     return 배율, c1, c2
 
 
+# ── 몸으로 맞추기 (정본 자) ────────────────────────────────────────────────
+
+def _줄인마스크(m: np.ndarray, 판: int) -> np.ndarray:
+    return np.asarray(Image.fromarray((m * 255).astype(np.uint8), 'L')
+                      .resize((판, 판), Image.BILINEAR)) > 127
+
+
+def 몸으로_맞춘다(몸m, 바탕m, 정본알파, 눈맞춤, 판=256, 결눈=True):
+    """크로마 그림을 정본 몸 좌표계로 옮기는 (sx, sy, dx, dy) 와 확신도를 낸다.
+
+    🔴 왜 눈이 아니라 몸인가 (09-06 실측 · 유호님이 「몽글 조각판은 매우 별로」라 하신 그 자리)
+      눈 사이 거리로 크기를 잡으면 몽글이 무너진다. 몽글의 눈은 «구슬 두 개»라 굽는 장마다
+      크기가 제각각으로 그려져, 눈 배율이 0.99~2.30 사이에서 널뛰었다(21벌 실측).
+      그 오차가 그대로 옷 크기가 되어 모자가 머리 위로 떠오르고 후드가 몸보다 커졌다.
+      마린은 렌즈가 헬멧에 박혀 있어 흔들림이 ±3% 안이었다. 그래서 마린만 자연스러웠다.
+      ⇒ 눈은 «어디쯤인가»만 주고, «얼마나 큰가»는 몸이 정한다.
+
+    🔑 어떻게 재나 — 크로마 그림은 몸의 경계를 픽셀 단위로 안다.
+      옷이 없는 자리(= 몸 아니면 바탕)에서는 구운 그림과 정본이 «똑같아야» 한다.
+      그래서 어긋난 칸수 = (몸인데 정본 밖) + (바탕인데 정본 몸 안) 을 가장 작게 만드는
+      크기와 자리를 고른다. 옷에 가려진 자리는 애초에 세지 않으므로 큰 옷도 안 흔들린다.
+      크기 후보마다 FFT 한 번이면 모든 자리의 점수가 한꺼번에 나온다.
+    """
+    배율0, c초, c정 = 눈맞춤
+    큰 = 정본알파.shape[0]
+    결 = 판 / 큰
+    A0 = _줄인마스크(몸m, 판)
+    W0 = _줄인마스크(바탕m, 판)
+    B = _줄인마스크(정본알파, 판)
+    sumB = max(1, int(B.sum()))
+    Bf = B.astype(np.float32)
+    cx, cy = c초[0] * 결, c초[1] * 결
+    Cx, Cy = c정[0] * 결, c정[1] * 결
+    R = max(6, int(판 * 0.10))          # 눈이 준 자리에서 이만큼까지만 본다
+
+    def 재본다(sx, sy):
+        nx, ny = max(8, round(판 * sx)), max(8, round(판 * sy))
+        A = np.asarray(Image.fromarray((A0 * 255).astype(np.uint8), 'L')
+                       .resize((nx, ny), Image.BILINEAR)).astype(np.float32) / 255
+        W = np.asarray(Image.fromarray((W0 * 255).astype(np.uint8), 'L')
+                       .resize((nx, ny), Image.BILINEAR)).astype(np.float32) / 255
+        sumA = max(1.0, float(A.sum()))
+        맞음 = fftconvolve(Bf, A[::-1, ::-1], mode='full')      # Σ A[p]·B[p+옮김]
+        덮침 = fftconvolve(Bf, W[::-1, ::-1], mode='full')
+        점수 = 맞음 - 덮침
+        ox0, oy0 = Cx - cx * sx, Cy - cy * sy
+        i0, j0 = int(round(oy0)) + ny - 1, int(round(ox0)) + nx - 1
+        y1, y2 = max(0, i0 - R), min(점수.shape[0], i0 + R + 1)
+        x1, x2 = max(0, j0 - R), min(점수.shape[1], j0 + R + 1)
+        if y1 >= y2 or x1 >= x2:
+            return None
+        창 = 점수[y1:y2, x1:x2]
+        i, j = np.unravel_index(int(창.argmax()), 창.shape)
+        i, j = i + y1, j + x1
+        return {'점수': float(점수[i, j]) / sumA,
+                '몸맞음': float(맞음[i, j]) / sumA,
+                '안겹침': 1.0 - float(덮침[i, j]) / sumB,
+                'sx': sx, 'sy': sy,
+                'dx': (j - nx + 1) / 결, 'dy': (i - ny + 1) / 결}
+
+    후보 = [재본다(s, s) for s in np.geomspace(배율0 * 0.40, 배율0 * 1.60, 30)]
+    후보 = [c for c in 후보 if c]
+    if not 후보:
+        return None
+    으뜸 = max(후보, key=lambda c: c['점수'])
+    # 몸의 «가로세로 비»가 다르게 그려진 장이 있다. 조금만 허용한다(모자가 찌그러지면 안 된다).
+    s = 으뜸['sx']
+    for rx in (0.94, 1.0, 1.06):
+        for ry in (0.94, 1.0, 1.06):
+            if rx == 1.0 and ry == 1.0:
+                continue
+            c = 재본다(s * rx, s * ry)
+            if c and c['점수'] > 으뜸['점수'] * 1.015:
+                으뜸 = c
+    으뜸['확신'] = min(으뜸['몸맞음'], 으뜸['안겹침'])
+    return 으뜸
+
+
 # ── 겹쳐 맞추기 ────────────────────────────────────────────────────────────
 
 def 눈으로_옮긴판(씌운: Image.Image, 몸: Image.Image, 배율, c씌, c정):
