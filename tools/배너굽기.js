@@ -70,9 +70,13 @@ const 규격들 = {
   링크드인: { W: 1584, H: 396,  안전W: 1000, 안전H: 300, 배: 0.62, 올림: 0,  몽글폭: 300, 몽글우: 74, 이음비: 0.805, 밀기: 190 },
 };
 let { W, H, 안전W, 안전H, 배, 올림, 몽글폭, 몽글우, 이음비, 밀기 } = 규격들.유튜브;
-/** 안 하나를 굽기 직전에 그 안의 규격으로 갈아 끼운다. 안을 하나씩 굽는 도구라 안전하다. */
+/** 안 하나를 굽기 직전에 그 안의 규격으로 갈아 끼운다. 안을 하나씩 굽는 도구라 안전하다.
+ *  🔑 **적용한 규격을 돌려준다.** 위 전역은 «다음 안을 구울 때» 갈리므로, 그 안의 규격을
+ *    나중까지 쓰려면(시안이 칸마다 제 비율로 그리려면) 여기서 받아 «떠 담아» 둬야 한다. */
 function 규격적용(안) {
-  ({ W, H, 안전W, 안전H, 배, 올림, 몽글폭, 몽글우, 이음비, 밀기 } = 규격들[(안들[안] || {}).규격 || '유튜브']);
+  const 규격 = 규격들[(안들[안] || {}).규격 || '유튜브'];
+  ({ W, H, 안전W, 안전H, 배, 올림, 몽글폭, 몽글우, 이음비, 밀기 } = 규격);
+  return 규격;
 }
 /** 규격에 비례한 px — 배너에서 눈으로 맞춘 값이 작은 판에서도 같은 «무게»로 읽히게 한다. */
 const 재기 = (n) => Math.round(n * 배);
@@ -690,6 +694,10 @@ function 크롬() {
 }
 
 function 굽기(안, 안내선) {
+  /* 🔑 규격을 «여기서» 잡아 결과에 실어 보낸다 — 전역 W·H 는 다음 안을 구울 때 갈리므로,
+   *   안을 다 구운 «뒤» 도는 시안()이 전역을 읽으면 지면 전체가 «마지막에 구운 안»의
+   *   규격으로 그려진다(09-06 실사고: 유튜브 배너가 링크드인 4:1 로 찌그러졌다). */
+  const 규격 = 규격적용(안);
   const 이름 = 안내선 ? `${안}_안내선` : 안;
   const src = path.join(낼곳, `_${이름}.html`);
   const png = path.join(낼곳, `${이름}.png`);
@@ -702,7 +710,7 @@ function 굽기(안, 안내선) {
   const 바이트 = fs.statSync(png).size;
   /* 6MB 는 유튜브가 거절하는 선이다 — 넘으면 조용히 두지 않고 그 자리에서 말한다. */
   const 넘음 = 바이트 > 6 * 1024 * 1024;
-  return { 안: 이름, png, 바이트, 넘음 };
+  return { 안: 이름, png, 바이트, 넘음, 규격 };
 }
 
 /** 시안 — 판정 자리. data URI 는 «한 번만» 적는다(프로필 시안이 13.7MB 로 부은 그 함정). */
@@ -717,24 +725,34 @@ function 시안(굽힌것) {
   const 변수 = 굽힌것.map(({ 안, png }) =>
     `    ${키[안]}:url("./${path.basename(png)}");`).join('\n');
 
-  const 칸 = 굽힌것.map(({ 안, 바이트, 넘음 }) => {
+  /* 🔴 **비율은 «칸마다» 다르다** — 유튜브 16:9 · 페북 커버 2.75:1 · 링크드인 4:1.
+   *   그래서 지면 CSS 에 한 벌을 박지 않고, 칸이 제 규격을 CSS 변수로 이고 간다.
+   *   `--안전배` = 안전 영역만 보여 줄 때 그림을 몇 %로 키우나(W ÷ 안전W). */
+  const 칸 = 굽힌것.map(({ 안, 바이트, 넘음, 규격 }) => {
     const a = 안들[안] || { 이름: 안, 설명: '' };
     const v = `background-image:var(${키[안]})`;
-    return `<section class="안">
+    const 자 = `--가로:${규격.W};--세로:${규격.H};--안전가로:${규격.안전W};--안전세로:${규격.안전H};`
+      + `--안전배:${(규격.W / 규격.안전W * 100).toFixed(2)}%`;
+    return `<section class="안" style="${자}">
   <h2>${a.이름}</h2>
   <p class="설명">${a.설명}</p>
-  <div class="띠줄"><span class="라벨">전체 (TV·큰 화면)</span><i class="배너" style="${v}"></i></div>
-  <div class="띠줄"><span class="라벨">안전 영역만 (어디서도 안 잘리는 부분)</span>
+  <div class="띠줄"><span class="라벨">전체 ${규격.W}×${규격.H} (큰 화면)</span><i class="배너" style="${v}"></i></div>
+  <div class="띠줄"><span class="라벨">안전 영역만 ${규격.안전W}×${규격.안전H} (어디서도 안 잘리는 부분)</span>
     <i class="잘린띠" style="${v}"></i></div>
   <p class="파일"><code>docs/SHIFT/배너/${안}.png</code> · ${(바이트 / 1048576).toFixed(2)}MB
     ${넘음 ? '<b class="빨강">🔴 6MB 초과 — 유튜브가 거절한다</b>' : '<span class="초록">✅ 6MB 이하</span>'}</p>
 </section>`;
   }).join('\n');
 
+  /* 규격 줄은 `규격들` 이 만든다 — 숫자를 문안에 또 적으면 규격을 갈 때 한쪽만 낡는다
+   *   (페북 커버를 1640×856 → 596 으로 간 09-02 가 그 자리였다). */
+  const 규격줄 = Object.entries(규격들).map(([이름, g]) =>
+    `<b>${이름}</b> ${g.W}×${g.H} (${(g.W / g.H).toFixed(2)} : 1) · 안 잘리는 곳 ${g.안전W}×${g.안전H}`).join('<br>');
+
   return `<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>yuhobuilds 유튜브 배너 — 세 안</title>
+<title>SYNK 소셜 대문 시안 — 유튜브 배너 · 페북 커버 · 링크드인 배경</title>
 <style>
   /* 낫표 「 」 교정 — 값의 정본 = docs/디자인_토큰.json 「서체.낫표교정」(유호 확정 08-31). 스택보다 먼저 선다. */
   @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
@@ -754,11 +772,14 @@ ${변수}
   .설명{color:var(--stone);font-size:.88rem;margin:0 0 18px;}
   .띠줄{margin:0 0 16px;}
   .라벨{display:block;font-size:.76rem;color:var(--ash);margin:0 0 6px;}
-  .배너{display:block;width:100%;aspect-ratio:${W}/${H};border-radius:10px;
+  /* 🔴 비율은 칸이 «CSS 변수»로 이고 온다 — 여기 숫자를 박으면 «마지막에 구운 안»의 규격으로
+   *   지면 전체가 그려져, 유튜브 배너가 4:1 로 찌그러지고 「안전 영역만」이 엉뚱한 자리를 키운다.
+   *   이 지면의 존재 이유가 「폰에서 잘리는 것을 미리 본다」이므로 그 판정이 통째로 거짓이 된다. */
+  .배너{display:block;width:100%;aspect-ratio:var(--가로)/var(--세로);border-radius:10px;
     background-size:cover;background-position:center;}
-  /* 안전 영역만 보여 주는 띠 — 배너를 확대해 가운데 1235×338 만 창에 남긴다. */
-  .잘린띠{display:block;width:100%;aspect-ratio:${안전W}/${안전H};border-radius:10px;
-    background-size:${(W / 안전W * 100).toFixed(2)}% auto;background-position:center;
+  /* 안전 영역만 보여 주는 띠 — 배너를 확대해 그 규격의 안전 영역만 창에 남긴다. */
+  .잘린띠{display:block;width:100%;aspect-ratio:var(--안전가로)/var(--안전세로);border-radius:10px;
+    background-size:var(--안전배) auto;background-position:center;
     box-shadow:inset 0 0 0 2px rgba(249,104,89,.5);}
   .파일{margin:14px 0 0;font-size:.78rem;color:var(--ash);}
   .빨강{color:#FD9C87;} .초록{color:var(--stone);}
@@ -767,10 +788,11 @@ ${변수}
   .꼬리 b{color:var(--paper);}
 </style></head>
 <body><div class="지면">
-<h1>yuhobuilds 유튜브 배너 — 세 안</h1>
-<p class="머리"><b>배너와 채널아트는 같은 것입니다</b> — 유튜브가 옛 이름(채널 아트)을 버리고 지금은 「배너 이미지」 하나로 부릅니다. 올리는 파일도 하나입니다.<br>
-규격은 2026-08-28 에 유튜브 고객센터 원문으로 확인했습니다: 권장 <b>2560×1440</b>(TV 포함) · 최소 2048×1152 · <b>글자가 안 잘리는 영역 1235×338</b> · 6MB 이하.<br>
-🔴 <b>판정은 아래 «안전 영역만» 줄로 하십시오</b> — 캔버스의 48%×23% 짜리 가운데 띠이고, 폰에서 보이는 것이 그것입니다.
+<h1>SYNK 소셜 대문 시안 — ${굽힌것.length}안</h1>
+<p class="머리"><b>이 지면에는 규격이 셋 섞여 있습니다</b> — 칸마다 제 규격으로 그리니 <b>칸끼리 모양이 다른 것이 정상</b>입니다:<br>
+${규격줄}<br>
+유튜브 규격은 2026-08-28 에 고객센터 원문으로, 페북 커버와 링크드인 배경은 09-02·09-06 에 실물 화면을 자로 재서 정했습니다. <b>배너와 채널아트는 같은 것입니다</b> — 유튜브가 옛 이름(채널 아트)을 버리고 지금은 「배너 이미지」 하나로 부릅니다. 올리는 파일도 하나입니다. 파일 크기는 6MB 이하여야 합니다.<br>
+🔴 <b>판정은 아래 «안전 영역만» 줄로 하십시오</b> — 폰에서 보이는 것이 그것입니다.
 다시 구우려면 <code>node tools/배너굽기.js</code>. ⚠ 이 지면은 옆 폴더의 후보 PNG 를 «상대 경로»로 봅니다 — 그림이 비어 보이면 그 명령 한 번이면 다시 채워집니다.</p>
 ${칸}
 <p class="꼬리">
