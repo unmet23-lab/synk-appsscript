@@ -9,8 +9,18 @@
 /*@FONTS@*/
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:1080px;height:1080px;overflow:hidden}
+/* 🔴 여기 맨 앞에 있던 «SUIT» 를 09-07 에 걷었다 (유호 지시 「당연히 고쳐줘」).
+   이 카드의 큰 글자(「안녕하세요」·「16 + 1」)는 펠트 천에서 오려낸 그림이고, 남은 작은 글자
+   (로마자·자리때)는 아래에서 Inter Tight 를 따로 부른다 ⇒ SUIT 로 그려지는 글자가 한 자도 없었다.
+   그런데 이름이 여기 남아 있어서 지면폰트 시험이 「이름만 부르고 안 싣는 지면」으로 매번 울었고,
+   그 빨강 하나가 저장소 전체 초록을 요구하는 배포 게이트를 막고 있었다.
+   📏 실측으로 갈랐다 — 서체를 심고 똑같이 다시 구운 판의 sha256 이 지금 카드와 한 글자도 다르지 않다
+      (4a4b39e78455c561…). 그래서 «심기»가 아니라 «안 쓰는 이름 걷기»가 참인 처방이다.
+   🔓 되살릴 자리 = 이 카드에 «그림이 아닌 진짜 한글 글자»를 넣게 되는 날. 그때는 이름만 되돌리지 말고
+      브랜드폰트의 심기로 실제 서체까지 함께 싣는다(이름만 부르면 시스템 고딕으로 조용히 떨어진다).
+   ⚠ 이 주석은 템플릿 문자열 «안»이다 — 백틱을 쓰면 지면이 통째로 깨진다(09-07 에 한 번 깼다). */
 body{position:relative;background:#080605;
-  font-family:'SUIT','Inter Tight',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+  font-family:'Inter Tight',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
 
 /* 바탕 — 구운 펠트 천. 글자가 읽히게 눌러 주되 결은 남긴다. */
 .천{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
