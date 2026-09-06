@@ -20,7 +20,8 @@
  *
  * ■ 함정
  *   - `tools/몽골어대조.js` 의 프롬프트 줄 모양이 바뀌면 여기서 **즉시 죽는다.** 그게 맞다.
- *   - 이 파일은 네트워크도 키 파일도 만지지 않는다. 키는 promptfoo 가 환경변수로만 받는다.
+ *   - 이 파일은 네트워크도 열쇠도 만지지 않는다. 제미나이를 «부르는» 자리는 `evals/제미나이문.js`
+ *     하나다(09-07 · 그 전에는 promptfoo 가 환경변수로 열쇠를 받아 직접 불렀다).
  *   - `require('tools/몽골어대조.js')` 는 모듈을 여는 것만으로 모델정책을 읽는다(네트워크 0).
  */
 'use strict';
@@ -92,22 +93,37 @@ function 스키마파일대조() {
   }
 }
 
-/* 모델·사고수준의 정본은 `tools/모델정책.js` 인데 YAML 은 JS 를 못 부른다.
- * 그래서 YAML 에 적힌 값이 정본과 어긋나면 **시험이 딴 것을 재는 것**이므로 여기서 막는다.
- * (2026-08-31 부터 정본 = 3.7. 3.6 은 대조군으로 남고 이 검사에 안 걸린다 —
- *  검사는 «정본이 YAML 안에 있나»만 본다. 순서는 안 본다.) */
+/* 모델·사고수준의 정본은 `tools/모델정책.js` 다. 시험지가 딴 것을 재고 있으면 여기서 막는다.
+ *
+ * 🔄 **09-07 에 자가 뒤집혔다.** 그 전에는 YAML 에 모델 이름을 적어 두고 «그 글자가 정본과 같은가»를
+ *   봤다. 이제는 YAML 이 모델을 아예 안 적고 `evals/제미나이문.js` 가 정본에서 읽어 온다 —
+ *   그래서 검사도 **「적힌 값이 맞나」에서 「적어 두지 않았나」로** 바뀐다. 적혀 있지 않으면 어긋날 수 없다.
+ *   대신 통로가 «실제로 내는» 값을 되읽어 정본과 맞춰 본다(네트워크 0). */
 function 정책대조() {
   const 픽 = require(path.join(__dirname, '..', 'tools', '모델정책.js')).제미나이설정();
   const yaml = path.join(__dirname, '몽골어검문.yaml');
   if (!fs.existsSync(yaml)) throw 확인불가(`시험지 YAML 이 없다 → ${yaml}`);
-  const t = fs.readFileSync(yaml, 'utf8');
-  if (t.indexOf(`google:${픽.model}`) === -1) {
-    throw 확인불가(`YAML 의 «지금 쓰는» 모델이 정본과 다르다 — 정본 = ${픽.model}(tools/모델정책.js)`);
+  // 주석 줄은 «꺼 둔 것»이라 자에 안 걸린다(대조군 블록이 여기서 걸리면 시험지를 못 적는다).
+  const 산줄 = fs.readFileSync(yaml, 'utf8').split(/\r?\n/).filter((l) => !/^\s*#/.test(l));
+
+  // ① 부르는 자리가 우리 통로인가 — 아니면 정본이 아닌 문·모델로 잴 수 있다
+  if (산줄.join('\n').indexOf('file://제미나이문.js') === -1) {
+    throw 확인불가('시험지가 evals/제미나이문.js 를 안 쓴다 — 그러면 정본 아닌 문·모델로 재게 된다');
   }
-  if (!new RegExp(`thinkingLevel:\\s*${픽.thinking_level}\\b`, 'i').test(t)) {
-    throw 확인불가(`YAML 의 사고 수준이 정본과 다르다 — 정본 = ${픽.thinking_level}(tools/모델정책.js)`);
+  // ② 모델 이름을 «시험지에도» 적어 두지 않았나 — 한 값을 두 곳이 알면 갈린다
+  //    (`file://…` 는 «부르는 자리»를 가리키는 것이지 모델 이름이 아니라 여기서 뺀다)
+  const 직접 = 산줄.find((l) => /^\s*-?\s*id:\s*(?!file:\/\/)[a-z]+:/i.test(l));
+  if (직접) {
+    throw 확인불가(`시험지가 모델을 직접 적고 있다 → "${직접.trim()}" · 정본은 tools/모델정책.js 하나다`);
   }
-  return 픽;
+  // ③ 그 통로가 실제로 내는 값이 정본과 같나 (호출 0 · 파일만 읽는다)
+  const 제미나이문 = require(path.join(__dirname, '제미나이문.js'));
+  const 정보 = new 제미나이문().모델정보();
+  if (정보.model !== 픽.model || 정보.thinking !== 픽.thinking_level) {
+    throw 확인불가(`evals/제미나이문.js 가 내는 픽이 정본과 다르다 — 정본 ${픽.model}/${픽.thinking_level}`
+      + ` · 내는 것 ${정보.model}/${정보.thinking}`);
+  }
+  return { ...픽, 용도: 정보.용도, 문: 정보.문 };
 }
 
 // ── promptfoo 가 부르는 자리 ────────────────────────────────────────────────
@@ -191,8 +207,11 @@ function 자체점검() {
   catch (e) { 파일상태 = '🔴 ' + e.message; }
   console.log('\n[스키마 파일] ' + 파일상태);
   let 정책상태;
-  try { const p = 정책대조(); 정책상태 = `✅ YAML 이 정본 픽과 같다 — ${p.model} / thinking=${p.thinking_level}`; }
-  catch (e) { 정책상태 = '🔴 ' + e.message; }
+  try {
+    const p = 정책대조();
+    정책상태 = `✅ 시험지가 정본 픽을 그대로 쓴다 — ${p.model} / thinking=${p.thinking_level}`
+      + ` · 가는 문 ${p.문}(${p.용도 === '돈' ? '크레딧이 낸다 · 하루 몫 벽 없음' : '공짜 몫 · 하루 20발'})`;
+  } catch (e) { 정책상태 = '🔴 ' + e.message; }
   console.log('[모델 정본] ' + 정책상태);
   return /🔴/.test(파일상태 + 정책상태) ? 2 : 0;
 }
