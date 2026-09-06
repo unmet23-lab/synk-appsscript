@@ -688,6 +688,15 @@ function 명부스윕_() {
       const 급수들 = pf.getRange(1, 급수칸, 마지막행, 1).getDisplayValues();
       표.forEach((r, i) => r.push(String(급수들[i][0] == null ? '' : 급수들[i][0])));   // 머리행엔 '현재급수' 가 그대로 실린다
     }
+    /* [v9.319] 입학 시즌 동봉 — 급수와 같은 규율: **이름으로** 찾고, 없으면 열을 아예 안 싣는다. 서버는 모르는 머리글을 무시하므로
+     *   옛 서버에도 무해하고, 새 서버(talk `roster-ingest`)는 `learners.entry_season` 의 «빈 자리에만» 채운다(시트와 같은 선점 규칙).
+     *   값은 profiles 「입학시즌」 그대로(텍스트 서식이라 표시값 = 'yyyy-MM-dd'). 이 칸이 안 실리면 회화 앱은 「이 학생이 몇 기인가」를
+     *   영영 모른다(브랜드 v2 ㉢-2 연결표 · 학생 번호 정본 v2 정정 ③). */
+    const 입학칸 = 전머리.indexOf(ENTRY_SEASON_HEADS_[0]) + 1;   // 1-기반 · 0 = 열 없음
+    if (입학칸 > 0) {
+      const 입학들 = pf.getRange(1, 입학칸, 마지막행, 1).getDisplayValues();
+      표.forEach((r, i) => r.push(String(입학들[i][0] == null ? '' : 입학들[i][0])));   // 머리행엔 '입학시즌' 이 그대로 실린다
+    }
     if (마지막행 >= 2) {
       머리 = 표[0];
       표.slice(1).forEach(r => {
