@@ -1168,10 +1168,10 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
   /* 트랙이 색인에서 일기로 부푸는 자리 — 빨강이 아니라 메모다(막지 않는다 · 자는 `tools/트랙위생.js`). */
   if (트랙위생.ok) {
     const w = 트랙위생.value;
-    if (w.부푼불릿.length || w.무거운머리.length) {
+    if (w.부푼불릿.length || w.무거운머리.length || (w.임자없음 || []).length) {
       notes.push({
         kind: '트랙 위생',
-        text: `부푼 불릿 ${w.부푼불릿.length} · 무거운 절 머리 ${w.무거운머리.length}(불릿 ${w.불릿수} 중) — 재료를 정본 문서로 옮길 자리다 · 전부 보기: node tools/트랙위생.js`,
+        text: `부푼 불릿 ${w.부푼불릿.length} · 무거운 절 머리 ${w.무거운머리.length} · 임자 없는 불릿 ${(w.임자없음 || []).length}(일감 ${w.불릿수} 중) — 전부 보기: node tools/트랙위생.js`,
       });
     }
   } else {
