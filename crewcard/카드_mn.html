@@ -1605,7 +1605,6 @@ section.page{
     --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
     --룸-chalk2:#EAEAEA; --룸-chalk2-rgb:234,234,234;
     --룸-chalk3:#D1D2D4; --룸-chalk3-rgb:209,210,212;
-    --룸-paper:#FBF7F0; --룸-paper-rgb:251,247,240;
     --룸-ink:#2B2320; --룸-ink-rgb:43,35,32;
     --룸-coral:#F96859; --룸-coral-rgb:249,104,89;
     --룸-coral3:#AE322A; --룸-coral3-rgb:174,50,42;
@@ -2099,8 +2098,8 @@ section.page{
        레진 → glow 가 종이에 안 실린다 → 코어를 «면»으로, 굴절밴드를 «선»으로 굳힌다
        못 옮기는 것 = 코스틱(샌 빛). 종이의 한계라 억지로 흉내내지 않는다. */
   @media print{
-    .룸{background:var(--룸-paper);color-scheme:light;}
-    .룸{background:var(--룸-paper);background-attachment:initial;
+    .룸{;color-scheme:light;}
+    .룸{;background-attachment:initial;
          font-size:10.6pt;line-height:1.62;}
 
     .유리{background:var(--룸-chalk2);border:1px solid var(--룸-chalk3);
@@ -2149,7 +2148,7 @@ section.page{
     .룸 li::marker{color:var(--룸-ash2);}
     .룸 blockquote{;}
     .룸 footer{;}
-    .룸 code{;background:var(--룸-chalk2);box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
+    .룸 code{;box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
 
     /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
     .쪽번호{display:block;position:fixed;bottom:4mm;right:0;
