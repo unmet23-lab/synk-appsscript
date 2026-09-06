@@ -235,7 +235,8 @@ function migrateHwFormV9138() {
  *   여기 주석으로 못박는다(2년 뒤 조인할 사람이 헤더 이름만 믿지 않게). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * [v9.187] '급수'(맨 끝) — 응답 시점의 학생 급수 스냅샷(제품방향 §불변식 2 「학생·레벨·시점」의 레벨 축).
  *   profiles는 현재값이라 승급하면 과거 응답의 난이도 맥락이 지워진다 — 행에 박아야 남는다. */
-const QUIZ_LOG_HEADERS = ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at', '급수', 'schema_ver', '시도', '문항지문', '스냅샷지연초'];
+const QUIZ_LOG_HEADERS = ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at', '급수', 'schema_ver', '시도', '문항지문', '스냅샷지연초',
+  '응답시각ms']; // [v9.312] 폼이 찍은 응답 시각(epoch ms) — 같은 원본 행을 다시 읽는 «재처리»를 가르는 정체(코덱스 09-06 3차 P1) · 사람이 읽는 날짜는 제출일이 쥔다
 const QUIZ_CONFIDENCE = ['확실해요', '아마도', '찍었어요'];
 /* 확신도 도움말 — 생성부와 migrateFormCopy0901 이 **같은 상수**를 본다(WORK_DESC 관례 · 두 곳에 적으면 갈린다). */
 const QUIZ_CONFIDENCE_HELP = '솔직하게 골라주세요 — 찍었다고 해서 불이익은 전혀 없고, 오히려 다음 문제를 더 잘 맞춰 드려요';
@@ -909,21 +910,23 @@ function quizSweep_(ss) {
    *   그런데 철학 Ⅲ-2(v1.21)는 「아는가의 판정은 다시 낸 문항의 결과가 한다」라 둘째 답이 곧 판정 재료다. 버리면 소급이 안 된다
    *   (심문 3회차 A3 · 4회차 A3 · 첫 진짜 학생 «전»). 이제 **시도 번호를 달아 전부 남긴다** — 「무엇을 골랐나」는 시도 1 행이 그대로 쥐고,
    *   소비자(aiWeakMap_)는 시도 1 만 읽는다. */
+  /* [v9.312] 적재됨 = '퀴즈ID|sid|응답시각ms' → 이미 적재한 «응답». 적재(아래 setValues) 뒤 포인터 저장만 실패하면 다음 스위프가 같은
+   *   원본 행을 다시 읽는데, 그것은 재제출이 아니라 재처리다(구 코드는 seen 이 조용히 걸렀고, 시도 번호를 달자 둘째 시도로 새 행이 됐다 —
+   *   코덱스 09-06 2차 P1). 응답의 정체는 «폼이 찍은 시각(ms)»이다 — 같은 날 같은 답을 다시 내도, 확신도만 바꿔 내도 시각이 다르니
+   *   다른 응답으로 남는다(원신호 보존 · 철학 A-1). 날짜·답으로 가르던 판은 그 둘을 버렸다(3차 P1 4a682b0d875b). 옛 행(응답시각 칸 없음)은
+   *   재처리 판정에서 빠진다 — 그 행들의 포인터는 이미 저장돼 있어 다시 읽힐 일이 없다. */
   const seen = {}, 적재됨 = {};
-  const 시도열 = QUIZ_LOG_HEADERS.indexOf('시도') + 1;
-  if (ql.getLastRow() >= 2) ql.getRange(2, 2, ql.getLastRow() - 1, 시도열 - 1).getValues().forEach(r => {
-    if (!r[0] || !r[1]) return;
-    const k = String(r[1]).trim() + '|' + String(r[0]).trim();
-    const n = Number(r[시도열 - 2]) || 1; // 옛 행(시도 칸 없음)은 1
+  const 시도칸 = QUIZ_LOG_HEADERS.indexOf('시도'), 응답ms칸 = QUIZ_LOG_HEADERS.indexOf('응답시각ms');
+  if (ql.getLastRow() >= 2) ql.getRange(2, 1, ql.getLastRow() - 1, QUIZ_LOG_HEADERS.length).getValues().forEach(r => {
+    if (!r[1] || !r[2]) return;
+    const k = String(r[2]).trim() + '|' + String(r[1]).trim();
+    const n = Number(r[시도칸]) || 1; // 옛 행(시도 칸 없음)은 1
     if (n > (seen[k] || 0)) seen[k] = n;
-    /* [v9.312] 이미 적재한 «응답» — 퀴즈ID|sid|제출일|고른답. 적재(아래 setValues) 뒤 포인터 저장만 실패하면 다음 스위프가 같은 원본
-     *   행을 다시 읽는데, 그것은 재제출이 아니라 재처리다(구 코드는 seen 이 조용히 걸렀고, 시도 번호를 달자 둘째 시도로 새 행이 됐다 —
-     *   코덱스 09-06 P1). 폼이 응답 ID 를 안 실어 보내니 «같은 날 · 같은 문항 · 같은 답»을 같은 응답으로 본다. 같은 날 똑같은 답을
-     *   «정말로» 두 번 낸 경우도 하나로 남는다 — 판정 재료가 같으니 잃는 것이 없고, 다른 답이면 시도 N 으로 남는다. */
-    적재됨[k + '|' + dstr(r[8], tz) + '|' + String(r[4] || '').trim()] = 1;
+    const ms = Number(r[응답ms칸]) || 0;
+    if (ms) 적재됨[k + '|' + ms] = 1;
   });
 
-  const out = [], badSid = [];
+  const out = [], badSid = [], 재처리 = []; // 재처리 = 로그엔 이미 있는 응답(sid 만 쓴다 · 하루 보상을 다시 태우는 재료)
   rows.forEach(r => {
     const ts = r[0] instanceof Date ? r[0] : new Date();
     const sid = String(r[1] || '').trim();
@@ -933,8 +936,9 @@ function quizSweep_(ss) {
     if (!sid || !qid || !ans) return;
     if (!valid.has(sid)) { badSid.push(sid); return; }
     const key = qid + '|' + sid;
-    const 응답키 = key + '|' + dstr(ts, tz) + '|' + String(셀안전_(ans)).trim();
-    if (적재됨[응답키]) return; // [v9.312] 같은 응답의 재처리 — 새 시도가 아니다(위 적재됨 주석)
+    const 응답ms = ts.getTime();
+    const 응답키 = key + '|' + 응답ms;
+    if (적재됨[응답키]) { 재처리.push(['', sid]); return; } // [v9.312] 같은 응답의 재처리 — 로그엔 안 쌓고 하루 보상만 다시 태운다(멱등)
     적재됨[응답키] = 1;
     const 시도 = (seen[key] || 0) + 1;
     seen[key] = 시도;
@@ -959,13 +963,17 @@ function quizSweep_(ss) {
       셀안전_(meta.cat), 셀안전_(meta.q), 셀안전_(ans), 셀안전_(meta.a),
       g.ok === null ? '판정보류' : (g.ok ? '정답' : '오답'), // 원칙: 판정 못 해도 행은 남는다
       셀안전_(conf), dstr(ts, tz), new Date(), lvOf[sid] || 0, SCHEMA_VER, // [v9.187] 급수 스냅샷(0=미정) · [v9.207] schema_ver
-      시도, 지문, 지연초]); // [v9.312] 시도 번호 · 문항 지문 · 스냅샷 지연초
+      시도, 지문, 지연초, 응답ms]); // [v9.312] 시도 번호 · 문항 지문 · 스냅샷 지연초 · 응답시각ms(재처리를 가르는 정체)
   });
   if (out.length) ql.getRange(ql.getLastRow() + 1, 1, out.length, QUIZ_LOG_HEADERS.length).setValues(out);
-  props.setProperty('퀴즈폼_포인터', String(last));
   notifyDroppedSids_('퀴즈폼', badSid);
-  if (out.length) Logger.log('퀴즈 응답 ' + out.length + '건 적재(quiz_log)');
-  퀴즈응답포인트_(ss, out, tz); // [v9.147] 적재된 응답에만 지급 — 지급이 적재보다 앞서면 "받았는데 안 쌓인 답"이 생긴다
+  if (out.length || 재처리.length) Logger.log('퀴즈 응답 ' + out.length + '건 적재(quiz_log)' + (재처리.length ? ' · 재처리 ' + 재처리.length + '건은 로그 없이 보상만' : ''));
+  /* [v9.147] 적재된 응답에만 지급 — 지급이 적재보다 앞서면 "받았는데 안 쌓인 답"이 생긴다.
+   * [v9.312] 재처리 행(로그엔 이미 있는 응답)도 함께 넘긴다 — 지급은 학생·날짜로 멱등이라 두 번 가지 않고, 앞 실행이 적재 뒤·지급 «전»에
+   *   죽었으면 여기서 채워진다(코덱스 3차 P1 c7ab1456a3bb). 포인터 저장은 맨 «뒤»다 — 지급이 죽어도 다음 스위프가 같은 행을 다시 읽어
+   *   (로그는 안 쌓고) 지급만 다시 태운다. */
+  퀴즈응답포인트_(ss, out.concat(재처리), tz);
+  props.setProperty('퀴즈폼_포인터', String(last));
 }
 
 /* [v9.147] 🎯 퀴즈 응답 포인트 — 「데이터를 낳는 행동」에 보상을 옮기는 두 경로 중 하나(다른 하나는 재작성).

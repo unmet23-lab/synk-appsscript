@@ -44,8 +44,8 @@ const QUIZ_LOG_HEADERS = JSON.parse(code.match(/const QUIZ_LOG_HEADERS = (\[[^\]
 const QUIZ_CONFIDENCE = JSON.parse(code.match(/const QUIZ_CONFIDENCE = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
 const 열 = (이름) => QUIZ_LOG_HEADERS.indexOf(이름);
 
-test('정본 헤더에 시도·문항지문·스냅샷지연초 세 칸이 «끝에» 붙었다 — 앞 칸 위치는 그대로다', () => {
-  assert.deepEqual(QUIZ_LOG_HEADERS.slice(-3), ['시도', '문항지문', '스냅샷지연초']);
+test('정본 헤더에 시도·문항지문·스냅샷지연초·응답시각ms 네 칸이 «끝에» 붙었다 — 앞 칸 위치는 그대로다', () => {
+  assert.deepEqual(QUIZ_LOG_HEADERS.slice(-4), ['시도', '문항지문', '스냅샷지연초', '응답시각ms']);
   assert.equal(열('정답여부'), 7); assert.equal(열('확신도'), 8); assert.equal(열('제출일'), 9);
 });
 
@@ -69,7 +69,7 @@ function 스위프돌리기({ 응답행들, 기존로그 = [] }) {
     ai_daily: null, quiz_log: 로그, point_logs: null,
   };
   const ss = { getSheetByName: (n) => 표[n] || null, getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar' };
-  const props = {}; const 알림 = [];
+  const props = {}; const 알림 = []; const 지급 = [];
   const 의존 = {
     PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => props[k], setProperty: (k, v) => { props[k] = v; } }) },
     Utilities: { formatDate: (d) => '20260906' },
@@ -79,14 +79,14 @@ function 스위프돌리기({ 응답행들, 기존로그 = [] }) {
     quizGrade_, 문항지문_,
     dstr: () => '2026-09-06',
     notifyDroppedSids_: (_w, ids) => 알림.push(...ids),
-    퀴즈응답포인트_: () => {},
+    퀴즈응답포인트_: (_s, loaded) => 지급.push(...loaded.map((r) => String(r[1]))),
     Logger: { log: () => {} },
     SCHEMA_VER: 'c16', QUIZ_LOG_HEADERS,
   };
   const quizSweep_ = 불러오기('function quizSweep_(ss)', '\n/* [v9.147] 🎯 퀴즈 응답 포인트', 'quizSweep_', 의존);
   quizSweep_(ss);
   const n = 로그.getLastRow();
-  return { 행들: n >= 2 ? 로그.getRange(2, 1, n - 1, QUIZ_LOG_HEADERS.length).getValues() : [], 알림 };
+  return { 행들: n >= 2 ? 로그.getRange(2, 1, n - 1, QUIZ_LOG_HEADERS.length).getValues() : [], 알림, 지급, 포인터: props['퀴즈폼_포인터'] };
 }
 const 응답 = (분전, qid, 답, 확신 = QUIZ_CONFIDENCE[0]) => [new Date(Date.now() - 분전 * 60000), 'S1', qid, 답, 확신];
 
@@ -99,18 +99,23 @@ test('🔴 같은 문항의 둘째 답이 시도 2 로 남는다 — 버리지 �
   assert.match(String(행들[1][0]), /-2$/);
 });
 
-test('🔴 같은 응답을 다시 읽어도(적재 뒤 포인터 저장 실패 → 재스위프) 새 시도로 안 센다 — 재제출과 재처리를 가른다', () => {
+test('🔴 같은 응답을 다시 읽어도(적재 뒤 포인터 저장 실패 → 재스위프) 새 시도로 안 센다 — 정체는 폼이 찍은 시각이다', () => {
   const 원본 = 응답(30, 'Q1', '을');
   const 첫 = 스위프돌리기({ 응답행들: [원본] });
   assert.equal(첫.행들.length, 1);
-  /* 포인터가 저장 안 된 채 같은 원본 행을 다시 읽는다 — 구 코드는 seen 이 걸렀고, 시도 번호를 단 첫 판은 시도 2 로 또 쌓았다(코덱스 09-06 P1) */
+  assert.equal(Number(첫.행들[0][열('응답시각ms')]), 원본[0].getTime(), '응답 시각(ms)이 행에 안 남았다');
+  assert.deepEqual(첫.지급, ['S1']);
+  /* 포인터가 저장 안 된 채 같은 원본 행을 다시 읽는다 — 구 코드는 seen 이 걸렀고, 시도 번호를 단 첫 판은 시도 2 로 또 쌓았다(코덱스 09-06 2차 P1) */
   const 재처리 = 스위프돌리기({ 응답행들: [원본], 기존로그: 첫.행들 });
   assert.equal(재처리.행들.length, 1, '같은 응답이 시도 2 로 또 쌓였다');
-  /* 진짜 재제출(다른 답)은 그대로 시도 2 */
-  const 재제출 = 스위프돌리기({ 응답행들: [원본, 응답(10, 'Q1', '에')], 기존로그: 첫.행들 });
-  assert.equal(재제출.행들.length, 2);
-  assert.equal(재제출.행들[1][열('시도')], 2);
-  assert.equal(재제출.행들[1][열('고른답')], '에');
+  assert.deepEqual(재처리.지급, ['S1'], '재처리에서 하루 보상이 다시 안 태워졌다 — 앞 실행이 적재 뒤·지급 전에 죽었으면 보상이 영영 빈다(3차 P1)');
+  assert.equal(재처리.포인터, '2', '재처리 뒤 포인터가 안 저장됐다');
+  /* 진짜 재제출 — 같은 답을 다시 내도, 확신도만 바꿔도 시각이 다르니 «다른 응답»으로 남는다(원신호 보존 · 3차 P1 4a682b0d875b) */
+  const 재제출 = 스위프돌리기({ 응답행들: [원본, 응답(10, 'Q1', '을', QUIZ_CONFIDENCE[QUIZ_CONFIDENCE.length - 1]), 응답(5, 'Q1', '에')], 기존로그: 첫.행들 });
+  assert.equal(재제출.행들.length, 3, '같은 답·다른 시각의 재제출이 버려졌다');
+  assert.equal(재제출.행들[1][열('시도')], 2); assert.equal(재제출.행들[1][열('고른답')], '을');
+  assert.equal(재제출.행들[2][열('시도')], 3); assert.equal(재제출.행들[2][열('고른답')], '에');
+  assert.deepEqual(재제출.지급, ['S1', 'S1', 'S1'], '지급 재료는 적재 행 + 재처리 행 전부다(하루 1회 상한은 지급 함수가 쥔다)');
 });
 
 test('이미 로그에 시도 1 이 있으면 새 답은 시도 2 다(옛 행에 시도 칸이 비어도 1 로 센다)', () => {
