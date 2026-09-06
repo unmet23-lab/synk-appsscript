@@ -30,8 +30,10 @@ AI 시대에 사람에게 남는 세 힘 — 질문하는 힘, 스스로 하는 
 ---
 ## 연락처
 
-페이스북 페이지로 메시지를 주세요.
+지원서 양식:
 
-**facebook.com/synkworld**
+**forms.gle/u9Y6GF1zv8H5Zgj47**
+
+궁금한 것은 페이스북 페이지로: **facebook.com/synkworld**
 
 몽골어로도, 한국어로도 괜찮습니다.
