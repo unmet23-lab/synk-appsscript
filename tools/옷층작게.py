@@ -16,6 +16,9 @@
 쓰는 법: python tools/옷층작게.py [--크기 1024]
 """
 import argparse
+import hashlib
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 from PIL import Image
@@ -32,6 +35,7 @@ def main():
     낼곳.mkdir(parents=True, exist_ok=True)
     했다 = 0
     잰바이트 = 0
+    판 = {}
     for p in sorted(든곳.glob('*.png')):
         im = Image.open(p).convert('RGBA')
         작 = im.resize((a.크기, a.크기), Image.LANCZOS)
@@ -39,7 +43,18 @@ def main():
         작.save(낼, quality=88, method=6)
         했다 += 1
         잰바이트 += 낼.stat().st_size
+        판[p.stem] = {'지문': hashlib.sha256(낼.read_bytes()).hexdigest()[:16],
+                      '바이트': 낼.stat().st_size}
+    # 🔴 «판»을 함께 적는다 — 학생이 그때 본 그림을 나중에 되살릴 수 있어야 한다(09-06 심문 P0).
+    #   같은 이름으로 다시 구우면 이름은 그대로인데 그림이 바뀐다. 오늘 하루에만 세 번 바뀌었다.
+    #   학생 기록에는 «품목 이름»만이 아니라 이 지문을 함께 남긴다 — 그래야 추억이 안 갈린다.
+    #   ⚠ 이것은 «알 수 있게» 만드는 첫 걸음이지 보관 규격이 아니다. 옛 판을 어디에 남길지는
+    #     옷장 화면을 지을 때 정한다(인계문 ⑤).
+    (낼곳 / '판.json').write_text(json.dumps(
+        {'만든때': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+         '크기': a.크기, '벌': 판}, ensure_ascii=False, indent=1), encoding='utf-8')
     print(f'✅ {했다}장 · {a.크기}² · 합계 {잰바이트/1024/1024:.1f}MB · {낼곳}')
+    print(f'   판.json — 벌마다 지문을 적었다(학생 기록이 가리킬 자리)')
 
 
 if __name__ == '__main__':
