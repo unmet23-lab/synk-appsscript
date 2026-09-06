@@ -68,8 +68,15 @@ const 마스코트들 = [
       'tail ending in a coral paddle with four tiny cream dots. Its eyes are large and round ' +
       'with a bright apple-green iris ring around a glossy black pupil, both equally bright. ' +
       'It is photographed from DIRECTLY ABOVE, lying spread out flat — keep that top-down view. ' +
-      'So the garment is seen from above: it lies over its back and around its neck, and the ' +
-      'long fur still fluffs out around every edge of it. ' +
+      /* 🔴 09-06 밤 · 유호 「까몽이는 쓸 수 있는 게 1~2장밖에 안 보여」. 앞 문장이 「등 위에 놓인다」
+         였는데, 그 말이 옷을 «바닥에 펼쳐 놓은 천»으로 만들었다. 위에서 본 각도에서 옷이 «입은 것»
+         으로 읽히려면 몸의 굽은 면을 타고 넘어가 실루엣 뒤로 사라져야 한다. */
+      '🔴 Seen from above, the garment must read as genuinely WORN — never as a flat piece of ' +
+      'cloth laid on its back. It wraps this round body: it curves down over both sides until ' +
+      'its outer edges disappear behind the body outline, the near edge is foreshortened and ' +
+      'shows the thickness of the felt, and the long fur presses out from underneath it all the ' +
+      'way around. Anything that goes around the neck is a closed ring seen from above, not an ' +
+      'open shape drawn on the surface. ' +
       'The two ears, the two front paws and the coral tail paddle are never covered or hidden — ' +
       'they always stay fully visible, because they are what makes it this creature. ',
     초록표식:
@@ -77,7 +84,12 @@ const 마스코트들 = [
       'flat — keep that top-down view. It has two short triangular ears, two small front paws ' +
       'reaching out to the sides, and a slim tail ending in a rounded paddle. ' +
       'EVERY part of the creature itself is that same flat colour — its fur, its ears, its paws, ' +
-      'its tail and the paddle at the end of it. Nothing of its body keeps another colour. ',
+      'its tail and the paddle at the end of it. Nothing of its body keeps another colour. ' +
+      '🔴 Seen from above, the garment must read as genuinely WORN — never as a flat piece of ' +
+      'cloth laid on its back. It wraps this round body: it curves down over both sides until ' +
+      'its outer edges disappear behind the body outline, and the near edge is foreshortened and ' +
+      'shows the thickness of the felt. Anything that goes around the neck is a closed ring seen ' +
+      'from above, not an open shape drawn on the surface. ',
   },
   {
     이름: '마린',
