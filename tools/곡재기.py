@@ -155,16 +155,17 @@ def 판정(v):
 
 def main():
     ap = argparse.ArgumentParser(description="배경음 후보를 규격으로 재고 쓰던 곡과 견준다")
-    ap.add_argument("곡", nargs="?", help="잴 곡 경로")
+    ap.add_argument("곡", nargs="*", help="잴 곡 경로(여럿 가능)")
     ap.add_argument("--혼자", action="store_true", help="쓰던 곡과 견주지 않는다")
     ap.add_argument("--쓰던것만", action="store_true", help="지금 쓰는 곡들만 잰다")
     a = ap.parse_args()
 
     잰것 = []
-    if a.곡:
-        if not os.path.exists(a.곡):
-            sys.exit(f"🔴 파일이 없다: {a.곡}")
-        잰것.append(재기("🆕 " + os.path.splitext(os.path.basename(a.곡))[0], a.곡))
+    for 하나 in (a.곡 or []):
+        if not os.path.exists(하나):
+            sys.exit(f"🔴 파일이 없다: {하나}")
+        잰것.append(재기("🆕 " + os.path.splitext(os.path.basename(하나))[0], 하나))
+    새것수 = len(잰것)
     if not a.혼자:
         for 이름, 상대 in 쓰던곡:
             p = os.path.join(ROOT, 상대)
@@ -178,11 +179,13 @@ def main():
     for v in 잰것:
         print(줄(v))
 
-    if a.곡:
+    if 새것수:
         print()
-        print(f"■ 새 곡 판정 — 규격만이다(«음악으로 좋은가»는 이 도구가 못 잰다)")
-        for m in 판정(잰것[0]):
-            print("   " + m)
+        print("■ 새 곡 판정 — 규격만이다(«음악으로 좋은가»는 이 도구가 못 잰다)")
+        for v in 잰것[:새것수]:
+            print(f"  · {v['이름']}")
+            for m in 판정(v):
+                print("     " + m)
 
 
 if __name__ == "__main__":
