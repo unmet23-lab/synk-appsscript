@@ -196,7 +196,11 @@ function 무대판(키) {
   return fs.existsSync(p) ? `data:image/png;base64,${fs.readFileSync(p).toString('base64')}` : null;
 }
 
-function 지면(키) {
+/** 한 장르의 배경 지면.
+ *  @param 마스코트만 true 면 «무대 없이 마스코트 층만» 그린다 — 움직이는 무대 영상 위에 얹을 층이다.
+ *    끄는 것 = 무대 사진 · 양모천 폴백 · 공기(비네팅) · 바탕색. 남기는 것 = 접지 그림자 · 주인공 · 각인.
+ *    🔑 접지와 후광을 남기는 까닭 = 그 둘이 「스티커」와 「앉은 것」을 가른다(이 파일 머리말의 규율). */
+function 지면(키, 마스코트만 = false) {
   const a = 장르들[키];
   const 액 = 액자[a.가이드] || 액자.몽글;
   /* 🔴 크기 — 첫 판 600px(화면 47%)은 «무대가 없을 때»의 값이다. 무대가 생기자 인형이 풍경을 가렸다.
@@ -209,7 +213,8 @@ function 지면(키) {
   return `<!doctype html><meta charset="utf-8">
 <style>
   @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR');unicode-range:U+300C-300D;}
-  html,body{margin:0;padding:0;background:${a.바탕};}
+  html,body{margin:0;padding:0;background:${마스코트만 ? 'transparent' : a.바탕};}
+  ${마스코트만 ? '.무대,.천,.결{display:none !important;} .판{background:transparent !important;}' : ''}
   .판{width:${W}px;height:${H}px;position:relative;overflow:hidden;background:${a.바탕};
     font-family:'Inter Tight','SYNK Bracket',system-ui,'Malgun Gothic',sans-serif;}
   /* ① 무대 — 106% 로 키워 앉힌다. 생성 모델이 우하단에 찍는 표식을 «잘라» 떨구는 자리다
@@ -253,7 +258,11 @@ function 지면(키) {
   ${무대 ? '<div class="무대"></div>' : 양모천svg({ ...a.천, w: W, h: H })}
   <div class="결"></div>
   <div class="접지"></div>
-  <div class="얼굴">${가이드img(a.가이드, a.표정)}</div>
+  <!-- 표정을 밖에서 덮어쓸 수 있다(env SYNK_FACE=눈감음). 움직이는 층을 만들 때 그 컷이 필요하다.
+       기본은 결 정의의 표정 그대로라 여느 굽기는 아무 영향이 없다.
+       ⚠ 이름이 영어인 까닭: bash 는 비ASCII 환경변수 이름을 못 받는다(09-06 실측 · 오늘 네 번째 자리).
+       ⚠ 이 주석 안에 백틱을 쓰면 바깥 템플릿 문자열이 그 자리에서 끊긴다(같은 날 실측). -->
+  <div class="얼굴">${가이드img(a.가이드, process.env.SYNK_FACE || a.표정)}</div>
   <div class="각인막"></div>
   <div class="각인">
     <!-- 🔑 각인은 «어느 장르든» 다크 판 워드마크다 — 뒤에 깔린 것이 무대가 아니라 어두운 그늘이라
@@ -346,13 +355,16 @@ function 크롬() {
 }
 
 /** 한 장 굽는다 — 어떤 지면이든 같은 크롬 호출을 탄다(호출 인자를 두 곳에 안 적는다). */
-function 굽기(이름, html, 방 = 낼곳) {
+function 굽기(이름, html, 방 = 낼곳, 투명 = false) {
   const src = path.join(방, `_${이름}.html`);
   const png = path.join(방, `${이름}.png`);
   fs.mkdirSync(방, { recursive: true });
   fs.writeFileSync(src, html, 'utf8');
+  /* 🔑 투명하게 찍으려면 크롬에게 «기본 바탕색이 없다»고 말해야 한다.
+   *   이 옵션이 없으면 흰 종이가 깔려서 알파가 죽는다(무대 영상 위에 얹을 층은 알파가 생명이다). */
+  const 더 = 투명 ? ['--default-background-color=00000000'] : [];
   spawnSync(크롬(), ['--headless=new', '--disable-gpu', '--force-device-scale-factor=1',
-    '--hide-scrollbars', `--window-size=${W},${H}`, `--screenshot=${png}`,
+    '--hide-scrollbars', `--window-size=${W},${H}`, `--screenshot=${png}`, ...더,
     'file:///' + src.replace(/\\/g, '/')], { encoding: 'utf8' });
   if (!fs.existsSync(png)) throw new Error(`굽기 실패: ${이름}`);
   fs.unlinkSync(src);
@@ -363,7 +375,7 @@ function main() {
   const argv = process.argv.slice(2);
   const i = argv.indexOf('--장르');
   const 하나 = i >= 0 ? argv[i + 1] : null;
-  const 아는것 = ['--장르', '--썸네일'];
+  const 아는것 = ['--장르', '--썸네일', '--마스코트만'];
   const 모름 = argv.filter((x) => x.startsWith('--') && !아는것.includes(x));
   if (모름.length) { console.error(`[라디오배경굽기] 모르는 플래그 ${모름.join(' ')} — 아는 것 = ${아는것.join(' · ')}`); process.exit(1); }
   if (하나 && !장르들[하나]) throw new Error(`모르는 장르: ${하나} (있는 것: ${Object.keys(장르들).join(' · ')})`);
@@ -384,7 +396,9 @@ function main() {
   const 목록 = 하나 ? [하나] : Object.keys(장르들).filter((k) => !장르들[k].대기);
   const 뺀것 = Object.keys(장르들).filter((k) => 장르들[k].대기);
   for (const k of 목록) {
-    const r = 굽기(k, 지면(k));
+    const 마스코트만 = argv.includes('--마스코트만');
+    const 방2 = 마스코트만 ? path.join(ROOT, 'docs/라디오/마스코트층') : 낼곳;
+    const r = 굽기(k, 지면(k, 마스코트만), 방2, 마스코트만);
     /* 「기본」은 무대 사진이 «없는 것이 옳다» — 빠진 게 아니므로 경고를 안 낸다.
      *   안 그러면 매번 뜨는 ⚠ 가 참말과 거짓말을 섞어, 진짜 빠진 무대를 못 보게 만든다. */
     const 무대말 = 무대판(k) ? '사진'
