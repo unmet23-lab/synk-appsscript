@@ -134,6 +134,8 @@
     animation: 뜸 .3s ease both;
   }
   #토스트 .알림 .무엇 { color: var(--귀리); font-size: 13px; letter-spacing: .06em; }
+  /* 인사는 닉네임에 조사가 «붙어야» 한 마디로 읽힌다 — 「유호 님」이 아니라 「유호님」(09-06 실측) */
+  #토스트 .알림.붙임 { gap: 0; }
   #토스트 .알림 .누구 { font-weight: 700; font-variant-numeric: tabular-nums; }
   #토스트 .알림.끝 { animation: 짐 .3s ease both; }
   @keyframes 뜸 { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -283,12 +285,14 @@ function 시작() {
 
   /* ── 토스트 (닉네임만 · 최대 3) ───────────────────────────── */
   const 토스트칸 = 요소('토스트');
-  function 토스트(무엇, 누구) {
+  /* 누구먼저 = true 면 닉네임이 앞에 선다 — 인사가 「○○님, 안녕하세요」로 읽히게(유호 09-06).
+     굵게 그리는 칸(.누구)은 그대로 닉네임이라 글꼴 결이 안 흔들린다. */
+  function 토스트(무엇, 누구, 누구먼저) {
     while (토스트칸.children.length >= 3) 토스트칸.firstElementChild.remove();
-    const el = document.createElement('div'); el.className = '알림';
+    const el = document.createElement('div'); el.className = 누구먼저 ? '알림 붙임' : '알림';
     const a = document.createElement('span'); a.className = '무엇'; 글(a, 무엇);
     const b = document.createElement('span'); b.className = '누구'; 글(b, 누구 || '');
-    el.append(a, b);
+    el.append(...(누구먼저 ? [b, a] : [a, b]));
     토스트칸.appendChild(el);
     setTimeout(() => { el.classList.add('끝'); setTimeout(() => el.remove(), 320); }, 4200);
   }
@@ -322,6 +326,8 @@ function 시작() {
     else if (r.종류 === '정답') 정답축하(r.값);
     else if (r.종류 === '연동') 토스트(판정.병기('연동'), r.값.닉네임);
     else if (r.종류 === '체크인') 토스트(판정.병기('체크인'), r.값.닉네임);
+    /* 🆕 09-06 — 채팅에 처음 말을 건 사람에게 인사한다(유호 지시). 닉네임이 앞에 선다. */
+    else if (r.종류 === '인사') 토스트(판정.병기('인사'), r.값.닉네임, true);
     else if (r.종류 === '투표') 토스트(판정.병기('투표'), r.값.선택);
     else if (r.종류 === '인사') 토스트(판정.병기('시작'), '');
     /* `라운드`·`마감` 은 화면이 아무것도 안 한다 — 퀴즈는 채팅으로 내려갔다(확정 ①).

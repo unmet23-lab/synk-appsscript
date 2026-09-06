@@ -1,0 +1,36 @@
+# 라디오24 «살아 있는» 송출 유닛 — /etc/systemd/system/radio-live.service
+#
+# 이것과 radio-stream.service 는 **둘 중 하나만** 돈다. 같은 방송 열쇠로 동시에 밀면 유튜브가 끊는다.
+#   radio-stream  곡 팩을 그대로 민다(-c copy · 계산 0 · 화면이 곡에 박혀 있다)
+#   radio-live    곡 팩 위에 층을 실시간으로 겹친다(다시 인코딩 · 채팅에 반응한다)  ← 이 파일
+#
+# 바꾸는 법:
+#   sudo systemctl disable --now radio-stream && sudo systemctl enable --now radio-live
+#   되돌리기: sudo systemctl disable --now radio-live && sudo systemctl enable --now radio-stream
+#
+# 준비물
+#   /opt/synk-radio/팩/playlist.txt          재생목록.js 가 낸다
+#   /opt/synk-radio/송출/.env                YOUTUBE_STREAM_KEY 한 줄 (synk 가 읽을 수 있어야 한다)
+#   /opt/synk-radio/지면/bots/오버레이/       층 지면과 겹쳐송출.js
+#   /usr/bin/chromium · 한글 글꼴(fonts-noto-cjk)  없으면 이름이 네모로 깨진다
+#
+# 🔴 크로미움은 root 로 안 돌린다 — 그래서 User=synk 다. 열쇠 파일도 synk 소유여야 한다.
+
+[Unit]
+Description=SYNK radio24 live overlay stream (chromium overlay + ffmpeg)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=60
+
+[Service]
+Type=simple
+User=synk
+WorkingDirectory=/opt/synk-radio/지면
+ExecStart=/usr/bin/node /opt/synk-radio/지면/bots/오버레이/겹쳐송출.js --팩 /opt/synk-radio/팩 --지면뿌리 /opt/synk-radio/지면 --프레임 20 --뜨기 10
+Restart=always
+RestartSec=5
+# 크로미움과 ffmpeg 는 이 프로세스의 자식이다 — 유닛을 멈추면 무리째 내려간다(기본 KillMode).
+
+[Install]
+WantedBy=multi-user.target
