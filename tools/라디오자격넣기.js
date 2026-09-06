@@ -35,8 +35,11 @@ const 봇칸 = {
   RADIO_YT_REFRESH_TOKEN: ['RADIO_YT_REFRESH_TOKEN'],
   SUPABASE_URL: ['SUPABASE_URL', 'EXPO_PUBLIC_SUPABASE_URL'],
   SUPABASE_ANON_KEY: ['SUPABASE_ANON_KEY', 'EXPO_PUBLIC_SUPABASE_ANON_KEY'],
-  RADIO_INGEST_SECRET: ['RADIO_INGEST_SECRET_PROD', 'RADIO_INGEST_SECRET'],
-  RADIO_ROUND_SECRET: ['RADIO_ROUND_SECRET_PROD', 'RADIO_ROUND_SECRET'],
+  /* 🔴 09-06 실측: `_PROD` 판을 먼저 쓰면 Supabase 인제스트가 **401 unauthorized** 를 낸다.
+   *   배포된 함수가 쥔 값은 «접미사 없는» 쪽이다. 이름이 `_PROD` 라고 «운영용»으로 읽으면 틀린다.
+   *   자 = 봇 로그의 「인제스트 실패 HTTP 401」 한 줄. 바꿔 넣고 재시작하니 그 줄이 사라졌다. */
+  RADIO_INGEST_SECRET: ['RADIO_INGEST_SECRET'],
+  RADIO_ROUND_SECRET: ['RADIO_ROUND_SECRET'],
 };
 
 function 환경읽기(경로) {
