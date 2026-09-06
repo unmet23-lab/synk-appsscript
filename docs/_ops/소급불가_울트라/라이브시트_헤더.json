@@ -1,4 +1,10 @@
 {
+ "_뜬때": {
+  "when": "2026-09-07T03:28:43+09:00",
+  "how": "구글 드라이브 통로로 SYNK_앱데이터 를 읽어 표 93벌의 첫 행을 뽑았다(읽기만 · 시트를 안 만졌다)",
+  "note": "마크다운 변환이 밑줄 앞에 역슬래시를 넣는다 — 걷지 않으면 student_id 가 딴 칸이 된다(09-07 실측)",
+  "caveat": "탭 이름은 마크다운에 안 실린다 — 옛 사진과 헤더 겹침으로 붙였고, 못 붙인 것은 이름모름_NN 이다"
+ },
  "직장기록_응답": {
   "headers": [
    "Хугацааны тамга",
@@ -27,8 +33,7 @@
    "다음 사람에게 한마디",
    "자료활용동의"
   ],
-  "filled_rows": 1,
-  "cols": 25
+  "filled_rows": 0
  },
  "대화폼_응답": {
   "headers": [
@@ -36,8 +41,7 @@
    "학생ID",
    "하고 싶은 말"
   ],
-  "filled_rows": 1,
-  "cols": 3
+  "filled_rows": 0
  },
  "퀴즈폼_응답": {
   "headers": [
@@ -47,8 +51,7 @@
    "내 답",
    "얼마나 확신하나요?"
   ],
-  "filled_rows": 1,
-  "cols": 5
+  "filled_rows": 0
  },
  "출퇴근폼_응답": {
   "headers": [
@@ -56,8 +59,7 @@
    "강사 이름",
    "구분"
   ],
-  "filled_rows": 1,
-  "cols": 3
+  "filled_rows": 0
  },
  "반출석폼_응답": {
   "headers": [
@@ -69,8 +71,7 @@
    "결석자 · 평일11A",
    "결석자 (직접 입력)"
   ],
-  "filled_rows": 1,
-  "cols": 7
+  "filled_rows": 0
  },
  "강의폼_응답": {
   "headers": [
@@ -79,8 +80,7 @@
    "강의",
    "오늘 배운 것을 한국어로 한 문장 쓰세요"
   ],
-  "filled_rows": 2,
-  "cols": 4
+  "filled_rows": 1
  },
  "portfolio_moments": {
   "headers": [
@@ -99,8 +99,7 @@
    "상태",
    "공개범위"
   ],
-  "filled_rows": 1,
-  "cols": 14
+  "filled_rows": 0
  },
  "voice_labels": {
   "headers": [
@@ -113,8 +112,7 @@
    "근거",
    "created_at"
   ],
-  "filled_rows": 1,
-  "cols": 8
+  "filled_rows": 0
  },
  "voice_delivery": {
   "headers": [
@@ -126,8 +124,7 @@
    "실린날",
    "created_at"
   ],
-  "filled_rows": 1,
-  "cols": 7
+  "filled_rows": 0
  },
  "talk_index_log": {
   "headers": [
@@ -142,8 +139,7 @@
    "quiet",
    "pct"
   ],
-  "filled_rows": 1,
-  "cols": 10
+  "filled_rows": 0
  },
  "consent_log": {
   "headers": [
@@ -152,8 +148,7 @@
    "상태",
    "기록일"
   ],
-  "filled_rows": 1,
-  "cols": 4
+  "filled_rows": 0
  },
  "voice_missions": {
   "headers": [
@@ -162,8 +157,7 @@
    "목표발화",
    "비고"
   ],
-  "filled_rows": 12,
-  "cols": 4
+  "filled_rows": 11
  },
  "상담로그": {
   "headers": [
@@ -179,8 +173,7 @@
    "채널",
    "모델"
   ],
-  "filled_rows": 7,
-  "cols": 11
+  "filled_rows": 6
  },
  "두뇌지식": {
   "headers": [
@@ -191,8 +184,7 @@
    "출처",
    "갱신일"
   ],
-  "filled_rows": 45,
-  "cols": 6
+  "filled_rows": 44
  },
  "두뇌로그": {
   "headers": [
@@ -208,8 +200,7 @@
    "사용지식",
    "비고"
   ],
-  "filled_rows": 1,
-  "cols": 11
+  "filled_rows": 0
  },
  "scene_log": {
   "headers": [
@@ -220,8 +211,7 @@
    "그날의문장",
    "created_at"
   ],
-  "filled_rows": 1,
-  "cols": 6
+  "filled_rows": 0
  },
  "self_declare_log": {
   "headers": [
@@ -230,8 +220,7 @@
    "값",
    "기록일"
   ],
-  "filled_rows": 4,
-  "cols": 4
+  "filled_rows": 3
  },
  "ai_daily_archive": {
   "headers": [
@@ -241,8 +230,7 @@
    "퀴즈문제",
    "퀴즈정답해설"
   ],
-  "filled_rows": 30,
-  "cols": 5
+  "filled_rows": 33
  },
  "outcome_log": {
   "headers": [
@@ -259,8 +247,7 @@
    "근거키",
    "created_at"
   ],
-  "filled_rows": 1,
-  "cols": 12
+  "filled_rows": 0
  },
  "exit_snapshot": {
   "headers": [
@@ -269,8 +256,7 @@
    "이름",
    "row_json"
   ],
-  "filled_rows": 2,
-  "cols": 4
+  "filled_rows": 1
  },
  "trajectory": {
   "headers": [
@@ -292,8 +278,7 @@
    "의도↔결과",
    "갱신일"
   ],
-  "filled_rows": 2,
-  "cols": 17
+  "filled_rows": 1
  },
  "결석폼_응답": {
   "headers": [
@@ -305,8 +290,7 @@
    "결과",
    "메모"
   ],
-  "filled_rows": 1,
-  "cols": 7
+  "filled_rows": 0
  },
  "lectures": {
   "headers": [
@@ -318,8 +302,7 @@
    "URL",
    "필수"
   ],
-  "filled_rows": 65,
-  "cols": 7
+  "filled_rows": 64
  },
  "lecture_views": {
   "headers": [
@@ -332,8 +315,7 @@
    "created_at",
    "비고"
   ],
-  "filled_rows": 2,
-  "cols": 8
+  "filled_rows": 1
  },
  "messenger_links": {
   "headers": [
@@ -346,8 +328,7 @@
    "마지막발송",
    "비고"
   ],
-  "filled_rows": 1,
-  "cols": 8
+  "filled_rows": 0
  },
  "jacket_grants": {
   "headers": [
@@ -356,10 +337,10 @@
    "자격도달일",
    "재원개월",
    "누적P",
-   "지급상태"
+   "지급상태",
+   "지급일"
   ],
-  "filled_rows": 1,
-  "cols": 6
+  "filled_rows": 0
  },
  "ai_ledger": {
   "headers": [
@@ -369,8 +350,7 @@
    "값",
    "created_at"
   ],
-  "filled_rows": 2,
-  "cols": 5
+  "filled_rows": 1
  },
  "스토리초안": {
   "headers": [
@@ -380,8 +360,7 @@
    "상태",
    "created_at"
   ],
-  "filled_rows": 7,
-  "cols": 5
+  "filled_rows": 6
  },
  "point_logs_archive": {
   "headers": [
@@ -394,8 +373,7 @@
    "연월",
    "태그"
   ],
-  "filled_rows": 82,
-  "cols": 8
+  "filled_rows": 81
  },
  "마감폼_응답": {
   "headers": [
@@ -405,8 +383,7 @@
    "진도",
    "오늘 한 번도 말하지 않은 학생"
   ],
-  "filled_rows": 1,
-  "cols": 5
+  "filled_rows": 0
  },
  "면접기록_응답": {
   "headers": [
@@ -429,8 +406,7 @@
    "자료활용동의",
    "학생ID"
   ],
-  "filled_rows": 1,
-  "cols": 18
+  "filled_rows": 0
  },
  "학업폼_응답": {
   "headers": [
@@ -442,8 +418,7 @@
    "값",
    "비고"
   ],
-  "filled_rows": 1,
-  "cols": 7
+  "filled_rows": 0
  },
  "enrollments": {
   "headers": [
@@ -456,8 +431,7 @@
    "비고",
    "created_at"
   ],
-  "filled_rows": 1,
-  "cols": 8
+  "filled_rows": 0
  },
  "설문폼_응답": {
   "headers": [
@@ -467,8 +441,7 @@
    "Хүүхдийн тань солонгос хэл ахиж байна гэж мэдрэгдэж байна уу? (아이의 한국어가 늘고 있다고 느끼시나요?)",
    "Нэг зүйлийг өөрчилж болох бол юу вэ? (한 가지만 바꿀 수 있다면 무엇인가요?)"
   ],
-  "filled_rows": 1,
-  "cols": 5
+  "filled_rows": 0
  },
  "목소리폼_응답": {
   "headers": [
@@ -479,10 +452,9 @@
    "Багана 4",
    "미션ID"
   ],
-  "filled_rows": 1,
-  "cols": 6
+  "filled_rows": 0
  },
- "ai_daily": {
+ "이름모름_35": {
   "headers": [
    "student_id",
    "날짜",
@@ -490,8 +462,7 @@
    "퀴즈문제",
    "퀴즈정답해설"
   ],
-  "filled_rows": 2,
-  "cols": 5
+  "filled_rows": 1
  },
  "error_bank": {
   "headers": [
@@ -500,8 +471,7 @@
    "패턴",
    "created_at"
   ],
-  "filled_rows": 5,
-  "cols": 4
+  "filled_rows": 4
  },
  "숙제폼_응답": {
   "headers": [
@@ -511,16 +481,14 @@
    "숙제ID",
    "재작성원본"
   ],
-  "filled_rows": 1,
-  "cols": 5
+  "filled_rows": 0
  },
  "출석폼_응답": {
   "headers": [
    "Хугацааны тамга",
    "학생ID"
   ],
-  "filled_rows": 1,
-  "cols": 2
+  "filled_rows": 0
  },
  "Маягтын Хариултууд 4": {
   "headers": [
@@ -544,10 +512,9 @@
    "14. \"열심히 공부했___ 시험을 잘 봤어요\"(결과)",
    "15. \"시간이 있___ 같이 영화 봐요\"(조건)"
   ],
-  "filled_rows": 1,
-  "cols": 19
+  "filled_rows": 0
  },
- "레벨테스트_응답": {
+ "이름모름_40": {
   "headers": [
    "Хугацааны тамга",
    "이름 / Нэр",
@@ -569,8 +536,7 @@
    "14. \"열심히 공부했___ 시험을 잘 봤어요\"(결과)",
    "15. \"시간이 있___ 같이 영화 봐요\"(조건)"
   ],
-  "filled_rows": 1,
-  "cols": 19
+  "filled_rows": 0
  },
  "약점메모폼_응답": {
   "headers": [
@@ -581,10 +547,9 @@
    "유형",
    "메모"
   ],
-  "filled_rows": 1,
-  "cols": 6
+  "filled_rows": 0
  },
- "약점메모폼_응답_구0724": {
+ "이름모름_42": {
   "headers": [
    "Хугацааны тамга",
    "강사",
@@ -593,8 +558,7 @@
    "유형",
    "메모"
   ],
-  "filled_rows": 2,
-  "cols": 6
+  "filled_rows": 1
  },
  "profiles": {
   "headers": [
@@ -736,8 +700,7 @@
    "관심전공",
    "등반카드HTML"
   ],
-  "filled_rows": 14,
-  "cols": 137
+  "filled_rows": 13
  },
  "quiz_log": {
   "headers": [
@@ -751,10 +714,11 @@
    "정답여부",
    "확신도",
    "제출일",
-   "created_at"
+   "created_at",
+   "급수",
+   "schema_ver"
   ],
-  "filled_rows": 1,
-  "cols": 11
+  "filled_rows": 0
  },
  "talk_log": {
   "headers": [
@@ -767,10 +731,12 @@
    "제출일",
    "created_at",
    "model",
-   "prompt_ver"
+   "prompt_ver",
+   "audio_ref",
+   "급수",
+   "schema_ver"
   ],
-  "filled_rows": 1,
-  "cols": 10
+  "filled_rows": 0
  },
  "teacher_gold": {
   "headers": [
@@ -786,10 +752,9 @@
    "오류태그",
    "강사",
    "created_at",
-   "🔒 Row ID"
+   "ð Row ID"
   ],
-  "filled_rows": 1,
-  "cols": 13
+  "filled_rows": 0
  },
  "lesson_close": {
   "headers": [
@@ -804,8 +769,7 @@
    "created_at",
    "처리상태"
   ],
-  "filled_rows": 1,
-  "cols": 10
+  "filled_rows": 0
  },
  "absence_followup": {
   "headers": [
@@ -820,8 +784,7 @@
    "복귀여부",
    "비고"
   ],
-  "filled_rows": 1,
-  "cols": 10
+  "filled_rows": 0
  },
  "groups": {
   "headers": [
@@ -836,8 +799,7 @@
    "편성근거",
    "고정"
   ],
-  "filled_rows": 10,
-  "cols": 10
+  "filled_rows": 9
  },
  "hw_feedback": {
   "headers": [
@@ -852,10 +814,9 @@
    "상태",
    "학생확인",
    "포인트지급",
-   "🔒 Row ID"
+   "ð Row ID"
   ],
-  "filled_rows": 2,
-  "cols": 12
+  "filled_rows": 1
  },
  "payments": {
   "headers": [
@@ -867,8 +828,7 @@
    "비고",
    "created_at"
   ],
-  "filled_rows": 3,
-  "cols": 7
+  "filled_rows": 2
  },
  "system_manifest": {
   "headers": [
@@ -876,8 +836,7 @@
    "값",
    "상태"
   ],
-  "filled_rows": 21,
-  "cols": 3
+  "filled_rows": 20
  },
  "inquiries": {
   "headers": [
@@ -887,8 +846,7 @@
    "상태",
    "접수시각"
   ],
-  "filled_rows": 4,
-  "cols": 5
+  "filled_rows": 3
  },
  "onboarding": {
   "headers": [
@@ -898,8 +856,7 @@
    "안내MN",
    "아이콘"
   ],
-  "filled_rows": 5,
-  "cols": 5
+  "filled_rows": 4
  },
  "attendance_batch": {
   "headers": [
@@ -910,8 +867,7 @@
    "created_at",
    "처리상태"
   ],
-  "filled_rows": 1,
-  "cols": 6
+  "filled_rows": 0
  },
  "mastery_log": {
   "headers": [
@@ -923,8 +879,7 @@
    "출처",
    "updated_at"
   ],
-  "filled_rows": 65,
-  "cols": 7
+  "filled_rows": 64
  },
  "student_errors": {
   "headers": [
@@ -937,8 +892,7 @@
    "created_at",
    "상태"
   ],
-  "filled_rows": 2,
-  "cols": 8
+  "filled_rows": 1
  },
  "exit_log": {
   "headers": [
@@ -950,8 +904,7 @@
    "종료사유",
    "종료일"
   ],
-  "filled_rows": 1,
-  "cols": 7
+  "filled_rows": 0
  },
  "absence_notice": {
   "headers": [
@@ -961,8 +914,7 @@
    "사유",
    "등록시각"
   ],
-  "filled_rows": 2,
-  "cols": 5
+  "filled_rows": 1
  },
  "leads": {
   "headers": [
@@ -977,10 +929,10 @@
    "등록일",
    "미등록사유",
    "메모",
+   "",
    "캠페인"
   ],
-  "filled_rows": 4,
-  "cols": 12
+  "filled_rows": 3
  },
  "경영계기판": {
   "headers": [
@@ -989,8 +941,7 @@
    "상태",
    "기준·메모"
   ],
-  "filled_rows": 16,
-  "cols": 4
+  "filled_rows": 15
  },
  "kpi_metrics": {
   "headers": [
@@ -1005,8 +956,7 @@
    "계산일",
    "확정여부"
   ],
-  "filled_rows": 24,
-  "cols": 10
+  "filled_rows": 23
  },
  "hall_of_fame": {
   "headers": [
@@ -1018,8 +968,7 @@
    "사진URL",
    "student_id"
   ],
-  "filled_rows": 2,
-  "cols": 7
+  "filled_rows": 1
  },
  "hw_batch": {
   "headers": [
@@ -1030,8 +979,7 @@
    "created_at",
    "처리상태"
   ],
-  "filled_rows": 1,
-  "cols": 6
+  "filled_rows": 0
  },
  "raid_story": {
   "headers": [
@@ -1041,8 +989,7 @@
    "제목",
    "스토리"
   ],
-  "filled_rows": 26,
-  "cols": 5
+  "filled_rows": 28
  },
  "today_board": {
   "headers": [
@@ -1052,8 +999,7 @@
    "시각",
    "퇴근"
   ],
-  "filled_rows": 2,
-  "cols": 5
+  "filled_rows": 1
  },
  "monthly_snapshot": {
   "headers": [
@@ -1062,8 +1008,7 @@
    "월간포인트",
    "랭킹"
   ],
-  "filled_rows": 34,
-  "cols": 4
+  "filled_rows": 33
  },
  "titles": {
   "headers": [
@@ -1071,8 +1016,7 @@
    "student_id",
    "칭호"
   ],
-  "filled_rows": 3,
-  "cols": 3
+  "filled_rows": 2
  },
  "manual_titles": {
   "headers": [
@@ -1081,8 +1025,7 @@
    "부여자",
    "날짜"
   ],
-  "filled_rows": 2,
-  "cols": 4
+  "filled_rows": 1
  },
  "story": {
   "headers": [
@@ -1091,8 +1034,7 @@
    "이름",
    "스토리"
   ],
-  "filled_rows": 40,
-  "cols": 4
+  "filled_rows": 39
  },
  "achievements": {
   "headers": [
@@ -1101,8 +1043,7 @@
    "등급",
    "달성일"
   ],
-  "filled_rows": 19,
-  "cols": 4
+  "filled_rows": 18
  },
  "schedule": {
   "headers": [
@@ -1112,8 +1053,7 @@
    "정원",
    "표시명"
   ],
-  "filled_rows": 25,
-  "cols": 5
+  "filled_rows": 24
  },
  "raid": {
   "headers": [
@@ -1124,8 +1064,7 @@
    "상태",
    "보상지급"
   ],
-  "filled_rows": 28,
-  "cols": 6
+  "filled_rows": 27
  },
  "class_stats": {
   "headers": [
@@ -1146,18 +1085,16 @@
    "반카드요약",
    "반몬스터이미지"
   ],
-  "filled_rows": 4,
-  "cols": 16
+  "filled_rows": 3
  },
  "app_state": {
   "headers": [
    "key",
    "value"
   ],
-  "filled_rows": 96,
-  "cols": 2
+  "filled_rows": 96
  },
- "voice_log": {
+ "이름모름_76": {
   "headers": [
    "student_id",
    "제출일",
@@ -1165,10 +1102,20 @@
    "파일URL",
    "file_id",
    "created_at",
-   ""
+   "전사",
+   "전사상태",
+   "전사일시",
+   "급수",
+   "미션ID",
+   "schema_ver",
+   "목표발화",
+   "시즌",
+   "전사신뢰도",
+   "전사엔진판",
+   "발음태그",
+   "돌려준날"
   ],
-  "filled_rows": 1,
-  "cols": 7
+  "filled_rows": 0
  },
  "attendance": {
   "headers": [
@@ -1181,8 +1128,7 @@
    "checked_by",
    "created_at"
   ],
-  "filled_rows": 81,
-  "cols": 8
+  "filled_rows": 80
  },
  "teacher_checkins": {
   "headers": [
@@ -1194,8 +1140,7 @@
    "gps_lng",
    "created_at"
   ],
-  "filled_rows": 1,
-  "cols": 7
+  "filled_rows": 0
  },
  "class_fuel": {
   "headers": [
@@ -1204,8 +1149,7 @@
    "입력자",
    "created_at"
   ],
-  "filled_rows": 2,
-  "cols": 4
+  "filled_rows": 1
  },
  "weekly_topics": {
   "headers": [
@@ -1222,8 +1166,7 @@
    "처리상태",
    "학습전개상태"
   ],
-  "filled_rows": 2,
-  "cols": 12
+  "filled_rows": 1
  },
  "report_cards": {
   "headers": [
@@ -1235,10 +1178,9 @@
    "코멘트",
    "created_at"
   ],
-  "filled_rows": 20,
-  "cols": 7
+  "filled_rows": 19
  },
- "point_logs": {
+ "이름모름_82": {
   "headers": [
    "log_id",
    "student_id",
@@ -1247,10 +1189,9 @@
    "given_by",
    "created_at",
    "연월",
-   "🔒 Row ID"
+   "ð Row ID"
   ],
-  "filled_rows": 1,
-  "cols": 8
+  "filled_rows": 0
  },
  "carryover": {
   "headers": [
@@ -1258,8 +1199,7 @@
    "points",
    "earned"
   ],
-  "filled_rows": 12,
-  "cols": 3
+  "filled_rows": 11
  },
  "crew_projects": {
   "headers": [
@@ -1273,8 +1213,7 @@
    "참여크루",
    "비고"
   ],
-  "filled_rows": 2,
-  "cols": 9
+  "filled_rows": 1
  },
  "synk_stories": {
   "headers": [
@@ -1287,8 +1226,7 @@
    "문법포인트",
    "씬프롬프트"
   ],
-  "filled_rows": 3,
-  "cols": 8
+  "filled_rows": 2
  },
  "synk_cards": {
   "headers": [
@@ -1296,8 +1234,7 @@
    "student_id",
    "카드HTML"
   ],
-  "filled_rows": 28,
-  "cols": 3
+  "filled_rows": 27
  },
  "world_raid": {
   "headers": [
@@ -1307,8 +1244,7 @@
    "누적데미지",
    "상태"
   ],
-  "filled_rows": 4,
-  "cols": 5
+  "filled_rows": 3
  },
  "academic_log": {
   "headers": [
@@ -1320,8 +1256,7 @@
    "비고",
    "입력자"
   ],
-  "filled_rows": 12,
-  "cols": 7
+  "filled_rows": 11
  },
  "notices": {
   "headers": [
@@ -1333,8 +1268,7 @@
    "created_at",
    "created_by"
   ],
-  "filled_rows": 8,
-  "cols": 7
+  "filled_rows": 7
  },
  "form_responses": {
   "headers": [
@@ -1344,8 +1278,7 @@
    "raw_data",
    "처리상태"
   ],
-  "filled_rows": 4,
-  "cols": 5
+  "filled_rows": 3
  },
  "teacher_stats": {
   "headers": [
@@ -1372,8 +1305,7 @@
    "등급판정",
    "지표모수"
   ],
-  "filled_rows": 4,
-  "cols": 22
+  "filled_rows": 3
  },
  "contents": {
   "headers": [
@@ -1383,12 +1315,14 @@
    "value_mn",
    "image_url",
    "threshold",
-   "🔒 Row ID",
+   "ð Row ID",
+   "",
+   "",
+   "",
    "영어",
    "상세카드",
    "몽골어"
   ],
-  "filled_rows": 554,
-  "cols": 10
+  "filled_rows": 179
  }
 }

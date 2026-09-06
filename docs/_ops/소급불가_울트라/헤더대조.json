@@ -4,7 +4,7 @@
   "tab": "hw_feedback",
   "code_cols": 24,
   "live_cols": 12,
-  "rows": 2,
+  "rows": 1,
   "missing": [
    "숙제ID",
    "오류태그",
@@ -21,40 +21,16 @@
    "확인지문"
   ],
   "extra": [
-   "🔒 Row ID"
+   "ð Row ID"
   ]
- },
- {
-  "key": "VOICE_LOG_HEADERS",
-  "tab": "voice_log",
-  "code_cols": 18,
-  "live_cols": 7,
-  "rows": 1,
-  "missing": [
-   "전사",
-   "전사상태",
-   "전사일시",
-   "급수",
-   "미션ID",
-   "schema_ver",
-   "목표발화",
-   "시즌",
-   "전사신뢰도",
-   "전사엔진판",
-   "발음태그",
-   "돌려준날"
-  ],
-  "extra": []
  },
  {
   "key": "QUIZ_LOG_HEADERS",
   "tab": "quiz_log",
   "code_cols": 17,
-  "live_cols": 11,
-  "rows": 1,
+  "live_cols": 13,
+  "rows": 0,
   "missing": [
-   "급수",
-   "schema_ver",
    "시도",
    "문항지문",
    "스냅샷지연초",
@@ -63,37 +39,13 @@
   "extra": []
  },
  {
-  "key": "TALK_LOG_HEADERS",
-  "tab": "talk_log",
-  "code_cols": 13,
-  "live_cols": 10,
-  "rows": 1,
-  "missing": [
-   "audio_ref",
-   "급수",
-   "schema_ver"
-  ],
-  "extra": []
- },
- {
   "key": "EXIT_LOG_HEADERS",
   "tab": "exit_log",
   "code_cols": 8,
   "live_cols": 7,
-  "rows": 1,
+  "rows": 0,
   "missing": [
    "이름_몽골"
-  ],
-  "extra": []
- },
- {
-  "key": "JACKET_HEADERS",
-  "tab": "jacket_grants",
-  "code_cols": 7,
-  "live_cols": 6,
-  "rows": 1,
-  "missing": [
-   "지급일"
   ],
   "extra": []
  },
@@ -102,7 +54,7 @@
   "tab": "kpi_metrics",
   "code_cols": 10,
   "live_cols": 10,
-  "rows": 24,
+  "rows": 23,
   "missing": [],
   "extra": []
  },
@@ -111,7 +63,7 @@
   "tab": "groups",
   "code_cols": 10,
   "live_cols": 10,
-  "rows": 10,
+  "rows": 9,
   "missing": [],
   "extra": []
  },
@@ -120,7 +72,7 @@
   "tab": "attendance",
   "code_cols": 5,
   "live_cols": 8,
-  "rows": 81,
+  "rows": 80,
   "missing": [],
   "extra": [
    "gps_lng",
@@ -133,7 +85,7 @@
   "tab": "portfolio_moments",
   "code_cols": 14,
   "live_cols": 14,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -142,7 +94,7 @@
   "tab": "lesson_close",
   "code_cols": 10,
   "live_cols": 10,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -151,7 +103,7 @@
   "tab": "lectures",
   "code_cols": 7,
   "live_cols": 7,
-  "rows": 65,
+  "rows": 64,
   "missing": [],
   "extra": []
  },
@@ -160,7 +112,7 @@
   "tab": "lecture_views",
   "code_cols": 8,
   "live_cols": 8,
-  "rows": 2,
+  "rows": 1,
   "missing": [],
   "extra": []
  },
@@ -169,7 +121,7 @@
   "tab": "schedule",
   "code_cols": 5,
   "live_cols": 5,
-  "rows": 25,
+  "rows": 24,
   "missing": [],
   "extra": []
  },
@@ -178,7 +130,7 @@
   "tab": "profiles",
   "code_cols": 20,
   "live_cols": 137,
-  "rows": 14,
+  "rows": 13,
   "missing": [],
   "extra": [
    "user_id",
@@ -300,7 +252,7 @@
   "tab": "profiles",
   "code_cols": 7,
   "live_cols": 137,
-  "rows": 14,
+  "rows": 13,
   "missing": [],
   "extra": [
    "user_id",
@@ -435,7 +387,7 @@
   "tab": "profiles",
   "code_cols": 4,
   "live_cols": 137,
-  "rows": 14,
+  "rows": 13,
   "missing": [],
   "extra": [
    "user_id",
@@ -573,7 +525,7 @@
   "tab": "messenger_links",
   "code_cols": 8,
   "live_cols": 8,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -582,7 +534,7 @@
   "tab": "enrollments",
   "code_cols": 8,
   "live_cols": 8,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -591,7 +543,7 @@
   "tab": "outcome_log",
   "code_cols": 12,
   "live_cols": 12,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -600,7 +552,7 @@
   "tab": "trajectory",
   "code_cols": 17,
   "live_cols": 17,
-  "rows": 2,
+  "rows": 1,
   "missing": [],
   "extra": []
  },
@@ -609,7 +561,7 @@
   "tab": "mastery_log",
   "code_cols": 7,
   "live_cols": 7,
-  "rows": 65,
+  "rows": 64,
   "missing": [],
   "extra": []
  },
@@ -618,7 +570,7 @@
   "tab": "scene_log",
   "code_cols": 6,
   "live_cols": 6,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -627,7 +579,16 @@
   "tab": "academic_log",
   "code_cols": 7,
   "live_cols": 7,
-  "rows": 12,
+  "rows": 11,
+  "missing": [],
+  "extra": []
+ },
+ {
+  "key": "VOICE_LOG_HEADERS",
+  "tab": "이름모름_76",
+  "code_cols": 18,
+  "live_cols": 18,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -636,7 +597,7 @@
   "tab": "voice_labels",
   "code_cols": 8,
   "live_cols": 8,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -645,7 +606,7 @@
   "tab": "voice_delivery",
   "code_cols": 7,
   "live_cols": 7,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -654,7 +615,7 @@
   "tab": "voice_missions",
   "code_cols": 4,
   "live_cols": 4,
-  "rows": 12,
+  "rows": 11,
   "missing": [],
   "extra": []
  },
@@ -663,7 +624,7 @@
   "tab": "class_stats",
   "code_cols": 8,
   "live_cols": 16,
-  "rows": 4,
+  "rows": 3,
   "missing": [],
   "extra": [
    "수업전브리핑",
@@ -681,7 +642,16 @@
   "tab": "talk_index_log",
   "code_cols": 10,
   "live_cols": 10,
-  "rows": 1,
+  "rows": 0,
+  "missing": [],
+  "extra": []
+ },
+ {
+  "key": "TALK_LOG_HEADERS",
+  "tab": "talk_log",
+  "code_cols": 13,
+  "live_cols": 13,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -690,10 +660,10 @@
   "tab": "teacher_gold",
   "code_cols": 12,
   "live_cols": 13,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": [
-   "🔒 Row ID"
+   "ð Row ID"
   ]
  },
  {
@@ -701,7 +671,7 @@
   "tab": "absence_followup",
   "code_cols": 10,
   "live_cols": 10,
-  "rows": 1,
+  "rows": 0,
   "missing": [],
   "extra": []
  },
@@ -710,7 +680,7 @@
   "tab": "teacher_stats",
   "code_cols": 22,
   "live_cols": 22,
-  "rows": 4,
+  "rows": 3,
   "missing": [],
   "extra": []
  },
@@ -719,7 +689,7 @@
   "tab": "self_declare_log",
   "code_cols": 4,
   "live_cols": 4,
-  "rows": 4,
+  "rows": 3,
   "missing": [],
   "extra": []
  },
@@ -728,7 +698,16 @@
   "tab": "consent_log",
   "code_cols": 4,
   "live_cols": 4,
-  "rows": 1,
+  "rows": 0,
+  "missing": [],
+  "extra": []
+ },
+ {
+  "key": "JACKET_HEADERS",
+  "tab": "jacket_grants",
+  "code_cols": 7,
+  "live_cols": 7,
+  "rows": 0,
   "missing": [],
   "extra": []
  }
