@@ -22,13 +22,35 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-/* 크레딧 원금 = 09-06 콘솔 실측(새 계정 77yuhbs · Free Trial · 09-05 시작 · 마감 2026-12-05).
- * ⚠ 화면에 크레딧 줄이 «둘» 보인다 — 돈이 두 배가 아니다.
+/* 지갑이 둘이다. 기본은 «지금 굽고 있는 쪽»을 잰다(`node tools/굽기계정.js` 가 그것을 정한다).
+ * ⚠ 새 지갑 화면에 크레딧 줄이 «둘» 보인다 — 돈이 두 배가 아니다.
  *   ① `FreeTrial:…`      ₩414,984 · **만료됨**(09-04 시작 09-05 종료) ← 무료 체험을 유료로 올리며 닫힌 줄
  *   ② `FreeTrialUpgrade:…` ₩414,984 · 사용 가능(09-05 시작 12-05 종료) ← 지금 쓰는 줄
  *   같은 40만이 ①에서 ②로 옮겨 간 것이다. 둘을 더해 80만으로 읽으면 틀린다. */
-const 크레딧원금 = 414984;
-const 마감 = '2026-12-05';
+/* 🔑 `확인잔액`·`확인때` = **콘솔 화면에서 마지막으로 눈으로 읽은 값**이다(09-06).
+ *   남은 돈은 「원금 − 이 창에서 태운 것」으로 세면 틀린다 — 창 밖에서 태운 것이 빠지기 때문이다.
+ *   그래서 «확인잔액에서, 확인한 때 이후로 태운 것»을 뺀다. 화면을 다시 읽으면 이 두 값을 갱신한다. */
+const 지갑들 = {
+  옛: {
+    이름: 'unmet23', 원금: 435523, 마감: '2026-11-13', 결제: '0161FA-7C996C-F1B948',
+    프로: 'gen-lang-client-0106203750', 자격: path.join(os.homedir(), '.clasprc.json'),
+    확인잔액: 136495, 확인때: '2026-09-06T17:00:00+09:00',
+  },
+  새: {
+    이름: '77yuhbs', 원금: 414984, 마감: '2026-12-05', 결제: '013A36-17619E-CE0D07',
+    프로: null, 자격: path.join(os.homedir(), '.synk-vertex-oauth.json'),
+    확인잔액: 222711, 확인때: '2026-09-06T16:30:00+09:00',
+  },
+};
+/** 굽기 자격 파일이 있으면 새 지갑, 없으면 옛 지갑(= `모델정책.js` 의 `붙인자격()` 과 같은 규칙). */
+function 고른지갑() {
+  if (process.argv.includes('--옛')) return 지갑들.옛;
+  if (process.argv.includes('--새')) return 지갑들.새;
+  return fs.existsSync(지갑들.새.자격) ? 지갑들.새 : 지갑들.옛;
+}
+const 지갑 = 고른지갑();
+const 크레딧원금 = 지갑.원금;
+const 마감 = 지갑.마감;
 
 /* 단가 = 09-06 «크레딧 화면»과 대조해 갈아 끼운 값.
  * 화면이 그날 ₩192,274 를 썼다고 말했고 같은 창의 출력 토큰이 1,332,857 이었다 ⇒ 토큰당 ₩0.1443.
@@ -38,7 +60,11 @@ const 마감 = '2026-12-05';
 const 토큰당 = 192274 / 1332857;
 const 단가출처 = '09-06 크레딧 화면 대조 실측 (쓴 것 ₩192,274 / 출력토큰 1,332,857)';
 
-const 자격경로 = process.env.SYNK_VERTEX_OAUTH || path.join(os.homedir(), '.synk-vertex-oauth.json');
+/* 새 지갑 자격은 «굽기를 옛 지갑으로 돌려 두면» 옆으로 치워져 있다(`tools/굽기계정.js`).
+ * 재는 일은 굽는 일과 별개이므로, 치워 둔 것도 찾아서 읽는다. */
+const 보관 = path.join(os.homedir(), '.synk-vertex-oauth.보관.json');
+const 자격경로 = process.env.SYNK_VERTEX_OAUTH
+  || (fs.existsSync(지갑.자격) ? 지갑.자격 : (지갑 === 지갑들.새 && fs.existsSync(보관) ? 보관 : 지갑.자격));
 
 function 인자(이름, 기본) {
   const i = process.argv.indexOf(이름);
@@ -64,7 +90,7 @@ async function 토큰얻기() {
     throw new Error(`구글 토큰 갱신 실패 ${r.status}: ${답.error_description || 답.error || ''}\n`
       + `   되살리는 법: node tools/구글계정붙이기.js --계정 ${j.계정 || '<메일주소>'}`);
   }
-  return { tok: 답.access_token, 프로: j.프로젝트, 계정: j.계정 };
+  return { tok: 답.access_token, 프로: 지갑.프로 || j.프로젝트, 계정: j.계정 || 지갑.이름 };
 }
 
 /** 모니터링 시계열 하나를 «시각 → 합계» 표로 접는다. */
@@ -132,16 +158,32 @@ async function 시계열(H, 프로, metric, 창초, 덧필터 = '') {
   console.log('합계'.padEnd(15), String(총호출).padStart(7), String(총막힘).padStart(9),
     String(총출력.toLocaleString()).padStart(12), String(총값.toLocaleString()).padStart(15));
 
-  const 남은 = 크레딧원금 - 총값;
   const 남은날 = Math.ceil((new Date(`${마감}T23:59:59+09:00`) - Date.now()) / 86400000);
-  console.log(`\n📊 이 창에서 태운 것 ≈ ₩${총값.toLocaleString()} (원금의 ${(총값 / 크레딧원금 * 100).toFixed(0)}%)`);
-  console.log(`   남은 것 ≈ ₩${남은.toLocaleString()} (${(남은 / 크레딧원금 * 100).toFixed(0)}%) · 남은 날 ${남은날}일`);
+  console.log(`\n📊 이 창에서 태운 것 ≈ ₩${총값.toLocaleString()} (원금 ₩${크레딧원금.toLocaleString()} 의 ${(총값 / 크레딧원금 * 100).toFixed(0)}%)`);
   if (총호출) console.log(`   한 번 부를 때마다 ≈ ₩${Math.round(총값 / 총호출).toLocaleString()}`);
+
+  /* 남은 돈 = «화면에서 읽은 잔액» − «그때 이후로 태운 것». 원금에서 창만 빼면 창 밖 소비가 통째로 빠진다. */
+  const 확인때 = new Date(지갑.확인때);
+  const 창시작 = new Date(Date.now() - 창시간 * 3600 * 1000);
+  let 확인뒤 = 0;
+  for (const [k, v] of 출력) {
+    // 시계열 키는 KST 「YYYY-MM-DD HH」 — 그 시각의 끝을 그 칸의 때로 본다
+    if (new Date(`${k.slice(0, 10)}T${k.slice(11, 13)}:59:59+09:00`) > 확인때) 확인뒤 += v;
+  }
+  const 확인뒤값 = Math.round(확인뒤 * 토큰당);
+  const 남은 = 지갑.확인잔액 - 확인뒤값;
+  console.log(`\n💰 남은 것 ≈ ₩${남은.toLocaleString()} · 남은 날 ${남은날}일 (마감 ${마감})`);
+  console.log(`   = 화면에서 읽은 ₩${지갑.확인잔액.toLocaleString()}(${지갑.확인때.slice(0, 16).replace('T', ' ')}) − 그 뒤 태운 ₩${확인뒤값.toLocaleString()}`);
+  if (창시작 > 확인때) {
+    console.log(`   🔴 창이 짧아 «확인한 때 이후»를 다 못 덮는다 — 이 값은 실제보다 크다.`);
+    console.log(`      창을 넓혀라: --시간 ${Math.ceil((Date.now() - 확인때) / 3600000) + 2}`);
+  }
 
   console.log(`\n📐 자 둘 — 섞어 읽지 말 것`);
   console.log(`   ① 부른 수·받은 양 = 구글 모니터링 실측(추정 아니다)`);
   console.log(`   ② 값(원) = ①에 단가를 곱한 «추정». 단가 출처 = ${단가출처}`);
   console.log(`   ⚠ 이 창 밖에서 태운 것은 안 들어 있다. 창을 넓히려면 --시간 100`);
   console.log(`   ⚠ 화면의 실제 잔액은 여기가 아니라 콘솔이 쥔다:`);
-  console.log(`      console.cloud.google.com/billing/013A36-17619E-CE0D07/credits?authuser=1\n`);
+  console.log(`      console.cloud.google.com/billing/${지갑.결제}/credits`);
+  console.log(`   🔑 화면을 다시 읽으면 이 파일의 '확인잔액'·'확인때' 를 그 값으로 갱신한다.\n`);
 })().catch((e) => { console.error(`\n🔴 ${e.message}\n`); process.exit(1); });
