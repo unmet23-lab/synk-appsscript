@@ -92,6 +92,13 @@ function 진단코드_(난수) {
   return String(100000 + Math.floor(r * 900000)).slice(0, 6);
 }
 
+/* 진단 은행의 문장 전부 — 자율일 굳히기가 «같은 문장을 연습에 안 내려고» 쓰는 제외 목록이다(자를 향해 가르치지 않는다). 정답은 안 낸다. */
+function 진단문장목록_() {
+  const out = [];
+  DIAG_LADDER.forEach(function (급) { [0, 1, 2].forEach(function (i) { 진단문항급_(급, i).forEach(function (q) { out.push(q.문장); }); }); });
+  return out;
+}
+
 /* 문형 번호 → 사람이 읽는 이름(`GRAMMAR_BANK`). 은행에 없으면 번호 그대로(지어내지 않는다). */
 function 진단문형이름_(id) {
   const 은행 = typeof GRAMMAR_BANK === 'undefined' ? [] : GRAMMAR_BANK;
