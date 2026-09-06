@@ -165,7 +165,8 @@ const EXIT_KEEP_COLS_ = [27, 28, 30, 31, 32, 37, 41, 44, 45, 46, 49, 50, 54, 55,
  *   (있는 것은 「1권 = 1시즌 8주」와 Lv1~6 뿐 · 엔진의 시즌 라벨은 시작일 yyyy-MM-dd 다). 규격 없이 적으면 뜻 모를
  *   숫자가 쌓인다(판정 Ⅶ-1) — 규격이 서는 날 «끝에» 한 칸 더한다.
  * ═══════════════════════════════════════════════════════════════════ */
-const EXIT_LOG_HEADERS = ['student_id', '이름', '반', '퇴소감지일', '재원일수', '종료사유', '종료일'];
+const EXIT_LOG_HEADERS = ['student_id', '이름', '반', '퇴소감지일', '재원일수', '종료사유', '종료일',
+  '이름_몽골']; // [v9.312] 몽골어 표기(상담시트 B) — 퇴소하면 profiles 의 C 칸이 사라지는데 골든 픽스처 이름 살균 사전은 그 표기도 알아야 한다(코덱스 09-06 P1)
 /* 종료사유 — 원장 수기 드롭다운의 정본(결정.md 08-30 · 여섯). 「미정」이 있는 까닭: 사람이 손으로 적는 칸인데
  * «아직 모른다»를 적을 낱말이 없으면 미분류가 전부 「기타」로 가고 이탈률이 조용히 갈린다.
  * ⚠ 문구를 고치면 이미 적힌 행과 갈라진다. **늘리는 것은 안전하고, 고치는 것은 소급 마이그레이션이다**(OUTCOME_KINDS_ 와 같은 규약). */
@@ -285,7 +286,8 @@ function syncProfiles() {
         const tenureDays = caD ? Math.floor((now - caD) / 86400000) : '';
         // 종료사유·종료일은 빈 채로 — 사람이 적는 칸이다(자동으로 알 수 없는 것을 자동인 척하지 않는다)
         퇴소사건.push([userId, row[0] || '', row[3] || '',
-          Utilities.formatDate(now, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd'), tenureDays, '', '']);
+          Utilities.formatDate(now, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd'), tenureDays, '', '',
+          row[1] || '']); // [v9.312] 이름_몽골 — 퇴소 뒤에도 이름 살균 사전(엔진_수집.js 명단이름_)이 두 표기를 다 알게
       }
       return;
     }
