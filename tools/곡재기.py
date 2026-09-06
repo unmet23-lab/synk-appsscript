@@ -59,10 +59,17 @@ def 읽기(경로):
     return np.frombuffer(r.stdout, dtype=np.float32)
 
 
-def 라우드니스(경로):
-    """ffmpeg ebur128 의 integrated LUFS. 이건 표준 자라 내가 정의하지 않는다."""
+def 라우드니스(경로, 시작=None, 길이=None):
+    """ffmpeg ebur128 의 integrated LUFS. 이건 표준 자라 내가 정의하지 않는다.
+
+    시작·길이를 주면 곡 «전체»가 아니라 그 «구간»만 잰다.
+    🔑 볼륨을 잡을 때 봐야 하는 건 전체가 아니라 영상이 실제로 무는 구간이다 —
+       09-07 실측: 따뜻_118 은 전체 −15.7 인데 쓰는 구간(26.4초~)은 −15.1 로 0.6dB 더 크다.
+    """
+    앞 = ["-ss", str(시작)] if 시작 is not None else []
+    앞 += ["-t", str(길이)] if 길이 is not None else []
     r = subprocess.run(
-        ["ffmpeg", "-v", "info", "-i", 경로, "-af", "ebur128=framelog=quiet", "-f", "null", "-"],
+        ["ffmpeg", "-v", "info", *앞, "-i", 경로, "-af", "ebur128=framelog=quiet", "-f", "null", "-"],
         capture_output=True)
     글 = r.stderr.decode("utf-8", "replace")
     표시 = 글.rfind("I:")
@@ -75,7 +82,7 @@ def 라우드니스(경로):
         return None
 
 
-def 재기(이름, 경로):
+def 재기(이름, 경로, 창초=30):
     x = 읽기(경로)
     길이 = len(x) / SR
 
@@ -100,11 +107,13 @@ def 재기(이름, 경로):
     봉우리 = (오름[1:-1] > 문턱) & (오름[1:-1] >= 오름[:-2]) & (오름[1:-1] > 오름[2:])
     온셋밀도 = float(봉우리.sum() / 길이)
 
-    # ⑤ 가장 꽉 찬 30초 — 30초 창의 평균 세기가 가장 큰 시작점
-    창수30 = int(30 * SR / 홉)
-    if 수 > 창수30:
+    # ⑤ 가장 꽉 찬 <창초>초 — 그 길이 창의 평균 세기가 가장 큰 시작점
+    #    🔑 창초는 «쓰는 자리»가 정한다. 릴은 540프레임 ÷ 30fps = 18초라 --창 18 로 잰다.
+    #       30초 창으로 고른 시작점이 18초 창에서도 제일 꽉 차다는 보장은 없다.
+    창수 = int(창초 * SR / 홉)
+    if 수 > 창수:
         누적 = np.concatenate([[0], np.cumsum(rms)])
-        평균들 = (누적[창수30:] - 누적[:-창수30]) / 창수30
+        평균들 = (누적[창수:] - 누적[:-창수]) / 창수
         꽉찬시작 = float(np.argmax(평균들) * 홉 / SR)
     else:
         꽉찬시작 = 0.0
@@ -120,7 +129,9 @@ def 재기(이름, 경로):
     return {
         "이름": 이름,
         "길이": 길이,
+        "창초": 창초,
         "LUFS": 라우드니스(경로),
+        "창LUFS": 라우드니스(경로, 꽉찬시작, 창초),
         "변동계수": 변동계수,
         "온셋": 온셋밀도,
         "꽉찬시작": 꽉찬시작,
@@ -130,14 +141,17 @@ def 재기(이름, 경로):
 
 def 줄(v):
     lufs = f"{v['LUFS']:6.1f}" if v["LUFS"] is not None else "     ?"
-    return (f"  {v['이름'][:22]:<22} {v['길이']:6.1f}초 {lufs}  "
+    창lufs = f"{v['창LUFS']:6.1f}" if v["창LUFS"] is not None else "     ?"
+    return (f"  {v['이름'][:22]:<22} {v['길이']:6.1f}초 {lufs} {창lufs}  "
             f"{v['변동계수']:6.3f}  {v['온셋']:5.2f}/초  {v['꽉찬시작']:6.1f}초부터  {v['밝기']:6.0f}Hz")
 
 
 def 판정(v):
     """규격만 본다. «음악으로 좋은가»는 여기서 안 답한다."""
     말 = []
-    말.append("✅ 길이 넉넉" if v["길이"] >= 40 else f"🔴 길이 {v['길이']:.0f}초 — 40초는 넘어야 «꽉 찬 30초»를 고른다")
+    넉넉 = v["창초"] + 10
+    말.append("✅ 길이 넉넉" if v["길이"] >= 넉넉
+              else f"🔴 길이 {v['길이']:.0f}초 — {넉넉:.0f}초는 넘어야 «꽉 찬 {v['창초']:.0f}초»를 고른다")
     if v["변동계수"] < 0.35:
         말.append("· 결 = «깔림»(패드에 가깝다. 티저처럼 소리가 안 나서야 하는 자리)")
     elif v["변동계수"] < 0.55:
@@ -158,24 +172,27 @@ def main():
     ap.add_argument("곡", nargs="*", help="잴 곡 경로(여럿 가능)")
     ap.add_argument("--혼자", action="store_true", help="쓰던 곡과 견주지 않는다")
     ap.add_argument("--쓰던것만", action="store_true", help="지금 쓰는 곡들만 잰다")
+    ap.add_argument("--창", type=float, default=30, metavar="초",
+                    help="쓸 구간의 길이(초). 릴은 18(540프레임÷30fps) · 기본 30")
     a = ap.parse_args()
 
     잰것 = []
     for 하나 in (a.곡 or []):
         if not os.path.exists(하나):
             sys.exit(f"🔴 파일이 없다: {하나}")
-        잰것.append(재기("🆕 " + os.path.splitext(os.path.basename(하나))[0], 하나))
+        잰것.append(재기("🆕 " + os.path.splitext(os.path.basename(하나))[0], 하나, a.창))
     새것수 = len(잰것)
     if not a.혼자:
         for 이름, 상대 in 쓰던곡:
             p = os.path.join(ROOT, 상대)
             if os.path.exists(p):
-                잰것.append(재기(이름, p))
+                잰것.append(재기(이름, p, a.창))
     if not 잰것:
         sys.exit("잴 것이 없다 — 곡 경로를 주거나 --쓰던것만 을 쓴다")
 
     print("■ 곡 재기 — 자는 tools/곡재기.py 다(08-26 표와 «같은 자»가 아니다. 아래는 이 자 안에서만 견준다)")
-    print(f"  {'곡':<22} {'길이':>7} {'라우드':>6}  {'변동':>6}  {'온셋':>7}  {'꽉 찬 30초':>10}  {'밝기':>7}")
+    print(f"  «라우드»는 곡 전체 · «창»은 그 아래 «꽉 찬 {a.창:.0f}초» 구간만 잰 값이다(볼륨은 이쪽으로 잡는다)")
+    print(f"  {'곡':<22} {'길이':>7} {'라우드':>6} {'창':>6}  {'변동':>6}  {'온셋':>7}  {f'꽉 찬 {a.창:.0f}초':>10}  {'밝기':>7}")
     for v in 잰것:
         print(줄(v))
 
