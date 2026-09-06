@@ -6,6 +6,7 @@ import { 리드크루클립 } from "./클립/리드크루클립";
 import { 커버 } from "./클립/커버";
 import { 카운트다운 } from "./클립/카운트다운";
 import { 카운트다운커버 } from "./클립/카운트다운커버";
+import { 첫게시물티저, 정사각, 티저길이 } from "./클립/첫게시물티저";
 import { 대본클립들 } from "./클립/생성/대본클립들";
 import { 카운트다운들 } from "./클립/생성/카운트다운들";
 import "./킷/폰트"; /* 부수효과로 폰트를 등록한다 — delayRender 가 렌더를 기다리게 한다 */
@@ -71,6 +72,15 @@ export const Root: React.FC = () => {
           />
         </React.Fragment>
       ))}
+
+      {/* 첫 게시물 티저 — 세로 릴이 아니라 «정사각»이다(페이스북 피드 · 유호 지시 09-07).
+          마지막 프레임이 곧 표지 카드가 되도록 짰다. */}
+      <Composition
+        id="fb-first-teaser"
+        component={첫게시물티저}
+        durationInFrames={티저길이}
+        {...정사각}
+      />
 
       {/* 로고 갈래 눈검사 — 「어느 판을 쓰나」를 화면에서 고른다(폰트시험과 같은 성격의 상시 검사판) */}
       <Composition id="logo-check" component={로고시험} durationInFrames={1} {...세로} />
