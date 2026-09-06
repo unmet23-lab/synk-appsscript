@@ -42,6 +42,27 @@ function ssh(명령, 조용히) {
     return;
   }
 
+  if (process.argv.includes('--송출켜기')) {
+    console.log('\n📡 송출을 켠다 — 유튜브로 신호가 나가기 시작한다(방송 자리는 «비공개»라 아무에게도 안 보인다)\n');
+    console.log(ssh('sudo systemctl start radio-stream; sleep 12; sudo journalctl -u radio-stream -n 12 --no-pager 2>/dev/null | tail -12', true).trim());
+  }
+
+  if (process.argv.includes('--송출끄기')) {
+    console.log('\n⏹ 송출을 끈다\n');
+    console.log(ssh('sudo systemctl stop radio-stream; sleep 2; echo "도나: $(systemctl is-active radio-stream 2>&1)"', true).trim());
+  }
+
+  if (process.argv.includes('--첫화면')) {
+    // 팩의 첫 프레임을 뽑아 노트북으로 가져온다 — 「화면이 어떻게 생겼나」를 눈으로 본다
+    console.log('\n🖼 첫 화면을 뽑는다\n');
+    ssh('cd /opt/synk-radio/팩 && f=$(ls *.ts | head -1) && ffmpeg -y -loglevel error -i "$f" -frames:v 1 /tmp/첫화면.png && echo "뽑았다: $f"', true);
+    const 받을곳 = path.join(os.homedir(), 'Documents', 'SYNK-appsscript', 'docs', '라디오', '첫화면.png');
+    try {
+      execFileSync('scp', ['-i', 열쇠, '-o', 'StrictHostKeyChecking=no', `${서버}:/tmp/첫화면.png`, 받을곳], { encoding: 'utf8' });
+      console.log(`   받았다 → ${받을곳}`);
+    } catch (e) { console.log(`   🔴 못 받았다: ${e.message.slice(0, 200)}`); }
+  }
+
   if (process.argv.includes('--설치')) {
     console.log('\n📦 설치한다 (송출은 «안» 켠다)\n' + '─'.repeat(52));
     console.log(ssh('cd ~/talk && sudo bash bots/송출/개통.sh --설치 2>&1 | tail -25', true).trim());
@@ -60,6 +81,9 @@ function ssh(명령, 조용히) {
   ].join('; '), true);
   console.log(상태.trim());
   console.log('─'.repeat(52));
-  console.log('\n🔴 송출은 꺼져 있다 — 켜는 것은 유호님이 첫 화면을 보시고 정한다.');
-  console.log('   켜는 법: node tools/라디오설치.js --송출켜기 (아직 안 만들었다 · 유호님 지시 때 만든다)\n');
+  const 송출 = /송출: |radio-stream/.test(상태) ? (상태.match(/\[도나\][^\n]*/) || [''])[0] : '';
+  console.log(`\n🎛 켜고 끄는 법: node tools/라디오설치.js --송출켜기 / --송출끄기`);
+  console.log(`   첫 화면 보기: node tools/라디오설치.js --첫화면 (docs/라디오/첫화면.png 로 받는다)`);
+  console.log(`   ⚠ 송출이 돌면 유튜브로 신호가 나간다 — 방송 자리의 «공개 범위»는 따로다:`);
+  console.log(`      node tools/라디오방송열쇠.js --공개범위 private|unlisted|public\n`);
 })().catch((e) => { console.error(`\n🔴 ${e.message}\n`); process.exit(1); });
