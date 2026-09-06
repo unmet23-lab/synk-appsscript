@@ -89,8 +89,12 @@ function 폼짓기() {
     갈래.createChoice('한국어 강사', 강사쪽),
     갈래.createChoice('몽골어 감수자', 감수쪽),
   ]);
-  // 강사 섹션을 다 채우면 감수자 섹션으로 넘어가지 않고 그대로 낸다.
-  강사쪽.setGoToPage(FormApp.PageNavigationType.SUBMIT);
+  /* 강사 섹션을 다 채우면 감수자 섹션으로 넘어가지 않고 그대로 낸다.
+   * 🔴 **한 칸 앞에 건다.** `PageBreakItem.setGoToPage()` 는 «그 표지가 여는 섹션»이 아니라
+   *   «그 표지 앞 섹션»이 끝난 뒤 갈 곳을 정한다. 즉 「강사 섹션 다음」을 바꾸려면
+   *   그 다음 표지인 `감수쪽` 에 건다. 09-06 첫 판은 `강사쪽` 에 걸어서 안 먹었고,
+   *   강사 지원자가 감수자 문항까지 보게 됐다(09-07 실물로 잡았다). */
+  감수쪽.setGoToPage(FormApp.PageNavigationType.SUBMIT);
 
   /* ── 설정 셋 ─────────────────────────────────────────────────────── */
   f.setCollectEmail(false);            // 켜면 지원자가 구글 로그인을 해야 한다
