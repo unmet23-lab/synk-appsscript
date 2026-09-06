@@ -120,6 +120,7 @@ const 나가는자리_ = [
    *     조건이 지금 성립한다. 이 트랙은 그 파일을 못 만지므로 **여기 적어 드러내기만 한다**(유호 판정 자리). */
   { file: '엔진_수집.js',     vendor: '변수URL',      n: 2, 뭐: '🔴 골든 픽스처 읽기·쓰기(GitHub contents API · 목적지가 변수라 리터럴로 안 잡힌다)' },
   { file: '엔진_운영배치.js', vendor: '변수URL',      n: 1, 뭐: '🔴 명부스윕_ — ROSTER_INGEST_URL(우리 백엔드). profiles A:H 전량이 나간다' },
+  { file: '엔진_자율일.js',   vendor: '변수URL',      n: 2, 뭐: '🔴 자율일다리_ · 자율일말하기제출_ — SUNDAY_BUNDLE_URL·SUNDAY_PROGRESS_URL(우리 백엔드 talk · 09-07). 나가는 것 = 학생ID + 그날 묶음(문항·문장·오답 고리) · 들어오는 것 = 배정ID별 항목 충족 목록' },
 ];
 const 선언합계_ = 나가는자리_.reduce((a, r) => a + r.n, 0);
 

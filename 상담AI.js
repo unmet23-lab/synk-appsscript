@@ -64,6 +64,8 @@ const 상담AI_환율 = 3500;                 // ₮/$1
  * 둘 다 이 함수 하나가 받는다. */
 function doPost(e) {
   try {
+    // [진단] 급수 진단 JSON 통로 — `?p=진단` 이면 상담 웹훅을 안 거친다(엔진_진단.js 진단API_ · ContentService 만 · 아래 doGet ⛔ 그대로)
+    if (e && e.parameter && e.parameter.p === '진단') return 진단API_(e, 'post');
     const raw = e && e.postData && e.postData.contents ? e.postData.contents : '{}';
     const body = JSON.parse(raw);
     const 입력 = 상담_정규화_(body);
@@ -126,6 +128,7 @@ function doGet(e) {
     return ContentService.createTextOutput(p['hub.challenge'] || '');
   }
   // [v9.185] 인계 메일 링크 — act=draft(확인·부작용 0) → act=send(발송). ContentService 텍스트만(위 ⛔ 준수)
+  if (p.p === '진단') return 진단API_(e, 'get');   // [진단] 급수 진단 결과 조회 — ContentService JSON 만(위 ⛔ 준수)
   if (p.act === 'draft' || p.act === 'send') return 상담_초안발송_(p);
   return ContentService.createTextOutput('SYNK');
 }
