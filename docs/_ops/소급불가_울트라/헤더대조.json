@@ -585,7 +585,7 @@
  },
  {
   "key": "VOICE_LOG_HEADERS",
-  "tab": "이름모름_76",
+  "tab": "voice_log",
   "code_cols": 18,
   "live_cols": 18,
   "rows": 0,

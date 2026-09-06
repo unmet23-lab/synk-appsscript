@@ -74,14 +74,18 @@ function score(cols, tab) {
 }
 
 const report = [];
+const 못붙임 = [];   // 라이브 탭에 짝이 없는 코드 상수 — 「없는 칸 0」과 헷갈리면 안 된다
 for (const [key, cols] of Object.entries(defs)) {
-  if (cols.length < 3) continue;
+  if (cols.length < 3) { 못붙임.push([key, cols.length, '칸이 셋 미만이라 짝을 못 고른다(확장 칸 정의로 보인다)']); continue; }
   let best = null, bestScore = 0;
   for (const tab of liveTabs) {
     const s = score(cols, tab);
     if (s > bestScore) { bestScore = s; best = tab; }
   }
-  if (!best || bestScore < Math.min(3, cols.length)) continue;
+  if (!best || bestScore < Math.min(3, cols.length)) {
+    못붙임.push([key, cols.length, '이 사진의 93탭 어디와도 안 겹친다 — 탭이 없거나 «다른 스프레드시트»에 산다']);
+    continue;
+  }
   const set = new Set(best.headers);
   const missing = cols.filter(c => c && !set.has(c));
   const extra = best.headers.filter(c => c && !cols.includes(c));
@@ -100,3 +104,11 @@ for (const r of report) {
 }
 const clean = report.filter(r => !r.missing.length);
 console.log(`\n✅ 칸이 다 선 표 ${clean.length}: ${clean.map(r => r.tab).join(', ')}`);
+
+/* 🔴 짝을 못 찾은 상수를 «조용히 건너뛰면» 위 셈이 전수인 것처럼 읽힌다 — 그것이 거짓 초록이다.
+ *   09-07 에 넷이 여기 걸렸고, 그중 상담 계열은 «다른 스프레드시트»(CONSULT_SHEET_ID)에 산다.
+ *   이 사진은 SYNK_앱데이터 한 벌만 뜬 것이라 원천적으로 그 탭을 못 본다. */
+if (못붙임.length) {
+  console.log(`\n❔ 라이브 탭에 «못 붙인» 코드 상수 ${못붙임.length} — 위 셈에 안 들어 있다`);
+  for (const [key, n, why] of 못붙임) console.log(`   · ${key} (${n}칸) — ${why}`);
+}
