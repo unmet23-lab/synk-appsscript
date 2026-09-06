@@ -11,7 +11,7 @@
 # 몸·접지 두 장은 **같은 상자**로 자른다(따로 자르면 그림자가 어긋난다).
 #
 # 사용: python tools/룸자산화.py
-import sys, os, io, json, base64
+import sys, os, io, json, time, base64
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -139,52 +139,146 @@ def 데이터URI(b):
     return "data:image/webp;base64," + base64.b64encode(b).decode("ascii")
 
 
-낸것 = {}
+# ══════════════════════════════════════════════════════════════════════════════
+#  원본 고르기 — 🔴 «가장 새로 구운 것»이 이긴다
+# ══════════════════════════════════════════════════════════════════════════════
+# 09-07 실사고: 이 자리가 「몸+접지 두 장이 있으면 무조건 그것」이라는 «이름 순서» 규칙이었다.
+#   08-22 에 블렌더로 구운 `요소_체크_몸.png` 가 폴더에 남아 있는 한, 09-07 에 새로 구운
+#   `요소_체크.avif` 는 영원히 안 실린다. 유호님이 「단추도 그렇고 다 예전 걸 사용하고 있네」로
+#   잡으신 자리가 정확히 이것이다 — 새로 구워도 배선이 옛 판을 집었다.
+#   ⇒ 이제 «파일이 만들어진 시각»으로 고른다. 새로 구우면 그것이 저절로 이긴다.
+#
+# 🔴 **생것(raw) PNG 은 원본이 아니다.** 제미나이가 낸 `<이름>.png` 는 흰 바탕이 붙은 채라
+#   알파가 통째로 불투명이다. 그대로 실으면 알파 상자가 화면 전체가 되어 부품이 «흰 네모»가 된다.
+#   흰 바탕을 걷어 `<이름>.avif` 로 담는 것은 다듬는 자(`tools/공방뒤처리.py`)의 몫이고,
+#   배선이 읽는 원본은 그 avif 다.
+#   ⚠ 장면(히어로 일곱·표지)은 바탕이 곧 그림이라 «일부러» 안 걷는다 — 그래서 불투명 avif 는 정상이다.
+#     가르는 자는 «꼴»이다: 불투명 png = 안 다듬은 생것 · 불투명 avif = 다듬는 자가 그렇게 두기로 한 것.
+
+
+def _때(경로):
+    return os.path.getmtime(경로)
+
+
+def _생것인가(경로):
+    """알파가 통째로 불투명하면 참 — 아직 흰 바탕을 안 걷은 생것이다."""
+    with Image.open(경로) as im:
+        return bool((np.asarray(im.convert("RGBA"))[:, :, 3] > 250).all())
+
+
+def 원본고르기(이름):
+    """이 부품을 그릴 수 있는 원본 중 «가장 새 것». (층수, 경로들, 시각) 또는 None."""
+    후보 = []
+    avif = os.path.join(구움, 이름 + ".avif")
+    if os.path.exists(avif):
+        후보.append((1, [avif], _때(avif)))
+    몸길, 접길 = os.path.join(구움, 이름 + "_몸.png"), os.path.join(구움, 이름 + "_접지.png")
+    if os.path.exists(몸길) and os.path.exists(접길):
+        후보.append((2, [몸길, 접길], max(_때(몸길), _때(접길))))
+    한길 = os.path.join(구움, 이름 + ".png")
+    if os.path.exists(한길):
+        후보.append((1, [한길], _때(한길)))
+
+    후보.sort(key=lambda c: c[2], reverse=True)
+    for 층수, 경로들, 때 in 후보:
+        if 경로들[0].endswith(".png") and 층수 == 1 and _생것인가(경로들[0]):
+            continue      # 흰 바탕이 안 걷힌 생것 — 다음 후보에게 넘긴다
+        return (층수, 경로들, 때)
+    return None
+
+
+# 🔴 **옛 판을 먼저 손에 쥔다 — 이것이 「조용히 죽지 않게」 막는 장치다**(09-07).
+#   전에는 낸 것만 모아 이 파일을 통째로 덮었다. 그래서 원본이 없어진 키는 «있던 base64 까지»
+#   같이 사라졌고, 지면은 그 자리를 CSS 흉내로 되돌렸다. 그런데 `node tools/lib/loom.js --분모`
+#   는 「그 CSS 가 나갔나」만 보므로 그래도 초록을 냈다 — 빠진 줄 아무도 모르는 상태다.
+#   ⇒ 이제 원본이 없으면 **옛 값을 그대로 지키고, 지킨 수와 이름을 보고한다.**
+옛판 = {}
+if os.path.exists(낼곳):
+    try:
+        옛판 = json.load(io.open(낼곳, encoding="utf-8")).get("부품", {}) or {}
+    except Exception as e:                                        # noqa: BLE001
+        print("  ⚠ 옛 판을 못 읽었다(%s) — 지킬 값이 없다" % str(e)[:80])
+
+낸것, 지킨것, 빈것, 되살린것 = {}, [], [], []
 합계 = 0
 print("■ Loom 자산화 — 구운 판 → 지면이 삼킬 수 있는 것\n")
 for 이름, spec in 규격.items():
-    몸길 = os.path.join(구움, 이름 + "_몸.png")
-    접길 = os.path.join(구움, 이름 + "_접지.png")
-    한길 = os.path.join(구움, 이름 + ".png")
-    두장 = os.path.exists(몸길) and os.path.exists(접길)
-    if not 두장 and not os.path.exists(한길):
-        print("  ⬜ %-12s 안 구웠다" % 이름)
+    고른 = 원본고르기(이름)
+    옛 = 옛판.get(이름)
+
+    if 고른 is None:
+        if 옛:
+            낸것[이름] = 옛
+            지킨것.append(이름)
+            합계 += 옛.get("바이트", 0)
+            print("  🧷 %-14s 원본이 없다 — 옛 값을 지켰다 (%s · %s)"
+                  % (이름, 옛.get("출처", "출처 모름"), 옛.get("구운날", "날짜 모름")))
+        else:
+            빈것.append(이름)
+            print("  ⬜ %-14s 원본도 옛 값도 없다" % 이름)
         continue
 
-    if 두장:
-        몸 = Image.open(몸길).convert("RGBA")
-        접 = Image.open(접길).convert("RGBA")
+    층수, 경로들, 때 = 고른
+    구운날 = time.strftime("%Y-%m-%d", time.localtime(때))
+    출처 = os.path.basename(경로들[0]) if 층수 == 1 else os.path.basename(경로들[0])[:-6] + "_몸/접지.png"
+
+    if 층수 == 2:
+        몸 = Image.open(경로들[0]).convert("RGBA")
+        접 = Image.open(경로들[1]).convert("RGBA")
         w, h = 몸.size
         b = 정사각(합(상자(np.asarray(몸)[:, :, 3]), 상자(np.asarray(접)[:, :, 3])), w, h)
         몸b = 웹피(몸.crop(b), spec["크기"])
         접b = 웹피(접.crop(b), spec["크기"], 품질=80)
-        낸것[이름] = {"몸": 데이터URI(몸b), "접지": 데이터URI(접b),
-                     "층": 2, "px": spec["크기"], "쓰임": spec["쓰임"]}
         바 = len(몸b) + len(접b)
-        print("  ✅ %-12s 두 층(몸+접지) · %dpx · %.1fKB" % (이름, spec["크기"], 바 / 1024))
+        낸것[이름] = {"몸": 데이터URI(몸b), "접지": 데이터URI(접b), "층": 2,
+                     "px": spec["크기"], "쓰임": spec["쓰임"],
+                     "출처": 출처, "구운날": 구운날, "바이트": 바}
+        꼴 = "두 층(몸+접지)"
     else:
-        im = Image.open(한길).convert("RGBA")
+        im = Image.open(경로들[0]).convert("RGBA")
         w, h = im.size
         b = 정사각(상자(np.asarray(im)[:, :, 3]), w, h)
         몸b = 웹피(im.crop(b), spec["크기"])
-        낸것[이름] = {"몸": 데이터URI(몸b), "층": 1, "px": spec["크기"], "쓰임": spec["쓰임"]}
         바 = len(몸b)
-        print("  ✅ %-12s 한 층 · %dpx · %.1fKB" % (이름, spec["크기"], 바 / 1024))
+        낸것[이름] = {"몸": 데이터URI(몸b), "층": 1,
+                     "px": spec["크기"], "쓰임": spec["쓰임"],
+                     "출처": 출처, "구운날": 구운날, "바이트": 바}
+        꼴 = "한 층"
     합계 += 바
+    # 🔑 옛 값보다 새 것으로 «갈렸는지»를 그 자리에서 찍는다 — 이 줄이 09-07 의 실패를 되풀이 못 하게 한다.
+    갈림 = ""
+    if 옛 and 옛.get("출처") and 옛.get("출처") != 출처:
+        갈림 = "  ⟲ %s → %s" % (옛["출처"], 출처)
+        되살린것.append(이름)
+    print("  ✅ %-14s %-12s · %dpx · %.1fKB · %s · %s%s"
+          % (이름, 꼴, spec["크기"], 바 / 1024, 출처, 구운날, 갈림))
 
 # 🔑 0은 분모와 함께 쓴다 — 「몇 개 냈다」만 적으면 안 낸 것이 이름 없이 사라진다.
-안낸것 = [n for n in 규격 if n not in 낸것]
-print("\n  합계 = 낸 것 %d + 안 낸 것 %d (전체 %d)" % (len(낸것), len(안낸것), len(규격)))
-if 안낸것:
-    print("  안 낸 것: " + ", ".join(안낸것) + "  → node tools/룸굽기.js --전량")
+print("\n  합계 = 새로 담은 것 %d + 옛 값을 지킨 것 %d + 빈 것 %d (전체 %d)"
+      % (len(낸것) - len(지킨것), len(지킨것), len(빈것), len(규격)))
+if 지킨것:
+    print("  🧷 옛 값을 지킨 것: " + ", ".join(지킨것))
+    print("     ↳ 이 부품들은 원본 그림이 폴더에 없다. 다시 구우려면 그 이름으로 굽기 일감을 세운다.")
+if 빈것:
+    print("  ⬜ 빈 것: " + ", ".join(빈것) + "  → node tools/룸굽기.js --전량")
+if 되살린것:
+    print("  ⟲ 옛 판에서 새 판으로 갈린 것 %d: %s" % (len(되살린것), ", ".join(되살린것)))
 print("  지면에 실리는 무게 = %.1fKB (base64 전 · 실제 %.1fKB)" % (합계 / 1024, 합계 * 4 / 3 / 1024))
 
-with open(낼곳, "w", encoding="utf-8") as f:
-    json.dump({
-        "판": "loom-구운재질 v1",
-        "만든날": "2026-08-16",
-        "어떻게": "tools/룸굽기.js · tools/요소부품굽기.js (Blender Cycles) → tools/룸자산화.py",
-        "왜 base64 인가": "외부 참조는 첨부 단독 지면에서 전멸한다(실측 08-15 · 7/7)",
-        "부품": 낸것,
-    }, f, ensure_ascii=False)
+# 🔴 장부는 «옆에 다 쓰고 나서» 바꿔 낀다(09-05 실사고 — `open(...,'w')` 는 여는 순간 0바이트다).
+글자 = json.dumps({
+    "판": "loom-구운재질 v2",
+    "만든날": "2026-08-16",
+    "고친날": time.strftime("%Y-%m-%d"),
+    "어떻게": "tools/공방굽기(제미나이 4K) → tools/공방뒤처리.py(흰 바탕 걷기·AVIF) → tools/룸자산화.py",
+    "원본 고르는 자": "가장 새로 구운 것이 이긴다(만든 시각). 흰 바탕이 안 걷힌 생 PNG 은 원본으로 안 친다",
+    "왜 base64 인가": "외부 참조는 첨부 단독 지면에서 전멸한다(실측 08-15 · 7/7)",
+    "부품": 낸것,
+}, ensure_ascii=False)
+임시 = 낼곳 + ".tmp"
+with open(임시, "w", encoding="utf-8", newline="") as f:
+    f.write(글자)
+    f.flush()
+    os.fsync(f.fileno())
+os.replace(임시, 낼곳)
 print("\n✅ " + os.path.relpath(낼곳, 루트) + " — `tools/lib/loom.js` 가 여기서 읽는다")
