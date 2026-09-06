@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 라디오 — 방송에 얹는 층</title>
+<!--
+  방송에 «실제로 얹히는» 층만 담은 지면 (2026-09-06 · 유호 지시 「프레임 좀 낮아도 좋으니 라이브로」).
+
+  ■ 미리보기 지면(`방송미리보기.html`)과 무엇이 다른가
+    미리보기는 사람이 «눈으로 보려고» 만든 지면이라 머리글·단추·설명이 붙어 있다.
+    이 지면에는 그런 것이 하나도 없다. 1920×1080 판에 층만 겹쳐 놓고, 바탕은 투명이다.
+    `겹쳐송출.js` 가 이 지면을 헤드리스 크로미움(화면 없는 브라우저)으로 열어 그림을 떠서
+    ffmpeg 에 넘긴다. 그래서 여기 보이는 것이 그대로 방송에 나간다.
+
+  ■ 어느 층을 실을지는 주소로 정한다
+    `?층=전광판`            문안(알림)만. 곡 팩에 마스코트가 이미 박혀 있을 때 쓴다.
+    `?층=마스코트,전광판`   둘 다. 마스코트를 팩에서 떼어낸 뒤에 쓴다.
+    기본값은 `전광판` 하나다 — 지금 도는 팩에는 마스코트가 박혀 있어서 둘이 겹치면 인형이 둘이 된다.
+
+  ■ 🔴 `color-scheme` 을 여기 걸지 않는다 (09-06 실측 · 미리보기 지면과 같은 함정)
+    크롬은 «부모와 밝기 결이 다른» 프레임 뒤에 불투명 흰색을 깔아 버린다. 그러면 투명한 층이
+    흰 네모가 되어 방송을 통째로 덮는다. 색은 아래에서 손으로만 정한다.
+-->
+<style>
+  html, body { margin: 0; padding: 0; width: 1920px; height: 1080px; background: transparent; overflow: hidden; }
+  iframe { position: absolute; inset: 0; width: 1920px; height: 1080px; border: 0; background: transparent; }
+  /* 🔴 «보이지 않는 맥박» — 이걸 빼면 그림 뜨기가 통째로 멈춘다 (09-06 실측).
+     까닭: 이 지면은 알림이 없을 때 «아무것도 안 그린다». 화면 없는 브라우저는 그릴 것이 없으면
+     새 그림을 아예 안 만들고, 그러면 「그림 한 장 줘」가 영영 답을 못 받는다. 그 한 번이 막히면
+     그 뒤 부탁이 전부 그 뒤에 줄을 서서 층이 통째로 굳는다(그날 60초에 0장 · 건너뛴 것 597).
+     그래서 1픽셀짜리 점 하나를 눈에 안 띄는 밝기로 계속 흔든다 — 방송에는 안 보이고, 브라우저는
+     매 순간 새 그림을 만든다. 지우려면 먼저 「멈춤 없이 뜨는지」를 재고 지운다. */
+  #맥박 { position: absolute; left: 0; top: 0; width: 1px; height: 1px; background: #fff;
+          animation: 맥박짓 1s linear infinite; }
+  @keyframes 맥박짓 { 0% { opacity: .004 } 50% { opacity: .012 } 100% { opacity: .004 } }
+</style>
+</head>
+<body>
+<div id="맥박"></div>
+<script>
+  var 인자 = new URLSearchParams(location.search);
+  var 층들 = (인자.get('층') || '전광판').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  var 파일 = { 마스코트: '마스코트.html', 전광판: '전광판.html', 무대: '무대.html' };
+  /* 뒤에 오는 것이 위에 그려진다 — 무대 → 마스코트 → 전광판 차례가 방송 차례다. */
+  ['무대', '마스코트', '전광판'].forEach(function (이름) {
+    if (층들.indexOf(이름) < 0) return;
+    var f = document.createElement('iframe');
+    f.setAttribute('scrolling', 'no');
+    f.src = 파일[이름] + location.hash;
+    document.body.appendChild(f);
+  });
+  /* 층은 서로를 모른다. 사건은 `BroadcastChannel('라디오오버레이')` 하나로만 흐른다.
+     겹쳐송출.js 가 이 창에서 그 문에 사건을 던지면 각 층이 제 몫만 집는다. */
+</script>
+</body>
+</html>
