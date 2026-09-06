@@ -103,6 +103,25 @@ function 펠트글자(글, 천, 크기, 자간 = 0.05) {
   return { uri: `data:image/png;base64,${b64}`, 폭, 높, KB: Math.round(b64.length * 0.75 / 1024) };
 }
 
+/** 「16 + 1」처럼 «천이 섞인 한 줄»을 만든다 — «+» 만 브랜드 코랄 천이다.
+ *  붙이는 일은 그림 쪽에서 끝낸다(tools/펠트글귀.py) — 지면에서 조각을 나란히 놓으면
+ *  조각마다 여백이 달라 기준선이 어긋난다. */
+function 펠트글귀(조각들, 크기) {
+  const 낼곳 = path.join(os.tmpdir(), `synk-글귀-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.png`);
+  const r = spawnSync('python', [path.join(루트, 'tools', '펠트글귀.py'),
+    '--조각', ...조각들, '--크기', String(크기), '--낼곳', 낼곳],
+    { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' }, timeout: 600000 });
+  if (!fs.existsSync(낼곳)) {
+    throw new Error(`펠트글귀.py 가 못 냈다: ${(r.stderr || r.stdout || '').split(/\r?\n/).slice(-3).join(' ')}`);
+  }
+  const png = fs.readFileSync(낼곳);
+  const out = { uri: `data:image/png;base64,${png.toString('base64')}`,
+                폭: png.readUInt32BE(16), 높: png.readUInt32BE(20),
+                KB: Math.round(png.length / 1024) };
+  fs.unlinkSync(낼곳);
+  return out;
+}
+
 /* ── 지면 ──────────────────────────────────────────────────────────────── */
 function 지면짓기() {
   /* 🔴 바탕은 «띠»가 아니라 «천»이어야 한다 — `DK1_띠_잉크천` 은 이름 그대로 가로 밴드라
@@ -111,19 +130,27 @@ function 지면짓기() {
      실측: 가장자리에서 안쪽 40칸까지 채도가 45→117 로 서서히 오른다 = 누끼 잔재가 아니라
      실제 보풀 광채다). 밝은 천에서는 그 잔털이 바탕에 이어져 선이 사라진다. */
   const 라이트 = !!인자['라이트'];
-  const 바탕 = 심기(라이트 ? 'docs/Loom_자산/구움/공방_모래펠트.png'
-                        : 'docs/Loom_자산/구움/공방_먹색펠트.png', 1400);
+  /* 🔑 천은 «.avif» 를 쓴다 — 저장소가 쥐는 것이 그 꼴이다(.gitignore 가 구움 폴더의 png 는
+     막고 avif 만 예외로 둔다). png 를 가리키면 이 기계에서만 굽히고 다른 기계에서는 죽는다. */
+  const 바탕 = 심기(라이트 ? 'docs/Loom_자산/구움/공방_모래펠트.avif'
+                        : 'docs/Loom_자산/구움/공방_먹색펠트.avif', 1400);
   /* --몽글 로 다른 판을 물릴 수 있다 — 가장자리 처방을 견줄 때 쓴다(09-07). */
   const 몽글 = 심기(인자['몽글'] || 'docs/캐릭터/정본_4K/몽글_본체.png', 1000);
   /* 인사말은 오려 만든 펠트 글자다. 천은 바탕과 반대로 골라 읽히게 한다. */
-  const 인사천 = 라이트 ? '공방_먹색펠트.png' : '공방_모래펠트.png';
+  const 인사천 = 라이트 ? '공방_먹색펠트.avif' : '공방_모래펠트.avif';
   /* 🔑 자간 0.05 — 보풀이 획 밖으로 번져서, 폰트가 알맞다고 보는 간격이 펠트에서는 붙어
      보인다(09-07 첫 판에서 「녕」 받침이 「하」에 닿았다). */
   const 인사 = 펠트글자('안녕하세요', 인사천, 200, 0.05);
   const 인사폭 = 580;                                    // 카드 위 실제 폭(px)
   const 인사높 = Math.round(인사.높 * 인사폭 / 인사.폭);
+  /* 「16 + 1」 — 숫자는 인사말과 같은 천, «+» 만 브랜드 코랄 천이다(유호 지시 09-07
+     「펠트로 해보자」 · 코랄 천은 그날 새로 구웠다 · 336원). */
+  const 수 = 펠트글귀([`16:${인사천}`, '+:공방_코랄펠트.avif:150', `1:${인사천}`], 220);
+  const 수폭 = 384;
+  const 수높 = Math.round(수.높 * 수폭 / 수.폭);
   const 잰것 = { 바탕이름: 라이트 ? '모래펠트' : '먹색펠트', 바탕: 바탕.KB,
-              몽글: 몽글.KB, 인사천: 인사천.replace('공방_', '').replace('.png', ''), 인사: 인사.KB };
+              몽글: 몽글.KB, 인사천: 인사천.replace('공방_', '').replace('.avif', ''),
+              인사: 인사.KB, 수: 수.KB };
 
   /* 🚫 원판(젤리)의 «빛 점 아치»는 옮기지 않았다. 그건 네온 문법이고, 펠트에서 그 자리를
      채울 구운 부품(매듭점·반짝임)은 낱개가 커서 열둘을 늘어놓으면 시끄럽다.
@@ -166,13 +193,12 @@ body{position:relative;background:${라이트 ? 색('Paper') : 색('Ink Deep')};
 .몽글{position:absolute;left:50%;top:594px;transform:translate(-50%,-50%);
   width:512px;display:block}
 
-/* 숫자 */
-.수{position:absolute;top:838px;left:0;right:0;text-align:center;
-  font-weight:800;font-size:104px;letter-spacing:-.02em;color:${라이트 ? 색('Ink') : 색('Paper')};line-height:1}
-.수 .더{color:${라이트 ? 색('Coral 3') : 색('Coral')};font-weight:700;margin:0 .1em}
+/* 숫자 — 오려 만든 펠트 글귀. «+» 만 코랄 천이다. */
+.수{position:absolute;top:824px;left:50%;transform:translateX(-50%);
+  width:${수폭}px;height:${수높}px;display:block}
 
-/* 자리·때 */
-.자리{position:absolute;top:968px;left:0;right:0;text-align:center;
+/* 자리·때 — 숫자 아래에 붙지 않게 «숫자가 끝나는 자리»에서 띄운다. */
+.자리{position:absolute;top:${824 + 수높 + 34}px;left:0;right:0;text-align:center;
   font-family:'Inter Tight',system-ui,sans-serif;font-weight:400;
   font-size:27px;letter-spacing:.03em;color:${라이트 ? 색('Deep Wool') : 색('Ash Wool')}}
 </style></head><body>
@@ -187,7 +213,7 @@ ${로고.워드마크({ 판: 라이트 ? '라이트' : '다크', 표현: '펠트
 
 <img class="몽글" src="${몽글.uri}" alt="펠트 마스코트 몽글">
 
-<div class="수">16<span class="더">+</span>1</div>
+<img class="수" src="${수.uri}" alt="16 + 1">
 <div class="자리">Улаанбаатар · 2027.02</div>
 
 </body></html>
@@ -231,7 +257,7 @@ function main() {
   fs.mkdirSync(path.dirname(지면경로), { recursive: true });
   fs.writeFileSync(지면경로, 심은원고, 'utf8');
   console.log(`■ 지면  ${path.relative(루트, 지면경로)}  (${Math.round(심은원고.length / 1024)}KB)`);
-  console.log(`   심은 자산 — ${잰것.바탕이름} ${잰것.바탕}KB · 몽글 ${잰것.몽글}KB · 오린 글자(${잰것.인사천}) ${잰것.인사}KB`);
+  console.log(`   심은 자산 — ${잰것.바탕이름} ${잰것.바탕}KB · 몽글 ${잰것.몽글}KB · 오린 글자(${잰것.인사천}) ${잰것.인사}KB · 오린 숫자 ${잰것.수}KB`);
 
   if (인자['지면만']) { console.log('   (--지면만 이라 굽지 않았다)'); return 0; }
 
