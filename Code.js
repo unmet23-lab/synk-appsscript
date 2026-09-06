@@ -1622,7 +1622,10 @@ const CARD_ANIM = '<style>@keyframes synkBreath{0%,100%{transform:scale(1) trans
 const ANIM_BREATH = 'animation:synkBreath 3.2s ease-in-out infinite;transform-origin:50% 100%;';
 const ANIM_BOSS = 'animation:synkBoss 4.4s ease-in-out infinite;transform-origin:50% 100%;';
 // [v9.44] HTML 이스케이프 공용 — 시트 커스텀 가능 텍스트(보스 대사·몬스터 이름 등)를 카드에 넣기 전 필수(레이아웃 파괴 차단)
-function escHtml_(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+// 🔴 정규식 안 따옴표는 유니코드 이스케이프로 적는다(맨`"` → `\u0022` · 매칭 동작 동일).
+//   tests/safety.test.js 「[v9.57] 톱레벨 크로스파일 참조 금지」의 추출기는 정규식 리터럴을 모른다 —
+//   맨 따옴표를 문자열 시작으로 읽어 이 줄 «뒤» 전부의 { } 깊이가 어긋나고, 그 구간은 톱레벨 검사에서 사라졌었다.
+function escHtml_(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\u0022/g, '&quot;'); }
 
 // [v9.11] 🖼️ 액자 시스템 — 도달 최고 단계(AP)가 액자 등급. 스킨은 취향, 액자는 지위.
 // [v9.35] 소프트 글로우 축 재설계 — 프레임은 공통 그라디언트+토큰(라운드 18/12·섀도), 단계 개성은
