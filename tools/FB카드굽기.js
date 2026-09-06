@@ -122,6 +122,25 @@ function 펠트글귀(조각들, 크기) {
   return out;
 }
 
+/** 자산 안에서 «그림이 실제로 있는 자리»를 잰다(0~1 비율).
+ *  몽글 본체는 정사각 캔버스 안에 몸이 떠 있어서, 화면에 얹은 상자와 «보이는 몸»의 자리가 다르다.
+ *  그 차이를 모르고 자리를 손으로 박으면 위아래 글자와 겹친다(유호 지적 09-07
+ *  「알파벳 안녕하세요가 약간 몽글이 머리 끝이랑 겹치네」). */
+function 그림자리(상대경로) {
+  const src = path.isAbsolute(상대경로) ? 상대경로 : path.join(루트, 상대경로);
+  const 코드 = 'import sys;from PIL import Image;'
+    + 'b=Image.open(sys.argv[1]).convert("RGBA").getbbox();'
+    + 'im=Image.open(sys.argv[1]);'
+    + 'print(b[0]/im.width,b[1]/im.height,b[2]/im.width,b[3]/im.height)';
+  const r = spawnSync('python', ['-c', 코드, src],
+    { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' }, timeout: 120000 });
+  const 값 = String(r.stdout || '').trim().split(/\s+/).map(Number);
+  if (값.length !== 4 || 값.some(Number.isNaN)) {
+    throw new Error(`그림 자리를 못 쟀다(${상대경로}): ${(r.stderr || '').slice(-200)}`);
+  }
+  return { 왼: 값[0], 위: 값[1], 오른: 값[2], 아래: 값[3] };
+}
+
 /* ── 지면 ──────────────────────────────────────────────────────────────── */
 function 지면짓기() {
   /* 🔴 바탕은 «띠»가 아니라 «천»이어야 한다 — `DK1_띠_잉크천` 은 이름 그대로 가로 밴드라
@@ -152,6 +171,21 @@ function 지면짓기() {
   const 수 = 펠트글귀([`16:${인사천}`, '+:공방_코랄펠트.avif:150', `1:${인사천}`], 220);
   const 수폭 = 384;
   const 수높 = Math.round(수.높 * 수폭 / 수.폭);
+
+  /* ── 세로 자리는 «위에서 아래로» 사슬로 푼다 ──────────────────────────────
+     손으로 박은 수를 쓰면 글자 하나만 길어져도 아래가 밀려 겹친다. 09-07 에 실제로
+     로마자가 몽글 머리에 닿았다. 그래서 아래 값들은 전부 «앞 요소가 끝나는 자리»에서 나온다. */
+  const 인사자리 = 190;
+  const 로마자리 = 인사자리 + 인사높 + 16;
+  const 로마높 = 30;                                   // font-size 23 + 줄 여백
+  const 몽글폭 = 470;
+  const 몽글틀 = 그림자리(인자['몽글'] || 'docs/캐릭터/정본_4K/몽글_본체.png');
+  const 몸위여백 = 몽글폭 * 몽글틀.위;                   // 상자 위쪽의 «빈 곳»
+  const 몸아래여백 = 몽글폭 * (1 - 몽글틀.아래);
+  const 숨틈 = 46;                                     // 로마자 아래와 몽글 «몸» 사이
+  const 몽글가운데 = 로마자리 + 로마높 + 숨틈 - 몸위여백 + 몽글폭 / 2;
+  const 수자리 = Math.round(몽글가운데 + 몽글폭 / 2 - 몸아래여백 + 34);
+  const 자리자리 = 수자리 + 수높 + 34;
   const 잰것 = { 바탕이름: 라이트 ? '모래펠트' : '먹색펠트', 바탕: 바탕.KB,
               몽글: 몽글.KB, 인사천: 인사천.replace('공방_', '').replace('.avif', ''),
               인사: 인사.KB, 수: 수.KB };
@@ -187,22 +221,22 @@ body{position:relative;background:${라이트 ? 색('Paper') : 색('Ink Deep')};
 .로고{position:absolute;top:64px;left:50%;transform:translateX(-50%);width:150px;display:block}
 
 /* 인사말 — 오려 만든 펠트 글자(그림이다. 서체가 아니다). */
-.인사{position:absolute;top:190px;left:50%;transform:translateX(-50%);
+.인사{position:absolute;top:${인사자리}px;left:50%;transform:translateX(-50%);
   width:${인사폭}px;height:${인사높}px;display:block}
-.로마{position:absolute;top:${190 + 인사높 + 18}px;left:0;right:0;text-align:center;
+.로마{position:absolute;top:${로마자리}px;line-height:${로마높}px;left:0;right:0;text-align:center;
   font-family:'DM Mono',ui-monospace,Consolas,monospace;
   font-size:23px;letter-spacing:.34em;color:${라이트 ? 색('Deep Wool') : 색('Ash Wool')}}
 
 /* 마스코트 — 몽글 본체(펠트 정본). 그림자는 자산이 이미 가지고 있다. */
-.몽글{position:absolute;left:50%;top:594px;transform:translate(-50%,-50%);
-  width:512px;display:block}
+.몽글{position:absolute;left:50%;top:${Math.round(몽글가운데)}px;transform:translate(-50%,-50%);
+  width:${몽글폭}px;display:block}
 
 /* 숫자 — 오려 만든 펠트 글귀. «+» 만 코랄 천이다. */
-.수{position:absolute;top:824px;left:50%;transform:translateX(-50%);
+.수{position:absolute;top:${수자리}px;left:50%;transform:translateX(-50%);
   width:${수폭}px;height:${수높}px;display:block}
 
 /* 자리·때 — 숫자 아래에 붙지 않게 «숫자가 끝나는 자리»에서 띄운다. */
-.자리{position:absolute;top:${824 + 수높 + 34}px;left:0;right:0;text-align:center;
+.자리{position:absolute;top:${자리자리}px;left:0;right:0;text-align:center;
   font-family:'Inter Tight',system-ui,sans-serif;font-weight:400;
   font-size:27px;letter-spacing:.03em;color:${라이트 ? 색('Deep Wool') : 색('Ash Wool')}}
 </style></head><body>
