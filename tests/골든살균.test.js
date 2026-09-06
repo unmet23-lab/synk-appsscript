@@ -71,12 +71,18 @@ const 시트들 = (표) => ({
   getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar',
 });
 
-test('명단 이름 조각 — 어절로 쪼개고 한 글자는 버린다(조사·어미와 겹친다)', () => {
-  const ss = 시트들({ profiles: [학생('S1', '바트 에르덴'), 학생('S2', 'Sarnai'), ['S9', '김', '', 'teacher']] });
+test('명단 이름 조각 — 어절로 쪼개고 한 글자는 버린다(조사·어미와 겹친다) · 몽골어 표기 칸(C)과 퇴소 명단도 든다', () => {
+  const 학생C = (id, 이름, 몽골) => { const r = 학생(id, 이름); r[2] = 몽골; return r; };
+  const ss = 시트들({
+    profiles: [학생C('S1', '바트 에르덴', 'Бат-Эрдэнэ'), 학생('S2', 'Sarnai'), ['S9', '김', '', 'teacher']],
+    exit_log: [['S7', '냠카', '', '2026-05-01']],     // 퇴소자 — profiles 에서 지워졌지만 teacher_gold 문장은 남는다(보안 검토 09-06)
+  });
   const 조각 = 명단이름_(ss).sort();
-  assert.deepEqual(조각, ['sarnai', '바트', '에르덴']);
+  assert.deepEqual(조각, ['sarnai', 'бат', 'эрдэнэ', '냠카', '바트', '에르덴']);
   assert.equal(이름살균_(조각, '저는 바트예요'), true);
   assert.equal(이름살균_(조각, 'SARNAI 랑 갔어요'), true, '대소문자를 무시해야 한다');
+  assert.equal(이름살균_(조각, '제 이름은 Бат입니다'), true, '몽골어 표기(C 칸)가 사전에 없다');
+  assert.equal(이름살균_(조각, '냠카랑 놀았어요'), true, '퇴소한 학생 이름이 사전에 없다');
   assert.equal(이름살균_(조각, '오늘 학원에 갔어요'), false);
 });
 

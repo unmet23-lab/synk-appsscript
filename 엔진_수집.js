@@ -235,7 +235,7 @@ function migrateHwFormV9138() {
  *   여기 주석으로 못박는다(2년 뒤 조인할 사람이 헤더 이름만 믿지 않게). — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
  * [v9.187] '급수'(맨 끝) — 응답 시점의 학생 급수 스냅샷(제품방향 §불변식 2 「학생·레벨·시점」의 레벨 축).
  *   profiles는 현재값이라 승급하면 과거 응답의 난이도 맥락이 지워진다 — 행에 박아야 남는다. */
-const QUIZ_LOG_HEADERS = ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at', '급수', 'schema_ver'];
+const QUIZ_LOG_HEADERS = ['id', 'student_id', '퀴즈ID', '유형', '문제', '고른답', '정답', '정답여부', '확신도', '제출일', 'created_at', '급수', 'schema_ver', '시도', '문항지문', '스냅샷지연초'];
 const QUIZ_CONFIDENCE = ['확실해요', '아마도', '찍었어요'];
 /* 확신도 도움말 — 생성부와 migrateFormCopy0901 이 **같은 상수**를 본다(WORK_DESC 관례 · 두 곳에 적으면 갈린다). */
 const QUIZ_CONFIDENCE_HELP = '솔직하게 골라주세요 — 찍었다고 해서 불이익은 전혀 없고, 오히려 다음 문제를 더 잘 맞춰 드려요';
@@ -905,9 +905,17 @@ function quizSweep_(ss) {
 
   const ql = ensureSheet(ss, 'quiz_log', QUIZ_LOG_HEADERS);
   헤더보정_(ql, QUIZ_LOG_HEADERS); // [v9.187] 이미 서 있는 11열 시트에 급수 이름표 — 없으면 새 칸이 조용히 버려진다
-  const seen = {}; // '퀴즈ID|sid' — 같은 문항 재제출은 첫 답만 센다(고쳐 낸 답은 "무엇을 골랐나"를 오염시킨다)
-  if (ql.getLastRow() >= 2) ql.getRange(2, 2, ql.getLastRow() - 1, 2).getValues().forEach(r => {
-    if (r[0] && r[1]) seen[String(r[1]).trim() + '|' + String(r[0]).trim()] = 1;
+  /* [v9.312] '퀴즈ID|sid' → 지금까지 센 시도 수. 구 코드는 둘째 답을 **버렸다**(「고쳐 낸 답은 무엇을 골랐나를 오염시킨다」) —
+   *   그런데 철학 Ⅲ-2(v1.21)는 「아는가의 판정은 다시 낸 문항의 결과가 한다」라 둘째 답이 곧 판정 재료다. 버리면 소급이 안 된다
+   *   (심문 3회차 A3 · 4회차 A3 · 첫 진짜 학생 «전»). 이제 **시도 번호를 달아 전부 남긴다** — 「무엇을 골랐나」는 시도 1 행이 그대로 쥐고,
+   *   소비자(aiWeakMap_)는 시도 1 만 읽는다. */
+  const seen = {};
+  const 시도열 = QUIZ_LOG_HEADERS.indexOf('시도') + 1;
+  if (ql.getLastRow() >= 2) ql.getRange(2, 2, ql.getLastRow() - 1, 시도열 - 1).getValues().forEach(r => {
+    if (!r[0] || !r[1]) return;
+    const k = String(r[1]).trim() + '|' + String(r[0]).trim();
+    const n = Number(r[시도열 - 2]) || 1; // 옛 행(시도 칸 없음)은 1
+    if (n > (seen[k] || 0)) seen[k] = n;
   });
 
   const out = [], badSid = [];
@@ -920,9 +928,15 @@ function quizSweep_(ss) {
     if (!sid || !qid || !ans) return;
     if (!valid.has(sid)) { badSid.push(sid); return; }
     const key = qid + '|' + sid;
-    if (seen[key]) return;
-    seen[key] = 1;
+    const 시도 = (seen[key] || 0) + 1;
+    seen[key] = 시도;
     const meta = qMap[qid + '|' + sid] || qMap[qid] || { cat: '', q: '', a: '' }; // [v9.188] 개인 퀴즈는 (문항ID, 학생) 짝으로 찾는다
+    /* [v9.312] 노출 판 — 학생이 «본 문항 판»은 폼이 안 실어 보낸다(소급 불가 · 심문 1·3·4회차 A2). 대신 스위프가 붙인 문항의
+     *   지문(문제|정답 해시)과 «응답에서 스냅샷까지 걸린 초»를 남긴다. 그러면 뒤에 문항이 개정됐을 때 「이 답이 어느 판을 봤나」를
+     *   지문으로 가르고, 지연이 큰 행(개정과 겹칠 수 있는 행)을 재채점에서 걸러낼 수 있다. 판을 «안다»고 적는 것이 아니라
+     *   «무엇을 붙였나»를 적는 것이다 — 폼이 판을 실어 보내는 날 그 값이 이 칸을 대신한다. */
+    const 지문 = 문항지문_(meta.q, meta.a);
+    const 지연초 = Math.max(0, Math.round((Date.now() - ts.getTime()) / 1000));
     const g = quizGrade_(ans, meta.a);
     /* 🔒 셀 수식 인젝션 차단 — 학생이 낸 답이 `=`로 시작하면 시트가 그것을 **수식으로 실행**한다.
      *   이 스프레드시트에는 profiles(학생·보호자 연락처)가 함께 있어,
@@ -933,10 +947,11 @@ function quizSweep_(ss) {
      *   그런데 개인 퀴즈부터 출처가 **AI 생성물**이고, 그 재료는 학생의 약점 메모·첨삭이다
      *   → 학생이 숙제에 `=IMPORTDATA(...)`를 써넣으면 약점 재료 → 프롬프트 → ai_daily → 여기로 흘러올 수 있다.
      *   경로가 길다고 안 오는 것은 아니다. 값은 그대로 두고 선두 문자만 무력화하니 학습 재료도 안 상한다. */
-    out.push(['QL' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid + '-' + qid, sid, 셀안전_(qid),
+    out.push(['QL' + Utilities.formatDate(ts, tz, 'yyyyMMdd') + '-' + sid + '-' + qid + (시도 > 1 ? '-' + 시도 : ''), sid, 셀안전_(qid),
       셀안전_(meta.cat), 셀안전_(meta.q), 셀안전_(ans), 셀안전_(meta.a),
       g.ok === null ? '판정보류' : (g.ok ? '정답' : '오답'), // 원칙: 판정 못 해도 행은 남는다
-      셀안전_(conf), dstr(ts, tz), new Date(), lvOf[sid] || 0, SCHEMA_VER]); // [v9.187] 급수 스냅샷(0=미정) · [v9.207] schema_ver
+      셀안전_(conf), dstr(ts, tz), new Date(), lvOf[sid] || 0, SCHEMA_VER, // [v9.187] 급수 스냅샷(0=미정) · [v9.207] schema_ver
+      시도, 지문, 지연초]); // [v9.312] 시도 번호 · 문항 지문 · 스냅샷 지연초
   });
   if (out.length) ql.getRange(ql.getLastRow() + 1, 1, out.length, QUIZ_LOG_HEADERS.length).setValues(out);
   props.setProperty('퀴즈폼_포인터', String(last));
@@ -1152,14 +1167,21 @@ function 골든픽스처_() {
   if (!gd || gd.getLastRow() < 2) return '강사 정답 모음이 비어 있습니다 — 표본은 매주 월요일 배치가 뽑고, 강사 응답은 강사 화면의 「정답 모음」에서 채웁니다.';
   const tz = ss.getSpreadsheetTimeZone();
   const rows = gd.getRange(2, 1, gd.getLastRow() - 1, GOLD_HEADERS.length).getValues();
+  /* [v9.312] 🔒 이름 살균 — 학생이 자유 서술 칸에 제 이름(또는 반 친구 이름)을 적은 문장은 **밖으로 안 나간다.**
+   *   출구 ②의 목적지가 공개 저장소의 영구 기록이라(철학 Ⅰ ㉣ 경계 ⑧ 아래 · 저장소는 공개 유지 08-31) 되돌릴 수 없다.
+   *   유호 확정 09-06 「출구는 켜 두되 살균을 먼저」 — 명단(profiles)의 이름을 못 읽으면 **살균 없이는 내보내지 않는다**
+   *   (조용히 0건 살균으로 통과하는 것이 이 자리에서 가장 나쁜 실패다). 걸린 항목은 빼고 수만 남긴다. */
+  const 이름들 = 명단이름_(ss);
+  if (이름들 === null) return '명단(profiles)을 못 읽어 이름 살균을 못 한다 — 살균 없이는 내보내지 않는다(유호 확정 09-06 · 안전).';
   const 항목 = [];
-  let 미응답 = 0;
+  let 미응답 = 0, 살균제외 = 0;
   rows.forEach(r => {
     const 원문 = 역소독_(r[4]).trim();
     const ai = 역소독_(r[5]).trim();
     const 판정 = String(r[6] || '').trim();
     const 강사교정 = 역소독_(r[7]).trim();
     if (!원문) return;
+    if (이름살균_(이름들, 원문 + ' ' + ai + ' ' + 강사교정)) { 살균제외++; return; }
     if (!판정 && !강사교정) { 미응답++; return; } // 강사가 아직 안 본 행 — 정답이 없으므로 픽스처가 아니다
     /* [v9.170] 정답을 정하는 것은 「판정」이다 — `강사교정 || ai`로 뭉뚱그리면 **강사가 AI를 부정한 행에서도
      *   AI교정이 정답으로 실린다.** Glide 「강사 정답 모음」 조립 중 실측된 두 경로:
@@ -1230,8 +1252,50 @@ function 골든픽스처_() {
    *   읽히면 **표본 부족이 점수로 위장된다.** 숫자를 내는 자리에서 미리 갈라 준다. */
   const 채점불가 = 항목.filter(x => x.종류 === '오류' && !x.포함.length && !x.불포함.length && !x.기대태그.length).length;
   doc.한계.push('이번 판: 오류 ' + (항목.length - 정상수) + ' · 정상 ' + 정상수 + ' · 강사 미응답으로 제외 ' + 미응답
-    + '건 · 채점 불가 ' + 채점불가 + '건(대조 근거가 없어 채점 분모에서 빠진다 — 강사 교정을 더 받아야 한다).');
-  return { doc: doc, 요약: '정상 ' + 정상수 + ' · 채점불가 ' + 채점불가 + ' · 미응답 제외 ' + 미응답, 건수: 항목.length, tz: tz };
+    + '건 · 채점 불가 ' + 채점불가 + '건(대조 근거가 없어 채점 분모에서 빠진다 — 강사 교정을 더 받아야 한다)'
+    + ' · 이름 살균으로 제외 ' + 살균제외 + '건(명단 ' + 이름들.length + '개 이름과 대조 — 학생이 제 이름을 적은 문장은 밖으로 안 나간다).');
+  return { doc: doc, 요약: '정상 ' + 정상수 + ' · 채점불가 ' + 채점불가 + ' · 미응답 제외 ' + 미응답 + ' · 이름 살균 제외 ' + 살균제외,
+    건수: 항목.length, 살균제외: 살균제외, 살균이름수: 이름들.length, tz: tz };
+}
+
+/* [v9.312] 명단의 이름 조각 — profiles 의 이름 칸 «둘»(B 한글 표기 · C 몽골어 표기)과 exit_log 의 이름 칸(퇴소한 학생)을
+ *   어절로 쪼개 두 글자 이상만 모은다(한 글자는 조사·어미와 겹쳐 오탐). 보안 검토 09-06 이 짚은 사각 둘 — ①「Баяр」·「Bayar」는
+ *   B 열 「바야르」와 안 겹친다 ②퇴소자는 profiles 에서 지워지는데 teacher_gold 의 그 문장은 남는다(6개월 주기 사이에 새는 자리).
+ *   못 읽으면 null — 「이름 0개」와 「명단을 못 읽었다」는 다른 얼굴이라 갈라 낸다(빈 명단은 [] · profiles 시트 없음은 null). */
+function 명단이름_(ss) {
+  const pf = ss.getSheetByName('profiles');
+  if (!pf) return null;
+  const 조각 = {};
+  const 담기 = (v) => String(v || '').split(/[\s·,()（）\/\-\u0027\u2019]+/).forEach(t => {
+    const s = t.trim();
+    if (s.length >= 2) 조각[s.toLowerCase()] = 1;
+  });
+  if (pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 4).getValues().forEach(r => {
+    if (!r[0] || r[3] !== 'student') return;
+    담기(r[1]); 담기(r[2]);
+  });
+  const ex = ss.getSheetByName('exit_log');   // 퇴소 학생(user_id · 이름 · …) — 없으면 그 층은 0(이름 0 이 아니라 시트 0)
+  if (ex && ex.getLastRow() >= 2) ex.getRange(2, 1, ex.getLastRow() - 1, 2).getValues().forEach(r => { if (r[0]) 담기(r[1]); });
+  return Object.keys(조각);
+}
+
+/* [v9.312] 문장에 명단 이름 조각이 들어 있나 — 대소문자 무시 · 부분 일치(「바트야」·「Bat-Erdene」 꼴을 다 잡는다). */
+function 이름살균_(이름들, 글) {
+  const s = String(글 || '').toLowerCase();
+  if (!s) return false;
+  for (let i = 0; i < 이름들.length; i++) if (s.indexOf(이름들[i]) !== -1) return true;
+  return false;
+}
+
+/* [v9.312] 문항 지문 — 스위프가 붙인 «문제|정답»의 짧은 해시(12자). 문항이 없으면 빈 문자열(「지문 없음」과 「빈 문항의 지문」을 안 섞는다).
+ *   quiz_log 의 「노출 판」 대용이다 — 뒤에 문항을 고치면 지문이 갈려 「이 답이 어느 판을 봤나」를 되짚을 수 있다. */
+function 문항지문_(문제, 정답) {
+  const s = String(문제 || '') + '|' + String(정답 || '');
+  if (s === '|') return '';
+  const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, s, Utilities.Charset.UTF_8);
+  let hex = '';
+  for (let i = 0; i < 6; i++) hex += ('0' + ((bytes[i] + 256) % 256).toString(16)).slice(-2);
+  return hex;
 }
 
 /* [v9.175] 출구 ① 내 드라이브 JSON. 손으로 받아 옮기는 경로 — 출구 ②(GitHub)가 막혔을 때의 대비책이다. */
@@ -1256,7 +1320,8 @@ function exportGoldenFixture_() {
  *      밑줄 없는 전역 전부가 노출 표면이 된다(실측 171개). 나가는 쪽만 만들면 그 표면이 0이다.
  *   ② **토큰은 소스에 없다** — 스크립트 속성에서 읽고, 로그·반환문에 절대 싣지 않는다.
  *   ③ **대상이 상수다** — 소유자·저장소·경로·브랜치를 인자로 받지 않는다. 잘못 조준할 여지를 없앤다.
- *      대상 저장소는 **비공개**임을 실측 확인했다(2026-08-04 · 학생 문장이 공개로 나가면 동의 위반).
+ *      ⚠ 대상 저장소는 08-04 엔 비공개였으나 **지금은 공개다**(08-29 실측 · 유호 확정 08-31 「공개 유지」 — CI 축). 그래서 09-06 에
+ *      이름 살균(`명단이름_`·`이름살균_`)이 이 출구의 선행이 됐고, 기본은 이 버튼이 아니라 출구 ①(내 드라이브 · 비공개 파일)이다.
  *   ④ **자동 배치에 넣지 않는다** — 메뉴에서 사람이 누를 때만 돈다. 비가역 외부 실행이라 그 클릭이 승인이다.
  * ⚠ 이름이 `_`로 끝나는 이유는 exportGoldenFixture_와 같다(노출 표면 최소화). */
 const GH_OWNER = 'unmet23-lab';
@@ -1284,7 +1349,7 @@ function 골든전송점검_() {
   if (code !== 200) return { ok: false, msg: 'GitHub 응답 ' + code + ' — ' + res.getContentText().slice(0, 120) };
   const p = JSON.parse(res.getContentText()).permissions || {};
   if (!p.push) return { ok: false, msg: '읽기는 되는데 쓰기 권한이 없습니다 — 토큰 Permissions의 Contents를 「Read and write」로 바꾸세요.' };
-  return { ok: true, msg: '연결 OK — ' + GH_OWNER + '/' + GH_REPO + ' 쓰기 권한 확인(비공개 저장소).' };
+  return { ok: true, msg: '연결 OK — ' + GH_OWNER + '/' + GH_REPO + ' 쓰기 권한 확인(⚠ 공개 저장소 — 올리면 영구 기록 · 이름 살균이 먼저 돈다 · 기본은 「내 드라이브」 버튼).' };
 }
 
 /* [v9.179] 설치 확인 — **공개**로 둔다(밑줄이 없다). 이유는 노출 표면 계산이 아니라 가용성이다:
@@ -1336,6 +1401,7 @@ function pushGoldenFixture_() {
     return 'GitHub 업로드 실패(' + code + ') — ' + put.getContentText().slice(0, 200);
   }
   const msg = 'SYNK-talk에 픽스처 ' + r.건수 + '건 올렸습니다(' + r.요약 + ').\n경로: ' + GH_PATH
+    + '\n이름 살균: 명단 ' + r.살균이름수 + '개 이름과 대조해 ' + r.살균제외 + '건을 뺐습니다(학생이 제 이름을 적은 문장은 밖으로 안 나갑니다 · 유호 확정 09-06).'
     + '\n저쪽에서 채점: node tools/eval-score.js evals/출력_v1.json --fixture ' + GH_PATH;
   Logger.log(msg);
   return msg;
