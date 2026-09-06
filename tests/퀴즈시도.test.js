@@ -117,11 +117,13 @@ test('🔴 같은 응답을 다시 읽어도(적재 뒤 포인터 저장 실패 
   assert.deepEqual(재처리.지급, ['S1@' + 오늘], '재처리에서 하루 보상이 다시 안 태워졌다 — 앞 실행이 적재 뒤·지급 전에 죽었으면 보상이 영영 빈다(3차 P1) · 응답일이 같이 가야 지급 함수가 가른다');
   assert.equal(재처리.포인터, '2', '재처리 뒤 포인터가 안 저장됐다');
   /* 진짜 재제출 — 같은 답을 다시 내도, 확신도만 바꿔도 시각이 다르니 «다른 응답»으로 남는다(원신호 보존 · 3차 P1 4a682b0d875b) */
-  const 재제출 = 스위프돌리기({ 응답행들: [원본, 응답(10, 'Q1', '을', QUIZ_CONFIDENCE[QUIZ_CONFIDENCE.length - 1]), 응답(5, 'Q1', '에')], 기존로그: 첫.행들 });
+  const 둘째 = 응답(10, 'Q1', '을', QUIZ_CONFIDENCE[QUIZ_CONFIDENCE.length - 1]), 셋째 = 응답(5, 'Q1', '에');
+  const 재제출 = 스위프돌리기({ 응답행들: [원본, 둘째, 셋째], 기존로그: 첫.행들 });
   assert.equal(재제출.행들.length, 3, '같은 답·다른 시각의 재제출이 버려졌다');
   assert.equal(재제출.행들[1][열('시도')], 2); assert.equal(재제출.행들[1][열('고른답')], '을');
   assert.equal(재제출.행들[2][열('시도')], 3); assert.equal(재제출.행들[2][열('고른답')], '에');
-  assert.deepEqual(재제출.지급, ['S1@' + 오늘, 'S1@' + 오늘, 'S1@' + 오늘], '지급 재료는 적재 행 + 재처리 행 전부다(하루 1회 상한은 지급 함수가 쥔다)');
+  /* 기대 날짜는 «그 응답의» 날로 센다 — 자정 직후엔 10분 전 응답이 어제라, 「전부 오늘」로 적으면 멀쩡한 엔진에도 시험이 빨개진다(6차 P2) */
+  assert.deepEqual(재제출.지급, ['S1@' + 날짜(원본[0]), 'S1@' + 날짜(둘째[0]), 'S1@' + 날짜(셋째[0])], '지급 재료는 적재 행 + 재처리 행 전부다(하루 1회 상한은 지급 함수가 쥔다)');
 });
 
 test('어제 응답의 재처리도 «응답일»을 달고 지급 함수로 간다 — 날짜로 거르는 자는 스위프가 아니라 지급 함수다(5차 P1)', () => {
@@ -147,19 +149,30 @@ test('같은 응답이라도 «시각»이 다르면 다른 응답이다 — 응
 });
 
 /* ── 지급 함수를 실물로 태운다 — 「하루 1회」의 하루는 «응답의 날»이다 ── */
-function 지급돌리기({ 행들, 지급이력 = [] }) {
+function 지급돌리기({ 행들, 지급이력 = [], 보관이력 = [] }) {
   const 나간것 = [];
+  const 머리 = ['id', 'student_id', 'pts', 'reason', 'by', 'created_at'];
+  const 표 = {
+    point_logs: 시트흉내({ 첫행: 1, 행들: [머리, ...지급이력] }),
+    point_logs_archive: 보관이력.length ? 시트흉내({ 첫행: 1, 행들: [머리, ...보관이력] }) : null,
+  };
+  const ss = { getSheetByName: (n) => 표[n] || null };
+  /* 실물 readPointLogs_(엔진_폼리포트.js)와 같은 규칙 — point_logs + point_logs_archive 병합 */
+  const readPointLogs_ = (s, cols) => ['point_logs', 'point_logs_archive'].reduce((acc, name) => {
+    const sh = s.getSheetByName(name);
+    if (!sh || sh.getLastRow() < 2) return acc;
+    return acc.concat(sh.getRange(2, 1, sh.getLastRow() - 1, cols).getValues());
+  }, []);
   const 의존 = {
     Utilities: { formatDate: (d) => 지역날짜(d) },
     asDate_: (v) => (v instanceof Date ? v : new Date(v)),
     dstr: (v) => 날짜(v),
     PT: { 퀴즈응답: 1 },
     appendPoints: (_s, rows) => 나간것.push(...rows.map((r) => r[0])),
-    QUIZ_LOG_HEADERS,
+    QUIZ_LOG_HEADERS, readPointLogs_,
   };
   const 퀴즈응답포인트_ = 함수('퀴즈응답포인트_', 의존);
-  const pl = 시트흉내({ 첫행: 1, 행들: [['id', 'student_id', 'pts', 'reason', 'by', 'created_at'], ...지급이력] });
-  퀴즈응답포인트_({ getSheetByName: (n) => (n === 'point_logs' ? pl : null) }, 행들, 'Asia/Ulaanbaatar');
+  퀴즈응답포인트_(ss, 행들, 'Asia/Ulaanbaatar');
   return 나간것;
 }
 const 지급행 = (sid, 언제) => ['P', sid, 1, '퀴즈응답', '시스템', 언제];
@@ -177,6 +190,8 @@ test('🔴 지급은 «응답의 날» 이후 지급이 있으면 건너뛴다 �
   assert.deepEqual(지급돌리기({ 행들: [응답행('S3', 날짜(지금)), 응답행('S3', 날짜(지금)), 응답행('S3', 날짜(어제))] }), ['S3']);
   /* ⑤ 제출일이 빈 행은 실행일로 본다 */
   assert.deepEqual(지급돌리기({ 행들: [응답행('S4', '')], 지급이력: [지급행('S4', 지금)] }), []);
+  /* ⑥ 월초 보관 뒤 — 지난달 말 지급이 point_logs_archive 로 옮겨간 뒤 그 응답을 재처리해도 안 준다(6차 P1) */
+  assert.deepEqual(지급돌리기({ 행들: [응답행('S5', 날짜(어제))], 지급이력: [], 보관이력: [지급행('S5', 어제)] }), [], '보관함의 지급을 못 봐 두 번 준다');
 });
 
 test('이미 로그에 시도 1 이 있으면 새 답은 시도 2 다(옛 행에 시도 칸이 비어도 1 로 센다)', () => {

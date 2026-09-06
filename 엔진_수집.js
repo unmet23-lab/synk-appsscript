@@ -1004,8 +1004,9 @@ function 퀴즈응답포인트_(ss, loaded, tz) {
    *   · 오늘 이미 받은 학생의 오늘 다른 문항 → 오늘 지급이 있다 → 안 준다(옛 규칙 그대로)
    *   지급 날짜 비교는 'yyyy-MM-dd' 문자열 비교다(같은 시간대로 접는다). 제출일 칸이 빈 행은 실행일로 본다. */
   const 지급일 = {};
-  const pl = ss.getSheetByName('point_logs');
-  if (pl && pl.getLastRow() >= 2) pl.getRange(2, 1, pl.getLastRow() - 1, 6).getValues().forEach(r => {
+  /* point_logs 만 읽으면 월초 보관(archiveMonthly → point_logs_archive) 뒤 지난달 말 응답의 재처리가 두 번 받는다(6차 P1 872f05cd4f83) —
+   *   병합 읽기(readPointLogs_ · 엔진_폼리포트.js)가 그 규칙의 단일 소스다. 옛 「오늘만」 규칙은 실행일 행이 보관될 일이 없어 안 밟던 자리. */
+  readPointLogs_(ss, 6).forEach(r => {
     if (!r[1] || !r[5] || String(r[3] || '') !== '퀴즈응답') return;
     const sid = String(r[1]).trim();
     (지급일[sid] = 지급일[sid] || []).push(Utilities.formatDate(asDate_(r[5]), tz, 'yyyy-MM-dd'));
