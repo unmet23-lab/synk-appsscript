@@ -30,21 +30,29 @@ const path = require('path');
 /* 🔑 `확인잔액`·`확인때` = **콘솔 화면에서 마지막으로 눈으로 읽은 값**이다(09-06).
  *   남은 돈은 「원금 − 이 창에서 태운 것」으로 세면 틀린다 — 창 밖에서 태운 것이 빠지기 때문이다.
  *   그래서 «확인잔액에서, 확인한 때 이후로 태운 것»을 뺀다. 화면을 다시 읽으면 이 두 값을 갱신한다. */
+/* 🔴 지갑이 «셋»이다(09-07 에 unmet27 이 붙었다 — 유호님이 40만원을 충전하셨다).
+ *   셋을 더해 읽지 말 것 — 각자 마감이 다르고, 먼저 죽는 것부터 태운다. */
 const 지갑들 = {
   옛: {
     이름: 'unmet23', 원금: 435523, 마감: '2026-11-13', 결제: '0161FA-7C996C-F1B948',
     프로: 'gen-lang-client-0106203750', 자격: path.join(os.homedir(), '.clasprc.json'),
     확인잔액: 136495, 확인때: '2026-09-06T17:00:00+09:00',
   },
-  새: {
+  이전: {
     이름: '77yuhbs', 원금: 414984, 마감: '2026-12-05', 결제: '013A36-17619E-CE0D07',
-    프로: null, 자격: path.join(os.homedir(), '.synk-vertex-oauth.json'),
+    프로: 'project-22fd10a3-c9c2-4b34-9f0', 자격: path.join(os.homedir(), '.synk-vertex-oauth.77yuhbs.json'),
     확인잔액: 222711, 확인때: '2026-09-06T16:30:00+09:00',
+  },
+  새: {
+    이름: 'unmet27', 원금: 414984, 마감: '2026-12-06', 결제: '01864D-0E650C-40F3CB',
+    프로: 'synk-bake-unmet27', 자격: path.join(os.homedir(), '.synk-vertex-oauth.json'),
+    확인잔액: 414984, 확인때: '2026-09-07T07:20:00+09:00',
   },
 };
 /** 굽기 자격 파일이 있으면 새 지갑, 없으면 옛 지갑(= `모델정책.js` 의 `붙인자격()` 과 같은 규칙). */
 function 고른지갑() {
   if (process.argv.includes('--옛')) return 지갑들.옛;
+  if (process.argv.includes('--이전')) return 지갑들.이전;
   if (process.argv.includes('--새')) return 지갑들.새;
   return fs.existsSync(지갑들.새.자격) ? 지갑들.새 : 지갑들.옛;
 }
