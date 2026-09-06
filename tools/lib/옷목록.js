@@ -62,6 +62,21 @@ const 마스코트들 = [
        몸까지 초록으로 구우면 눈을 찾는 자가 몸과 눈을 못 가른다 — 21벌이 통째로 어긋났다.
        자홍 몸이면 초록 홍채가 그대로 도드라진다. */
     바탕: '자홍',
+    /* 🔴 09-06 밤 · 유호 「까몽이 옷이 제대로 안 얹혀져」— 뿌리는 «자홍 판»이었다.
+       「참조의 몸을 자홍으로 물들여라」는 말이 몸을 다시 그리게 해서, 21벌 중 여럿이 위에서 본 둥근
+       몸이 아니라 «서 있는 봉제 인형»(머리·몸통·다리)으로 나왔다. 실루엣이 다르니 옷이 엉뚱한 크기로
+       앉았다(겨울 델이 몸을 삼킴 · 확신 0.71). ⇒ 셋을 같이 바꿨다:
+         물들인참조 — 물들이는 일은 우리가 한다(`tools/옷참조물들이기.py` · 0원). 제미나이에겐 «이 그림
+                    그대로 + 옷만». 실측 크기 1.008 · 확신 0.97.
+         화면 초록  — 바탕을 흰 대신 크로마 초록 스크린으로. 「크림 옷 vs 흰 바탕」·「바닥 그림자」를
+                    가르던 자 여덟이 통째로 필요 없어진다(초록도 자홍도 아닌 곳이 곧 옷).
+                    옷 자체가 초록인 셋(잎망토·새싹·화관)은 항목에서 화면을 «파랑»으로 준다.
+         털결      — 긴 털이라 조각이 «스티커»로 보이던 것을, 정본 털끝을 옷 가장자리로 넘기고 접촉
+                    그림자를 넣어 «파묻힌 옷»으로 만든다(`옷초록떼기.털결얹기` · 0원).
+       몽글·마린은 셋 다 안 탄다(유호 「마린은 100% 다 좋다」) — 옛 길 그대로다. */
+    물들인참조: true,
+    화면: '초록',
+    털결: true,
     표식:
       'The character is a very small round creature of long soft charcoal-brown fur, with two ' +
       'short triangular ears, two small dark front paws reaching out to the sides, and a slim ' +
@@ -184,15 +199,21 @@ const 공용 = [
 
 /* ── 성과 옷 넷 더 — 출석 셋 + 첫 목소리 (유호 확정 09-06 「자라는 식물로 가자」) ──── */
 const 성과더 = [
-  { 이름: '한 달 출석 새싹', 갈래: '악세', 성과: true, 바탕: '자홍', 설명:
-    'One small brooch is pinned on the front of its body — a single green felt sprout with two ' +
-    'tiny rounded leaves rising from a chalk-white felt disc, edged in cream blanket stitch.' },
+  /* 🔑 `화면: '파랑'` — 화면을 크로마로 굽는 마스코트(까몽)에서, 초록 옷은 초록 화면과 못 가른다.
+     흰 화면으로 굽는 마스코트(몽글·마린)는 이 값을 안 읽는다. */
+  /* 🔴 「몸 앞에 핀으로 단다」만 적으니 제미나이가 브로치를 «달 곳»으로 없던 갈색 조끼를 지어냈다
+     (09-06 밤 · 까몽 물들인 참조 판 · 조끼가 통째로 조각이 됐다 · 373만 점). 브로치는 «맨몸에 바로»라고 못 박는다. */
+  { 이름: '한 달 출석 새싹', 갈래: '악세', 성과: true, 바탕: '자홍', 화면: '파랑', 설명:
+    'One small brooch is pinned DIRECTLY onto the bare body at the front of its chest — a single ' +
+    'green felt sprout with two tiny rounded leaves rising from a chalk-white felt disc, edged in ' +
+    'cream blanket stitch. Nothing else is worn: no vest, no cape, no cloth of any kind around or ' +
+    'under the brooch. The body itself is bare everywhere except this one small brooch.' },
   /* 🔴 옷 자체가 초록이라 «초록 몸»으로 구우면 옷까지 걷힌다 — 이 둘만 자홍 몸으로 굽는다. */
-  { 이름: '3개월 출석 잎망토', 갈래: '의상', 성과: true, 바탕: '자홍', 설명:
+  { 이름: '3개월 출석 잎망토', 갈래: '의상', 성과: true, 바탕: '자홍', 화면: '파랑', 설명:
     'It wears a short shoulder cape of soft meadow-green felt fastened at the throat with one ' +
     'cream cord, its lower edge cut into three broad rounded leaf shapes, each with one line of ' +
     'cream running stitch down its middle like a leaf vein.' },
-  { 이름: '6개월 출석 화관', 갈래: '악세', 성과: true, 바탕: '자홍', 설명:
+  { 이름: '6개월 출석 화관', 갈래: '악세', 성과: true, 바탕: '자홍', 화면: '파랑', 설명:
     'A soft flower crown rests on its head — a ring of meadow-green felt leaves with five small ' +
     'open flowers worked in coral and butter-yellow felt, each with a centre of tiny cream beads. ' +
     'The ring follows the curve of the head.' },

@@ -104,6 +104,85 @@ const 초록지시 = (표식, 설명, 바탕 = '초록') =>
   `left. Every wool fibre is resolved. No text, no watermark, no hands, no second character. ` +
   `Tack sharp, medium format macro, photorealistic craft object.`;
 
+/** ②′ «미리 물들인 참조» 지시문 — 참조 자체가 이미 «자홍 몸 + 크로마 화면»이다 (09-06 밤 · 까몽).
+ *
+ * 🔴 왜 갈랐나 — 위 `초록지시` 의 「참조의 몸을 자홍으로 물들여라」는 말이 몸을 «다시 그리게» 했다.
+ *   까몽 21벌 중 여럿이 위에서 본 둥근 몸이 아니라 «서 있는 봉제 인형»(머리·몸통·다리)으로 나왔고,
+ *   실루엣이 다르니 몸으로 자리를 맞추는 자가 옷을 엉뚱한 크기로 앉혔다(겨울 델이 몸을 삼킴 · 확신 0.71).
+ *   물들이는 일을 우리가 하고(`tools/옷참조물들이기.py` · 0원) 제미나이에겐 「이 그림 그대로 + 옷만」을
+ *   시키니 실루엣이 그대로 왔다 — 같은 옷 실측 크기 1.008 · 확신 0.97.
+ *   바탕도 흰 대신 «크로마 화면»이다 — 크림 옷·바닥 그림자를 가르던 자가 통째로 필요 없어진다.
+ *   ⚠ 옷을 맨 앞에 세우는 것·「그 옷 하나만」·크기 못 박기는 위와 같은 까닭으로 그대로 둔다. */
+const 화면색 = { 초록: 'CHROMA GREEN (#00B140)', 파랑: 'CHROMA BLUE (#0047FF)' };
+
+const 물들인지시 = (표식, 설명, 바탕 = '자홍', 화면 = '초록') =>
+  `A small handmade felt character is WEARING something, and that garment is the point of this ` +
+  `picture. ${설명} ` +
+  `${표식}` +
+  `The reference photograph shows this exact character already prepared for a chroma-key shoot: ` +
+  `its own wool is dyed a flat uniform ${바탕색[바탕]} all over, and it is photographed against a ` +
+  `perfectly flat, evenly lit ${화면색[화면]} screen. ` +
+  `Reproduce the reference EXACTLY — the same silhouette, the same size and the same position in ` +
+  `the frame, the same pose, the same camera angle, the same fluffy outline, the same two eyes in ` +
+  `the same place keeping their real colour — and add ONLY the garment on top of it. ` +
+  `🔴 The character's own body stays that same flat ${바탕색[바탕]} everywhere: its fur, its ears, ` +
+  `its paws, its tail and the paddle at the end of it. No part of the body takes any other colour, ` +
+  `no tint, no pattern. Its eyes keep their real colour and stay exactly as they are. ` +
+  `🔴 The background stays that same flat even ${화면색[화면]} screen everywhere, edge to edge: ` +
+  `no floor, no table, no horizon, no gradient, no vignette, and NO shadow of any kind on it — ` +
+  `the screen is lit perfectly evenly and the character casts nothing onto it. ` +
+  `🔴 The GARMENT keeps all of its own real colours and is clearly, fully visible — only the ` +
+  `character's body is that flat colour and only the background is the screen colour. Do not ` +
+  `leave the garment out. ` +
+  `🔴 ONLY that one garment is worn. Nothing else is added to the character — no crown, no hat, ` +
+  `no scarf, no glasses, no bag, no badge beyond what is described in the sentence above. ` +
+  /* 🔴 09-06 밤 실측 — 새싹 브로치 판에 제미나이가 브로치를 «달 곳»으로 없던 갈색 조끼를 지어냈다.
+     작은 악세는 몸에 «바로» 앉는다고, 그리고 그것을 받칠 옷을 지어내지 말라고 못 박는다. */
+  `🔴 If that one item is a small accessory (a brooch, a badge, glasses, a necklace, a hat, a ` +
+  `pendant), it sits DIRECTLY on the bare body — do not invent any vest, cape, shirt or cloth for ` +
+  `it to be pinned to or to hang against. The body around it stays bare. ` +
+  `🔴 SIZE — the garment is made to FIT this character: it is in scale with its body, the way a ` +
+  `real doll's clothes are. A hat sits on the head without being wider than the head; a crown is ` +
+  `small enough to rest on it. Nothing is oversized. ` +
+  `The character fills the frame exactly as it does in the reference photograph — the same ` +
+  `distance, the same crop. Do not zoom out and do not shrink it. ` +
+  `Studio lighting: broad soft diffused light from every side with one gentle key from the upper ` +
+  `left. Every wool fibre is resolved. No text, no watermark, no hands, no second character. ` +
+  `Tack sharp, medium format macro, photorealistic craft object.`;
+
+/** 물들인 참조 그림의 자리 — 없으면 그 자리에서 만든다(0원 · 정본에서 나온다 · git 밖). */
+function 물들인참조(m, 화면) {
+  const 낼 = path.join(낼방, '참조', `${m.이름}_${m.바탕 || '초록'}_${화면}.png`);
+  if (!fs.existsSync(낼)) {
+    const r = 파이썬(['tools/옷참조물들이기.py', '--몸', path.join(루트, m.참조), '--눈', m.눈,
+      '--몸색', m.바탕 || '초록', '--화면', 화면, '--낼곳', 낼]);
+    if (!r.ok) throw new Error(`물들인 참조를 못 만들었다 — ${r.글.slice(-200)}`);
+  }
+  return 낼;
+}
+
+/** ② 한 벌의 «조각 뜨는 그림» 굽기 옵션 — 마스코트가 물들인 참조를 쓰면 ②′ 길, 아니면 옛 길. */
+function 초록굽기옵션(x, 꼬리 = '') {
+  const 바탕 = x.바탕 || x.마스코트.바탕 || '초록';
+  const 표식 = x.마스코트.초록표식 || x.마스코트.표식;
+  if (x.마스코트.물들인참조) {
+    const 화면 = x.화면 || x.마스코트.화면 || '초록';
+    return { 이름: `${x.이름} 초록${꼬리}`, 지시: 물들인지시(표식, x.설명, 바탕, 화면),
+      비율: '1:1', 크기: '4K', 참조: [물들인참조(x.마스코트, 화면)], 저장경로: x.초록 };
+  }
+  return { 이름: `${x.이름} 초록${꼬리}`, 지시: 초록지시(표식, x.설명, 바탕),
+    비율: '1:1', 크기: '4K', 참조: [path.join(루트, x.마스코트.참조)], 저장경로: x.초록 };
+}
+
+/** ③ 떼는 자에게 줄 인자 — 화면(흰·초록·파랑)과 털결은 마스코트·항목이 정한다. */
+function 떼기인자(x) {
+  const 화면 = x.마스코트.화면 ? (x.화면 || x.마스코트.화면) : '흰';
+  return ['tools/옷초록떼기.py', x.초록, x.층,
+    '--몸', path.join(루트, x.마스코트.참조), '--눈', x.마스코트.눈, '--얹음', x.얹음,
+    '--바탕', x.바탕 || x.마스코트.바탕 || '초록', '--화면', 화면,
+    ...(x.마스코트.털결 ? ['--털결'] : [])];
+}
+
 /** (옛 길 · 안 쓴다) 옷만 뜨는 지시문 — 21벌 중 8벌이 프레임을 바꿔 09-06 에 초록 길로 갈았다. */
 const 옷만지시 = (옷이름, 설명) =>
   `The reference photograph shows a small handmade felt character wearing ${옷이름}. ` +
@@ -194,9 +273,7 @@ async function 떼기만돈다(할것) {
     for (;;) {
       const x = 줄선것.shift();
       if (!x) return;
-      const r = await 파이썬비동기(['tools/옷초록떼기.py', x.초록, x.층,
-        '--몸', path.join(루트, x.마스코트.참조), '--눈', x.마스코트.눈, '--얹음', x.얹음,
-        '--바탕', x.바탕 || x.마스코트.바탕 || '초록']);
+      const r = await 파이썬비동기(떼기인자(x));
       const 끝줄 = (r.글.split('\n').pop() || '').trim();
       if (r.ok) { 됨++; 말(`   [${x.마스코트.이름}] ${x.이름} — ${끝줄.replace(/^\S+\s+\S+\s+—\s+/, '')}`); }
       else { 실패++; 말(`🔴 [${x.마스코트.이름}] ${x.이름} — ${끝줄.slice(-140)}`); }
@@ -211,9 +288,7 @@ async function 떼기만돈다(할것) {
 
 /** 초록 그림에서 옷을 떼어 정본 몸 자리에 앉힌다(0원). */
 function 떼어앉힌다(x) {
-  const r = 파이썬(['tools/옷초록떼기.py', x.초록, x.층,
-    '--몸', path.join(루트, x.마스코트.참조), '--눈', x.마스코트.눈, '--얹음', x.얹음,
-    '--바탕', x.바탕 || x.마스코트.바탕 || '초록']);
+  const r = 파이썬(떼기인자(x));
   if (!r.ok) return { ok: false, 왜: r.글.slice(-140) };
   const 점 = (r.글.match(/옷 ([\d,]+)점/) || [])[1];
   return { ok: true, 점 };
@@ -242,13 +317,20 @@ function 떼어앉힌다(x) {
      전에는 목록 앞에서부터 잘랐는데, 앞쪽이 이미 다 구워진 벌이면 상한이 그 자리에서 소진되고
      정작 구울 것에는 안 닿았다 — 여덟 벌을 시켰더니 이미 난 두 벌을 세고 끝났다. */
   const 아직 = 굽을것.filter((x) => !fs.existsSync(x.씌운) || !fs.existsSync(x.초록));
-  const 셀수 = 돈상한 > 0 ? Math.floor(돈상한 / (장당 * 2)) : 아직.length;
-  const 할것 = 아직.slice(0, 셀수);
+  /* 🔑 장 수는 «정말 구울 장»으로 센다 (09-06 밤). 씌움이 이미 있고 초록만 없는 벌은 한 장이다 —
+     한 벌 = 두 장으로 세면 상한이 절반에서 끊기고(16벌에 11,000원을 줘야 했다) 게이트 예상값도 곱절이 된다. */
+  const 장수 = (x) => (걸음 !== 2 && !fs.existsSync(x.씌운) ? 1 : 0) + (fs.existsSync(x.초록) ? 0 : 1);
+  const 할것 = [];
+  let 셀장 = 0;
+  for (const x of 아직) {
+    if (돈상한 > 0 && (셀장 + 장수(x)) * 장당 > 돈상한) break;
+    할것.push(x); 셀장 += 장수(x);
+  }
   if (아직.length === 0) { 말('■ 다 나 있다 — 구울 것이 없다(0원). 조각만 다시 뜨려면 --떼기만'); return; }
-  말(`■ 옷 굽기 — ${할것.length}벌 · 약 ${(할것.length * 2 * 장당).toLocaleString()}원`
+  말(`■ 옷 굽기 — ${할것.length}벌 · ${셀장}장 · 약 ${(셀장 * 장당).toLocaleString()}원`
     + (돈상한 ? ` (상한 ${돈상한.toLocaleString()}원)` : ' (상한 없음)'));
 
-  const ok = await 굽기.배치게이트(할것.length * 2, '4K');
+  const ok = await 굽기.배치게이트(셀장, '4K');
   if (!ok) { 말('🚫 게이트가 막았다 — 한 장도 안 구웠다(0원).'); return; }
 
   let 됨 = 0, 실패 = 0, 연속막힘 = 0;
@@ -273,11 +355,7 @@ function 떼어앉힌다(x) {
     // ② 초록 몸에 같은 옷을 입혀 굽는다 — 조각을 뜨는 그림
     if (!fs.existsSync(x.초록)) {
       말(`■ ${머리} — ② 초록 몸`);
-      const r = await 한장({
-        이름: `${x.이름} 초록`,
-        지시: 초록지시(x.마스코트.초록표식 || x.마스코트.표식, x.설명, x.바탕 || x.마스코트.바탕 || '초록'),
-        비율: '1:1', 크기: '4K', 참조: [path.join(루트, x.마스코트.참조)], 저장경로: x.초록,
-      }, `${x.이름} 초록`);
+      const r = await 한장(초록굽기옵션(x), `${x.이름} 초록`);
       if (r === '돈벽') break;
       if (!r) { 실패++; if (++연속막힘 >= 3) { 말('🔴 세 판 잇달아 막혔다 — 그만둔다.'); break; } continue; }
       연속막힘 = 0;
@@ -291,11 +369,7 @@ function 떼어앉힌다(x) {
       말(`   ⚠ ${x.이름} — ${결과.왜} · 초록 몸을 한 번 다시 굽는다`);
       try { fs.unlinkSync(x.초록); } catch { /* 없으면 그만 */ }
       await 잔다(45000);
-      const r2 = await 한장({
-        이름: `${x.이름} 초록(다시)`,
-        지시: 초록지시(x.마스코트.초록표식 || x.마스코트.표식, x.설명, x.바탕 || x.마스코트.바탕 || '초록'),
-        비율: '1:1', 크기: '4K', 참조: [path.join(루트, x.마스코트.참조)], 저장경로: x.초록,
-      }, `${x.이름} 초록(다시)`);
+      const r2 = await 한장(초록굽기옵션(x, '(다시)'), `${x.이름} 초록(다시)`);
       if (r2 === '돈벽') break;
       if (r2) 결과 = 떼어앉힌다(x);
     }
