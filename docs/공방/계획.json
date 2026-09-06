@@ -14,7 +14,7 @@
       {
         "이름": "천·바탕",
         "쓰는 곳": "지면 배경 · 카드 바탕 · PPT 표지",
-        "상태": "8/8",
+        "상태": "9/9",
         "것들": [
           {
             "이름": "크림 양모 펠트",
@@ -81,6 +81,15 @@
             "지시": "The cloth is cotton corduroy dyed a warm coral, fine even wales running in one direction, the pile catching light along every ridge.",
             "파일": "공방_코듀로이.avif",
             "2K판": "공방_코듀로이.webp"
+          },
+          {
+            "이름": "코랄 펠트",
+            "상태": "구웠다",
+            "메모": "브랜드 기본색 천이 여덟 천 중에 없었다 — 오려 만든 글자·부품이 코랄로 못 서던 자리(유호 지시 09-07)",
+            "쇠": "공방_코랄펠트",
+            "규격": "천",
+            "지시": "The cloth is densely needle-felted wool dyed a warm coral red, the red of coral tips seen through shallow water, soft and slightly dusty rather than neon.",
+            "파일": "공방_코랄펠트.avif"
           }
         ]
       },
