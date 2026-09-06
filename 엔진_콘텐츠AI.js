@@ -3097,9 +3097,13 @@ function 퀴즈오답맵_(ss, 복귀) {
   const 복귀맵 = (복귀 && 복귀.맵) || {};
   const 컷_ = (sid) => (복귀맵[sid] ? Math.min(cut, 복귀맵[sid] - 14 * 86400000) : cut);
   const agg = {}; // 학생 → 라벨 → { 오답, 찍맞, t }
+  const 시도칸 = QUIZ_LOG_HEADERS.indexOf('시도');
   ql.getRange(2, 1, ql.getLastRow() - 1, w).getValues().forEach(r => {
     const sid = String(r[1] || '').trim();
     if (!sid) return;
+    /* [v9.312] 「무엇을 골랐나」는 **첫 답**이다 — 둘째 답부터는 시도 번호를 달고 남지만(철학 Ⅲ-2 · 다시 낸 문항의 결과가 판정)
+     *   약점 재료로는 안 센다. 옛 행(시도 칸 없음)은 1 이다. */
+    if (시도칸 >= 0 && (Number(r[시도칸]) || 1) > 1) return;
     const 판정 = String(r[7] || '').trim();
     /* 🔑 문구를 리터럴로 다시 적지 않는다 — 폼 3택의 정본은 `QUIZ_LOG_HEADERS` 옆 `QUIZ_CONFIDENCE`
      *   하나다. 두 곳에 적으면 갈라지고, 갈라진 쪽은 **조용히 아무것도 안 고른다**(축이 죽어도 초록). */
