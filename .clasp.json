@@ -11,6 +11,6 @@
   "jsonExtensions": [
     ".json"
   ],
-  "filePushOrder": ["Code.js", "엔진_운영배치.js", "엔진_폼리포트.js", "엔진_콘텐츠AI.js", "엔진_셋업확장.js", "엔진_수집.js", "엔진_궤적.js", "contents_교안.js", "contents_서클.js", "contents_순간.js", "contents_증서.js", "contents_상담AI.js", "상담AI.js", "교재연동.js", "contents_두뇌.js", "엔진_두뇌.js"],
+  "filePushOrder": ["Code.js", "엔진_운영배치.js", "엔진_폼리포트.js", "엔진_콘텐츠AI.js", "엔진_셋업확장.js", "엔진_수집.js", "엔진_궤적.js", "엔진_진단.js", "엔진_자율일.js", "contents_교안.js", "contents_서클.js", "contents_1기차시.js", "contents_순간.js", "contents_증서.js", "contents_상담AI.js", "상담AI.js", "교재연동.js", "contents_두뇌.js", "엔진_두뇌.js"],
   "skipSubdirectories": false
 }
