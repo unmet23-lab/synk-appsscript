@@ -1012,19 +1012,18 @@ function 퀴즈응답포인트_(ss, loaded, tz) {
     (지급일[sid] = 지급일[sid] || []).push(Utilities.formatDate(asDate_(r[5]), tz, 'yyyy-MM-dd'));
   });
   const 제출일칸 = QUIZ_LOG_HEADERS.indexOf('제출일');
-  /* [v9.313] 이 호출 안에서 같은 학생·«같은 응답일»은 1회 — 밀린 배치가 어제·오늘 응답을 한 번에 읽으면 날마다 1회(학생 하나로 접으면 어제 몫이
-   *   영영 빈다 · 소넷 검토 09-06). 오래된 응답일부터 돈다: 오늘 몫이 먼저 서면 어제 몫이 「어제 이후 지급 있음」에 걸려 빈다(자정 직후 스위프가
-   *   23:58 답과 00:02 답을 한 번에 읽는 자리). 이 호출에서 준 것도 지급 이력에 넣어 두 번째 재료가 같은 자로 갈리게 한다. */
+  /* [v9.313] 이 호출 안에서 같은 학생은 1회 — 「하루 1회」의 하루는 **지급일**이다. 야간 dailyGuard(엔진_운영배치.js)가 지급일로 같은 상한을
+   *   다시 재므로, 응답일마다 주면 밤에 회수된다(코덱스 P1 7d6fc1a63437 · 「응답일마다 1회」 제안은 그래서 반려). 응답일은 «이미 준 응답인가»
+   *   (재처리·늦은 적재·자정 경계)를 가르는 데만 쓴다. 오래된 응답일부터 돌아, 밀린 배치에서 어느 응답이 오늘 몫을 받는지가 정해진다. */
   const 이번 = {};
   const grants = [];
   loaded.map(row => ({ sid: String(row[1] || '').trim(), 날: row[제출일칸] ? dstr(row[제출일칸], tz) : today }))
     .filter(x => x.sid)
     .sort((a, b) => (a.날 < b.날 ? -1 : (a.날 > b.날 ? 1 : 0)))
     .forEach(({ sid, 날 }) => {
-      if (이번[sid + '|' + 날]) return;
+      if (이번[sid]) return;
       if ((지급일[sid] || []).some(d => d >= 날)) return;
-      이번[sid + '|' + 날] = 1;
-      지급일[sid] = (지급일[sid] || []).concat(날);
+      이번[sid] = 1;
       grants.push([sid, PT.퀴즈응답, '퀴즈응답', '시스템']);
     });
   if (grants.length) appendPoints(ss, grants);
