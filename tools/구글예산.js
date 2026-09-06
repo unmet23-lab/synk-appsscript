@@ -28,6 +28,11 @@ const path = require('path');
 const 결제계정 = process.env.SYNK_BILLING_ACCOUNT || '013A36-17619E-CE0D07';
 const 자격경로 = process.env.SYNK_VERTEX_OAUTH || path.join(os.homedir(), '.synk-vertex-oauth.json');
 
+/* 🔑 알림이 «가는 곳». 결제 계정 주인과 아무 상관이 없다 — 아무 주소나 된다(유호 확정 09-06).
+ * 계정 주인은 77yuhbs 인데 유호님이 그 메일함을 안 보시므로, 늘 보시는 unmet23 으로 돌린다.
+ * ⇒ 예산에 «메일 채널»을 붙이고 기본 수신자(계정 주인)는 끈다(`disableDefaultIamRecipients: true`). */
+const 받을주소 = process.env.SYNK_BILLING_ALERT_EMAIL || 'unmet23@gmail.com';
+
 /** 세울 경보 두 벌. 하나는 «카드로 나가나», 하나는 «크레딧이 바닥나 가나». */
 const 세울것 = [
   {
@@ -35,16 +40,35 @@ const 세울것 = [
     budgetFilter: { creditTypesTreatment: 'INCLUDE_ALL_CREDITS' },
     amount: { specifiedAmount: { currencyCode: 'KRW', units: '50000' } },
     thresholdRules: [0.01, 0.2, 0.5, 1.0].map((t) => ({ thresholdPercent: t })),
-    notificationsRule: { disableDefaultIamRecipients: false },
   },
   {
     displayName: '크레딧이 바닥나 가면 알림',
     budgetFilter: { creditTypesTreatment: 'EXCLUDE_ALL_CREDITS' },
     amount: { specifiedAmount: { currencyCode: 'KRW', units: '414984' } },
     thresholdRules: [0.5, 0.8, 0.9, 1.0].map((t) => ({ thresholdPercent: t })),
-    notificationsRule: { disableDefaultIamRecipients: false },
   },
 ];
+
+/** 메일 채널을 찾거나 만든다. 이 채널이 예산과 «주소»를 잇는 다리다.
+ *  ⚠ `sendTestNotification` 은 이 통로에 없다(v3·v1 둘 다 404 · 09-06 실측) ⇒ «도착하나»는 진짜 알림으로만 갈린다. */
+async function 메일채널(H, 프로) {
+  const 있 = await (await fetch(`https://monitoring.googleapis.com/v3/projects/${프로}/notificationChannels`, { headers: H })).json();
+  const 찾음 = (있.notificationChannels || []).find((c) => c.type === 'email' && c.labels?.email_address === 받을주소);
+  if (찾음) return 찾음;
+  const r = await fetch(`https://monitoring.googleapis.com/v3/projects/${프로}/notificationChannels`, {
+    method: 'POST', headers: H,
+    body: JSON.stringify({
+      type: 'email',
+      displayName: 'SYNK 돈 경보 받는 곳',
+      description: '구글 크레딧이 바닥나거나 카드로 돈이 나가기 시작하면 여기로 온다',
+      labels: { email_address: 받을주소 },
+      enabled: true,
+    }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!j.name) throw new Error(`메일 채널을 못 만들었다 ${r.status}: ${JSON.stringify(j).slice(0, 250)}`);
+  return j;
+}
 
 const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -78,11 +102,17 @@ function 한줄(b) {
   const 금액 = b.amount?.specifiedAmount;
   const 뜻 = b.budgetFilter?.creditTypesTreatment === 'INCLUDE_ALL_CREDITS' ? '카드로 나갈 돈' : '총 사용액';
   const 문턱 = (b.thresholdRules || []).map((t) => `${Math.round(t.thresholdPercent * 100)}%`).join('·');
+  const n = b.notificationsRule || {};
+  const 가는곳 = (n.monitoringNotificationChannels || []).length
+    ? `${받을주소} (채널 ${n.monitoringNotificationChannels[0].split('/').pop()})`
+    : '결제 계정 주인 (채널이 안 붙었다)';
   return `  · ${b.displayName}\n`
     + `      재는 것 ${뜻} · 기준 ${금액?.currencyCode} ${Number(금액?.units || 0).toLocaleString()}`
     + ` · 알리는 때 ${문턱}\n`
     + `      첫 알림이 오는 값 ≈ ${금액?.currencyCode} `
-    + `${Math.round(Number(금액?.units || 0) * ((b.thresholdRules || [{}])[0].thresholdPercent || 0)).toLocaleString()}`;
+    + `${Math.round(Number(금액?.units || 0) * ((b.thresholdRules || [{}])[0].thresholdPercent || 0)).toLocaleString()}\n`
+    + `      가는 곳 = ${가는곳}`
+    + `${n.disableDefaultIamRecipients ? ' · 계정 주인에게는 안 간다' : ''}`;
 }
 
 (async () => {
@@ -111,14 +141,22 @@ function 한줄(b) {
     console.log(`문 켜기 ${켜기.status} · 전파를 기다린다(30초)…`);
     await 잠깐(30000);
 
+    const 채널 = await 메일채널(H, 프로);
+    console.log(`알림 가는 곳 = ${받을주소}`);
+    const 알림규칙 = { monitoringNotificationChannels: [채널.name], disableDefaultIamRecipients: true };
+
     const 있는것 = await 목록(H).catch(() => []);
     for (const b of 세울것) {
-      if (있는것.some((x) => x.displayName === b.displayName)) {
-        console.log(`이미 있다(겹쳐 만들지 않는다): ${b.displayName}`);
+      const 이미 = 있는것.find((x) => x.displayName === b.displayName);
+      if (이미) {
+        // 겹쳐 만들지 않고 «가는 곳»만 맞춘다(주소를 바꿨을 때 이 자리가 따라온다)
+        const r = await fetch(`https://billingbudgets.googleapis.com/v1/${이미.name}?updateMask=notificationsRule`,
+          { method: 'PATCH', headers: H, body: JSON.stringify({ notificationsRule: 알림규칙 }) });
+        console.log(`이미 있다 · 가는 곳만 맞췄다 ${r.status}: ${b.displayName}`);
         continue;
       }
       const r = await fetch(`https://billingbudgets.googleapis.com/v1/billingAccounts/${결제계정}/budgets`,
-        { method: 'POST', headers: H, body: JSON.stringify(b) });
+        { method: 'POST', headers: H, body: JSON.stringify({ ...b, notificationsRule: 알림규칙 }) });
       const j = await r.json().catch(() => ({}));
       console.log(`세움 ${r.status}: ${b.displayName}${r.ok ? '' : ' · ' + JSON.stringify(j).slice(0, 200)}`);
     }
@@ -132,6 +170,7 @@ function 한줄(b) {
     return;
   }
   것들.forEach((b) => console.log(한줄(b)));
-  console.log(`\n⚠ 알림은 결제 계정 «주인» 메일로 간다 — 그 메일함을 안 보면 이 장치는 없는 것과 같다.`);
-  console.log(`⚠ 달마다 0으로 돌아간다(calendarPeriod=MONTH).\n`);
+  console.log(`\n⚠ 달마다 0으로 돌아간다(calendarPeriod=MONTH).`);
+  console.log(`⚠ «진짜 도착하나»는 아직 안 재봤다 — 시험 발송 주소가 이 통로에 없다(v3·v1 둘 다 404 · 09-06 실측).`);
+  console.log(`   첫 진짜 알림이 그것을 가른다. 문턱에 닿았는데 메일이 없으면 채널을 의심한다.\n`);
 })().catch((e) => { console.error(`\n🔴 ${e.message}\n`); process.exit(1); });
