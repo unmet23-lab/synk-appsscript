@@ -2442,14 +2442,15 @@
         "이름": "글자 시험",
         "쓰는 곳": "표지·제목 — 되면 명품 글자를 굽고, 안 되면 오려 만드는 쪽이 유일한 길로 확정된다",
         "_결": "🔑 두 장만 던져 잰다. 이미지 모델이 한글 자모를 흘리는 것은 흔하다.",
-        "상태": "0/2",
+        "상태": "1/2",
         "것들": [
           {
             "이름": "펠트 글자 · 한국어",
-            "상태": "아직",
+            "상태": "구웠다",
             "쇠": "공방_글자_한국어",
             "규격": "부품",
-            "지시": "Three Korean hangul characters spelling the word 한국어, each character cut by hand from warm coral wool felt and laid side by side in a row, reading left to right: first 한, then 국, then 어. Each character is a single flat felt shape, its outline hand stitched all the way round with small even blanket stitches in cream thread. The letterforms are thick, geometric and evenly weighted like a bold sans-serif. The three characters are the only things in the frame and none of them touch each other."
+            "지시": "Three Korean hangul characters spelling the word 한국어, each character cut by hand from warm coral wool felt and laid side by side in a row, reading left to right: first 한, then 국, then 어. Each character is a single flat felt shape, its outline hand stitched all the way round with small even blanket stitches in cream thread. The letterforms are thick, geometric and evenly weighted like a bold sans-serif. The three characters are the only things in the frame and none of them touch each other.",
+            "파일": "공방_글자_한국어.png"
           },
           {
             "이름": "자수 글자 · SYNK",
@@ -7088,6 +7089,96 @@
             "규격": "부품",
             "상태": "아직",
             "지시": "A single running-stitch tack of thread on cream felt, one short raised stitch in deep warm grey (#575046), extremely simple, the smallest possible mark, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, shallow depth, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "불릿 매듭점",
+            "쇠": "매듭점",
+            "파일": "매듭점.avif",
+            "2K판": "매듭점.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A trefoil knot tied from a single strand of deep warm grey wool yarn (#575046), three even loops, soft halo of loose fibres around it, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, visible individual wool fibres, no text, no watermark, centred square composition."
+          },
+          {
+            "이름": "번호 받침 단추",
+            "쇠": "단추민판",
+            "파일": "단추민판.avif",
+            "2K판": "단추민판.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A round two-tier felt button in cream wool (#FBF7F0 over #EDE7DC) with a plain undecorated centre, two small stitch holes, no numeral or marking of any kind, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, visible individual wool fibres, no text, no watermark, centred square composition."
+          },
+          {
+            "이름": "히어로 그릇 폼폼",
+            "쇠": "폼폼민방울",
+            "파일": "폼폼민방울.avif",
+            "2K판": "폼폼민방울.webp",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A round wool pom-pom in coral (#F96859), full and soft, fibres catching the light at the rim, completely plain with no numeral, letter or stitching on it, photographed from directly overhead on a plain warm off-white paper background (#FBF7F0), soft even studio light, visible individual wool fibres, no text, no watermark, centred square composition."
+          },
+          {
+            "이름": "소개서 표지 — Core",
+            "쇠": "히어로_Core",
+            "파일": "히어로_Core.avif",
+            "2K판": "히어로_Core.webp",
+            "규격": "장면",
+            "상태": "아직",
+            "지시": "A still life of a ring of coral wool yarn coiled into a closed circle, like a gauge filling, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, resting on folded wool cloth with the workshop table softly out of focus behind, photographed as a still life on a soft wool surface, raking side light that lifts every fibre, shallow depth of field so the background falls away, warm off-white ground (#FBF7F0), no text, no watermark, square composition."
+          },
+          {
+            "이름": "소개서 표지 — Loom",
+            "쇠": "히어로_Loom",
+            "파일": "히어로_Loom.avif",
+            "2K판": "히어로_Loom.webp",
+            "규격": "장면",
+            "상태": "아직",
+            "지시": "A still life of a single large coral pom-pom, the material itself as the subject, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, resting on folded wool cloth with the workshop table softly out of focus behind, photographed as a still life on a soft wool surface, raking side light that lifts every fibre, shallow depth of field so the background falls away, warm off-white ground (#FBF7F0), no text, no watermark, square composition."
+          },
+          {
+            "이름": "소개서 표지 — Vellum",
+            "쇠": "히어로_Vellum",
+            "파일": "히어로_Vellum.avif",
+            "2K판": "히어로_Vellum.webp",
+            "규격": "장면",
+            "상태": "아직",
+            "지시": "A still life of a speech bubble cut from cream felt with a blanket-stitched edge, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, resting on folded wool cloth with the workshop table softly out of focus behind, photographed as a still life on a soft wool surface, raking side light that lifts every fibre, shallow depth of field so the background falls away, warm off-white ground (#FBF7F0), no text, no watermark, square composition."
+          },
+          {
+            "이름": "소개서 표지 — Trail",
+            "쇠": "히어로_Trail",
+            "파일": "히어로_Trail.avif",
+            "2K판": "히어로_Trail.webp",
+            "규격": "장면",
+            "상태": "아직",
+            "지시": "A still life of a decorative knot of pale wool yarn tied into four looped petals, one long thread trailing away, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, resting on folded wool cloth with the workshop table softly out of focus behind, photographed as a still life on a soft wool surface, raking side light that lifts every fibre, shallow depth of field so the background falls away, warm off-white ground (#FBF7F0), no text, no watermark, square composition."
+          },
+          {
+            "이름": "소개서 표지 — Prism",
+            "쇠": "히어로_Prism",
+            "파일": "히어로_Prism.avif",
+            "2K판": "히어로_Prism.webp",
+            "규격": "장면",
+            "상태": "아직",
+            "지시": "A still life of three felt bars of rising height in coral, butter yellow and lapis blue standing side by side, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, resting on folded wool cloth with the workshop table softly out of focus behind, photographed as a still life on a soft wool surface, raking side light that lifts every fibre, shallow depth of field so the background falls away, warm off-white ground (#FBF7F0), no text, no watermark, square composition."
+          },
+          {
+            "이름": "소개서 표지 — Temper",
+            "쇠": "히어로_Temper",
+            "파일": "히어로_Temper.avif",
+            "2K판": "히어로_Temper.webp",
+            "규격": "장면",
+            "상태": "아직",
+            "지시": "A still life of a round felt stamp pressed into cream wool leaving a soft coral impression, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, resting on folded wool cloth with the workshop table softly out of focus behind, photographed as a still life on a soft wool surface, raking side light that lifts every fibre, shallow depth of field so the background falls away, warm off-white ground (#FBF7F0), no text, no watermark, square composition."
+          },
+          {
+            "이름": "소개서 표지 — Reed",
+            "쇠": "히어로_Reed",
+            "파일": "히어로_Reed.avif",
+            "2K판": "히어로_Reed.webp",
+            "규격": "장면",
+            "상태": "아직",
+            "지시": "A still life of a band of cream felt with a line of stitches ending in a small tied knot, thread trimmed, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, resting on folded wool cloth with the workshop table softly out of focus behind, photographed as a still life on a soft wool surface, raking side light that lifts every fibre, shallow depth of field so the background falls away, warm off-white ground (#FBF7F0), no text, no watermark, square composition."
           }
         ]
       }
