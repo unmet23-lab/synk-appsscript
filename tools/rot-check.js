@@ -1089,6 +1089,26 @@ function 밤굽기Section(뿌리 = ROOT) {
 // ⚠  = 아직 거짓은 아니지만 방치하면 🔴이 된다
 const EVOLVE_THRESHOLD = 2; // 지침: 마찰 신호 2건이면 지침 개정을 **제안**한다(/evolve 스킬은 08-20 은퇴 · 문턱은 산다)
 
+/* ── 철학 Ⅰ-5 넷째 칸 「누구에게」 — ④ 도장에 수신자가 붙었나 (09-06 · 철학 4회차 심문 G5 · 5회차 판정) ──
+ * 정본은 「④모✓닿✓늘✗ 누구=학생」 꼴을 요구한다(Ⅰ-3 ④ · Ⅰ-5 적는 법). 세는 자가 없으면 문서 규칙은 조용히 무시된다 —
+ * 09-06 실측: 트랙의 ④ 도장 다섯 중 「누구=」가 붙은 것이 둘이었다. 규칙 줄(백틱 안의 예시)은 도장이 아니라 뺀다. */
+function 누구에게Section() {
+  const p = path.join(ROOT, 'docs', '_ops', '트랙.md');
+  if (!fs.existsSync(p)) return { 측정: false, 빠진: [] };
+  const 빠진 = [];
+  fs.readFileSync(p, 'utf8').split(/\r?\n/).forEach((줄, i) => {
+    const 도장 = /④모[✓✗]닿[✓✗]늘[✓✗]/g;
+    let m;
+    while ((m = 도장.exec(줄))) {
+      const 앞 = 줄.slice(Math.max(0, m.index - 1), m.index);
+      if (앞 === '`') continue;                                   // 규칙의 예시(백틱 안) — 도장이 아니다
+      const 뒤 = 줄.slice(m.index, m.index + 60);
+      if (!/누구\s*=\s*\S/.test(뒤)) 빠진.push(`트랙.md:${i + 1} — ${줄.trim().slice(0, 70)}`);
+    }
+  });
+  return { 측정: true, 빠진 };
+}
+
 function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false } = {}) {
   const mem = attempt('memory', memorySection);
   const doc = attempt('doc', docSection);
@@ -1110,10 +1130,16 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
   const 게이트 = attempt('게이트초', () => 게이트Section());
   const 밤굽기 = attempt('밤굽기도장', () => 밤굽기Section());
   const 트랙수 = attempt('트랙수대조', () => require('./lib/트랙수대조.js').대조하기(ROOT));
+  const 누구 = attempt('누구에게', 누구에게Section);
 
   const red = [];
   const warn = [];
   const notes = [];
+
+  /* ④ 도장에 「누구=」가 없는 줄 — 철학 Ⅰ-5 「못 대면 미완결」. 빨강이 아니라 주의로 낸다(트랙 문장은 사람이 고친다). */
+  if (누구.ok && 누구.value.측정) {
+    for (const x of 누구.value.빠진) warn.push({ kind: '④ 도장에 「누구=」 없음', text: `${x} → 도장 뒤에 「누구=학생/강사/학부모/내부」 한 낱말(철학 Ⅰ-5 적는 법)` });
+  }
 
   // 신설 절 다섯도 이 그물에 넣는다 — 절이 죽으면 「검사기 고장」 적색이 뜨고, 적색은 이제 축을 안 탄다.
   // (`소개` 는 08-29 까지 이 그물 밖이었다 — 소개서 절이 죽으면 아무 소리도 안 났다. 같이 넣는다.)
