@@ -231,6 +231,36 @@ const 자막: React.FC<{ 장면: 장면 }> = ({ 장면 }) => {
   );
 };
 
+/**
+ * 로고 띠 — 위 띠에 브랜드 마크. **훅이 끝난 뒤에 들어온다**(유호 확정 09-06).
+ *
+ * 🔑 왜 «미루기»이지 «빼기»가 아닌가 — 이 로고는 유호님이 화면에서 잡아 주셔서 들어간 것이다
+ *   (「30초 브랜드 영상에 브랜드 마크가 0회였다」 · 08-26). 빼면 그 교정이 죽는다.
+ *   ⇒ 브랜드 마크는 그대로 나오되 **첫 2초에는 안 나온다.**
+ *
+ * 🔴 근거를 정직하게 적는다 — 「로고가 광고 신호라 넘긴다」는 자료가 **우리에게 없다**.
+ *   가진 자가 말하는 것은 하나뿐이다: 「첫 2초에 «결과»를 보여준 훅이 가장 셌다」
+ *   (OpusClip 34,635 클립 · 설계 §1-2 ㉯). 로고는 결과가 아니고, 첫 2초의 맨 위 띠를 먹는다.
+ *   그것이 이 변경의 전부다 — 그 이상을 주장하지 않는다.
+ */
+const 로고띠: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  /* 훅이 끝나자마자 «툭» 나타나면 컷처럼 보인다 — 자막의 들임과 같은 결로 0.5초에 걸쳐 들어온다. */
+  const 들임 = interpolate(frame, [0, Math.round(fps * 0.5)], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.bezier(0.16, 1, 0.3, 1),
+  });
+  return (
+    <AbsoluteFill
+      style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 236, opacity: 들임 }}
+    >
+      <Img src={staticFile(로고.파일)} style={{ width: 로고.폭 }} />
+    </AbsoluteFill>
+  );
+};
+
 /** 훅 — 첫 2~3초. 궁금·공감을 여는 자리(synk-content §2). */
 const 훅자막: React.FC<{ 글: string; 몽골어?: string }> = ({ 글, 몽골어 }) => {
   const frame = useCurrentFrame();
@@ -450,10 +480,11 @@ export const 리드크루클립: React.FC<{ 클립: 클립 }> = ({ 클립 }) => 
           🔴 08-26 까지 이 자리가 «민라이트 150px» 였다. 그건 킷이 「예전 민벡터 표현은 기본에서
              은퇴」로 닫은 판이고, 유호님이 화면에서 잡아 주셨다. 판과 크기의 정본은 `연출.로고`
              하나이고 까닭은 거기 적혀 있다(자리가 먼저고 크기는 거기서 나온다).
-          🔑 자리는 실측으로 비어 있는 위 띠다 — 자막 앵커가 y470 부터라 안 겹친다. */}
-      <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "center", paddingTop: 236 }}>
-        <Img src={staticFile(로고.파일)} style={{ width: 로고.폭 }} />
-      </AbsoluteFill>
+          🔑 자리는 실측으로 비어 있는 위 띠다 — 자막 앵커가 y470 부터라 안 겹친다.
+          🆕 09-06 — **훅이 끝난 뒤에 들어온다**(유호 「먼저 1번 가자」). 까닭은 `로고띠` 주석에. */}
+      <Sequence from={훅프레임}>
+        <로고띠 />
+      </Sequence>
 
       {/* 실땀 — 모든 펠트 오브젝트의 테두리. 지면 아래를 한 줄로 여민다 */}
       <AbsoluteFill style={{ justifyContent: "flex-end" }}>
