@@ -611,6 +611,30 @@ thread. The stars are plump and soft with gently rounded points, not sharp. Both
 both level with each other, sitting flat against the wool.
 🔴 The star IS the whole eye — no black bead behind or beside it, no eyeball, no white of the
 eye, no socket. Nothing else on the face.`) },
+
+  /* ── 인사 «동작» 컷 (2026-09-06 밤 · 유호 지시 「인사하는 모션을 따로 구워서」) ──────────
+   *   앞의 판들은 전부 «표정»이었다. 이 둘은 처음으로 «자세»가 바뀌는 판이다.
+   *   쓰임 = 라디오 방송에서 채팅에 처음 말을 건 사람에게 인사할 때, 정지 컷 넷을 스톱모션으로
+   *   넘긴다: 본체 → 인사1 → 인사2 → 인사1 → (웃음 컷) → 본체.
+   *   🔴 이어 붙일 컷이라 **틀이 같아야 한다** — 굽고 나서 눈으로 대조하고, 어긋나면 틀맞추기.
+   *   마린을 먼저 굽는 까닭 = 지금 방송의 전자 결에 서 있는 DJ 라 바로 눈으로 잰다. */
+  { 누구: '마린', 이름: '마린_인사1', 카메라: 마린카메라, 참조: '마린_본체.png',
+    자세: `POSE — A SMALL POLITE BOW, JUST BEGUN: the whole doll — helmet, body and pouch
+together — leans FORWARD toward the viewer by about 15 degrees, tipping from the feet like a
+weighted toy. The feet stay flat, together, and in exactly the same spot. The two stubby arms
+stay relaxed at the sides. Because the helmet tips forward, a little more of its rounded crown
+shows and the two lens eyes sit slightly lower in the frame, still fully visible.
+🔴 The camera does not move: same distance, same crop, same figure size in frame. The doll is
+still floating in the middle of the frame with nothing under it.` },
+  { 누구: '마린', 이름: '마린_인사2', 카메라: 마린카메라, 참조: '마린_본체.png',
+    자세: `POSE — THE BOW AT ITS DEEPEST: the whole doll — helmet, body and pouch together —
+leans FORWARD toward the viewer by about 30 degrees, tipping from the feet like a weighted toy.
+The feet stay flat, together, and in exactly the same spot. The two stubby arms stay relaxed at
+the sides. The rounded crown of the helmet now faces the viewer more than the face does, and the
+two lens eyes are lower and partly shaded by the helmet's front edge, but still visible — the
+doll is bowing, not turning away, and the face is never hidden.
+🔴 The camera does not move: same distance, same crop, same figure size in frame. The doll is
+still floating in the middle of the frame with nothing under it.` },
 ];
 
 const 몸들 = { 몽글: 몽글몸, 까몽: 까몽몸, 마린: 마린몸 };
@@ -633,6 +657,18 @@ its shadow. Those belong to the old photograph, not to this one.`;
    *   실측: 「두 배 가까이 키워라」고 썼는데 렌즈 몫이 15.68% → 16.62% 로 6%만 늘었다.
    *   ⇒ `얼굴먼저` 인 판은 얼굴을 카메라 바로 뒤로 올리고, 참조에게 «얼굴만은 따르지 마라»를
    *     같이 못 박는다. 참조는 힘이 세서 시키지 않은 것까지 데려온다(배경·조명에서 두 번 겪었다). */
+  /* 🆕 2026-09-06 유호 지시 「인사하는 모션을 따로 구워서 인사반응할때 인사하게」.
+   *   표정만 바뀌던 판에 «자세»가 처음 들어온다. 자세는 카메라 바로 뒤에 세운다 —
+   *   「맨 앞에 선 덩어리가 장면을 정한다」(09-05 실측)를 그대로 따르는 자리다. 뒤에 두면
+   *   앞의 「참조와 같게」가 이겨서 몸이 안 기운다(놀람 판에서 눈 크기로 겪은 그 자리).
+   *   🔴 이어 붙여 넘길 컷이라 **틀이 흔들리면 못 쓴다** — 자세 문면마다 「카메라·거리·크기는
+   *     참조와 똑같다」를 못 박는다. 그래도 어긋나면 `tools/마스코트틀맞추기.py` 가 맞춘다. */
+  if (판.자세) {
+    const 자세빼고같게 = 같은것 + `\n🔴 ONE EXCEPTION: the BODY POSE is as described above, not
+as in the reference. Shape, colour, markings, camera, distance and the figure's size in frame
+follow the reference exactly — only the pose is new.`;
+    return [판.카메라, 판.자세, 배경, 자세빼고같게, 몸, 판.얼굴 || '', 빛, 금지].filter(Boolean).join('\n\n');
+  }
   if (판.얼굴먼저) {
     const 얼굴빼고같게 = 같은것 + `\n🔴 ONE EXCEPTION: do NOT copy the EYES from the reference.
 The reference shows this character's resting face; this picture needs the face described above,
