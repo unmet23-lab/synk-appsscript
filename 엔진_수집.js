@@ -915,8 +915,9 @@ function quizSweep_(ss) {
    *   코덱스 09-06 2차 P1). 응답의 정체는 «폼이 찍은 시각(ms)»이다 — 같은 날 같은 답을 다시 내도, 확신도만 바꿔 내도 시각이 다르니
    *   다른 응답으로 남는다(원신호 보존 · 철학 A-1). 날짜·답으로 가르던 판은 그 둘을 버렸다(3차 P1 4a682b0d875b). 옛 행(응답시각 칸 없음)은
    *   재처리 판정에서 빠진다 — 그 행들의 포인터는 이미 저장돼 있어 다시 읽힐 일이 없다. */
-  const seen = {}, 적재됨 = {};
+  const seen = {}, 적재됨 = {}, 구형적재 = {};
   const 시도칸 = QUIZ_LOG_HEADERS.indexOf('시도'), 응답ms칸 = QUIZ_LOG_HEADERS.indexOf('응답시각ms');
+  const 제출일칸 = QUIZ_LOG_HEADERS.indexOf('제출일'), 고른답칸 = QUIZ_LOG_HEADERS.indexOf('고른답');
   if (ql.getLastRow() >= 2) ql.getRange(2, 1, ql.getLastRow() - 1, QUIZ_LOG_HEADERS.length).getValues().forEach(r => {
     if (!r[1] || !r[2]) return;
     const k = String(r[2]).trim() + '|' + String(r[1]).trim();
@@ -924,7 +925,11 @@ function quizSweep_(ss) {
     if (n > (seen[k] || 0)) seen[k] = n;
     const ms = Number(r[응답ms칸]) || 0;
     if (ms) 적재됨[k + '|' + ms] = 1;
+    /* 응답시각 칸이 없던 판의 행 — 날짜·답으로만 가른다. 옛 판이 적재 뒤 포인터 저장 «전»에 죽은 채 이 판으로 올라온 첫 스위프가 그 행을
+     *   다시 읽는 하루를 위한 것이다(4차 P1 209b63ae38f6). 고른답은 셀안전_ 의 접두를 시트가 먹고 원문을 돌려주니 원문끼리 비교한다. */
+    else 구형적재[k + '|' + dstr(r[제출일칸], tz) + '|' + String(r[고른답칸] || '').trim()] = 1;
   });
+  const 오늘 = dstr(new Date(), tz);
 
   const out = [], badSid = [], 재처리 = []; // 재처리 = 로그엔 이미 있는 응답(sid 만 쓴다 · 하루 보상을 다시 태우는 재료)
   rows.forEach(r => {
@@ -938,7 +943,14 @@ function quizSweep_(ss) {
     const key = qid + '|' + sid;
     const 응답ms = ts.getTime();
     const 응답키 = key + '|' + 응답ms;
-    if (적재됨[응답키]) { 재처리.push(['', sid]); return; } // [v9.312] 같은 응답의 재처리 — 로그엔 안 쌓고 하루 보상만 다시 태운다(멱등)
+    const 응답일 = dstr(ts, tz);
+    if (적재됨[응답키] || 구형적재[key + '|' + 응답일 + '|' + ans]) {
+      /* [v9.312] 같은 응답의 재처리 — 로그엔 안 쌓고 하루 보상만 다시 태운다(멱등). 단 «오늘» 응답만이다: 어제 응답의 재처리는 어제 지급을
+       *   오늘 장부(퀴즈응답포인트_ 는 실행일 지급만 본다)로 못 보니 두 번 줄 수 있다(4차 P1 81d7359a93bb). 자정 «직전» 적재·지급 뒤 죽고
+       *   자정 «직후» 다시 도는 그 몇 분의 자리다 — 지급 «전»에 죽은 어제 응답은 보상을 잃는데, 옛 판도 같은 조건에서 잃었다. */
+      if (응답일 === 오늘) 재처리.push(['', sid]);
+      return;
+    }
     적재됨[응답키] = 1;
     const 시도 = (seen[key] || 0) + 1;
     seen[key] = 시도;
