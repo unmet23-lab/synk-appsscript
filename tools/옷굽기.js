@@ -93,6 +93,13 @@ const 초록지시 = (표식, 설명, 바탕 = '초록') =>
   `distance, the same crop. Do not zoom out and do not shrink it. ` +
   `Macro product photograph against a plain flat pure white background, the whole character ` +
   `floating in empty space with no ground and no cast shadow on any surface. ` +
+  /* 🔴 09-06 밤 실측 — 「no cast shadow」한 마디로는 부족했다. 까몽 여섯 벌에 바닥 그림자가 났고,
+     그 회색이 옷에 «이어져» 붙어 조각을 떼도 안 떨어졌다(떨어져 있으면 덩어리째 버릴 수 있다).
+     떼는 자로는 더 못 내리는 자리라 굽는 문장에서 막는다. */
+  `🔴 There is NO shadow anywhere in the picture: none under the character, none beside it, ` +
+  `none behind it, and none on the background. The background is one single flat even white ` +
+  `with absolutely nothing on it — no grey patch, no gradient, no floor, no surface, no ` +
+  `reflection. The character is lit so evenly that it casts nothing at all. ` +
   `Studio lighting: broad soft diffused light from every side with one gentle key from the upper ` +
   `left. Every wool fibre is resolved. No text, no watermark, no hands, no second character. ` +
   `Tack sharp, medium format macro, photorealistic craft object.`;
