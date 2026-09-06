@@ -58,18 +58,26 @@ def 표뽑기(s):
 
 def main():
     if len(sys.argv) < 2:
-        print('쓰기: python docs/_ops/소급불가_울트라/사진뜨기.py <드라이브가 떨어뜨린 JSON 파일>')
+        print('쓰기: python docs/_ops/소급불가_울트라/사진뜨기.py <드라이브가 떨어뜨린 JSON 파일> [이름기준 git판]')
+        print('  이름기준 = 탭 이름을 물려받을 옛 사진의 git 판(기본 HEAD).')
+        print('  🔴 이름을 «못 붙인» 사진을 기준으로 다시 뜨면 그 «이름모름»을 그대로 물려받는다 —')
+        print('     09-07 에 그렇게 한 번 헛돌았다. 그럴 때는 이름이 온전했던 판을 손으로 준다.')
         return 2
+    기준판 = sys.argv[2] if len(sys.argv) > 2 else 'HEAD'
     s = json.load(open(sys.argv[1], encoding='utf-8'))['fileContent']
     표들 = 표뽑기(s)
     # 표 모양: 1행 빈칸 · 2행 정렬표시 · 3행이 진짜 헤더 · 그 뒤가 값
     새 = [([c for c in (t[2] if len(t) > 2 else [])], max(0, len(t) - 3)) for t in 표들]
 
-    옛raw = subprocess.run(['git', 'show', 'HEAD:' + OUT], capture_output=True).stdout.decode('utf-8')
+    옛raw = subprocess.run(['git', 'show', 기준판 + ':' + OUT], capture_output=True).stdout.decode('utf-8')
     옛맵 = json.loads(옛raw) if 옛raw.strip() else {}
     옛 = [(n, [str(x).strip() for x in (v.get('headers') or [])])
           for n, v in 옛맵.items() if not n.startswith('_')]
 
+    # 🔴 자를 «겹침 비율»이 아니라 «옛 칸이 새 칸에 얼마나 들어 있나»(포함율)로 잡는다.
+    #   까닭 = 칸이 늘어난 탭을 겹침 비율로 재면 점수가 떨어져 짝을 놓친다. 09-07 실측:
+    #   voice_log 는 옛 7칸이 새 18칸에 «전부» 들어 있는데 겹침 비율은 7/18 = 0.39 라 문턱에 걸려
+    #   이름을 못 붙였고, 그 바람에 짝 도구(순서대조.js)가 그 탭을 «라이브 0칸»으로 읽어 거짓 초록을 냈다.
     쌍 = []
     for i, (h, _) in enumerate(새):
         a = set(x for x in h if x)
@@ -78,7 +86,9 @@ def main():
             b = set(x for x in 옛[j][1] if x)
             if not a or not b:
                 continue
-            sc = len(a & b) / len(a | b)
+            포함 = len(a & b) / len(b)          # 옛 칸 가운데 새 사진에 살아 있는 몫
+            겹침 = len(a & b) / len(a | b)      # 동점일 때 가르는 곁자
+            sc = 포함 + 겹침 * 0.001
             if sc > best[0]:
                 best = (sc, j)
         쌍.append((i, best[0], best[1]))
@@ -86,7 +96,7 @@ def main():
     남은 = set(range(len(옛)))
     붙임 = {}
     for i, sc, j in 쌍:
-        if j is not None and j in 남은 and sc >= 0.4:
+        if j is not None and j in 남은 and sc >= 0.6:   # 옛 칸의 6할 이상이 살아 있으면 같은 탭으로 본다
             붙임[i] = 옛[j][0]; 남은.discard(j)
 
     결과 = {'_뜬때': {

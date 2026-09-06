@@ -23,9 +23,20 @@ const pairs = [
   ['JACKET_HEADERS', 'jacket_grants'],
 ];
 
+let 못잼 = 0;
 for (const [key, tab] of pairs) {
   const code = get(key) || [];
-  const L = (live[tab] && live[tab].headers || []).map(s => String(s).trim());
+  /* 🔴 탭을 «못 찾은 것»과 «탭이 빈 것»은 다른 말이다 (09-07 실측).
+   *   사진이 그 탭 이름을 못 붙였을 때 이 자가 「라이브 0칸 → 전부 새로 씀 → 안전」이라는
+   *   **거짓 초록**을 냈다. 실제로는 라이브에 18칸이 다 서 있었다.
+   *   ⇒ 못 찾으면 판정하지 않고 그렇게 말한다(memory zero-is-a-success-face-taxonomy). */
+  if (!live[tab]) {
+    console.log('▸ ' + tab + ' (' + key + ') · ❔ **못 쟀다** — 사진에 그 이름의 탭이 없다');
+    console.log('   사진의 탭 이름은 옛 판에서 물려받는다 · 다시 뜨는 자 = 사진뜨기.py <파일> [이름기준 git판]');
+    못잼++;
+    continue;
+  }
+  const L = (live[tab].headers || []).map(s => String(s).trim());
   console.log('▸ ' + tab + ' (' + key + ') · 코드 ' + code.length + ' ↔ 라이브 ' + L.length);
   let bad = 0, add = 0;
   const n = Math.max(code.length, L.length);
@@ -38,4 +49,8 @@ for (const [key, tab] of pairs) {
     else { bad++; console.log('   ⚠ ' + (i + 1) + '열 덮어씀: 코드[' + c + '] ↔ 라이브[' + l + ']'); }
   }
   console.log('   → 새로 쓰는 칸 ' + add + ' · 🔴덮어쓰는 칸 ' + bad + (bad ? '  ← 이대로 부르면 위험' : '  ← 안전'));
+}
+if (못잼) {
+  console.log('\n❔ 못 잰 표 ' + 못잼 + ' — 위 「안전/위험」에 이것들은 안 들어 있다. 사진을 고치고 다시 돌린다.');
+  process.exitCode = 2;   // 조용히 0 으로 끝나면 다음 사람이 「다 쟀다」로 읽는다
 }
