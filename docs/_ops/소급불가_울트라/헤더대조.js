@@ -1,12 +1,50 @@
 /* 코드가 정의한 시트 칸 ↔ 라이브 시트 실물 칸 대조
  * 자 = 코드의 `const *_HEADERS = [...]` 전량 vs 라이브 93탭의 첫 행
- * 🔴 이 자가 재는 것은 «칸이 서 있나»뿐이다 — «값이 차나»는 다른 층이다. */
+ * 🔴 이 자가 재는 것은 «칸이 서 있나»뿐이다 — «값이 차나»는 다른 층이다.
+ *
+ * ■ 🔴 **고치지 않는다. 재기만 한다.** (유호 확정 2026-09-07)
+ *   라이브 칸을 실제로 늘리는 일은 소급 불가 자리라 「더 발전한 설계로 나중에」로 미뤄 뒀다.
+ *   그러니 이 파일에 «고치는 손잡이»를 붙이지 않는다 — 붙이는 순간 재는 자가 만지는 자가 된다.
+ *   고치는 자(`헤더보정_` · `엔진_수집.js`)는 따로 있고, 그것을 부르는 것은 그날의 판단이다.
+ *
+ * ■ 🔴 **이 자는 «반쪽만 지금»이다** (09-07 에 붙인 자)
+ *   코드 쪽은 지금 트리를 읽어 늘 최신인데, 라이브 쪽은 **떠 둔 사진**(`라이브시트_헤더.json`)이다.
+ *   사진이 낡으면 「라이브가 안 따라왔다」가 거짓이 될 수 있다(그 사이 배포가 칸을 세웠을 수 있다).
+ *   ⇒ 사진의 나이를 «먼저» 찍고, 오래됐으면 운다. 자를 밝히지 않으면 이 자는 조용히 거짓말한다
+ *      (memory measurement-needs-its-instrument · zero-is-a-success-face-taxonomy).
+ *
+ * 쓰기: node docs/_ops/소급불가_울트라/헤더대조.js   (어느 폴더에서 불러도 된다) */
 const fs = require('fs');
-const live = JSON.parse(fs.readFileSync('docs/_ops/소급불가_울트라/라이브시트_헤더.json', 'utf8'));
+const path = require('path');
+const { execFileSync } = require('child_process');
 
-const files = fs.readdirSync('.').filter(f => /\.js$/.test(f) && !/^_/.test(f));
+const 여기 = __dirname;                         // docs/_ops/소급불가_울트라
+const ROOT = path.resolve(여기, '..', '..', '..');  // 저장소 뿌리
+const 사진경로 = path.join(여기, '라이브시트_헤더.json');
+const live = JSON.parse(fs.readFileSync(사진경로, 'utf8'));
+
+/* 사진이 언제 뜬 것인가 — git 이 답하고, 못 답하면 파일 시각으로 내려간다(자를 함께 찍는다). */
+function 사진나이() {
+  try {
+    const d = execFileSync('git', ['-C', ROOT, 'log', '-1', '--format=%cI', '--', 사진경로],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    if (d) return { 때: new Date(d), 자: 'git 마지막 커밋' };
+  } catch { /* git 이 없거나 얕은 체크아웃 — 아래로 내려간다 */ }
+  return { 때: fs.statSync(사진경로).mtime, 자: '파일 시각(git 이 답을 못 했다)' };
+}
+const 나이 = 사진나이();
+const 지난날 = Math.floor((Date.now() - 나이.때.getTime()) / 86400000);
+const 낡음문턱 = 14;
+console.log(`📷 라이브 사진 = ${나이.때.toISOString().slice(0, 10)} · ${지난날}일 전 (자 = ${나이.자})`);
+if (지난날 >= 낡음문턱) {
+  console.log(`🔴 사진이 ${낡음문턱}일을 넘었다 — 아래 「없는 칸」은 그 사이 배포가 세웠을 수 있다.`);
+  console.log('   다시 뜨는 법 = 라이브 시트를 열어 탭마다 첫 행을 받아 이 파일을 새로 쓴다(읽기만 · 라이브를 안 만진다).');
+}
+console.log('');
+
+const files = fs.readdirSync(ROOT).filter(f => /\.js$/.test(f) && !/^_/.test(f));
 let src = '';
-for (const f of files) src += '\n/*FILE:' + f + '*/\n' + fs.readFileSync(f, 'utf8');
+for (const f of files) src += '\n/*FILE:' + f + '*/\n' + fs.readFileSync(path.join(ROOT, f), 'utf8');
 
 // const XXX_HEADERS = [ ... ];  (여러 줄 허용)
 const re = /const\s+([A-Z0-9_]*HEADERS[A-Z0-9_]*)\s*=\s*\[([\s\S]*?)\]\s*;/g;
@@ -43,7 +81,7 @@ for (const [key, cols] of Object.entries(defs)) {
 }
 
 report.sort((a, b) => b.missing.length - a.missing.length);
-fs.writeFileSync('docs/_ops/소급불가_울트라/헤더대조.json', JSON.stringify(report, null, 1));
+fs.writeFileSync(path.join(여기, '헤더대조.json'), JSON.stringify(report, null, 1));
 
 console.log('헤더 상수', Object.keys(defs).length, '· 라이브 탭에 붙인 것', report.length);
 console.log('\n🔴 라이브에 «없는 칸»이 있는 표 — 코드는 세웠는데 시트가 안 따라왔다');
