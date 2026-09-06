@@ -492,8 +492,14 @@ function 사건받기(사건) {
   if (반응) { if (대기열.length < 3) 대기열.push(일감); else console.warn('[마스코트 오버레이] 대기열 초과 — 버림: ' + 종류); }
   else 반응시작(일감);
 }
+/* 🔴 문 손잡이를 «변수에 잡아 둔다» (09-06 실측 · 유호님 앞에서 결이 안 바뀐 그 자리).
+   `new BroadcastChannel(...).onmessage = ...` 만 쓰면 그 문을 가리키는 것이 아무 데도 없어,
+   브라우저가 청소하다 문째로 치워 버린다 — 그러면 봇이 사건을 보내도 «조용히» 아무 일도 안 난다.
+   무대 층도 같은 자리를 같은 커밋에서 고쳤다. */
+let 문 = null;
 try {
-  new BroadcastChannel('라디오오버레이').onmessage = e => 사건받기(e.data);
+  문 = new BroadcastChannel('라디오오버레이');
+  문.onmessage = e => 사건받기(e.data);
 } catch (_) { /* OBS CEF 구버전 — postMessage 만으로 동작 */ }
 window.addEventListener('message', e => {
   if (e.data && e.data.채널 === '라디오오버레이') 사건받기(e.data);

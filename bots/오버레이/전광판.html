@@ -330,7 +330,11 @@ function 시작() {
     데모판갱신();
   }
 
-  try { const 입구 = new BroadcastChannel('라디오오버레이'); 입구.onmessage = (e) => 사건(e.data); }
+  /* 🔴 문 손잡이를 «바깥 변수»에 잡아 둔다 (09-06 실측 · 마스코트 층에서 이것 때문에 사건이 끊겼다).
+     `try { const 입구 = ... }` 는 그 블록을 벗어나는 순간 문을 가리키는 것이 아무 데도 없어서,
+     브라우저가 청소하다 문째로 치울 수 있다 — 그러면 봇이 보내도 «조용히» 아무 일도 안 난다. */
+  let 입구 = null;
+  try { 입구 = new BroadcastChannel('라디오오버레이'); 입구.onmessage = (e) => 사건(e.data); }
   catch (_) { /* OBS CEF 구버전 — postMessage 만으로 동작 */ }
   window.addEventListener('message', (e) => {
     if (e.data && e.data.채널 === '라디오오버레이') 사건(e.data);

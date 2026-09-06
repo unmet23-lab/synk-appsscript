@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 라디오 — 방송 화면 미리보기</title>
+<!--
+  방송에 나갈 화면을 «세 층 겹친 채로» 눈으로 보는 지면 (2026-09-06 · 유호 지시 09-06).
+
+  ■ 왜 있나
+    OBS 는 소스 셋을 겹쳐 내보내는데(무대 → 마스코트 → 전광판), 그전에는 «겹친 모습»을
+    볼 데가 없었다. 층마다 따로 열어 봐야 했고, 그러면 「무대가 바뀔 때 DJ 도 같이 갈아입나」를
+    눈으로 못 잰다. 여기서 결(곡 장르) 하나를 누르면 **두 층이 같은 사건으로 함께 움직인다.**
+
+  ■ 무엇을 보나
+    · 1920×1080 을 그대로 축소해 보여 준다 — 방송 나갈 비율 그대로다.
+    · 결 일곱을 누르면 무대가 겹쳐 넘어가고, 그 사이 DJ 가 화면 밖으로 나갔다 갈아입고 들어온다.
+    · 반응 여섯도 눌러 볼 수 있다(인사·라운드·정답·체크인·투표).
+
+  ■ 어떻게 이어져 있나
+    층 셋은 서로를 모른다. 이 지면이 `BroadcastChannel('라디오오버레이')` 에 사건을 한 번 던지면
+    각 층이 제 몫만 집는다 — 봇이 하는 일과 **똑같은 방식**이다(그래서 여기서 맞으면 방송에서도 맞다).
+    ⚠ `file://` 로 열면 BroadcastChannel 이 프레임 사이에서 안 통한다 — 지면 서버로 연다
+       (`node tools/지면서버.js 8765` → http://localhost:8765/bots/오버레이/방송미리보기.html).
+-->
+<style>
+  /* 🔴 `color-scheme: dark` 를 여기 걸면 안 된다 (09-06 실측).
+     크롬은 «부모와 밝기 결이 다른» 프레임을 불투명 흰색으로 깔아 버린다 — 마스코트 층이
+     투명한데도 무대를 통째로 덮어 흰 네모가 됐다. 색은 아래에서 손으로 다 정한다. */
+  html, body { margin: 0; height: 100%; background: #141110; color: #FBF7F0;
+               font: 14px/1.6 system-ui, -apple-system, "Malgun Gothic", sans-serif; }
+  .판 { display: flex; flex-direction: column; height: 100%; }
+  .머리 { padding: 14px 18px 10px; border-bottom: 1px solid #3a322e; }
+  .머리 h1 { margin: 0 0 4px; font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+  .머리 p { margin: 0; color: #C7BFB2; font-size: 12.5px; }
+  .몸 { flex: 1; display: flex; min-height: 0; }
+  .무대칸 { flex: 1; display: grid; place-items: center; padding: 18px; min-width: 0; }
+  /* 1920×1080 을 통째로 축소한다 — 방송 비율을 눈으로 속이지 않기 위해서다 */
+  #화면 { position: relative; width: 1920px; height: 1080px; transform-origin: center center;
+          background: #080605; box-shadow: 0 10px 40px rgba(0,0,0,.55); border-radius: 4px; overflow: hidden; }
+  #화면 iframe { position: absolute; inset: 0; width: 1920px; height: 1080px; border: 0; }
+  .곁 { width: 268px; border-left: 1px solid #3a322e; padding: 14px; overflow: auto; }
+  .곁 h2 { font-size: 12px; margin: 0 0 8px; color: #C7BFB2; font-weight: 600; letter-spacing: .04em; }
+  .곁 h2:not(:first-child) { margin-top: 18px; }
+  button { display: block; width: 100%; margin: 0 0 6px; padding: 9px 11px; text-align: left;
+           font: inherit; font-size: 13px; color: #FBF7F0; background: #241e1b;
+           border: 1px solid #3a322e; border-radius: 7px; cursor: pointer; }
+  button:hover { background: #2f2724; border-color: #F96859; }
+  button.섰다 { border-color: #F96859; background: #33211e; }
+  button small { display: block; color: #9c948a; font-size: 11.5px; }
+  .알림 { margin-top: 14px; color: #9c948a; font-size: 11.5px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div class="판">
+  <div class="머리">
+    <h1>라디오 방송 화면 — 세 층을 겹친 모습</h1>
+    <p>결(곡 장르)을 누르면 무대가 넘어가고, 그 사이에 진행자가 화면 밖에서 옷을 갈아입고 들어옵니다.</p>
+  </div>
+  <div class="몸">
+    <div class="무대칸">
+      <div id="화면">
+        <iframe id="무대층" src="무대.html?결=드림하늘" title="무대 층"></iframe>
+        <iframe id="마스코트층" src="마스코트.html?크기=0.19" title="마스코트 층"></iframe>
+      </div>
+    </div>
+    <div class="곁">
+      <h2>결 — 곡 장르 일곱</h2>
+      <div id="결단추"></div>
+      <h2>반응</h2>
+      <div id="반응단추"></div>
+      <div class="알림" id="알림"></div>
+    </div>
+  </div>
+</div>
+<script>
+'use strict';
+/* 결 → 누가 · 무엇을 (보여 주기만 한다 · 정본은 마스코트.html 의 `장르차림` 이다) */
+const 결표 = [
+  ['드림하늘', '몽글 · SYNK 후드 + 헤드폰 + 돌 주머니'],
+  ['드림들판', '몽글 · 앞치마 + 몽골 모자 + 돌 주머니'],
+  ['집안밤공부', '몽글 · SYNK 후드 + 안경 + 학생 가방'],
+  ['시티팝노을휴양지', '까몽 · 여름 델 + 반짝이 목걸이 + 헤드폰'],
+  ['차분달빛호수', '까몽 · 담요 망토 + 목도리 + 반짝이 목걸이'],
+  ['전자밤도시', '마린 · 임무 조끼 + 헤드폰 + 체크 목록'],
+  ['드림물결', '마린 · SYNK 후드 + 흰 꽃 + 헤드폰'],
+];
+const 반응표 = [['인사', '탭 인사'], ['라운드', '퀴즈 열림 — 놀람'], ['정답', '정답 — 기쁨'],
+                ['체크인', '자습 체크인 — 눈인사'], ['투표', '빗소리 투표 — 살랑']];
+
+let 문 = null;
+try { 문 = new BroadcastChannel('라디오오버레이'); } catch (_) { /* 폴백은 아래 postMessage */ }
+/* 🔴 문 «하나»로만 던진다 (09-06 실측). 둘 다 쓰면 층이 같은 사건을 두 번 받고,
+   무대 겹 둘이 서로를 내려 화면이 통째로 검어졌다. 방송 봇도 문 하나만 쓴다. */
+function 던진다(사건) {
+  if (문) { 문.postMessage(사건); return; }
+  for (const f of document.querySelectorAll('iframe')) {
+    try { f.contentWindow.postMessage(Object.assign({ 채널: '라디오오버레이' }, 사건), '*'); } catch (_) { /* 아직 안 뜬 프레임 */ }
+  }
+}
+
+const 결칸 = document.getElementById('결단추');
+결표.forEach(([결, 설명]) => {
+  const b = document.createElement('button');
+  b.innerHTML = 결 + '<small>' + 설명 + '</small>';
+  b.onclick = () => {
+    던진다({ 종류: '결', 결 });
+    for (const x of 결칸.children) x.classList.remove('섰다');
+    b.classList.add('섰다');
+    알림('결 = ' + 결 + ' — 무대가 2.4초에 걸쳐 넘어가고, 진행자는 화면 밖에서 갈아입습니다.');
+  };
+  결칸.appendChild(b);
+});
+const 반응칸 = document.getElementById('반응단추');
+반응표.forEach(([종류, 설명]) => {
+  const b = document.createElement('button');
+  b.innerHTML = 종류 + '<small>' + 설명 + '</small>';
+  b.onclick = () => { 던진다({ 종류 }); 알림('반응 = ' + 종류); };
+  반응칸.appendChild(b);
+});
+function 알림(글) { document.getElementById('알림').textContent = 글; }
+
+/* 1920×1080 을 칸에 맞춰 통째로 줄인다 */
+const 화면 = document.getElementById('화면');
+function 맞춘다() {
+  const 칸 = document.querySelector('.무대칸');
+  const 배 = Math.min((칸.clientWidth - 36) / 1920, (칸.clientHeight - 36) / 1080);
+  화면.style.transform = 'scale(' + 배.toFixed(4) + ')';
+  화면.style.margin = ((1080 * 배 - 1080) / 2) + 'px ' + ((1920 * 배 - 1920) / 2) + 'px';
+}
+addEventListener('resize', 맞춘다);
+맞춘다();
+알림('결을 눌러 보세요. 층 셋은 서로를 모르고, 사건 하나를 각자 집습니다 — 봇이 하는 일과 같습니다.');
+</script>
+</body>
+</html>
