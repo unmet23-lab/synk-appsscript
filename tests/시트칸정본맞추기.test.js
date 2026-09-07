@@ -322,7 +322,37 @@ test('아침 배치가 결과를 «남긴다» — 안 남기면 도는지 아�
   const 칸블록 = 몸.slice(몸.indexOf("safeRun('시트칸맞추기'"), 몸.indexOf("safeRun('학생ID발급'"));
   assert.ok(칸블록.includes('시트칸맞추기기록_('), '아침 배치가 결과를 버리면 09-07 구멍이 그대로다');
   assert.ok(칸블록.includes('시트칸정본맞추기_('), '자를 부르는 줄이 그대로 있어야 한다');
+  /* 🔴 [09-08 검수 P1 a0a278d4cc1f · P2 97689851540f] 기록이 «인수 자리»에 있으면
+   *   맞추기가 던질 때 기록 함수가 아예 안 불려 「안 돌았다」와 「돌다 죽었다」가 같은 얼굴이 된다. */
+  assert.ok(/finally\s*\{[\s\S]*시트칸맞추기기록_\(/.test(칸블록),
+    '기록이 finally 에 있어야 한다 — 예외로 끝나도 한 줄은 남는다');
+  /* 🔑 주석에 «옛 꼴»을 남겨 두었으므로 주석을 걷고 잰다 — 안 걷으면 그 설명 자체가 시험을 빨갛게 한다. */
+  const 코드만 = 칸블록.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  assert.ok(!/시트칸맞추기기록_\(\s*\w+\s*,\s*시트칸정본맞추기_\(/.test(코드만),
+    '기록을 맞추기의 «인수 자리»에 두면 죽었을 때 아무 줄도 안 남는다');
 });
+
+test('🔴 예외로 끝나도 «건너뛴표»에 그 사실이 남는다 (09-08 검수 P2 97689851540f)', () => {
+  const i = 셋업.indexOf('function morningJobs()');
+  const 몸 = 셋업.slice(i, 셋업.indexOf('\n}', i));
+  const 칸블록 = 몸.slice(몸.indexOf("safeRun('시트칸맞추기'"), 몸.indexOf("safeRun('학생ID발급'"));
+  assert.match(칸블록, /건너뛴표:\s*\[/, '죽은 판이 무엇을 남기는지 코드에 서 있어야 한다');
+  assert.match(칸블록, /예외로 끝났다/, '사람이 읽고 「돌다 죽었다」로 알아볼 말이 들어가야 한다');
+});
+
+test('🔴 늘린 칸은 «아무것도 만지기 전» 폭으로 센다 (09-08 검수 P1 bddf9a7aad1d)', () => {
+  const 맞추기 = 떼어오기(셋업, 'function 시트칸정본맞추기_(');
+  assert.match(맞추기, /const 시작폭 = sh\.getMaxColumns\(\);/,
+    '표를 만지기 전에 폭을 잡아 두어야 한다');
+  assert.ok(!/const 전폭 = sh\.getMaxColumns\(\);/.test(맞추기),
+    '헤더보정_ 직전에 폭을 잡으면 그 앞에서 늘린 칸이 기록에서 통째로 빠진다');
+  assert.ok(맞추기.includes('sh.getMaxColumns() - 시작폭'),
+    '증설량은 시작폭과의 차이로 센다');
+  /* 막혀서 되돌아설 때도 이미 늘린 칸은 샌 것이라 센다 */
+  const 막힘블록 = 맞추기.slice(맞추기.indexOf('if (막힘)'), maxIndex(맞추기));
+  assert.ok(막힘블록.includes('시작폭'), '막힌 표에서도 늘어난 폭을 세야 한다');
+});
+function maxIndex(s) { const i = s.indexOf('건너뛴표.push'); return i < 0 ? s.length : i + 200; }
 
 test('스위치 이름이 코드와 안내문에서 같다 — 갈리면 켜는 법이 틀려진다', () => {
   const 스위치 = 떼어오기(셋업, 'function 열밀기켜졌나_(');
