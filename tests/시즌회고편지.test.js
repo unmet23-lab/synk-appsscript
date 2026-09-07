@@ -205,6 +205,26 @@ test('[회고] 시즌회고발송_ — 열쇠는 보낸 «뒤»에만 · 실패�
   } finally { global.Date = 원래Date; }
 });
 
+test('[회고] 시즌회고발송_ — 명부가 비면 도장 없이 돌아오고, 이메일 없음·소속 모름이 하나라도 있으면 시즌 도장을 안 찍는다(코덱스 2차 P1·P2) · 실패 로그에 번호 0', () => {
+  const H = ['user_id', '이름', '이름_몽골', 'role', 'class_name', '생일', 'email']; H.length = 26; H[26] = '입학시즌';
+  const row = (id, email) => { const r = [id, id, '', 'student', '11A', '', email]; r.length = 26; r[26] = '2026-11-30'; return r; };
+  const 원래Date = Date;
+  global.Date = class extends 원래Date { constructor(...a) { super(...(a.length ? a : ['2027-01-25T07:00:00'])); } static now() { return new 원래Date('2027-01-25T07:00:00').getTime(); } };
+  try {
+    const 빈 = 엔진({ start: D('2026-11-30'), sheets: { profiles: 시트(H, []) } });
+    assert.ok(/명부에 학생이 없다/.test(빈.E.시즌회고발송_()));
+    assert.equal(빈.state.has('회고발송시즌'), false, '명부가 빈 채로 도장을 찍으면 복구 뒤 영영 「이미 보냄」이다');
+    const 하나없음 = 엔진({ start: D('2026-11-30'), sheets: { profiles: 시트(H, [row('S1', 'a@x.c'), row('S2', '')]) } });
+    const 말 = 하나없음.E.시즌회고발송_();
+    assert.ok(/보냄 1 .*이메일 없음 1/.test(말), 말);
+    assert.equal(하나없음.state.has('회고발송시즌'), false, '이메일 없는 학생이 남아 있으면 도장을 안 찍는다 — 주소를 채우면 다시 돈다');
+  } finally { global.Date = 원래Date; }
+  const 발송 = section('function 시즌회고발송_() {', 'function 회고API_(');
+  const c0 = 발송.indexOf('} catch (e) {');
+  const 실패절 = 발송.slice(c0, 발송.indexOf('}', c0 + 13) + 1);   // catch 블록 몸통만
+  assert.ok(!/s\.sid|Logger|e\.message/.test(실패절), '실패 처리에 학생 번호·예외 원문이 로그로 나가면 안 된다(코덱스 2차 P0): ' + 실패절);
+});
+
 /* ───────────────────── ⑥ 통로 ───────────────────── */
 test('[회고] 회고API_ — 열쇠 없으면 0 · show 는 고정 본문 · answer 는 잠금 안에서 한 번만 · 보호자 답은 화자 보호자 · 답은 있다/없다 둘뿐', () => {
   const state = new Map();
@@ -218,12 +238,12 @@ test('[회고] 회고API_ — 열쇠 없으면 0 · show 는 고정 본문 · an
   assert.ok(/우리 아이/.test(s.물음));
   const post = (body) => E.회고API_({ parameter: { p: '회고' }, postData: { contents: JSON.stringify(body) } }, 'post');
   assert.equal(결과(post({ op: 'answer', t, 답: '글쎄' })).error, 'bad-answer');
-  const a1 = 결과(post({ op: 'answer', t, 답: '있다', 한줄: '이름을 기억해 줬다' }));
+  const a1 = 결과(post({ op: 'answer', t, 답: '있다', 한줄: '이름을  기억해\r\n줬다 ' }));
   assert.deepEqual(a1, { ok: true, 중복: false });
   assert.equal(calls.증언.length, 1);
   assert.equal(calls.증언[0].화자, '보호자', '보호자 무대의 답은 「스스로 한 말」이 아니다');
   assert.equal(calls.증언[0].잠금없이, true, '바깥 잠금 안에서 부른다(같은 잠금을 두 번 안 잡는다)');
-  assert.equal(calls.증언[0].답, '있다 — 이름을 기억해 줬다');
+  assert.equal(calls.증언[0].답, '있다 — 이름을  기억해\n줬다', '한 줄은 공백·줄바꿈 그대로(원문 보존 · 코덱스 2차 P1)');
   assert.equal(calls.locks, 1);
   const a2 = 결과(post({ op: 'answer', t, 답: '없다' }));
   assert.deepEqual(a2, { ok: true, 중복: true }, '두 번째 답은 저장하지 않는다');

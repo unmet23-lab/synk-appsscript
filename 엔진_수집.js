@@ -1541,9 +1541,10 @@ const TESTIMONY_ANSWER_MAX_ = 2000;
 /** 공백 접기 — 지문·조각용. 저장하는 원문에는 안 쓴다. */
 function 증언공백접기_(s) { return String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); }
 
-/** 지문 — 번호·출처·물음·답(공백 접은 판)의 SHA-256 앞 12자. 시각은 안 넣는다(같은 말은 언제 다시 보내도 한 줄). */
-function 증언지문_(번호, 출처, 물음, 답) {
-  const 원문 = [번호, 출처, 물음, 증언공백접기_(답)].map(function (s) { const t = String(s == null ? '' : s); return t.length + ':' + t; }).join('|');
+/** 지문 — 번호·출처·물음·답(공백 접은 판)·시즌·화자의 SHA-256 앞 12자. 시각은 안 넣는다(같은 말은 언제 다시 보내도 한 줄).
+ *  [v9.325] 시즌·화자를 넣는다 — 다른 시즌에 같은 물음에 같은 「없다」를 답하면 그건 새 관측이지 재시도가 아니다(코덱스 09-07 2차 P1). */
+function 증언지문_(번호, 출처, 물음, 답, 시즌, 화자) {
+  const 원문 = [번호, 출처, 물음, 증언공백접기_(답), 시즌, 화자].map(function (s) { const t = String(s == null ? '' : s); return t.length + ':' + t; }).join('|');
   const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 원문, Utilities.Charset.UTF_8);
   return bytes.map(function (b) { return ('0' + (b & 0xFF).toString(16)).slice(-2); }).join('').slice(0, 12);
 }
@@ -1563,17 +1564,19 @@ function 증언남기기_(ss, 입력) {
   if (isNaN(시각.getTime())) return { ok: false, error: 'bad-time' };
   const 시각분 = Utilities.formatDate(시각, ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd HH:mm');
   const 화자 = String(입.화자 || '') === '보호자' ? '보호자' : '학생';
-  const id = 증언지문_(sid, 출처, 물음, 원문);
+  const 시즌 = String(입.시즌 || '').slice(0, 20);
+  const id = 증언지문_(sid, 출처, 물음, 원문, 시즌, 화자);
   const 잠금 = 입.잠금없이 ? null : LockService.getScriptLock();
   if (잠금 && !잠금.tryLock(10000)) return { ok: false, error: 'busy' };
   try {
     const sh = ensureSheet(ss, TESTIMONY_TAB_, TESTIMONY_HEADERS);
+    if (typeof 헤더보정_ === 'function') 헤더보정_(sh, TESTIMONY_HEADERS);   // 옛 8칸 탭에 10칸 행을 쓰면 「이름 없는 값 열」이 된다(코덱스 2차 P1) — 칸부터 세운다
     if (sh.getLastRow() >= 2) {
       const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
       for (let i = 0; i < ids.length; i++) if (String(ids[i][0]) === id) return { ok: true, id: id, 중복: true };
     }
     const 소독 = function (v) { const t = String(v == null ? '' : v); return typeof 셀안전_ === 'function' ? 셀안전_(t) : t; };
-    sh.appendRow([id, sid, 시각분, 소독(출처), 소독(물음), 소독(원문), 소독(String(입.맥락 || '').slice(0, 200)), 소독(String(입.시즌 || '').slice(0, 20)),
+    sh.appendRow([id, sid, 시각분, 소독(출처), 소독(물음), 소독(원문), 소독(String(입.맥락 || '').slice(0, 200)), 소독(시즌),
       화자, TESTIMONY_SCHEMA_VER]);
     return { ok: true, id: id, 중복: false };
   } finally { if (잠금) 잠금.releaseLock(); }
@@ -1591,6 +1594,11 @@ function 증언비식별_(이름들, 글) {
   if (/(^|[^\w])@[A-Za-z0-9_.]{3,}/.test(s)) return null;               // 손잡이
   if (/\b(?:S|DEMO-)[A-Za-z]*\d{2,}\b/i.test(s)) return null;           // 학생 번호 꼴
   if (/https?:\/\/|www\./i.test(s)) return null;                       // 주소
+  /* [v9.325] 코덱스 2차 P0 — 생년·학교·연도 없는 날짜도 사람을 가리킨다(작은 반에서는 더). 안 나가는 쪽으로 틀린다. */
+  if (/\b(?:19|20)\d{2}\b/.test(s)) return null;                        // 연도(생년·입학년)
+  if (/\d{1,2}\s*월\s*\d{1,2}\s*일/.test(s)) return null;               // 연도 없는 날짜
+  if (/학교|대학|초등|중학|고등|유치원|university|school|college|сургууль|их сургууль/i.test(s)) return null; // 학교 이름
+  if (/아파트|\bapt\b|хороо|дүүрэг/i.test(s)) return null;                // 사는 곳(아파트 · 몽골 행정구역)
   return s;
 }
 
@@ -1621,9 +1629,10 @@ function 증언맵_(ss, 창) {
     const ms = d ? d.getTime() : 0;
     if (!ms || ms < 시작 || ms >= 끝) return;
     const 답 = 증언비식별_(이름들, r[5]);
-    if (!답) { 걸러냄++; return; }
+    const 물음 = String(r[4] || '').trim() ? 증언비식별_(이름들, r[4]) : '';   // 물음도 밖으로 나간다 — 검문(코덱스 2차 P0) · 빈 물음은 그대로 빈 것
+    if (!답 || (String(r[4] || '').trim() && !물음)) { 걸러냄++; return; }
     건수++;
-    (agg[sid] = agg[sid] || []).push({ 물음: 증언공백접기_(r[4]), 답: 증언공백접기_(답), t: ms });
+    (agg[sid] = agg[sid] || []).push({ 물음: 증언공백접기_(물음), 답: 증언공백접기_(답), t: ms });
   });
   Object.keys(agg).forEach(function (sid) {
     const 둘 = agg[sid].sort(function (a, b) { return b.t - a.t; }).slice(0, 2);
