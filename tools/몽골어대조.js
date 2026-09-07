@@ -380,8 +380,12 @@ async function main() {
   const 맞춤법미실행 = 맞춤법 === null;
   console.log('\n■ 맞춤법 (spellcheck.mn · 사전 자 — 역번역이 원리상 못 보는 축)');
   if (맞춤법미실행) {
-    console.log('  🔴 이 층은 **안 돌았다** — 서비스에 못 닿았거나 응답 형식이 바뀌었다.');
+    const 사유 = require('./lib/몽골어맞춤법.js').맞춤법검사.마지막사유;
+    console.log('  🔴 이 층은 **안 돌았다** — ' + (사유 || '서비스에 못 닿았거나 응답 형식이 바뀌었다.'));
     console.log('     0건이 아니라 «미측정»이다.');
+    if (사유 && /몫 초과/.test(사유)) {
+      console.log('     ⚠ 벽에 대고 다시 부르면 벽이 길어진다. 한 시간 뒤에 «한 번만» 다시 돌린다.');
+    }
   } else if (맞춤법.의심.length) {
     for (const w of 맞춤법.의심) {
       const s = 맞춤법.제안[w];
