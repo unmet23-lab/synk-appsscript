@@ -1524,3 +1524,167 @@ function pushGoldenFixture_() {
   Logger.log(msg);
   return msg;
 }
+
+/* ===================== [㉡-2 · 2026-09-07] 🗣 증언 그릇 — 학생의 말을 번호와 함께 모으고, 밖에 낼 때만 가린다 =====================
+ * 요구 = docs/명품브랜딩_v2.md ㉡-2 · 첫 손님 = ㉡-1 물음의 답(1기 끝 01-24) · 완료 조건 = ㉢ 삶 이해가 그 말을 읽는다(마케팅 문구로만 쓰이면 미완).
+ * ■ 그릇 = testimony_log(수집 표식 · 소급 불가 — 그날 그 말은 그날에만 있다). 칸 = id · student_id · 시각 · 출처 · 물음 · 답 · 맥락 · 시즌
+ *   (상수는 엔진_콘텐츠AI.js — 소비자 파일). 「언제 무엇을 묻고 받은 답인가」(아스트라)가 시각·물음·답 셋이다.
+ *   ⚠ 진단 단계의 말(「안 할래요」 사유 · ㉠-1 한 줄·고침)은 여기가 아니라 진단세션 그릇이다 — 두 그릇을 섞지 않는다.
+ * ■ 모을 때는 안 끊는다 — 번호·원문 그대로(셀안전_ 소독만 · 500자). 가리는 것은 밖으로 나가는 자리(증언반출_) 하나이고,
+ *   명단을 못 읽으면 안 내보낸다(골든픽스처와 같은 fail-closed). 「없다」도 답이다 — 그대로 남긴다(그게 최저점 원천이다 · 눈금 Ⅰ).
+ * ■ 읽는 자리 = 엔진_콘텐츠AI.js aiStudioBatch_ ① 「오늘의 한 문장」(증언맵_) — 사람 화면이 아니라 산출이 바뀌는 자리라 도달이다.
+ * ■ 멱등 — id = 번호|출처|물음|답|시각(분)의 지문. 같은 말을 두 번 보내도 한 줄. */
+const TESTIMONY_ANSWER_MAX_ = 500;
+
+/** 지문 — SHA-256 앞 12자. 시각은 분까지(같은 분 안의 같은 말은 한 건). */
+function 증언지문_(번호, 출처, 물음, 답, 시각분) {
+  const 원문 = [번호, 출처, 물음, 답, 시각분].map(function (s) { const t = String(s == null ? '' : s); return t.length + ':' + t; }).join('|');
+  const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 원문, Utilities.Charset.UTF_8);
+  return bytes.map(function (b) { return ('0' + (b & 0xFF).toString(16)).slice(-2); }).join('').slice(0, 12);
+}
+
+/** 남기기 — 입력 { student_id, 출처, 물음, 답, 맥락?, 시즌?, 시각? }. 빈 답은 안 남긴다(「없다」는 낱말로 보내야 남는다 —
+ *  빈칸은 «안 물었다»와 같은 얼굴이라 뒤에 못 가른다). 돌려주는 것 = { ok, id, 중복 } 또는 { ok:false, error }. */
+function 증언남기기_(ss, 입력) {
+  const 입 = 입력 || {};
+  const sid = String(입.student_id || '').trim();
+  const 출처 = String(입.출처 || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+  const 물음 = String(입.물음 || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+  const 답 = String(입.답 || '').replace(/\s+/g, ' ').trim().slice(0, TESTIMONY_ANSWER_MAX_);
+  if (!sid) return { ok: false, error: 'no-student' };
+  if (!출처 || !물음) return { ok: false, error: 'no-question' };
+  if (!답) return { ok: false, error: 'empty' };
+  const 시각 = 입.시각 ? new Date(입.시각) : new Date();
+  if (isNaN(시각.getTime())) return { ok: false, error: 'bad-time' };
+  const 시각분 = Utilities.formatDate(시각, ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd HH:mm');
+  const id = 증언지문_(sid, 출처, 물음, 답, 시각분);
+  const sh = ensureSheet(ss, TESTIMONY_TAB_, TESTIMONY_HEADERS);
+  if (sh.getLastRow() >= 2) {
+    const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
+    for (let i = 0; i < ids.length; i++) if (String(ids[i][0]) === id) return { ok: true, id: id, 중복: true };
+  }
+  const 소독 = function (v) { const t = String(v == null ? '' : v); return typeof 셀안전_ === 'function' ? 셀안전_(t) : t; };
+  sh.appendRow([id, sid, 시각분, 소독(출처), 소독(물음), 소독(답), 소독(String(입.맥락 || '').slice(0, 200)), 소독(String(입.시즌 || '').slice(0, 20))]);
+  return { ok: true, id: id, 중복: false };
+}
+
+/** ㉢ 삶 이해의 첫 소비자 — 학생별 최근 말 둘(창 = 기본 120일). { 맵: { sid: '물음 → 답 · …' }, 건수, 학생수 }.
+ *  이름은 안 싣는다(방향 불변식 4 — 매칭은 번호가 진다). 140자 캡 = 약점·성취 칸과 같은 눈금(한쪽만 길면 그쪽으로 쏠린다). */
+function 증언맵_(ss, 창일) {
+  const 맵 = {};
+  const sh = ss.getSheetByName(TESTIMONY_TAB_);
+  if (!sh || sh.getLastRow() < 2) return { 맵: 맵, 건수: 0, 학생수: 0 };
+  const w = Math.min(TESTIMONY_HEADERS.length, sh.getLastColumn());
+  if (w < 6) return { 맵: 맵, 건수: 0, 학생수: 0 };            // 답 칸이 없으면 읽을 것이 없다
+  const 경계 = Date.now() - (창일 || 120) * 86400000;
+  const 날 = function (v) { const d = toDate_(v); if (d) return d; const x = new Date(v); return isNaN(x.getTime()) ? null : x; };
+  const agg = {};
+  let 건수 = 0;
+  sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues().forEach(function (r) {
+    const sid = String(r[1] || '').trim(), 답 = String(r[5] || '').trim();
+    if (!sid || !답) return;
+    const d = 날(r[2]);
+    const ms = d ? d.getTime() : 0;
+    if (ms && ms < 경계) return;
+    건수++;
+    (agg[sid] = agg[sid] || []).push({ 물음: String(r[4] || '').trim(), 답: 답, t: ms });
+  });
+  Object.keys(agg).forEach(function (sid) {
+    const 둘 = agg[sid].sort(function (a, b) { return b.t - a.t; }).slice(0, 2);
+    맵[sid] = 둘.map(function (x) { return (x.물음 ? x.물음.slice(0, 30) + ' → ' : '') + x.답.slice(0, 60); }).join(' · ').slice(0, 140);
+  });
+  return { 맵: 맵, 건수: 건수, 학생수: Object.keys(맵).length };
+}
+
+/** 밖으로 내는 판 — 사람을 알아볼 것이 0: 번호 없음 · 시각은 달까지 · 명단 이름 조각이 든 답은 뺀다(몇 건 뺐나를 같이 낸다).
+ *  명단(profiles)을 못 읽으면 **안 내보낸다**(null) — 살균 없이는 밖으로 안 나간다(골든픽스처와 같은 선). */
+function 증언반출_(ss) {
+  const 이름들 = 명단이름_(ss);
+  if (!이름들) return null;
+  const sh = ss.getSheetByName(TESTIMONY_TAB_);
+  if (!sh || sh.getLastRow() < 2) return { 판: [], 뺀건수: 0 };
+  const w = Math.min(TESTIMONY_HEADERS.length, sh.getLastColumn());
+  if (w < 6) return { 판: [], 뺀건수: 0 };
+  const 판 = [];
+  let 뺀 = 0;
+  sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues().forEach(function (r) {
+    const 답 = String(r[5] || '').trim();
+    if (!답) return;
+    if (이름살균_(이름들, 답)) { 뺀++; return; }
+    판.push({ 월: String(r[2] || '').slice(0, 7), 출처: String(r[3] || ''), 물음: String(r[4] || ''), 답: 답 });
+  });
+  return { 판: 판, 뺀건수: 뺀 };
+}
+
+/* ===================== [㉡-1 부품 · 2026-09-07] ✍ 첨삭 확인자 — 서명을 «채우는» 통로 =====================
+ * v9.315~317 이 세운 칸 셋(확인자·확인시각·확인지문)은 채우는 통로가 0줄이라 사람이봤나_ 가 언제나 거짓이었다(그것이 사실이었다).
+ * 이 통로 = 이 스프레드시트의 설치형 onEdit. 사람이 hw_feedback 에서 학생이 읽는 네 자리(고친문장·오늘의포인트·칭찬·다음미션)나
+ * 상태를 손으로 고친 «그 자리»에서 셋을 찍는다 — 이미 사람이 손대는 자리에서만 기록(브랜드 v2 ㉡-1 ⚠ · 무인 발행은 안 건드린다).
+ * ■ 무인('무인') 행에는 안 찍는다 — 사람 손이 닿았어도 발행경로가 무인이면 그 카드를 낸 것은 배치다. 격리·대기 행만.
+ * ■ 이름 = 편집자 이메일(e.user → Session.getActiveUser). 못 얻으면 안 찍는다 — 모르는 이름을 지어 넣지 않는다(빈 확인자 = 「사람이 없다」).
+ * ■ 서명 칸 자체를 고치는 편집은 서명이 아니다(되돌이 방지). 트리거 핸들러라 이름에 밑줄 없음 · 모든 편집이 때리니 좁게 보고 즉시 return.
+ * ■ 설치는 손이 아니라 아침 배치(첨삭서명트리거보장_)가 한다 — 없으면 만들고 있으면 0. resetAllTriggers 도 같은 이름을 재설치한다. */
+const HW_SIGN_HANDLER_ = 'onHwFeedbackEdit';
+
+/** 편집자 이름 — 설치형 트리거의 e.user(같은 도메인·공유 편집자일 때만 값이 온다) → 실행 계정 → 없으면 ''. */
+function 편집자이름_(e) {
+  try { const u = e && e.user && typeof e.user.getEmail === 'function' ? String(e.user.getEmail() || '').trim() : ''; if (u) return u; } catch (x) { /* 권한 없음 */ }
+  try { const a = String(Session.getActiveUser().getEmail() || '').trim(); if (a) return a; } catch (x) { /* 권한 없음 */ }
+  return '';
+}
+
+/** 헤더 행 → 서명에 쓰는 열(1-based). 서명 칸 셋·발행경로·고친문장 중 하나라도 없으면 null(아직 칸이 안 선 시트). */
+function 첨삭서명대상열_(헤더) {
+  const h = (헤더 || []).map(function (x) { return String(x == null ? '' : x).trim(); });
+  const col = function (n) { return h.indexOf(n) + 1; };
+  const 열 = {
+    읽는칸: ['고친문장', '오늘의포인트', '칭찬', '다음미션', '상태'].map(col).filter(function (c) { return c > 0; }),
+    고친문장: col('고친문장'), 오늘의포인트: col('오늘의포인트'), 칭찬: col('칭찬'), 다음미션: col('다음미션'),
+    발행경로: col('발행경로'), 확인자: col('확인자'), 확인시각: col('확인시각'), 확인지문: col('확인지문'),
+  };
+  if (!열.발행경로 || !열.확인자 || !열.확인시각 || !열.확인지문 || !열.고친문장) return null;
+  return 열;
+}
+
+/** 한 행에 서명 셋을 찍는다 — 발행경로가 격리·대기일 때만(무인·빈칸은 false). 지문은 «지금 그 문장»의 것이다. */
+function 첨삭서명찍기_(sh, r, 열, 이름, 지금) {
+  const 길 = String(sh.getRange(r, 열.발행경로).getValue() || '').trim();
+  if (길 !== 발행경로_.격리 && 길 !== 발행경로_.대기) return false;
+  const v = function (c) { return c ? sh.getRange(r, c).getValue() : ''; };
+  const 지문 = 카드지문_(v(열.고친문장), v(열.오늘의포인트), v(열.칭찬), v(열.다음미션));
+  sh.getRange(r, 열.확인자).setValue(이름);
+  sh.getRange(r, 열.확인시각).setValue(지금);
+  sh.getRange(r, 열.확인지문).setValue(지문);
+  return true;
+}
+
+function onHwFeedbackEdit(e) {
+  try {
+    if (!e || !e.range) return;
+    const sh = e.range.getSheet();
+    if (sh.getName() !== 'hw_feedback') return;
+    if (e.range.getRow() < 2) return;                                   // 헤더 편집은 서명이 아니다
+    const 열 = 첨삭서명대상열_(sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0]);
+    if (!열) return;                                                     // 서명 칸이 아직 안 선 시트 — 아침 시트칸맞추기 뒤에 선다
+    const c1 = e.range.getColumn(), c2 = e.range.getLastColumn();
+    if (열.확인자 >= c1 && 열.확인자 <= c2) return;                       // 서명 칸을 고치는 편집은 서명이 아니다(되돌이 방지)
+    if (!열.읽는칸.some(function (c) { return c >= c1 && c <= c2; })) return;
+    const 이름 = 편집자이름_(e);
+    if (!이름) { Logger.log('첨삭 서명 건너뜀 — 편집자 이름을 못 얻었다(행 ' + e.range.getRow() + ')'); return; }
+    const 지금 = Utilities.formatDate(new Date(), sh.getParent().getSpreadsheetTimeZone(), 'yyyy-MM-dd HH:mm');
+    let n = 0;
+    for (let r = e.range.getRow(); r <= e.range.getLastRow(); r++) if (첨삭서명찍기_(sh, r, 열, 이름, 지금)) n++;
+    if (n) Logger.log('첨삭 서명 ' + n + '행 — ' + 이름);
+  } catch (err) {
+    Logger.log('onHwFeedbackEdit 실패(삼킴): ' + err);                   // 트리거 예외가 시트 편집을 막지 않게 한다
+  }
+}
+
+/** 설치 보장 — 아침 배치가 부른다. 같은 핸들러가 있으면 0(멱등). 돌려주는 말은 로그용. */
+function 첨삭서명트리거보장_() {
+  const 있음 = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === HW_SIGN_HANDLER_; });
+  if (있음) return '있음';
+  ScriptApp.newTrigger(HW_SIGN_HANDLER_).forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet()).onEdit().create();
+  Logger.log('✅ 첨삭 서명 onEdit 트리거 생성 — hw_feedback 에서 사람이 고친 자리에 확인자·확인시각·확인지문이 찍힌다');
+  return '만듦';
+}

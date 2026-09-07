@@ -586,6 +586,17 @@ function main() {
     return `수집 <b>${s.전체}종</b> = 제품층 ${s.제품} + 자산층 ${s.자산} + <b>도달 0 이 ${s.도달0}종</b>`
       + (s.손 ? ` <span class="잔글">· 도달 ${s.제품 + s.자산}종 중 ${s.손}종(${s.손목록.map(esc).join('·')})은 «사람이 눌러야만» 돈다 — 도달 0 과 다른 병이다(저쪽은 「안 읽는다」, 이쪽은 「읽는데 저절로 안 돈다」)</span>` : '')
       + (r.위반.length ? ` · <b>장부 위반 ${r.위반.length}건</b>` : '')
+      /* [㉢-2 · 09-07] 연결표 — 원천 → 읽는 부품 → «언제» → 이해 대장의 어느 칸. 「모아 놨다」를 완료로 안 세는 자의 화면
+       *   (브랜드 v2 ㉢-2 ⑥ · 값 정본 = 수집도달_() 의 회수·대장칸 두 칸 · 자 = tools/lib/시트도달.js). 닿는 탭만 줄이 된다 —
+       *   안 닿는 탭은 위 「도달 0」 줄이 이름을 댄다. */
+      + (s.연결표 && s.연결표.length
+        ? `<details class="연결표"><summary>연결표 ${s.연결표.length}줄 — 원천 → 읽는 부품 → 언제 → 대장 칸`
+          + ` <span class="잔글">(대장 ${['㉠', '㉡', '㉢'].map((c) => `${c} ${s.대장칸별[c] || 0}`).join(' · ')})</span></summary>`
+          + '<table class="연결표"><thead><tr><th>원천(탭)</th><th>읽는 부품</th><th>층</th><th>언제</th><th>대장 칸</th></tr></thead><tbody>'
+          + s.연결표.map((e) => `<tr><td><code>${esc(e.탭)}</code></td><td><code>${esc(e.소비자)}</code>${e.손 ? ' <span class="잔글">(사람이 눌러야 돈다)</span>' : ''}</td>`
+            + `<td>${esc(e.층)}</td><td>${esc(e.회수)}</td><td>${esc(e.대장칸)}</td></tr>`).join('')
+          + '</tbody></table></details>'
+        : '')
       + `<br><span class="잔글">도달 0: ${s.도달0목록.map(esc).join(' · ') || '없다'}`
       + ' — 「읽는 코드가 있다」가 아니라 「읽어서 «다음에 줄 것»이 바뀐다」가 도달이다'
       + '(주간 리포트 꼬리처럼 <b>끝이 사람 화면</b>이면 도달이 아니다) · 실값 정본 = 엔진_셋업확장.js `수집도달_()`</span>';
@@ -668,6 +679,7 @@ ${브랜드폰트.면()}
   .실측{margin-top:12px;padding:12px 16px;background:var(--cream);border-left:6px solid var(--emerald);
         border-radius:8px;font-size:12.5px}
   .잔글{color:var(--slate2);font-size:11.5px}
+  details.연결표{margin-top:6px} details.연결표 summary{cursor:pointer} table.연결표{table-layout:auto;border-spacing:0;font-size:12px} table.연결표 th,table.연결표 td{text-align:left;padding:2px 8px;border-bottom:1px solid var(--line,#e5e7eb);vertical-align:top}
   .사유{margin:6px 0 0;padding:8px 16px;background:var(--paper);border:1px solid var(--cream3);
         border-radius:8px;font-size:12px;color:var(--slate2)}
   .사유 summary{cursor:pointer;color:var(--navy);font-weight:700}

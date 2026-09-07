@@ -66,6 +66,7 @@ function doPost(e) {
   try {
     // [진단] 급수 진단 JSON 통로 — `?p=진단` 이면 상담 웹훅을 안 거친다(엔진_진단.js 진단API_ · ContentService 만 · 아래 doGet ⛔ 그대로)
     if (e && e.parameter && e.parameter.p === '진단') return 진단API_(e, 'post');
+    if (e && e.parameter && e.parameter.p === '회고') return 회고API_(e, 'post');   // [㉡-1 · 09-07] 시즌 회고 물음 답 — ContentService 만(아래 doGet ⛔ 그대로)
     const raw = e && e.postData && e.postData.contents ? e.postData.contents : '{}';
     const body = JSON.parse(raw);
     const 입력 = 상담_정규화_(body);
@@ -129,6 +130,7 @@ function doGet(e) {
   }
   // [v9.185] 인계 메일 링크 — act=draft(확인·부작용 0) → act=send(발송). ContentService 텍스트만(위 ⛔ 준수)
   if (p.p === '진단') return 진단API_(e, 'get');   // [진단] 급수 진단 결과 조회 — ContentService JSON 만(위 ⛔ 준수)
+  if (p.p === '회고') return 회고API_(e, 'get');   // [㉡-1 · 09-07] 회고 편지 보기(열쇠 필요) — ContentService JSON 만
   if (p.act === 'draft' || p.act === 'send') return 상담_초안발송_(p);
   return ContentService.createTextOutput('SYNK');
 }

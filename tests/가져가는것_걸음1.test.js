@@ -225,7 +225,7 @@ test('⑥ portfolio_moments 가 골격에 수집 표식으로 서고, 도달 장
   const { 읽다 } = require('../tools/lib/시트도달.js');
   const r = 읽다(ROOT);
   assert.ok(r.탭.includes('portfolio_moments'), '수집 탭 목록에 없다');
-  assert.deepEqual(r.장부.portfolio_moments, { 소비자: 'Code.js:calcAll', 층: '제품' }, '소비자 장부 칸이 다르다 — 생산과 소비는 같은 커밋이다(§2-c ⚠)');
+  assert.deepEqual(r.장부.portfolio_moments, { 소비자: 'Code.js:calcAll', 층: '제품', 회수: '매일', 대장칸: '㉡' }, '소비자 장부 칸이 다르다 — 생산과 소비는 같은 커밋이다(§2-c ⚠)');
   assert.deepEqual(r.위반, [], '시트층 도달 장부가 빨갛다: ' + JSON.stringify(r.위반));
   assert.deepEqual(헤더, ['moment_id', 'session_key', '사건일', '반', '차시', '종류', '한줄', '기간키', '미디어', '원본폴더', '사본폴더', '적재일', '상태', '공개범위'],
     '헤더 순서가 정본과 다르다 — 행이 하나라도 들어가면 못 고친다');
