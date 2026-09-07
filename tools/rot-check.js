@@ -556,23 +556,12 @@ function geminilmDriveSection() {
   return { present: true, failed, last, 성공일, 지난날, 마운트 };
 }
 
-function mapSection() {
-  /* 바탕화면 SYNK_지도 폴더 — 유호님이 실제로 여는 사본이 repo 정본과 갈라졌는지.
-   * 도구(tools/지도대장.js)는 e27a93a 로 들어왔는데 **발화 지점이 0**이었다(「장치와
-   * 발동 조건은 같은 커밋에서」 미충족 · 커밋 메시지에 미완성으로 명시). 여기가 그 발동
-   * 조건이다 — 주간 점검이 돌 때마다 같이 잰다(2026-08-04).
-   * 폴더가 없으면 부패가 아니라 미실행이다(CI·클라우드·다른 기계). */
-  const M = require('./지도대장.js');
-  const 결과 = M.훑기();
-  if (!결과.있음) return { present: false, dir: 결과.dir };
-  const 문제지도 = 결과.지도들.filter((m) => m.문제.length);
-  return {
-    present: true,
-    지도수: 결과.지도들.length,
-    문제수: 문제지도.reduce((a, m) => a + m.문제.length, 0),
-    지도들: 문제지도.map((m) => ({ 이름: m.이름, 첫문제: (m.문제[0] || '').split('\n')[0] })),
-  };
-}
+/* ⛔ mapSection(바탕화면 SYNK_지도 사본 신선도)은 09-07 에 걷었다 — 지도대장 도구와 함께(그 파일은
+ *   git 이력에만 있다 · 여기 경로를 적으면 아래 「이름은 부르는데 없는 파일」 검사가 스스로를 잡는다).
+ *   그 통로가 굽던 지도는 한 벌뿐인데 정본 둘이 커밋 808a71247(교재를 앱에서 뗀다)로 저장소를 떠나
+ *   «다시 구워도 값이 0인 죽은 지도»였다(트랙 §2-낱말 09-07 실측 · DESIGN.md §5). 여기서 계속 재면
+ *   매주 「정본이 없다」를 경고로 내는 자리가 된다 — 고칠 길이 없는 경고는 노이즈고, 노이즈는 꺼진다.
+ *   지도가 다시 필요해지면 그때 정본에서 새로 짓는다. */
 
 function toilSection() {
   /* 손일 장부(docs/_ops/손일장부.md(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다))가 자라고 있는지.
@@ -1117,7 +1106,6 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
   const nbl = attempt('geminilm', geminilmSection);
   const nbd = attempt('geminilm-drive', geminilmDriveSection);
   const toi = attempt('toil', toilSection);
-  const map = attempt('지도', mapSection);
   const 절단 = attempt('절단문서', () => 절단문서Section());
   const dep = attempt('배포판', () => 배포Section(라이브, 시간제한));
   const 재질 = attempt('재질의금지', 재질의Section);
@@ -1146,7 +1134,7 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
 
   // 신설 절 다섯도 이 그물에 넣는다 — 절이 죽으면 「검사기 고장」 적색이 뜨고, 적색은 이제 축을 안 탄다.
   // (`소개` 는 08-29 까지 이 그물 밖이었다 — 소개서 절이 죽으면 아무 소리도 안 났다. 같이 넣는다.)
-  for (const s of [mem, doc, fri, har, nbl, nbd, toi, map, 절단, dep, 재질, 장부, 바탕, 소개, 이름, 남은손, 상주, 게이트, 밤굽기]) {
+  for (const s of [mem, doc, fri, har, nbl, nbd, toi, 절단, dep, 재질, 장부, 바탕, 소개, 이름, 남은손, 상주, 게이트, 밤굽기]) {
     // `배포:true`·`장부:true` = 각자 스로틀로 따로 도는 항목(F244). 문구가 아니라 이 표식으로
     // 고른다 — 앵커는 문구가 바뀌면 죽고, 죽으면 그 절만 조용히 리포트에서 빠진다.
     if (!s.ok) red.push({ kind: '검사기 고장', text: `${s.name} 검사가 실패했다 — ${s.error}`, 배포: s === dep, 장부: s === 장부 });
@@ -1377,16 +1365,6 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
           'PC가 꺼져 있었다면 정상이지만, 켜져 있었다면 예약 작업을 확인하라(schtasks /query /tn SYNK_GeminiLM).',
       });
     }
-  }
-
-  if (map.ok && map.value.present && map.value.문제수) {
-    warn.push({
-      kind: '지도 사본 갈림',
-      text: `바탕화면 SYNK_지도 ${map.value.지도수}종 중 문제 ${map.value.문제수}건 — ` +
-        map.value.지도들.slice(0, 3).map((m) => `${m.이름}(${m.첫문제})`).join(' · ') +
-        ' — 유호님이 여는 사본이 정본과 갈라졌거나 신선도를 모른다.' +
-        ' 상세: node tools/지도대장.js · 수리: --bake / --stamp',
-    });
   }
 
   if (toi.ok && toi.value.present && toi.value.stale) {
@@ -1939,6 +1917,6 @@ if (require.main === module) main();
  * 조용하다」 — 둘 다 침묵을 닮았다. 그래서 베끼지 않고 **이 한 벌을 빌려 쓴다**(회귀는
  * tests/절단문서.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다) ③ 이 그대로 진다). ⚠ 시각은 안 돌려준다 — 부르는 쪽은 `--since` 로
  * 이미 걸러진 목록을 받으므로 필요 없다. */
-module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, mapSection, 절단문서Section, 뒤커밋들, 배포Section, 배포도장, 편집중인가, EVOLVE_THRESHOLD, 마지막개정, frictionSection, 장부Section, 장부판정, 장부도장, 장부패치, 축만, 장부_주기_일,
+module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, 절단문서Section, 뒤커밋들, 배포Section, 배포도장, 편집중인가, EVOLVE_THRESHOLD, 마지막개정, frictionSection, 장부Section, 장부판정, 장부도장, 장부패치, 축만, 장부_주기_일,
   // 08-29 신설 — 회귀가 픽스처로 재는 자리들(탐지력은 실물이 아니라 픽스처가 진다 · F296).
   이름부름Section, 남은손Section, 상주Section, 게이트Section, 밤굽기Section, 부패키, 눌림갱신, 그날, 상주선언, 게이트_중앙값_한도_ms };

@@ -70,11 +70,17 @@ const 조각들 = [
 const 끝페이드 = 0;   // 마무리 화면이 스스로 사라지므로 여기서 또 어둡게 하지 않는다
 const 디졸브 = 0.35;   // 짧게 — 전환이 빨라야 늘어지지 않는다
 
-/* 음악. 숫자면 이 저장소가 구운 것, 경로면 유호님이 주신 파일. */
+/* 음악. 숫자면 이 저장소가 구운 것(Lyria), 경로면 유호님이 주신 파일.
+ *
+ * 🔄 09-07 — 기본값을 유호님의 Suno 시티팝으로 갈았다(유호 확정 09-07 「bgm들도 앞으로 수노로」 ·
+ *   같은 날 티저도 이 곡으로 「b가 훨씬 낫다」). 09-05 판은 바탕화면의 ACE-Step 판
+ *   (`SYNK 자산/음악/시티팝_citypop/_씨앗없음_citypop_vocal_고친판.wav` · 13초부터)이었는데
+ *   그 파일은 저장소 밖이라 다른 기계에서 죽고, 그 통로(ACE-Step)는 09-07 에 여섯 판 실패로 닫혔다.
+ *   🔑 이제 곡이 저장소 안(`docs/홍보물/BGM/`)에 있어 누가 구워도 같은 소리가 난다.
+ *   시작 63.9초 = 이 곡의 «가장 꽉 찬 28초»(자 = `python tools/곡재기.py --창 28`). 앞 1분이 도입부다. */
 const 음악들 = { 1: '결1_피아노.wav', 2: '결2_현악.wav', 3: '결3_피아노와공기.wav' };
-const 유호음악 = 'C:/Users/q1212/OneDrive/Desktop/SYNK 자산/음악/시티팝_citypop/'
-  + '_씨앗없음_citypop_vocal_고친판.wav';
-const 유호음악시작 = 13;   // 초 — 유호 09-05 「그냥 13초부터 시작하면 좋을것같네」(앞서 10초에서 옮겼다)
+const 유호음악 = path.join(뿌리, 'docs', '홍보물', 'BGM', '시티팝_147.wav');
+const 유호음악시작 = 63.9;
 
 /* 🔴 치직거림 걷기 (유호 09-05 「화면이 치직치직 효과는 없애는게 더 깔끔한것같아」)
  *   원인은 굽기 지시문의 「fine film grain」이다. 다시 구우면 8컷 ₩37,171 이라, 여기서 걷는다.
@@ -222,4 +228,17 @@ const 벌려 = (s) => s.split('').join(' ');
   execFileSync('ffmpeg', 명령, { stdio: ['ignore', 'inherit', 'inherit'] });
   const mb = (fs.statSync(낼것).size / 1024 / 1024).toFixed(1);
   console.log(`\n✅ ${낼것}  (${mb} MB · ${총길이.toFixed(1)}초 · 3840×2160)`);
+
+  /* 🔴 1080p 판을 «같은 자리에서» 낸다 (09-07).
+   *   옆에 `SYNK_홍보_1080p.mp4` 가 있었는데 이 도구는 4K 만 냈다 — 1080p 는 손으로 만든 것이었다.
+   *   그래서 09-07 에 곡을 갈아 4K 를 다시 냈을 때 1080p 는 09-05 판(옛 곡) 그대로 남아 있었다.
+   *   두 벌이 따로 만들어지면 하나가 조용히 낡는다(곡·자막·컷이 갈린 채 둘 다 「완성본」 얼굴을 한다).
+   *   ⇒ 4K 가 난 직후 그 파일에서 줄여 낸다. 소리는 다시 안 굽고 그대로 옮긴다(-c:a copy). */
+  const 작은것 = path.join(방, 'SYNK_홍보_1080p.mp4');
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', 낼것,
+    '-vf', 'scale=1920:1080:flags=lanczos', '-c:v', 'libx264', '-preset', 'slow', '-crf', '18',
+    '-pix_fmt', 'yuv420p', '-c:a', 'copy', '-movflags', '+faststart', 작은것],
+    { stdio: ['ignore', 'inherit', 'inherit'] });
+  const mb2 = (fs.statSync(작은것).size / 1024 / 1024).toFixed(1);
+  console.log(`✅ ${작은것}  (${mb2} MB · 1920×1080 · 4K 에서 줄인 것)`);
 })();
