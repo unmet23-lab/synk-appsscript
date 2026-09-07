@@ -409,3 +409,23 @@ test('스위치 이름이 코드와 안내문에서 같다 — 갈리면 켜는 
   const 맞추기 = 떼어오기(셋업, 'function 시트칸정본맞추기_(');
   assert.ok(맞추기.includes('SHEET_COL_PUSH'), '보류 안내가 같은 이름을 말해야 한다');
 });
+
+test('🔴 «같은 표 안»에서 죽어도 이미 늘린 칸이 세어진다 (09-08 검수 P1 d308df9a6738)', () => {
+  /* 앞 시험은 «앞 표를 끝내고 다음 표»에서 던졌다. 검수가 짚은 자리는 그보다 안쪽이다 —
+   * 한 표의 폭을 늘린 «뒤» 헤더를 쓰다가 죽으면, 갈래 둘(정상 끝·막힘)에만 있던 합산에 못 닿아
+   * 실제 두 칸이 기록에 0 으로 남았다. ⇒ 표 하나를 통째로 감싸 어느 갈래로 끝나든 센다. */
+  const 담김 = {};
+  const 한판 = 한판만들기([['죽는표', ['A', 'B', 'C']]], 담김);
+  const 시트 = 가짜시트(['A']);
+  const 원래getRange = 시트.getRange.bind(시트);
+  시트.getRange = function (r, c, nr, nc) {
+    const g = 원래getRange(r, c, nr, nc);
+    if (r === 1) g.setValue = function () { throw new Error('헤더 쓰다 죽었다'); };
+    return g;
+  };
+  assert.throws(() => 한판({ getSheetByName: (n) => (n === '죽는표' ? 시트 : null) }), /헤더 쓰다 죽었다/);
+
+  const 적힌것 = JSON.parse(담김['시트칸맞추기_마지막']);
+  assert.strictEqual(적힌것.더한칸, 2, '표 «안»에서 죽었을 때 이미 늘린 두 칸이 0 으로 남았다');
+  assert.ok(적힌것.건너뛴표.some((x) => /예외로 끝났다/.test(x)), '죽었다는 표식이 있어야 한다');
+});
