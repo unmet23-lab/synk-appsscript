@@ -260,7 +260,10 @@ async function 태우기() {
   for (let n = 0; n < 대상.length; n++) {
     const s = 대상[n];
     if (n > 0 && 사이ms) await 잠깐(사이ms);
-    fs.writeFileSync(임시, `${s.ko}\n---\n${s.mn}\n`, 'utf8');
+    /* 🔴 **넘기는 글은 `넘길글()` 하나가 만든다.** 여기서 같은 꼴을 다시 적으면 «짝지문을 내는 자»와
+     *   «실제로 넘기는 자»가 갈린다 — 09-07 에 실제로 갈렸다. 지문은 자리표시자를 채운 글로 내고
+     *   파일은 안 채운 글로 써서, 자리표시자가 든 16줄이 **두 번을 태워도 「안 쟀다」로 남았다.** */
+    fs.writeFileSync(임시, 넘길글(s), 'utf8');
     const r = spawnSync(process.execPath, [검문자, '--파일', 임시, ...문플래그], {
       cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300_000,
     });
