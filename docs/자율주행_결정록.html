@@ -91,9 +91,9 @@ footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--cream3);font-
 footer b{color:var(--navy);font-weight:500}
 footer code{font-family:var(--mono);font-size:11.5px}
 </style>
-<style data-loom="밝은부품">
-/* ── Loom 밝은부품 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
-   통로: node tools/lib/loom.js --css 밝은부품
+<style data-loom="부품만">
+/* ── Loom 부품만 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
+   통로: node tools/lib/loom.js --css 부품만
    값:   docs/디자인_토큰.json (색·율·재질·부품) — 이 CSS 에 hex·px 원본은 없다
    물성 사다리: 펠트(먹는다) → 유리(통과시킨다) → 레진(가둔다) · 림 무채
    ⚠번호는 CSS counter 가 «자동»으로 세운다 — 원고가 번호를 안 적어도 된다.
@@ -105,12 +105,8 @@ footer code{font-family:var(--mono);font-size:11.5px}
   /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
   :root{
     --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
-    --룸-chalk2:#EAEAEA; --룸-chalk2-rgb:234,234,234;
-    --룸-chalk3:#D1D2D4; --룸-chalk3-rgb:209,210,212;
     --룸-ink:#2B2320; --룸-ink-rgb:43,35,32;
     --룸-coral:#F96859; --룸-coral-rgb:249,104,89;
-    --룸-coral3:#AE322A; --룸-coral3-rgb:174,50,42;
-    --룸-ash2:#666666; --룸-ash2-rgb:102,102,102;
     --룸-font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   }
   /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
@@ -154,7 +150,7 @@ footer code{font-family:var(--mono);font-size:11.5px}
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
     opacity:.95;
-    filter:saturate(1.5)
+    filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
            drop-shadow(0 0 10px rgba(249,104,89,0.2));
   }
   .유리>*{position:relative;z-index:2;}
@@ -208,7 +204,7 @@ footer code{font-family:var(--mono);font-size:11.5px}
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
-    filter:saturate(1.6)
+    filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
            drop-shadow(0 0 8px rgba(249,104,89,0.28));}
 
   /*loom부품:순번*/
@@ -237,7 +233,7 @@ footer code{font-family:var(--mono);font-size:11.5px}
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
     -webkit-mask-composite:xor;mask-composite:exclude;
-    filter:saturate(1.6)
+    filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
            drop-shadow(0 0 8px rgba(249,104,89,0.28));}
   /* 🔴 «.민» — 번호를 **원고가 손으로 적은** 목록에서 원판만 걷는다(«<li><span>1.</span>…»).
      counter 를 그런 목록에 씌우면 «① 1. …» 로 두 번 번호가 되고, 그 사고는 **남의 지면에서만** 난다
@@ -571,90 +567,6 @@ footer code{font-family:var(--mono);font-size:11.5px}
   .룸 a:not(.민):not(.레일 a)::before,.룸 a .점,.링크점{background-image:url("data:image/webp;base64,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");
     background-size:contain;background-position:center;background-repeat:no-repeat;
     background-color:transparent;box-shadow:none;}
-
-  /* ── 밝은 화면 — 바탕이 Paper 인 남의 지면에 얹을 때 (2026-08-19)
-     «낮» 과 **같은 값**을 쓰되 «@media print» 밖에 둔다. 위 «밝은글자()» 주석이 사유를 진다. */
-    .룸 h2{;}
-    .흐린{color:var(--룸-ash2);}
-    .룸 a{;font-weight:640;box-shadow:none;border-bottom:1px solid var(--룸-coral3);}
-    .룸 a:not(.민)::before{background:var(--룸-coral3);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{;}
-    /* 🔴 인용은 «안 흐린다» — 통짜 지면과 갈리는 유일한 값이고, 사유가 있다.
-       남의 지면에서 blockquote 는 «판» 위에 앉아 있을 수 있다(실측 2026-08-19: 개인정보 게시본은
-       blockquote 바탕이 Chalk 다). 거기에 Ash 2 를 얹으면 **4.46:1** — 기준 4.5 를 아슬하게
-       못 넘고 렌더린트가 문다. 우리는 그 판의 색을 모르므로 «흐림»으로는 대비를 보장할 수 없다.
-       ⇒ 남의 지면에서 인용의 신호는 색이 아니라 **따옴 부품과 레일**이 진다. */
-    .룸 blockquote{;}
-
-  /* ── 낮 지면 ────────────────────────────────────────────────────────────
-     ⚠검은 무대를 종이에 그대로 두면 안 되는 이유는 취향이 아니라 실패 모드다:
-       크롬 인쇄의 「배경 그래픽」은 **기본이 꺼짐**이라 바탕만 흰 종이가 되고 글자는 Cream 으로
-       남는다 — **Cream on 흰 종이 = 1.13:1**(본문이 통째로 사라진다).
-     «다른 디자인»이 아니라 **같은 골격에 다른 빛**이다 — 부품 구조가 그대로다.
-     재질도 죽이지 않고 «굳힌다»: 유리는 판이 되고, 레진은 구슬이 된다.
-       유리 → 뒤가 비치는 것이 유리인데 종이엔 뒤가 없다 → 면 + 실선
-       레진 → glow 가 종이에 안 실린다 → 코어를 «면»으로, 굴절밴드를 «선»으로 굳힌다
-       못 옮기는 것 = 코스틱(샌 빛). 종이의 한계라 억지로 흉내내지 않는다. */
-  @media print{
-    .룸{;color-scheme:light;}
-    .룸{;background-attachment:initial;
-         font-size:10.6pt;line-height:1.62;}
-
-    .유리{background:var(--룸-chalk2);border:1px solid var(--룸-chalk3);
-      -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;
-      break-inside:avoid;padding:var(--칸) calc(var(--칸) + var(--숨));}
-    .유리::before{content:none;}
-
-    /* 번호 — 유리 원판이 «찍힌 원판»이 된다. 분산 림은 선 하나로 굳는다. */
-    .룸 h2{margin:calc(var(--켜) * .6) 0 var(--참);font-size:14pt;break-after:avoid;}
-    .룸 h2:not(:has(.번호))::before,.번호,.잔번호,.각주{
-      background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:inset 0 0 0 1px var(--룸-ash2);}
-    .룸 h2:not(:has(.번호))::after{background:var(--룸-chalk3);}
-    .번호::before{content:none;}
-    .룸 ol>li::before{background:var(--룸-chalk3);color:var(--룸-ink);
-      box-shadow:inset 0 0 0 1px var(--룸-ash2);}
-    .룸 ol>li::after{content:none;}
-
-    /* 레진 — 코어를 면으로, 굴절밴드를 선으로. 구슬로 읽히되 종이에서 뜨지 않는다. */
-    .룸 ul>li::before{background:rgba(174,50,42,0.22);
-      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.55);}
-    .룸 ul>li::after{background:none;}
-    .체크,.히어로수{color:var(--룸-ink);
-      background:radial-gradient(58% 58% at 50% 44%, rgba(174,50,42,0.26), rgba(174,50,42,0.07) 70%),
-                 var(--룸-chalk2);
-      box-shadow:inset 0 0 0 1px rgba(174,50,42,0.5);}
-    .체크::before,.히어로수::before{content:none;}
-
-    /* 칩은 종이에서도 배경을 안 입는다(유호 확정 09-03 · 흰 바탕은 대비 상한이 낮아 되레 나빠진다).
-       배경 그래픽을 끄면 표식 그림이 빠지고 굵은 글자로 선다 — 설계된 폴백이다. */
-    .칩::before{content:none;}
-    .실금{background:var(--룸-chalk3);}
-    .룸 blockquote::before{background:var(--룸-chalk3);color:var(--룸-ink);box-shadow:none;}
-    .오브{width:74px;height:74px;border-radius:20px;color:var(--룸-ink);font-size:1.7rem;
-      box-shadow:none;border:1px solid var(--룸-chalk3);}   /* 배경을 끄면 천이 사라지니 테두리가 형태를 진다 */
-    .오브::before,.오브::after{content:none;}
-
-    .룸 h2{;}
-    .흐린{color:var(--룸-ash2);}
-    .룸 a{;font-weight:640;box-shadow:none;border-bottom:1px solid var(--룸-coral3);}
-    .룸 a:not(.민)::before{background:var(--룸-coral3);box-shadow:none;}
-    .룸 blockquote i,.룸 blockquote em{;}
-    /* 🔴 여기서부터는 **남의 지면의 글**까지 검게 만든다 — 종이에서는 Loom 이 판 전체를 가지므로 맞다.
-       화면(«밝은글»)에는 안 준다: 밝은 지면 «안»의 어두운 섬(header 같은 것)의 글까지 검어져
-       그 자리가 통째로 사라진다(2026-08-19 실측 · 엔진 지도 머리말). */
-    .룸 p,.룸 li,.룸 b,.룸 strong,.룸 td,.룸 th,.룸 h3{;}
-    .룸 li::marker{color:var(--룸-ash2);}
-    .룸 blockquote{;}
-    .룸 footer{;}
-    .룸 code{;box-shadow:inset 0 0 0 1px var(--룸-chalk3);}
-
-    /* 쪽번호 — 낮에만 산다. @page 여백 안에 앉힌다. */
-    .쪽번호{display:block;position:fixed;bottom:4mm;right:0;
-      font-size:8.5pt;color:var(--룸-ash2);font-variant-numeric:tabular-nums;}
-    .룸 thead{display:table-header-group;}
-    .룸 tr,.수치{break-inside:avoid;}
-    .룸 *{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
-  }
 /* ──────── Loom 끝 (여기까지가 조립분 · 아래는 지면 몫) ──────── */
 </style>
 </head>
@@ -666,15 +578,15 @@ footer code{font-family:var(--mono);font-size:11.5px}
      다 만든 뒤 번호를 부르시면 그 자리에서 바꿉니다 — 「바꾸려면」 칸이 그 비용입니다.</p>
   
   <div class="counts">
-    <div class="lead">판정 <b>16</b></div>
-    <div class="hot">대기<b>16</b></div>
+    <div class="lead">판정 <b>21</b></div>
+    <div class="hot">대기<b>21</b></div>
     <div>유지<b>0</b></div>
     <div>바꿈<b>0</b></div>
     <div>보류<b>0</b></div>
   </div>
   <div class="counts second">
-    <div class="lead">그 뒤 <b>16</b></div>
-    <div class="hot">아직<b>16</b></div>
+    <div class="lead">그 뒤 <b>21</b></div>
+    <div class="hot">아직<b>21</b></div>
     <div>섰다<b>0</b></div>
     <div>뒤집힘<b>0</b></div>
     <div>무효<b>0</b></div>
@@ -699,11 +611,13 @@ footer code{font-family:var(--mono);font-size:11.5px}
   <button class="f" data-k="a" data-v="앱 화면" aria-pressed="false">앱 화면</button>
   <button class="f" data-k="a" data-v="엔진 배선" aria-pressed="false">엔진 배선</button>
   <button class="f" data-k="a" data-v="엔진 설계" aria-pressed="false">엔진 설계</button>
+  <button class="f" data-k="a" data-v="영상" aria-pressed="false">영상</button>
   <button class="f" data-k="a" data-v="운영 규율" aria-pressed="false">운영 규율</button>
   <button class="f" data-k="a" data-v="운영 도구" aria-pressed="false">운영 도구</button>
   <button class="f" data-k="a" data-v="운영 배포" aria-pressed="false">운영 배포</button>
   <button class="f" data-k="a" data-v="평가" aria-pressed="false">평가</button>
   <button class="f" data-k="a" data-v="평가 게이트" aria-pressed="false">평가 게이트</button>
+  <button class="f" data-k="a" data-v="홍보물" aria-pressed="false">홍보물</button>
 </div></nav>
 
 <div class="wrap">
@@ -932,12 +846,82 @@ footer code{font-family:var(--mono);font-size:11.5px}
   
   
 </article>
+<article class="card" data-r="대기" data-a="홍보물" data-e="아직">
+  <div class="head">
+    <span class="num">#17</span>
+    <h3>첫 게시물 표지 카드를 어두운 천 판으로 골랐다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-09-07 &nbsp;·&nbsp; 홍보물 &nbsp;·&nbsp; appsscript</div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">어두운 천 판(docs/홍보물/FB_첫게시물_카드_v4.png)을 발행용으로. 밝은 판(_밝은판.png)은 저장소에 그대로 남긴다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">밝은 천 판(FB_첫게시물_카드_v4_밝은판.png)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">① 티저 영상의 마지막 화면이 곧 이 카드다(마지막 프레임을 뽑아 확인). 썸네일과 영상 끝이 같은 그림이어야 한다는 것이 이 티저의 설계 원리라, 밝은 판을 고르면 티저를 밝은 천으로 다시 굽고 유호님이 이미 「b가 훨씬 낫다」로 받으신 판을 버려야 한다. ② 페이스북 피드는 흰 바탕이라 어두운 판이 눈에 띈다. ③ 밝은 판을 만든 까닭(어두운 천에서 몽글 잔털이 오려낸 선으로 읽힘)은 1080 크기 실물에서 보이지 않았다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">올릴것 폴더의 카드를 _밝은판.png 로 바꾸고, 티저 컴포지션(영상/src/클립/첫게시물티저.tsx)의 천 자산(public/티저/천_어두운.png)을 밝은 천으로 갈아 6초를 다시 굽는다(40초). 비용 낮음. 다만 티저를 유호님이 다시 들으셔야 한다.</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="영상" data-e="아직">
+  <div class="head">
+    <span class="num">#18</span>
+    <h3>릴 01편 4화의 「운동장」 자리를 대본대로 둔다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-09-07 &nbsp;·&nbsp; 영상 &nbsp;·&nbsp; appsscript</div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">대본이 정한 운동장을 그대로. 앞 셋(교실·복도·창가 책상)과 결이 다른 것을 화면 사정으로 고치지 않는다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">앞 셋과 같은 실내 자리(교실·복도)로 바꾼다</span><span class="chip">운동장을 대신할 새 자리 그림을 굽는다(돈)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">훅 「이름을 묻고 싶은데 입이 안 떨어져요」는 사람들 사이(운동장)라는 자리가 뜻을 진다. 그리고 5화(우편함 앞)도 바깥이라 4화가 혼자 튀는 게 아니다 — 1~3 실내에서 4~5 바깥으로 가는 것은 하루가 끝나 가는 흐름이다(다섯 훅 프레임을 나란히 놓고 확인). 실내로 바꾸면 뜻이 죽고, 새로 구우면 돈이 든다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">대본(.claude/skills/synk-content/references/리드크루클립/01_첫인사_자기소개.md)의 4화 자리 한 줄을 바꾸고 clip-01-4 두 벌(몽글·까몽)을 다시 굽는다(약 200초). 비용 낮음.</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="영상" data-e="아직">
+  <div class="head">
+    <span class="num">#19</span>
+    <h3>릴 09편 다섯 화의 「카페 안」 자리를 그대로 둔다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-09-07 &nbsp;·&nbsp; 영상 &nbsp;·&nbsp; appsscript</div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">다섯 화 전부 같은 카페 그림. 바꾸지 않는다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">09-1·09-5 를 다른 자리(옷 가게 안·우편함 앞)로 바꾼다</span><span class="chip">카페 문 앞·카운터 두 벌을 새로 굽는다(돈)</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">09편은 알바 첫날 하루가 한 카페에서 흐르는 이야기라, 같은 자리가 «같은 이야기»라는 신호다. 다섯이 각기 다른 날 올라가고 표지는 표현 문장으로 다 달라서 피드에서 다섯이 나란히 놓이지 않는다. 실측: 자리 그림 14벌 중 카페는 한 벌이고, 가게 안·우편함 앞은 다른 장소라 바꾸면 뜻이 깨진다. 0원으로 변주할 길이 없고, 변주하려면 새 그림 = 돈이라 내가 정할 자리가 아니다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">카페 문 앞·카운터 그림 둘을 구워(제미나이 · 한 장 몇백 원) 자리 배경 묶음에 넣고, 09-1·09-5 대본의 자리를 바꾼 뒤 네 벌을 다시 굽는다. 비용 = 그림값 + 굽기 7분.</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="운영 도구" data-e="아직">
+  <div class="head">
+    <span class="num">#20</span>
+    <h3>바탕화면 대장 PDF 통로(tools/지도대장.js)를 걷었다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-09-07 &nbsp;·&nbsp; 운영 도구 &nbsp;·&nbsp; appsscript</div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">도구 파일 삭제 · rot-check 의 발화 자리 넷(함수·호출·경고·export) 걷음 · DESIGN.md §5 줄을 은퇴 표기 · AI_스택_가이드 머리의 참조 걷음. 바탕화면 폴더는 유호님 것이라 그대로 뒀다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">도구를 두고 rot-check 만 끈다</span><span class="chip">바탕화면 폴더까지 지운다</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">09-07 실측(트랙 §2-낱말)으로 굽던 지도가 한 벌뿐이고 그 정본 둘이 커밋 808a71247(교재를 앱에서 뗀다)로 저장소를 떠나, 다시 구워도 값이 0이었다. 도구를 남기면 매주 「정본이 없다」 경고를 내고, 고칠 길이 없는 경고는 노이즈가 되어 꺼진다. 폴더는 유호님 손이 만든 것이라 지우는 것은 넘지 않았다.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">git 이력에서 tools/지도대장.js 를 되살리고 rot-check 의 걷은 네 자리를 그 커밋에서 되돌린다. 비용 낮음. 다만 되살려도 정본이 없는 지도라 굽는 값은 여전히 0이다 — 지도가 다시 필요해지면 그때 정본에서 새로 짓는 편이 맞다.</span></div>
+  
+  
+</article>
+<article class="card" data-r="대기" data-a="홍보물" data-e="아직">
+  <div class="head">
+    <span class="num">#21</span>
+    <h3>홍보 4K 영상의 곡을 Suno 시티팝으로 갈고, 1080p 를 같은 자리에서 내게 했다</h3>
+    <span class="badge b-대기">대기</span>
+  </div>
+  <div class="meta">2026-09-07 &nbsp;·&nbsp; 홍보물 &nbsp;·&nbsp; appsscript</div>
+  <div class="row"><span class="k">고른 것</span><span class="v pick">tools/홍보영상잇기.js 의 기본 곡을 docs/홍보물/BGM/시티팝_147.wav(63.9초부터 · 자 = 곡재기 --창 28)로. 4K 가 난 직후 1080p 를 자동으로 줄여 낸다.</span></div>
+  <div class="row"><span class="k">안 고른 것</span><span class="v alt"><span class="chip">Lyria 결1~3(피아노·현악·피아노와공기) 중 하나</span><span class="chip">09-05 ACE-Step 판(바탕화면 파일 · 13초부터) 그대로</span></span></div>
+  <div class="row"><span class="k">왜</span><span class="v">09-07 확정 「곡은 Suno 로」와, 같은 날 티저가 이 곡으로 「b가 훨씬 낫다」. 옛 기본값은 저장소 밖 파일이라 다른 기계에서 죽고, ACE-Step 통로는 여섯 판 실패로 닫혔다. 1080p 는 손으로 만든 것이라 4K 를 다시 낼 때 09-05 판이 그대로 남아 있었다(시각 실측). 실물 확인: 새 4K 안의 세기 곡선이 시티팝_147 과 +0.508, Lyria 와 −0.284.</span></div>
+  <div class="undo"><span class="k">바꾸려면</span><span class="v">잇기.js 의 유호음악 두 줄을 옛 값으로 되돌리고 도구를 한 번 돌린다(1~2분). 비용 0.</span></div>
+  
+  
+</article>
 <footer>
   정본은 <code>docs/_ops/자율주행_결정록.jsonl</code> — 이 화면은 그걸 읽어 그린 것이라 <b>정본이 바뀌면 여기도 바뀝니다</b>.<br>
   판정 반영 = <code>node tools/자율기록.js 판정 --번호 N --결과 유지|바꿈|보류</code> · 굽기 = <code>node tools/자율기록.js --굽기</code><br>
   <b>「그 뒤」는 다른 축입니다</b> — 판정은 <b>유호님이 승인했나</b>, 그 뒤는 <b>그 판단이 실제로 어떻게 됐나</b>입니다.
   뒤집힌 결정이 가장 값진 재료라 따로 셉니다 — <code>node tools/자율기록.js 효과 --스캔</code><br>
-  마지막 굽기 <b>2026-09-03</b>
+  마지막 굽기 <b>2026-09-07</b>
 </footer>
 </div>
 
