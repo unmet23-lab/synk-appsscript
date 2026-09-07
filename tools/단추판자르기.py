@@ -59,7 +59,7 @@ def 중심찾기(rgb, a, 열, 행):
     return 중심
 
 
-def 가르기(판경로, 열=4, 행=3):
+def 가르기(판경로, 열=4, 행=3, 모양='원'):
     im = Image.open(판경로)
     누끼 = AI누끼.걷기(im, AI누끼.세션()).convert('RGBA')
     arr = np.asarray(누끼)
@@ -83,8 +83,12 @@ def 가르기(판경로, 열=4, 행=3):
     H, W = a.shape
     yy, xx = np.mgrid[0:H, 0:W]
     낱장 = []
+    칸폭, 칸높이 = (x1 - x0) / 열, (y1 - y0) / 행
     for k, (cx, cy) in enumerate(격자중심):
-        마스크 = a & (((xx - cx) ** 2 + (yy - cy) ** 2) <= 반지름 ** 2)
+        if 모양 == '원':
+            마스크 = a & (((xx - cx) ** 2 + (yy - cy) ** 2) <= 반지름 ** 2)
+        else:   # 네모 — 칸 전체(보풀 몫 3%). 네모 천 조각처럼 칸을 꽉 채우는 것에 쓴다
+            마스크 = a & (np.abs(xx - cx) <= 칸폭 / 2 * 1.03) & (np.abs(yy - cy) <= 칸높이 / 2 * 1.03)
         ys, xs = np.where(마스크)
         x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
         조각 = arr[y0:y1, x0:x1].copy()
@@ -98,16 +102,23 @@ def main():
     ap.add_argument('--판', default=os.path.join(방, '단추판_열둘.png'))
     ap.add_argument('--열', type=int, default=4)
     ap.add_argument('--행', type=int, default=3)
+    ap.add_argument('--모양', default='원', choices=['원', '네모'],
+                    help='칸 안에서 무엇을 오리나 — 원(단추처럼 둥근 것) · 네모(네모 천 조각 · 칸 전체)')
+    ap.add_argument('--이름들', default=','.join(f'단추숫자_{i:02d}' for i in range(1, 13)),
+                    help='읽는 순서(왼→오, 위→아래)대로 덮어쓸 쇠 이름들, 쉼표로. 수가 열×행과 같아야 한다')
     ap.add_argument('--안냄', action='store_true', help='avif 는 안 쓰고 한눈에 판만 낸다')
     ap.add_argument('--한눈에', default='', help='한눈에 판을 낼 경로(기본 = 바탕화면 SYNK 자산/밤굽기_0907)')
     a = ap.parse_args()
 
-    낱장 = 가르기(a.판, a.열, a.행)
-    print(f'■ 단추 {len(낱장)}장 ({a.행}행 × {a.열}열)')
-    for i, 조각 in enumerate(낱장, 1):
+    이름들 = [n.strip() for n in a.이름들.split(',') if n.strip()]
+    if len(이름들) != a.열 * a.행:
+        raise SystemExit(f'🔴 이름이 {len(이름들)}개인데 칸은 {a.열}×{a.행}={a.열 * a.행} 이다 — 안 썼다')
+    낱장 = 가르기(a.판, a.열, a.행, a.모양)
+    print(f'■ 조각 {len(낱장)}장 ({a.행}행 × {a.열}열 · {a.모양})')
+    for i, (조각, 이름) in enumerate(zip(낱장, 이름들), 1):
         if not a.안냄:
-            조각.save(os.path.join(방, f'단추숫자_{i:02d}.avif'), 'AVIF', quality=70)
-        print(f'   {i:02d}  {조각.size[0]}x{조각.size[1]}' + ('' if a.안냄 else '  → 단추숫자_%02d.avif' % i))
+            조각.save(os.path.join(방, f'{이름}.avif'), 'AVIF', quality=70)
+        print(f'   {i:02d}  {조각.size[0]}x{조각.size[1]}' + ('' if a.안냄 else f'  → {이름}.avif'))
 
     칸 = 220
     장 = Image.new('RGB', (칸 * 6, (칸 + 18) * 2), (58, 50, 44)); d = ImageDraw.Draw(장)

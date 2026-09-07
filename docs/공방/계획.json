@@ -7447,6 +7447,24 @@
             "지시": "A neat grid of twelve round felt buttons, four across and three down, evenly spaced with generous empty space between them so that no two buttons touch. All twelve buttons are exactly identical in size and shape: a round two-tier felt button in cream wool, a flat lower disc in oat-coloured wool with a slightly smaller raised cream disc on top, so the lower disc shows as an even ring of the same width on every button. The only difference between the buttons is the numeral: in reading order, left to right and top to bottom, they read 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12. Each numeral is embroidered dead centre on its raised disc in dark ink-brown thread with visible chain-stitch texture, the same size on every button, about two fifths of the button diameter tall. No stitch holes, no other marks. Densely needle-felted wool, hand-made craft quality, matte, visible individual wool fibres and slight surface fuzz. Photographed from directly overhead with no perspective, on a plain flat white background, soft even studio light, no cast shadows. Square 1:1 framing, the grid centred with an even margin. No text other than the twelve numerals, no watermark."
           }
         ]
+      },
+      {
+        "이름": "크림 조각 여섯 한 장",
+        "쓰는 곳": "문서 지면 전량 · 앱 탭·표식",
+        "상태": "0/1",
+        "_크기": "4K",
+        "_왜": "유호 확정 09-07 「이 방법 꼭 기억해줘. 그리고 나머지 여섯도 한 장으로 얹어줘」. 낱장으로 구운 여섯(탭집·탭책·탭차트·탭사람·체크·별)은 천 조각 모양(집꼴·둥근·네모·사람꼴·별꼴)과 크기가 제각각이었다.",
+        "_결": "여섯을 «같은 네모 천 조각» 위에 한 장(3×2)으로 굽는다. 가르기 = python tools/단추판자르기.py --판 docs/Loom_자산/구움/크림조각판_여섯.png --열 3 --행 2 --모양 네모 --이름들 요소_탭집,요소_탭책,요소_탭차트,요소_탭사람,요소_체크,요소_별 → 그 뒤 python tools/룸자산화.py. 규격은 «장면»으로 둬 뒤처리가 통째로 안 오리게 한다. 🚫 아직 안 굽는다(336원 · 유호님 픽 뒤).",
+        "것들": [
+          {
+            "이름": "크림 조각 여섯 한 장",
+            "쇠": "크림조각판_여섯",
+            "파일": "크림조각판_여섯.png",
+            "규격": "장면",
+            "상태": "아직",
+            "지시": "A neat grid of six felt icon patches, three across and two down, evenly spaced with generous empty space between them so that no two patches touch. All six patches are exactly identical: a square of cream wool felt with softly rounded corners and a blanket-stitched edge in pale thread, the same size and the same orientation for every patch. On each patch a single icon is embroidered dead centre in dark ink-brown thread with visible chain-stitch texture, all six icons the same height, about three fifths of the patch width. In reading order, left to right and top to bottom, the icons are: a simple house outline, an open book, a bar chart of three rising bars, a standing person outline, a check mark, and a five-pointed star. The star alone is embroidered in warm butter-yellow thread; the other five are ink-brown. No other marks, no text. Densely needle-felted wool, hand-made craft quality, matte, visible individual wool fibres and slight surface fuzz. Photographed from directly overhead with no perspective, on a plain flat white background, soft even studio light, no cast shadows. Square 1:1 framing, the grid centred with an even margin. No watermark."
+          }
+        ]
       }
     ]
   },
