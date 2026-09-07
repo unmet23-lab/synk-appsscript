@@ -694,7 +694,9 @@ const SELF_DECLARE_HEADERS = ['student_id', '필드', '값', '기록일'];
  *   아래 aiStudioBatch_ ① 절이고, 도달 장부(수집도달_)는 소비자 파일의 코드에 탭 이름이 실재해야 한다(맨이름 규칙).
  *   그릇·남기기·맵·반출은 엔진_수집.js 가 쥔다. 칸은 끝에만 늘린다(읽는 쪽이 열 번호로 집는다). */
 const TESTIMONY_TAB_ = 'testimony_log';
-const TESTIMONY_HEADERS = ['id', 'student_id', '시각', '출처', '물음', '답', '맥락', '시즌'];
+const TESTIMONY_HEADERS = ['id', 'student_id', '시각', '출처', '물음', '답', '맥락', '시즌', '화자', 'schema_ver'];
+/* [v9.324] 화자 = 학생 | 보호자(코덱스 09-07 P1 — 보호자가 쓴 답이 「스스로 한 말」로 AI·회고에 들어가던 구멍) · schema_ver = 행의 판(소급 불가 시트의 계약 판). */
+const TESTIMONY_SCHEMA_VER = 1;
 const SELF_DECLARE_COLS_ = [['드림한줄', 80], ['최애', 105], ['애칭', 41], ['고른가이드', 55]]; // [함께한날 막1·4] 가이드를 바꾼 날이 한 줄 남는다(교체 무제한 §7-⑥) · 41열 라벨은 AO1 헤더 개명(몬스터이름→애칭)과 같은 커밋
 
 /* 순수 판정 — 「무엇을 새로 적을 것인가」(profilesIntegrityCore_ 와 같은 무늬: 코어=순수·래퍼=시트).
