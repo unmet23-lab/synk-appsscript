@@ -94,11 +94,13 @@ function 자율일묶음_(주, 학생ID, 재료) {
       원오답: c.원오답 || null, 이월: true });
   });
   고른.forEach(function (w) {
+    // 원오답 고리 = 퀴즈 기록의 «퀴즈ID + 제출일»(행 번호가 아니다 · talk 의 사건 ID 도 아니다 · 배포 검수 P1 fe59046320b7)
     항목.push({ 항목ID: 자율일항목ID_(배정ID, '오답', ++n), 종류: '오답', 목표: w.문형 || '', 문항: w.문항 || null,
-      원오답: { quiz_log_id: w.id, t: w.t || 0 } });
+      원오답: { 퀴즈ID: w.id, 제출일ms: w.t || 0 } });
   });
 
-  if (주.진단) 항목.push({ 항목ID: 자율일항목ID_(배정ID, '진단', 1), 종류: '진단', 회차: 주.진단 });
+  // 진단은 «역할 이름»(중간·끝)으로 부른다 — 숫자 회차는 실물(진단문항급_ 0·1·2)과 어긋난다(배포 검수 P1 d4a6c365fab4)
+  if (주.진단) 항목.push({ 항목ID: 자율일항목ID_(배정ID, '진단', 1), 종류: '진단', 역할: 주.진단 });
 
   const 공급상태 = !항목.length ? '공급실패:전부' : (실패.length ? '공급실패:' + 실패.join(' · ') : '정상');
   return { 배정ID: 배정ID, 학생ID: String(학생ID), 자율일: 주.일, 차시: 주.차시, 주유형: 유형, 차시판: COHORT1_WEEKS_VER,
@@ -140,12 +142,12 @@ function 자율일문항거르기_(문항들, 진단문장, 검문) {
   return (문항들 || []).filter(function (q, i) {
     if (!q || typeof q.문장 !== 'string' || !Array.isArray(q.보기) || q.보기.length !== 4) return false;
     if ((q.문장.match(/___/g) || []).length !== 1) return false;
-    if (!(q.정답 >= 0 && q.정답 <= 3)) return false;
+    if (!Number.isInteger(q.정답) || q.정답 < 0 || q.정답 > 3) return false;   // '0'·null·0.5 는 정답 자리가 아니다(배포 검수 P3 dba2a43e2ba0)
     if (new Set(q.보기.map(function (o) { return String(o).trim(); })).size !== 4) return false;
+    if (검문 && 검문[i] !== true) return false;                                  // 검문에 떨어진 후보는 중복 목록에 «안 올린다» — 같은 문장의 멀쩡한 후보까지 지우지 않게(P2 ae3d659c03c3)
     const 키 = q.문장.replace(/\s+/g, ' ').trim();
     if (진단[키] || 본[키]) return false;
     본[키] = 1;
-    if (검문 && 검문[i] !== true) return false;
     return true;
   });
 }
@@ -348,7 +350,6 @@ function sundayBundleBatch_() {
   const 전체복습 = (주.유형 || []).indexOf('전체복습') > -1;
   const nowStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm');
   const 묶음들 = [], 새행 = [], 갱신 = [];
-  let 실패 = 0;
   학생들.forEach(function (s) {
     const 오답행 = 자율일오답행_(ss, s.sid, 전체복습 ? 복습컷 : 컷, 목표찾기);
     let 전체복습문형 = null;
@@ -372,13 +373,14 @@ function sundayBundleBatch_() {
     }
     const 묶음 = 자율일묶음_(주, s.sid, { 굳히기문항: 재료.굳히기문항, 낭독: 재료.낭독, 답하기: 재료.답하기, 오답행: 오답행, 이월: 이월, 전체복습문형: 전체복습문형 });
     if (재료.오류 && 묶음.공급상태.indexOf('공급실패') === 0) 묶음.공급상태 += ' (' + 재료.오류 + ')';
-    if (묶음.공급상태.indexOf('공급실패') === 0) 실패++;
-    묶음들.push(묶음);
     const 있음 = 기존[묶음.배정ID];
-    if (있음 && !자율일다시지을까_(있음.묶음)) { 묶음들[묶음들.length - 1] = 있음.묶음; return; }   // 발행 뒤 불변 — 이미 실린 묶음은 그대로(다리도 그것을 보낸다)
+    if (있음 && !자율일다시지을까_(있음.묶음)) { 묶음들.push(있음.묶음); return; }   // 발행 뒤 불변 — 이미 실린 묶음은 그대로(다리도 그것을 보낸다)
+    묶음들.push(묶음);
     if (있음) 갱신.push({ row: 있음.row, 값: 자율일행값_(묶음, nowStr) });
     else 새행.push(자율일행값_(묶음, nowStr));
   });
+  // 공급 실패는 «실제로 남는 묶음»에서 센다 — 새 후보로 세면 재실행 때 실패 0 으로 거짓 보고가 된다(배포 검수 P1 53d799392c72)
+  const 실패 = 묶음들.filter(function (b) { return String(b.공급상태 || '').indexOf('공급실패') === 0; }).length;
   갱신.forEach(function (u) { sh.getRange(u.row, 1, 1, AUTO_ASSIGN_HEADERS.length).setValues([u.값]); });
   if (새행.length) sh.getRange(sh.getLastRow() + 1, 1, 새행.length, AUTO_ASSIGN_HEADERS.length).setValues(새행);
   const 다리 = 자율일다리_(주, 묶음들);
@@ -428,13 +430,14 @@ function sundayBundleJudge_() {
   const 자율일 = Utilities.formatDate(new Date(now.getTime() - 뒤로 * 86400000), tz, 'yyyy-MM-dd');
   const 주 = 차시주_(자율일);
   if (!주) return;
+  const props = PropertiesService.getScriptProperties();
+  const 도장키 = '자율일판정:' + 자율일;
+  if (dow === 1 && props.getProperty(도장키)) return;              // 월요일 보고는 하루 한 번 — 아침(weeklyJobs)과 밤(nightJobs)이 둘 다 부른다(배포 검수 P1 bffb9bf838e7)
+  // 🔴 시트가 아직 없어도 돌아서지 않는다 — 「배치가 한 번도 안 돌았다」가 바로 그 모양이다(배포 검수 P1 0e7791159474)
   const sh = ss.getSheetByName(AUTO_ASSIGN_TAB_);
-  if (!sh) return;
-  const 기존 = 자율일행들_(sh);
-  const 대상 = Object.keys(기존).map(function (k) { return 기존[k]; }).filter(function (e) {
-    if (e.묶음.자율일 !== 자율일) return false;
-    return dow === 1 ? !e.묶음.완주판정 : /^(빈날|부분)$/.test(e.묶음.완주판정);
-  });
+  const 기존 = sh ? 자율일행들_(sh) : {};
+  const 전부 = Object.keys(기존).map(function (k) { return 기존[k]; }).filter(function (e) { return e.묶음.자율일 === 자율일; });
+  const 대상 = 전부.filter(function (e) { return dow === 1 ? !e.묶음.완주판정 : /^(빈날|부분)$/.test(e.묶음.완주판정); });
   const 이름 = {};
   const pf = ss.getSheetByName('profiles');
   if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 2).getValues().forEach(function (r) { if (r[0]) 이름[String(r[0]).trim()] = String(r[1] || '').trim(); });
@@ -456,10 +459,13 @@ function sundayBundleJudge_() {
     if (dow === 2 && 판정 !== b.완주판정) 판정 += '(지각)';
     if (dow === 2 && 판정 === b.완주판정) return;                 // 화요일에 안 바뀐 행은 손대지 않는다
     sh.getRange(e.row, H.indexOf('완주판정') + 1, 1, 6).setValues([[판정, r.찬수, r.항목수, JSON.stringify(r.미집계), JSON.stringify(r.빈항목), nowStr]]);
-    판정들.push({ 이름: 이름[b.학생ID] || b.학생ID, 판정: 판정 });
+    b.완주판정 = 판정;
   });
   if (dow === 1) {
+    // 보고는 그 자율일 «전원» — 방금 판정한 학생과 이미 판정돼 있던 학생을 다 싣는다(P2 2954ddd9cc3a)
+    전부.forEach(function (e) { 판정들.push({ 이름: 이름[e.묶음.학생ID] || e.묶음.학생ID, 판정: e.묶음.완주판정 || '미집계' }); });
     미배정.forEach(function (s) { 판정들.push({ 이름: s.name, 판정: '공급실패' }); });
+    props.setProperty(도장키, nowStr);
     const 줄 = 자율일한줄_(판정들, 자율일) + (미배정.length ? '\n(공급 실패 중 ' + 미배정.length + '명은 묶음 행 자체가 없다 — 토요일 밤 배치가 안 돌았거나 1기 반이 그때 비어 있었다)' : '') +
       (말하기 ? '' : '\n(낭독·답하기는 talk 답이 없어 이번 셈에서 뺐습니다 — SUNDAY_PROGRESS_URL 미배선)');
     adminMail('[SYNK] 자율일 한 줄 — ' + 자율일, 줄);
