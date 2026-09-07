@@ -154,16 +154,34 @@ function ffmpeg띄우기() {
        thread_queue_size 를 늘려 두는 것은 「queue blocking」 경고가 그 어긋남을 키우기 때문이다. */
     '-f', 'image2pipe', '-framerate', String(뜨기), '-thread_queue_size', '512', '-i', 'pipe:0',
     '-filter_complex', 겹치기, '-map', '[영상]', '-map', '0:a',
-    '-c:v', 'libx264', '-preset', 'veryfast', '-b:v', '2500k', '-maxrate', '3000k', '-bufsize', '5000k',
-    '-g', String(프레임 * 2), '-c:a', 'copy'];
+    /* 🔴 09-07 저녁 실측 — veryfast 로는 e2-medium(코어 둘을 나눠 쓰는 기계)에서 실시간대비 0.45~0.88x 로 뒤처져
+       유튜브가 굶는다(videoIngestionStarved). ultrafast 는 화질을 조금 내주고 인코딩 CPU 를 크게 아낀다 —
+       방송이 1280×720 · 2.5Mbps 라 눈에 띄는 차이는 작다. 값은 아래 1분 보고의 «실시간대비»가 판정한다. */
+    '-c:v', 'libx264', '-preset', 'ultrafast', '-b:v', '2500k', '-maxrate', '3000k', '-bufsize', '5000k',
+    '-g', String(프레임 * 2), '-c:a', 'copy',
+    '-progress', 'pipe:2'];   // 09-07 · 실시간을 따라가나(speed)를 재려고 — 값은 아래 1분 보고로만 나간다
   const 뒤 = 시늉파일
     ? ['-t', String(시늉초), '-y', 시늉파일]
     : ['-f', 'flv', `rtmp://a.rtmp.youtube.com/live2/${열쇠읽기()}`];
   말(시늉파일 ? `시늉 — ${시늉초}초를 ${시늉파일} 로 뽑는다` : '유튜브로 민다(열쇠는 안 찍는다)');
   const p = spawn('ffmpeg', 앞.concat(뒤), { stdio: ['pipe', 'ignore', 'pipe'] });
-  p.stderr.on('data', (d) => 말('ffmpeg:', String(d).trim().slice(0, 200)));
+  /* 🆕 2026-09-07 «뒤처짐을 재는 자» — 유튜브가 `videoIngestionStarved`(영상이 모자라게 들어온다)를
+     냈는데 우리 일지는 「실패 0」만 찍고 있었다. 뜨는 쪽과 흘려보내는 쪽만 세고, **ffmpeg 이 실시간을
+     따라가는지는 아무도 안 재고 있었다.** 그래서 `-progress` 로 그 수를 받아 둔다.
+     🔑 읽는 법: `speed` 가 1.0 이면 실시간 · 0.9 면 10% 뒤처져 유튜브가 굶는다 · `drop`·`dup` 은 버린/겹친 장.
+     ⚠ 이 값들은 초당 한 번씩 쏟아지므로 **일지에 안 찍는다** — 아래 1분 보고에 한 줄로 실린다. */
+  p.stderr.on('data', (d) => {
+    const 글 = String(d);
+    for (const m of 글.matchAll(/^(speed|drop_frames|dup_frames|out_time)=(.+)$/gm)) 진척[m[1]] = m[2].trim();
+    /* 진짜 경고만 남긴다 — progress 블록의 key=value 줄은 위에서 걷어 냈다. */
+    /* 키에 숫자도 온다(`stream_0_0_q=12.0`) — 09-07 저녁 실측 · 그 줄이 10분에 978번 일지에 새어 들어갔다. */
+    const 남은 = 글.split(/\r?\n/).filter((l) => l && !/^[a-z_0-9]+=/.test(l)).join(' ').trim();
+    if (남은) 말('ffmpeg:', 남은.slice(0, 200));
+  });
   return p;
 }
+/* ffmpeg 이 스스로 알려 주는 진척 — 위 리스너가 채우고 1분 보고가 읽는다. */
+const 진척 = { speed: '?', drop_frames: '?', dup_frames: '?', out_time: '?' };
 
 /* ── ④-2 채팅 감시 — «처음 말을 건 사람»에게 인사한다 ─────────────────────────
    (유호 지시 2026-09-06 「이런 반응을 캐치해서 인사같은거 하게 못만드나?」)
@@ -373,6 +391,10 @@ function 사건문세우기(사건넣기) {
     다시쓴것++;
   }, Math.round(1000 / 뜨기));
 
-  setInterval(() => 말(`층 ${센것}장 떴다 · 내보낸 것 ${다시쓴것} · 실패 ${실패}`), 60000);
+  /* 🆕 09-07 — 보고에 «실시간을 따라가나»를 같이 싣는다. 앞의 두 수(뜬 것·내보낸 것)는 우리 쪽만 세므로
+     유튜브가 굶고 있어도 「실패 0」이 나온다(09-07 실측 · 그 거짓 초록 때문에 20시간을 못 봤다).
+     🔑 speed 가 1.0 아래로 오래 머물면 유튜브가 `videoIngestionStarved` 를 낸다 — 그때 보이라고 찍는다. */
+  setInterval(() => 말(`층 ${센것}장 떴다 · 내보낸 것 ${다시쓴것} · 실패 ${실패}`
+    + ` · 실시간대비 ${진척.speed} · 버린장 ${진척.drop_frames} · 겹친장 ${진척.dup_frames}`), 60000);
   process.on('SIGINT', () => { try { 크롬프로.kill(); ff.kill('SIGINT'); } catch {} process.exit(0); });
 })().catch((e) => { console.error('🔴 ' + e.message); process.exit(1); });
