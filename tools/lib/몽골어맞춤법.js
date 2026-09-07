@@ -107,7 +107,14 @@ async function 부르기(엔드포인트, payload) {
       signal: ctrl.signal,
     });
     const body = await res.text();
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      /* 🔑 시간당 몫이 차면 400 + 「Reached hourly usage limit」 을 준다(09-07 실측).
+       *   이걸 그냥 「HTTP 400」 으로 뭉개면 «형식이 바뀌었나»를 의심하게 되어 엉뚱한 데를 판다.
+       *   ⚠ 벽에 대고 다시 부르면 벽이 길어진다 — 기다렸다 «한 번만» 부른다. */
+      const 몫 = /hourly usage limit|rate limit|too many requests/i.test(body);
+      throw new Error(몫 ? `시간당 몫 초과 — 한 시간 뒤에 한 번만 다시 부른다 (HTTP ${res.status})`
+                         : `HTTP ${res.status}${body ? ' · ' + body.slice(0, 80).replace(/\s+/g, ' ') : ''}`);
+    }
     // 사이트가 키를 거절하면 «따옴표 낀 문자열»을 준다 — JSON 으로는 읽히므로 따로 잡는다.
     if (body.trim().replace(/^"|"$/g, '') === 'Invalid hash.') throw new Error('키 거절(Invalid hash) — 사이트 셈이 바뀌었나');
     const j = JSON.parse(body);
@@ -134,7 +141,11 @@ async function 맞춤법검사(mn, { 제안받기 = true } = {}) {
      *   원래 참고한 스킬은 지웠는데, 그게 우리 글에선 바로 거짓 양성을 냈다(실측 09-01). */
     낱말 = r.map((w) => String(w));
   } catch (e) {
-    return null; // 🔴 0건이 아니다 — 미측정이다
+    /* 🔴 0건이 아니다 — 미측정이다.
+     * 다만 «왜» 못 쟀는지는 남긴다. 09-07 에 이걸 안 남겨서 네 회차 내내
+     * 「형식이 바뀌었나」를 의심하며 엉뚱한 데를 봤다 — 실제로는 시간당 몫이 찬 것이었다. */
+    맞춤법검사.마지막사유 = e && e.message ? e.message : String(e);
+    return null;
   }
   const 허용 = 낱말.filter((w) => 우리것인가(w) || 서수부스러기.test(w));
   let 의심 = 낱말.filter((w) => !우리것인가(w) && !서수부스러기.test(w));
