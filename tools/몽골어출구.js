@@ -150,19 +150,15 @@ function 기준선쓰기() {
  *     ⓑ 배열 짝  `['키', '제목', '한국어', '몽골어']` — 엔진_콘텐츠AI.js 의 온보딩
  *   ⇒ 같은 줄에서 «가장 가까운 한국어 조각»을 짝으로 삼는다. 못 찾으면 **지어내지 않고** 따로 센다. */
 function 짝뽑기(줄, 몽골어) {
-  // ⓐ 괄호 짝 — 몽골어 바로 뒤의 (한국어)
+  /* 🔴 **괄호 짝만 신뢰한다** (09-07 실측으로 좁혔다).
+   *   처음에는 「같은 줄의 몽골어 «앞»에 있는 마지막 한국어」도 짝으로 봤는데, 한 줄에 여러 짝이
+   *   있는 배열에서 **한국어 하나가 몽골어 여럿에 붙었다** — 「친구도움」에 `Найздаа тусалсан`(친구를
+   *   도왔다)과 `Төвлөрөл`(집중)이 나란히 붙는 식이다. 그 짝을 검문에 태우면 뜻 대조가 통째로 헛것이 된다.
+   *   ⇒ 못 찾으면 **지어내지 않고 null**. 짝 없는 것은 두 겹(문법·맞춤법)으로 간다. */
   const 뒤 = 줄.slice(줄.indexOf(몽골어) + 몽골어.length);
-  const 괄호 = /^[^(]{0,12}\(([^)]{4,})\)/.exec(뒤);
-  if (괄호 && /[가-힣]/.test(괄호[1])) return 괄호[1].trim();
-  // ⓑ 배열·인자 짝 — 같은 줄의 한국어 조각 중 몽골어 «앞»에 있는 마지막 것
-  const 한국어들 = [];
-  for (const m of 줄.match(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g) || []) {
-    const t = m.slice(1, -1).trim();
-    if (/[가-힣]/.test(t) && t.replace(/[^\p{L}]/gu, '').length >= 4 && !몽골어인가(t)) 한국어들.push({ t, at: 줄.indexOf(m) });
-  }
-  const 몽at = 줄.indexOf(몽골어);
-  const 앞 = 한국어들.filter((x) => x.at < 몽at).pop();
-  return 앞 ? 앞.t : null;
+  const 괄호 = /^[»"'`\s]{0,4}\(([^)]{4,})\)/.exec(뒤);
+  if (괄호 && /[가-힣]/.test(괄호[1]) && !몽골어인가(괄호[1])) return 괄호[1].trim();
+  return null;
 }
 
 /** 밤 일감이 태울 꼴 — 짝을 찾은 것만 낸다(짝 없는 것은 태울 수 없다). */
@@ -190,16 +186,66 @@ function 일감내기({ 조용히 = false } = {}) {
   return 0;
 }
 
+/* ── 태우기 — 밤 일감이 부르는 자리 ──────────────────────────────────────
+ * 🔑 **짝이 있으면 다섯 겹, 없으면 두 겹.** 짝을 억지로 지어내지 않는다.
+ *   09-07 실측: 880개 중 한국어 짝을 «확실히» 뽑을 수 있는 것은 열셋뿐이었다(괄호 짝 꼴).
+ *   나머지를 「못 잰다」로 두면 864개가 영영 아무 겹도 안 지난다. 두 겹이라도 재는 쪽이
+ *   안 재는 쪽보다 낫고, «두 겹만 쟀다»는 사실은 검문이 스스로 종합에 적는다. */
+async function 태우기(인자) {
+  const os = require('os');
+  const { spawnSync } = require('child_process');
+  const 사이ms = Math.max(0, Number((인자[인자.indexOf('--사이') + 1]) || 5) * 1000);
+  const 한도 = Number(인자[인자.indexOf('--한도') + 1]) || 0;
+  const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  const { 대상: 짝있음 } = 일감내기({ 조용히: true });
+  const 조각 = 모으기();
+  const 잰 = 잰것들();
+  const 짝지문 = new Set(짝있음.map((x) => x.지문));
+  const 짝없음 = [...조각].filter(([f]) => !잰.has(f) && !짝지문.has(f)).map(([f, v]) => ({ 지문: f, 몽골어: v.글, 자리: v.자리[0] }));
+
+  let 목록 = [...짝있음.map((x) => ({ ...x, 겹: 5 })), ...짝없음.map((x) => ({ ...x, 겹: 2 }))];
+  if (한도) 목록 = 목록.slice(0, 한도);
+  console.log(`■ 몽골어 대청소 — ${목록.length}개 (다섯 겹 ${짝있음.length} · 두 겹 ${짝없음.length}) · 사이 ${사이ms / 1000}초`);
+
+  const 임시 = path.join(os.tmpdir(), `출구태우기_${process.pid}.txt`);
+  let 통과 = 0; let 검수 = 0; let 불가 = 0; let 연속실패 = 0;
+  for (let i = 0; i < 목록.length; i++) {
+    const x = 목록[i];
+    if (i > 0 && 사이ms) await 잠깐(사이ms);
+    let r;
+    if (x.겹 === 5) {
+      fs.writeFileSync(임시, `${x.한국어}\n---\n${x.몽골어}\n`, 'utf8');
+      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--파일', 임시], { cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300000 });
+    } else {
+      r = spawnSync(process.execPath, [path.join(__dirname, '몽골어대조.js'), '--원문없음', x.몽골어], { cwd: 루트, encoding: 'utf8', windowsHide: true, timeout: 300000 });
+    }
+    const 글 = `${r.stdout || ''}${r.stderr || ''}`;
+    const 반쪽 = /🟡 반쪽/.test(글);
+    if (r.status === 0 || 반쪽) 통과 += 1; else if (r.status === 2) 검수 += 1; else 불가 += 1;
+    연속실패 = (r.status === 0 || r.status === 2 || 반쪽) ? 0 : 연속실패 + 1;
+    if ((i + 1) % 25 === 0 || i === 목록.length - 1) console.log(`  … ${i + 1}/${목록.length} (깨끗 ${통과} · 검수 ${검수} · 불가 ${불가})`);
+    if (연속실패 >= 3) { console.error(`\n🔴 셋이 잇달아 막혔다 — 남은 ${목록.length - i - 1}개는 안 던진다.`); break; }
+  }
+  try { fs.unlinkSync(임시); } catch { /* 지워지면 좋고 */ }
+  console.log(`\n■ 셈 — 깨끗 ${통과} + 사람 눈 ${검수} + 확인 불가 ${불가}`);
+  console.log('  🔑 다음에 기준선을 다시 쓴다: node tools/몽골어출구.js --기준선쓰기');
+  return 불가 ? 2 : 0;
+}
+
 if (require.main === module) {
   const 인자 = process.argv.slice(2);
-  try {
-    if (인자.includes('--기준선쓰기')) process.exit(기준선쓰기());
-    else if (인자.includes('--일감')) process.exit(일감내기());
-    else { 세기({ 목록: 인자.includes('--목록') }); process.exit(0); }
-  } catch (e) {
-    console.error('🔴 ' + (e && e.message));
-    process.exit(1);
-  }
+  (async () => {
+    try {
+      if (인자.includes('--기준선쓰기')) process.exit(기준선쓰기());
+      else if (인자.includes('--태우기')) process.exit(await 태우기(인자));
+      else if (인자.includes('--일감')) process.exit(일감내기());
+      else { 세기({ 목록: 인자.includes('--목록') }); process.exit(0); }
+    } catch (e) {
+      console.error('🔴 ' + (e && e.message));
+      process.exit(1);
+    }
+  })();
 }
 
 module.exports = { 모으기, 잰것들, 기준선읽기, 몽골어인가, 조각뽑기, 지문, 기준선경로 };
