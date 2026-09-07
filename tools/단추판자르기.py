@@ -129,7 +129,9 @@ def main():
         장.paste(바탕.convert('RGB'), (x + 6, y + 6)); d.text((x + 6, y + 칸), f'{i + 1:02d}', fill=(215, 205, 190))
     낼곳 = a.한눈에 or os.path.join(os.path.expanduser('~'), 'OneDrive', 'Desktop', 'SYNK 자산', '밤굽기_0907')
     os.makedirs(낼곳, exist_ok=True)
-    경로 = os.path.join(낼곳, '한눈에_단추_한장에서_열둘.png')
+    # 한눈에 이름은 «판 이름»을 따른다 — 고정 이름이면 다음 판이 앞 판의 한눈에를 덮어쓴다(여섯 판이 열둘 판을 덮었다).
+    판이름 = os.path.splitext(os.path.basename(a.판))[0]
+    경로 = os.path.join(낼곳, f'한눈에_{판이름}_갈라낸것.png')
     장.save(경로)
     print('✅ 한눈에:', 경로, '' if a.안냄 else '· avif 열둘을 덮어썼다 — 다음: python tools/룸자산화.py')
 
