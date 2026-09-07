@@ -277,13 +277,48 @@ function 열에값있나_(sh, col) {
   return false;
 }
 
-function 시트칸정본맞추기_(ss) {
-  const 결과 = { 맞춘표: [], 민열: [], 건너뛴표: [], 더한칸: 0 };
+/* [2026-09-07] 남의 열을 «옮기는» 것만 스위치 뒤에 둔다 — 유호 확정 09-07.
+ *   늘리기(빈 자리에 정본 이름을 채우는 것)는 값을 한 칸도 안 건드리므로 늘 돈다.
+ *   그런데 «남의 이름이 선 자리»를 뒤로 미는 것은 그 열의 값이 통째로 자리를 옮기는 일이라
+ *   **소급 불가**다. 실물이 하나 걸려 있다: hw_feedback 12열 `🔒 Row ID`(죽은 Glide 잔재 ·
+ *   값 1행). 그것을 언제 «어떤 설계로» 옮길지는 유호님이 1기 첫 주(11월) 전에 정하신다
+ *   (트랙 §0-소급 [유호] 줄). 그날까지 이 자는 재기만 하고 손대지 않는다.
+ * 🔑 속성을 못 읽으면 **안 민다** — 틀릴 때 방향이 「안 건드림」이어야 한다. */
+function 열밀기켜졌나_() {
+  try {
+    return String(PropertiesService.getScriptProperties().getProperty('SHEET_COL_PUSH') || '').trim() === 'on';
+  } catch (e) { return false; }
+}
+
+function 시트칸정본맞추기_(ss, 옵션) {
+  const 밀기허용 = (옵션 && 옵션.밀기 != null) ? !!옵션.밀기 : 열밀기켜졌나_();
+  const 결과 = { 맞춘표: [], 민열: [], 건너뛴표: [], 보류표: [], 더한칸: 0, 밀기: 밀기허용 };
   sheetSkeleton_().forEach(function (k) {
     const 이름 = k[0], 정본칸 = k[1];
     if (!정본칸 || !정본칸.length) return;
     const sh = ss.getSheetByName(이름);
     if (!sh) return;                                   // 없는 탭은 ensureSheet 몫이다
+
+    /* ① 먼저 «읽기만» 해서 판정한다 — 아직 한 칸도 안 건드린 채다.
+     *   밀기가 꺼져 있는데 폭부터 늘려 두면, 그 표는 「폭은 늘었는데 이름은 빈」 어중간한 꼴로 남는다.
+     *   그래서 만지기 «전»에 남의 열이 있는지부터 본다. */
+    const 볼폭0 = Math.min(sh.getMaxColumns(), 정본칸.length);
+    if (볼폭0 < 1) return;
+    const 지금0 = sh.getRange(1, 1, 1, 볼폭0).getValues()[0]
+      .map(function (v) { return String(v == null ? '' : v).trim(); });
+    const 정본이름0 = {};
+    정본칸.forEach(function (h) { 정본이름0[h] = true; });
+    const 남의열 = [];
+    for (let q = 0; q < 볼폭0; q++) {
+      const nm0 = 지금0[q];
+      if (!nm0 || nm0 === 정본칸[q] || 정본이름0[nm0]) continue;   // 빈칸·제자리·순서섞임은 아래 본 갈래가 다룬다
+      남의열.push((q + 1) + '열 「' + nm0 + '」');
+    }
+    if (남의열.length && !밀기허용) {
+      결과.보류표.push(이름 + ': ' + 남의열.join(' · ') + ' — 옮기는 것은 소급 불가라 스크립트 속성 SHEET_COL_PUSH=on 뒤에 있다');
+      return;                                          // 🔴 이 표는 한 칸도 안 건드린다
+    }
+
     // 🔑 정본 폭까지 «먼저» 늘린다 — 안 늘리면 마지막 자리의 남의 열은 「맨 뒤로」가 제자리라
     //   한 칸도 안 움직이고, 그 뒤 헤더보정_ 가 그 이름을 덮어쓴다(회귀가 이 자리를 잡았다).
     if (sh.getMaxColumns() < 정본칸.length) {
@@ -329,6 +364,32 @@ function 시트칸정본맞추기_(ss) {
     결과.더한칸 += Math.max(0, sh.getMaxColumns() - 전폭);
   });
   return 결과;
+}
+
+/* [2026-09-07] 🔴 «돌았나»를 남긴다 — 09-07 에 드러난 진짜 구멍이 이 자리다.
+ *
+ * ■ 무엇이 뚫려 있었나
+ *   자(`시트칸정본맞추기_`)는 v9.309(09-03)부터 아침 배치 첫 줄에 걸려 있었다. 그런데 결과를
+ *   `safeRun` 이 통째로 버려서, **「지난 나흘 동안 한 번이라도 돌았나」를 물어볼 자리가 0**이었다.
+ *   그 사이 라이브 `hw_feedback` 은 12칸에 멈춰 있었는데(09-07 14:03 실측) 아무도 몰랐고,
+ *   「안 돌았나 · 돌았는데 막혔나 · 돌아서 고쳤나」 셋을 가를 근거가 없었다.
+ *   장치를 세워 두고 그 장치가 도는지 안 보는 것이 [[zero-is-a-success-face-taxonomy]] 의 그 얼굴이다.
+ *
+ * ■ 왜 app_state 한 줄인가
+ *   새 탭도 새 통로도 안 판다. `app_state` 는 이미 서 있고, 드라이브로 시트 사진을 뜰 때 **값까지
+ *   실려 오므로** 노트북에서 그대로 읽힌다(사진뜨기 통로 = `docs/_ops/소급불가_울트라/`).
+ *   기록이 실패해도 배치는 죽지 않는다 — 기록은 곁이지 일이 아니다. */
+function 시트칸맞추기기록_(ss, r) {
+  try {
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    setState(st, '시트칸맞추기_마지막', JSON.stringify({
+      때: new Date().toISOString(),
+      밀기: !!r.밀기,                                   // 스위치가 켜져 있었나(꺼짐이 기본)
+      맞춘표: r.맞춘표.length, 더한칸: r.더한칸, 민열: r.민열.length,
+      보류표: r.보류표 || [],                            // 🔴 사람이 볼 자리 — 소급 불가라 손 안 댄 표
+      건너뛴표: r.건너뛴표,                              // 🔴 사람이 볼 자리 — 순서 섞임·이름 없는 데이터 열
+    }));
+  } catch (e) { Logger.log('시트칸맞추기 기록 실패: ' + e); }
 }
 
 /** [v9.241] 수집 장부 탭 이름 — 골격의 세 번째 칸에서 **도출**한다(손 목록 금지 · 회귀가 대조한다). */
@@ -1601,7 +1662,11 @@ function morningJobs() {   // 매일 07시
   rehearsalForceOff_(); // [v9.120] 리허설이 켜진 채 배치가 오면 그날 알림이 통째로 죽는다 — TTL과 별개의 두 번째 안전장치
   // 🔴 값을 쓰는 배치들보다 «먼저» 칸을 세운다 — 칸이 없으면 그날 값이 안 적히고, 그 줄은 영영 빈 채다.
   //    ensureSheet 는 «없는 탭»만 만들므로 골격에 칸을 더해도 라이브가 안 따라온다(09-03 실측 5표).
-  safeRun('시트칸맞추기', function () { 시트칸정본맞추기_(SpreadsheetApp.getActiveSpreadsheet()); });
+  // 🔴 결과를 «남긴다» — 안 남기면 「돌았나」를 물어볼 자리가 없다(09-07 실측: 나흘간 아무도 몰랐다).
+  safeRun('시트칸맞추기', function () {
+    const ssCol = SpreadsheetApp.getActiveSpreadsheet();
+    시트칸맞추기기록_(ssCol, 시트칸정본맞추기_(ssCol));
+  });
   safeRun('학생ID발급', function () { 학생ID_발급_(); }); // [v9.164] 반배정·앱편입인데 ID가 빈 행을 채운다. **syncProfiles보다 앞** — 뒤에 두면 그날 아침 앱에 못 들어가고 하루 밀린다. onEdit 트리거가 죽어도 여기서 잡히는 두 번째 발동층
   safeRun('syncProfiles', syncProfiles);       // [v7.0] 동기화 먼저 — 신규 학생 생일을 당일부터 인식
   safeRun('birthdayCheck', birthdayCheck);

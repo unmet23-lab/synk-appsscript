@@ -32,13 +32,35 @@ function 떼어오기(소스, 머리) {
 const 보정소스 = 떼어오기(수집, 'function 헤더보정_(');
 const 값있나소스 = 떼어오기(셋업, 'function 열에값있나_(');
 const 맞추기소스 = 떼어오기(셋업, 'function 시트칸정본맞추기_(');
+const 스위치소스 = 떼어오기(셋업, 'function 열밀기켜졌나_(');
+const 기록소스 = 떼어오기(셋업, 'function 시트칸맞추기기록_(');
 
-/** 골격을 주입해 함수를 만든다. */
+/** 골격을 주입해 함수를 만든다.
+ *  🔑 `PropertiesService` 는 **일부러 안 준다** — 여기서 스위치는 못 읽히고, 그때 기본값이
+ *     「안 민다」여야 한다. 그 기본값 자체가 이 시험이 지키는 것이다(유호 확정 09-07). */
 function 만들기(골격) {
   return new Function(
     'sheetSkeleton_',
-    보정소스 + '\n' + 값있나소스 + '\n' + 맞추기소스 + '\nreturn 시트칸정본맞추기_;'
+    보정소스 + '\n' + 값있나소스 + '\n' + 스위치소스 + '\n' + 맞추기소스 + '\nreturn 시트칸정본맞추기_;'
   )(() => 골격);
+}
+
+/** 기록 함수를 만든다 — `ensureSheet`·`setState`·`Logger` 를 모사로 준다. */
+function 기록만들기(담을곳) {
+  const 칸들 = {};
+  const st = {
+    _칸: 칸들,
+    getLastRow: () => Object.keys(칸들).length,
+    getRange: () => ({ setValue() {}, setValues() {} }),
+  };
+  return new Function(
+    'ensureSheet', 'setState', 'Logger',
+    기록소스 + '\nreturn 시트칸맞추기기록_;'
+  )(
+    () => st,
+    (_st, key, val) => { 담을곳[key] = val; },
+    { log() {} }
+  );
 }
 
 /** 구글 시트 한 장 모사 — 1행(칸 이름)과 그 아래 데이터 행. */
@@ -103,14 +125,45 @@ test('빈 칸을 정본대로 채운다 — voice_log 무늬(18칸 정본 ↔ �
   assert.strictEqual(r.민열.length, 0, '덮어쓸 남의 열이 없으니 밀 것도 없다');
 });
 
-test('남의 열은 덮지 않고 맨 뒤로 민다 — hw_feedback 무늬(12열 🔒 Row ID)', () => {
-  const 정본 = ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션',
-    '상태', '학생확인', '포인트지급', '숙제ID', '오류태그', '재작성원본', '다시쓰기URL',
-    '숙제문항', '급수', 'model', 'prompt_ver', 'schema_ver'];
-  const 라이브 = 정본.slice(0, 11).concat(['🔒 Row ID']);
+/* 🔴 아래 두 시험이 유호 확정 09-07 「기본은 늘리기만 · 옮기는 것은 스위치 뒤에」를 지킨다.
+ *   같은 라이브 무늬(hw_feedback 12열)를 스위치 끈 판과 켠 판으로 두 번 잰다. */
+const HW정본 = ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션',
+  '상태', '학생확인', '포인트지급', '숙제ID', '오류태그', '재작성원본', '다시쓰기URL',
+  '숙제문항', '급수', 'model', 'prompt_ver', 'schema_ver'];
+const HW라이브 = HW정본.slice(0, 11).concat(['🔒 Row ID']);
+
+test('🔴 스위치가 꺼져 있으면 한 칸도 안 건드린다 — 옮기기는 소급 불가다(유호 확정 09-07)', () => {
+  const sh = 가짜시트(HW라이브, [['FBDEMO-01', 'SYNK-001', '', '', '', '', '', '', '노출', '', '', '남의값']]);
+  const 맞추기 = 만들기([['hw_feedback', HW정본]]);
+  const r = 맞추기(가짜문서({ hw_feedback: sh }));   // 옵션을 안 준다 = 라이브 기본 갈래
+
+  assert.deepStrictEqual(sh.칸(), HW라이브, '칸이 하나도 안 움직여야 한다 — 폭조차 안 늘린다');
+  assert.deepStrictEqual(sh.행()[0][11], '남의값', '남의 열의 값이 제자리에 있어야 한다');
+  assert.strictEqual(r.맞춘표.length, 0, '이 표는 맞추면 안 된다');
+  assert.strictEqual(r.민열.length, 0, '한 열도 밀면 안 된다');
+  assert.strictEqual(r.보류표.length, 1, '손 안 댄 까닭이 사람에게 보여야 한다');
+  assert.match(r.보류표[0], /12열/, '몇 열이 걸렸는지 말해야 한다');
+  assert.match(r.보류표[0], /SHEET_COL_PUSH/, '켜는 법을 함께 말해야 한다');
+  assert.strictEqual(r.밀기, false, '스위치를 못 읽으면 «안 민다»가 기본이다');
+});
+
+test('빈 칸 채우기는 스위치와 무관하게 늘 돈다 — 값을 한 칸도 안 건드리기 때문이다', () => {
+  const 정본 = ['id', 'student_id', '제출일', '상태'];
+  const sh = 가짜시트(['id', 'student_id'], [['A1', 'SYNK-001']]);
+  const 맞추기 = 만들기([['늘리기만표', 정본]]);
+  const r = 맞추기(가짜문서({ 늘리기만표: sh }));      // 스위치 꺼진 기본 갈래
+
+  assert.deepStrictEqual(sh.칸(), 정본, '남의 열이 없으니 스위치와 상관없이 정본이 서야 한다');
+  assert.strictEqual(r.보류표.length, 0, '보류할 것이 없다');
+  assert.strictEqual(r.맞춘표.length, 1);
+});
+
+test('남의 열은 덮지 않고 맨 뒤로 민다 — hw_feedback 무늬(12열 🔒 Row ID · 스위치 켠 판)', () => {
+  const 정본 = HW정본;
+  const 라이브 = HW라이브;
   const sh = 가짜시트(라이브);
   const 맞추기 = 만들기([['hw_feedback', 정본]]);
-  const r = 맞추기(가짜문서({ hw_feedback: sh }));
+  const r = 맞추기(가짜문서({ hw_feedback: sh }), { 밀기: true });
 
   const 결과 = sh.칸();
   assert.deepStrictEqual(결과.slice(0, 20), 정본, '정본 20칸이 제자리에 서야 한다');
@@ -174,4 +227,51 @@ test('아침 배치가 «값을 쓰는 일들보다 먼저» 칸을 세운다', 
     const j = 차례.indexOf(이름);
     if (j >= 0) assert.ok(칸 < j, `칸 세우기가 ${이름} 보다 앞이어야 한다 — 칸이 없으면 그날 값이 안 적힌다`);
   }
+});
+
+/* ══════════ 「돌았나」를 물어볼 자리 — 2026-09-07 ══════════
+ * 자가 아침마다 걸려 있어도 결과를 안 남기면 「나흘 동안 한 번이라도 돌았나」를 물어볼 데가 없다.
+ * 실제로 그랬다: v9.309(09-03)부터 걸려 있었는데 라이브 hw_feedback 은 09-07 까지 12칸이었고,
+ * 「안 돌았나 · 돌았는데 막혔나」를 가를 근거가 0이었다. */
+
+test('🔴 기록이 «손 안 댄 표»를 담는다 — 안 담으면 아무도 모른다', () => {
+  const 담김 = {};
+  const 기록 = 기록만들기(담김);
+  기록({}, { 맞춘표: ['a(4칸)'], 민열: [], 건너뛴표: [], 보류표: ['hw_feedback: 12열 「🔒 Row ID」'], 더한칸: 2, 밀기: false });
+
+  const 적힌것 = 담김['시트칸맞추기_마지막'];
+  assert.ok(적힌것, 'app_state 에 한 줄이 적혀야 한다');
+  const j = JSON.parse(적힌것);
+  assert.ok(j.때, '«언제» 돌았나가 없으면 「돌았나」를 못 잰다');
+  assert.strictEqual(j.밀기, false, '스위치가 켜져 있었나도 함께 남아야 한다');
+  assert.deepStrictEqual(j.보류표, ['hw_feedback: 12열 「🔒 Row ID」'], '손 안 댄 표가 그대로 실려야 한다');
+  assert.strictEqual(j.맞춘표, 1);
+  assert.strictEqual(j.더한칸, 2);
+});
+
+test('기록이 실패해도 아침 배치는 안 죽는다 — 기록은 곁이지 일이 아니다', () => {
+  const 터지는기록 = new Function(
+    'ensureSheet', 'setState', 'Logger',
+    기록소스 + '\nreturn 시트칸맞추기기록_;'
+  )(
+    () => { throw new Error('app_state 를 못 열었다'); },
+    () => {},
+    { log() {} }
+  );
+  assert.doesNotThrow(() => 터지는기록({}, { 맞춘표: [], 민열: [], 건너뛴표: [], 보류표: [], 더한칸: 0, 밀기: false }));
+});
+
+test('아침 배치가 결과를 «남긴다» — 안 남기면 도는지 아무도 모른다', () => {
+  const i = 셋업.indexOf('function morningJobs()');
+  const 몸 = 셋업.slice(i, 셋업.indexOf('\n}', i));
+  const 칸블록 = 몸.slice(몸.indexOf("safeRun('시트칸맞추기'"), 몸.indexOf("safeRun('학생ID발급'"));
+  assert.ok(칸블록.includes('시트칸맞추기기록_('), '아침 배치가 결과를 버리면 09-07 구멍이 그대로다');
+  assert.ok(칸블록.includes('시트칸정본맞추기_('), '자를 부르는 줄이 그대로 있어야 한다');
+});
+
+test('스위치 이름이 코드와 안내문에서 같다 — 갈리면 켜는 법이 틀려진다', () => {
+  const 스위치 = 떼어오기(셋업, 'function 열밀기켜졌나_(');
+  assert.ok(스위치.includes("'SHEET_COL_PUSH'"), '스위치를 읽는 이름');
+  const 맞추기 = 떼어오기(셋업, 'function 시트칸정본맞추기_(');
+  assert.ok(맞추기.includes('SHEET_COL_PUSH'), '보류 안내가 같은 이름을 말해야 한다');
 });
