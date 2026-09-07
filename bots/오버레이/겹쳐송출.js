@@ -25,20 +25,27 @@
  * ■ 쓰기
  *   node 겹쳐송출.js                      팩을 읽어 유튜브로 (열쇠는 --열쇠 파일에서)
  *   node 겹쳐송출.js --시늉 /tmp/맛보기.mp4  유튜브로 안 보내고 파일로 20초만 뽑는다(시험)
- *   node 겹쳐송출.js --층 마스코트,전광판   마스코트를 팩에서 떼어낸 뒤에 쓸 차림
+ *   node 겹쳐송출.js --층 마스코트,전광판   마스코트를 팩에서 떼어낸 뒤에 쓸 차림 — 🆕 09-07 부터 기본값(무대만 팩)
+ *   node 겹쳐송출.js --층 전광판            옛 팩(마스코트 박힘)으로 되돌릴 때
+ *   --마스코트크기 0.32 --마스코트자리 중하 --마스코트바닥 2.5   층의 인형 크기(화면 폭 몫)·자리·발밑 여백(vh)
  */
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, execFileSync } = require('child_process');
 
 const 인자 = process.argv.slice(2);
 const 값 = (이름, 기본) => { const i = 인자.indexOf(이름); return i > -1 && 인자[i + 1] ? 인자[i + 1] : 기본; };
 const 있나 = (이름) => 인자.includes(이름);
 
-const 지면뿌리 = 값('--지면뿌리', path.resolve(__dirname, '..', '..'));
+/* 🔴 path.resolve 로 «정규화»한다(09-07 실측 · 윈도) — 슬래시로 준 뿌리와 path.join 이 만든 역슬래시 경로가 startsWith 에서
+   안 맞아 모든 파일이 403 「밖」으로 떨어졌다(층이 통째로 빈 채 방송에 나갔다). 리눅스에선 같은 값이라 해가 없다. */
+const 지면뿌리 = path.resolve(값('--지면뿌리', path.resolve(__dirname, '..', '..')));
 const 팩폴더 = 값('--팩', '/opt/synk-radio/팩');
-const 층 = 값('--층', '전광판');
+const 층 = 값('--층', '마스코트,전광판');   // 09-07 · 무대만 팩으로 가면서 기본값이 뒤집혔다(옛 팩이면 --층 전광판)
+const 마스코트크기 = 값('--마스코트크기', '0.32');   // 옛 팩의 인형 폭 410/1280 (라디오배경굽기.js 지면())
+const 마스코트자리 = 값('--마스코트자리', '중하');
+const 마스코트바닥 = 값('--마스코트바닥', '2.5');   // vh · 앉는 선 0.885 에 발이 닿는 값(몽글 액자 기준)
 const 프레임 = Number(값('--프레임', '20'));
 const 뜨기 = Number(값('--뜨기', '10'));
 const 지면포트 = Number(값('--지면포트', '8765'));
@@ -249,6 +256,48 @@ async function 채팅감시(사건넣기) {
   }
 }
 
+/* ── ④-3 결 신호 — «지금 어느 장르 곡인가»를 층에 알린다 (09-07 · 무대만 팩 뒤 필요해진 자리)
+   무대만 팩으로 가면서 인형이 층으로 나왔다. 층은 결(곡 장르)을 받아야 누가 서고 무엇을 입나를 정한다
+   (마스코트.html 장르차림). ffmpeg 의 concat 은 곡이 바뀌는 순간을 밖으로 안 알려 주므로, 재생목록의
+   차례와 각 곡의 길이(ffprobe)로 «시계»를 만들어 경계마다 결 사건을 던진다. -re 가 실시간을 지키니 어긋남은 초 단위다.
+   🔑 결 이름은 마스코트.html 장르차림의 낱말이다 — 팩 이름의 영어 키(house·citypop·calm)를 그 낱말로 옮긴다. */
+const 결이름 = { house: '전자밤도시', citypop: '시티팝노을휴양지', calm: '차분달빛호수',
+  dream_sky: '드림하늘', dream_water: '드림물결', dream_field: '드림들판' };
+function 재생차례() {
+  const 줄들 = fs.readFileSync(path.join(팩폴더, 'playlist.txt'), 'utf8').split(/\r?\n/);
+  const 파일들 = 줄들.map((l) => (l.match(/^file\s+'(.+)'\s*$/) || [])[1]).filter(Boolean);
+  let 표 = {};
+  try { for (const t of JSON.parse(fs.readFileSync(path.join(팩폴더, '재생목록.json'), 'utf8')).트랙 || []) 표[t.파일] = t.결; } catch { /* 없으면 이름에서 읽는다 */ }
+  return 파일들.map((f) => {
+    const 키 = 표[f] || (f.match(/-([a-z_]+)-air\.ts$/) || [])[1] || '';
+    let 초 = 0;
+    try { 초 = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path.join(팩폴더, f)], { encoding: 'utf8' }).trim()) || 0; } catch { /* 길이를 못 재면 0 — 아래서 건너뛴다 */ }
+    return { 파일: f, 결: 결이름[키] || null, 초 };
+  }).filter((t) => t.초 > 0);
+}
+async function 결신호(사건넣기) {
+  const 차례 = 재생차례();
+  const 한바퀴 = 차례.reduce((a, t) => a + t.초, 0);
+  if (!차례.length || !한바퀴) { 말('결 신호를 못 켠다 — 재생목록의 길이를 못 쟀다'); return; }
+  말(`결 신호 켬 — ${차례.length}곡 · 한 바퀴 ${Math.round(한바퀴)}초 · ` + 차례.map((t) => `${t.결 || '?'}`).join(','));
+  const 시작t = Date.now();
+  let 마지막 = -1;
+  const 한번 = async () => {
+    let 남은 = ((Date.now() - 시작t) / 1000) % 한바퀴;
+    let i = 0;
+    while (i < 차례.length - 1 && 남은 >= 차례[i].초) { 남은 -= 차례[i].초; i++; }
+    if (i === 마지막) return;
+    마지막 = i;
+    const t = 차례[i];
+    if (!t.결) { 말(`곡 ${i + 1} ${t.파일} — 결을 몰라 층에 안 알린다`); return; }
+    await 사건넣기({ 종류: '결', 결: t.결 });
+    말(`곡 ${i + 1}/${차례.length} ${t.파일} → 결 ${t.결}`);
+  };
+  await 잠깐(2500);            // 층이 컷을 다 읽을 틈(첫 결 신호가 교대 연출을 부른다)
+  await 한번();
+  setInterval(() => { 한번().catch((e) => 말('결 신호 실패:', e.message)); }, 1000);
+}
+
 /* ── ④ 사건 문 — 봇이 여기로 던지면 층이 받는다 ──────────────────────────────── */
 function 사건문세우기(사건넣기) {
   http.createServer((req, res) => {
@@ -269,7 +318,8 @@ function 사건문세우기(사건넣기) {
 /* ── ⑤ 이어 붙이기 ─────────────────────────────────────────────────────────── */
 (async () => {
   await 지면서버세우기();
-  const 주소 = `http://127.0.0.1:${지면포트}/bots/오버레이/방송층.html?층=${encodeURIComponent(층)}`;
+  const 주소 = `http://127.0.0.1:${지면포트}/bots/오버레이/방송층.html?층=${encodeURIComponent(층)}`
+    + `&크기=${encodeURIComponent(마스코트크기)}&자리=${encodeURIComponent(마스코트자리)}&바닥=${encodeURIComponent(마스코트바닥)}`;
   말('층 지면:', 주소);
   const 크롬프로 = 크롬띄우기(주소);
   const { 부르기 } = await 붙기(await 문찾기());
@@ -290,6 +340,7 @@ function 사건문세우기(사건넣기) {
   });
   사건문세우기(사건넣기);
   채팅감시(사건넣기).catch((e) => 말('채팅 감시가 죽었다:', e.message));
+  결신호(사건넣기).catch((e) => 말('결 신호가 죽었다:', e.message));
 
   let 뜨는중 = false, 막힘 = false, 센것 = 0, 다시쓴것 = 0, 실패 = 0, 마지막장 = null;
   ff.stdin.on('drain', () => { 막힘 = false; });

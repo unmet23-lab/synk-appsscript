@@ -200,7 +200,9 @@ function 무대판(키) {
  *  @param 마스코트만 true 면 «무대 없이 마스코트 층만» 그린다 — 움직이는 무대 영상 위에 얹을 층이다.
  *    끄는 것 = 무대 사진 · 양모천 폴백 · 공기(비네팅) · 바탕색. 남기는 것 = 접지 그림자 · 주인공 · 각인.
  *    🔑 접지와 후광을 남기는 까닭 = 그 둘이 「스티커」와 「앉은 것」을 가른다(이 파일 머리말의 규율). */
-function 지면(키, 마스코트만 = false) {
+/** @param 덮개만 true 면 «무대 위에 얹을 덮개»만 그린다 — 공기(비네팅)·각인막·각인. 무대 영상으로 팩을 만들 때
+ *    Veo 영상엔 이 둘이 없어서(09-07 실측 · 옛 팩엔 있었다) 팩 굽기가 이 그림을 영상 위에 얹는다. */
+function 지면(키, 마스코트만 = false, 덮개만 = false) {
   const a = 장르들[키];
   const 액 = 액자[a.가이드] || 액자.몽글;
   /* 🔴 크기 — 첫 판 600px(화면 47%)은 «무대가 없을 때»의 값이다. 무대가 생기자 인형이 풍경을 가렸다.
@@ -213,8 +215,9 @@ function 지면(키, 마스코트만 = false) {
   return `<!doctype html><meta charset="utf-8">
 <style>
   @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR');unicode-range:U+300C-300D;}
-  html,body{margin:0;padding:0;background:${마스코트만 ? 'transparent' : a.바탕};}
+  html,body{margin:0;padding:0;background:${(마스코트만 || 덮개만) ? 'transparent' : a.바탕};}
   ${마스코트만 ? '.무대,.천,.결{display:none !important;} .판{background:transparent !important;}' : ''}
+  ${덮개만 ? '.무대,.천,.접지,.얼굴{display:none !important;} .판{background:transparent !important;}' : ''}
   .판{width:${W}px;height:${H}px;position:relative;overflow:hidden;background:${a.바탕};
     font-family:'Inter Tight','SYNK Bracket',system-ui,'Malgun Gothic',sans-serif;}
   /* ① 무대 — 106% 로 키워 앉힌다. 생성 모델이 우하단에 찍는 표식을 «잘라» 떨구는 자리다
@@ -375,7 +378,7 @@ function main() {
   const argv = process.argv.slice(2);
   const i = argv.indexOf('--장르');
   const 하나 = i >= 0 ? argv[i + 1] : null;
-  const 아는것 = ['--장르', '--썸네일', '--마스코트만'];
+  const 아는것 = ['--장르', '--썸네일', '--마스코트만', '--무대덮개'];
   const 모름 = argv.filter((x) => x.startsWith('--') && !아는것.includes(x));
   if (모름.length) { console.error(`[라디오배경굽기] 모르는 플래그 ${모름.join(' ')} — 아는 것 = ${아는것.join(' · ')}`); process.exit(1); }
   if (하나 && !장르들[하나]) throw new Error(`모르는 장르: ${하나} (있는 것: ${Object.keys(장르들).join(' · ')})`);
@@ -397,8 +400,9 @@ function main() {
   const 뺀것 = Object.keys(장르들).filter((k) => 장르들[k].대기);
   for (const k of 목록) {
     const 마스코트만 = argv.includes('--마스코트만');
-    const 방2 = 마스코트만 ? path.join(ROOT, 'docs/라디오/마스코트층') : 낼곳;
-    const r = 굽기(k, 지면(k, 마스코트만), 방2, 마스코트만);
+    const 덮개만 = argv.includes('--무대덮개');   // 09-07 · 무대 영상 팩용 덮개(공기+각인)
+    const 방2 = 마스코트만 ? path.join(ROOT, 'docs/라디오/마스코트층') : 덮개만 ? path.join(ROOT, 'docs/라디오/무대덮개') : 낼곳;
+    const r = 굽기(k, 지면(k, 마스코트만, 덮개만), 방2, 마스코트만 || 덮개만);
     /* 「기본」은 무대 사진이 «없는 것이 옳다» — 빠진 게 아니므로 경고를 안 낸다.
      *   안 그러면 매번 뜨는 ⚠ 가 참말과 거짓말을 섞어, 진짜 빠진 무대를 못 보게 만든다. */
     const 무대말 = 무대판(k) ? '사진'
