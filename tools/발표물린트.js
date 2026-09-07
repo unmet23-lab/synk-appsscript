@@ -127,16 +127,16 @@ function lint(file) {
   // 기간 약속 금지 — 승급은 도달제다(정본 ■7)
   if (/(\d+)\s*(개월|주|년)\s*이?면\s*\d*\s*급/.test(text)) bad.push('기간 약속(「N개월이면 N급」)');
 
-  // 비노출 잠금 — 고객 대면물에서 SYNK ORIGINALS 는 언급하지 않는다(정본 ■8 · 계보 §2-2)
-  const hidden = ['ORIGINALS'].filter((w) => text.includes(w));
+  // 비노출 잠금 — 고객 대면물에서 SYNK PULSE 는 언급하지 않는다(정본 ■8 · 계보 §2-2)
+  const hidden = ['PULSE'].filter((w) => text.includes(w));
   if (hidden.length) bad.push(`비노출 잠금 위반: ${hidden.join(', ')}`);
 
-  // 옛 이름 — SYNK STUDIO 는 2026-09-07 에 SYNK ORIGINALS 로 갈아 끼웠다(계보 v1.5 부록 6).
+  // 옛 이름 — SYNK STUDIO 는 2026-09-07 에 SYNK PULSE 로 갈아 끼웠다(계보 v1.5 부록 6).
   //   ⚠ 비노출과 **갈라서** 잡는다. 비노출은 「고객 대면물에만 안 쓴다」(투자자 덱에는 쓴다)이고
   //   옛 이름은 「어디에도 안 쓴다」라 성격이 다르다. 한 목록에 넣으면 사유가 「비노출」로 나와
   //   투자자 덱에서 옛 이름이 조용히 살아남는다 — 08-16 에 철회 목록을 비노출 목록과 가른
   //   것과 똑같은 까닭이다(구 덱을 재활용하면 옛 이름이 되살아난다).
-  if (text.includes('STUDIO')) bad.push('옛 이름: SYNK STUDIO — 2026-09-07 에 SYNK ORIGINALS 로 갈았다(계보 v1.5 부록 6)');
+  if (text.includes('STUDIO')) bad.push('옛 이름: SYNK STUDIO — 2026-09-07 에 SYNK PULSE 로 갈았다(계보 v1.5 부록 6)');
 
   // 철회된 제품 라인 — 의류·굿즈·식품(구 Wear·Pantry·우산명)은 2026-08-16 계보에서
   // 제거됐다(조직계보 v1.4 부록 5 · 유호님 확정). 비노출이 아니라 철회라 예외 자리가
