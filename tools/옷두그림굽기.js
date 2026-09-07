@@ -110,7 +110,15 @@ function 지시문(마스코트, 옷들) {
 
   const 이름들 = String(인자.것).split(',').map((s) => s.trim()).filter(Boolean);
   const 옷들 = [];
-  const 참조 = [path.join(저장소, 마스코트.참조)];
+  /* 🔑 `--표정 윙크` — 몸 참조를 본체 대신 «그 표정 컷»으로 준다 (09-07 · 까몽 ⓐ 길 = 표정마다 한 장씩 굽는다).
+     정본 표정 컷은 docs/캐릭터/정본_4K/<마스코트>_<표정>.png 이다. 없으면 굽기 «전»에 선다. */
+  const 표정 = String(인자.표정 || '본체').trim();
+  let 몸참조 = path.join(저장소, 마스코트.참조);
+  if (표정 !== '본체') {
+    몸참조 = path.join(저장소, 'docs', '캐릭터', '정본_4K', `${마스코트이름}_${표정}.png`);
+    if (!fs.existsSync(몸참조)) throw new Error(`표정 컷이 없다 — ${몸참조}`);
+  }
+  const 참조 = [몸참조];
   for (const n of 이름들) {
     const v = 벌.find((x) => x.이름 === n);
     if (!v) throw new Error(`목록에 없다 — ${n} (--목록 으로 이름을 본다)`);
@@ -119,14 +127,18 @@ function 지시문(마스코트, 옷들) {
   }
 
   const 크기 = 인자.크기 || '4K';
-  const 꼬리 = 이름들.map((s) => s.replace(/ /g, '')).join('+');
+  const 꼬리 = 이름들.map((s) => s.replace(/ /g, '')).join('+') + (표정 !== '본체' ? `_${표정}` : '');
   const 저장경로 = path.join(낼방, `${마스코트이름}_${꼬리}.png`);
   fs.mkdirSync(낼방, { recursive: true });
 
+  let 지시 = 지시문(마스코트, 옷들);
+  if (표정 !== '본체') {
+    지시 += '\n🔴 REFERENCE 1 shows the doll with one specific facial expression (eyes, eyelids, gaze). Keep that exact expression — do not reset it to a neutral face.';
+  }
   await 배치게이트(1, 크기);
   await 한컷({
-    이름: `두그림 ${마스코트이름} ${이름들.join('+')}`,
-    지시: 지시문(마스코트, 옷들),
+    이름: `두그림 ${마스코트이름} ${이름들.join('+')}${표정 !== '본체' ? ' · ' + 표정 : ''}`,
+    지시,
     참조,
     비율: '1:1',
     크기,
