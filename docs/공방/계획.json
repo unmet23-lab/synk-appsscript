@@ -7429,6 +7429,24 @@
             "지시": "A horizontal band of cream felt with a row of stitches rising and falling like a waveform in coral thread (#F96859), wide landscape shape, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
           }
         ]
+      },
+      {
+        "이름": "절번호 단추 한 장",
+        "쓰는 곳": "문서 지면 전량 — 절 머리의 번호",
+        "상태": "1/1",
+        "_크기": "4K",
+        "_왜": "유호 지적 09-07 「새 판도 제각각이야」. 열둘을 따로 굽는 한 숫자 높이(지름의 45~87%)·테 폭·자리가 안 맞는다 — 지시문의 수치를 모델이 안 듣는다. 한 장에 함께 그리면 같은 손이 된다.",
+        "_결": "한 장(336원)으로 열둘을 굽고 tools/단추판자르기.py 가 AI 누끼로 열둘을 갈라 단추숫자_01~12.avif 로 덮어쓴다. 규격은 «장면»으로 둬 뒤처리가 통째로 안 오리게 한다(자르기는 슬라이서 몫). 쇠 이름은 배선 규격 키와 안 겹친다.",
+        "것들": [
+          {
+            "이름": "절번호 단추 열둘 한 장",
+            "쇠": "단추판_열둘",
+            "파일": "단추판_열둘.avif",
+            "규격": "장면",
+            "상태": "구웠다",
+            "지시": "A neat grid of twelve round felt buttons, four across and three down, evenly spaced with generous empty space between them so that no two buttons touch. All twelve buttons are exactly identical in size and shape: a round two-tier felt button in cream wool, a flat lower disc in oat-coloured wool with a slightly smaller raised cream disc on top, so the lower disc shows as an even ring of the same width on every button. The only difference between the buttons is the numeral: in reading order, left to right and top to bottom, they read 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12. Each numeral is embroidered dead centre on its raised disc in dark ink-brown thread with visible chain-stitch texture, the same size on every button, about two fifths of the button diameter tall. No stitch holes, no other marks. Densely needle-felted wool, hand-made craft quality, matte, visible individual wool fibres and slight surface fuzz. Photographed from directly overhead with no perspective, on a plain flat white background, soft even studio light, no cast shadows. Square 1:1 framing, the grid centred with an even margin. No text other than the twelve numerals, no watermark."
+          }
+        ]
       }
     ]
   },
