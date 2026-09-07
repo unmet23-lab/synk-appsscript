@@ -70,13 +70,16 @@
      ⚠ 디스크 그림은 «가운데를 맞춰 정사각»으로 담아 두었다. 안 그러면 도는 축이 어긋나 흔들린다. */
   #부스 {
     position: absolute; left: 50%; transform: translateX(-50%);
-    width: var(--부스폭, 30vw);
-    bottom: var(--부스바닥, 0vh);
+    /* 🔴 09-08 유호 지적 「dj 부스가 마린을 너무 가렸어」 — 30vw 는 마린 몸의 대부분을 덮었다.
+       부스는 «앞에 놓인 물건»이지 마린을 대신하는 것이 아니다. 폭을 줄이고 아래로 더 내려서
+       마린의 가슴 위가 드러나게 한다(실제 DJ 부스도 허리께에 온다). */
+    width: var(--부스폭, 24vw);
+    bottom: var(--부스바닥, -3.5vh);
     pointer-events: none;
   }
   #부스 img.판 { display: block; width: 100%; height: auto; }
   /* 🔑 디스크 자리는 «눈대중이 아니라 잰 값»이다 — 부스 그림에서 빈 턴테이블 자리(가장 어두운 덩이) 둘의
-     중심을 재니 왼쪽 x27.9% y23.0%, 오른쪽 x78.3% y22.8%, 지름 16%대였다(09-08 실측 · 받침을 걷은 뒤 판).
+     중심을 재니 왼쪽 x30.9% y22.1%, 오른쪽 x78.7% y21.5%, 지름 15~16%였다(09-08 실측 · 받침을 걷은 뒤 판).
      디스크 폭 17%(가로 기준)를 그 중심에 맞추면 left/right/top 이 아래 값으로 떨어진다.
      ⚠ top 은 «부스 높이» 기준이라 가로 17% 를 세로 몫으로 바꿔야 한다(부스 H/W = 0.588). */
   #부스 .디스크 {
@@ -84,8 +87,8 @@
     animation: 돈다 8s linear infinite;
     will-change: transform;
   }
-  #부스 .디스크.왼 { left: 19.4%; top: 8.6%; }
-  #부스 .디스크.오 { right: 13.2%; top: 8.3%; animation-duration: 8.6s; }   /* 둘이 «같이» 돌면 기계처럼 보인다 */
+  #부스 .디스크.왼 { left: 22.4%; top: 7.6%; }
+  #부스 .디스크.오 { right: 12.8%; top: 6.9%; animation-duration: 8.6s; }   /* 둘이 «같이» 돌면 기계처럼 보인다 */
   @keyframes 돈다 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { #부스 .디스크 { animation: none; } }
 

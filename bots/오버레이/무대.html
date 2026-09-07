@@ -75,6 +75,33 @@
     will-change: opacity;
   }
   @keyframes 빛숨 { from { opacity: .26; } to { opacity: .48; } }
+
+  /* 🆕 2026-09-08 «불빛 흔들림» — 유호 지시 「뒤에 배경 불빛이 흔들리게 해줘」.
+     무대 그림에 박힌 창문·가로등·네온이 «물에 비쳐 일렁이는» 결을 낸다.
+     🔑 그림 자체를 못 건드리므로(구운 펠트다) 그 위에 **아주 여린 빛 겹 둘**을 얹어 서로 다른 박자로
+        밝아졌다 여린다. 겹이 둘이라 주기가 겹치지 않고, 그래서 규칙적인 깜빡임으로 안 읽힌다.
+     🔴 색 연산(filter·blend)은 안 쓴다 — 펠트 결을 뭉갠다(마스코트 층과 같은 규격). opacity 만 민다.
+     🔴 «천천히»가 이 방송의 규율이다(설계 v1.5 §8-2). 7.5초·11.3초 주기라 눈에 띄게 깜빡이지 않고
+        보고 있으면 «살아 있다»만 남는다. 유호님 멀미 이력이 있는 자리라 움직임은 밝기뿐이고 자리는 안 바뀐다. */
+  .일렁 {
+    position: absolute; inset: 0; pointer-events: none;
+    mix-blend-mode: normal;
+    will-change: opacity;
+  }
+  #일렁1 {
+    background:
+      radial-gradient(38% 26% at 22% 34%, rgba(255,196,120,.20), rgba(255,196,120,0) 70%),
+      radial-gradient(34% 22% at 74% 30%, rgba(150,210,255,.18), rgba(150,210,255,0) 70%);
+    animation: 일렁A 7.5s ease-in-out infinite alternate;
+  }
+  #일렁2 {
+    background:
+      radial-gradient(44% 30% at 50% 40%, rgba(255,150,190,.16), rgba(255,150,190,0) 72%),
+      radial-gradient(30% 20% at 12% 26%, rgba(255,235,176,.16), rgba(255,235,176,0) 70%);
+    animation: 일렁B 11.3s ease-in-out infinite alternate;
+  }
+  @keyframes 일렁A { from { opacity: .30; } to { opacity: .92; } }
+  @keyframes 일렁B { from { opacity: .85; } to { opacity: .22; } }
   /* ④ 사건에 어리는 빛 — 1.2초 밝아졌다 제자리로 */
   #빛.어린다 { animation: none; opacity: .92; transition: opacity 1.2s ease-out; }
 
@@ -112,7 +139,7 @@
   }
   body.데모 #데모판 { display: block; }
   @media (prefers-reduced-motion: reduce) {
-    .장 img, #빛, #보풀 i { animation: none; }
+    .장 img, #빛, #보풀 i, .일렁 { animation: none; }
   }
 </style>
 </head>
@@ -121,6 +148,8 @@
   <div class="장"><img alt=""></div>
   <div class="장"><img alt=""></div>
 </div>
+<div id="일렁1" class="일렁" aria-hidden="true"></div>
+<div id="일렁2" class="일렁" aria-hidden="true"></div>
 <div id="빛" aria-hidden="true"></div>
 <div id="보풀" aria-hidden="true"></div>
 <div id="데모판"></div>
