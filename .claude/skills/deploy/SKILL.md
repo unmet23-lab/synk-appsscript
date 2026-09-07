@@ -85,6 +85,7 @@ description: SYNK 배포 파이프라인 — 구문검사(node --check) → 안�
 
 7. **라이브 배포**: `clasp push --force`.
    - ⚠ **push가 라이브를 안 바꾸는 프로젝트가 있다** — 고정 버전 배포를 서빙하면 push는 프로젝트 파일만 갱신한다(crewcard 가 `@16` 옛 스냅샷을 계속 서빙한 실사고). 루트는 `@HEAD`라 push가 곧 라이브 — **프로젝트마다 다르다.**
+   - 🔴 **루트에 판 고정 배포가 하나 더 있다(09-07 · v9.322)** — 진단 화면(synk.im/diag)이 부르는 익명 웹앱 `AKfycbz69uS1-ZNW51oOTDqniQW7Rqml8bzKHi8fRasyd1V-V8YwHisT9nSiZdCwJCrZzsfe`. push 뒤 반드시 `clasp deploy -i AKfycbz69uS1-ZNW51oOTDqniQW7Rqml8bzKHi8fRasyd1V-V8YwHisT9nSiZdCwJCrZzsfe --description "<설명> #fp:<지문>"` 로 새 판을 다시 가리킨다. 안 하면 진단 통로만 옛 코드를 탄다(옛 @HEAD 배포는 로그인을 요구해 화면이 못 쓴다 · 그대로 둔다).
    - 그래서 push 뒤 **`node tools/배포판점검.js --라이브`**. `--라이브`를 빼면 라이브를 안 읽고 「안 쟀다」를 초록으로 낸다. 이 갈래만 **도장을 남긴다**(유호 승인 「배포한 자가 그 자리에서 찍는다」) — 안 찍으면 「배포집합이 앞서 있다」 경보가 라이브=HEAD인 날에도 계속 떠서 진짜 밀린 날에 무시당한다. 출력 끝 `🖈 도장 n/m` 확인.
    - 낡았으면 도구가 주는 명령 그대로: `clasp deploy --deploymentId <기존ID> --description "<설명> #fp:<지문>"`. **⛔ `--deploymentId`를 빼면 새 배포가 생겨 접수 주소가 둘로 갈린다.** 실행 후 `clasp deployments`로 개수 불변 확인.
    - `#fp:`는 배포 내용의 지문이다(clasp이 배포 시각을 안 줘서 라이브가 스스로 「어느 코드인지」 말하게 한 것) — 지우지 말 것.
