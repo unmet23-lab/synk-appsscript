@@ -1570,7 +1570,11 @@ function 증언남기기_(ss, 입력) {
   if (잠금 && !잠금.tryLock(10000)) return { ok: false, error: 'busy' };
   try {
     const sh = ensureSheet(ss, TESTIMONY_TAB_, TESTIMONY_HEADERS);
-    if (typeof 헤더보정_ === 'function') 헤더보정_(sh, TESTIMONY_HEADERS);   // 옛 8칸 탭에 10칸 행을 쓰면 「이름 없는 값 열」이 된다(코덱스 2차 P1) — 칸부터 세운다
+    /* 옛 8칸 탭에 10칸 행을 쓰면 「이름 없는 값 열」이 된다(코덱스 2차 P1) — 칸부터 세운다. 다만 정본 자리에 **다른 이름**이 서 있으면
+     *   덮지 않고 멈춘다(코덱스 3차 P0 · 결정 09-03 「다른 이름이 선 자리는 손대지 않는다」) — 그 열의 값이 남의 이름을 뒤집어쓴다. */
+    const 충돌 = 증언헤더충돌_(sh);
+    if (충돌) { Logger.log('증언 저장 멈춤 — 헤더 자리에 다른 이름이 서 있다: ' + 충돌 + ' (사람이 본다 · 학생 글은 안 썼다)'); return { ok: false, error: 'header-clash' }; }
+    if (typeof 헤더보정_ === 'function') 헤더보정_(sh, TESTIMONY_HEADERS);
     if (sh.getLastRow() >= 2) {
       const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
       for (let i = 0; i < ids.length; i++) if (String(ids[i][0]) === id) return { ok: true, id: id, 중복: true };
@@ -1580,6 +1584,17 @@ function 증언남기기_(ss, 입력) {
       화자, TESTIMONY_SCHEMA_VER]);
     return { ok: true, id: id, 중복: false };
   } finally { if (잠금) 잠금.releaseLock(); }
+}
+
+/** 헤더 행에서 정본 자리 i 에 «정본과 다른 이름»이 서 있는가 — 있으면 그 자리를 글로 돌려준다(없으면 ''). 빈 칸·정본 이름은 충돌이 아니다. */
+function 증언헤더충돌_(sh) {
+  const w = sh.getLastColumn();
+  if (w < 1) return '';
+  const cur = sh.getRange(1, 1, 1, w).getValues()[0].map(function (h) { return String(h == null ? '' : h).trim(); });
+  for (let i = 0; i < TESTIMONY_HEADERS.length && i < cur.length; i++) {
+    if (cur[i] && cur[i] !== TESTIMONY_HEADERS[i]) return (i + 1) + '열 「' + cur[i] + '」(정본 「' + TESTIMONY_HEADERS[i] + '」 자리)';
+  }
+  return '';
 }
 
 /** 밖으로 나가기 «전» 검문 — 이름들(명단이름_) 이 null 이면 검문 불가라 null. 명단 이름 조각 · 전화·긴 숫자열 · 이메일 · 손잡이(@) ·
@@ -1599,6 +1614,11 @@ function 증언비식별_(이름들, 글) {
   if (/\d{1,2}\s*월\s*\d{1,2}\s*일/.test(s)) return null;               // 연도 없는 날짜
   if (/학교|대학|초등|중학|고등|유치원|university|school|college|сургууль|их сургууль/i.test(s)) return null; // 학교 이름
   if (/아파트|\bapt\b|хороо|дүүрэг/i.test(s)) return null;                // 사는 곳(아파트 · 몽골 행정구역)
+  /* [v9.326] 코덱스 3차 P0 — 빗금 날짜(03/05) · 몽골어 월일(3 сарын 5) · 영어 학원 낱말(academy·institute) · 도로명(○○로 12 · ○○길 3) */
+  if (/\b\d{1,2}\/\d{1,2}\b/.test(s)) return null;
+  if (/сарын|өдөр/i.test(s)) return null;
+  if (/academ|institut|kindergarten/i.test(s)) return null;
+  if (/[가-힣]+(?:로|길)\s*\d/.test(s)) return null;
   return s;
 }
 

@@ -75,11 +75,12 @@ function 엔진(o) {
   const LockService = { getScriptLock: () => ({ tryLock: () => { if (o.lockRefuse) return false; calls.locks++; return true; }, releaseLock: () => {} }) };
   const ContentService = { MimeType: { JSON: 'json' }, createTextOutput: (s) => ({ 본문: s, setMimeType() { return this; } }) };
   const 증언남기기_ = (s, 입력) => { calls.증언.push(입력); return { ok: true, id: 'x', 중복: false }; };
+  calls.logs = [];
   const E = new Function('toDate_', '진단문형이름_', '증언맵_', 'seasonStartOf_', 'seasonKeyOf_', 'Utilities', 'SEASON_WEEKS', 'HW_FEEDBACK_HEADERS', 'LECTURE_SRC_PREFIX',
     'ENTRY_SEASON_HEADS_', 'getState', 'setState', 'ensureSheet', 'quotaOk', 'MailApp', 'PropertiesService', 'LockService', 'ContentService', 'SpreadsheetApp', 'Logger', '증언남기기_',
     `${주차절}\n${앞절}\n${API절}\nreturn { 회고_알게된것_, 회고편지글_, 회고물음_, 회고대상시즌_, 시즌있었나_, 회고수신자_, 시즌회고발송_, 회고API_, 회고토큰_ };`)(
     toDate_, 진단문형이름_, 증언맵_, seasonStartOf_, seasonKeyOf_, Utilities, 8, HWH, '강의:', ['입학시즌'], getState, setState, ensureSheet, quotaOk, MailApp, PropertiesService,
-    LockService, ContentService, { getActiveSpreadsheet: () => ss }, { log: () => {} }, 증언남기기_);
+    LockService, ContentService, { getActiveSpreadsheet: () => ss }, { log: (m) => { calls.logs.push(String(m)); } }, 증언남기기_);
   return { E, ss, state, calls };
 }
 const 결과 = (out) => JSON.parse(out.본문);
@@ -214,6 +215,7 @@ test('[회고] 시즌회고발송_ — 명부가 비면 도장 없이 돌아오�
     const 빈 = 엔진({ start: D('2026-11-30'), sheets: { profiles: 시트(H, []) } });
     assert.ok(/명부에 학생이 없다/.test(빈.E.시즌회고발송_()));
     assert.equal(빈.state.has('회고발송시즌'), false, '명부가 빈 채로 도장을 찍으면 복구 뒤 영영 「이미 보냄」이다');
+    assert.ok(빈.calls.logs.some(l => /명부에 학생이 없다/.test(l)), 'safeRun 은 반환값을 버린다 — 건너뛴 사실은 로그가 진다(코덱스 3차 P2)');
     const 하나없음 = 엔진({ start: D('2026-11-30'), sheets: { profiles: 시트(H, [row('S1', 'a@x.c'), row('S2', '')]) } });
     const 말 = 하나없음.E.시즌회고발송_();
     assert.ok(/보냄 1 .*이메일 없음 1/.test(말), 말);
