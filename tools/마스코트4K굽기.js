@@ -26,7 +26,9 @@
  * ⚠ 돈이 든다 — 4K 한 장 ≈ 336원. 15장 ≈ 5,040원. `배치게이트` 가 굽기 «전»에 총액을 찍는다.
  * ⚠ 분당 한도(429)가 있다. 벽에 대고 두드리면 벽이 «길어지므로»(09-05 실측) 사이를 30초 두고,
  *   막히면 길게 쉬고 두 번만, 세 판이 잇달아 막히면 멈춘다.
- * ⚠ 흰 배경이 붙어 나온다 — 굽고 나서 `python tools/흰배경걷기.py <파일>` 로 걷는다.
+ * ⚠ 흰 배경이 붙어 나온다 — 굽고 나서 **`python tools/AI누끼.py <파일> --출력 <파일>`** 로 걷는다.
+ *   🔴 09-08 실측 — `흰배경걷기.py` 는 **마린의 크림색 몸을 파먹는다**(구멍 775점 · 떨어진 조각 1,755점).
+ *   크림이 흰 바탕과 색이 가까워 «색으로 가르는 자»가 물건을 배경으로 읽기 때문이다. AI 누끼는 형태를 본다.
  *   (이 도구가 자동으로 부르지 않는다: 원본을 남겨 두어야 다른 임계로 다시 걷을 수 있다.)
  *
  * 사용:
@@ -85,7 +87,10 @@ height and exactly on its centre line. The doll faces the lens straight on, squa
 camera. The picture is bilaterally symmetrical: mirror the left half onto the right half and
 it matches. We see the FRONT only — no side of the body, no turn, no tilt, no rotation.`;
 
-/* 좌34·우34 는 «살짝만» 돌린다 — 정본의 두 판도 거의 정면에 가깝다(09-05 실측). */
+/* 좌34·우34 는 «살짝만» 돌린다 — 정본의 두 판도 거의 정면에 가깝다(09-05 실측).
+ * 🔴 09-08 — 몽글·까몽의 34도 참조를 «옛 34도 컷»에서 «본체»로 옮겼다. 그날 정본 44벌이
+ *   의상 통일판으로 갈렸는데(꽃·끈·투구 테가 본체 한 벌에서 온다), 옛 34도를 참조하면
+ *   새로 구운 34도만 옛 의상을 물고 온다. 마린은 처음부터 본체를 참조하고 있었다. */
 const 몽글카메라34 = (쪽) => `CAMERA AND POSE — THIS IS THE MOST IMPORTANT INSTRUCTION:
 A three-quarter product photograph, turned only SLIGHTLY. The doll turns about 20 degrees to
 its own ${쪽}, no more — this is a gentle turn, not a side view. The camera stays at the doll's
@@ -234,8 +239,8 @@ const 판들 = [
   { 누구: '몽글', 이름: '몽글_본체',   카메라: 몽글카메라,          얼굴: 몽글눈뜸,   참조: '몽글_본체.png' },
   { 누구: '몽글', 이름: '몽글_눈감음', 카메라: 몽글카메라,          얼굴: 몽글눈감음, 참조: '몽글_눈감음.png' },
   { 누구: '몽글', 이름: '몽글_눈웃음', 카메라: 몽글카메라,          얼굴: 몽글눈웃음, 참조: '몽글_눈웃음.png' },
-  { 누구: '몽글', 이름: '몽글_좌34',   카메라: 몽글카메라34('left'),  얼굴: 몽글눈뜸,   참조: '몽글_좌34.png' },
-  { 누구: '몽글', 이름: '몽글_우34',   카메라: 몽글카메라34('right'), 얼굴: 몽글눈뜸,   참조: '몽글_우34.png' },
+  { 누구: '몽글', 이름: '몽글_좌34',   카메라: 몽글카메라34('left'),  얼굴: 몽글눈뜸,   참조: '몽글_본체.png' },
+  { 누구: '몽글', 이름: '몽글_우34',   카메라: 몽글카메라34('right'), 얼굴: 몽글눈뜸,   참조: '몽글_본체.png' },
   /* 🔴 09-05 — 첫 배치에서 «빠뜨렸다». 옛 정본의 몽글 표정은 여섯인데(마스코트자산.js 의 `표정`)
    *   다섯만 구웠다. 그대로 정본을 갈면 `경로('놀람')` 이 없는 파일을 가리킨다.
    *   옛 놀람은 «합성물»이었다 — 본체의 구슬을 1.35배로 키워 얹은 판이라 배경판이 아예 없었다.
@@ -315,9 +320,9 @@ No mouth, no nose, no eyebrows, no blush, no cheeks, no other feature.` },
     얼굴: 까몽눈선('Both curve gently DOWNWARD like a shallow bowl turned over — the shape of a sleeping eye. They sit level with each other.') },
   { 누구: '까몽', 이름: '까몽_눈웃음', 카메라: 까몽카메라, 참조: '까몽_눈웃음.png',
     얼굴: 까몽눈선('Both curve UPWARD into a happy arc, like two smiles — the shape of an eye laughing. They sit level with each other.') },
-  { 누구: '까몽', 이름: '까몽_좌34', 카메라: 까몽카메라34('left'), 참조: '까몽_좌34.png',
+  { 누구: '까몽', 이름: '까몽_좌34', 카메라: 까몽카메라34('left'), 참조: '까몽_본체.png',
     얼굴: 까몽눈뜸('Both eyes are wide open and calm; the far eye reads slightly narrower because of the turn.') },
-  { 누구: '까몽', 이름: '까몽_우34', 카메라: 까몽카메라34('right'), 참조: '까몽_우34.png',
+  { 누구: '까몽', 이름: '까몽_우34', 카메라: 까몽카메라34('right'), 참조: '까몽_본체.png',
     얼굴: 까몽눈뜸('Both eyes are wide open and calm; the far eye reads slightly narrower because of the turn.') },
   { 누구: '까몽', 이름: '까몽_놀람', 카메라: 까몽카메라, 참조: '까몽_놀람.png',
     얼굴: 까몽눈뜸('Both eyes are stretched WIDE OPEN, much rounder and larger than usual, with the green iris ring showing all the way around — startled. They sit level with each other.') },
@@ -690,10 +695,13 @@ async function main() {
   const 누구 = argv.includes('--누구') ? argv[argv.indexOf('--누구') + 1] : null;
   const 하나 = argv.includes('--판') ? Number(argv[argv.indexOf('--판') + 1]) : null;
   const 다시 = argv.includes('--다시');
+  /* 🆕 09-08 — 이름으로 고른다. `--판 N` 은 하나뿐이라 「34도 여섯 벌」 같은 묶음을 못 부른다. */
+  const 이름들 = argv.includes('--이름') ? argv[argv.indexOf('--이름') + 1].split(',') : null;
 
   let 대상 = 판들;
   if (누구) 대상 = 대상.filter((p) => p.누구 === 누구);
   if (하나) 대상 = 판들.filter((_, i) => i + 1 === 하나);
+  if (이름들) 대상 = 판들.filter((p) => 이름들.some((n) => p.이름.includes(n)));
   if (!대상.length) { console.error(`고를 판이 없다 — --누구 는 몽글·까몽·마린 · --판 은 1~${판들.length}`); process.exit(1); }
 
   if (!(await 배치게이트(대상.length, '4K'))) { process.exitCode = 3; return; }
@@ -728,7 +736,7 @@ async function main() {
   }
   function 마무리() {
     console.log(`\n[마스코트4K굽기] 구움 ${구움} · 건너뜀 ${건너뜀} · 든 돈 ≈ ${구움 * 336}원 · ${낼곳}`);
-    console.log('   다음 = 흰 배경 걷기(python tools/흰배경걷기.py <파일>) · 그 뒤 유호님 판정.');
+    console.log('   다음 = 흰 배경 걷기(python tools/AI누끼.py <파일> --출력 <파일>) · 그 뒤 유호님 판정.');
     console.log('   🔴 정본 교체는 승인 «뒤에» 별도로 한다 — 이 도구는 후보만 낸다.');
   }
   마무리();
