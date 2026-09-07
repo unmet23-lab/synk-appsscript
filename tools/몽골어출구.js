@@ -62,6 +62,7 @@ function 조각뽑기(줄) {
 }
 
 /** 장부에 지문이 있는 몽골어 모음. */
+/** 「이 조각이 검문을 **지나기는** 했나」 — 문(시험)이 보는 자다. 장부에 줄이 있으면 지난 것이다. */
 function 잰것들() {
   const 셋 = new Set();
   if (!fs.existsSync(장부경로)) return 셋;
@@ -69,6 +70,35 @@ function 잰것들() {
     if (!l.trim()) continue;
     try { const j = JSON.parse(l); if (j.번역지문) 셋.add(j.번역지문); } catch { /* 깨진 줄은 넘긴다 */ }
   }
+  return 셋;
+}
+
+/** 「이 조각을 **다시 던질 필요가 없나**」 — 태우기가 보는 자다. 위와 **다른 물음**이다(09-08).
+ *
+ * 🔴 왜 갈랐나: 맞춤법 층에는 시간당 몫이 있어서 벽에 닿은 뒤의 줄은 「층 미실행」으로 남는다.
+ *   그런데 「장부에 줄이 있다」만 보면 그것도 «잰 것»이라 **다시는 안 던져지고**, 그 조각들은
+ *   영영 «반쪽의 반쪽»(문법만)으로 굳는다 — 안 잰 것이 잰 것으로 읽히는 병.
+ *   ⇒ 태우기는 **두 겹(문법·맞춤법)이 둘 다 돈 줄만** 「다 쟀다」로 센다.
+ *   🚫 문(시험) 쪽 자까지 이걸로 바꾸면 안 된다 — 그러면 「검문을 지난 적이 있다」가 거짓이 되어
+ *     기준선에 없는 옛 조각이 «새로 들어온 미검문»으로 잡힌다(09-08 에 실제로 빨개졌다).
+ * ⚠ 말투·뜻은 기준에서 뺀다 — 말투 층은 철거돼 늘 null 이고, 뜻 층은 짝이 있을 때만 돈다.
+ * ⚠ `층` 이 아예 없는 옛 줄은 「다 쟀다」로 둔다(뒤로 호환 · 그 판은 층을 안 남겼다).
+ * 🔑 같은 지문이 여러 번이면 **마지막 줄이 이긴다**(재시도가 채운 것을 읽어야 한다). */
+const 층다쟀나 = (층) => (!층 ? true : (층.문법 != null && 층.맞춤법 != null));
+
+function 다잰것들() {
+  const 마지막 = new Map();
+  if (!fs.existsSync(장부경로)) return new Set();
+  for (const l of fs.readFileSync(장부경로, 'utf8').split(/\r?\n/)) {
+    if (!l.trim()) continue;
+    try {
+      const j = JSON.parse(l);
+      if (!j.번역지문) continue;
+      마지막.set(j.번역지문, 층다쟀나(j.층));
+    } catch { /* 깨진 줄은 넘긴다 */ }
+  }
+  const 셋 = new Set();
+  for (const [지문, 다쟀나] of 마지막) if (다쟀나) 셋.add(지문);
   return 셋;
 }
 
@@ -164,7 +194,7 @@ function 짝뽑기(줄, 몽골어) {
 /** 밤 일감이 태울 꼴 — 짝을 찾은 것만 낸다(짝 없는 것은 태울 수 없다). */
 function 일감내기({ 조용히 = false } = {}) {
   const 조각 = 모으기();
-  const 잰 = 잰것들();
+  const 잰 = 다잰것들();   // 🔑 던질 목록이므로 「두 겹을 다 쟀나」로 본다(09-08 · 위 §다잰것들)
   const 대상 = [];
   const 짝없음 = [];
   for (const 이름 of fs.readdirSync(루트)) {
@@ -224,13 +254,19 @@ function 한판읽기(글, status) {
 async function 태우기(인자) {
   const os = require('os');
   const { spawnSync } = require('child_process');
-  const 사이ms = Math.max(0, Number((인자[인자.indexOf('--사이') + 1]) || 5) * 1000);
-  const 한도 = Number(인자[인자.indexOf('--한도') + 1]) || 0;
+  /* 🔴 인자를 못 찾으면 `indexOf` 가 -1 이라 `인자[0]`(= `--태우기`)을 값으로 읽어 **NaN** 이 됐다(09-08).
+   *   `사이` 가 NaN 이면 `setTimeout(NaN)` = 0ms 라 **사이 없이 몰아 던진다** — 벽을 더 빨리 부른다.
+   *   화면에도 「사이 NaN초」로 찍혔는데 그게 유일한 신호였다. ⇒ 값이 «있을 때만» 읽는다. */
+  const 값 = (이름) => { const i = 인자.indexOf(이름); return i >= 0 ? 인자[i + 1] : undefined; };
+  const 사이수 = Number(값('--사이'));
+  const 사이ms = Math.max(0, Number.isFinite(사이수) ? 사이수 : 5) * 1000;
+  const 한도수 = Number(값('--한도'));
+  const 한도 = Number.isFinite(한도수) ? 한도수 : 0;
   const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const { 대상: 짝있음 } = 일감내기({ 조용히: true });
   const 조각 = 모으기();
-  const 잰 = 잰것들();
+  const 잰 = 다잰것들();   // 🔑 「층 미실행」로 남은 것은 다시 던진다(09-08 · 위 §다잰것들)
   const 짝지문 = new Set(짝있음.map((x) => x.지문));
   const 짝없음 = [...조각].filter(([f]) => !잰.has(f) && !짝지문.has(f)).map(([f, v]) => ({ 지문: f, 몽골어: v.글, 자리: v.자리[0] }));
 
@@ -239,6 +275,22 @@ async function 태우기(인자) {
   /* 겹 수는 «이번에 던질 목록»에서 센다 — 한도를 걸었는데 전체 수를 찍으면 머리글이 거짓이 된다(09-08). */
   const 이번다섯 = 목록.filter((x) => x.겹 === 5).length;
   console.log(`■ 몽골어 대청소 — ${목록.length}개 (다섯 겹 ${이번다섯} · 두 겹 ${목록.length - 이번다섯}) · 사이 ${사이ms / 1000}초`);
+
+  /* 🔑 **던지기 «전»에 벽부터 잰다**(09-08). 맞춤법 층이 시간당 몫에 걸려 있으면 아무리 던져도
+   *   「반쪽의 반쪽」만 쌓이는데, 문법 층(제미나이)은 그동안 크레딧을 그대로 태운다.
+   *   이 프로브는 **사전 한 번**이라 값이 0이다 — 벽이면 크레딧을 한 푼도 안 쓰고 물러난다. */
+  try {
+    const { 맞춤법검사 } = require('./lib/몽골어맞춤법.js');
+    const 프로브 = await 맞춤법검사('Сайн байна уу.', { 제안받기: false });
+    if (!프로브) {
+      console.error('\n🟠 맞춤법 층이 지금 답을 안 한다(시간당 몫으로 보인다) — **한 개도 안 던진다.**');
+      console.error('   지금 던지면 문법만 잰 «반쪽의 반쪽»이 쌓이고 크레딧은 그대로 나간다.');
+      console.error('   🔑 한 시간쯤 뒤에 같은 명령을 다시 부른다(이미 잰 것은 건너뛴다 · 이 프로브는 값이 0이다).');
+      return 2;
+    }
+  } catch (e) {
+    console.error(`⚠ 벽 프로브를 못 돌렸다(${e && e.message}) — 그대로 진행한다(프로브는 곁이지 문이 아니다).`);
+  }
 
   const 임시 = path.join(os.tmpdir(), `출구태우기_${process.pid}.txt`);
   let 통과 = 0; let 검수 = 0; let 못잼 = 0; let 불가 = 0; let 연속실패 = 0; let 연속못잼 = 0;
@@ -295,4 +347,4 @@ if (require.main === module) {
   })();
 }
 
-module.exports = { 모으기, 잰것들, 기준선읽기, 몽골어인가, 조각뽑기, 지문, 기준선경로, 한판읽기 };
+module.exports = { 모으기, 잰것들, 다잰것들, 층다쟀나, 기준선읽기, 몽골어인가, 조각뽑기, 지문, 기준선경로, 한판읽기 };
