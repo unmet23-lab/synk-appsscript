@@ -4,9 +4,11 @@
 # ■ 무엇을 하나
 #   옛 팩(마스코트가 그림으로 박힌 곡 파일)에서 «소리»만 뽑아, 마스코트 없는 무대 위에 얹어 새 팩을 만든다.
 #   그래야 마스코트가 방송 층(bots/오버레이/마스코트.html)에서 따로 움직인다 — 결(장르)마다 DJ 가 서고, 인사에 고개를 숙인다.
-#   무대 = 시티팝은 Veo 영상(8초 반복) · 차분·전자는 정지 그림.
-#   🔴 전자(house) 무대 영상은 8초 동안 카메라가 계속 밀려 들어가 끝 장면이 첫 장면과 다르다(09-07 실측 ·
-#      lastFrame 을 첫 장면으로 줬는데도). 반복하면 8초마다 튀므로 정지 그림으로 간다 — 다시 구울 값은 컷당 약 4,600원(유호 자리).
+#   무대 = 시티팝·전자는 Veo 영상(8초 반복) · 차분은 정지 그림.
+#   🔴 09-07 저녁 «판정 철회» — 전자(house) 영상을 「카메라가 밀려 들어가 8초마다 튄다」고 적고 정지 그림으로 돌렸으나,
+#      다시 재보니 카메라는 고정이다. 자 셋: ① 첫↔끝 psnr 38.75dB(거의 같다) ② 첫 프레임을 2% 키워 견주면 18.58dB 로
+#      «떨어진다»(확대가 있었다면 올라야 한다) ③ 첫↔끝 차분 그림에 건물 윤곽선 0, 첫↔중간에는 창문 네모만 뜬다.
+#      ⇒ 유호 지시 09-06 「창문에 있는 불이 깜빡거려야지」 그대로 구워진 판이다. 다시 구울 돈 0원.
 #   덮개(docs/라디오/무대덮개/<장르>.png · 공기 비네팅 + 「synk · ORIGINAL SOUND」 각인)를 무대 위에 얹는다 —
 #   옛 팩에는 무대 굽기(라디오배경굽기.js)가 그려 넣었던 것이라 빠지면 방송 결이 달라진다.
 #   무대 자리(확대·위치)는 라디오배경굽기.js 장르표의 무대자리를 그대로: house·citypop 106% 44%/40% · calm 118% 44%/26%.
@@ -46,7 +48,7 @@ for a in "$IN"/*.aac; do
   [ -f "$cover" ] || { echo "🔴 $n — 덮개가 없다: $cover (node tools/라디오배경굽기.js --장르 $genre --무대덮개)"; bad=$((bad+1)); continue; }
   t0=$(date +%s)
   case "$genre" in
-    citypop)   # Veo 영상 반복 — 끝 장면 = 첫 장면이라 이음매가 없다(09-07 실측)
+    citypop|house)   # Veo 영상 반복 — 끝 장면 = 첫 장면이라 이음매가 없다(둘 다 09-07 실측 · 위 «판정 철회» 참고)
       ffmpeg -y -loglevel error -stream_loop -1 -i "$R/docs/라디오/무대영상/$genre.mp4" -i "$a" -i "$cover" \
         -filter_complex "[0:v]scale=1357:-2:flags=lanczos,crop=1280:720:34:17[s];[s][2:v]overlay=0:0:format=auto,format=yuv420p[v]" \
         -map "[v]" -map 1:a -shortest \
@@ -55,7 +57,7 @@ for a in "$IN"/*.aac; do
       판만들기 calm 1510:-2 1280:720:101:32 && \
       ffmpeg -y -loglevel error -loop 1 -framerate 30 -i "$OUT/_판/calm.png" -i "$a" -map 0:v -map 1:a -shortest -pix_fmt yuv420p \
         -c:v libx264 -tune stillimage -preset veryfast -crf 23 -maxrate 1500k -bufsize 3000k -r 30 -g 60 -c:a copy -f mpegts "$out" ;;
-    *)         # house 와 그 밖 — 정지 그림(영상이 반복에 못 쓰거나 아직 없다)
+    *)         # 그 밖 — 정지 그림(무대 영상이 아직 없다)
       판만들기 "$genre" 1357:-2 1280:720:34:17 && \
       ffmpeg -y -loglevel error -loop 1 -framerate 30 -i "$OUT/_판/$genre.png" -i "$a" -map 0:v -map 1:a -shortest -pix_fmt yuv420p \
         -c:v libx264 -tune stillimage -preset veryfast -crf 23 -maxrate 1500k -bufsize 3000k -r 30 -g 60 -c:a copy -f mpegts "$out" ;;
