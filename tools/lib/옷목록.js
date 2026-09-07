@@ -229,14 +229,43 @@ const 성과더 = [
 /* ── 그 아이만의 것 — 가이드 정본 §3-1 ⑦ 「내 물건 셋」에서 왔다 ───────────── */
 const 고유 = {
   몽글: [
+    /* 🔴 2026-09-07 재작성 — 옛 문장은 「short」와 「ending high on the body」로 «짧다»를 두 번 말했고,
+       모델이 그것을 «아주 짧게»로 읽어 저고리를 **가슴을 가로지르는 흰 띠 한 줄**로 그렸다.
+       초록 판부터 그렇게 나왔으니 떼기 탓이 아니라 굽기 탓이다(09-07 실측 · 층 조각에서 어깨가 뚫렸다).
+       ⇒ 「어깨를 덮는다」를 먼저 못 박고 「띠가 아니다」를 대놓고 적는다. 첫 문장이 실루엣을 정한다. */
+    /* 🔴 2026-09-07 두 번 갈아엎었다 — 둘 다 «가슴을 가로지르는 흰 띠»로 나왔다(336원 × 2 · 실측).
+       ① 옛 문장은 「short」·「ending high on the body」로 짧음을 두 번 말했다.
+       ② 그것을 걷고 「COVERS THE WHOLE UPPER BODY … over the top of both shoulders」로 바꿨는데도 그대로였다.
+       🔑 까닭은 둘이다. ⓐ 몽글의 표식이 「no shoulders」라고 못 박는다 — 「어깨를 덮어라」는 그 표식과
+          싸우다 진다. ⓑ 낱말 「jacket」 자체가 «짧은 옷»을 부른다.
+       ⇒ ③ 은 **잘 나온 「여름 델」의 문법을 통째로 빌린다** — 「wrap robe … follows the body and falls in
+          soft folds」. 어깨를 입에 담지 않고, 옷을 «몸을 감싸며 흐르는 천»으로 말한다. */
     { 이름: '저고리', 갈래: '의상', 설명:
-      'It wears a hanbok jeogori jacket: short, cut from soft chalk-white felt, crossing at the ' +
-      'front with a wide coral collar band (git) and a long coral ribbon (goreum) tied in one ' +
-      'loose bow that hangs down. It is short and softly rounded, ending high on the body.' },
+      'It wears a hanbok jeogori: a wrap top of soft chalk-white felt crossing left over right at ' +
+      'the front and covering the whole body like a robe, with a wide coral collar band (git) ' +
+      'edging the neckline and running down the front opening, and one long coral ribbon (goreum) ' +
+      'tied in a loose bow that hangs down the front. The white felt follows the body and falls in ' +
+      'soft folds. The white area is broad and unbroken — it is not a narrow band across the front.' },
     { 이름: '치마', 갈래: '의상', 설명:
       'It wears a hanbok chima skirt: a full high-waisted wrap skirt of soft lapis-blue felt ' +
       'gathered into a wide cream band across the upper body, falling in many soft vertical ' +
       'folds all the way down and flaring gently at the bottom.' },
+    /* 🆕 2026-09-07 유호 지시 「따로따로 하지말고 한벌로 한번에 구우면 괜찮지않아?」 —
+       09-07 에 세우신 «세트는 한 장에 굽는다» 원리를 옷에 적용한 자리다.
+       🔑 왜 한 벌이라야 서나: **저고리가 짧은 까닭은 아래에 치마가 있기 때문**이다. 치마 없이 저고리만
+          그리라고 하면 모델에게 「짧아야 할 이유」가 없어서 가슴을 가로지르는 띠로 줄어든다(336원 × 2 실패).
+          둘을 함께 그리면 그 비례가 저절로 선다.
+       🔑 그리고 「white above, blue below」로 위아래를 갈라 준다 — 흰 자리가 띠로 좁아질 여지를 없앤다.
+       ⚠ 어깨를 입에 담지 않는다. 몽글의 표식이 「no shoulders」라, 어깨를 말하면 그 표식과 싸우다 진다. */
+    { 이름: '한복', 갈래: '의상', 설명:
+      'It wears a full hanbok, jeogori and chima together as one outfit. Below: a lapis-blue chima ' +
+      'skirt gathered into a wide cream waistband across the middle of the body, falling in many ' +
+      'soft vertical folds all the way down to the hem and flaring gently at the bottom. Above the ' +
+      'waistband: a chalk-white jeogori wrap top crossing left over right, edged along the neckline ' +
+      'and down the front opening with a wide coral collar band (git), with one long coral ribbon ' +
+      '(goreum) tied in a loose bow hanging down the front. The whole body is clothed from just ' +
+      'below the eyes down to the hem — white above the waistband, blue below it. The felt follows ' +
+      'the body and falls in soft folds.' },
     /* §3-1 ⑦ — 「주머니 속 이상한 돌 여럿(예쁜 건 마린에게 준다)」 */
     { 이름: '돌 주머니', 갈래: '악세', 고유: true, 설명:
       'A small open pouch of oat linen hangs against its body from one cream strap over the ' +
