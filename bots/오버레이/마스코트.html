@@ -61,6 +61,34 @@
   #접지 { position: absolute; left: 50%; width: 86%; height: 14%; transform: translate(-50%, 50%);
           bottom: 15.6%; border-radius: 50%; pointer-events: none;
           background: radial-gradient(ellipse at 50% 50%, var(--접지색, rgba(10,10,14,0.38)) 0%, transparent 70%); }
+  /* 🆕 2026-09-08 DJ 부스 — 유호 지시 「마스코트앞에 dj 부스같은거 설치해보는거어때? dj 컨트롤?
+     디스크 판은 계속 돌아가게 해놓고」. 부스는 마스코트 «앞»에 서서 하반신을 가린다(DJ 가 부스 뒤에 선 꼴).
+     🔑 부스·디스크는 **구운 펠트 그림**이다 — CSS 로 흉내내지 않는다(킷 ①). 여기서 CSS 가 하는 일은
+        «도는 것» 하나뿐이고, 그건 재질이 아니라 움직임이라 규격에 안 걸린다.
+     🔴 디스크는 «천천히» 돈다(8초 한 바퀴). 실제 LP 는 1.8초에 한 바퀴인데 그 속도로 돌리면
+        24시간 켜 두는 화면에서 눈이 아프다 — 이 방송의 상품은 잔잔함이다(설계 v1.5 §8-2).
+     ⚠ 디스크 그림은 «가운데를 맞춰 정사각»으로 담아 두었다. 안 그러면 도는 축이 어긋나 흔들린다. */
+  #부스 {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    width: var(--부스폭, 30vw);
+    bottom: var(--부스바닥, 0vh);
+    pointer-events: none;
+  }
+  #부스 img.판 { display: block; width: 100%; height: auto; }
+  /* 🔑 디스크 자리는 «눈대중이 아니라 잰 값»이다 — 부스 그림에서 빈 턴테이블 자리(가장 어두운 덩이) 둘의
+     중심을 재니 왼쪽 x27.9% y23.0%, 오른쪽 x78.3% y22.8%, 지름 16%대였다(09-08 실측 · 받침을 걷은 뒤 판).
+     디스크 폭 17%(가로 기준)를 그 중심에 맞추면 left/right/top 이 아래 값으로 떨어진다.
+     ⚠ top 은 «부스 높이» 기준이라 가로 17% 를 세로 몫으로 바꿔야 한다(부스 H/W = 0.588). */
+  #부스 .디스크 {
+    position: absolute; width: 17%;
+    animation: 돈다 8s linear infinite;
+    will-change: transform;
+  }
+  #부스 .디스크.왼 { left: 19.4%; top: 8.6%; }
+  #부스 .디스크.오 { right: 13.2%; top: 8.3%; animation-duration: 8.6s; }   /* 둘이 «같이» 돌면 기계처럼 보인다 */
+  @keyframes 돈다 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { #부스 .디스크 { animation: none; } }
+
   .경고 {
     position: absolute; left: 12px; bottom: 12px; max-width: 46ch;
     font: 13px/1.5 system-ui, sans-serif; color: #FBF7F0;
@@ -79,6 +107,7 @@
 </head>
 <body>
 <div id="마스코트틀" aria-hidden="true"></div>
+<div id="부스" aria-hidden="true" hidden></div>
 <div id="데모판"></div>
 <script>
 'use strict';
@@ -100,6 +129,33 @@ if (인자.get('demo') === '1' || 인자.get('데모') === '1') document.body.cl
   /* `?바닥=<vh>` — 발밑 여백. 무대의 앉는 선(라디오배경굽기 장르표 0.885)에 맞추는 손잡이. */
   const 바닥 = parseFloat(인자.get('바닥'));
   if (바닥 >= 0 && 바닥 <= 40) 틀.style.bottom = 바닥 + 'vh';
+}
+
+/* 🆕 2026-09-08 DJ 부스 — `?부스=1` 일 때만 선다. 결마다 켤지 말지가 갈리므로(잔잔한 결에는 안 어울린다)
+   기본은 «꺼짐»이고 방송이 켠다. 크기·바닥은 마스코트와 같은 손잡이 문법을 쓴다. */
+{
+  const 부스켬 = 인자.get('부스') === '1';
+  if (부스켬) {
+    const 소품 = '../../docs/Loom_자산/라디오소품/';
+    const 부스 = document.getElementById('부스');
+    const 폭 = parseFloat(인자.get('부스크기'));
+    if (폭 > 0 && 폭 <= 1) 부스.style.setProperty('--부스폭', (폭 * 100) + 'vw');
+    const 바닥 = parseFloat(인자.get('부스바닥'));
+    if (바닥 >= 0 && 바닥 <= 40) 부스.style.setProperty('--부스바닥', 바닥 + 'vh');
+    const 판 = new Image();
+    판.className = '판'; 판.alt = '';
+    판.onload = () => { 부스.hidden = false; };
+    판.onerror = () => 경고('부스 그림이 없다: ' + 판.src);   // 침묵 실패 금지 — 층의 규율 그대로
+    부스.appendChild(판);
+    for (const 쪽 of ['왼', '오']) {
+      const d = new Image();
+      d.className = '디스크 ' + 쪽; d.alt = '';
+      d.onerror = () => 경고('디스크 그림이 없다: ' + d.src);
+      부스.appendChild(d);
+      d.src = 소품 + '디스크.webp';
+    }
+    판.src = 소품 + '부스.webp';
+  }
 }
 
 /* ── 컷 (그림 정본 = 토큰 `재질.펠트.정본사진.평상복` 의 누끼 세트) ───────────────
@@ -439,8 +495,28 @@ let 다음깜빡 = 2000 + Math.random() * 3000;
       (`최대지속` 표가 그 «상시 금지»의 기계 실체다).
    눈웃음이 목록에 셋인 것은 «자주 웃게» 하는 무게다(일곱 중 셋 ≈ 43%). */
 const 살이컷들 = ['눈웃음', '눈웃음', '눈웃음', '궁금함', '집중', '안도', '응원'];
-const 살이지속 = 1.6;      // 초
-const 살이사이 = () => 14000 + Math.random() * 20000;   // ms
+const 살이지속 = 1.8;      // 초 — 09-08 에 1.6 에서 조금 늘렸다(방송에서 인형이 240px 이라 짧으면 안 읽힌다)
+/* 🆕 2026-09-08 — 유호 지시 「마린이 계속 dj하는 추임새를 몇초마다 한번씩 주는거야」.
+   ⚠ 유호님이 말씀하신 «추임새»는 말이 아니라 **움직임**이다(같은 날 정정 「웃는거같은거」).
+     그러니 새 장치를 짓는 게 아니라 **이미 도는 살이 컷의 빈도**를 DJ 답게 당기는 일이다.
+   🔴 옛 값은 14~34초였다 — 「몇 초마다」와 거리가 멀어서 화면이 거의 안 움직였다.
+   🔑 결(곡 장르)마다 다르게 잡는다. 전자는 자주, 차분·공부는 뜸하게 — 잔잔함이 이 방송의 상품이라
+      (설계 v1.5 §8-2) 느린 곡에서까지 자주 웃으면 그 결을 깬다. DJ 는 곡을 따라간다. */
+const 결살이 = {
+  전자네온물가:     [5000, 11000],
+  전자밤도시:       [5000, 11000],
+  시티팝노을휴양지: [8000, 16000],
+  드림물결:         [8000, 16000],
+  추석보름달마당:   [10000, 20000],
+  드림하늘:         [10000, 20000],
+  드림들판:         [10000, 20000],
+  차분달빛호수:     [16000, 32000],
+  집안밤공부:       [16000, 32000],
+};
+const 살이사이 = () => {
+  const [빠름, 느림] = 결살이[현재차림] || [14000, 34000];   // 모르는 결이면 옛 값 그대로
+  return 빠름 + Math.random() * (느림 - 빠름);
+};   // ms
 let 다음살이 = 살이사이();
 let 살이 = null;           // {컷, 끝ms}
 let 반응 = null;          // {종류, 시작t}
