@@ -72,9 +72,11 @@ function 엔진(opts) {
   const 셀안전_ = (v) => (/^[=+\-@\t\r]/.test(v) ? "'" + v : v);
   const toDate_ = (v) => (v instanceof Date ? v : null);
   const 명단이름_ = () => (o.names === undefined ? ['바트', 'bat'] : o.names);
-  const E = new Function('ensureSheet', 'Utilities', 'LockService', '셀안전_', 'toDate_', '명단이름_',
-    `${상수절}\n${살균절}\n${그릇절}\nreturn { 증언지문_, 증언남기기_, 증언비식별_, 증언맵_, 증언반출_, 이름살균_, TESTIMONY_SCHEMA_VER };`)(ensureSheet, Utilities, LockService, 셀안전_, toDate_, 명단이름_);
-  return { E, ss, sh, locks };
+  const 보정 = [];
+  const 헤더보정_ = (s, headers) => { 보정.push(headers); };
+  const E = new Function('ensureSheet', 'Utilities', 'LockService', '셀안전_', 'toDate_', '명단이름_', '헤더보정_',
+    `${상수절}\n${살균절}\n${그릇절}\nreturn { 증언지문_, 증언남기기_, 증언비식별_, 증언맵_, 증언반출_, 이름살균_, TESTIMONY_SCHEMA_VER };`)(ensureSheet, Utilities, LockService, 셀안전_, toDate_, 명단이름_, 헤더보정_);
+  return { E, ss, sh, locks, 보정 };
 }
 const now = Date.now();
 const d = (일전) => new Date(now - 일전 * 86400000);
@@ -117,8 +119,18 @@ test('[증언] 같은 말은 «언제 다시 보내도» 한 줄 — 지문에 �
   assert.equal(c.중복, false, '답이 다르면 다른 줄이다');
   const 공백 = E.증언남기기_(ss, Object.assign({}, 입력, { 답: '한국  회사에서\n일하고 싶어요' }));
   assert.equal(공백.중복, true, '공백·줄바꿈만 다른 같은 말은 같은 지문');
+  const 다른시즌 = E.증언남기기_(ss, Object.assign({}, 입력, { 시즌: '2027-02-25' }));
+  assert.equal(다른시즌.중복, false, '다른 시즌의 같은 답은 새 관측이다(코덱스 2차 P1) — 지문에 시즌이 든다');
+  const 다른화자 = E.증언남기기_(ss, Object.assign({}, 입력, { 화자: '보호자' }));
+  assert.equal(다른화자.중복, false, '보호자가 같은 말을 해도 다른 줄');
   const 막힘 = 엔진({ lockRefuse: true });
   assert.deepEqual(막힘.E.증언남기기_(막힘.ss, 입력), { ok: false, error: 'busy' });
+});
+
+test('[증언] 옛 8칸 탭에 쓰기 «전»에 칸을 세운다(헤더보정_) — 이름 없는 값 열이 생기면 아침 시트칸맞추기가 그 표를 멈춘다', () => {
+  const { E, ss, 보정 } = 엔진();
+  E.증언남기기_(ss, { student_id: 'S1', 출처: '회고', 물음: 'q', 답: 'a' });
+  assert.deepEqual(보정, [HEADERS], '쓰기 전에 헤더 정본으로 보정한다');
 });
 
 test('[증언] 원문은 공백·줄바꿈 그대로 남고 2000자에서 자른다 · 남의 글은 셀안전_ 을 지난다(= 로 시작하면 수식이 안 된다)', () => {
@@ -144,6 +156,12 @@ test('[증언] 검문 — 이름 조각 · 긴 숫자열 · 이메일 · 손잡�
   assert.equal(E.증언비식별_(이름들, '인스타 @tuvshin_99'), null, '손잡이');
   assert.equal(E.증언비식별_(이름들, '내 번호는 S0042'), null, '학생 번호 꼴');
   assert.equal(E.증언비식별_(이름들, 'https://example.com 봐요'), null, '주소');
+  assert.equal(E.증언비식별_(이름들, '2004년에 태어났어요'), null, '연도(생년)');
+  assert.equal(E.증언비식별_(이름들, '3월 5일에 시험이 있어요'), null, '연도 없는 날짜');
+  assert.equal(E.증언비식별_(이름들, '몽골국립대학교 3학년이에요'), null, '학교 이름');
+  assert.equal(E.증언비식별_(이름들, 'Их сургууль-д сурдаг'), null, '몽골어 학교');
+  assert.equal(E.증언비식별_(이름들, '한강 아파트에 살아요'), null, '사는 곳');
+  assert.equal(E.증언비식별_(이름들, '다시 해 볼게요, 친구랑 같이'), '다시 해 볼게요, 친구랑 같이', '「다시」·「친구」 같은 보통 말은 통과한다');
   assert.equal(E.증언비식별_(null, '한국 회사'), null, '명단을 못 읽으면 검문 불가');
   assert.equal(E.증언비식별_(이름들, '   '), null);
 });
@@ -158,14 +176,16 @@ test('[증언] 증언맵_ — 학생별 최근 둘 · 창 밖은 안 읽는다 �
     ['i5', '', d(1), '회고', 'q', '번호 없음', '', '', '학생', 1],
     ['i6', 'S3', d(2), '회고', '느낀 것', '있다 — 보호자가 씀', '', '', '보호자', 1],
     ['i7', 'S4', d(2), '회고', '느낀 것', '바트가 잘해 줬다', '', '', '학생', 1],
+    ['i8', 'S5', d(2), '회고', '바트에게 묻는 것', '괜찮았어요', '', '', '학생', 1],
   ];
   const { E, ss } = 엔진({ sheet: 시트(rows) });
   const r = E.증언맵_(ss, 120);
   assert.equal(r.건수, 3, '창 안 + 번호 있는 학생 화자 + 검문 통과');
-  assert.equal(r.걸러냄, 1, '이름 조각이 든 답 하나를 걸렀다');
+  assert.equal(r.걸러냄, 2, '이름 조각이 든 답 하나 · 이름 든 물음 하나를 걸렀다');
   assert.equal(r.학생수, 1);
   assert.equal(r.맵.S3, undefined, '보호자의 말은 「스스로 한 말」이 아니다');
   assert.equal(r.맵.S4, undefined, '검문에 걸린 답은 AI 로 안 간다');
+  assert.equal(r.맵.S5, undefined, '물음도 밖으로 나간다 — 물음에 이름이 들면 그 줄은 안 간다(코덱스 2차 P0)');
   assert.ok(r.맵.S1.indexOf('내 이름을 기억해 줬다') > -1 && r.맵.S1.indexOf('회사 때문에') > -1, r.맵.S1);
   assert.ok(r.맵.S1.indexOf('옛 말') === -1, '셋째(오래된 것)는 안 싣는다');
   assert.ok(r.맵.S1.length <= 140);
