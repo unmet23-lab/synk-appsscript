@@ -133,7 +133,11 @@ function 진단행찾기_(sh, 열쇠) {
 }
 function 진단JSON_(v, 기본) { try { const j = JSON.parse(String(v || '')); return j == null ? 기본 : j; } catch (e) { return 기본; } }
 function 진단칸쓰기_(sh, row, 값들) {   // 값들 = { 칸이름: 값 }
-  Object.keys(값들).forEach(function (n) { const c = 진단칸_(n); if (c >= 0) sh.getRange(row, c + 1).setValue(값들[n]); });
+  /* [v9.321] 🔴 문자열은 셀안전_(상담AI.js · 런타임 호출이라 로드 순서 무관)로 소독해 쓴다 — 쓰기문장·안할래 사유·멈춘 까닭·고침 한 줄은
+   *   «남의 글»이고, `=` 로 시작하면 시트 셀이 수식이 된다(profiles 가 v9.153 에 막은 그 구멍 · writeIfChanged 통로엔 있고 setValue 직기입엔 없었다).
+   *   JSON 문자열(답·스냅샷·고침)도 문자열이라 같이 지나지만 `{`·`[` 로 시작하므로 셀안전_ 가 손대지 않는다. 시험 문맥엔 셀안전_ 가 없어 typeof 로 건너뛴다. */
+  const 소독 = function (v) { return (typeof v === 'string' && typeof 셀안전_ === 'function') ? 셀안전_(v) : v; };
+  Object.keys(값들).forEach(function (n) { const c = 진단칸_(n); if (c >= 0) sh.getRange(row, c + 1).setValue(소독(값들[n])); });
 }
 
 /* 세션 시작 — 입력 { 역할, 이메일, 전화, 학생번호 }. 연락 통로가 하나도 없으면 시작하지 않는다(등록 때 이을 열쇠가 없다 · 판매 설계 §⑥-㉡ 걸음 1).
