@@ -7465,6 +7465,96 @@
             "지시": "A neat grid of six felt icon patches, three across and two down, evenly spaced with generous empty space between them so that no two patches touch. All six patches are exactly identical: a square of cream wool felt with softly rounded corners and a blanket-stitched edge in pale thread, the same size and the same orientation for every patch. On each patch a single icon is embroidered dead centre in dark ink-brown thread with visible chain-stitch texture, all six icons the same height, about three fifths of the patch width. In reading order, left to right and top to bottom, the icons are: a simple house outline, an open book, a bar chart of three rising bars, a standing person outline, a check mark, and a five-pointed star. The star alone is embroidered in warm butter-yellow thread; the other five are ink-brown. No other marks, no text. Densely needle-felted wool, hand-made craft quality, matte, visible individual wool fibres and slight surface fuzz. Photographed from directly overhead with no perspective, on a plain flat white background, soft even studio light, no cast shadows. Square 1:1 framing, the grid centred with an even margin. No watermark."
           }
         ]
+      },
+      {
+        "이름": "소리 띠 넷 한 장",
+        "쓰는 곳": "문서 지면 전량 · 앱 화면",
+        "상태": "1/1",
+        "_크기": "4K",
+        "_왜": "유호 지시 09-07 「지금 첨부한 그림 싹다 다시 구워야해」 — 하나씩 따로 구운 24벌 중 표지 일곱을 뺀 17벌. 세트는 한 장에 굽고 갈라 쓴다(결정 09-07).",
+        "_결": "가르기 = python tools/단추판자르기.py --판 docs/Loom_자산/구움/소리띠판_넷.png --열 2 --행 2 --모양 네모 --이름들 요소_녹음대기,요소_녹음중,요소_녹음맺음,요소_내려놓은바늘 → python tools/룸자산화.py. 규격 «장면»(뒤처리가 통째로 안 오리게). 🚫 아직 안 굽는다 — 유호님 픽 뒤.",
+        "것들": [
+          {
+            "이름": "소리 띠 넷 한 장",
+            "쇠": "소리띠판_넷",
+            "파일": "소리띠판_넷.avif",
+            "규격": "장면",
+            "상태": "구웠다",
+            "지시": "A neat grid of 4 felt craft objects, 2 across and 2 down, evenly spaced with generous empty space between them so that no two objects touch, all four strips exactly the same size and shape, each centred in its own equal invisible cell. In reading order, left to right and top to bottom: (1) a plain horizontal strip of cream felt with a single straight running-stitch line along its middle in pale thread. (2) the same cream felt strip with a coral-pink zigzag wave embroidered along its middle. (3) the same cream felt strip with the running-stitch line ending in a small tied knot at the right end. (4) a small folded pad of cream felt with a steel sewing needle laid across it and a short loose thread trailing. All objects are densely needle-felted wool, hand-made craft quality, matte, with visible individual wool fibres and slight surface fuzz, in sharp focus. Photographed from directly overhead with no perspective, on a plain flat white background, soft even studio light, no cast shadows. Square 1:1 framing, the grid centred with an even margin. No text, no watermark."
+          }
+        ]
+      },
+      {
+        "이름": "작은 표식 넷 한 장",
+        "쓰는 곳": "문서 지면 전량 · 앱 화면",
+        "상태": "1/1",
+        "_크기": "4K",
+        "_왜": "유호 지시 09-07 「지금 첨부한 그림 싹다 다시 구워야해」 — 하나씩 따로 구운 24벌 중 표지 일곱을 뺀 17벌. 세트는 한 장에 굽고 갈라 쓴다(결정 09-07).",
+        "_결": "가르기 = python tools/단추판자르기.py --판 docs/Loom_자산/구움/표식판_넷.png --열 2 --행 2 --모양 네모 --이름들 매듭점,단추민판,땀점,폼폼민방울 → python tools/룸자산화.py. 규격 «장면»(뒤처리가 통째로 안 오리게). 🚫 아직 안 굽는다 — 유호님 픽 뒤.",
+        "것들": [
+          {
+            "이름": "작은 표식 넷 한 장",
+            "쇠": "표식판_넷",
+            "파일": "표식판_넷.avif",
+            "규격": "장면",
+            "상태": "구웠다",
+            "지시": "A neat grid of 4 felt craft objects, 2 across and 2 down, evenly spaced with generous empty space between them so that no two objects touch, each object centred in its own equal invisible square cell, all objects drawn at the same scale. In reading order, left to right and top to bottom: (1) a small three-loop trefoil knot tied from deep grey wool yarn. (2) a plain round two-tier felt button in cream wool with an oat-coloured lower disc, no numeral, no holes. (3) a single short running-stitch dash of pale thread sewn on a tiny square of cream felt. (4) a fluffy coral-pink wool pompom ball. All objects are densely needle-felted wool, hand-made craft quality, matte, with visible individual wool fibres and slight surface fuzz, in sharp focus. Photographed from directly overhead with no perspective, on a plain flat white background, soft even studio light, no cast shadows. Square 1:1 framing, the grid centred with an even margin. No text, no watermark."
+          }
+        ]
+      },
+      {
+        "이름": "표지 합주 다시",
+        "쓰는 곳": "문서 지면 전량 · 앱 화면",
+        "상태": "1/1",
+        "_크기": "4K",
+        "_왜": "유호 지시 09-07 「지금 첨부한 그림 싹다 다시 구워야해」 — 하나씩 따로 구운 24벌 중 표지 일곱을 뺀 17벌. 세트는 한 장에 굽고 갈라 쓴다(결정 09-07).",
+        "_결": "한 장에 물건 하나(장면 하나라 세트가 아니다) — 뒤처리가 AI 누끼로 오린다. 🚫 아직 안 굽는다 — 유호님 픽 뒤.",
+        "것들": [
+          {
+            "이름": "표지 합주 다시",
+            "쇠": "합주",
+            "파일": "합주.avif",
+            "규격": "부품",
+            "상태": "구웠다",
+            "지시": "Three felt balls of the same size resting together in a tight triangular cluster, touching each other: one coral-pink, one cream, one deep charcoal-grey, each with a single pale running-stitch seam around its middle. Densely needle-felted wool, hand-made craft quality, matte, visible individual wool fibres and slight surface fuzz, in sharp focus. Photographed from directly overhead with no perspective, on a plain flat white background, soft even studio light, no cast shadows. Square 1:1 framing, the cluster centred with a generous margin. No text, no watermark."
+          }
+        ]
+      },
+      {
+        "이름": "요소 넷 한 장 ⓐ",
+        "쓰는 곳": "문서 지면 전량 · 앱 화면",
+        "상태": "1/1",
+        "_크기": "4K",
+        "_왜": "「요소 여덟 한 장」(21:44)은 모델이 여덟 대신 하트 «하나»를 그렸다 — 서로 다른 물건 여덟을 한 장에 시키면 무너진다. 넷씩 둘로 가르고, 「네 장의 서로 다른 제품 사진을 2×2 로 모은 콜라주」로 시킨다(소리 띠 판이 그 꼴로 성공했다).",
+        "_결": "가르기 = python tools/단추판자르기.py --판 docs/Loom_자산/구움/요소판_넷a.png --열 2 --행 2 --모양 네모 --이름들 요소_말풍선,요소_도장,요소_게이지,요소_폼폼 → python tools/룸자산화.py. 🚫 아직 안 굽는다 — 유호님 픽 뒤(336원).",
+        "것들": [
+          {
+            "이름": "요소 넷 한 장 ⓐ",
+            "쇠": "요소판_넷a",
+            "파일": "요소판_넷a.avif",
+            "규격": "장면",
+            "상태": "구웠다",
+            "지시": "A 2 by 2 photo grid: four SEPARATE product photographs of four DIFFERENT felt craft items, arranged in a square collage with thin white gutters between the four photos, one item per photo, each item centred in its own photo at the same scale. The four items, in reading order (top-left, top-right, bottom-left, bottom-right), are: (1) a speech bubble cut from cream felt with a blanket-stitched edge and a small tail at the lower left. (2) a round cream felt stamp with a solid coral-pink felt disc in its centre. (3) a ring made of twisted coral-pink wool roving. (4) a tightly felted coral-pink wool ball. Every item is densely needle-felted wool, hand-made craft quality, matte, with visible individual wool fibres and slight surface fuzz, in sharp focus, photographed from directly overhead with no perspective on a plain flat white background, soft even studio light, no cast shadows. Square 1:1 framing. No text, no watermark."
+          }
+        ]
+      },
+      {
+        "이름": "요소 넷 한 장 ⓑ",
+        "쓰는 곳": "문서 지면 전량 · 앱 화면",
+        "상태": "1/1",
+        "_크기": "4K",
+        "_왜": "「요소 여덟 한 장」(21:44)은 모델이 여덟 대신 하트 «하나»를 그렸다 — 서로 다른 물건 여덟을 한 장에 시키면 무너진다. 넷씩 둘로 가르고, 「네 장의 서로 다른 제품 사진을 2×2 로 모은 콜라주」로 시킨다(소리 띠 판이 그 꼴로 성공했다).",
+        "_결": "가르기 = python tools/단추판자르기.py --판 docs/Loom_자산/구움/요소판_넷b.png --열 2 --행 2 --모양 네모 --이름들 요소_시침핀,요소_와펜,요소_매듭,요소_하트 → python tools/룸자산화.py. 🚫 아직 안 굽는다 — 유호님 픽 뒤(336원).",
+        "것들": [
+          {
+            "이름": "요소 넷 한 장 ⓑ",
+            "쇠": "요소판_넷b",
+            "파일": "요소판_넷b.avif",
+            "규격": "장면",
+            "상태": "구웠다",
+            "지시": "A 2 by 2 photo grid: four SEPARATE product photographs of four DIFFERENT felt craft items, arranged in a square collage with thin white gutters between the four photos, one item per photo, each item centred in its own photo at the same scale. The four items, in reading order (top-left, top-right, bottom-left, bottom-right), are: (1) a small square pad of cream felt with a coral-headed sewing pin stuck into it at an angle. (2) a round coral-pink felt badge with a cream blanket-stitched border and a check mark stitched in coral thread. (3) a four-loop flower knot tied from thick cream wool yarn. (4) a plump heart cut from cream felt with a coral-pink blanket-stitched edge. Every item is densely needle-felted wool, hand-made craft quality, matte, with visible individual wool fibres and slight surface fuzz, in sharp focus, photographed from directly overhead with no perspective on a plain flat white background, soft even studio light, no cast shadows. Square 1:1 framing. No text, no watermark."
+          }
+        ]
       }
     ]
   },
