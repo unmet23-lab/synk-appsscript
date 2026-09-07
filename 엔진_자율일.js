@@ -589,10 +589,13 @@ function 자율일말하기제출_(자율일) {
   const props = PropertiesService.getScriptProperties();
   const url = String(props.getProperty('SUNDAY_PROGRESS_URL') || '').trim();
   const anon = String(props.getProperty('SUNDAY_BUNDLE_ANON') || '').trim();
-  if (!url || !anon) return null;
+  // 🔴 되돌려 받는 값에 배정ID(= 학생번호가 든 글자)가 실린다 — 좁은 열쇠를 같이 들려 보낸다.
+  //    talk 쪽 문(functions/sunday-bundle)이 GET 에도 같은 자물쇠를 요구한다(09-07). 열쇠가 없으면 아예 안 부른다.
+  const key = String(props.getProperty('SUNDAY_BUNDLE_KEY') || '').trim();
+  if (!url || !anon || !key) return null;
   try {
     const res = UrlFetchApp.fetch(url + (url.indexOf('?') > -1 ? '&' : '?') + 'day=' + encodeURIComponent(자율일),
-      { method: 'get', headers: { apikey: anon, Authorization: 'Bearer ' + anon }, muteHttpExceptions: true });
+      { method: 'get', headers: { apikey: anon, Authorization: 'Bearer ' + anon, 'x-sunday-bundle-key': key }, muteHttpExceptions: true });
     if (res.getResponseCode() !== 200) return null;
     const j = JSON.parse(res.getContentText());
     if (!j || j.ok !== true || !j.배정 || typeof j.배정 !== 'object') return null;
