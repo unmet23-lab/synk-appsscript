@@ -23,6 +23,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -110,9 +111,13 @@ def 견본(p, 크기, 테두리=False):
     """부품 하나를 그리는 상자. 몸 위에 접지가 깔린다(두 층일 때)."""
     if not p:
         return f'<div class="빔" style="width:{크기}px;height:{크기}px"></div>'
-    층 = [f'url("{p["몸"]}")']
+    # 🔴 **큰따옴표를 쓰지 않는다**(09-07 실사고 · 유호님이 「그림이 안보여」로 잡으셨다).
+    #   이 값은 `style="…"` 안에 들어간다. 안에 `"` 를 쓰면 그 자리에서 **속성이 끝나** 브라우저가
+    #   `background-image:url(` 까지만 읽고 나머지를 버린다 — 47벌이 통째로 빈 상자가 됐다.
+    #   base64 는 A–Z a–z 0–9 + / = 뿐이라 작은따옴표 안에서 안전하다.
+    층 = [f"url('{p['몸']}')"]
     if p.get('층') == 2 and p.get('접지'):
-        층.append(f'url("{p["접지"]}")')
+        층.append(f"url('{p['접지']}')")
     스타일 = (f'width:{크기}px;height:{크기}px;'
             f'background-image:{",".join(층)};'
             'background-size:contain;background-position:center;background-repeat:no-repeat')
@@ -396,6 +401,20 @@ def main():
 </div>
 <script>{JS}</script>
 '''
+
+    # 🔴 **낸 것을 되읽어 센다**(09-07 · 그림이 통째로 안 뜬 뒤에 세운 자).
+    #   `style="…"` 안에 큰따옴표가 하나라도 들어가면 그 자리에서 속성이 끊겨 그림이 사라지는데,
+    #   HTML 은 그래도 «멀쩡한 모양»으로 뜬다 — 빈 상자가 47벌이어도 빨간 줄이 0이다.
+    #   그래서 「몇 개가 실제로 그림을 물었나」를 분모와 함께 세고, 어긋나면 안 낸다.
+    상자수 = html.count('class="견본"')
+    # 속성 값 «안»에 큰따옴표가 없어야 성한 것이다 — 있으면 그 자리에서 속성이 끊긴다.
+    #   그래서 «그림도 들었고 끝줄까지 살아남았나»를 함께 본다. 앞만 보면 끊긴 것도 통과한다.
+    성한것 = len([m for m in re.findall(r'style="([^"]*)"', html)
+                if "background-image:url('data:image/webp;base64," in m
+                and m.endswith('background-repeat:no-repeat')])
+    if 상자수 and 성한것 != 상자수:
+        raise SystemExit(f'🔴 그림을 문 상자가 {성한것}/{상자수} 뿐이다 — style 속성이 끊겼다(큰따옴표 확인). 안 냈다.')
+    print(f'   그림을 문 상자 {성한것}/{상자수}')
 
     낼길 = os.path.join(루트, a.낼곳)
     임시 = 낼길 + '.tmp'
