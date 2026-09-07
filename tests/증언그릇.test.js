@@ -35,17 +35,18 @@ const 그릇절 = section('const TESTIMONY_ANSWER_MAX_ = 2000;', '/* ===========
 const 살균절 = section('function 이름살균_(', 'function 문항지문_(');
 const HEADERS = ['id', 'student_id', '시각', '출처', '물음', '답', '맥락', '시즌', '화자', 'schema_ver'];
 
-/** 시트 흉내 — 행 배열 하나. */
-function 시트(rows, w) {
+/** 시트 흉내 — 행 배열 하나 + 헤더 행(기본 = 정본 열 칸). */
+function 시트(rows, w, 헤더) {
+  const hdr = 헤더 || HEADERS.slice();
   const sh = {
     rows: rows.slice(),
     appended: [],
     getLastRow() { return this.rows.length + 1; },
-    getLastColumn() { return w || HEADERS.length; },
+    getLastColumn() { return w || hdr.length; },
     appendRow(r) { this.appended.push(r); this.rows.push(r); },
     getRange(r, c, n, cw) {
       const self = this;
-      return { getValues() { return self.rows.slice(r - 2, r - 2 + n).map(row => row.slice(c - 1, c - 1 + cw)); } };
+      return { getValues() { return r === 1 ? [hdr.slice(c - 1, c - 1 + cw)] : self.rows.slice(r - 2, r - 2 + n).map(row => row.slice(c - 1, c - 1 + cw)); } };
     },
   };
   return sh;
@@ -74,8 +75,8 @@ function 엔진(opts) {
   const 명단이름_ = () => (o.names === undefined ? ['바트', 'bat'] : o.names);
   const 보정 = [];
   const 헤더보정_ = (s, headers) => { 보정.push(headers); };
-  const E = new Function('ensureSheet', 'Utilities', 'LockService', '셀안전_', 'toDate_', '명단이름_', '헤더보정_',
-    `${상수절}\n${살균절}\n${그릇절}\nreturn { 증언지문_, 증언남기기_, 증언비식별_, 증언맵_, 증언반출_, 이름살균_, TESTIMONY_SCHEMA_VER };`)(ensureSheet, Utilities, LockService, 셀안전_, toDate_, 명단이름_, 헤더보정_);
+  const E = new Function('ensureSheet', 'Utilities', 'LockService', '셀안전_', 'toDate_', '명단이름_', '헤더보정_', 'Logger',
+    `${상수절}\n${살균절}\n${그릇절}\nreturn { 증언지문_, 증언남기기_, 증언비식별_, 증언맵_, 증언반출_, 이름살균_, TESTIMONY_SCHEMA_VER };`)(ensureSheet, Utilities, LockService, 셀안전_, toDate_, 명단이름_, 헤더보정_, { log: () => {} });
   return { E, ss, sh, locks, 보정 };
 }
 const now = Date.now();
@@ -128,9 +129,21 @@ test('[증언] 같은 말은 «언제 다시 보내도» 한 줄 — 지문에 �
 });
 
 test('[증언] 옛 8칸 탭에 쓰기 «전»에 칸을 세운다(헤더보정_) — 이름 없는 값 열이 생기면 아침 시트칸맞추기가 그 표를 멈춘다', () => {
-  const { E, ss, 보정 } = 엔진();
-  E.증언남기기_(ss, { student_id: 'S1', 출처: '회고', 물음: 'q', 답: 'a' });
+  const 옛 = 시트([], 8, HEADERS.slice(0, 8));
+  const { E, ss, 보정 } = 엔진({ sheet: 옛 });
+  const r = E.증언남기기_(ss, { student_id: 'S1', 출처: '회고', 물음: 'q', 답: 'a' });
+  assert.equal(r.ok, true);
   assert.deepEqual(보정, [HEADERS], '쓰기 전에 헤더 정본으로 보정한다');
+  assert.equal(옛.appended.length, 1);
+});
+
+test('[증언] 정본 자리에 «다른 이름»이 서 있으면 덮지 않고 멈춘다 — 그 열의 값이 남의 이름을 뒤집어쓴다(코덱스 3차 P0 · 결정 09-03)', () => {
+  const 충돌 = 시트([], 9, HEADERS.slice(0, 8).concat(['운영메모']));
+  const { E, ss, 보정 } = 엔진({ sheet: 충돌 });
+  const r = E.증언남기기_(ss, { student_id: 'S1', 출처: '회고', 물음: 'q', 답: 'a' });
+  assert.deepEqual(r, { ok: false, error: 'header-clash' });
+  assert.deepEqual(보정, [], '충돌 자리에 헤더보정_ 을 부르면 「운영메모」가 「화자」로 바뀐다');
+  assert.equal(충돌.appended.length, 0, '학생 글을 쓰지 않는다');
 });
 
 test('[증언] 원문은 공백·줄바꿈 그대로 남고 2000자에서 자른다 · 남의 글은 셀안전_ 을 지난다(= 로 시작하면 수식이 안 된다)', () => {
@@ -161,6 +174,10 @@ test('[증언] 검문 — 이름 조각 · 긴 숫자열 · 이메일 · 손잡�
   assert.equal(E.증언비식별_(이름들, '몽골국립대학교 3학년이에요'), null, '학교 이름');
   assert.equal(E.증언비식별_(이름들, 'Их сургууль-д сурдаг'), null, '몽골어 학교');
   assert.equal(E.증언비식별_(이름들, '한강 아파트에 살아요'), null, '사는 곳');
+  assert.equal(E.증언비식별_(이름들, '생일은 03/05예요'), null, '빗금 날짜(코덱스 3차)');
+  assert.equal(E.증언비식별_(이름들, '3 сарын 5-нд төрсөн'), null, '몽골어 월일');
+  assert.equal(E.증언비식별_(이름들, 'ABC Academy에 다녀요'), null, '영어 학원 낱말');
+  assert.equal(E.증언비식별_(이름들, '테헤란로 12에 살아요'), null, '도로명');
   assert.equal(E.증언비식별_(이름들, '다시 해 볼게요, 친구랑 같이'), '다시 해 볼게요, 친구랑 같이', '「다시」·「친구」 같은 보통 말은 통과한다');
   assert.equal(E.증언비식별_(null, '한국 회사'), null, '명단을 못 읽으면 검문 불가');
   assert.equal(E.증언비식별_(이름들, '   '), null);
