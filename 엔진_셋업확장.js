@@ -2220,7 +2220,10 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
       if (amt < 0 || 말.indexOf('환불') >= 0) 돌려받은사람[sid] = 1;
     });
     payerN = Object.keys(낸사람).length;
-    refundN = Object.keys(돌려받은사람).length;
+    /* [검수 P1 bec533a] 환불자는 «결제자 집합 안»에서만 센다. 안 그러면 양수 납부자 1명에
+     *   남의 음수 행 둘이 섞였을 때 2/1명 = 200% 가 정상처럼 나온다. 대장의 정의는
+     *   「결제했고 그중 환불한 사람」이다. 양수 행이 뒤에 와도 되게 마지막에 교집합을 낸다. */
+    refundN = Object.keys(돌려받은사람).filter((sid) => 낸사람[sid]).length;
     if (payerN > 0) refundPct = Math.round(refundN / payerN * 1000) / 10;
   }
 
@@ -2285,7 +2288,9 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
     '③ 추천 비율: ' + fmt(refPct, '%') + ' ' + stRef,
     '④ 이탈률: ' + (chR != null ? chR + '%' : 'KPI 미가동') + (chPrevR != null ? ' (전월 ' + chPrevR + '%)' : '') + ' ' + stChurn + ' · 이탈위험 상 ' + riskHi + '/중 ' + riskMid,
     '⑤ 3개월+ 선납: ' + fmt(prePct, '%') + ' ' + stPre,
-    '⑥ CPL: ' + (cpl == null ? '— (광고비·리드 입력 후)' : cpl + '만₮/건 (광고비 ' + adSpend + '÷리드 ' + inMonth.length + ')') + ' ⚪' // [v9.33]
+    '⑥ CPL: ' + (cpl == null ? '— (광고비·리드 입력 후)' : cpl + '만₮/건 (광고비 ' + adSpend + '÷리드 ' + inMonth.length + ')') + ' ⚪', // [v9.33]
+    /* [검수 P1 416906b] 시트에만 넣으면 weeklyJobs 의 주간 메일과 AI 해설에서 통째로 빠진다. */
+    '⑦ 환불 비율: ' + (payerN === 0 ? '— (결제 기입 전)' : refundN + '/' + payerN + '명 = ' + refundPct + '%') + ' ⚪' // [v9.331]
   ];
   if (alerts.length) t.push('', alerts.join('\n'));
   return t.join('\n');
