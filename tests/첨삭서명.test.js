@@ -233,3 +233,122 @@ test('무인 여부는 상수에서 파생한다 — 리터럴을 다시 적으�
   assert.ok(/AI_FEEDBACK_AUTOPUBLISH \? 발행경로_\.무인 : 발행경로_\.대기/.test(src),
     '발행경로가 AI_FEEDBACK_AUTOPUBLISH 를 안 읽는다 — 상태 열과 갈라진다');
 });
+
+/* ── [㉡-1 부품 · 09-07] 서명을 «채우는» 통로 — onHwFeedbackEdit ── */
+
+/* 통로 넷(편집자이름_ · 첨삭서명대상열_ · 첨삭서명찍기_ · onHwFeedbackEdit)을 가짜 의존으로 태운다. 카드지문_ 은 Utilities 층이라 흉내낸다. */
+function 통로(opts) {
+  const o = opts || {};
+  const src = 수집소스();
+  const 몸 = [
+    조각(src, 'const 발행경로_ =', '\n'),
+    조각(src, "const HW_SIGN_HANDLER_ = 'onHwFeedbackEdit';", '\n'),
+    조각(src, 'function 편집자이름_(', '\n}\n'),
+    조각(src, 'function 첨삭서명대상열_(', '\n}\n'),
+    조각(src, 'function 첨삭서명찍기_(', '\n}\n'),
+    조각(src, 'function onHwFeedbackEdit(', '\n}\n'),
+    조각(src, 'function 첨삭서명트리거보장_(', '\n}\n'),
+  ].join('\n');
+  const logs = [];
+  const writes = [];
+  const 헤더 = o.헤더 || ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션', '상태', '학생확인', '포인트지급',
+    '숙제ID', '오류태그', '재작성원본', '다시쓰기URL', '숙제문항', '급수', 'model', 'prompt_ver', 'schema_ver', '발행경로', '확인자', '확인시각', '확인지문'];
+  const rows = o.rows || {};
+  const sh = {
+    getName: () => o.시트이름 || 'hw_feedback',
+    getLastColumn: () => 헤더.length,
+    getParent: () => ({ getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar' }),
+    getRange(r, c, n, w) {
+      return {
+        getValues: () => (r === 1 ? [헤더.slice(c - 1, c - 1 + (w || 1))] : [[]]),
+        getValue: () => ((rows[r] || {})[헤더[c - 1]] === undefined ? '' : rows[r][헤더[c - 1]]),
+        setValue: (v) => { writes.push({ r, 칸: 헤더[c - 1], v }); },
+      };
+    },
+  };
+  const e = o.e === null ? null : Object.assign({
+    range: { getSheet: () => sh, getRow: () => o.row || 2, getLastRow: () => o.lastRow || o.row || 2, getColumn: () => o.col || 9, getLastColumn: () => o.lastCol || o.col || 9 },
+    user: { getEmail: () => (o.user === undefined ? 'yuho@synk.im' : o.user) },
+  }, o.eExtra || {});
+  const triggers = o.triggers || [];
+  const made = [];
+  const ScriptApp = {
+    getProjectTriggers: () => triggers.map(h => ({ getHandlerFunction: () => h })),
+    newTrigger: (h) => ({ forSpreadsheet: () => ({ onEdit: () => ({ create: () => { made.push(h); } }) }) }),
+  };
+  const F = new Function('Session', 'Utilities', 'Logger', 'ScriptApp', 'SpreadsheetApp', '카드지문_',
+    몸 + '\nreturn { onHwFeedbackEdit: onHwFeedbackEdit, 첨삭서명대상열_: 첨삭서명대상열_, 첨삭서명트리거보장_: 첨삭서명트리거보장_ };')(
+    { getActiveUser: () => ({ getEmail: () => (o.session === undefined ? '' : o.session) }) },
+    { formatDate: () => '2026-09-07 06:40' },
+    { log: (m) => logs.push(String(m)) },
+    ScriptApp, { getActiveSpreadsheet: () => ({}) },
+    (a, b, c, d) => 'fp:' + [a, b, c, d].join('|'));
+  return { F, e, writes, logs, made };
+}
+const 격리행 = { 발행경로: '격리', 고친문장: '고친', 오늘의포인트: '포', 칭찬: '칭', 다음미션: '미', 상태: '노출' };
+
+test('🔴 통로 — 격리 행의 상태를 사람이 «노출»로 바꾼 그 자리에서 확인자·확인시각·확인지문 셋이 찍힌다(지문 = 지금 그 문장)', () => {
+  const t = 통로({ rows: { 2: 격리행 }, col: 9 });
+  t.F.onHwFeedbackEdit(t.e);
+  assert.deepStrictEqual(t.writes.map(w => w.칸), ['확인자', '확인시각', '확인지문']);
+  assert.strictEqual(t.writes[0].v, 'yuho@synk.im');
+  assert.strictEqual(t.writes[1].v, '2026-09-07 06:40');
+  assert.strictEqual(t.writes[2].v, 'fp:고친|포|칭|미', '지문은 학생이 읽는 네 자리로 — 인자 순서가 카드지문_ 과 같아야 한다');
+});
+
+test('🔴 통로 — 무인 발행 행에는 사람이 손대도 서명이 안 붙는다(그 카드를 낸 것은 배치다) · 빈 발행경로도 마찬가지', () => {
+  const a = 통로({ rows: { 2: Object.assign({}, 격리행, { 발행경로: '무인' }) }, col: 5 });
+  a.F.onHwFeedbackEdit(a.e);
+  assert.deepStrictEqual(a.writes, []);
+  const b = 통로({ rows: { 2: Object.assign({}, 격리행, { 발행경로: '' }) }, col: 5 });
+  b.F.onHwFeedbackEdit(b.e);
+  assert.deepStrictEqual(b.writes, []);
+});
+
+test('통로 — 좁게 본다: 다른 시트 · 헤더 행 · 서명 칸 자체를 고치는 편집 · 학생이 안 읽는 칸(포인트지급)은 즉시 return', () => {
+  const 딴시트 = 통로({ rows: { 2: 격리행 }, 시트이름: 'profiles', col: 9 }); 딴시트.F.onHwFeedbackEdit(딴시트.e);
+  const 헤더행 = 통로({ rows: { 2: 격리행 }, row: 1, col: 9 }); 헤더행.F.onHwFeedbackEdit(헤더행.e);
+  const 서명칸 = 통로({ rows: { 2: 격리행 }, col: 22 }); 서명칸.F.onHwFeedbackEdit(서명칸.e);
+  const 딴칸 = 통로({ rows: { 2: 격리행 }, col: 11 }); 딴칸.F.onHwFeedbackEdit(딴칸.e);
+  [딴시트, 헤더행, 서명칸, 딴칸].forEach(t => assert.deepStrictEqual(t.writes, []));
+  const 없음 = 통로({ e: null }); 없음.F.onHwFeedbackEdit(없음.e);
+  assert.deepStrictEqual(없음.writes, []);
+});
+
+test('🔴 통로 — 편집자 이름을 못 얻으면 안 찍는다(모르는 이름을 지어 넣지 않는다) · e.user 가 비면 실행 계정으로 한 번 더 본다', () => {
+  const a = 통로({ rows: { 2: 격리행 }, col: 9, user: '', session: '' });
+  a.F.onHwFeedbackEdit(a.e);
+  assert.deepStrictEqual(a.writes, []);
+  assert.ok(a.logs.some(l => /이름을 못 얻었다/.test(l)), '건너뛴 사실이 로그에 남아야 한다');
+  const b = 통로({ rows: { 2: 격리행 }, col: 9, user: '', session: 'owner@gmail.com' });
+  b.F.onHwFeedbackEdit(b.e);
+  assert.strictEqual(b.writes[0].v, 'owner@gmail.com');
+});
+
+test('통로 — 붙여넣기로 여러 행이 한꺼번에 바뀌면 격리·대기 행마다 찍고 무인 행은 건너뛴다', () => {
+  const t = 통로({ rows: { 2: 격리행, 3: Object.assign({}, 격리행, { 발행경로: '무인' }), 4: Object.assign({}, 격리행, { 발행경로: '대기' }) }, row: 2, lastRow: 4, col: 5, lastCol: 8 });
+  t.F.onHwFeedbackEdit(t.e);
+  assert.deepStrictEqual(t.writes.map(w => w.r + ':' + w.칸), ['2:확인자', '2:확인시각', '2:확인지문', '4:확인자', '4:확인시각', '4:확인지문']);
+});
+
+test('통로 — 서명 칸이 아직 안 선 시트(옛 헤더)에는 아무것도 안 쓴다 · 설치 보장은 멱등이다', () => {
+  const 옛 = 통로({ rows: { 2: 격리행 }, col: 5, 헤더: ['id', 'student_id', '제출일', '제출문', '고친문장', '오늘의포인트', '칭찬', '다음미션', '상태'] });
+  옛.F.onHwFeedbackEdit(옛.e);
+  assert.deepStrictEqual(옛.writes, []);
+  const 있음 = 통로({ triggers: ['onHwFeedbackEdit', 'parentSweep'] });
+  assert.strictEqual(있음.F.첨삭서명트리거보장_(), '있음');
+  assert.deepStrictEqual(있음.made, []);
+  const 없음 = 통로({ triggers: ['parentSweep'] });
+  assert.strictEqual(없음.F.첨삭서명트리거보장_(), '만듦');
+  assert.deepStrictEqual(없음.made, ['onHwFeedbackEdit']);
+});
+
+test('🔴 등록층 — 매니페스트에 onHwFeedbackEdit 이 있고, resetAllTriggers 가 재설치하며, 아침 배치가 설치를 보장한다', () => {
+  const src = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8').replace(/\r\n/g, '\n');
+  const 매니 = 조각(src, 'function triggerManifest_(tbOn) {', '\n}\n');
+  assert.ok(/'onHwFeedbackEdit'/.test(매니), '매니페스트 밖이면 워치독이 실종을 못 본다(v9.164 의 그 병)');
+  const 재설치 = 조각(src, 'function resetAllTriggers(force) {', '\n}\n');
+  assert.ok(/ScriptApp\.newTrigger\('onHwFeedbackEdit'\)\.forSpreadsheet\(SpreadsheetApp\.getActiveSpreadsheet\(\)\)\.onEdit\(\)\.create\(\)/.test(재설치), '전체 삭제 루프 뒤 재설치가 없으면 조용히 실종된다(이름은 글자로 — safety 회귀가 글자로 대조한다)');
+  const 아침 = 조각(src, 'function morningJobs() {', '\n}\n');
+  assert.ok(/safeRun\('첨삭서명트리거', 첨삭서명트리거보장_\)/.test(아침), '손으로 켜는 설정을 두지 않는다 — 아침 배치가 보장한다');
+});

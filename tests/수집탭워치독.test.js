@@ -349,7 +349,7 @@ test('🔴 실저장소 — 넓힌 분모가 그대로 산다(표식 30종 = #Q1
     'voice_labels', 'voice_delivery', 'consent_log', 'portfolio_moments', '진단세션', '자율일배정'];
   const 빠짐 = 신규.filter((n) => 수집.indexOf(n) === -1);
   assert.deepEqual(빠짐, [], `넓힌 수집 탭이 분모 밖으로 나갔다 — ${빠짐.join(', ')}`);
-  assert.equal(수집.length, 30, `수집 표식 ${수집.length}종 — 30이 아니면 판정표(docs/엔진도달_설계.md §8-0 · 그 문서는 파생이라 코드가 정본)와 갈라졌다`);
+  assert.equal(수집.length, 31, `수집 표식 ${수집.length}종 — 31이 아니면 판정표(docs/엔진도달_설계.md §8-0 · 그 문서는 파생이라 코드가 정본)와 갈라졌다`);
   /* leads 는 사람이 고치는 리드 원장(inquiries 동류)이라 골격엔 들되 표식은 ㉡ 탈락이다. */
   assert.equal(수집.indexOf('leads'), -1, 'leads 에 수집 표식이 붙었다 — 사람 원장은 ㉡ 탈락(Ⅰ-④ 판정)');
   /* 🔴 **탈락 쪽도 못박는다** — 통과 목록만 검사하면 「넓히기」가 무제한으로 번져도 초록이다.
