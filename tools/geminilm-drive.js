@@ -193,6 +193,27 @@ function main() {
   }
   fs.rmSync(임시, { recursive: true, force: true });
 
+  /* ── 이번에 안 만든 옛 권을 걷는다 ────────────────────────────────────
+   * 머리말의 「묶음은 개수가 고정」은 **전제일 뿐 보장이 아니다**. 권수는
+   * CHUNK_CHARS 로 나눈 결과라 원본이 줄면 권수도 준다.
+   * 09-07 실측: 08-16 에 기억이 8권이었는데 오늘 7권이 되어 SYNK_기억_08.pdf 가
+   * 3주째 폴더에 남아 있었다. 소스로 거는 것이 파일이 아니라 **폴더**라서
+   * 남은 권도 그대로 읽힌다. 그래서 뒤집힌 옛 판정이 새 판정과 나란히 답에
+   * 섞인다(조용한 낡음 — 실패한 얼굴이 아니라 성공한 얼굴로 온다).
+   * 지우는 그물은 좁게 — 우리가 만드는 이름 꼴에 정확히 맞는 것만 건다.
+   * 유호님이 손으로 넣어 둔 파일과 _빠진_파일.txt 는 여기 안 걸린다.
+   * 자리도 여기여야 한다: 굽기가 하나라도 실패하면 위에서 throw 로 죽으므로
+   * 「새 판을 못 구웠는데 옛 판만 지웠다」가 원리상 안 생긴다. */
+  const 만든이름 = new Set(권.map((x) => x.이름));
+  const 걷음 = [];
+  for (const 이름 of fs.readdirSync(OUT)) {
+    if (!/^SYNK_(기억|문서)_\d{2}\.pdf$/.test(이름)) continue;
+    if (만든이름.has(이름)) continue;
+    fs.unlinkSync(path.join(OUT, 이름));
+    걷음.push(이름);
+  }
+  if (걷음.length) log(`  🧹 옛 권 ${걷음.length}개 걷음: ${걷음.join(', ')}`);
+
   // 빠진 것도 폴더 안에 남긴다 — 「자료가 없어 못 답한 것」과 「일부러 뺀 것」을 가르려고
   fs.writeFileSync(path.join(OUT, '_빠진_파일.txt'),
     `만든 날 ${만든날}\n개인정보·자격증명이 본문에 있어 제외한 원본 ${blocked.length}개\n\n` +
@@ -200,6 +221,7 @@ function main() {
     '\n\n안전한 값이면 tools/geminilm-export.js 의 ALLOW 에 값 단위로 추가하고 다시 돌린다.\n', 'utf8');
 
   log(`\n✅ ${구움}권 구움 → ${OUT}`);
+  if (걷음.length) log(`🧹 옛 권 ${걷음.length}개 걷음 — ${걷음.join(', ')} (이번 판에 없는 번호)`);
   if (blocked.length) log(`⛔ 제외 ${blocked.length}개 (_빠진_파일.txt 참고)`);
 }
 
