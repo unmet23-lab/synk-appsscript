@@ -1,5 +1,90 @@
 [
  {
+  "key": "DIAG_SESSION_HEADERS",
+  "tab": "quiz_log",
+  "code_cols": 24,
+  "live_cols": 17,
+  "rows": 0,
+  "missing": [
+   "세션번호",
+   "진단코드",
+   "이메일",
+   "전화",
+   "역할",
+   "회차",
+   "문항스냅샷",
+   "답",
+   "멱등열쇠",
+   "표본급수",
+   "급수경로",
+   "맞힌문형",
+   "다음문형",
+   "쓰기지시문",
+   "쓰기문장",
+   "AI산출",
+   "기준판",
+   "잰시각",
+   "학생번호",
+   "시작점",
+   "상태"
+  ],
+  "extra": [
+   "id",
+   "student_id",
+   "퀴즈ID",
+   "유형",
+   "문제",
+   "고른답",
+   "정답",
+   "정답여부",
+   "확신도",
+   "제출일",
+   "급수",
+   "문항지문",
+   "스냅샷지연초",
+   "응답시각ms"
+  ]
+ },
+ {
+  "key": "AUTO_ASSIGN_HEADERS",
+  "tab": "quiz_log",
+  "code_cols": 17,
+  "live_cols": 17,
+  "rows": 0,
+  "missing": [
+   "배정ID",
+   "자율일",
+   "차시",
+   "주유형",
+   "차시판",
+   "목표",
+   "항목",
+   "공급상태",
+   "완주판정",
+   "찬수",
+   "항목수",
+   "미집계",
+   "빈항목",
+   "판정시각"
+  ],
+  "extra": [
+   "id",
+   "퀴즈ID",
+   "유형",
+   "문제",
+   "고른답",
+   "정답",
+   "정답여부",
+   "확신도",
+   "제출일",
+   "급수",
+   "시도",
+   "문항지문",
+   "스냅샷지연초",
+   "응답시각ms"
+  ]
+ },
+ {
   "key": "HW_FEEDBACK_HEADERS",
   "tab": "hw_feedback",
   "code_cols": 24,
@@ -25,36 +110,11 @@
   ]
  },
  {
-  "key": "QUIZ_LOG_HEADERS",
-  "tab": "quiz_log",
-  "code_cols": 17,
-  "live_cols": 13,
-  "rows": 0,
-  "missing": [
-   "시도",
-   "문항지문",
-   "스냅샷지연초",
-   "응답시각ms"
-  ],
-  "extra": []
- },
- {
-  "key": "EXIT_LOG_HEADERS",
-  "tab": "exit_log",
-  "code_cols": 8,
-  "live_cols": 7,
-  "rows": 0,
-  "missing": [
-   "이름_몽골"
-  ],
-  "extra": []
- },
- {
   "key": "KPI_HEADERS",
   "tab": "kpi_metrics",
   "code_cols": 10,
   "live_cols": 10,
-  "rows": 23,
+  "rows": 24,
   "missing": [],
   "extra": []
  },
@@ -129,7 +189,7 @@
   "key": "SHARED_COL_HEADERS",
   "tab": "profiles",
   "code_cols": 20,
-  "live_cols": 137,
+  "live_cols": 138,
   "rows": 13,
   "missing": [],
   "extra": [
@@ -244,14 +304,15 @@
    "희망진학과정",
    "목표비자",
    "관심전공",
-   "등반카드HTML"
+   "등반카드HTML",
+   "입학시즌"
   ]
  },
  {
   "key": "SHARED2_COL_HEADERS",
   "tab": "profiles",
   "code_cols": 7,
-  "live_cols": 137,
+  "live_cols": 138,
   "rows": 13,
   "missing": [],
   "extra": [
@@ -379,14 +440,15 @@
    "희망진학과정",
    "목표비자",
    "관심전공",
-   "등반카드HTML"
+   "등반카드HTML",
+   "입학시즌"
   ]
  },
  {
   "key": "SHARED3_COL_HEADERS",
   "tab": "profiles",
   "code_cols": 4,
-  "live_cols": 137,
+  "live_cols": 138,
   "rows": 13,
   "missing": [],
   "extra": [
@@ -517,7 +579,8 @@
    "희망진학과정",
    "목표비자",
    "관심전공",
-   "등반카드HTML"
+   "등반카드HTML",
+   "입학시즌"
   ]
  },
  {
@@ -647,6 +710,15 @@
   "extra": []
  },
  {
+  "key": "QUIZ_LOG_HEADERS",
+  "tab": "quiz_log",
+  "code_cols": 17,
+  "live_cols": 17,
+  "rows": 0,
+  "missing": [],
+  "extra": []
+ },
+ {
   "key": "TALK_LOG_HEADERS",
   "tab": "talk_log",
   "code_cols": 13,
@@ -665,6 +737,15 @@
   "extra": [
    "ð Row ID"
   ]
+ },
+ {
+  "key": "EXIT_LOG_HEADERS",
+  "tab": "exit_log",
+  "code_cols": 8,
+  "live_cols": 8,
+  "rows": 0,
+  "missing": [],
+  "extra": []
  },
  {
   "key": "ABSENCE_FOLLOWUP_HEADERS",
