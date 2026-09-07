@@ -7573,6 +7573,25 @@
             "지시": "Two separate handmade felt objects laid out side by side on a plain flat surface with a wide empty gap between them so they never touch. LEFT OBJECT: a small DJ mixing console seen straight from the front, built entirely of densely needle-felted wool. Its body is a low wide box of deep midnight-navy wool with a narrow cream running stitch along its top edge. Across its face sit two rows of small round knobs in cream and coral wool, two short slider tracks of oat-coloured felt each with a coral slider cap, and one narrow rectangular window of pale butter wool standing in for a display, with no writing on it. Two shallow round recesses, one on the left and one on the right of the console top, are empty and clearly readable as turntable platters waiting for a record. RIGHT OBJECT: a single round record disc seen perfectly flat from directly above, a true circle with no perspective and no tilt whatsoever. It is a flat disc of near-black charcoal wool with fine concentric circular running stitches in slightly lighter thread, a coral felt label circle dead centre with one small cream dot at its middle, and a clean smooth outer edge. Both objects are matte densely felted wool with visible individual fibres, soft handmade irregularity, no plastic and no metal sheen. Even soft studio light from the upper left, no harsh shadow between them. No text, no lettering, no watermark, no hands. Tack sharp, medium format macro, photorealistic craft objects."
           }
         ]
+      },
+      {
+        "이름": "본체 SYNK 프로필 · 어두운 판",
+        "쓰는 곳": "본체 SYNK 인스타 프로필 사진(원형으로 잘린다) — 유호 지시 09-08 「어두운 판으로 한 벌 더 구워줘」",
+        "_결": "🔴 09-06 에 옛 «그린» 검은 판을 참조로 주고 「그대로, 더 또렷하게」만 시켰더니 배경이 흰색으로 나왔다 (밤워드마크_4K.png) — 참조의 «배경»은 안 지켜진다는 실측이다. 그래서 이번에는 그 4K 펠트 판을 참조로 주고 배경을 문장으로 못 박는다. 🔴 순검정 금지(킷) — 잉크 #2B2320 결의 어두운 천.",
+        "상태": "1/1",
+        "것들": [
+          {
+            "이름": "밤워드마크 · 어두운 판 (4K)",
+            "상태": "구웠다",
+            "쇠": "밤워드마크_어두운_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/Loom_자산/구움/밤워드마크_4K.png"
+            ],
+            "지시": "Keep the felt lettering in the reference image EXACTLY as it is: the same word \"synk\", the same letterforms and proportions, the same wool felt materials, the same cream-coloured letters with the single red-coral \"k\", the same hand-sewn running stitches along every edge, the same head-on camera angle. Do not redesign the letters, do not add or remove anything. Change ONLY the surface they rest on: replace the pale background with a deep charcoal-brown felt cloth (#2B2320), a soft matte woven wool that fills the whole frame, never pure black. Light the scene softly from the upper left so the cream letters lift clearly off the dark cloth, each letter casting a soft close contact shadow, and the wool fibres, the felt nap and every individual stitch stay fully resolved. Centre the word in the frame with generous even margins on all four sides.",
+            "파일": "밤워드마크_어두운_4K.avif"
+          }
+        ]
       }
     ]
   },
