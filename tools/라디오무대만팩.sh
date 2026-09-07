@@ -4,7 +4,7 @@
 # ■ 무엇을 하나
 #   옛 팩(마스코트가 그림으로 박힌 곡 파일)에서 «소리»만 뽑아, 마스코트 없는 무대 위에 얹어 새 팩을 만든다.
 #   그래야 마스코트가 방송 층(bots/오버레이/마스코트.html)에서 따로 움직인다 — 결(장르)마다 DJ 가 서고, 인사에 고개를 숙인다.
-#   무대 = 시티팝·전자는 Veo 영상(8초 반복) · 차분은 정지 그림.
+#   무대 = 시티팝은 Veo 영상(8초 반복) · 🆕 09-08 전자(house)는 «층에서 구운» 60초 영상(층_house.mp4 · 전자네온물가 · tools/무대영상굽기.js) · 차분은 정지 그림.
 #   🔴 09-07 저녁 «판정 철회» — 전자(house) 영상을 「카메라가 밀려 들어가 8초마다 튄다」고 적고 정지 그림으로 돌렸으나,
 #      다시 재보니 카메라는 고정이다. 자 셋: ① 첫↔끝 psnr 38.75dB(거의 같다) ② 첫 프레임을 2% 키워 견주면 18.58dB 로
 #      «떨어진다»(확대가 있었다면 올라야 한다) ③ 첫↔끝 차분 그림에 건물 윤곽선 0, 첫↔중간에는 창문 네모만 뜬다.
@@ -50,9 +50,10 @@ for a in "$IN"/*.aac; do
   # 🆕 09-08 «층에서 구운 영상» — tools/무대영상굽기.js 가 무대 층(bots/오버레이/무대.html)을 찍어 만든 되풀이 영상.
   #   이미 1280x720 이고 층이 보여 주는 틀 그대로라 확대·자르기 없이 1:1 로 깐다(미리보기에서 유호님이 보신 그 틀이다).
   #   덮개(비네팅·각인)는 그대로 얹는다. 이 파일이 있으면 아래 case 의 Veo 영상·정지 그림보다 앞선다.
-  층="$R/docs/라디오/무대영상/층_$genre.mp4"
-  if [ -f "$층" ]; then
-    ffmpeg -y -loglevel error -stream_loop -1 -i "$층" -i "$a" -i "$cover" \
+  #   ⚠ 변수명이 영어인 까닭 = 머리글의 그 줄(bash 는 한글 식별자를 못 받는다 · 09-08 에 `층=` 으로 또 밟아 넷을 옛 영상으로 구웠다).
+  layer="$R/docs/라디오/무대영상/층_$genre.mp4"
+  if [ -f "$layer" ]; then
+    ffmpeg -y -loglevel error -stream_loop -1 -i "$layer" -i "$a" -i "$cover" \
       -filter_complex "[0:v]scale=1280:720:flags=lanczos[s];[s][2:v]overlay=0:0:format=auto,format=yuv420p[v]" \
       -map "[v]" -map 1:a -shortest \
       -c:v libx264 -preset veryfast -crf 23 -maxrate 1500k -bufsize 3000k -r 30 -g 60 -c:a copy -f mpegts "$out"
@@ -77,6 +78,8 @@ for a in "$IN"/*.aac; do
   fi
   d=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$out" 2>/dev/null)
   sz=$(stat -c %s "$out" 2>/dev/null)
-  if [ $rc -eq 0 ] && [ -n "$sz" ]; then ok=$((ok+1)); echo "✅ $n ($genre) ${d}s $((sz/1024/1024))MB $(( $(date +%s)-t0 ))초"; else bad=$((bad+1)); echo "🔴 $n 실패 rc=$rc"; fi
+  t1=$(date +%s)
+  src_note="정지 그림"; [ -f "$layer" ] && src_note="층 영상" || { case "$genre" in citypop|house) src_note="Veo 영상";; esac; }
+  if [ $rc -eq 0 ] && [ -n "$sz" ]; then ok=$((ok+1)); echo "✅ $n ($genre · $src_note) ${d}s $((sz/1024/1024))MB $((t1-t0))초"; else bad=$((bad+1)); echo "🔴 $n 실패 rc=$rc"; fi
 done
 echo "합계 성공 $ok 실패 $bad → $OUT"
