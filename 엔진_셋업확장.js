@@ -1626,6 +1626,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('expandLessonLog', expandLessonLog_);   // [v9.36] 수업 마감 로그 승격분 → 숙제 +10·연료 전개 (calcAll 앞 = 그날 밤 게이지·랭킹 즉시 반영)
   safeRun('expandMasteryLog', expandMasteryLog_); // [v9.36] 당일 문법 태그 → mastery_log upsert (calcAll 앞 = 그날 밤 진화 게이트 즉시 반영)
   safeRun('calcAll', calcAll); // 오늘의 숙제 게시(21시 조건) + Glide가 만든 point_logs A·F 빈칸 보정 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
+  safeRun('cohort1HwBatch', cohort1HwBatchWeekly_); // [자율일] 토요일 밤에만 — 1기 반의 «그 주 앱 제출자 전원»을 hw_batch 한 행으로(유호 확정 09-07 ⓑ · 강사 1탭을 배치가 대신) · 바로 아래 전개가 5점을 준다
   safeRun('expandHwBatch', expandHwBatch);       // [v8.0] 숙제 일괄 1탭 → 학생별 +10 전개 (가드·정산·스토리 전에)
   safeRun('dailyGuard', dailyGuard);             // [v7.5] 일일 한도 — MVP 반당 1명 + 숙제·칭찬·생일 1회/일 자동 정정
   safeRun('notifyDailyAwards', notifyDailyAwards); // [v7.6] 유효 MVP·시냅스 학부모 알림(한·몽 통합 1통)

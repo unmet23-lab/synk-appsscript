@@ -467,6 +467,77 @@ function sundayBundleJudge_() {
   }
 }
 
+/* ── 1기 숙제 완료자 = «그 주에 앱으로 낸 학생 전원» (유호 확정 09-07 「제안에 따를게」 · 대응표 §⑤-㉣ ⓑ) ──────────
+ * 정규 학원은 강사가 수업에서 완료자 목록을 1탭으로 찍고(hw_batch) 밤 22시 `expandHwBatch` 가 학생별 +5 를 준다.
+ * 1기는 화면 수업이고 유호님 혼자라, 그 1탭을 «배치»가 찍는다 — 토요일 밤에 그 주(월~토) 앱 제출자 전원을 hw_batch 한 행으로.
+ * 「제출 = 완료」로 뜻이 넓어진다는 것을 알고 정하셨다. 포인트 값·통로는 그대로(코드가 정본 · 5점).
+ * 보는 통로 셋 = hw_feedback 제출일 · quiz_log 제출일 · 지난 자율일 묶음 판정(완주·부분). talk 에만 남은 제출은 못 본다(시트에 안 비친다 — 정직하게).
+ * 순수 함수 `자율일주간창_`·`자율일완료자_` 는 시험이 태운다. */
+function 자율일주간창_(토요일) {            // 'yyyy-MM-dd'(토) → { 부터: 월, 까지: 토 } 문자열
+  const d = new Date(토요일 + 'T00:00:00Z');
+  const 월 = new Date(d.getTime() - 5 * 86400000);
+  const f = function (x) { return x.toISOString().slice(0, 10); };
+  return { 부터: f(월), 까지: 토요일 };
+}
+function 자율일완료자_(학생들, 낸날짜별) {   // 학생들 = [{sid,name}] · 낸날짜별 = { sid: ['yyyy-MM-dd', …] } · 창 = {부터, 까지}
+  return function (창) {
+    return (학생들 || []).filter(function (s) {
+      return ((낸날짜별 || {})[s.sid] || []).some(function (day) { return day >= 창.부터 && day <= 창.까지; });
+    }).map(function (s) { return s.sid; });
+  };
+}
+function cohort1HwBatchWeekly_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = ss.getSpreadsheetTimeZone();
+  const now = new Date();
+  if (Number(Utilities.formatDate(now, tz, 'u')) !== 6) return;   // 토요일 밤에만(expandHwBatch 보다 앞에 걸려 있다)
+  const 오늘 = Utilities.formatDate(now, tz, 'yyyy-MM-dd');
+  const 학생들 = 자율일학생들_(ss);
+  if (!학생들.length) return;                                        // 1기 반이 없다 — 정상(개원 뒤 학원 반은 강사 1탭 그대로)
+  const 반별 = {};
+  const pf = ss.getSheetByName('profiles');
+  pf.getRange(2, 1, pf.getLastRow() - 1, 5).getValues().forEach(function (r) { if (r[0]) 반별[String(r[0]).trim()] = String(r[4] || '').trim(); });
+  const 낸날짜별 = {};
+  const 적기 = function (sid, d) { if (!sid || !d) return; (낸날짜별[sid] = 낸날짜별[sid] || []).push(Utilities.formatDate(d, tz, 'yyyy-MM-dd')); };
+  const fb = ss.getSheetByName('hw_feedback');
+  if (fb && fb.getLastRow() >= 2) fb.getRange(2, 1, fb.getLastRow() - 1, 3).getValues().forEach(function (r) { const d = toDate_(r[2]); if (d) 적기(String(r[1] || '').trim(), d); });
+  const ql = ss.getSheetByName('quiz_log');
+  if (ql && ql.getLastRow() >= 2) {
+    const c = function (n) { return QUIZ_LOG_HEADERS.indexOf(n); };
+    ql.getRange(2, 1, ql.getLastRow() - 1, Math.min(QUIZ_LOG_HEADERS.length, ql.getLastColumn())).getValues().forEach(function (r) {
+      const d = toDate_(r[c('제출일')]) || (r[c('created_at')] instanceof Date ? r[c('created_at')] : null);
+      if (d) 적기(String(r[c('student_id')] || '').trim(), d);
+    });
+  }
+  const sh = ss.getSheetByName(AUTO_ASSIGN_TAB_);
+  if (sh) {
+    const 기존 = 자율일행들_(sh);
+    Object.keys(기존).forEach(function (k) {
+      const b = 기존[k].묶음;
+      if (/^(완주|부분)/.test(b.완주판정 || '') && b.자율일) (낸날짜별[b.학생ID] = 낸날짜별[b.학생ID] || []).push(b.자율일);
+    });
+  }
+  const 창 = 자율일주간창_(오늘);
+  const 완료자 = 자율일완료자_(학생들, 낸날짜별)(창);
+  if (!완료자.length) { Logger.log('1기 숙제 완료자: 이번 주 앱 제출 0명(' + 창.부터 + '~' + 창.까지 + ')'); return; }
+  const hb = ensureSheet(ss, 'hw_batch', ['date', 'class_name', '완료자목록', '입력자', 'created_at', '처리상태']);
+  const 입력자 = '배치(1기 제출=완료)';
+  const 이미 = {};
+  if (hb.getLastRow() >= 2) hb.getRange(2, 1, hb.getLastRow() - 1, 4).getValues().forEach(function (r) {
+    if (String(r[3] || '') === 입력자 && r[0] && Utilities.formatDate(asDate_(r[0]), tz, 'yyyy-MM-dd') === 오늘) 이미[String(r[1] || '').trim()] = 1;
+  });
+  const 반묶음 = {};
+  완료자.forEach(function (sid) { const c = 반별[sid] || ''; (반묶음[c] = 반묶음[c] || []).push(sid); });
+  const nowStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm');
+  let 행 = 0;
+  Object.keys(반묶음).forEach(function (c) {
+    if (이미[c]) return;                                            // 같은 날 두 번 돌아도 한 행(멱등 · expandHwBatch 도 하루 1회를 지킨다)
+    hb.appendRow([오늘, c, 반묶음[c].join(','), 입력자, nowStr, '']);
+    행++;
+  });
+  Logger.log('1기 숙제 완료자: ' + 완료자.length + '명 · ' + 행 + '반 행 추가(' + 창.부터 + '~' + 창.까지 + ')');
+}
+
 /* quiz_log 에서 «배정ID#…» 꼴 퀴즈ID 로 들어온 제출을 배정ID 별로 모은다(자율일 당일 이후만 · 날짜는 시트 시간대 문자열로 견준다). */
 function 자율일퀴즈제출_(ss, 자율일, tz) {
   const ql = ss.getSheetByName('quiz_log');
