@@ -2202,6 +2202,28 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
     if (any) revenue = sum;
   }
 
+  /* [v9.331] 환불 비율 — 분모는 «실제 결제자»다(심문 2회차 B8 · 유호 확정 09-08).
+   *   🔴 leads 의 「등록」 칸을 분모로 쓰지 않는다: 등록하고 결제를 안 한 사람이 거기 남는다.
+   *   🔴 정원(16)도 분모가 아니다: 8명이 결제하고 1명이 신청하면 1/8 이지 1/16 이 아니다.
+   *   새 칸은 안 만든다(라이브 칸 늘리기는 성공한 적이 없다). 금액이 음수이거나
+   *   방법·비고에 「환불」이 있으면 환불 건으로 세고, 사람 단위라 student_id 로 중복을 제거한다.
+   *   창을 안 나눈다: 1기가 첫 기수라 누적이 곧 1기다. 기수가 늘면 그때 창을 나눈다. */
+  let refundPct = null, payerN = 0, refundN = 0;
+  if (sh.pay.getLastRow() >= 2) {
+    const 낸사람 = {}, 돌려받은사람 = {};
+    sh.pay.getRange(2, 1, sh.pay.getLastRow() - 1, 6).getValues().forEach(r => {
+      const sid = String(r[0] || '').trim();
+      if (!sid) return;                                  // student_id 가 비면 사람을 못 세므로 건너뛴다
+      const amt = Number(r[2]) || 0;
+      const 말 = String(r[4] || '') + ' ' + String(r[5] || '');  // 방법 + 비고
+      if (amt > 0) 낸사람[sid] = 1;
+      if (amt < 0 || 말.indexOf('환불') >= 0) 돌려받은사람[sid] = 1;
+    });
+    payerN = Object.keys(낸사람).length;
+    refundN = Object.keys(돌려받은사람).length;
+    if (payerN > 0) refundPct = Math.round(refundN / payerN * 1000) / 10;
+  }
+
   // ── 신호등 판정 (진단 임계선)
   const surv = (burn > 0 && cash > 0) ? Math.round(cash / burn * 10) / 10 : null;
   const cvR = kpiCur ? kpiCur.convRate : null, cvN = kpiCur ? kpiCur.consult : 0;
@@ -2230,6 +2252,10 @@ function updateBizDashboard(asText, kpiData) { // 계기판 시트 갱신 + 요�
     ['④ 월 이탈률(당월 잠정)', (chR != null ? chR + '%' : '— (KPI 미가동)') + (chPrevR != null ? ' · 전월 ' + chPrevR + '%' : ''), stChurn, '≤5% 사수 · 8% 2개월 연속 = 마케팅 증액 금지 · 정의=출석 ' + KPI_CHURN_DAYS + '일+ 무활동'],
     ['이탈위험 상/중 (선행지표)', riskHi + '명 / ' + riskMid + '명', riskHi > 0 ? '🟡' : '🟢', 'profiles 이탈위험 — 담임 케어 SOP 대상'],
     ['⑤ 3개월+ 선납 비중(90일)', fmt(prePct, '%'), stPre, '등록자 중 3·6개월/번들. 30%+ = 겨울 방어선'],
+    /* [v9.331] 신호등은 ⚪ 고정 — 「첫 2주 안에 그만두면 전액 환불」이 우리 약속이라
+     *   어느 값부터 나쁜지 재는 자가 없다. 자가 서기 전엔 색을 칠하지 않는다(CPL 과 같은 갈래). */
+    ['⑦ 환불 비율(누적)', payerN === 0 ? '— (결제 기입 전)' : refundN + '/' + payerN + '명 = ' + refundPct + '%', '⚪',
+      '분모는 payments 의 «실제 결제자»다 — leads 「등록」도 정원 16도 아니다. 환불 = 금액 음수 또는 방법·비고에 「환불」'],
     ['⑥ CPL (리드당 광고비)', cpl == null ? '— (광고비·리드 입력 후)' : cpl + '만₮/건', '⚪', '이번달 광고비 ' + (adSpend || 0) + '만₮ ÷ 이번달 리드 ' + inMonth.length + '건 · 몽골 벤치마크 부재로 색 판정 보류(실측 누적용)'] // [v9.33]
   ];
   sh.db.getRange(2, 1, rows.length, 4).setValues(rows);

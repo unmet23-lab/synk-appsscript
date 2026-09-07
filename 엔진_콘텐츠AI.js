@@ -3753,6 +3753,13 @@ function createLevelTestForm() {
   ss.getSheets().forEach(sh => { before[sh.getName()] = 1; });
   const form = FormApp.create('SYNK LAB — 무료 한국어 레벨 테스트 (Үнэгүй түвшин тогтоох тест)');
   setState(ensureSheet(ss, 'app_state', ['key', 'value']), '레벨테스트URL', form.getPublishedUrl()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
+  /* 🔴 [09-08] 문안을 「어느 단계」로 갈 것이 이미 정해져 있다(유호 확정 · 명품 마케팅 §⑬ 걸음 2).
+   *   F1 은 TOPIK 급수를 안 내고 아래 `lvl` 의 다섯 단계 이름을 낸다(입문·초급 1·초급 2·중급 1·중급 2+).
+   *   🔴 그런데 한국어만 고치면 못 나간다. 이 한 문자열이 한국어와 몽골어 «짝»이라, 한국어에
+   *   「어느 단계인지」를 넣으면 몽골어 쪽은 여전히 「진단 리포트가 간다」까지만 말해
+   *   두 언어가 서로 다른 약속을 한다. 몽골어 짝을 함께 쓰고 검문(tools/몽골어대조.js)을
+   *   지난 뒤에 함께 간다. 09-08 에 한국어만 갈았다가 tests/몽골어출구.test.js 가
+   *   잡아서 되돌렸다 — 그 게이트가 옳았다. */
   form.setDescription('15문항 · 5분 · 결과는 몽골어 AI 진단 리포트로 이메일에 도착합니다.\n15 асуулт · 5 минут · Танд монгол хэлээр оношилгооны тайлан имэйлээр очно.');
   form.addTextItem().setTitle('이름 / Нэр').setRequired(true);
   form.addTextItem().setTitle('연락처 / Утас').setRequired(true);
