@@ -1573,7 +1573,7 @@ function 증언남기기_(ss, 입력) {
     /* 옛 8칸 탭에 10칸 행을 쓰면 「이름 없는 값 열」이 된다(코덱스 2차 P1) — 칸부터 세운다. 다만 정본 자리에 **다른 이름**이 서 있으면
      *   덮지 않고 멈춘다(코덱스 3차 P0 · 결정 09-03 「다른 이름이 선 자리는 손대지 않는다」) — 그 열의 값이 남의 이름을 뒤집어쓴다. */
     const 충돌 = 증언헤더충돌_(sh);
-    if (충돌) { Logger.log('증언 저장 멈춤 — 헤더 자리에 다른 이름이 서 있다: ' + 충돌 + ' (사람이 본다 · 학생 글은 안 썼다)'); return { ok: false, error: 'header-clash' }; }
+    if (충돌) { Logger.log('증언 저장 멈춤 — 헤더 ' + 충돌 + ' 자리에 다른 이름이 서 있다(사람이 본다 · 학생 글은 안 썼다 · 셀값은 로그에 안 낸다)'); return { ok: false, error: 'header-clash' }; }
     if (typeof 헤더보정_ === 'function') 헤더보정_(sh, TESTIMONY_HEADERS);
     if (sh.getLastRow() >= 2) {
       const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
@@ -1592,7 +1592,7 @@ function 증언헤더충돌_(sh) {
   if (w < 1) return '';
   const cur = sh.getRange(1, 1, 1, w).getValues()[0].map(function (h) { return String(h == null ? '' : h).trim(); });
   for (let i = 0; i < TESTIMONY_HEADERS.length && i < cur.length; i++) {
-    if (cur[i] && cur[i] !== TESTIMONY_HEADERS[i]) return (i + 1) + '열 「' + cur[i] + '」(정본 「' + TESTIMONY_HEADERS[i] + '」 자리)';
+    if (cur[i] && cur[i] !== TESTIMONY_HEADERS[i]) return (i + 1) + '열(정본 「' + TESTIMONY_HEADERS[i] + '」 자리)';   // 셀값은 안 싣는다(코덱스 4차 P3)
   }
   return '';
 }
@@ -1610,15 +1610,17 @@ function 증언비식별_(이름들, 글) {
   if (/\b(?:S|DEMO-)[A-Za-z]*\d{2,}\b/i.test(s)) return null;           // 학생 번호 꼴
   if (/https?:\/\/|www\./i.test(s)) return null;                       // 주소
   /* [v9.325] 코덱스 2차 P0 — 생년·학교·연도 없는 날짜도 사람을 가리킨다(작은 반에서는 더). 안 나가는 쪽으로 틀린다. */
-  if (/\b(?:19|20)\d{2}\b/.test(s)) return null;                        // 연도(생년·입학년)
+  if (/\b(?:19\d{2}|200\d|201\d)\b/.test(s)) return null;               // 생년 꼴(1900~2019) — 목표 연도(2026·2027…)는 보통 말이라 통과([v9.327])
   if (/\d{1,2}\s*월\s*\d{1,2}\s*일/.test(s)) return null;               // 연도 없는 날짜
   if (/학교|대학|초등|중학|고등|유치원|university|school|college|сургууль|их сургууль/i.test(s)) return null; // 학교 이름
   if (/아파트|\bapt\b|хороо|дүүрэг/i.test(s)) return null;                // 사는 곳(아파트 · 몽골 행정구역)
-  /* [v9.326] 코덱스 3차 P0 — 빗금 날짜(03/05) · 몽골어 월일(3 сарын 5) · 영어 학원 낱말(academy·institute) · 도로명(○○로 12 · ○○길 3) */
+  /* [v9.326] 코덱스 3차 P0 — 빗금 날짜(03/05) · 몽골어 월일(3 сарын 5) · 영어 학원 낱말 · 도로명(○○로 12 · ○○길 3)
+   * [v9.327] 코덱스 4차 P1 — 넷을 «식별 꼴»로 좁혔다: 낱말만으로 걸면 「Өдөр бүр」(매일) · 「academic」 · 「한국어로 3문장」 같은 보통 말까지
+   *   빠져 엔진 재료가 준다(철학 Ⅰ-3②④ · 제품방향 불변식 3). 숫자가 붙은 꼴만 날짜·주소다. */
   if (/\b\d{1,2}\/\d{1,2}\b/.test(s)) return null;
-  if (/сарын|өдөр/i.test(s)) return null;
-  if (/academ|institut|kindergarten/i.test(s)) return null;
-  if (/[가-힣]+(?:로|길)\s*\d/.test(s)) return null;
+  if (/\d{1,2}\s*(?:-р\s*)?сарын\s*\d{1,2}/i.test(s)) return null;                          // 3 сарын 5 · 3-р сарын 5
+  if (/\b(?:academy|institute|kindergarten)\b/i.test(s)) return null;                         // 기관 낱말 그대로(academic 은 아니다)
+  if (/[가-힣]{2,}(?:대로|로|길)\s?\d+(?:번길|번지|번|호|층|동|-|,|\s|에|$)/.test(s)) return null;  // 테헤란로 12에 · 세종대로 1번길 — 「한국어로 3문장」은 아니다
   return s;
 }
 
