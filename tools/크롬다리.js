@@ -32,12 +32,32 @@ const 로그 = path.join(홈, 'AppData', 'Local', 'Claude', 'Logs', 'chrome-nati
 const 줄 = [];
 const 적기 = (s) => { 줄.push(s); console.log(s); };
 
-/* ① 대화창 계정 — 「계정 불일치」를 «먼저» 지워야 딴 데를 본다(09-07 에 여기서 세 번 헛돌았다) */
-function 계정() {
+/* ① 계정 — 🔴 **`~/.claude.json` 으로 재면 거짓 초록이 난다**(09-07 저녁 실측).
+ *   그 파일은 «터미널 CLI가 마지막에 로그인한» 계정이라, 데스크톱 앱이 그 뒤 다른 계정으로
+ *   갈아타도 **안 따라온다.** 실제로 09-07 19:34 에 앱이 한도 때문에 계정을 바꿨는데
+ *   그 파일은 그대로 unmet27 이어서, 이 도구의 첫 판이 「계정은 맞다」고 거짓말을 했다.
+ *   ⇒ 도구 호출이 나가는 방은 **앱이 «지금» 로그인한 계정**이다. 그건 앱 로그가 안다. */
+function 앱계정uuid() {
+  try {
+    const L = path.join(홈, 'AppData', 'Local', 'Claude', 'Logs', 'main.log');
+    const 크기 = fs.statSync(L).size;
+    const 시작 = Math.max(0, 크기 - 4 * 1024 * 1024);        // 끝 4MB 만 — 로그가 수십 MB 다
+    const fd = fs.openSync(L, 'r');
+    const buf = Buffer.alloc(크기 - 시작);
+    fs.readSync(fd, buf, 0, buf.length, 시작);
+    fs.closeSync(fd);
+    const m = String(buf).match(/acct:([0-9a-f-]{36})/g);
+    return m && m.length ? m[m.length - 1].slice(5) : null;
+  } catch { return null; }
+}
+
+/* CLI 쪽 계정 — «대조용»이지 판정용이 아니다 */
+function cli계정() {
   try {
     const j = JSON.parse(fs.readFileSync(path.join(홈, '.claude.json'), 'utf8'));
-    return (j.oauthAccount && j.oauthAccount.emailAddress) || null;
-  } catch { return null; }
+    const a = j.oauthAccount || {};
+    return { uuid: a.accountUuid || null, 메일: a.emailAddress || null };
+  } catch { return { uuid: null, 메일: null }; }
 }
 
 /* ② 관이 실제로 서 있나 — 파일 목록으로 잰다(윈도우는 파이프가 가상 폴더에 보인다) */
@@ -74,14 +94,23 @@ function 최근끊김() {
   } catch { return null; }
 }
 
-const 계 = 계정();
+const 앱u = 앱계정uuid();
+const cli = cli계정();
+const 갈렸나 = !!(앱u && cli.uuid && 앱u !== cli.uuid);
 const 관 = 관섰나();
 const 다리 = 다리수();
 const 선때 = 다리선때();
 const 끊김 = 최근끊김();
 
 적기('■ 크롬이 붙는 통로 셋 — 어디가 끊겼나');
-적기(`  ① 대화창 계정      ${계 || '(못 읽었다)'}`);
+적기(`  ① 앱이 지금 쓰는 계정  ${앱u || '(못 읽었다)'}   ← 도구 호출이 나가는 방은 «이것»이다`);
+적기(`     터미널 CLI 쪽 파일  ${cli.uuid || '(못 읽었다)'} ${cli.메일 ? '(' + cli.메일 + ')' : ''}`);
+if (갈렸나) {
+  적기('     🔴 **둘이 다르다 — 계정이 갈렸다.** 앱이 도중에 다른 계정으로 갈아탔다는 뜻이고,');
+  적기('        확장은 옛 계정 방에 남아 있다. 🚫 `~/.claude.json` 의 메일 주소를 믿지 마라(안 따라온다).');
+} else if (앱u) {
+  적기('     ✅ 둘이 같다 — 앱 계정은 흔들리지 않았다.');
+}
 적기(`  ② 이름 있는 관     ${관 === null ? '(못 쟀다)' : 관 ? `섰다 (${관이름})` : '🔴 없다'}`);
 적기(`  ③ 다리 프로세스    ${다리 === null ? '(못 쟀다)' : 다리 === 1 ? '1벌 (정상)' : 다리 === 0 ? '🔴 0벌' : `🔴 ${다리}벌 — 서로 관을 뺏는다`}`);
 적기(`  ④ 다리가 선 때     ${선때 || '(기록 없음)'}`);
@@ -89,7 +118,14 @@ const 끊김 = 최근끊김();
 적기('');
 
 let 코드 = 0;
-if (다리 === 0 || 관 === false) {
+if (갈렸나) {
+  적기('🔴 **까닭은 계정이 갈린 것이다** — 다리·관이 멀쩡해도 방이 달라서 목록이 빈다.');
+  적기(`   처방: 크롬 옆 Claude 패널을 **앱이 지금 쓰는 계정**(위 ①의 ${앱u.slice(0, 8)}…)으로 로그인한다.`);
+  적기('        그 계정의 메일 주소는 앱 설정 화면이 안다 — `~/.claude.json` 의 주소가 아니다.');
+  적기('   ⚠ 로그인 뒤에도 안 붙으면 **확장을 다시 띄운다**(chrome://extensions 에서 껐다 켜기).');
+  적기('     확장의 배경 일꾼이 옛 계정 방에 든 채로 새 로그인을 못 따라오는 자국이 09-07 에 있었다.');
+  코드 = 1;
+} else if (다리 === 0 || 관 === false) {
   적기('🔴 **다리가 안 섰다** — 크롬 쪽이 원인이다.');
   적기('   처방: 크롬에서 Claude 옆 패널을 한 번 연다(패널을 열어야 확장이 다리를 띄운다).');
   코드 = 1;
