@@ -8,8 +8,11 @@
   쓰는 법  : python tools/마스코트치수재기.py            → 숫자만 (JSON)
              python tools/마스코트치수재기.py --그림 <폴더> → 확인용 그림도 같이
 
-  ⚠ 캐릭터마다 «눈을 찾는 자»가 다르다 — 몽글은 검은 구슬, 까몽은 초록 홍채, 마린은 노란 렌즈다.
-    한 가지 자로 셋을 다 재려 하면 까몽의 검은 털이 통째로 눈으로 잡힌다(09-08 에 밟았다).
+  🔴 09-08 에 눈 자를 한 번 고쳤다(유호님이 지면에서 «짝짝이 상자»를 잡으셨다). 밟은 함정 셋:
+     ① **밝기만으로 몽글의 눈을 찾으면 눈 둘레의 그늘까지 삼킨다** — 오른쪽 눈이 44% 커 보였다.
+        가르는 자는 밝기가 아니라 «붉은기»(r-g)다: 구슬 r-g≈2 · 코랄 그늘 r-g≈116.
+     ② **까몽의 초록 문턱이 높으면 홍채 고리의 «밝은 쪽»만 잡힌다** — 눈이 실제의 3분의 2로 나왔다.
+     ③ **덩어리로 안 묶으면** 눈 밖의 밝은 털이 반짝임으로 잡힌다 — 반짝임은 «가장 큰 밝은 덩어리» 하나다.
 """
 import io, json, os, sys
 import numpy as np
@@ -18,13 +21,13 @@ from PIL import Image, ImageDraw
 SRC = os.path.join('docs', '캐릭터', '정본_4K')
 NAMES = ['몽글', '까몽', '마린']
 
-# 눈을 찾는 자 — 캐릭터마다 다르다
+# 눈을 찾는 자 — 캐릭터마다 다르다 (한 가지 자로는 셋을 못 잰다)
 EYE_KEY = {
-    '몽글': lambda r, g, b, l: l < 55,                                  # 검은 구슬
-    '까몽': lambda r, g, b, l: (g - r > 18) & (g - b > 18) & (l > 55),  # 초록 홍채
-    '마린': lambda r, g, b, l: (r > 150) & (g > 120) & (r - b > 70),    # 노란 렌즈
+    '몽글': lambda r, g, b, l: (l < 70) & ((r - g) < 40),          # 검은 구슬 — 붉은기로 그늘과 가른다
+    '까몽': lambda r, g, b, l: (g > r) & (g > b) & (l > 30),        # 초록 홍채 고리 전체
+    '마린': lambda r, g, b, l: (r > 150) & (g > 120) & ((r - b) > 70),  # 노란 렌즈
 }
-GLINT_TH = {'몽글': 190, '까몽': 200, '마린': 240}                       # 반짝임 문턱 밝기
+GLINT_TH = {'몽글': 190, '까몽': 190, '마린': 240}                   # 반짝임 문턱 밝기
 
 
 def _load(name, cut='본체'):
@@ -137,20 +140,24 @@ def measure(name):
 
     key = m & EYE_KEY[name](r, g, b, lum)
     key[y0 + int(bh * .7):] = False
-    cs = _blobs(key[::4, ::4], 400)[:2]
+    cs = _blobs(key[::4, ::4], 150)[:2]
     for c in cs:
         for k in ('x0', 'x1', 'y0', 'y1'):
             c[k] *= 4
         c['cx'] *= 4
         c['cy'] *= 4
+        c['n'] *= 16
     if len(cs) == 2:
         L, R = sorted(cs, key=lambda d: d['cx'])
-        ew = (L['x1'] - L['x0'] + R['x1'] - R['x0'] + 2) / 2
-        eh = (L['y1'] - L['y0'] + R['y1'] - R['y0'] + 2) / 2
+        wL, wR = L['x1'] - L['x0'] + 1, R['x1'] - R['x0'] + 1
+        hL, hR = L['y1'] - L['y0'] + 1, R['y1'] - R['y0'] + 1
+        ew, eh = (wL + wR) / 2, (hL + hR) / 2
         span = R['cx'] - L['cx']
-        rec['눈'] = dict(잡은것={'몽글': '검은 구슬', '까몽': '초록 홍채가 보이는 자리',
+        rec['눈'] = dict(잡은것={'몽글': '검은 구슬', '까몽': '초록 홍채 고리 전체',
                               '마린': '노란 렌즈'}[name],
+                        왼쪽=[wL, hL], 오른쪽=[wR, hR],
                         폭px=int(ew), 높이px=int(eh), 세로가로비=round(eh / ew, 2),
+                        좌우_폭차이=f'{round(100 * abs(wL - wR) / max(wL, wR), 1)}%',
                         사이_중심간px=int(span),
                         폭_몸폭대비=round(ew / bw, 3), 사이_몸폭대비=round(span / bw, 3),
                         사이_눈폭배수=round(span / ew, 2),
@@ -160,19 +167,20 @@ def measure(name):
                         상자=[[L['x0'], L['y0'], L['x1'], L['y1']],
                             [R['x0'], R['y0'], R['x1'], R['y1']]])
 
-        # 반짝임 — 눈 상자 안에서 가장 큰 밝은 덩어리 하나
-        bx = rec['눈']['상자'][1]
-        pad = int(.15 * (bx[2] - bx[0]))
-        sub = lum[bx[1] - pad:bx[3] + pad, bx[0] - pad:bx[2] + pad]
-        hot = _blobs((sub > GLINT_TH[name])[::2, ::2], 25)
-        if hot:
-            h = hot[0]
-            d = max(h['x1'] - h['x0'], h['y1'] - h['y0']) * 2 + 1
-            rec['눈']['반짝임'] = dict(지름px=int(d), 지름_눈폭대비=round(d / (bx[2] - bx[0] + 1), 3),
-                                  가로_눈안에서=round((h['cx'] * 2 + bx[0] - pad - bx[0]) / (bx[2] - bx[0] + 1), 3),
-                                  세로_눈안에서=round((h['cy'] * 2 + bx[1] - pad - bx[1]) / (bx[3] - bx[1] + 1), 3))
-        else:
-            rec['눈']['반짝임'] = '없다(무광)'
+        # 반짝임 — 눈 상자 «안»에서 가장 큰 밝은 덩어리 하나
+        빛 = []
+        for bx in rec['눈']['상자']:
+            w, h = bx[2] - bx[0] + 1, bx[3] - bx[1] + 1
+            sub = lum[bx[1]:bx[3] + 1, bx[0]:bx[2] + 1]
+            hot = _blobs((sub > GLINT_TH[name])[::2, ::2], 10)
+            if not hot:
+                continue
+            t = hot[0]
+            d = (max(t['x1'] - t['x0'], t['y1'] - t['y0']) + 1) * 2
+            빛.append(dict(지름_눈폭대비=round(d / w, 3),
+                          가로_눈안에서=round(t['cx'] * 2 / w, 3),
+                          세로_눈안에서=round(t['cy'] * 2 / h, 3)))
+        rec['눈']['반짝임'] = 빛 if 빛 else '없다(무광)'
     return rec, (a, m, r, g, b, lum, x0, y0, x1, y1, bw, bh)
 
 
@@ -234,9 +242,11 @@ if __name__ == '__main__':
             rec['킷과의거리'][label] = kit_distance(hx, kit)
         rep[name] = rec
         if draw_to and '눈' in rec:
-            im = Image.open(os.path.join(SRC, f'{name}_본체.png')).convert('RGBA')
+            # 🔴 자르는 기준은 «투명도 128 초과»여야 한다. PIL 의 getbbox() 는 투명도 0 초과라
+            #    그림이 더 넓게 잘리고, 그 위에 백분율로 그린 상자가 통째로 밀린다(09-08 유호 지적).
             bb = rec['몸상자']
-            im = im.crop((bb[0], bb[1], bb[2] + 1, bb[3] + 1))
+            im = Image.open(os.path.join(SRC, f'{name}_본체.png')).convert('RGBA') \
+                      .crop((bb[0], bb[1], bb[2] + 1, bb[3] + 1))
             sc = 420. / max(im.size)
             im = im.resize((int(im.width * sc), int(im.height * sc)), Image.LANCZOS)
             bg = Image.new('RGB', im.size, (240, 240, 236))
