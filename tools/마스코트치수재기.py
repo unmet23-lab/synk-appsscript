@@ -258,3 +258,8 @@ if __name__ == '__main__':
                              outline=(210, 30, 20), width=3)
             bg.save(os.path.join(draw_to, f'치수확인_{name}.png'))
     sys.stdout.write(json.dumps(rep, ensure_ascii=False, indent=1))
+    if not draw_to:
+        sys.stderr.write(
+            '\n⚠ 확인 그림 없이 낸 값이다. 자가 틀리면 «숫자»로는 안 보이고 «그림»에서 보인다(09-08 함정 셋).\n'
+            '   판정에 쓰기 전에  python tools/마스코트치수재기.py --그림 <폴더>  로 다시 돌려 상자를 눈으로 겹쳐 본다.\n'
+            '   짝이 있는 것은 「좌우_폭차이」를 먼저 본다 — 10%를 넘으면 눈이 아니라 자를 의심한다.\n')
