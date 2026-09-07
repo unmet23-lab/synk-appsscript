@@ -49,17 +49,99 @@
      숨은 탭·절전에서는 그림 시계가 멎어 opacity 가 0.002 에 붙박이고, 무대가 «영영 안 뜬다».
      방송에 나갈 층이라 「보통은 된다」로는 부족하다 — 아래 `서서히()` 가 타이머로 직접 민다. */
   .장 { position: absolute; inset: 0; opacity: 0; will-change: opacity; }
+  /* 🆕 2026-09-08 — 그림을 «판» 안에 넣고 숨은 판이 쉰다. 그래야 판 안에 얹는 불빛·물비침이 그림과
+     **같이** 움직인다(그림만 숨 쉬면 불빛이 그림 위에서 4% 까지 미끄러진다 · 09-08 실측 셈). */
+  .장 .판 {
+    position: absolute; inset: 0;
+    /* ① 숨 쉬는 무대 — 트랜스폼만. 54초에 한 숨(들이쉬고 내쉬기) */
+    animation: 숨 var(--숨주기, 54s) ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  .장:nth-child(2) .판 { animation-delay: calc(var(--숨주기, 54s) / -2); }   /* 두 겹이 «같이» 숨쉬면 전환이 티 난다 */
   .장 img {
+    position: absolute; inset: 0;
     width: 100%; height: 100%;
     object-fit: cover;                       /* 정사각 그림을 16:9 에 채운다 — 자르는 일은 화면 몫 */
     object-position: var(--맞춤, center);
     display: block;
-    /* ① 숨 쉬는 무대 — 트랜스폼만. 54초에 한 숨(들이쉬고 내쉬기) */
-    animation: 숨 54s ease-in-out infinite alternate;
-    will-change: transform;
     user-select: none; -webkit-user-drag: none;
   }
-  .장:nth-child(2) img { animation-delay: -27s; }   /* 두 겹이 «같이» 숨쉬면 전환이 티 난다 */
+
+  /* 🆕 2026-09-08 «살아 있는 무대» — 유호 지시 「전체적으로 불빛 반짝이는거랑 가로등 가끔씩 깜빡거리는거랑
+     바닥에 비치고있는 빛들 은은하게 움직이도록 · 배경이 조금 더 생동감있었으면 해」.
+     구운 펠트 그림은 못 건드리므로, 그림에 «박힌» 불빛 자리 위에 여린 빛 조각을 얹어 저마다 다른 박자로 산다.
+     자리는 `무대빛` 표(아래 스크립트)가 결마다 든다 — 그림을 도구로 잰 값이고 눈대중이 아니다.
+     🔴 색 연산(filter·blend) 0 · 자리 이동 0 — 밝기만 오르내린다. 물비침 한 겹만 ±0.22% 흔들린다(4px).
+     ⓐ 물비침: 같은 그림을 한 장 더 물 자리에만(마스크) 깔고 좌우로 아주 조금 흔든다 → 물에 비친 불빛이 «일렁»인다.
+     ⓑ 등(가로등): 불무리가 숨 쉬다 «가끔» 한 번 꺼질 듯 깜빡인다 — 어두운 심을 같은 박자로 얹어 알전구 자체가 어두워진다.
+     ⓒ 창: 창문 불빛이 저마다 2.6~5.4초로 밝아졌다 여린다.
+     ⓓ 네온: 물에 비친 네온 기둥이 2.4~4.6초로 숨 쉬고, 기둥 «안에서» 빛 띠가 천천히 흘러내린다(물의 흐름).
+     🔴 09-08 걷은 것 — 물 전체에 가로 빛띠를 흘리는 「잔물결」겹. 화면에서 주사선(가로줄)으로 읽혔다(실측 사진).
+        흐름은 «기둥 안에서만» 낸다 — 색이 있는 자리 안의 띠는 물결로 읽히고, 빈 물 위의 띠는 줄로 읽힌다. */
+  .장 img.물비침 {
+    opacity: .5;
+    transform-origin: 50% var(--물선, 44%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--물선, 44%) - 4%), rgba(0,0,0,.7) calc(var(--물선, 44%) + 5%), #000 calc(var(--물선, 44%) + 16%));
+            mask-image: linear-gradient(to bottom, transparent calc(var(--물선, 44%) - 4%), rgba(0,0,0,.7) calc(var(--물선, 44%) + 5%), #000 calc(var(--물선, 44%) + 16%));
+    animation: 물결 var(--물결주기, 8.2s) ease-in-out infinite alternate;
+    will-change: transform;
+  }
+  @keyframes 물결 {
+    from { transform: translate3d(-0.22%, 0, 0) scale(1.004, 1.012); }
+    to   { transform: translate3d(0.22%, 0.1%, 0) scale(0.996, 0.994); }
+  }
+  .장 .판:not(.물있음) img.물비침 { display: none; }
+
+  .장 .빛들 { position: absolute; inset: 0; pointer-events: none; }
+  .장 .빛들 i {
+    position: absolute; display: block; border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: var(--늦게, 0s);
+    will-change: opacity;
+  }
+  .장 .빛들 i.등 {
+    width: 6.2vw; height: 6.2vw;
+    background: radial-gradient(circle, rgba(255,226,166,.62) 0%, rgba(255,214,140,.30) 28%, rgba(255,200,120,0) 68%);
+    animation: 등깜빡 var(--주기, 13s) ease-in-out infinite;
+  }
+  .장 .빛들 i.등심 {
+    width: 1.9vw; height: 1.9vw;
+    background: radial-gradient(circle, rgba(30,24,52,.9) 0%, rgba(30,24,52,.7) 40%, rgba(30,24,52,0) 74%);
+    opacity: 0;
+    animation: 등심 var(--주기, 13s) linear infinite;
+  }
+  /* 가로등 — 대부분 잔잔히 숨 쉬고, 한 주기에 두 번(30%·71%) 짧게 꺼질 듯 흔들린다. 네 등의 주기가 다 달라 겹치지 않는다. */
+  @keyframes 등깜빡 {
+    0%, 100% { opacity: .55; } 9% { opacity: .64; } 18% { opacity: .48; } 27% { opacity: .62; }
+    30% { opacity: .16; } 31.5% { opacity: .6; } 33% { opacity: .28; } 35% { opacity: .62; }
+    50% { opacity: .5; } 64% { opacity: .62; }
+    71% { opacity: .1; } 72.5% { opacity: .56; } 74% { opacity: .22; } 76% { opacity: .62; } 88% { opacity: .54; }
+  }
+  @keyframes 등심 {
+    0%, 29%, 36%, 70%, 77%, 100% { opacity: 0; }
+    30% { opacity: .6; } 31.5% { opacity: .05; } 33% { opacity: .42; } 35% { opacity: 0; }
+    71% { opacity: .66; } 72.5% { opacity: .1; } 74% { opacity: .5; } 76% { opacity: 0; }
+  }
+  .장 .빛들 i.창 {
+    width: 2.2vw; height: 2.2vw;
+    background: radial-gradient(circle, var(--색) 0%, transparent 62%);
+    opacity: .35;
+    animation: 반짝 var(--주기, 3.4s) ease-in-out infinite alternate;
+  }
+  @keyframes 반짝 { from { opacity: .18; } to { opacity: .85; } }
+  .장 .빛들 i.네온 {
+    width: 3.4vw; height: 36vh;
+    transform: translate(-50%, 0);
+    border-radius: 50% / 10%;
+    /* 색 띠가 66px 마다 되풀이되고(아래 흐름 이 66px 을 밀어 이음매 없이 돈다), 부드러운 타원 마스크가 기둥 꼴을 만든다 */
+    background: repeating-linear-gradient(to bottom, var(--색) 0, transparent 22px, transparent 44px, var(--색) 66px);
+    -webkit-mask-image: radial-gradient(50% 50% at 50% 38%, #000 0%, transparent 72%);
+            mask-image: radial-gradient(50% 50% at 50% 38%, #000 0%, transparent 72%);
+    opacity: .5;
+    animation: 네온숨 var(--주기, 3s) ease-in-out infinite alternate, 흐름 var(--흐름주기, 6s) linear infinite;
+  }
+  @keyframes 네온숨 { from { opacity: .3; } to { opacity: .92; } }
+  @keyframes 흐름 { from { background-position: 0 0; } to { background-position: 0 66px; } }
   @keyframes 숨 {
     from { transform: scale(1.045) translate3d(-0.5%, 0.35%, 0); }
     to   { transform: scale(1.085) translate3d(0.6%, -0.45%, 0); }
@@ -70,7 +152,7 @@
     position: absolute; inset: 0; pointer-events: none;
     background: radial-gradient(120% 72% at 12% 4%, rgba(255,235,176,.34), rgba(255,235,176,0) 62%);
     opacity: .34;
-    animation: 빛숨 26s ease-in-out infinite alternate;
+    animation: 빛숨 var(--빛숨주기, 26s) ease-in-out infinite alternate;
     transition: opacity .45s ease-out;
     will-change: opacity;
   }
@@ -92,13 +174,13 @@
     background:
       radial-gradient(38% 26% at 22% 34%, rgba(255,196,120,.20), rgba(255,196,120,0) 70%),
       radial-gradient(34% 22% at 74% 30%, rgba(150,210,255,.18), rgba(150,210,255,0) 70%);
-    animation: 일렁A 7.5s ease-in-out infinite alternate;
+    animation: 일렁A var(--일렁A주기, 7.5s) ease-in-out infinite alternate;
   }
   #일렁2 {
     background:
       radial-gradient(44% 30% at 50% 40%, rgba(255,150,190,.16), rgba(255,150,190,0) 72%),
       radial-gradient(30% 20% at 12% 26%, rgba(255,235,176,.16), rgba(255,235,176,0) 70%);
-    animation: 일렁B 11.3s ease-in-out infinite alternate;
+    animation: 일렁B var(--일렁B주기, 11.3s) ease-in-out infinite alternate;
   }
   @keyframes 일렁A { from { opacity: .30; } to { opacity: .92; } }
   @keyframes 일렁B { from { opacity: .85; } to { opacity: .22; } }
@@ -139,14 +221,14 @@
   }
   body.데모 #데모판 { display: block; }
   @media (prefers-reduced-motion: reduce) {
-    .장 img, #빛, #보풀 i, .일렁 { animation: none; }
+    .장 .판, .장 img.물비침, .장 .빛들 i, #빛, #보풀 i, .일렁 { animation: none; }
   }
 </style>
 </head>
 <body>
 <div id="무대" aria-hidden="true">
-  <div class="장"><img alt=""></div>
-  <div class="장"><img alt=""></div>
+  <div class="장"><div class="판"><img class="바탕" alt=""><img class="물비침" alt=""><div class="빛들"></div></div></div>
+  <div class="장"><div class="판"><img class="바탕" alt=""><img class="물비침" alt=""><div class="빛들"></div></div></div>
 </div>
 <div id="일렁1" class="일렁" aria-hidden="true"></div>
 <div id="일렁2" class="일렁" aria-hidden="true"></div>
@@ -164,6 +246,31 @@ if (인자.get('demo') === '1' || 인자.get('데모') === '1') document.body.cl
   if (맞춤) document.documentElement.style.setProperty('--맞춤', 맞춤);
 }
 
+/* ── 🆕 2026-09-08 «구울 때의 박자» — `?루프=<초>` ──────────────────────────────
+   이 지면은 방송에 «그대로» 나가지 않는다. 방송 배경은 곡 팩(.ts)에 영상으로 박혀 있고(라디오무대만팩.sh),
+   그 영상은 tools/무대영상굽기.js 가 이 지면을 헤드리스 크롬으로 한 장씩 찍어 만든다.
+   영상은 <루프>초로 잘라 되풀이되므로, 되풀이되는 모든 박자가 그 길이를 «정확히 나눠야» 이음매가 안 보인다.
+   🔑 루프가 오면 모든 박자를 루프/n (n = 1…60) 중 가장 가까운 값으로 «살짝» 옮긴다 — 7.5초는 7.5초 그대로,
+      11.3초는 10초로, 54초 숨은 30초 왕복(=60초 한 바퀴)으로. 미리보기·OBS 에서는 인자가 없어 박자가 그대로다.
+   ⚠ 왕복(alternate)은 두 번이 한 바퀴다 — 그래서 왕복 박자는 «2×초»가 루프를 나눠야 한다. */
+const 루프 = Math.max(0, parseFloat(인자.get('루프')) || 0);
+function 박자(초, 왕복 = false) {
+  if (!루프) return 초;
+  const 바퀴 = 왕복 ? 초 * 2 : 초;
+  let 가장 = 루프;
+  for (let n = 2; n <= 60; n++) { const 후보 = 루프 / n; if (Math.abs(후보 - 바퀴) < Math.abs(가장 - 바퀴)) 가장 = 후보; }
+  return 왕복 ? 가장 / 2 : 가장;
+}
+const 초로 = (x) => x.toFixed(3).replace(/\.?0+$/, '') + 's';
+if (루프) {
+  const r = document.documentElement.style;
+  r.setProperty('--숨주기', 초로(박자(54, true)));
+  r.setProperty('--빛숨주기', 초로(박자(26, true)));
+  r.setProperty('--일렁A주기', 초로(박자(7.5, true)));
+  r.setProperty('--일렁B주기', 초로(박자(11.3, true)));
+  r.setProperty('--물결주기', 초로(박자(8.2, true)));
+}
+
 /* ── 무대 그림 ────────────────────────────────────────────────────
    🔴 결 이름은 `마스코트.html` 의 `장르차림` 키와 **같은 낱말**이다(일곱).
       한쪽만 고치면 그 결에서 DJ 는 갈아입는데 무대는 그대로 서 있다 — 가장 안 보이는 자리다. */
@@ -174,9 +281,66 @@ const 결들 = ['시티팝노을휴양지', '전자밤도시', '드림하늘', '
 const 무대파일 = (결) => 무대경로 + 결 + '.webp';
 
 const 겹들 = Array.from(document.querySelectorAll('.장'));
-const 그림들 = 겹들.map((d) => d.querySelector('img'));
+const 그림들 = 겹들.map((d) => d.querySelector('img.바탕'));
+const 판들 = 겹들.map((d) => d.querySelector('.판'));
+const 물비침들 = 겹들.map((d) => d.querySelector('img.물비침'));
 let 선겹 = 0;                                      // 지금 «보이는» 겹의 번호
 let 현재결 = null;
+
+/* ── 🆕 2026-09-08 무대별 «빛 지도» ──────────────────────────────────────────
+   무대 그림에 박힌 불빛의 자리. 화면(16:9 프레임) 기준 백분율이다.
+   🔑 값은 그림을 도구로 잰 것이다(밝고 따뜻한 덩이 = 등 · 밝고 채도 높은 작은 덩이 = 창 · 물 위 밝고 채도 높은 세로 기둥 = 네온).
+      정사각 그림을 16:9 에 cover 로 채우면 위아래 21.875% 씩 잘리므로 y_화면 = (y_그림 − 0.21875) ÷ 0.5625 로 옮겼다.
+   ⚠ 그림을 다시 구우면 이 표도 다시 잰다 — 눈대중으로 옮겨 적지 않는다.
+   표에 없는 결은 빛 조각 없이 그림만 선다(그래도 바깥 일렁·보풀·숨은 돈다). */
+const 네온색 = { 분홍: 'rgba(222,72,178,.5)', 파랑: 'rgba(24,186,236,.46)', 주황: 'rgba(240,164,112,.46)', 호박: 'rgba(210,140,92,.42)' };
+const 무대빛 = {
+  전자네온물가: {
+    물선: 44,                                     // 물이 시작되는 높이(%) — 물비침·잔물결의 마스크 선
+    등: [[6.2, 22.2], [13.2, 24.0], [87.1, 24.2], [93.5, 22.4]],
+    창: [
+      [16.7, 36.1, '#2edcf0'], [20.0, 30.8, '#f9a345'], [21.6, 34.9, '#1fdafd'], [24.9, 36.0, '#fe9537'],
+      [37.0, 31.9, '#f6a263'], [39.1, 34.7, '#31e0fb'], [41.6, 39.9, '#43dffa'], [44.4, 29.2, '#f7c278'],
+      [49.0, 36.1, '#f6c255'], [52.3, 38.4, '#fe9f39'], [58.8, 38.4, '#f6ac57'], [61.0, 35.2, '#fb8d45'],
+      [63.5, 29.6, '#f8b065'], [66.4, 35.8, '#20e8fa'], [70.1, 27.1, '#24d1f9'], [72.1, 32.2, '#f4a747'],
+      [74.6, 33.6, '#20e8fb'], [79.0, 30.3, '#fb8d5f'], [82.9, 36.8, '#f7a435'],
+    ],
+    네온위: 47,                                   // 네온 기둥의 윗머리(%)
+    네온: [
+      [8.7, '분홍'], [24.8, '분홍'], [30.3, '분홍'], [39.2, '파랑'], [41.7, '파랑'], [48.6, '파랑'],
+      [52.4, '주황'], [58.7, '주황'], [62.7, '주황'], [66.5, '파랑'], [70.9, '파랑'], [90.5, '호박'], [94.5, '호박'],
+    ],
+  },
+};
+
+/** 판 하나에 그 결의 빛 조각을 심는다. 박자는 «번호로 정해진» 값이라 두 겹·두 기계에서 늘 같다(구울 때 재현되어야 한다). */
+function 빛심기(번호, 결) {
+  const 판 = 판들[번호];
+  const 통 = 판.querySelector('.빛들');
+  const 지도 = 무대빛[결];
+  통.replaceChildren();
+  판.classList.toggle('물있음', !!(지도 && 지도.물선 != null));
+  판.style.setProperty('--물선', ((지도 && 지도.물선 != null) ? 지도.물선 : 44) + '%');
+  if (!지도) return;
+  const 넣기 = (cls, x, y, 값들) => {
+    const e = document.createElement('i');
+    e.className = cls;
+    e.style.left = x + '%';
+    e.style.top = y + '%';
+    for (const [k, v] of Object.entries(값들)) e.style.setProperty(k, v);
+    통.appendChild(e);
+  };
+  (지도.등 || []).forEach(([x, y], i) => {
+    const 박 = { '--주기': 초로(박자(12.7 + i * 2.3)), '--늦게': (-(i * 3.7 + 1.1)).toFixed(1) + 's' };
+    넣기('등', x, y, 박);
+    넣기('등심', x, y, 박);
+  });
+  (지도.창 || []).forEach(([x, y, 색], i) => 넣기('창', x, y, {
+    '--색': 색, '--주기': 초로(박자(2.6 + ((i * 7) % 11) * 0.26, true)), '--늦게': (-((i * 5) % 13) * 0.37).toFixed(2) + 's' }));
+  (지도.네온 || []).forEach(([x, 결색], i) => 넣기('네온', x, 지도.네온위 == null ? 47 : 지도.네온위, {
+    '--색': 네온색[결색] || 결색, '--주기': 초로(박자(2.4 + ((i * 5) % 9) * 0.25, true)), '--늦게': (-((i * 3) % 7) * 0.53).toFixed(2) + 's',
+    '--흐름주기': 초로(박자(5.2 + ((i * 4) % 7) * 0.6)) }));
+}
 
 /** 밝기를 «타이머로» 서서히 민다 — 그림 시계가 멎어도 끝까지 간다(위 CSS 주석의 그 자리). */
 function 서서히(요소, 목표, 초) {
@@ -232,6 +396,8 @@ function 무대세우기(결, 처음 = false) {
   미리받기(결).then(() => {
     if (내차례 !== 차례) return;                    // 그새 다른 결이 왔다 — 늦게 온 그림이 이기면 안 된다
     그림들[다음].src = 무대파일(결);
+    물비침들[다음].src = 무대파일(결);             // 물비침은 «같은 그림»을 물 자리에만 한 장 더 깐다
+    빛심기(다음, 결);
     if (!처음) 빛어리기(1.6);                       // 겹치는 순간 빛이 한 번 어린다 = 「장면이 바뀌었다」
     /* 🔴 다음 그림 프레임(requestAnimationFrame)을 기다리지 않는다 (09-06 실측).
        숨은 탭·절전에서는 그 부름이 아예 안 와서 무대가 «영영 안 선다» — 화면이 통째로 검어졌다.
@@ -266,7 +432,7 @@ function 빛어리기(초 = 1.2) {
     e.style.left = (Math.random() * 100).toFixed(1) + 'vw';
     e.style.top = (72 + Math.random() * 34).toFixed(1) + 'vh';
     e.style.setProperty('--굵기', (3 + Math.random() * 7).toFixed(1) + 'px');
-    e.style.setProperty('--시간', (26 + Math.random() * 26).toFixed(1) + 's');
+    e.style.setProperty('--시간', 초로(박자(26 + Math.random() * 26)));
     e.style.setProperty('--늦게', (-Math.random() * 40).toFixed(1) + 's');
     판.appendChild(e);
   }
