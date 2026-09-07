@@ -95,6 +95,14 @@ function 가짜시트(칸들, 아래 = []) {
     insertColumnsAfter(after, n) {
       for (let i = 0; i < n; i++) { cols.push(''); 행들.forEach((r) => r.push('')); }
     },
+    /* 🔑 「그 자리 «앞»에 빈 열」 — 뒤에 있던 열이 오른쪽으로 밀린다(값도 함께).
+     *   이동 뒤 빈 자리를 도로 채우는 데 쓴다(09-08 검수 P1). */
+    insertColumnsBefore(before, n) {
+      for (let i = 0; i < n; i++) {
+        cols.splice(before - 1, 0, '');
+        행들.forEach((r) => r.splice(before - 1, 0, ''));
+      }
+    },
     moveColumns(range, dest) {           // 실제 API 와 같이 «이동 전» 좌표 기준
       /* 🔴 09-07 실행층 실측 — 진짜 API 는 목적지가 폭을 넘으면 던진다(「해당 열이 범위를 벗어납니다.」).
        *   이 줄이 없으면 아래 splice 가 «범위를 넘겨도 조용히 끝에» 넣어 버려서, 이 가짜가
@@ -203,6 +211,46 @@ test('🔴 이름 없는데 «아래에 값이 있는» 열은 덮지 않고 멈
   assert.strictEqual(r.건너뛴표.length, 1, '멈추고 사람에게 넘겨야 한다');
   assert.strictEqual(sh.칸()[2], '', '3열에 「제출일」을 씌우면 「남의값」이 제출일로 읽힌다');
   assert.deepStrictEqual(sh.행()[0], ['A1', 'SYNK-001', '남의값', '노출'], '값은 한 칸도 안 움직여야 한다');
+});
+
+test('🔴 남의 열을 밀어도 «값이 남의 이름을 뒤집어쓰지» 않는다 — 뺀 자리를 도로 채운다 (09-08 검수 P1)', () => {
+  /* 검수 df3b1e78·47ca570f 가 잡은 자리다. `moveColumns` 는 열을 «빼서» 옮기므로 뒤 열이
+   * 한 칸씩 왼쪽으로 당겨지는데, 그대로 두고 `헤더보정_` 가 이름만 덮으면 c 가 B 의 값으로 읽힌다.
+   * 🔑 **값 없는 무늬로만 재면 이 병이 안 보인다** — 그래서 아래는 값을 넣고 잰다
+   *   (바로 위 「맨 뒤로 민다」 시험이 값 행 없이 재서 이 자리를 못 봤다). */
+  const 정본 = ['A', 'B', 'C', 'D'];
+  const sh = 가짜시트(['A', 'X', 'C', 'D'], [['a', 'x', 'c', 'd']]);
+  const 맞추기 = 만들기([['값보존표', 정본]]);
+  const r = 맞추기(가짜문서({ 값보존표: sh }), { 밀기: true });
+
+  const 칸 = sh.칸(); const 행 = sh.행()[0];
+  assert.deepStrictEqual(칸.slice(0, 4), 정본, '정본 넷이 제자리에 서야 한다');
+  assert.strictEqual(행[0], 'a', 'A 의 값은 그대로다');
+  assert.strictEqual(행[1], '', 'B 자리는 «비어» 있어야 한다 — 남의 값이 올라오면 그게 이 병이다');
+  assert.strictEqual(행[2], 'c', 'C 의 값이 B 로 밀려 올라가면 안 된다');
+  assert.strictEqual(행[3], 'd', 'D 의 값이 C 로 밀려 올라가면 안 된다');
+  const 밖 = 칸.indexOf('X');
+  assert.ok(밖 >= 4, '남의 열은 정본 범위 밖에 서야 한다');
+  assert.strictEqual(행[밖], 'x', '남의 열의 값이 그 열을 따라가야 한다 — 잃으면 소급 불가다');
+  assert.strictEqual(r.민열.length, 1);
+  assert.strictEqual(r.건너뛴표.length, 0);
+});
+
+test('🔴 남의 열이 둘이어도 값이 안 섞인다 — 뒤에서 앞으로 두 번 미는 자리 (09-08)', () => {
+  const 정본 = ['A', 'B', 'C'];
+  const sh = 가짜시트(['A', 'X', 'Y'], [['a', 'x', 'y']]);
+  const 맞추기 = 만들기([['둘민표', 정본]]);
+  const r = 맞추기(가짜문서({ 둘민표: sh }), { 밀기: true });
+
+  const 칸 = sh.칸(); const 행 = sh.행()[0];
+  assert.deepStrictEqual(칸.slice(0, 3), 정본);
+  assert.deepStrictEqual(행.slice(0, 3), ['a', '', ''], 'B·C 자리는 비어야 한다');
+  for (const 짝 of [['X', 'x'], ['Y', 'y']]) {
+    const at = 칸.indexOf(짝[0]);
+    assert.ok(at >= 3, 짝[0] + ' 는 정본 밖에 서야 한다');
+    assert.strictEqual(행[at], 짝[1], 짝[0] + ' 의 값이 그 열을 따라가야 한다');
+  }
+  assert.strictEqual(r.민열.length, 2);
 });
 
 test('참말로 빈 열이면 정본 이름을 채운다 — 아래에 값이 없다', () => {
