@@ -201,3 +201,75 @@ test('배선 — 골격에 진단세션 · 밤 배치에 쓰기 태깅 · .clasp
   const cj = JSON.parse(fs.readFileSync(path.join(ROOT, '.clasp.json'), 'utf8'));
   ['엔진_진단.js', '엔진_자율일.js', 'contents_1기차시.js'].forEach((f) => assert.ok(cj.filePushOrder.indexOf(f) > -1, `${f} 가 filePushOrder 에 없다`));
 });
+
+/* ── [vNEXT] ㉠-1 「다음 자리」 층 — 브랜드 v2 ㉠-1 · 기억 teaching-toward-the-ruler-kills-it ──
+ *   ① 칸 둘은 끝에만 는다(뒤 칸이 «적재되는 척» 사라지지 않게 시작 행 폭 = 헤더 폭)
+ *   ② 「무엇이 멈추게 했나」는 학생이 쓴 한 줄만 — 안 쓰면 빈칸(36문항에서 지어내지 않는다)
+ *   ③ 「이 자리, 맞아요?」 고침은 옆에 남고 관측(다음문형)은 그대로 · 다음 자리는 문형 번호에 묶여 나간다(㉮ 기계 완료 조건)
+ *   ④ 카드 메일이 「첫 주 숙제」로 자를 향해 가르치지 않는다 */
+test('[㉠-1] 칸 둘은 «끝에만» 는다 — 멈춘까닭·학생고침이 마지막이고, 시작 행의 폭이 헤더 폭과 같다', () => {
+  const H = C.DIAG_SESSION_HEADERS;
+  같다(H.slice(-2), ['멈춘까닭', '학생고침']);
+  const s = C.진단시작_({ 역할: '시작', 이메일: 'w@b.mn' });
+  const rows = C.시트들['진단세션'].rows;
+  assert.equal(rows[rows.length - 1].length, H.length, '시작 행 폭 ≠ 헤더 폭 — 뒤 칸이 적재되는 척 사라진다');
+  const r = C.진단결과_({ 세션번호: s.세션번호 });
+  assert.equal(r.멈춘까닭, '', '아직 아무것도 안 썼는데 빈칸이 아니다'); assert.equal(r.고침, null);
+});
+
+test('[㉠-1] 「무엇이 멈추게 했나」 — 학생이 쓴 한 줄만 결과에 실리고, 안 쓰면 비어 있다(36문항에서 지어내지 않는다)', () => {
+  const s = C.진단시작_({ 역할: '시작', 이메일: 'why@b.mn' });
+  assert.equal(C.진단멈춘까닭_({ 세션번호: s.세션번호, 한줄: '  회사가  바빠서   멈췄어요 ' }).남김, true);
+  assert.equal(C.진단결과_({ 세션번호: s.세션번호 }).멈춘까닭, '회사가 바빠서 멈췄어요', '학생이 쓴 글이 그대로(공백만 접어서) 나가야 한다');
+  const s2 = C.진단시작_({ 역할: '시작', 이메일: 'quiet@b.mn' });
+  assert.equal(C.진단멈춘까닭_({ 세션번호: s2.세션번호, 한줄: '' }).남김, false);
+  assert.equal(C.진단결과_({ 세션번호: s2.세션번호 }).멈춘까닭, '');
+  assert.equal(C.진단멈춘까닭_({ 세션번호: 'DS-없음' }).error, 'no-session');
+});
+
+test('[㉠-1] 「이 자리, 맞아요?」 — 고침은 옆에 남고 관측(다음문형)은 그대로다 · 판정은 둘뿐 · 다음 자리는 문형 번호에 묶여 나간다', () => {
+  const s = C.진단시작_({ 역할: '시작', 이메일: 'fix@b.mn' });
+  const rows = C.시트들['진단세션'].rows;
+  const 급별 = JSON.parse(rows[rows.length - 1][C.DIAG_SESSION_HEADERS.indexOf('문항스냅샷')]);
+  정답들(급별, 3, 2).forEach((v, n) => C.진단답_({ 세션번호: s.세션번호, 급: 3, n, 답: v, 멱등열쇠: 'f3-' + n }));   // 3급에서 둘 틀림 → 미달 · 다음문형 둘
+  const 전 = C.진단결과_({ 세션번호: s.세션번호 });
+  assert.equal(전.다음문형.length, 2); assert.equal(전.고침, null);
+  assert.ok(전.다음문형.every((g) => /^G\d{3}$/.test(g.번호) && g.이름), '「다음 자리」가 문형 번호+이름으로 안 나간다(㉮ 기계 완료 조건)');
+  assert.equal(C.진단고침_({ 세션번호: s.세션번호, 판정: '글쎄요' }).error, 'bad-verdict');
+  assert.equal(C.진단고침_({ 세션번호: s.세션번호, 판정: '아니에요', 한줄: '이건 아는 건데 급해서 눌렀어요' }).ok, true);
+  const 후 = C.진단결과_({ 세션번호: s.세션번호 });
+  같다(후.다음문형, 전.다음문형, '고침이 관측을 지웠다 — 기록은 덧붙이기만 한다');
+  assert.equal(후.고침.판정, '아니에요'); assert.equal(후.고침.한줄, '이건 아는 건데 급해서 눌렀어요');
+  같다(후.고침.다음문형, 전.다음문형.map((g) => g.번호), '무엇에 대한 고침인지(그때의 다음문형)가 같이 남아야 한다');
+});
+
+test('[㉠-1] 카드 메일 — 「첫 주 숙제」로 자를 향해 가르치지 않는다 · 멈춘 까닭은 쓴 사람에게만 · 결핍 낱말 0', () => {
+  const H = C.DIAG_SESSION_HEADERS;
+  const 행 = (멈춘까닭) => {
+    const r = H.map(() => '');
+    r[H.indexOf('진단코드')] = '123456'; r[H.indexOf('문항스냅샷')] = JSON.stringify(C.진단스냅샷_(0).급별); r[H.indexOf('답')] = '{}';
+    r[H.indexOf('쓰기문장')] = '어제 영화를 봤어요.'; r[H.indexOf('멈춘까닭')] = 멈춘까닭;
+    return r;
+  };
+  const ai = { 태그: ['오류없음'], 교정문: '', 규칙: '' };
+  C.메일.length = 0;
+  C.진단카드메일_('a@b.mn', 행(''), ai);
+  C.진단카드메일_('a@b.mn', 행('군대 다녀와서 잊었어요'), ai);
+  assert.equal(C.메일.length, 2);
+  assert.ok(!/첫 주 숙제/.test(C.메일[0].body), '「첫 주 숙제」가 남아 있다 — 진단이 재는 여섯을 편들어 가르치면 자가 죽는다(대응표 §②-㉡)');
+  assert.match(C.메일[0].body, /그 자리가 오는 주에/);
+  assert.ok(!/멈춘 까닭/.test(C.메일[0].body), '안 쓴 사람에게 멈춘 까닭 줄이 나갔다 — 지어낸 것이 된다');
+  assert.match(C.메일[1].body, /전에 멈춘 까닭 — 당신이 쓴 것: 「군대 다녀와서 잊었어요」/);
+  assert.ok(!/아직|부족|틀렸|못 /.test(C.메일[1].body), '결핍 낱말이 메일에 있다');
+  assert.equal(/첫 주 숙제/.test(읽기('엔진_진단.js').replace(/\/\*[\s\S]*?\*\//g, '')), false, '엔진 코드 어디에도 「첫 주 숙제」가 없어야 한다');
+});
+
+test('[㉠-1] JSON 통로에 why·fix 가 있다 — 화면이 그 둘을 부른다', () => {
+  const s = C.진단시작_({ 역할: '시작', 이메일: 'api@b.mn' });
+  const why = JSON.parse(C.진단API_({ parameter: { p: '진단' }, postData: { contents: JSON.stringify({ op: 'why', session: s.세션번호, text: '돈이 없어서요' }) } }, 'post').t);
+  assert.equal(why.ok, true);
+  const fix = JSON.parse(C.진단API_({ parameter: { p: '진단' }, postData: { contents: JSON.stringify({ op: 'fix', session: s.세션번호, verdict: '맞아요' }) } }, 'post').t);
+  assert.equal(fix.ok, true);
+  const r = C.진단결과_({ 세션번호: s.세션번호 });
+  assert.equal(r.멈춘까닭, '돈이 없어서요'); assert.equal(r.고침.판정, '맞아요');
+});

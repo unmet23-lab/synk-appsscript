@@ -31,8 +31,12 @@ const DIAG_ROLE_ROUND = { 시작: 0, 중간: 1, 끝: 2, 연습: 0 };   // 역할
 const DIAG_SESSION_TAB_ = '진단세션';
 const DIAG_SESSION_HEADERS = ['세션번호', '진단코드', '이메일', '전화', '역할', '회차', '문항스냅샷', '답', '시도', '멱등열쇠',
   '표본급수', '급수경로', '맞힌문형', '다음문형', '쓰기지시문', '쓰기문장', 'AI산출', '기준판', '잰시각', '학생번호', '시작점', '상태',
-  'created_at', 'schema_ver'];
-const DIAG_SCHEMA_VER = 1;
+  'created_at', 'schema_ver',
+  /* [v9.320] ㉠-1 「다음 자리」 층(브랜드 v2) — 칸 둘은 «끝에만» 는다(읽는 쪽은 이름으로 찾지만 시트는 자리로 산다 · 라이브 증분은 진단시트_ 가 한다).
+   *   멈춘까닭 = 학생이 «스스로» 쓴 한 줄(선택) — 36문항은 문형을 재지 «왜 멈췄나»를 못 재므로, 비면 결과에도 비워 둔다(지어내지 않는다).
+   *   학생고침 = 「이 자리, 맞아요?」에 대한 학생 답(JSON · 맞아요/아니에요 + 한 줄 + 그때의 다음문형) — 관측(다음문형)은 안 지운다. */
+  '멈춘까닭', '학생고침'];
+const DIAG_SCHEMA_VER = 2;                   // [v9.320] 칸 둘이 끝에 늘었다(멈춘까닭·학생고침) — 1판 행은 그 두 칸이 비어 있다
 const DIAG_WRITE_BATCH_MAX_ = 20;            // 밤 배치가 하룻밤에 태깅하는 쓰기 문장 상한(AI 호출 상한)
 
 /* ── 순수 함수 ────────────────────────────────────────────────────────────── */
@@ -108,7 +112,13 @@ function 진단문형이름_(id) {
 
 /* ── 시트 ─────────────────────────────────────────────────────────────────── */
 
-function 진단시트_(ss) { return ensureSheet(ss, DIAG_SESSION_TAB_, DIAG_SESSION_HEADERS); }
+function 진단시트_(ss) {
+  const sh = ensureSheet(ss, DIAG_SESSION_TAB_, DIAG_SESSION_HEADERS);
+  /* [v9.320] 라이브 시트의 헤더 증분 — ensureSheet 는 탭이 없을 때만 헤더를 쓴다(기억 sheet-headers-lag-behind-code).
+   *   칸은 끝에만 늘므로 폭이 모자랄 때만 이름 대조로 뒤를 채운다(`헤더보정_` · 엔진_수집.js · 시험 문맥엔 없어 typeof 로 건너뛴다). */
+  if (typeof 헤더보정_ === 'function' && sh.getLastColumn() < DIAG_SESSION_HEADERS.length) 헤더보정_(sh, DIAG_SESSION_HEADERS);
+  return sh;
+}
 function 진단칸_(n) { return DIAG_SESSION_HEADERS.indexOf(n); }
 
 /* 세션번호 또는 진단코드로 행을 찾는다 → { row, r(값 배열) } · 없으면 null. */
@@ -153,7 +163,8 @@ function 진단시작_(입력) {
   for (let t = 0; t < 5 && 진단행찾기_(sh, 코드); t++) 코드 = 진단코드_();   // 여섯 자리가 겹치면 다시(다섯 번)
   const nowStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm:ss');
   sh.appendRow([세션번호, 코드, 이메일, 전화, 역할, 회차, JSON.stringify(snap.급별), '{}', '{}', '{}',
-    '', '[]', '[]', '[]', snap.쓰기지시문, '', '', 기준판, '', 학생번호, '', 상태, nowStr, DIAG_SCHEMA_VER]);
+    '', '[]', '[]', '[]', snap.쓰기지시문, '', '', 기준판, '', 학생번호, '', 상태, nowStr, DIAG_SCHEMA_VER,
+    '', '']);   // [v9.320] 멈춘까닭 · 학생고침 — 헤더 폭과 같아야 뒤 칸이 «적재되는 척» 사라지지 않는다
   return { ok: true, 세션번호: 세션번호, 진단코드: 코드, 역할: 역할, 기준판: 기준판, 시작급: DIAG_LADDER[0],
     문항: 진단공개문항_(snap.급별), 쓰기지시문: snap.쓰기지시문 };
 }
@@ -255,7 +266,40 @@ function 진단결과_(입력) {
     맞힌문형: 결과.맞힌문형.map(function (g) { return { 번호: g, 이름: 진단문형이름_(g) }; }),
     다음문형: 결과.다음문형.map(function (g) { return { 번호: g, 이름: 진단문형이름_(g) }; }),
     쓰기: { 문장: 문장, 상태: !문장 ? '없음' : (ai ? '완료' : '대기'), 카드: ai ? { 태그: ai.태그 || [], 교정문: ai.교정문 || '', 규칙: ai.규칙 || '' } : null },
+    멈춘까닭: String(f.r[진단칸_('멈춘까닭')] || ''),               // [v9.320] 학생이 쓴 한 줄 그대로 · 없으면 '' — 36문항에서 지어내지 않는다(브랜드 v2 ㉠-1 ⑥-㉯)
+    고침: 진단JSON_(f.r[진단칸_('학생고침')], null),                // [v9.320] 「이 자리, 맞아요?」 답 · 없으면 null
     상태: 상태 };
+}
+
+/* [v9.320] ㉠-1 「무엇이 멈추게 했나」 — 학생이 «스스로» 쓴 한 줄만 받는다(선택 · 비워도 된다 · 되붙잡기 0).
+ *   36문항은 문형을 재지 «왜 멈췄나»(돈·시간·선생·마음)를 못 재므로, 이 칸이 비면 결과에도 비워 둔다(철학 Ⅲ-2 「모르는 것은 비워 둔다」).
+ *   사람·삶 이해(㉡·㉢)의 첫 재료다 — 등록하는 날 학생 번호에 세션째로 이어진다(진단잇기_). 그 전엔 진단 세션 그릇에 산다(휘발 금지 · 브랜드 v2 ㉠-1). */
+function 진단멈춘까닭_(입력) {
+  입력 = 입력 || {};
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = 진단시트_(ss);
+  const f = 진단행찾기_(sh, 입력.세션번호);
+  if (!f) return { ok: false, error: 'no-session' };
+  const 한줄 = String(입력.한줄 || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+  진단칸쓰기_(sh, f.row, { 멈춘까닭: 한줄 });
+  return { ok: true, 남김: !!한줄 };
+}
+
+/* [v9.320] ㉠-1 「이 자리, 맞아요?」 — 학생은 자기 기록의 공동 저자다(철학 v1.19 · 엔진 v3 D7 · 「맞아?」 카드 · 「아니야」면 다음 생성에서 뺀다).
+ *   고침은 «옆에» 남고 관측(다음문형)은 안 지운다 — 기록은 덧붙이기만 한다. 판정은 둘뿐(맞아요 · 아니에요) · 한 줄은 선택.
+ *   무엇에 대한 고침인지 남기려고 그때의 다음문형을 같이 적는다(나중에 다시 채점해 다음문형이 바뀌어도 고침이 가리키던 것이 남는다). */
+function 진단고침_(입력) {
+  입력 = 입력 || {};
+  const 판정 = String(입력.판정 || '').trim();
+  if (판정 !== '맞아요' && 판정 !== '아니에요') return { ok: false, error: 'bad-verdict' };
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = 진단시트_(ss);
+  const f = 진단행찾기_(sh, 입력.세션번호);
+  if (!f) return { ok: false, error: 'no-session' };
+  const 한줄 = String(입력.한줄 || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+  const 고침 = { 판정: 판정, 한줄: 한줄, 시각: new Date().toISOString(), 다음문형: 진단JSON_(f.r[진단칸_('다음문형')], []) };
+  진단칸쓰기_(sh, f.row, { 학생고침: JSON.stringify(고침) });
+  return { ok: true, 판정: 판정 };
 }
 
 /* 「지금은 안 할래요」 — 사유는 선택. 안 고르고 닫아도 «눌렀다»는 남는다(그 자체가 분모 · 설계 §⑭-㉣). */
@@ -339,6 +383,8 @@ function 진단API_(e, method) {
     else if (op === 'write') out = 진단쓰기_({ 세션번호: 입력.세션번호 || 입력.session, 문장: 입력.문장 || 입력.text });
     else if (op === 'result') out = 진단결과_({ 세션번호: 입력.세션번호 || 입력.session, 진단코드: 입력.진단코드 || 입력.code });
     else if (op === 'decline') out = 진단안할래_({ 세션번호: 입력.세션번호 || 입력.session, 사유: 입력.사유 || 입력.reason });
+    else if (op === 'why') out = 진단멈춘까닭_({ 세션번호: 입력.세션번호 || 입력.session, 한줄: 입력.한줄 || 입력.text });          // [v9.320] ㉠-1
+    else if (op === 'fix') out = 진단고침_({ 세션번호: 입력.세션번호 || 입력.session, 판정: 입력.판정 || 입력.verdict, 한줄: 입력.한줄 || 입력.text });   // [v9.320] ㉠-1
     else out = { ok: false, error: 'bad-op' };
     return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
@@ -410,9 +456,13 @@ function 진단카드메일_(to, r, ai) {
     '',
     '쓴 문장: 「' + String(r[진단칸_('쓰기문장')] || '') + '」',
     깨끗 ? '이 문장은 깨끗해요.' : ('여기 한 자리가 보여요. ' + ai.규칙 + (ai.교정문 ? '\n이렇게 써요: 「' + ai.교정문 + '」' : '')),
+    /* [v9.320] ㉠-1 — 학생이 «스스로» 쓴 한 줄이 있을 때만 그대로 싣는다. 없으면 이 줄 자체가 없다(지어내지 않는다 · 브랜드 v2 ㉠-1 ⑥-㉯). */
+    (function () { const w = String(r[진단칸_('멈춘까닭')] || '').trim(); return w ? '\n전에 멈춘 까닭 — 당신이 쓴 것: 「' + w + '」\n선생님이 이것도 함께 봅니다.' : null; })(),
     '',
     '[다음]',
-    '오늘 나온 「다음 자리」가 첫 주 숙제가 됩니다. 선생님이 그 자리를 기억하고 있고, 8주 뒤에 오늘과 같은 자를 다시 대 봅니다.',
+    /* [v9.320] 🔴 「첫 주 숙제가 됩니다」를 걷었다 — 진단이 재는 문형 여섯을 첫 주에 편들어 가르치면 끝 진단이 「시킨 여섯을 외웠는가」를 재게 되어
+     *   8주 약속과 12-21·01-24 판정이 같이 죽는다(대응표 §②-㉡ 「열둘을 같은 무게로」 · 기억 teaching-toward-the-ruler-kills-it). 그 자리는 그 문형이 오는 주에 온다. */
+    '오늘 나온 「다음 자리」는 8주 안에 그 자리가 오는 주에 다시 만납니다. 선생님이 그 자리를 기억하고 있고, 8주 뒤에 오늘과 같은 자를 다시 대 봅니다.',
     '진단 코드: ' + String(r[진단칸_('진단코드')]) + ' (등록할 때 이 숫자를 말씀해 주세요)',
     '', 'SYNK LAB'
   ].filter(function (s) { return s !== null; }).join('\n');
