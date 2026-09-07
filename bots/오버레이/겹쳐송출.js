@@ -290,7 +290,10 @@ async function 채팅감시(사건넣기) {
    (마스코트.html 장르차림). ffmpeg 의 concat 은 곡이 바뀌는 순간을 밖으로 안 알려 주므로, 재생목록의
    차례와 각 곡의 길이(ffprobe)로 «시계»를 만들어 경계마다 결 사건을 던진다. -re 가 실시간을 지키니 어긋남은 초 단위다.
    🔑 결 이름은 마스코트.html 장르차림의 낱말이다 — 팩 이름의 영어 키(house·citypop·calm)를 그 낱말로 옮긴다. */
+/* 🆕 09-07 chuseok — 추석 시즌 무대(보름달 뜬 한옥 마당). 2026 추석 = 09-25.
+   팩 파일 이름의 영어 키가 `-chuseok-air.ts` 이면 이 결이 층에 간다. */
 const 결이름 = { house: '전자밤도시', citypop: '시티팝노을휴양지', calm: '차분달빛호수',
+  chuseok: '추석보름달마당',
   dream_sky: '드림하늘', dream_water: '드림물결', dream_field: '드림들판' };
 function 재생차례() {
   const 줄들 = fs.readFileSync(path.join(팩폴더, 'playlist.txt'), 'utf8').split(/\r?\n/);

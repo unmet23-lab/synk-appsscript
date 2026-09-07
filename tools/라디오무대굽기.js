@@ -200,6 +200,41 @@ THE SKY: a breathtaking gradient of warm apricot, blush pink and pale gold felt 
 soft lavender, with the sun just below the horizon throwing a glow up through the haze.
 Warm, golden, overwhelmingly beautiful — the last perfect minute of a summer evening.`,
   },
+
+  /* ── 2026-09-07 신설 (유호 지시 「이제 곧 추석인데 혹시 추석 배경으로 바꿔줄수있어?」 ·
+   *    후보 셋 중 「보름달 뜬 한옥 마당」 확정) ────────────────────────────────────
+   * 🔑 밤 장면의 급소를 calm 에서 그대로 가져온다 — **아래 절반이 화면에서 가장 밝아야 한다.**
+   *   주인공이 그 앞에 서므로, 뒤가 어두우면 까몽(검은 털)이 통째로 사라진다(09-02 재굽기 근거).
+   *   그래서 마당(달빛 받은 흙바닥)을 넓고 환하게 깔고 집·나무·장독은 좌우 가장자리로 민다.
+   * 🔑 하늘은 «따뜻한 깊은 밤색»이다 — 회색·파랑·검정으로 가면 펠트가 죽는다(calm 실측 문장 그대로).
+   * ⚠ 추석 = 2026-09-25. 달은 «보름달»이라 크고 둥글어야 하는데, 구도 규율이 가운데를 비우라 하므로
+   *   오른쪽 위로 높이 올린다(calm 의 달과 같은 자리). */
+  chuseok: {
+    이름: '추석 — 보름달 뜬 한옥 마당',
+    참조: ['DeepWool.png', 'Butter.png', 'Oat.png', 'Chalk.png'],
+    장면: `A tiny felt Korean hanok courtyard on a still autumn night under a huge full harvest moon.
+The horizon sits LOW, in the upper third: the lower HALF of the picture is the open earthen
+courtyard, and that lower half is the BRIGHTEST part of the whole image — smooth pale oatmeal
+and warm sand wool, washed in moonlight, embroidered with faint long running stitches of cream
+thread like raked earth.
+Along the far edge of the courtyard, low and small, stands a hanok house: a long tiled roof of
+layered charcoal-grey felt tiles with gently upturned eaves, wooden posts and a low railing
+wrapped in warm chestnut yarn, and paper-screen doors glowing softly from within like warm
+butter-yellow lanterns. The house is pushed to the far left and far right of the horizon,
+leaving the middle of the courtyard completely open.
+At the far left edge, a cluster of round dark felt jars on a low stone terrace. At the far right
+edge, a slender persimmon tree of twisted chestnut yarn with a few tiny orange felted fruits,
+leaning in from outside the frame.
+Along the very bottom edge, close to the lens and softly out of focus, a low wooden tray holding
+a few pale half-moon rice cakes of cream wool and a small heap of felted chestnuts.
+THE MOON: an enormous round moon of cream and pale butter wool hangs HIGH toward the RIGHT,
+luminous and hazy, ringed by a wide soft halo of loose white roving, with one thin wisp of
+roving cloud crossing it.
+THE SKY: a rich WARM DEEP BROWN felt — the colour of dark chestnut and roasted coffee, never
+grey, never blue, never black — densely embroidered with MANY stars: dozens of tiny cream
+french knots, thickest near the top of the frame.
+Warm, still, nostalgic autumn night — the quiet hour after the family meal.`,
+  },
 };
 
 function 참조경로(파일들) {

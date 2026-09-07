@@ -136,10 +136,16 @@ const 옷들 = [
     'of cream lambswool and a tiny coral knot at the very top. It follows the curve of the head.' },
 
   /* ③ 한복 넷 */
+  /* 🔴 2026-09-07 재작성 — 옛 문장은 「short … ending high on the body」를 두 번 말했고, 모델이 그것을
+     «아주 짧게»로 읽어 저고리를 **가슴을 가로지르는 흰 띠**로 그렸다(초록 판부터 그랬다 · 떼기 탓이 아니다).
+     그래서 어깨를 덮는다는 것을 먼저 못 박고, 「띠가 아니다」를 대놓고 적는다. */
   { 이름: '저고리', 라인: '한복', 가림: '큼', 설명:
-    'It wears a hanbok jeogori jacket: short, cut from soft chalk-white felt, crossing at the ' +
-    'front with a wide coral collar band (git) and a long coral ribbon (goreum) tied in one loose ' +
-    'bow that hangs down. It is short and softly rounded, ending high on the body.' },
+    'It wears a hanbok jeogori jacket of soft chalk-white felt. The white felt COVERS THE WHOLE ' +
+    'UPPER BODY: it wraps right over the top of both shoulders and down the sides, and crosses ' +
+    'over at the front. This is a jacket, NOT a narrow band or a sash across the chest. ' +
+    'A wide coral collar band (git) runs around the neck and down the crossing edge, and one long ' +
+    'coral ribbon (goreum) is tied in a loose bow that hangs down the front. The lower hem ends ' +
+    'in a soft rounded curve around the middle of the body.' },
   { 이름: '치마', 라인: '한복', 가림: '아주큼', 설명:
     'It wears a hanbok chima skirt: a full high-waisted wrap skirt of soft lapis-blue felt ' +
     'gathered into a wide cream band across the chest, falling in many soft vertical folds all ' +
