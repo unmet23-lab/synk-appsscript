@@ -170,7 +170,12 @@ test('🔑 과녁은 **프로젝트별**이다 — 처방한 커밋에 그 프�
      *   거의 다 한글이라(`contents_상담AI.js` 등 18건 중 16건) 글자 비교가 전부 어긋났고,
      *   자는 그것을 「배포 파일이 0건」으로 읽어 멀쩡한 커밋을 F292 위반으로 몰았다.
      *   이 기계에서만 초록이던 까닭도 이것이다 — 여기 git 설정은 이미 꺼져 있다. */
-    const r = spawnSync('git', ['-C', ROOT, '-c', 'core.quotepath=false', 'show', '--name-only', '--format=', m[1]],
+    /* 🔴 09-07 밤: 도구(`커밋읽기`)와 **같은 축**(`--first-parent`)으로 읽는다. 과녁이 머지 커밋일 때 — 옆 세션의
+     *   「Merge remote-tracking branch 'origin/master'」(926adea2)가 배포 파일을 데려온 최신 커밋이던 날 — 이 자가
+     *   축 없이 `git show` 를 치면 combined diff 라 파일이 0건으로 나와 **멀쩡한 과녁을 F292 위반으로 몰았다**
+     *   (master 가 빨개져 남의 배포까지 막혔다). 도구 머리말(F578)이 이미 「combined 라서 안 나오고 첫 부모를
+     *   대야 나온다」고 적어 둔 그 자리다 — 자가 도구보다 낡아 있었다. */
+    const r = spawnSync('git', ['-C', ROOT, '-c', 'core.quotepath=false', 'show', '--first-parent', '--name-only', '--format=', m[1]],
       { encoding: 'utf8' });
     const 담김 = (r.stdout || '').split('\n').map((x) => x.trim()).filter(Boolean);
     const 집합 = 점검.배포집합(proj, ROOT) || [];
