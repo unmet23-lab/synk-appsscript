@@ -47,6 +47,17 @@ for a in "$IN"/*.aac; do
   cover="$R/docs/라디오/무대덮개/$genre.png"
   [ -f "$cover" ] || { echo "🔴 $n — 덮개가 없다: $cover (node tools/라디오배경굽기.js --장르 $genre --무대덮개)"; bad=$((bad+1)); continue; }
   t0=$(date +%s)
+  # 🆕 09-08 «층에서 구운 영상» — tools/무대영상굽기.js 가 무대 층(bots/오버레이/무대.html)을 찍어 만든 되풀이 영상.
+  #   이미 1280x720 이고 층이 보여 주는 틀 그대로라 확대·자르기 없이 1:1 로 깐다(미리보기에서 유호님이 보신 그 틀이다).
+  #   덮개(비네팅·각인)는 그대로 얹는다. 이 파일이 있으면 아래 case 의 Veo 영상·정지 그림보다 앞선다.
+  층="$R/docs/라디오/무대영상/층_$genre.mp4"
+  if [ -f "$층" ]; then
+    ffmpeg -y -loglevel error -stream_loop -1 -i "$층" -i "$a" -i "$cover" \
+      -filter_complex "[0:v]scale=1280:720:flags=lanczos[s];[s][2:v]overlay=0:0:format=auto,format=yuv420p[v]" \
+      -map "[v]" -map 1:a -shortest \
+      -c:v libx264 -preset veryfast -crf 23 -maxrate 1500k -bufsize 3000k -r 30 -g 60 -c:a copy -f mpegts "$out"
+    rc=$?
+  else
   case "$genre" in
     citypop|house)   # Veo 영상 반복 — 끝 장면 = 첫 장면이라 이음매가 없다(둘 다 09-07 실측 · 위 «판정 철회» 참고)
       ffmpeg -y -loglevel error -stream_loop -1 -i "$R/docs/라디오/무대영상/$genre.mp4" -i "$a" -i "$cover" \
@@ -63,6 +74,7 @@ for a in "$IN"/*.aac; do
         -c:v libx264 -tune stillimage -preset veryfast -crf 23 -maxrate 1500k -bufsize 3000k -r 30 -g 60 -c:a copy -f mpegts "$out" ;;
   esac
   rc=$?
+  fi
   d=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$out" 2>/dev/null)
   sz=$(stat -c %s "$out" 2>/dev/null)
   if [ $rc -eq 0 ] && [ -n "$sz" ]; then ok=$((ok+1)); echo "✅ $n ($genre) ${d}s $((sz/1024/1024))MB $(( $(date +%s)-t0 ))초"; else bad=$((bad+1)); echo "🔴 $n 실패 rc=$rc"; fi
