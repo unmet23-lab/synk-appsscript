@@ -48,6 +48,22 @@ const W = 1280, H = 720;                       // 720p 단일 규격(설계 §7-
  * 🔑 자리를 가운데에서 **왼쪽 아래 구석**으로 옮겼다 — 무대가 생기자 가운데는 주인공 자리다.
  *   구석 각인은 방송 채널 버그(bug)의 문법이라 「코퍼레이트」에 더 맞고, 화면도 안 막는다. */
 const 각인 = 'ORIGINAL SOUND';
+/* 🆕 2026-09-08 각인 로고 = «구운 펠트 실물» — 벡터로 그린 판을 안 쓴다(유호 지적 09-08).
+   파일이 없으면 옛 벡터로 물러나되 **경고를 낸다** — 조용히 옛 판으로 돌아가면 아무도 못 알아챈다. */
+/* 🔴 «각인용 작은 판»을 쓴다 — 오려 낸 원본(2804px · 7.6MB)을 data URI 로 통째로 실었더니
+   지면이 그 그림을 다 못 받은 채 사진이 찍혀 **로고가 아예 안 나왔다**(09-08 실측 · 선과 글자만 남았다).
+   화면에서 104px 로 그려지므로 420px 이면 4배 여유다(114KB).
+   🔑 자리가 docs/라디오 인 까닭 = docs/Loom_자산/구움 은 굽기 산출물이라 git 이 안 담는다(.gitignore).
+      이 그림은 덮개를 «다시 굽는 재료»라 담겨 있어야 한다 — 안 담으면 다른 기계에서 덮개를 못 만든다.
+      만드는 자 = 밤워드마크_어두운_4K 를 오려(밝은 글자만 남기고) 가로 420px 로 줄인 것. */
+const 각인로고길 = path.join(ROOT, 'docs/라디오/각인_로고.png');
+function 각인로고() {
+  if (!fs.existsSync(각인로고길)) {
+    console.warn(`⚠ 각인 로고 실물이 없다: ${각인로고길} — 옛 벡터 판으로 그린다(정본이 아니다)`);
+    return 워드마크({ 판: '다크', 표현: '펠트', 색갈래: '코랄' });
+  }
+  return `<img src="data:image/png;base64,${fs.readFileSync(각인로고길).toString('base64')}" alt="">`;
+}
 
 /* ── 장르 셋 — 색은 킷 램프 안에서만 고른다(철칙 ④: 주연 1실 + 조연 1실) ──────────
  * ⚠ 전자(house)는 **마린을 기다린다**(유호 확정 09-02) — 가이드가 몽글·까몽 둘뿐이라
@@ -268,7 +284,8 @@ function 지면(키, 마스코트만 = false, 덮개만 = false) {
     background:radial-gradient(ellipse 100% 100% at 0% 100%, ${a.천.어둡나 ? 'rgba(8,6,4,0.62)' : 'rgba(62,30,20,0.50)'} 0%, transparent 72%);}
   .각인{position:absolute;left:56px;bottom:46px;z-index:5;}
   .로고{width:104px;margin:0 0 12px;filter:drop-shadow(0 1px 4px ${a.천.어둡나 ? 'rgba(0,0,0,0.6)' : 'rgba(50,22,14,0.45)'});}
-  .로고 svg{width:100%;height:auto;display:block;}
+  /* 🔴 09-08 — 그림(img)을 안 적어 두면 구운 로고가 «제 크기»(420px)로 그려져 화면 3분의 1을 먹는다(그날 실측). */
+  .로고 svg,.로고 img{width:100%;height:auto;display:block;}
   .선{width:104px;height:1px;margin:0 0 12px;background:${a.천.어둡나 ? 'rgba(251,247,240,0.46)' : 'rgba(251,247,240,0.62)'};}
   .말{margin:0;font-size:12.5px;font-weight:600;letter-spacing:.38em;text-transform:uppercase;
     color:${색['Paper']};opacity:.94;
@@ -285,9 +302,15 @@ function 지면(키, 마스코트만 = false, 덮개만 = false) {
   <div class="얼굴">${가이드img(a.가이드, process.env.SYNK_FACE || a.표정)}</div>
   <div class="각인막"></div>
   <div class="각인">
-    <!-- 🔑 각인은 «어느 장르든» 다크 판 워드마크다 — 뒤에 깔린 것이 무대가 아니라 어두운 그늘이라
-         라이트 판(잉크 글자)을 쓰면 그늘 위에서 안 읽힌다. 판을 정하는 것은 «바로 뒤»지 화면 전체가 아니다. -->
-    <div class="로고">${워드마크({ 판: '다크', 표현: '펠트', 색갈래: '코랄' })}</div>
+    <!-- 🔴 2026-09-08 — 각인 로고를 «구운 펠트 실물»로 갈았다(유호 지적 09-08 「synk 로고 지금 새로 정본
+         바뀌었어. 저거 쓰지말고 새로 나온 정본으로 바꿔줘」).
+         옛 판은 워드마크() 가 그리는 **벡터**였다 — 같은 날 본체 SYNK 프로필에서 유호님이 그 판을
+         「로고 레시피로 그린 판」이라 물리시고 제미나이 4K 펠트 판으로 바꾸셨다(결정.md 09-08 · 커밋 4e296036c).
+         새 정본 = docs/Loom_자산/구움/밤워드마크_어두운_4K.png 을 오려 낸 밤워드마크_누끼.png
+         (크림 syn + 코랄 k · 실땀 그대로 · 배경 투명).
+         ⚠ 이 주석은 템플릿 문자열 «안»이라 백틱을 못 쓴다 — 위 ⚠ 줄이 예고한 그 자리다(09-08 에 또 밟았다).
+         🔑 각인은 «어느 장르든» 어두운 그늘 위에 앉으므로 밝은 크림 글자가 맞다(라이트 판은 그늘에서 안 읽힌다). -->
+    <div class="로고">${각인로고()}</div>
     <div class="선"></div>
     <p class="말">${각인}</p>
   </div>
@@ -307,8 +330,13 @@ function 지면(키, 마스코트만 = false, 덮개만 = false) {
 const 썸네일 = {
   무대: 'citypop',           // 노을이 목록에서 가장 눈에 든다(밤 판은 작게 줄면 검은 사각이 된다)
   가이드: '몽글', 표정: '눈웃음',
-  작은줄: '24시간',
-  큰줄: '한국어 라디오',
+  /* 🆕 09-08 이름 교체 (유호 지시 「한국어 라디오가 아니라 다른 트렌디한 이름 · 니 제안을 따를게」).
+   *   옛 이름 「24시간 한국어 라디오」의 약점 셋 — ①한국어를 아직 못 읽는 몽골 학생이 제목을
+   *   못 읽는다 ②사람들이 실제로 검색하는 낱말(lofi)이 없다 ③장르가 안 보인다.
+   *   `K-LOFI 24` 가 셋을 다 뒤집는다: lofi 는 전 세계가 검색하는 낱말 · K- 가 「한국어」를
+   *   로마자로 나른다 · 24 는 안 꺼진다는 뜻이고 내부 이름 「라디오24」와도 이어진다. */
+  작은줄: 'KOREAN STUDY RADIO',
+  큰줄: 'K-LOFI 24',
   받침줄: '공부할 때 켜 두세요',
 };
 
@@ -343,7 +371,8 @@ function 썸네일지면() {
   .말{position:absolute;left:74px;top:50%;transform:translateY(-50%);z-index:4;}
   .작은{margin:0 0 10px;font-size:34px;font-weight:700;letter-spacing:.30em;text-transform:uppercase;
     color:${색['Coral Soft']};text-shadow:0 2px 10px rgba(0,0,0,.5);}
-  .큰{margin:0;font-size:110px;line-height:1.02;font-weight:900;letter-spacing:-.035em;
+  /* 🔴 로마자 이름이 되면서 자를 갈았다 — 한글용 자간(-.035em)은 로마자에서 글자가 붙어 답답하다. */
+  .큰{margin:0;font-size:124px;line-height:1.02;font-weight:900;letter-spacing:-.015em;
     color:${색['Paper']};text-shadow:0 4px 22px rgba(38,14,8,.62);}
   .받침{margin:22px 0 0;font-size:31px;font-weight:600;letter-spacing:-.01em;
     color:rgba(251,247,240,.90);text-shadow:0 2px 10px rgba(0,0,0,.55);}
