@@ -7291,6 +7291,144 @@
             "지시": "A single round two-tier felt button in cream wool, photographed from directly overhead. Structure, identical for every button in this set: a flat lower disc in oat wool (#EDE7DC) and, concentric on top of it, a slightly smaller raised disc in cream wool (#FBF7F0), so the lower disc shows as an even border ring of uniform width all the way around. The numeral \"12\" is embroidered dead centre on the raised top disc in dark ink-brown thread (#2B2320) with visible chain-stitch texture; the numeral is optically centred both horizontally and vertically, and its cap height is 40% of the button diameter. No stitch holes, no other marks. Densely needle-felted wool, hand-made craft quality, matte, light-absorbing, visible individual wool fibres and slight surface fuzz. Lit by soft even studio light with no cast shadow, on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream button. Perfectly circular, seen straight on with no perspective. Square 1:1 framing, the button centred and filling 78% of the frame width, equal margin on all four sides. No text, no watermark, no props."
           }
         ]
+      },
+      {
+        "이름": "크림 부품 회색 바탕 다시 굽기",
+        "쓰는 곳": "문서 지면 전량 · 앱 화면 · 캐러셀",
+        "상태": "0/16",
+        "_크기": "4K",
+        "_왜": "유호 지적 09-07 「그림이 안보여」 뒤 전수 대조. 09-07 새벽 판은 크림 양모를 «크림 종이 바탕»에서 찍게 시켜, 흰 배경을 걷는 자가 물건의 밝은 쪽을 배경으로 오인해 파먹었다. 실측 42벌 중 상한 것 = 절번호 단추 셋(다른 묶음이 맡는다) + 여기 열여섯. 색이 있는 부품(코랄 폼폼·와펜·게이지·하트)은 멀쩡하다 — 그것이 원인의 증거다.",
+        "_결": "① 바탕만 회색(#8A8A8A)으로 옮기고 드리운 그림자를 없앤다. 물건 묘사는 한 글자도 안 건드렸다 — 형태·색·재질은 이미 좋았고 오려내기만 실패했다. ② 갈래 = 형체가 죽었다 7(땀점·매듭·시침핀·내려놓은바늘·녹음대기·녹음맺음·탭책) · 흰 얼룩 3(탭집·단추민판·말풍선) · 가장자리 너덜 6(체크·별·도장·탭차트·탭사람·녹음중). ③ 굽고 나면 python tools/룸자산화.py 한 번으로 지면 전량에 닿는다.",
+        "것들": [
+          {
+            "이름": "링크 땀점 — 무채 (회색 바탕)",
+            "쇠": "땀점",
+            "파일": "땀점.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single running-stitch tack of thread on cream felt, one short raised stitch in deep warm grey (#575046), extremely simple, the smallest possible mark, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "꽃 매듭 (회색 바탕)",
+            "쇠": "요소_매듭",
+            "파일": "요소_매듭.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A decorative knot of pale wool yarn (#F0E3C8) tied into four looped petals, resting on cream felt, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "시침핀 (회색 바탕)",
+            "쇠": "요소_시침핀",
+            "파일": "요소_시침핀.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A pin with a small round felt head in coral pushed into cream felt at a slight angle, casting a soft short shadow, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "놓인 바늘 (회색 바탕)",
+            "쇠": "요소_내려놓은바늘",
+            "파일": "요소_내려놓은바늘.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A sewing needle laid down on cream felt with a length of pale thread (#F0E3C8) still trailing from its eye, entirely neutral colours, wide landscape shape, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "소리 띠 ① 대기 (회색 바탕)",
+            "쇠": "요소_녹음대기",
+            "파일": "요소_녹음대기.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A horizontal band of cream felt with a flat row of short even stitches across its middle, quiet and still, wide landscape shape, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "소리 띠 ③ 맺음 (회색 바탕)",
+            "쇠": "요소_녹음맺음",
+            "파일": "요소_녹음맺음.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A horizontal band of cream felt with a row of stitches ending in a small knot at the right, thread trimmed, wide landscape shape, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "탭 자수 — 책 (회색 바탕)",
+            "쇠": "요소_탭책",
+            "파일": "요소_탭책.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "An open book outline embroidered in deep warm grey thread on cream felt, back stitch, geometric and flat, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "탭 자수 — 집 (회색 바탕)",
+            "쇠": "요소_탭집",
+            "파일": "요소_탭집.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A simple house outline embroidered in deep warm grey thread on cream felt, back stitch, geometric and flat, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "번호 받침 단추 (회색 바탕)",
+            "쇠": "단추민판",
+            "파일": "단추민판.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A single round two-tier felt button in cream wool, photographed from directly overhead. Structure: a flat lower disc in oat wool (#EDE7DC) and, concentric on top of it, a slightly smaller raised disc in cream wool (#FBF7F0), so the lower disc shows as an even border ring of uniform width all the way around. The raised top disc is plain and undecorated: no numeral, no stitch holes, no marks of any kind. Densely needle-felted wool, hand-made craft quality, matte, light-absorbing, visible individual wool fibres and slight surface fuzz. Lit by soft even studio light with no cast shadow, on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream button. Perfectly circular, seen straight on with no perspective. Square 1:1 framing, the button centred and filling 78% of the frame width, equal margin on all four sides. No text, no watermark, no props."
+          },
+          {
+            "이름": "말풍선 (회색 바탕)",
+            "쇠": "요소_말풍선",
+            "파일": "요소_말풍선.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A speech bubble cut from cream felt with a blanket-stitched edge in pale thread, one small tail at the lower left, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "체크 자수 (회색 바탕)",
+            "쇠": "요소_체크",
+            "파일": "요소_체크.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A check mark embroidered in deep warm grey thread on a small square of cream felt, the stitches clearly raised, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "별 자수 (회색 바탕)",
+            "쇠": "요소_별",
+            "파일": "요소_별.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A five-pointed star embroidered in warm butter-yellow thread (#F5C445) on cream felt, satin stitch filling it solidly, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "도장 (회색 바탕)",
+            "쇠": "요소_도장",
+            "파일": "요소_도장.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A round felt stamp pressed into cream wool leaving a coral (#F96859) circular impression with a soft edge, as if newly stamped, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "탭 자수 — 차트 (회색 바탕)",
+            "쇠": "요소_탭차트",
+            "파일": "요소_탭차트.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "Three rising bars embroidered in deep warm grey thread on cream felt, back stitch, geometric and flat, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "탭 자수 — 사람 (회색 바탕)",
+            "쇠": "요소_탭사람",
+            "파일": "요소_탭사람.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A simple person silhouette embroidered in deep warm grey thread on cream felt, back stitch, geometric and flat, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          },
+          {
+            "이름": "소리 띠 ② 도는 중 (회색 바탕)",
+            "쇠": "요소_녹음중",
+            "파일": "요소_녹음중.png",
+            "규격": "부품",
+            "상태": "아직",
+            "지시": "A horizontal band of cream felt with a row of stitches rising and falling like a waveform in coral thread (#F96859), wide landscape shape, densely needle-felted wool, hand-made craft quality, matte, light-absorbing, photographed from directly overhead on a plain flat mid-grey backdrop (#8A8A8A) that is clearly separated from the cream wool, lit by soft even studio light with no cast shadow, visible individual wool fibres and slight surface fuzz, no text, no watermark, centred square composition with generous margin."
+          }
+        ]
       }
     ]
   },
