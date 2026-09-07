@@ -96,6 +96,13 @@ function 가짜시트(칸들, 아래 = []) {
       for (let i = 0; i < n; i++) { cols.push(''); 행들.forEach((r) => r.push('')); }
     },
     moveColumns(range, dest) {           // 실제 API 와 같이 «이동 전» 좌표 기준
+      /* 🔴 09-07 실행층 실측 — 진짜 API 는 목적지가 폭을 넘으면 던진다(「해당 열이 범위를 벗어납니다.」).
+       *   이 줄이 없으면 아래 splice 가 «범위를 넘겨도 조용히 끝에» 넣어 버려서, 이 가짜가
+       *   라이브에서 한 번도 안 되는 코드에 거짓 초록을 준다(실제로 나흘간 그랬다).
+       *   ⇒ 실행층에서만 드러나는 API 를 흉내낼 때는 «되는 것»만이 아니라 «던지는 자리»도 흉내낸다. */
+      if (!(dest >= 1 && dest <= cols.length)) {
+        throw new Error('해당 열이 범위를 벗어납니다. (목적지 ' + dest + ' · 폭 ' + cols.length + ')');
+      }
       const from = range._col;
       const 옮김 = (arr) => {
         const [v] = arr.splice(from - 1, 1);
