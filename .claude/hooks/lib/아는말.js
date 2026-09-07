@@ -28,7 +28,7 @@
 // 그건 «바꾸지 않고 뜻만 붙이는» 대상이라 걸려야 정상이다.
 const 아는말 = [
   // 우리 것
-  'SYNK', 'SHIFT', 'LAB', 'TOPIK', 'EPS', 'K-Startup',
+  'SYNK', 'SHIFT', 'LAB', 'PULSE', 'TOPIK', 'EPS', 'K-Startup',   // PULSE = 유호님이 09-07 에 후보 넷 중 직접 고르신 이름(「응 synk pulse로 확정하자」)
   // 유호님이 손수 쓰시는 프로그램
   'Blender', 'Canva', 'Figma', 'Notion', 'Excel', 'Word', 'Windows', 'Chrome',
   'YouTube', 'TikTok', 'Instagram', 'Facebook', 'Gmail', 'Google', 'GitHub',
@@ -51,6 +51,7 @@ const 아는말 = [
   // 우리 일에서 매일 나오는 말
   'git', 'push', 'PR',
   'clasp',   // 09-03 유호님이 직접 「아는말에 넣어줘」 — 배포 이야기마다 나온다
+  'Vertex',  // 09-05 유호님 첫마디가 「vertex 이용한거」였다 — 되물음이 아니라 사용이 증거다
 ];
 
 const 아는말집합 = new Set(아는말.map((w) => w.toLowerCase()));
