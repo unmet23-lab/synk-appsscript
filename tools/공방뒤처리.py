@@ -1,7 +1,10 @@
 """공방 굽기 뒤처리 — 갓 구운 PNG 를 «쓸 수 있는 자산»으로 만든다 (2026-09-05).
 
 무엇을 하나 (규격에 따라 갈린다):
-  부품    — 흰 배경·그림자·구멍을 걷는다(`tools/흰배경걷기.py`).
+  부품    — 배경을 걷는다. 🔴 09-07 부터 자르는 자는 `tools/AI누끼.py`(형태를 보고 가른다)가 기본이다.
+           옛 자 `tools/흰배경걷기.py` 는 색으로 갈라서 크림 양모를 크림·흰 바탕에서 파먹었다
+           (새벽 판 14/42 · 낮 판 7/28 이 뜯겼고, 말풍선·녹음맺음은 산산조각). `--옛자르기` 로만 남긴다.
+           `--다시` 는 이미 avif 로 담긴 것도 원본(`쇠.png`)에서 다시 오린다 — 자가 바뀐 날 쓴다.
   천·장면 — 배경이 곧 그림이라 안 걷는다.
   🔴 «장면»이 09-05 저녁까지 부품 쪽에 서 있었다. 규격표는 장면을 「크림 바탕 위에 물건 하나,
      여백이 넉넉해야 그 위에 글자를 얹을 수 있다」로 못 박는데, 그 크림 바탕을 걷으니
@@ -58,6 +61,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--묶음', help='이 묶음만 다듬는다')
+    ap.add_argument('--다시', action='store_true',
+                    help='이미 avif/webp 로 담긴 것도 원본 «쇠.png» 에서 다시 오린다(자가 바뀐 날)')
+    ap.add_argument('--옛자르기', action='store_true',
+                    help='색으로 가르는 옛 자(흰배경걷기.py)를 쓴다 — 크림 물건에는 쓰지 않는다')
     ap.add_argument('--너비', type=int, default=0,
                     help='담을 때 긴 변 최대(px). 0(기본) 이면 «원본 크기 그대로» — AVIF 라 줄일 이유가 없다')
     ap.add_argument('--꼴', default='AVIF', choices=['AVIF', 'WEBP'],
@@ -82,8 +89,15 @@ def main():
                 #   가리키는 것이고(라디오 무대 `docs/라디오/무대/*.png` 가 그렇다), 그런 그림은
                 #   방송이 원본 그대로 읽으므로 걷거나 AVIF 로 담을 대상이 아니다.
                 #   09-05 실물: 이 걸림돌이 없어 라디오 무대 7장이 매번 「원본이 없다」로 빨개졌다.
-                if x.get('상태') == '구웠다' and 파일.endswith('.png') and '/' not in 파일 and '\\' not in 파일:
-                    할것.append((m['이름'], x, x.get('규격') or '부품'))
+                if '/' in 파일 or '\\' in 파일 or x.get('상태') != '구웠다':
+                    continue
+                원본 = None
+                if 파일.endswith('.png'):
+                    원본 = 파일
+                elif a.다시 and x.get('쇠') and os.path.exists(os.path.join(방, x['쇠'] + '.png')):
+                    원본 = x['쇠'] + '.png'          # 이미 담긴 것을 원본에서 다시 — 자가 바뀐 날
+                if 원본:
+                    할것.append((m['이름'], x, x.get('규격') or '부품', 원본))
 
     if not 할것:
         print('■ 다듬을 것이 없다(0장).')
@@ -92,8 +106,14 @@ def main():
     print(f'■ 뒤처리 {len(할것)}장 · {a.꼴} q{품질} · 긴 변 '
           + (f'{a.너비}px' if a.너비 else '원본 그대로'))
     산것 = 실패 = 0
-    for 묶, 것, 규격 in 할것:
-        png = os.path.join(방, 것['파일'])
+    # 🔑 AI 자는 모델을 «한 번만» 올린다(38초) — 장마다 띄우면 스물여덟 번이다. 부품이 하나도 없으면 안 올린다.
+    AI자 = None
+    if not a.옛자르기 and any(규 not in ('천', '장면') for _, _, 규, _ in 할것):
+        sys.path.insert(0, os.path.join(ROOT, 'tools'))
+        import AI누끼
+        AI자 = AI누끼.세션()
+    for 묶, 것, 규격, 원본 in 할것:
+        png = os.path.join(방, 원본)
         if not os.path.exists(png):
             print(f'   ⚠ 원본이 없다 — {것["파일"]}')
             실패 += 1
@@ -108,16 +128,20 @@ def main():
                 #   글자를 얹을 자리가 없어진다. 어떤 임계로도 깔끔해지지 않는다 — 걷는 일 자체가 틀렸다.
                 im = Image.open(png).convert('RGB')
             else:
-                누끼 = png[:-4] + '_누끼.png'
-                subprocess.run([sys.executable, os.path.join(ROOT, 'tools', '흰배경걷기.py'),
-                                png, '--출력', 누끼, '--흰바닥', '0'],
-                               capture_output=True, text=True, encoding='utf-8', errors='replace')
-                if not os.path.exists(누끼):
-                    print(f'   🔴 배경을 못 걷었다 — {것["이름"]}')
-                    실패 += 1
-                    continue
-                im = Image.open(누끼).convert('RGBA')
-                os.remove(누끼)
+                if AI자 is not None:
+                    # 형태로 가른다 — 크림 물건도 안 파먹는다(09-07 실측 28/28 온전).
+                    im = AI누끼.걷기(Image.open(png), AI자).convert('RGBA')
+                else:
+                    누끼 = png[:-4] + '_누끼.png'
+                    subprocess.run([sys.executable, os.path.join(ROOT, 'tools', '흰배경걷기.py'),
+                                    png, '--출력', 누끼, '--흰바닥', '0'],
+                                   capture_output=True, text=True, encoding='utf-8', errors='replace')
+                    if not os.path.exists(누끼):
+                        print(f'   🔴 배경을 못 걷었다 — {것["이름"]}')
+                        실패 += 1
+                        continue
+                    im = Image.open(누끼).convert('RGBA')
+                    os.remove(누끼)
             if a.너비:
                 im.thumbnail((a.너비, a.너비), Image.LANCZOS)
             if a.꼴 == 'AVIF':
