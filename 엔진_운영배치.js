@@ -1737,8 +1737,10 @@ function 접점최저_(rows) {
 /** 원장이 읽는 한 줄 — 점수와 그 점수를 만든 접점 이름. 표가 비면 그 사실을 말한다(빈 줄 없음). */
 function 접점한줄_(최저) {
   if (!최저 || 최저.점수 === null) return '접점 밀도 — 표가 비어 있어 못 잰다(접점밀도 탭 · 열둘에 점수를 적으면 다음 10분에 선다)';
-  const 누가 = 최저.이름들.length === 최저.전체 ? '열두 자리 전부' : 최저.이름들.join(' · ');
+  /* [v9.324] 분모를 말한다 — 표에 자리가 열둘보다 적으면 「전부」가 거짓이 된다(코덱스 09-07 P1 · 접점 1/12만 남기고 만점 → 전체 통과처럼 보였다). */
+  const 누가 = 최저.이름들.length === 최저.전체 ? (최저.전체 >= 12 ? '열두 자리 전부' : 최저.전체 + '자리 전부') : 최저.이름들.join(' · ');
   let s = '오늘 접점 밀도 ' + 최저.점수 + '점 ← ' + 누가 + ' (열두 자리 중 가장 낮은 값이 오늘 점수 · 표 = 접점밀도 탭)';
+  if (최저.전체 < 12) s += ' · ⚠ 표에 ' + 최저.전체 + '자리뿐 — 열둘이어야 한다(빠진 접점은 재지 않은 것이다)';
   if (최저.미판정.length) s += ' · 미판정 ' + 최저.미판정.length + ': ' + 최저.미판정.join(' · ');
   return s;
 }
@@ -4228,16 +4230,20 @@ function checkAchievements() {
 }
 
 
-/* ===================== [㉡-1 · 2026-09-07] 📜 시즌 회고 편지 — 「우리가 당신에 대해 알게 된 것」 + 읽은 사람의 물음 하나 =====================
+/* ===================== [㉡-1 · 2026-09-07 · [v9.324] 손질] 📜 시즌 회고 편지 — 「우리가 당신에 대해 알게 된 것」 + 읽은 사람의 물음 하나 =====================
  * 요구 = docs/명품브랜딩_v2.md ㉡-1 — ㉮ 블록이 있고 «알게 된 것»이 이해 대장 칸 이름(㉠ 실력 · ㉡ 사람 · ㉢ 삶)으로 되짚어진다(기계)
- *   ㉯ 읽은 사람이 물음 하나에 답한다(「있다/없다 · 한 줄」 → 증언 그릇 testimony_log · 출처 '회고물음'). «있다»가 0 이면 블록이 있어도 미완.
+ *   ㉯ 읽은 사람이 물음 하나에 답한다(「있다/없다 · 한 줄」 → 증언 그릇 testimony_log · 출처 '회고물음' · 화자 = 학생|보호자). «있다»가 0 이면 블록이 있어도 미완.
  * ■ 무대 둘 — Ⓐ 1기(성인 본인이 읽는다 · profiles email) / Ⓑ UB 학원(학부모가 읽는다 · profiles Z 보호자 이메일). 보호자 이메일이 있으면 Ⓑ, 없으면 Ⓐ.
  * ■ 언제 — 월 07시 weeklyJobs. 시즌 시작(app_state 시즌시작일)에서 8주가 끝난 «다음 월요일»(9주차 · 10주차까지 여유).
- *   시즌시작일이 이미 다음 시즌으로 넘어갔으면 지난 시즌(−8주)을 본다. 한 시즌에 한 번(app_state 회고발송시즌) · 학생마다 열쇠 하나
- *   (app_state 회고토큰:<열쇠> = sid|시즌|무대 — 열쇠가 이미 있으면 그 학생은 보낸 것).
- * ■ 재료는 이미 쌓인 것만 읽는다(진단세션 시작점 · mastery_log 도달 · attendance · hw_feedback · achievements 리듬 · self_declare_log 드림한줄 ·
- *   testimony_log). 없는 층은 「아직 적을 것이 없습니다」로 남긴다 — 지어내지 않는다. 목표 도달 판정은 사람 몫(시즌회고 설계 §10 🚫 자동 채점).
- * ■ 통로 — 상담AI.js doGet/doPost `?p=회고` → 회고API_(ContentService JSON 만 · HtmlService ⛔ · 상담AI.js 머리말). 화면 = synk.im/retro/?t=<열쇠>.
+ *   시즌시작일이 이미 다음 시즌으로 넘어갔으면 지난 시즌(−8주)을 보되, **그 시즌이 실제로 돌았을 때만**(시즌있었나_ · 조 편성이나 명부 입학시즌에 그 키가 있다).
+ *   ⚠ 날짜 역산만 믿으면 첫 시즌 2주차에 «가상 지난 시즌» 편지가 신입에게 나간다(코덱스 09-07 P1 · 12-07 에 실제로 그랬을 자리).
+ * ■ 누구에게 — 그 시즌에 «있던» 학생만(회고수신자_ · 입학시즌 ≤ 시즌키, 없으면 등록일 ≤ 시즌 끝, 둘 다 모르면 뺀다 · 세어서 로그에).
+ * ■ 한 시즌에 한 번(app_state 회고발송시즌 — 보류·실패가 0일 때만 찍는다) · 학생마다 열쇠 하나(회고토큰:<열쇠> = sid|시즌|무대 — **보낸 뒤에만** 남긴다 ·
+ *   발송이 실패한 사람은 열쇠가 없어 다음 월요일에 다시). 발송 당시 본문은 회고본문:<열쇠> 에 고정한다(뒤에 쌓인 기록이 편지를 못 바꾼다).
+ * ■ 재료는 그 시즌 창 안의 것만(진단세션 시작점 · mastery_log 도달(닿음 판정은 전체 이력) · attendance · hw_feedback(강의 요약 행 제외) ·
+ *   self_declare_log 드림한줄(기록일 ≤ 시즌 끝) · testimony_log(시즌 창 · 학생 화자 · 비식별 검문)). 없는 층은 「아직 적을 것이 없습니다」 — 지어내지 않는다.
+ *   업적에서 만든 «리듬» 문장은 안 싣는다 — 사람의 성향 판정은 확인 없이 밖으로 안 나간다(철학 Ⅰ-3① · 시즌회고 설계 §10).
+ * ■ 통로 — 상담AI.js doGet/doPost `?p=회고` → 회고API_(ContentService JSON 만 · HtmlService ⛔). 답은 스크립트 잠금 안에서 한 번만. 화면 = synk.im/retro/?t=<열쇠>.
  * ■ 한국어 판만이다 — 몽골어 병기는 감수자 뒤(학부모 소식과 같은 선). */
 const RETRO_SOURCE_ = '회고물음';
 const RETRO_PAGE_ = 'https://synk.im/retro/?t=';
@@ -4262,9 +4268,10 @@ function 회고_알게된것_(ss, sid, 시즌) {
   let 재료 = 0;
   const 끝다음 = new Date(시즌.끝.getTime() + 86400000);
   const 안에 = function (v) { const d = 회고날짜_(v); return !!d && d >= 시즌.시작 && d < 끝다음; };
+  const 전에 = function (v) { const d = 회고날짜_(v); return !!d && d < 끝다음; };
   const 같다 = function (v) { return String(v == null ? '' : v).trim() === sid; };
 
-  /* ㉠ 실력 — 시작 진단(진단세션 시작점 ✓)과 시즌 안 「도달」 문법 */
+  /* ㉠ 실력 — 시작 진단(진단세션 시작점 ✓) · 시즌 안 「도달」 문법 · 닿음 판정은 «전체 이력»(지난 시즌에 닿은 것도 닿은 것이다 · 코덱스 09-07 P1) */
   let 시작 = null;
   const dg = ss.getSheetByName('진단세션');
   if (dg && dg.getLastRow() >= 2) {
@@ -4277,54 +4284,68 @@ function 회고_알게된것_(ss, sid, 시즌) {
       시작 = { 급수: c('표본급수') > -1 ? r[c('표본급수')] : '', 다음: Array.isArray(다음) ? 다음.map(String) : [] };
     });
   }
-  const 도달 = [];
+  const 이번시즌도달 = [], 전체도달 = {};
   const ml = ss.getSheetByName('mastery_log');
   if (ml && ml.getLastRow() >= 2) ml.getRange(2, 1, ml.getLastRow() - 1, 5).getValues().forEach(function (r) {
     if (!같다(r[0]) || String(r[2]) !== '도달') return;
-    if (안에(r[4]) || (!r[4] && 안에(r[3]))) 도달.push(String(r[1]));
+    const 날 = r[4] || r[3];
+    if (전에(날)) 전체도달[String(r[1])] = 1;                 // 시즌 끝까지 닿은 것 전부 — 닿음 판정의 분모
+    if (안에(날)) 이번시즌도달.push(String(r[1]));
   });
   const 문형이름 = function (g) { return (typeof 진단문형이름_ === 'function' && 진단문형이름_(g)) || g; };
-  if (시작 || 도달.length) {
+  if (시작 || 이번시즌도달.length) {
     재료++;
     const 조각 = [];
     if (시작) 조각.push('시작 진단 ' + (시작.급수 ? 시작.급수 + '급' : '(급수 못 잼)') + (시작.다음.length ? ' · 그때 다음 자리 「' + 시작.다음.slice(0, 2).map(문형이름).join('·') + '」' : ''));
-    조각.push(도달.length ? '이번 시즌에 도달로 적힌 문법 ' + 도달.length + '개(' + 도달.slice(0, 3).map(문형이름).join(' · ') + (도달.length > 3 ? ' …' : '') + ')' : '이번 시즌 도달로 적힌 문법은 아직 없습니다');
+    조각.push(이번시즌도달.length ? '이번 시즌에 도달로 적힌 문법 ' + 이번시즌도달.length + '개(' + 이번시즌도달.slice(0, 3).map(문형이름).join(' · ') + (이번시즌도달.length > 3 ? ' …' : '') + ')' : '이번 시즌 도달로 적힌 문법은 아직 없습니다');
     if (시작 && 시작.다음.length) {
-      const 닿음 = 시작.다음.filter(function (g) { return 도달.indexOf(g) > -1; });
+      const 닿음 = 시작.다음.filter(function (g) { return 전체도달[g]; });
       조각.push(닿음.length ? '시작 때의 다음 자리 중 ' + 닿음.length + '개에 닿았습니다' : '시작 때의 다음 자리에는 아직 안 닿았습니다');
     }
     줄들.push({ 칸: '㉠', 글: 조각.join(' · ') });
   } else 줄들.push({ 칸: '㉠', 글: '아직 적을 것이 없습니다 — 시작 진단과 도달 기록이 둘 다 비어 있습니다' });
 
-  /* ㉡ 사람 — 출석·숙제 제출·리듬(achievements 히든 = 언제 움직였나) */
+  /* ㉡ 사람 — 시즌 안 출석 · 숙제 제출(강의 요약 행은 제출이 아니다 · 같은 날 여러 카드는 한 번 · calcTeacherStats 와 같은 규칙) */
   let 출석 = 0, 숙제 = 0;
   const at = ss.getSheetByName('attendance');
   if (at && at.getLastRow() >= 2) at.getRange(2, 1, at.getLastRow() - 1, 3).getValues().forEach(function (r) { if (같다(r[1]) && 안에(r[2])) 출석++; });
   const hf = ss.getSheetByName('hw_feedback');
-  if (hf && hf.getLastRow() >= 2) hf.getRange(2, 1, hf.getLastRow() - 1, 3).getValues().forEach(function (r) { if (같다(r[1]) && 안에(r[2])) 숙제++; });
-  let 리듬 = '';
-  try { if (typeof 성취맵_ === 'function') 리듬 = String((성취맵_(ss).맵 || {})[sid] || ''); } catch (x) { 리듬 = ''; }
-  if (출석 || 숙제 || 리듬) {
-    재료++;
-    줄들.push({ 칸: '㉡', 글: ['8주 동안 출석 ' + 출석 + '회 · 숙제 제출 ' + 숙제 + '건', 리듬 ? '언제·어떻게 움직였나 — ' + 리듬 : ''].filter(String).join(' · ') });
-  } else 줄들.push({ 칸: '㉡', 글: '아직 적을 것이 없습니다 — 출석·숙제·리듬 기록이 비어 있습니다' });
+  if (hf && hf.getLastRow() >= 2) {
+    const 강의열 = HW_FEEDBACK_HEADERS.indexOf('숙제ID');
+    const 폭 = Math.min(강의열 + 1, hf.getLastColumn());
+    const 본날 = {};
+    hf.getRange(2, 1, hf.getLastRow() - 1, 폭).getValues().forEach(function (r) {
+      if (!같다(r[1]) || !안에(r[2])) return;
+      if (String(r[강의열] == null ? '' : r[강의열]).indexOf(LECTURE_SRC_PREFIX) === 0) return;
+      const d = 회고날짜_(r[2]);
+      const k = d ? Utilities.formatDate(d, ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd') : String(r[2]);
+      if (본날[k]) return;
+      본날[k] = 1; 숙제++;
+    });
+  }
+  if (출석 || 숙제) { 재료++; 줄들.push({ 칸: '㉡', 글: '8주 동안 출석 ' + 출석 + '회 · 숙제 제출 ' + 숙제 + '건' }); }
+  else 줄들.push({ 칸: '㉡', 글: '아직 적을 것이 없습니다 — 출석·숙제 기록이 비어 있습니다' });
 
-  /* ㉢ 삶 — 처음의 드림 한 줄 → 지금 · 스스로 한 말(testimony_log) */
+  /* ㉢ 삶 — 처음의 드림 한 줄 → 시즌 끝의 드림 한 줄(기록일 ≤ 시즌 끝) · 시즌 창 안의 스스로 한 말(학생 화자 · 검문 통과분) */
   let 처음 = '', 지금 = '';
   const sd = ss.getSheetByName('self_declare_log');
-  if (sd && sd.getLastRow() >= 2) sd.getRange(2, 1, sd.getLastRow() - 1, 3).getValues().forEach(function (r) {
-    if (!같다(r[0]) || String(r[1]) !== '드림한줄') return;
-    const v = String(r[2] || '').trim();
-    if (!v) return;
-    if (!처음) 처음 = v;
-    지금 = v;
-  });
+  if (sd && sd.getLastRow() >= 2) {
+    const w = Math.min(4, sd.getLastColumn());
+    sd.getRange(2, 1, sd.getLastRow() - 1, w).getValues().forEach(function (r) {
+      if (!같다(r[0]) || String(r[1]) !== '드림한줄') return;
+      if (w >= 4 && !전에(r[3])) return;                      // 시즌 끝 뒤에 쓴 것은 이 시즌의 회고가 아니다
+      const v = String(r[2] || '').trim();
+      if (!v) return;
+      if (!처음) 처음 = v;
+      지금 = v;
+    });
+  }
   let 말 = '';
-  try { if (typeof 증언맵_ === 'function') 말 = String((증언맵_(ss, 200).맵 || {})[sid] || ''); } catch (x) { 말 = ''; }
+  try { if (typeof 증언맵_ === 'function') 말 = String((증언맵_(ss, { 시작: 시즌.시작, 끝: 시즌.끝 }).맵 || {})[sid] || ''); } catch (x) { 말 = ''; }
   if (처음 || 말) {
     재료++;
     줄들.push({ 칸: '㉢', 글: [
-      처음 ? '처음 쓴 드림 한 줄 「' + 처음.slice(0, 60) + '」' + (지금 && 지금 !== 처음 ? ' → 지금 「' + 지금.slice(0, 60) + '」' : ' — 그대로입니다') : '',
+      처음 ? '처음 쓴 드림 한 줄 「' + 처음.slice(0, 60) + '」' + (지금 && 지금 !== 처음 ? ' → 시즌 끝 「' + 지금.slice(0, 60) + '」' : ' — 그대로입니다') : '',
       말 ? '스스로 한 말 — ' + 말 : '',
     ].filter(String).join(' · ') });
   } else 줄들.push({ 칸: '㉢', 글: '아직 적을 것이 없습니다 — 드림 한 줄도, 스스로 한 말도 아직 없습니다' });
@@ -4353,21 +4374,66 @@ function 회고토큰_(sid, 시즌키) {
   return bytes.map(function (b) { return ('0' + (b & 0xFF).toString(16)).slice(-2); }).join('').slice(0, 20);
 }
 
-/** 회고를 보낼 시즌 — 지금이 9~10주차인 시즌(시즌시작일 그대로, 또는 −8주 = 지난 시즌). 없으면 null. */
+/** 그 시즌이 실제로 돌았나 — 조 편성(groups) 에 그 시즌 키가 있거나 명부 「입학시즌」에 그 키가 있으면 참. 날짜 역산은 증거가 아니다. */
+function 시즌있었나_(ss, 키, tz) {
+  const g = ss.getSheetByName('groups');
+  if (g && g.getLastRow() >= 2) {
+    const rows = g.getRange(2, 1, g.getLastRow() - 1, 1).getValues();
+    for (let i = 0; i < rows.length; i++) if (seasonKeyOf_(rows[i][0], tz) === 키) return true;
+  }
+  const pf = ss.getSheetByName('profiles');
+  if (pf && pf.getLastRow() >= 2) {
+    const hdr = pf.getRange(1, 1, 1, pf.getLastColumn()).getValues()[0].map(function (h) { return String(h || '').trim(); });
+    const c = hdr.indexOf(ENTRY_SEASON_HEADS_[0]);
+    if (c > -1) {
+      const vals = pf.getRange(2, c + 1, pf.getLastRow() - 1, 1).getValues();
+      for (let i = 0; i < vals.length; i++) if (seasonKeyOf_(vals[i][0], tz) === 키) return true;
+    }
+  }
+  return false;
+}
+
+/** 회고를 보낼 시즌 — 지금이 9~10주차인 시즌. 시즌시작일 그대로, 또는 −8주(지난 시즌 · 실제로 돌았을 때만). 없으면 null. */
 function 회고대상시즌_(ss, now, tz) {
   const start = seasonStartOf_(ss);
   if (!start) return null;
   const 후보 = [start, new Date(start.getTime() - SEASON_WEEKS * 7 * 86400000)];
   for (let i = 0; i < 후보.length; i++) {
     const w = seasonWeekOf_(후보[i], now);
-    if (w === SEASON_WEEKS + 1 || w === SEASON_WEEKS + 2) {
-      return { 키: Utilities.formatDate(후보[i], tz, 'yyyy-MM-dd'), 시작: 후보[i], 끝: new Date(후보[i].getTime() + (SEASON_WEEKS * 7 - 1) * 86400000) };
-    }
+    if (w !== SEASON_WEEKS + 1 && w !== SEASON_WEEKS + 2) continue;
+    const 키 = Utilities.formatDate(후보[i], tz, 'yyyy-MM-dd');
+    if (i === 1 && !시즌있었나_(ss, 키, tz)) continue;   // 가상 지난 시즌엔 편지가 없다
+    return { 키: 키, 시작: 후보[i], 끝: new Date(후보[i].getTime() + (SEASON_WEEKS * 7 - 1) * 86400000) };
   }
   return null;
 }
 
-/** 월 07시 weeklyJobs — 시즌 끝난 다음 월요일에 학생(또는 보호자)마다 편지 한 통. 0 은 분모와 함께 로그에 남긴다. */
+/** 수신자 — 그 시즌에 «있던» 학생만. 소속 = 입학시즌 ≤ 시즌키 · 없으면 등록일 ≤ 시즌 끝 · 둘 다 모르면 뺀다(세어서). 이메일 = 보호자(Z) 우선, 없으면 학생(G). */
+function 회고수신자_(ss, 시즌, tz) {
+  const 셈 = { 목록: [], 전체: 0, 밖: 0, 모름: 0, 없음: 0 };
+  const pf = ss.getSheetByName('profiles');
+  if (!pf || pf.getLastRow() < 2) return 셈;
+  const w = pf.getLastColumn();
+  const hdr = pf.getRange(1, 1, 1, w).getValues()[0].map(function (h) { return String(h || '').trim(); });
+  const c입학 = hdr.indexOf(ENTRY_SEASON_HEADS_[0]);
+  pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues().forEach(function (r) {
+    if (!r[0] || r[3] !== 'student' || String(r[0]).indexOf('DEMO-') === 0) return;
+    셈.전체++;
+    const 입학 = c입학 > -1 ? seasonKeyOf_(r[c입학], tz) : '';
+    let 소속 = null;
+    if (입학) 소속 = 입학 <= 시즌.키;
+    else { const 등록 = 회고날짜_(r[11]); if (등록) 소속 = 등록 < new Date(시즌.끝.getTime() + 86400000); }
+    if (소속 === null) { 셈.모름++; return; }
+    if (!소속) { 셈.밖++; return; }
+    const pm = String(r[25] || '').trim(), sm = String(r[6] || '').trim();
+    const 무대 = pm.indexOf('@') > -1 ? 'Ⓑ' : (sm.indexOf('@') > -1 ? 'Ⓐ' : '');
+    if (!무대) { 셈.없음++; return; }
+    셈.목록.push({ sid: String(r[0]).trim(), 이름: String(r[1] || r[0]), 무대: 무대, 메일: 무대 === 'Ⓑ' ? pm : sm });
+  });
+  return 셈;
+}
+
+/** 월 07시 weeklyJobs — 시즌 끝난 다음 월요일에 그 시즌 학생(또는 보호자)마다 편지 한 통. 0 은 분모와 함께 로그에 남긴다. */
 function 시즌회고발송_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -4375,35 +4441,28 @@ function 시즌회고발송_() {
   if (!시즌) return '회고 시즌 아님';
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
   if (String(getState(st, '회고발송시즌').val) === 시즌.키) return '이미 보냄 ' + 시즌.키;
-  const pf = ss.getSheetByName('profiles');
-  if (!pf || pf.getLastRow() < 2) return '명부 없음';
-  const w = Math.min(26, pf.getLastColumn());
-  if (w < 7) return '명부 칸 부족';
-  const 학생 = [];
-  pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues().forEach(function (r) {
-    if (!r[0] || r[3] !== 'student') return;
-    const pm = String(r[25] || '').trim(), sm = String(r[6] || '').trim();
-    const 무대 = pm.indexOf('@') > -1 ? 'Ⓑ' : (sm.indexOf('@') > -1 ? 'Ⓐ' : '');
-    학생.push({ sid: String(r[0]).trim(), 이름: String(r[1] || r[0]), 무대: 무대, 메일: 무대 === 'Ⓑ' ? pm : sm });
-  });
-  let 보냄 = 0, 없음 = 0, 보류 = 0, 이미 = 0;
-  학생.forEach(function (s) {
-    if (!s.무대) { 없음++; return; }
+  const 수신 = 회고수신자_(ss, 시즌, tz);
+  let 보냄 = 0, 이미 = 0, 보류 = 0, 실패 = 0;
+  수신.목록.forEach(function (s) {
     const 토큰 = 회고토큰_(s.sid, 시즌.키);
-    if (getState(st, '회고토큰:' + 토큰).row > 0) { 이미++; return; }   // 지난 월요일에 보낸 사람(쿼터 보류 뒤 재실행)
+    if (getState(st, '회고토큰:' + 토큰).row > 0) { 이미++; return; }   // 지난 월요일에 보낸 사람
     if (!quotaOk(1)) { 보류++; return; }
     const 블록 = 회고_알게된것_(ss, s.sid, 시즌);
-    setState(st, '회고토큰:' + 토큰, s.sid + '|' + 시즌.키 + '|' + s.무대);
-    MailApp.sendEmail(s.메일, '[SYNK] ' + s.이름 + ' — 8주가 끝났습니다 · 우리가 알게 된 것', 회고편지글_(s.이름, s.무대, 블록, RETRO_PAGE_ + 토큰));
+    try {
+      MailApp.sendEmail(s.메일, '[SYNK] ' + s.이름 + ' — 8주가 끝났습니다 · 우리가 알게 된 것', 회고편지글_(s.이름, s.무대, 블록, RETRO_PAGE_ + 토큰));
+    } catch (e) { 실패++; Logger.log('회고 편지 발송 실패(' + s.sid + ' · 다음 월요일에 다시): ' + String(e && e.message || e).slice(0, 120)); return; }
+    setState(st, '회고토큰:' + 토큰, s.sid + '|' + 시즌.키 + '|' + s.무대);   // 보낸 «뒤»에만 — 실패한 사람은 열쇠가 없어 다시 돈다
+    setState(st, '회고본문:' + 토큰, JSON.stringify(블록.줄들));              // 발송 당시 본문 고정
     보냄++;
   });
-  if (!보류) setState(st, '회고발송시즌', 시즌.키);   // 쿼터로 못 보낸 사람이 있으면 다음 월요일에 다시 — 보낸 사람은 열쇠가 있어 안 겹친다
-  const 말 = '시즌 회고 편지 ' + 시즌.키 + ': 보냄 ' + 보냄 + ' · 이미 보냄 ' + 이미 + ' · 이메일 없음 ' + 없음 + ' · 쿼터 보류 ' + 보류 + ' (분모 ' + 학생.length + ')';
+  if (!보류 && !실패) setState(st, '회고발송시즌', 시즌.키);   // 못 보낸 사람이 하나라도 있으면 시즌 도장을 안 찍는다(10주차까지 다시)
+  const 말 = '시즌 회고 편지 ' + 시즌.키 + ': 보냄 ' + 보냄 + ' · 이미 보냄 ' + 이미 + ' · 발송 실패 ' + 실패 + ' · 쿼터 보류 ' + 보류
+    + ' · 이메일 없음 ' + 수신.없음 + ' · 시즌 밖(뒤에 들어옴) ' + 수신.밖 + ' · 소속 모름 ' + 수신.모름 + ' (학생 ' + 수신.전체 + '명)';
   Logger.log(말);
   return 말;
 }
 
-/** JSON 통로(?p=회고) — show(GET) · answer(POST). 열쇠가 없으면 아무것도 안 보여 준다. 답은 있다/없다 둘뿐 · 한 번만 · 증언 그릇으로. */
+/** JSON 통로(?p=회고) — show(GET) · answer(POST). 열쇠가 없으면 아무것도 안 보여 준다. 답은 있다/없다 둘뿐 · 잠금 안에서 한 번만 · 증언 그릇으로. */
 function 회고API_(e, method) {
   let 입력 = {};
   try {
@@ -4419,24 +4478,34 @@ function 회고API_(e, method) {
     else {
       const p = 표.split('|');
       const sid = p[0], 시즌키 = p[1], 무대 = p[2] === 'Ⓑ' ? 'Ⓑ' : 'Ⓐ';
-      const 답함 = String(getState(st, '회고답:' + t).val || '');
       if (op === 'show') {
-        const 시작 = 회고날짜_(시즌키);
-        if (!시작) out = { ok: false, error: 'bad-season' };
-        else {
-          const 블록 = 회고_알게된것_(ss, sid, { 키: 시즌키, 시작: 시작, 끝: new Date(시작.getTime() + (SEASON_WEEKS * 7 - 1) * 86400000) });
-          out = { ok: true, 무대: 무대, 시즌: 시즌키, 줄들: 블록.줄들.map(function (l) { return { 칸: l.칸, 이름: 회고칸이름_[l.칸] || l.칸, 글: l.글 }; }),
-            물음: 회고물음_(무대), 답함: !!답함 };
+        let 줄들 = null;
+        try { const 저장 = String(getState(st, '회고본문:' + t).val || ''); if (저장) 줄들 = JSON.parse(저장); } catch (eJ) { 줄들 = null; }
+        if (!줄들) {                                                   // 고정 본문이 없는 옛 열쇠 — 시즌 창으로 다시 계산
+          const 시작 = 회고날짜_(시즌키);
+          if (시작) 줄들 = 회고_알게된것_(ss, sid, { 키: 시즌키, 시작: 시작, 끝: new Date(시작.getTime() + (SEASON_WEEKS * 7 - 1) * 86400000) }).줄들;
         }
+        if (!줄들) out = { ok: false, error: 'bad-season' };
+        else out = { ok: true, 무대: 무대, 시즌: 시즌키, 줄들: 줄들.map(function (l) { return { 칸: l.칸, 이름: 회고칸이름_[l.칸] || l.칸, 글: l.글 }; }),
+          물음: 회고물음_(무대), 답함: !!String(getState(st, '회고답:' + t).val || '') };
       } else if (op === 'answer' && method === 'post') {
         const 답 = String(입력.답 || 입력.a || '').trim();
         if (답 !== '있다' && 답 !== '없다') out = { ok: false, error: 'bad-answer' };
-        else if (답함) out = { ok: true, 중복: true };
         else {
-          const 한줄 = String(입력.한줄 || 입력.line || '').replace(/\s+/g, ' ').trim().slice(0, 200);
-          const r = 증언남기기_(ss, { student_id: sid, 출처: RETRO_SOURCE_, 물음: 회고물음_(무대), 답: 답 + (한줄 ? ' — ' + 한줄 : ''), 맥락: '시즌 회고 편지 · 무대 ' + 무대, 시즌: 시즌키 });
-          if (r.ok) setState(st, '회고답:' + t, new Date().toISOString());
-          out = r.ok ? { ok: true, 중복: !!r.중복 } : { ok: false, error: r.error };
+          const lock = LockService.getScriptLock();
+          if (!lock.tryLock(10000)) out = { ok: false, error: 'busy' };
+          else {
+            try {
+              if (String(getState(st, '회고답:' + t).val || '')) out = { ok: true, 중복: true };
+              else {
+                const 한줄 = String(입력.한줄 || 입력.line || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+                const r = 증언남기기_(ss, { student_id: sid, 출처: RETRO_SOURCE_, 물음: 회고물음_(무대), 답: 답 + (한줄 ? ' — ' + 한줄 : ''),
+                  맥락: '시즌 회고 편지 · 무대 ' + 무대, 시즌: 시즌키, 화자: 무대 === 'Ⓑ' ? '보호자' : '학생', 잠금없이: true });
+                if (r.ok) setState(st, '회고답:' + t, new Date().toISOString());
+                out = r.ok ? { ok: true, 중복: !!r.중복 } : { ok: false, error: r.error };
+              }
+            } finally { lock.releaseLock(); }
+          }
         }
       } else out = { ok: false, error: 'bad-op' };
     }

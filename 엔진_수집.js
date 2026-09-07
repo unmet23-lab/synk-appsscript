@@ -1525,79 +1525,116 @@ function pushGoldenFixture_() {
   return msg;
 }
 
-/* ===================== [㉡-2 · 2026-09-07] 🗣 증언 그릇 — 학생의 말을 번호와 함께 모으고, 밖에 낼 때만 가린다 =====================
+/* ===================== [㉡-2 · 2026-09-07 · [v9.324] 손질] 🗣 증언 그릇 — 학생의 말을 번호와 함께 모으고, 밖에 낼 때만 가린다 =====================
  * 요구 = docs/명품브랜딩_v2.md ㉡-2 · 첫 손님 = ㉡-1 물음의 답(1기 끝 01-24) · 완료 조건 = ㉢ 삶 이해가 그 말을 읽는다(마케팅 문구로만 쓰이면 미완).
- * ■ 그릇 = testimony_log(수집 표식 · 소급 불가 — 그날 그 말은 그날에만 있다). 칸 = id · student_id · 시각 · 출처 · 물음 · 답 · 맥락 · 시즌
- *   (상수는 엔진_콘텐츠AI.js — 소비자 파일). 「언제 무엇을 묻고 받은 답인가」(아스트라)가 시각·물음·답 셋이다.
+ * ■ 그릇 = testimony_log(수집 표식 · 소급 불가). 칸 = id · student_id · 시각 · 출처 · 물음 · 답 · 맥락 · 시즌 · 화자 · schema_ver(상수는 엔진_콘텐츠AI.js — 소비자 파일).
  *   ⚠ 진단 단계의 말(「안 할래요」 사유 · ㉠-1 한 줄·고침)은 여기가 아니라 진단세션 그릇이다 — 두 그릇을 섞지 않는다.
- * ■ 모을 때는 안 끊는다 — 번호·원문 그대로(셀안전_ 소독만 · 500자). 가리는 것은 밖으로 나가는 자리(증언반출_) 하나이고,
- *   명단을 못 읽으면 안 내보낸다(골든픽스처와 같은 fail-closed). 「없다」도 답이다 — 그대로 남긴다(그게 최저점 원천이다 · 눈금 Ⅰ).
- * ■ 읽는 자리 = 엔진_콘텐츠AI.js aiStudioBatch_ ① 「오늘의 한 문장」(증언맵_) — 사람 화면이 아니라 산출이 바뀌는 자리라 도달이다.
- * ■ 멱등 — id = 번호|출처|물음|답|시각(분)의 지문. 같은 말을 두 번 보내도 한 줄. */
-const TESTIMONY_ANSWER_MAX_ = 500;
+ * ■ [v9.324] 코덱스 검수(49eb769)가 잡은 넷을 고쳤다:
+ *   ① 원문 보존 — 답은 공백·줄바꿈 그대로 남긴다(상한 2000자 · 셀안전_ 소독만). 공백을 접는 것은 «지문»과 «소비자가 읽는 조각»뿐이다.
+ *   ② 지문에 시각을 안 넣는다 — 같은 답을 분 경계 너머 재시도해도 한 줄. 조회→append 는 스크립트 잠금 안에서(동시 요청 멱등).
+ *   ③ 화자 칸 — 보호자가 쓴 답(회고 편지 무대 Ⓑ)은 「스스로 한 말」이 아니다. 소비자(증언맵_)는 학생 화자만 읽는다.
+ *   ④ 밖으로 나가는 자리는 둘 다 검문한다(증언비식별_) — 외부 AI 프롬프트(증언맵_)와 반출 판(증언반출_). 명단 이름 조각 · 전화 · 이메일 ·
+ *      손잡이(@) · 학생 번호 꼴 · 주소가 들면 그 줄은 안 나간다. 명단을 못 읽으면 검문이 불가하니 아무것도 안 낸다(fail-closed · 골든픽스처와 같은 선).
+ * ■ 읽는 자리 = 엔진_콘텐츠AI.js aiStudioBatch_ ① 「오늘의 한 문장」(증언맵_) — 사람 화면이 아니라 산출이 바뀌는 자리라 도달이다. */
+const TESTIMONY_ANSWER_MAX_ = 2000;
 
-/** 지문 — SHA-256 앞 12자. 시각은 분까지(같은 분 안의 같은 말은 한 건). */
-function 증언지문_(번호, 출처, 물음, 답, 시각분) {
-  const 원문 = [번호, 출처, 물음, 답, 시각분].map(function (s) { const t = String(s == null ? '' : s); return t.length + ':' + t; }).join('|');
+/** 공백 접기 — 지문·조각용. 저장하는 원문에는 안 쓴다. */
+function 증언공백접기_(s) { return String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); }
+
+/** 지문 — 번호·출처·물음·답(공백 접은 판)의 SHA-256 앞 12자. 시각은 안 넣는다(같은 말은 언제 다시 보내도 한 줄). */
+function 증언지문_(번호, 출처, 물음, 답) {
+  const 원문 = [번호, 출처, 물음, 증언공백접기_(답)].map(function (s) { const t = String(s == null ? '' : s); return t.length + ':' + t; }).join('|');
   const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, 원문, Utilities.Charset.UTF_8);
   return bytes.map(function (b) { return ('0' + (b & 0xFF).toString(16)).slice(-2); }).join('').slice(0, 12);
 }
 
-/** 남기기 — 입력 { student_id, 출처, 물음, 답, 맥락?, 시즌?, 시각? }. 빈 답은 안 남긴다(「없다」는 낱말로 보내야 남는다 —
- *  빈칸은 «안 물었다»와 같은 얼굴이라 뒤에 못 가른다). 돌려주는 것 = { ok, id, 중복 } 또는 { ok:false, error }. */
+/** 남기기 — 입력 { student_id, 출처, 물음, 답, 맥락?, 시즌?, 시각?, 화자?('학생'|'보호자' · 기본 학생), 잠금없이?(바깥이 이미 잠갔을 때) }.
+ *  빈 답은 안 남긴다(「없다」는 낱말로 보내야 남는다). 돌려주는 것 = { ok, id, 중복 } 또는 { ok:false, error }. */
 function 증언남기기_(ss, 입력) {
   const 입 = 입력 || {};
   const sid = String(입.student_id || '').trim();
-  const 출처 = String(입.출처 || '').replace(/\s+/g, ' ').trim().slice(0, 40);
-  const 물음 = String(입.물음 || '').replace(/\s+/g, ' ').trim().slice(0, 200);
-  const 답 = String(입.답 || '').replace(/\s+/g, ' ').trim().slice(0, TESTIMONY_ANSWER_MAX_);
+  const 출처 = 증언공백접기_(입.출처).slice(0, 40);
+  const 물음 = 증언공백접기_(입.물음).slice(0, 200);
+  const 원문 = String(입.답 == null ? '' : 입.답).replace(/\r\n?/g, '\n').trim().slice(0, TESTIMONY_ANSWER_MAX_);
   if (!sid) return { ok: false, error: 'no-student' };
   if (!출처 || !물음) return { ok: false, error: 'no-question' };
-  if (!답) return { ok: false, error: 'empty' };
+  if (!증언공백접기_(원문)) return { ok: false, error: 'empty' };
   const 시각 = 입.시각 ? new Date(입.시각) : new Date();
   if (isNaN(시각.getTime())) return { ok: false, error: 'bad-time' };
   const 시각분 = Utilities.formatDate(시각, ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd HH:mm');
-  const id = 증언지문_(sid, 출처, 물음, 답, 시각분);
-  const sh = ensureSheet(ss, TESTIMONY_TAB_, TESTIMONY_HEADERS);
-  if (sh.getLastRow() >= 2) {
-    const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
-    for (let i = 0; i < ids.length; i++) if (String(ids[i][0]) === id) return { ok: true, id: id, 중복: true };
-  }
-  const 소독 = function (v) { const t = String(v == null ? '' : v); return typeof 셀안전_ === 'function' ? 셀안전_(t) : t; };
-  sh.appendRow([id, sid, 시각분, 소독(출처), 소독(물음), 소독(답), 소독(String(입.맥락 || '').slice(0, 200)), 소독(String(입.시즌 || '').slice(0, 20))]);
-  return { ok: true, id: id, 중복: false };
+  const 화자 = String(입.화자 || '') === '보호자' ? '보호자' : '학생';
+  const id = 증언지문_(sid, 출처, 물음, 원문);
+  const 잠금 = 입.잠금없이 ? null : LockService.getScriptLock();
+  if (잠금 && !잠금.tryLock(10000)) return { ok: false, error: 'busy' };
+  try {
+    const sh = ensureSheet(ss, TESTIMONY_TAB_, TESTIMONY_HEADERS);
+    if (sh.getLastRow() >= 2) {
+      const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
+      for (let i = 0; i < ids.length; i++) if (String(ids[i][0]) === id) return { ok: true, id: id, 중복: true };
+    }
+    const 소독 = function (v) { const t = String(v == null ? '' : v); return typeof 셀안전_ === 'function' ? 셀안전_(t) : t; };
+    sh.appendRow([id, sid, 시각분, 소독(출처), 소독(물음), 소독(원문), 소독(String(입.맥락 || '').slice(0, 200)), 소독(String(입.시즌 || '').slice(0, 20)),
+      화자, TESTIMONY_SCHEMA_VER]);
+    return { ok: true, id: id, 중복: false };
+  } finally { if (잠금) 잠금.releaseLock(); }
 }
 
-/** ㉢ 삶 이해의 첫 소비자 — 학생별 최근 말 둘(창 = 기본 120일). { 맵: { sid: '물음 → 답 · …' }, 건수, 학생수 }.
- *  이름은 안 싣는다(방향 불변식 4 — 매칭은 번호가 진다). 140자 캡 = 약점·성취 칸과 같은 눈금(한쪽만 길면 그쪽으로 쏠린다). */
-function 증언맵_(ss, 창일) {
-  const 맵 = {};
+/** 밖으로 나가기 «전» 검문 — 이름들(명단이름_) 이 null 이면 검문 불가라 null. 명단 이름 조각 · 전화·긴 숫자열 · 이메일 · 손잡이(@) ·
+ *  학생 번호 꼴 · 주소가 들면 null(그 줄은 안 나간다 · 통째로 · 부분 가림은 안 한다 — 남는 조각이 다시 사람을 가리킨다). 통과하면 원문 그대로. */
+function 증언비식별_(이름들, 글) {
+  if (!이름들) return null;
+  const s = String(글 == null ? '' : 글);
+  if (!s.trim()) return null;
+  if (이름살균_(이름들, s)) return null;
+  if ((s.match(/\d/g) || []).length >= 7) return null;                 // 전화·계좌·긴 번호(날짜도 걸린다 — 안 나가는 쪽으로 틀린다)
+  if (/[\w.+-]+@[\w-]+\.[\w.]+/.test(s)) return null;                 // 이메일
+  if (/(^|[^\w])@[A-Za-z0-9_.]{3,}/.test(s)) return null;               // 손잡이
+  if (/\b(?:S|DEMO-)[A-Za-z]*\d{2,}\b/i.test(s)) return null;           // 학생 번호 꼴
+  if (/https?:\/\/|www\./i.test(s)) return null;                       // 주소
+  return s;
+}
+
+/** ㉢ 삶 이해의 첫 소비자 — 학생별 최근 말 둘. 창 = 일수(기본 120 · 오늘부터 거꾸로) 또는 { 시작, 끝 }(시즌 창).
+ *  학생 화자만(보호자 답은 뺀다) · 검문(증언비식별_)을 지난 답만 · 명단을 못 읽으면 맵이 빈다(검문못함 = true). 이름은 안 싣는다.
+ *  140자 캡 = 약점·성취 칸과 같은 눈금. 돌려주는 것 = { 맵, 건수, 학생수, 걸러냄, 검문못함 }. */
+function 증언맵_(ss, 창) {
+  const 빈 = { 맵: {}, 건수: 0, 학생수: 0, 걸러냄: 0, 검문못함: false };
   const sh = ss.getSheetByName(TESTIMONY_TAB_);
-  if (!sh || sh.getLastRow() < 2) return { 맵: 맵, 건수: 0, 학생수: 0 };
+  if (!sh || sh.getLastRow() < 2) return 빈;
+  const 이름들 = 명단이름_(ss);
+  if (!이름들) return Object.assign(빈, { 검문못함: true });
   const w = Math.min(TESTIMONY_HEADERS.length, sh.getLastColumn());
-  if (w < 6) return { 맵: 맵, 건수: 0, 학생수: 0 };            // 답 칸이 없으면 읽을 것이 없다
-  const 경계 = Date.now() - (창일 || 120) * 86400000;
+  if (w < 6) return 빈;
+  let 시작 = 0, 끝 = Infinity;
+  if (창 && typeof 창 === 'object') {
+    시작 = 창.시작 ? 창.시작.getTime() : 0;
+    끝 = 창.끝 ? 창.끝.getTime() + 86400000 : Infinity;
+  } else 시작 = Date.now() - (창 || 120) * 86400000;
   const 날 = function (v) { const d = toDate_(v); if (d) return d; const x = new Date(v); return isNaN(x.getTime()) ? null : x; };
   const agg = {};
-  let 건수 = 0;
+  let 건수 = 0, 걸러냄 = 0;
   sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues().forEach(function (r) {
-    const sid = String(r[1] || '').trim(), 답 = String(r[5] || '').trim();
-    if (!sid || !답) return;
+    const sid = String(r[1] || '').trim();
+    if (!sid) return;
+    if (w > 8 && String(r[8] || '') === '보호자') return;                // 보호자의 말은 「스스로 한 말」이 아니다
     const d = 날(r[2]);
     const ms = d ? d.getTime() : 0;
-    if (ms && ms < 경계) return;
+    if (!ms || ms < 시작 || ms >= 끝) return;
+    const 답 = 증언비식별_(이름들, r[5]);
+    if (!답) { 걸러냄++; return; }
     건수++;
-    (agg[sid] = agg[sid] || []).push({ 물음: String(r[4] || '').trim(), 답: 답, t: ms });
+    (agg[sid] = agg[sid] || []).push({ 물음: 증언공백접기_(r[4]), 답: 증언공백접기_(답), t: ms });
   });
   Object.keys(agg).forEach(function (sid) {
     const 둘 = agg[sid].sort(function (a, b) { return b.t - a.t; }).slice(0, 2);
-    맵[sid] = 둘.map(function (x) { return (x.물음 ? x.물음.slice(0, 30) + ' → ' : '') + x.답.slice(0, 60); }).join(' · ').slice(0, 140);
+    빈.맵[sid] = 둘.map(function (x) { return (x.물음 ? x.물음.slice(0, 30) + ' → ' : '') + x.답.slice(0, 60); }).join(' · ').slice(0, 140);
   });
-  return { 맵: 맵, 건수: 건수, 학생수: Object.keys(맵).length };
+  빈.건수 = 건수; 빈.걸러냄 = 걸러냄; 빈.학생수 = Object.keys(빈.맵).length;
+  return 빈;
 }
 
-/** 밖으로 내는 판 — 사람을 알아볼 것이 0: 번호 없음 · 시각은 달까지 · 명단 이름 조각이 든 답은 뺀다(몇 건 뺐나를 같이 낸다).
- *  명단(profiles)을 못 읽으면 **안 내보낸다**(null) — 살균 없이는 밖으로 안 나간다(골든픽스처와 같은 선). */
+/** 밖으로 내는 판 — 사람을 알아볼 것이 0: 번호 없음 · 시각은 달까지 · 출처·물음·답 셋 다 검문(증언비식별_) · 화자는 낱말로만.
+ *  명단(profiles)을 못 읽으면 **안 내보낸다**(null). 걸러낸 수를 같이 낸다. */
 function 증언반출_(ss) {
   const 이름들 = 명단이름_(ss);
   if (!이름들) return null;
@@ -1608,10 +1645,10 @@ function 증언반출_(ss) {
   const 판 = [];
   let 뺀 = 0;
   sh.getRange(2, 1, sh.getLastRow() - 1, w).getValues().forEach(function (r) {
-    const 답 = String(r[5] || '').trim();
-    if (!답) return;
-    if (이름살균_(이름들, 답)) { 뺀++; return; }
-    판.push({ 월: String(r[2] || '').slice(0, 7), 출처: String(r[3] || ''), 물음: String(r[4] || ''), 답: 답 });
+    if (!String(r[5] || '').trim()) return;
+    const 출처 = 증언비식별_(이름들, r[3]), 물음 = 증언비식별_(이름들, r[4]), 답 = 증언비식별_(이름들, r[5]);
+    if (!출처 || !물음 || !답) { 뺀++; return; }
+    판.push({ 월: String(r[2] || '').slice(0, 7), 출처: 출처, 물음: 물음, 답: 답, 화자: w > 8 && String(r[8] || '') === '보호자' ? '보호자' : '학생' });
   });
   return { 판: 판, 뺀건수: 뺀 };
 }
