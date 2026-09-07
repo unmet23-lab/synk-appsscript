@@ -23,7 +23,7 @@
 /* 시트 골격 — `sheetSkeleton_` 이 이 상수를 그대로 쓴다(두 곳에 적으면 갈린다). */
 const AUTO_ASSIGN_HEADERS = ['배정ID', 'student_id', '자율일', '차시', '주유형', '차시판', '목표', '항목', '공급상태',
   '완주판정', '찬수', '항목수', '미집계', '빈항목', '판정시각', 'created_at', 'schema_ver'];
-const AUTO_ASSIGN_SCHEMA_VER = 1;
+const AUTO_ASSIGN_SCHEMA_VER = 2;   // 2 = 항목 칸 「회차」→「역할」 · 원오답 「quiz_log_id」→「퀴즈ID·제출일ms」(09-07 · 1 판 행은 라이브에 0건 · 배포 검수 P3 fe7d3a2b4e8e)
 const AUTO_ASSIGN_TAB_ = '자율일배정';
 const AUTO_WRONG_WINDOW_DAYS_ = 14;   // 오답 창 — `퀴즈오답맵_` 과 같은 14일(한 재료에 창 하나 · 설계 §③-㉡)
 const AUTO_REVIEW_WINDOW_DAYS_ = 60;  // 전체복습(8차시)이 「8주 동안 오답을 낸 문형」을 고르는 창
@@ -443,7 +443,8 @@ function sundayBundleJudge_() {
   if (pf && pf.getLastRow() >= 2) pf.getRange(2, 1, pf.getLastRow() - 1, 2).getValues().forEach(function (r) { if (r[0]) 이름[String(r[0]).trim()] = String(r[1] || '').trim(); });
   // 배치가 아예 안 돈 날 — 1기 학생인데 그 자율일 행이 없으면 «공급실패(미배정)»다(심문 2회차 아스트라 P1 · 전원 미공급과 「집계할 학생 없음」이 같은 얼굴이 되지 않게)
   const 미배정 = dow === 1 ? 자율일학생들_(ss).filter(function (s) { return !기존[s.sid + '|' + 자율일]; }) : [];
-  if (!대상.length && !미배정.length) return;
+  // 월요일은 «전원 보고»가 목적이라 그 자율일에 학생이 하나라도 있으면 간다(새 판정이 0이어도) · 화요일은 다시 셀 행이 있을 때만(배포 검수 P1 8df1f2dcc582)
+  if (dow === 1 ? (!전부.length && !미배정.length) : !대상.length) return;
   const 퀴즈제출 = 자율일퀴즈제출_(ss, 자율일, tz);
   const 진단제출 = 자율일진단제출_(ss, 주, 자율일, tz);
   const 말하기 = 자율일말하기제출_(자율일);               // null = talk 답이 없다 → 미집계
@@ -465,10 +466,10 @@ function sundayBundleJudge_() {
     // 보고는 그 자율일 «전원» — 방금 판정한 학생과 이미 판정돼 있던 학생을 다 싣는다(P2 2954ddd9cc3a)
     전부.forEach(function (e) { 판정들.push({ 이름: 이름[e.묶음.학생ID] || e.묶음.학생ID, 판정: e.묶음.완주판정 || '미집계' }); });
     미배정.forEach(function (s) { 판정들.push({ 이름: s.name, 판정: '공급실패' }); });
-    props.setProperty(도장키, nowStr);
     const 줄 = 자율일한줄_(판정들, 자율일) + (미배정.length ? '\n(공급 실패 중 ' + 미배정.length + '명은 묶음 행 자체가 없다 — 토요일 밤 배치가 안 돌았거나 1기 반이 그때 비어 있었다)' : '') +
       (말하기 ? '' : '\n(낭독·답하기는 talk 답이 없어 이번 셈에서 뺐습니다 — SUNDAY_PROGRESS_URL 미배선)');
-    adminMail('[SYNK] 자율일 한 줄 — ' + 자율일, 줄);
+    adminMail('[SYNK] 자율일 한 줄 — ' + 자율일, 줄);       // 발송(큐 적재)이 던지면 도장을 안 찍는다 — 다음 호출이 다시 보낸다(배포 검수 P1 bf96aa49a972 · P2 60be425574ee)
+    props.setProperty(도장키, nowStr);
     Logger.log(줄);
   }
 }

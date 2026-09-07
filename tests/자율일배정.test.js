@@ -264,6 +264,14 @@ test('배선 — 골격에 자율일배정 · 토요일 밤 묶음 · 월 07시 
   assert.match(night, /safeRun\('sundayBundle', sundayBundleBatch_\)/, '토요일 밤 묶음이 밤 배치에 안 걸렸다');
   assert.match(night, /safeRun\('sundayBundleJudge', sundayBundleJudge_\)/, '화요일 재집계가 밤 배치에 안 걸렸다');
   assert.match(weekly, /safeRun\('sundayBundleJudge', sundayBundleJudge_\)/, '월요일 판정이 weeklyJobs(월 07시)에 안 걸렸다');
+  // 배포 검수 2차 P1 둘 — 월요일은 전원 보고라 새 판정 0 이어도 가고, 도장은 발송 «뒤»에 찍는다
+  const 자율 = 읽기('엔진_자율일.js');
+  const j = 자율.indexOf('function sundayBundleJudge_(');
+  const 본문 = 자율.slice(j, 자율.indexOf('\nfunction ', j + 10));
+  assert.match(본문, /if \(dow === 1 \? \(!전부\.length && !미배정\.length\) : !대상\.length\) return;/, '월요일 조기 반환이 새 판정 0 을 «보고 없음»으로 접는다');
+  const 메일 = 본문.indexOf("adminMail('[SYNK] 자율일 한 줄"), 도장 = 본문.indexOf('props.setProperty(도장키, nowStr)');
+  assert.ok(메일 > -1 && 도장 > 메일, '도장이 발송보다 먼저다 — 발송이 실패하면 보고가 영영 사라진다');
+  assert.match(자율, /const AUTO_ASSIGN_SCHEMA_VER = 2;/, '항목 칸 이름을 바꿨으면 schema_ver 도 올라야 한다');
   assert.equal(AUTO_HEADERS_OK(), true);
 });
 function AUTO_HEADERS_OK() {
