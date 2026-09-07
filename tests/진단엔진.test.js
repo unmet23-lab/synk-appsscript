@@ -264,6 +264,23 @@ test('[㉠-1] 카드 메일 — 「첫 주 숙제」로 자를 향해 가르치�
   assert.equal(/첫 주 숙제/.test(읽기('엔진_진단.js').replace(/\/\*[\s\S]*?\*\//g, '')), false, '엔진 코드 어디에도 「첫 주 숙제」가 없어야 한다');
 });
 
+test('[㉠-1] 학생이 쓴 글은 셀안전_ 를 지나 시트에 들어간다 — `=` 로 시작하는 한 줄이 수식이 되지 않는다(profiles 의 v9.153 구멍과 같은 자리)', () => {
+  const 본문 = 읽기('엔진_진단.js');
+  const 쓰기 = 본문.slice(본문.indexOf('function 진단칸쓰기_('), 본문.indexOf('function 진단시작_('));
+  assert.match(쓰기, /셀안전_\(/, '진단칸쓰기_ 가 셀안전_ 를 안 지난다 — 학생 한 줄이 시트 수식이 된다');
+  /* 직기입(setValue)이 진단칸쓰기_ 밖에 있어도 «남의 글»(입력·시트에서 읽은 문자열)을 쓰면 안 된다 — 잇기의 학생번호·'✓' 는 우리 값이라 그대로 둔다 */
+  const 밖 = 본문.split('\n').filter((l) => /\.setValue\(/.test(l) && !/소독\(값들\[n\]\)/.test(l));
+  assert.ok(밖.every((l) => !/입력|한줄|문장|사유/.test(l)), '진단칸쓰기_ 밖의 직기입이 남의 글을 쓴다 — 소독은 한 통로에서만 산다:\n' + 밖.join('\n'));
+  // 런타임 — 문맥에 셀안전_ 를 끼우면 그 함수를 타고, 빼면 원문 그대로다(시험 문맥 기본)
+  C.셀안전_ = (v) => (/^[=+\-@]/.test(v) ? "'" + v : v);
+  try {
+    const s = C.진단시작_({ 역할: '시작', 이메일: 'inj@b.mn' });
+    C.진단멈춘까닭_({ 세션번호: s.세션번호, 한줄: '=1+1' });
+    const rows = C.시트들['진단세션'].rows;
+    assert.equal(rows[rows.length - 1][C.DIAG_SESSION_HEADERS.indexOf('멈춘까닭')], "'=1+1", '수식 문자가 소독 없이 들어갔다');
+  } finally { delete C.셀안전_; }
+});
+
 test('[㉠-1] JSON 통로에 why·fix 가 있다 — 화면이 그 둘을 부른다', () => {
   const s = C.진단시작_({ 역할: '시작', 이메일: 'api@b.mn' });
   const why = JSON.parse(C.진단API_({ parameter: { p: '진단' }, postData: { contents: JSON.stringify({ op: 'why', session: s.세션번호, text: '돈이 없어서요' }) } }, 'post').t);
