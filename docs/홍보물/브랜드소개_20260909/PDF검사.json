@@ -1,0 +1,54 @@
+[
+  {
+    "file": "synk.pdf",
+    "pages": 5,
+    "bytes": 5795285,
+    "imagePixels": [
+      3840,
+      2400
+    ],
+    "pagePoints": [
+      1080,
+      675
+    ]
+  },
+  {
+    "file": "lab.pdf",
+    "pages": 5,
+    "bytes": 5224546,
+    "imagePixels": [
+      3840,
+      2400
+    ],
+    "pagePoints": [
+      1080,
+      675
+    ]
+  },
+  {
+    "file": "shift.pdf",
+    "pages": 5,
+    "bytes": 5266208,
+    "imagePixels": [
+      3840,
+      2400
+    ],
+    "pagePoints": [
+      1080,
+      675
+    ]
+  },
+  {
+    "file": "pulse.pdf",
+    "pages": 5,
+    "bytes": 8265607,
+    "imagePixels": [
+      3840,
+      2400
+    ],
+    "pagePoints": [
+      1080,
+      675
+    ]
+  }
+]

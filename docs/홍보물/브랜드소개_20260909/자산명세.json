@@ -1,0 +1,218 @@
+[
+  {
+    "key": "paper",
+    "source": "영상/public/공방/Paper_4K.avif",
+    "width": 3641,
+    "height": 2825,
+    "alpha": true,
+    "output": "assets/paper.webp"
+  },
+  {
+    "key": "ink",
+    "source": "영상/public/공방/Ink_4K.avif",
+    "width": 4112,
+    "height": 2799,
+    "alpha": true,
+    "output": "assets/ink.webp"
+  },
+  {
+    "key": "mong",
+    "source": "docs/캐릭터/정본_4K/몽글_본체.png",
+    "width": 4096,
+    "height": 4096,
+    "alpha": true,
+    "output": "assets/mong.webp"
+  },
+  {
+    "key": "smile",
+    "source": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
+    "width": 4096,
+    "height": 4096,
+    "alpha": true,
+    "output": "assets/smile.webp"
+  },
+  {
+    "key": "curious",
+    "source": "docs/캐릭터/정본_4K/몽글_궁금함.png",
+    "width": 4096,
+    "height": 4096,
+    "alpha": true,
+    "output": "assets/curious.webp"
+  },
+  {
+    "key": "notebook",
+    "source": "영상/public/공방/공방_공책과연필.avif",
+    "width": 4096,
+    "height": 4096,
+    "alpha": false,
+    "output": "assets/notebook.webp"
+  },
+  {
+    "key": "compass",
+    "source": "영상/public/공방/공방_나침반.avif",
+    "width": 4096,
+    "height": 4096,
+    "alpha": false,
+    "output": "assets/compass.webp"
+  },
+  {
+    "key": "letter",
+    "source": "영상/public/공방/공방_편지봉투.avif",
+    "width": 3176,
+    "height": 2680,
+    "alpha": true,
+    "output": "assets/letter.webp"
+  },
+  {
+    "key": "book",
+    "source": "영상/public/공방/공방_책.avif",
+    "width": 3100,
+    "height": 1990,
+    "alpha": true,
+    "output": "assets/book.webp"
+  },
+  {
+    "key": "scissors",
+    "source": "영상/public/공방/공방_가위.avif",
+    "width": 2181,
+    "height": 2687,
+    "alpha": true,
+    "output": "assets/scissors.webp"
+  },
+  {
+    "key": "radio",
+    "source": "영상/public/공방/라디오_4K.avif",
+    "width": 2755,
+    "height": 2569,
+    "alpha": true,
+    "output": "assets/radio.webp"
+  },
+  {
+    "key": "window",
+    "source": "영상/public/공방/공방_창가책상.avif",
+    "width": 4096,
+    "height": 4096,
+    "alpha": false,
+    "output": "assets/window.webp"
+  },
+  {
+    "key": "classroom",
+    "source": "영상/public/공방/공방_교실.avif",
+    "width": 4096,
+    "height": 4096,
+    "alpha": false,
+    "output": "assets/classroom.webp"
+  },
+  {
+    "key": "roof",
+    "source": "영상/public/공방/공방_별보는지붕.avif",
+    "width": 4096,
+    "height": 4096,
+    "alpha": false,
+    "output": "assets/roof.webp"
+  },
+  {
+    "key": "cafe",
+    "source": "영상/public/공방/공방_카페안.avif",
+    "width": 4096,
+    "height": 4096,
+    "alpha": false,
+    "output": "assets/cafe.webp"
+  },
+  {
+    "key": "house",
+    "source": "영상/public/공방/라디오무대_집안밤공부.avif",
+    "width": 3999,
+    "height": 4112,
+    "alpha": true,
+    "output": "assets/house.webp"
+  },
+  {
+    "key": "lake",
+    "source": "영상/public/공방/라디오무대_차분달빛호수.avif",
+    "width": 4112,
+    "height": 3938,
+    "alpha": true,
+    "output": "assets/lake.webp"
+  },
+  {
+    "key": "meadow",
+    "source": "영상/public/공방/라디오무대_드림들판.avif",
+    "width": 4112,
+    "height": 4096,
+    "alpha": true,
+    "output": "assets/meadow.webp"
+  },
+  {
+    "key": "city",
+    "source": "영상/public/공방/라디오무대_전자밤도시.avif",
+    "width": 4112,
+    "height": 4112,
+    "alpha": true,
+    "output": "assets/city.webp"
+  },
+  {
+    "key": "clipboard",
+    "source": "영상/public/공방/무대_클립보드_4K.avif",
+    "width": 2361,
+    "height": 2906,
+    "alpha": true,
+    "output": "assets/clipboard.webp"
+  },
+  {
+    "key": "seal",
+    "source": "영상/public/공방/무대_도장_4K.avif",
+    "width": 3123,
+    "height": 2676,
+    "alpha": true,
+    "output": "assets/seal.webp"
+  },
+  {
+    "key": "logo",
+    "source": "영상/public/공방/로고찡긋플레이팅_4K.avif",
+    "width": 2175,
+    "height": 1861,
+    "alpha": true,
+    "output": "assets/logo.webp"
+  },
+  {
+    "key": "korean",
+    "source": "영상/public/공방/ㄱ_4K.avif",
+    "width": 3843,
+    "height": 2717,
+    "alpha": true,
+    "output": "assets/korean.webp"
+  },
+  {
+    "key": "headphones",
+    "source": "영상/public/공방/공방_꾸밈_헤드폰코랄.avif",
+    "width": 2615,
+    "height": 3143,
+    "alpha": true,
+    "output": "assets/headphones.webp"
+  },
+  {
+    "key": "night",
+    "source": "docs/Loom_자산/무대/집안밤공부.webp",
+    "width": 2048,
+    "height": 2048,
+    "alpha": false,
+    "output": "assets/night.webp"
+  },
+  {
+    "key": "moon",
+    "source": "docs/Loom_자산/무대/차분달빛호수.webp",
+    "width": 2048,
+    "height": 2048,
+    "alpha": false,
+    "output": "assets/moon.webp"
+  },
+  {
+    "key": "woolLogo",
+    "source": "docs/Loom_자산/구움/양모워드마크_누끼.png",
+    "width": 2820,
+    "height": 1301,
+    "alpha": true,
+    "output": "assets/woolLogo.webp"
+  }
+]

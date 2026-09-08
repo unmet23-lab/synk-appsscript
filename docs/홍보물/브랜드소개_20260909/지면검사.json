@@ -1,0 +1,417 @@
+[
+  {
+    "brand": "synk",
+    "checks": [
+      {
+        "page": "1",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "woolLogo",
+            "natural": [
+              2820,
+              1301
+            ],
+            "display": [
+              650,
+              300
+            ]
+          }
+        ]
+      },
+      {
+        "page": "2",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "book",
+            "natural": [
+              3100,
+              1990
+            ],
+            "display": [
+              410,
+              285
+            ]
+          }
+        ]
+      },
+      {
+        "page": "3",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "curious",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              270,
+              250
+            ]
+          }
+        ]
+      },
+      {
+        "page": "4",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "notebook",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              385,
+              290
+            ]
+          },
+          {
+            "key": "mong",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              385,
+              290
+            ]
+          },
+          {
+            "key": "night",
+            "natural": [
+              2048,
+              2048
+            ],
+            "display": [
+              462,
+              290
+            ]
+          }
+        ]
+      },
+      {
+        "page": "5",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "letter",
+            "natural": [
+              3176,
+              2680
+            ],
+            "display": [
+              480,
+              365
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "brand": "lab",
+    "checks": [
+      {
+        "page": "1",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "smile",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              650,
+              590
+            ]
+          }
+        ]
+      },
+      {
+        "page": "2",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "cafe",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              520,
+              510
+            ]
+          }
+        ]
+      },
+      {
+        "page": "3",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "curious",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              270,
+              250
+            ]
+          }
+        ]
+      },
+      {
+        "page": "4",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "book",
+            "natural": [
+              3100,
+              1990
+            ],
+            "display": [
+              300,
+              230
+            ]
+          }
+        ]
+      },
+      {
+        "page": "5",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "classroom",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              480,
+              365
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "brand": "shift",
+    "checks": [
+      {
+        "page": "1",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "notebook",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              560,
+              490
+            ]
+          }
+        ]
+      },
+      {
+        "page": "2",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "scissors",
+            "natural": [
+              2181,
+              2687
+            ],
+            "display": [
+              250,
+              285
+            ]
+          }
+        ]
+      },
+      {
+        "page": "3",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "book",
+            "natural": [
+              3100,
+              1990
+            ],
+            "display": [
+              480,
+              300
+            ]
+          }
+        ]
+      },
+      {
+        "page": "4",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "korean",
+            "natural": [
+              3840,
+              2715
+            ],
+            "display": [
+              260,
+              285
+            ]
+          }
+        ]
+      },
+      {
+        "page": "5",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "letter",
+            "natural": [
+              3176,
+              2680
+            ],
+            "display": [
+              480,
+              365
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "brand": "pulse",
+    "checks": [
+      {
+        "page": "1",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "house",
+            "natural": [
+              3734,
+              3840
+            ],
+            "display": [
+              600,
+              630
+            ]
+          }
+        ]
+      },
+      {
+        "page": "2",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "night",
+            "natural": [
+              2048,
+              2048
+            ],
+            "display": [
+              636,
+              350
+            ]
+          },
+          {
+            "key": "moon",
+            "natural": [
+              2048,
+              2048
+            ],
+            "display": [
+              636,
+              350
+            ]
+          }
+        ]
+      },
+      {
+        "page": "3",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "mong",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              450,
+              335
+            ]
+          },
+          {
+            "key": "smile",
+            "natural": [
+              3840,
+              3840
+            ],
+            "display": [
+              450,
+              335
+            ]
+          }
+        ]
+      },
+      {
+        "page": "4",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "headphones",
+            "natural": [
+              2615,
+              3143
+            ],
+            "display": [
+              438,
+              300
+            ]
+          },
+          {
+            "key": "book",
+            "natural": [
+              3100,
+              1990
+            ],
+            "display": [
+              438,
+              300
+            ]
+          }
+        ]
+      },
+      {
+        "page": "5",
+        "overflow": [],
+        "assets": [
+          {
+            "key": "headphones",
+            "natural": [
+              2615,
+              3143
+            ],
+            "display": [
+              300,
+              365
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
