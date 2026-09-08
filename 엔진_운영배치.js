@@ -2667,7 +2667,7 @@ function setupSchedule(rooms) {
 const ABSENCE_FOLLOWUP_HEADERS = ['날짜', 'student_id', '반', '담당강사', '감지시각', '연락여부', '연락시각', '연락수단', '복귀여부', '비고'];
 const ABSENCE_NAG_DAYS = 3;      // 미연락 재알림 창 D+1~D+3 — 정확일 매칭이면 배치가 하루 죽을 때 영영 건너뛴다(MJ_expiryDaily_ 창 방식 계보)
 const ABSENCE_RETURN_DAYS = 14;  // 복귀 판정 유예 — 이 안에 출석이 없으면 '미복귀' 확정
-const ABSENCE_ESCALATE_N = 3;    // 유예 창 안 결석 N회 → 원장 보고(수업 규칙 「결석자 복귀」 "3회면 원장에게 보고" · v3.0 기준 절차 6)
+const ABSENCE_ESCALATE_N = 3;    // 유예 창 안 결석 N회 → 원장 보고(수업 규칙 「결석자 복귀」 "3회면 기획자에게 보고" · v3.0 기준 절차 6)
 const ABSENCE_SEASON_DAYS = 56;  // 등급 심사 주기 = 8주 시즌(주간 리포트의 복귀율 집계 창)
 
 // [v9.89] 복귀 판정(순수 함수 — tests/safety.test.js가 직접 로드해 검증).
@@ -2824,7 +2824,7 @@ function checkNoShow() {
           map[num].time + ' 시작 ' + num + ' 수업 30분 경과, 미출석:\n\n' +
           absent.map(r => '· ' + r[0] + ' ' + r[1]).join('\n') +
           '\n\n📌 24시간 안에 연락하고 아래 폼에 남겨주세요(시즌 등급 심사 「결석 복귀율」 항목).' +
-          (formUrlNS ? '\n' + formUrlNS : '\n※ 연락 기록 폼이 아직 없습니다 — 원장에게 알려주세요(createAbsenceForm 1회 실행).'));
+          (formUrlNS ? '\n' + formUrlNS : '\n※ 연락 기록 폼이 아직 없습니다 — 기획자에게 알려주세요(createAbsenceForm 1회 실행).'));
       });
     }
     setState(st, key, absent.length + '명');
@@ -2905,9 +2905,9 @@ function absenceFollowupNightly_() {
       MailApp.sendEmail(em, '[SYNK] 🔁 결석 연락 미이행 ' + byT[t].length + '건 — 24시간 규칙',
         nm + ' 선생님,\n\n아래 학생은 결석이 감지됐는데 아직 연락 기록이 없습니다.\n\n' + byT[t].join('\n') +
         '\n\n── 수업 규칙 「결석자 복귀」 ──\n· 24시간 안에 메신저로 3문장(오늘 뭘 했는지 · 걱정 한마디 · 다음 시간 예고)\n' +
-        '· 2회 연속이면 전화 · 3회 연속이면 원장 보고\n· "왜 안 왔어요?"로 시작하지 않기\n\n' +
+        '· 2회 연속이면 전화 · 3회 연속이면 기획자 보고\n· "왜 안 왔어요?"로 시작하지 않기\n\n' +
         '연락하셨으면 기록해 주세요(30초). 이 기록이 시즌 등급 심사 「결석 복귀율」의 원본입니다.\n' +
-        (formUrl || '※ 기록 폼 미생성 — 원장에게 알려주세요') +
+        (formUrl || '※ 기록 폼 미생성 — 기획자에게 알려주세요') +
         '\n\n※ 이 알림은 감지 후 ' + ABSENCE_NAG_DAYS + '일까지만 갑니다. 그 뒤에도 빈칸이면 미이행으로 남습니다.');
       sent++;
     });

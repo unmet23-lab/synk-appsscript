@@ -2461,7 +2461,7 @@ function migrateFormCopy0901() {
  *   sweepAbsenceForm_의 위치 파싱(1~7열)이 깨진다. 동기화는 제목·안내·선택지만 바꾸고 항목은 건드리지 않는다.
  *   고정 6문항 = 강사 · 반 · 학생 이름 · 연락 수단 · 결과 · 메모 → 응답 7열(타임스탬프 포함). */
 const ABSENCE_CONTACT_METHODS = ['메신저', '전화', '학부모 전화', '직접 만남', '기타'];
-const ABSENCE_CONTACT_RESULTS = ['연결됨 — 다음 시간에 온다고 함', '연결됨 — 사유만 확인', '답장 없음(메시지는 남김)', '학부모에게 전달', '장기 결석 — 원장 보고 필요'];
+const ABSENCE_CONTACT_RESULTS = ['연결됨 — 다음 시간에 온다고 함', '연결됨 — 사유만 확인', '답장 없음(메시지는 남김)', '학부모에게 전달', '장기 결석 — 기획자 보고 필요'];
 function absenceFormSpec_(ss) {
   const base = teacherMemoSpec_(ss); // 강사·반 로스터 재사용 — 아침 동기화도 같은 원천을 본다
   return {
@@ -3547,7 +3547,7 @@ function runReportCards_() {
       '[v9.155] 카드는 이제 **메일 첨부로만** 전달됩니다(공개 링크 폐지 — 유호님 08-04 결정).\n' +
       '즉 이메일이 없는 학생의 카드는 만들어져도 보호자에게 닿지 않습니다.\n\n' +
       '조치: 상담시트에서 그 학생의 보호자 이메일을 채우면 다음 배치부터 자동 발송됩니다.\n' +
-      '(원장님은 Drive ' + REPORT_FOLDER_NAME + ' 폴더에서 로그인 상태로 직접 보실 수 있습니다.)');
+      '(기획자님은 Drive ' + REPORT_FOLDER_NAME + ' 폴더에서 로그인 상태로 직접 보실 수 있습니다.)');
   }
 
   if (mails.length && quotaOk(mails.length)) {
@@ -4936,7 +4936,7 @@ function menuPrintMonthlyCards() {
   const ui = SpreadsheetApp.getUi();
   try {
     const msg = printMonthlyCards();
-    ui.alert('🖨 이달의 카드', msg + '\n\n링크는 원장 메일로도 갔습니다.\n' +
+    ui.alert('🖨 이달의 카드', msg + '\n\n링크는 기획자 메일로도 갔습니다.\n' +
       'Drive 의 「SYNK_인쇄」 폴더에서도 열 수 있습니다.', ui.ButtonSet.OK);
   } catch (e) {
     ui.alert('🖨 이달의 카드', '아직 못 만들었어요 — ' + e.message +

@@ -315,8 +315,8 @@ function 두뇌_답_(질문, 대상, 세션) {
     required: ['reply', 'handoff', 'handoff_reason', 'used_topics'],
     properties: {
       reply: { type: 'string', description: '답변. 지식에 있는 내용만. 답할 수 없으면 빈 문자열' },
-      handoff: { type: 'boolean', description: '원장에게 넘겨야 하면 true' },
-      handoff_reason: { type: 'string', description: '넘기는 이유를 한국어 한 문장으로(원장이 읽는다). 넘기지 않으면 빈 문자열' },
+      handoff: { type: 'boolean', description: '기획자에게 넘겨야 하면 true' },
+      handoff_reason: { type: 'string', description: '넘기는 이유를 한국어 한 문장으로(기획자가 읽는다). 넘기지 않으면 빈 문자열' },
       used_topics: { type: 'array', items: { type: 'string' }, description: '답에 실제로 사용한 지식의 주제' }
     }
   };
