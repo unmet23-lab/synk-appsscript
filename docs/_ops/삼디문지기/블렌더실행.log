@@ -1,0 +1,15 @@
+06:57.687  render           | Saved: 'C:\Users\q1212\Documents\SYNK-appsscript\docs\_ops\삼디문지기\까몽_블렌더_누끼.png'
+누끼 한 장 — 그림자 받이 0(받침천을 걷은 캐릭터 판): C:\Users\q1212\Documents\SYNK-appsscript\docs\_ops\삼디문지기\까몽_블렌더_누끼.png
+구움: 오브 C:\Users\q1212\Documents\SYNK-appsscript\docs\_ops\삼디문지기\까몽_블렌더_누끼.png 샘플 96 염료 Coral #F96859 장치 CPU
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+
+C:\Users\q1212\Documents\SYNK-appsscript\tools\요소굽기.py:412: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m.use_nodes = True
+C:\Users\q1212\Documents\SYNK-appsscript\tools\요소굽기.py:147: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m.use_nodes = True
+C:\Users\q1212\Documents\SYNK-appsscript\tools\요소굽기.py:169: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  m.use_nodes = True
+C:\Users\q1212\Documents\SYNK-appsscript\tools\요소굽기.py:5525: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  씬.world.use_nodes = True
