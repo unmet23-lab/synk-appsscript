@@ -329,7 +329,7 @@ test('Ⓔ 이달의 카드 본체 — 종이로 나가는 유일한 카드라 �
    ['#6B7280', '킷 밖 회색 — Ash Wool 로'], ['#1D1D1C', '퇴역 대기 — Ink 로']].forEach(([hex, 왜]) => {
     assert.equal(토막.includes(hex), false, `${hex} 가 남아 있다(${왜})`);
   });
-  assert.ok(/#FBF7F0/.test(토막) && /#F0E3C8/.test(토막), '킷 색(Paper·Stitch)이 안 들어갔다');
+  assert.ok(/#FBF7F0/.test(토막) && /#FBCAAB/.test(토막), '킷 색(Paper·Stitch)이 안 들어갔다');
 });
 
 /* ── F. 메뉴 ────────────────────────────────────────────────────────────────── */
