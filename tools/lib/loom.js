@@ -1504,7 +1504,59 @@ ${부품절}
 
 /* 🔑 `범위씌우기`·`기본범위` 를 내보내는 이유 = 픽스처가 물게 하려고(지면방 `분모확인()` 과 같은 계열).
  *   순수 함수로 떼어 놓지 않으면 변이 검사에서 「게이트를 꺼도 전부 초록」이 난다(실측 08-16). */
-module.exports = { css, 율, 분모, 시연, 지면들, 림레시피, 정본, 마커, 범위씌우기, 기본범위, 기본천 };
+/** 엔진 소개서의 전시 지면. 색·서체·간격은 Loom의 정본에서 파생한다. */
+function 엔진전시() {
+  const t = 정본();
+  const c = t.색;
+  const 활자 = [['Regular',400],['Medium',500],['SemiBold',600],['Bold',700]].map(([name,weight]) => {
+    const data = fs.readFileSync(path.join(루트,'docs','브랜드_폰트','InterTight',`InterTight-${name}.ttf`));
+    return `@font-face{font-family:'Inter Tight';font-style:normal;font-weight:${weight};font-display:swap;src:url(data:font/ttf;base64,${data.toString('base64')}) format('truetype');}`;
+  }).join('\n');
+  return `
+  ${활자}
+  body.엔진전시{--chalk:${c.Paper};--chalk-rgb:${rgb(c.Paper)};--ash:${c.Stone};
+    --graphite:${c['Ink Deep']};--graphite2:${c.Ink};--graphite2-rgb:${rgb(c.Ink)};
+    --graphite3:${c.Ink};--ink:${c.Paper};--금:${알파(c,'Stitch',.2)};
+    background:${c['Ink Deep']};color:${c.Paper};font-weight:500;}
+  .엔진전시 .판{max-width:1600px;padding:0 var(--장) var(--막);gap:var(--장);grid-template-columns:180px minmax(0,1fr)}
+  .엔진전시 .글{max-width:none;width:100%;min-width:0}
+  .엔진전시 .레일{padding-top:var(--장);color:${c.Stone}}
+  .엔진전시 .레일 a{min-height:44px;display:flex;align-items:center;color:${c.Stone};font-size:.85rem}
+  .엔진전시 .표지{min-height:780px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:var(--켜);padding:var(--장) 0 var(--막)}
+  .엔진전시 .표지 .오브{grid-column:2;grid-row:1;max-width:600px;aspect-ratio:1;filter:drop-shadow(0 var(--단) var(--단) ${알파(c,'Ink',.35)})}
+  .엔진전시 .표지>div:last-child{grid-column:1;grid-row:1}
+  .엔진전시 .표지 h1{font-size:clamp(2.8rem,4.6vw,5.8rem);letter-spacing:-.04em;color:${c.Paper};background:none;line-height:1.04;overflow-wrap:normal}
+  .엔진전시 .표지 .꼭지{font-weight:600;letter-spacing:.08em;color:${c.Stone}}
+  .엔진전시 .전시제목{font-size:clamp(1.7rem,2.5vw,2.6rem);font-weight:800;letter-spacing:-.04em;line-height:1.24;text-wrap:balance;margin:var(--켜) 0 var(--단);max-width:18ch}
+  .엔진전시 .표지 .한줄{font-size:1.05rem;line-height:1.72;max-width:34ch;color:${c.Oat};font-weight:500}
+  .엔진전시 .표지 .메타{margin-top:var(--켜);color:${c.Stone}}
+  .엔진전시 h2{margin-top:var(--막);font-size:clamp(1.6rem,2.6vw,2.5rem);letter-spacing:-.04em;text-wrap:balance}
+  .엔진전시 .번호{color:${c.Ink};text-shadow:none}
+  .엔진전시 p{max-width:70ch;text-wrap:pretty}
+  .엔진전시 .흐름{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--단);padding:0;margin:var(--켜) 0;list-style:none;counter-reset:단계}
+  .엔진전시 .흐름>li{padding:var(--단) 0 0;margin:0;border-top:1px solid var(--금);min-height:0;counter-increment:단계;font-size:.92rem;color:${c.Stone}}
+  .엔진전시 .흐름>li::before{content:'0' counter(단계);display:block;position:static;background:none;box-shadow:none;width:auto;height:auto;color:${c['Coral Soft']};font-size:.75rem;margin-bottom:var(--단);font-variant-numeric:tabular-nums}
+  .엔진전시 .흐름>li::after{content:none}
+  .엔진전시 .흐름 strong{display:block;color:${c.Paper};font-size:1.1rem;margin-bottom:var(--틈)}
+  .엔진전시 .유리{background-color:${c.Ink};color:${c.Paper}}
+  .엔진전시 blockquote{padding:var(--켜);margin:var(--켜) 0;max-width:none;font-size:1.1rem}
+  .엔진전시 table{width:100%;margin:var(--켜) 0;table-layout:fixed}
+  .엔진전시 th,.엔진전시 td{padding:var(--단);overflow-wrap:anywhere}
+  .엔진전시 th{color:${c.Stone}}
+  .엔진전시 a:focus-visible{outline:2px solid ${c['Coral Soft']};outline-offset:4px}
+  .엔진전시 footer{margin-top:var(--막);padding-top:var(--켜);border-top:1px solid var(--금);display:flex;flex-wrap:wrap;gap:var(--단);color:${c.Stone}}
+  .엔진전시 footer nav{display:flex;flex-wrap:wrap;gap:var(--단)}
+  .엔진전시 .표지 .오브::before{inset:0}
+  @media(max-width:680px){.엔진전시 .레일 ol{display:none!important}.엔진전시 .표지 .오브{max-width:260px!important}}
+  @media(min-width:2300px){.엔진전시 .판{max-width:1920px}.엔진전시 .표지{min-height:960px}.엔진전시 .표지 .오브{max-width:720px}}
+  @media(max-width:1100px){.엔진전시 .판{padding:0 var(--단) var(--장);grid-template-columns:1fr;gap:0}.엔진전시 .레일{position:static;display:block;padding-top:var(--단)}.엔진전시 .레일 ol{display:flex;flex-wrap:wrap;gap:0 var(--단)}.엔진전시 .표지{min-height:0;padding:var(--켜) 0 var(--장)} }
+  @media(max-width:680px){.엔진전시 .표지{grid-template-columns:1fr;gap:var(--단)}.엔진전시 .표지 .오브{grid-column:1;grid-row:1;max-width:340px}.엔진전시 .표지>div:last-child{grid-column:1;grid-row:2}.엔진전시 .전시제목{max-width:22ch}.엔진전시 .흐름{grid-template-columns:1fr}.엔진전시 blockquote{padding:var(--단)}.엔진전시 th,.엔진전시 td{padding:var(--참)}}
+  @media(prefers-reduced-motion:reduce){.엔진전시 *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+  @media print{body.엔진전시{--chalk:${c.Ink};--ash:${c['Deep Wool']};--ink:${c.Ink};background:${c.Paper}!important;color:${c.Ink}!important}.엔진전시 .판{display:block;padding:0;max-width:none}.엔진전시 .레일{display:none}.엔진전시 .표지{min-height:0;padding:0 0 var(--켜);break-after:page}.엔진전시 .표지 .오브{max-width:280px;filter:none}.엔진전시 h1,.엔진전시 p,.엔진전시 strong,.엔진전시 .꼭지,.엔진전시 .메타,.엔진전시 .흐름>li{color:${c.Ink}!important}.엔진전시 h2{margin-top:var(--켜)}.엔진전시 .유리{background:${c.Paper};color:${c.Ink}!important}.엔진전시 footer{display:block}}
+  `;
+}
+
+module.exports = { css, 율, 분모, 시연, 지면들, 림레시피, 정본, 마커, 범위씌우기, 기본범위, 기본천, 엔진전시 };
 
 /* ── CLI ──────────────────────────────────────────────────────────────────── */
 if (require.main === module) {
