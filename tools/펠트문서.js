@@ -209,7 +209,14 @@ function 스킨(쓸천, 림 = '무채', 히어로 = null, 쓴클래스 = null) {
   if (히어로 && !부품들[히어로]) {
     throw new Error(`원고가 부른 히어로 「${히어로}」 가 구운재질에 없다 — 이름을 고치거나 그 자산을 굽는다`);
   }
-  const 얼굴 = 부품들[얼굴이름];
+  let 얼굴 = 부품들[얼굴이름];
+  // 엔진 전시 소개서만 4K 제작 원본을 사용한다. 기존 지면의 크기·재현성은 유지한다.
+  const 전시 = 쓴클래스 && 쓴클래스.has('엔진전시');
+  if (전시 && /^히어로_(Core|Loom|Vellum|Trail|Prism|Temper|Reed)$/.test(얼굴이름)) {
+    const 원본길 = path.join(루트, 'docs', 'Loom_자산', '구움', 얼굴이름 + '_4K.avif');
+    if (!fs.existsSync(원본길)) throw new Error('고해상도 표지 원본 없음: ' + 얼굴이름);
+    얼굴 = { ...얼굴, 몸: 'data:image/avif;base64,' + fs.readFileSync(원본길).toString('base64'), 접지: null };
+  }
   if (!얼굴 || !얼굴['몸']) throw new Error('구운재질에 「' + 얼굴이름 + '」 이 없다 — node tools/룸굽기.js --전량');
   const 얼굴층 = 얼굴['접지'] ? `url(${얼굴['몸']}),url(${얼굴['접지']})` : `url(${얼굴['몸']})`;
   const 얼굴꼴 = 얼굴이름 === '합주' ? '1058/600' : '1/1';    /* 합주만 가로 장면, 나머지는 정사각 물건 */
@@ -577,7 +584,8 @@ function 굽기(입력, 출력, 쓸천, 림) {
      실측 09-01: 안 쓰는 요소까지 실으니 한 지면이 310KB → 611KB 가 됐고 브라우저가 열기를 거부했다. */
   const 쓴클래스 = new Set(
     [...원문.matchAll(/class="([^"]+)"/g)].flatMap((m) => m[1].split(/\s+/)).filter(Boolean));
-  const 결과 = 원문.replace(표식, 스킨(쓸천, 림, 히어로이름(원문), 쓴클래스) + '\n' + 스크립트());
+  const 전시층 = 쓴클래스.has('엔진전시') ? '<style data-loom-engine>' + loom.엔진전시() + '</style>' : '';
+  const 결과 = 원문.replace(표식, 스킨(쓸천, 림, 히어로이름(원문), 쓴클래스) + 전시층 + '\n' + 스크립트());
   fs.mkdirSync(path.dirname(출력), { recursive: true });
   fs.writeFileSync(출력, 결과, 'utf8');
   return { 바이트: Buffer.byteLength(결과, 'utf8') };
