@@ -33,11 +33,11 @@ const 장부길 = process.env.RADIO_GUARD_STATE || '/opt/synk-radio/방송지킴
 const 표지길 = process.env.RADIO_THUMB || '/opt/synk-radio/무대덮개/썸네일.png';
 const 한도 = 4;
 
-/* 간판(제목·소개·분류·꼬리표)은 `tools/lib/라디오간판.js` 한 곳이 쥔다 — 09-08 에 모았다.
-   🔴 앞서 내가 「서버 봇은 tools/lib 를 못 읽는다」고 적었는데 확인 없이 쓴 말이었다.
-   실측 = 서버에는 이 저장소가 통째로 /opt/synk-radio/지면/ 으로 들어가 있고 이 파일은
-   /opt/synk-radio/지면/bots/오버레이/방송지킴이.js 로 돈다. 그래서 상대 경로로 닿는다. */
-const { 방송제목, 방송소개, 분류, 꼬리표 } = require('../../tools/lib/라디오간판.js');
+/* 간판(제목·소개·분류·꼬리표)은 `./라디오간판.js` 한 곳이 쥔다 — 09-08 에 세 곳에서 모았다.
+ * 🔴 간판이 «이 폴더 안»에 사는 까닭 = 서버로 올라가는 것이 bots 뿐이다.
+ *   09-08 실측 — /opt/synk-radio/지면/ 아래에는 bots 와 docs 뿐이고 tools 가 아예 없다.
+ *   한때 tools/lib 에 두고 ../../ 로 읽게 했는데, 그대로 올렸으면 이 봇이 그 자리에서 죽었다. */
+const { 방송제목, 방송소개, 분류, 꼬리표 } = require('./라디오간판.js');
 
 const 이제 = () => new Date().toISOString().replace('T', ' ').slice(0, 19);
 const 말 = (...것) => console.log(`[방송지킴이 ${이제()}]`, ...것);

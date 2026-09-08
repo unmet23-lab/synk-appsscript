@@ -27,7 +27,7 @@ const 표지길 = path.join(__dirname, '..', 'docs', '라디오', '썸네일.png
 /* 간판은 `tools/lib/라디오간판.js` 한 곳이 쥔다 — 09-08 에 모았다.
    🔴 이 파일의 꼬리표가 «세 번째 사본»이었고, 09-08 에 앞의 둘만 고쳤을 때 여기만 옛 값으로
    남아 있었다(유호 지시 「공부·한국어 조건을 걷어라」). 그 갈림이 이 모아 두기를 낳았다. */
-const { 분류, 꼬리표 } = require('./lib/라디오간판.js');
+const { 분류, 꼬리표 } = require('../bots/오버레이/라디오간판.js');
 
 const env = {};
 for (const L of fs.readFileSync(path.join(os.homedir(), 'Documents', 'SYNK-talk', '.env'), 'utf8').split(/\r?\n/)) {
