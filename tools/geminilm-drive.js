@@ -22,6 +22,13 @@
  *   node tools/geminilm-drive.js --out "G:\\내 드라이브\\SYNK_제미나이LM"
  *   node tools/geminilm-drive.js --dry
  *
+ * 🔴 **손으로 고칠 때는 이 파일이 아니라 `tools/geminilm-drive.cmd` 를 돌린다**(09-08 에 밟았다).
+ *   낡음 검사(`tools/rot-check.js` 의 geminilm 절)는 «PDF 가 새것인가»가 아니라
+ *   **`tools/geminilm-drive.log` 의 마지막 `OK`/`FAILED` 줄**을 읽는다. 그 줄을 쓰는 것은
+ *   예약 작업이 부르는 `.cmd` 래퍼뿐이라, 이 `.js` 를 직접 돌리면 24권이 제대로 구워져도
+ *   검사는 계속 빨갛다 — 「고쳤는데 자가 안 움직인다」로 보이는 자리다.
+ *   ⇒ 자를 움직이려면 자가 읽는 통로를 그대로 탄다.
+ *
  * ⛔ 개인정보 게이트는 geminilm-export.js의 것을 **그대로 쓴다**(사본 금지 —
  *    게이트가 둘이 되면 한쪽만 고쳐지고, 새는 방향은 언제나 「통과」다).
  */
