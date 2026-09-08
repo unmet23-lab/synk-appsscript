@@ -27,7 +27,17 @@ const DIAG_GATE = 0.8;                       // 진단 전용 문턱 — TOPIK_P
 const DIAG_LADDER = [3, 4];                  // 사다리 — 은행이 있는 급만. 1·2·5급 은행이 서면 여기에 더한다(그때 기준판이 오른다)
 const DIAG_RULER_VER = 'diag-r1-2026-09-07'; // 기준판 — 은행판(contents_진단문항.js 09-07 판) · 문턱 0.8 · 3급 여섯(G502·G503·G504·G507·G508·G510) · 4급 여섯(G705·G708·G710·G711·G713·G714) · 짝 규칙(같은 문형·같은 길이·같은 보기 구성) — 시험이 이 여섯이 은행과 같은지 잰다
 const DIAG_VOID_ITEMS = [];                  // 못박은 판에서 «오류로 뺀» 문항 — '급|문형' 꼴. 빼면 그 급 분모가 5, 문턱은 4/5(설계 §⑤-㉢). 판을 통째로 갈지 않는다.
-const DIAG_ROLE_ROUND = { 시작: 0, 중간: 1, 끝: 2, 연습: 0 };   // 역할 → 문항 회차(짝 셋 중 몇째)
+const DIAG_ROLE_ROUND = { 시작: 0, 중간: 1, 끝: 2, 연습: 0 };
+
+/* ── [v9.332] 제안 봉투 ─────────────────────────────────────────────
+ *   판매 설계 §⑥ 걸음 5 · 심문 A2 가 요구한 그릇. 제안 한 건의 «그때 조건»을 통째로 남긴다.
+ *   🔑 값·문안이 나중에 바뀌어도 이미 보낸 제안은 이 봉투로 판정한다 — 그게 이 그릇의 유일한 일이다. */
+const OFFER_TAB_ = '제안봉투';
+const OFFER_HEADERS = ['봉투번호', '진단코드', '세션번호', '학생번호', '제안시각',
+  '가격', '보장문안판', '환불조건판', '잔여정원', '상태', '결제열쇠', '엔진판', 'created_at'];
+/* 그때 조건의 «판 이름» — 값이나 문안을 고치는 날 이 문자열도 함께 올린다.
+ *   올리는 것을 잊으면 옛 봉투와 새 봉투가 같은 판 이름을 달아 되짚을 수 없다. */
+const OFFER_TERMS_VER = 'offer-t1-2026-09-08';   // 값 15만원(결정 09-07) · 보장 = 8주 뒤 급수 안 오르면 다음 8주 무료 · 환불 = 첫 2주 안 전액(무대 Ⓐ)   // 역할 → 문항 회차(짝 셋 중 몇째)
 const DIAG_SESSION_TAB_ = '진단세션';
 const DIAG_SESSION_HEADERS = ['세션번호', '진단코드', '이메일', '전화', '역할', '회차', '문항스냅샷', '답', '시도', '멱등열쇠',
   '표본급수', '급수경로', '맞힌문형', '다음문형', '쓰기지시문', '쓰기문장', 'AI산출', '기준판', '잰시각', '학생번호', '시작점', '상태',
@@ -317,6 +327,81 @@ function 진단안할래_(입력) {
   const 지금 = String(f.r[진단칸_('상태')] || '');
   진단칸쓰기_(sh, f.row, { 상태: (지금 ? 지금 + ' · ' : '') + '안할래' + (사유 ? ':' + 사유 : '') });
   return { ok: true };
+}
+
+/* ── [v9.332] 제안 봉투 ────────────────────────────────────────────
+ * 봉투 하나 = 제안 한 건. 되짚을 수 있어야 하므로 «그때 값»을 그대로 박는다.
+ *   🔑 멱등: 같은 세션에 이미 «보냄» 봉투가 있으면 새로 만들지 않고 그것을 돌려준다.
+ *      두 번 눌러 봉투가 둘이 되면 「그때 무엇을 약속했나」가 두 개가 된다. */
+function 제안봉투시트_(ss) {
+  return ensureSheet(ss, OFFER_TAB_, OFFER_HEADERS);
+}
+function 봉투칸_(이름) { return OFFER_HEADERS.indexOf(이름); }
+
+/* 만들기 — 입력 { 세션번호 | 진단코드, 학생번호(선택), 가격, 잔여정원 }.
+ *   가격·잔여정원을 안 주면 봉투를 «안» 만든다. 빈 봉투는 되짚을 때 0원짜리 약속으로 읽힌다. */
+function 제안봉투만들기_(입력) {
+  입력 = 입력 || {};
+  const 세션 = String(입력.세션번호 || '').trim();
+  const 코드 = String(입력.진단코드 || '').trim();
+  if (!세션 && !코드) return { ok: false, error: 'no-key' };
+  const 가격 = Number(입력.가격);
+  if (!(가격 > 0)) return { ok: false, error: 'no-price' };
+  const 잔여 = Number(입력.잔여정원);
+  if (!(잔여 >= 0)) return { ok: false, error: 'no-seats' };
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = 제안봉투시트_(ss);
+
+  /* 멱등 — 같은 세션(없으면 같은 진단코드)의 «보냄» 봉투를 먼저 찾는다. */
+  if (sh.getLastRow() >= 2) {
+    const vals = sh.getRange(2, 1, sh.getLastRow() - 1, OFFER_HEADERS.length).getValues();
+    for (let i = 0; i < vals.length; i++) {
+      const 같은세션 = 세션 && String(vals[i][봉투칸_('세션번호')]).trim() === 세션;
+      const 같은코드 = !세션 && 코드 && String(vals[i][봉투칸_('진단코드')]).trim() === 코드;
+      if ((같은세션 || 같은코드) && String(vals[i][봉투칸_('상태')]) === '보냄') {
+        return { ok: true, 봉투번호: String(vals[i][봉투칸_('봉투번호')]), 이미있음: true };
+      }
+    }
+  }
+
+  const tz = ss.getSpreadsheetTimeZone();
+  const 지금 = new Date();
+  const 봉투번호 = 'OF-' + Utilities.formatDate(지금, tz, 'yyyyMMdd-HHmmss') + '-' +
+    String(Math.floor(Math.random() * 1000) + 1000).slice(1);
+  /* 🔒 [보안 검토 09-08] 시트 소독 통로를 지난다 — 세션번호·진단코드는 진단 웹 통로에서 오는
+   *   «밖의 글»이다. 이 스프레드시트에 profiles(연락처)가 함께 살아서, `=IMPORTDATA(...)` 한 줄이
+   *   들어가면 사람이 클릭하지 않아도 시트가 스스로 평가해 개인정보가 나간다(엔진_수집.js:1030 의 그 까닭).
+   *   행소독_ 은 문자열만 감싸므로 숫자(가격·잔여정원)와 Date 는 그대로 남는다. */
+  sh.appendRow(행소독_([봉투번호, 코드, 세션, String(입력.학생번호 || ''),
+    Utilities.formatDate(지금, tz, 'yyyy-MM-dd HH:mm'),
+    가격, OFFER_TERMS_VER, OFFER_TERMS_VER, 잔여, '보냄', '',
+    (typeof SYNK_VERSION === 'string' ? SYNK_VERSION : ''),
+    Utilities.formatDate(지금, tz, 'yyyy-MM-dd HH:mm:ss')]));
+  return { ok: true, 봉투번호: 봉투번호, 이미있음: false };
+}
+
+/* 상태 바꾸기 — 보냄 → 수락 | 거절 | 만료. 결제와 취소를 이 봉투에 잇는다.
+ *   🔴 이미 «수락»인 봉투를 다시 수락으로 덮지 않는다(결제 열쇠가 지워진다). */
+function 제안봉투상태_(봉투번호, 상태, 결제열쇠) {
+  const 번호 = String(봉투번호 || '').trim();
+  const 새상태 = String(상태 || '').trim();
+  if (!번호) return { ok: false, error: 'no-envelope' };
+  if (['수락', '거절', '만료'].indexOf(새상태) < 0) return { ok: false, error: 'bad-state' };
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = 제안봉투시트_(ss);
+  if (sh.getLastRow() < 2) return { ok: false, error: 'no-envelope' };
+  const vals = sh.getRange(2, 1, sh.getLastRow() - 1, OFFER_HEADERS.length).getValues();
+  for (let i = 0; i < vals.length; i++) {
+    if (String(vals[i][봉투칸_('봉투번호')]).trim() !== 번호) continue;
+    const 지금상태 = String(vals[i][봉투칸_('상태')]);
+    if (지금상태 === '수락' && 새상태 === '수락') return { ok: true, 그대로: true };
+    sh.getRange(i + 2, 봉투칸_('상태') + 1).setValue(새상태);
+    /* 🔒 결제 열쇠도 밖에서 온다 — 같은 통로를 지난다. */
+    if (결제열쇠) sh.getRange(i + 2, 봉투칸_('결제열쇠') + 1).setValue(행소독_(String(결제열쇠)));
+    return { ok: true, 그대로: false };
+  }
+  return { ok: false, error: 'no-envelope' };
 }
 
 /* 그 학생의 «시작점» 세션(잇는 날 못박은 것). */
