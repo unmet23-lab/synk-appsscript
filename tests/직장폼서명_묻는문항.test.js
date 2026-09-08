@@ -108,13 +108,18 @@ function 도장블록뽑기() {
 const 필수소스 = /const WORK_REQUIRED_ = \[[^\]]*\];/.exec(폼);
 assert.ok(필수소스, '필수 문항 정본 배열을 못 찾았다');
 
+/* 🔑 앞머리 값도 «소스에서» 가져온다 — 시험에 그 글자를 다시 적으면 한 값을 두 곳이 알게 되어 갈린다. */
+const 앞머리소스 = /const WORK_DONE_MISSING_ = '[^']*';/.exec(폼);
+assert.ok(앞머리소스, '완료 표식의 «까닭» 앞머리 상수를 못 찾았다');
+const WORK_DONE_MISSING_ = new Function(앞머리소스[0] + '\nreturn WORK_DONE_MISSING_;')();
+
 /** 완료 도장 블록을 실제로 돌린다. `담을곳` 에 app_state 에 적힌 값이 그대로 들어온다. */
 function 도장돌리기(폼객체, 담을곳) {
   const { 묻는문항_ } = 서명만들기();
   const WORK_REQUIRED_ = new Function(필수소스[0] + '\nreturn WORK_REQUIRED_;')();
-  const f = new Function('f0', '묻는문항_', 'WORK_REQUIRED_', 'setState', 'st', 'Logger',
+  const f = new Function('f0', '묻는문항_', 'WORK_REQUIRED_', 'WORK_DONE_MISSING_', 'setState', 'st', 'Logger',
     도장블록뽑기() + '\nreturn 빠진필수;');
-  return f(폼객체, 묻는문항_, WORK_REQUIRED_, (_st, k, v) => { 담을곳[k] = v; }, {}, { log() {} });
+  return f(폼객체, 묻는문항_, WORK_REQUIRED_, WORK_DONE_MISSING_, (_st, k, v) => { 담을곳[k] = v; }, {}, { log() {} });
 }
 
 test('⑥ 필수 다섯이 다 «묻는 자리»면 완료 도장을 찍는다 — 대조군', () => {
@@ -136,6 +141,26 @@ test('🔴 ⑦ 필수가 빠지면 «이미 찍혀 있던» 완료 도장을 뗀
   ]);
   const 빠짐 = 도장돌리기(흉내, 담김);
   assert.deepEqual(빠짐, ['자료활용동의'], '섹션 머리를 필수 문항으로 세면 안 된다');
-  assert.strictEqual(담김['직장폼완료'], '',
+  assert.notStrictEqual(담김['직장폼완료'], 'y',
     '옛 도장을 안 떼면 「이미 있습니다」로 지나가 동의 없는 응답이 쌓인다');
+  /* 🔴 [5회차 P1 d8eb1dbcd4b9] 빈 값이 아니라 «까닭»이라야 아래 안내가 갈래를 가른다. */
+  assert.strictEqual(담김['직장폼완료'], '필수누락:자료활용동의',
+    '왜 뗐는지를 안 남기면 그 뒤 안내가 「섹션 7개를 보고 y 를 적으세요」로 나가 누락이 그대로 지나간다');
+});
+
+test('🔴 ⑧ 그 뒤 안내가 «무엇이 빠졌는지»를 이름으로 말한다 (검수 5회차 P1 d8eb1dbcd4b9)', () => {
+  /* 표식을 떼는 길을 열었는데 그 길 «끝»의 안내가 옛것이었다. 안내대로 y 를 손으로 넣으면
+   *   방금 찾아낸 누락이 그대로인 채 재실행이 「이미 있습니다」로 끝난다. */
+  const 안내자 = new Function('WORK_DONE_MISSING_',
+    떼어오기(폼, 'function 직장폼미완안내_(') + '\nreturn 직장폼미완안내_;')('필수누락:');
+
+  const 누락안내 = 안내자('필수누락:자료활용동의', 'https://example/x');
+  assert.match(누락안내, /자료활용동의/, '무엇이 빠졌는지를 이름으로 말하지 않는다');
+  assert.match(누락안내, /y 를 손으로 적지 마세요/, '손으로 도장을 찍지 말라고 말해야 한다');
+  assert.ok(누락안내.indexOf('섹션 7개') === -1, '누락 갈래에 「섹션 7개를 세라」가 남아 있으면 엉뚱한 곳을 보신다');
+
+  /* 옛 갈래(표식이 애초에 없다)는 그대로 남아야 한다 — 그 폼을 위해 있던 안내다. */
+  const 끊긴안내 = 안내자('', 'https://example/x');
+  assert.match(끊긴안내, /섹션 7개/, '문항을 붙이다 끊긴 폼의 안내가 사라졌다');
+  assert.match(끊긴안내, /y 로 적으면 됩니다/, '그 갈래에서는 손으로 적는 것이 맞다');
 });
