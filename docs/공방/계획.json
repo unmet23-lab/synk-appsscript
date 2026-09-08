@@ -1928,7 +1928,14 @@
             "규격": "장면",
             "지시": "The corner of a room built entirely from needle-felted wool, a wooden desk against a tall felt window with an open felt notebook and a mug on it, a chair pulled back, felt wall and floor filling the rest of the frame.",
             "쇠": "공방_창가책상",
-            "파일": "공방_창가책상.avif"
+            "파일": "공방_창가책상.avif",
+            "검수": {
+              "판정": "다름",
+              "언제": "2026-09-08",
+              "무엇": "지시는 「창가의 책상·공책·머그·의자」인데 난 것은 «펠트 그릇» 한 개다. 요구한 물건이 아예 없다.",
+              "누가": "09-06 코덱스 기능체크가 짚고 09-08 에 눈으로 확인했다",
+              "다음": "다시 굽는다 — 4K 한 장 336원 · 유호님이 「굽자」 하실 때"
+            }
           },
           {
             "이름": "눈 오는 창",
@@ -1936,7 +1943,14 @@
             "규격": "장면",
             "지시": "The inside corner of a room built entirely from needle-felted wool, a tall felt window in the wall with cream felt snow drifting past its dark blue pane, the felt sill dusted with snow, felt wall and floor filling the rest of the frame.",
             "쇠": "공방_눈오는창",
-            "파일": "공방_눈오는창.avif"
+            "파일": "공방_눈오는창.avif",
+            "검수": {
+              "판정": "다름",
+              "언제": "2026-09-08",
+              "무엇": "지시는 「창 밖으로 눈 내리는 방 구석」인데 난 것은 «흰 덩어리» 하나다. 창도 방도 없다.",
+              "누가": "09-06 코덱스 기능체크가 짚고 09-08 에 눈으로 확인했다",
+              "다음": "다시 굽는다 — 4K 한 장 336원 · 유호님이 「굽자」 하실 때"
+            }
           },
           {
             "이름": "봄 들판",
@@ -2445,7 +2459,14 @@
             "쇠": "공방_완료도장_자주",
             "규격": "부품",
             "지시": "A round rubber-stamp mark pressed in deep plum ink onto pale cream felt, its edge slightly broken the way a hand stamp prints unevenly.",
-            "파일": "공방_완료도장_자주.avif"
+            "파일": "공방_완료도장_자주.avif",
+            "검수": {
+              "판정": "다름",
+              "언제": "2026-09-08",
+              "무엇": "지시는 「글자 없는 둥근 도장」인데 테두리에 영문 꼴 글자가 박혔다(MO…ARHEER · WOOL…). 규격 = tools/lib/공방규격.js 의 No text.",
+              "누가": "09-06 코덱스 기능체크가 짚고 09-08 에 눈으로 확인했다",
+              "다음": "다시 굽는다 — 4K 한 장 336원 · 유호님이 「굽자」 하실 때"
+            }
           }
         ]
       },
@@ -2811,7 +2832,14 @@
             ],
             "_옛판": "docs/Loom_자산/구움/로고찡긋플레이팅.png",
             "지시": "Reproduce the object in the reference image EXACTLY: the same silhouette, the same proportions, the same colours, the same materials, the same number and placement of every part, the same camera angle. Do not redesign it, do not add or remove anything, do not restyle it. The only difference is that this photograph is far sharper and larger, so the wool fibres, the felt nap, the individual stitches and every small texture are fully resolved.",
-            "파일": "로고찡긋플레이팅_4K.avif"
+            "파일": "로고찡긋플레이팅_4K.avif",
+            "검수": {
+              "판정": "다름",
+              "언제": "2026-09-08",
+              "무엇": "지시는 「원본을 그대로, 더 선명하게」인데 원본(접시 위 세 색 얼굴)과 다른 «회색 네발 짐승»이 났다.",
+              "누가": "09-06 코덱스 기능체크가 짚고 09-08 에 눈으로 확인했다",
+              "다음": "다시 굽는다 — 4K 한 장 336원 · 유호님이 「굽자」 하실 때"
+            }
           },
           {
             "이름": "매듭점 (4K)",
