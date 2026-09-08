@@ -347,8 +347,15 @@ function 제안봉투만들기_(입력) {
   if (!세션 && !코드) return { ok: false, error: 'no-key' };
   const 가격 = Number(입력.가격);
   if (!(가격 > 0)) return { ok: false, error: 'no-price' };
-  const 잔여 = Number(입력.잔여정원);
-  if (!(잔여 >= 0)) return { ok: false, error: 'no-seats' };
+  /* 🔴 [09-08 배포 검수 P2] **빈 값과 «진짜 0»을 가른다.** `Number('')`·`Number(null)`·`Number(' ')` 은
+   *   전부 0 이라, 정원을 **아예 안 넘긴** 제안이 「잔여 0」인 봉투로 앉는다. 그러면 그 봉투는
+   *   «그때 조건»을 거짓으로 적은 것이 되고, 이 그릇의 존재 이유가 통째로 무너진다.
+   *   ⇒ 숫자로 바꾸기 «전»에 빈 것을 거절하고, 명시로 넘긴 숫자만 받는다. */
+  const 잔여원 = 입력.잔여정원;
+  if (잔여원 === null || 잔여원 === undefined || 잔여원 === '') return { ok: false, error: 'no-seats' };
+  if (typeof 잔여원 === 'string' && !잔여원.trim()) return { ok: false, error: 'no-seats' };
+  const 잔여 = Number(잔여원);
+  if (!isFinite(잔여) || 잔여 < 0) return { ok: false, error: 'no-seats' };
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = 제안봉투시트_(ss);
@@ -395,10 +402,22 @@ function 제안봉투상태_(봉투번호, 상태, 결제열쇠) {
   for (let i = 0; i < vals.length; i++) {
     if (String(vals[i][봉투칸_('봉투번호')]).trim() !== 번호) continue;
     const 지금상태 = String(vals[i][봉투칸_('상태')]);
-    if (지금상태 === '수락' && 새상태 === '수락') return { ok: true, 그대로: true };
+    const 지금열쇠 = String(vals[i][봉투칸_('결제열쇠')] || '').trim();
+    /* 🔴 [09-08 배포 검수 P1] **「이미 수락」으로 그냥 돌아가면 «못 붙은 결제 열쇠»가 영영 빈 채 남는다.**
+     *   상태는 저장됐는데 바로 뒤 열쇠 저장만 실패한 자리가 그렇다(쓰기 둘이 한 덩이가 아니다).
+     *   그 뒤로는 같은 요청을 몇 번 보내도 이 조기 반환에 걸려 다시는 안 붙는다.
+     *   ⇒ **빈 자리만 채우고** 돌아간다. 🔒 이미 붙어 있는 열쇠는 안 덮는다 — 그것을 지키는 것이
+     *   원래 이 조기 반환이 하려던 일이다(덮으면 결제가 어느 봉투 것인지 되짚을 바닥이 사라진다). */
+    if (지금상태 === '수락' && 새상태 === '수락') {
+      if (결제열쇠 && !지금열쇠) {
+        sh.getRange(i + 2, 봉투칸_('결제열쇠') + 1).setValue(셀안전_(String(결제열쇠)));
+        return { ok: true, 그대로: true, 열쇠붙임: true };
+      }
+      return { ok: true, 그대로: true };
+    }
     sh.getRange(i + 2, 봉투칸_('상태') + 1).setValue(새상태);
-    /* 🔒 결제 열쇠도 밖에서 온다 — 같은 통로를 지난다. */
-    if (결제열쇠) sh.getRange(i + 2, 봉투칸_('결제열쇠') + 1).setValue(행소독_(String(결제열쇠)));
+    /* 🔒 결제 열쇠도 밖에서 온다 — 같은 통로를 지난다. 이미 붙은 것은 안 덮는다(위와 같은 까닭). */
+    if (결제열쇠 && !지금열쇠) sh.getRange(i + 2, 봉투칸_('결제열쇠') + 1).setValue(셀안전_(String(결제열쇠)));
     return { ok: true, 그대로: false };
   }
   return { ok: false, error: 'no-envelope' };
