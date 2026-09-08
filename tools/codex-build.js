@@ -221,7 +221,7 @@ function 시험파일인가(p) { return 시험무늬.test(경로정규화(p)); }
 function 시험지문들(wt) {
   const 맵 = new Map();
   try {
-    const 목록 = execFileSync('git', ['-C', wt, 'ls-tree', '-rz', 'HEAD'], 검수.자식옵션({ encoding: 'utf8', stdio: 'pipe', maxBuffer: 64 * 1024 * 1024 }))
+    const 목록 = execFileSync('git', ['-C', wt, 'ls-tree', '-rz', '--full-tree', 'HEAD'], 검수.자식옵션({ encoding: 'utf8', stdio: 'pipe', maxBuffer: 64 * 1024 * 1024 }))
       .split('\0').filter(Boolean).map((행) => /^(\d+) blob ([0-9a-f]+)\t([\s\S]+)$/.exec(행))
       .filter((m) => m && 시험파일인가(m[3])).map((m) => ({ 경로: 경로정규화(m[3]), 객체: m[2] }));
     if (!목록.length) return 맵;
