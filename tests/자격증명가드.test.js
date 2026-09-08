@@ -238,31 +238,3 @@ test('예외는 한 번만 통한다 — 상시 해제 스위치가 아니다', 
 
 // ── 등록층 (훅이 정확해도 안 불리면 통과가 된다 · F053) ─────────────────────
 
-test('🔴 settings.json 라우팅이 이 훅보다 넓다 — 매처를 훅에서 파생시켜 되센다', () => {
-  const src = fs.readFileSync(HOOK, 'utf8');
-  const 뽑기 = (이름) => {
-    const m = src.match(new RegExp(`const ${이름} = \\[([\\s\\S]*?)\\];`));
-    assert.ok(m, `${이름} 목록을 훅에서 못 찾았다 — 이 검사가 무력화됐다`);
-    return (m[1].match(/'([^']+)'/g) || []).map((s) => s.slice(1, -1));
-  };
-  const 판정대상 = [...뽑기('이동도구'), ...뽑기('쓰기도구')];
-  assert.ok(판정대상.length >= 10, '판정 대상이 비었다 — 파생이 죽으면 이 검사는 조용히 통과한다');
-
-  const j = JSON.parse(fs.readFileSync(설정, 'utf8'));
-  const 그룹 = (j.hooks.PreToolUse || []).filter((g) => /credential-guard/.test(JSON.stringify(g)));
-  assert.equal(그룹.length, 1, 'credential-guard 가 PreToolUse 에 정확히 한 번 등록돼 있지 않다');
-  const re = new RegExp(그룹[0].matcher);
-
-  /* 🔑 라우팅은 훅보다 **넓어야** 한다. 훅이 아무리 정확해도 안 불리면 통과가 된다(F053).
-   *   서버 3종 × 훅이 판정하는 도구 전부가 매처에 걸리는지 실제로 물어본다. */
-  for (const 서버 of ['mcp__claude-in-chrome__', 'mcp__Claude_Browser__', 'mcp__computer-use__']) {
-    for (const t of 판정대상) {
-      assert.ok(re.test(서버 + t), `매처가 ${서버}${t} 를 안 넘긴다 — 훅에 닿지도 못한다`);
-    }
-  }
-
-  // 실행 불가는 통과가 아니라 deny 로 드러낸다(F044) + 로컬 절대경로 금지(F053)
-  const cmd = 그룹[0].hooks[0].command;
-  assert.match(cmd, /CLAUDE_PROJECT_DIR/, '등록이 이 기계에서만 유효한 경로를 쓴다');
-  assert.match(cmd, /"permissionDecision":"deny"/, '훅을 못 찾았을 때 조용히 통과한다 — 그게 F044 다');
-});

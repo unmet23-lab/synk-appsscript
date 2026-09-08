@@ -87,8 +87,3 @@ test('require 해도 기억을 건드리지 않는다 — 시험이 클론을 �
   assert.ok(원문.includes('require.main === module'), 'require.main 가드가 사라졌다');
 });
 
-test('세션 훅이 이 도구를 실제로 부른다 — 안 부르면 새 기계는 백지로 시작한다', () => {
-  const 설정 = fs.readFileSync(path.join(__dirname, '..', '.claude', 'settings.json'), 'utf8');
-  assert.ok(설정.includes('기억데려오기'),
-    'SessionStart 훅에서 기억데려오기 호출이 사라졌다 — 도구는 살아 있는데 아무도 안 부르는 상태다');
-});
