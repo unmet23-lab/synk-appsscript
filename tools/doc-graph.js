@@ -278,8 +278,13 @@ function findMapGaps(docs) {
   const map = docs.get(DOC_MAP);
   // 지도가 없는 것과 「누락 0」을 같은 모양으로 두지 않는다 — 미실행이 통과처럼 보이면 안 된다.
   if (!map) return { noMap: true, missing: [] };
+  // 짧은 지도에서 명시적으로 연결한 상세 색인 한 벌만 함께 본다. 임의 링크는 따라가지 않는다.
+  const linked = /(?<![!\\])\[상세 문서 색인\]\((?:\.\/)?자료안내\/상세_색인\.md\)/
+    .test(maskCode(map.text).replace(/<!--[\s\S]*?-->/g, ''));
+  const index = linked ? docs.get('docs/자료안내/상세_색인.md') : null;
+  const mapText = map.text + (index ? '\n' + index.text : '');
   const missing = [...docs.keys()]
-    .filter((r) => r !== DOC_MAP && TOP_LEVEL_MD.test(r) && !map.text.includes(path.basename(r)))
+    .filter((r) => r !== DOC_MAP && TOP_LEVEL_MD.test(r) && !mapText.includes(path.basename(r)))
     .sort();
   return { noMap: false, missing };
 }
@@ -593,7 +598,7 @@ function main() {
   } else if (g.mapGaps.missing.length) {
     console.log(`\n  ⚠ 지도 누락 — ${g.mapGaps.missing.length}건(최상위 docs/*.md 인데 ${DOC_MAP} 색인에 없다)`);
     for (const m of g.mapGaps.missing) console.log(`    ${m}`);
-    console.log('    → 지도에 한 줄 넣거나, 끝난 문서면 그 자리에서 지운다(보존은 git 이력 — CLAUDE.md v10 「낡은 것은 남기지 않는다」 · _archive 에 새로 넣지 않는다).');
+    console.log('    → 현재 읽기 지도 또는 지도에서 명시적으로 연결한 상세 문서 색인에 연결한다. 누락만으로 문서를 삭제하지 않는다.');
   }
 
   if (g.canonUnknown.length) {

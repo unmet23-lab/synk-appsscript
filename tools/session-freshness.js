@@ -128,12 +128,19 @@ async function safeStatus(git, cwd) {
 
 async function baseline(git, cwd) {
   // All refs are local snapshots. No remote update or network request is made.
-  for (const [source, ref] of [['master', 'refs/heads/master'],
-    ['origin/HEAD', 'refs/remotes/origin/HEAD'], ['main', 'refs/heads/main']]) {
-    try {
-      const head = (await git(cwd, ['rev-parse', '--verify', ref + '^{commit}'])).trim();
-      if (OID.test(head)) return { source, head };
-    } catch { /* Try the next existing local default ref within the same deadline. */ }
+  const candidates = [['master', 'refs/heads/master'],
+    ['origin/HEAD', 'refs/remotes/origin/HEAD'], ['main', 'refs/heads/main']];
+  // One process for all candidates, including missing refs; the second snapshot uses one too.
+  const raw = await git(cwd, ['for-each-ref', '--format=%(refname) %(objectname) %(objecttype)',
+    ...candidates.map(([, ref]) => ref)]);
+  const commits = new Map();
+  for (const line of raw.trim().split(/\r?\n/)) {
+    const [ref, head, type, extra] = line.split(' ');
+    if (type === 'commit' && !extra && OID.test(head)) commits.set(ref, head);
+  }
+  for (const [source, ref] of candidates) {
+    // for-each-ref also accepts path prefixes; a branch such as master/experiment is not master.
+    if (commits.has(ref)) return { source, head: commits.get(ref) };
   }
   throw new Error('baseline-unavailable');
 }
