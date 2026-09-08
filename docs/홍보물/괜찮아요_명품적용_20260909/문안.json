@@ -1,0 +1,30 @@
+[
+  {
+    "kind": "cover",
+    "body": "<div class=\"label\">НЭГ ҮГ · ӨӨР УТГА</div><h1><span class=\"kr\">괜찮아요.</span></h1><div class=\"hook\">Кофе уумаар байна.<br>Та юу гэж хариулах вэ?</div><div class=\"pair \"><div class=\"kr\">커피 드릴까요?</div><div class=\"mn\">Кофе өгөх үү?</div></div><div class=\"choices\"><div class=\"kr\">A&nbsp; 괜찮아요.</div><div class=\"kr\">B&nbsp; 네, 주세요.</div></div>"
+  },
+  {
+    "kind": "answer",
+    "body": "<div class=\"label\">КОФЕ АВАХ</div><h1>Авмаар байвал — B.</h1><div class=\"pair hero\"><div class=\"kr\">네, 주세요.</div><div class=\"mn\">Тийм ээ, өгөөч.</div></div><div class=\"note\">Зөвхөн «괜찮아요» гэж хэлбэл<br>татгалзаж байгаа мэт сонсогдож болно.</div>"
+  },
+  {
+    "kind": "dialogue",
+    "body": "<div class=\"label\">ЭЕЛДГЭЭР ТАТГАЛЗАХ</div><h1>Энэ удаа<br>кофе уухгүй.</h1><div class=\"pair \"><div class=\"kr\">커피 드릴까요?</div><div class=\"mn\">Кофе өгөх үү?</div></div><div class=\"pair reply\"><div class=\"kr\">아니요, 괜찮아요.</div><div class=\"mn\">Үгүй ээ, зүгээр.</div></div><div class=\"pair small\"><div class=\"kr\">감사합니다.</div><div class=\"mn\">Баярлалаа.</div></div>"
+  },
+  {
+    "kind": "dialogue",
+    "body": "<div class=\"label\">САНАА АМРААХ</div><h1>Найз тань ширээн дээр<br>ус асгачихлаа.</h1><div class=\"pair \"><div class=\"kr\">미안해요.</div><div class=\"mn\">Уучлаарай.</div></div><div class=\"pair reply\"><div class=\"kr\">괜찮아요.<br>닦으면 돼요.</div><div class=\"mn\">Зүгээр ээ.<br>Арччихвал болно.</div></div>"
+  },
+  {
+    "kind": "compare",
+    "body": "<div class=\"label\">ӨМНӨХ ҮГИЙГ НЬ СОНСООРОЙ</div><h1>Ижил үг.<br>Өөр нөхцөл.</h1><div class=\"comparison\"><div class=\"pair \"><div class=\"kr\">커피 드릴까요?</div><div class=\"mn\">Кофе өгөх үү?</div></div><div class=\"pair small\"><div class=\"kr\">괜찮아요.</div><div class=\"mn\">Татгалзаж байгаа мэт сонсогдож болно.</div></div></div><div class=\"comparison\"><div class=\"pair \"><div class=\"kr\">미안해요.</div><div class=\"mn\">Уучлаарай.</div></div><div class=\"pair small\"><div class=\"kr\">괜찮아요.</div><div class=\"mn\">Асуудалгүй гэсэн үг.</div></div></div>"
+  },
+  {
+    "kind": "quiz",
+    "body": "<div class=\"label\">ОДОО ТА ХЭЛЭЭД ҮЗЭЭРЭЙ</div><h1>Ус авмаар байна.</h1><div class=\"pair \"><div class=\"kr\">물 드릴까요?</div><div class=\"mn\">Ус өгөх үү?</div></div><div class=\"choices\"><div class=\"option\"><div class=\"pair \"><div class=\"kr\">A  네, 주세요.</div><div class=\"mn\">Тийм ээ, өгөөч.</div></div></div><div class=\"option\"><div class=\"pair \"><div class=\"kr\">B  아니요, 괜찮아요.</div><div class=\"mn\">Үгүй ээ, зүгээр.</div></div></div></div><div class=\"note\">Авмаар байвал A.</div>"
+  },
+  {
+    "kind": "keep",
+    "body": "<div class=\"label\">ХАДГАЛЖ АВААД ХЭРЭГЛЭЭРЭЙ</div><h1>Өнөөдөр хэрэглэх<br>гурван өгүүлбэр.</h1><div class=\"keeps\"><div class=\"label\">АВАХДАА</div><div class=\"pair \"><div class=\"kr\">네, 주세요.</div><div class=\"mn\">Тийм ээ, өгөөч.</div></div><div class=\"label\">ТАТГАЛЗАХДАА</div><div class=\"pair \"><div class=\"kr\">아니요, 괜찮아요.</div><div class=\"mn\">Үгүй ээ, зүгээр.</div></div><div class=\"label\">УУЧЛАЛД ХАРИУЛАХДАА</div><div class=\"pair \"><div class=\"kr\">괜찮아요.</div><div class=\"mn\">Зүгээр ээ.</div></div></div>"
+  }
+]
