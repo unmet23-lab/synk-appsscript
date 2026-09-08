@@ -214,5 +214,13 @@
     "height": 1301,
     "alpha": true,
     "output": "assets/woolLogo.webp"
+  },
+  {
+    "key": "stitch",
+    "source": "영상/public/공방/공방_구분띠스티치.avif",
+    "width": 5520,
+    "height": 767,
+    "alpha": true,
+    "output": "assets/stitch.webp"
   }
 ]

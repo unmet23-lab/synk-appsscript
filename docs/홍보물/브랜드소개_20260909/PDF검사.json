@@ -2,7 +2,7 @@
   {
     "file": "synk.pdf",
     "pages": 5,
-    "bytes": 5795285,
+    "bytes": 5795187,
     "imagePixels": [
       3840,
       2400
@@ -15,7 +15,7 @@
   {
     "file": "lab.pdf",
     "pages": 5,
-    "bytes": 5224546,
+    "bytes": 5251392,
     "imagePixels": [
       3840,
       2400
@@ -28,7 +28,7 @@
   {
     "file": "shift.pdf",
     "pages": 5,
-    "bytes": 5266208,
+    "bytes": 5300727,
     "imagePixels": [
       3840,
       2400
@@ -41,7 +41,7 @@
   {
     "file": "pulse.pdf",
     "pages": 5,
-    "bytes": 8265607,
+    "bytes": 8301726,
     "imagePixels": [
       3840,
       2400

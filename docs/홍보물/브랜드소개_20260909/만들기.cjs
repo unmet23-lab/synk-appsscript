@@ -5,13 +5,14 @@ const loom=require(path.join(root,'tools/lib/loom.js'));
 const token=loom.정본(),color=n=>token.색[n];
 const fonts=require(path.join(root,'tools/lib/브랜드폰트.js'));
 const logo=require(path.join(root,'tools/lib/로고정본.js'));
+const division=require('./사업명.js');
 const imageUsed=new Set();
 function img(key,cls='',alt='') {imageUsed.add(key);return `<img class="art ${cls}" src="assets/${key}.webp" alt="${alt}" data-asset="${key}">`;}
 const note=s=>`<p class="note">${s}</p>`;
 const text=s=>`<p class="bodycopy">${s}</p>`;
 const h=s=>`<h1>${s}</h1>`;
 const eyebrow=s=>`<p class="eyebrow">${s}</p>`;
-const mark=(brand)=>`<div class="brand">${logo.워드마크({판:'라이트',표현:'민',신호:'k',색갈래:'단색'})}${brand==='SYNK'?'':`<span>${brand.replace('SYNK ','')}</span>`}</div>`;
+const mark=(brand,cover=false)=>{const large=cover&&brand!=='SYNK';if(large)imageUsed.add('stitch');return division.조합(brand,{large});};
 const pair=(a,b)=>`<div class="line-pair"><h3>${a}</h3><p>${b}</p></div>`;
 const brandNames={synk:'SYNK',lab:'SYNK LAB',shift:'SYNK SHIFT',pulse:'SYNK PULSE'};
 const all={
@@ -70,9 +71,9 @@ Object.assign(all.pulse[2],{body:'차분한 표정, 반가운 미소.<br>장면�
 for(const pages of Object.values(all))for(const p of pages){if(p.caption)p.caption=p.caption.replace('승인된 캐릭터 정본을 활용한 표현','SYNK 캐릭터의 표정과 몸짓');if(p.gallery)p.gallery=p.gallery.map(x=>x.map(t=>t==='현재 사용하는 캐릭터 정본'?'SYNK 캐릭터의 모습':t));}
 const fontCss=()=>[['Regular',400],['Medium',500],['SemiBold',600],['Bold',700]].map(([n,w])=>`@font-face{font-family:'Inter Tight';font-weight:${w};src:url(data:font/ttf;base64,${fs.readFileSync(path.join(root,`docs/브랜드_폰트/InterTight/InterTight-${n}.ttf`)).toString('base64')}) format('truetype')}`).join('\n')+fonts.면();
 function renderDoc(key){
- const pages=all[key].map((p,i)=>`<div class="paper-wrap"><section class="sheet ${p.type}" data-brand="${key}" data-page="${i+1}">${mark(brandNames[key])}${body(p)}<footer class="folio"><span>${brandNames[key]} · ${key==='pulse'?'제작 협업 소개':'사업·협업 소개'}</span><span>${String(i+1).padStart(2,'0')} / ${String(all[key].length).padStart(2,'0')}</span></footer></section></div>`).join('\n');
+ const pages=all[key].map((p,i)=>`<div class="paper-wrap"><section class="sheet ${p.type}" data-brand="${key}" data-page="${i+1}">${mark(brandNames[key],p.type==='cover')}${body(p)}<footer class="folio"><span>${brandNames[key]} · ${key==='pulse'?'제작 협업 소개':'사업·협업 소개'}</span><span>${String(i+1).padStart(2,'0')} / ${String(all[key].length).padStart(2,'0')}</span></footer></section></div>`).join('\n');
  const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${brandNames[key]} 소개서</title><style>${fontCss()}${css}</style></head><body><nav class="toolbar"><a href="index.html">소개서 모아보기</a><a href="${key}.pdf" download>PDF 내려받기</a></nav>${pages}<script>if(new URLSearchParams(location.search).has('export'))document.body.classList.add('export');function fit(){document.querySelectorAll('.paper-wrap').forEach(x=>x.style.setProperty('--scale',x.clientWidth/1440))}fit();addEventListener('resize',fit)</script></body></html>`;
- fs.writeFileSync(path.join(__dirname,key+'.html'),html.replace('</style>',polish+'</style>'));
+ fs.writeFileSync(path.join(__dirname,key+'.html'),html.replace('</style>',polish+division.css+'</style>'));
 }
 Object.keys(all).forEach(renderDoc);
 fs.writeFileSync(path.join(__dirname,'소개서_문안.json'),JSON.stringify(all,null,2));

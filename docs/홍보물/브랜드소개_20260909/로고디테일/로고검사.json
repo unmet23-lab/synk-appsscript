@@ -1,0 +1,29 @@
+[
+  {
+    "brand": "SYNK LAB",
+    "smallFont": "24px",
+    "coverFont": "32px",
+    "stitchHeight": "9px",
+    "stitchImageHeight": "9px",
+    "color": "rgb(174, 50, 42)",
+    "synkOriginalUnchanged": true
+  },
+  {
+    "brand": "SYNK SHIFT",
+    "smallFont": "24px",
+    "coverFont": "32px",
+    "stitchHeight": "9px",
+    "stitchImageHeight": "9px",
+    "color": "rgb(36, 68, 140)",
+    "synkOriginalUnchanged": true
+  },
+  {
+    "brand": "SYNK PULSE",
+    "smallFont": "24px",
+    "coverFont": "32px",
+    "stitchHeight": "9px",
+    "stitchImageHeight": "9px",
+    "color": "rgb(153, 41, 93)",
+    "synkOriginalUnchanged": true
+  }
+]
