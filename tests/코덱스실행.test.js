@@ -639,3 +639,45 @@ test('🔴 시험지문들 — 추적 중인 시험만 지문을 뜬다(미추�
   const 지금 = (f) => { try { return require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(방, f))).digest('hex'); } catch (_) { return null; } };
   assert.deepStrictEqual(빌드.시험손댐(['tests/a.test.js'], 맵, 지금, []), ['tests/a.test.js (고쳤다)']);
 });
+
+test('재개 전에 남은 시험 변경·삭제도 커밋된 원본과 대조한다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-test-baseline-'));
+  const git = (...args) => {
+    const r = spawnSync('git', ['-C', 방, ...args], { encoding: 'utf8' });
+    assert.strictEqual(r.status, 0, r.stderr);
+    return r.stdout;
+  };
+  git('init', '-q');
+  fs.mkdirSync(path.join(방, 'tests'));
+  const 기존 = path.join(방, 'tests', 'a.test.js');
+  fs.writeFileSync(기존, 'original assertion\n');
+  fs.writeFileSync(path.join(방, 'tests', '빈.test.js'), '');
+  fs.writeFileSync(path.join(방, 'tests', '여러줄.test.js'), '한글\n가짜 blob 20\n여러 줄\n');
+  git('add', '--', 'tests/a.test.js', 'tests/빈.test.js', 'tests/여러줄.test.js');
+  git('-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'base');
+  const 지금 = (f) => { try { return require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(방, f))).digest('hex'); } catch (_) { return null; } };
+  const 최초 = 빌드.시험지문들(방);
+  assert.strictEqual(최초.size, 3);
+  assert.strictEqual(최초.get('tests/빈.test.js'), 지금('tests/빈.test.js'));
+  assert.strictEqual(최초.get('tests/여러줄.test.js'), 지금('tests/여러줄.test.js'));
+  fs.writeFileSync(기존, 'weakened assertion from interrupted run\n');
+  for (const 스테이징 of [false, true]) {
+    if (스테이징) git('add', '--', 'tests/a.test.js');
+    const 재개 = 빌드.시험지문들(방);
+    assert.strictEqual(재개.get('tests/a.test.js'), 최초.get('tests/a.test.js'));
+    assert.deepStrictEqual(빌드.시험손댐(['tests/a.test.js'], 재개, 지금), ['tests/a.test.js (고쳤다)']);
+    assert.deepStrictEqual(빌드.시험손댐(['tests/a.test.js'], 재개, 지금, ['tests/a.test.js']), []);
+  }
+  fs.writeFileSync(path.join(방, 'tests', 'new.test.js'), 'new test\n');
+  git('add', '--', 'tests/new.test.js');
+  assert.ok(!빌드.시험지문들(방).has('tests/new.test.js'), '아직 커밋되지 않은 새 시험은 새 시험이다');
+  fs.unlinkSync(기존);
+  assert.deepStrictEqual(빌드.시험손댐(['tests/a.test.js'], 빌드.시험지문들(방), 지금), ['tests/a.test.js (지웠다)']);
+  git('add', '--', 'tests/a.test.js');
+  assert.deepStrictEqual(빌드.시험손댐(['tests/a.test.js'], 빌드.시험지문들(방), 지금), ['tests/a.test.js (지웠다)']);
+});
+
+test('커밋된 시험의 기준을 읽지 못하면 빈 기준으로 실행하지 않는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-build-no-baseline-'));
+  assert.throws(() => 빌드.시험지문들(방), (e) => e.확인불가 === true && /원본을 읽지 못했다/.test(e.message));
+});
