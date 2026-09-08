@@ -143,7 +143,7 @@ def main():
 <title>SYNK 로고 — 실물 시트</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800&display=swap">
 <style>
-  :root { --ink-deep:#080605; --ink:#2B2320; --paper:#FBF7F0; --stitch:#F0E3C8;
+  :root { --ink-deep:#080605; --ink:#2B2320; --paper:#FBF7F0; --stitch:#FBCAAB;
           --stone:#C7BFB2; --ash-wool:#8D857A; --coral:#F96859; --coral-soft:#FBB7A3; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--ink-deep); color:var(--paper); padding:36px 20px 44px;

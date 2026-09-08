@@ -62,7 +62,7 @@ def 심기(경로, 폭, 품질=86):
 머리 = '''<title>{제목}</title>
 <style>
 :root{{
-  --paper:#FBF7F0; --ink:#2B2320; --stitch:#F0E3C8; --oat:#EDE7DC;
+  --paper:#FBF7F0; --ink:#2B2320; --stitch:#FBCAAB; --oat:#EDE7DC;
   --stone:#C7BFB2; --ash:#8D857A; --deepwool:#575046;
   --coral:#F96859; --wash:#FEF0E9; --rim:#941F19;
   --kr:'SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;

@@ -2028,7 +2028,7 @@ function setAppState_(ss, key, val) {
 /* ===================== [함께한날 막4] 장면 사다리 · 가이드 대사 · 카드 셋 =====================
  * 정본 = docs/함께한날_설계_v1.md. 축 둘 = 함께한 날(시간·매일) + 내가 맞힌 말(학습·중간).
  * 단계도 등급도 진화도 없다 — 쌓이는 것 하나, 열리는 조건 하나. 둘 다 남과 견줄 수 없다.
- * 색은 킷만(DESIGN.md): Paper #FBF7F0 · Ink #2B2320 · Stitch #F0E3C8 · 신호 1점 = Coral(글자는 Coral 3
+ * 색은 킷만(DESIGN.md): Paper #FBF7F0 · Ink #2B2320 · Stitch #FBCAAB · 신호 1점 = Coral(글자는 Coral 3
  * #AE322A) · Oat/Stone/Ash. 순백 금지 · 라이트 위 코랄 «글자» 금지(강조는 Coral 3) · 이모지 절제. */
 
 // 장면 사다리 — [장면, 함께한 날 문턱, 맞힌 말 누계 문턱(0=게이트 없음)]. 간격은 매번 커진다(설계 §2).
@@ -2123,7 +2123,7 @@ function guideImgOk_(v) { return String(v || '').trim().indexOf('http') === 0; }
 
 function guideDotHtml_(img, size, nm) {
   const 점 = 'width:' + size + 'px;height:' + size + 'px;border-radius:50%;'
-    + 'background:radial-gradient(circle at 32% 30%,#FBB7A3,#F96859 68%,#AE322A);border:2px solid #F0E3C8;';
+    + 'background:radial-gradient(circle at 32% 30%,#FBB7A3,#F96859 68%,#AE322A);border:2px solid #FBCAAB;';
   const 이름표 = ' role="img" aria-label="' + escHtml_(nm || '가이드') + '" title="' + escHtml_(nm || '가이드') + '"';
   if (guideImgOk_(img)) {
     /* 심층방어(08-27) — img·nm 은 contents 시트 E열·C열에서 온다. 지금은 씨앗 상수가 채우지만
@@ -2148,11 +2148,11 @@ function buildTogetherCard_(o) {
     ? '다음 만남의 열쇠는 <b style="color:#AE322A;">맞힌 말 ' + o.scene.toMastered + '개</b>'
     : '다음 만남까지 <b style="color:#AE322A;font-size:16px;">' + o.scene.toDays + '일</b>';
   const meetsLine = o.meets > 0 ? ' · 오늘 ' + escHtml_(o.guideName) + '와 한 것 <b>' + o.meets + '</b>' : '';
-  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:12px 14px;color:#2B2320;">' +
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #FBCAAB;border-radius:16px;padding:12px 14px;color:#2B2320;">' +
     '<div style="position:relative;height:52px;">' +
-      '<div style="position:absolute;left:6px;right:6px;top:38px;border-top:2px dashed #F0E3C8;"></div>' +
+      '<div style="position:absolute;left:6px;right:6px;top:38px;border-top:2px dashed #FBCAAB;"></div>' +
       '<div style="position:absolute;top:0;left:' + leftPct + '%;transition:left .3s;">' + guideDotHtml_(o.guideImg, 40, o.guideName) + '</div>' +
-      '<div style="position:absolute;top:26px;left:0;width:10px;height:10px;border-radius:50%;background:#EDE7DC;border:2px solid #F0E3C8;"></div>' +
+      '<div style="position:absolute;top:26px;left:0;width:10px;height:10px;border-radius:50%;background:#EDE7DC;border:2px solid #FBCAAB;"></div>' +
     '</div>' +
     '<div style="font-size:13.5px;padding-top:6px;">' + headLine + '</div>' +
     '<div style="font-size:12px;color:#8D857A;padding-top:3px;">함께한 날 <b style="color:#2B2320;">' + o.days + '</b>' + meetsLine + '</div>' +
@@ -2173,7 +2173,7 @@ function buildFilmStripHtml_(o) {
   const lastLine = lastRow
     ? '<div style="font-size:11.5px;color:#8D857A;padding-top:6px;">최근 장면 ' + lastRow.n + ' · ' + escHtml_(String(lastRow.d || '')) + (lastRow.form ? ' · ' + escHtml_(lastRow.form) : '') + '</div>'
     : '';
-  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:11px 13px;color:#2B2320;">' +
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #FBCAAB;border-radius:16px;padding:11px 13px;color:#2B2320;">' +
     '<div style="font-size:12.5px;font-weight:700;padding-bottom:6px;">' + escHtml_(o.guideName || '몽글') + '와 걸어온 장면 · ' + idx + '</div>' +
     '<div style="white-space:nowrap;overflow-x:auto;">' + dots.join('') + '</div>' + lastLine + '</div>';
 }
@@ -2204,7 +2204,7 @@ function buildWalkedRoadHtml_(o) {
    *   개수·진행률은 안 낸다(§4-b ㉢) · 사진 자체는 화면에 안 띄운다(§5-c — 공개 링크가 필요해진다). 문구 정본 = contents_순간.js. */
   const momentTxt = o.moment ? momentLine_('걸어온길', o.moment) : '';
   const momentLine = momentTxt ? '<div style="font-size:12px;padding-top:8px;">' + escHtml_(momentTxt) + '</div>' : '';
-  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:12px 14px;color:#2B2320;line-height:1.8;">' +
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #FBCAAB;border-radius:16px;padding:12px 14px;color:#2B2320;line-height:1.8;">' +
     '<div style="font-size:13px;font-weight:800;">' + escHtml_(o.guideName || '몽글') + '와 걸어온 길</div>' +
     '<div style="font-size:12.5px;padding-top:4px;">함께한 날 <b>' + o.days + '</b> · 내가 맞힌 말 <b>' + o.mastered + '</b>' + (o.bank ? ' / ' + o.bank : '') + '</div>' +
     (bars ? '<div style="padding-top:8px;"><div style="font-size:11.5px;color:#8D857A;">달마다 만난 날</div><div style="height:46px;">' + bars + '</div></div>' : '') +

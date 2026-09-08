@@ -12,7 +12,7 @@
   --synk-paper:#FBF7F0; /* 바탕(라이트) — 양모 종이. 팬톤 2026 Cloud Dancer 자리 */
   --synk-ink:#2B2320; /* 잉크(라이트) — 갈색이 밴 따뜻한 먹(Paper 위 14.42) · 다크에서는 «카드 면»(양모 밤 · 조항 ⓚ): 낮의 글자가 밤의 면이 된다 */
   --synk-ink-deep:#080605; /* 바탕(다크) — 양모 밤의 바닥(조항 ⓚ · 유호 확정 08-20). Ink 의 그늘이자 Graphite 의 따뜻한 쌍둥이. 카드(Ink)가 여기서 ΔL* 12.8 로 뜬다(기각선 8.3) */
-  --synk-stitch:#F0E3C8; /* 실땀 — 모든 펠트 오브젝트의 테두리·구분선·자수 포인트(운용 규칙 ② · 마스코트 실물 밑단 실측) */
+  --synk-stitch:#FBCAAB; /* 실땀 — 모든 펠트 오브젝트의 테두리·구분선·자수 포인트(운용 규칙 ②). 🆕 2026-09-08 유호 확정 「4K 가 정본이야」로 값이 갈렸다. 정본_4K 몽글 밑단 실을 다시 재니 옛 크림빛 값과 16.1 만큼 떨어져 있었다(밝은 쪽 #FCD9BC · 어두운 쪽 #F7BD9A — 코랄 몸에서 튄 빛이 실에 얹혀 복숭아빛이 돈다). ⚠ 옛 값은 퇴역이다(tests/브랜드값.test.js 퇴역 목록 · 여기 적으면 그 검사가 문다) */
   --synk-oat:#EDE7DC; /* 양모 회색 1 — 칩 바닥·가라앉은 면 */
   --synk-stone:#C7BFB2; /* 양모 회색 2 — 비활성 테두리 */
   --synk-ash-wool:#8D857A; /* 양모 회색 3 — 보조 글자·캡션 */
@@ -59,7 +59,7 @@
   --synk-신호_바닥:#FEF0E9; /* = Coral Wash */
   --synk-알약:#FBB7A3; /* = Coral Soft */
   --synk-성장수치:#AE322A; /* = Coral 3 */
-  --synk-실땀:#F0E3C8; /* = Stitch */
+  --synk-실땀:#FBCAAB; /* = Stitch */
   --synk-안내_면:#3D6BC9; /* = Lapis */
   --synk-안내_글자:#24448C; /* = Lapis Deep */
   --synk-정답_면:#7DB45A; /* = Meadow */
@@ -79,7 +79,7 @@
   --synk-잉크:#FBF7F0; /* = Paper */
   --synk-보조잉크:#EDE7DC; /* = Oat */
   --synk-보조잉크2:#C7BFB2; /* = Stone */
-  --synk-실땀:#F0E3C8; /* = Stitch */
+  --synk-실땀:#FBCAAB; /* = Stitch */
   --synk-신호:#F96859; /* = Coral */
   --synk-신호_보조:#FD9C87; /* = Coral 2 */
   --synk-눌림:#AE322A; /* = Coral 3 */
