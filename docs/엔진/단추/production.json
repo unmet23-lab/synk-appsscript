@@ -1,0 +1,67 @@
+{
+  "producer": "Codex built-in image_gen",
+  "upscaled": false,
+  "format_conversion_only": true,
+  "encoding": {
+    "format": "AVIF",
+    "quality": 94,
+    "subsampling": "4:4:4"
+  },
+  "preserved_prototype": "number-01-4k.png",
+  "assets": [
+    {
+      "number": "01",
+      "file": "number-01.avif",
+      "width": 1254,
+      "height": 1254,
+      "source": "number-01.png",
+      "source_sha256": "1495f9d8e0605b8ca17bfb6edf1983208766ca76ff9514a8bcb04c391283df44",
+      "bytes": 539778
+    },
+    {
+      "number": "02",
+      "file": "number-02.avif",
+      "width": 1254,
+      "height": 1254,
+      "source": "number-02.png",
+      "source_sha256": "514abdf9832b9cd22bc64a574c999ee9b7fa9cbcec961edeef1f4c32b0f032ec",
+      "bytes": 440865
+    },
+    {
+      "number": "03",
+      "file": "number-03.avif",
+      "width": 1254,
+      "height": 1254,
+      "source": "number-03.png",
+      "source_sha256": "a4e4d452ca690b0f52c513e571fdc72261461495e3a165b08c52b8d06063e462",
+      "bytes": 450123
+    },
+    {
+      "number": "04",
+      "file": "number-04.avif",
+      "width": 1254,
+      "height": 1254,
+      "source": "number-04.png",
+      "source_sha256": "3cfcd171b9bcf7b86215c49bd097ada3b6dc6310fe9a91a64a877a99053ed703",
+      "bytes": 440160
+    },
+    {
+      "number": "05",
+      "file": "number-05.avif",
+      "width": 1254,
+      "height": 1254,
+      "source": "number-05.png",
+      "source_sha256": "bf330136acf62b7c89394a8950f021b258939ef20c6a26eed436d081921be028",
+      "bytes": 446485
+    },
+    {
+      "number": "06",
+      "file": "number-06.avif",
+      "width": 1254,
+      "height": 1254,
+      "source": "number-06.png",
+      "source_sha256": "4de32a84b36736c05ddf4959ac6e4a0532f020910f15701b9f8a62f26f80125e",
+      "bytes": 446859
+    }
+  ]
+}

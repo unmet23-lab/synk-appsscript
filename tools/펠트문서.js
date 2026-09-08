@@ -578,12 +578,25 @@ function 굽기(입력, 출력, 쓸천, 림) {
   /* 서체를 «바깥에서 부르는 줄»은 여기서 걷는다 — 스킨이 폰트를 안에 싣기 때문이다.
      원고에 그 줄이 남아 있어도 되게 둔다(옛 원고 전량을 손대지 않아도 굽기가 알아서 걷는다).
      원고 자신은 가볍게 둔다 — 832KB 를 원고에도 박으면 diff 가 죽고 재현 대조가 무거워진다. */
-  const 원문 = 브랜드폰트.걷기(fs.readFileSync(입력, 'utf8'));
+  let 원문 = 브랜드폰트.걷기(fs.readFileSync(입력, 'utf8'));
   if (!원문.includes(표식)) throw new Error('표식이 없다 — 입력 HTML 에 ' + 표식 + ' 한 줄을 둔다: ' + 입력);
   /* 이 원고가 실제로 부르는 클래스 — 구움층이 «쓰는 것만» 싣는 근거(loom `부르나`).
      실측 09-01: 안 쓰는 요소까지 실으니 한 지면이 310KB → 611KB 가 됐고 브라우저가 열기를 거부했다. */
   const 쓴클래스 = new Set(
     [...원문.matchAll(/class="([^"]+)"/g)].flatMap((m) => m[1].split(/\s+/)).filter(Boolean));
+  if (쓴클래스.has('엔진전시')) {
+    // 숫자까지 함께 생성한 자수 이미지. 원본 크기는 자산 기록에서 읽는다.
+    const 단추폴더 = path.join(루트, 'docs', '엔진', '단추');
+    const 단추들 = JSON.parse(fs.readFileSync(path.join(단추폴더, 'production.json'), 'utf8')).assets;
+    원문 = 원문.replace(/<span class="번호"(?: data-n="\d+")?>(\d{2})<\/span>/g, (_, n) => {
+      const 단추 = 단추들.find((item) => item.number === n);
+      if (!단추) throw new Error('엔진 단추 기록 없음: ' + n);
+      const asset = path.join(단추폴더, 단추.file);
+      if (!fs.existsSync(asset)) throw new Error('엔진 단추 렌더 없음: ' + n);
+      const data = fs.readFileSync(asset).toString('base64');
+      return `<span class="번호 구운번호" data-n="${n}"><img src="data:image/avif;base64,${data}" alt="${n}" width="${단추.width}" height="${단추.height}" decoding="async"></span>`;
+    });
+  }
   const 전시층 = 쓴클래스.has('엔진전시') ? '<style data-loom-engine>' + loom.엔진전시() + '</style>' : '';
   const 결과 = 원문.replace(표식, 스킨(쓸천, 림, 히어로이름(원문), 쓴클래스) + 전시층 + '\n' + 스크립트());
   fs.mkdirSync(path.dirname(출력), { recursive: true });
