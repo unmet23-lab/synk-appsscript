@@ -6,7 +6,9 @@
  * 한글 음절 이름도 센다. 이것은 정적 참조 검사이며 데이터 흐름의 증명이 아니다.
  *
  * node tools/prism래칫.js [--범위 <저장소 상대 glob>]... / --자가시험
- * 기본 범위는 리포트 엔진 둘. 추가 glob은 Node의 node:fs.globSync로 푼다.
+ * 기본 범위는 리포트 엔진 둘. 추가 glob은 직접 탐색하고 node:path.matchesGlob으로 맞춘다.
+ * fs.globSync는 탐색 오류를 빈 결과로 숨기므로 쓰지 않는다. 일부만 못 봐도 확인 불가다.
+ * 명부·범위는 실제 파일의 상대 경로를 공유한다(Windows 대소문자·링크 별칭 포함).
  * 종료: 0=검사 통과, 1=금지 참조, 2=확인 불가. CI 배선은 별도 작업이다.
  * 검사({루트, 명부, 범위}) / 실행(인자, {루트})는 임시 픽스처용 진입점이다.
  * 자가시험은 실제 범위·명부를 읽지 않고 자체 임시 뿌리를 만든 뒤 지운다.
@@ -48,7 +50,21 @@ function 안쪽인가(뿌리, 대상) {
 function 실제경로(뿌리, 상대) {
   const 실제 = fs.realpathSync(path.resolve(뿌리, 상대));
   if (!안쪽인가(뿌리, 실제)) throw new Error('저장소 밖으로 이어진 경로');
-  return 실제;
+  // Windows의 realpathSync는 입력 대소문자를 남길 수 있다. native가 실제 표기를 돌려준다.
+  const 정본 = fs.realpathSync.native(실제);
+  if (!안쪽인가(뿌리, 정본)) throw new Error('저장소 밖으로 이어진 경로');
+  return 정본;
+}
+
+function 파일열쇠(뿌리, 경로, 없는경로허용 = false) {
+  try { return path.relative(뿌리, 실제경로(뿌리, 경로)).replace(/\\/g, '/'); }
+  catch (오류) {
+    // 명부에는 아직 없는 소비자도 올릴 수 있다. 권한 오류나 바깥 링크는 예외가 아니다.
+    if (없는경로허용 && 오류.code === 'ENOENT') {
+      return process.platform === 'win32' ? 경로.toLowerCase() : 경로;
+    }
+    throw 오류;
+  }
 }
 
 function 명부읽기(뿌리, 명부) {
@@ -71,10 +87,109 @@ function 명부읽기(뿌리, 명부) {
     const 경로 = 상대경로(항목.경로, `${자리} 경로`);
     if (!갈래들.has(항목.갈래)) throw new Error(`${자리}: 갈래가 올바르지 않다`);
     if (!채운문자열(항목.사유)) throw new Error(`${자리}: 사유가 비었다`);
-    if (등록.has(경로)) throw new Error(`${자리}: 같은 경로가 두 번 등록됐다 — ${경로}`);
-    등록.set(경로, 항목.갈래);
+    let 열쇠;
+    try { 열쇠 = 파일열쇠(뿌리, 경로, true); }
+    catch (_) { throw new Error(`${자리}: 명부 경로를 확인할 수 없다 — ${경로}`); }
+    if (등록.has(열쇠)) throw new Error(`${자리}: 같은 경로가 두 번 등록됐다 — ${경로}`);
+    등록.set(열쇠, 항목.갈래);
   }
   return 등록;
+}
+
+function* glob대안(패턴) {
+  // 슬래시를 가로지르는 {파일,폴더/*.js}도 먼저 가지로 나눈다.
+  // 숫자·문자 범위와 문자 집합은 그대로 두어 Node의 낱토막 매처가 해석한다.
+  const 여는곳 = [];
+  let 문자집합 = false;
+  for (let i = 0; i < 패턴.length; i++) {
+    if (패턴[i] === '[') 문자집합 = true;
+    else if (패턴[i] === ']') 문자집합 = false;
+    if (문자집합) continue;
+    if (패턴[i] === '{') 여는곳.push(i);
+    else if (패턴[i] === '}' && 여는곳.length) {
+      const 시작 = 여는곳.pop();
+      const 내용 = 패턴.slice(시작 + 1, i);
+      if (!내용.includes(',')) continue;
+      for (const 대안 of 내용.split(',')) {
+        yield* glob대안(패턴.slice(0, 시작) + 대안 + 패턴.slice(i + 1));
+      }
+      return;
+    }
+  }
+  yield 패턴;
+}
+
+function glob찾기(뿌리, 패턴) {
+  const 후보 = new Set();
+  const 디렉터리들 = new Map();
+  const 목록들 = new Map();
+  function 디렉터리(경로) {
+    if (!디렉터리들.has(경로)) {
+      try {
+        const 실제 = 실제경로(뿌리, 경로 || '.');
+        디렉터리들.set(경로, fs.statSync(실제).isDirectory() ? 실제 : null);
+      } catch (_) { throw new Error(`범위 디렉터리를 확인할 수 없다 — ${경로 || '.'}`); }
+    }
+    return 디렉터리들.get(경로);
+  }
+  function 목록(경로) {
+    const 실제 = 디렉터리(경로);
+    if (!목록들.has(실제)) {
+      try { 목록들.set(실제, fs.readdirSync(실제, { withFileTypes: true })); }
+      catch (_) { throw new Error(`범위 디렉터리를 탐색할 수 없다 — ${경로 || '.'}`); }
+    }
+    return 목록들.get(실제);
+  }
+  function 탐색(부모, 토막들, 번호) {
+    if (번호 === 토막들.length) {
+      if (부모) 후보.add(부모);
+      return;
+    }
+    if (!디렉터리(부모)) return;
+    const 토막 = 토막들[번호];
+    const 끝 = 번호 === 토막들.length - 1;
+    if (토막 === '**') {
+      탐색(부모, 토막들, 번호 + 1);
+      const 다음 = 토막들.slice(번호 + 1).find((값) => 값 !== '**');
+      for (const 항목 of 목록(부모)) {
+        // 뒤 토막이 숨김 이름을 명시한 경우에는 그 디렉터리 안쪽도 범위다.
+        if (항목.name.startsWith('.') && (!다음 || !path.matchesGlob(항목.name, 다음))) continue;
+        const 경로 = path.posix.join(부모, 항목.name);
+        // globSync의 기본 동작처럼 **는 디렉터리 링크를 재귀 추적하지 않는다.
+        if (항목.isDirectory()) 탐색(경로, 토막들, 번호);
+        else if (끝) 후보.add(경로);
+      }
+      return;
+    }
+    if (토막 === '.' || 토막 === '') {
+      탐색(부모, 토막들, 번호 + 1);
+      return;
+    }
+    const 무늬 = /[*?\[\]{}()]/.test(토막);
+    let 항목들;
+    if (무늬) {
+      항목들 = 목록(부모).filter((항목) => path.matchesGlob(항목.name, 토막));
+    } else {
+      const 경로 = path.posix.join(부모, 토막);
+      try { 항목들 = [fs.lstatSync(path.resolve(뿌리, 경로))]; }
+      catch (오류) {
+        // 없는 고정 이름은 무일치다. EACCES 등은 다른 대안이 맞아도 검사 실패다.
+        if (오류.code === 'ENOENT') return;
+        throw new Error(`범위 경로를 확인할 수 없다 — ${경로}`);
+      }
+    }
+    for (const 항목 of 항목들) {
+      const 경로 = path.posix.join(부모, 무늬 ? 항목.name : 토막);
+      if (끝) 후보.add(경로);
+      else if (항목.isDirectory() || (!무늬 && 항목.isSymbolicLink())) {
+        탐색(경로, 토막들, 번호 + 1);
+      }
+    }
+  }
+  for (const 대안 of glob대안(패턴)) {
+    탐색('', 상대경로(대안, '범위 대안').split('/'), 0);
+  }
+  return 후보;
 }
 
 function 범위찾기(뿌리, 범위) {
@@ -83,19 +198,22 @@ function 범위찾기(뿌리, 범위) {
   for (const 원형 of 범위) {
     const 패턴 = 상대경로(원형, '범위');
     let 후보;
-    try { 후보 = fs.globSync(패턴, { cwd: 뿌리 }); }
-    catch (_) { throw new Error(`범위를 펼칠 수 없다 — ${원형}`); }
+    try { 후보 = glob찾기(뿌리, 패턴); }
+    catch (오류) { throw new Error(`범위를 펼칠 수 없다 — ${원형}: ${오류.message}`); }
     let 찾은수 = 0;
     for (const 값 of 후보) {
       const 경로 = 상대경로(값, '범위 파일');
+      let 열쇠;
       try {
         const 실제 = 실제경로(뿌리, 경로);
-        if (fs.statSync(실제).isDirectory()) continue;
-        if (!fs.statSync(실제).isFile()) throw new Error('일반 파일이 아니다');
+        const 상태 = fs.statSync(실제);
+        if (상태.isDirectory()) continue;
+        if (!상태.isFile()) throw new Error('일반 파일이 아니다');
+        열쇠 = 파일열쇠(뿌리, 경로);
       } catch (_) {
         throw new Error(`범위 파일을 확인할 수 없다 — ${경로}`);
       }
-      파일들.add(경로);
+      파일들.add(열쇠);
       찾은수++;
     }
     if (찾은수 === 0) throw new Error(`범위 패턴에 맞는 파일이 없다 — ${원형}`);
