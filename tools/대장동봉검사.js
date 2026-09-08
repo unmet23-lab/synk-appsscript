@@ -44,6 +44,7 @@ const 정본경로 = 'docs/SYNK_철학.md';
 const 산출경로 = 'docs/이해대장.html';
 /* [F520] 화면의 부모는 **둘**이다 — 정본(무엇을 그리나)과 생성기(어떻게 그리나). */
 const 생성기경로 = 'tools/이해대장.js';
+const 명부경로 = 'docs/_ops/prism_접점등록.json';
 
 /* [F520 이어받기] 부모는 둘이 아니라 **다섯**이다 — 위 두 갈래를 세운 뒤 화면의 입력을 전수로 다시
  *   세니 셋이 더 나왔다. 생성기가 `require` 하는 부품 둘과, 점수 줄이 읽는 장부다:
@@ -71,6 +72,10 @@ const 방아쇠목록 = [
   /* 세 홉째 — `loom얹기` 의 게이트(「닿는 훅이 있나」)가 여기서 난다. 폐포로 올린 회귀가
    * 그 자리에서 이 파일을 찾아냈다(내가 아니라 검사가 잡았다). */
   'tools/lib/loom훅.js',
+  // 생성기의 새 입력 — Prism 절 부품이 바뀌면 화면 바이트가 바뀐다.
+  'tools/lib/prism대장절.js',
+  // 생성기의 새 입력 — 명부의 등록 소비자 수 K가 화면에 직접 들어간다.
+  명부경로,
 ];
 
 const 말 = (s) => process.stderr.write(s + '\n');
@@ -180,6 +185,7 @@ function main() {
 
   const 산출상태 = 스테이징.get(산출경로);
   const 산출뒤 = 산출상태 === 'D' ? null : 판본(산출상태 ? '' : 'HEAD', 산출경로);
+  const 명부뒤 = 판본(스테이징.has(명부경로) ? '' : 'HEAD', 명부경로);
 
   /* 임시 파일 두 벌 — 작업본을 건드리지 않는다. 옆 세션이 같은 파일을 읽는 중일 수 있고,
    * 커밋 훅이 작업본을 흔들면 그 자체가 남의 트랙을 깨는 사고다(F073 축). */
@@ -189,6 +195,10 @@ function main() {
     const 산출tmp = path.join(방, '이해대장.html');
     fs.writeFileSync(정본tmp, 정본뒤, 'utf8');
     if (산출뒤 !== null) fs.writeFileSync(산출tmp, 산출뒤, 'utf8');
+    // 색인·HEAD에 명부가 없거나 삭제됐으면 임시 파일·환경변수를 만들지 않는다.
+    // 이때는 판정기가 작업본 명부를 읽는 한계가 남는다.
+    const 명부tmp = 명부뒤 === null ? null : path.join(방, 'prism_명부.json');
+    if (명부tmp !== null) fs.writeFileSync(명부tmp, 명부뒤, 'utf8');
 
     const r = spawnSync(process.execPath, [판정기, '--검사'], {
       cwd: ROOT,
@@ -201,7 +211,7 @@ function main() {
        *   그 변수를 뿌리로 얹는다. 상속하면 워크트리 커밋의 게이트가 «주 저장소 작업본»(남의 미커밋 포함)
        *   으로 그려서, 스테이징된 화면과 영원히 안 맞는 차단이 된다(실측: Loom 부품 19종 vs 22종).
        *   이 게이트의 ROOT 원칙(위 36행 「이 파일이 속한 저장소」)을 spawn 한 겹까지 관철하는 것이다. */
-      env: (() => { const e = { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp, SYNK_대장_방아쇠: 방아쇠.join('\n') }; delete e.CLAUDE_PROJECT_DIR; return e; })(),
+      env: (() => { const e = { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp, SYNK_대장_방아쇠: 방아쇠.join('\n') }; delete e.CLAUDE_PROJECT_DIR; delete e.SYNK_PRISM_명부; if (명부tmp !== null) e.SYNK_PRISM_명부 = 명부tmp; return e; })(),
     });
     if (r.stdout) process.stdout.write(r.stdout);
     if (r.stderr) process.stderr.write(r.stderr);

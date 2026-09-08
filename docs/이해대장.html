@@ -79,6 +79,11 @@
   .사유 li{margin:0 0 6px;line-height:1.55}
   .사유 code{background:var(--cream);border-radius:4px;padding:1px 6px;color:var(--navy)}
   .범례{margin-top:36px;padding-top:16px;border-top:1px solid var(--cream3);color:var(--slate2);font-size:12px}
+  .prism줄{margin-top:12px;padding:12px 16px;background:var(--cream);border-left:6px solid var(--slate2);
+        border-radius:8px;font-size:12.5px;overflow-wrap:anywhere}
+  .prism줄 p{margin:6px 0 0}
+  .prism줄.통과{border-color:var(--emerald)}
+  .prism줄.경고{border-color:var(--coral3)}
   /* 🔴 이름을 갈랐다(09-04 · codex 1823e3122dfe) — 옛 이름 «.칩» 은 Loom 의 «분류 칩»과 같은 이름이었다.
      Loom 조립분이 뒤에 얹히면서 padding:0·border-radius:0 으로 덮어, 이 범례가 «글자에 붙은 사각형»이 됐다.
      둘은 다른 물건이다(저기는 문서의 분류 표식, 여기는 상태 색 견본) — 같은 이름을 쓰면 순서가 승패를 정한다. */
@@ -644,6 +649,10 @@
   <span class="범례칩" style="background:transparent;color:#AE322A;border:2px dashed #AE322A">비었다</span>
   <div style="margin-top:10px">색은 브랜드 킷 23색에서만 뽑는다(유호님 확정) · KC Sun 은 면으로만 쓰고 글자로 쓰지 않는다.</div>
 </div>
+<h2 class="절">Prism 접점 — 학생·학부모 접점 참조 0</h2>
+<p class="설명">학생·학부모 접점에 Prism 산출이 닿지 않는지, 산출에 필요한 정보가 갖춰졌는지 확인한다. 경고가 있으면 아래 사유와 잡힌 자리를 먼저 본다.</p>
+<div class="prism접점"><div class="prism줄 통과"><b>접점 참조 검사</b><p>범위 파일 22 · 참조 0 · 등록 소비자 2 · 학생·학부모 참조 0</p></div>
+<div class="prism줄"><b style="color:var(--coral3)">⚠ 안 재봤다</b> — 산출 장부가 이 저장소에 없다. 정본은 비공개 버킷이다(설계 §8-5).</div></div>
 <div style="margin-top:22px">
   <div style="font-size:12.5px;font-weight:800;color:#666666;letter-spacing:.04em;margin-bottom:9px">📎 함께 볼 것 — 판정·설계 화면</div>
   <div style="display:grid;gap:8px">
