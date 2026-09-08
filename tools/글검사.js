@@ -76,17 +76,29 @@ function 있나() { return fs.existsSync(검사기); }
  */
 const 우리이음말 = ['라서', '이라(?=\\s|,|$)'];
 
+/* 🔴 채우기가 «실패»하면 조용히 지나가지 않는다 (심문 09-08 P0).
+ *   첫 판은 목록 파일이 없으면 `{함:false}` 만 돌려주고 검사를 그대로 이어 갔다.
+ *   hanlint 가 판을 올려 그 파일 자리가 바뀌면 채우기는 영영 실패하는데 도구는 멀쩡한 얼굴로
+ *   「깨끗하다」를 낸다 — 자가 무뎌진 채 나는 거짓 초록이다(zero-is-a-success-face-taxonomy).
+ *   ⇒ 실패는 `탈` 로 돌려주고 부르는 쪽이 «못 쟀다»(종료 2)로 멈춘다. */
 function 이음말채우기() {
   const p = path.join(뿌리, 'node_modules', 'hanlint', 'data', 'causalMarkers.txt');
-  if (!fs.existsSync(p)) return { 함: false, 까닭: '목록 파일이 없다' };
-  const 원 = fs.readFileSync(p, 'utf8');
+  if (!fs.existsSync(p)) return { 함: false, 탈: `이음말 목록 파일이 없다: ${path.relative(뿌리, p)}` };
+  let 원;
+  try { 원 = fs.readFileSync(p, 'utf8'); } catch (e) { return { 함: false, 탈: `이음말 목록을 못 읽었다: ${e.message}` }; }
   const 있는줄 = new Set(원.split(/\r?\n/).map((s) => s.trim()));
   const 넣을것 = 우리이음말.filter((v) => !있는줄.has(v));
   if (!넣을것.length) return { 함: false, 까닭: '이미 다 있다' };
   const 줄끝 = 원.includes('\r\n') ? '\r\n' : '\n';
-  fs.writeFileSync(p, 원.replace(/\s*$/, '') + 줄끝
-    + `# ── SYNK 가 채운 것 (tools/글검사.js · 왜는 그 파일 주석)${줄끝}`
-    + 넣을것.join(줄끝) + 줄끝, 'utf8');
+  try {
+    fs.writeFileSync(p, 원.replace(/\s*$/, '') + 줄끝
+      + `# ── SYNK 가 채운 것 (tools/글검사.js · 왜는 그 파일 주석)${줄끝}`
+      + 넣을것.join(줄끝) + 줄끝, 'utf8');
+  } catch (e) { return { 함: false, 탈: `이음말을 못 채웠다: ${e.message}` }; }
+  // 되읽어 센다 — 「썼다」는 「들어갔다」가 아니다(blanket-replace-needs-a-zero-count)
+  const 되읽음 = new Set(fs.readFileSync(p, 'utf8').split(/\r?\n/).map((s) => s.trim()));
+  const 안들어간것 = 우리이음말.filter((v) => !되읽음.has(v));
+  if (안들어간것.length) return { 함: false, 탈: `채웠는데 되읽으니 없다: ${안들어간것.join(' · ')}` };
   return { 함: true, 넣은것: 넣을것 };
 }
 
@@ -152,13 +164,20 @@ function 재기(파일, 설정, 형식 = 'json') {
   } catch (e) {
     // 지적이 있으면 종료 코드 1 로 나온다 — 그건 실패가 아니다.
     결과 = (e.stdout || '') + '';
-    if (!결과.trim()) return { 파일, 오류: String(e.message).slice(0, 200), 지적: [] };
+    /* 🔴 «못 쟀다»를 «0건»으로 돌려주지 않는다 (심문 09-08 P1).
+     *   첫 판은 `{오류, 지적:[]}` 를 돌려줬는데 부르는 쪽 넷이 전부 `오류` 를 안 읽어서,
+     *   검사기가 죽은 파일이 «깨끗한 파일»과 화면에서 구별되지 않았다. */
+    if (!결과.trim()) return { 파일, 못쟀다: String(e.message).split('\n')[0].slice(0, 160), 지적: [] };
   }
   if (형식 !== 'json') return { 파일, 평문: 결과, 지적: [] };
   try {
     const j = JSON.parse(결과);
     // 형태 = { files: [ { path, findings: [ { rule, line, severity, quote, why } ] } ] }
-    const 목록 = (j.files || []).flatMap(f => f.findings || []);
+    // 🔴 `files` 칸 자체가 없으면 «지적이 0건»이 아니라 «검사기가 다른 것을 냈다»다
+    if (!Array.isArray(j.files)) {
+      return { 파일, 지적: [], 못쟀다: `검사기 출력에 files 칸이 없다: ${결과.trim().slice(0, 120)}`, 잰글 };
+    }
+    const 목록 = j.files.flatMap(f => f.findings || []);
     return { 파일, 지적: 목록.map(f => ({
       줄: f.line ?? 0,
       규칙: f.rule ?? '?',
@@ -166,7 +185,8 @@ function 재기(파일, 설정, 형식 = 'json') {
       말: f.why ?? '',
       글: String(f.quote ?? '').slice(0, 90),
     })), 잰글 };
-  } catch { return { 파일, 지적: [], 파싱실패: 결과.slice(0, 200), 잰글 }; }
+    // 잘린 JSON·필수 칸 없는 `{}` 도 «못 쟀다»다 — 지적 0건과 같은 얼굴로 두지 않는다
+  } catch { return { 파일, 지적: [], 못쟀다: `검사기 출력이 JSON 이 아니다: ${결과.trim().slice(0, 120)}`, 잰글 }; }
 }
 
 /** 지적 하나의 «신원» — 줄 번호는 글이 밀리면 바뀌니 «파일+규칙+글자»로 잡는다. */
@@ -194,9 +214,11 @@ function 대외문안검사({ 전량 = false } = {}) {
   const 잠금 = 전량 ? null : 기준선읽기();
   let 합 = 0, 잠긴수 = 0;
   const 규칙별 = new Map();
+  const 못잰것 = [];
   for (const f of 대외문안) {
     const r = 재기(f, 자고르기(f));
     if (r.없음) { console.log(`   (없다) ${f}`); continue; }
+    if (r.못쟀다) { 못잰것.push({ 파일: f, 까닭: r.못쟀다 }); continue; }
     const 새것 = r.지적.filter(d => { if (잠금 && 잠금.has(지문(f, d))) { 잠긴수++; return false; } return true; });
     if (!새것.length) continue;
     console.log(`\n── ${f}  ${새것.length}건`);
@@ -212,15 +234,23 @@ function 대외문안검사({ 전량 = false } = {}) {
     합 += 새것.length;
   }
   console.log(`\n${'─'.repeat(52)}`);
+  /* 🔴 «못 쟌 파일»을 먼저 낸다 — 초록보다 위에 둔다.
+   *   아래 「✅ 0건」이 이 줄 위에 있으면 사람은 초록만 보고 닫는다. */
+  if (못잰것.length) {
+    console.log(`🔴 못 쟌 파일 ${못잰것.length}건 — «0건이 아니다». 이 파일들은 이번 수에 안 들었다:`);
+    for (const v of 못잰것) console.log(`   · ${v.파일}\n     ${v.까닭}`);
+    console.log('');
+  }
   if (합 === 0) {
-    console.log(`✅ 새 지적 0건${잠금 ? ` (기준선이 ${잠긴수}건을 잠그고 있다)` : ''}`);
+    console.log(`${못잰것.length ? '🟡' : '✅'} 새 지적 0건${잠금 ? ` (기준선이 ${잠긴수}건을 잠그고 있다)` : ''}`
+      + `${못잰것.length ? ` · 다만 ${못잰것.length}건은 «못 쟀다»` : ''}`);
   } else {
     console.log(`🟡 새 지적 ${합}건${잠금 ? ` · 기준선이 잠근 것 ${잠긴수}건` : ''}`);
     const 줄 = [...규칙별].sort((a, b) => b[1] - a[1]).map(([r, n]) => `${r} ${n}`).join(' · ');
     if (줄) console.log(`   많은 것부터: ${줄}`);
     console.log(`   규칙 하나가 무엇인지: node node_modules/hanlint/bin/hanlint.js explain <규칙>`);
   }
-  return 합;
+  return { 합, 못잰수: 못잰것.length };
 }
 
 function 답검사(글) {
@@ -228,7 +258,7 @@ function 답검사(글) {
   fs.writeFileSync(임시, 글, 'utf8');
   const r = 재기(임시, 자.내답);
   try { fs.unlinkSync(임시); } catch {}
-  return r.지적;
+  return r;                       // 🔴 지적만 꺼내면 «못 쟀다»가 0건으로 둔갑한다
 }
 
 // ── 들머리
@@ -243,7 +273,15 @@ if (!있나()) {
  *    조용히 지나가면 자가 무뎌진 채로 「깨끗하다」를 낸다(거짓 초록). */
 {
   const r = 이음말채우기();
-  if (r.함) console.log(`ℹ 검사기에 우리 이음말을 다시 채웠다: ${r.넣은것.join(' · ')}`);
+  /* 🔴 안내는 «표준 오류»로 낸다 (심문 09-08 P1).
+   *    표준 출력에 쓰면 `--json` 실행에서 안내문이 JSON 앞에 붙어 파싱이 깨진다 —
+   *    하필 «복구가 필요한 바로 그 실행»에서만 깨져서, 판정 지면이 재료를 못 읽는다. */
+  if (r.함) console.error(`ℹ 검사기에 우리 이음말을 다시 채웠다: ${r.넣은것.join(' · ')}`);
+  if (r.탈) {
+    console.error(`🔴 자가 무뎌진 채로는 안 잰다 — «못 쟀다»(0건이 아니다).\n   ${r.탈}`);
+    console.error('   들이는 법:  npm install   (그래도 안 되면 hanlint 판이 올라 자리가 바뀐 것이다)');
+    process.exit(2);
+  }
 }
 if (인자.includes('--기준선')) { 기준선뜨기(); process.exit(0); }
 /* --json — 화면은 파일마다 12건에서 접는데(진짜 적색이 밀려나지 않게), «판정 지면»을 지으려면
@@ -254,10 +292,13 @@ if (인자.includes('--json')) {
   const 전량 = 인자.includes('--전량');
   const 잠금 = 전량 ? null : 기준선읽기();
   const 밖 = [];
+  const 못잰것 = [];
   let 잠긴수 = 0;
   for (const f of 대외문안) {
     const r = 재기(f, 자고르기(f));
     if (r.없음) continue;
+    // 🔴 못 쟌 파일을 재료에 실어 보낸다 — 판정 지면이 «깨끗한 파일»로 세지 않게
+    if (r.못쟀다) { 못잰것.push({ 파일: f, 까닭: r.못쟀다 }); continue; }
     const 줄들 = String(r.잰글 || '').split('\n');
     for (const d of r.지적) {
       if (잠금 && 잠금.has(지문(f, d))) { 잠긴수++; continue; }
@@ -270,14 +311,18 @@ if (인자.includes('--json')) {
       밖.push({ 파일: f, ...d, 앞뒤 });
     }
   }
-  console.log(JSON.stringify({ 뜬때: new Date().toISOString(), 전량, 잠긴수, 건수: 밖.length, 지적: 밖 }, null, 1));
-  process.exit(0);
+  console.log(JSON.stringify({
+    뜬때: new Date().toISOString(), 전량, 잠긴수, 건수: 밖.length, 못잰수: 못잰것.length, 못잰것, 지적: 밖,
+  }, null, 1));
+  process.exit(못잰것.length ? 2 : 0);
 }
 if (인자.includes('--답')) {
   let 글 = '';
   try { 글 = fs.readFileSync(0, 'utf8'); } catch {}
   if (!글.trim()) { console.log('넣을 글이 없다. 예)  echo "글" | node tools/글검사.js --답'); process.exit(2); }
-  const 지적 = 답검사(글);
+  const r = 답검사(글);
+  if (r.못쟀다) { console.log(`🔴 «못 쟀다»(0건이 아니다)\n   ${r.못쟀다}`); process.exit(2); }
+  const 지적 = r.지적;
   if (!지적.length) { console.log('✅ 지적 0건'); process.exit(0); }
   console.log(`🟡 지적 ${지적.length}건`);
   for (const d of 지적) {
@@ -288,10 +333,11 @@ if (인자.includes('--답')) {
 }
 const 파일들 = 인자.filter(a => !a.startsWith('--'));
 if (파일들.length) {
-  let 합 = 0;
+  let 합 = 0, 못잰수 = 0;
   for (const f of 파일들) {
     const r = 재기(f, 자고르기(f));
     if (r.없음) { console.log(`(없다) ${f}`); continue; }
+    if (r.못쟀다) { console.log(`\n🔴 ${f} — «못 쟀다»(0건이 아니다)\n   ${r.못쟀다}`); 못잰수++; continue; }
     console.log(`\n── ${f}  ${r.지적.length}건`);
     for (const d of r.지적) {
       console.log(`   ${String(d.줄).padStart(4)}  [${d.규칙}] ${d.말}`);
@@ -299,6 +345,11 @@ if (파일들.length) {
     }
     합 += r.지적.length;
   }
-  process.exit(합 ? 1 : 0);
+  process.exit(못잰수 ? 2 : (합 ? 1 : 0));
 }
-process.exit(대외문안검사({ 전량: 인자.includes('--전량') }) ? 1 : 0);
+/* 종료 코드 셋을 가른다 — 0=깨끗 · 1=지적 있다 · 2=못 쟀다.
+ * 🔴 「못 쟀다」를 0 으로 내면 이 도구를 부르는 훅·CI 가 «검사가 통과했다»로 읽는다. */
+{
+  const r = 대외문안검사({ 전량: 인자.includes('--전량') });
+  process.exit(r.못잰수 ? 2 : (r.합 ? 1 : 0));
+}
