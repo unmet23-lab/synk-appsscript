@@ -53,13 +53,43 @@ def 정본자(누구):
                 세로비=((눈['왼'][1] + 눈['오'][1]) / 2 - ys.min()) / (ys.max() - ys.min() + 1)))
 
 
-def 앉히기(경로, 낼곳, 자, 판=None):
+def 맞춤값(경로, 자, 판):
+    """이 그림을 정본 틀에 앉히려면 얼마로 줄이고 어디로 옮겨야 하나."""
+    im = Image.open(경로).convert('RGBA')
+    a = np.asarray(im)
+    몸 = a[..., 3] > 128
+    if not 몸.any():
+        return None
+    눈 = _얹기.눈찾기(a[..., :3], 몸, 기대=자['기대'])
+    if 눈 is None:
+        return None
+    k = (자['눈사이비'] * 판) / max(눈['사이'], 1e-6)
+    눈중심 = ((눈['왼'][0] + 눈['오'][0]) / 2 * k, (눈['왼'][1] + 눈['오'][1]) / 2 * k)
+    목표중심 = (자['눈중심'][0] * 판, 자['눈중심'][1] * 판)
+    return dict(k=k, dx=round(목표중심[0] - 눈중심[0]), dy=round(목표중심[1] - 눈중심[1]))
+
+
+def 앉히기(경로, 낼곳, 자, 판=None, 값=None):
     판 = 판 or 자['판']
     im = Image.open(경로).convert('RGBA')
     a = np.asarray(im)
     몸 = a[..., 3] > 128
     if not 몸.any():
         return None
+    if 값 is not None:                       # 🔴 옷 한 벌의 열네 컷은 «같은» 값으로 앉힌다
+        k, dx, dy = 값['k'], 값['dx'], 값['dy']
+        새폭, 새높 = max(1, round(im.width * k)), max(1, round(im.height * k))
+        작 = im.resize((새폭, 새높), Image.LANCZOS)
+        캔 = Image.new('RGBA', (판, 판), (0, 0, 0, 0))
+        캔.paste(작, (dx, dy), 작)
+        os.makedirs(os.path.dirname(낼곳), exist_ok=True)
+        캔.save(낼곳)
+        b = np.asarray(캔)[..., 3] > 128
+        ys, xs = np.where(b) if b.any() else (np.array([0]), np.array([0]))
+        닿음 = int(b[0, :].sum() + b[-1, :].sum() + b[:, 0].sum() + b[:, -1].sum())
+        return dict(파일=os.path.basename(낼곳), 크기맞춤=round(k, 4),
+                    몸폭비=round((xs.max() - xs.min() + 1) / 판, 4), 가장자리에_닿은점=닿음)
+
     눈 = _얹기.눈찾기(a[..., :3], 몸, 기대=자['기대'])
     if 눈 is None:
         return dict(파일=os.path.basename(경로), 결과='🔴 눈을 못 찾았다')
@@ -105,9 +135,40 @@ if __name__ == '__main__':
           f'눈 사이 {자["눈사이비"]*100:.2f}% · 눈 중심 ({자["눈중심"][0]*100:.1f}%, {자["눈중심"][1]*100:.1f}%)')
 
     파일 = [f for f in sorted(os.listdir(방)) if f.startswith(누구 + '_') and f.endswith('.png')]
+
+    # 🔴 표정 컷은 «옷 한 벌마다 한 번» 재서 열넷에 같은 값을 쓴다 (09-08).
+    #    장마다 따로 재면 ⓐ 눈감은 표정에서 홍채를 못 찾아 여섯 장이 아예 안 나오고
+    #    ⓑ 몸 폭이 82.9% ± 6.4% 로 흩어져 앱에서 표정을 갈아 끼울 때 인형이 벌렁거린다.
+    #    기준은 표정을 얹기 «전»의 옷 그림이다 — 눈이 가장 또렷하다.
+    기준방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷',
+                        들.replace('_표정', '').replace('표정_', '') or 'GPT_누끼')
+    값모음, 기준못찾음 = {}, []
+    묶음 = {}
+    for f in 파일:
+        조각 = f[:-4].split('_')
+        옷 = 조각[1] if len(조각) >= 3 else None      # <누구>_<옷>_<표정>.png
+        묶음.setdefault(옷, []).append(f)
+    if any(옷 for 옷 in 묶음 if 옷):
+        for 옷 in 묶음:
+            if not 옷:
+                continue
+            기 = os.path.join(기준방, f'{누구}_{옷}.png')
+            if not os.path.exists(기):
+                기준못찾음.append(옷)
+                continue
+            v = 맞춤값(기, 자, 판 or 자['판'])
+            if v is None:
+                기준못찾음.append(옷)
+            else:
+                값모음[옷] = v
+        if 기준못찾음:
+            print(f'   ⚠ 기준을 못 잡은 옷: {", ".join(sorted(set(기준못찾음)))} (그 컷은 장마다 따로 잰다)')
+
     폭들, 나쁨 = [], []
     for i, f in enumerate(파일, 1):
-        r = 앉히기(os.path.join(방, f), os.path.join(낼방, f), 자, 판)
+        조각 = f[:-4].split('_')
+        옷 = 조각[1] if len(조각) >= 3 else None
+        r = 앉히기(os.path.join(방, f), os.path.join(낼방, f), 자, 판, 값모음.get(옷))
         if r is None:
             continue
         if r.get('결과') or r.get('가장자리에_닿은점', 0) > 0:
