@@ -1,0 +1,404 @@
+[
+  {
+    "file": "SYNK_Core_소개서.html",
+    "width": 390,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Core_소개서.html",
+    "width": 1440,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Core_소개서.html",
+    "width": 3840,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Loom_소개서.html",
+    "width": 390,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Loom_소개서.html",
+    "width": 1440,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Loom_소개서.html",
+    "width": 3840,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Prism_소개서.html",
+    "width": 390,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Prism_소개서.html",
+    "width": 1440,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Prism_소개서.html",
+    "width": 3840,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Reed_소개서.html",
+    "width": 390,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Reed_소개서.html",
+    "width": 1440,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Reed_소개서.html",
+    "width": 3840,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Temper_소개서.html",
+    "width": 390,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Temper_소개서.html",
+    "width": 1440,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Temper_소개서.html",
+    "width": 3840,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Trail_소개서.html",
+    "width": 390,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Trail_소개서.html",
+    "width": 1440,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Trail_소개서.html",
+    "width": 3840,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Vellum_소개서.html",
+    "width": 390,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Vellum_소개서.html",
+    "width": 1440,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_Vellum_소개서.html",
+    "width": 3840,
+    "overflow": false,
+    "count": 6,
+    "expected": 6,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_엔진_지도.html",
+    "width": 390,
+    "overflow": false,
+    "count": 4,
+    "expected": 4,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_엔진_지도.html",
+    "width": 1440,
+    "overflow": false,
+    "count": 4,
+    "expected": 4,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  },
+  {
+    "file": "SYNK_엔진_지도.html",
+    "width": 3840,
+    "overflow": false,
+    "count": 4,
+    "expected": 4,
+    "valid": true,
+    "widths": [
+      64,
+      64,
+      64,
+      64
+    ],
+    "linkErrors": 0
+  }
+]

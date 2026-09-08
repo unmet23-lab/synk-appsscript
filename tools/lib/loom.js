@@ -1532,6 +1532,9 @@ function 엔진전시() {
   .엔진전시 .표지 .메타{margin-top:var(--켜);color:${c.Stone}}
   .엔진전시 h2{margin-top:var(--막);font-size:clamp(1.6rem,2.6vw,2.5rem);letter-spacing:-.04em;text-wrap:balance}
   .엔진전시 .번호{color:${c.Ink};text-shadow:none}
+  .엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}
+  .엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}
+  .엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}
   .엔진전시 p{max-width:70ch;text-wrap:pretty}
   .엔진전시 .흐름{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--단);padding:0;margin:var(--켜) 0;list-style:none;counter-reset:단계}
   .엔진전시 .흐름>li{padding:var(--단) 0 0;margin:0;border-top:1px solid var(--금);min-height:0;counter-increment:단계;font-size:.92rem;color:${c.Stone}}
