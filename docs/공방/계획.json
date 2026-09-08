@@ -7592,6 +7592,25 @@
             "파일": "밤워드마크_어두운_4K.avif"
           }
         ]
+      },
+      {
+        "이름": "양모 워드마크 · 밝은 판",
+        "쓰는 곳": "SYNK LAB 유튜브 배너(@synkkorean · 양모 크림 바탕) — 유호 지시 09-08 「로고 지금 구워줘」",
+        "_결": "🔴 밝은 바탕에 쓸 구운 워드마크가 없었다. 있던 것 둘(밤워드마크_4K · 밤워드마크_어두운_4K)은 «크림 글자»라 크림 천 위에서 사라진다. 그래서 배너만 09-08 까지 «그린» 벡터 로고를 썼고 유호님이 그것을 잡으셨다. 🔴 09-06 실측 = 참조의 «배경»은 안 지켜진다 ⇒ 배경도 글자 색도 문장으로 못 박는다. 🔴 재염색 금지(킷) — 구운 판을 물들이지 않고 그 색으로 «직접» 굽는다.",
+        "상태": "1/1",
+        "것들": [
+          {
+            "이름": "양모 워드마크 · 밝은 판 (4K)",
+            "상태": "구웠다",
+            "쇠": "양모워드마크_4K",
+            "규격": "부품",
+            "참조": [
+              "docs/Loom_자산/구움/밤워드마크_4K.png"
+            ],
+            "지시": "Keep the felt lettering in the reference image EXACTLY as it is: the same word \"synk\", the same letterforms and proportions, the same wool felt material, the same hand-sewn running stitches along every edge, the same head-on camera angle. Do not redesign the letters, do not change their shapes or spacing, do not add or remove anything. Change ONLY the colours. The three letters \"s\", \"y\" and \"n\" become deep ink-brown wool felt (#2B2320) instead of cream — a dark warm brown-black, never pure black. The single letter \"k\" stays exactly the red-coral it already is (#F96859). The running stitches along every edge become pale cream thread so they still read clearly against the dark letters. Replace the background with a pale cream wool felt cloth (#FBF7F0), a soft matte woven wool that fills the whole frame, evenly lit with no vignette and no gradient. Light the scene softly from the upper left so the dark letters lift clearly off the pale cloth, each letter casting a soft close contact shadow, and the wool fibres, the felt nap and every individual stitch stay fully resolved. Centre the word in the frame with generous even margins on all four sides.",
+            "파일": "양모워드마크_4K.png"
+          }
+        ]
       }
     ]
   },
