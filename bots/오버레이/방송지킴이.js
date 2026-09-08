@@ -103,6 +103,7 @@ function 장부읽기() {
   const 단계보기 = async (id) => (await yt('GET', `liveBroadcasts?part=status&id=${id}`)).items?.[0]?.status?.lifeCycleStatus;
 
   let 자리 = 안끝난[0];
+  let 새로만듦 = false;
   if (자리) 말(`트는 자리 0개 · 아직 안 튼 자리 ${자리.id}(${자리.status.lifeCycleStatus}) 를 올린다`);
   else {
     말('🔴 트는 자리 0개 — 새로 연다');
@@ -113,9 +114,30 @@ function 장부읽기() {
       contentDetails: { enableAutoStart: false, enableAutoStop: false, enableDvr: true, latencyPreference: 'normal' },
     });
     말(`   만들었다 ${자리.id}`);
-    await yt('POST', `liveBroadcasts/bind?id=${자리.id}&part=id,contentDetails&streamId=${스트림.id}`);
-    말('   지금 스트림에 묶었다');
+    새로만듦 = true;
+    /* 🔴 [09-08 배포 검수 P2] **만든 «즉시» 장부에 센다.** 옛 판은 맨 끝에서 한 번에 적었는데,
+     *   그 사이(묶기·전환·표지)에서 넘어지거나 프로세스가 끊기면 그 자리는 «안 센 것»이 된다.
+     *   그런 자리가 저절로 끝나면 다음 실행이 또 새로 만들고, 하루 한도와 유튜브 몫이 조용히
+     *   새어 나간다. 재현에서 한도 4 인데 6/6 이 만들어졌다. */
+    장부.연것 += 1;
+    장부.자리들.push({ 때: 이제(), id: 자리.id, 단계: 'created' });
+    fs.writeFileSync(장부길, JSON.stringify(장부, null, 2));
+    말(`   장부에 먼저 적었다 (오늘 ${장부.연것}/${한도})`);
   }
+
+  /* 🔴 [09-08 배포 검수 P1] **다시 쓰는 자리도 «묶여 있나»를 본다.**
+   *   옛 판은 새로 만드는 갈래에서만 스트림에 묶었다. 그래서 만든 «직후» 묶기가 실패하면,
+   *   다음부터는 그 안 묶인 자리를 계속 다시 집어 들고 전환만 시도하다 실패한다 —
+   *   되살리기가 «영영» 멈춘다(09-08 에 방송이 5시간 40분 꺼져 있던 그 무늬의 이웃이다).
+   *   ⇒ 어느 갈래로 왔든 여기서 한 번 재고, 안 묶였거나 다른 곳에 묶였으면 지금 스트림에 묶는다. */
+  let 묶임 = null;
+  try {
+    묶임 = (await yt('GET', `liveBroadcasts?part=contentDetails&id=${자리.id}`)).items?.[0]?.contentDetails?.boundStreamId || null;
+  } catch (e) { 말(`   ⚠ 묶임 상태를 못 읽었다(${e.message}) — 그래도 묶어 본다`); }
+  if (묶임 !== 스트림.id) {
+    await yt('POST', `liveBroadcasts/bind?id=${자리.id}&part=id,contentDetails&streamId=${스트림.id}`);
+    말(`   ${묶임 ? '다른 곳(' + 묶임 + ')에 묶여 있어 ' : '안 묶여 있어 '}지금 스트림에 묶었다`);
+  } else 말('   이미 지금 스트림에 묶여 있다');
 
   let 지금 = await 단계보기(자리.id);
   if (지금 === 'ready' || 지금 === 'created') {
@@ -145,8 +167,17 @@ function 장부읽기() {
     } else 말(`   ⚠ 표지 그림이 없다: ${표지길}`);
   } catch (e) { 말(`   ⚠ 겉모습 채우기 실패(방송은 돈다): ${e.message}`); }
 
-  장부.연것 += 1;
-  장부.자리들.push({ 때: 이제(), id: 자리.id, 단계: 지금 });
+  /* 새로 만든 자리는 위에서 이미 셌다 — 여기선 «단계»만 갈아 준다(두 번 세면 한도가 반으로 준다).
+   * 다시 쓴 자리는 여기서 한 줄 남긴다(만든 것이 아니라 한도를 새로 먹지 않는다). */
+  if (새로만듦) {
+    const 마지막 = 장부.자리들[장부.자리들.length - 1];
+    if (마지막 && 마지막.id === 자리.id) 마지막.단계 = 지금;
+  } else {
+    /* 🔒 다시 쓴 자리도 옛 판처럼 «한 번»으로 센다 — 그 셈이 하루 한도의 브레이크를 겸한다.
+     *   빼면 안 풀리는 자리를 크론이 영원히 다시 집어 든다(고치려던 것보다 나쁜 자리다). */
+    장부.연것 += 1;
+    장부.자리들.push({ 때: 이제(), id: 자리.id, 단계: 지금, 다시쓴것: true });
+  }
   fs.writeFileSync(장부길, JSON.stringify(장부, null, 2));
   말(`✅ ${자리.id} 를 열었다 (오늘 ${장부.연것}/${한도}) · 안 바뀌는 주소 = https://www.youtube.com/@synkkorean/live`);
 })().catch((e) => { 말(`🔴 넘어졌다: ${e.message}`); process.exit(1); });

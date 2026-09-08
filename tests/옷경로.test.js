@@ -7,6 +7,10 @@
  */
 'use strict';
 
+/* 🔴 [09-08] `describe`·`it` 은 전역이 아니다 — `node:test` 에서 꺼내 와야 한다.
+ *   빠져 있어서 이 파일이 첫 줄에서 죽었고, 저장소 «전체» 초록을 요구하는 배포 게이트가
+ *   그 빨강 하나로 남의 배포까지 막고 있었다. */
+const { describe, it } = require('node:test');
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
