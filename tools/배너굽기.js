@@ -381,7 +381,11 @@ const 안들 = {
     바탕: 색['Paper'],
     글자: 색['Ink'],
     보조: 색['Ash Wool'],
-    로고: () => 워드마크({ 판: '라이트', 표현: '펠트', 색갈래: '코랄' }),
+    /* 🆕 09-08 — 로고와 도장을 «그린 것»에서 «구운 펠트»로 갈았다(유호 지시 「예전 로고를 쓰고있고」).
+     *   커버는 브랜드 신호를 가장 크게 쓰는 지면이라, 그 자리가 그린 판이면 「펠트 실물만」 규율이
+     *   가장 눈에 띄는 조각에서 깨진다. */
+    로고: () => 구운워드마크('양모'),
+    구운도장: true,
     천: { 보풀: '#FFFFFF', 그늘: 색['Oat'], 어둡나: false },
     /* 🔴 큰 꺾쇠 워터마크를 **껐다**(09-02 · 유호 「< 균형이 안 맞는것같은데?」).
      *   1.7배를 옆으로 밀어도, 2.3배로 키워 중앙에 둬도 균형이 안 잡혔다 — 커버는 배너보다
@@ -441,7 +445,8 @@ const 안들 = {
     도장: true,
     도장크기: 150,
     아래로고: true,
-    아래로고크기: 104,
+    /* 누끼는 그린 판보다 커야 한다(09-08 · 여백 없이 잘려 같은 폭이면 작아 보인다). */
+    아래로고크기: 190,
     큰크기: 100,
     작은크기: 42,
     큰줄: 'Солонгос хэл — тоглоом шиг',
@@ -603,6 +608,16 @@ function 구운워드마크(판 = '밤') {
   return `<img src="data:image/png;base64,${b64}" alt="synk" data-synk-wordmark>`;
 }
 
+/** 구운 도장 — «그린» SVG 배지가 아니라 구운 펠트 실물의 누끼다(09-08).
+ *  ⑥ 페이스북 커버가 브랜드 신호로 이것을 가장 크게 쓴다(150px). 그 자리가 그린 판이면
+ *  「펠트 실물만」 규율이 커버의 가장 눈에 띄는 조각에서 깨진다. */
+function 구운도장() {
+  const 경로 = path.join(ROOT, 'docs/Loom_자산/구움/도장꽉_누끼.png');
+  if (!fs.existsSync(경로)) throw new Error('구운 도장 누끼가 없다: ' + 경로);
+  const b64 = fs.readFileSync(경로).toString('base64');
+  return `<img src="data:image/png;base64,${b64}" alt="" data-synk-stamp>`;
+}
+
 /** 한 안의 자립형 HTML. `안내선` 이 참이면 안전 영역을 그린다(검수용 · 업로드본에는 안 넣는다).
  *
  * 층 순서(아래→위) — 실물 천 위에 실물 조각을 얹는 순서 그대로다:
@@ -698,10 +713,12 @@ function 지면(안, 안내선) {
   .아래로고{width:${재기(a.아래로고크기 || 104)}px;margin-top:${재기(20)}px;opacity:.88;
     filter:drop-shadow(0 ${재기(4)}px ${재기(7)}px rgba(43,35,32,0.16));}
   .아래로고 svg{width:100%;height:auto;display:block;}
+  .아래로고 img{width:100%;height:auto;display:block;}
   .락업{display:flex;align-items:center;gap:${재기(30)}px;}
   .락업 .로고{width:${재기(150)}px;}
   .도장{display:grid;place-items:center;filter:drop-shadow(0 ${재기(6)}px ${재기(10)}px rgba(43,35,32,0.20));}
   .도장 svg{display:block;}
+  .도장 img{width:${재기(a.도장크기 || 150)}px;height:auto;display:block;}
   /* 글자가 0 인 판(워드마크만 · 샤넬식)은 로고가 곧 히어로라 190 → 320 으로 키운다 — 안전 영역 338 높이 안이다. */
   .로고{width:${재기(a.로고크기 || ((큰 || 작은) ? 190 : 320))}px;filter:drop-shadow(0 ${재기(7)}px ${재기(13)}px rgba(0,0,0,${어둡 ? '0.55' : '0.18'}));}
   .로고 svg{width:100%;height:auto;display:block;}
@@ -722,7 +739,7 @@ function 지면(안, 안내선) {
   <div class="속">
     ${a.락업
       ? `<div class="락업"><div class="도장">${도장({ px: 재기(a.도장크기 || 150) })}</div><div class="로고">${a.로고()}</div></div>`
-      : (a.도장 ? `<div class="도장">${도장({ px: 재기(a.도장크기 || 150) })}</div>` : (a.로고없이 ? '' : `<div class="로고">${a.로고()}</div>`))}
+      : (a.도장 ? `<div class="도장">${a.구운도장 ? 구운도장() : 도장({ px: 재기(a.도장크기 || 150) })}</div>` : (a.로고없이 ? '' : `<div class="로고">${a.로고()}</div>`))}
     ${큰 ? `<p class="큰">${큰}</p>` : ''}
     ${작은 ? `<p class="작은">${작은}</p>` : ''}
     ${a.아래로고 ? `<div class="아래로고">${a.로고()}</div>` : ''}
