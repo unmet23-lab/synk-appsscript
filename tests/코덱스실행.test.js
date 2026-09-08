@@ -492,6 +492,54 @@ test('🔴 수용 대조를 못 쟀으면 완주가 아니다 — 「미충족 0
   assert.ok(/못 쟀다/.test(글), '「미충족 0」과 「안 쟀다」를 화면이 갈라 말해야 한다: ' + 글.slice(-400));
   const 마지막행 = JSON.parse(fs.readFileSync(장부, 'utf8').trim().split('\n').pop());
   assert.strictEqual(마지막행.상태, '수용확인불가', '장부에도 갈려 남아야 한다: ' + JSON.stringify(마지막행.상태));
+
+  // 모델 프로세스를 대역으로 바꿔 실제 CLI→장부→종료까지 확인한다. 조건식 복제 시험이 아니다.
+  const fakePath = path.join(가짜방, 'fakecodex.js');
+  const oldFake = fs.readFileSync(fakePath, 'utf8');
+  const 기준문 = '`tests/sae.test.js` 가 있고 통과한다.';
+  for (const 항목 of [
+    [{ 기준: 기준문, 판정: '확인불가', 근거: '실행 결과 확인 못함' }],
+    [],
+    [{ 기준: '없는 조건', 판정: '충족', 근거: '다른 시험' }],
+    [{ 기준: 기준문, 판정: '충족', 근거: '시험 통과' }, { 기준: 기준문, 판정: '충족', 근거: '중복' }],
+  ]) {
+    const result = JSON.stringify({ 항목, 요약: '대역 판정' });
+    const accept = `if (a.some(s => String(s).includes('수용대조.schema.json'))) { fs.writeFileSync(a[a.indexOf('-o') + 1], ${JSON.stringify(result)}); process.exit(0); }`;
+    fs.writeFileSync(fakePath, oldFake.replace("const ci = a.indexOf('-C');", "const ci = a.indexOf('-C');\n" + accept));
+    const run = 실행(['--발주', path.join(방, '발주.md'), '--저장소', 방, '--발주검토안함', '--검수안함', '--한도무시', '--라운드', '1', '--timeout', '60'], { env });
+    assert.equal(run.status, 1, run.stdout + run.stderr);
+    const last = JSON.parse(fs.readFileSync(장부, 'utf8').trim().split('\n').pop());
+    assert.equal(last.상태, '수용확인불가', JSON.stringify(last.라운드들.at(-1).수용검사));
+    assert.equal(last.인계.수용.확인불가, true);
+    assert.ok(last.소요ms >= 0);
+  }
+
+  // 이미 검수를 마친 동일 커밋을 대역 장부로 준비한다. 이후에는 수용 호출만 허용한다.
+  const seed = JSON.parse(fs.readFileSync(장부, 'utf8').trim().split('\n').pop());
+  const seedRound = seed.라운드들.at(-1);
+  const sha = seedRound.대상커밋;
+  assert.ok(sha);
+  seedRound.검수 = { 종료: 0, 차단수: 0 };
+  fs.appendFileSync(장부, JSON.stringify(seed) + '\n');
+  fs.writeFileSync(env.SYNK_REVIEW_LEDGER, JSON.stringify({ 시각: new Date().toISOString(), 대상: { 종류: 'commit', 값: sha }, 지적: [], 요약: '대역 독립 검수' }) + '\n');
+  const calls = path.join(런방, 'calls.jsonl');
+  for (const [i, 판정] of ['확인불가', '확인불가', '충족'].entries()) {
+    const out = JSON.stringify({ 항목: [{ 기준: 기준문, 판정, 근거: '합성 시험 결과' }], 요약: '대역 수용' });
+    fs.writeFileSync(fakePath, [
+      "const fs=require('fs'); const a=process.argv.slice(2);",
+      `fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(a.filter(s=>String(s).endsWith('.schema.json'))) + '\\n');`,
+      "if (!a.some(s=>String(s).includes('수용대조.schema.json'))) process.exit(91);",
+      `fs.writeFileSync(a[a.indexOf('-o')+1], ${JSON.stringify(out)});`,
+    ].join('\n'));
+    const run = 실행(['--발주', path.join(방, '발주.md'), '--저장소', 방, '--한도무시', '--라운드', '1', '--timeout', '60'], { env });
+    assert.equal(run.status, 판정 === '충족' ? 0 : 1, run.stdout + run.stderr);
+    assert.match(run.stdout, /시험\(도구가 돌렸다\): 통과/);
+    const last = JSON.parse(fs.readFileSync(장부, 'utf8').trim().split('\n').pop());
+    assert.equal(last.인계.대상커밋, sha);
+    assert.ok(last.라운드들.at(-1).재개원본);
+    assert.equal(last.상태, 판정 === '충족' ? '완주' : '수용확인불가');
+    assert.equal(fs.readFileSync(calls, 'utf8').trim().split('\n').length, i + 1, '매 재개는 수용 호출 하나만 한다');
+  }
 });
 
 test('🔑 --마른손 은 코덱스를 안 태우고 ⓪만 낸다 — 임시 저장소에서 형식·범위·계획을 출력한다', () => {
