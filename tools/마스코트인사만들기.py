@@ -61,6 +61,45 @@ def 기울이기(a, 각도, 위넓힘=None):
     return np.asarray(out), dict(세로비=round(k, 4), 위넓힘=round(p, 4))
 
 
+def 머리지킴(a, 누름=0.90, 겹침=90):
+    """머리 크기는 그대로 두고 «몸만» 눌러 머리를 내린다 (유호 지적 2026-09-08).
+
+    🔴 왜 이 자가 따로 있나 — 통째로 기울이면(기울이기) 머리까지 같이 눌려서
+       「숙였다」가 아니라 **「작아졌다」로 읽힌다**(유호 「4,5번이 크기가 점점 작아지네」).
+       실제 인사는 머리 크기가 그대로인 채 머리가 «내려온다».
+    어떻게 — 투구 아래 끝을 선으로 삼아 둘로 가른다.
+       ① 투구 = 크기 그대로, 내려온 만큼 아래로 옮긴다.
+       ② 몸·다리 = 발선을 고정하고 세로만 `누름` 배로 누른다.
+       ③ 이음매는 투구가 어깨를 덮는 자리라 겹쳐 두면 안 보인다.
+    """
+    m = a[..., 3] > 128
+    r, g, b = (a[..., i].astype(int) for i in range(3))
+    navy = m & (b - r > 25) & (b > 45) & (b < 190)     # 마린 투구
+    ny, _ = np.where(navy)
+    투끝 = int(ny.max())
+    ys, _ = np.where(m)
+    발 = int(ys.max())
+    몸높 = 발 - 투끝
+    내림 = int(round(몸높 * (1 - 누름)))
+
+    H, W = a.shape[0], a.shape[1]
+    낼 = np.zeros_like(a)
+
+    # ② 몸·다리 — 발선 고정으로 세로만 누른다
+    몸 = Image.fromarray(a[투끝 - 겹침:발 + 1])
+    새높 = max(1, int(round(몸.height * 누름)))
+    몸 = 몸.resize((W, 새높), Image.BICUBIC)
+    윗 = 발 + 1 - 새높
+    낼[윗:발 + 1] = np.asarray(몸)
+
+    # ① 투구 — 크기 그대로 내림만큼 내려 얹는다
+    투 = Image.fromarray(a[:투끝 + 1])
+    캔 = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    캔.paste(투, (0, 내림))
+    낼 = np.asarray(Image.alpha_composite(Image.fromarray(낼), 캔))
+    return 낼, dict(투구아래끝=투끝, 내림=내림, 누름=round(누름, 3))
+
+
 if __name__ == '__main__':
     q = argparse.ArgumentParser()
     q.add_argument('--누구', default='마린')
@@ -68,8 +107,19 @@ if __name__ == '__main__':
     q.add_argument('--출력')
     q.add_argument('--출력틀')
     q.add_argument('--위넓힘', type=float)
+    q.add_argument('--누름', help='머리 크기를 지키고 몸만 누른다(0.90 = 몸을 10%% 누름)')
     n = q.parse_args()
     a = np.asarray(Image.open(os.path.join(SRC, f'{n.누구}_본체.png')).convert('RGBA'))
+    if n.누름:
+        for i, k in enumerate([float(x) for x in str(n.누름).split(',')], 1):
+            b, 잰것 = 머리지킴(a, k)
+            길 = (n.출력 if n.출력 else (n.출력틀 or 'docs/캐릭터/정본_4K_후보/{누구}_머리지킴{n}.png')).format(n=i, 누구=n.누구)
+            os.makedirs(os.path.dirname(길), exist_ok=True)
+            Image.fromarray(b).save(길)
+            m = b[..., 3] > 128
+            ys, xs = np.where(m)
+            print(f'  ✅ 누름 {k} → {길}  내림 {잰것["내림"]}px · 몸 {int(xs.max()-xs.min()+1)}x{int(ys.max()-ys.min()+1)}')
+        raise SystemExit
     각들 = [float(x) for x in str(n.각).split(',')]
     for i, 각 in enumerate(각들, 1):
         b, 잰것 = 기울이기(a, 각, n.위넓힘)
