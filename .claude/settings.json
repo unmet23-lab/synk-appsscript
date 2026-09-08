@@ -43,11 +43,30 @@
             "statusMessage": "학생 접점 말투 검사"
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/git-internals-guard.js\"; { command -v node >/dev/null && [ -f \"$H\" ]; } || { printf %s '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"SYNK 가드 미실행 — node 또는 훅 파일을 못 찾았다. 통과가 아니라 차단한다(F044). 확인: node 설치 여부와 CLAUDE_PROJECT_DIR.\"}}'; echo \"SYNK 가드 미실행: $H\" >&2; exit 2; }; printf %s \"$IN\" | node \"$H\"",
+            "shell": "bash",
+            "timeout": 20,
+            "statusMessage": "git 내부(.git/hooks) 쓰기 검사"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/peer-edit-watch.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then printf %s \"$IN\" | node \"$H\" --재기; fi; exit 0",
+            "shell": "bash",
+            "timeout": 25,
+            "statusMessage": "다른 창이 만진 파일 세기"
+          },
           {
             "type": "command",
             "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/decision-catch.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then printf %s \"$IN\" | node \"$H\"; fi; exit 0",
@@ -79,6 +98,17 @@
             "shell": "bash",
             "timeout": 25,
             "statusMessage": "공용 원장 미커밋 검사"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "IFS= read -r -d '' IN || true; H=\"${CLAUDE_PROJECT_DIR:-$PWD}/.claude/hooks/peer-edit-watch.js\"; if [ -f \"$H\" ] && command -v node >/dev/null; then printf %s \"$IN\" | node \"$H\" --찍기; fi; exit 0",
+            "shell": "bash",
+            "timeout": 25,
+            "statusMessage": "작업트리 상태 찍기"
           }
         ]
       }
