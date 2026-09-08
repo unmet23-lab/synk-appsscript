@@ -241,9 +241,43 @@ function 헤더보정_(sh, HEADERS) {
   });
 }
 
+/* 🔴 [09-08 검수 P1 7d7e5ecc43e7] 헤더 치유 «보류판» — 폭은 늘리되, **정본과 다른 이름이 서 있고
+ *   그 아래에 값이 있는 열은 이름을 안 덮는다.** 보류한 자리를 배열로 돌려준다.
+ *
+ * ■ 왜 있나 — 같은 열을 두 통로가 만지는데 한쪽만 판정을 거쳤다.
+ *   아침 자(`시트칸정본맞추기_` · 엔진_셋업확장.js)는 그런 열을 정본 폭 «밖»으로 옮겨 값과 함께
+ *   보존하거나, 못 옮기면 그 표를 통째로 멈춘다. 그런데 야간 첨삭 배치가 부르는 통로는 그 판정을
+ *   안 거치고 `헤더보정_` 로 이름만 정본으로 덮었다. 라이브 실물이 하나 걸려 있다 —
+ *   `hw_feedback` 12열 「🔒 Row ID」(죽은 Glide 잔재 · 값 1행).
+ *
+ * ■ 덮으면 무엇을 잃나 — 읽는 층은 «자리»로 읽으므로(골격 파생 · 손 인덱스 금지) 값의 해석은
+ *   이름을 덮든 말든 이미 「숙제ID」다. 잃는 것은 **그 열이 남의 것이었다는 마지막 증거**다.
+ *   이름을 덮는 순간 아침 자도 그 열을 «남의 열»로 못 알아보고, 옮길 기회가 영영 사라진다
+ *   (소급 불가 · 언제 어떤 설계로 옮길지는 유호님이 1기 첫 주 전에 정하신다 · 트랙 §0-소급).
+ *
+ * 🔑 실패로 접지 않는다 — 한 칸을 지키자고 배치를 멈추면 첨삭 전체가 죽는다. 지키고 계속 간다. */
+function 헤더보정보류_(sh, HEADERS) {
+  const need = HEADERS.length;
+  if (sh.getMaxColumns() < need) sh.insertColumnsAfter(sh.getMaxColumns(), need - sh.getMaxColumns());
+  const cur = sh.getRange(1, 1, 1, need).getValues()[0];
+  const 보류 = [];
+  HEADERS.forEach((h, i) => {
+    const 지금 = String(cur[i] == null ? '' : cur[i]).trim();
+    if (지금 === h) return;                                  // 제자리
+    /* 빈 이름은 덮는다(값이 있어도) — 아침 자가 그 갈래를 따로 멈춰 세운다.
+     *   여기서 막으면 이름 없는 열 하나가 첨삭 배치를 매일 밤 반쯤 멈춰 세운다. */
+    if (지금 !== '' && 열에값있나_(sh, i + 1)) {              // 엔진_셋업확장.js · 런타임 호출이라 로드 순서 무관
+      보류.push((i + 1) + '열 「' + 지금 + '」');
+      return;
+    }
+    sh.getRange(1, i + 1).setValue(h);
+  });
+  return 보류;
+}
+
 /* 기존 hw_feedback을 정본 폭으로 증분 — 이름은 소비처 4곳이 불러서 유지, 본체는 공용 치유로. */
 function hwFeedbackEnsureCols_(fb) {
-  헤더보정_(fb, HW_FEEDBACK_HEADERS);
+  return 헤더보정보류_(fb, HW_FEEDBACK_HEADERS);
 }
 
 /* 「다시 써보기」 링크 — 학생ID + 원본 첨삭 id를 함께 프리필한다.

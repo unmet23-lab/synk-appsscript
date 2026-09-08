@@ -1655,6 +1655,21 @@ const WORK_HELP = {
  * (codex P2 d7c9f6f6: 구판 검증은 WORK_HELP 키 = «도움말 있는» 문항이라, 도움말 없는 필수 「일한 곳」·
  * 「무슨 일」이 빠진 반쪽 폼을 완료로 찍을 수 있었다). 생성부에서 필수를 바꾸면 이 목록도 같은 커밋. */
 const WORK_REQUIRED_ = ['일한 곳', '무슨 일', '시킨 일 그대로', '예정에 없던 일이 생긴 적', '자료활용동의'];
+/* 🔴 [09-08 검수 P1 0b525a02163c · P2 61e7fc738d02·050b0b7ad402] 그 이름이 «묻는 자리»에 붙어 있나.
+ *   제목 «글자»만 세면 섹션 머리·설명 블록·사진 블록으로 그 이름을 흉내 낼 수 있다 — 그러면
+ *   **묻는 문항이 하나도 없는 폼**이 서명을 통과하고, 그 뒤 라우팅 복구가 그 폼을 정본으로 굳힌다.
+ *   ⇒ 이름을 셀 때 «묻지 않는 블록»은 빼고 센다.
+ * 🔑 필수 여부(isRequired)까지는 **안** 묻는다 — 옛 판으로 만들어진 라이브 폼이 선택으로 서 있을 수
+ *   있는데 그걸 **안 재봤다**. 재보지 않은 것으로 문을 잠그면 이 자가 «진짜 폼»을 거절해 유호님의
+ *   복구 길을 막는다. 흉내의 문턱만 올리고, 문은 그대로 둔다.
+ * ⚠ 종류를 못 읽으면 «묻는 자리»로 본다 — 틀릴 때 방향이 「예전 동작」이어야 한다. */
+function 묻는문항_(item) {
+  try {
+    const T = FormApp.ItemType;
+    const t = item.getType();
+    return !(t === T.SECTION_HEADER || t === T.PAGE_BREAK || t === T.IMAGE || t === T.VIDEO);
+  } catch (e) { return true; }
+}
 /* 이 폼을 «이 폼이게 하는» 서명 — 제목은 고유하지 않다(복사본·손으로 만든 동명 폼이 있을 수 있다).
  * 🔑 **자를 하나로 둔다**(①배포 검수 550ba898c5dd): 응답 탭에서 폼을 «찾는» 자리와, 라이브 폼을 «고치는»
  *   자리가 서로 다른 자를 쓰면 느슨한 쪽 문으로 남의 폼이 들어온다. 실제로 마이그레이션이 제목만 보고 있었다.
@@ -1726,7 +1741,7 @@ function 직장폼제목치유_(form) {
 }
 function 직장폼서명_(form, 탭연결확인됨) {
   if (직장폼제목_(form, 탭연결확인됨) !== WORK_FORM_TITLE) return false;
-  const t = form.getItems().map(function (i) { return String(i.getTitle()).trim(); });
+  const t = form.getItems().filter(묻는문항_).map(function (i) { return String(i.getTitle()).trim(); });
   return t.indexOf('시킨 일 그대로') !== -1 && t.indexOf('예정에 없던 일이 생긴 적') !== -1;
 }
 /* ⚠ 잠금이 «이 폼에만» 있고 면접 폼에 없는 것은 갈린 게 아니라 위험 창이 다른 자리다(①배포 검수 c2e5cccfcc26):
@@ -1774,7 +1789,8 @@ function createWorkLogForm_(알림기록) {
            * 끊긴 폼(동의 섹션 없음)도 지난다. 완료 도장은 **필수 문항 전수**가 있어야 찍는다 —
            * 특히 「자료활용동의」가 빠진 채 y 를 찍으면 동의 없는 응답이 조용히 쌓인다.
            * 빠졌으면 ID·URL 만 복구하고 완료는 안 찍는다 → 아래 「만들다 만 상태」 안내가 그대로 받는다. */
-          const 있는문항 = f0.getItems().map(function (i) { return String(i.getTitle()).trim(); });
+          // [09-08 검수 P2 61e7fc738d02] 완료 도장도 «묻는 자리»만 센다 — 섹션 머리로 다섯을 흉내 내면 동의 없는 응답이 쌓인다
+          const 있는문항 = f0.getItems().filter(묻는문항_).map(function (i) { return String(i.getTitle()).trim(); });
           const 빠진필수 = WORK_REQUIRED_.filter(function (t) { return 있는문항.indexOf(t) === -1; });
           if (빠진필수.length === 0) {
             setState(st, '직장폼완료', 'y');
