@@ -16,6 +16,7 @@ const root=__dirname;
   for(let i=0;i<await sheets.count();i++){
    const p=path.join(root,full?'소개서_4K':'미리보기',`${brand}-${i+1}.png`);
    await sheets.nth(i).screenshot({path:p});
+   if(full)await sharp(p).resize(1440,900).png().toFile(path.join(root,'미리보기',`${brand}-${i+1}.png`));
    const buf=await sharp(p).resize(720,450).png().toBuffer();tiles.push({input:buf,left:(i%2)*744,top:Math.floor(i/2)*474});
    if(i===0)covers.push({input:buf,left:(covers.length%2)*744,top:Math.floor(covers.length/2)*474});
   }

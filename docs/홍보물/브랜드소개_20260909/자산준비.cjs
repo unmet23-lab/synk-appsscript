@@ -16,7 +16,8 @@ const list={
  logo:'영상/public/공방/로고찡긋플레이팅_4K.avif',korean:'영상/public/공방/ㄱ_4K.avif',
  headphones:'영상/public/공방/공방_꾸밈_헤드폰코랄.avif',
  night:'docs/Loom_자산/무대/집안밤공부.webp',moon:'docs/Loom_자산/무대/차분달빛호수.webp',
- woolLogo:'docs/Loom_자산/구움/양모워드마크_누끼.png'
+ woolLogo:'docs/Loom_자산/구움/양모워드마크_누끼.png',
+ stitch:'영상/public/공방/공방_구분띠스티치.avif'
 };
 (async()=>{
  fs.mkdirSync(path.join(__dirname,'assets'),{recursive:true});

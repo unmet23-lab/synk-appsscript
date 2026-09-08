@@ -119,6 +119,28 @@
         "overflow": [],
         "assets": [
           {
+            "key": "stitch",
+            "natural": [
+              2048,
+              285
+            ],
+            "display": [
+              65,
+              9
+            ]
+          },
+          {
+            "key": "stitch",
+            "natural": [
+              2048,
+              285
+            ],
+            "display": [
+              65,
+              9
+            ]
+          },
+          {
             "key": "smile",
             "natural": [
               3840,
@@ -209,6 +231,28 @@
         "overflow": [],
         "assets": [
           {
+            "key": "stitch",
+            "natural": [
+              2048,
+              285
+            ],
+            "display": [
+              65,
+              9
+            ]
+          },
+          {
+            "key": "stitch",
+            "natural": [
+              2048,
+              285
+            ],
+            "display": [
+              65,
+              9
+            ]
+          },
+          {
             "key": "notebook",
             "natural": [
               3840,
@@ -298,6 +342,28 @@
         "page": "1",
         "overflow": [],
         "assets": [
+          {
+            "key": "stitch",
+            "natural": [
+              2048,
+              285
+            ],
+            "display": [
+              65,
+              9
+            ]
+          },
+          {
+            "key": "stitch",
+            "natural": [
+              2048,
+              285
+            ],
+            "display": [
+              65,
+              9
+            ]
+          },
           {
             "key": "house",
             "natural": [

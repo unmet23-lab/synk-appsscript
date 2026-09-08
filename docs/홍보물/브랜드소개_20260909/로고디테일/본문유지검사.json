@@ -1,0 +1,26 @@
+[
+  {
+    "brand": "lab",
+    "differentPixels": 82,
+    "totalPixels": 7680000,
+    "region": "로고 아래 y150px부터 페이지 하단까지",
+    "maxChannelDifference": 2,
+    "channelsDifferingMoreThanOne": 28
+  },
+  {
+    "brand": "shift",
+    "differentPixels": 124,
+    "totalPixels": 7680000,
+    "region": "로고 아래 y150px부터 페이지 하단까지",
+    "maxChannelDifference": 2,
+    "channelsDifferingMoreThanOne": 4
+  },
+  {
+    "brand": "pulse",
+    "differentPixels": 142,
+    "totalPixels": 7680000,
+    "region": "로고 아래 y150px부터 페이지 하단까지",
+    "maxChannelDifference": 1,
+    "channelsDifferingMoreThanOne": 0
+  }
+]
