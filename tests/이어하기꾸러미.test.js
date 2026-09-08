@@ -16,6 +16,25 @@ const assert = require('node:assert');
 const path = require('node:path');
 
 const { 금지인가, 문서인가 } = require(path.join(__dirname, '..', 'tools', '이어하기꾸러미.js'));
+test('핵심 자료 복사는 링크를 연결하고 재실행해도 중복을 만들지 않는다', t => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const { copy, within } = require('../tools/이어하기꾸러미.js');
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-core-test-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const source = path.join(temp, 'source'), destination = path.join(temp, 'destination');
+  fs.mkdirSync(path.join(source, 'docs'), { recursive: true });
+  fs.writeFileSync(path.join(source, 'docs/a.md'), '[원문](다른문서.md#기준)\n[외부](https://example.com)');
+  const row = { brand: 'SYNK', source: 'docs/a.md', target: '정본/a.md', bytes: 10 };
+  assert.equal(copy(source, destination, [row]).written, 1);
+  const result = fs.readFileSync(path.join(destination, 'SYNK/정본/a.md'), 'utf8');
+  assert.ok(result.includes('/blob/master/docs/' + encodeURIComponent('다른문서.md') + '#기준'));
+  assert.ok(result.includes('[외부](https://example.com)'));
+  assert.equal(copy(source, destination, [row]).unchanged, 1);
+  assert.throws(() => within(source, '../escape.md'));
+  assert.throws(() => copy(source, destination, [{ ...row, target: '../../escape.md' }]));
+  assert.throws(() => copy(source, destination, [{ ...row, source: '.env' }]));
+});
 
 test('자격증명 무늬는 담을 목록에 못 든다', () => {
   const 막혀야하는것 = [
