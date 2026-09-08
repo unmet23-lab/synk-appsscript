@@ -30,6 +30,16 @@
 """
 import subprocess
 import sys
+
+# 🔴 밤 일감이 부를 때 한글 출력이 깨지지 않게 여기서 정한다 (09-08 실패 자리).
+#    예약에 `set PYTHONUTF8=1 &&` 를 넣었더니 cmd 가 «&& 앞의 빈칸까지» 값으로 먹어
+#    파이썬이 「invalid PYTHONUTF8 value」로 시작도 못 하고 죽었다(종료코드 1).
+#    ⇒ 환경변수에 기대지 않는다. 대본이 스스로 정한다.
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
 import time
 from pathlib import Path
 
