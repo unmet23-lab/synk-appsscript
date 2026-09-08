@@ -246,14 +246,43 @@ test('rename counting and CLI argument parsing are bounded and exact', () => {
 test('origin/HEAD fallback uses only local refs; main fallback works without remote refs', async () => {
   const fallback = path.join(temporary, 'fallback');
   init(fallback, 'main');
-  const main = await collect({ cwd: fallback });
+  const calls = [];
+  const run = (command, args, options, callback) => {
+    calls.push(args);
+    require('node:child_process').execFile(command, args, options, callback);
+  };
+  const main = await collect({ cwd: fallback, run });
   assert.equal(main.status, 'observed');
   assert.equal(main.baseline.source, 'main');
+  assert.equal(calls.filter(args => args.includes('for-each-ref')).length, 2);
+  assert.ok(!calls.some(args => args.includes('rev-parse') && args.some(arg => arg.startsWith('refs/'))));
+  calls.length = 0;
   git(fallback, ['update-ref', 'refs/remotes/origin/main', 'HEAD']);
   git(fallback, ['symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/main']);
-  const remote = await collect({ cwd: fallback });
+  const remote = await collect({ cwd: fallback, run });
   assert.equal(remote.status, 'observed');
   assert.equal(remote.baseline.source, 'origin/HEAD');
+  assert.equal(calls.filter(args => args.includes('for-each-ref')).length, 2);
+  assert.ok(!calls.some(args => args.includes('rev-parse') && args.some(arg => arg.startsWith('refs/'))));
+});
+
+test('default-ref batching does not treat similarly prefixed branches as a baseline', async () => {
+  const prefixed = path.join(temporary, 'prefixed-default');
+  init(prefixed, 'development');
+  git(prefixed, ['branch', 'master/not-default']);
+  git(prefixed, ['branch', 'main/not-default']);
+  assert.equal((await collect({ cwd: prefixed })).status, 'unavailable');
+});
+
+test('default-ref batching does not accept a non-commit object as the baseline', async () => {
+  const report = await collect({ cwd: repo, run(command, args, options, callback) {
+    if (args.includes('for-each-ref')) {
+      callback(null, 'refs/heads/master ' + baseHead + ' tree\n');
+    } else {
+      require('node:child_process').execFile(command, args, options, callback);
+    }
+  } });
+  assert.equal(report.status, 'unavailable');
 });
 
 test('Antigravity first invocation finds the first matching workspace and injects ephemeral metadata only', () => {

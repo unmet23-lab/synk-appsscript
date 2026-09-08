@@ -1,20 +1,18 @@
 #!/usr/bin/env node
 /**
- * 브리핑 — 세션 첫머리 알림을 «클로드 밖»에서도 낸다.
+ * 브리핑 — 프로젝트에 등록한 SessionStart 명령을 수동으로 조회·실행하는 선택 도구.
  *
- * 왜: 클로드 코드는 세션이 열릴 때 SessionStart 훅 12벌을 스스로 돌려
- *     「확정 몇 건 · 미커밋 몇 건 · 검수 런 몇 건 · 판이 뒤진 도구」를 보여 준다.
- *     코덱스(GPT)에는 그런 자리가 없다 — 그래서 GPT 가 라우터로 설 때
- *     이 도구를 첫 명령으로 부른다.
+ * 2026-09-09: 옛 시작 훅 묶음은 해제했다. 등록이 비어 있는 것은 오류가 아니며
+ *     이 도구가 필수 시작 절차도 아니다. 빈 등록을 이유로 훅을 복원하지 않는다.
+ *     현재 작업 사본의 최신 상태는 `node tools/session-freshness.js --json`으로 조회한다.
  *
- * 정본이 갈리지 않게: 명령을 여기 베껴 적지 않는다.
- *     `.claude/settings.json` 의 hooks.SessionStart 를 «그 자리에서 읽어» 돌린다.
- *     훅이 늘거나 바뀌면 이 도구는 고칠 것이 없다.
+ * 명령은 프로젝트의 `.claude/settings.json`·`settings.local.json`에서 읽는다.
+ *     사용자 홈의 훅이나 하네스의 신뢰·실행 상태까지 확인하는 도구는 아니다.
  *
  * 쓰는 법:
- *   node tools/브리핑.js          — 전부 돌린다
- *   node tools/브리핑.js --목록    — 무엇을 돌릴지만 보여 준다(안 돌린다)
- *   node tools/브리핑.js --조용    — 죽은 훅만 보고한다
+ *   node tools/브리핑.js          — 프로젝트에 등록된 명령을 실행한다
+ *   node tools/브리핑.js --목록    — 등록된 명령만 보여 준다(실행하지 않는다)
+ *   node tools/브리핑.js --조용    — 등록된 명령을 실행하고 실패를 보고한다
  */
 
 'use strict';
@@ -75,8 +73,8 @@ function bash찾기() {
 const 명령들 = 훅명령모으기();
 
 if (명령들.length === 0) {
-  console.log('🧾 세션 첫머리 알림을 못 찾았다 — `.claude/settings.json` 에 SessionStart 훅이 없다.');
-  console.log('   이건 「알릴 게 없다」가 아니라 «확인 불가»다.');
+  console.log('🧾 실행할 프로젝트 SessionStart 명령이 없다. 빈 등록 자체는 오류가 아니며 옛 훅을 복원할 필요도 없다.');
+  console.log('   최신 작업 상태는 `node tools/session-freshness.js --json`으로 조회한다. 설정 읽기 오류가 위에 표시됐다면 그 설정은 확인 불가다.');
   process.exit(0);
 }
 
