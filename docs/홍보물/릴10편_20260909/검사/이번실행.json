@@ -1,0 +1,307 @@
+{
+  "at": "2026-09-08T23:52:54.115Z",
+  "mode": [],
+  "errors": [],
+  "results": [
+    {
+      "id": "gift-01",
+      "seed": "1dde14062a1d169da48e2c09a2df29865f76cea96c5822887ed594fd39fb6df8",
+      "videoHash": "9001e1ef5a572161959bd54cdc2d91f417232b0b3a330b242862bff8886eabd7",
+      "renderedAt": "2026-09-08T23:45:25.258Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "4665856"
+        }
+      }
+    },
+    {
+      "id": "gift-02",
+      "seed": "244eb0bba2879740a1f3c5d224b2d09ada63f27a51c08aaaf55a2345c82f70be",
+      "videoHash": "d84f7b4a9cd3b3bd25a1cdab97d26b253ef0e8f551fd40e70e85abd8de07fdcc",
+      "renderedAt": "2026-09-08T23:46:11.095Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "3304784"
+        }
+      }
+    },
+    {
+      "id": "gift-03",
+      "seed": "d97a3f1d159c2db936f108939abcea2f177ddfa432511e8ff5a89597b1ac4724",
+      "videoHash": "b45918ac960d6069999d0cce3c98c70dd32d76a906dfa2a6f2719002b7502aa2",
+      "renderedAt": "2026-09-08T23:47:00.012Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "2684877"
+        }
+      }
+    },
+    {
+      "id": "gift-04",
+      "seed": "c5b3b6d969f7a72e2055afff2dfe757f98a0f15bb538f3c2696ba57d78d9af76",
+      "videoHash": "e1ed91aa2c1cdd5644c5c1554494733a614cb0bf79a69f56e7bd0a886c908e6c",
+      "renderedAt": "2026-09-08T23:47:52.269Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "2708050"
+        }
+      }
+    },
+    {
+      "id": "gift-05",
+      "seed": "05141710d565a1ea34591fb62c4d00c6efc8a8bac790ec6de2ef003c8f66c1cc",
+      "videoHash": "14c5f4aedbc6da3f6078a5c0a7008695131f4dc0bf02749b48843869f8144431",
+      "renderedAt": "2026-09-08T23:48:45.835Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "4332470"
+        }
+      }
+    },
+    {
+      "id": "gift-06",
+      "seed": "3b28686ac9885a47b2edda474a6689b9a24fdfdf6c53113f8d6a52164d9c6fed",
+      "videoHash": "571698270308bf79165a970501388a6fa965c6a2101f05c4b1790c502968b840",
+      "renderedAt": "2026-09-08T23:49:37.594Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "3270665"
+        }
+      }
+    },
+    {
+      "id": "gift-07",
+      "seed": "6828a618439d8b91f7c8e8cd795a9f057d378aa00167c6d91d825dc0719ba898",
+      "videoHash": "6a71bc8b5e1e1e179089c78f2869ea1f1a49843d34de9834af99d4f18a6cffff",
+      "renderedAt": "2026-09-08T23:50:24.580Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "3218753"
+        }
+      }
+    },
+    {
+      "id": "gift-08",
+      "seed": "2fdb78f49d3e674b4b79c5986c9eef5b3515c9148429e355a6ae0e76a49f117c",
+      "videoHash": "7f02d91be6adc7388894b4c20f8d71f9e108b39a6a0dd2090e979228b1d07ef2",
+      "renderedAt": "2026-09-08T23:51:08.080Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "3305880"
+        }
+      }
+    },
+    {
+      "id": "gift-09",
+      "seed": "6091f5d106d886aca50182806dfac0c2720175cd1b20811ceb096e3e354efbda",
+      "videoHash": "696958c4769f43851631e58da7421548d4d8b04c10ed6766b1b010c73eb93efa",
+      "renderedAt": "2026-09-08T23:52:06.081Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "7596089"
+        }
+      }
+    },
+    {
+      "id": "gift-10",
+      "seed": "dd4c14b1421412de2c65d562d4cb5df1365f150f5f6f3310092c7e6198a796d9",
+      "videoHash": "1d23bf300342749648651832381e364333b1090694bf5a81b75e69cc8353e896",
+      "renderedAt": "2026-09-08T23:52:54.113Z",
+      "info": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_type": "video",
+            "width": 1080,
+            "height": 1920,
+            "r_frame_rate": "30/1",
+            "side_data_list": [
+              {}
+            ]
+          },
+          {
+            "codec_type": "audio",
+            "sample_rate": "48000",
+            "r_frame_rate": "0/0"
+          }
+        ],
+        "format": {
+          "duration": "30.058000",
+          "size": "4453319"
+        }
+      }
+    }
+  ]
+}

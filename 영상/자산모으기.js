@@ -149,6 +149,8 @@ if (로고표준형) {
    400ms 이하 · **실패음 없음** · 사인·트라이앵글만 · C 펜타토닉 안.
    영상이 새 소리를 만들지 않는다 — 있는 것을 고를 뿐이다. */
 const 소리방 = path.join(저장소, 'docs', '브랜드_사운드킷');
+/* 09-09 승인된 LAB 분과 로고. 공통 로고 원본/옛45편을 바꾸지 않고 이번10편에 공급한다. */
+복사(path.join(저장소, 'docs', '홍보물', '브랜드소개_20260909', '로고디테일', '로고_투명', 'SYNK-LAB-기본형-4K.png'), '릴10편/로고.png');
 if (fs.existsSync(소리방)) {
   for (const f of fs.readdirSync(소리방)) {
     if (f.toLowerCase().endsWith('.wav')) 복사(path.join(소리방, f), `소리/${f}`);

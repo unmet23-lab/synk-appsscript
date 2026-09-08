@@ -1,0 +1,557 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SYNK LAB · 도움을 주는 릴 10편</title><style>/* ── Loom 부품만 지면 — 조립 산출물(손 편집 금지) ──────────────────────────
+   통로: node tools/lib/loom.js --css 부품만
+   값:   docs/디자인_토큰.json (색·율·재질·부품) — 이 CSS 에 hex·px 원본은 없다
+   물성 사다리: 펠트(먹는다) → 유리(통과시킨다) → 레진(가둔다) · 림 무채
+   ⚠번호는 CSS counter 가 «자동»으로 세운다 — 원고가 번호를 안 적어도 된다.
+   범위: 맨요소 규칙은 «.룸» 안에서만 산다 — 남의 지면을 안 때린다(F517).
+         한글 부품 클래스(.번호·.칩·…)와 :root 변수는 전역이다(이름이 서로 소).
+   ──────────────────────────────────────────────────────────────────────── */
+  /* 낫표 「 」 교정 — 스택보다 «먼저» 선다(토큰 「서체.낫표교정_까닭」). */
+  @font-face{font-family:'SYNK Bracket';src:local('Malgun Gothic'),local('Apple SD Gothic Neo'),local('Noto Sans KR'),local('Noto Sans CJK KR');unicode-range:U+300C-300D;}
+  /* 색 — 이 CSS 가 «실제로 참조하는» 것만. 안 쓰는 색은 남의 지면에 안 들인다. */
+  :root{
+    --룸-chalk:#E4E4E7; --룸-chalk-rgb:228,228,231;
+    --룸-ink:#2B2320; --룸-ink-rgb:43,35,32;
+    --룸-coral:#F96859; --룸-coral-rgb:249,104,89;
+    --룸-font:'SYNK Bracket','Inter Tight','SUIT Variable',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  }
+  /* ── 율 — 모든 간격이 여기서 나온다. 이름 없는 px 을 지면에 적지 않는다.
+     4px 기반 ×1.5 근사 — 인접 두 단이 눈에 갈려야 «고른» 것이 된다. */
+  :root{
+    --실:2px;   /* 선 두께·림·밑선 — 면이 아니라 «획» */
+    --숨:4px;   /* 글자와 그에 딸린 표식 사이(점·번호·아이콘) — 붙지도 떨어지지도 않는 자리 */
+    --틈:8px;   /* 같은 것끼리 — 칩 줄·아이콘 줄·목록 항목 사이 */
+    --참:12px;   /* 작은 부품의 안쪽 패딩(칩·번호판·코드 조각) */
+    --칸:16px;   /* 다른 것 사이 · 중간 부품 안쪽 패딩 */
+    --단:24px;   /* 블록 사이(문단↔표·문단↔콜아웃) · 판 안쪽 패딩 */
+    --켜:40px;   /* 문단 무리 사이 · 소제목 위 */
+    --장:64px;   /* 절 사이 — 「여기서 화제가 바뀐다」 */
+    --막:104px;   /* 표지·챕터 브레이크 — 한 지면에 한두 번 */
+    /* 사다리 — 장 ≥ 켜×1.5 ≥ 단×2.5 (깨지면 문서가 한 덩어리로 읽힌다) */
+    --제목위:3.5em; --제목아래:.85em;      /* 위>아래 3:1 — 제목은 «다음 것»에 붙는다 */
+    --줄본문:1.72; --줄제목:1.24; --줄히어로:.93;
+  }
+
+  .유리{
+    position:relative;border-radius:var(--깃);
+    background:
+      linear-gradient(176deg, rgba(228,228,231,0.11) 0%, rgba(228,228,231,0.022) 26%,
+                     rgba(0,0,0,.06) 62%, rgba(0,0,0,.14) 100%),
+      rgba(29,29,28,0.55);
+    -webkit-backdrop-filter:blur(30px) saturate(165%);
+    backdrop-filter:blur(30px) saturate(165%);
+    box-shadow:
+      inset 0 1px 0 rgba(228,228,231,0.16),
+      inset 0 -1px 0 rgba(228,228,231,0.07),
+      0 1px 2px rgba(0,0,0,.6),
+      0 30px 60px -28px rgba(0,0,0,1);
+    padding:var(--단) calc(var(--단) + var(--숨));
+  }
+  /* 분산 림 — 유리 가장자리에서 파장이 갈라진다. 테두리 «두께만» 남기는 마스크 xor. */
+  .유리::before{
+    content:'';position:absolute;inset:0;border-radius:inherit;
+    padding:1.2px;pointer-events:none;z-index:1;
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;
+    opacity:.95;
+    filter:saturate(1.5) drop-shadow(0 0 5px rgba(78,124,255,0.34))
+           drop-shadow(0 0 10px rgba(249,104,89,0.2));
+  }
+  .유리>*{position:relative;z-index:2;}
+  .유리.잔잔{--깃:16px;padding:var(--칸) var(--단);}
+  .유리.잔잔::before{opacity:.72;}
+
+  /*loom부품:절번호*/
+  /* 절번호 — 원고가 번호를 안 적어도 counter 가 세운다. .번호 span 이 있으면 그것이 이긴다. */
+  .글,.룸{counter-reset:절;}
+  /* 🔴 두 번째 «칸»부터는 리셋을 끈다 — 안 끄면 절 번호가 칸마다 01 로 되돌아간다.
+     왜 생기나: 위 줄의 「body」 는 문서에 하나뿐이라 리셋도 한 번인데, 남의 지면에 가둬 얹으면
+     「범위씌우기」 가 그것을 「.룸」 으로 접는다. 그런데 인쇄물은 **쪽마다** 「section class="… 룸"」
+     이라 «하나뿐이던 리셋»이 쪽 수만큼 늘어난다. 지면이 아니라 «접기»가 만든 사고다.
+     실측 09-03: 학부모 안내문 kr 이 01·02·03 · **01·02** · 상담브로셔 11절 중 **01 이 아홉 번**.
+     ⚠「.」 로 시작하는 선택자는 「선택자범위()」 가 전역으로 흘리므로 이 줄은 가둬도 그대로 산다.
+     ⚠순서가 값이다 — 위 리셋 «뒤»에 와야 이긴다. */
+  .글~.글,.룸~.룸{counter-reset:none;}
+  .룸 h2{counter-increment:절;
+     display:flex;align-items:center;gap:calc(var(--숨) * 2.5);flex-wrap:wrap;
+     margin:var(--제목위) 0 var(--제목아래);
+     font-size:clamp(1.32rem,2.5vw,1.72rem);font-weight:800;
+     letter-spacing:-.038em;line-height:var(--줄제목);}
+  .룸 h2>span:not(.번호){flex:0 1 auto;min-width:0;}
+  .룸 h2:not(:has(.번호))::before{content:counter(절,decimal-leading-zero);position:relative;
+    flex:none;width:2.05em;height:2.05em;border-radius:50%;
+    display:inline-grid;place-items:center;padding-bottom:.025em;
+    font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
+    color:var(--룸-chalk);
+    background:
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
+  /* ⚠사라지는 실금은 «번호와 무관»하다 — :has(.번호) 로 함께 가두면 옛 원고(번호를 손으로 적은
+     지면)에서 절 실금이 통째로 사라진다. 실측 08-16: 소개서 6벌이 전부 그 모양이었다.
+     ::before(번호)만 갈리고 ::after(실금)는 어느 쪽이든 선다.
+     ⚠이 주석에 백틱을 쓰지 않는다 — 여기는 템플릿 리터럴 «안»이라 하나로 CSS 가 통째로 끊긴다. */
+  .룸 h2::after{content:'';flex:1 1 3em;min-width:2em;height:var(--실);
+     background:linear-gradient(90deg,rgba(228,228,231,0.24),rgba(228,228,231,0));}
+  .번호{position:relative;
+    flex:none;width:2.05em;height:2.05em;border-radius:50%;
+    display:inline-grid;place-items:center;padding-bottom:.025em;
+    font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
+    color:var(--룸-chalk);
+    background:
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
+  .번호::before{position:absolute;inset:0;
+    content:'';border-radius:50%;padding:1.4px;pointer-events:none;
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;
+    filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
+
+  /*loom부품:순번*/
+  /* 순번 — ol 의 1·2·3. 브라우저 기본 마커를 끄고 유리 원판으로 세운다(유호 지시의 정확한 자리).
+     🔴 «.민» 은 빠진다 — 번호를 **원고가 손으로 적은** 목록이다(«<li><span>1.</span>…»).
+        counter 를 그런 목록에 씌우면 «① 1. …» 두 번 번호가 되고, 그 사고는 남의 지면에서만 난다
+        (우리 원고는 번호를 안 적으니까). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19). */
+  .룸 ol{list-style:none;counter-reset:순번;padding-left:0;margin:var(--단) 0;}
+  .룸 ol>li{counter-increment:순번;position:relative;
+        padding-left:calc(1.55em + var(--칸));margin:var(--참) 0;min-height:1.55em;}
+  .룸 ol>li::before{content:counter(순번);position:absolute;left:0;top:.06em;
+    flex:none;width:1.55em;height:1.55em;border-radius:50%;
+    display:inline-grid;place-items:center;padding-bottom:.025em;
+    font-size:.72em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
+    color:var(--룸-chalk);
+    background:
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 12px 22px -12px rgba(0,0,0,.95);}
+  /* ⚠림에도 «같은» font-size 를 준다 — em 은 자기 font-size 기준이라, .72em 이 걸린 ::before 는
+     1.55em=18.97px 인데 안 걸린 ::after 는 1.55em=26.34px 이었다(실측 08-16). 림이 원판보다 컸다. */
+  .룸 ol>li::after{position:absolute;left:0;top:.06em;font-size:.72em;
+    width:1.55em;height:1.55em;
+    content:'';border-radius:50%;padding:1.1px;pointer-events:none;
+    background:conic-gradient(from 208deg,rgba(140,140,140,0.45) 25deg,rgba(228,228,231,0.6) 120deg,rgba(140,140,140,0.35) 210deg,rgba(228,228,231,0.42) 300deg,rgba(140,140,140,0.5) 350deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;
+    filter:saturate(1.6) drop-shadow(0 0 4px rgba(78,124,255,0.5))
+           drop-shadow(0 0 8px rgba(249,104,89,0.28));}
+  /* 🔴 «.민» — 번호를 **원고가 손으로 적은** 목록에서 원판만 걷는다(«<li><span>1.</span>…»).
+     counter 를 그런 목록에 씌우면 «① 1. …» 로 두 번 번호가 되고, 그 사고는 **남의 지면에서만** 난다
+     (우리 원고는 번호를 안 적는다). 실물 = 발표물 01 덱의 «ol.q3» (2026-08-19).
+     ⚠기본 규칙(위)은 안 건드린다 — 그 모양을 «흠 검사»가 재고 있어서, 선택자를 고치면
+     가드가 「순번 원판이 없다」로 거짓 적색을 낸다(실측). 규칙을 바꾸려면 가드부터 바꾼다. */
+  .룸 ol.민>li{counter-increment:none;padding-left:0;min-height:0;}
+  .룸 ol.민>li::before,.룸 ol.민>li::after{content:none;display:none;}
+
+  /*loom부품:차례번호*/
+  .잔번호{position:relative;
+    flex:none;width:1.35em;height:1.35em;border-radius:50%;
+    display:inline-grid;place-items:center;padding-bottom:.025em;
+    font-size:.66em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
+    color:var(--룸-chalk);
+    background:
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.16);}
+
+  /*loom부품:각주번호*/
+  .각주{position:relative;
+    flex:none;width:1.25em;height:1.25em;border-radius:50%;
+    display:inline-grid;place-items:center;padding-bottom:.025em;
+    font-size:.62em;font-weight:800;letter-spacing:0;font-variant-numeric:tabular-nums;
+    color:var(--룸-chalk);
+    background:
+      linear-gradient(170deg, rgba(228,228,231,0.14), rgba(228,228,231,0.02) 58%),
+      rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.16);
+    vertical-align:super;}
+
+  /*loom부품:불릿*/
+  /* 불릿 — 지면에서 가장 많이 반복되는 부품이라 가장 작게(7px) 쓴다.
+     ⚠갇힌 빛이 무채인 이유: 수십 개가 코랄이면 «신호 1점»이 죽는다(철칙 ④). */
+  .룸 ul{list-style:none;padding-left:0;margin:var(--단) 0;}
+  .룸 ul>li{position:relative;padding-left:calc(var(--칸) + var(--참));margin:var(--숨) 0;}
+  .룸 ul>li::before{
+    content:'';position:absolute;left:var(--숨);top:.62em;   /* x-height 중앙 — 행 중앙이 아니다 */
+    width:7px;height:7px;border-radius:50%;
+    background:
+      radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
+        rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
+      rgba(29,29,28,0.62);
+    box-shadow:
+      inset 0 0 0 1px rgba(228,228,231,0.1),
+      inset 0 3px 10px -3px rgba(228,228,231,0.45),
+      inset 0 -3px 10px -2px rgba(0,0,0,.58),
+      0 6px 14px -4px rgba(228,228,231,0.38);
+  }
+  .룸 ul>li::after{content:'';position:absolute;left:var(--숨);top:.62em;width:7px;height:7px;
+    border-radius:50%;pointer-events:none;
+    background:radial-gradient(34% 26% at 36% 18%, rgba(255,255,255,.9), rgba(255,255,255,0) 70%);}
+
+  /*loom부품:체크*/
+  .체크{display:inline-grid;place-items:center;position:relative;
+    width:1.3em;height:1.3em;border-radius:50%;flex:none;padding-bottom:.025em;
+    font-size:.72em;font-weight:800;color:var(--룸-chalk);
+    background:
+      radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
+        rgba(228,228,231,0.58) 0%, rgba(228,228,231,0.12) 62%, rgba(228,228,231,0) 78%),
+      rgba(29,29,28,0.62);
+    box-shadow:
+      inset 0 0 0 1px rgba(228,228,231,0.1),
+      inset 0 3px 10px -3px rgba(228,228,231,0.45),
+      inset 0 -3px 10px -2px rgba(0,0,0,.58),
+      0 6px 14px -4px rgba(228,228,231,0.38);}
+  .체크::before{
+    content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
+
+  /*loom부품:별*//*loom부품:하트*//*loom부품:도장*//*loom부품:말풍선*/
+  /* 자수 표식 넷 — 요소 공방(08-22). 별=보상 · 하트=응원 · 도장=확인 · 말풍선=힌트.
+     구운 자산이 있으면 아래 구움층이 덮는다. 없으면 이 흉내가 산다 — «자리와 크기»는 맞고
+     «무엇인지»만 흐린 판이다(빈 칸으로 두면 지면이 무너지고, 글자로 두면 타이포 불가침을 깬다). */
+  .별,.하트,.도장,.말풍선{display:inline-block;vertical-align:-.3em;flex:none;
+    width:1.62em;height:1.62em;border-radius:34%;background:rgba(249,104,89,0.88);}
+  .도장{width:2.3em;height:2.3em;border-radius:50%;vertical-align:-.55em;}
+  .말풍선{width:2.0em;height:1.62em;border-radius:26%;}
+
+  /*loom부품:와펜*//*loom부품:매듭*//*loom부품:폼폼*//*loom부품:시침핀*//*loom부품:게이지*//*loom부품:소리대기*//*loom부품:소리중*//*loom부품:소리맺음*//*loom부품:바늘*//*loom부품:탭집*//*loom부품:탭책*//*loom부품:탭차트*//*loom부품:탭사람*/
+  /* 🔴 자수 요소 열셋 — 그림은 08월에 구워 뒀는데 «크기»가 없어서 쓰려 해도 0×0 으로 섰다.
+     그래서 어느 지면에서도 안 쓰였고, 「쓰는 것만 싣는다」가 지날 때마다 통째로 쓸려 나갔다
+     (09-03 실측: 홈페이지 자립형에서 26장이 그렇게 빠졌다 · 유호 확정 09-03 「빼지마. 저거 좋은데」).
+     ⇒ 위 별·하트 무리와 «같은 자리»를 준다. 뒤 구움층이 재질만 갈아끼운다.
+     크기가 하나인 근거 = 열셋 다 정사각 그림이다(128~384px · 가로÷세로 1.00 · 09-03 실측).
+     ⚠부품별 크기 차등(도장이 2.3em 인 것 같은)은 «유호님 눈»이 판정 축이라 아직 안 준다. */
+  .와펜,.매듭,.폼폼,.시침핀,.게이지,.소리대기,.소리중,.소리맺음,.바늘,.탭집,.탭책,.탭차트,.탭사람{display:inline-block;vertical-align:-.3em;flex:none;
+    width:1.62em;height:1.62em;border-radius:34%;background:rgba(249,104,89,0.88);}
+
+  /*loom부품:히어로수*/
+  /* 히어로수 — 지면당 «1점». 가장 센 물성이라 둘이면 서로를 죽인다.
+     여기서만 갇힌 빛이 코랄이다 — 면이 아니라 «속의 빛»이라 신호 1점 규율 안에 든다.
+     ⚠padding 은 광학 보정(.025em)까지 한 줄에 — 뒤에 따로 쓰면 이 줄이 그것을 덮는다. */
+  .히어로수{display:inline-grid;place-items:center;position:relative;
+    min-width:2.6em;height:2.6em;padding:0 var(--참) .025em;border-radius:999px;
+    font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.04em;
+    font-variant-numeric:tabular-nums;color:var(--룸-chalk);
+    background:
+      radial-gradient(57.99999999999999% 57.99999999999999% at 50% 44%,
+        rgba(249,104,89,0.58) 0%, rgba(249,104,89,0.12) 62%, rgba(249,104,89,0) 78%),
+      rgba(29,29,28,0.62);
+    box-shadow:
+      inset 0 0 0 1px rgba(228,228,231,0.1),
+      inset 0 3px 10px -3px rgba(249,104,89,0.45),
+      inset 0 -3px 10px -2px rgba(0,0,0,.58),
+      0 6px 14px -4px rgba(249,104,89,0.38);}
+  .히어로수::before{
+    content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:radial-gradient(30% 22% at 38% 16%, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);}
+
+  /*loom부품:태그*/
+  /* 분류 칩 — 유호 확정 09-03 「4번이 제일 낫다」로 **배경을 걷고 «표식»으로** 갔다.
+     이 자리가 저장소의 마지막 CSS 흉내였고, 그것이 여기서 닫힌다.
+     🔑 까닭은 «관습»을 의심한 유호님 물음이었다: 「이걸 이렇게 지금 배경으로 글씨를 꾸미는 이유가 뭐야?」
+        답 = 기능이 요구한 게 아니다. 칩이 하는 일은 「이 낱말은 분류다」를 알리는 것 하나이고,
+        배경은 그 일을 하면서 **대비 천장**을 물고 온다 — 밝은 천 9.4 · 어두운 천 11.2 · 본문 15.1.
+        배경을 빼면 칩 글자가 본문과 같은 대비를 그대로 쓴다.
+     ⚠ 잃는 것을 적어 둔다: 14px 에서는 펠트 «결»이 안 보여 재질감이 형체로만 남는다.
+        그래도 흉내가 아니라 «구운 것»이라는 사실은 지켜진다(자산 = 단추민판).
+     🔴 배경만 지우면 안 된다 — 아래 ::before 가 그리던 네모가 남아 「글씨가 오른쪽으로 튀어나간」
+        것처럼 보인다(09-03 실측 · 그 유령 테두리를 못 찾아 두 번 헤맸다). 그래서 함께 걷는다. */
+  /* ⚠여기는 «자리»만 잡는다 — 표식 그림은 구움표가 얹는다(자산이 없으면 굵은 글자로 선다).
+     갈라 둔 까닭: 분모가 「그 CSS 가 실제로 나갔나」로 구움을 세므로, 구운 것을 쓰는 규칙은
+     반드시 구움표에 있어야 한다. 여기 두면 자산이 없어도 초록으로 세어진다(F517② 와 같은 자리). */
+  .칩{display:inline-flex;align-items:center;position:relative;
+    padding:0;margin:0 5px;border-radius:0;
+    font-size:inherit;font-weight:800;letter-spacing:-.01em;color:inherit;box-shadow:none;}
+  .칩::before{content:none;}
+
+  /*loom부품:구분선*/
+  /* 실금 — 선은 재질을 «안» 입는다. 획이라 두께가 없고, 두께가 없으면 물성이 없다. */
+  .실금{height:var(--실);border:0;margin:var(--켜) 0;
+    background:linear-gradient(90deg,rgba(228,228,231,0),rgba(228,228,231,0.22) 18%,
+      rgba(228,228,231,0.22) 82%,rgba(228,228,231,0));}
+
+  /*loom부품:인용부호*/
+  .룸 blockquote{position:relative;margin:var(--켜) 0;padding:var(--단) var(--단) var(--단) calc(var(--켜) + var(--참));
+    font-size:.97rem;}
+  .룸 blockquote::before{content:'\201C';position:absolute;left:var(--칸);top:calc(var(--칸) - var(--숨));
+    display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;
+    font-size:1.5em;line-height:1;font-weight:800;color:var(--룸-chalk);
+    padding-top:.28em;   /* 광학 — 여는 따옴표는 글리프가 위쪽에 몰려 있다 */
+    background:linear-gradient(170deg, rgba(228,228,231,0.13), rgba(228,228,231,0.02) 58%),
+               rgba(29,29,28,0.55);
+    box-shadow:inset 0 1px 0 rgba(228,228,231,0.2),0 10px 20px -12px rgba(0,0,0,.9);}
+  .룸 blockquote i,.룸 blockquote em{;font-style:italic;}
+
+  /*loom부품:표지오브*/
+  /* 펠트 오브 — 이 지면에서 «부피»를 가진 유일한 물건이라 하나뿐이어야 한다.
+     빛을 먹는 재질(roughness .95)이라 유리·레진 옆에서 «사람이 만든 것»으로 읽힌다. */
+  .오브{width:112px;height:112px;border-radius:31px;flex:none;position:relative;overflow:hidden;
+    background-color:var(--룸-chalk);background-image:url(data:image/webp;base64,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);background-size:46px;
+    display:grid;place-items:center;
+    color:var(--룸-ink);font-weight:800;font-size:2.6rem;letter-spacing:-.05em;
+    box-shadow:
+      inset 0 3px 4px rgba(255,255,255,.62),
+      inset 0 -14px 24px -6px rgba(8,9,12,0.5),
+      inset 8px 0 20px -10px rgba(8,9,12,0.35),
+      inset -8px 0 20px -10px rgba(8,9,12,0.35),
+      0 2px 0 rgba(0,0,0,.6), 0 38px 60px -20px rgba(0,0,0,1);}
+  /* 잔털 림라이트 — 위 가장자리에서 빛이 섬유 «끝»을 태운다(펠트의 서명) */
+  .오브::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:radial-gradient(78% 52% at 42% -6%, rgba(255,255,255,.72), rgba(255,255,255,0) 62%);}
+  .오브::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);}
+
+  /*loom부품:링크점*/
+  /* 링크 — 40~50대가 읽는다는 것을 셈에 넣으면 밑선 알파만으로는 링크가 아니다.
+     셋을 겹친다: 밑선 .62 · 굵기 한 단 · 앞에 코랄 점(3px 이라 신호 1점을 안 넘는다). */
+  .룸 a{;text-decoration:none;font-weight:560;
+    box-shadow:inset 0 -1px 0 rgba(228,228,231,0.62);
+    transition:box-shadow 180ms ease,color 180ms ease;}
+  .룸 a:not(.민):not(.레일 a)::before{content:'';display:inline-block;width:3px;height:3px;
+    border-radius:50%;vertical-align:.32em;margin-right:var(--숨);
+    background:var(--룸-coral);box-shadow:0 0 6px rgba(249,104,89,0.7);}
+  .룸 a:hover{box-shadow:inset 0 -1px 0 rgba(249,104,89,0.9);}
+
+  /*loom부품:쪽번호*/
+  /* 쪽번호 — 낮 지면에서만 산다. 화면에는 «쪽»이라는 것이 없다. */
+  .쪽번호{display:none;}
+
+  /*loom부품:본문타이포*/
+  /* 🚫본문 타이포 — 불가침. 글자에 재질을 입히지 않는다(DESIGN.md §1 「타이포는 안 건드린다」).
+     여기 있는 것은 «재질을 안 입힌다»는 선언이고, 그래서 분모에 든다(빠뜨린 것과 갈리게). */
+  .룸 p,.룸 li,.룸 td,.룸 th{font-family:var(--룸-font);}
+
+/* ──────── Loom 끝 (여기까지가 조립분 · 아래는 지면 몫) ──────── */
+@font-face{font-family:InterTight;src:url('../../브랜드_폰트/InterTight/InterTight-Regular.ttf')}@font-face{font-family:SUIT;src:url('../../브랜드_폰트/SUIT/SUIT-Regular.otf')}
+body{word-break:keep-all;overflow-wrap:break-word}
+*{box-sizing:border-box}html{background:#FBF7F0;color-scheme:light}body{margin:0;background:#FBF7F0;color:#2B2320;font-family:InterTight,SUIT,sans-serif;line-height:1.55}main{max-width:1280px;margin:auto;padding:64px 40px}header{max-width:840px;margin:0 0 64px}header img{width:200px;margin-bottom:38px}h1{font-size:44px;line-height:1.15;letter-spacing:-.04em;margin:16px 0 24px}p{color:inherit}a{color:#AE322A;text-underline-offset:4px}header .note{color:#8D857A;font-size:15px}article{display:grid;grid-template-columns:340px 1fr;gap:48px;padding:48px 0;border-top:1px solid #FBCAAB}video{display:block;width:100%;aspect-ratio:9/16;background:#EDE7DC;border-radius:20px}.eyebrow{font-size:14px;font-weight:600;color:#AE322A}h2{font-size:31px;line-height:1.2;margin:16px 0}.hook{font-size:24px;line-height:1.25}nav{display:flex;flex-wrap:wrap;gap:12px 24px;margin:30px 0}details{border-top:1px solid #FBCAAB;padding:16px 0}summary{cursor:pointer;font-weight:600}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:16px}button{background:#2B2320;color:#FBF7F0;border:0;border-radius:10px;font:inherit;padding:10px 18px;cursor:pointer}.status{margin-left:12px;font-size:14px}@media(max-width:760px){main{padding:32px 22px}h1{font-size:32px}article{grid-template-columns:1fr;gap:28px}.media{max-width:380px;margin:auto;width:100%}h2{font-size:27px}}</style></head><body><main><header><img src="../브랜드소개_20260909/로고디테일/로고_투명/SYNK-LAB-기본형-4K.png" alt="SYNK LAB"><p class="eyebrow">2026.09.09 · 10 REELS / 10 USEFUL NOTES</p><h1>재밌게 이해하고,<br>필요할 때 꺼내 쓰는 한국어.</h1><p>영상에서 답 하나를 먼저 줍니다. 더 필요한 학생에게는 상황별 카드를 제공합니다. 댓글이 없어도 설명글의 문장 전체를 읽고 사용할 수 있습니다.</p><p class="note">파일 검토·전달용 모아보기입니다. 아직 공개 게시하지 않았고, 자동 메시지 발송도 연결하지 않았습니다. 음성 강의가 아닌 자막·배경음악 영상입니다.</p><p><a href="읽어주세요.md">제작 범위·운영 안내</a> · <a href="독립검토.md">기획 검토</a> · <a href="번역검수.md">번역 검토</a></p></header><article id="gift-01"><div class="media"><video controls preload="none" poster="표지/gift-01-cover.png" src="영상/gift-01.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">01 / 10 · 댓글 키워드 КОФЕ</span><h2>커피 한 잔, 내 선택으로 주문하기</h2><p class="hook">Кофе нэг аяга. Асуулт яагаад дуусахгүй байна?</p><p>카페 주문 5문장</p><nav><a href="영상/gift-01.mp4" download>영상</a><a href="표지/gift-01-cover.png" download>표지</a><a href="제공자료/gift-01-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-01.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Кофе захиалахдаа сонголтдоо таарсан мөрийг ашиглаарай.
+
+1. Уух зүйл, тоо
+[메뉴] 한 잔 주세요.
+[Уух зүйл]-ээс нэг аягыг авъя.
+
+2. Халуунаар
+따뜻한 걸로 주세요.
+Халуунаар нь авъя.
+
+3. Хүйтнээр
+아이스로 주세요.
+Мөстэйг нь авъя.
+
+4. Эндээ уух
+여기서 마실게요.
+Эндээ ууна.
+
+5. Аваад явах
+포장해 주세요.
+Аваад явъя, савлаад өгөөрэй.
+
+[메뉴] гэдэгт уух зүйлийнхээ нэрийг хэлнэ. Жишээ: 아이스 라테 한 잔 주세요. Уух зүйл бүрийг халуун, хүйтнээр сонгож болох эсэхийг ажилтнаас асуугаарай.
+
+Дараагийн захиалгадаа ашиглахаар хадгалаарай. Карт хэрэгтэй бол сэтгэгдэлд КОФЕ гэж бичээрэй.</pre><button type="button" data-copy="gift-01">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Кофе захиалах таван өгүүлбэрийг нийтлэлийн тайлбараас бас хуулж авч болно. Уух зүйл, тоогоо өөртөө тааруулж солиорой.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> 한 잔인데, 질문은 세 개?<br><span>Кофе нэг аяга. Асуулт яагаад дуусахгүй байна?</span></p><p><b>4–10초</b> 드시고 가세요?<br><span>Энд уух уу гэж асууж байна.</span></p><p><b>10–17초</b> 여기서 마실게요.<br><span>Эндээ ууна.</span></p><p><b>17–23초</b> 포장해 주세요.<br><span>Аваад явах бол ингэж хэлээрэй.</span></p><p><b>23–30초</b> 카페 주문 5문장<br><span>Захиалгын карт хэрэгтэй бол сэтгэгдэлд КОФЕ гэж бичээрэй.</span></p></details></div></article><article id="gift-02"><div class="media"><video controls preload="none" poster="표지/gift-02-cover.png" src="영상/gift-02.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">02 / 10 · 댓글 키워드 АМТ</span><h2>덜 맵게는 맵지 않게일까요</h2><p class="hook">Бага халуун ногоотой гэвэл огт халуун ногоогүй юу?</p><p>내 입맛 주문 메모</p><nav><a href="영상/gift-02.mp4" download>영상</a><a href="표지/gift-02-cover.png" download>표지</a><a href="제공자료/gift-02-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-02.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Өөрийн амтанд тааруулж захиалахад хэрэглэх таван өгүүлбэр.
+
+1. Эхлээд амтыг нь асуух
+이거 많이 매워요?
+Энэ их халуун ногоотой юу?
+
+2. Халуун ногоог багасгах
+덜 맵게 해 주세요.
+Халуун ногоог нь багасгаад өгөөч.
+
+3. Халуун ногоогүй хоол хайх
+맵지 않은 메뉴가 있어요?
+Халуун ногоогүй хоол байна уу?
+
+4. Соусыг тусад нь авах
+소스를 따로 주실 수 있어요?
+Соусыг нь тусад нь өгч болох уу?
+
+5. Санал болгохыг хүсэх
+덜 매운 메뉴를 추천해 주세요.
+Халуун ногоо багатай хоол санал болгооч.
+
+덜 맵게 гэдэг нь ердийнхөөс бага халуун ногоотой гэсэн утгатай. Огт халуун ногоогүй болно гэсэн үг биш. Хэр хэмжээнд өөрчилж болох нь хоол, газраасаа шалтгаална.
+
+Хоол захиалахдаа харахаар хадгалаарай. Карт хэрэгтэй бол сэтгэгдэлд АМТ гэж бичээрэй.</pre><button type="button" data-copy="gift-02">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Тайлбарт таван өгүүлбэр нь бүтнээрээ бий. Халуун ногоогүй хоол хүсвэл гурав дахь асуултыг ашиглаарай.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> 덜 맵게 = 안 맵게?<br><span>Бага халуун ногоотой гэвэл огт халуун ногоогүй юу?</span></p><p><b>4–10초</b> 덜 = 원래보다 적게<br><span>Халуун ногоог нь багасгана. Бүрэн арилгах гэсэн үг биш.</span></p><p><b>10–17초</b> 덜 맵게 해 주세요.<br><span>Халуун ногоог нь багасгаад өгөөч.</span></p><p><b>17–23초</b> 맵지 않은 메뉴가 있어요?<br><span>Халуун ногоогүй хоол байна уу?</span></p><p><b>23–30초</b> 내 입맛 주문 메모<br><span>Амтаа тааруулж захиалах карт авъя гэвэл АМТ гэж бичээрэй.</span></p></details></div></article><article id="gift-03"><div class="media"><video controls preload="none" poster="표지/gift-03-cover.png" src="영상/gift-03.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">03 / 10 · 댓글 키워드 ЧАТ</span><h2>친구 채팅의 초성 읽기</h2><p class="hook">Найз чинь ㄱㅅ гэж бичжээ. Ямар үг вэ?</p><p>친구 채팅 초성 5개</p><nav><a href="영상/gift-03.mp4" download>영상</a><a href="표지/gift-03-cover.png" download>표지</a><a href="제공자료/gift-03-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-03.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Найзынхаа богино хариуг уншихад хэрэглэх таван товчлол.
+
+1. Мэндлэх
+ㅎㅇ → 안녕!
+Сайн уу!
+
+2. Талархах
+ㄱㅅ → 고마워!
+Баярлалаа!
+
+3. Баяр хүргэх
+ㅊㅋ → 축하해!
+Баяр хүргэе!
+
+4. Ойлгосноо хэлэх
+ㅇㅋ → 알겠어!
+За, ойлголоо!
+
+5. Яриагаа дуусгах
+ㅂㅂ → 나중에 봐!
+Дараа уулзъя!
+
+Эдгээр нь ойр дотнын найзуудын чатанд хэрэглэдэг товчлол. Багшдаа эсвэл анх холбоо барьж байгаа хүнд 안녕하세요, 감사합니다, 알겠습니다 гэж бүтнээр бичээрэй. Товчлолын утга ярианы агуулгаас шалтгаалж өөр байж болно.
+
+Чат уншихдаа харахаар хадгалаарай. Карт хэрэгтэй бол сэтгэгдэлд ЧАТ гэж бичээрэй.</pre><button type="button" data-copy="gift-03">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Тайлбарт нь бүтэн өгүүлбэрээр бичих жишээ бас бий. Эдгээрийг найзуудын чатыг уншихдаа ашиглаарай.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> ㄱㅅ?<br><span>Найз чинь ㄱㅅ гэж бичжээ. Ямар үг вэ?</span></p><p><b>4–10초</b> ㄱㅅ → 감사<br><span>Дэлгэрүүлбэл: баярлалаа.</span></p><p><b>10–17초</b> 고마워!<br><span>Найздаа бүтнээр нь бичвэл: баярлалаа!</span></p><p><b>17–23초</b> ㅊㅋ → 축하해!<br><span>Энэ нь баяр хүргэе гэсэн товчлол.</span></p><p><b>23–30초</b> 친구 채팅 초성 5개<br><span>Таван товчлолтой карт хэрэгтэй бол ЧАТ гэж бичээрэй.</span></p></details></div></article><article id="gift-04"><div class="media"><video controls preload="none" poster="표지/gift-04-cover.png" src="영상/gift-04.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">04 / 10 · 댓글 키워드 ДАХИН</span><h2>필요한 부분만 다시 묻기</h2><p class="hook">Цагийг нь л дахин сонсмоор байвал яах вэ?</p><p>다시 묻는 5문장</p><nav><a href="영상/gift-04.mp4" download>영상</a><a href="표지/gift-04-cover.png" download>표지</a><a href="제공자료/gift-04-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-04.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Сонссон зүйлээ бүтнээр нь дахин асуух албагүй. Өөрт хэрэгтэй тусламжаа сонгоорой.
+
+1. Бүтнээр нь дахин сонсох
+한 번만 더 말씀해 주세요.
+Дахиад нэг удаа хэлээд өгөөч.
+
+2. Арай удаан сонсох
+조금 천천히 말씀해 주세요.
+Жаахан удаан хэлээд өгөөч.
+
+3. Цагийг нь дахин асуух
+몇 시라고 하셨어요?
+Хэдэн цаг гэж хэлсэн бэ?
+
+4. Газрыг нь дахин асуух
+어디라고 하셨어요?
+Хаана гэж хэлсэн бэ?
+
+5. Бичгээр харах
+적어 주실 수 있어요?
+Бичээд өгч болох уу?
+
+네? гэж лавлаж болно. Харин дээрх өгүүлбэрүүд юуг дахин сонсмоор байгааг тодруулж өгнө. Бичлэгт гарсан маргаашийн 3 цаг бол зөвхөн жишээ.
+
+Хэрэгтэй үедээ харахаар хадгалаарай. Карт хэрэгтэй бол сэтгэгдэлд ДАХИН гэж бичээрэй.</pre><button type="button" data-copy="gift-04">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Дахин асуух таван өгүүлбэрийг тайлбараас бас хуулж болно. Цагийг л лавлах бол гурав дахь мөрийг ашиглаарай.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> 내일 · ?시 · 도서관 앞<br><span>Цагийг нь л дахин сонсмоор байвал яах вэ?</span></p><p><b>4–10초</b> 시간만 다시<br><span>Сонссон хэсгээ үлдээгээд, цагийг нь асууя.</span></p><p><b>10–17초</b> 몇 시라고 하셨어요?<br><span>Хэдэн цаг гэж хэлсэн бэ?</span></p><p><b>17–23초</b> 3시요. → 내일 3시<br><span>Одоо уулзах цаг тодорхой боллоо.</span></p><p><b>23–30초</b> 다시 묻는 5문장<br><span>Дахин асуух таван өгүүлбэртэй карт авъя гэвэл ДАХИН гэж бичээрэй.</span></p></details></div></article><article id="gift-05"><div class="media"><video controls preload="none" poster="표지/gift-05-cover.png" src="영상/gift-05.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">05 / 10 · 댓글 키워드 УУЛЗАХ</span><h2>같은 역에서 함께 만나려면</h2><p class="hook">Нэг буудалд ирчихээд яагаад уулзахгүй байна?</p><p>만날 장소 4칸 메모</p><nav><a href="영상/gift-05.mp4" download>영상</a><a href="표지/gift-05-cover.png" download>표지</a><a href="제공자료/gift-05-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-05.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Найзтайгаа нэг буудалд ирсэн ч өөр гарц дээр зогсож байж болно. Уулзахаасаа өмнө дөрвөн зүйлийг тохироорой.
+
+1. Буудлын нэр
+어느 역에서 만나요?
+Аль метроны буудалд уулзах вэ?
+
+2. Гарцын дугаар
+몇 번 출구에서 만나요?
+Хэддүгээр гарц дээр уулзах вэ?
+
+3. Дотор уу, гадаа юу?
+출구 안에서 만나요, 밖에서 만나요?
+Гарцын дотор уу, гадаа нь уулзах уу?
+
+4. Харагдаж байгаа тэмдэг
+앞에 뭐가 보여요?
+Урд чинь юу харагдаж байна?
+
+Буудал: ___ / гарц: ___ / дотор, гадаа: ___ / харагдах тэмдэг: ___. Эдгээрийг уулзахаар тохирсон хүнтэйгээ хуваалцаарай. Бичлэгийн зураг, хоёрдугаар гарц нь бодит маршрутын заавар биш.
+
+Дараагийн уулзалтдаа ашиглахаар хадгалаарай. Карт хэрэгтэй бол сэтгэгдэлд УУЛЗАХ гэж бичээрэй.</pre><button type="button" data-copy="gift-05">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Тайлбарт нь бөглөж ашиглах мөр бас бий. Буудлын нэрийн дараа гарц, дотор эсвэл гадаа гэдгийг тохироорой.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> 도착했어요. / 저도요.<br><span>Нэг буудалд ирчихээд яагаад уулзахгүй байна?</span></p><p><b>4–10초</b> 역은 같고, 출구는 달라요<br><span>Буудал нь нэг. Гарц нь өөр байжээ.</span></p><p><b>10–17초</b> 몇 번 출구에서 만나요?<br><span>Хэддүгээр гарц дээр уулзах вэ?</span></p><p><b>17–23초</b> 2번 출구 밖에서요.<br><span>Хоёрдугаар гарцын гадаа. Одоо нэг газар боллоо.</span></p><p><b>23–30초</b> 만날 장소 4칸 메모<br><span>Уулзах газраа тохирох карт хэрэгтэй бол УУЛЗАХ гэж бичээрэй.</span></p></details></div></article><article id="gift-06"><div class="media"><video controls preload="none" poster="표지/gift-06-cover.png" src="영상/gift-06.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">06 / 10 · 댓글 키워드 ХИЧЭЭЛ</span><h2>공강과 휴강, 같은 빈칸의 다른 뜻</h2><p class="hook">Хоёул хичээлгүй. Гэтэл яагаад өөр үгтэй вэ?</p><p>학교 공지 낱말 5개</p><nav><a href="영상/gift-06.mp4" download>영상</a><a href="표지/gift-06-cover.png" download>표지</a><a href="제공자료/gift-06-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-06.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Сургуулийн зарлал уншихдаа хэрэглэх таван үг, асуулт.
+
+1. Хоёр хичээлийн хоорондох чөлөөт цаг
+공강 · 다음 시간이 공강이에요.
+Дараагийн цагт хичээлгүй.
+
+2. Товлосон хичээл орохгүй болох
+휴강 · 오늘 수업은 휴강이에요.
+Өнөөдрийн хичээл орохгүй.
+
+3. Ороогүй хичээлээ нөхөх
+보강 · 보강은 언제예요?
+Нөхөх хичээл хэзээ вэ?
+
+4. Хичээл орох өрөө солигдох
+강의실 변경 · 어디로 바뀌었어요?
+Хичээл орох өрөө хаашаа солигдсон бэ?
+
+5. Онлайнаар хичээллэх
+온라인 수업 · 접속 링크는 어디에 있어요?
+Хичээлд орох холбоос хаана байгаа вэ?
+
+Хичээл орохгүй гэсэн зарлал гарвал нөхөх хичээлийн өдөр, цаг, өрөөний талаар юу гэж бичсэнийг шалгаарай. Нөхөх хэлбэр, хуваарь нь тухайн хичээлийн зарлалаар тодорхой болно.
+
+Зарлал уншихдаа харахаар хадгалаарай. Карт хэрэгтэй бол сэтгэгдэлд ХИЧЭЭЛ гэж бичээрэй.</pre><button type="button" data-copy="gift-06">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Тайлбарт нь асууж болох өгүүлбэрүүд ч бий. Өөрийн хичээлийн зарлалтай тулгаж уншаарай.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> 공강 / 휴강<br><span>Хоёул хичээлгүй. Гэтэл яагаад өөр үгтэй вэ?</span></p><p><b>4–10초</b> 공강: 수업과 수업 사이 빈 시간<br><span>Хоёр хичээлийн хоорондох хичээлгүй цаг.</span></p><p><b>10–17초</b> 휴강: 예정된 수업을 쉬어요<br><span>Хуваарьтай байсан хичээл энэ удаа орохгүй.</span></p><p><b>17–23초</b> 보강은 언제예요?<br><span>Нөхөх хичээл хэзээ вэ? Зарлалаас нь шалгаарай.</span></p><p><b>23–30초</b> 학교 공지 낱말 5개<br><span>Зарлал унших таван үгтэй карт хэрэгтэй бол ХИЧЭЭЛ гэж бичээрэй.</span></p></details></div></article><article id="gift-07"><div class="media"><video controls preload="none" poster="표지/gift-07-cover.png" src="영상/gift-07.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">07 / 10 · 댓글 키워드 ДААЛГАВАР</span><h2>내일까지라면 몇 시까지일까요</h2><p class="hook">Маргааш гэхээр хэдэн цаг хүртэл вэ?</p><p>과제 제출 4칸 메모</p><nav><a href="영상/gift-07.mp4" download>영상</a><a href="표지/gift-07-cover.png" download>표지</a><a href="제공자료/gift-07-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-07.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Даалгаврынхаа зааврыг авахдаа дөрвөн зүйлийг тэмдэглээрэй. Мэдээлэл нь байвал хуулж бичээд, бусдыг нь асууна.
+
+1. Юу хийх вэ?
+어느 부분까지 하면 돼요?
+Аль хэсэг хүртэл хийх вэ?
+
+2. Хэдийд өгөх вэ?
+몇 시까지 내면 돼요?
+Хэдэн цаг гэхэд өгөх вэ?
+
+3. Хаана өгөх вэ?
+어디에 내면 돼요?
+Хаана өгөх вэ?
+
+4. Ямар файлаар өгөх вэ?
+파일은 어떤 형식으로 내면 돼요?
+Файлыг ямар форматаар өгөх вэ?
+
+Хийх зүйл: ___ / өдөр, цаг: ___ / өгөх газар: ___ / файлын формат, хэмжээ: ___. Бичлэгийн 3 цаг нь жишээ. Бодит хугацааг багшийнхаа заавраас шалгаарай.
+
+Дараагийн даалгавартаа ашиглахаар хадгалаарай. Карт хэрэгтэй бол сэтгэгдэлд ДААЛГАВАР гэж бичээрэй.</pre><button type="button" data-copy="gift-07">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Тайлбарт нь бөглөх мөрүүд бий. Багшийн заасан өдөр, цаг, өгөх газар, файлын форматыг бичээрэй.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> 내일까지 제출<br><span>Маргааш гэхээр хэдэн цаг хүртэл вэ?</span></p><p><b>4–10초</b> 날짜 ✓ / 시각 ? / 내는 곳 ?<br><span>Өдрийг нь мэдлээ. Харин цаг, өгөх газар нь?</span></p><p><b>10–17초</b> 내일 몇 시까지 내면 돼요?<br><span>Маргааш хэдэн цаг гэхэд өгөх вэ?</span></p><p><b>17–23초</b> 예: 오후 3시까지요.<br><span>Жишээ нь: үдээс хойш 3 цаг гэхэд.</span></p><p><b>23–30초</b> 과제 제출 4칸 메모<br><span>Дөрвөн зүйлээ тэмдэглэх карт авъя гэвэл ДААЛГАВАР гэж бичээрэй.</span></p></details></div></article><article id="gift-08"><div class="media"><video controls preload="none" poster="표지/gift-08-cover.png" src="영상/gift-08.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">08 / 10 · 댓글 키워드 МЕССЕЖ</span><h2>안녕하세요 다음에 쓰는 첫 메시지</h2><p class="hook">Сайн байна уу гэсний дараа юу бичих вэ?</p><p>첫 연락 완성문 3개</p><nav><a href="영상/gift-08.mp4" download>영상</a><a href="표지/gift-08-cover.png" download>표지</a><a href="제공자료/gift-08-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-08.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Анх холбоо барихдаа өөрийгөө танилцуулаад, асуух зүйлээ хамт бичээрэй. Хаалттай хэсгийг өөртөө тааруулж солино.
+
+1. Хичээл дээр танилцсан хүнд
+안녕하세요. 오늘 수업에서 만난 [이름]입니다. 아까 말씀하신 자료를 보내 주실 수 있어요?
+Сайн байна уу. Өнөөдрийн хичээл дээр танилцсан [нэр] байна. Түрүүн ярьсан материалаа надад явуулж өгч болох уу?
+
+2. Багшаасаа даалгавраа лавлах
+선생님, 안녕하세요. [수업]을 듣는 [이름]입니다. 오늘 과제는 [내용]이 맞나요?
+Сайн байна уу, багш аа. [Хичээл]-д суудаг [нэр] байна. Өнөөдрийн даалгавар [агуулга] мөн үү?
+
+3. Дугуйлангийн уулзалтыг асуух
+안녕하세요. [동아리]에 관심이 있는 [이름]입니다. 다음 모임은 언제인가요?
+Сайн байна уу. [Дугуйлан]-г сонирхож байгаа [нэр] байна. Дараагийн уулзалт хэзээ вэ?
+
+Мэндлэх → өөрийгөө танилцуулах → нэг асуулт. Үнэхээр танилцсан нөхцөл, асуух зүйлээ бичээрэй. Төгсгөлд нь 감사합니다. буюу Баярлалаа гэж нэмж болно. Нэр, холбоо барих мэдээллээ нийтийн сэтгэгдэлд бичих шаардлагагүй.
+
+Дараа хуулж ашиглахаар хадгалаарай. Загваруудын карт хэрэгтэй бол сэтгэгдэлд МЕССЕЖ гэж бичээрэй.</pre><button type="button" data-copy="gift-08">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Гурван загварыг тайлбараас бүтнээр хуулж аваад хаалттай хэсгийг өөртөө тааруулж солиорой. Нэрээ сэтгэгдэлд бичих хэрэггүй.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> 안녕하세요. ...<br><span>Сайн байна уу гэсний дараа юу бичих вэ?</span></p><p><b>4–10초</b> 누구인지 + 필요한 질문<br><span>Өөрийгөө сануулаад, асуултаа бичье.</span></p><p><b>10–17초</b> 오늘 수업에서 만난 [이름]입니다.<br><span>Өнөөдрийн хичээл дээр танилцсан [нэр] байна.</span></p><p><b>17–23초</b> 자료를 보내 주실 수 있어요?<br><span>Материалаа надад явуулж өгч болох уу?</span></p><p><b>23–30초</b> 첫 연락 완성문 3개<br><span>Гурван мессежийн загвартай карт авъя гэвэл МЕССЕЖ гэж бичээрэй.</span></p></details></div></article><article id="gift-09"><div class="media"><video controls preload="none" poster="표지/gift-09-cover.png" src="영상/gift-09.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">09 / 10 · 댓글 키워드 ӨРӨӨ</span><h2>방 사진에서 보이지 않는 것 묻기</h2><p class="hook">Өрөөний зургаас интернэтийн хурд харагдах уу?</p><p>방 보기 질문 5개</p><nav><a href="영상/gift-09.mp4" download>영상</a><a href="표지/gift-09-cover.png" download>표지</a><a href="제공자료/gift-09-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-09.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Өрөөний зурагт харагдахгүй зүйлийг үзэхдээ асууж болно. Зөвшөөрөл хүсээд, өөрөө сонирхсон зүйлээ шалгаарай.
+
+1. Цонх
+창문을 열어 봐도 돼요?
+Цонхыг нээж үзэж болох уу?
+
+2. Угаалга
+세탁기는 어디에 있어요?
+Угаалгын машин хаана байгаа вэ?
+
+3. Интернэт
+여기서 인터넷에 연결해 봐도 돼요?
+Энд интернэтэд холбогдож үзэж болох уу?
+
+4. Гаднах дуу чимээ
+창문을 열고 바깥 소리를 잠깐 들어 봐도 돼요?
+Цонхыг нээгээд гаднах чимээг нь түр сонсож болох уу?
+
+5. Өрөөнд дагалдах тавилга
+사진 속 책상과 침대도 포함돼요?
+Зураг дээрх ширээ, ор нь хамт байх уу?
+
+Тухайн үед өөрийн харсан, сонссон зүйлээ тэмдэглээрэй. Тэр үед ажигласан зүйл үргэлж тийм байна гэсэн үг биш. Энэ нь өрөө үзэх асуултын хуудас болохоос гэрээ, аюулгүй байдлын бүрэн шалгалт биш.
+
+Өрөө үзэхдээ харахаар хадгалаарай. Карт хэрэгтэй бол сэтгэгдэлд ӨРӨӨ гэж бичээрэй.</pre><button type="button" data-copy="gift-09">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Таван асуултыг тайлбараас бас хуулж болно. Өрөө үзэх үедээ харсан, сонссон зүйлээ хажууд нь тэмдэглээрэй.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> 책상은 보여요. 인터넷은요?<br><span>Өрөөний зургаас интернэтийн хурд харагдах уу?</span></p><p><b>4–10초</b> 확대해도 안 보이는 것<br><span>Зургийг томрууллаа ч мэдэхгүй зүйл бий.</span></p><p><b>10–17초</b> 여기서 인터넷에 연결해 봐도 돼요?<br><span>Энд интернэтэд холбогдож үзэж болох уу?</span></p><p><b>17–23초</b> 창문을 열어 봐도 돼요?<br><span>Цонхыг нээж үзэж болох уу?</span></p><p><b>23–30초</b> 방 보기 질문 5개<br><span>Өрөө үзэх таван асуулттай карт авъя гэвэл ӨРӨӨ гэж бичээрэй.</span></p></details></div></article><article id="gift-10"><div class="media"><video controls preload="none" poster="표지/gift-10-cover.png" src="영상/gift-10.mp4" playsinline></video></div><div class="copy"><span class="eyebrow">10 / 10 · 댓글 키워드 ЗУРАГ</span><h2>사진에서 신발까지 나오게 부탁하기</h2><p class="hook">Гуталтайгаа авахуулмаар байтал цээж зураг болчихов уу?</p><p>원하는 사진 부탁 5문장</p><nav><a href="영상/gift-10.mp4" download>영상</a><a href="표지/gift-10-cover.png" download>표지</a><a href="제공자료/gift-10-resource-1.png" download>제공 카드 1</a><a href="게시문안/gift-10.txt" download>설명글·답글</a></nav><details><summary>게시할 몽골어 설명글</summary><pre>Зураг авахуулахдаа хүссэн хэлбэрээ нэг өгүүлбэрээр нэмж хэлээрэй.
+
+1. Зураг авч өгөхийг хүсэх
+사진 좀 찍어 주실 수 있어요?
+Зураг аваад өгч болох уу?
+
+2. Босоо зураг
+세로로 찍어 주세요.
+Босоогоор аваад өгөөч.
+
+3. Хэвтээ зураг
+가로로 찍어 주세요.
+Хэвтээгээр аваад өгөөч.
+
+4. Бүтэн бие
+전신이 나오게 찍어 주세요.
+Бүтэн биеэр аваад өгөөч.
+
+5. Арын барилгыг хамт оруулах
+뒤에 건물도 나오게 찍어 주세요.
+Арын барилгыг бас багтаагаад аваарай.
+
+Эхлээд зураг авахад тохиромжтой эсэхийг асуугаарай. Хүсэлтээсээ нэгийг нэмж хэлээд, дараа нь 감사합니다. буюу Баярлалаа гэж хэлж болно.
+
+Дараа зураг авахуулахдаа харахаар хадгалаарай. Карт хэрэгтэй бол сэтгэгдэлд ЗУРАГ гэж бичээрэй.</pre><button type="button" data-copy="gift-10">설명글 복사</button><span class="status" role="status"></span></details><details><summary>실제 카드와 함께 보낼 답글</summary><pre>Хүссэн карт чинь энд байна. Таван өгүүлбэр тайлбарт бүтнээрээ бий. Босоо, хэвтээ, бүтэн биеийн аль зураг хүсэж байгаагаа сонгоод хэлээрэй.</pre></details><details><summary>한국어 장면 구성</summary><p><b>0–4초</b> 신발까지 찍고 싶었는데?<br><span>Гуталтайгаа авахуулмаар байтал цээж зураг болчихов уу?</span></p><p><b>4–10초</b> 전신 = 몸 전체<br><span>Толгойноос хөл хүртэл бүтэн биеэ багтаая.</span></p><p><b>10–17초</b> 전신이 나오게 찍어 주세요.<br><span>Бүтэн биеэр аваад өгөөч.</span></p><p><b>17–23초</b> 세로로 찍어 주세요.<br><span>Босоогоор аваад өгөөч.</span></p><p><b>23–30초</b> 원하는 사진 부탁 5문장<br><span>Зураг авахуулах карт хэрэгтэй бол ЗУРАГ гэж бичээрэй.</span></p></details></div></article><footer>10편의 실제 반응을 본 뒤 후속 주제·자료를 조정합니다. 옛 45편 원본은 보관하며 이번 제작 대상에 포함하지 않았습니다.</footer></main><script>document.querySelectorAll('[data-copy]').forEach(button=>button.addEventListener('click',async()=>{const box=button.closest('details'),status=box.querySelector('.status');try{await navigator.clipboard.writeText(box.querySelector('pre').textContent);status.textContent='복사했습니다.'}catch{status.textContent='브라우저가 복사를 허용하지 않았습니다. 문안을 선택해 복사해 주세요.'}}));</script></body></html>
