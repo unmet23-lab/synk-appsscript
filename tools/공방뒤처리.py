@@ -42,6 +42,40 @@ try:
 except ImportError:
     sys.exit('Pillow 가 없다 — python -m pip install pillow')
 
+# 🔴 배경을 «안» 걷는 규격 — 배경째 쓰는 사진이라 걷으면 물건이 너덜너덜 남는다.
+#   09-08 사고: 「자리」 규격이 09-05 에 규격표(tools/lib/공방규격.js)에 생겼는데
+#   이 목록에는 안 들어왔다. 그래서 자리 배경을 그 규격으로 다시 구웠더니
+#   방 사진이 «누끼 뜨는 길»로 들어가 한 장이 죽고 한 장은 배경이 뜯긴 채 담겼다.
+#   기억 constant-known-in-two-places 의 그 자리다 — 한 값을 두 곳이 알면 갈린다.
+#   ⇒ 아래 «모르는 규격 검사»가 그 갈림을 다음부터 소리 내어 막는다.
+안걷는규격 = ('천', '장면', '자리', '바깥자리')
+걷는규격 = ('부품', '입힘')
+
+
+def 규격표이름들():
+    """규격 정본(공방규격.js)에 있는 규격 «이름»만 뽑는다 — 값은 안 읽는다."""
+    import re
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lib', '공방규격.js')
+    try:
+        with io.open(p, encoding='utf-8') as f:
+            글 = f.read()
+    except OSError:
+        return None
+    몸 = 글.split('const 규격표 = {', 1)[-1]
+    return set(re.findall(r'^  ([가-힣]+):', 몸, re.M))
+
+
+def 규격빠짐검사():
+    """규격표에 있는데 위 두 목록 어디에도 없는 규격이 있으면 그 자리에서 멈춘다."""
+    이름 = 규격표이름들()
+    if not 이름:
+        return
+    빠짐 = 이름 - set(안걷는규격) - set(걷는규격)
+    if 빠짐:
+        sys.exit(f'🔴 규격 「{" · ".join(sorted(빠짐))}」이 규격표에는 있는데 이 도구가 모른다.\n'
+                 f'   배경을 걷을지 말지 정해서 tools/공방뒤처리.py 의 «안걷는규격»이나 «걷는규격»에 넣는다.\n'
+                 f'   (09-08 에 「자리」가 이 자리에서 빠져 방 사진이 누끼 길로 갔다.)')
+
 # 🔴 **화면에 찍는 자리에서 죽지 않게 한다**(09-05 실물).
 #   다듬기가 첫 장에서 넘어졌다. 그림이 아니라 «✅ 를 찍는 print» 가 터진 것이다 —
 #   윈도 콘솔의 기본 글자표(cp949)에 그 글자가 없어 UnicodeEncodeError 로 죽었다.
@@ -103,12 +137,13 @@ def main():
         print('■ 다듬을 것이 없다(0장).')
         return
 
+    규격빠짐검사()
     print(f'■ 뒤처리 {len(할것)}장 · {a.꼴} q{품질} · 긴 변 '
           + (f'{a.너비}px' if a.너비 else '원본 그대로'))
     산것 = 실패 = 0
     # 🔑 AI 자는 모델을 «한 번만» 올린다(38초) — 장마다 띄우면 스물여덟 번이다. 부품이 하나도 없으면 안 올린다.
     AI자 = None
-    if not a.옛자르기 and any(규 not in ('천', '장면') for _, _, 규, _ in 할것):
+    if not a.옛자르기 and any(규 not in 안걷는규격 for _, _, 규, _ in 할것):
         sys.path.insert(0, os.path.join(ROOT, 'tools'))
         import AI누끼
         AI자 = AI누끼.세션()
@@ -120,7 +155,7 @@ def main():
             continue
         담을것 = png[:-4] + 확장
         try:
-            if 규격 in ('천', '장면'):
+            if 규격 in 안걷는규격:
                 # 🔑 «장면»도 안 걷는다(09-05 저녁에 바로잡았다).
                 #   규격표가 「크림 바탕 위에 물건 하나, 여백이 넉넉해야 그 위에 글자를 얹을 수 있다」로
                 #   못 박은 대로, 장면은 배경째 쓰는 «사진 한 장»이다. 그 크림 바탕을 걷으면
@@ -171,6 +206,11 @@ def main():
         os.fsync(f.fileno())
     os.replace(임시, 계획경로)
     print(f'■ 합계 {len(할것)}장 = 담음 {산것} + 실패 {실패} · 계획.json 의 파일 이름도 함께 옮겼다')
+    # 🔴 09-08 — 여기서 «실패 1» 을 찍고도 종료 상태가 0 이었다. 부르는 쪽(tools/밤굽기.js 의
+    #   `다듬는다`)은 status 로만 보므로 그 실패가 통째로 안 보였고, 그날 창가 책상 한 장이
+    #   조용히 사라졌다. 기억 zero-is-a-success-face-taxonomy 의 그 자리다.
+    if 실패:
+        sys.exit(1)
 
 
 if __name__ == '__main__':
