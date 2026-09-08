@@ -1918,7 +1918,22 @@ function createWorkLogForm_(알림기록) {
         Logger.log(mI);
         return mI;
       }
-      const 완료값 = String(getState(st, '직장폼완료').val || '');
+      /* 🔴 [09-08 검수 6회차 P1 46f56e7949f2] **「고치고 다시 누르면 도장은 저절로 찍힙니다」를 지키는 자리다.**
+       *   앞 판은 그 약속을 지킬 수 없었다: 첫 실행이 응답 탭에서 폼을 찾아 **ID 를 저장하므로**,
+       *   재실행은 위 `if (!exId)` 블록(문항 재검사 + 도장)에 아예 안 들어온다. 그래서 유호님이
+       *   빠진 문항을 다 더하고 다시 누르셔도 **같은 경고만 영영 반복**됐다 — 내가 쓴 안내가 거짓말이 된다.
+       *   ⇒ 표식이 «필수누락»으로 적혀 있으면 여기서 문항을 다시 세고, 채워졌으면 도장을 찍는다.
+       * 🔑 세는 자는 위와 같은 것을 쓴다(`묻는문항_`) — 자가 갈리면 한쪽 문으로 흉내가 들어온다. */
+      let 완료값 = String(getState(st, '직장폼완료').val || '');
+      if (완료값.indexOf(WORK_DONE_MISSING_) === 0) {
+        const 다시본문항 = exForm.getItems().filter(묻는문항_).map(function (i) { return String(i.getTitle()).trim(); });
+        const 아직빠짐 = WORK_REQUIRED_.filter(function (t) { return 다시본문항.indexOf(t) === -1; });
+        완료값 = 아직빠짐.length === 0 ? 'y' : WORK_DONE_MISSING_ + 아직빠짐.join('·');
+        setState(st, '직장폼완료', 완료값);
+        Logger.log(아직빠짐.length === 0
+          ? '직장 경험 폼 — 빠졌던 필수 문항이 채워져 완료 도장을 다시 찍었습니다.'
+          : '직장 경험 폼 — 아직 빠진 필수 문항: ' + 아직빠짐.join(' · '));
+      }
       if (완료값 !== 'y') {
         const mP = 직장폼미완안내_(완료값, exForm.getPublishedUrl());
         Logger.log(mP);
