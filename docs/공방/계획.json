@@ -1285,8 +1285,9 @@
             "쇠": "공방_구분띠스티치",
             "규격": "부품",
             "비율": "16:9",
-            "지시": "A single long horizontal line of large hand running stitches in cream wool thread on nothing, the thread lying in a straight row with even gaps, spanning the full width of the frame.",
-            "파일": "공방_구분띠스티치.avif"
+            "지시": "A single hand sewing stitch of thick cream wool thread lying on a flat black surface, one short straight stitch set at a slight diagonal, both ends of the thread pressed down into the surface, sharp macro photograph taken from directly above, individual wool fibres and a soft halo of fluff clearly visible, solid black background, square frame, nothing else in the frame.",
+            "파일": "공방_구분띠스티치.png",
+            "왜 다시": "09-08 유호 판정 「이거 좀 별론데」. 옛 지시가 실을 «on nothing»(아무것도 없는 위)에 두라고 시켜 실이 공중에 흐트러졌고, 게다가 5520×767 가로 판이라 규율 「부품은 정사각으로 쓴다」와 어긋났다. ⇒ 한 땀만 정사각으로 굽고 잇는 일은 코드가 한다(tools/캐러셀굽기.js)."
           },
           {
             "이름": "구분 띠 리본",

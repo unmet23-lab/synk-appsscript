@@ -7,6 +7,15 @@
  *   캐러셀은 같은 틀 위에 장이 여러 개 서고, 원고가 카드마다 다르다. 그래서 «틀»과 «원고»를 가른다.
  *   굽는 통로(크롬 헤드리스)와 자산 심기는 FB카드굽기 와 같은 처방을 쓴다.
  *
+ * ■ 🔴 요소를 얹기 전에 «보이나»를 먼저 잰다 (유호 지시 09-08 「저런게 나가면 절대 안돼 · 싸구려같아」)
+ *   ① **바탕과 색이 가까운 부품은 안 보인다.** 크림 실땀을 크림 천 위에 놓았더니 윤곽선만 남은
+ *      껍데기가 됐다. 4K 로 다시 구워도 같은 자리에 걸린다 — 색 거리가 문제이지 해상도가 아니다.
+ *   ② **누끼 후광이 남으면 회색 네모가 된다.** 흰 바탕에서 걷으면 크림 보풀 둘레에 옅은 알파가
+ *      남는다. 세게 걷으면 이번엔 속이 비어 껍데기가 된다.
+ *   ③ ⇒ **얹은 뒤 반드시 굽고 그림을 눈으로 본다.** 코드만 보면 셋 다 안 보인다.
+ *   🔑 킷 3규칙이 답을 이미 준다 — 「위계는 색이 아니라 «밀도»(크기·웨이트·여백)」.
+ *      선을 못 세우는 자리는 **여백이 가른다.** 요소를 억지로 넣으면 그 순간 싸구려가 된다.
+ *
  * ■ 재질은 «구운 자산»에서만 온다
  *   바탕·장식·진행 점은 전부 공방에서 구운 펠트다. CSS 로 그림자·질감을 만들면 그 순간 브랜드가
  *   갈린다(memory `loom-baked-assets-only-for-ui`).
@@ -62,13 +71,19 @@ function ffmpeg() {
   throw new Error('ffmpeg 를 못 찾았다 — 자산을 줄일 수 없다(4K 원본을 그대로 심으면 카드가 20MB 가 된다)');
 }
 
-/** 그림 한 장을 폭 N 으로 줄여 webp data URI 로. 투명은 지킨다. */
-function 심기(상대경로, 폭) {
+/** 그림 한 장을 폭 N 으로 줄여 webp data URI 로.
+ * 🔴 **알파가 있는 부품은 무손실로 줄인다**(09-08 실측 · 유호 「싸구려같아」의 그 자리).
+ *   `-q:v 88 -pix_fmt yuva420p` 는 알파를 4:2:0 으로 서브샘플링해 **투명한 바깥이 옅게 살아난다** —
+ *   크림 천 위에 얹으면 그것이 «흰 네모»로 보인다. 몽글이 정본은 알파가 완벽했는데(바깥 테두리
+ *   알파 최대 0) 변환에서 망가졌다. 원본을 의심하기 전에 «내 변환»을 먼저 잰다. */
+function 심기(상대경로, 폭, 무손실 = false) {
   const src = path.isAbsolute(상대경로) ? 상대경로 : path.join(루트, 상대경로);
   if (!fs.existsSync(src)) throw new Error(`자산이 없다: ${상대경로}`);
   const 임시 = path.join(os.tmpdir(), `synk-car-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`);
   const r = spawnSync(ffmpeg(), ['-y', '-i', src, '-vf', `scale=${폭}:-1:flags=lanczos`,
-    '-c:v', 'libwebp', '-lossless', '0', '-q:v', '88', '-pix_fmt', 'yuva420p', 임시],
+    '-c:v', 'libwebp',
+    ...(무손실 ? ['-lossless', '1', '-pix_fmt', 'bgra']
+              : ['-lossless', '0', '-q:v', '88', '-pix_fmt', 'yuva420p']), 임시],
     { encoding: 'utf8' });
   if (r.status !== 0 || !fs.existsSync(임시)) {
     throw new Error(`ffmpeg 실패(${상대경로}): ${(r.stderr || '').split('\n').slice(-4).join(' ')}`);
@@ -107,11 +122,10 @@ const 카드들 = {
 /* ── 지면 ──────────────────────────────────────────────────────────────── */
 function 지면짓기(카드) {
   const 바탕 = 심기(공방('공방/펠트_종이바탕.webp'), W);
-  const 띠 = 심기(누끼('공방_구분띠스티치'), 900);
-  const 점켬 = 심기(누끼('공방_진행점켜짐'), 96);
-  const 점끔 = 심기(누끼('공방_진행점꺼짐'), 96);
+  const 점켬 = 심기(누끼('공방_진행점켜짐'), 96, true);
+  const 점끔 = 심기(누끼('공방_진행점꺼짐'), 96, true);
   /* 마스코트 정본은 이미 알파를 가졌다(4096² rgba) — 누끼를 다시 뜰 자리가 아니다. */
-  const 몽글 = 심기(마스코트.절대경로('본체', { 누끼: true }), 560);
+  const 몽글 = 심기(마스코트.절대경로('본체', { 누끼: true }), 560, true);
 
   const 점들 = Array.from({ length: 카드.총쪽 }, (_, i) => (
     `<img class="점" src="${i + 1 === 카드.쪽 ? 점켬.uri : 점끔.uri}" alt="">`
@@ -129,12 +143,11 @@ function 지면짓기(카드) {
       padding:120px 88px 150px;justify-content:center}
 
   /* 큰 수 — 이 카드의 «신호»이고, 신호는 코랄 하나다(킷 3규칙) */
-  .수줄{display:flex;align-items:baseline;gap:34px}
+  .수줄{display:flex;align-items:baseline;gap:34px;margin-bottom:104px}
   .수{font:800 300px/0.86 'Inter Tight',sans-serif;color:${색('Coral 3')};
       letter-spacing:-.04em;font-feature-settings:'tnum' 1}
   .수뒤{font:700 76px/1 'Inter Tight',sans-serif;color:${색('Ink')};letter-spacing:-.01em}
 
-  .띠{width:904px;margin:40px 0 44px;opacity:.92}
 
   /* 몽골어가 주인공 — 키릴은 Inter Tight 가 그린다 */
   .몽골{font:500 46px/1.42 'Inter Tight',sans-serif;color:${색('Ink')};
@@ -148,8 +161,9 @@ function 지면짓기(카드) {
   .바닥{position:absolute;left:88px;right:88px;bottom:76px;
         display:flex;align-items:center;justify-content:space-between}
   .꼬리{font:500 24px/1.4 'Inter Tight',sans-serif;color:${색('Ash Wool')}}
-  .점들{display:flex;gap:14px;align-items:center}
-  .점{width:16px;height:16px;display:block}
+  .점들{display:flex;gap:15px;align-items:center}
+  /* 🔑 규율 「작은 크기에서 갈린다」 — 16px 에서는 펠트 결이 죽어 그냥 원이 된다 */
+  .점{width:21px;height:21px;display:block}
 </style></head><body>
 
 <img class="바탕" src="${바탕.uri}" alt="">
@@ -159,7 +173,6 @@ function 지면짓기(카드) {
     <span class="수">${카드.큰수}</span>
     <span class="수뒤">${카드.수뒤}</span>
   </div>
-  <img class="띠" src="${띠.uri}" alt="">
   <p class="몽골">${카드.몽골}</p>
   <p class="한국">${카드.한국}</p>
 </div>
@@ -173,7 +186,7 @@ function 지면짓기(카드) {
 
 </body></html>`;
 
-  const 잰것 = { 바탕: 바탕.KB, 띠: 띠.KB, 점: 점켬.KB + 점끔.KB, 몽글: 몽글.KB };
+  const 잰것 = { 바탕: 바탕.KB, 점: 점켬.KB + 점끔.KB, 몽글: 몽글.KB };
   return { 원고, 잰것 };
 }
 
@@ -224,7 +237,7 @@ function main() {
   fs.mkdirSync(path.dirname(지면경로), { recursive: true });
   fs.writeFileSync(지면경로, 낼원고, 'utf8');
   console.log(`■ 지면  ${path.relative(루트, 지면경로)}  (${Math.round(낼원고.length / 1024)}KB)`);
-  console.log(`   심은 자산 — 바탕 ${잰것.바탕}KB · 띠 ${잰것.띠}KB · 진행 점 ${잰것.점}KB · 몽글 ${잰것.몽글}KB`);
+  console.log(`   심은 자산 — 바탕 ${잰것.바탕}KB · 진행 점 ${잰것.점}KB · 몽글 ${잰것.몽글}KB`);
   console.log(`   서체 심김 = ${브랜드폰트.심겼나(낼원고) ? '✅' : '🔴 안 심겼다'}`);
 
   if (인자['지면만']) return;
