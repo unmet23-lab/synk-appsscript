@@ -68,7 +68,13 @@ def main():
     out.save(출력)
     import numpy as np
     물건몫 = (np.asarray(out.getchannel('A')) > 128).mean() * 100
-    print(f'✅ {os.path.basename(출력)}  {out.size[0]}x{out.size[1]} · 물건 {물건몫:.1f}%')
+    # 🔴 윈도 콘솔이 cp949 면 ✅ 같은 글자에서 UnicodeEncodeError 로 죽는다(09-08 실측 · 두 번 밟았다).
+    #    파일은 이미 저장한 뒤라 «일은 됐는데 죽은 얼굴»이 된다. 그래서 인쇄만 감싼다.
+    줄 = f'✅ {os.path.basename(출력)}  {out.size[0]}x{out.size[1]} · 물건 {물건몫:.1f}%'
+    try:
+        print(줄)
+    except UnicodeEncodeError:
+        print(줄.encode('utf-8', 'replace').decode('ascii', 'replace'))
 
 
 if __name__ == '__main__':
