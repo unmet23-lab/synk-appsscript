@@ -89,17 +89,28 @@ im.save(sys.argv[2], 'JPEG', quality=92)
   return 낼곳;
 }
 
-function 지시문(마스코트, 옷) {
+function 지시문(마스코트, 옷들) {
+  const 여럿 = 옷들.length > 1;
+  const 참조설명 = 옷들.map((o, i) =>
+    `REFERENCE ${i + 2} shows «${o.이름}» on its own, on a white background.`).join(' ');
   return [
-    'Generate an image. You are given 2 reference images.',
+    `Generate an image. You are given ${옷들.length + 1} reference images.`,
     'REFERENCE 1 is the doll itself. This is the exact character you must reproduce; copy it faithfully.',
-    `REFERENCE 2 shows «${옷.이름}» on its own, on a white background. Copy that piece exactly as shown:`,
-    'its shape, colours, felt material, stitching and proportions. Do not redesign it.',
+    `${참조설명} Copy each piece exactly as shown:`,
+    'its shape, colours, felt material, stitching and proportions. Do not redesign any of them.',
     '',
     마스코트.표식,
     '',
-    `Draw the doll of REFERENCE 1 actually wearing it. ${옷.설명}`,
+    `Draw the doll of REFERENCE 1 actually wearing ${여럿 ? `ALL ${옷들.length} pieces at once` : 'it'}. `
+      + 옷들.map((o) => o.설명).join(' '),
     '',
+    /* 🔴 겹쳐 입힐 때만 붙인다 — 한 벌일 때 넣으면 모델이 없는 옷을 찾아 지어낸다. */
+    ...(여럿 ? [
+      `All ${옷들.length} pieces must be clearly visible and must not collide with each other:`,
+      'each sits on its own part of the body, layered naturally the way a real doll would wear them together.',
+      'A head piece sits ON the head, a neck piece around the neck, a body garment on the body.',
+      '',
+    ] : []),
     'It must read as genuinely worn, not pasted on: it follows the curve of the body it rests on, its outer',
     'edges disappear behind the body outline, the fur presses out from underneath it all the way around, the',
     'wool compresses slightly where it rests, and there is a soft contact shadow beneath it. The garment and',
@@ -111,7 +122,7 @@ function 지시문(마스코트, 옷) {
     ...(앞발있음.has(마스코트.이름)
       ? ['🔴 The two front paws stay held out to the SIDES at mid height — do not raise the arms upward.']
       : []),
-    'Nothing about the doll changes; only the garment is added.',
+    `Nothing about the doll changes; only the ${여럿 ? 'garments are' : 'garment is'} added.`,
     '🔴 The eyes and the tail tip must stay fully visible and unobstructed.',
     '🔴 Keep the doll the same size in frame as in REFERENCE 1. Do not shrink it.',
     '',
@@ -120,18 +131,21 @@ function 지시문(마스코트, 옷) {
   ].join('\n');
 }
 
-async function 한벌({ 열쇠값, 마스코트, 옷, 몸참조, 크기 }) {
-  const 파일 = 옷.이름.replace(/ /g, '');
-  const 옷조각 = path.join(조각방, `옷_${마스코트.이름}_${파일}.png`);
-  if (!fs.existsSync(옷조각)) throw new Error(`옷 조각이 없다 — ${옷조각}`);
-  const 옷참조 = 참조만들기(옷조각, path.join(참조방, 마스코트.이름, `${파일}.jpg`));
+async function 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 }) {
+  const 옷참조들 = 옷들.map((옷) => {
+    const 파일 = 옷.이름.replace(/ /g, '');
+    const 옷조각 = path.join(조각방, `옷_${마스코트.이름}_${파일}.png`);
+    if (!fs.existsSync(옷조각)) throw new Error(`옷 조각이 없다 — ${옷조각}`);
+    return 참조만들기(옷조각, path.join(참조방, 마스코트.이름, `${파일}.jpg`));
+  });
+  const 파일 = 옷들.map((o) => o.이름.replace(/ /g, '')).join('+');
 
   const fd = new FormData();
   fd.append('model', 모델);
-  fd.append('prompt', 지시문(마스코트, 옷));
+  fd.append('prompt', 지시문(마스코트, 옷들));
   fd.append('size', `${크기}x${크기}`);
   fd.append('n', '1');
-  for (const p of [몸참조, 옷참조]) {
+  for (const p of [몸참조, ...옷참조들]) {
     fd.append('image[]', new Blob([fs.readFileSync(p)], { type: 'image/jpeg' }), path.basename(p));
   }
 
@@ -165,20 +179,32 @@ async function 한벌({ 열쇠값, 마스코트, 옷, 몸참조, 크기 }) {
     return;
   }
 
+  /** 이름 하나를 옷으로 바꾼다. */
+  const 찾기 = (n) => {
+    const v = 벌.find((x) => x.이름 === n);
+    if (!v) throw new Error(`목록에 없다 — ${n} (--목록 으로 이름을 본다)`);
+    return v;
+  };
+
+  /* 할것 = «한 장에 들어갈 옷 묶음»의 목록이다.
+     --것  "목도리,안경"       → 두 장 (각각 한 벌씩)
+     --겹  "목도리+안경"       → 한 장 (둘을 겹쳐 입힌다)
+     --겹  "목도리+안경,왕관+조끼" → 두 장 (각각 두 벌 겹쳐) */
   let 할것;
-  if (인자.전부) 할것 = 벌;
-  else if (인자.것) {
-    const 이름들 = String(인자.것).split(',').map((s) => s.trim()).filter(Boolean);
-    할것 = 이름들.map((n) => {
-      const v = 벌.find((x) => x.이름 === n);
-      if (!v) throw new Error(`목록에 없다 — ${n} (--목록 으로 이름을 본다)`);
-      return v;
-    });
-  } else throw new Error('--것 "옷 이름" 또는 --전부 가 있어야 한다.');
+  if (인자.전부) 할것 = 벌.map((v) => [v]);
+  else if (인자.겹) {
+    할것 = String(인자.겹).split(',').map((덩) =>
+      덩.split('+').map((s) => s.trim()).filter(Boolean).map(찾기)).filter((a) => a.length);
+    for (const 묶 of 할것) {
+      if (묶.length > 4) throw new Error(`한 장에 네 벌까지다 — ${묶.map((o) => o.이름).join('+')}`);
+    }
+  } else if (인자.것) {
+    할것 = String(인자.것).split(',').map((s) => s.trim()).filter(Boolean).map((n) => [찾기(n)]);
+  } else throw new Error('--것 "옷 이름" · --겹 "옷+옷" · --전부 중 하나가 있어야 한다.');
 
   const 크기 = Number(인자.크기 || 2560);
   const 어림 = 할것.length * 0.0427;
-  console.log(`■ ${마스코트이름} ${할것.length}벌 · ${크기}×${크기} · 어림값 $${어림.toFixed(2)} ≈ ${Math.round(어림 * 환율)}원`);
+  console.log(`■ ${마스코트이름} ${할것.length}장 · ${크기}×${크기} · 어림값 $${어림.toFixed(2)} ≈ ${Math.round(어림 * 환율)}원`);
   if (!인자.간다 && 할것.length > 3) {
     console.log('   → 진짜 굽는다면 --간다 를 붙인다.');
     return;
@@ -192,19 +218,20 @@ async function 한벌({ 열쇠값, 마스코트, 옷, 몸참조, 크기 }) {
   const 동시 = Number(인자.동시 || 3);
   for (let i = 0; i < 할것.length; i += 동시) {
     const 묶음 = 할것.slice(i, i + 동시);
-    await Promise.all(묶음.map(async (옷) => {
+    await Promise.all(묶음.map(async (옷들) => {
+      const 이름 = 옷들.map((o) => o.이름).join(' + ');
       const 시작 = Date.now();
       try {
-        const r = await 한벌({ 열쇠값, 마스코트, 옷, 몸참조, 크기 });
+        const r = await 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 });
         합 += r.든돈;
-        console.log(`  ✅ ${옷.이름} · ${Math.round((Date.now() - 시작) / 1000)}초 · ${r.칸}칸 · ${Math.round(r.든돈 * 환율)}원`);
+        console.log(`  ✅ ${이름} · ${Math.round((Date.now() - 시작) / 1000)}초 · ${r.칸}칸 · ${Math.round(r.든돈 * 환율)}원`);
       } catch (e) {
-        실패.push(옷.이름);
-        console.log(`  ❌ ${옷.이름} — ${String(e.message).slice(0, 140)}`);
+        실패.push(이름);
+        console.log(`  ❌ ${이름} — ${String(e.message).slice(0, 140)}`);
       }
     }));
   }
-  console.log(`\n■ 끝 — ${할것.length - 실패.length}/${할것.length}벌 · 든 값 $${합.toFixed(4)} ≈ ${Math.round(합 * 환율)}원`);
+  console.log(`\n■ 끝 — ${할것.length - 실패.length}/${할것.length}장 · 든 값 $${합.toFixed(4)} ≈ ${Math.round(합 * 환율)}원`);
   console.log(`   낸 곳: ${낼방}`);
   /* 🔴 한 벌이라도 못 구웠으면 «비정상»으로 끝낸다 (09-08 이종 검수 32cc40911543).
      한 장씩의 예외를 배열에만 담고 정상 종료하면, 밤 사슬이나 && 로 이어 붙인 다음 걸음이
