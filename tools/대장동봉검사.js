@@ -200,30 +200,6 @@ function main() {
     const 명부tmp = 명부뒤 === null ? null : path.join(방, 'prism_명부.json');
     if (명부tmp !== null) fs.writeFileSync(명부tmp, 명부뒤, 'utf8');
 
-    // 명부뿐 아니라 참조 파일의 목록·내용도 커밋될 판이어야 한다.
-    // 색인은 미스테이징 수정·미추적 파일을 빼고, 스테이징 추가·삭제·이동을 이미 반영한다.
-    const 참조tmp = path.join(방, 'prism_참조판.json');
-    let 참조판;
-    try {
-      const 파일들 = [];
-      for (const 항목 of git(['ls-files', '--stage', '-z']).split('\0').filter(Boolean)) {
-        const 일치 = /^(\d{6}) [0-9a-f]+ ([0-3])\t([\s\S]+)$/.exec(항목);
-        if (!일치) throw new Error('색인 항목을 읽을 수 없다');
-        const [, 모드, 단계, 경로] = 일치;
-        if (경로.includes('/') || !경로.endsWith('.js')) continue;
-        // 링크·충돌을 일반 파일로 둔갑시켜 안전한 참조 수를 만들어 내지 않는다.
-        if (!['100644', '100755'].includes(모드) || 단계 !== '0') throw new Error('일반 파일 판이 아니다');
-        const 내용 = 판본('', 경로);
-        if (내용 === null) throw new Error('색인 파일을 읽을 수 없다');
-        파일들.push({ 경로, 내용 });
-      }
-      참조판 = { 파일들 };
-    } catch (_) {
-      // 일부만 읽은 판을 넘기지 않는다. 래칫이 이 판을 「못 쟀다」로 드러낸다.
-      참조판 = { 오류: '커밋될 Prism 참조 파일 목록·내용을 확인할 수 없다' };
-    }
-    fs.writeFileSync(참조tmp, JSON.stringify(참조판), 'utf8');
-
     const r = spawnSync(process.execPath, [판정기, '--검사'], {
       cwd: ROOT,
       encoding: 'utf8',
@@ -235,7 +211,7 @@ function main() {
        *   그 변수를 뿌리로 얹는다. 상속하면 워크트리 커밋의 게이트가 «주 저장소 작업본»(남의 미커밋 포함)
        *   으로 그려서, 스테이징된 화면과 영원히 안 맞는 차단이 된다(실측: Loom 부품 19종 vs 22종).
        *   이 게이트의 ROOT 원칙(위 36행 「이 파일이 속한 저장소」)을 spawn 한 겹까지 관철하는 것이다. */
-      env: (() => { const e = { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp, SYNK_대장_방아쇠: 방아쇠.join('\n'), SYNK_PRISM_참조판: 참조tmp }; delete e.CLAUDE_PROJECT_DIR; delete e.SYNK_PRISM_명부; if (명부tmp !== null) e.SYNK_PRISM_명부 = 명부tmp; return e; })(),
+      env: (() => { const e = { ...process.env, SYNK_대장_정본: 정본tmp, SYNK_대장_산출: 산출tmp, SYNK_대장_방아쇠: 방아쇠.join('\n') }; delete e.CLAUDE_PROJECT_DIR; delete e.SYNK_PRISM_명부; if (명부tmp !== null) e.SYNK_PRISM_명부 = 명부tmp; return e; })(),
     });
     if (r.stdout) process.stdout.write(r.stdout);
     if (r.stderr) process.stderr.write(r.stderr);
