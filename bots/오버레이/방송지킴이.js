@@ -33,20 +33,11 @@ const 장부길 = process.env.RADIO_GUARD_STATE || '/opt/synk-radio/방송지킴
 const 표지길 = process.env.RADIO_THUMB || '/opt/synk-radio/무대덮개/썸네일.png';
 const 한도 = 4;
 
-/* 🔴 이 값들은 «두 곳»이 안다 — tools/라디오방송열쇠.js 와 bots/오버레이/방송지킴이.js.
-   방송지킴이는 서버(/opt/synk-radio/)에서 돌아 tools/lib 를 못 읽어 공용 모듈로 못 묶었다.
-   ⇒ 한쪽만 고치면 갈린다. 고칠 때 반드시 둘 다 고친다(기억 constant-known-in-two-places).
-   🆕 09-08 유호 지시 — «공부»와 «한국어»를 조건으로 걸지 않는다(결정 원장 09-08).
-      옛 판 = 「K-LOFI 24 · 한국어 공부할 때 켜 두는 라디오」.
-      까닭 = 카페에서 틀어도 되는 자리인데 조건을 달면 그 밖의 듣는 사람을 스스로 잘라 낸다. */
-const 방송제목 = 'K-LOFI 24 · lofi beats to chill to 🎧';
-const 방송소개 = '언제나 곁에 두는 노래. 24시간 꺼지지 않습니다.\n여기 나오는 노래는 전부 우리가 직접 만들었습니다.\n\nSYNK LAB · 몽골 울란바토르';
-const 분류 = '27';
-const 꼬리표 = ['lofi', 'lofi hip hop', 'lofi radio', 'study music', '공부할 때 듣는 음악', '한국어 공부',
-  'korean study music', 'k-lofi', 'солонгос хэл', 'солонгос хэл сурах', 'chill beats', '24/7 radio',
-  /* 09-08 — 꼬리표는 «검색 그물»이지 «듣는 조건»이 아니라 study 계열을 안 지우고 넷을 더했다.
-     지우면 이미 걸리던 검색이 죽는다. */
-  'cafe music', 'relaxing music', 'sleep music', 'work music'];
+/* 간판(제목·소개·분류·꼬리표)은 `tools/lib/라디오간판.js` 한 곳이 쥔다 — 09-08 에 모았다.
+   🔴 앞서 내가 「서버 봇은 tools/lib 를 못 읽는다」고 적었는데 확인 없이 쓴 말이었다.
+   실측 = 서버에는 이 저장소가 통째로 /opt/synk-radio/지면/ 으로 들어가 있고 이 파일은
+   /opt/synk-radio/지면/bots/오버레이/방송지킴이.js 로 돈다. 그래서 상대 경로로 닿는다. */
+const { 방송제목, 방송소개, 분류, 꼬리표 } = require('../../tools/lib/라디오간판.js');
 
 const 이제 = () => new Date().toISOString().replace('T', ' ').slice(0, 19);
 const 말 = (...것) => console.log(`[방송지킴이 ${이제()}]`, ...것);
