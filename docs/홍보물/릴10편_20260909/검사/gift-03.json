@@ -1,0 +1,30 @@
+{
+  "id": "gift-03",
+  "seed": "d97a3f1d159c2db936f108939abcea2f177ddfa432511e8ff5a89597b1ac4724",
+  "videoHash": "b45918ac960d6069999d0cce3c98c70dd32d76a906dfa2a6f2719002b7502aa2",
+  "renderedAt": "2026-09-08T23:47:00.012Z",
+  "info": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 1080,
+        "height": 1920,
+        "r_frame_rate": "30/1",
+        "side_data_list": [
+          {}
+        ]
+      },
+      {
+        "codec_type": "audio",
+        "sample_rate": "48000",
+        "r_frame_rate": "0/0"
+      }
+    ],
+    "format": {
+      "duration": "30.058000",
+      "size": "2684877"
+    }
+  }
+}
