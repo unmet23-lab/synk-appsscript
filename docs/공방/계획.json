@@ -1360,9 +1360,10 @@
             "상태": "구웠다",
             "쇠": "공방_펠트여권",
             "규격": "부품",
-            "지시": "A small passport booklet made entirely of deep lapis blue wool felt, closed and lying flat, its cover edge blanket stitched with cream wool thread, one simple cream felt emblem shape centred on the cover, softly rounded corners, sharp macro photograph taken from directly above, individual wool fibres visible, solid black background, square frame, nothing else in the frame.",
+            "지시": "A small blank passport booklet made entirely of deep lapis blue wool felt, closed and lying flat, its cover edge blanket stitched with cream wool thread, the cover completely plain with no letters, no numbers, no emblem and no marking of any kind, softly rounded corners, sharp macro photograph taken from directly above, individual wool fibres visible, solid black background, square frame, nothing else in the frame.",
             "왜": "비자 카드의 주제 요소. 라피스라 크림 천 위에서 또렷하다.",
-            "파일": "공방_펠트여권.png"
+            "파일": "공방_펠트여권.png",
+            "왜 다시": "09-08 유호 물음 「오른쪽 위에 0 이건 뭐야?」. 옛 지시의 «one simple cream felt emblem shape» 를 모델이 «O» 글자로 만들었고, 뜻이 없는 글자라 보는 사람이 갸웃한다. ⇒ 표지를 통째로 비운다 — 여권은 형태만으로 여권으로 읽힌다."
           }
         ],
         "상태": "14/14"
