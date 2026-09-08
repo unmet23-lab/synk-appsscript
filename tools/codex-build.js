@@ -616,7 +616,7 @@ function main(argv) {
    * — codex-review.js §62 «이 도구의 집»과 같은 축이다. 못 실리면 조용히 0 이 되지 않게 센다. */
   const 철학 = 실행자철학블록(검수.철학텍스트());
   console.log(철학
-    ? `판단 정본 ${검수.철학텍스트().length.toLocaleString()}자 — 실행자·발주검토자에 실린다`
+    ? `판단 정본 ${검수.철학텍스트().length.toLocaleString('ko-KR')}자 — 실행자·발주검토자에 실린다`
     : '⚠ 판단 정본이 **안 실렸다** — 실행자가 「무엇이 좋은 산출물인가」를 모른 채 짓는다(위 stderr 를 보라)');
 
   /* ── 🔴 프롬프트를 만드는 자리는 **하나뿐이다** (09-08 · GPT 발주검토 지적 🔴 [범위]) ───────
@@ -642,9 +642,15 @@ function main(argv) {
   if (마른손 || 프롬프트확인) {
     if (프롬프트확인) {
       const 본문 = 검수.철학텍스트();
+      /* 🔴 이 줄은 사람만 읽는 것이 아니다 — `tools/GPT철학대조.js` 가 정규식으로 숫자를 뽑는다.
+       *   `toLocaleString()` 을 로캘 없이 부르면 기계에 따라 `5.672`·`5 672` 로 나와 그 정규식이
+       *   행 전체를 놓치고 「측정행을 못 찾았다」로 빠진다(09-08 · GPT 검수 P2 · 이 기계는 `5,672`
+       *   지만 CI·컨테이너는 다를 수 있다). 거짓 초록은 아니지만 남의 배포까지 막는 빨강이 된다.
+       *   ⇒ 기계가 읽는 자리는 로캘을 못 박는다. */
+      const 수 = (n) => n.toLocaleString('ko-KR');
       const 잰다 = (이름, p) => {
         const 들었나 = !!본문 && p.includes(본문);
-        console.log(`  ${이름.padEnd(12)} 프롬프트 ${p.length.toLocaleString().padStart(8)}자 · 판단 정본 ${(들었나 ? 본문.length : 0).toLocaleString().padStart(6)}자 ${들었나 ? '✅' : '❌'}`);
+        console.log(`  ${이름.padEnd(12)} 프롬프트 ${수(p.length).padStart(8)}자 · 판단 정본 ${수(들었나 ? 본문.length : 0).padStart(6)}자 ${들었나 ? '✅' : '❌'}`);
         return 들었나;
       };
       /* 아래 둘은 모델용 호출과 **같은 클로저**를 부른다 — 그래서 여기 초록이면 실제로
