@@ -17,6 +17,7 @@
  *   node tools/라디오방송열쇠.js          # 지금 무엇이 있나만 본다(1유닛)
  *   node tools/라디오방송열쇠.js --받기    # 없으면 만들고, 열쇠를 서버에 넣는다
  *   node tools/라디오방송열쇠.js --갈기    # 🆕 09-08 열쇠만 새로 — 새 스트림 · 다시 묶기 · .env 두 칸 갈기 · 옛 스트림 삭제 · 단계 되돌리기
+ *   node tools/라디오방송열쇠.js --다시켜기 # 🆕 09-08 «트는 곳»만 새로 — 방송 자리가 끝나 아무도 못 볼 때(.env 는 안 건드린다)
  */
 'use strict';
 
@@ -29,7 +30,10 @@ const talk환경 = path.join(os.homedir(), 'Documents', 'SYNK-talk', '.env');
 const ssh열쇠 = path.join(os.homedir(), '.ssh', 'synk_radio');
 const 서버 = 'synk@34.71.111.97';
 const 스트림이름 = 'SYNK 라디오24 상시';
-const 방송제목 = 'SYNK 라디오24';
+/* 🆕 09-08 이름 교체(유호 지시 · 커밋 e3c5ac1c9) — 「24시간 한국어 라디오」·「SYNK FM」은 옛 이름이다.
+   lofi 는 세계가 실제로 검색하는 낱말이고, K- 가 한국어를 로마자로 세워 준다. */
+const 방송제목 = 'K-LOFI 24 · 한국어 공부할 때 켜 두는 라디오 🎧';
+const 방송소개 = '한국어 공부할 때 켜 두는 로파이 라디오입니다. 24시간 꺼지지 않아요.\n\nSYNK LAB — 몽골 학생을 위한 한국어 학원';
 
 function 환경읽기() {
   const 표 = {};
@@ -117,6 +121,73 @@ const 공개범위표 = { private: '비공개', unlisted: '일부공개', public
        옛 열쇠로 밀던 ffmpeg 은 끊기고, radio-live 가 5초 뒤 새 .env 로 되살아난다(Restart=always · 09-08 실측).
        ⑤ 다시 묶으면 방송 단계가 내려가므로(testing/live → ready), 새 스트림이 «active» 가 되길 기다려 옛 단계로 되돌린다.
      쿼터 ≈ 2 + 50(insert) + 50(bind) + 50(delete) + 50~100(transition) + 폴링 ≈ 230유닛. */
+  /* 🆕 09-08 낮 `--다시켜기` — «트는 곳»만 새로 연다. 열쇠(.env)는 손도 안 댄다.
+     왜 있나: 09-08 낮에 방송 자리 셋이 전부 complete 인데 스트림은 active·good 이라, 5시간 40분 동안
+     아무도 못 보는 그림을 밀고 있었다. 끝난 자리는 되살릴 수 없어 «새 자리»를 열어 지금 스트림에 묶는 길이 필요했다.
+     🔴 `--받기` 를 쓰면 안 된다 — 그 갈래는 `cat > .env` 로 환경 파일을 통째로 덮어써서
+        09-07 에 자격 세 칸이 사라진 적이 있다. 이 갈래는 .env 를 읽지도 쓰지도 않는다.
+     🔴 공개 범위는 «비공개»로 연다. 공개로 바꾸는 것은 밖으로 내보내는 일이라 유호님 자리다(--공개범위 로 따로).
+     ⚠ 쿼터 ≈ insert 50 + bind 50 + transition 50×2 + 폴링 ≈ 210유닛(하루 한도 10,000). */
+  if (process.argv.includes('--다시켜기')) {
+    const 스트림들 = (await yt(tok, 'GET', 'liveStreams?part=id,snippet,status&mine=true&maxResults=25')).items || [];
+    const 스트림 = 스트림들.find((x) => x.status?.streamStatus === 'active') || 스트림들[0];
+    if (!스트림) throw new Error('스트림이 하나도 없다 — 먼저 --받기 로 만든다');
+    console.log(`\n스트림 「${스트림.snippet.title}」 · 받는 중? ${스트림.status?.streamStatus} · 건강 ${스트림.status?.healthStatus?.status}`);
+    if (스트림.status?.streamStatus !== 'active') {
+      throw new Error('스트림이 active 가 아니다 — 그림이 안 들어오는데 방송을 열면 또 죽는다. 서버(radio-live)를 먼저 본다');
+    }
+
+    const 방송들 = (await yt(tok, 'GET', 'liveBroadcasts?part=id,status&broadcastStatus=all&broadcastType=all&maxResults=25')).items || [];
+    const 살아있는 = 방송들.filter((b) => !['complete', 'revoked'].includes(b.status?.lifeCycleStatus));
+    if (살아있는.length) {
+      console.log(`\n이미 살아 있는 자리가 있다 — 새로 안 만든다: ${살아있는.map((b) => `${b.id}·${b.status.lifeCycleStatus}`).join(' / ')}`);
+      console.log('   (죽은 줄 알았다면 node tools/라디오방송건강.js 로 다시 본다)\n');
+      return;
+    }
+
+    console.log(`① 새 방송 자리를 만든다: ${방송제목}`);
+    const 방송 = await yt(tok, 'POST', 'liveBroadcasts?part=snippet,status,contentDetails', {
+      snippet: { title: 방송제목, description: 방송소개, scheduledStartTime: new Date(Date.now() + 60 * 1000).toISOString() },
+      status: { privacyStatus: 'private', selfDeclaredMadeForKids: false },
+      /* 🔴 자동 종료를 켜면 잠깐 끊길 때마다 자리가 죽고 채팅 방 번호가 새로 난다(트랙 §0-라디오). */
+      contentDetails: { enableAutoStart: false, enableAutoStop: false, enableDvr: true, latencyPreference: 'normal' },
+    });
+    console.log(`   만들었다 · id ${방송.id} · ${공개범위표[방송.status?.privacyStatus]}`);
+
+    console.log('② 지금 스트림에 묶는다');
+    await yt(tok, 'POST', `liveBroadcasts/bind?id=${방송.id}&part=id,contentDetails&streamId=${스트림.id}`);
+
+    const 단계보기 = async () => (await yt(tok, 'GET', `liveBroadcasts?part=status&id=${방송.id}`)).items?.[0]?.status?.lifeCycleStatus;
+    const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
+    console.log('③ 시험 단계로 올린다(testing — 아직 아무도 못 본다)');
+    await yt(tok, 'POST', `liveBroadcasts/transition?id=${방송.id}&broadcastStatus=testing&part=id,status`);
+    let 지금 = await 단계보기();
+    for (let k = 0; k < 12 && 지금 !== 'testing'; k++) { await 잠깐(5000); 지금 = await 단계보기(); }
+    console.log(`   단계 ${지금}`);
+
+    console.log('④ 트는 단계로 올린다(live — 이제 링크가 있으면 보인다)');
+    await yt(tok, 'POST', `liveBroadcasts/transition?id=${방송.id}&broadcastStatus=live&part=id,status`);
+    지금 = await 단계보기();
+    console.log(`   단계 ${지금}`);
+
+    /* ⑤ 🔴 켜고 끝내지 않는다 — 앞의 세 자리가 39초·125초·246초 만에 죽었다.
+          «켰다»가 아니라 «켜져 있나»를 재야 하므로, 15초마다 물어 몇 분을 지켜본다. */
+    const 분 = Number(process.argv[process.argv.indexOf('--지켜보기') + 1]) || 10;
+    console.log(`\n⑤ ${분}분 지켜본다(15초마다 · 죽으면 그 자리에서 멈춘다)`);
+    const 시작 = Date.now();
+    while (Date.now() - 시작 < 분 * 60 * 1000) {
+      await 잠깐(15000);
+      const 단계 = await 단계보기();
+      const 산초 = Math.round((Date.now() - 시작) / 1000);
+      if (단계 !== 'live') { console.log(`   🔴 ${산초}초 만에 죽었다 — 단계 ${단계}`); break; }
+      if (산초 % 60 < 15) console.log(`   ${산초}초 · live`);
+    }
+    console.log(`\n최종 단계 = ${await 단계보기()}`);
+    console.log(`보는 곳 = https://www.youtube.com/watch?v=${방송.id} (지금은 비공개 — 유호님 계정에서만 보인다)`);
+    console.log('공개로 바꾸는 것은 밖으로 내보내는 일이라 따로 여쭙는다: node tools/라디오방송열쇠.js --공개범위 public\n');
+    return;
+  }
+
   if (process.argv.includes('--갈기')) {
     const 목록 = (await yt(tok, 'GET', 'liveStreams?part=id,snippet,cdn,status&mine=true&maxResults=25')).items || [];
     const 방송들 = await yt(tok, 'GET', 'liveBroadcasts?part=id,snippet,status,contentDetails&mine=true&maxResults=25');
