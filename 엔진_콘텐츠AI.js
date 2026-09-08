@@ -3723,6 +3723,22 @@ const LEVEL_TEST_Q = [ // [문항, 보기4, 정답 인덱스(0~3)]
   ['"동생은 키가 크___ 저는 작아요"(대조)', ['고', '지만', '아서', '니까'], 1],
   ['"열심히 공부했___ 시험을 잘 봤어요"(결과)', ['지만', '더니', '거나', '려고'], 1],
   ['"시간이 있___ 같이 영화 봐요"(조건)', ['어서', '으면', '지만', '고'], 1]];
+
+/* ── F1 폼 설명 — 한국어·몽골어 «짝»의 정본 [09-08] ──────────────────────────────
+ * 이 한 줄이 **밖으로 나가는 첫 글**이다(10월 첫 주 공개 · 명품 마케팅 §⑬ 걸음 2).
+ * 읽는 자리가 둘이라 값을 여기 한 곳에만 둔다 — ①새 폼 만들기(createLevelTestForm)
+ * ②이미 열린 폼 갈기(f1폼설명갱신). 두 곳이 각자 문자열을 들면 곧 갈린다.
+ *
+ * 🔴 **한국어만 고치면 안 된다.** 두 언어가 서로 다른 약속을 하게 된다 — 09-08 에 한국어만
+ *   갈았다가 tests/몽골어출구.test.js 가 잡아서 되돌렸다. 그 게이트가 옳았다.
+ * 🔴 다섯 단계 이름은 **한국어 그대로** 둔다 — 학생이 받는 리포트(아래 lvl·폴백)가 내는 이름과
+ *   같아야 한다. 「몽골어로 옮기는 편이 나은가」는 원어민에게 물어 둔 셋 중 하나다.
+ * ⏳ 몽골어 쪽은 **기계 검문만 지났다**(tools/몽골어대조.js) — 원어민 도장은 09-10~15 에 온다
+ *   (docs/몽골어검수_요청_큐.md §Q). 도장이 오면 아래 한 줄만 갈고 f1폼설명갱신() 을 한 번 돌린다. */
+const F1_설명_KR = '15문항 · 5분 · 지금 어느 단계인지(입문 · 초급 1 · 초급 2 · 중급 1 · 중급 2+)를 몽골어 리포트로 이메일에 보내 드립니다.';
+const F1_설명_MN = '15 асуулт · 5 минут · Таны одоогийн түвшнийг (입문 · 초급 1 · 초급 2 · 중급 1 · 중급 2+) тодорхойлж, монгол хэл дээрх тайланг имэйлээр илгээнэ.';
+function F1_폼_설명_() { return F1_설명_KR + '\n' + F1_설명_MN; }
+
 function createLevelTestForm() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // [v9.60] 재실행 안전(멱등) — 구 버전은 무조건 새 폼을 만들고 마지막에 시트 이름만 바꿨다.
@@ -3753,14 +3769,7 @@ function createLevelTestForm() {
   ss.getSheets().forEach(sh => { before[sh.getName()] = 1; });
   const form = FormApp.create('SYNK LAB — 무료 한국어 레벨 테스트 (Үнэгүй түвшин тогтоох тест)');
   setState(ensureSheet(ss, 'app_state', ['key', 'value']), '레벨테스트URL', form.getPublishedUrl()); // [v9.94] 생성 즉시 기록 — 뒤 단계(응답 시트 연결)에서 타임아웃돼도 앱이 이 폼을 잃지 않는다
-  /* 🔴 [09-08] 문안을 「어느 단계」로 갈 것이 이미 정해져 있다(유호 확정 · 명품 마케팅 §⑬ 걸음 2).
-   *   F1 은 TOPIK 급수를 안 내고 아래 `lvl` 의 다섯 단계 이름을 낸다(입문·초급 1·초급 2·중급 1·중급 2+).
-   *   🔴 그런데 한국어만 고치면 못 나간다. 이 한 문자열이 한국어와 몽골어 «짝»이라, 한국어에
-   *   「어느 단계인지」를 넣으면 몽골어 쪽은 여전히 「진단 리포트가 간다」까지만 말해
-   *   두 언어가 서로 다른 약속을 한다. 몽골어 짝을 함께 쓰고 검문(tools/몽골어대조.js)을
-   *   지난 뒤에 함께 간다. 09-08 에 한국어만 갈았다가 tests/몽골어출구.test.js 가
-   *   잡아서 되돌렸다 — 그 게이트가 옳았다. */
-  form.setDescription('15문항 · 5분 · 결과는 몽골어 AI 진단 리포트로 이메일에 도착합니다.\n15 асуулт · 5 минут · Танд монгол хэлээр оношилгооны тайлан имэйлээр очно.');
+  form.setDescription(F1_폼_설명_()); // 정본 = 위 F1_설명_KR·F1_설명_MN (여기에 문자열을 다시 적지 않는다)
   form.addTextItem().setTitle('이름 / Нэр').setRequired(true);
   form.addTextItem().setTitle('연락처 / Утас').setRequired(true);
   form.addTextItem().setTitle('이메일 / Имэйл (리포트 수신)').setRequired(true);
@@ -3775,6 +3784,31 @@ function createLevelTestForm() {
   setState(ensureSheet(ss, 'app_state', ['key', 'value']), '레벨테스트URL', form.getPublishedUrl());
   Logger.log('레벨 테스트 폼 생성 완료 — 공유 URL: ' + form.getPublishedUrl());
   return '레벨 테스트 준비 완료. FB·상담에 뿌릴 URL: ' + form.getPublishedUrl();
+}
+
+/* [09-08] 이미 열린 F1 폼의 설명을 정본으로 다시 씌운다 — ▶ 에디터에서 손으로 실행.
+ *
+ * 왜 «따로» 있나: 위 createLevelTestForm() 은 폼이 없을 때만 만든다(멱등 · v9.60). 그래서 코드의
+ *   문안을 고쳐도 **이미 개통된 폼은 옛 문안을 그대로 달고 있다** — 학생이 여는 것은 그 폼이다.
+ *   「코드를 고쳤으니 됐다」가 여기서는 거짓이 된다.
+ * 무엇을 바꾸나: **설명 한 칸만.** 문항·응답·공유 URL·응답 시트는 건드리지 않는다.
+ * 여러 번 눌러도 같다 — 이미 정본과 같으면 아무것도 쓰지 않고 그렇다고 말한다.
+ * 🔑 폼을 여는 열쇠는 «편집 URL»이다. app_state 의 「레벨테스트URL」 은 공개 URL(/viewform)이라
+ *   FormApp.openByUrl 이 못 연다 — 응답 시트가 쥔 편집 URL 이 정문이다. */
+function f1폼설명갱신() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('레벨테스트_응답');
+  if (!sh) { const m = "'레벨테스트_응답' 시트가 없습니다 — 폼이 아직 안 열렸습니다. createLevelTestForm() 을 먼저 실행하세요."; Logger.log(m); return m; }
+  let form = null;
+  try { const edit = sh.getFormUrl(); if (edit) form = FormApp.openByUrl(edit); }
+  catch (e) { Logger.log('F1 폼 열기 실패: ' + e.message); }
+  if (!form) { const m = '응답 시트에 연결된 F1 폼을 못 찾았습니다 — 시트-폼 연결이 끊겼습니다.'; Logger.log(m); return m; }
+  const 새것 = F1_폼_설명_(), 옛것 = String(form.getDescription() || '');
+  if (옛것 === 새것) { const m = 'F1 폼 설명은 이미 정본과 같습니다 — 아무것도 바꾸지 않았습니다.'; Logger.log(m); return m; }
+  form.setDescription(새것);
+  const m = 'F1 폼 설명을 갈았습니다.\n[옛것] ' + 옛것 + '\n[새것] ' + 새것;
+  Logger.log(m);
+  return m;
 }
 
 // [v9.60] 폼 재실행이 남긴 잔재 청소 — ▶ 수동 실행. 자동 생성 이름('설문지 응답 시트N'·'Form Responses N')이면서

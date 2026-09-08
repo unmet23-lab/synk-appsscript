@@ -20,6 +20,7 @@ const ROOT = path.resolve(__dirname, '..');
 const 검수 = require(path.join(ROOT, 'tools', 'codex-review.js'));
 /* 자체 CLI 플래그 목록을 그 파일에서 읽어 온다 — 예외를 이 시험에 하드코딩하면 두 곳이 갈린다(09-04). */
 const 정책 = require(path.join(ROOT, 'tools', '모델정책.js'));
+const 런 = require(path.join(ROOT, 'tools', 'lib', '검수런.js')); // 한도 마커의 정본 — 이름을 여기 베끼지 않는다
 const 점검 = require(path.join(ROOT, 'tools', '배포판점검.js'));
 
 const 루트프로젝트 = ROOT;
@@ -375,12 +376,22 @@ test('🔴 --timeout 은 진짜 상한이다 — 오래 사는 코덱스도 그 
 
   const 옛APPDATA = process.env.APPDATA;
   process.env.APPDATA = 방;
+  /* 🔑 벤더 한도 차단을 끄고 잰다 (09-08). 이 시험이 부르는 것은 **위에서 만든 가짜**이지 진짜
+   *   코덱스가 아니라, 벤더 몫과 아무 상관이 없다. 그런데 한도 마커가 있으면 `검수.codex` 가
+   *   가짜를 띄우기도 «전»에 「한도 소진」으로 던져서, 이 시험이 재려던 **상한 자체를 못 재고**
+   *   빨개진다 — 그리고 그 빨강이 저장소 전체 초록을 요구하는 배포 게이트까지 막는다
+   *   (기억 `deploy-gate-eats-others-red`). 09-08 오전에 실제로 그렇게 막혔다.
+   * 🚫 이 우회는 「성공 1회면 마커가 지워진다」인데, 여기 가짜는 상한에 끊겨 성공하지 않는다 —
+   *   그래서 진짜 한도 상태를 이 시험이 지우지 않는다. */
+  const 옛한도무시 = process.env[런.한도무시키];
+  process.env[런.한도무시키] = '1';
   const 상한 = 3000;
   let 잡은 = null;
   const 시작 = Date.now();
   try { 검수.codex(['exec', '-'], 'x', 상한, '실행 1'); } catch (e) { 잡은 = e; }
   const 걸린 = Date.now() - 시작;
   process.env.APPDATA = 옛APPDATA;
+  if (옛한도무시 === undefined) delete process.env[런.한도무시키]; else process.env[런.한도무시키] = 옛한도무시;
 
   assert.ok(잡은, '가짜가 안 끝났는데 codex() 가 안 던졌다');
   assert.ok(잡은.타임아웃, '타임아웃으로 안 읽혔다: ' + 잡은.message);
