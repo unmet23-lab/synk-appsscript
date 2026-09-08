@@ -11,6 +11,7 @@
  * fs.globSync는 탐색 오류를 빈 결과로 숨기므로 쓰지 않는다. 일부만 못 봐도 확인 불가다.
  * 명부·범위는 실제 파일의 상대 경로를 공유한다(Windows 대소문자·링크 별칭 포함).
  * SYNK_PRISM_명부만 바깥 파일 경로를 허용한다 — 동봉 게이트가 커밋될 명부를 임시 파일로 넘긴다.
+ * 참조판 인자는 동봉 게이트의 색인 파일 목록·내용이다. 이때 경로 대조도 작업본을 읽지 않는다.
  * 종료: 0=검사 통과, 1=금지 참조, 2=확인 불가. CI 배선은 별도 작업이다.
  * 검사({루트, 명부, 범위}) / 실행(인자, {루트})는 임시 픽스처용 진입점이다.
  * 자가시험은 실제 범위·명부를 읽지 않고 자체 임시 뿌리를 만든 뒤 지운다.
@@ -58,7 +59,11 @@ function 실제경로(뿌리, 상대) {
   return 정본;
 }
 
-function 파일열쇠(뿌리, 경로, 없는경로허용 = false) {
+function 파일열쇠(뿌리, 경로, 없는경로허용 = false, 참조파일들) {
+  if (참조파일들 !== undefined) {
+    const 접기 = (값) => process.platform === 'win32' ? 값.toLowerCase() : 값;
+    return [...참조파일들.keys()].find((값) => 접기(값) === 접기(경로)) || 접기(경로);
+  }
   try { return path.relative(뿌리, 실제경로(뿌리, 경로)).replace(/\\/g, '/'); }
   catch (오류) {
     // 명부에는 아직 없는 소비자도 올릴 수 있다. 권한 오류나 바깥 링크는 예외가 아니다.
@@ -69,7 +74,7 @@ function 파일열쇠(뿌리, 경로, 없는경로허용 = false) {
   }
 }
 
-function 명부읽기(뿌리, 명부, 외부명부 = false) {
+function 명부읽기(뿌리, 명부, 외부명부 = false, 참조파일들) {
   let 내용;
   try {
     내용 = fs.readFileSync(외부명부 ? 명부 : 실제경로(뿌리, 명부), 'utf8');
@@ -90,7 +95,7 @@ function 명부읽기(뿌리, 명부, 외부명부 = false) {
     if (!갈래들.has(항목.갈래)) throw new Error(`${자리}: 갈래가 올바르지 않다`);
     if (!채운문자열(항목.사유)) throw new Error(`${자리}: 사유가 비었다`);
     let 열쇠;
-    try { 열쇠 = 파일열쇠(뿌리, 경로, true); }
+    try { 열쇠 = 파일열쇠(뿌리, 경로, true, 참조파일들); }
     catch (_) { throw new Error(`${자리}: 명부 경로를 확인할 수 없다 — ${경로}`); }
     if (등록.has(열쇠)) throw new Error(`${자리}: 같은 경로가 두 번 등록됐다 — ${경로}`);
     등록.set(열쇠, 항목.갈래);
@@ -194,17 +199,47 @@ function glob찾기(뿌리, 패턴) {
   return 후보;
 }
 
-function 범위찾기(뿌리, 범위) {
+// 동봉 검사만 받는 임시 JSON이다. 실패·깨진 판을 빈 목록이나 작업본으로 대체하지 않는다.
+function 참조판읽기(파일) {
+  let 자료;
+  try { 자료 = JSON.parse(fs.readFileSync(파일, 'utf8')); }
+  catch (_) { throw new Error('커밋될 Prism 참조 판을 읽을 수 없다'); }
+  if (!객체(자료) || !Array.isArray(자료.파일들)) {
+    throw new Error('커밋될 Prism 참조 파일 목록·내용을 확인할 수 없다');
+  }
+  const 파일들 = new Map();
+  const 열쇠들 = new Set();
+  for (const 항목 of 자료.파일들) {
+    if (!객체(항목) || typeof 항목.내용 !== 'string') throw new Error('커밋될 Prism 참조 파일 내용이 없다');
+    const 경로 = 상대경로(항목.경로, '참조 판 경로');
+    if (경로.includes('/') || !경로.endsWith('.js')) throw new Error('참조 판은 뿌리 .js 파일만 받는다');
+    const 열쇠 = process.platform === 'win32' ? 경로.toLowerCase() : 경로;
+    if (열쇠들.has(열쇠)) throw new Error('커밋될 Prism 참조 파일 경로가 중복됐다');
+    열쇠들.add(열쇠);
+    파일들.set(경로, 항목.내용);
+  }
+  return 파일들;
+}
+
+function 범위찾기(뿌리, 범위, 참조파일들) {
   if (!Array.isArray(범위)) throw new Error('범위 배열이 필요하다');
   const 파일들 = new Set();
   for (const 원형 of 범위) {
     const 패턴 = 상대경로(원형, '범위');
     let 후보;
-    try { 후보 = glob찾기(뿌리, 패턴); }
+    try {
+      후보 = 참조파일들 === undefined ? glob찾기(뿌리, 패턴)
+        : [...참조파일들.keys()].filter((경로) => path.matchesGlob(경로, 패턴));
+    }
     catch (오류) { throw new Error(`범위를 펼칠 수 없다 — ${원형}: ${오류.message}`); }
     let 찾은수 = 0;
     for (const 값 of 후보) {
       const 경로 = 상대경로(값, '범위 파일');
+      if (참조파일들 !== undefined) {
+        파일들.add(경로);
+        찾은수++;
+        continue;
+      }
       let 열쇠;
       try {
         const 실제 = 실제경로(뿌리, 경로);
@@ -224,7 +259,7 @@ function 범위찾기(뿌리, 범위) {
   return [...파일들].sort();
 }
 
-function 검사({ 루트 = 저장소, 명부, 범위 = 기본범위 } = {}) {
+function 검사({ 루트 = 저장소, 명부, 범위 = 기본범위, 참조판 } = {}) {
   try {
     let 뿌리;
     try { 뿌리 = fs.realpathSync(루트); }
@@ -233,14 +268,15 @@ function 검사({ 루트 = 저장소, 명부, 범위 = 기본범위 } = {}) {
     const 명부경로 = 외부명부
       ? process.env.SYNK_PRISM_명부
       : 상대경로(명부 === undefined ? 기본명부 : 명부, '명부');
-    const 등록 = 명부읽기(뿌리, 명부경로, 외부명부);
-    const 파일들 = 범위찾기(뿌리, 범위);
+    const 참조파일들 = 참조판 === undefined ? undefined : 참조판읽기(참조판);
+    const 등록 = 명부읽기(뿌리, 명부경로, 외부명부, 참조파일들);
+    const 파일들 = 범위찾기(뿌리, 범위, 참조파일들);
     const 출력 = [];
     let 참조수 = 0;
     let 학생학부모수 = 0;
     for (const 경로 of 파일들) {
       let 내용;
-      try { 내용 = fs.readFileSync(실제경로(뿌리, 경로), 'utf8'); }
+      try { 내용 = 참조파일들 === undefined ? fs.readFileSync(실제경로(뿌리, 경로), 'utf8') : 참조파일들.get(경로); }
       catch (_) { throw new Error(`범위 파일을 읽을 수 없다 — ${경로}`); }
       const 갈래 = 등록.get(경로);
       const 금지갈래 = 갈래 === '학생' || 갈래 === '학부모';
