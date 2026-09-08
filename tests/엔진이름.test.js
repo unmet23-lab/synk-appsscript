@@ -76,7 +76,10 @@ test('실저장소 — 엔진 갈래 지면 전량이 이름 칸에 회사명을
 
 test('실저장소 — 원고 전량도 같은 이름을 쓴다(원고가 정본이라 여기서 갈리면 다음 굽기가 되돌린다)', () => {
   const 원고 = 지면들(원고방);
-  assert.strictEqual(원고.length, 7, `원고 ${원고.length}벌 — 소개서 7벌이 분모다(Reed 편입 09-01)`);
+  const 소개서 = 원고.filter((f) => f.endsWith('_소개서.html'));
+  assert.strictEqual(소개서.length, 7, `소개서 ${소개서.length}벌 — 엔진 7종이 분모다`);
+  assert.ok(원고.includes('SYNK_엔진_지도.html'), '엔진 지도 원고가 없다');
+  assert.strictEqual(원고.length, 8, `원고 ${원고.length}벌 — 소개서 7벌과 지도 1벌이 분모다`);
   const 흠 = 원고.flatMap((f) => 이름칸흠(f, fs.readFileSync(path.join(원고방, f), 'utf8')).map((h) => `${f}: ${h}`));
   assert.deepStrictEqual(흠, [], `원고 ${원고.length}벌 중 ${흠.length}건`);
 });
