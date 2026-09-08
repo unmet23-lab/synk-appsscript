@@ -118,17 +118,48 @@ def 장부읽기():
             '패치': {}}
 
 
+def _장부꼴():
+    """지금 장부가 쓰는 «들여쓰기»와 «줄끝»을 그대로 읽어 온다.
+
+    🔴 09-08 사고 — 이 자가 없어서 염색이 장부를 통째로 다시 썼다. 파일은 2칸으로
+       들여 써 있는데 도구가 1칸으로 내보내, 내용이 하나도 안 바뀌어도 163줄 중
+       320곳이 diff 에 뜬다. 그 판에서 진짜 변경(한 색의 목표값)이 소음에 묻혔다.
+       줄끝도 같은 자리다 — 윈도에서 CRLF 인 파일을 LF 로 뱉으면 전 줄이 바뀐다
+       (기억 sed-i-flips-crlf-to-lf 와 같은 무늬).
+    """
+    p = os.path.join(라이브러리, 장부파일)
+    if not os.path.exists(p):
+        return 2, '\n'
+    with open(p, encoding='utf-8', newline='') as f:
+        s = f.read()
+    줄끝 = '\r\n' if '\r\n' in s else '\n'
+    for 줄 in s.split(줄끝):
+        본 = 줄.lstrip(' ')
+        깊이 = len(줄) - len(본)
+        if 깊이 and 본.startswith('"'):
+            return 깊이, 줄끝
+    return 2, 줄끝
+
+
 def 장부등록(이름, 역할, 왜=None, 목표=None):
+    """장부의 그 항목만 «고쳐» 쓴다 — 통째로 갈아치우지 않는다.
+
+    🔴 09-08 사고 — 여기서 `장['패치'][이름] = 항` 로 통째로 덮는 바람에, 있던 색을
+       다시 염색하자 그 항목의 「왜」(그 색이 왜 그 값인지 적어 둔 유일한 자리)가
+       조용히 사라졌다. 염색은 `왜` 를 안 넘기므로 «안 넘긴 칸»은 건드리면 안 된다.
+    """
     장 = 장부읽기()
-    항 = {'역할': 역할}
+    항 = dict(장.get('패치', {}).get(이름) or {})     # 있던 것을 이어받는다
+    항['역할'] = 역할
     if 왜:
         항['왜'] = 왜
     if 목표:
         항['목표'] = 목표.upper()
-    장['패치'][이름] = 항
-    with open(os.path.join(라이브러리, 장부파일), 'w', encoding='utf-8') as f:
-        json.dump(장, f, ensure_ascii=False, indent=1)
-        f.write('\n')
+    장.setdefault('패치', {})[이름] = 항
+    들여, 줄끝 = _장부꼴()
+    글 = json.dumps(장, ensure_ascii=False, indent=들여) + '\n'
+    with open(os.path.join(라이브러리, 장부파일), 'w', encoding='utf-8', newline='') as f:
+        f.write(글.replace('\n', 줄끝))
 
 
 def 기본패치확인():
