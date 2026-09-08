@@ -126,6 +126,12 @@ function 지면짓기(카드) {
   const 점끔 = 심기(누끼('공방_진행점꺼짐'), 96, true);
   /* 마스코트 정본은 이미 알파를 가졌다(4096² rgba) — 누끼를 다시 뜰 자리가 아니다. */
   const 몽글 = 심기(마스코트.절대경로('본체', { 누끼: true }), 560, true);
+  /* 🔑 조연 실은 «라피스»다(09-08 4K 로 새로 구웠다 · 672원).
+     크림 부품이 크림 천에서 안 보이던 자리를 색으로 푼다 — 킷 「주연 1실 + 조연 1실」. */
+  const 여권 = 심기(누끼('공방_펠트여권'), 420, true);
+  const 땀 = 심기(누끼('공방_실땀한땀라피스'), 200, true);
+
+  const 땀줄 = Array.from({ length: 9 }, () => `<img class="땀" src="${땀.uri}" alt="">`).join('');
 
   const 점들 = Array.from({ length: 카드.총쪽 }, (_, i) => (
     `<img class="점" src="${i + 1 === 카드.쪽 ? 점켬.uri : 점끔.uri}" alt="">`
@@ -143,7 +149,14 @@ function 지면짓기(카드) {
       padding:120px 88px 150px;justify-content:center}
 
   /* 큰 수 — 이 카드의 «신호»이고, 신호는 코랄 하나다(킷 3규칙) */
-  .수줄{display:flex;align-items:baseline;gap:34px;margin-bottom:104px}
+  .수줄{display:flex;align-items:baseline;gap:34px}
+
+  /* 손바느질 한 줄 — 라피스 실 한 땀을 나란히 놓는다. 크림 천 위에서 또렷하다 */
+  .땀줄{display:flex;align-items:center;gap:10px;margin:30px 0 38px;width:904px}
+  .땀{width:72px;height:72px;display:block;flex:0 0 auto}
+
+  /* 주제 요소 — 손으로 놓은 듯 살짝 기울인다 */
+  .여권{position:absolute;top:96px;right:84px;width:196px;display:block;transform:rotate(-7deg)}
   .수{font:800 300px/0.86 'Inter Tight',sans-serif;color:${색('Coral 3')};
       letter-spacing:-.04em;font-feature-settings:'tnum' 1}
   .수뒤{font:700 76px/1 'Inter Tight',sans-serif;color:${색('Ink')};letter-spacing:-.01em}
@@ -168,11 +181,14 @@ function 지면짓기(카드) {
 
 <img class="바탕" src="${바탕.uri}" alt="">
 
+<img class="여권" src="${여권.uri}" alt="">
+
 <div class="판">
   <div class="수줄">
     <span class="수">${카드.큰수}</span>
     <span class="수뒤">${카드.수뒤}</span>
   </div>
+  <div class="땀줄">${땀줄}</div>
   <p class="몽골">${카드.몽골}</p>
   <p class="한국">${카드.한국}</p>
 </div>
@@ -186,7 +202,7 @@ function 지면짓기(카드) {
 
 </body></html>`;
 
-  const 잰것 = { 바탕: 바탕.KB, 점: 점켬.KB + 점끔.KB, 몽글: 몽글.KB };
+  const 잰것 = { 바탕: 바탕.KB, 점: 점켬.KB + 점끔.KB, 몽글: 몽글.KB, 여권: 여권.KB, 땀: 땀.KB };
   return { 원고, 잰것 };
 }
 
@@ -237,7 +253,7 @@ function main() {
   fs.mkdirSync(path.dirname(지면경로), { recursive: true });
   fs.writeFileSync(지면경로, 낼원고, 'utf8');
   console.log(`■ 지면  ${path.relative(루트, 지면경로)}  (${Math.round(낼원고.length / 1024)}KB)`);
-  console.log(`   심은 자산 — 바탕 ${잰것.바탕}KB · 진행 점 ${잰것.점}KB · 몽글 ${잰것.몽글}KB`);
+  console.log(`   심은 자산 — 바탕 ${잰것.바탕}KB · 진행 점 ${잰것.점}KB · 몽글 ${잰것.몽글}KB · 여권 ${잰것.여권}KB · 실땀 ${잰것.땀}KB`);
   console.log(`   서체 심김 = ${브랜드폰트.심겼나(낼원고) ? '✅' : '🔴 안 심겼다'}`);
 
   if (인자['지면만']) return;

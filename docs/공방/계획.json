@@ -1345,9 +1345,27 @@
             "규격": "부품",
             "지시": "A simple hand shape of pale cream wool felt with the index finger extended, pointing to the right, the edges blanket stitched.",
             "파일": "공방_넘김손가락.avif"
+          },
+          {
+            "이름": "실땀 한 땀(라피스)",
+            "상태": "구웠다",
+            "쇠": "공방_실땀한땀라피스",
+            "규격": "부품",
+            "지시": "A single hand sewing stitch of thick deep lapis blue wool thread lying flat on a black surface, one short straight stitch set at a slight diagonal, both ends of the thread pressed down into the surface, sharp macro photograph taken from directly above, individual wool fibres and a soft halo of fluff clearly visible, solid black background, square frame, nothing else in the frame.",
+            "왜": "크림 실은 크림 천 위에서 원리상 안 보인다(09-08 실측). 구분선은 조연 실(라피스)로 세운다.",
+            "파일": "공방_실땀한땀라피스.png"
+          },
+          {
+            "이름": "펠트 여권",
+            "상태": "구웠다",
+            "쇠": "공방_펠트여권",
+            "규격": "부품",
+            "지시": "A small passport booklet made entirely of deep lapis blue wool felt, closed and lying flat, its cover edge blanket stitched with cream wool thread, one simple cream felt emblem shape centred on the cover, softly rounded corners, sharp macro photograph taken from directly above, individual wool fibres visible, solid black background, square frame, nothing else in the frame.",
+            "왜": "비자 카드의 주제 요소. 라피스라 크림 천 위에서 또렷하다.",
+            "파일": "공방_펠트여권.png"
           }
         ],
-        "상태": "12/12"
+        "상태": "14/14"
       },
       {
         "이름": "다시 굽기 (4K)",
