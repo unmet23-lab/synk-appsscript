@@ -1902,10 +1902,24 @@ function 검수한회(대상, timeoutMs, 방, i, 총) {
  * 규칙을 그대로 따랐다) gemini 는 diff 만 받으므로 프롬프트에 실어 준다. 규칙은 한 파일에만 산다. */
 function 검수규칙추출(md) {
   const 줄들 = String(md || '').replace(/\r\n/g, '\n').split('\n');
-  const 시작 = 줄들.findIndex((l) => /^##\s+(?:\d+[.)]\s*)?Code Review Rules\s*$/.test(l));
+  let 시작 = -1, 끝 = 줄들.length, 펜스 = null;
+  for (let i = 0; i < 줄들.length; i++) {
+    const 줄 = 줄들[i];
+    // 코드 예시 안의 # 주석과 제목은 Markdown 절의 경계가 아니다.
+    if (펜스) {
+      if (new RegExp('^ {0,3}' + 펜스.문자 + '{' + 펜스.길이 + ',}[ \\t]*$').test(줄)) 펜스 = null;
+      continue;
+    }
+    const 열기 = 줄.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+    if (열기 && (열기[1][0] !== '`' || !열기[2].includes('`'))) {
+      펜스 = { 문자: 열기[1][0], 길이: 열기[1].length };
+      continue;
+    }
+    if (시작 < 0) {
+      if (/^ {0,3}##\s+(?:\d+[.)]\s*)?Code Review Rules\s*$/.test(줄)) 시작 = i;
+    } else if (/^ {0,3}#{1,2}\s/.test(줄)) { 끝 = i; break; }
+  }
   if (시작 < 0) throw 확인불가('AGENTS.md의 Code Review Rules 절을 찾지 못했다');
-  let 끝 = 시작 + 1;
-  while (끝 < 줄들.length && !/^#{1,2}\s/.test(줄들[끝])) 끝++;
   if (!줄들.slice(시작 + 1, 끝).join('\n').trim()) throw 확인불가('AGENTS.md의 검수 규칙 본문이 비었다');
   return 줄들.slice(시작, 끝).join('\n').trim();
 }
