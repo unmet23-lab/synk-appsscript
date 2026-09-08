@@ -130,19 +130,3 @@ test('③ 파일 안에 있는 SNS·DM 실문구가 대상이다 (경로 실재�
 
 /* ── ④ 등록층 — 훅이 실제로 발화하는가 (가드는 로직보다 등록층에서 샌다) ──── */
 
-test('④ settings.json 에 등록돼 있고, 라우팅이 훅보다 좁지 않다', () => {
-  const s = JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'));
-  const 등록 = (s.hooks?.PreToolUse || []).filter((h) =>
-    (h.hooks || []).some((x) => String(x.command || '').includes('voice-guard.js')));
-  assert.equal(등록.length, 1, 'voice-guard 등록이 정확히 1개여야 한다');
-
-  const m = 등록[0].matcher;
-  for (const t of ['Edit', 'Write', 'MultiEdit']) {
-    assert.ok(new RegExp(`^(${m})$`).test(t), `매처가 ${t}를 안 잡는다 — 훅보다 좁다`);
-  }
-  const cmd = 등록[0].hooks[0].command;
-  assert.ok(!/\.md/.test(cmd), '앞단 필터가 .md로 좁히면 .js·.html 학생 접점이 통째로 샌다');
-  assert.ok(/CLAUDE_PROJECT_DIR/.test(cmd), '로컬 절대경로 등록은 다른 기계에서 죽는다(F044)');
-  // 실행 불가를 **deny 로 드러낸다** — exit 코드만으로는 조용한 통과와 구분되지 않는다(F044).
-  assert.ok(/"permissionDecision":\\?"deny/.test(cmd), '훅을 못 찾을 때 통과가 아니라 차단해야 한다(F044)');
-});

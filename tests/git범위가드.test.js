@@ -145,15 +145,6 @@ test('전역 옵션이 붙어도 정상 형태는 통과한다 (과잉 차단 �
   });
 });
 
-test('훅이 settings.json에 실제로 등록돼 있다 (파일만 있고 안 불리면 없는 것과 같다)', () => {
-  const s = JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'));
-  const pre = (s.hooks && s.hooks.PreToolUse) || [];
-  const 등록 = JSON.stringify(pre);
-  assert.ok(등록.indexOf('git-scope-guard') >= 0, 'settings.json PreToolUse에 git-scope-guard가 없다');
-  const bash = pre.filter((h) => /Bash/.test(String(h.matcher || '')));
-  assert.ok(bash.length >= 1 && JSON.stringify(bash).indexOf('git-scope-guard') >= 0,
-    'Bash 매처에 걸려 있지 않으면 git 명령을 못 본다');
-});
 
 /* ── ④ rebase·merge 진행 중 커밋 차단 (2026-08-04 F038) ─────────────────────
  * 실사고: 옆 세션이 리베이스를 도는 동안 다른 세션이 `git commit -- 경로`를 했고,

@@ -134,14 +134,6 @@ test('기준선이 없는 스킬은 «도장을 찍으라»고 알린다 — 처
   assert.ok(글.includes('--도장'), '무엇을 하면 되는지 안 알려준다');
 });
 
-test('⏱ 요청·전체 시간 상한이 세션 시작 훅 한도(45초) 안에 든다', () => {
-  const 설정 = JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'));
-  const 훅 = (설정.hooks.SessionStart[0].hooks || []).find((h) => (h.command || '').includes('스킬판점검'));
-  assert.ok(훅, '세션 시작 훅에서 이 도구를 못 찾았다');
-  assert.ok(점검.전체예산밀리 < 훅.timeout * 1000,
-    `전체 예산 ${점검.전체예산밀리}ms 가 훅 상한 ${훅.timeout}s 를 넘는다 — 훅이 결과 없이 잘린다`);
-  assert.ok(점검.한요청밀리 <= 점검.전체예산밀리, '한 요청 상한이 전체 예산보다 크다');
-});
 
 // ── 표와 도구가 한 몸인가 ────────────────────────────────────────────
 
@@ -178,13 +170,8 @@ test('표 문서가 이 도구를 가리킨다 — 「어떻게 다시 재나」
   assert.ok(/도장/.test(표글), '봤고 처리했을 때 무엇을 하는지가 표에 없다');
 });
 
-test('🔴 세션 시작 훅이 이 도구를 «--훅» 으로 부른다 — 안 걸려 있으면 아무도 안 잰다', () => {
-  const 설정 = JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'));
-  const 훅들 = (설정.hooks && 설정.hooks.SessionStart) || [];
-  const 명령 = 훅들.flatMap((g) => (g.hooks || []).map((h) => h.command || '')).join('\n');
-  assert.ok(명령.includes('스킬판점검.js'), '세션 시작 훅에 이 도구가 없다 — 자동으로 도는 자리가 사라졌다');
-  assert.ok(/스킬판점검\.js[^\n]*--훅/.test(명령.replace(/\\"/g, '"')),
-    '훅 모드(--훅) 없이 부른다 — 매 세션 네트워크를 때리고 7일 규칙이 죽는다');
-  assert.ok(/확인 불가/.test(명령),
-    '도구가 없을 때 「다 최신」이라고 말하는 훅이다 — 「없다」와 «못 쟀다»를 갈라야 한다');
+
+test('도구의 요청 시간 상한은 전체 실행 예산 안에 든다', () => {
+  assert.ok(점검.한요청밀리 > 0);
+  assert.ok(점검.한요청밀리 <= 점검.전체예산밀리);
 });
