@@ -38,7 +38,11 @@ _blobs = _치수재기._blobs
 
 SRC = os.path.join('docs', '캐릭터', '정본_4K')
 OUT = os.path.join('docs', '캐릭터', '정본_4K_후보', '의상통일')
-비스듬 = {'좌34', '우34'}          # 옆으로 돈 컷은 포갤 수 없다 — 따로 둔다
+# 🔴 포갤 수 없는 컷 — 여기 든 것은 «옛 판 그대로» 둔다.
+#   좌34·우34 = 몸이 돌아가 있어 본체 화소를 못 얹는다.
+#   인사      = «몸짓»이 쓰임의 전부인데(라디오에서 인사할 때 쓴다) 몸을 본체 것으로 갈면
+#              숙이는 동작이 통째로 사라진다(09-08 실측 · 유호님께 보여 드린 그 자리).
+못포갬 = {'좌34', '우34', '인사'}
 
 # 캐릭터마다 «머리(닻)»와 «눈(창)»을 찾는 자가 다르다
 자 = {
@@ -82,7 +86,7 @@ def 읽기(name, cut):
 
 def 컷목록(name):
     cs = [f[:-4].split('_', 1)[1] for f in sorted(os.listdir(SRC)) if f.startswith(name + '_')]
-    return [c for c in cs if c not in 비스듬]
+    return [c for c in cs if c not in 못포갬]
 
 
 def 통일(name, 검사만=False):
@@ -119,9 +123,13 @@ def 통일(name, 검사만=False):
     창 = [int(lo[0] - 눈높 * .30), int(lo[1] - 눈높 * .45),
          int(lo[2] + 눈높 * .30), int(lo[3] + 눈높 * .45)]
     눈폭 = max(1.0, (lo[2] - lo[0]))
-    # 창을 머리 «안»으로 눌러 테두리·몸·의상이 본체 것으로 남게 한다
+    # 창을 머리 «안»으로 눌러 테두리·몸·의상이 본체 것으로 남게 한다.
+    # 🔴 위아래만 누르면 창이 옆선에 닿아 «몸 폭»이 컷마다 흔들린다(09-08 마린 1.51%).
+    #    네 방향을 다 눌러야 실루엣이 통째로 본체 것이 된다.
     창[3] = min(창[3], 닻본[3] - int(H본 * .06))
     창[1] = max(창[1], 닻본[1] + int(H본 * .04))
+    창[0] = max(창[0], 닻본[0] + int(W본 * .06))
+    창[2] = min(창[2], 닻본[2] - int(W본 * .06))
 
     마스크 = Image.new('L', (a본.shape[1], a본.shape[0]), 0)
     ImageDraw.Draw(마스크).rounded_rectangle(tuple(창), radius=int(눈폭 * .45), fill=255)
@@ -161,12 +169,52 @@ def 통일(name, 검사만=False):
     return 보고
 
 
+def 옆판통일(name='마린'):
+    """옆으로 돈 컷(좌34·우34) — 머리는 그 컷에서, «투구 아래»는 본체에서 가져온다.
+
+    🔴 09-08 유호 지적 「각각 셋 다 꽃이 달라」에서 나왔다. 실측 — 마린 34도 둘의 꽃은
+       줄기가 본체의 절반(3,521점 → 1,859·1,517)이고 꽃잎이 뭉개져 있었다.
+    🔑 34도라 해도 실제로는 거의 안 돌아간다(몸 폭이 정면의 0.99~1.03배). 그래서 «투구 아래»를
+       본체 것으로 갈아도 어색하지 않고, 꽃·끈·주머니·다리가 화소 단위로 같아진다.
+    ⚠ 마린 전용이다 — 몽글·까몽은 몸이 곧 머리라 자를 선이 없다.
+    ⚠ 인사는 여기 안 든다. 숙이는 동작이라 투구가 꽃을 가리는 게 «맞는» 그림이다.
+    """
+    a본, 닻본, _ = 읽기(name, '본체')
+    H본 = 닻본[3] - 닻본[1] + 1
+    W본 = 닻본[2] - 닻본[0] + 1
+    자름 = 닻본[3] - int(H본 * .04)          # 투구 아래 끝 조금 위에서 가른다
+    마스크 = Image.new('L', (a본.shape[1], a본.shape[0]), 0)
+    ImageDraw.Draw(마스크).rectangle([0, 0, a본.shape[1], 자름], fill=255)
+    마스크 = 마스크.filter(ImageFilter.GaussianBlur(26))
+    밖 = np.asarray(마스크) == 0
+    os.makedirs(OUT, exist_ok=True)
+    보고 = []
+    for c in ('좌34', '우34'):
+        a, 닻, _ = 읽기(name, c)
+        k = W본 / (닻[2] - 닻[0] + 1)
+        dx, dy = 닻본[0] - 닻[0] * k, 닻본[1] - 닻[1] * k
+        im = Image.fromarray(a).resize((int(a.shape[1] * k), int(a.shape[0] * k)), Image.LANCZOS)
+        캔 = Image.new('RGBA', (a본.shape[1], a본.shape[0]), (0, 0, 0, 0))
+        캔.paste(im, (int(round(dx)), int(round(dy))))
+        합 = Image.composite(캔, Image.fromarray(a본), 마스크)
+        같 = int(((np.asarray(합) == a본).all(axis=2) & 밖).sum())
+        비율 = 100.0 * 같 / int(밖.sum())
+        합.save(os.path.join(OUT, f'{name}_{c}.png'))
+        보고.append((c, round(비율, 4), round(k, 4)))
+        print(f'   {c:<6} 투구 아래가 본체와 {비율:.4f}% 같다 · 크기맞춤 {k:.4f}')
+    return 보고
+
+
 if __name__ == '__main__':
     검사만 = '--검사만' in sys.argv
     누구 = None
     if '--누구' in sys.argv:
         누구 = sys.argv[sys.argv.index('--누구') + 1]
     분 = [누구] if 누구 else ['마린', '몽글', '까몽']
+    if '--옆판' in sys.argv:
+        print('■ 마린 옆판(34도) — 투구 아래를 본체 것으로 간다')
+        옆판통일('마린')
+        raise SystemExit
     전체 = []
     for n in 분:
         b = 통일(n, 검사만)
