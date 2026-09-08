@@ -14,7 +14,7 @@
       {
         "이름": "천·바탕",
         "쓰는 곳": "지면 배경 · 카드 바탕 · PPT 표지",
-        "상태": "9/9",
+        "상태": "10/10",
         "것들": [
           {
             "이름": "크림 양모 펠트",
@@ -90,6 +90,17 @@
             "규격": "천",
             "지시": "The cloth is densely needle-felted wool dyed a warm coral red, the red of coral tips seen through shallow water, soft and slightly dusty rather than neon.",
             "파일": "공방_코랄펠트.avif"
+          },
+          {
+            "이름": "실땀 펠트",
+            "상태": "구웠다",
+            "메모": "킷 실땀(Stitch)이 4K 마스코트 밑단 실 실측값 #FBCAAB 로 갈렸는데 펠트 패치 그림은 옛 크림빛 #F0E3C8 로 남아 브랜드킷이 «새 이름표 옆 옛 견본»을 띄웠다(09-08 배포 검수 P2 · 2c08e987f983). 재염색은 09-05 저녁에 유호님이 내리셨으므로(「색 표현이 좀 싸구려같아」) 그 색으로 바로 굽는다(유호 지시 09-08 「한번 구워줘」).",
+            "쇠": "공방_실땀펠트",
+            "규격": "천",
+            "지시": "The cloth is densely needle-felted wool dyed a VERY PALE, CLEAN, LUMINOUS peach — a high-key blush that sits only a shade away from white, like fresh cream with the faintest blush of ripe apricot stirred through it. The colour is light, bright, airy and clear. It is emphatically NOT beige, NOT tan, NOT brown, NOT khaki, NOT ochre, NOT dusty, NOT muted, NOT greyed and NOT weathered. Think pale peach-blossom petals in bright open shade. The overall picture is bright and high-key: the cloth must read as a delicate pale tint, never as a mid-tone. Quiet and even across the whole surface.",
+            "굽기이력": "🔴 두 번 구웠고(672원) 둘 다 못 앉았다. 1회차(20:12) 코어 #DEBFAB · ΔE2000 6.33(어둡고 탁한 갈색빛). 밝기·맑기를 앞세우고 베이지·갈색을 낱말로 막아 2회차(20:5x)를 구웠더니 코어 #F7DBCE · ΔE 7.99 로 «반대쪽»으로 갔다(너무 옅고 분홍). ⇒ 배운 것 = **낱말만으로는 특정 hex 에 못 앉힌다. 양쪽으로 빗나가는 것이 그 증거다.** 이 자리는 「구워서 색을 맞추는」 일이 아니라 「구워서 결을 얻고 색은 연산이 앉히는」 일이다(펠트패치 설계 원문 그대로).",
+            "구운천_판정": "🔴 구운 천으로 타일을 만들어 봤지만 지금 견본을 못 이겼다. 통로 = 576화소 뜯어 144 로 줄이고(결이 지금 견본의 101.9% 로 가장 가까운 배율) `타일_거울` 로 288² 이음매 0 을 만든 뒤 목표색으로 물들임 → 코어 #F9CAAB · ΔE 0.48 · 결 4.164 · 이음매비 0.000 으로 지금 견본(0.49 · 4.086 · 0.000)과 숫자가 거의 같았다. 🔑 갈린 것은 숫자가 아니라 «눈»이다 — 매크로로 구운 올이 굵어서 2×2 로 이어 붙이면 거울 대칭이 나비 무늬로 도드라진다. 지금 견본은 올이 고와 그 무늬가 안 보인다. ⇒ 지금 견본을 그대로 둔다(유호님께 사진으로 보고 09-08).",
+            "파일": "공방_실땀펠트.png"
           }
         ]
       },
