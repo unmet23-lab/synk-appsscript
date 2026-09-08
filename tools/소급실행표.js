@@ -104,13 +104,28 @@ function 낡음표시(s) {
 /** 마감이 «12-07 파일럿»에 걸리나. 색인 §시계 정정 — 첫 학생은 개원이 아니라 파일럿이다. */
 const 파일럿인가 = (v) => /파일럿|12월|12-07|첫 학생|첫학생/.test(v.deadline_event || '');
 
+/* 🔴 «검색어에 안 걸렸다»를 «뒤에 해도 된다»로 바꾸지 않는다 (심문 09-08 P0).
+ *   첫 판은 갈래가 둘이었다 — 파일럿에 걸린 것 / 그 뒤에 오는 것. 그런데 뒤쪽 106건 중
+ *   61건이 «첫 무엇이 일어나는 날»인데 날짜가 안 박혀 있다(첫 출석·첫 음성 수집·첫 진단·
+ *   첫 시즌 회고·학생이 앱에서 처음 고르는 날 …). 파일럿은 «학생이 오는 리허설»이라
+ *   그중 몇은 그날 지나간다. 「모른다」를 「뒤」에 넣으면 그 사이 맥락과 잴 기회가 사라진다.
+ *   ⇒ 갈래를 셋으로 둔다: 파일럿에 걸린다 / **언제인지 모른다** / 파일럿 뒤가 확실하다. */
+const 날짜박힘 = (v) => /20\d\d[-.\/]\d\d|2027|개원|2026-1[012]/.test(v.deadline_event || '');
+const 첫사건 = (v) => /첫\s|첫[가-힣]|처음/.test(v.deadline_event || '');
+const 갈래 = (v) => {
+  if (파일럿인가(v)) return 0;                       // 파일럿에 걸린다
+  if (첫사건(v) && !날짜박힘(v)) return 1;           // «첫 무엇»인데 날짜가 없다 — 모른다
+  return 2;                                          // 파일럿 뒤가 확실하다
+};
+const 갈래말 = ['12-07 파일럿에 걸린 것', '🔴 언제인지 «모르는» 것 — 파일럿에 걸릴 수 있다', '파일럿 뒤가 확실한 것'];
+
 const 전부 = JSON.parse(fs.readFileSync(재료, 'utf8'));
-let 볼것 = 인자.전량 ? 전부 : 전부.filter(파일럿인가);
+let 볼것 = 인자.전량 ? 전부 : 전부.filter((v) => 갈래(v) <= (인자.모르는것 ? 1 : 0));
 if (인자.임자) 볼것 = 볼것.filter((v) => v.owner === 인자.임자);
 
-/* 급한 순 — 파일럿이 먼저, 그 안에서 확신이 높은 것이 먼저(자리가 확실하니 바로 손댈 수 있다) */
+/* 급한 순 — 갈래가 먼저, 그 안에서 확신이 높은 것이 먼저(자리가 확실하니 바로 손댈 수 있다) */
 const 확신순 = { high: 0, medium: 1, low: 2 };
-볼것.sort((a, b) => (파일럿인가(b) - 파일럿인가(a))
+볼것.sort((a, b) => (갈래(a) - 갈래(b))
   || (확신순[a.confidence] - 확신순[b.confidence])
   || String(a.id).localeCompare(String(b.id)));
 
@@ -120,10 +135,14 @@ if (인자.md) {
   console.log('> 재료 `docs/_ops/소급불가_울트라/전량.json` 의 `source` 칸을 꺼낸 것이다.');
   console.log('> 🔑 **자리는 처음부터 있었다** — 색인 마크다운이 옮길 때 그 칸을 버렸을 뿐이다.');
   console.log('> 되뜨는 자 = `node tools/소급실행표.js --전량 --md`\n');
-  console.log(`총 ${볼것.length}건 · 파일럿(12-07)에 걸린 것 ${볼것.filter(파일럿인가).length}건\n`);
+  console.log(`총 ${볼것.length}건 · 파일럿(12-07)에 걸린 것 ${볼것.filter((v) => 갈래(v) === 0).length}건`
+    + ` · 🔴 언제인지 모르는 것 ${볼것.filter((v) => 갈래(v) === 1).length}건`
+    + ` · 파일럿 뒤가 확실한 것 ${볼것.filter((v) => 갈래(v) === 2).length}건\n`);
+  console.log('> 🔴 가운데 갈래는 «파일럿에 걸릴 수 있다» — 「검색어에 안 걸렸다」를 「뒤에 해도 된다」로');
+  console.log('> 읽지 않는다. 한 건씩 열어 「그날 지나가나」를 판정해야 한다(아직 안 했다).\n');
   let 절 = null;
   for (const v of 볼것) {
-    const 새절 = 파일럿인가(v) ? '12-07 파일럿에 걸린 것' : '그 뒤에 오는 것';
+    const 새절 = 갈래말[갈래(v)];
     if (새절 !== 절) { 절 = 새절; console.log(`\n## ${절}\n`); }
     console.log(`### ${v.title}`);
     console.log(`- **임자** ${임자말[v.owner] || v.owner} · **확신** ${확신말[v.confidence] || v.confidence} · \`${v.id}\``);
@@ -143,6 +162,9 @@ if (인자.md) {
   }
   const c = (k) => 볼것.filter((v) => v.owner === k).length;
   console.log('\n' + '─'.repeat(60));
+  console.log(`갈래 — 파일럿 ${볼것.filter((v) => 갈래(v) === 0).length}`
+    + ` · 🔴 모른다 ${볼것.filter((v) => 갈래(v) === 1).length}`
+    + ` · 뒤가 확실 ${볼것.filter((v) => 갈래(v) === 2).length}`);
   console.log(`임자 — 내가 ${c('machine')} · 유호님 ${c('yuho')} · 사람 손 ${c('person')}`);
   console.log(`확신 — 높다 ${볼것.filter((v) => v.confidence === 'high').length}`
     + ` · 보통 ${볼것.filter((v) => v.confidence === 'medium').length}`
