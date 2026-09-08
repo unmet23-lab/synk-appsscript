@@ -71,12 +71,35 @@ http.createServer((요청, 답) => {
         + `<h2>${상대}</h2><ul>${줄}</ul>`);
       return;
     }
-    답.writeHead(200, {
-      'content-type': 형[path.extname(절대).toLowerCase()] || 'application/octet-stream',
-      'content-length': st.size,
+    const 형식 = 형[path.extname(절대).toLowerCase()] || 'application/octet-stream';
+    const 공통 = {
+      'content-type': 형식,
       /* 지면을 다시 굽고 새로고침했는데 옛 판이 보이면 판정이 통째로 헛돈다 */
       'cache-control': 'no-store, max-age=0',
-    });
+      /* 🔴 구간 요청을 받는다고 «먼저» 알린다 — 09-08 실측: 이 줄이 없으면 크롬이 영상을
+         받다가 readyState 0 에서 멈춘다(error 도 안 난다). 지면 안의 <video> 가 통째로
+         빈 네모로 보이고, 곁의 그림은 멀쩡해서 얼핏 「영상만 못 구웠나」로 오독된다. */
+      'accept-ranges': 'bytes',
+    };
+    const 구간 = /^bytes=(\d*)-(\d*)$/.exec(요청.headers.range || '');
+    if (구간 && st.size > 0) {
+      let 시작 = 구간[1] === '' ? null : Number(구간[1]);
+      let 끝 = 구간[2] === '' ? null : Number(구간[2]);
+      if (시작 === null) {           // bytes=-N → 끝에서 N 바이트
+        시작 = Math.max(0, st.size - (끝 ?? 0));
+        끝 = st.size - 1;
+      } else if (끝 === null || 끝 >= st.size) {
+        끝 = st.size - 1;
+      }
+      if (Number.isNaN(시작) || Number.isNaN(끝) || 시작 > 끝 || 시작 >= st.size) {
+        답.writeHead(416, { 'content-range': `bytes */${st.size}` }).end();
+        return;
+      }
+      답.writeHead(206, { ...공통, 'content-length': 끝 - 시작 + 1, 'content-range': `bytes ${시작}-${끝}/${st.size}` });
+      fs.createReadStream(절대, { start: 시작, end: 끝 }).pipe(답);
+      return;
+    }
+    답.writeHead(200, { ...공통, 'content-length': st.size });
     fs.createReadStream(절대).pipe(답);
   });
 }).listen(포트, () => {
