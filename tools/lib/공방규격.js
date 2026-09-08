@@ -72,6 +72,32 @@ const 규격표 = {
     'No people, no animals, no dolls, no figures of any kind are anywhere in the picture. ' +
     'Soft daylight from one side, gentle and even, every wool fibre resolved. ' +
     'Calm, quiet, expensive-looking craft photography. No text, no watermark, no hands.',
+  /* 🔴 «바깥자리» — 방이 아닌 «탁 트인 바깥»을 그린다 (2026-09-08 신설 · 유호 「제대로 해줘」).
+   *   왜 여섯째가 필요했나: 「자리 배경 — 학생」 열다섯 장을 눈으로 다 보니 «걸어 들어갈 자리»로
+   *   난 것이 한 장뿐이었다. 실내는 «자리» 규격이 고치지만(실측: 「집 안 밤공부」가 방으로 났다),
+   *   바깥은 «자리» 를 써도 방이 된다 — 그 규격이 walls·floor·room 을 말하기 때문이다
+   *   (실측: 「드림 들판」이 «방 안 벽에 들판 벽화»로 났다).
+   *
+   *   🔴 급소 = **«벽에 걸린 자수 패널»로 접히는 것**이다. 09-08 실측에서 운동장·봄 들판·
+   *     여름 바다·가을 언덕·별 보는 지붕·차강사르 게르 여섯이 전부 그렇게 났다 —
+   *     바깥 풍경을 손바닥만 한 펠트 조각에 수놓아 크림 종이 위에 세워 둔 사진이다.
+   *     지시문이 "A whole meadow … fills the frame" 이라 «전체»를 말했는데도 그랬다.
+   *     ⇒ 규격이 그 꼴을 «이름을 대어» 막는다(panel·patch·plaque·tile·framed picture).
+   *   ⚠ 자리 규격과 같은 셋은 그대로 진다: ①사람·동물·인형 0 ②아래 3분의 1 비움
+   *     ③눈높이 고정 — 마스코트가 그 위에 서기 때문이다. */
+  바깥자리:
+    'A photograph of a whole outdoor place made entirely from wool felt and soft fabric, seen ' +
+    'from standing height and only very slightly from above, as if you were standing inside it. ' +
+    'The place fills the entire frame edge to edge and runs back to its own far horizon, so it ' +
+    'reads as somewhere you could walk into. ' +
+    /* 🔴 이 두 줄이 09-08 의 여섯 장을 낸 자리를 막는다 — 이름을 대지 않으면 또 난다. */
+    'It is NOT a small felt panel, patch, plaque, tile, coaster, framed picture or embroidered ' +
+    'scene, and it is NOT an object placed or propped on a table, paper or any other surface. ' +
+    'No edge, border, backing, corner or shadow of any such object appears anywhere in the frame. ' +
+    'The lower third of the ground is left open and empty. ' +
+    'No people, no animals, no dolls, no figures of any kind are anywhere in the picture. ' +
+    'Soft natural daylight, gentle and even, every wool fibre resolved. ' +
+    'Calm, quiet, expensive-looking craft photography. No text, no watermark, no hands.',
   /* 🔴 «입힘» — 마스코트에게 옷·장식을 «씌운 채» 굽는다 (2026-09-05 밤 신설 · 유호 확정
    *   「오려얹은거는 매우 별로다. 씌운 채가 정말 자연스럽고 좋아」 · 결정.md 09-05).
    *
