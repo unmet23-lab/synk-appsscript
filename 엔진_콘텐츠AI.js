@@ -2474,7 +2474,11 @@ function aiFeedbackBatch_() {
     if (r[0] && r[3] === 'student') info[String(r[0]).trim()] = { name: r[1] || r[0], lv: Number(r[66]) || 0 };
   });
   const fb = ensureSheet(ss, 'hw_feedback', HW_FEEDBACK_HEADERS); // [v9.138] 헤더 하드코딩 2벌 → 단일 정본(시트 골격과 갈라지던 것)
-  hwFeedbackEnsureCols_(fb); // [v9.138] 기존 11열 시트를 15열로 증분 — 없으면 append가 뒤 4칸을 조용히 버린다
+  const 헤더보류 = hwFeedbackEnsureCols_(fb); // [v9.138] 기존 11열 시트를 15열로 증분 — 없으면 append가 뒤 4칸을 조용히 버린다
+  /* 🔴 [09-08 검수 P1 7d7e5ecc43e7] 값이 있는 «남의 이름» 열은 안 덮고 남긴다 — 덮으면 그 열이
+   *   남의 것이었다는 마지막 증거가 사라져 아침 자도 못 알아본다(소급 불가). 조용히 남기면
+   *   아무도 모르므로 로그에 남긴다 — 「0건」과 「안 재봤다」가 같은 모양이면 안 된다. */
+  if (헤더보류 && 헤더보류.length) Logger.log('⚠ hw_feedback 헤더 보류 ' + 헤더보류.length + '칸(값 있는 남의 이름은 안 덮는다 · 옮기기는 아침 자 + SHEET_COL_PUSH): ' + 헤더보류.join(' · '));
   const hwTpl = String(getState(ensureSheet(ss, 'app_state', ['key', 'value']), '숙제폼재작성틀').val || ''); // 다시쓰기 링크 틀(미생성이면 빈칸)
   // [v9.187] 출처 2열 + 문항 스냅샷 재료 — talk 배치와 같은 규약(실행 1회 계산 · 배치 중엔 안 바뀐다)
   const model = typeof AI_FEEDBACK_MODEL === 'undefined' ? '' : AI_FEEDBACK_MODEL;
