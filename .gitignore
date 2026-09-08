@@ -285,3 +285,6 @@ docs/Loom_자산/부품_견줌판.html
 !docs/Loom_자산/구움/표식판_넷.avif
 !docs/Loom_자산/구움/요소판_넷a.avif
 !docs/Loom_자산/구움/요소판_넷b.avif
+
+# 캐러셀 지면 — 카드 한 장에 1MB(자산을 통째로 심는다). 도구가 언제든 다시 만든다
+docs/홍보물/_src_캐러셀_*.html
