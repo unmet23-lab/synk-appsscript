@@ -4,6 +4,7 @@
 // 블록 생성 여부가 아니라, 기존 조립 경로가 실제로 만든 프롬프트를 잰다.
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const 런 = require('./lib/검수런.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const 발주경로 = path.join(ROOT, 'docs', '_ops', '발주', 'GPT철학대조.md');
@@ -43,9 +44,10 @@ function 실행쪽측정() {
   let 자식;
   try {
     // 두 역할을 한 번에 재는 읽기 전용 통로. 셸·모델·워크트리 생성은 호출하지 않는다.
+    // 조립 예외가 나도 자식의 마감이 부모 런 상태를 덮지 않도록 격리한다.
     자식 = spawnSync(process.execPath, [
       path.join(__dirname, 'codex-build.js'), '--발주', 발주경로, '--프롬프트확인',
-    ], { cwd: ROOT, encoding: 'utf8', windowsHide: true, timeout: 15000, maxBuffer: 1024 * 1024 });
+    ], { cwd: ROOT, encoding: 'utf8', windowsHide: true, timeout: 15000, maxBuffer: 1024 * 1024, env: 런.자식환경() });
   } catch (오류) {
     return 못잼(`자식 프로세스 실행 실패: ${한줄(오류)}`);
   }
