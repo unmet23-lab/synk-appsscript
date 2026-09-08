@@ -37,9 +37,22 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 저장소 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-옷방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷', 'GPT')
+# 🔴 옷 그림이 나는 방이 «둘»이다 (09-08) — 열쇠(종량제)로 구운 것과 정액제 ChatGPT 창으로 구운 것.
+#    한 방만 보면 정액제로 구운 조합에 표정이 안 얹힌다. 앞의 방부터 찾고, 없으면 다음 방을 본다.
+옷방들 = [os.path.join(저장소, 'docs', 'Loom_자산', '옷', 방)
+        for 방 in ('GPT', 'GPT정액시험')]
+옷방 = 옷방들[0]                                   # 목록을 낼 때 쓰는 기본 방
 정본방 = os.path.join(저장소, 'docs', '캐릭터', '정본_4K')
 낼방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷', 'GPT_표정')
+
+
+def 옷그림찾기(누구, 옷이름):
+    """두 방을 앞에서부터 뒤져 그 옷 그림의 경로를 낸다. 없으면 None."""
+    for 방 in 옷방들:
+        p = os.path.join(방, f'{누구}_{옷이름}.png')
+        if os.path.exists(p):
+            return p
+    return None
 
 _spec = importlib.util.spec_from_file_location(
     '치수재기', os.path.join(저장소, 'tools', '마스코트치수재기.py'))
@@ -49,6 +62,11 @@ _blobs = _치수재기._blobs
 
 # 옆으로 돈 컷은 포갤 수 없다 — 정면 옷 그림에 옆얼굴을 얹으면 어긋난다
 못포갬 = {'좌34', '우34', '인사'}
+
+# 🔴 «눈을 덮는» 악세 — 이것을 입은 컷에서만 눈 창을 색으로 좁힌다.
+#    안 좁히면 그 옷이 눈과 함께 지워지고, 좁히면 원래 눈이 덜 지워져 얼룩이 남는다.
+#    이름 조각으로 본다(겹쳐 입으면 파일 이름이 「목도리+안경」처럼 이어지기 때문).
+눈덮는옷 = ('안경',)
 
 
 def 눈찾기(a, 몸, 위쪽=0.55, 기대=None):
@@ -125,9 +143,10 @@ def 표정목록(누구):
 
 
 def 한벌(옷이름, 표정들=None, 검사만=False, 누구='까몽'):
-    옷경로 = os.path.join(옷방, f'{누구}_{옷이름}.png')
-    if not os.path.exists(옷경로):
-        raise SystemExit(f'옷 그림이 없다 — {옷경로}')
+    옷경로 = 옷그림찾기(누구, 옷이름)
+    if 옷경로 is None:
+        raise SystemExit(f'옷 그림이 없다 — {누구}_{옷이름}.png 를 두 방에서 못 찾았다\n'
+                         + '\n'.join(f'   {방}' for 방 in 옷방들))
     # 🔴 정본을 «먼저» 재서 눈 비율을 얻고, 그 비율로 옷 그림의 눈 짝을 고른다.
     본a, 본몸 = 정본읽기(os.path.join(정본방, f'{누구}_본체.png'))
     본눈 = 눈찾기(본a[..., :3], 본몸)
@@ -197,8 +216,17 @@ def 한벌(옷이름, 표정들=None, 검사만=False, 누구='까몽'):
     e = 옷눈['상자']
     여 = int(눈높 * .6)
     눈네모[max(0, int(e[1] - 여)):int(e[3] + 여), max(0, int(e[0] - 여)):int(e[2] + 여)] = True
-    눈색 = ((옷a[..., 1].astype(int) > 옷a[..., 0]) & (옷a[..., 1].astype(int) > 옷a[..., 2])) | (밝 > 200)
-    눈자리 = 눈네모 & 눈색
+    # 🔴 눈 네모 «안»을 어디까지 여느냐 (09-08 · 두 번 밟았다)
+    #   ⓐ 다 열면 안경 테·왕관 띠가 지워진다 → 눈 색만 열도록 좁혔다.
+    #   ⓑ 그랬더니 원래 눈이 «깨끗이» 안 지워져, 표정이 바뀌며 눈이 옮겨간 자리에
+    #      옛 눈의 초록 테가 남아 각진 얼룩이 됐다(정액제 판 윙크에서 드러났다).
+    #   ⇒ 기본은 «다 연다»(원래 눈이 통째로 지워진다). 눈을 «덮는» 악세를 입은 컷만 좁힌다.
+    눈덮음 = any(k in 옷이름 for k in 눈덮는옷)
+    if 눈덮음:
+        눈색 = ((옷a[..., 1].astype(int) > 옷a[..., 0]) & (옷a[..., 1].astype(int) > 옷a[..., 2])) | (밝 > 200)
+        눈자리 = 눈네모 & 눈색
+    else:
+        눈자리 = 눈네모
     # 🔴 옷 «윗선» 아래는 털로 안 친다. 크림색 목도리의 그늘이 위 조건을 통과해 목도리 위에
     #    네모 자국을 남겼다(09-08 실측). 창 안에서 옷 화소가 그 행의 40% 를 넘는 첫 행이 윗선이다.
     # 🔴 윗선은 «눈 아래»에서만 찾는다. 안경·왕관처럼 눈 높이나 그 위에 앉는 옷에서
@@ -263,8 +291,11 @@ if __name__ == '__main__':
         표정들 = [s.strip() for s in sys.argv[sys.argv.index('--표정') + 1].split(',') if s.strip()]
 
     if '--전부' in sys.argv:
-        옷들 = sorted(f[len(누구) + 1:-4] for f in os.listdir(옷방)
-                    if f.startswith(누구 + '_') and f.endswith('.png'))
+        # 두 방을 다 훑는다. 같은 옷이 양쪽에 있으면 한 번만 센다.
+        옷들 = sorted({f[len(누구) + 1:-4]
+                     for 방 in 옷방들 if os.path.isdir(방)
+                     for f in os.listdir(방)
+                     if f.startswith(누구 + '_') and f.endswith('.png')})
     elif '--옷' in sys.argv:
         옷들 = [s.strip() for s in sys.argv[sys.argv.index('--옷') + 1].split(',') if s.strip()]
     else:
