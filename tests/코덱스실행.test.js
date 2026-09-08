@@ -658,6 +658,7 @@ test('재개 전에 남은 시험 변경·삭제도 커밋된 원본과 대조�
   const 지금 = (f) => { try { return require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(방, f))).digest('hex'); } catch (_) { return null; } };
   const 최초 = 빌드.시험지문들(방);
   assert.strictEqual(최초.size, 3);
+  assert.deepStrictEqual(빌드.시험지문들(path.join(방, 'tests')), 최초, '하위 폴더에서도 경로는 저장소 루트 기준이다');
   assert.strictEqual(최초.get('tests/빈.test.js'), 지금('tests/빈.test.js'));
   assert.strictEqual(최초.get('tests/여러줄.test.js'), 지금('tests/여러줄.test.js'));
   fs.writeFileSync(기존, 'weakened assertion from interrupted run\n');
