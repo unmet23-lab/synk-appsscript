@@ -606,6 +606,14 @@ function main() {
     `<li><button class="복사 큰" data-말="${esc(지시문(c.주소, c.층, c.열))}">${esc(c.주소)}</button>`
     + `<span class="제안글"><b>${esc(c.층)}</b>의 「${esc(c.열)}」 — ${esc(c.왜)}</span></li>`).join('');
 
+  const prism절 = (() => {
+    try { return require('./lib/prism대장절.js').절({ 루트: ROOT }); }
+    catch (오류) {
+      const 한줄 = String(오류?.message ?? 오류).replace(/[\r\n\u2028\u2029]/g, ' ').slice(0, 160);
+      return `<div class="prism줄 경고"><b style="color:${킷.coral3}">⚠ 못 쟀다</b> — ${esc(한줄)}</div>`;
+    }
+  })();
+
   const html = `<!doctype html><html lang="ko"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SYNK 이해 대장 — 어디가 비었나 (${ver})</title>
@@ -687,6 +695,11 @@ ${브랜드폰트.면()}
   .사유 li{margin:0 0 6px;line-height:1.55}
   .사유 code{background:var(--cream);border-radius:4px;padding:1px 6px;color:var(--navy)}
   .범례{margin-top:36px;padding-top:16px;border-top:1px solid var(--cream3);color:var(--slate2);font-size:12px}
+  .prism줄{margin-top:12px;padding:12px 16px;background:var(--cream);border-left:6px solid var(--slate2);
+        border-radius:8px;font-size:12.5px;overflow-wrap:anywhere}
+  .prism줄 p{margin:6px 0 0}
+  .prism줄.통과{border-color:var(--emerald)}
+  .prism줄.경고{border-color:var(--coral3)}
   /* 🔴 이름을 갈랐다(09-04 · codex 1823e3122dfe) — 옛 이름 «.칩» 은 Loom 의 «분류 칩»과 같은 이름이었다.
      Loom 조립분이 뒤에 얹히면서 padding:0·border-radius:0 으로 덮어, 이 범례가 «글자에 붙은 사각형»이 됐다.
      둘은 다른 물건이다(저기는 문서의 분류 표식, 여기는 상태 색 견본) — 같은 이름을 쓰면 순서가 승패를 정한다. */
@@ -736,6 +749,9 @@ ${실물표(실물)}
   <span class="범례칩" style="background:transparent;color:${킷.coral3};border:2px dashed ${킷.coral3}">비었다</span>
   <div style="margin-top:10px">색은 브랜드 킷 23색에서만 뽑는다(유호님 확정) · KC Sun 은 면으로만 쓰고 글자로 쓰지 않는다.</div>
 </div>
+<h2 class="절">Prism 접점 — 학생·학부모 접점 참조 0</h2>
+<p class="설명">학생·학부모 접점에 Prism 산출이 닿지 않는지, 산출에 필요한 정보가 갖춰졌는지 확인한다. 경고가 있으면 아래 사유와 잡힌 자리를 먼저 본다.</p>
+${prism절}
 ${함께볼것구역()}
 <footer>
   생성: <code>node tools/이해대장.js</code> — 정본이 바뀌면 다시 돌린다(사본을 두지 않는다).<br>
