@@ -1668,7 +1668,13 @@ function 묻는문항_(item) {
     const T = FormApp.ItemType;
     const t = item.getType();
     return !(t === T.SECTION_HEADER || t === T.PAGE_BREAK || t === T.IMAGE || t === T.VIDEO);
-  } catch (e) { return true; }
+  } catch (e) {
+    /* 🔴 [09-08 검수 2회차 c8c1d42fedc7] 열린 기본값은 그대로 두되 «조용하지 않게» 한다 —
+     *   여기로 떨어지면 이 형상 검사가 그 항목에 대해 우회된 것이고, 그 사실이 어디에도 안 남으면
+     *   「안 쟀다」와 「괜찮다」가 같은 모양이 된다. 제목은 안 찍는다(원문을 로그로 옮기지 않는다). */
+    Logger.log('⚠ 폼 문항 종류를 못 읽어 「묻는 자리」로 셌다(형상 검사 우회 · 예전 동작): ' + e);
+    return true;
+  }
 }
 /* 이 폼을 «이 폼이게 하는» 서명 — 제목은 고유하지 않다(복사본·손으로 만든 동명 폼이 있을 수 있다).
  * 🔑 **자를 하나로 둔다**(①배포 검수 550ba898c5dd): 응답 탭에서 폼을 «찾는» 자리와, 라이브 폼을 «고치는»
@@ -1796,7 +1802,14 @@ function createWorkLogForm_(알림기록) {
             setState(st, '직장폼완료', 'y');
             Logger.log('직장 경험 폼 — ID가 없어 응답 탭의 연결 폼에서 복구했습니다(필수 문항 전수 확인).');
           } else {
-            Logger.log('직장 경험 폼 — ID는 복구했지만 필수 문항이 빠져 완료 도장은 안 찍었습니다: ' + 빠진필수.join(' · '));
+            /* 🔴 [09-08 검수 2회차 P1 0226902a897b] **찍혀 있던 완료 도장을 «뗀다».**
+             *   앞 판은 「안 찍는다」로만 두었는데, 그것으로는 부족했다: 폼 ID 는 비었는데 완료 표식만
+             *   y 로 남아 있는 상태에서 이 경로를 타면, 필수 문항이 빠진 것을 **발견하고도** y 가 살아 있어
+             *   아래 「만들다 만 상태」 안내(`!== 'y'` 로 걸린다)를 그냥 지나쳐 「이미 있습니다」로 끝났다.
+             *   ⇒ 「자료활용동의」가 빠진 폼이 정상으로 보고되고, 동의 없는 응답이 조용히 쌓인다.
+             * 🔑 도장은 «이번에 실제로 센 것»을 따른다 — 옛 도장을 근거로 삼지 않는다. */
+            setState(st, '직장폼완료', '');
+            Logger.log('직장 경험 폼 — ID는 복구했지만 필수 문항이 빠져 완료 도장을 뗐습니다(옛 도장이 있었다면 그것도 함께): ' + 빠진필수.join(' · '));
           }
         } else {
           const mX = '⚠️ 탭 「' + WORK_TAB + '」에 연결된 폼이 직장 경험 폼이 아닙니다(제목 「' + 직장폼제목보임_(f0, true) + '」'
@@ -3188,13 +3201,13 @@ function jacketPrintTags_(받은이들, tz) {
     '<style>@page{size:A4;margin:0;}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
     'body{margin:0;padding:10mm;background:#FBF7F0;font-family:' + "'Inter Tight','SUIT',sans-serif" + ';color:#2B2320;}' +
     '.g{display:flex;flex-wrap:wrap;gap:6mm;}' +
-    '.t{width:55mm;height:85mm;border:1.2pt dashed #F0E3C8;border-radius:3mm;padding:7mm 6mm;' +
+    '.t{width:55mm;height:85mm;border:1.2pt dashed #FBCAAB;border-radius:3mm;padding:7mm 6mm;' +
     'display:flex;flex-direction:column;justify-content:center;text-align:center;position:relative;}' +
     '.b{font-size:11pt;line-height:1.7;font-weight:600;}' +
     '.s{font-size:9.5pt;line-height:1.6;color:#575046;margin-top:3mm;}' +
     /* 끈 구멍 자리 — 실물은 여기 펀치를 낸다(설계 §11-a #14 「구멍 1 + 실」) */
     '.h{position:absolute;top:5mm;left:50%;margin-left:-1.5mm;width:3mm;height:3mm;' +
-    'border:1pt solid #F0E3C8;border-radius:50%;}' +
+    'border:1pt solid #FBCAAB;border-radius:50%;}' +
     '@media print{.t{page-break-inside:avoid;}}</style></head>' +
     '<body><div class="g">' + 태그 + '</div></body></html>';
   const blob = Utilities.newBlob(html, 'text/html',
@@ -4823,7 +4836,7 @@ function buildMonthlyCards_() {
       (mi.indexOf('http') === 0 ? '<img src="' + mi + '" style="width:72px;image-rendering:pixelated;display:block;margin:2px auto 0;"/>' : '') + // [v9.35] A안 이미지에도 무해
       '<div style="font-size:12px;color:#2B2320;">' + s.mon + '와 함께한 한 달</div>' +
       '<div style="font-size:11px;color:#8D857A;padding-top:2px;">' + (function(){ const ps2 = playStyleOf_(cardLogs[s.id] || []); return ps2[0] + ' ' + ps2[1]; })() + '</div>' +
-      '<div style="font-size:13px;padding-top:6px;border-top:1px dashed #F0E3C8;margin-top:6px;">' + stat + '</div>' +
+      '<div style="font-size:13px;padding-top:6px;border-top:1px dashed #FBCAAB;margin-top:6px;">' + stat + '</div>' +
       '</div></div>'];
   });
   if (rows.length) cd.getRange(cd.getLastRow() + 1, 1, rows.length, 3).setValues(rows);
@@ -4853,7 +4866,7 @@ function printMonthlyCards() {
     '*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
     'body{margin:0;padding:8mm;background:#FBF7F0;}' +
     '.g{display:flex;flex-wrap:wrap;gap:5mm;}' +
-    '.c{width:62mm;border:1px dashed #F0E3C8;border-radius:3mm;padding:2mm;}' +
+    '.c{width:62mm;border:1px dashed #FBCAAB;border-radius:3mm;padding:2mm;}' +
     '.tip{font-size:9pt;color:#8D857A;padding-bottom:4mm;}' +
     '@media print{.c{page-break-inside:avoid;}.tip{display:none;}}</style></head>' +
     '<body><div class="tip">점선을 따라 손으로 뜯어 주세요 — 자르는 도구가 필요 없습니다.</div>' +

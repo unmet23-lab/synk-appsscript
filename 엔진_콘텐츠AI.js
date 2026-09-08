@@ -463,14 +463,14 @@ function 등반카드HTML_(c) {
   const bandLine = (c.급수 && c.토픽밴드.length)
     ? '<div style="font-size:11px;color:#8D857A;padding-top:4px;">지금 Lv' + c.급수 + ' · ' + c.토픽밴드.join('~') + '급 구간 · 함께 가는 곳 ' + c.과녁 + '급</div>'
     : '<div style="font-size:11px;color:#8D857A;padding-top:4px;">함께 가는 곳 ' + c.과녁 + '급</div>';
-  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #F0E3C8;border-radius:16px;padding:12px 14px;color:#2B2320;">'
+  return CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#FBF7F0;border:2px solid #FBCAAB;border-radius:16px;padding:12px 14px;color:#2B2320;">'
     + '<div style="font-size:12.5px;font-weight:800;padding-bottom:8px;">⛰ 토픽 등반</div>'
     + '<div style="padding-bottom:9px;">' + peaks + '</div>'
     + '<div style="height:9px;background:#EDE7DC;border-radius:99px;overflow:hidden;">'
     + '<div style="height:9px;width:' + Math.max(pct, 2) + '%;background:#F96859;border-radius:99px;"></div></div>'
     + '<div style="font-size:13.5px;padding-top:7px;">' + head + '<span style="color:#8D857A;font-size:12px;"> · ' + pct + '%</span></div>'
     + stepLine + nearLine + bandLine
-    + '<div style="font-size:10.5px;color:#8D857A;padding-top:8px;line-height:1.6;border-top:1px dashed #F0E3C8;margin-top:8px;">'
+    + '<div style="font-size:10.5px;color:#8D857A;padding-top:8px;line-height:1.6;border-top:1px dashed #FBCAAB;margin-top:8px;">'
     + '이 줄이 세는 것 — 서로 다른 날 <b>두 번</b>, 내가 직접 쓰거나 말해서 맞은 문형.<br/>'
     + '분모는 우리 문법 목록의 그 급 문형 수다(시험 점수 예측이 아니다).</div>'
     + '</div>';
@@ -2475,10 +2475,16 @@ function aiFeedbackBatch_() {
   });
   const fb = ensureSheet(ss, 'hw_feedback', HW_FEEDBACK_HEADERS); // [v9.138] 헤더 하드코딩 2벌 → 단일 정본(시트 골격과 갈라지던 것)
   const 헤더보류 = hwFeedbackEnsureCols_(fb); // [v9.138] 기존 11열 시트를 15열로 증분 — 없으면 append가 뒤 4칸을 조용히 버린다
-  /* 🔴 [09-08 검수 P1 7d7e5ecc43e7] 값이 있는 «남의 이름» 열은 안 덮고 남긴다 — 덮으면 그 열이
+  /* 🔴 [09-08 검수 P1 7d7e5ecc43e7] 아래에 값이 있는 열은 이름을 안 덮고 남긴다 — 덮으면 그 열이
    *   남의 것이었다는 마지막 증거가 사라져 아침 자도 못 알아본다(소급 불가). 조용히 남기면
-   *   아무도 모르므로 로그에 남긴다 — 「0건」과 「안 재봤다」가 같은 모양이면 안 된다. */
-  if (헤더보류 && 헤더보류.length) Logger.log('⚠ hw_feedback 헤더 보류 ' + 헤더보류.length + '칸(값 있는 남의 이름은 안 덮는다 · 옮기기는 아침 자 + SHEET_COL_PUSH): ' + 헤더보류.join(' · '));
+   *   아무도 모르므로 로그에 남긴다 — 「0건」과 「안 재봤다」가 같은 모양이면 안 된다.
+   * 🔴 [2회차 P1 02ab57bcd477] **1행 원문은 안 찍는다** — 머리줄이 지워지면 학생 이름이 1행으로
+   *   올라오는데, 그것을 그대로 복사하면 학생 식별 데이터의 출구가 된다. `헤더보정보류_` 가
+   *   이미 «열 번호 + 정본 이름»만 돌려주므로 여기서는 그것을 그대로 잇는다.
+   * 🔴 [2회차 8eedb5868cf3] 안내를 **확정 안 Ⓒ**(유호 09-07 「c」)에 맞춘다 — 그 확정은 열을
+   *   «옮기지도 그냥 지우지도 않는다». 값을 app_state 로 옮겨 적고, 데모 줄을 걷고, 이름을 세운다.
+   *   앞 판은 「옮기기는 아침 자 + SHEET_COL_PUSH」로 안내해 확정과 어긋났다. */
+  if (헤더보류 && 헤더보류.length) Logger.log('⚠ hw_feedback 헤더 보류 ' + 헤더보류.length + '칸(아래에 값이 있어 이름을 안 덮었다) — 푸는 차례는 `docs/시트_RowID_정리_설계_v1.md` §7 의 일곱 걸음(유호 확정 09-07 안 Ⓒ · 값을 옮겨 적고 데모 줄을 걷고 이름을 세운다): ' + 헤더보류.join(' · '));
   const hwTpl = String(getState(ensureSheet(ss, 'app_state', ['key', 'value']), '숙제폼재작성틀').val || ''); // 다시쓰기 링크 틀(미생성이면 빈칸)
   // [v9.187] 출처 2열 + 문항 스냅샷 재료 — talk 배치와 같은 규약(실행 1회 계산 · 배치 중엔 안 바뀐다)
   const model = typeof AI_FEEDBACK_MODEL === 'undefined' ? '' : AI_FEEDBACK_MODEL;
