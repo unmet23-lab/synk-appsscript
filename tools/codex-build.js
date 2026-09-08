@@ -217,17 +217,31 @@ function 범위밖(파일들, 허용경로들) {
 const 시험무늬 = /(^|\/)(tests?|__tests__|evals)\/|\.(test|spec)\.[cm]?[jt]sx?$/i;
 function 시험파일인가(p) { return 시험무늬.test(경로정규화(p)); }
 
-/** 실행 «전» 시험 파일들의 지문. **추적 중인 것만** — 새로 지은 시험은 원래 없었으니 자유다. */
+/** HEAD에 커밋된 시험의 지문. 중단된 런의 변경·삭제나 인덱스를 원본으로 받아들이지 않는다. */
 function 시험지문들(wt) {
   const 맵 = new Map();
-  let 목록 = [];
   try {
-    목록 = execFileSync('git', ['-C', wt, 'ls-files', '-z'], 검수.자식옵션({ encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }))
-      .split('\0').filter(Boolean).map(경로정규화).filter(시험파일인가);
-  } catch (_) { return 맵; }
-  for (const p of 목록) {
-    try { 맵.set(p, crypto.createHash('sha256').update(fs.readFileSync(path.join(wt, p))).digest('hex')); }
-    catch (_) { /* 못 읽은 것은 안 담는다 — 뒤에 «바뀜»으로 잡히면 그때 막힌다 */ }
+    const 목록 = execFileSync('git', ['-C', wt, 'ls-tree', '-rz', 'HEAD'], 검수.자식옵션({ encoding: 'utf8', stdio: 'pipe', maxBuffer: 64 * 1024 * 1024 }))
+      .split('\0').filter(Boolean).map((행) => /^(\d+) blob ([0-9a-f]+)\t([\s\S]+)$/.exec(행))
+      .filter((m) => m && 시험파일인가(m[3])).map((m) => ({ 경로: 경로정규화(m[3]), 객체: m[2] }));
+    if (!목록.length) return 맵;
+    // 파일마다 git을 새로 띄우지 않고 커밋의 내용을 한 번에 읽는다.
+    const 묶음 = execFileSync('git', ['-C', wt, 'cat-file', '--batch'], 검수.자식옵션({
+      input: 목록.map((x) => x.객체).join('\n') + '\n', encoding: null, stdio: 'pipe', maxBuffer: 64 * 1024 * 1024,
+    }));
+    let 위치 = 0;
+    for (const x of 목록) {
+      const 줄끝 = 묶음.indexOf(10, 위치);
+      if (줄끝 < 0) throw new Error('객체 머리글 누락');
+      const 머리 = /^([0-9a-f]+) blob (\d+)$/.exec(묶음.subarray(위치, 줄끝).toString('ascii'));
+      if (!머리 || 머리[1] !== x.객체) throw new Error('객체 순서 또는 형식 불일치');
+      const 끝 = 줄끝 + 1 + Number(머리[2]);
+      if (끝 >= 묶음.length || 묶음[끝] !== 10) throw new Error('객체 내용 누락');
+      맵.set(x.경로, crypto.createHash('sha256').update(묶음.subarray(줄끝 + 1, 끝)).digest('hex'));
+      위치 = 끝 + 1;
+    }
+  } catch (_) {
+    throw 확인불가('커밋된 시험의 원본을 읽지 못했다. 시험 보호 근거 없이 실행하지 않는다.');
   }
   return 맵;
 }
@@ -736,7 +750,7 @@ function main(argv) {
     }
   }
 
-  /* 🔴 실행 «전»에 시험의 지문을 뜬다 — 뒤에 뜨면 실행자가 이미 고친 뒤라 「원본」이 아니다(:183). */
+  /* 커밋된 시험을 원본으로 잠근다. 앞 런이 남긴 수정·삭제도 현재 파일과 대조해 잡는다. */
   const 원본시험 = 시험지문들(wt);
   const 지금지문 = (f) => {
     try { return crypto.createHash('sha256').update(fs.readFileSync(path.join(wt, f))).digest('hex'); }
