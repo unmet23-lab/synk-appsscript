@@ -87,7 +87,8 @@ def main():
     ap.add_argument('--파랑', type=int, default=10, help='파랑 − max(빨강,초록) 이 이보다 커야 헬멧(가슴 그늘을 거른다)')
     ap.add_argument('--넓힘', type=int, default=12, help='정본 헬멧을 지울 때 가장자리를 넓히는 폭(px)')
     ap.add_argument('--테두리', type=int, default=160, help='헬멧 «위쪽» 둘레 이 폭(px) 안의 털을 옛 것은 지우고 새 것은 얹는다 · 0 이면 안 한다')
-    ap.add_argument('--키움', type=float, default=1.0, help='얹는 헬멧을 목 자리 기준으로 키우는 배율')
+    ap.add_argument('--키움', type=float, default=1.0, help='얹는 헬멧의 가로 배율(목 자리 기준)')
+    ap.add_argument('--세로키움', type=float, default=0.0, help='세로 배율을 따로 준다(0 이면 가로와 같이 간다)')
     ap.add_argument('--내림', type=int, default=0, help='얹는 헬멧을 아래로 미는 px(음수면 위로)')
     ap.add_argument('--옆', type=int, default=0, help='얹는 헬멧을 오른쪽으로 미는 px(음수면 왼쪽)')
     ap.add_argument('--검사', action='store_true', help='못 덮은 점을 자홍색으로 찍은 확인 그림을 함께 낸다')
@@ -131,13 +132,17 @@ def main():
     층[층마스크] = A1s[층마스크]
     층im = Image.fromarray(층, 'RGBA')
     목 = ((hx_a + hx_b) / 2, hy_b - (hy_b - hy_a) * 0.15)
-    if a.키움 != 1.0:
-        kw, kh = max(1, round(새w * a.키움)), max(1, round(새h * a.키움))
+    # 🔴 2026-09-08 — 가로·세로를 «따로» 잡는다(유호 지적 「인사하는 티가 안 난다」).
+    #   앞으로 숙이면 투구는 가로는 그대로고 **세로만 짧아진다**(앞단축). 한 배율로 키우면
+    #   그 둘이 묶여서, 세로를 맞추면 가로가 좁아지고 가로를 맞추면 머리가 커 보인다.
+    kx, ky = a.키움, (a.세로키움 if a.세로키움 else a.키움)
+    if kx != 1.0 or ky != 1.0:
+        kw, kh = max(1, round(새w * kx)), max(1, round(새h * ky))
         큰 = 층im.resize((kw, kh), Image.LANCZOS)
         판 = Image.new('RGBA', (새w, 새h), (0, 0, 0, 0))
         # 목 자리가 제자리에 남게 붙인다
-        ox = int(round(목[0] - 목[0] * a.키움))
-        oy = int(round(목[1] - 목[1] * a.키움))
+        ox = int(round(목[0] - 목[0] * kx))
+        oy = int(round(목[1] - 목[1] * ky))
         판.paste(큰, (ox, oy))
         층im = 판
 
@@ -177,7 +182,7 @@ def main():
     os.makedirs(os.path.dirname(os.path.abspath(a.낼곳)), exist_ok=True)
     낸것.save(a.낼곳)
     print(f'■ 헬멧 얹기 → {a.낼곳}')
-    print(f'   배율 {s:.4f}(정본 점 {n0:,} / 숙인 컷 점 {n1:,}) · 옮김 dx={dx} dy={dy} · 키움 {a.키움} · 넓힘 {a.넓힘}')
+    print(f'   배율 {s:.4f}(정본 점 {n0:,} / 숙인 컷 점 {n1:,}) · 옮김 dx={dx} dy={dy} · 키움 가로 {a.키움} 세로 {a.세로키움 or a.키움} · 넓힘 {a.넓힘}')
     print(f'   정본 헬멧 상자 {상자(H0)} · 얹은 헬멧 상자 {tuple(int(v) for v in np.array(상자(새알파)))}')
     print(f'   지운 점 {int(지울것.sum()):,} · 못 덮은 점 {int(못덮음.sum()):,} · 그중 몸 자리(사고) {n사고:,}'
           + ('  ✅' if n사고 == 0 else '  🔴 --키움 · --내림 · --옆 으로 잡는다'))
