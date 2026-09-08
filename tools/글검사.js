@@ -58,6 +58,38 @@ const 자고르기 = (파일) => (홍보물인가(파일) ? 자.홍보물 : 자.
 
 function 있나() { return fs.existsSync(검사기); }
 
+/* ══════════ 우리 이음말을 검사기에 채워 넣는다 (2026-09-08) ══════════
+ *
+ * ■ 왜 여기서 하나
+ *   hanlint 의 인과 표지 목록은 `data/causalMarkers.txt` 파일이 쥐고 있고, **설정으로 더하는 길이 없다**
+ *   (`--config` 도 `--preset` 도 이 목록엔 안 닿는다 · 09-08 실측). 그런데 그 파일은 node_modules 안이라
+ *   `npm install` 한 번이면 날아간다. 그래서 «도구가 돌 때마다» 없으면 채운다 — 사람이 기억할 일을 없앤다.
+ *
+ * ■ 무엇을 채우나 (판정 지면 `docs/말투_두규칙_판정_0904.html` §02)
+ *   「~라서」와 「~이라」는 까닭을 잇는 말인데 목록에 없었다(「따라서」 안에 「라서」가 들어 있을 뿐이다).
+ *   그래서 까닭이 멀쩡히 있는 글이 「사실만 나열」로 걸렸다.
+ *
+ * ■ 🔴 「이라」에 경계를 주는 까닭 — 안 주면 자를 무디게 만든다
+ *   경계 없이 넣으면 「~이라고」·「~이라는」 같은 «인용»까지 인과로 읽어, 진짜 나열 넷을 놓쳤다
+ *   (09-08 실측: 경계 없이 −12 · 경계 주고 −8 · 그 차이 4곳이 전부 거짓 통과였다).
+ *   목록이 이미 쓰는 표기법(`지만(?=\s|,|$)`)을 그대로 따른다.
+ */
+const 우리이음말 = ['라서', '이라(?=\\s|,|$)'];
+
+function 이음말채우기() {
+  const p = path.join(뿌리, 'node_modules', 'hanlint', 'data', 'causalMarkers.txt');
+  if (!fs.existsSync(p)) return { 함: false, 까닭: '목록 파일이 없다' };
+  const 원 = fs.readFileSync(p, 'utf8');
+  const 있는줄 = new Set(원.split(/\r?\n/).map((s) => s.trim()));
+  const 넣을것 = 우리이음말.filter((v) => !있는줄.has(v));
+  if (!넣을것.length) return { 함: false, 까닭: '이미 다 있다' };
+  const 줄끝 = 원.includes('\r\n') ? '\r\n' : '\n';
+  fs.writeFileSync(p, 원.replace(/\s*$/, '') + 줄끝
+    + `# ── SYNK 가 채운 것 (tools/글검사.js · 왜는 그 파일 주석)${줄끝}`
+    + 넣을것.join(줄끝) + 줄끝, 'utf8');
+  return { 함: true, 넣은것: 넣을것 };
+}
+
 /** HTML 에서 사람이 읽는 글자만 뽑는다 — 검사기는 마크다운만 알아서 태그를 그대로 주면 헛 지적이 난다. */
 function html을글로(s) {
   return s
@@ -206,6 +238,12 @@ if (!있나()) {
   console.log('   들이는 법:  npm install');
   console.log(`   찾은 자리:  ${path.relative(뿌리, 검사기)}`);
   process.exit(2);
+}
+/* 🔴 재기 «전»에 우리 이음말이 검사기에 있는지 본다 — npm install 이 지웠으면 다시 채운다.
+ *    조용히 지나가면 자가 무뎌진 채로 「깨끗하다」를 낸다(거짓 초록). */
+{
+  const r = 이음말채우기();
+  if (r.함) console.log(`ℹ 검사기에 우리 이음말을 다시 채웠다: ${r.넣은것.join(' · ')}`);
 }
 if (인자.includes('--기준선')) { 기준선뜨기(); process.exit(0); }
 /* --json — 화면은 파일마다 12건에서 접는데(진짜 적색이 밀려나지 않게), «판정 지면»을 지으려면
