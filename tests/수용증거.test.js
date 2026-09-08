@@ -51,6 +51,27 @@ test('필수 규칙 누락·빈 본문은 확인불가로 드러낸다', () => {
     assert.throws(() => 검수.검수규칙추출(md), (e) => e.확인불가 === true);
   }
 });
+
+test('코드 예시 안의 제목을 건너뛰고 뒤쪽 검수 규칙까지 전달한다', () => {
+  for (const [열기, 중간, 닫기] of [
+    ['```sh', '# 예시 주석\n## 예시 제목', '```'],
+    ['~~~text', '# 예시 주석\n## 예시 제목', '~~~~'],
+    ['````js', '```\n# 짧은 펜스로는 안 닫힌다', '````'],
+    ['   ```js', '## 들여쓴 예시 제목', '   ```'],
+  ]) {
+    const md = ['~~~text', '## Code Review Rules', '가짜 규칙', '~~~',
+      '## 4. Code Review Rules', '앞 규칙', 열기, 중간, 닫기,
+      '반드시 전달할 뒤 규칙', '## 5. Router', '다른 역할'].join('\n');
+    const 규칙 = 검수.검수규칙추출(md);
+    assert.ok(!규칙.includes('가짜 규칙'));
+    assert.ok(규칙.includes('반드시 전달할 뒤 규칙'));
+    assert.ok(!규칙.includes('다른 역할'));
+    assert.ok(검수.gemini프롬프트({ 종류: 'commit', 값: 'abc', 파일들: ['a.js'] }, 'diff', 규칙)
+      .includes('반드시 전달할 뒤 규칙'));
+  }
+  assert.throws(() => 검수.검수규칙추출('```md\n## Code Review Rules\n가짜 규칙\n```'),
+    (e) => e.확인불가 === true);
+});
 test('현재 저장소 규칙이 실제 Gemini 프롬프트에 들어간다', () => {
   const 규칙 = 검수.검수규칙읽기();
   const p = 검수.gemini프롬프트({ 종류: 'commit', 값: 'abc', 파일들: ['a.js'] }, 'diff', 규칙);
