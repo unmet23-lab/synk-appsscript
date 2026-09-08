@@ -46,7 +46,7 @@ const 배포자격 = path.join(os.homedir(), '.clasprc.json');
  *     ~/.synk-vertex-oauth.77yuhbs.json  ⇒ 되살리려면 이 파일을 `활성` 자리로 복사한다. */
 const 지갑 = {
   옛: { 계정: 'unmet23@gmail.com', 결제: '0161FA-7C996C-F1B948', 프로: 'gen-lang-client-0106203750', 마감: '2026-11-13' },
-  새: { 계정: 'unmet27@gmail.com', 결제: '01864D-0E650C-40F3CB', 프로: 'synk-bake-unmet27', 마감: '2026-12-06' },
+  새: { 계정: 'unmet27@gmail.com', 결제: '01864D-0E650C-40F3CB', 프로: 'synk-bake-unmet27', 마감: '2026-12-07' },
   이전: { 계정: '77yuhbs@gmail.com', 결제: '013A36-17619E-CE0D07', 프로: 'project-22fd10a3-c9c2-4b34-9f0', 마감: '2026-12-05' },
 };
 
