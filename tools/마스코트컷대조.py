@@ -15,6 +15,12 @@ import importlib.util, io, json, os, sys
 import numpy as np
 from PIL import Image
 
+try:                                     # 투구 축에만 쓴다 — 없으면 그 축만 「안 쟀다」로 빠진다
+    from scipy.ndimage import binary_closing, binary_fill_holes
+    _채움있음 = True
+except ImportError:                      # pragma: no cover
+    _채움있음 = False
+
 # 눈을 찾는 자와 «덩어리 묶기»는 치수재기 것을 그대로 빌린다 — 두 곳이 다른 자를 쓰면 값이 갈린다
 _spec = importlib.util.spec_from_file_location(
     '치수재기', os.path.join(os.path.dirname(os.path.abspath(__file__)), '마스코트치수재기.py'))
@@ -28,6 +34,32 @@ EYE_KEY = {
     '까몽': lambda r, g, b, l: (g > r) & (g > b) & (l > 30),
     '마린': lambda r, g, b, l: (r > 150) & (g > 120) & ((r - b) > 70),
 }
+# ── 투구 축 (마린만) ──────────────────────────────────────────────────────────
+# 🔴 09-08 에 이 축이 «없어서» 트랙이 여덟 시간 동안 틀린 숫자를 들고 있었다.
+#    인사 컷을 「투구 상자 높이 ÷ 몸 상자 높이」로 재니 본체 0.605 → 인사 0.672 = +11.0% 가 나왔고,
+#    그것이 「투구가 커졌다」로 읽혀 유호님께 갈래 셋이 올라가 있었다. 실제로는 «30도 숙인 것»이다 —
+#    기울이면 상자는 원래 커진다(대각선이 상자를 밀어낸다).
+#    ⇒ 가르는 자는 «겉넓이»다. 기울여도 넓이는 안 변하고, 진짜 커지면 넓이가 같이 큰다.
+#    구멍(노란 렌즈)은 반드시 메운다 — 표정마다 렌즈가 달라 안 메우면 넓이가 ±8% 흔들린다.
+투구자 = {
+    '마린': lambda r, g, b, l: (b - r > 25) & (b > 45) & (b < 190),      # 남색 펠트 투구
+}
+
+
+def 투구재기(name, m, r, g, b, lum):
+    """투구의 «겉넓이»와 «상자»를 함께 낸다 — 둘이 갈리면 커진 게 아니라 기울어진 것이다."""
+    if name not in 투구자 or not _채움있음:
+        return None
+    h = m & 투구자[name](r, g, b, lum)
+    if not h.any():
+        return None
+    h = binary_fill_holes(binary_closing(h, np.ones((15, 15))))
+    ys, xs = np.where(h)
+    return dict(넓이=int(h.sum()),
+                상자=[int(xs.max() - xs.min() + 1), int(ys.max() - ys.min() + 1)],
+                아래끝=int(ys.max()))
+
+
 # 몸이 달라지는 게 «맞는» 컷은 흔들림 판정에서 뺀다 — 옆으로 돈 것과 «몸짓» 컷.
 # 🔴 09-08 에 인사를 더했다. 인사는 숙이는 동작이라 몸 높이가 본체보다 짧은 게 정상인데,
 #    정면 무리에 섞여 있어서 마린 흔들림이 2.0% 로 잡혔다(다른 컷은 전부 0.0%).
@@ -43,6 +75,9 @@ def 재기(name, cut):
     x0, y0, x1, y1 = int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())
     bw, bh = x1 - x0 + 1, y1 - y0 + 1
     rec = dict(컷=cut, 몸=[bw, bh], 가로세로비=round(bw / bh, 3))
+    투 = 투구재기(name, m, r, g, b, lum)
+    if 투:
+        rec['투구'] = 투
 
     key = m & EYE_KEY[name](r, g, b, lum)
     key[y0 + int(bh * .7):] = False
@@ -88,6 +123,26 @@ def main():
             return dict(최소=min(v), 최대=max(v), 본체=base['눈'][키] if isinstance(base['눈'], dict) else None,
                         흔들림=round(100 * (max(v) - min(v)) / max(abs(max(v)), 1e-9), 1))
         옆 = [x for x in recs if x['컷'] in 비스듬]
+
+        # 투구 — 「넓이」와 「상자」를 나란히 낸다. 넓이는 그대로인데 상자만 크면 «기울었다»는 뜻이다.
+        투구축 = None
+        if '투구' in base:
+            잰것 = [x for x in recs if '투구' in x]
+            def 투구줄(x):
+                넓 = 100 * (x['투구']['넓이'] / base['투구']['넓이'] - 1)
+                상자비 = x['투구']['상자'][1] / x['몸'][1]
+                기준비 = base['투구']['상자'][1] / base['몸'][1]
+                return dict(컷=x['컷'], 넓이_본체대비=round(넓, 1),
+                            상자높이_몸높이대비=round(상자비, 4),
+                            그_본체대비=round(100 * (상자비 / 기준비 - 1), 1))
+            줄들 = [투구줄(x) for x in 잰것]
+            투구축 = dict(
+                본체넓이=base['투구']['넓이'],
+                넓이_본체대비=dict(최소=min(x['넓이_본체대비'] for x in 줄들),
+                              최대=max(x['넓이_본체대비'] for x in 줄들)),
+                컷별=줄들,
+                읽는법='넓이는 그대로인데 상자만 커진 컷 = «커진» 것이 아니라 «기울어진» 것이다')
+
         rep[name] = dict(
             컷수=len(recs), 정면컷수=len(정면), 눈잰컷수=len(눈있),
             몸폭=dict(최소=min(폭), 최대=max(폭), 흔들림=round(100 * (max(폭) - min(폭)) / max(폭), 2)),
@@ -99,6 +154,7 @@ def main():
             옆으로돈컷=[dict(컷=x['컷'], 몸폭=x['몸'][0],
                         정면대비=round(x['몸'][0] / base['몸'][0], 3)) for x in 옆],
             눈못잰컷=[x['컷'] for x in recs if not isinstance(x['눈'], dict)],
+            투구=투구축,
             컷별=recs)
     return rep
 
@@ -117,5 +173,20 @@ if __name__ == '__main__':
             print(f"   {키:<16} {d['최소']}~{d['최대']} (본체 {d['본체']}) · 흔들림 {d['흔들림']}%")
         print(f"   좌우 폭차이 가장 큰 컷 {v['좌우_폭차이_최대']}%")
         print(f"   따로 보는 컷: " + ' · '.join(f"{x['컷']} 정면의 {x['정면대비']}배" for x in v['옆으로돈컷']))
+        if v.get('투구'):
+            t = v['투구']
+            print(f"   투구 — 겉넓이가 본체와 {t['넓이_본체대비']['최소']}~{t['넓이_본체대비']['최대']}% 차이")
+            튀 = [x for x in t['컷별'] if abs(x['그_본체대비']) >= 3 or abs(x['넓이_본체대비']) >= 3]
+            for x in 튀:
+                상, 넓 = x['그_본체대비'], x['넓이_본체대비']
+                if abs(상) >= 3 and abs(넓) < abs(상) / 1.5:
+                    말 = '기울었다 — 상자만 커졌고 겉넓이는 따라오지 않았다'
+                elif abs(넓) >= 3 and abs(상) < 3:
+                    말 = ('돌아서 좁아졌다' if 넓 < 0 else '상자는 그대로인데 넓이만 늘었다')
+                else:
+                    말 = '둘이 같이 움직였다 — 투구 크기가 진짜 다르다'
+                print(f"      {x['컷']:<6} 상자 {상:+.1f}% · 겉넓이 {넓:+.1f}%  → {말}")
+            if not 튀:
+                print("      전부 본체와 3% 안 — 투구는 갈리지 않았다")
         if v['눈못잰컷']:
             print(f"   눈 못 잰 컷: {' · '.join(v['눈못잰컷'])}")
