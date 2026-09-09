@@ -481,6 +481,36 @@
       "sha256": "2e66688d9d8e51c6dc4ce4ef102f470bfabe31cd771dbbb319d8ef0dee003099"
     }
   ],
+  "rebuild": {
+    "date": "2026-09-10",
+    "scope": "문서 이동 뒤 로컬 재생성·구조 검사. 09-09 원고 검토를 다시 수행했다는 뜻이 아님",
+    "sourceReferences": [
+      {
+        "path": "AGENTS.md",
+        "sha256": "32222dab4c650029ef561b258b0442f7a920fdd78b3a706727f4c9f8c4d28f0c"
+      },
+      {
+        "path": "docs/AI_운영원칙.md",
+        "sha256": "f16234c9e1dcc5818e7023acf3a9c4b70cdb9e6934ea49abee8cb5ec72d85c7f"
+      },
+      {
+        "path": "docs/마케팅_정본.md",
+        "sha256": "ae1f3c950a9a1215a58f7497380b26f903123504ca8b33408e4345eb7959ecbd"
+      },
+      {
+        "path": "docs/마케팅/SHIFT_공개수업.md",
+        "sha256": "98ee9d3f389da92a10faddbb8e1c2567fd4cf56d3cb8cf5894f445b704995878"
+      },
+      {
+        "path": "docs/명품_기준_v1.md",
+        "sha256": "a5a0d37efbeb2bfd090c3c08ebd51ac068ff2014a02d890425478b06cf8a07e5"
+      },
+      {
+        "path": "DESIGN.md",
+        "sha256": "dc499de9590eb7e940c22646a730c615b617e4a26d85c5dfa325db648994dda6"
+      }
+    ]
+  },
   "visualHandoff": {
     "stylesheet": "Loom existing tokens only",
     "fonts": "approved fonts only",

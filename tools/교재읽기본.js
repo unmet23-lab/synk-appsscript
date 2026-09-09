@@ -5,13 +5,13 @@
  *          node tools/교재읽기본.js --바탕화면  → 바탕화면에도 한 벌
  *
  * 왜 있나 (2026-08-09 · 유호님 「보여줘」):
- *   권1 원고는 한 파일이 아니다 — 1·3~8과는 `docs/_archive/교재_시냅스코어_권1_원고_v2.md` 에 있고
+ *   권1 원고는 Git 보존판의 두 파일이다 — 1·3~8과는 `docs/_archive/교재_시냅스코어_권1_원고_v2.md` 에 있고
  *   **2과 본문만 `docs/_archive/교재_시냅스코어_권1_초안_v1.md` §③** 에 있다(중복 사본 금지 원칙의
  *   결과다). v2 의 2과 자리에는 "저기가 정본" 이라는 안내 한 줄만 서 있어, 원고를 처음부터 끝까지
  *   읽으려면 사람이 두 파일을 오가야 했다. 여기서 **읽을 때만** 합친다 — 원본 md 는 건드리지 않는다.
  *
  * 원칙:
- *  · 정본은 repo 의 md 다. 이 HTML 은 열람용 스냅샷이고, 어긋나면 md 가 이긴다(머리에 날짜·원본 경로를 박는다).
+ *  · 원본은 아래 고정 Git 판이다. 이 HTML 은 보관 원고의 열람용 스냅샷이며 현행 교육·앱 계약이 아니다.
  *  · 색·서체 값은 킷 토큰(docs/tools/synk-tokens.css)을 소비한다 — 손 hex 금지(DESIGN.md §5).
  *  · md 렌더는 공용 통로 `tools/lib/마크다운.js` — 이 문서는 지면 목업(``` 펜스)이 본체라
  *    펜스를 못 다루는 렌더러에 물리면 박스 그림이 조용히 문단으로 풀린다.
@@ -24,6 +24,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('node:child_process');
 const { esc, 렌더 } = require('./lib/마크다운.js');
 // 바탕화면을 찾는 **단 하나의 통로**(파일 안 사본 금지 — `tests/바탕화면통로.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)` 가 문다).
 const { 경로: 바탕화면 } = require('./lib/바탕화면.js');
@@ -31,10 +32,19 @@ const { 경로: 바탕화면 } = require('./lib/바탕화면.js');
 const ROOT = path.join(__dirname, '..');
 /* ⚰ **원고 넷이 `_archive/` 로 보관됐다** (2026-09-03 · 유호 확정 「교재랑 앱이랑은 아예 별개라고
  *   생각해줄래? 교재는 기각하고 어디 안보이는곳에 보관만해줘」 · 교재 제작은 재헌님 몫).
- *   이 도구는 «걷지 않고» 보관본을 읽게만 바꿨다 — 유호님이 「보관만」이라 하셨으므로 열어 볼 길은 남긴다.
+ *   09-09 MD 정리 뒤에도 열어 볼 수 있도록 삭제 직전 Git 판을 메모리로 읽는다. 활성 MD 사본은 복원하지 않는다.
  *   🔑 앞으로 앱·엔진 설계는 교재를 전제하지 않는다(memory `textbook-separate-from-app`). */
-const 본편 = path.join(ROOT, 'docs', '_archive', '교재_시냅스코어_권1_원고_v2.md');
-const 초안 = path.join(ROOT, 'docs', '_archive', '교재_시냅스코어_권1_초안_v1.md');
+const 보존판 = 'adc049af2ef7d1ce303e0d32650d3bf812ee4c09';
+const 본편 = 'docs/_archive/교재_시냅스코어_권1_원고_v2.md';
+const 초안 = 'docs/_archive/교재_시냅스코어_권1_초안_v1.md';
+const 보존주소 = (file) => `https://github.com/unmet23-lab/synk-appsscript/blob/${보존판}/${file.split('/').map(encodeURIComponent).join('/')}`;
+function 보존원문(file) {
+  try {
+    return execFileSync('git', ['show', `${보존판}:${file}`], { cwd: ROOT, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 });
+  } catch (cause) {
+    throw new Error(`Git 보존 원문을 읽지 못했다: ${보존판}:${file}. 이력이 있는 저장소에서 실행해야 한다.`, { cause });
+  }
+}
 const TOKENS = path.join(ROOT, 'docs', 'tools', 'synk-tokens.css');
 const OUT_DIR = path.join(ROOT, 'docs', '교재_읽기본');
 const OUT = path.join(OUT_DIR, '권1.html');
@@ -241,11 +251,9 @@ const JS = `
 
 function 빌드(opt) {
   opt = opt || {};
-  for (const p of [본편, 초안, TOKENS]) {
-    if (!fs.existsSync(p)) throw new Error('없다: ' + path.relative(ROOT, p));
-  }
-  const 본편md = fs.readFileSync(본편, 'utf8');
-  const 초안md = fs.readFileSync(초안, 'utf8');
+  if (!fs.existsSync(TOKENS)) throw new Error('없다: ' + path.relative(ROOT, TOKENS));
+  const 본편md = 보존원문(본편);
+  const 초안md = 보존원문(초안);
   const { md, 합친줄수 } = 합치기(본편md, 초안md);
 
   const 목차 = 목차만들기(md);
@@ -270,8 +278,8 @@ function 빌드(opt) {
 <body>
 <header class="band">${LOGO_W5}
   <div><h1>${esc(제목)}</h1>
-  <div class="cap">열람용 스냅샷 ${날짜} · 정본은 저장소 md — 어긋나면 md 가 이긴다<br>
-  1·3~8과 = docs/_archive/교재_시냅스코어_권1_원고_v2.md · 2과 = docs/_archive/교재_시냅스코어_권1_초안_v1.md §③<br>
+  <div class="cap">보관 원고의 열람본 ${날짜} · 원본 고정판 ${보존판.slice(0, 9)} · 현행 계약 아님<br>
+  <a href="${보존주소(본편)}">1·3~8과 원고</a> · <a href="${보존주소(초안)}">2과 원고 §③</a><br>
   ⚰ 보관본이다 — 교재와 앱은 별개로 간다(유호 확정 09-03 · 교재는 재헌님 몫)</div></div>
   <div class="우">
     <button class="칩" id="작게" aria-label="지면 목업 작게">A−</button>
@@ -286,26 +294,28 @@ ${목차.map((t) => `    <a href="#${esc(t.id)}">${esc(t.글자)}</a>`).join('\n
   </nav>
   <main>
 ${body}
-<footer>이 파일은 <strong>열람용 사본</strong>입니다 — 고치는 곳은 저장소 md 이고,
-고친 뒤 <code>node tools/교재읽기본.js</code> 로 다시 굽습니다.<br>
+<footer>이 파일은 <strong>Git 보존 원고의 열람용 사본</strong>입니다.
+<code>node tools/교재읽기본.js</code> 로 같은 보존판을 다시 굽습니다. 현행 교재 제작은 담당자 원본에서 진행합니다.<br>
 ⚠️ 인쇄·조판 전 필수: 본문의 <code>📱 [V1-0X-XX]</code> 는 설계상 가상 코드라
-<code>docs/_archive/교재_앱_연동_매핑_v1.md</code> §④ 치환표대로 실존 QZ ID 로 바꿔야 QR 이 빈 곳을 안 가리킵니다.<br>
+<a href="${보존주소('docs/_archive/교재_앱_연동_매핑_v1.md')}">당시 교재·앱 매핑</a> §④의 역사적 설명이며 현재 앱 연결 지시가 아닙니다.<br>
 검수 상태: 유호님 검수 전 완주본 · 몽골어(⚡거울·키릴 대조)는 전량 원어민 검수 필요(R1).</footer>
   </main>
 </div>
 <script>${JS}</script>
 </body></html>`;
 
-  fs.mkdirSync(OUT_DIR, { recursive: true });
-  fs.writeFileSync(OUT, html, 'utf8');
-  const 낸것 = [OUT];
+  const outDir = opt.outDir || OUT_DIR;
+  const out = path.join(outDir, '권1.html');
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(out, html, 'utf8');
+  const 낸것 = [out];
 
   if (opt.바탕화면) {
     const d = 바탕화면();
     fs.writeFileSync(path.join(d, '시냅스코어_권1_원고.html'), html, 'utf8');
     낸것.push(path.join(d, '시냅스코어_권1_원고.html'));
   }
-  return { 낸것, 합친줄수, 과수: 목차.length, 바이트: Buffer.byteLength(html) };
+  return { 낸것, 합친줄수, 과수: 목차.filter((t) => /^\d+과\s/.test(t.글자)).length, 바이트: Buffer.byteLength(html) };
 }
 
 if (require.main === module) {

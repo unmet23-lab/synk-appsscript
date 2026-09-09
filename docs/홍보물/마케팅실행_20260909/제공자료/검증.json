@@ -1,6 +1,8 @@
 {
   "status": "passed",
-  "date": "2026-09-09",
+  "date": "2026-09-10",
+  "productionDate": "2026-09-09",
+  "scope": "문서 이동 뒤 로컬 재생성·구조 검사. 09-09 원고 검토를 다시 수행했다는 뜻이 아님",
   "checks": {
     "materialCount": 6,
     "supportGuideCount": 1,
