@@ -1559,7 +1559,99 @@ function 엔진전시() {
   `;
 }
 
-module.exports = { css, 율, 분모, 시연, 지면들, 림레시피, 정본, 마커, 범위씌우기, 기본범위, 기본천, 엔진전시 };
+/**
+ * 계정별 작품 컬렉션. 1080×1350은 발행 판형, 간격은 율에서 얻는다.
+ * 호출자가 색·서체·그림자 스킨을 다시 쓰지 않도록 Loom 안에 둔다.
+ * 기존 지면에는 자동 적용하지 않는다. .account-collection 에만 작용한다.
+ */
+function 계정컬렉션() {
+  const t = 정본(), c = t.색, q = t.율.단계;
+  const u = (n) => `${q.칸.px * n}px`;
+  return `
+  .account-collection{margin:0;background:${c.Paper};color:${c.Ink};font-family:'Inter Tight','SUIT Variable',sans-serif;-webkit-font-smoothing:antialiased}
+  .account-collection *{box-sizing:border-box}
+  .account-collection a{color:inherit;text-underline-offset:.22em}
+  .account-collection h1,.account-collection h2,.account-collection h3{font-synthesis:none;text-wrap:balance}
+  .account-collection p,.account-collection li{text-wrap:pretty}
+  .account-collection .canvas-wrap{width:100%;max-width:1080px;aspect-ratio:4/5;position:relative;margin:0 auto ${u(2)};overflow:hidden}
+  .account-collection .artboard{position:absolute;width:1080px;height:1350px;overflow:hidden;background:${c.Paper};transform:scale(var(--scale,1));transform-origin:top left;--signal:${c['Coral 3']}}
+  .account-collection .artboard[data-brand=SHIFT]{--signal:${c['Lapis Deep']}}
+  .account-collection .artboard[data-brand=PULSE]{--signal:${c['Pop Deep']}}
+  .account-collection .artboard[data-brand=SYNK]{--signal:${c.Ink}}
+  .account-collection .brand-lock{position:absolute;top:${u(3)};left:${u(5.5)};height:${u(4)};display:flex;align-items:center;gap:${u(.75)};z-index:3}
+  .account-collection .brand-lock svg{width:108px;height:${u(4)}}
+  .account-collection .division-label{position:relative;color:var(--signal);font-size:${u(1.5)};font-weight:600;letter-spacing:.03em}
+  .account-collection .division-label img{position:absolute;top:100%;left:0;width:100%;height:${u(.375)};object-fit:cover;margin-top:${u(.25)}}
+  .account-collection .copy{position:absolute;left:${u(5.5)};right:${u(5.5)};top:${u(12)};z-index:2}
+  .account-collection .eyebrow{font-size:${u(1.625)};font-weight:600;color:var(--signal);margin:0 0 ${u(2)};line-height:1.4;letter-spacing:.01em}
+  .account-collection .headline{font-size:${u(5.5)};line-height:1.14;letter-spacing:-.03em;font-weight:800;margin:0;white-space:pre-line;max-width:890px}
+  .account-collection .body-copy{font-size:${u(2.5)};line-height:1.45;margin:${u(2.5)} 0 0;white-space:pre-line;max-width:870px;color:${c['Deep Wool']}}
+  .account-collection .kr{font-family:'SUIT Variable',sans-serif;font-size:${u(4.5)};font-weight:800;line-height:1.35;letter-spacing:-.025em;color:var(--signal);white-space:pre-line;margin:${u(3)} 0 0}
+  .account-collection .artboard[data-id="14-lab-telegram"] .kr{font-size:${u(4)}}
+  .account-collection .mn{font-size:${u(2.6)};font-weight:450;line-height:1.4;white-space:pre-line;margin:${u(1.5)} 0 0}
+  .account-collection .lines{padding:0;margin:${u(2.5)} 0 0;list-style:none;font-size:${u(2.5)};line-height:1.48}
+  .account-collection .lines li{white-space:pre-line;margin:0;padding:${u(1)} 0;border-top:1px solid ${c.Oat}}
+  .account-collection .lines li:first-child{border-top:0;padding-top:0}
+  .account-collection .hero-asset{position:absolute;left:${u(5.5)};right:${u(5.5)};bottom:${u(6)};width:904px;height:500px;object-fit:contain;z-index:1}
+  .account-collection .artboard[data-layout=hero] .hero-asset{height:520px}
+  .account-collection .artboard[data-layout=hero] .body-copy{max-width:850px;font-size:${u(2.25)}}
+  .account-collection .artboard[data-layout=lesson] .headline{font-size:${u(4.5)}}
+  .account-collection .artboard[data-layout=lesson] .hero-asset{height:250px;width:300px;left:auto;right:${u(5.5)};bottom:${u(6)}}
+  .account-collection .artboard[data-layout=worksheet] .headline{font-size:${u(4.5)}}
+  .account-collection .artboard[data-layout=worksheet] .body-copy{font-size:${u(2.5)};margin-top:${u(1.5)}}
+  .account-collection .artboard[data-layout=worksheet] .lines{font-size:${u(2.625)};margin-top:${u(3)}}
+  .account-collection .artboard[data-layout=worksheet] .lines li{padding:${u(1)} 0;border:0;min-height:${u(6)}}
+  .account-collection .artboard[data-layout=worksheet] .lines[data-count="2"] li{min-height:${u(12)}}
+  .account-collection .artboard[data-layout=worksheet] .lines[data-count="3"] li{min-height:${u(10)}}
+  .account-collection .artboard[data-layout=worksheet] .lines[data-count="6"]{display:grid;grid-template-columns:1fr 1fr;column-gap:${u(2.5)};row-gap:${u(1.5)}}
+  .account-collection .artboard[data-layout=worksheet] .lines[data-count="6"] li{min-height:${u(12)}}
+  .account-collection .write-line{display:block;width:100%;border-bottom:2px solid ${c.Oat};height:${u(3)}}
+  .account-collection .artboard[data-layout=worksheet] .hero-asset{width:180px;height:180px;left:auto;right:${u(5.5)};bottom:${u(6)}}
+  .account-collection .artboard[data-layout=diptych] .headline{font-size:${u(4.75)}}
+  .account-collection .diptych{position:absolute;left:${u(5.5)};right:${u(5.5)};top:790px;bottom:${u(6)};display:grid;grid-template-columns:1fr 1fr;gap:${u(1.5)}}
+  .account-collection .diptych img{width:100%;height:100%;min-height:0;object-fit:contain;object-position:center}
+  .account-collection .paper-edge{display:none}
+  .account-collection .folio{position:absolute;left:${u(5.5)};right:${u(5.5)};bottom:${u(2.75)};display:flex;justify-content:space-between;gap:${u(2)};font-size:${u(1.25)};color:${c['Deep Wool']};line-height:1.4;z-index:3}
+  .account-collection .folio span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .account-collection.export .canvas-wrap{width:1080px;max-width:none;margin:0}
+  .account-collection.export .artboard{transform:none}
+  .account-collection.export .toolbar{display:none}
+  .account-collection .toolbar{max-width:1080px;margin:auto;padding:${u(1.5)};display:flex;gap:${u(1.5)};justify-content:space-between;align-items:center;font-size:18px}
+  .account-collection .toolbar a{display:inline-flex;align-items:center;min-height:44px}
+  .account-collection .collection-shell{max-width:1440px;padding:${u(4)} ${u(3)};margin:auto}
+  .account-collection .collection-intro{padding:${u(3)} 0 ${u(4)};border-bottom:1px solid ${c.Oat};margin-bottom:${u(3)}}
+  .account-collection .collection-intro h1{font-size:clamp(40px,6vw,88px);line-height:1.08;letter-spacing:-.04em;margin:${u(1)} 0 ${u(2)}}
+  .account-collection .collection-intro p{max-width:760px;font-size:20px;line-height:1.7;margin:${u(1)} 0}
+  .account-collection .kicker{font-size:14px;font-weight:600;letter-spacing:.04em;color:${c['Deep Wool']}}
+  .account-collection .filters{display:flex;flex-wrap:wrap;gap:${u(.5)};margin:${u(2)} 0}
+  .account-collection button,.account-collection .download{font:inherit;font-size:15px;min-height:44px;padding:${u(.75)} ${u(1)};border:1px solid ${c['Wool']||c.Oat};border-radius:${u(.5)};background:${c.Paper};color:${c.Ink};cursor:pointer;display:inline-flex;align-items:center;text-decoration:none;transition:transform 120ms ease-out,background-color 150ms ease-out}
+  .account-collection button:active,.account-collection .download:active{transform:scale(.96)}
+  .account-collection button[aria-pressed=true]{background:${c.Ink};color:${c.Paper}}
+  .account-collection :focus-visible{outline:3px solid ${c['Lapis Deep']};outline-offset:4px}
+  .account-collection .collection-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:${u(2)} ${u(1.5)}}
+  .account-collection .entry{min-width:0;border-bottom:1px solid ${c.Oat};padding-bottom:${u(1.5)}}
+  .account-collection .entry[hidden]{display:none}
+  .account-collection .entry-cover{display:block;aspect-ratio:4/5;width:100%;object-fit:cover;background:${c.Oat}}
+  .account-collection .entry h2{font-size:24px;line-height:1.35;letter-spacing:-.025em;margin:${u(1)} 0 ${u(.5)}}
+  .account-collection .entry p{font-size:16px;line-height:1.6;margin:${u(.5)} 0}
+  .account-collection .entry .metadata{font-size:13px;color:${c['Deep Wool']};line-height:1.5}
+  .account-collection .entry .actions{display:flex;flex-wrap:wrap;gap:${u(.5)};margin-top:${u(1)}}
+  .account-collection .status{font-size:13px;display:inline-block;padding:${u(.375)} ${u(.625)};background:${c.Oat};border-radius:${u(.375)}}
+  .account-collection details{margin-top:${u(1)}}
+  .account-collection summary{cursor:pointer;min-height:44px;display:flex;align-items:center;text-decoration:underline;text-underline-offset:.25em;font-size:15px}
+  .account-collection .caption-preview{white-space:pre-wrap;font-size:15px;line-height:1.65}
+  .account-collection .film{width:100%;max-height:720px;display:block;background:${c.Ink};margin:${u(1)} 0}
+  .account-collection .article{max-width:760px;margin:0 auto;padding:${u(4)} ${u(1.5)};font-size:20px;line-height:1.85}
+  .account-collection .article h1{font-size:42px;line-height:1.3;letter-spacing:-.03em}
+  .account-collection .article h2{font-size:28px;margin-top:${u(3)}}
+  .account-collection .article img{width:100%;height:auto}
+  @media(max-width:1000px){.account-collection .collection-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:640px){.account-collection .collection-shell{padding:${u(1.5)}}.account-collection .collection-grid{grid-template-columns:1fr}.account-collection .collection-intro{padding-top:${u(1)}}.account-collection .collection-intro p{font-size:18px}.account-collection .entry h2{font-size:24px}}
+  @media(prefers-reduced-motion:reduce){.account-collection *{transition:none!important;scroll-behavior:auto!important}}
+  `;
+}
+
+module.exports = { css, 율, 분모, 시연, 지면들, 림레시피, 정본, 마커, 범위씌우기, 기본범위, 기본천, 엔진전시, 계정컬렉션 };
 
 /* ── CLI ──────────────────────────────────────────────────────────────────── */
 if (require.main === module) {

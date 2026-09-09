@@ -1,0 +1,183 @@
+{
+  "sourceSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
+  "recorded": 13,
+  "preparation": 3,
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "account": "@synkkorean",
+      "platform": "YouTube",
+      "status": "recorded",
+      "format": "video",
+      "cards": 1,
+      "derivativeOf": null,
+      "expectedVideo": true,
+      "duration": 30
+    },
+    {
+      "id": "02-lab-instagram",
+      "account": "@synk.mn",
+      "platform": "Instagram",
+      "status": "recorded",
+      "format": "carousel",
+      "cards": 5,
+      "derivativeOf": null,
+      "expectedVideo": false,
+      "duration": null
+    },
+    {
+      "id": "03-lab-tiktok",
+      "account": "@synk.mn",
+      "platform": "TikTok",
+      "status": "recorded",
+      "format": "video",
+      "cards": 1,
+      "derivativeOf": null,
+      "expectedVideo": true,
+      "duration": 30
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "account": "@yuhobuilds",
+      "platform": "YouTube",
+      "status": "recorded",
+      "format": "video",
+      "cards": 1,
+      "derivativeOf": null,
+      "expectedVideo": true,
+      "duration": 60
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "account": "@yuhobuilds",
+      "platform": "Instagram",
+      "status": "recorded",
+      "format": "video",
+      "cards": 1,
+      "derivativeOf": "04-yuhobuilds-youtube",
+      "expectedVideo": true,
+      "duration": 30
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "account": "@yuhobuilds",
+      "platform": "TikTok",
+      "status": "recorded",
+      "format": "video",
+      "cards": 1,
+      "derivativeOf": "04-yuhobuilds-youtube",
+      "expectedVideo": true,
+      "duration": 25
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "account": "@synkbrief",
+      "platform": "YouTube",
+      "status": "recorded",
+      "format": "video",
+      "cards": 1,
+      "derivativeOf": null,
+      "expectedVideo": true,
+      "duration": 40
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "account": "@synkbrief",
+      "platform": "Instagram",
+      "status": "recorded",
+      "format": "carousel",
+      "cards": 6,
+      "derivativeOf": null,
+      "expectedVideo": false,
+      "duration": null
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "account": "@synkbrief",
+      "platform": "TikTok",
+      "status": "recorded",
+      "format": "video",
+      "cards": 1,
+      "derivativeOf": "07-synkbrief-youtube",
+      "expectedVideo": true,
+      "duration": 25
+    },
+    {
+      "id": "10-lab-facebook",
+      "account": "facebook.com/synkworld",
+      "platform": "Facebook",
+      "status": "recorded",
+      "format": "carousel",
+      "cards": 2,
+      "derivativeOf": null,
+      "expectedVideo": false,
+      "duration": null
+    },
+    {
+      "id": "11-yuhobuilds-threads",
+      "account": "@yuhobuilds",
+      "platform": "Threads",
+      "status": "preparation",
+      "format": "text",
+      "cards": 1,
+      "derivativeOf": "04-yuhobuilds-youtube",
+      "expectedVideo": false,
+      "duration": null
+    },
+    {
+      "id": "12-synkbrief-threads",
+      "account": "@synkbrief",
+      "platform": "Threads",
+      "status": "preparation",
+      "format": "text",
+      "cards": 1,
+      "derivativeOf": "07-synkbrief-youtube",
+      "expectedVideo": false,
+      "duration": null
+    },
+    {
+      "id": "13-yuhobuilds-linkedin",
+      "account": "yuhobuilds",
+      "platform": "LinkedIn",
+      "status": "recorded",
+      "format": "image",
+      "cards": 1,
+      "derivativeOf": null,
+      "expectedVideo": false,
+      "duration": null
+    },
+    {
+      "id": "14-lab-telegram",
+      "account": "t.me/synkmn",
+      "platform": "Telegram",
+      "status": "recorded",
+      "format": "image",
+      "cards": 1,
+      "derivativeOf": null,
+      "expectedVideo": false,
+      "duration": null
+    },
+    {
+      "id": "15-synklab-substack",
+      "account": "synklab.substack.com · 유호 · 짓고 있습니다",
+      "platform": "Substack",
+      "status": "recorded",
+      "format": "letter",
+      "cards": 1,
+      "derivativeOf": "04-yuhobuilds-youtube",
+      "expectedVideo": false,
+      "duration": null
+    },
+    {
+      "id": "16-synk-instagram",
+      "account": "SYNK Instagram · 희망 @synk.im / 대안 @synkim",
+      "platform": "Instagram",
+      "status": "preparation",
+      "format": "image",
+      "cards": 1,
+      "derivativeOf": null,
+      "expectedVideo": false,
+      "duration": null
+    }
+  ]
+}
