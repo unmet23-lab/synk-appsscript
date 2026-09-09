@@ -115,7 +115,6 @@
 <div id="마스코트틀" aria-hidden="true"></div>
 <div id="부스" aria-hidden="true" hidden></div>
 <div id="데모판"></div>
-<script src="라디오표정리듬.js"></script>
 <script>
 'use strict';
 /* ── 설정(URL 파라미터) ─────────────────────────────────────────── */
@@ -538,8 +537,6 @@ function DJ바꾸기(새DJ) {
 
 /* ── 상태 (마스코트모션.py 상태()의 웹 이식 — 부유·숨·깜빡·스프링·감쇠 튐 공식 그대로) ── */
 const 시작 = performance.now();
-// 09-09: 낮은 캡처 빈도에서도 깜빡임을 읽을 수 있도록 실제 시작부터 폐안을 유지한다.
-const 유휴리듬 = 라디오표정리듬.만들기({ 시작ms: 0 });
 let 다음깜빡 = 2000 + Math.random() * 3000;
 /* 🆕 2026-09-07 «표정 살이» — 유호 지시 「눈 깜빡이거나 웃거나 생동감을 부여해줘」.
    가만히 서 있는 동안 이따금 표정 하나를 1.6초 들었다 내린다. **몸은 1픽셀도 안 움직인다**
@@ -587,11 +584,10 @@ const 최대지속 = { 인사: .3, 라운드: 1.1, 정답: 2.3, 체크인: 1.4, 
 const 인사컷지속 = 1.2;
 function 인사컷있나() { return !!(이미지[현재DJ] && 이미지[현재DJ]['인사']); }
 
-const 울란바토르시 = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Ulaanbaatar', hour: '2-digit', hourCycle: 'h23' });
 function 밤인가(now) {
   if (인자.get('밤') === '1') return true;
   if (인자.get('밤') === '0') return false;
-  const 시 = Number(울란바토르시.format(now));
+  const 시 = new Date(now).getHours(); // VPS/송출 PC 로컬시 = 울란바토르
   return 시 >= 3 && 시 < 6;
 }
 
@@ -603,9 +599,7 @@ function 프레임() {
 function 한틱() {
   if (!준비) return;
   마지막틱 = performance.now();
-  const 경과ms = 마지막틱 - 시작;
-  if (반응) 유휴리듬.중단(경과ms);
-  const t = 경과ms / 1000;
+  const t = (performance.now() - 시작) / 1000;
   const 폭px = 틀.clientWidth || 300;
   const 자 = 폭px / 331;               // 모션 도구 기준(720px 무대 · 마스코트 331px)으로 진폭 환산
   const 밤 = 밤인가(Date.now());
@@ -616,7 +610,7 @@ function 한틱() {
      되살리려면 이 두 줄을 옛 식으로 돌리면 된다(옛 식 = git 이력). */
   let 떠오름 = 0;
   const 숨 = 1;
-  let sx = 숨, sy = 숨, 기울기 = 0, 컷 = '기본';
+  let sx = 숨, sy = 숨, 기울기 = 0, 컷 = 밤 ? '깜빡' : '기본';
 
   if (반응) {
     const p = t - 반응.시작t;
@@ -686,11 +680,23 @@ function 한틱() {
         break;
       }
     }
-  } else {
-    const 기움 = 기우는컷[현재DJ];
-    const 머리옷중 = 기움 && 머리옷쓴채();
-    const 가능표정 = Object.keys(이미지[현재DJ]).filter(k => !(머리옷중 && 기움.has(k)));
-    컷 = 유휴리듬.읽기(경과ms, { 밤, 가능표정, 중단: false }).표정 || '기본';
+  } else if (!밤) {
+    const ms = t * 1000;
+    /* 표정 살이 — 깜빡임과 «같은 유휴 자리»라 겹치면 살이가 이긴다(둘 다 뜨면 얼굴이 떤다).
+       반응(인사·정답…)이 오면 위 가지가 이겨서 여기까지 안 온다 — 규율은 그대로다. */
+    if (살이 && ms > 살이.끝) { 살이 = null; 다음살이 = ms + 살이사이(); }
+    if (!살이 && ms > 다음살이) {
+      /* 그 DJ 에게 «있는» 컷만 고른다 — 없는 컷을 들면 화면이 빈다(옷 조각과 같은 규율). */
+      const 기움 = 기우는컷[현재DJ];
+      const 머리옷중 = 기움 && 머리옷쓴채();
+      const 후보 = 살이컷들.filter((k) => 이미지[현재DJ] && 이미지[현재DJ][k] && !(머리옷중 && 기움.has(k)));
+      if (후보.length) 살이 = { 컷: 후보[Math.floor(Math.random() * 후보.length)], 끝: ms + 살이지속 * 1000 };
+      else 다음살이 = ms + 살이사이();     // 살이 컷이 하나도 없는 DJ — 조용히 넘어간다
+    }
+    if (살이) 컷 = 살이.컷;
+    // 자연 깜빡임 150ms (반응 중엔 반응이 이긴다 — 모션 도구와 같은 우선순위)
+    else if (ms > 다음깜빡 + 150) 다음깜빡 = ms + 2200 + Math.random() * 3000;
+    else if (ms > 다음깜빡) 컷 = '깜빡';
   }
 
   /* 확인용 — `?고정=<컷>` 이면 그 컷을 계속 든다(헤드리스 크롬으로 사진을 찍어 견주는 용도 · 봇은 이 인자를 안 준다). */

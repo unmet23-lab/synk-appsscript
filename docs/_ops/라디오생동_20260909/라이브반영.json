@@ -1,0 +1,26 @@
+{
+  "applied": true,
+  "at": "2026-09-09T09:24:26.392Z",
+  "files": {
+    "video": {
+      "path": "/opt/synk-radio/무대차례/chuseok-natural-20260909.mp4",
+      "sha256": "5b4b8f84d0ced1eaa6e9135af2582daa192a87fd00c2f39015faf5fe594232f7"
+    },
+    "rhythm": {
+      "path": "/opt/synk-radio/지면/bots/오버레이/라디오표정리듬.js",
+      "sha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8"
+    },
+    "html": {
+      "path": "/opt/synk-radio/지면/bots/오버레이/mascot-natural-20260909.next.html",
+      "sha256": "64a55da4e3cc1443e217481726acd898d192f1b3a780b8222f999a069238b4a2"
+    }
+  },
+  "backups": [
+    "/opt/synk-radio/지면/bots/오버레이/마스코트.html.before-natural-20260909",
+    "/opt/synk-radio/무대차례/목록.txt.before-natural-20260909"
+  ],
+  "htmlSha256": "64a55da4e3cc1443e217481726acd898d192f1b3a780b8222f999a069238b4a2",
+  "stagePlaylist": "ffconcat version 1.0\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\nfile 'chuseok-natural-20260909.mp4'\n",
+  "audioPlaylist": "ffconcat version 1.0\nfile 'synk-radio-blok11-20260909-air.aac'\n",
+  "service": "MainPID=137314\nActiveState=active\nActiveEnterTimestamp=Wed 2026-09-09 09:24:26 UTC"
+}
