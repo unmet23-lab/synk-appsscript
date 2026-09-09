@@ -503,27 +503,77 @@ function 장부Section(잰다, 형제들) {
   return { 측정: true, 결과, 섰던적: !!상태().장부섰나 };
 }
 
-function geminilmSection() {
-  // 하네스 폴더와 결정적으로 다른 점: 제미나이LM 묶음은 **올린 뒤 손이 닿지 않는다.**
-  // 자료는 구글 계정 안으로 복사돼 버려서, 저장소가 아무리 바뀌어도 그쪽은 그대로다.
-  // 즉 「스스로 낡음을 말하는」 배너조차 올라간 사본에는 만든 날짜로 굳어 있다 —
-  // 낡음을 알려야 할 상대는 폴더가 아니라 **올린 사람**이다. 그래서 주간 점검이 진다.
-  const N = require('./geminilm-export.js'); // require는 생성기를 실행하지 않는다
-  const dir = process.env.SYNK_GEMINILM_OUT || N.DEFAULT_OUT;
-  const readme = path.join(dir, 'README_먼저읽기.md');
-  if (!fs.existsSync(readme)) return { present: false }; // 아직 안 쓰는 것 = 부패 아님
-  const madeAt = fs.statSync(readme).mtimeMs;
-  // 앵커는 굵기표시(**)를 건너뛰고 날짜만 본다 — 문구 앵커는 문구가 바뀌면 죽고,
-  // 죽어도 경고는 그대로 떠서 「(날짜 미검출)」이라는 쓸모없는 값으로 조용히 낡는다.
-  // 생성기와 이 앵커가 어긋나는지는 tests/노트북LM묶음.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)가 왕복으로 검사한다.
-  const m = fs.readFileSync(readme, 'utf8').match(/만든 날\s*\**\s*(\d{4}-\d{2}-\d{2})/);
-  const changed = [];
-  for (const { root } of N.SOURCE_ROOTS) {
-    for (const f of N.walk(root)) {
-      if (fs.statSync(f).mtimeMs > madeAt) changed.push(path.basename(f));
+function geminilmSection({ repo = ROOT, dir } = {}) {
+  // 로컬 생성본만 잰다. 업로드된 사본의 갱신·동기화를 확인한 것은 아니다.
+  const N = require('./geminilm-export.js');
+  const hash = body => require('node:crypto').createHash('sha256').update(body).digest('hex');
+  dir = dir || process.env.SYNK_GEMINILM_OUT || N.DEFAULT_OUT;
+  if (!fs.existsSync(dir)) return { present: false };
+  const unknown = reason => ({ present: true, unknown: true, reason, changed: [] });
+  const children = fs.readdirSync(dir, { withFileTypes: true })
+    .filter(entry => entry.isDirectory() && !entry.isSymbolicLink() && /^생성본-\d{4}-\d{2}-\d{2}-/.test(entry.name))
+    .map(entry => path.join(dir, entry.name));
+  const direct = fs.existsSync(path.join(dir, '생성정보.json')) || /^생성본-\d{4}-\d{2}-\d{2}-/.test(path.basename(dir));
+  const candidates = direct ? [dir] : children;
+  if (!candidates.length) return fs.existsSync(path.join(dir, 'README_먼저읽기.md'))
+    ? unknown('기존 사본에 원본 해시가 없어 최신 여부를 확인할 수 없다') : { present: false };
+  const valid = [];
+  for (const folder of candidates) {
+    try {
+      const manifest = JSON.parse(fs.readFileSync(path.join(folder, '생성정보.json'), 'utf8'));
+      const safeSource = source => typeof source === 'string' && source.startsWith('docs/') &&
+        !source.includes('\\') && !source.includes('\0') && !source.split('/').some(part => part === '..' || part === '.' || !part);
+      const isHash = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
+      if (manifest.schema !== 1 || typeof manifest.madeAt !== 'string' ||
+          !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(manifest.madeAt) ||
+          !Number.isFinite(Date.parse(manifest.madeAt)) || new Date(manifest.madeAt).toISOString() !== manifest.madeAt ||
+          !Array.isArray(manifest.files) || !manifest.files.length ||
+          !manifest.policy || manifest.policy.source !== 'docs/AI_운영원칙.md' || !isHash(manifest.policy.sha256))
+        return unknown('생성정보가 없거나 손상되어 최신 생성본을 확인할 수 없다');
+      const seen = new Set();
+      for (const file of manifest.files) {
+        if (!safeSource(file.source) || file.name !== N.flatName('문서', file.source.slice(5)) ||
+            !isHash(file.sha256) || !isHash(file.outputSha256) || seen.has(file.source))
+          return unknown('생성정보의 원본 목록·해시가 불완전하다');
+        seen.add(file.source);
+        const output = path.join(folder, file.name);
+        if (!fs.lstatSync(output).isFile() || fs.lstatSync(output).isSymbolicLink() || hash(fs.readFileSync(output)) !== file.outputSha256)
+          return unknown('생성 파일이 없거나 내용이 바뀌어 묶음을 확인할 수 없다');
+      }
+      if (!manifest.files.some(file => file.source === manifest.policy.source && file.sha256 === manifest.policy.sha256) ||
+          !Array.isArray(manifest.artifacts) || manifest.artifacts.length !== 2 ||
+          !['README_먼저읽기.md', '_빠진_파일.md'].every(name => manifest.artifacts.some(file => file.name === name)))
+        return unknown('공통 원칙·생성 안내 정보가 빠져 묶음을 확인할 수 없다');
+      for (const file of manifest.artifacts) {
+        const output = path.join(folder, file.name);
+        if (!isHash(file.sha256) || !fs.lstatSync(output).isFile() || fs.lstatSync(output).isSymbolicLink() ||
+            hash(fs.readFileSync(output)) !== file.sha256)
+          return unknown('생성 안내 파일이 없거나 바뀌어 묶음을 확인할 수 없다');
+      }
+      valid.push({ folder, manifest });
+    } catch {
+      // 깨진 새 생성본을 무시하고 이전의 정상본을 최신으로 보고하지 않는다.
+      return unknown('생성본 일부를 읽지 못해 최신 여부를 확인할 수 없다');
     }
   }
-  return { present: true, made: m ? m[1] : '(날짜 미검출)', changed };
+  valid.sort((a, b) => Date.parse(b.manifest.madeAt) - Date.parse(a.manifest.madeAt));
+  const latest = valid[0];
+  const fingerprint = entry => JSON.stringify(entry.manifest.files.map(file => [file.source, file.sha256]).sort());
+  if (valid.some(entry => entry.manifest.madeAt === latest.manifest.madeAt && fingerprint(entry) !== fingerprint(latest)))
+    return unknown('같은 생성 시각에 다른 원본의 사본이 있어 최신 순서를 확인할 수 없다');
+  const before = new Map(latest.manifest.files.map(file => [file.source, file.sha256]));
+  const current = new Map(N.collectSources(repo).files.map(file => [file.source, file.sha256]));
+  const changed = [...new Set([...before.keys(), ...current.keys()])]
+    .filter(source => before.get(source) !== current.get(source)).sort();
+  return { present: true, unknown: false, made: latest.manifest.madeAt, folder: latest.folder, changed, basis: 'source-and-output-sha256' };
+}
+
+function geminilmFinding(value) {
+  if (!value.present) return null;
+  if (value.unknown) return { kind: '공유 자료 최신 여부 미확인', text: value.reason + ' — 현재 원문과 대조하고 새 생성본을 확인한다.' };
+  if (!value.changed.length) return null;
+  return { kind: '제미나이LM 묶음 낡음', text: `로컬 생성본(${value.made})과 현재 원문 ${value.changed.length}개가 다르다. ` +
+    '필요한 자료를 다시 생성하고 사용할 사본을 선택한다. 로컬 생성 성공은 외부 서비스의 갱신을 뜻하지 않는다.' };
 }
 
 function geminilmDriveSection() {
@@ -1332,15 +1382,9 @@ function collect({ 라이브 = false, 시간제한, 장부: 장부잰다 = false
     });
   }
 
-  if (nbl.ok && nbl.value.present && nbl.value.changed.length) {
-    const n = nbl.value.changed.length;
-    warn.push({
-      kind: '제미나이LM 묶음 낡음',
-      text: `묶음(만든 날 ${nbl.value.made}) 이후 원천 ${n}개가 바뀌었다 — ` +
-        `${nbl.value.changed.slice(0, 3).join(', ')}${n > 3 ? ` 외 ${n - 3}건` : ''}. ` +
-        '올라간 사본은 저장소가 만질 수 없으므로 스스로 안 낫는다. ' +
-        '수리: node tools/geminilm-export.js → 제미나이LM에서 옛 노트북을 지우고 새로 올린다',
-    });
+  if (nbl.ok) {
+    const finding = geminilmFinding(nbl.value);
+    if (finding) warn.push(finding);
   }
 
   if (nbd.ok && nbd.value.present && !nbd.value.unknown) {
@@ -1917,6 +1961,6 @@ if (require.main === module) main();
  * 조용하다」 — 둘 다 침묵을 닮았다. 그래서 베끼지 않고 **이 한 벌을 빌려 쓴다**(회귀는
  * tests/절단문서.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다) ③ 이 그대로 진다). ⚠ 시각은 안 돌려준다 — 부르는 쪽은 `--since` 로
  * 이미 걸러진 목록을 받으므로 필요 없다. */
-module.exports = { collect, render, dueNow, stateFile, harnessSection, toilSection, 절단문서Section, 뒤커밋들, 배포Section, 배포도장, 편집중인가, EVOLVE_THRESHOLD, 마지막개정, frictionSection, 장부Section, 장부판정, 장부도장, 장부패치, 축만, 장부_주기_일,
+module.exports = { collect, render, dueNow, stateFile, harnessSection, geminilmSection, geminilmFinding, toilSection, 절단문서Section, 뒤커밋들, 배포Section, 배포도장, 편집중인가, EVOLVE_THRESHOLD, 마지막개정, frictionSection, 장부Section, 장부판정, 장부도장, 장부패치, 축만, 장부_주기_일,
   // 08-29 신설 — 회귀가 픽스처로 재는 자리들(탐지력은 실물이 아니라 픽스처가 진다 · F296).
   이름부름Section, 남은손Section, 상주Section, 게이트Section, 밤굽기Section, 부패키, 눌림갱신, 그날, 상주선언, 게이트_중앙값_한도_ms };

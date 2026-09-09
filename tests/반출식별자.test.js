@@ -174,7 +174,8 @@ test('🔴 게이트를 못 세우면 «0건»이 아니라 던진다 — 조용
  *     · 뿌리가 **없다** → **skip(사유 동봉)**. 저장소 밖 폴더가 없는 것은 CI 의 «정상»이라
  *       빨갛게 만들면 안 된다(우는 검사는 꺼진다). 그러나 조용히 초록으로 넘기면 그게 이 병이다 —
  *       그래서 「이 기계에서는 못 쟀다」가 **실행 출력에 남는다**. 안 잰 것과 0건을 눈으로 가른다. */
-const 최소분모_ = 100;   // 두 갈래 모두 오늘 실측 191·336 — 이 아래로 떨어지면 걷기가 죽은 것이다
+// 09-09: 개인 기억의 자동 반출·실코퍼스 읽기는 제거했다. 저장소 문서만 검사한다.
+const 최소분모_ = 100;
 
 /** 갈래 하나를 걷는다. 뿌리가 없으면 «못 쟀다»로 돌려준다 — 0벌로 접지 않는다. */
 function 갈래_(뿌리) {
@@ -182,10 +183,10 @@ function 갈래_(뿌리) {
   return { prefix: 뿌리.prefix, root: 뿌리.root, 잼, 후보: 잼 ? G.walk(뿌리.root) : [] };
 }
 
-test('🔴 실코퍼스 갈래가 갈래별로 살아 있다 — 합산 문턱은 한 갈래의 죽음을 안 알려준다', () => {
+test('공유 자료의 원천은 저장소 문서만이며 개인 기억을 읽지 않는다', () => {
   const 갈래들 = G.SOURCE_ROOTS.map(갈래_);
-  assert.ok(갈래들.length >= 2,
-    `SOURCE_ROOTS 가 ${갈래들.length}갈래뿐 — 갈래가 접히면 아래 검사도 같이 접힌다`);
+  assert.deepEqual(갈래들.map(g => g.prefix), ['문서']);
+  assert.equal(path.resolve(갈래들[0].root), path.resolve(__dirname, '..', 'docs'));
   const 죽은 = 갈래들.filter((g) => g.잼 && g.후보.length < 최소분모_)
     .map((g) => `${g.prefix}: 뿌리는 있는데 ${g.후보.length}벌(<${최소분모_}) — ${g.root}`);
   assert.deepEqual(죽은, [], '걷기가 죽었다(뿌리는 있는데 분모가 얇다):\n  ' + 죽은.join('\n  '));
@@ -208,7 +209,7 @@ for (const 뿌리 of G.SOURCE_ROOTS) {
     const 새로막힌 = [];
     for (const abs of g.후보) {
       const hits = G.scan라벨_(fs.readFileSync(abs, 'utf8'));
-      if (hits.length) 새로막힌.push(path.basename(abs) + ' → ' + hits.slice(0, 2).map((h) => h.kind + ' ' + h.value).join(' · '));
+      if (hits.length) 새로막힌.push(path.basename(abs) + ' → ' + hits.slice(0, 2).map((h) => h.kind).join(' · '));
     }
     assert.deepEqual(새로막힌, [], `[${g.prefix}] 라벨 축이 실물 ${새로막힌.length}벌을 새로 막는다(분모 ${g.후보.length}벌) — ` +
       '전부 진짜 식별자면 그 파일을 고치고, 오탐이면 값 꼴 검사를 조여라(둘 중 하나를 «반드시» 하고 이 줄을 갱신):\n  ' +

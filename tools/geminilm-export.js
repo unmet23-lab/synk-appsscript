@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 /**
  * 제미나이LM 묶음 생성기 — repo 정본에서 제미나이LM 업로드 폴더를 **생성**한다.
- * (2026-08-22 개명: 구글이 「노트북LM」을 이 이름으로 바꿨다. 폴더 이름 자체는 안 바꿨다 —
- *  아래 DEFAULT_OUT 주석 참고.)
+ * 기존 파일명·폴더명은 호환을 위해 유지한다. 현재 제품명·기능은 공식 앱에서 확인한다.
  *
  * 왜 생성기인가:
  *   `docs/AI_스택_가이드.md` §1-5의 잠금 3개 중 하나가 「사본에 만든 날짜를 박는다 —
  *   사본을 손으로 관리하지 않는다」다. 손으로 올린 묶음은 스스로 낡음을 모르고,
  *   낡은 사본이 출처를 찍어 답하면 그게 정확히 「정본 분열」이다.
- *   → 다시 돌리면 폴더 전체가 새로 만들어진다(harness-export.js와 같은 정신).
+ *   → 실행마다 새 생성본 폴더를 만든다. 기존 자료와 사용자 파일은 지우지 않는다.
  *
  * 사용:
  *   node tools/geminilm-export.js           # 바탕화면\SYNK_제미나이LM 에 생성
@@ -32,14 +31,10 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const crypto = require('node:crypto');
 
 const REPO = path.resolve(__dirname, '..');
-// 하네스 경로는 손으로 조립하지 않는다 — 이 자리엔 이 기계 이름이 박혀 있었다(F206).
-const MEM = require('./memory-graph.js').memoryDir();
-// 폴더 이름도 2026-08-22 갈아탔다(geminilm-drive.js 의 같은 주석 참고) — 단 이 폴더는
-// 위험이 다르다: 매번 통째로 지우고 새로 만드는 «생성기 산출물»이라 살아있는 소스
-// 바인딩이 없다(README 안내대로 이미 업로드된 노트북은 그 시점의 정적 사본을 갖고
-// 있을 뿐, 이 폴더를 계속 지켜보지 않는다). 그래서 실물 웹 폴더 순서를 안 기다려도 된다.
+// 개인 기억 폴더는 조회하거나 복제하지 않는다. 공유 자료는 저장소 원문에서만 만든다.
 const DEFAULT_OUT = path.join(os.homedir(), 'OneDrive', 'Desktop', 'SYNK_제미나이LM');
 
 // ── 담지 않을 폴더 (경로 단위) ──────────────────────────────────────────
@@ -277,6 +272,7 @@ function walk(dir, out = [], base) {
   if (!fs.existsSync(dir)) return out;
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
+    if (e.isSymbolicLink()) continue;
     if (DENY_DIR.some((re) => re.test(path.sep + path.relative(root, p)))) continue;
     if (e.isDirectory()) walk(p, out, root);
     else if (e.name.toLowerCase().endsWith('.md')) out.push(p);
@@ -291,140 +287,84 @@ const flatName = (prefix, rel) =>
 
 // 톱레벨에 둔 이유: rot-check(주간 부패 점검)가 「묶음을 만든 뒤 원천이 몇 개 바뀌었나」를
 // 세려면 원천 목록을 알아야 한다. 생성기 안에 가둬두면 그 점검을 다시 쓸 수 없다.
-const SOURCE_ROOTS = [
-  { prefix: '기억', root: MEM, label: '판정 이력(memory)' },
-  { prefix: '문서', root: path.join(REPO, 'docs'), label: '정본 문서(docs)' },
+const sourceRoots = (repo = REPO) => [
+  { prefix: '문서', root: path.join(repo, 'docs'), label: '저장소 문서(docs)' },
 ];
+const SOURCE_ROOTS = sourceRoots();
+
+const sha256 = body => crypto.createHash('sha256').update(body).digest('hex');
+
+function collectSources(repo = REPO) {
+  const policyPath = 'docs/AI_운영원칙.md';
+  const policyHash = sha256(fs.readFileSync(path.join(repo, policyPath)));
+  const files = [], blocked = [];
+  for (const { prefix, root } of sourceRoots(repo)) {
+    for (const abs of walk(root)) {
+      const rel = path.relative(root, abs).replace(/\\/g, '/');
+      const body = fs.readFileSync(abs, 'utf8');
+      // 파일명도 외부 산출물에 들어가므로 본문과 함께 검사한다.
+      const hits = scanPII(rel + '\n' + body);
+      if (hits.length) {
+        // 제외한 원문·식별 가능한 파일명은 반환값·장부·로그에도 남기지 않는다.
+        blocked.push({ kinds: [...new Set(hits.map(hit => hit.kind))], count: hits.length });
+        continue;
+      }
+      files.push({ name: flatName(prefix, rel), source: `docs/${rel}`, sha256: sha256(body), body });
+    }
+  }
+  if (!files.some(file => file.source === policyPath)) throw new Error('공통 운영 원칙을 포함할 수 없어 생성 중단');
+  if (new Set(files.map(file => file.name)).size !== files.length) throw new Error('공유 파일 이름이 겹쳐 생성 중단');
+  return { files, blocked, policyPath, policyHash };
+}
+
+function generate({ repo = REPO, out = DEFAULT_OUT, dry = false, log = console.log, now = new Date() } = {}) {
+  const madeAt = now.toISOString();
+  const today = madeAt.slice(0, 10);
+  const { files, blocked, policyPath, policyHash } = collectSources(repo);
+
+  let output = null;
+  if (!dry) {
+    // 기존 사용자 파일과 이전 생성물에는 쓰거나 지우지 않는다.
+    fs.mkdirSync(path.resolve(out), { recursive: true });
+    output = fs.mkdtempSync(path.join(path.resolve(out), `생성본-${today}-`));
+    for (const file of files) {
+      const banner = `> **공유 사본** · 만든 날 ${madeAt}\n` +
+        `> 원본: SYNK-appsscript/\`${file.source}\` · SHA256 \`${file.sha256}\`\n` +
+        `> 작업 전에 저장소의 \`${policyPath}\`와 관련 원문을 실제로 다시 읽는다. 이 사본은 자동 갱신되지 않는다.\n\n---\n\n`;
+      const payload = banner + file.body;
+      file.outputSha256 = sha256(payload);
+      fs.writeFileSync(path.join(output, file.name), payload, { encoding: 'utf8', flag: 'wx' });
+    }
+    const excluded = `# 제외한 자료\n\n만든 날 ${madeAt} · 제외 ${blocked.length}개. 식별정보·자격증명 원문과 파일명은 기록하지 않는다.\n\n` +
+      blocked.map((item, i) => `- 제외 ${i + 1}: ${item.kinds.join('·')} (${item.count}건)`).join('\n') + '\n';
+    fs.writeFileSync(path.join(output, '_빠진_파일.md'), excluded, { encoding: 'utf8', flag: 'wx' });
+    const guide = `# SYNK 공유 자료 — 먼저 읽기\n\n` +
+      `> 만든 날 ${madeAt} · 자료 ${files.length}개 · 제외 ${blocked.length}개\n` +
+      `> 공통 원칙 원본: SYNK-appsscript/\`${policyPath}\` · SHA256 \`${policyHash}\`\n\n` +
+      `이 폴더는 이 시점의 저장소 자료를 읽고 대조하는 사본이다. 현재 주담당은 작업 전에 저장소의 공통 운영 원칙, 관련 정본, 최근 변경과 완료 증거를 실제로 확인한다. 경로를 전달한 것만으로 원문을 읽었다고 보지 않는다.\n\n` +
+      `개인 기억은 포함하지 않는다. 자동 검사는 모든 민감정보를 찾는 보장이 아니므로 반출은 요청한 자료와 계정 범위에 한정한다.\n\n` +
+      `외부 서비스에 연결할 때는 현재 공식 앱의 지원 형식·계정·포함량을 확인한다. 이번 생성본 안에서 필요한 자료만 선택하고 이전 생성본과 섞이지 않았는지 확인한다. 기존 노트북·사용자 파일은 이 도구가 삭제하지 않는다.\n\n` +
+      `이 생성기는 로컬 파일만 만든다. 업로드·자동 동기화·모델의 원문 독해를 확인한 것이 아니다. 재생성은 저장소에서 \`node tools/geminilm-export.js\`로 실행하며, 매번 새 생성본 폴더가 생긴다. 사본의 답은 현재 주담당이 최신 원문과 대조해 요청 범위 안에서 반영한다.\n`;
+    fs.writeFileSync(path.join(output, 'README_먼저읽기.md'), guide, { encoding: 'utf8', flag: 'wx' });
+    const artifacts = [{ name: 'README_먼저읽기.md', sha256: sha256(guide) }, { name: '_빠진_파일.md', sha256: sha256(excluded) }];
+    fs.writeFileSync(path.join(output, '생성정보.json'), JSON.stringify({ schema: 1, madeAt, policy: { source: policyPath, sha256: policyHash }, artifacts, files: files.map(({ body, ...file }) => file) }, null, 2), { encoding: 'utf8', flag: 'wx' });
+  }
+  const result = { madeAt, dry, output, written: files.length, blocked: blocked.length };
+  log(JSON.stringify(result));
+  return result;
+}
 
 function main() {
   const args = process.argv.slice(2);
-  const DRY = args.includes('--dry');
-  const outIdx = args.indexOf('--out');
-  const OUT = outIdx >= 0 && args[outIdx + 1] ? path.resolve(args[outIdx + 1]) : DEFAULT_OUT;
-
-  const today = new Date().toISOString().slice(0, 10);
-  const log = (s) => console.log(s);
-
-  log(`제미나이LM 묶음 생성 — 만든 날 ${today}`);
-  log(`대상: ${OUT}${DRY ? '  [DRY RUN]' : ''}\n`);
-
-  // 정본 버전 (묶음이 어느 판에서 나왔는지)
-  const claudeMd = fs.readFileSync(path.join(REPO, 'CLAUDE.md'), 'utf8');
-  const mVer = claudeMd.match(/\*\*(v[\d.]+)\s*·\s*([\d-]+)\*\*/);
-  const VER = mVer ? `${mVer[1]} (정본일 ${mVer[2]})` : '(버전 미검출)';
-
-  const banner = (원본경로) => `> ⚠ **사본이다 — 정본이 아니다.**
-> **만든 날: ${today}** · 지침 ${VER}
-> 원본 = SYNK-appsscript 저장소 \`${원본경로}\`
-> 다시 만들기: 저장소에서 \`node tools/geminilm-export.js\`
->
-> ⛔ **여기서 결정하지 않는다.** 이 묶음의 답은 **재료지 판정이 아니다** —
-> 확정은 저장소의 정본과 대조한 뒤에만. 이 사본은 만든 날 이후 갱신되지 않는다.
-
----
-
-`;
-
-  const sources = SOURCE_ROOTS;
-
-  if (!DRY && fs.existsSync(OUT)) {
-    fs.rmSync(OUT, { recursive: true, force: true });   // 재생성이므로 통째로 새로
-    log('  (기존 폴더를 지우고 새로 만든다 — 이 폴더는 언제나 생성물이다)\n');
-  }
-  if (!DRY) fs.mkdirSync(OUT, { recursive: true });
-
-  let written = 0;
-  const blocked = [];
-
-  for (const { prefix, root, label } of sources) {
-    const files = walk(root);
-    log(`${label} — ${files.length}개 후보`);
-    for (const abs of files) {
-      const rel = path.relative(root, abs).replace(/\\/g, '/');
-      const body = fs.readFileSync(abs, 'utf8');
-      const hits = scanPII(body);
-      if (hits.length) {
-        blocked.push({ prefix, rel, hits });
-        continue;
-      }
-      const name = flatName(prefix, rel);
-      if (!DRY) fs.writeFileSync(path.join(OUT, name), banner(`${prefix === '기억' ? 'memory' : 'docs'}/${rel}`) + body, 'utf8');
-      written++;
-    }
-  }
-
-  // ── 제외 목록도 묶음 안에 쓴다 ─────────────────────────────────────────
-  // 터미널 출력은 스크롤로 사라진다. 「무엇이 빠졌는지」가 묶음 안에 있어야
-  // 나중에 제미나이LM이 답을 못 할 때 「없는 것」과 「빠진 것」을 구분할 수 있다.
-  const 제외본문 = `# 이 묶음에서 **빠진** 파일 (${blocked.length}개)
-
-> 만든 날 ${today} · 자동 생성 — 손으로 고치지 말 것
-
-개인정보·제3자 연락처·자격증명이 본문에 있어 **업로드에서 제외**했다.
-제미나이LM이 이 주제를 못 답하면 「자료가 없어서」가 아니라 「일부러 뺐기 때문」이다.
-
-| 원본 | 걸린 것 | 줄 | 값 |
-|---|---|---|---|
-${blocked.length === 0 ? '| — | (없음) | — | — |' :
-  blocked.flatMap(({ prefix, rel, hits }) =>
-    hits.slice(0, 3).map((h) => `| ${prefix}/${rel} | ${h.kind} | ${h.line} | \`${h.value}\` |`)
-  ).join('\n')}
-
-**안전한 값으로 판명되면** \`tools/geminilm-export.js\`의 \`ALLOW\` 목록에 그 값을
-그대로 추가하고 다시 돌린다(파일 단위 예외가 아니라 **값 단위 예외** — 파일을 통째로
-통과시키면 그 파일에 나중에 들어올 진짜 개인정보까지 함께 통과한다).
-`;
-  if (!DRY) fs.writeFileSync(path.join(OUT, '_빠진_파일.md'), 제외본문, 'utf8');
-
-  const 안내 = `# SYNK 제미나이LM 묶음 — 올리는 방법
-
-> **만든 날 ${today}** · 지침 ${VER} · 자료 **${written}개** (제외 ${blocked.length}개)
-> ⚠ 이 안내의 접속 URL·상한 개수는 「노트북LM」시절 값을 그대로 옮긴 것이다(2026-08-22) —
-> 구글이 이름을 제미나이LM으로 바꾼 뒤 실제 화면에서 달라졌으면 그대로 따르면 된다.
-
-## 이 묶음의 자리 (왜 만드는가)
-**클로드 한도가 찼을 때의 조회 창구.** 제미나이LM은 클로드 한도를 **0** 쓴다.
-능력 경쟁이 아니라 **결손 보전** — 정본 = \`docs/AI_스택_가이드.md\` §1-5.
-
-## 올리는 순서
-1. 크롬에서 **notebooklm.google.com** 접속 → 구글 계정(Google AI Pro) 로그인
-2. 왼쪽 위 **「새로 만들기(Create new)」** 클릭
-3. 자료 추가 창이 뜨면 **「파일 업로드」** 선택
-4. 이 폴더(\`SYNK_제미나이LM\`)를 열고 **Ctrl+A**로 전부 선택 → **열기**
-   - 자료 ${written}개 (Plus 상한 300개 이내)
-5. 왼쪽 위 노트북 이름을 **\`SYNK 판정이력 ${today}\`** 로 바꾼다
-   - 🔑 **이름에 날짜를 넣는 게 핵심이다.** 다음에 다시 만들면 노트북이 2개가 되는데,
-     날짜가 없으면 어느 쪽이 최신인지 화면으로 구별할 방법이 없다.
-
-## 쓸 때의 규칙 3개 (이게 없으면 오히려 사고다)
-1. ⛔ **여기서 결정하지 않는다.** 답은 재료지 판정이 아니다.
-2. ⛔ **학생 데이터·개인정보를 추가로 올리지 않는다.** 이 묶음은 이미 걸러져 있다.
-3. ⛔ **답을 정본에 되돌려 쓰지 않는다.** 정본은 저장소 하나뿐 — 반영은 클로드에게 시킨다.
-
-## 다시 만들 때
-저장소가 바뀌면 이 묶음은 그날로 낡는다. 클로드에게 **"제미나이LM 묶음 만들어줘"** 라고 하면
-이 폴더가 새로 생성된다. 그 뒤 **제미나이LM에서 옛 노트북은 지우고 새로 올린다**
-(자료만 갈아끼우면 옛 자료가 남아 섞인다).
-`;
-  if (!DRY) fs.writeFileSync(path.join(OUT, 'README_먼저읽기.md'), 안내, 'utf8');
-
-  log('');
-  log(`✅ 자료 ${written}개 생성${DRY ? ' (예정)' : ''}`);
-  if (blocked.length) {
-    log(`⛔ 제외 ${blocked.length}개 — 개인정보·자격증명이 본문에 있다:`);
-    for (const { prefix, rel, hits } of blocked) {
-      const 요약 = [...new Set(hits.map((h) => h.kind))].join('·');
-      log(`   ${prefix}/${rel}  [${요약}] 예) ${hits[0].value} (${hits[0].line}줄)`);
-    }
-    log('   → 안전한 값이면 ALLOW 목록에 값을 추가하고 다시 돌린다.');
-  }
-  if (!DRY) log(`\n폴더: ${OUT}`);
+  const index = args.indexOf('--out');
+  if (index >= 0 && !args[index + 1]) throw new Error('--out 뒤에 경로가 필요합니다');
+  return generate({ dry: args.includes('--dry'), out: index >= 0 ? args[index + 1] : DEFAULT_OUT });
 }
 
 if (require.main === module) main();
 
 module.exports = {
-  scanPII, walk, flatName, DEFAULT_OUT, ALLOW, DENY_DIR, SOURCE_ROOTS,
+  scanPII, walk, flatName, DEFAULT_OUT, ALLOW, DENY_DIR, SOURCE_ROOTS, sourceRoots, collectSources, generate,
   // 08-29 라벨 식별자 축 — 회귀가 «분류 전수»와 «정본 대조»를 재려고 물어본다
   scan라벨_, 식별라벨_, 식별열_별칭, 비식별열_, 라벨축_, 골격정본_,
 };
