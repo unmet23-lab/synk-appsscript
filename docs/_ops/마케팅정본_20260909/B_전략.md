@@ -217,7 +217,7 @@ SYNK 본체 인스타 달 1회는 최신 확정을 따르는 계획이다. 기�
 
 ## 9. 읽은 범위와 충돌 처리
 
-**전체 읽음:** `AGENTS.md`, `docs/AI_운영원칙.md`, synk-brand/SKILL.md, synk-design/SKILL.md, `DESIGN.md`, `docs/조직계보_정본_v1.md`, `docs/SYNK_로드맵.html`의 전체 가시 본문(스크립트·스타일·태그 제외, 출력 잘린 중간을 별도로 다시 읽음), `docs/정본/SYNK/SYNK 기업소개서.txt`, `docs/정본/SYNK LAB/SYNK LAB 소개서.txt`, `docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt`, `docs/홍보물/브랜드소개_20260909/소개서_문안.json`, `읽어주세요.md`, `로고디테일/로고설명.md`, `사용자산.json`, `자산명세.json`, `docs/명품마케팅_회사별_v1.md`, `docs/명품_기준_v1.md`.
+**전체 읽음:** `AGENTS.md`, `docs/AI_운영원칙.md`, synk-brand/SKILL.md, synk-design/SKILL.md, `DESIGN.md`, `docs/조직계보_정본_v1.md`, `docs/SYNK_로드맵.html`의 전체 가시 본문(스크립트·스타일·태그 제외, 출력 잘린 중간을 별도로 다시 읽음), `docs/정본/SYNK/SYNK 기업소개서.txt`, `docs/정본/SYNK LAB/SYNK LAB 소개서.txt`, `docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt`, `docs/홍보물/브랜드소개_20260909/소개서_문안.json`, `읽어주세요.md`, `로고디테일/로고설명.md`, `사용자산.json`, `자산명세.json`, [당시 명품마케팅_회사별_v1](https://github.com/unmet23-lab/synk-appsscript/blob/a02539a2b930492b1cc57c21cca105d774ce8102/docs/%EB%AA%85%ED%92%88%EB%A7%88%EC%BC%80%ED%8C%85_%ED%9A%8C%EC%82%AC%EB%B3%84_v1.md), `docs/명품_기준_v1.md`.
 
 **관련 부분 읽음:** `tools/lib/마스코트자산.js` 헤더·경로·표정 일부, `docs/_ops/결정.md`의 09-09 첫 학생/09-08 라디오·핸들·본체 결정, `docs/_ops/트랙.md` 최신 라디오/첫 학생/마케팅 상태 검색. 철학 전문·엔진 7종 전문은 주담당의 정독을 통합 전제로 하며 B가 읽었다고 하지 않는다. 브랜드 자산 전체 픽셀을 이 초안에서 재검수하지 않았다. 공식 시장/명품 사례 외부 조사는 주담당/독립 조사 결과를 붙일 자리이며 B의 가설을 그 결과로 둔갑시키지 않는다.
 

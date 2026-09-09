@@ -17,7 +17,8 @@ const docs = {
   SYNK: ['DESIGN.md', 'docs/AI_운영원칙.md', 'docs/SYNK_철학.md', 'docs/제품방향.md',
     'docs/엔진7종_상향설계_v3.md', 'docs/명품_기준_v1.md',
     'docs/명품브랜딩_v2.md', 'docs/명품브랜딩_조사_2026-09-09.md',
-    'docs/마케팅_정본.md', 'docs/명품마케팅_회사별_v1.md', 'docs/명품눈금_v1.md',
+    'docs/마케팅_정본.md', 'docs/명품눈금_v1.md',
+    'docs/로고_중립색_정본_v1.md', 'docs/홈페이지_설계_v1.md',
     'docs/디자인_컨셉_정본_v1.md', 'docs/디자인_토큰.json',
     'docs/브랜드_폰트_정본.md', 'docs/양모공방_요소사전.md', 'docs/캐릭터/의상제작_정본.md'],
   'SYNK LAB': ['docs/커리큘럼_정본_v1.md', 'docs/반편성_정본_v2.md',
@@ -58,6 +59,8 @@ function 목록(root = ROOT) {
     const slug = { SYNK: 'synk', 'SYNK LAB': 'lab', 'SYNK SHIFT': 'shift', 'SYNK PULSE': 'pulse' }[brand];
     add(brand, 'docs/홍보물/브랜드소개_20260909/' + slug + '.pdf', '소개서.pdf');
   }
+  // 회사별 전략과 실행 기준은 현행 분리 원문에서 가져온다.
+  folder('SYNK', 'docs/마케팅', '정본/마케팅', p => p.endsWith('.md'));
   add('SYNK', 'docs/브랜드킷.html', '브랜드 킷.html');
   folder('SYNK', 'docs/엔진', '엔진 7종', p => !p.includes('/') && p.endsWith('.html'));
   folder('SYNK', 'docs/캐릭터/정본_4K', '확정 자산/마스코트');
