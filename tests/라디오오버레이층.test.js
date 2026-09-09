@@ -66,13 +66,13 @@ test('차림에 적힌 옷 조각이 실제로 있다', () => {
   }
 });
 
-test('라디오 전용 까몽 컷이 모두 있고 모든 결에서 통합 의상을 한 번만 쓴다', () => {
+test('명시 선택 없는 기본 편성은 기존 까몽 8컷을 보존하고 옷을 중복 합성하지 않는다', () => {
   const 경로 = 마스코트글.match(/까몽:\s*'([^']*라디오DJ\/)'/);
   assert.ok(경로, '까몽이 라디오 전용 DJ 폴더를 가리키지 않는다');
   const 컷 = 마스코트글.match(/\n  까몽:\s*\{([\s\S]*?)\n  \},/);
   assert.ok(컷, '까몽 컷표를 못 읽었다');
   const 파일들 = [...컷[1].matchAll(/:\s*'([^']+\.webp)'/g)].map((m) => m[1]);
-  assert.ok(파일들.length >= 8, '라디오 까몽 표정 컷이 모자란다');
+  assert.strictEqual(new Set(파일들).size, 8, '기본 까몽은 승인된 8컷이다. 기쁨은 눈웃음의 별칭이다');
   const 컷방 = path.resolve(path.dirname(path.join(루트, 'bots/오버레이/마스코트.html')), 경로[1]);
   for (const 파일 of new Set(파일들)) {
     const p = path.join(컷방, 파일);
