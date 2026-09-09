@@ -44,13 +44,15 @@ describe('옷 그림 이름 규칙', () => {
     assert.ok(L.옷경로('까몽', ['목도리'], '윙크', '표정틀').endsWith('.png'));
   });
 
-  it('차림 수는 「의상 최대 1 + 악세 최대 2」로 센다 (유호 확정 09-06)', () => {
-    const c = L.차림수('까몽');
-    const 둘씩 = (c.악세 * (c.악세 - 1)) / 2;
-    assert.strictEqual(c.한벌, c.의상 + c.악세);
-    assert.strictEqual(c.두벌, c.의상 * c.악세 + 둘씩);
-    assert.strictEqual(c.세벌, c.의상 * 둘씩);
-    assert.strictEqual(c.전부, c.한벌 + c.두벌 + c.세벌);
+  it('현재 차림 분모는 의상 최대1+악세 최대1이며 세 캐릭터 재고 감사와 같다', () => {
+    for (const [name, expected] of [['까몽',129],['몽글',142],['마린',129]]) {
+      const c = L.차림수(name);
+      assert.strictEqual(c.한벌, c.의상 + c.악세);
+      assert.strictEqual(c.두벌, c.의상 * c.악세);
+      assert.strictEqual(c.세벌, 0);
+      assert.strictEqual(c.전부, c.한벌 + c.두벌);
+      assert.strictEqual(c.전부, expected);
+    }
   });
 
   /* 🔴 이 시험은 «지금 있는 자산»을 잰다 — 자산이 늘면 같이 늘어야 한다.

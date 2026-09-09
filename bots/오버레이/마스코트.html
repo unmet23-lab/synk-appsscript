@@ -120,6 +120,9 @@
 'use strict';
 /* ── 설정(URL 파라미터) ─────────────────────────────────────────── */
 const 인자 = new URLSearchParams(location.search);
+const 움직임줄임 = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+// 명시 선택은 장르 시계와 분리한다. 기본 방송은 기존 까몽 차림을 유지한다.
+let 명시선택 = ['몽글', '까몽', '마린'].includes(인자.get('DJ'));
 if (인자.get('무대') === '1') document.body.classList.add('무대');
 if (인자.get('demo') === '1' || 인자.get('데모') === '1') document.body.classList.add('데모');
 /* 🆕 09-08 — 발밑 여백 한 값이 아홉 무대를 다 맡고 있었다. 무대마다 «바닥이 끝나는 선»이 다른데 값이 하나라,
@@ -277,7 +280,7 @@ function 경고(문구) {
 
 /* DJ 하나씩 «따로» 준비한다 — 한쪽 컷이 깨져도 다른 DJ 는 방송을 계속한다
    (v1 은 하나만 실패해도 화면 전체가 빈 채로 나갔다). 못 선 DJ 로의 교대는 그때 거절한다. */
-Promise.all(Object.keys(컷표).map(DJ =>
+const 기본준비 = Promise.all(Object.keys(컷표).map(DJ =>
   Promise.all(Object.entries(컷표[DJ]).map(([이름, 파일]) => new Promise(끝 => {
     const im = new Image();
     im.onload = () => 끝({ 이름, im, ok: true });
@@ -310,7 +313,7 @@ Promise.all(Object.keys(컷표).map(DJ =>
   const 첫결 = 인자.get('결');
   if (첫결) {
     const 설DJ = 결의DJ(첫결);
-    if (설DJ && 준비된DJ.has(설DJ)) 현재DJ = 설DJ;
+    if (!명시선택 && 설DJ && 준비된DJ.has(설DJ)) 현재DJ = 설DJ;
     갈아입기(첫결);
   }
   이미지[현재DJ]['기본'].hidden = false;
@@ -496,6 +499,7 @@ function 갈아입기(결) {
   if (!차림) return;                                // 모르는 결 = 맨몸(틀리게 입히지 않는다)
   const 꼴 = DJ꼴[현재DJ] || '';
   부스맞추기();                                    // 이 결에 부스가 서나 — 서면 부스 뒤 옷은 안 입힌다
+  if (명시선택) return;                            // 고른 통합 차림에 옛 조각을 덧씌우지 않는다
   const 입힐옷 = 부스선다(결) ? 차림.옷.filter((이름) => !부스뒤옷.has(이름)) : 차림.옷;
   입힐옷.slice(0, 옷층수).forEach((이름, i) => {
     const im = 옷들[i];
@@ -519,17 +523,206 @@ function 옷_이름(DJ, 이름) { return '옷_' + DJ + '_' + 이름; }
 function 결의DJ(결) { return (장르차림[결] || {}).DJ || null; }
 
 let 현재표정 = '기본';
+let 선택세트 = null;                              // 활성 통합 세트 하나만 보관(전체 카탈로그 선로딩 금지)
+let 선택요청 = null;
+let 선택이동 = null;
+let 마지막차림오류 = null;
+let 선택번호 = 0;
+let 목록약속 = null;
+let 검수표정;                                    // undefined=URL 고정, null=자동 표정으로 복귀
+const 차림뿌리 = '../../docs/Loom_자산/라디오차림/';
+const 필수차림표정 = ['기본', '깜빡', '눈웃음', '궁금함', '집중', '안도', '응원', '놀람'];
+const 선택이동ms = 280;                            // UI 교체: 300ms 안, 좌표만 이동하고 색/비율은 그대로
+const 지금이미지 = () => 선택세트 ? 선택세트.이미지 : 이미지[현재DJ];
+const 단정한키 = (이름) => 이름.replace(/\s+/g, '');
+function 차림오류(코드, 메시지) { return Object.assign(new Error(메시지), { code: 코드 }); }
+function 이미지놓기(im) { im.onload = null; im.onerror = null; im.remove(); im.removeAttribute('src'); }
+function 세트놓기(세트) { if (세트) for (const im of new Set(Object.values(세트.이미지))) 이미지놓기(im); }
+function 차림상태() {
+  const 현재 = 지금이미지() || {};
+  return {
+    현재DJ, DJ: 현재DJ, 준비, 표정: 현재표정, 결: 현재차림, 명시선택,
+    차림: 선택세트 ? { ...선택세트.선택, 상태: 선택세트.상태 } : {
+      DJ: 현재DJ, 의상: 현재DJ === '까몽' ? '여름 델' : null,
+      악세: 현재DJ === '까몽' ? '전설의 팻말' : null, 상태: '기존승인',
+    },
+    오류: 마지막차림오류 ? { ...마지막차림오류 } : null,
+    활성이미지수: new Set(Object.values(현재)).size,
+    보류이미지수: 선택요청 ? 선택요청.이미지.size : 0,
+    기본보관이미지수: Object.values(이미지).reduce((n, 세트) => n + new Set(Object.values(세트)).size, 0),
+    캐시한도: { 활성차림: 1, 보류차림: 1, 차림당이미지: 8 },
+    선택중: !!선택요청, 교체중: !!선택이동,
+    transform: 틀.style.transform || '', 움직임줄임: 움직임줄임.matches,
+    표시파일: 현재[현재표정] ? 현재[현재표정].src : null,
+  };
+}
+window.마스코트상태 = 차림상태;
+window.마스코트검수표정 = function (이름) {
+  if (인자.get('검수') !== '1') throw 차림오류('검수전용', '강제 표정은 로컬 검수 모드에서만 사용할 수 있습니다.');
+  if (이름 !== null && (typeof 이름 !== 'string' || !지금이미지()[이름])) throw 차림오류('표정없음', '지금 차림에 없는 표정입니다.');
+  검수표정 = 이름; 한틱(); return 차림상태();
+};
+
+function 차림목록() {
+  if (!목록약속) {
+    const 중단 = new AbortController();
+    const 시한 = setTimeout(() => 중단.abort(), 15000);
+    목록약속 = fetch(차림뿌리 + '목록.json', { signal: 중단.signal, cache: 'no-cache' })
+      .then(r => { if (!r.ok) throw 차림오류('목록없음', '차림 목록을 읽지 못했습니다. 지금 차림을 유지합니다.'); return r.json(); })
+      .finally(() => clearTimeout(시한))
+      .catch(e => { 목록약속 = null; throw e; });
+  }
+  return 목록약속;
+}
+function 선택검사(값) {
+  if (!값 || typeof 값 !== 'object' || Array.isArray(값)) throw 차림오류('잘못된선택', '캐릭터·의상 1벌·악세서리 1개를 지정해 주세요.');
+  if (!['몽글', '까몽', '마린'].includes(값.DJ)) throw 차림오류('캐릭터없음', '준비된 캐릭터가 아닙니다.');
+  for (const 칸 of ['의상', '악세']) {
+    if (typeof 값[칸] !== 'string' || !값[칸].trim() || /[+,/\\]/.test(값[칸])) {
+      throw 차림오류('한개씩선택', '의상 1벌과 악세서리 1개만 선택할 수 있습니다.');
+    }
+  }
+  if (Object.keys(값).some(k => !['DJ', '의상', '악세'].includes(k))) throw 차림오류('한개씩선택', '캐릭터·의상 1벌·악세서리 1개 외의 추가 선택은 받을 수 없습니다.');
+  return { DJ: 값.DJ, 의상: 값.의상.trim(), 악세: 값.악세.trim() };
+}
+function 차림파일(파일, DJ) {
+  if (typeof 파일 !== 'string' || !파일.startsWith(DJ + '/') || !/^[^:?#%\\]+\.webp$/.test(파일)
+      || 파일.split('/').some(p => !p || p === '.' || p === '..')) {
+    throw 차림오류('잘못된파일', '차림 이미지 경로가 해당 캐릭터 폴더 안의 WebP가 아닙니다.');
+  }
+  return 차림뿌리 + 파일;
+}
+function 선택그림읽기(파일, 요청) {
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    요청.이미지.add(im);
+    let 끝남 = false;
+    const 시한 = setTimeout(() => 끝(차림오류('이미지시간초과', '차림 이미지를 제때 읽지 못했습니다.')), 15000);
+    const 끝 = (오류) => {
+      if (끝남) return; 끝남 = true; clearTimeout(시한); 요청.취소들.delete(취소);
+      im.onload = null; im.onerror = null;
+      if (오류) reject(오류); else resolve(im);
+    };
+    const 취소 = () => { 끝(차림오류('선택취소', '더 최근의 차림 선택으로 바뀌었습니다.')); 이미지놓기(im); };
+    요청.취소들.add(취소);
+    im.onload = async () => {
+      try {
+        await im.decode();
+        if (im.naturalWidth !== 1024 || im.naturalHeight !== 1024) throw 차림오류('이미지크기', '차림 이미지는 1024 정사각 화면용이어야 합니다.');
+        끝();
+      } catch (e) { 끝(e); }
+    };
+    im.onerror = () => 끝(차림오류('이미지없음', '선택한 차림의 표정 이미지를 읽지 못했습니다.'));
+    im.hidden = true; im.alt = ''; im.src = 파일;
+  });
+}
+function 요청정리(요청, 오류) {
+  if (요청.끝남) return;
+  요청.끝남 = true;
+  for (const 취소 of [...요청.취소들]) 취소();
+  for (const im of 요청.이미지) 이미지놓기(im);
+  요청.이미지.clear();
+  if (선택이동 && 선택이동.요청 === 요청) { 선택이동 = null; 틀.style.transform = 'translateY(0px) rotate(0deg)'; }
+  if (선택요청 === 요청) 선택요청 = null;
+  if (오류) 요청.reject(오류); else 요청.resolve(차림상태());
+}
+function 선택적용(이동) {
+  const 다음 = 이동.세트;
+  for (const im of Object.values(지금이미지() || {})) im.hidden = true;
+  const 이전 = 선택세트;
+  // 제작 단계에서 정본 눈 간격·좌표에 등록한 같은 캔버스다. 모자/긴 옷을 포함한
+  // 새 알파 bbox로 재보정하면 옷을 바꿀 때 얼굴까지 커졌다 작아진다. DJ별 한 꼴만 쓴다.
+  const 꼴 = DJ꼴[다음.선택.DJ] || '';
+  for (const im of new Set(Object.values(다음.이미지))) { im.style.transform = 꼴; 틀.appendChild(im); }
+  선택세트 = 다음; 현재DJ = 다음.선택.DJ; 현재표정 = '기본'; 명시선택 = true;
+  다음.이미지.기본.hidden = false;
+  for (const im of 옷들) { im.hidden = true; im.removeAttribute('src'); }
+  이동.요청.이미지.clear();                          // 보류 소유권을 활성 세트로 옮긴다
+  세트놓기(이전);
+  살이 = null; 반응 = null; 대기열.length = 0;
+  다음살이 = (performance.now() - 시작) + 살이사이();
+  이동.바꿈 = true;
+}
+function 선택프레임() {
+  const 이동 = 선택이동;
+  if (!이동) return false;
+  const 경과 = performance.now() - 이동.시작;
+  const 반 = 선택이동ms / 2;
+  if ((경과 >= 반 || 움직임줄임.matches) && !이동.바꿈) 선택적용(이동);
+  if (경과 >= 선택이동ms || 움직임줄임.matches) {
+    틀.style.transform = 'translateY(0px) rotate(0deg)'; 요청정리(이동.요청); return true;
+  }
+  const 화면밖 = Math.max(innerHeight || 1080, 틀.clientHeight || 300) * 1.5;
+  const u = 경과 < 반 ? 경과 / 반 : (경과 - 반) / 반;
+  const 이동몫 = 경과 < 반 ? 1 - Math.pow(1 - u, 3) : Math.pow(1 - u, 3);
+  틀.style.transform = `translateY(${(화면밖 * 이동몫).toFixed(2)}px) rotate(0deg)`;
+  return true;
+}
+window.마스코트차림 = function (값) {
+  const 번호 = ++선택번호;
+  if (선택요청) 요청정리(선택요청, 차림오류('선택취소', '더 최근의 차림 선택으로 바뀌었습니다.'));
+  return new Promise((resolve, reject) => {
+    const 요청 = { 번호, resolve, reject, 이미지: new Set(), 취소들: new Set(), 끝남: false };
+    선택요청 = 요청; 마지막차림오류 = null;
+    (async () => {
+      const 선택 = 선택검사(값);
+      await 기본준비;
+      if (요청.끝남) return;
+      if (!준비) throw 차림오류('기본미준비', '기본 마스코트가 준비되지 않아 차림을 바꾸지 않습니다.');
+      const 목록 = await 차림목록();
+      if (요청.끝남) return;
+      const 캐릭터 = 목록 && 목록.캐릭터 && 목록.캐릭터[선택.DJ];
+      const 포함 = (칸, 이름) => Array.isArray(칸) && 칸.some(x => typeof x === 'string' && 단정한키(x) === 단정한키(이름));
+      if (!캐릭터 || !포함(캐릭터.의상, 선택.의상) || !포함(캐릭터.악세, 선택.악세)) {
+        throw 차림오류('미준비', '이 캐릭터의 해당 의상 또는 악세서리가 준비되지 않았습니다.');
+      }
+      const 짝들 = Object.entries(캐릭터.차림 || {}).filter(([, 항목]) => 항목 && typeof 항목.의상 === 'string' && typeof 항목.악세 === 'string'
+        && 단정한키(항목.의상) === 단정한키(선택.의상) && 단정한키(항목.악세) === 단정한키(선택.악세));
+      if (짝들.length !== 1) throw 차림오류('미준비', '선택한 의상과 악세서리를 함께 입은 표정 세트가 없거나 목록이 모호합니다.');
+      const [키, 항목] = 짝들[0];                    // 저장 키의 순서는 옷 목록이 정한다. 의상/악세 순서를 추측하지 않는다.
+      if (!(항목.상태 === '통과' || (인자.get('검수') === '1' && 항목.상태 === '검수후보'))) {
+        throw 차림오류('검수미완료', '아직 검수를 통과하지 않은 차림입니다. 방송에는 적용하지 않습니다.');
+      }
+      if (선택세트 && 선택세트.선택.DJ === 선택.DJ && 선택세트.선택.키 === 키) { 요청정리(요청); return; }
+      const 표 = 항목.표정 || {};
+      const 파일 = 필수차림표정.map(k => 차림파일(표[k], 선택.DJ));
+      const 새이미지 = {};
+      // 직렬 로드로 새 선택 한 벌만 펼친다. 연속 클릭 시 직전 로드와 디코드를 취소한다.
+      for (let i = 0; i < 필수차림표정.length; i++) {
+        if (요청.끝남) return;
+        새이미지[필수차림표정[i]] = await 선택그림읽기(파일[i], 요청);
+      }
+      if (요청.끝남) return;
+      새이미지.기쁨 = 새이미지.눈웃음;               // 별도 기쁨 그림을 만들었다고 세지 않는다
+      선택이동 = { 요청, 세트: { 선택: { ...선택, 키 }, 상태: 항목.상태, 이미지: 새이미지 }, 시작: performance.now(), 바꿈: false };
+      한틱();
+    })().catch(e => {
+      if (요청.끝남) return;
+      마지막차림오류 = { 코드: e.code || '차림읽기실패', 메시지: e.message || '차림을 읽지 못했습니다.' };
+      경고(마지막차림오류.메시지 + ' 지금 차림은 유지합니다.');
+      요청정리(요청, e);
+    });
+  });
+};
+기본준비.then(() => {
+  if (인자.has('의상') || 인자.has('악세')) {
+    window.마스코트차림({ DJ: 인자.get('DJ') || 현재DJ, 의상: 인자.get('의상'), 악세: 인자.get('악세') }).catch(() => {});
+  }
+});
 function 표정(이름) {
   if (!준비 || 이름 === 현재표정) return;
-  이미지[현재DJ][현재표정].hidden = true;
-  이미지[현재DJ][이름].hidden = false;
+  const 세트 = 지금이미지();
+  if (!세트[이름]) return;
+  세트[현재표정].hidden = true;
+  세트[이름].hidden = false;
   현재표정 = 이름;
 }
 
 /** DJ 세트를 통째로 바꾼다 — 교대 연출이 **화면 밖에 있는 동안**에만 부른다. */
 function DJ바꾸기(새DJ) {
   if (!준비된DJ.has(새DJ) || 새DJ === 현재DJ) return;
-  이미지[현재DJ][현재표정].hidden = true;
+  지금이미지()[현재표정].hidden = true;
+  세트놓기(선택세트); 선택세트 = null;
   현재DJ = 새DJ;
   현재표정 = '기본';
   이미지[현재DJ]['기본'].hidden = false;
@@ -585,7 +778,7 @@ const 최대지속 = { 인사: .3, 라운드: 1.1, 정답: 2.3, 체크인: 1.4, 
 /* 🆕 09-07 — 인사 «컷»이 있는 DJ 의 인사 길이. 스프링 0.3초는 몸이 튀는 시간이고, 숙인 컷은 «보여 주는» 시간이라
    더 길어야 읽힌다(방송에서 인형이 240px 이다). 1.2초 = 숙였다 드는 한 호흡. */
 const 인사컷지속 = 1.2;
-function 인사컷있나() { return !!(이미지[현재DJ] && 이미지[현재DJ]['인사']); }
+function 인사컷있나() { return !!(지금이미지() && 지금이미지()['인사']); }
 
 const 울란바토르시 = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Ulaanbaatar', hour: '2-digit', hourCycle: 'h23' });
 function 밤인가(now) {
@@ -604,7 +797,8 @@ function 한틱() {
   if (!준비) return;
   마지막틱 = performance.now();
   const 경과ms = 마지막틱 - 시작;
-  if (반응) 유휴리듬.중단(경과ms);
+  if (반응 || 선택이동) 유휴리듬.중단(경과ms);
+  if (선택프레임()) return;
   const t = 경과ms / 1000;
   const 폭px = 틀.clientWidth || 300;
   const 자 = 폭px / 331;               // 모션 도구 기준(720px 무대 · 마스코트 331px)으로 진폭 환산
@@ -615,8 +809,7 @@ function 한틱() {
      반응(인사·정답·교대…)의 순간 움직임은 그대로 산다 — 유호님이 마다한 것은 «상시» 흔들림이다.
      되살리려면 이 두 줄을 옛 식으로 돌리면 된다(옛 식 = git 이력). */
   let 떠오름 = 0;
-  const 숨 = 1;
-  let sx = 숨, sy = 숨, 기울기 = 0, 컷 = '기본';
+  let 기울기 = 0, 컷 = '기본';
 
   if (반응) {
     const p = t - 반응.시작t;
@@ -625,37 +818,35 @@ function 한틱() {
       반응 = null;
       if (대기열.length) 반응시작(대기열.shift());
     } else switch (반응.종류) {
-      case '인사': {            // 탭 스프링 300ms — sx +13% · sy −15% · 들림 14px
+      case '인사': {            // 300ms 작은 눈인사 — 옷·몸 비율은 바꾸지 않는다
         if (인사컷있나()) {     // 🆕 09-07 숙인 컷이 있는 DJ(마린) — 컷만 바뀐다 · 몸은 그 자리 · 흔들림 0
           컷 = '인사';
           break;
         }
         const s = Math.sin(p / .3 * Math.PI);
-        sx = 숨 * (1 + 0.13 * s); sy = 숨 * (1 - 0.15 * s);
-        떠오름 += 14 * s * 자;
+        떠오름 += 4 * s * 자;
         break;
       }
       case '라운드': {           // 라운드 열림 — 놀람(은은) + 소홉
         컷 = '놀람';
         const s = Math.sin(Math.min(p / .35, 1) * Math.PI);
-        떠오름 += 10 * s * 자;
+        떠오름 += 4 * s * 자;
         break;
       }
       case '정답': {             // 정답 공개 — 기쁨 + 통통 튐(감쇠), 끝에 눈웃음 마무리
         const 튐 = Math.exp(-p * 2.6) * Math.sin(p * 13);
-        떠오름 -= 26 * Math.abs(튐) * 0.7 * 자;
-        sx = 숨 * (1 - 0.05 * 튐); sy = 숨 * (1 + 0.06 * 튐);
+        떠오름 -= 5 * Math.abs(튐) * 자;
         컷 = p < 1.7 ? '기쁨' : '눈웃음';
         break;
       }
       case '체크인': {           // 자습 체크인 접수 — 눈인사 + 소홉
         컷 = '눈웃음';
         const s = Math.sin(Math.min(p / .4, 1) * Math.PI);
-        떠오름 += 8 * s * 자;
+        떠오름 += 3 * s * 자;
         break;
       }
       case '투표': {             // 투표 반영 — 몸 살랑(감쇠 기울임 · 표정은 기본)
-        기울기 = Math.exp(-p * 1.4) * Math.sin(p * 5.5) * 6;
+        기울기 = Math.exp(-p * 1.4) * Math.sin(p * 5.5) * 2;
         break;
       }
       /* DJ 교대 — 유호 확정 08-25 ③ 「몽글이 나가고 까몽이 들어오는 짧은 순간이
@@ -680,8 +871,7 @@ function 한틱() {
           떠오름 -= 나감 * (1 - u) * (1 - u);
         } else {                                        // ③ 새 DJ 의 짧은 인사(인사 스프링과 같은 공식)
           const s = Math.sin((p - 1.6) / .6 * Math.PI);
-          sx = 숨 * (1 + 0.13 * s); sy = 숨 * (1 - 0.15 * s);
-          떠오름 += 14 * s * 자;
+          떠오름 += 4 * s * 자;
         }
         break;
       }
@@ -689,20 +879,21 @@ function 한틱() {
   } else {
     const 기움 = 기우는컷[현재DJ];
     const 머리옷중 = 기움 && 머리옷쓴채();
-    const 가능표정 = Object.keys(이미지[현재DJ]).filter(k => !(머리옷중 && 기움.has(k)));
+    const 가능표정 = Object.keys(지금이미지()).filter(k => !(머리옷중 && 기움.has(k)));
     컷 = 유휴리듬.읽기(경과ms, { 밤, 가능표정, 중단: false }).표정 || '기본';
   }
 
   /* 확인용 — `?고정=<컷>` 이면 그 컷을 계속 든다(헤드리스 크롬으로 사진을 찍어 견주는 용도 · 봇은 이 인자를 안 준다). */
-  const 고정 = 인자.get('고정');
-  if (고정 && 이미지[현재DJ] && 이미지[현재DJ][고정]) 컷 = 고정;
+  const 고정 = 검수표정 === undefined ? 인자.get('고정') : 검수표정;
+  if (고정 && 지금이미지()[고정]) 컷 = 고정;
   표정(컷);
   /* 🔴 2026-09-08 되돌림 — 그날 인사를 «몸 전체를 기울인 판»으로 바꿔 봤다가 유호님 판정으로
      **09-07 판(투구만 숙임)으로 되돌아왔다**(「인사하는 티가 안 난다 · 이 두 개로 확정해」).
      까닭 = 마린은 키의 60%가 투구라 몸만 눌러서는 머리가 151화소밖에 안 내려가 티가 안 난다.
      ⇒ 몸은 본체 그대로이므로 감추는 것은 **머리 옷만**이다(가슴 조각은 자리가 맞는다). */
   for (const im of 옷들) im.style.visibility = (컷 === '인사' && 머리옷.has(im.dataset.이름 || '')) ? 'hidden' : '';
-  틀.style.transform = `translateY(${(-떠오름).toFixed(2)}px) rotate(${기울기.toFixed(2)}deg) scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`;
+  if (움직임줄임.matches) { 떠오름 = 0; 기울기 = 0; }
+  틀.style.transform = `translateY(${(-떠오름).toFixed(2)}px) rotate(${기울기.toFixed(2)}deg)`;
 }
 requestAnimationFrame(프레임);
 // rAF 기아 폴백 — 숨은 탭·절전에선 rAF 가 서고 setInterval 만 돈다(실측 08-14: 데모판은 돌고
@@ -743,6 +934,7 @@ function 사건받기(사건) {
   }
   const 일감 = { 종류 };
   if (종류 === '교대') {
+    if (명시선택) { if (사건.결) 갈아입기(사건.결); return; }
     /* 🆕 2026-09-06 — 결(곡 장르)을 «들고 간다». v2 는 이 줄이 없어서 결을 버렸고,
        그래서 「곡 장르마다 갈아입는다」가 원리상 설 수 없었다(유호 지시 09-06). */
     일감.결 = 사건.결 || null;

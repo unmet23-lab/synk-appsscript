@@ -28,6 +28,7 @@
     python tools/옷표정얹기.py --전부                          # 옷 21벌 x 표정 전부
     python tools/옷표정얹기.py --옷 목도리 --검사만            # 내지 않고 숫자만
     python tools/옷표정얹기.py --옷 목도리 --보고 <파일.json>  # 병렬 작업은 보고서를 갈라 쓴다
+    python tools/옷표정얹기.py --옷 목도리 --출력 <검수폴더> # 기존 승인 표정을 덮지 않는 후보
 """
 import importlib.util
 import json
@@ -143,7 +144,37 @@ def 표정목록(누구):
     return out
 
 
-def 한벌(옷이름, 표정들=None, 검사만=False, 누구='까몽'):
+def 색옷씨앗(옷a, 옷몸, 눈상자):
+    """초록은 실제 눈 주변에서만 홍채다. 아래의 새싹까지 눈으로 열지 않는다."""
+    rgb = 옷a[..., :3].astype(int)
+    쨍 = rgb.max(axis=2) - rgb.min(axis=2)
+    초록 = (rgb[..., 1] > rgb[..., 0]) & (rgb[..., 1] > rgb[..., 2])
+    눈근처 = np.zeros_like(옷몸)
+    x0, y0, x1, y1 = 눈상자
+    # 눈찾기는 4칸 간격으로 잰다. 그 표본 오차만 여유로 두며 눈높이만큼 넓히지 않는다.
+    여 = 4
+    눈근처[max(0, int(y0)-여):min(옷몸.shape[0], int(y1)+여+1),
+             max(0, int(x0)-여):min(옷몸.shape[1], int(x1)+여+1)] = True
+    초록눈 = 초록 & 눈근처
+    # 기존의 채도 기준은 유지한다. 낮은 채도의 털 그림자까지 옷으로 잠그지 않는다.
+    return 옷몸 & (쨍 >= 52) & ~초록눈
+
+
+def 출력방(지정=None):
+    낼곳 = os.path.abspath(지정 or 낼방)
+    for 보호방 in [정본방, *옷방들]:
+        보호방 = os.path.abspath(보호방)
+        try:
+            안 = os.path.normcase(os.path.commonpath([낼곳, 보호방])) == os.path.normcase(보호방)
+        except ValueError:
+            안 = False
+        if 안:
+            raise ValueError('표정 출력은 정본·원본 폴더 밖이어야 한다')
+    return 낼곳
+
+
+def 한벌(옷이름, 표정들=None, 검사만=False, 누구='까몽', 출력=None):
+    낼곳 = 출력방(출력)
     옷경로 = 옷그림찾기(누구, 옷이름)
     if 옷경로 is None:
         raise SystemExit(f'옷 그림이 없다 — {누구}_{옷이름}.png 를 두 방에서 못 찾았다\n'
@@ -247,10 +278,9 @@ def 한벌(옷이름, 표정들=None, 검사만=False, 누구='까몽'):
     마스크 = Image.fromarray((np.asarray(네모) * 갈수있는곳).astype(np.uint8))
     마스크 = 마스크.filter(ImageFilter.GaussianBlur(max(2, int(눈높 * .06))))
     # 🔴 흐린 마스크의 가장자리가 빨강 안경 테·노랑 왕관 띠 안으로 번지면, 형태는 남아도
-    #    옷 화소가 표정 털과 섞인다. 초록 눈은 열어 두고, 채도가 높은 옷감 씨앗만 조금 넓혀
+    #    옷 화소가 표정 털과 섞인다. 실제 눈 상자의 초록만 열어 두고 옷감 씨앗을 조금 넓혀
     #    그 자리를 원본으로 다시 잠근다. 그래서 눈동자는 바뀌고 옷 경계는 화소 그대로 남는다.
-    초록눈 = (g0 > r0) & (g0 > b0)
-    색옷씨 = 옷몸 & (쨍 >= 52) & ~초록눈
+    색옷씨 = 색옷씨앗(옷a, 옷몸, e)
     보호폭 = max(3, int(눈높 * .12))
     if 보호폭 % 2 == 0:
         보호폭 += 1
@@ -267,7 +297,8 @@ def 한벌(옷이름, 표정들=None, 검사만=False, 누구='까몽'):
     바탕 = Image.fromarray(옷a)
     보고 = dict(옷=옷이름, 크기맞춤=round(k, 4), 옮김=[int(round(dx)), int(round(dy))],
                창=창, 창이덮는몸=f'{창덮음}%', 자가튄컷=튄컷, 컷=[])
-    os.makedirs(낼방, exist_ok=True)
+    if not 검사만:
+        os.makedirs(낼곳, exist_ok=True)
     for c in 컷들:
         p = os.path.join(정본방, f'{누구}_{c}.png')
         if not os.path.exists(p):
@@ -290,14 +321,20 @@ def 한벌(옷이름, 표정들=None, 검사만=False, 누구='까몽'):
         else:
             r['결과'] = '✅ 옷 같음'
             if not 검사만:
-                합.save(os.path.join(낼방, f'{누구}_{옷이름}_{c}.png'))
+                합.save(os.path.join(낼곳, f'{누구}_{옷이름}_{c}.png'))
         보고['컷'].append(r)
     return 보고
 
 
 if __name__ == '__main__':
     검사만 = '--검사만' in sys.argv
-    보고경로 = os.path.join(낼방, '_보고.json')
+    출력 = None
+    if '--출력' in sys.argv:
+        i = sys.argv.index('--출력') + 1
+        if i >= len(sys.argv) or sys.argv[i].startswith('--'):
+            raise SystemExit('--출력 뒤에 별도 폴더가 있어야 한다')
+        출력 = 출력방(sys.argv[i])
+    보고경로 = os.path.join(출력방(출력), '_보고.json')
     if '--보고' in sys.argv:
         보고경로 = os.path.abspath(sys.argv[sys.argv.index('--보고') + 1])
     누구 = '까몽'
@@ -320,7 +357,7 @@ if __name__ == '__main__':
 
     전체 = []
     for o in 옷들:
-        b = 한벌(o, 표정들, 검사만, 누구)
+        b = 한벌(o, 표정들, 검사만, 누구, 출력=출력)
         전체.append(b)
         성 = sum(1 for c in b.get('컷', []) if c.get('결과', '').startswith('✅'))
         print(f"■ {o} · 크기맞춤 {b.get('크기맞춤')} · 창이 덮는 몸 {b.get('창이덮는몸')} · "
@@ -331,5 +368,5 @@ if __name__ == '__main__':
     os.makedirs(os.path.dirname(보고경로), exist_ok=True)
     with open(보고경로, 'w', encoding='utf-8') as f:
         json.dump(전체, f, ensure_ascii=False, indent=1)
-    print(f'\n낸 곳: {낼방}')
+    print(f'\n낸 곳: {출력방(출력)}')
     print(f'보고서: {보고경로}')

@@ -1,0 +1,58 @@
+{
+  "scope": "Two outfits, one expression each. Deterministic alpha-compositing correction only; not all 1862 output assets regenerated.",
+  "comparisons": [
+    {
+      "outfit": "안경+여름델",
+      "expression": "본체",
+      "values": {
+        "k": 2.494121540313791,
+        "dx": 526,
+        "dy": 585
+      },
+      "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\의상라디오검수_20260909\\자산\\알파보존후보\\까몽_안경+여름델_본체.png",
+      "preview": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\의상라디오검수_20260909\\자산\\알파보존후보\\안경+여름델_기존왼쪽_수정오른쪽_400px.png",
+      "measurement": {
+        "파일": "까몽_안경+여름델_본체.png",
+        "크기맞춤": 2.4941,
+        "몸폭비": 0.7854,
+        "가장자리에_닿은점": 0
+      },
+      "existingExactlyMatchesOldMaskedPaste": true,
+      "changedVisiblePixels": 259285,
+      "changedFullyOpaquePixels": 0,
+      "semiTransparentPixelCountAfter": 259285,
+      "originalHashesUnchanged": {
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT_표정_누끼\\까몽_안경+여름델_본체.png": "a9f410b9d50ef9ac67c5bec522eff96763e5cd68fe19e71ebfbe65a27ed3534b",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT정액시험_누끼\\까몽_안경+여름델.png": "6e19fe5cbfafee847d4094768d3bf9cf7a19c6f8fa4cffbad1e74148c414c5c7",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT_표정_누끼_틀\\까몽_안경+여름델_본체.png": "b2c6f5d512a9eb234c9ade51fad526eab202f4bf62ad6fc6bff9cb20dbf2cca7"
+      }
+    },
+    {
+      "outfit": "목도리+여름델",
+      "expression": "본체",
+      "values": {
+        "k": 2.7213427116193034,
+        "dx": 432,
+        "dy": 545
+      },
+      "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\의상라디오검수_20260909\\자산\\알파보존후보\\까몽_목도리+여름델_본체.png",
+      "preview": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\의상라디오검수_20260909\\자산\\알파보존후보\\목도리+여름델_기존왼쪽_수정오른쪽_400px.png",
+      "measurement": {
+        "파일": "까몽_목도리+여름델_본체.png",
+        "크기맞춤": 2.7213,
+        "몸폭비": 0.8323,
+        "가장자리에_닿은점": 0
+      },
+      "existingExactlyMatchesOldMaskedPaste": true,
+      "changedVisiblePixels": 316248,
+      "changedFullyOpaquePixels": 0,
+      "semiTransparentPixelCountAfter": 316248,
+      "originalHashesUnchanged": {
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT_표정_누끼\\까몽_목도리+여름델_본체.png": "91b8457b24a3179e9f0aa509eaa93694cda8f436262e39f32f39e2659389399b",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT정액시험_누끼\\까몽_목도리+여름델.png": "96807c923e2a0648fd15bb09001d16360bee6d199174693f1388fb9620cc58a0",
+        "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT_표정_누끼_틀\\까몽_목도리+여름델_본체.png": "8e9be7ab27645b38fffe374bbf5d1a6ce811f61b6a1fc76719791e8298f7d6cf"
+      }
+    }
+  ],
+  "canonicalUnchangedSha256": "fea5f2b66db16a1089f4475492c59fb8273bfcf80b18fbcde4909a950e3796ab"
+}

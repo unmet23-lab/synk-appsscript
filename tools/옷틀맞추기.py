@@ -10,7 +10,7 @@
     정본  4096 판 · 몸 폭 3236화소 → 판의 79% (여백 21%)
     GPT   2560 판 · 몸 폭 2520화소 → 판의 98% (여백 2%)
     그대로 앱에 넣으면 옷을 입는 순간 인형이 «커진다». 몸을 늘이고 줄일 일이 아니라
-    여백을 맞추는 일이다 — 그래서 화질 손실이 없다.
+    여백을 맞추는 일이다. 크기 변경에는 리샘플링이 들어가므로 무손실 생성이나 새 4K 원본은 아니다.
 
   어떻게
     ① 정본 본체에서 «두 눈 사이 / 판 크기»와 «두 눈 중심의 판 안 자리»를 잰다.
@@ -21,6 +21,7 @@
     python tools/옷틀맞추기.py --들 GPT_누끼
     python tools/옷틀맞추기.py --들 GPT_표정_누끼 --판 4096
     python tools/옷틀맞추기.py --들 GPT_표정_누끼 --옷 목도리,안경
+    python tools/옷틀맞추기.py --들 GPT_표정_누끼 --옷 안경 --출력 <별도검수폴더>
 """
 import importlib.util
 import os
@@ -70,6 +71,29 @@ def 맞춤값(경로, 자, 판):
     return dict(k=k, dx=round(목표중심[0] - 눈중심[0]), dy=round(목표중심[1] - 눈중심[1]))
 
 
+def 투명틀에앉히기(그림, 판, dx, dy):
+    """빈 투명 캔버스로 RGBA를 그대로 복사한다. 마스크로 알파를 두 번 곱하지 않는다."""
+    캔 = Image.new('RGBA', (판, 판), (0, 0, 0, 0))
+    # RGBA 자신을 paste의 mask로 주면 반투명 털의 alpha가 제곱되고 RGB도 검게 섞인다.
+    # 여기는 늘 비어 있는 캔버스이므로 마스크 없는 복사가 원래 색·투명을 보존한다.
+    캔.paste(그림, (dx, dy))
+    return 캔
+
+
+def 출력방(입력, 기본, 지정=None):
+    낼곳 = os.path.abspath(지정 or 기본)
+    if os.path.normcase(낼곳) == os.path.normcase(os.path.abspath(입력)):
+        raise ValueError('출력 폴더는 입력 폴더와 달라야 한다 — 원본을 덮어쓰지 않는다')
+    정본 = os.path.abspath(정본방)
+    try:
+        정본안 = os.path.normcase(os.path.commonpath([낼곳, 정본])) == os.path.normcase(정본)
+    except ValueError:                      # 별도 드라이브의 검수 폴더는 정본 아래가 아니다
+        정본안 = False
+    if 정본안:
+        raise ValueError('의상 틀 결과를 마스코트 정본 폴더에 쓸 수 없다')
+    return 낼곳
+
+
 def 앉히기(경로, 낼곳, 자, 판=None, 값=None):
     판 = 판 or 자['판']
     im = Image.open(경로).convert('RGBA')
@@ -81,8 +105,7 @@ def 앉히기(경로, 낼곳, 자, 판=None, 값=None):
         k, dx, dy = 값['k'], 값['dx'], 값['dy']
         새폭, 새높 = max(1, round(im.width * k)), max(1, round(im.height * k))
         작 = im.resize((새폭, 새높), Image.LANCZOS)
-        캔 = Image.new('RGBA', (판, 판), (0, 0, 0, 0))
-        캔.paste(작, (dx, dy), 작)
+        캔 = 투명틀에앉히기(작, 판, dx, dy)
         os.makedirs(os.path.dirname(낼곳), exist_ok=True)
         캔.save(낼곳)
         b = np.asarray(캔)[..., 3] > 128
@@ -105,8 +128,7 @@ def 앉히기(경로, 낼곳, 자, 판=None, 값=None):
     목표중심 = (자['눈중심'][0] * 판, 자['눈중심'][1] * 판)
     dx, dy = round(목표중심[0] - 눈중심[0]), round(목표중심[1] - 눈중심[1])
 
-    캔 = Image.new('RGBA', (판, 판), (0, 0, 0, 0))
-    캔.paste(작, (dx, dy), 작)
+    캔 = 투명틀에앉히기(작, 판, dx, dy)
     os.makedirs(os.path.dirname(낼곳), exist_ok=True)
     캔.save(낼곳)
 
@@ -130,7 +152,13 @@ if __name__ == '__main__':
     판 = int(sys.argv[sys.argv.index('--판') + 1]) if '--판' in sys.argv else None
 
     방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷', 들)
-    낼방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷', f'{들}_틀')
+    지정출력 = None
+    if '--출력' in sys.argv:
+        순서 = sys.argv.index('--출력') + 1
+        if 순서 >= len(sys.argv) or sys.argv[순서].startswith('--'):
+            raise SystemExit('--출력 뒤에 별도 결과 폴더 경로가 있어야 한다')
+        지정출력 = sys.argv[순서]
+    낼방 = 출력방(방, os.path.join(저장소, 'docs', 'Loom_자산', '옷', f'{들}_틀'), 지정출력)
     자 = 정본자(누구)
     print(f'■ 정본 {누구} — 판 {자["판"]} · 몸 폭 {자["몸폭비"]*100:.1f}% · '
           f'눈 사이 {자["눈사이비"]*100:.2f}% · 눈 중심 ({자["눈중심"][0]*100:.1f}%, {자["눈중심"][1]*100:.1f}%)')
