@@ -1,0 +1,19 @@
+{
+  "actions": [
+    "start two roles",
+    "inspect tram",
+    "share signal 1",
+    "share signal 2",
+    "switch to archive",
+    "inspect radio",
+    "share archive 1",
+    "share archive 2",
+    "open vote",
+    "archive votes homes",
+    "switch to signal",
+    "signal votes homes",
+    "finalize"
+  ],
+  "ending": "서로의 창문",
+  "completed": true
+}

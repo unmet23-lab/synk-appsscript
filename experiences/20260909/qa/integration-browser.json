@@ -1,0 +1,135 @@
+{
+  "time": "2026-09-09T14:27:07.104Z",
+  "base": "http://127.0.0.1:4399",
+  "browser": "Chrome headless",
+  "results": [
+    {
+      "name": "hub",
+      "viewport": 1440,
+      "axe": {
+        "violations": [],
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      "links": [
+        "#main",
+        "./",
+        "./pulse/",
+        "./rehearsal/",
+        "./accessibility/"
+      ]
+    },
+    {
+      "name": "hub",
+      "viewport": 390,
+      "overflow": false
+    },
+    {
+      "name": "hub",
+      "viewport": 320,
+      "overflow": false
+    },
+    {
+      "name": "rehearsal",
+      "viewport": 1440,
+      "axe": {
+        "violations": [],
+        "incomplete": [
+          "aria-prohibited-attr"
+        ]
+      },
+      "links": [
+        "#scene"
+      ]
+    },
+    {
+      "name": "rehearsal",
+      "viewport": 390,
+      "overflow": false
+    },
+    {
+      "name": "rehearsal",
+      "viewport": 320,
+      "overflow": false
+    },
+    {
+      "name": "accessibility",
+      "viewport": 1440,
+      "axe": {
+        "violations": [],
+        "incomplete": []
+      },
+      "links": [
+        "#main",
+        "../",
+        "./guide.html",
+        "../pulse/"
+      ]
+    },
+    {
+      "name": "accessibility",
+      "viewport": 390,
+      "overflow": false
+    },
+    {
+      "name": "accessibility",
+      "viewport": 320,
+      "overflow": false
+    },
+    {
+      "name": "pulse",
+      "viewport": 1440,
+      "axe": {
+        "violations": [],
+        "incomplete": [
+          "color-contrast",
+          "skip-link"
+        ]
+      },
+      "links": [
+        "#story-panel",
+        "../",
+        "./",
+        "#"
+      ]
+    },
+    {
+      "name": "pulse",
+      "viewport": 390,
+      "overflow": false
+    },
+    {
+      "name": "pulse",
+      "viewport": 320,
+      "overflow": false
+    },
+    {
+      "name": "shared-accessibility",
+      "skipLink": true,
+      "motionPreferenceShared": true
+    },
+    {
+      "name": "pulse-under-common-server",
+      "sharedReducedMotion": true,
+      "render": {
+        "renderer": "Three.js r180 / WebGL2",
+        "geometries": 84,
+        "drawCalls": 243,
+        "triangles": 3285328,
+        "pixelRatio": 1,
+        "quality": "auto",
+        "autoReduced": false,
+        "reflections": true,
+        "silhouetteFibres": true,
+        "reducedMotion": true,
+        "textile": "SYNK felt tile"
+      }
+    },
+    {
+      "name": "rehearsal-under-common-server",
+      "inputAndReload": true
+    }
+  ],
+  "problems": []
+}
