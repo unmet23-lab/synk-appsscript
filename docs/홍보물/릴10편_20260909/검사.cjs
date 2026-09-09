@@ -60,6 +60,8 @@ async function inspect(){
       const context=await browser.newContext({viewport}),page=await context.newPage(),errors=[];
       page.on('pageerror',e=>errors.push(String(e)));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
       await page.goto(url,{waitUntil:'networkidle'});await page.evaluate(()=>document.fonts.ready);
+      const fonts=await page.evaluate(()=>[...document.fonts].map(f=>({family:f.family,status:f.status})));
+      for(const family of ['SUIT Variable','InterTight'])assert.ok(fonts.some(f=>f.family.replace(/["']/g,'')===family&&f.status==='loaded'),family+' 실제 로딩');
       assert.equal(await page.locator('article').count(),10);assert.equal(await page.locator('video').count(),10);
       const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,images:[...document.images].every(i=>i.complete&&i.naturalWidth>0)}));
       assert.ok(dimensions.scroll<=dimensions.width);assert.ok(dimensions.images);
@@ -71,7 +73,7 @@ async function inspect(){
         assert.ok(result.started>0);assert.equal(result.current,24);assert.equal(result.error,null);assert.equal(result.width,1080);playback.push(result);
       }
       await page.screenshot({path:path.join(__dirname,'검사',`모아보기-${viewport.width}.png`),fullPage:false});
-      assert.equal(errors.length,0,errors.join('\n'));browserResults.push({viewport,dimensions,playback,errors});await context.close();
+      assert.equal(errors.length,0,errors.join('\n'));browserResults.push({viewport,dimensions,fonts,playback,errors});await context.close();
     }
   }finally{await browser.close();await new Promise(resolve=>local.close(resolve));}
   const result={at:new Date().toISOString(),reels:10,beats:50,giftItems:data.reels.reduce((s,r)=>s+r.gift.items.length,0),layoutSamples:layout.length,overflow:bad,audio,browserResults};
