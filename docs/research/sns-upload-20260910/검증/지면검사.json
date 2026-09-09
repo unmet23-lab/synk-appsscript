@@ -1,0 +1,44 @@
+{
+  "sourceEntries": 55,
+  "sourceHash": "f6d42c43265d54495a82f056e7b3bb09b60f6a07c5f8171912334818a267e610",
+  "htmlHash": "31acf6344045d297a6e826e6f18164faec88e848cc62086d2cd595845cc4f5ab",
+  "views": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "tables": 10,
+      "missingAnchors": [],
+      "fontsLoaded": "loaded",
+      "localLinks": [
+        "보고서.md",
+        "../../%EB%A7%88%EC%BC%80%ED%8C%85_%EC%A0%95%EB%B3%B8.md",
+        "../../%EB%A7%88%EC%BC%80%ED%8C%85_%ED%99%95%EC%9E%A5%EC%95%88_20260909.md",
+        "../../%ED%99%8D%EB%B3%B4%EB%AC%BC/%EB%A7%88%EC%BC%80%ED%8C%85%EC%8B%A4%ED%96%89_20260909/%EC%8B%A4%ED%96%89%EC%A0%81%EC%9A%A9.md",
+        "meta-evidence.md",
+        "video-evidence.md",
+        "other-evidence.md",
+        "local-channels-evidence.md"
+      ]
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "scrollWidth": 390,
+      "tables": 10,
+      "missingAnchors": [],
+      "fontsLoaded": "loaded",
+      "localLinks": [
+        "보고서.md",
+        "../../%EB%A7%88%EC%BC%80%ED%8C%85_%EC%A0%95%EB%B3%B8.md",
+        "../../%EB%A7%88%EC%BC%80%ED%8C%85_%ED%99%95%EC%9E%A5%EC%95%88_20260909.md",
+        "../../%ED%99%8D%EB%B3%B4%EB%AC%BC/%EB%A7%88%EC%BC%80%ED%8C%85%EC%8B%A4%ED%96%89_20260909/%EC%8B%A4%ED%96%89%EC%A0%81%EC%9A%A9.md",
+        "meta-evidence.md",
+        "video-evidence.md",
+        "other-evidence.md",
+        "local-channels-evidence.md"
+      ]
+    }
+  ],
+  "issues": []
+}
