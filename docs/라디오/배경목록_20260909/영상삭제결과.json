@@ -1,0 +1,93 @@
+{
+  "method": "Windows Recycle Bin",
+  "recoverable": true,
+  "planned": 14,
+  "removed": 14,
+  "completed": true,
+  "files": [
+    {
+      "path": "docs/라디오/무대영상/층_citypop.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\층_citypop.mp4",
+      "sha256": "61cd992712a09369d4e284c4d26058be98844cfbff42a9e33442973a99a0753c",
+      "bytes": 20008546
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_citypop.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\덮개붙임\\덮개붙임_층_citypop.mp4",
+      "sha256": "cd5018372263ab7ddf3a4158c3d19c44fc5d9fb55da4e5ed2f989d2979ba073a",
+      "bytes": 19816924
+    },
+    {
+      "path": "docs/라디오/무대영상/층_city.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\층_city.mp4",
+      "sha256": "a3a897c237b1461a017e50101594a5af2db1eb9583c291d317552b14afaf6bb0",
+      "bytes": 35624006
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_city.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\덮개붙임\\덮개붙임_층_city.mp4",
+      "sha256": "f29d8017fe0d9adfb8690b2ea34ff40b5d329a20b3aaef55225bfcc8f054ca8a",
+      "bytes": 35102753
+    },
+    {
+      "path": "docs/라디오/무대영상/층_calm.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\층_calm.mp4",
+      "sha256": "49c2cf553b350d05341d59caca29fd83e09e7e95c5795d2a93f9f8db6a8e3bdf",
+      "bytes": 35891278
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_calm.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\덮개붙임\\덮개붙임_층_calm.mp4",
+      "sha256": "5b31159197cacf83d31a0ececad903525ddac56b79bc4a52a7ef6661b484c252",
+      "bytes": 36255048
+    },
+    {
+      "path": "docs/라디오/무대영상/층_dream_sky.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\층_dream_sky.mp4",
+      "sha256": "5bad8af25e2e0c4ea9a8da07ce16eb50c1534088af1d231f10f39c94e436dd03",
+      "bytes": 28214484
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_dream_sky.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\덮개붙임\\덮개붙임_층_dream_sky.mp4",
+      "sha256": "718b78d6b5ffc1699ca19d93cb9bbb0b4cc8ebfe3294a4e856d3becb58acbf78",
+      "bytes": 27842482
+    },
+    {
+      "path": "docs/라디오/무대영상/층_study.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\층_study.mp4",
+      "sha256": "f550f750e7455e9bc53e2c341dc558359ce836faf037208d276bb19a7d9ce8ef",
+      "bytes": 52324413
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_study.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\덮개붙임\\덮개붙임_층_study.mp4",
+      "sha256": "4811a9f10b48eb854d3dc78fa988e85859f2a657f1e3c214533047e546c422f5",
+      "bytes": 51341203
+    },
+    {
+      "path": "docs/라디오/무대영상/층_dream_water.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\층_dream_water.mp4",
+      "sha256": "d7aae95938610a1a91d5c8df59705fe12575902af1f65b8750c5f087a63b2b78",
+      "bytes": 33352330
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_dream_water.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\덮개붙임\\덮개붙임_층_dream_water.mp4",
+      "sha256": "a4d5227aee301eb1f9c1d7f4e302be4a5f4a6b2809232a2f18c352de2754d30e",
+      "bytes": 32763305
+    },
+    {
+      "path": "docs/라디오/무대영상/층_dream_field.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\층_dream_field.mp4",
+      "sha256": "5d6fb66804277ba067b7338859167b8f1f64d900ad04e11467356ee1ec256b3c",
+      "bytes": 20246289
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_dream_field.mp4",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대영상\\덮개붙임\\덮개붙임_층_dream_field.mp4",
+      "sha256": "3883d3175e2b05d4a4b4e3e23355d593703fde2c55aa859994ab0168cd1e2c42",
+      "bytes": 20466082
+    }
+  ]
+}

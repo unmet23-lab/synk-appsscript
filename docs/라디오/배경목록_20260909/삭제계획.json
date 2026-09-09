@@ -1,0 +1,570 @@
+{
+  "userApprovedSharedSourceDeletion": true,
+  "keepNumbers": [
+    1,
+    2,
+    11,
+    13,
+    17,
+    29,
+    28,
+    27,
+    21,
+    16
+  ],
+  "removedNumbers": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    14,
+    15,
+    18,
+    19,
+    20,
+    22,
+    23,
+    24,
+    25,
+    26,
+    30
+  ],
+  "method": "Windows Recycle Bin; exact validated file paths only",
+  "exclusions": [
+    "Completed marketing artwork and embedded document assets",
+    "Music and current live server data",
+    "Standalone transparent mascot/booth overlay assets"
+  ],
+  "protected": [
+    {
+      "path": "docs/라디오/무대/chuseok.png",
+      "sha256": "77f06b4d6c24d8cf75d11af15807d89d27eb8e0a2546591c9bd8364bfbb3d4d5",
+      "reason": "保留 1 보름달 한옥 마당"
+    },
+    {
+      "path": "docs/라디오/무대/보관/전자_네온물가.png",
+      "sha256": "ad4c63507e60b670d77a193554d8115a055acc23657c4e8defee4489b1a4d7c9",
+      "reason": "保留 2 네온 물가"
+    },
+    {
+      "path": "docs/라디오/무대/dream_water.png",
+      "sha256": "3086e9afb1124b7b9c6940619194cb8a4d00d3eb6b03a21a320cb8a21c4a47c0",
+      "reason": "保留 11 거울 수면과 문"
+    },
+    {
+      "path": "docs/라디오/무대/dream_field.png",
+      "sha256": "c3d6fb508a9244ca34e83de4631f5c1757b1f21b6045b06112dc469b71b10b1a",
+      "reason": "保留 13 반딧불 노을 들판"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_내방낮.png",
+      "sha256": "d07d8cc399d55e4b7f4127070d45745df3147c7c4440e163e884ed68b99e8c5a",
+      "reason": "保留 16 내 방 낮"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_내방낮.avif",
+      "sha256": "cfbc45d46f31f1330de011e1dc8ff1040f518b57f1a48704aa0863115208efa7",
+      "reason": "Selected 16 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_내방밤.png",
+      "sha256": "076f88f03ae1d105364bb2be8c5400d150dd15315c1a2654c347ab32fc08c743",
+      "reason": "保留 17 내 방 밤"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_내방밤.avif",
+      "sha256": "6ef7f0f148417392cb97edc614c4c5771b4c5b8221f443ae8be516f17ac17eea",
+      "reason": "Selected 17 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_운동장.png",
+      "sha256": "127079c8f0098b7d5c8aa6a21174312cb22c3d0a6f9627e4cec355cd1ce3f828",
+      "reason": "保留 21 운동장"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_운동장.avif",
+      "sha256": "5f34b13691721bc40cbe3eb95faf7acb3c94d708263b0aa77d8f887a2b1549b5",
+      "reason": "Selected 21 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_가을언덕.png",
+      "sha256": "73cfaa42047fbbb6ad4386ba599b19a522e7d9d17b2cc8b75e5f7505a6194963",
+      "reason": "保留 27 가을 언덕"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_가을언덕.avif",
+      "sha256": "ff0cd3d2775c4700fd884ae83897d97476d9caf3cc116d6ba412ff029783ee86",
+      "reason": "Selected 27 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_차강사르게르.png",
+      "sha256": "c81e421fe7bbceb083f25871b15055459116875a6f0b36c261172e7cfbd0235d",
+      "reason": "保留 28 차강사르 게르"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_차강사르게르.avif",
+      "sha256": "c172e08830c94f9e52b31ad17c5f30f55797c88f21e2e2c250352ae6990dc1be",
+      "reason": "Selected 28 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_별보는지붕.png",
+      "sha256": "bf40c998164726beb1098d4aab0c0512764f1f421c6d03fd1aa780a8eed2ecac",
+      "reason": "保留 29 별 보는 지붕"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_별보는지붕.avif",
+      "sha256": "4bf69762d7235a88fdaaab100fb1544e3a1a4d5fc9f3f4874d236e62b261ab0b",
+      "reason": "Selected 29 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/무대/추석보름달마당.webp",
+      "sha256": "aa8fe80195c19240dbcc8ff7c7b7c63557245333c973cbd4251cbde0866f611a",
+      "reason": "Selected shared stage"
+    },
+    {
+      "path": "docs/Loom_자산/무대/전자네온물가.webp",
+      "sha256": "6c1d8acb1950c0ba7d77cb9f934e70f03a729f83a234e158758f85b02c88ccf1",
+      "reason": "Selected shared stage"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_chuseok.mp4",
+      "sha256": "cd0f9377f3bcabcfff88cc6b1048d9be3bb9ddf6836e3b7c86af50940e24d1ab",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_house.mp4",
+      "sha256": "1e5252603aa7f08989a8b99805cfe818032f83c000911606cf1ea8e6057a40fa",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/추석_자연생동_20260909.mp4",
+      "sha256": "5b4b8f84d0ced1eaa6e9135af2582daa192a87fd00c2f39015faf5fe594232f7",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/추석_자연생동_20260909_v2.mp4",
+      "sha256": "c0e984f2ce771cabd1704c5ac25335c1b05519731566de7dfa98cf6622827df7",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/추석_영상생성_20260909.mp4",
+      "sha256": "af2b83919d5b06758702829d1c36fcfb31fdcfa12453d944ffecbc6402956f50",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/추석_나무고정_조명_20260909.mp4",
+      "sha256": "dcc5a8fef2e5efd9c0611166f53fac32846e16fb14f2d81a68a3c6d403ff3dfa",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_house.mp4",
+      "sha256": "4ef29dac25c6d11adea5ca5c33ccef4cec4603f095950125692365519c5ec225",
+      "reason": "Selected neon water video"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_chuseok.mp4",
+      "sha256": "0743a7f06055c3a171ffc7bf1e42399d29d6bec926c0411c03f2d6e9265a58af",
+      "reason": "Selected Chuseok video"
+    },
+    {
+      "path": "bots/오버레이/방송층.html",
+      "sha256": "b4a4a0f9e2236bd29cc2ccf116d5d7162aaf390e5f8fea6232051ace5b9466ff",
+      "reason": "Current mascot expression/edge runtime"
+    },
+    {
+      "path": "bots/오버레이/라디오표정리듬.js",
+      "sha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8",
+      "reason": "Current mascot expression/edge runtime"
+    },
+    {
+      "path": "bots/오버레이/라디오가장자리.js",
+      "sha256": "b76f448ab55af135a5e2dc652683fc721edfc35ceaad7ae1af4bcac138a25a58",
+      "reason": "Current mascot expression/edge runtime"
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/라디오/무대/citypop.png",
+      "reason": "Removed radio still",
+      "bytes": 22834606,
+      "sha256": "d75bcc1e0cd99a42ef25850cd7328839b126b40415efc2911167ce7895c3f6ad"
+    },
+    {
+      "path": "docs/Loom_자산/무대/시티팝노을휴양지.webp",
+      "reason": "Deleted shared indoor stage",
+      "bytes": 422784,
+      "sha256": "4b3ec00a9f82e54e72f695b7f8db13cffe4fbc6e147d5b8528063c70f332ea7f"
+    },
+    {
+      "path": "docs/라디오/무대/city.png",
+      "reason": "Removed radio still",
+      "bytes": 19779081,
+      "sha256": "bb3fa861dcb6bedcb79f85d33e9320295516ce995449cfea08197c2ff26092a1"
+    },
+    {
+      "path": "docs/Loom_자산/무대/전자밤도시.webp",
+      "reason": "Deleted shared indoor stage",
+      "bytes": 424132,
+      "sha256": "f4bf4fa1f19355d72fef62c265f353ebb9ee36ea653e04f838b5da7f820d0d51"
+    },
+    {
+      "path": "docs/라디오/무대/calm.png",
+      "reason": "Removed radio still",
+      "bytes": 22473926,
+      "sha256": "9a4d188c1d71bbc0a367ca5134f0cdec79d84f8c122ddd50b071f8ba97ed068b"
+    },
+    {
+      "path": "docs/Loom_자산/무대/차분달빛호수.webp",
+      "reason": "Deleted shared indoor stage",
+      "bytes": 447278,
+      "sha256": "8694ef709b5f8c20b38f6ca052cc2f4f01f8fbbdc71e019a0e3eb7bd6f6eccb4"
+    },
+    {
+      "path": "docs/라디오/무대/dream_sky.png",
+      "reason": "Removed radio still",
+      "bytes": 16882239,
+      "sha256": "3bd7b88c63c91b8bb6ca1f1d9e12a18e3413af53c48f0ed7c2d56e78b31d0fe7"
+    },
+    {
+      "path": "docs/Loom_자산/무대/드림하늘.webp",
+      "reason": "Deleted shared indoor stage",
+      "bytes": 482842,
+      "sha256": "883894ffcc0aba677edc49f8e8183cee34e86a1b41beb7d5e732d3ac5925dcce"
+    },
+    {
+      "path": "docs/Loom_자산/무대/드림물결.webp",
+      "reason": "Deleted shared indoor stage",
+      "bytes": 610372,
+      "sha256": "612f4a68a8cc50a505e49d63180d0178ab2de1ebcc71ca10c69c4eab98024c52"
+    },
+    {
+      "path": "docs/Loom_자산/무대/드림들판.webp",
+      "reason": "Deleted shared indoor stage",
+      "bytes": 263570,
+      "sha256": "f800aa8069cc572bd2e6d7b914315c6e57b628bb62539e6417de222e5100e24c"
+    },
+    {
+      "path": "docs/Loom_자산/무대/집안밤공부.webp",
+      "reason": "Deleted shared indoor stage",
+      "bytes": 724248,
+      "sha256": "e6b8cc7f8a3485bdc09ffc060620127bf49592ed210aa47c45a3238bbe008241"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_옷가게안.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 20836225,
+      "sha256": "793d8060583145236b2f13b835f00b509edb92410a050ae6638ceab274cefba2"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_교실.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 18034926,
+      "sha256": "21ca7bfdf1b6b9732b26cf66945530b8adba1b56adbc2efda0bac94c1e80a095"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_복도.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 20482891,
+      "sha256": "b43497abbe669c8aa466a2756788f845dc0017c1f3622f418d75226aaf75c48c"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_우편함앞.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 29192035,
+      "sha256": "40a245403bdff117594e6888a2e239885d9332b02fc14df873de68efda1de8bd"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_창가책상.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 22524299,
+      "sha256": "5b9ae5db823a455890bfb6e4e1c4b7e759dbc13fb07f2e87fa8078f72e65c63c"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_눈오는창.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 24207796,
+      "sha256": "39be1b569e6e079744c20d6886a3483c0eeb74fad1eee45fb4afdfb2a8544f17"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_봄들판.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 25823036,
+      "sha256": "e49b77dd5b61b3d2e103473f97bfaeb6727cc6276eba94c2aaf4b485d51e5002"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_여름바다.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 28989607,
+      "sha256": "103e6157c380680a8c72d51d9ec76971885217f957fe8190b2eb1363dcbf3ffa"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_카페안.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 22041540,
+      "sha256": "eafba2363cc83e7d43ddc8436d3839bb91ac6e0b88a3276030e7a0413115f352"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_옷가게안.avif",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 834195,
+      "sha256": "aceddee1526d0e1f8212362a675a0689b459189ca222cf622d434b210d0a4631"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_옷가게안_누끼.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 16689738,
+      "sha256": "94b2a9c7a03771ad75aa21d1befe46c6fae6e1be6ba0e9e5e79e1a476f141905"
+    },
+    {
+      "path": "영상/public/공방/공방_옷가게안.avif",
+      "reason": "Public asset copy of deleted place",
+      "bytes": 834195,
+      "sha256": "aceddee1526d0e1f8212362a675a0689b459189ca222cf622d434b210d0a4631"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_교실.avif",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 405824,
+      "sha256": "d03da55bbef952c887165aae910934f33cde5b58129e8faf26963d39b81c4057"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_교실_누끼.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 6281619,
+      "sha256": "5f6e65f3008897fa15ac17b6751f198dcc744af4a0f8a275849e32e02bae6f30"
+    },
+    {
+      "path": "영상/public/공방/공방_교실.avif",
+      "reason": "Public asset copy of deleted place",
+      "bytes": 405824,
+      "sha256": "d03da55bbef952c887165aae910934f33cde5b58129e8faf26963d39b81c4057"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_복도.avif",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 755414,
+      "sha256": "4d9e8f0a1297012b4a26bdb5881a5a70129a58bbe24ff72e5ef1b7d2afa347b4"
+    },
+    {
+      "path": "영상/public/공방/공방_복도.avif",
+      "reason": "Public asset copy of deleted place",
+      "bytes": 755414,
+      "sha256": "4d9e8f0a1297012b4a26bdb5881a5a70129a58bbe24ff72e5ef1b7d2afa347b4"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_우편함앞.avif",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 2102275,
+      "sha256": "a7d5c57eb58d4884cdb33411ae8d3ef8d169f37999593cc37ed76bd7de4db073"
+    },
+    {
+      "path": "영상/public/공방/공방_우편함앞.avif",
+      "reason": "Public asset copy of deleted place",
+      "bytes": 2102275,
+      "sha256": "a7d5c57eb58d4884cdb33411ae8d3ef8d169f37999593cc37ed76bd7de4db073"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_창가책상.avif",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 1103347,
+      "sha256": "1343e00f7c49bfe2da7cd8d67d0b3dd820b2ed816537fe151be989cc32266dc9"
+    },
+    {
+      "path": "영상/public/공방/공방_창가책상.avif",
+      "reason": "Public asset copy of deleted place",
+      "bytes": 1103347,
+      "sha256": "1343e00f7c49bfe2da7cd8d67d0b3dd820b2ed816537fe151be989cc32266dc9"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_눈오는창.avif",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 1340197,
+      "sha256": "a4c23811587c5ed369c5edd6497a7e77c3b92a558fc38fbb7263c1e60a9eabfa"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_눈오는창_누끼.png",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 6957745,
+      "sha256": "40eed8d693a0eeca66676cdad844f31767bfb71cd9997b94abb7db774563ad50"
+    },
+    {
+      "path": "영상/public/공방/공방_눈오는창.avif",
+      "reason": "Public asset copy of deleted place",
+      "bytes": 1340197,
+      "sha256": "a4c23811587c5ed369c5edd6497a7e77c3b92a558fc38fbb7263c1e60a9eabfa"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_봄들판.avif",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 1810087,
+      "sha256": "67f5773aa5d3da9a5b4187f6b9f2eb6690d3a536d5c156158c38ce80a327f17d"
+    },
+    {
+      "path": "영상/public/공방/공방_봄들판.avif",
+      "reason": "Public asset copy of deleted place",
+      "bytes": 1810087,
+      "sha256": "67f5773aa5d3da9a5b4187f6b9f2eb6690d3a536d5c156158c38ce80a327f17d"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_여름바다.avif",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 2435543,
+      "sha256": "1339e90009e0d8ec0509e942aa7165cc3b644afbd5330b0cd2167fba39ab65ca"
+    },
+    {
+      "path": "영상/public/공방/공방_여름바다.avif",
+      "reason": "Public asset copy of deleted place",
+      "bytes": 2435543,
+      "sha256": "1339e90009e0d8ec0509e942aa7165cc3b644afbd5330b0cd2167fba39ab65ca"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_카페안.avif",
+      "reason": "Deleted shared place and direct derivative",
+      "bytes": 1039712,
+      "sha256": "5cbba41ddb94723eda897da4bf24b317db1f19bc7b401703716b824078c0bcb3"
+    },
+    {
+      "path": "영상/public/공방/공방_카페안.avif",
+      "reason": "Public asset copy of deleted place",
+      "bytes": 1039712,
+      "sha256": "5cbba41ddb94723eda897da4bf24b317db1f19bc7b401703716b824078c0bcb3"
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_시티팝노을휴양지.avif",
+      "reason": "Deleted stage AVIF",
+      "bytes": 1102614,
+      "sha256": "39f97d402c3999d3f203d0e7c93e04f8904e941a641767dec42feb1b5a5f41ab"
+    },
+    {
+      "path": "영상/public/공방/라디오무대_시티팝노을휴양지.avif",
+      "reason": "Public copy of deleted stage",
+      "bytes": 1102614,
+      "sha256": "39f97d402c3999d3f203d0e7c93e04f8904e941a641767dec42feb1b5a5f41ab"
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_전자밤도시.avif",
+      "reason": "Deleted stage AVIF",
+      "bytes": 950525,
+      "sha256": "6378ec2847c5ba3d745248fda6af902ed584b9a02e148a8feaf881b4fc115477"
+    },
+    {
+      "path": "영상/public/공방/라디오무대_전자밤도시.avif",
+      "reason": "Public copy of deleted stage",
+      "bytes": 950525,
+      "sha256": "6378ec2847c5ba3d745248fda6af902ed584b9a02e148a8feaf881b4fc115477"
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_차분달빛호수.avif",
+      "reason": "Deleted stage AVIF",
+      "bytes": 1224265,
+      "sha256": "8c5c1f1c894c30d792eeb24298f08c4063592c0db15b9b9cc85e50b1e68baed1"
+    },
+    {
+      "path": "영상/public/공방/라디오무대_차분달빛호수.avif",
+      "reason": "Public copy of deleted stage",
+      "bytes": 1224265,
+      "sha256": "8c5c1f1c894c30d792eeb24298f08c4063592c0db15b9b9cc85e50b1e68baed1"
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_드림하늘.avif",
+      "reason": "Deleted stage AVIF",
+      "bytes": 1486259,
+      "sha256": "5639b330bb17afb576d4ab1ae96150e9c69b3b1890300a34b4b06e898d400284"
+    },
+    {
+      "path": "영상/public/공방/라디오무대_드림하늘.avif",
+      "reason": "Public copy of deleted stage",
+      "bytes": 1486259,
+      "sha256": "5639b330bb17afb576d4ab1ae96150e9c69b3b1890300a34b4b06e898d400284"
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_드림물결.avif",
+      "reason": "Deleted stage AVIF",
+      "bytes": 1502046,
+      "sha256": "10f508ce57ab6fdf8408c92573a66ca15abb10314cceab461351e559371aaa31"
+    },
+    {
+      "path": "영상/public/공방/라디오무대_드림물결.avif",
+      "reason": "Public copy of deleted stage",
+      "bytes": 1502046,
+      "sha256": "10f508ce57ab6fdf8408c92573a66ca15abb10314cceab461351e559371aaa31"
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_드림들판.avif",
+      "reason": "Deleted stage AVIF",
+      "bytes": 858842,
+      "sha256": "3e65b2c0d21f875971baca97f8bc132dc399f1eb80bae90cc8d6a8bf65775c8a"
+    },
+    {
+      "path": "영상/public/공방/라디오무대_드림들판.avif",
+      "reason": "Public copy of deleted stage",
+      "bytes": 858842,
+      "sha256": "3e65b2c0d21f875971baca97f8bc132dc399f1eb80bae90cc8d6a8bf65775c8a"
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_집안밤공부.avif",
+      "reason": "Deleted stage AVIF",
+      "bytes": 1762111,
+      "sha256": "abefde15fad168e1f51d6ea4f117f7dfdd7911dca20e259790d9c17fa9ec78af"
+    },
+    {
+      "path": "영상/public/공방/라디오무대_집안밤공부.avif",
+      "reason": "Public copy of deleted stage",
+      "bytes": 1762111,
+      "sha256": "abefde15fad168e1f51d6ea4f117f7dfdd7911dca20e259790d9c17fa9ec78af"
+    },
+    {
+      "path": "docs/라디오/배경/citypop.png",
+      "reason": "Removed radio background composition",
+      "bytes": 1438248,
+      "sha256": "8923dc3bfcbc1dd4ca6befd617a99888994191a4fca6f2e8db15f77fedbf3193"
+    },
+    {
+      "path": "docs/라디오/배경/city.png",
+      "reason": "Removed radio background composition",
+      "bytes": 1266742,
+      "sha256": "7f6ded79804c8086df03b17ca5ca97da291675f7429b6c45fe63296e570d286e"
+    },
+    {
+      "path": "docs/라디오/배경/calm.png",
+      "reason": "Removed radio background composition",
+      "bytes": 1521078,
+      "sha256": "00cdbd723d65d8148e802600a6d2c0e9ffb24d5f6a7e898a6a656e1cb921b51f"
+    },
+    {
+      "path": "docs/라디오/배경/dream_sky.png",
+      "reason": "Removed radio background composition",
+      "bytes": 1004130,
+      "sha256": "3fa86b931c71976b4d830df1113caaa0ae986d3eda22008d913db5799c31eabc"
+    },
+    {
+      "path": "docs/라디오/무대/house.png",
+      "reason": "Removed radio still",
+      "bytes": 1510993,
+      "sha256": "9d13f4681cdc979c07807f81c5437dedcc84486add07358a3824548c61750c5d"
+    },
+    {
+      "path": "docs/라디오/배경/house.png",
+      "reason": "Removed radio background composition",
+      "bytes": 1412875,
+      "sha256": "a1158eecaa65904210f929a00bf92c43b514d1cf30e0297645c9c8c2bfcb4d74"
+    },
+    {
+      "path": "docs/라디오/배경목록_20260909/01-15_라디오배경.png",
+      "reason": "Superseded 30-scene contact sheet",
+      "bytes": 3591253,
+      "sha256": "d8689976775b1d6d19bb28ab8de365d724572e8a59378ef64c341cacd4d336d2"
+    },
+    {
+      "path": "docs/라디오/배경목록_20260909/16-30_공간배경.png",
+      "reason": "Superseded 30-scene contact sheet",
+      "bytes": 3247026,
+      "sha256": "a1b9219134b72bd1a9998442b7b0d3e53253fb9d17363406578739aa9e8ab90f"
+    }
+  ]
+}

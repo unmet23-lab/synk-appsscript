@@ -29,8 +29,8 @@
  *   다시 구우면 프레임 다섯(0.2·2·4·6·7.8초)을 뽑아 «확대가 없나»를 먼저 재고 쓴다.
  * 쓰는 법:
  *   node tools/라디오무대영상.js --값만            0원. 얼마 드는지만 센다
- *   node tools/라디오무대영상.js --무대 house      한 장만(시험)
- *   node tools/라디오무대영상.js                   일곱 무대 전부
+ *   node tools/라디오무대영상.js --무대 neon_water      한 장만(시험)
+ *   node tools/라디오무대영상.js                   보존한 네 무대 전부
  */
 'use strict';
 
@@ -50,15 +50,10 @@ const 환율 = 1452;
 /* 무대마다 «무엇이 움직이나»를 적는다. 구조는 그대로 두고 결만 흔든다.
  * 🔑 공통 규율 = 카메라 고정 · 구조 불변 · 생명 없음. 그래야 반복해도 티가 안 나고 정본이 안 흔들린다. */
 const 무대들 = {
-  citypop: { 이름: '시티팝 노을 휴양지', 움직임: 'palm fronds sway gently in a warm breeze, slow ocean ripples catch the low sun, thin clouds drift slowly' },
-  calm:    { 이름: '차분 달빛 호수',     움직임: 'still water ripples very slowly under moonlight, faint mist drifts low, reeds sway barely' },
-  /* 🔴 09-06 1차에서 안개(haze)가 불빛을 덮었다 — 유호 지적 「바람이 부는것보다 창문에있는 불이
-   *   깜빡거려야지」. 안개·연기를 빼고 «창문 불빛 하나씩»만 남긴다. 도시는 미동도 않는다. */
-  house:   { 이름: '전자 밤 도시',       움직임: 'ONLY the small window lights change: a few windows dim and brighten softly, one at a time, at different moments. The buildings, the ground and the air are completely still. No fog, no haze, no smoke, no drifting particles' },
-  city:    { 이름: '도시 밤 골목',       움직임: 'string lights sway slightly, warm window glow flickers, thin smoke drifts from a rooftop' },
-  dream_sky:   { 이름: '드림 하늘',      움직임: 'pastel clouds drift slowly, soft light shifts across the steps, tiny sparkles float upward' },
-  dream_water: { 이름: '드림 물결',      움직임: 'water surface ripples slowly, soft reflections shimmer, gentle mist drifts' },
-  dream_field: { 이름: '드림 들판',      움직임: 'grass and flowers sway in a soft breeze, clouds drift slowly, light shifts gently' },
+  chuseok: { 이름: '보름달 한옥 마당', 움직임: 'ONLY the small paper-window lights dim and brighten softly at different moments. The houses, moon and tree remain still' },
+  neon_water: { 이름: '네온 물가', 원본: '보관/전자_네온물가.png', 움직임: 'ONLY the water reflections shimmer gently and the small distant lights dim and brighten softly. The skyline, ground and framing remain still' },
+  dream_water: { 이름: '거울 수면과 문', 움직임: 'water surface ripples slowly, soft reflections shimmer, gentle mist drifts' },
+  dream_field: { 이름: '반딧불 노을 들판', 움직임: 'grass and flowers sway in a soft breeze, clouds drift slowly, light shifts gently' },
 };
 
 const 공통 = 'Handmade needle-felted wool miniature scene, macro photograph, shallow depth of field. '
@@ -86,7 +81,7 @@ async function 토큰() {
 
 async function 한무대(키, tok, 프로) {
   const 무대 = 무대들[키];
-  const 그림 = path.join(무대방, `${키}.png`);
+  const 그림 = path.join(무대방, 무대.원본 || `${키}.png`);
   if (!fs.existsSync(그림)) return { 실패: `무대 그림이 없다: ${키}.png` };
 
   const 밑 = `https://us-central1-aiplatform.googleapis.com/v1/projects/${프로}/locations/us-central1/publishers/google/models/${모델}`;
@@ -144,6 +139,7 @@ async function 한무대(키, tok, 프로) {
 (async () => {
   const i = process.argv.indexOf('--무대');
   const 하나 = i > -1 ? process.argv[i + 1] : null;
+  if (i >= 0 && (!하나 || !Object.hasOwn(무대들, 하나))) throw new Error(`삭제되었거나 모르는 무대: ${하나 || '(없음)'} (보존: ${Object.keys(무대들).join(' · ')})`);
   const 할것 = 하나 ? [하나] : Object.keys(무대들);
   const 값 = 할것.length * 컷길이 * 초당달러;
 

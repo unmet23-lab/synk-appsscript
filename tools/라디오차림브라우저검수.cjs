@@ -50,7 +50,7 @@ async function main(){
   for(const value of [{DJ:'마린',의상:'SYNK 후드',악세:'펠트 헤드폰'},{DJ:'몽글',의상:'SYNK 후드',악세:'펠트 헤드폰'},{DJ:'까몽',의상:'여름 델',악세:['펠트 헤드폰','안경']}]){
    const rejection=await page.evaluate(async value=>{try{await window.마스코트차림(value);return null;}catch(e){return e.code||e.message;}},value);assert.ok(rejection);assert.deepEqual((await pixels(page)).state.차림,previous);checks.push({type:'rejection',value,rejection});
   }
-  await page.evaluate(()=>window.마스코트반응({종류:'결',결:'전자밤도시'}));await page.waitForTimeout(2500);assert.deepEqual((await pixels(page)).state.차림,previous);checks.push({type:'genre-preserves-choice'});
+  await page.evaluate(()=>window.마스코트반응({종류:'결',결:'전자네온물가'}));await page.waitForTimeout(2500);assert.deepEqual((await pixels(page)).state.차림,previous);checks.push({type:'genre-preserves-choice'});
  }
  const sample=pairs.find(([key])=>key==='여름델+전설의팻말');
  if(sample){

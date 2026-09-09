@@ -28,13 +28,13 @@
  *   마스코트가 설 자리(가운데 위)와 로고 자리(아래 가운데)를 프롬프트가 «구도»로 비워 둔다.
  *   안 비우면 주인공 뒤가 시끄러워 둘 다 안 읽힌다.
  *
- * ⚠ 돈이 든다 — 1컷 ≈ **336원(4K)** · 190원(2K). 일곱 장 전량이면 2,352원.
+ * ⚠ 돈이 든다 — 1컷 ≈ **336원(4K)** · 190원(2K). 보존한 네 장 전량이면 1,344원(종전 추정 단가).
  * ⚠ 우하단 생성 표식(sparkle)이 붙는다 — 합성 쪽(`라디오배경굽기.js`)이 **잘라서** 떨군다.
  *   비가시 SynthID 는 그대로 둔다(🚫지우려는 시도).
  *
  * 쓰기:
  *   node tools/라디오무대굽기.js                  안 구운 것만
- *   node tools/라디오무대굽기.js --장르 citypop    하나만
+ *   node tools/라디오무대굽기.js --장르 chuseok    하나만
  *   node tools/라디오무대굽기.js --다시            있어도 다시(옛 판은 _이전 로 밀어 둔다)
  *   출력 = docs/라디오/무대/<장르>.png (**4K** · 16:9 · `--크기 2K` 로 낮출 수 있다)
  */
@@ -80,135 +80,6 @@ floor or studio the diorama sits on, and do not show the cut edge of the felt ba
  * (house = 마린 대기라 여기서도 안 굽는다 — 얼굴이 없는 무대만 있어도 못 켠다.)
  * 참조 = 그 장르의 «주연 실 + 조연 실»(킷 철칙 ④). 색을 낱말로 안 준다. */
 const 무대들 = {
-  citypop: {
-    이름: '시티팝 — 노을 휴양지',
-    참조: ['CoralWash.png', 'Coral.png', 'Oat.png', 'Stitch.png'],
-    장면: `A tiny felt tropical resort coastline at golden hour, seen from the beach.
-A calm felt sea fills the middle distance, layered wool in warm peach and soft coral, its
-wavelets picked out in long horizontal running stitches of cream thread. A pale oatmeal wool
-shore runs along the bottom edge with a few tiny felted pebbles and a shell. Two felt palm
-trees lean in from the far left and far right edges, fronds cut from stiff felt sheet with
-visible scissor edges, their trunks wrapped in twisted yarn. A small striped parasol and a
-rolled towel sit low at the right edge. A big soft sun of pale butter wool rests low on the
-horizon behind a veil of haze, throwing a long shimmering stitch-path across the water.
-The sky is a graded field of warm peach, apricot and cream wool with four or five small
-clouds of loose white roving. Warm low evening light, long soft shadows on the sand.`,
-  },
-  calm: {
-    이름: '차분 — 밤의 호수',
-    참조: ['DeepWool.png', 'Stone.png', 'AshWool.png', 'Chalk.png'],
-    /* 🔑 재굽기 09-02 — 첫 판은 어두운 언덕이 화면 «가운데»를 차지해서 까몽(검은 털)이 설 자리가
-     *   없었다. 밤 장면의 급소는 「무엇이 밝은가」다: 주인공이 검으면 그 뒤가 밝아야 실루엣이 산다.
-     *   ⇒ 수평선을 내리고, 달빛 받은 물·안개 띠를 아래 절반에 «넓고 환하게» 깐다. */
-    장면: `A tiny felt night landscape by a wide, still, moonlit lake. The horizon sits LOW,
-in the upper third: the lower HALF of the picture is all water and pale moonlit shore.
-That lower half is the brightest part of the whole image — smooth pale silver-grey felt,
-luminous with reflected moonlight, embroidered with long horizontal running stitches of cream
-thread and drifting sheets of white roving mist lying over it. Behind it, far away and small,
-low rolling hills of deep warm charcoal-brown wool are layered front to back, each further
-ridge softer and hazier than the last. A round moon of cream wool hangs high toward the right,
-hazy and glowing, with one thin wisp of roving cloud crossing it. A cluster of small simplified
-felt pine trees stands far off along the left edge and a few more at the far right, small and
-almost silhouettes, well away from the centre.
-THE SKY: a rich WARM DEEP BROWN felt — the colour of dark chocolate and coffee, never grey,
-never blue, never black — densely embroidered with MANY stars: dozens of tiny cream french
-knots plus a scattering of larger six-armed star stitches, thickest near the top of the frame.
-The warm brown sky and the cool glowing water are the two halves of this picture.`,
-  },
-
-  /* ── 09-05 신설 (유호 지시) ────────────────────────────────────────────────
-   * 「전자도 한번 구워줘 · 새 해변 배경이랑 차분도 · 도시느낌의 배경도 하나 ·
-   *  전부 아름다운느낌이면 좋겠어 그리고 드림코어느낌의 정말 아름답고 황홀한 느낌으로도 몇장」
-   * 🔑 드림코어는 결 하나가 아니라 «셋»으로 나눴다 — 같은 낱말로 세 번 부르면 비슷한 것만 나온다.
-   *   하늘/물/들판으로 장면을 갈라야 세 장이 서로 다른 아름다움을 낸다. */
-
-  house: {
-    이름: '전자 — 밤의 네온 항구',
-    참조: ['Lapis.png', 'LapisDeep.png', 'Pop.png', 'DeepWool.png'],
-    장면: `A tiny felt night harbour seen across still black water, lit by neon.
-The horizon sits LOW in the upper third; the lower HALF is calm dark water of deep indigo
-wool, glassy and smooth, carrying long vertical reflections of coloured light stitched in
-glossy floss — magenta, cyan and warm amber streaks running down toward the viewer.
-Far away along the horizon, a low skyline of simple felt blocks in deep navy and charcoal,
-each tiny window a single bright french knot. A few slim felt light poles stand at the far
-left and far right edges, each topped with a glowing bead of pale wool wrapped in a halo of
-loose roving. Thin ribbons of magenta and cyan roving drift low over the water as neon haze.
-THE SKY: deep midnight indigo felt graded to warm violet near the horizon, with a soft
-electric glow rising off the distant city. Cool, sleek, quietly euphoric night mood.`,
-  },
-
-  city: {
-    이름: '도시 — 비 갠 저녁의 골목 옥상',
-    참조: ['Stone.png', 'Ash.png', 'Butter.png', 'Lapis.png'],
-    장면: `A tiny felt city rooftop view at blue hour, just after rain.
-The lower edge is a low felt parapet wall of textured grey stone-coloured wool, running
-along the very bottom of the frame. Beyond and below it, layered rows of small felt rooftops
-and building blocks recede into the distance at the far left and far right, built from
-grey, ash and soft slate wool, each lit window a warm butter-yellow french knot, hundreds of
-them scattered like embers. A few slim felt antennas and a water tank sit at the extreme left
-edge; a string of tiny bulb lights is strung across the top right corner on a thread.
-Wet rooftops catch light in long soft stitched highlights. Thin sheets of white roving mist
-lie between the building layers, making each row further away paler than the last.
-THE SKY: a deep dusky blue felt washed with warm amber near the low horizon where the sun
-just left, one or two long clouds of loose roving. Melancholy, warm, beautiful city calm.`,
-  },
-
-  dream_sky: {
-    이름: '드림코어 — 구름 위의 계단',
-    참조: ['LapisSoft.png', 'CoralSoft.png', 'ButterSoft.png', 'Chalk.png'],
-    장면: `A tiny surreal felt dreamscape floating in an endless pastel sky.
-The whole frame is filled with soft billowing clouds of white and pale pink wool roving,
-piled thick along the bottom edge like a sea of fleece and thinning to open sky above.
-At the far left edge, a short flight of pale felt steps rises out of the cloud and simply
-ends in mid-air. At the far right, a single doorway frame of cream felt stands free with
-nothing behind it, its opening filled with a softer, brighter light than the sky around.
-Small pale spheres of wool drift weightlessly at different depths, some near and blurred,
-some far and tiny. Long thin stitches of iridescent floss arc between them like faint threads.
-THE SKY: an impossibly beautiful gradient of pale lilac, peach, mint and cream felt, glowing
-from within, with a soft halo bloom near the upper right. Weightless, nostalgic, euphoric —
-the feeling of a half-remembered dream you did not want to leave.`,
-  },
-
-  dream_water: {
-    이름: '드림코어 — 끝없는 거울 물',
-    참조: ['LapisSoft.png', 'Chalk.png', 'PopSoft.png', 'Stone.png'],
-    장면: `A tiny surreal felt dreamscape: an endless shallow mirror of water under a vast sky.
-The lower two thirds is perfectly still pale water — smooth felt in soft lilac-grey, so calm
-it doubles everything above it in a soft blurred reflection, its surface marked only by a few
-faint concentric ripple rings of running stitch. The horizon is a single clean line very low
-in the frame. Scattered far along that horizon, at the left and right edges only, stand a few
-tall thin felt arches and one lone rounded doorway, small and pale, each mirrored below.
-Two or three soft glowing orbs of cream wool hover above the water near the edges, each with
-a gentle bloom and a faint reflected twin. Thin veils of white roving mist lie on the water.
-THE SKY: an enormous gradient of pale rose, periwinkle and cream felt with a low soft sun
-of butter wool near the horizon, its light spilling across the mirror in a long stitched path.
-Silent, vast, achingly beautiful — stillness that feels like it goes on forever.`,
-  },
-
-  dream_field: {
-    이름: '드림코어 — 빛나는 들판',
-    참조: ['MeadowSoft.png', 'CoralSoft.png', 'ButterSoft.png', 'Chalk.png'],
-    장면: `A tiny surreal felt dreamscape: a rolling meadow glowing at the last light of day.
-The lower half is soft rolling ground of pale sage and mint wool, its surface embroidered all
-over with thousands of tiny stitches suggesting grass, and dotted with small pale flowers made
-of french knots in cream and blush. Fireflies — dozens of tiny glowing beads of butter wool
-with soft halos — drift at every depth, thickest near the left and right edges, sparse in the
-middle. A few slender felt stems and seed heads lean in from the very bottom edge, close to
-the lens and softly out of focus. Far away on the low horizon, a line of small simplified
-felt trees, hazy and pale. Long sheets of golden roving haze lie across the field.
-THE SKY: a breathtaking gradient of warm apricot, blush pink and pale gold felt rising into
-soft lavender, with the sun just below the horizon throwing a glow up through the haze.
-Warm, golden, overwhelmingly beautiful — the last perfect minute of a summer evening.`,
-  },
-
-  /* ── 2026-09-07 신설 (유호 지시 「이제 곧 추석인데 혹시 추석 배경으로 바꿔줄수있어?」 ·
-   *    후보 셋 중 「보름달 뜬 한옥 마당」 확정) ────────────────────────────────────
-   * 🔑 밤 장면의 급소를 calm 에서 그대로 가져온다 — **아래 절반이 화면에서 가장 밝아야 한다.**
-   *   주인공이 그 앞에 서므로, 뒤가 어두우면 까몽(검은 털)이 통째로 사라진다(09-02 재굽기 근거).
-   *   그래서 마당(달빛 받은 흙바닥)을 넓고 환하게 깔고 집·나무·장독은 좌우 가장자리로 민다.
-   * 🔑 하늘은 «따뜻한 깊은 밤색»이다 — 회색·파랑·검정으로 가면 펠트가 죽는다(calm 실측 문장 그대로).
-   * ⚠ 추석 = 2026-09-25. 달은 «보름달»이라 크고 둥글어야 하는데, 구도 규율이 가운데를 비우라 하므로
-   *   오른쪽 위로 높이 올린다(calm 의 달과 같은 자리). */
   chuseok: {
     이름: '추석 — 보름달 뜬 한옥 마당',
     참조: ['DeepWool.png', 'Butter.png', 'Oat.png', 'Chalk.png'],
@@ -234,6 +105,51 @@ THE SKY: a rich WARM DEEP BROWN felt — the colour of dark chestnut and roasted
 grey, never blue, never black — densely embroidered with MANY stars: dozens of tiny cream
 french knots, thickest near the top of the frame.
 Warm, still, nostalgic autumn night — the quiet hour after the family meal.`,
+  },
+  neon_water: {
+    파일: '보관/전자_네온물가.png',
+    이름: '전자 — 밤의 네온 항구',
+    참조: ['Lapis.png', 'LapisDeep.png', 'Pop.png', 'DeepWool.png'],
+    장면: `A tiny felt night harbour seen across still black water, lit by neon.
+The horizon sits LOW in the upper third; the lower HALF is calm dark water of deep indigo
+wool, glassy and smooth, carrying long vertical reflections of coloured light stitched in
+glossy floss — magenta, cyan and warm amber streaks running down toward the viewer.
+Far away along the horizon, a low skyline of simple felt blocks in deep navy and charcoal,
+each tiny window a single bright french knot. A few slim felt light poles stand at the far
+left and far right edges, each topped with a glowing bead of pale wool wrapped in a halo of
+loose roving. Thin ribbons of magenta and cyan roving drift low over the water as neon haze.
+THE SKY: deep midnight indigo felt graded to warm violet near the horizon, with a soft
+electric glow rising off the distant city. Cool, sleek, quietly euphoric night mood.`,
+  },
+  dream_water: {
+    이름: '거울 수면과 문',
+    참조: ['LapisSoft.png', 'Chalk.png', 'PopSoft.png', 'Stone.png'],
+    장면: `A tiny surreal felt dreamscape: an endless shallow mirror of water under a vast sky.
+The lower two thirds is perfectly still pale water — smooth felt in soft lilac-grey, so calm
+it doubles everything above it in a soft blurred reflection, its surface marked only by a few
+faint concentric ripple rings of running stitch. The horizon is a single clean line very low
+in the frame. Scattered far along that horizon, at the left and right edges only, stand a few
+tall thin felt arches and one lone rounded doorway, small and pale, each mirrored below.
+Two or three soft glowing orbs of cream wool hover above the water near the edges, each with
+a gentle bloom and a faint reflected twin. Thin veils of white roving mist lie on the water.
+THE SKY: an enormous gradient of pale rose, periwinkle and cream felt with a low soft sun
+of butter wool near the horizon, its light spilling across the mirror in a long stitched path.
+Silent, vast, achingly beautiful — stillness that feels like it goes on forever.`,
+  },
+  dream_field: {
+    이름: '반딧불 노을 들판',
+    참조: ['MeadowSoft.png', 'CoralSoft.png', 'ButterSoft.png', 'Chalk.png'],
+    장면: `A tiny surreal felt dreamscape: a rolling meadow glowing at the last light of day.
+The lower half is soft rolling ground of pale sage and mint wool, its surface embroidered all
+over with thousands of tiny stitches suggesting grass, and dotted with small pale flowers made
+of french knots in cream and blush. Fireflies — dozens of tiny glowing beads of butter wool
+with soft halos — drift at every depth, thickest near the left and right edges, sparse in the
+middle. A few slender felt stems and seed heads lean in from the very bottom edge, close to
+the lens and softly out of focus. Far away on the low horizon, a line of small simplified
+felt trees, hazy and pale. Long sheets of golden roving haze lie across the field.
+THE SKY: a breathtaking gradient of warm apricot, blush pink and pale gold felt rising into
+soft lavender, with the sun just below the horizon throwing a glow up through the haze.
+Warm, golden, overwhelmingly beautiful — the last perfect minute of a summer evening.`,
   },
 };
 
@@ -271,7 +187,7 @@ function main() {
   const i = argv.indexOf('--장르');
   const 하나 = i >= 0 ? argv[i + 1] : null;
   const 다시 = argv.indexOf('--다시') >= 0;
-  if (하나 && !무대들[하나]) throw new Error(`모르는 장르: ${하나} (있는 것: ${Object.keys(무대들).join(' · ')})`);
+  if (i >= 0 && (!하나 || !Object.hasOwn(무대들, 하나))) throw new Error(`모르는 장르: ${하나 || '(없음)'} (있는 것: ${Object.keys(무대들).join(' · ')})`);
 
   fs.mkdirSync(낼곳, { recursive: true });
   const k = 키();
@@ -289,7 +205,7 @@ function main() {
      *   구운 것처럼 읽힌다**(돈이 드는 도구라 그 오독의 값이 크다). */
     let 구움 = 0, 건너뜀 = 0;
     for (const 키이름 of 목록) {
-      const 저장경로 = path.join(낼곳, `${키이름}.png`);
+      const 저장경로 = path.join(낼곳, 무대들[키이름].파일 || `${키이름}.png`);
       if (fs.existsSync(저장경로) && !다시) { 건너뜀 += 1; console.log(`⏭  ${키이름} — 이미 있다(--다시 면 다시 굽는다)`); continue; }
       /* 옛 판을 덮기 전에 한 칸 옆으로 민다 — 눈으로 고르는 일이라 «직전 것»이 있어야 견준다.
        * 🔑 **저장소 «밖»으로 민다**(os.tmpdir). 09-02 에 저장소 안에 뒀다가 커밋에 섞일 뻔했다 —

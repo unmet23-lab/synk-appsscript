@@ -89,7 +89,7 @@ for(const b of document.querySelectorAll('[data-event]'))b.onclick=()=>{stopCycl
 for(const key of ['의상','악세'])$(key).onchange=()=>stopCycle();
 $('apply').onclick=applyOutfit;
 $('cycle').onclick=startCycle;
-$('genre').onclick=()=>{stopCycle();if(ready&&!applying)runtime().마스코트반응?.({종류:'결',결:'전자밤도시'});};
+$('genre').onclick=()=>{stopCycle();if(ready&&!applying)runtime().마스코트반응?.({종류:'결',결:'전자네온물가'});};
 function motionPreference(){if(reduceMotion.matches){stopCycle();$('cycle-state').textContent='움직임 줄임 설정 · 수동 표정 버튼으로 비교하세요.';}controls();}
 reduceMotion.addEventListener?.('change',motionPreference);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCycle();});

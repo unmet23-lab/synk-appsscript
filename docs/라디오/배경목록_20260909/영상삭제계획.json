@@ -1,0 +1,276 @@
+{
+  "userApprovedSharedSourceDeletion": true,
+  "keepNumbers": [
+    1,
+    2,
+    11,
+    13,
+    17,
+    29,
+    28,
+    27,
+    21,
+    16
+  ],
+  "removedNumbers": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    14,
+    15,
+    18,
+    19,
+    20,
+    22,
+    23,
+    24,
+    25,
+    26,
+    30
+  ],
+  "method": "Windows Recycle Bin; exact validated file paths only",
+  "exclusions": [
+    "Completed marketing artwork and embedded document assets",
+    "Music and current live server data",
+    "Standalone transparent mascot/booth overlay assets"
+  ],
+  "protected": [
+    {
+      "path": "docs/라디오/무대/chuseok.png",
+      "sha256": "77f06b4d6c24d8cf75d11af15807d89d27eb8e0a2546591c9bd8364bfbb3d4d5",
+      "reason": "保留 1 보름달 한옥 마당"
+    },
+    {
+      "path": "docs/라디오/무대/보관/전자_네온물가.png",
+      "sha256": "ad4c63507e60b670d77a193554d8115a055acc23657c4e8defee4489b1a4d7c9",
+      "reason": "保留 2 네온 물가"
+    },
+    {
+      "path": "docs/라디오/무대/dream_water.png",
+      "sha256": "3086e9afb1124b7b9c6940619194cb8a4d00d3eb6b03a21a320cb8a21c4a47c0",
+      "reason": "保留 11 거울 수면과 문"
+    },
+    {
+      "path": "docs/라디오/무대/dream_field.png",
+      "sha256": "c3d6fb508a9244ca34e83de4631f5c1757b1f21b6045b06112dc469b71b10b1a",
+      "reason": "保留 13 반딧불 노을 들판"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_내방낮.png",
+      "sha256": "d07d8cc399d55e4b7f4127070d45745df3147c7c4440e163e884ed68b99e8c5a",
+      "reason": "保留 16 내 방 낮"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_내방낮.avif",
+      "sha256": "cfbc45d46f31f1330de011e1dc8ff1040f518b57f1a48704aa0863115208efa7",
+      "reason": "Selected 16 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_내방밤.png",
+      "sha256": "076f88f03ae1d105364bb2be8c5400d150dd15315c1a2654c347ab32fc08c743",
+      "reason": "保留 17 내 방 밤"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_내방밤.avif",
+      "sha256": "6ef7f0f148417392cb97edc614c4c5771b4c5b8221f443ae8be516f17ac17eea",
+      "reason": "Selected 17 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_운동장.png",
+      "sha256": "127079c8f0098b7d5c8aa6a21174312cb22c3d0a6f9627e4cec355cd1ce3f828",
+      "reason": "保留 21 운동장"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_운동장.avif",
+      "sha256": "5f34b13691721bc40cbe3eb95faf7acb3c94d708263b0aa77d8f887a2b1549b5",
+      "reason": "Selected 21 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_가을언덕.png",
+      "sha256": "73cfaa42047fbbb6ad4386ba599b19a522e7d9d17b2cc8b75e5f7505a6194963",
+      "reason": "保留 27 가을 언덕"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_가을언덕.avif",
+      "sha256": "ff0cd3d2775c4700fd884ae83897d97476d9caf3cc116d6ba412ff029783ee86",
+      "reason": "Selected 27 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_차강사르게르.png",
+      "sha256": "c81e421fe7bbceb083f25871b15055459116875a6f0b36c261172e7cfbd0235d",
+      "reason": "保留 28 차강사르 게르"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_차강사르게르.avif",
+      "sha256": "c172e08830c94f9e52b31ad17c5f30f55797c88f21e2e2c250352ae6990dc1be",
+      "reason": "Selected 28 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_별보는지붕.png",
+      "sha256": "bf40c998164726beb1098d4aab0c0512764f1f421c6d03fd1aa780a8eed2ecac",
+      "reason": "保留 29 별 보는 지붕"
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_별보는지붕.avif",
+      "sha256": "4bf69762d7235a88fdaaab100fb1544e3a1a4d5fc9f3f4874d236e62b261ab0b",
+      "reason": "Selected 29 derivative"
+    },
+    {
+      "path": "docs/Loom_자산/무대/추석보름달마당.webp",
+      "sha256": "aa8fe80195c19240dbcc8ff7c7b7c63557245333c973cbd4251cbde0866f611a",
+      "reason": "Selected shared stage"
+    },
+    {
+      "path": "docs/Loom_자산/무대/전자네온물가.webp",
+      "sha256": "6c1d8acb1950c0ba7d77cb9f934e70f03a729f83a234e158758f85b02c88ccf1",
+      "reason": "Selected shared stage"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_chuseok.mp4",
+      "sha256": "cd0f9377f3bcabcfff88cc6b1048d9be3bb9ddf6836e3b7c86af50940e24d1ab",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_house.mp4",
+      "sha256": "1e5252603aa7f08989a8b99805cfe818032f83c000911606cf1ea8e6057a40fa",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/추석_자연생동_20260909.mp4",
+      "sha256": "5b4b8f84d0ced1eaa6e9135af2582daa192a87fd00c2f39015faf5fe594232f7",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/추석_자연생동_20260909_v2.mp4",
+      "sha256": "c0e984f2ce771cabd1704c5ac25335c1b05519731566de7dfa98cf6622827df7",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/추석_영상생성_20260909.mp4",
+      "sha256": "af2b83919d5b06758702829d1c36fcfb31fdcfa12453d944ffecbc6402956f50",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/추석_나무고정_조명_20260909.mp4",
+      "sha256": "dcc5a8fef2e5efd9c0611166f53fac32846e16fb14f2d81a68a3c6d403ff3dfa",
+      "reason": "Selected scene video"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_house.mp4",
+      "sha256": "4ef29dac25c6d11adea5ca5c33ccef4cec4603f095950125692365519c5ec225",
+      "reason": "Selected neon water video"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_chuseok.mp4",
+      "sha256": "0743a7f06055c3a171ffc7bf1e42399d29d6bec926c0411c03f2d6e9265a58af",
+      "reason": "Selected Chuseok video"
+    },
+    {
+      "path": "bots/오버레이/방송층.html",
+      "sha256": "b4a4a0f9e2236bd29cc2ccf116d5d7162aaf390e5f8fea6232051ace5b9466ff",
+      "reason": "Current mascot expression/edge runtime"
+    },
+    {
+      "path": "bots/오버레이/라디오표정리듬.js",
+      "sha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8",
+      "reason": "Current mascot expression/edge runtime"
+    },
+    {
+      "path": "bots/오버레이/라디오가장자리.js",
+      "sha256": "b76f448ab55af135a5e2dc652683fc721edfc35ceaad7ae1af4bcac138a25a58",
+      "reason": "Current mascot expression/edge runtime"
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/라디오/무대영상/층_citypop.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 20008546,
+      "sha256": "61cd992712a09369d4e284c4d26058be98844cfbff42a9e33442973a99a0753c"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_citypop.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 19816924,
+      "sha256": "cd5018372263ab7ddf3a4158c3d19c44fc5d9fb55da4e5ed2f989d2979ba073a"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_city.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 35624006,
+      "sha256": "a3a897c237b1461a017e50101594a5af2db1eb9583c291d317552b14afaf6bb0"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_city.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 35102753,
+      "sha256": "f29d8017fe0d9adfb8690b2ea34ff40b5d329a20b3aaef55225bfcc8f054ca8a"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_calm.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 35891278,
+      "sha256": "49c2cf553b350d05341d59caca29fd83e09e7e95c5795d2a93f9f8db6a8e3bdf"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_calm.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 36255048,
+      "sha256": "5b31159197cacf83d31a0ececad903525ddac56b79bc4a52a7ef6661b484c252"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_dream_sky.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 28214484,
+      "sha256": "5bad8af25e2e0c4ea9a8da07ce16eb50c1534088af1d231f10f39c94e436dd03"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_dream_sky.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 27842482,
+      "sha256": "718b78d6b5ffc1699ca19d93cb9bbb0b4cc8ebfe3294a4e856d3becb58acbf78"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_study.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 52324413,
+      "sha256": "f550f750e7455e9bc53e2c341dc558359ce836faf037208d276bb19a7d9ce8ef"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_study.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 51341203,
+      "sha256": "4811a9f10b48eb854d3dc78fa988e85859f2a657f1e3c214533047e546c422f5"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_dream_water.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 33352330,
+      "sha256": "d7aae95938610a1a91d5c8df59705fe12575902af1f65b8750c5f087a63b2b78"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_dream_water.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 32763305,
+      "sha256": "a4d5227aee301eb1f9c1d7f4e302be4a5f4a6b2809232a2f18c352de2754d30e"
+    },
+    {
+      "path": "docs/라디오/무대영상/층_dream_field.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 20246289,
+      "sha256": "5d6fb66804277ba067b7338859167b8f1f64d900ad04e11467356ee1ec256b3c"
+    },
+    {
+      "path": "docs/라디오/무대영상/덮개붙임/덮개붙임_층_dream_field.mp4",
+      "reason": "Video of removed background; indoor dream_water/field distinct from retained outdoor PNGs",
+      "bytes": 20466082,
+      "sha256": "3883d3175e2b05d4a4b4e3e23355d593703fde2c55aa859994ab0168cd1e2c42"
+    }
+  ]
+}

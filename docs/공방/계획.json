@@ -1884,7 +1884,7 @@
       {
         "이름": "자리 배경 — 학생",
         "쓰는 곳": "앱 「살아 있는 자리」 배경 고르기(옷처럼 고른다) · 릴 배경 · 라디오 무대",
-        "상태": "15/15",
+        "상태": "6/6",
         "것들": [
           {
             "이름": "내 방 낮",
@@ -1903,30 +1903,6 @@
             "파일": "공방_내방밤.avif"
           },
           {
-            "이름": "옷 가게 안",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "The inside of a tiny clothes shop made of wool felt, a rail of little felt garments along one wall and a low wooden counter, warm and softly lit.",
-            "쇠": "공방_옷가게안",
-            "파일": "공방_옷가게안.avif"
-          },
-          {
-            "이름": "교실",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "A small classroom built from wool felt, a few low desks facing a cream felt board, a window on the left letting in soft daylight.",
-            "쇠": "공방_교실",
-            "파일": "공방_교실.avif"
-          },
-          {
-            "이름": "복도",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "A quiet school corridor of wool felt, a row of little lockers along one side and light falling from tall windows on the other.",
-            "쇠": "공방_복도",
-            "파일": "공방_복도.avif"
-          },
-          {
             "이름": "운동장",
             "상태": "구웠다",
             "규격": "바깥자리",
@@ -1939,53 +1915,6 @@
               "무엇": "뜻 없는 영문 글자가 박혔다(운동장 = SCHOOL · 카페 = 가짜 메뉴 글자)",
               "고친것": "지시문에서 글자를 부르는 낱말을 걷고 글자 금지를 이름 대어 붙였다"
             }
-          },
-          {
-            "이름": "우편함 앞",
-            "상태": "구웠다",
-            "규격": "바깥자리",
-            "지시": "The corner of a front yard built entirely from needle-felted wool, a coral felt letterbox on a post beside a low felt gate with one cream envelope in its slot, a felt path and shrubs behind it, wool walls framing the view.",
-            "쇠": "공방_우편함앞",
-            "파일": "공방_우편함앞.avif"
-          },
-          {
-            "이름": "창가 책상",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "The corner of a room built entirely from needle-felted wool, a wooden desk against a tall felt window with an open felt notebook and a mug on it, a chair pulled back, felt wall and floor filling the rest of the frame.",
-            "쇠": "공방_창가책상",
-            "파일": "공방_창가책상.avif"
-          },
-          {
-            "이름": "눈 오는 창",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "The inside corner of a room built entirely from needle-felted wool, a tall felt window in the wall with cream felt snow drifting past its dark blue pane, the felt sill dusted with snow, felt wall and floor filling the rest of the frame.",
-            "쇠": "공방_눈오는창",
-            "파일": "공방_눈오는창.avif",
-            "검수": {
-              "판정": "다름",
-              "언제": "2026-09-08",
-              "무엇": "지시는 「창 밖으로 눈 내리는 방 구석」인데 난 것은 «흰 덩어리» 하나다. 창도 방도 없다.",
-              "누가": "09-06 코덱스 기능체크가 짚고 09-08 에 눈으로 확인했다",
-              "다음": "다시 굽는다 — 4K 한 장 336원 · 유호님이 「굽자」 하실 때"
-            }
-          },
-          {
-            "이름": "봄 들판",
-            "상태": "구웠다",
-            "규격": "바깥자리",
-            "지시": "A whole spring meadow made of needle-felted wool fills the frame and runs back to a low horizon, its felt grass dotted with tiny coral and butter flowers, slender felt trees standing further back, a soft wool sky above them; the felt place is the entire picture, not a small model on a table.",
-            "쇠": "공방_봄들판",
-            "파일": "공방_봄들판.avif"
-          },
-          {
-            "이름": "여름 바다",
-            "상태": "구웠다",
-            "규격": "바깥자리",
-            "지시": "A whole summer seashore made of needle-felted wool fills the frame, layered blue felt water running back to the horizon with white felt surf, oatmeal felt sand in front and a pale wool sky above; the felt place is the entire picture, not a small model on a table.",
-            "쇠": "공방_여름바다",
-            "파일": "공방_여름바다.avif"
           },
           {
             "이름": "가을 언덕",
@@ -2010,20 +1939,6 @@
             "지시": "A whole rooftop made of needle-felted wool fills the frame, grey felt tiles running back to a low felt railing, dark felt rooftops beyond it and a deep indigo wool night sky scattered with tiny cream felt stars above; the felt place is the entire picture, not a small model on a table.",
             "쇠": "공방_별보는지붕",
             "파일": "공방_별보는지붕.avif"
-          },
-          {
-            "이름": "카페 안",
-            "상태": "구웠다",
-            "규격": "자리",
-            "쇠": "공방_카페안",
-            "지시": "The inside of a small cafe built entirely from needle-felted wool, a low wooden counter running across the front with a little felt coffee machine on it, a cream felt board on the wall behind carrying only a few small stitched felt shapes and a tiny felt leaf as marks, two small round tables with stools at one side, warm and softly lit. The board is blank of writing: NO letters, NO words, NO prices, NO menu text and no writing of any kind appear on it or anywhere else in the picture, in any script.",
-            "파일": "공방_카페안.avif",
-            "검수": {
-              "판정": "다시 굽는 중",
-              "언제": "2026-09-08",
-              "무엇": "뜻 없는 영문 글자가 박혔다(운동장 = SCHOOL · 카페 = 가짜 메뉴 글자)",
-              "고친것": "지시문에서 글자를 부르는 낱말을 걷고 글자 금지를 이름 대어 붙였다"
-            }
           }
         ]
       },
@@ -2588,69 +2503,6 @@
             ],
             "지시": "A chunky hand-knitted winter scarf in cream and coral stripes with short tasselled ends, photographed as it would look wrapped around an invisible rounded bell-shaped form about as wide as the character in the reference image. The scarf keeps its full three-dimensional wrapped loop — it curves away around the far side and comes back — and the two ends cross at the front and hang down. The loop is wide enough that the body it wraps would be as thick as the reference character. Nothing else is in the frame: no body, no mannequin, no ghost outline. Only the scarf, holding its wrapped shape in empty space.",
             "파일": "공방_두르기_f_보이지않는몸.png"
-          }
-        ]
-      },
-      {
-        "이름": "라디오 무대 4K",
-        "쓰는 곳": "라디오24 장르 블록 배경 — 장르마다 한 장 · 그 위에 정본 마스코트를 합성한다(09-02 확정)",
-        "상태": "7/7",
-        "것들": [
-          {
-            "이름": "시티팝 노을 휴양지",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "A whole seaside resort at sunset made of needle-felted wool fills the frame, felt palm trees leaning over a felt boardwalk, a warm orange and pink wool sky over layered felt water; the felt place is the entire picture, not a small model on a table.",
-            "쇠": "라디오무대_시티팝노을휴양지",
-            "파일": "라디오무대_시티팝노을휴양지.avif"
-          },
-          {
-            "이름": "차분 달빛 호수",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "A whole moonlit lake made of needle-felted wool fills the frame, still indigo felt water with a pale wool moon reflected in it, dark felt pines along the far shore, a deep night wool sky above; the felt place is the entire picture, not a small model on a table.",
-            "쇠": "라디오무대_차분달빛호수",
-            "파일": "라디오무대_차분달빛호수.avif"
-          },
-          {
-            "이름": "전자 밤 도시",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "A whole night city made of needle-felted wool fills the frame, felt tower blocks with tiny lit felt windows receding into the distance, a deep indigo wool sky above them; the felt place is the entire picture, not a small model on a table.",
-            "쇠": "라디오무대_전자밤도시",
-            "파일": "라디오무대_전자밤도시.avif"
-          },
-          {
-            "이름": "드림 들판",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "A whole dreamlike meadow made of needle-felted wool fills the frame, pale lilac felt grass running to a low horizon under a soft gradient wool sky, a few round felt clouds drifting low; the felt place is the entire picture, not a small model on a table.",
-            "쇠": "라디오무대_드림들판",
-            "파일": "라디오무대_드림들판.avif"
-          },
-          {
-            "이름": "드림 하늘",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "A whole sky made of needle-felted wool fills the frame, layered pink and lilac felt clouds stacked into the distance with pale wool light behind them; the felt place is the entire picture, not a small model on a table.",
-            "쇠": "라디오무대_드림하늘",
-            "파일": "라디오무대_드림하늘.avif"
-          },
-          {
-            "이름": "드림 물결",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "A whole calm water surface made of needle-felted wool fills the frame, soft turquoise felt ripples running to a pale horizon under a gentle wool sky; the felt place is the entire picture, not a small model on a table.",
-            "쇠": "라디오무대_드림물결",
-            "파일": "라디오무대_드림물결.avif"
-          },
-          {
-            "이름": "집 안 밤공부",
-            "상태": "구웠다",
-            "규격": "자리",
-            "지시": "The corner of a study room built entirely from needle-felted wool, a felt desk under a warm felt lamp beside a tall dark window, felt books stacked at one side, felt wall and floor filling the rest of the frame.",
-            "쇠": "라디오무대_집안밤공부",
-            "파일": "라디오무대_집안밤공부.avif"
           }
         ]
       },

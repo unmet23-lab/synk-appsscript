@@ -42,6 +42,11 @@ const 크롬 = 값('--크롬', process.platform === 'win32'
 if (!결 || !낼) { console.error('쓰기: node tools/무대영상굽기.js --결 <결> --낼 <mp4> [--루프 60] [--뜨기 30]'); process.exit(2); }
 
 const 뿌리 = path.resolve(__dirname, '..');
+/* 삭제한 키는 브라우저·서버를 열기 전에 거절한다. 다른 그림으로 조용히 치환하지 않는다. */
+const 무대글 = fs.readFileSync(path.join(뿌리, 'bots/오버레이/무대.html'), 'utf8');
+const 결표 = 무대글.match(/const 결들 = \[([^\]]+)\]/);
+const 허용결 = 결표 ? [...결표[1].matchAll(/'([^']+)'/g)].map((m) => m[1]) : [];
+if (!허용결.includes(결)) { console.error('삭제되었거나 모르는 결: ' + 결 + ' (보존: ' + 허용결.join(' · ') + ')'); process.exit(2); }
 const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms));
 const 말 = (...x) => console.log('[무대영상굽기]', ...x);
 

@@ -1,0 +1,387 @@
+{
+  "method": "Windows Recycle Bin",
+  "recoverable": true,
+  "planned": 63,
+  "removed": 63,
+  "completed": true,
+  "files": [
+    {
+      "path": "docs/라디오/무대/citypop.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대\\citypop.png",
+      "sha256": "d75bcc1e0cd99a42ef25850cd7328839b126b40415efc2911167ce7895c3f6ad",
+      "bytes": 22834606
+    },
+    {
+      "path": "docs/Loom_자산/무대/시티팝노을휴양지.webp",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\무대\\시티팝노을휴양지.webp",
+      "sha256": "4b3ec00a9f82e54e72f695b7f8db13cffe4fbc6e147d5b8528063c70f332ea7f",
+      "bytes": 422784
+    },
+    {
+      "path": "docs/라디오/무대/city.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대\\city.png",
+      "sha256": "bb3fa861dcb6bedcb79f85d33e9320295516ce995449cfea08197c2ff26092a1",
+      "bytes": 19779081
+    },
+    {
+      "path": "docs/Loom_자산/무대/전자밤도시.webp",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\무대\\전자밤도시.webp",
+      "sha256": "f4bf4fa1f19355d72fef62c265f353ebb9ee36ea653e04f838b5da7f820d0d51",
+      "bytes": 424132
+    },
+    {
+      "path": "docs/라디오/무대/calm.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대\\calm.png",
+      "sha256": "9a4d188c1d71bbc0a367ca5134f0cdec79d84f8c122ddd50b071f8ba97ed068b",
+      "bytes": 22473926
+    },
+    {
+      "path": "docs/Loom_자산/무대/차분달빛호수.webp",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\무대\\차분달빛호수.webp",
+      "sha256": "8694ef709b5f8c20b38f6ca052cc2f4f01f8fbbdc71e019a0e3eb7bd6f6eccb4",
+      "bytes": 447278
+    },
+    {
+      "path": "docs/라디오/무대/dream_sky.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대\\dream_sky.png",
+      "sha256": "3bd7b88c63c91b8bb6ca1f1d9e12a18e3413af53c48f0ed7c2d56e78b31d0fe7",
+      "bytes": 16882239
+    },
+    {
+      "path": "docs/Loom_자산/무대/드림하늘.webp",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\무대\\드림하늘.webp",
+      "sha256": "883894ffcc0aba677edc49f8e8183cee34e86a1b41beb7d5e732d3ac5925dcce",
+      "bytes": 482842
+    },
+    {
+      "path": "docs/Loom_자산/무대/드림물결.webp",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\무대\\드림물결.webp",
+      "sha256": "612f4a68a8cc50a505e49d63180d0178ab2de1ebcc71ca10c69c4eab98024c52",
+      "bytes": 610372
+    },
+    {
+      "path": "docs/Loom_자산/무대/드림들판.webp",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\무대\\드림들판.webp",
+      "sha256": "f800aa8069cc572bd2e6d7b914315c6e57b628bb62539e6417de222e5100e24c",
+      "bytes": 263570
+    },
+    {
+      "path": "docs/Loom_자산/무대/집안밤공부.webp",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\무대\\집안밤공부.webp",
+      "sha256": "e6b8cc7f8a3485bdc09ffc060620127bf49592ed210aa47c45a3238bbe008241",
+      "bytes": 724248
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_옷가게안.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_옷가게안.png",
+      "sha256": "793d8060583145236b2f13b835f00b509edb92410a050ae6638ceab274cefba2",
+      "bytes": 20836225
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_교실.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_교실.png",
+      "sha256": "21ca7bfdf1b6b9732b26cf66945530b8adba1b56adbc2efda0bac94c1e80a095",
+      "bytes": 18034926
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_복도.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_복도.png",
+      "sha256": "b43497abbe669c8aa466a2756788f845dc0017c1f3622f418d75226aaf75c48c",
+      "bytes": 20482891
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_우편함앞.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_우편함앞.png",
+      "sha256": "40a245403bdff117594e6888a2e239885d9332b02fc14df873de68efda1de8bd",
+      "bytes": 29192035
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_창가책상.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_창가책상.png",
+      "sha256": "5b9ae5db823a455890bfb6e4e1c4b7e759dbc13fb07f2e87fa8078f72e65c63c",
+      "bytes": 22524299
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_눈오는창.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_눈오는창.png",
+      "sha256": "39be1b569e6e079744c20d6886a3483c0eeb74fad1eee45fb4afdfb2a8544f17",
+      "bytes": 24207796
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_봄들판.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_봄들판.png",
+      "sha256": "e49b77dd5b61b3d2e103473f97bfaeb6727cc6276eba94c2aaf4b485d51e5002",
+      "bytes": 25823036
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_여름바다.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_여름바다.png",
+      "sha256": "103e6157c380680a8c72d51d9ec76971885217f957fe8190b2eb1363dcbf3ffa",
+      "bytes": 28989607
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_카페안.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_카페안.png",
+      "sha256": "eafba2363cc83e7d43ddc8436d3839bb91ac6e0b88a3276030e7a0413115f352",
+      "bytes": 22041540
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_옷가게안.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_옷가게안.avif",
+      "sha256": "aceddee1526d0e1f8212362a675a0689b459189ca222cf622d434b210d0a4631",
+      "bytes": 834195
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_옷가게안_누끼.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_옷가게안_누끼.png",
+      "sha256": "94b2a9c7a03771ad75aa21d1befe46c6fae6e1be6ba0e9e5e79e1a476f141905",
+      "bytes": 16689738
+    },
+    {
+      "path": "영상/public/공방/공방_옷가게안.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\공방_옷가게안.avif",
+      "sha256": "aceddee1526d0e1f8212362a675a0689b459189ca222cf622d434b210d0a4631",
+      "bytes": 834195
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_교실.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_교실.avif",
+      "sha256": "d03da55bbef952c887165aae910934f33cde5b58129e8faf26963d39b81c4057",
+      "bytes": 405824
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_교실_누끼.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_교실_누끼.png",
+      "sha256": "5f6e65f3008897fa15ac17b6751f198dcc744af4a0f8a275849e32e02bae6f30",
+      "bytes": 6281619
+    },
+    {
+      "path": "영상/public/공방/공방_교실.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\공방_교실.avif",
+      "sha256": "d03da55bbef952c887165aae910934f33cde5b58129e8faf26963d39b81c4057",
+      "bytes": 405824
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_복도.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_복도.avif",
+      "sha256": "4d9e8f0a1297012b4a26bdb5881a5a70129a58bbe24ff72e5ef1b7d2afa347b4",
+      "bytes": 755414
+    },
+    {
+      "path": "영상/public/공방/공방_복도.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\공방_복도.avif",
+      "sha256": "4d9e8f0a1297012b4a26bdb5881a5a70129a58bbe24ff72e5ef1b7d2afa347b4",
+      "bytes": 755414
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_우편함앞.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_우편함앞.avif",
+      "sha256": "a7d5c57eb58d4884cdb33411ae8d3ef8d169f37999593cc37ed76bd7de4db073",
+      "bytes": 2102275
+    },
+    {
+      "path": "영상/public/공방/공방_우편함앞.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\공방_우편함앞.avif",
+      "sha256": "a7d5c57eb58d4884cdb33411ae8d3ef8d169f37999593cc37ed76bd7de4db073",
+      "bytes": 2102275
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_창가책상.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_창가책상.avif",
+      "sha256": "1343e00f7c49bfe2da7cd8d67d0b3dd820b2ed816537fe151be989cc32266dc9",
+      "bytes": 1103347
+    },
+    {
+      "path": "영상/public/공방/공방_창가책상.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\공방_창가책상.avif",
+      "sha256": "1343e00f7c49bfe2da7cd8d67d0b3dd820b2ed816537fe151be989cc32266dc9",
+      "bytes": 1103347
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_눈오는창.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_눈오는창.avif",
+      "sha256": "a4c23811587c5ed369c5edd6497a7e77c3b92a558fc38fbb7263c1e60a9eabfa",
+      "bytes": 1340197
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_눈오는창_누끼.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_눈오는창_누끼.png",
+      "sha256": "40eed8d693a0eeca66676cdad844f31767bfb71cd9997b94abb7db774563ad50",
+      "bytes": 6957745
+    },
+    {
+      "path": "영상/public/공방/공방_눈오는창.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\공방_눈오는창.avif",
+      "sha256": "a4c23811587c5ed369c5edd6497a7e77c3b92a558fc38fbb7263c1e60a9eabfa",
+      "bytes": 1340197
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_봄들판.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_봄들판.avif",
+      "sha256": "67f5773aa5d3da9a5b4187f6b9f2eb6690d3a536d5c156158c38ce80a327f17d",
+      "bytes": 1810087
+    },
+    {
+      "path": "영상/public/공방/공방_봄들판.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\공방_봄들판.avif",
+      "sha256": "67f5773aa5d3da9a5b4187f6b9f2eb6690d3a536d5c156158c38ce80a327f17d",
+      "bytes": 1810087
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_여름바다.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_여름바다.avif",
+      "sha256": "1339e90009e0d8ec0509e942aa7165cc3b644afbd5330b0cd2167fba39ab65ca",
+      "bytes": 2435543
+    },
+    {
+      "path": "영상/public/공방/공방_여름바다.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\공방_여름바다.avif",
+      "sha256": "1339e90009e0d8ec0509e942aa7165cc3b644afbd5330b0cd2167fba39ab65ca",
+      "bytes": 2435543
+    },
+    {
+      "path": "docs/Loom_자산/구움/공방_카페안.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_카페안.avif",
+      "sha256": "5cbba41ddb94723eda897da4bf24b317db1f19bc7b401703716b824078c0bcb3",
+      "bytes": 1039712
+    },
+    {
+      "path": "영상/public/공방/공방_카페안.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\공방_카페안.avif",
+      "sha256": "5cbba41ddb94723eda897da4bf24b317db1f19bc7b401703716b824078c0bcb3",
+      "bytes": 1039712
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_시티팝노을휴양지.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\라디오무대_시티팝노을휴양지.avif",
+      "sha256": "39f97d402c3999d3f203d0e7c93e04f8904e941a641767dec42feb1b5a5f41ab",
+      "bytes": 1102614
+    },
+    {
+      "path": "영상/public/공방/라디오무대_시티팝노을휴양지.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\라디오무대_시티팝노을휴양지.avif",
+      "sha256": "39f97d402c3999d3f203d0e7c93e04f8904e941a641767dec42feb1b5a5f41ab",
+      "bytes": 1102614
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_전자밤도시.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\라디오무대_전자밤도시.avif",
+      "sha256": "6378ec2847c5ba3d745248fda6af902ed584b9a02e148a8feaf881b4fc115477",
+      "bytes": 950525
+    },
+    {
+      "path": "영상/public/공방/라디오무대_전자밤도시.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\라디오무대_전자밤도시.avif",
+      "sha256": "6378ec2847c5ba3d745248fda6af902ed584b9a02e148a8feaf881b4fc115477",
+      "bytes": 950525
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_차분달빛호수.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\라디오무대_차분달빛호수.avif",
+      "sha256": "8c5c1f1c894c30d792eeb24298f08c4063592c0db15b9b9cc85e50b1e68baed1",
+      "bytes": 1224265
+    },
+    {
+      "path": "영상/public/공방/라디오무대_차분달빛호수.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\라디오무대_차분달빛호수.avif",
+      "sha256": "8c5c1f1c894c30d792eeb24298f08c4063592c0db15b9b9cc85e50b1e68baed1",
+      "bytes": 1224265
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_드림하늘.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\라디오무대_드림하늘.avif",
+      "sha256": "5639b330bb17afb576d4ab1ae96150e9c69b3b1890300a34b4b06e898d400284",
+      "bytes": 1486259
+    },
+    {
+      "path": "영상/public/공방/라디오무대_드림하늘.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\라디오무대_드림하늘.avif",
+      "sha256": "5639b330bb17afb576d4ab1ae96150e9c69b3b1890300a34b4b06e898d400284",
+      "bytes": 1486259
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_드림물결.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\라디오무대_드림물결.avif",
+      "sha256": "10f508ce57ab6fdf8408c92573a66ca15abb10314cceab461351e559371aaa31",
+      "bytes": 1502046
+    },
+    {
+      "path": "영상/public/공방/라디오무대_드림물결.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\라디오무대_드림물결.avif",
+      "sha256": "10f508ce57ab6fdf8408c92573a66ca15abb10314cceab461351e559371aaa31",
+      "bytes": 1502046
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_드림들판.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\라디오무대_드림들판.avif",
+      "sha256": "3e65b2c0d21f875971baca97f8bc132dc399f1eb80bae90cc8d6a8bf65775c8a",
+      "bytes": 858842
+    },
+    {
+      "path": "영상/public/공방/라디오무대_드림들판.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\라디오무대_드림들판.avif",
+      "sha256": "3e65b2c0d21f875971baca97f8bc132dc399f1eb80bae90cc8d6a8bf65775c8a",
+      "bytes": 858842
+    },
+    {
+      "path": "docs/Loom_자산/구움/라디오무대_집안밤공부.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\라디오무대_집안밤공부.avif",
+      "sha256": "abefde15fad168e1f51d6ea4f117f7dfdd7911dca20e259790d9c17fa9ec78af",
+      "bytes": 1762111
+    },
+    {
+      "path": "영상/public/공방/라디오무대_집안밤공부.avif",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\public\\공방\\라디오무대_집안밤공부.avif",
+      "sha256": "abefde15fad168e1f51d6ea4f117f7dfdd7911dca20e259790d9c17fa9ec78af",
+      "bytes": 1762111
+    },
+    {
+      "path": "docs/라디오/배경/citypop.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\배경\\citypop.png",
+      "sha256": "8923dc3bfcbc1dd4ca6befd617a99888994191a4fca6f2e8db15f77fedbf3193",
+      "bytes": 1438248
+    },
+    {
+      "path": "docs/라디오/배경/city.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\배경\\city.png",
+      "sha256": "7f6ded79804c8086df03b17ca5ca97da291675f7429b6c45fe63296e570d286e",
+      "bytes": 1266742
+    },
+    {
+      "path": "docs/라디오/배경/calm.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\배경\\calm.png",
+      "sha256": "00cdbd723d65d8148e802600a6d2c0e9ffb24d5f6a7e898a6a656e1cb921b51f",
+      "bytes": 1521078
+    },
+    {
+      "path": "docs/라디오/배경/dream_sky.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\배경\\dream_sky.png",
+      "sha256": "3fa86b931c71976b4d830df1113caaa0ae986d3eda22008d913db5799c31eabc",
+      "bytes": 1004130
+    },
+    {
+      "path": "docs/라디오/무대/house.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\무대\\house.png",
+      "sha256": "9d13f4681cdc979c07807f81c5437dedcc84486add07358a3824548c61750c5d",
+      "bytes": 1510993
+    },
+    {
+      "path": "docs/라디오/배경/house.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\배경\\house.png",
+      "sha256": "a1158eecaa65904210f929a00bf92c43b514d1cf30e0297645c9c8c2bfcb4d74",
+      "bytes": 1412875
+    },
+    {
+      "path": "docs/라디오/배경목록_20260909/01-15_라디오배경.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\배경목록_20260909\\01-15_라디오배경.png",
+      "sha256": "d8689976775b1d6d19bb28ab8de365d724572e8a59378ef64c341cacd4d336d2",
+      "bytes": 3591253
+    },
+    {
+      "path": "docs/라디오/배경목록_20260909/16-30_공간배경.png",
+      "absolute": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\배경목록_20260909\\16-30_공간배경.png",
+      "sha256": "a1b9219134b72bd1a9998442b7b0d3e53253fb9d17363406578739aa9e8ab90f",
+      "bytes": 3247026
+    }
+  ]
+}

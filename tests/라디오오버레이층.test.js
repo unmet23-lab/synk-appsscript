@@ -17,11 +17,12 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const 루트 = path.join(__dirname, '..');
 const 무대글 = fs.readFileSync(path.join(루트, 'bots/오버레이/무대.html'), 'utf8');
 const 마스코트글 = fs.readFileSync(path.join(루트, 'bots/오버레이/마스코트.html'), 'utf8');
-const 무대방 = path.join(루트, 'docs/Loom_자산/무대');
+const 무대파일표 = vm.runInNewContext('(' + 무대글.match(/const 무대파일표 = (\{[\s\S]*?\n\});/)[1] + ')');
 
 /** `const 결들 = ['가', '나', ...];` 에서 낱말만 뽑는다. */
 function 무대가아는결() {
@@ -46,8 +47,9 @@ test('결 이름이 무대 층과 마스코트 층에서 같다', () => {
 
 test('결마다 무대 그림이 실제로 있다', () => {
   for (const 결 of 무대가아는결()) {
-    const p = path.join(무대방, 결 + '.webp');
-    assert.ok(fs.existsSync(p), `무대 그림이 없다: ${p} — python tools/무대작게.py 가 낸다`);
+    assert.ok(Object.hasOwn(무대파일표, 결), `명시적 무대 경로가 없다: ${결}`);
+    const p = path.resolve(루트, 'bots/오버레이', 무대파일표[결]);
+    assert.ok(fs.existsSync(p), `보존한 무대 그림이 없다: ${p}`);
   }
 });
 

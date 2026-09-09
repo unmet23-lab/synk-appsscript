@@ -97,10 +97,10 @@ test('기본 방송은 승인된 공통 털 까몽을 사용하고 URL DJ는 결
   assert.equal(new Set(h.edgeReads.map(call => call.url)).size, 8);
   assert.equal(new Set(h.edgeReads.map(call => call.baseUrl)).size, 1);
   assert.ok(h.edgeReads.every(call => call.enabled && call.baseUrl.endsWith('여름델+전설의팻말_본체.webp')));
-  const m = await 화면({ search: '?DJ=마린&결=전자밤도시&밤=0' });
+  const m = await 화면({ search: '?DJ=마린&결=전자네온물가&밤=0' });
   assert.equal(m.snap().DJ, '마린');
-  m.ctx.window.마스코트반응({ 종류: '결', 결: '시티팝노을휴양지' }); m.tick(2500);
-  assert.equal(m.snap().DJ, '마린'); assert.equal(m.snap().결, '시티팝노을휴양지');
+  m.ctx.window.마스코트반응({ 종류: '결', 결: '추석보름달마당' }); m.tick(2500);
+  assert.equal(m.snap().DJ, '마린'); assert.equal(m.snap().결, '추석보름달마당');
 });
 
 test('경계 원본 비교 URL은 같은 까몽 8컷을 보정 비활성으로 읽는다', async () => {
@@ -179,7 +179,7 @@ test('선택 이동 중 재선택은 이전 결과를 취소하고 빈 이미지
 });
 test('고른 착용 세트는 장르와 인사·정답·모든 검수표정 동안 유지되고 몸을 찌그러뜨리지 않는다', async () => {
   const h = await 화면({ search: '?검수=1&밤=0' }); await h.choose(한복);
-  h.ctx.window.마스코트반응({ 종류: '결', 결: '전자밤도시', DJ: '마린' });
+  h.ctx.window.마스코트반응({ 종류: '결', 결: '전자네온물가', DJ: '마린' });
   assert.equal(h.snap().차림.키, '헤드폰+한복'); assert.equal(h.snap().DJ, '까몽');
   for (const name of 표정들) {
     const s = h.ctx.window.마스코트검수표정(name); assert.equal(s.표정, name); assert.match(s.표시파일, /헤드폰\+한복/);

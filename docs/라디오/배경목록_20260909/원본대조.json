@@ -1,0 +1,157 @@
+{
+  "sourceUnchanged": true,
+  "fit": "inside-no-crop",
+  "count": 10,
+  "entries": [
+    {
+      "number": 1,
+      "name": "보름달 한옥 마당",
+      "source": "docs/라디오/무대/chuseok.png",
+      "sha256": "77f06b4d6c24d8cf75d11af15807d89d27eb8e0a2546591c9bd8364bfbb3d4d5",
+      "width": 5504,
+      "height": 3072,
+      "imageBox": {
+        "x": 40,
+        "y": 185,
+        "width": 512,
+        "height": 286
+      },
+      "sheet": "선택한_배경10개.png"
+    },
+    {
+      "number": 2,
+      "name": "네온 물가",
+      "source": "docs/라디오/무대/보관/전자_네온물가.png",
+      "sha256": "ad4c63507e60b670d77a193554d8115a055acc23657c4e8defee4489b1a4d7c9",
+      "width": 5504,
+      "height": 3072,
+      "imageBox": {
+        "x": 576,
+        "y": 185,
+        "width": 512,
+        "height": 286
+      },
+      "sheet": "선택한_배경10개.png"
+    },
+    {
+      "number": 11,
+      "name": "거울 수면과 문",
+      "source": "docs/라디오/무대/dream_water.png",
+      "sha256": "3086e9afb1124b7b9c6940619194cb8a4d00d3eb6b03a21a320cb8a21c4a47c0",
+      "width": 5504,
+      "height": 3072,
+      "imageBox": {
+        "x": 40,
+        "y": 593,
+        "width": 512,
+        "height": 286
+      },
+      "sheet": "선택한_배경10개.png"
+    },
+    {
+      "number": 13,
+      "name": "반딧불 노을 들판",
+      "source": "docs/라디오/무대/dream_field.png",
+      "sha256": "c3d6fb508a9244ca34e83de4631f5c1757b1f21b6045b06112dc469b71b10b1a",
+      "width": 5504,
+      "height": 3072,
+      "imageBox": {
+        "x": 576,
+        "y": 593,
+        "width": 512,
+        "height": 286
+      },
+      "sheet": "선택한_배경10개.png"
+    },
+    {
+      "number": 17,
+      "name": "내 방 밤",
+      "source": "docs/Loom_자산/구움/공방_내방밤.png",
+      "sha256": "076f88f03ae1d105364bb2be8c5400d150dd15315c1a2654c347ab32fc08c743",
+      "width": 4096,
+      "height": 4096,
+      "imageBox": {
+        "x": 136,
+        "y": 984,
+        "width": 320,
+        "height": 320
+      },
+      "sheet": "선택한_배경10개.png"
+    },
+    {
+      "number": 29,
+      "name": "별 보는 지붕",
+      "source": "docs/Loom_자산/구움/공방_별보는지붕.png",
+      "sha256": "bf40c998164726beb1098d4aab0c0512764f1f421c6d03fd1aa780a8eed2ecac",
+      "width": 4096,
+      "height": 4096,
+      "imageBox": {
+        "x": 672,
+        "y": 984,
+        "width": 320,
+        "height": 320
+      },
+      "sheet": "선택한_배경10개.png"
+    },
+    {
+      "number": 28,
+      "name": "차강사르 게르",
+      "source": "docs/Loom_자산/구움/공방_차강사르게르.png",
+      "sha256": "c81e421fe7bbceb083f25871b15055459116875a6f0b36c261172e7cfbd0235d",
+      "width": 4096,
+      "height": 4096,
+      "imageBox": {
+        "x": 136,
+        "y": 1392,
+        "width": 320,
+        "height": 320
+      },
+      "sheet": "선택한_배경10개.png"
+    },
+    {
+      "number": 27,
+      "name": "가을 언덕",
+      "source": "docs/Loom_자산/구움/공방_가을언덕.png",
+      "sha256": "73cfaa42047fbbb6ad4386ba599b19a522e7d9d17b2cc8b75e5f7505a6194963",
+      "width": 4096,
+      "height": 4096,
+      "imageBox": {
+        "x": 672,
+        "y": 1392,
+        "width": 320,
+        "height": 320
+      },
+      "sheet": "선택한_배경10개.png"
+    },
+    {
+      "number": 21,
+      "name": "운동장",
+      "source": "docs/Loom_자산/구움/공방_운동장.png",
+      "sha256": "127079c8f0098b7d5c8aa6a21174312cb22c3d0a6f9627e4cec355cd1ce3f828",
+      "width": 4096,
+      "height": 4096,
+      "imageBox": {
+        "x": 136,
+        "y": 1800,
+        "width": 320,
+        "height": 320
+      },
+      "sheet": "선택한_배경10개.png"
+    },
+    {
+      "number": 16,
+      "name": "내 방 낮",
+      "source": "docs/Loom_자산/구움/공방_내방낮.png",
+      "sha256": "d07d8cc399d55e4b7f4127070d45745df3147c7c4440e163e884ed68b99e8c5a",
+      "width": 4096,
+      "height": 4096,
+      "imageBox": {
+        "x": 672,
+        "y": 1800,
+        "width": 320,
+        "height": 320
+      },
+      "sheet": "선택한_배경10개.png"
+    }
+  ]
+}
