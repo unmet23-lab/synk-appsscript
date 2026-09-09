@@ -1,33 +1,19 @@
-<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>배우고 나서 혼자 다시 하는 실습 설계 · 직접 작성</title><link rel="stylesheet" href="../execution.css"><body class="account-collection execution"><article class="editorial"><div class="brand-lock" role="img" aria-label="SYNK SHIFT"><img class="brand-synk" src="../assets/brand-synk.webp" alt=""><img class="division-stitch-logo" data-division="SHIFT" src="../assets/brand-shift.webp" alt=""></div><p class="kicker">SHIFT WORKBOOK · shift-lesson</p><h1>배우고 나서 혼자 다시 하는 실습 설계</h1><p>시작 파일·완성 예시·조건 변경·자기 점검으로 자율 실습을 설계합니다.</p><p class="notice">예시는 가상 교육용입니다. 아래 글은 이 화면에서만 편집하며 서버로 보내거나 자동 저장하지 않습니다. 창을 닫기 전 텍스트 파일로 보관하세요. 고객 원문·개인정보·비밀번호는 넣지 마세요.</p><div class="material-actions"><a class="download" href="06_강의실습설계.html">설명·예외·확인법 읽기</a><a class="download" href="../자료실/index.html">다른 문제 고르기</a></div><details><summary>참고할 채운 예시</summary><pre>[가상 시작 파일]
-저는 기획과 콘텐츠와 디자인에 관심이 많습니다.
-이번에 정리해볼 일은 독립 강사의 첫 기관 제안용 소개자료입니다.
-강사의 초안에서 대상·실습·결과가 섞여 있으면 순서를 나눕니다.
-편집 가능한 원고 한 장과 읽는 순서 안내를 남깁니다.
-이 예시에는 디자인 파일 제작, 기관 섭외, 계약 성사가 포함되지 않습니다.
-
-[내 작업]
-누구:
-어떤 상황:
-실제로 할 일:
-남길 것:
-맡지 않는 일:
-설명형 소개:
-짧은 소개:
-점검 메모: 원본에 없는 약속을 넣었는가? 두 소개의 범위가 같은가?
-</pre></details><label class="work-label" for="work">예시를 나의 실제 조건으로 고쳐 보세요</label><textarea class="work-input" id="work" spellcheck="false">[가상 시작 파일]
-저는 기획과 콘텐츠와 디자인에 관심이 많습니다.
-이번에 정리해볼 일은 독립 강사의 첫 기관 제안용 소개자료입니다.
-강사의 초안에서 대상·실습·결과가 섞여 있으면 순서를 나눕니다.
-편집 가능한 원고 한 장과 읽는 순서 안내를 남깁니다.
-이 예시에는 디자인 파일 제작, 기관 섭외, 계약 성사가 포함되지 않습니다.
-
-[내 작업]
-누구:
-어떤 상황:
-실제로 할 일:
-남길 것:
-맡지 않는 일:
-설명형 소개:
-짧은 소개:
-점검 메모: 원본에 없는 약속을 넣었는가? 두 소개의 범위가 같은가?
-</textarea><div class="material-actions"><button id="save">내 작업 텍스트 받기</button><button id="select">전체 선택</button></div><p class="work-status" id="work-status" role="status"></p><h2>보관하기 전에</h2><p>누구의 어떤 상황인지, 실제로 맡을 일인지, 남는 결과와 제외 범위가 맞는지 확인하세요. 예시의 고객·지원·성과를 나의 사실처럼 남겨두지 않습니다.</p><p><a href="06_강의실습설계.html">조건별 변형과 막혔을 때의 도움으로 돌아가기</a></p></article><script>const w=document.querySelector('#work'),status=document.querySelector('#work-status');document.querySelector('#save').onclick=()=>{const text=w.value.trim();if(!text){status.textContent='보관할 내용을 먼저 적어주세요.';w.focus();return}const a=document.createElement('a'),u=URL.createObjectURL(new Blob([text+'\n'],{type:'text/plain;charset=utf-8'}));a.href=u;a.download='shift-lesson-my-work.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);status.textContent='작성한 내용의 다운로드를 요청했습니다. 브라우저의 다운로드 위치를 확인하세요.'};document.querySelector('#select').onclick=()=>{w.focus();w.select();status.textContent='내용을 선택했습니다. 필요한 곳에 복사해서 사용하세요.'}</script></body></html>
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>배우고 나서 혼자 다시 하는 실습 설계 · 직접 작성</title><link rel="stylesheet" href="../execution.css"><body class="account-collection execution"><article class="editorial"><div class="brand-lock" role="img" aria-label="SYNK SHIFT"><img class="brand-synk" src="../assets/brand-synk.webp" alt=""><img class="division-stitch-logo" data-division="SHIFT" src="../assets/brand-shift.webp" alt=""></div><p class="kicker">SHIFT WORKBOOK · shift-lesson</p><h1>배우고 나서 혼자 다시 하는 실습 설계</h1><p>시작 파일·완성 예시·조건 변경·자기 점검으로 자율 실습을 설계합니다.</p><p class="notice">예시는 가상 교육용입니다. 아래 글은 이 화면에서만 편집하며 서버로 보내거나 자동 저장하지 않습니다. 창을 닫기 전 텍스트 파일로 보관하세요. 고객 원문·개인정보·비밀번호는 넣지 마세요.</p><div class="material-actions"><a class="download" href="06_강의실습설계_완성예시.html">완성 예시부터 보기</a><a class="download" href="06_강의실습설계.html">설명·예외·확인법 읽기</a><a class="download" href="../자료실/index.html">다른 문제 고르기</a></div><details><summary>참고할 채운 예시</summary><pre>수업 주제: 내 일을 설명하는 첫 문장 — 가상 온라인 자율 실습
+청중의 시작 상태: 하는 일은 있으나 고객과 결과가 소개에 분명하지 않음
+끝에서 할 수 있을 행동: 원본 사실을 나눠 소개문을 쓰고 범위를 점검함
+시작 파일: 대상·실습·결과가 섞인 가상 초안
+완성 예시: 설명형 소개 + 짧은 소개 + 점검 메모
+연습 과제: 세 칸 분류 → 소개 작성 → 새 고객 조건으로 다시 작성
+확인법: 근거 대조 / 새 약속 없음 / 두 소개의 범위 일치
+막히면: 문장 대신 세 칸 메모 → 예시 대조 → 한 조건만 바꿔 재시도
+남길 파일: 자기 소개 원고와 수정 이유 메모
+운영 조건: 자율 연습. 개별 지도·개강·판매·현장 운영은 확정하지 않음.</pre></details><label class="work-label" for="work">예시를 나의 실제 조건으로 고쳐 보세요</label><textarea class="work-input" id="work" spellcheck="false">수업 주제: 내 일을 설명하는 첫 문장 — 가상 온라인 자율 실습
+청중의 시작 상태: 하는 일은 있으나 고객과 결과가 소개에 분명하지 않음
+끝에서 할 수 있을 행동: 원본 사실을 나눠 소개문을 쓰고 범위를 점검함
+시작 파일: 대상·실습·결과가 섞인 가상 초안
+완성 예시: 설명형 소개 + 짧은 소개 + 점검 메모
+연습 과제: 세 칸 분류 → 소개 작성 → 새 고객 조건으로 다시 작성
+확인법: 근거 대조 / 새 약속 없음 / 두 소개의 범위 일치
+막히면: 문장 대신 세 칸 메모 → 예시 대조 → 한 조건만 바꿔 재시도
+남길 파일: 자기 소개 원고와 수정 이유 메모
+운영 조건: 자율 연습. 개별 지도·개강·판매·현장 운영은 확정하지 않음.</textarea><div class="material-actions"><button id="save">내 작업 텍스트 받기</button><button id="select">전체 선택</button></div><p class="work-status" id="work-status" role="status"></p><h2>보관하기 전에</h2><p>누구의 어떤 상황인지, 실제로 맡을 일인지, 남는 결과와 제외 범위가 맞는지 확인하세요. 예시의 고객·지원·성과를 나의 사실처럼 남겨두지 않습니다.</p><p><a href="06_강의실습설계.html">조건별 변형과 막혔을 때의 도움으로 돌아가기</a></p></article><script>const w=document.querySelector('#work'),status=document.querySelector('#work-status');document.querySelector('#save').onclick=()=>{const text=w.value.trim();if(!text){status.textContent='보관할 내용을 먼저 적어주세요.';w.focus();return}const a=document.createElement('a'),u=URL.createObjectURL(new Blob([text+'\n'],{type:'text/plain;charset=utf-8'}));a.href=u;a.download='shift-lesson-my-work.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);status.textContent='작성한 내용의 다운로드를 요청했습니다. 브라우저의 다운로드 위치를 확인하세요.'};document.querySelector('#select').onclick=()=>{w.focus();w.select();status.textContent='내용을 선택했습니다. 필요한 곳에 복사해서 사용하세요.'}</script></body></html>
