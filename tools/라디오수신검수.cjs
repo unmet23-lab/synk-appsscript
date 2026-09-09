@@ -1,7 +1,8 @@
 'use strict';
 // 공개 유튜브 수신본만 유한 길이로 저장한다. 재생 주소/서명 쿼리는 출력하지 않는다.
 const fs=require('node:fs'),path=require('node:path'),{spawn,execFileSync}=require('node:child_process');
-const out=path.resolve(__dirname,'../docs/_ops/라디오생동_20260909/v2');
+const version=process.argv.includes('--fur')?'털고정':process.argv.includes('--v4')?'v4':process.argv.includes('--v3')?'v3':'v2';
+const out=path.resolve(__dirname,'../docs/_ops/라디오생동_20260909/'+version);
 const duration=Number(process.argv[2]||90),name=process.argv[3]||'유튜브수신';
 const withVideo=process.argv.includes('--video');
 if(!Number.isFinite(duration)||duration<10||duration>300||!/^[-\w가-힣]+$/.test(name))throw new Error('검수 범위 오류');

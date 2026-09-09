@@ -8,6 +8,8 @@ const vm = require('node:vm');
 const script = fs.readFileSync(path.join(__dirname, '../bots/오버레이/마스코트.html'), 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
 const 표정들 = ['기본', '깜빡', '눈웃음', '궁금함', '집중', '안도', '응원', '놀람'];
 const flush = () => new Promise(setImmediate);
+// 기본 승인 세트도 라디오차림/ 아래 있으므로 선택 UI의 세 시험 차림만 따로 센다.
+const 선택시험파일 = src => /\/라디오차림\/까몽\/(헤드폰\+한복|안경\+후드|모자\+델)_/.test(src);
 function 목록(상태 = '통과') {
   const 차림 = {};
   for (const [키, 의상, 악세] of [['헤드폰+한복', '한복', '헤드폰'], ['안경+후드', '후드', '안경'], ['모자+델', '델', '모자']]) {
@@ -17,7 +19,7 @@ function 목록(상태 = '통과') {
 }
 async function 화면(options = {}) {
   let now = 0, timerId = 0;
-  const nodes = new Map(), timers = new Map(), images = [], loads = [], decoded = [], warnings = [];
+  const nodes = new Map(), timers = new Map(), images = [], loads = [], decoded = [], warnings = [], edgeReads = [];
   const preference = { matches: !!options.reduce };
   function element() {
     const classes = new Set();
@@ -59,6 +61,13 @@ async function 화면(options = {}) {
   const ctx = vm.createContext({
     document, Image, URLSearchParams, AbortController, innerHeight: 1080,
     라디오표정리듬: require('../bots/오버레이/라디오표정리듬.js'),
+    // 이 VM은 비동기 읽기 계약만 모의한다. RGBA 보정은 라디오가장자리.test.js가 검증한다.
+    라디오가장자리: { 읽기: (url, baseUrl, enabled) => new Promise((resolve, reject) => {
+      edgeReads.push({ url, baseUrl, enabled });
+      const im = new Image();
+      im.onload = () => resolve(im); im.onerror = () => reject(new Error('모의 경계 그림 읽기 실패'));
+      im.src = url;
+    }) },
     location: { search: options.search || '?밤=0' }, performance: { now: () => now },
     console: { warn: s => warnings.push(s), error: s => warnings.push(s) },
     matchMedia: () => preference, requestAnimationFrame() {}, setInterval() {},
@@ -76,18 +85,29 @@ async function 화면(options = {}) {
   async function choose(value) {
     const p = ctx.window.마스코트차림(value); await flush(); tick(150); tick(150); return p;
   }
-  return { ctx, images, loads, decoded, warnings, evalJS, snap, tick, choose, preference, timers };
+  return { ctx, images, loads, decoded, warnings, edgeReads, evalJS, snap, tick, choose, preference, timers };
 }
 const 한복 = { DJ: '까몽', 의상: '한복', 악세: '헤드폰' };
 const 후드 = { DJ: '까몽', 의상: '후드', 악세: '안경' };
 
-test('기본 방송의 기존 까몽 파일은 보존하고 URL DJ는 결이 덮지 않는다', async () => {
+test('기본 방송은 승인된 공통 털 까몽을 사용하고 URL DJ는 결이 덮지 않는다', async () => {
   const h = await 화면();
-  assert.equal(h.snap().DJ, '까몽'); assert.match(h.snap().표시파일, /라디오DJ\/까몽_여름델\+전설의팻말_본체.webp$/);
+  assert.equal(h.snap().DJ, '까몽');
+  assert.match(h.snap().표시파일, /라디오차림\/까몽\/_후보\/여름델\+전설의팻말\/65f92a753bb5416b\/여름델\+전설의팻말_본체.webp$/);
+  assert.equal(new Set(h.edgeReads.map(call => call.url)).size, 8);
+  assert.equal(new Set(h.edgeReads.map(call => call.baseUrl)).size, 1);
+  assert.ok(h.edgeReads.every(call => call.enabled && call.baseUrl.endsWith('여름델+전설의팻말_본체.webp')));
   const m = await 화면({ search: '?DJ=마린&결=전자밤도시&밤=0' });
   assert.equal(m.snap().DJ, '마린');
   m.ctx.window.마스코트반응({ 종류: '결', 결: '시티팝노을휴양지' }); m.tick(2500);
   assert.equal(m.snap().DJ, '마린'); assert.equal(m.snap().결, '시티팝노을휴양지');
+});
+
+test('경계 원본 비교 URL은 같은 까몽 8컷을 보정 비활성으로 읽는다', async () => {
+  const h = await 화면({ search: '?밤=0&경계원본=1' });
+  assert.equal(h.snap().DJ, '까몽');
+  assert.equal(new Set(h.edgeReads.map(call => call.url)).size, 8);
+  assert.ok(h.edgeReads.every(call => call.enabled === false));
 });
 test('선택 8컷을 모두 decode한 뒤 화면 밖에서 원자 교체하고 기존 파일은 그대로 둔다', async () => {
   const h = await 화면();
@@ -118,7 +138,7 @@ test('1+1 초과·다른 캐릭터 항목·미준비 조합을 다른 옷으로 
     await assert.rejects(h.ctx.window.마스코트차림(value));
     assert.equal(h.snap().차림.상태, '기존승인'); assert.equal(h.snap().선택중, false);
   }
-  assert.equal(h.loads.filter(s => s.includes('/라디오차림/')).length, 0);
+  assert.equal(h.loads.filter(선택시험파일).length, 0);
 });
 for (const [name, option] of [['404', 'imageFail'], ['decode 실패', 'decodeFail'], ['틀린 해상도', 'sizeFail']]) {
   test(`한 표정 ${name}이면 현재 차림을 지키고 보류 이미지를 해제한다`, async () => {
@@ -135,7 +155,7 @@ test('누락·외부경로·다른 캐릭터 이미지의 목록을 이미지 �
     const catalogue = 목록(); catalogue.캐릭터.까몽.차림['헤드폰+한복'].표정.놀람 = bad;
     const h = await 화면({ catalogue });
     await assert.rejects(h.ctx.window.마스코트차림(한복), { code: '잘못된파일' });
-    assert.equal(h.loads.filter(s => s.includes('/라디오차림/')).length, 0);
+    assert.equal(h.loads.filter(선택시험파일).length, 0);
   }
 });
 test('느린 이전 선택이 나중에 끝나도 최신 선택을 덮지 않고 캐시는 활성1+보류1로 제한된다', async () => {
@@ -147,7 +167,7 @@ test('느린 이전 선택이 나중에 끝나도 최신 선택을 덮지 않고
   assert.equal((await settled)[0].reason.code, '선택취소'); assert.equal(h.snap().차림.키, '안경+후드');
   assert.equal(h.snap().보류이미지수, 0); assert.equal(slow.src, '');
   for (let i = 0; i < 6; i++) await h.choose(i % 2 ? 후드 : { DJ: '까몽', 의상: '델', 악세: '모자' });
-  assert.equal(h.images.filter(im => im.src.includes('/라디오차림/')).length, 8);
+  assert.equal(h.images.filter(im => 선택시험파일(im.src)).length, 8);
   const requests = h.loads.length; await h.choose(후드); assert.equal(h.loads.length, requests, '현재 세트 재선택은 재로딩하지 않는다');
 });
 test('선택 이동 중 재선택은 이전 결과를 취소하고 빈 이미지 없이 최신 세트만 남긴다', async () => {
@@ -155,7 +175,7 @@ test('선택 이동 중 재선택은 이전 결과를 취소하고 빈 이미지
   const older = h.ctx.window.마스코트차림(한복); const settled = Promise.allSettled([older]); await flush(); h.tick(150);
   await h.choose(후드);
   assert.equal((await settled)[0].reason.code, '선택취소'); assert.equal(h.snap().차림.키, '안경+후드');
-  assert.equal(h.images.filter(im => im.src.includes('/라디오차림/')).length, 8);
+  assert.equal(h.images.filter(im => 선택시험파일(im.src)).length, 8);
 });
 test('고른 착용 세트는 장르와 인사·정답·모든 검수표정 동안 유지되고 몸을 찌그러뜨리지 않는다', async () => {
   const h = await 화면({ search: '?검수=1&밤=0' }); await h.choose(한복);

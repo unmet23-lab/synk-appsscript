@@ -1,0 +1,39 @@
+{
+  "observedAt": "2026-09-09T12:49:49.615Z",
+  "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\털고정\\유튜브수신_경계2.mp4",
+  "sourceSha256": "111d9afcf1e8fecb4b3062a256cbef92d68d3d331599f9e0276cf9c3b316a1b8",
+  "bytes": 7562726,
+  "codec": "aac",
+  "sampleRate": 44100,
+  "channels": 2,
+  "durationSeconds": 90.000544,
+  "packets": {
+    "count": 3876,
+    "firstPtsSeconds": 0,
+    "lastPtsSeconds": 89.977324,
+    "endSeconds": 90.00054399999999,
+    "maxGapSeconds": 0.0000010000000116860974,
+    "maxOverlapSeconds": 0.00000100000000458067,
+    "eventsAbove1_1ms": [],
+    "dtsReversals": []
+  },
+  "decoded": {
+    "count": 3876,
+    "firstPtsSeconds": 0,
+    "lastPtsSeconds": 89.977324,
+    "endSeconds": 90.00054395464852,
+    "maxGapSeconds": 0.000023045351483119703,
+    "maxOverlapSeconds": 0.000022954648528639154,
+    "eventsAbove1_1ms": [],
+    "totalSamples": 3969024
+  },
+  "probeWarnings": [],
+  "decodeWarnings": "",
+  "silenceThresholdDb": -45,
+  "silenceMinimumSeconds": 0.003,
+  "silenceEvents": [],
+  "listeningPerformed": false,
+  "scope": "Complete saved YouTube receiver sample only; not a full radio playlist cycle or a perceptual listening test.",
+  "pass": true,
+  "conclusion": "No packet/frame timing discontinuity above 1.1ms, non-increasing DTS, decoder warning, or silence of at least 3ms below -45dB was detected in this receiver sample."
+}

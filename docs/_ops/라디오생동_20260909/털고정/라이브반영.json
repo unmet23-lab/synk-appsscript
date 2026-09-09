@@ -1,0 +1,71 @@
+{
+  "at": "2026-09-09T12:47:17.574Z",
+  "mode": "--apply",
+  "applied": true,
+  "restarted": true,
+  "htmlSha": "64e3c25efc30375e999be983da7e6295de01108f8b7de0e676f44e32412da983",
+  "backup": "/opt/synk-radio/지면/bots/오버레이/마스코트.html.before-fur-20260909-1114809e0ee3",
+  "files": [
+    {
+      "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_본체.webp",
+      "sha256": "eff5870074874ed22d64fef995ed6ef4acf5f9f10711ea895b7e5ea8be3b9713"
+    },
+    {
+      "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈감음.webp",
+      "sha256": "7dcfe1f5edafcad44a2fa74b90254ecce153bad59ab7e5b2455804290b24dca9"
+    },
+    {
+      "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈웃음.webp",
+      "sha256": "c19871e6eb72a57c9d0a75f8d5d62ef8408a42cb12b81c2ceea10770a408dc2d"
+    },
+    {
+      "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_궁금함.webp",
+      "sha256": "4ceebec6a148a4c99cf8b67a31c831bd7fc1a04d327d79548ede6e55c6c351fc"
+    },
+    {
+      "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_집중.webp",
+      "sha256": "b6fc3deb07db384e3d717089bf34ddddaa2e90e938674b3fe8d2e3685f101239"
+    },
+    {
+      "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_안도.webp",
+      "sha256": "bdf7db3fa592ecfb86c5f5129e78402550d667faf18e9dbb63048d80f440d78e"
+    },
+    {
+      "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_응원.webp",
+      "sha256": "15ac333084ecc1d69686be24e0572f41e5b896305c3f6b54cba76a7a8faf09cd"
+    },
+    {
+      "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_놀람.webp",
+      "sha256": "e95361b7d5ebb7d14591266a5efefa205ec21fce904217270bc8a6386f534590"
+    },
+    {
+      "path": "/opt/synk-radio/지면/bots/오버레이/라디오가장자리-b76f448ab55a.js",
+      "sha256": "b76f448ab55af135a5e2dc652683fc721edfc35ceaad7ae1af4bcac138a25a58"
+    }
+  ],
+  "protectedUnchanged": 16,
+  "before": {
+    "service": {
+      "MainPID": "144575",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "ActiveEnterTimestamp": "Wed 2026-09-09 12:26:49 UTC"
+    },
+    "opened": [
+      "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+      "/opt/synk-radio/무대차례/chuseok-tree-light-20260909-dcc5a8fef2e5.mp4"
+    ]
+  },
+  "after": {
+    "service": {
+      "MainPID": "145581",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "ActiveEnterTimestamp": "Wed 2026-09-09 12:47:06 UTC"
+    },
+    "opened": [
+      "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+      "/opt/synk-radio/무대차례/chuseok-tree-light-20260909-dcc5a8fef2e5.mp4"
+    ]
+  }
+}

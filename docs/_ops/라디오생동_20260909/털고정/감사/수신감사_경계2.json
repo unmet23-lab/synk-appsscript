@@ -1,0 +1,58 @@
+{
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\털고정\\유튜브수신_경계2.mp4",
+  "sha256": "111d9afcf1e8fecb4b3062a256cbef92d68d3d331599f9e0276cf9c3b316a1b8",
+  "reference": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\털고정\\유튜브수신_털고정.mp4",
+  "reference_sha256": "23c3ef568a79bc36921918c807814add85c204cc858bf4fd59138062dcac972a",
+  "receipt": {
+    "started": "2026-09-09T12:47:37.409Z",
+    "finished": "2026-09-09T12:49:14.633Z",
+    "videoId": "eI-5vSy5mjY",
+    "formatId": "232+234",
+    "secondsRequested": 90,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720
+        },
+        {
+          "codec_name": "aac",
+          "sample_rate": "44100"
+        }
+      ],
+      "format": {
+        "duration": "90.000544",
+        "size": "7562726"
+      }
+    },
+    "silence": [],
+    "captureWarnings": "",
+    "source": "YouTube public playback, not local preview"
+  },
+  "sample_times_seconds": [
+    20,
+    50,
+    85
+  ],
+  "pixel_display_scale": "1280x720 source crop shown1:1, no crop resizing",
+  "full_decode_exit_code": 0,
+  "full_decode_errors": "",
+  "visual_findings": [
+    "At received20,50,85seconds the second correction is visible. Compared with the first correction at the same display scale, the lower-belly bright contour is weaker and less like a continuous hard white line.",
+    "The1:1 crops and full1280x720 frame show brown fur tips blending more softly into the pale courtyard. Ear tips, hand shapes, tail, blue clothing, cream ties and sign remain recognizable and intact; no obvious wholesale silhouette erosion, missing tufts or overall blur is visible.",
+    "Warm pale fur remains on the ears, hands and lower belly. In these frames it reads more like light catching fur tips than the first correction's sticker-like rim. This is a qualitative visual judgment, not a claim of physically perfect scene relighting or complete removal of all bright edge pixels.",
+    "The three samples show differing eye openness while the surrounding face fur, clothes and body outline remain visually consistent. These samples do not establish delivery of all eight named expressions.",
+    "The raised soft ground shadow remains present. The mascot still has the intentionally footless, floating appearance; this audit does not interpret that approved design as a compositing failure.",
+    "Further broad edge removal is not recommended from this evidence: the main hard-line issue is reduced and more removal risks thinning the accepted furry silhouette."
+  ],
+  "verdict": "Scoped visual acceptance: second correction improves the bright sticker-like contour without obvious over-trimming; retain natural pale fur. Not a full8-expression or continuous-viewing certification.",
+  "limits": [
+    "Three late received frames inspected, not all eight expressions or continuous human playback.",
+    "Lossy broadcast encoding: decoded pixel equality is neither required nor claimed.",
+    "Natural light-colored fur is not automatically a compositing defect; assess the continuous bright contour separately."
+  ],
+  "source_server_git_modified": false
+}
