@@ -1,0 +1,53 @@
+{
+  "preparedAt": "2026-09-10",
+  "basisHead": "a1d64fb04f8766dbef1cd3607c99577062f30f18",
+  "title": "오늘 밤 제일 환한 사람",
+  "product": "K-LOFI24",
+  "productionBrand": "SYNK PULSE",
+  "channel": "https://www.youtube.com/@synkkorean",
+  "videoSource": "docs/홍보물/마케팅실행_20260909/01-lab-youtube/video.mp4",
+  "videoSourceSha256": "dc49a898dbb3fff7699747a41b12bc12686034dc329f34b615e50443967017dd",
+  "videoOutput": "video.mp4",
+  "videoOutputSha256": "dc49a898dbb3fff7699747a41b12bc12686034dc329f34b615e50443967017dd",
+  "videoEdit": "none; exact byte copy of approved v5 complete listening film",
+  "bytes": 9256869,
+  "durationSeconds": 61.6,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "sampleRate": 48000,
+  "audioChannels": 2,
+  "sourceStageNativeSize": [1280, 720],
+  "credit": "AI 음악 제작 · Suno / 장면·편집 · SYNK PULSE",
+  "mongolianCaptionSource": "docs/홍보물/마케팅실행_20260909/01-lab-youtube/게시문안.txt",
+  "mongolianCaptionOutput": "게시문안_몽골어_기존.txt",
+  "mongolianCaptionOutputSha256": "98fe45d2a597ea868636b401933f2acdfb5d37c9aa2ddb94fe715ac2023bd108",
+  "newWork": ["한국어 게시문안", "감상노트", "대체텍스트", "공통 빌더에 넘긴 신규 표지 원고"],
+  "checks": {
+    "sourceAndOutputHashMatch": true,
+    "decodeFullVideoAndAudio": "pass; ffmpeg -nostdin -v error -xerror -map 0:v:0 -map 0:a:0 -f null",
+    "actualOutputFramesViewedAtSeconds": [0, 30.8, 61.5],
+    "viewedFrameFindings": "시작·중간·끝의 곡명판과 K-LOFI24, 달·구름·한옥·까몽의 의상과 팻말이 유지됨. 세 시점에서 새 잘림·큰 압축 깨짐·가사 추정 자막 없음.",
+    "measuredInputLufs": -15.07,
+    "measuredInputTruePeakDbtp": -3.75,
+    "audioMeasurementOnly": true,
+    "audioFileReNormalized": false,
+    "continuousHumanListening": false,
+    "humanMongolianReview": false,
+    "snsUploadPerformed": false,
+    "liveRadioChanged": false,
+    "gameUsed": false
+  },
+  "evidence": [
+    "../_검토/pulse/시작.png",
+    "../_검토/pulse/중간.png",
+    "../_검토/pulse/끝.png"
+  ],
+  "limits": [
+    "구체 가사·장르·악기·작곡자 의도는 확인하지 않았으며 새로 표기하지 않음",
+    "현재 플랫폼 로그인·업로드 가능 상태·Content ID 결과 확인 안 함",
+    "이번 제공물이 새 음악·새 영상 제작 또는 영상 편집을 뜻하지 않음"
+  ]
+}

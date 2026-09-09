@@ -1,0 +1,52 @@
+[
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\brand-synk.webp",
+    "sha256": "4020da0d130d2a544b54dd2a10e50bafaaa8c848851ade06c20872cc7d0a4c81",
+    "output": "assets\\brand-synk.webp"
+  },
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\brand-lab.webp",
+    "sha256": "6c92afe5ba49d701c0942eed725127e73b86723c72d94f566224c158613d8f65",
+    "output": "assets\\brand-lab.webp"
+  },
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\brand-shift.webp",
+    "sha256": "294b5a309321183a518da010dc31de93160d49dbdec6423a8b07fdfebfab500c",
+    "output": "assets\\brand-shift.webp"
+  },
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\book.webp",
+    "sha256": "7ea277b275b1fcf58fdb7e4a6daa61b8e760bdf0e03192c102ea54d5048f8957",
+    "output": "assets\\book.webp"
+  },
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\notebook.webp",
+    "sha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4",
+    "output": "assets\\notebook.webp"
+  },
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\paper.webp",
+    "sha256": "99b7db5faef4e701674780401aaaec56dd4f99a76410b04a0bdff6b66e14c4b3",
+    "output": "assets\\paper.webp"
+  },
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\classroom.webp",
+    "sha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7",
+    "output": "assets\\classroom.webp"
+  },
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\compass.webp",
+    "sha256": "4cc7f71e95c6f37b89eec0425ab4ba4b2d26516d9380cc4caf6989a37ba43bbd",
+    "output": "assets\\compass.webp"
+  },
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\letter.webp",
+    "sha256": "faa4d4443c175de1a9ceaf3c2a4194c4346844d86750d75b36d7d26d4b0be0c0",
+    "output": "assets\\letter.webp"
+  },
+  {
+    "source": "docs\\홍보물\\마케팅실행_20260909\\assets\\scissors.webp",
+    "sha256": "6eb4bd715fdbbf36e77aedae5799f64c95f4456a1ab9911ebde78a1b0344a3e0",
+    "output": "assets\\scissors.webp"
+  }
+]

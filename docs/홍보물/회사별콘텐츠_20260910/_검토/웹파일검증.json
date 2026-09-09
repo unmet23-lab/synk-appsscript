@@ -1,0 +1,35 @@
+{
+  "at": "2026-09-09T17:25:18.127Z",
+  "html": 17,
+  "localReferences": 151,
+  "downloads": [
+    {
+      "folder": "01-lab",
+      "exact": true,
+      "templateChars": 582
+    },
+    {
+      "folder": "02-shift",
+      "exact": true,
+      "templateChars": 393
+    },
+    {
+      "folder": "04-synk",
+      "exact": true,
+      "templateChars": 47
+    }
+  ],
+  "video": {
+    "duration": 61.6,
+    "width": 1920,
+    "height": 1080,
+    "controls": true,
+    "autoplay": false
+  },
+  "cards": 18,
+  "issues": [],
+  "screens": [
+    "웹-1440.png",
+    "웹-390.png"
+  ]
+}
