@@ -1,0 +1,5 @@
+# 보존 원본의 내용 지문에는 줄바꿈도 포함된다.
+baseline/** -text
+edition.css -text
+lab/material.md -text
+shift/material.md -text
