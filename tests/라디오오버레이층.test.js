@@ -57,12 +57,34 @@ test('차림에 적힌 옷 조각이 실제로 있다', () => {
   const 줄들 = [...표.matchAll(/^\s{2}([^\s:]+)\s*:\s*\{\s*DJ:\s*'([^']+)'\s*,\s*옷:\s*\[([^\]]*)\]/gm)];
   assert.ok(줄들.length > 0, '차림 줄을 하나도 못 읽었다 — 이 자가 헛돌고 있다');
   for (const [, 결, DJ, 옷글] of 줄들) {
-    const 옷들 = 옷글.match(/'([^']+)'/g).map((s) => s.slice(1, -1));
+    const 옷들 = (옷글.match(/'([^']+)'/g) || []).map((s) => s.slice(1, -1));
     assert.ok(옷들.length <= 3, `${결}: 층은 셋뿐이다(의상 1 + 악세 2 · 유호 확정 09-06)`);
     for (const 옷 of 옷들) {
       const p = path.join(옷방, `옷_${DJ}_${옷}.webp`);
       assert.ok(fs.existsSync(p), `${결} 의 옷 조각이 없다: ${p}`);
     }
+  }
+});
+
+test('라디오 전용 까몽 컷이 모두 있고 모든 결에서 통합 의상을 한 번만 쓴다', () => {
+  const 경로 = 마스코트글.match(/까몽:\s*'([^']*라디오DJ\/)'/);
+  assert.ok(경로, '까몽이 라디오 전용 DJ 폴더를 가리키지 않는다');
+  const 컷 = 마스코트글.match(/\n  까몽:\s*\{([\s\S]*?)\n  \},/);
+  assert.ok(컷, '까몽 컷표를 못 읽었다');
+  const 파일들 = [...컷[1].matchAll(/:\s*'([^']+\.webp)'/g)].map((m) => m[1]);
+  assert.ok(파일들.length >= 8, '라디오 까몽 표정 컷이 모자란다');
+  const 컷방 = path.resolve(path.dirname(path.join(루트, 'bots/오버레이/마스코트.html')), 경로[1]);
+  for (const 파일 of new Set(파일들)) {
+    const p = path.join(컷방, 파일);
+    assert.ok(fs.existsSync(p), `라디오 까몽 컷이 없다: ${p}`);
+  }
+
+  const 표 = 마스코트글.match(/const\s+장르차림\s*=\s*\{([\s\S]*?)\n\};/)[1];
+  const 줄들 = [...표.matchAll(/^\s{2}([^\s:]+)\s*:\s*\{\s*DJ:\s*'([^']+)'\s*,\s*옷:\s*\[([^\]]*)\]/gm)];
+  assert.ok(줄들.length > 0, '장르차림을 못 읽었다');
+  for (const [, 결, DJ, 옷글] of 줄들) {
+    assert.strictEqual(DJ, '까몽', `${결}: 확정한 라디오 DJ 까몽이 아니다`);
+    assert.strictEqual(옷글.trim(), '', `${결}: 통합 의상 위에 별도 옷을 다시 얹고 있다`);
   }
 });
 
