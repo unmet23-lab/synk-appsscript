@@ -1,0 +1,23 @@
+<!doctype html><html lang="mn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Өөрийн өгүүлбэрээ бичье</title><link rel="stylesheet" href="../edition.css"></head><body class="account-collection execution"><article class="editorial"><div class="brand-lock" role="img" aria-label="SYNK LAB"><img class="brand-synk" src="../assets/brand-synk.webp" alt=""><img class="division-stitch-logo" data-division="LAB" src="../assets/brand-lab.webp" alt=""></div><a href="index.html">Буцах</a><h1>Өөрийн өгүүлбэрээ бичье</h1><p>Жишээг хараад өөрийн өгүүлбэрээ бичээрэй. Энэ хуудас бичсэн зүйлийг серверт илгээхгүй. Хуудсыг хаахаасаа өмнө TXT файлаа аваарай.</p><a class="download" href="material.html" target="_blank" rel="noopener">Жишээ ба дасгал</a><label class="work-label" for="work">Өөрийн өгүүлбэрээ бичье</label><textarea class="work-input" id="work" spellcheck="false">Миний хийх зүйл / 내가 할 일: 사진 보내기
+Хүсэлт / 들은 요청: 내일까지 사진을 보내 주세요.
+Өдөр / 들은 날짜:
+Асуулт / 내 질문: ___ 몇 시까지 보내면 돼요?
+Хариу / 상대가 말한 시간:
+Батлах / 내 말로 확인: 네, ___까지 보낼게요.
+
+Шинэ нөхцөл / 바뀐 조건: Цаг өөрчлөгдлөө. / 시간이 달라졌어요.
+Шинээр хэлсэн цаг / 새로 들은 시간:
+Өөрчилсөн өгүүлбэр / 바꾼 문장:
+Яагаад өөрчилсөн бэ? / 바꾼 이유:
+
+Өөр нөхцөлд / 다른 상황 적용
+Явуулах зүйл / 이번에 보낼 것:
+Өдөр / 날짜:
+Асуулт / 시간 질문:
+Сонссон хариу / 들은 답:
+Батлах өгүүлбэр / 확인 문장:
+
+Өөрөө шалгах / 내 확인
+Өдөр, цаг хоорондоо таарч байна уу? / 질문의 날짜와 답의 시간이 이어지나요?
+Шинэ цагийг өөрийн өгүүлбэртээ оруулсан уу? / 상대가 바꾼 시간을 내 확인 문장에도 넣었나요?
+</textarea><div class="material-actions"><button type="button" class="download" id="save">TXT файл авах</button></div><p class="work-status" role="status" id="status"></p></article><script>document.getElementById('save').addEventListener('click',()=>{const value=document.getElementById('work').value;const url=URL.createObjectURL(new Blob([value],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='SYNK-LAB-practice.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);document.getElementById('status').textContent="TXT файл бэлэн боллоо. Татсан файлуудаа шалгаарай."})</script></body></html>

@@ -1,0 +1,141 @@
+{
+  "baselineCommit": "95d463fdc6c16000d9c4e718554e9b4dce4067e1",
+  "observedAt": "2026-09-09T19:31:53.426Z",
+  "origins": [
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/content-b.json",
+      "snapshot": "baseline/content-b.json",
+      "sha256": "477ca8be4ad68eb76109280c42ffa948106be2fec5a571fef29dda601d9365c8"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/edition.css",
+      "snapshot": "edition.css",
+      "sha256": "ac04a35c5e4cfad52884e7a1c421545387e0956569f809547399fa80bb7ae4ca"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/assets/brand-synk.webp",
+      "snapshot": "assets/brand-synk.webp",
+      "sha256": "4020da0d130d2a544b54dd2a10e50bafaaa8c848851ade06c20872cc7d0a4c81"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/assets/brand-lab.webp",
+      "snapshot": "assets/brand-lab.webp",
+      "sha256": "6c92afe5ba49d701c0942eed725127e73b86723c72d94f566224c158613d8f65"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/assets/brand-shift.webp",
+      "snapshot": "assets/brand-shift.webp",
+      "sha256": "294b5a309321183a518da010dc31de93160d49dbdec6423a8b07fdfebfab500c"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/assets/notebook.webp",
+      "snapshot": "assets/notebook.webp",
+      "sha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/assets/compass.webp",
+      "snapshot": "assets/compass.webp",
+      "sha256": "4cc7f71e95c6f37b89eec0425ab4ba4b2d26516d9380cc4caf6989a37ba43bbd"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/assets/letter.webp",
+      "snapshot": "assets/letter.webp",
+      "sha256": "faa4d4443c175de1a9ceaf3c2a4194c4346844d86750d75b36d7d26d4b0be0c0"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/assets/book.webp",
+      "snapshot": "assets/book.webp",
+      "sha256": "7ea277b275b1fcf58fdb7e4a6daa61b8e760bdf0e03192c102ea54d5048f8957"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/assets/scissors.webp",
+      "snapshot": "assets/scissors.webp",
+      "sha256": "6eb4bd715fdbbf36e77aedae5799f64c95f4456a1ab9911ebde78a1b0344a3e0"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/01-lab/upload-01.jpg",
+      "snapshot": "baseline/lab/upload-01.jpg",
+      "sha256": "f07a16a2d2aed29907d1fa196c23952452a468e0b6f9ebc4bd25cceae3f54724"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/01-lab/upload-02.jpg",
+      "snapshot": "baseline/lab/upload-02.jpg",
+      "sha256": "5eb75bb0fa4a3a0c95d3ab49893b711e69e65c3f2854ee3139941c986caea769"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/01-lab/upload-03.jpg",
+      "snapshot": "baseline/lab/upload-03.jpg",
+      "sha256": "e33966acfb852c25e3790440b125dc5e54a5f06d1d80afd2aa65fb1a269db617"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/01-lab/upload-04.jpg",
+      "snapshot": "baseline/lab/upload-04.jpg",
+      "sha256": "c967883207fc65190875cce2c36e8112ac0f0b353c75ac5bf33a587f7fe2b704"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/01-lab/upload-05.jpg",
+      "snapshot": "baseline/lab/upload-05.jpg",
+      "sha256": "9a9adc16084d97b8f9de58d586a3ac95cabde0c7e4e1387f1efff7ad0bfdb6e6"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/01-lab/upload-06.jpg",
+      "snapshot": "baseline/lab/upload-06.jpg",
+      "sha256": "ebd9f20f89917c11acc02d1793b8fc71c7702773f579a0b1f79246a8920a37d9"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/01-lab/게시문안.txt",
+      "snapshot": "baseline/lab/게시문안.txt",
+      "sha256": "bae74218286cfc5f2fa59a061a3064d3dde2100e19a187c09f364c05d4dd5a56"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/01-lab/material.md",
+      "snapshot": "baseline/lab/material.md",
+      "sha256": "d21a73f71eabe7c824b7b2d6b8588688940ca4c05a3ce0c3a98deceb74924f42"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/01-lab/게시문안_한국어뜻.txt",
+      "snapshot": "baseline/lab/게시문안_한국어뜻.txt",
+      "sha256": "723711470f264d52a6fff89e5067d6e1902302a8774ca41ac803878ae8a81f5d"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/02-shift/upload-01.jpg",
+      "snapshot": "baseline/shift/upload-01.jpg",
+      "sha256": "ad2241f25c7d2d6dbc4b75e8d5b3f7cf3c8556c778344bf91fe6389c1f7099f6"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/02-shift/upload-02.jpg",
+      "snapshot": "baseline/shift/upload-02.jpg",
+      "sha256": "4dac41bcb134a49fd6a636411bb2a42a8c6247c1525c163d22e8cc324c57277c"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/02-shift/upload-03.jpg",
+      "snapshot": "baseline/shift/upload-03.jpg",
+      "sha256": "7cc0113861f1e1c91b49ae4e341bac210fe8e1225efaaa2ea7d1f54b27c711f9"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/02-shift/upload-04.jpg",
+      "snapshot": "baseline/shift/upload-04.jpg",
+      "sha256": "aab840b6567bc23a2243615c1a07973fd3fe33123800126ca4be3fa433b17c1e"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/02-shift/upload-05.jpg",
+      "snapshot": "baseline/shift/upload-05.jpg",
+      "sha256": "9ce005a9dba5b0544e1196b313f8134a4a7e27b50590b450d0f575f1a4aa54dc"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/02-shift/upload-06.jpg",
+      "snapshot": "baseline/shift/upload-06.jpg",
+      "sha256": "386d1c512f353e13ae70afef056dee51a4a8e47e0540812979702e8519179e72"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/02-shift/게시문안.txt",
+      "snapshot": "baseline/shift/게시문안.txt",
+      "sha256": "0d295f363e3a93cd3a38decdf81bd2583230f8e9678cb14b2bbfaea5dbdc9035"
+    },
+    {
+      "source": "docs/홍보물/회사별콘텐츠_20260910/02-shift/material.md",
+      "snapshot": "baseline/shift/material.md",
+      "sha256": "27a86cc03a2b0efe1f31641edc26c8c83532d06a60c9032115b6bbefbf93327d"
+    }
+  ]
+}

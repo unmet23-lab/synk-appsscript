@@ -1,0 +1,29 @@
+{
+  "changedCards": 4,
+  "results": [
+    {
+      "file": "lab/upload-01.jpg",
+      "sha256": "fcd52107ade8079c5e5316ecdb9981c2c1fc7ec1db769f36e28c5b11ede5ce70",
+      "bottom": 840.828125,
+      "overflow": false
+    },
+    {
+      "file": "lab/upload-06.jpg",
+      "sha256": "3e0eccaf48e0ec2f8743a825ae1df73f1b43f09421b767b3ec7a15b90071d045",
+      "bottom": 828.546875,
+      "overflow": false
+    },
+    {
+      "file": "shift/upload-01.jpg",
+      "sha256": "42364cdc9851cfae27fbf50e460d5956477e506b7a5c8ade44084aa2553d410b",
+      "bottom": 763.328125,
+      "overflow": false
+    },
+    {
+      "file": "shift/upload-06.jpg",
+      "sha256": "7610ed8aea4161311fa1a882546ecf28059c09d06e4704dc7f15323bdd80406d",
+      "bottom": 841.484375,
+      "overflow": false
+    }
+  ]
+}

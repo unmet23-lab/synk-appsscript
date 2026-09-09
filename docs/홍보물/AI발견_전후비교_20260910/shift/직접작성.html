@@ -1,0 +1,33 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>내 조건으로 작성</title><link rel="stylesheet" href="../edition.css"></head><body class="account-collection execution"><article class="editorial"><div class="brand-lock" role="img" aria-label="SYNK SHIFT"><img class="brand-synk" src="../assets/brand-synk.webp" alt=""><img class="division-stitch-logo" data-division="SHIFT" src="../assets/brand-shift.webp" alt=""></div><a href="index.html">글과 카드로</a><h1>내 조건으로 작성</h1><p>예시와 확인 기준을 보고 내 조건으로 고쳐 쓰세요. 입력은 서버로 보내거나 자동 저장하지 않습니다. 창을 닫기 전에 TXT 파일로 받으세요.</p><a class="download" href="material.html" target="_blank" rel="noopener">완성 예시와 실습</a><label class="work-label" for="work">내 조건으로 작성</label><textarea class="work-input" id="work" spellcheck="false">처음 고객 요청:
+처음 제안:
+
+바뀐 고객 요청:
+바뀐 조건:
+달라질 결과물:
+그대로인 범위:
+새로 확인할 것:
+
+내가 먼저 물을 질문 1:
+내가 먼저 물을 질문 2:
+내가 먼저 물을 질문 3:
+고객 답변에서 실제 확인한 것:
+추가 확인할 것(배포일 / 파일 전달일 / 권한 등):
+
+수정 제안:
+수정한 부분:
+수정한 이유:
+실제 사용 장면에서 확인할 것:
+
+다른 상황 적용 — 행사 슬라이드를 혼자 읽는 자료로도 요청받았어요.
+새 독자와 읽는 상황:
+먼저 확인할 세 질문:
+달라질 결과물:
+그대로인 범위:
+수정 제안 두 문장:
+수정 이유 한 문장:
+
+내 확인:
+처음 요청과 바뀐 요청을 둘 다 남겼나요?
+고객의 답변에서 확인한 내용으로 제안을 바꿨나요?
+새 범위·일정·비용 중 합의할 것을 남겼나요?
+</textarea><div class="material-actions"><button type="button" class="download" id="save">내 글 TXT 받기</button></div><p class="work-status" role="status" id="status"></p></article><script>document.getElementById('save').addEventListener('click',()=>{const value=document.getElementById('work').value;const url=URL.createObjectURL(new Blob([value],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='SYNK-SHIFT-practice.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);document.getElementById('status').textContent="TXT 파일을 만들었습니다. 다운로드 폴더에서 확인하세요."})</script></body></html>
