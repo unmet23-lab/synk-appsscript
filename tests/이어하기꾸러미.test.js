@@ -28,7 +28,7 @@ test('핵심 자료 복사는 링크를 연결하고 재실행해도 중복을 �
   const row = { brand: 'SYNK', source: 'docs/a.md', target: '정본/a.md', bytes: 10 };
   assert.equal(copy(source, destination, [row]).written, 1);
   const result = fs.readFileSync(path.join(destination, 'SYNK/정본/a.md'), 'utf8');
-  assert.ok(result.includes('/blob/master/docs/' + encodeURIComponent('다른문서.md') + '#기준'));
+  assert.ok(result.includes('[원문](<' + path.join(source, 'docs/다른문서.md').replace(/\\/g, '/') + '#기준>)'));
   assert.ok(result.includes('[외부](https://example.com)'));
   assert.equal(copy(source, destination, [row]).unchanged, 1);
   assert.throws(() => within(source, '../escape.md'));

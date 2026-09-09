@@ -14,12 +14,12 @@ const 금지인가 = p => forbidden.some(re => re.test(p));
 const 문서인가 = p => p.endsWith('.md') || p.startsWith('docs/_ops/') ||
   (p.startsWith('docs/') && p.endsWith('.json'));
 const docs = {
-  SYNK: ['DESIGN.md', 'docs/SYNK_철학.md', 'docs/제품방향.md',
+  SYNK: ['DESIGN.md', 'docs/AI_운영원칙.md', 'docs/SYNK_철학.md', 'docs/제품방향.md',
     'docs/엔진7종_상향설계_v3.md', 'docs/명품_기준_v1.md',
     'docs/명품브랜딩_v2.md', 'docs/명품브랜딩_조사_2026-09-09.md',
-    'docs/명품마케팅_회사별_v1.md', 'docs/명품눈금_v1.md',
+    'docs/마케팅_정본.md', 'docs/명품마케팅_회사별_v1.md', 'docs/명품눈금_v1.md',
     'docs/디자인_컨셉_정본_v1.md', 'docs/디자인_토큰.json',
-    'docs/브랜드_폰트_정본.md', 'docs/양모공방_요소사전.md'],
+    'docs/브랜드_폰트_정본.md', 'docs/양모공방_요소사전.md', 'docs/캐릭터/의상제작_정본.md'],
   'SYNK LAB': ['docs/커리큘럼_정본_v1.md', 'docs/반편성_정본_v2.md',
     'docs/강사_교수법_매뉴얼_v1.md', 'docs/자주묻는질문_정본.md'],
   'SYNK SHIFT': ['docs/SHIFT/콘텐츠_배분_v1.md', 'docs/SHIFT/영상_공개선.md'],
@@ -81,15 +81,24 @@ const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 function payload(root, row) {
   const data = fs.readFileSync(within(root, row.source));
   if (!row.source.endsWith('.md')) return data;
-  // 복사본의 상대 링크가 끊기지 않게 원본 저장소의 실제 문서 주소로 연결한다.
-  return Buffer.from(data.toString('utf8').replace(/(\]\()([^\s)]+)(\))/g, (all, left, url, right) => {
+  // 사본을 만든 바로 그 작업 파일로 연결한다. 원격 master는 아직 옛 판이거나 파일이 없을 수 있다.
+  const localPath = source => path.resolve(root, source).replace(/\\/g, '/');
+  const body = data.toString('utf8').replace(/(\]\()([^\s)]+)(\))/g, (all, left, url, right) => {
     if (/^(?:[a-z]+:|#|\/\/)/i.test(url)) return all;
     const [file, anchor] = url.split('#');
     const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(row.source), decodeURIComponent(file)));
     if (resolved.startsWith('../')) return all;
-    return left + 'https://github.com/unmet23-lab/synk-appsscript/blob/master/' +
-      resolved.split('/').map(encodeURIComponent).join('/') + (anchor ? '#' + anchor : '') + right;
-  }), 'utf8');
+    return left + '<' + localPath(resolved) + (anchor ? '#' + anchor : '') + '>' + right;
+  });
+  const original = 'https://github.com/unmet23-lab/synk-appsscript/blob/master/' +
+    row.source.split('/').map(encodeURIComponent).join('/');
+  const policy = localPath('docs/AI_운영원칙.md');
+  const banner = `> **공유 사본** · [이 컴퓨터의 작업 원문](<${localPath(row.source)}>)\n` +
+    `> 실제 원본 경로: \`${localPath(row.source)}\`\n` +
+    `> 원본 파일 수정 시각: ${fs.statSync(within(root, row.source)).mtime.toISOString()} · SHA256 \`${hash(data)}\`\n` +
+    `> 작업 전에 [공통 운영 원칙](<${policy}>)과 관련 정본·최근 변경을 실제로 다시 읽는다. 이 파일은 실시간으로 갱신되지 않는다.\n` +
+    `> 보조: [GitHub 게시본](${original})은 현재 작업 파일과의 일치를 확인하지 않았으며, 아직 없거나 이전 내용일 수 있다. 다른 기기에서 로컬 원본에 접근하지 못하면 최신 여부는 미확인이다.\n\n`;
+  return Buffer.from(banner + body, 'utf8');
 }
 function copy(root, destination, rows) {
   // 사용자 파일은 자동 삭제하지 않는다. 선택된 파일만 검증해서 갱신한다.

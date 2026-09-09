@@ -353,3 +353,214 @@ for (const filterType of ['clean', 'process']) {
     assert.equal(fs.existsSync(marker), true, 'fixture did not exercise Git filter behavior');
   });
 }
+
+test('repeated --repo preserves one-repository compatibility and selects only matching repositories', async () => {
+  const second = path.join(temporary, 'second-canonical');
+  const linked = path.join(temporary, 'second-linked');
+  init(second);
+  git(second, ['worktree', 'add', '--detach', linked, 'HEAD']);
+  assert.deepEqual(parseArgs(['--repo', repo, '--repo', second]).repo, [repo, second]);
+  for (const cwd of [repo, second, linked]) {
+    const report = await collect({ cwd, repo: [repo, second] });
+    assert.equal(report.status, 'observed');
+    assert.equal(report.canonicalReference, cwd === repo ? 'configured-repo-1' : 'configured-repo-2');
+  }
+  assert.equal((await collect({ cwd: foreign, repo: [repo, second] })).status, 'out-of-scope');
+  for (const [flag, input] of [
+    ['--hook', { cwd: linked, hook_event_name: 'UserPromptSubmit' }],
+    ['--antigravity-hook', { workspacePaths: [foreign, linked], invocationNum: 0 }],
+  ]) {
+    const result = cli([flag, '--repo', repo, '--repo', second], JSON.stringify(input));
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /configured-repo-2/);
+    assert.ok(!result.stdout.includes(second));
+  }
+});
+
+test('canonical uncommitted artifacts, equal-count rewrites, new files and deletions change the signal', async () => {
+  const canonical = path.join(temporary, 'artifact-canonical');
+  const downstream = path.join(temporary, 'artifact-downstream');
+  init(canonical);
+  file(canonical, POLICY, 'same policy');
+  file(canonical, 'docs/product.md', 'version one');
+  commit(canonical);
+  git(canonical, ['worktree', 'add', '--detach', downstream, 'HEAD']);
+  file(canonical, 'docs/product.md', 'version two');
+  const first = await collect({ cwd: downstream, repo: canonical });
+  assert.equal(first.status, 'observed');
+  assert.equal(first.behind, 0);
+  assert.equal(first.working.current.trackedDirty, 0);
+  assert.equal(first.working.canonical.trackedDirty, 1);
+  assert.equal(first.policy.current.sha256, first.policy.canonical.sha256);
+  file(canonical, 'docs/product.md', 'version six'); // Same file count and same byte length.
+  fs.utimesSync(path.join(canonical, 'docs/product.md'), new Date(), new Date(Date.now() + 2000));
+  const second = await collect({ cwd: downstream, repo: canonical });
+  assert.equal(second.working.canonical.trackedDirty, 1);
+  assert.notEqual(first.working.canonical.fingerprint.sha256, second.working.canonical.fingerprint.sha256);
+  file(canonical, 'docs/new-material.md', SECRET);
+  const third = await collect({ cwd: downstream, repo: canonical });
+  assert.equal(third.working.canonical.untracked, 1);
+  assert.notEqual(second.working.canonical.fingerprint.sha256, third.working.canonical.fingerprint.sha256);
+  file(canonical, 'docs/new-material.md', 'replacement');
+  const rewritten = await collect({ cwd: downstream, repo: canonical });
+  assert.equal(rewritten.working.canonical.untracked, 1);
+  assert.notEqual(third.working.canonical.fingerprint.sha256, rewritten.working.canonical.fingerprint.sha256);
+  fs.unlinkSync(path.join(canonical, 'docs/product.md'));
+  const beforeStatus = git(canonical, ['status', '--porcelain=v1', '-z']);
+  const deleted = await collect({ cwd: downstream, repo: canonical });
+  assert.equal(deleted.working.canonical.trackedDirty, 1);
+  assert.notEqual(rewritten.working.canonical.fingerprint.sha256, deleted.working.canonical.fingerprint.sha256);
+  assert.equal(git(canonical, ['status', '--porcelain=v1', '-z']), beforeStatus);
+  const context = output(deleted, { hookEvent: 'UserPromptSubmit' });
+  assert.match(context, /뒤처짐 0이어도 작업물은 다를 수/);
+  assert.ok(!context.includes('new-material'));
+  assert.ok(!context.includes(SECRET));
+  assert.ok(!context.includes('git show'));
+});
+
+test('manual explicit files compare current bytes with canonical bytes without outputting paths or contents', async () => {
+  const canonical = path.join(temporary, 'compare-canonical');
+  const downstream = path.join(temporary, 'compare-downstream');
+  init(canonical);
+  file(canonical, 'docs/product.md', 'old content');
+  commit(canonical);
+  git(canonical, ['worktree', 'add', '--detach', downstream, 'HEAD']);
+  file(canonical, 'docs/product.md', SECRET);
+  file(canonical, 'docs/new.md', 'new content');
+  fs.unlinkSync(path.join(canonical, 'fixture.txt'));
+  const result = cli(['--repo', canonical, '--files', 'docs/product.md', '--files', 'docs/new.md',
+    '--files', 'fixture.txt', '--files', 'docs/absent.md', '--json'], undefined, downstream);
+  assert.equal(result.status, 0);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.status, 'observed');
+  assert.deepEqual(report.files.map(file => file.comparison), ['different', 'different', 'different', 'both-missing']);
+  assert.equal(report.files[0].canonical.sha256, crypto.createHash('sha256').update(SECRET).digest('hex'));
+  assert.equal(report.files[1].current.state, 'missing');
+  assert.equal(report.files[2].canonical.state, 'missing');
+  assert.ok(!result.stdout.includes(SECRET));
+  assert.ok(!result.stdout.includes('docs/product.md'));
+  const same = await collect({ cwd: canonical, repo: canonical, files: ['docs/product.md'] });
+  assert.equal(same.files[0].comparison, 'same');
+  const automatic = output(report, { hookEvent: 'UserPromptSubmit' });
+  assert.ok(!automatic.includes(report.files[0].canonical.sha256));
+  assert.throws(() => parseArgs(['--hook', '--files', 'docs/product.md']));
+  assert.throws(() => parseArgs(['--antigravity-hook', '--files', 'docs/product.md']));
+});
+
+test('explicit file comparison rejects traversal, secrets, ignored files, directory links and oversized files', async () => {
+  const secured = path.join(temporary, 'explicit-files');
+  const outside = path.join(temporary, 'outside-files');
+  init(secured);
+  fs.mkdirSync(outside);
+  file(outside, 'external.md', SECRET);
+  file(secured, '.env', SECRET);
+  file(secured, 'credentials.json', SECRET);
+  file(secured, 'docs/ignored.md', SECRET);
+  file(secured, '.gitignore', 'docs/ignored.md\n');
+  fs.symlinkSync(outside, path.join(secured, 'linked'), process.platform === 'win32' ? 'junction' : 'dir');
+  file(secured, 'docs/large.md', '');
+  fs.truncateSync(path.join(secured, 'docs/large.md'), 64 * 1024 * 1024 + 1);
+  const files = ['../outside-files/external.md', '.env', 'credentials.json', 'docs/ignored.md',
+    'linked/external.md', path.join(outside, 'external.md'), 'fixture.txt:stream', '.git/index', 'docs/large.md'];
+  const report = await collect({ cwd: secured, repo: secured, files });
+  assert.equal(report.status, 'observed');
+  assert.deepEqual(report.files.slice(0, -1).map(file => file.current.state), files.slice(0, -1).map(() => 'refused'));
+  assert.equal(report.files.at(-1).current.state, 'incomplete');
+  assert.ok(!JSON.stringify(report).includes(SECRET));
+  assert.ok(!JSON.stringify(report).includes('external.md'));
+  assert.ok(report.files.every(file => !file.current.sha256));
+});
+
+test('metadata file-count limit reports incomplete instead of a misleading complete fingerprint', async () => {
+  const report = await collect({ cwd: repo, repo, run(command, args, options, callback) {
+    if (args.includes('status')) {
+      callback(null, Array.from({ length: 2049 }, (_, i) => '?? many/file-' + i + '.md\0').join(''));
+    } else require('node:child_process').execFile(command, args, options, callback);
+  } });
+  assert.equal(report.status, 'observed');
+  assert.equal(report.working.current.state, 'incomplete');
+  assert.equal(report.working.current.untracked, 2049);
+  assert.equal(report.working.current.fingerprint.state, 'incomplete');
+  assert.ok(!report.working.current.fingerprint.sha256);
+  assert.match(output(report), /incomplete/);
+});
+
+test('external linked-worktree timeout emits only neutral unavailable context and remains bounded', async () => {
+  const started = performance.now();
+  const report = await collect({ cwd: old, repo, timeoutMs: 1 });
+  assert.equal(report.status, 'unavailable');
+  assert.equal(report.scopeVerified, false);
+  assert.ok(performance.now() - started < 500);
+  const context = output(report, { hookEvent: 'SessionStart' });
+  assert.match(context, /작업 범위를 확인하지 못했습니다/);
+  assert.ok(!context.includes('AI_운영원칙'));
+  assert.ok(!context.includes('SYNK'));
+  assert.ok(!context.includes(SECRET));
+  assert.ok(!context.includes('HEAD'));
+});
+
+test('canonical commits on a separate branch are visible even when both worktrees match the master baseline', async () => {
+  const canonical = path.join(temporary, 'committed-canonical');
+  const downstream = path.join(temporary, 'committed-downstream');
+  init(canonical);
+  file(canonical, POLICY, 'unchanged policy');
+  file(canonical, 'docs/product.md', 'v1');
+  commit(canonical);
+  git(canonical, ['worktree', 'add', '--detach', downstream, 'HEAD']);
+  git(canonical, ['checkout', '-b', 'ongoing-work']);
+  file(canonical, 'docs/product.md', 'v2');
+  commit(canonical);
+  const report = await collect({ cwd: downstream, repo: canonical });
+  assert.equal(report.status, 'observed');
+  assert.deepEqual([report.ahead, report.behind], [0, 0]);
+  assert.equal(report.baseline.source, 'master');
+  assert.equal(report.working.current.trackedDirty, 0);
+  assert.equal(report.working.canonical.trackedDirty, 0);
+  assert.equal(report.policy.current.sha256, report.policy.canonical.sha256);
+  assert.notEqual(report.head, report.canonicalHead);
+  const context = output(report, { hookEvent: 'UserPromptSubmit' });
+  assert.match(context, /정본 작업본과 커밋 다름/);
+  assert.match(context, /기준 가지와 별도 근거/);
+  assert.ok(context.includes(report.canonicalHead.slice(0, 12)));
+});
+
+test('explicit binary deliverables including PNG and PDF above 2 MiB compare by bounded content hashes', async () => {
+  const canonical = path.join(temporary, 'media-canonical');
+  const downstream = path.join(temporary, 'media-downstream');
+  init(canonical);
+  const bytes = Buffer.alloc(2 * 1024 * 1024 + 31, 0xa5);
+  for (const name of ['asset.png', 'asset.pdf']) file(canonical, name, bytes);
+  for (const name of ['asset.docx', 'asset.pptx', 'asset.xlsx', 'asset.wav', 'asset.mp4']) file(canonical, name, Buffer.from([0, 1, 2, 255]));
+  commit(canonical);
+  git(canonical, ['worktree', 'add', '--detach', downstream, 'HEAD']);
+  const names = ['asset.png', 'asset.pdf', 'asset.docx', 'asset.pptx', 'asset.xlsx', 'asset.wav', 'asset.mp4'];
+  const same = await collect({ cwd: downstream, repo: canonical, files: names });
+  assert.equal(same.status, 'observed');
+  assert.deepEqual(same.files.map(file => file.comparison), names.map(() => 'same'));
+  assert.equal(same.files[0].canonical.sha256, crypto.createHash('sha256').update(bytes).digest('hex'));
+  bytes[100] = 0x5a;
+  for (const name of ['asset.png', 'asset.pdf']) file(canonical, name, bytes);
+  const changed = await collect({ cwd: downstream, repo: canonical, files: names.slice(0, 2) });
+  assert.deepEqual(changed.files.map(file => file.comparison), ['different', 'different']);
+  assert.equal(changed.files[1].canonical.sha256, crypto.createHash('sha256').update(bytes).digest('hex'));
+  assert.ok(!JSON.stringify(changed).includes('asset.png'));
+});
+
+test('manual file-comparison deadline returns incomplete without publishing a partial hash', async () => {
+  const report = await collect({ cwd: repo, repo, files: ['fixture.txt'], run(command, args, options, callback) {
+    if (args.includes('check-ignore')) {
+      // Consume the detail budget but leave the final consistency-check reserve available.
+      setTimeout(() => callback(null, ''), Math.max(1, options.timeout - 300));
+    } else if (args.includes('HEAD^{commit}')) {
+      callback(null, baseHead + '\n');
+    } else if (args.includes('for-each-ref')) {
+      callback(null, 'refs/heads/master ' + baseHead + ' commit\n');
+    } else if (args.includes('rev-list')) {
+      callback(null, '0\t0\n');
+    } else require('node:child_process').execFile(command, args, options, callback);
+  } });
+  assert.equal(report.status, 'observed');
+  assert.equal(report.files[0].comparison, 'unavailable');
+  assert.equal(report.files[0].current.state, 'incomplete');
+  assert.ok(!report.files[0].current.sha256);
+});

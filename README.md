@@ -28,9 +28,11 @@
 ## 확인하고 작업하기
 
 ```text
-node tools/session-freshness.js --json    # 현재 작업 사본과 로컬 기준 확인
+node tools/session-freshness.js --repo C:/Users/q1212/Documents/SYNK-appsscript --repo C:/Users/q1212/Documents/SYNK-talk --json
 node --test tests/<관련 파일>.test.js     # 바꾼 기능의 관련 시험
 ```
+
+명령은 현재 작업 폴더를 검사합니다. 다른 기계에서는 두 기준 작업본의 실제 경로로 바꿉니다. 뒤처짐 0도 미커밋 원본과 내용이 다를 수 있습니다. 이번 일의 원문·자산을 실제로 읽고 필요하면 `--files docs/AI_운영원칙.md`처럼 관련 파일을 대조합니다. 자세한 후속 작업 방식은 [공통 원칙의 최신 상태 절](docs/AI_운영원칙.md#세션-사이-최신-상태)을 따릅니다.
 
 독립 작업은 기본 하네스의 병렬 기능을 쓰고, 자기 변경만 커밋합니다. 커밋·원격 반영·실제 배포는 서로 다른 단계입니다. 배포가 요청 범위에 있을 때 배포 스킬로 검증합니다.
 
