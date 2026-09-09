@@ -1,0 +1,122 @@
+{
+  "checkedAt": "2026-09-09T22:37:36.411Z",
+  "scope": "SHIFT 실제 회사 이야기·AI 작업 방향 반영",
+  "textChecks": {
+    "newLocalLinks": 54,
+    "missing": [],
+    "diffCheckExit": 0
+  },
+  "renderChecks": [
+    {
+      "file": "docs/SYNK_철학_요약.html",
+      "width": 1440,
+      "bodyWidth": 1440,
+      "missingImages": []
+    },
+    {
+      "file": "docs/SYNK_철학_요약.html",
+      "width": 390,
+      "bodyWidth": 390,
+      "missingImages": []
+    },
+    {
+      "file": "docs/홍보물/회사별콘텐츠_20260910/회사별_마케팅보고.html",
+      "width": 1440,
+      "bodyWidth": 1440,
+      "missingImages": []
+    },
+    {
+      "file": "docs/홍보물/회사별콘텐츠_20260910/회사별_마케팅보고.html",
+      "width": 390,
+      "bodyWidth": 390,
+      "missingImages": []
+    }
+  ],
+  "sources": [
+    {
+      "file": "docs/마케팅/SHIFT.md",
+      "sha256": "3638e0b076bed52d22cb9d35b54cc6fee0083bb99bb0746c4a3c59e567984c0a"
+    },
+    {
+      "file": "docs/마케팅/SHIFT_공개수업.md",
+      "sha256": "98ee9d3f389da92a10faddbb8e1c2567fd4cf56d3cb8cf5894f445b704995878"
+    },
+    {
+      "file": "docs/마케팅/채널과_발행.md",
+      "sha256": "56db4d506708788e13e52d56c26f0745bf97ba885ac0140bae92b7950f408b66"
+    },
+    {
+      "file": "docs/마케팅/제작_인수기준.md",
+      "sha256": "79530c031b361430c7854ccbde58962675da78a3e05cb1399c0a04fe09be9b4f"
+    },
+    {
+      "file": "docs/마케팅/근거와_품질판단.md",
+      "sha256": "e8f56c3d32034f0f7cc36861fde0c62eefdd53c0cf2c17fb71ef93b8384f59f3"
+    },
+    {
+      "file": "docs/마케팅/약속과_실행.md",
+      "sha256": "e5732d7da3a874b46b7bf92db74c6d41e0140dd526a7e4a1b0ca25466c0ebe71"
+    },
+    {
+      "file": "docs/마케팅_정본.md",
+      "sha256": "ae1f3c950a9a1215a58f7497380b26f903123504ca8b33408e4345eb7959ecbd"
+    },
+    {
+      "file": "docs/SYNK_철학.md",
+      "sha256": "56239c5376bd87f6d6750cbf2526ba33cbbfb4352e010fbd1171f46d2839517e"
+    },
+    {
+      "file": "docs/SYNK_철학_요약.html",
+      "sha256": "c923e9420782af92661e299ff8c921766e06ad2eae9454ccf639855d70ee4a28"
+    },
+    {
+      "file": "docs/제품방향.md",
+      "sha256": "4b93fd0c901c7e5c61ecbcb3fca2a5c2eb25b9b4eecd51ac093663ba10b4d026"
+    },
+    {
+      "file": "docs/자료안내/SYNK SHIFT.md",
+      "sha256": "9f16c5f2f30b49548c7c2191e3ba8ac0ecf1b10198b0c2b2e1552091aeca9ccd"
+    },
+    {
+      "file": "docs/조직계보_정본_v1.md",
+      "sha256": "6d092442d3555bc3dbc6c034ae2ba93182a3919f0fa3e70db971da6b8e44f53e"
+    },
+    {
+      "file": "docs/SHIFT/설계_v1.md",
+      "sha256": "b4d76972dc39e26583b4775bf5256c26b08eaefbde1425d6187dc20d9f8b2ce7"
+    },
+    {
+      "file": "docs/SHIFT/영상_공개선.md",
+      "sha256": "addb20d687a27962fabd9cc7f77aab2732e2e809b39dc211ceeeefc36814c1a6"
+    },
+    {
+      "file": "docs/홍보물/회사별콘텐츠_20260910/회사별_마케팅보고.md",
+      "sha256": "86f6fd266d74fffeae1aac0bf57d7d2d102a51d02fedb86c5f8a073b635554d7"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/실행적용.md",
+      "sha256": "e64df547e5547b90c8fe6b5ddae95defcfca35b7409e434e622528a94aef2b6a"
+    },
+    {
+      "file": "docs/홍보물/까몽_제작이야기_20260909/기획과사용법.md",
+      "sha256": "ee86984bada1e44e2c28d1d9171900a7c3b5f732afe021e62c906e599968a44f"
+    },
+    {
+      "file": "docs/홍보물/회사별콘텐츠_20260910/회사별_마케팅보고.html",
+      "sha256": "9f5bf941948dca4d8879cfe63f53dcd9ced80f8a53e5231102c93b3cfabdc1a8"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/회사별_첫게시물보고.md",
+      "sha256": "8ba4bca3a545f11ea27ee267fce88116f2fe0528a2e167588b10d6565fba4ac8"
+    },
+    {
+      "file": "docs/AI_운영원칙.md",
+      "sha256": "f16234c9e1dcc5818e7023acf3a9c4b70cdb9e6934ea49abee8cb5ec72d85c7f"
+    }
+  ],
+  "notPerformed": [
+    "새 본편 제작",
+    "SNS 게시·계정 소개 변경",
+    "실제 고객·매출 효과 검증"
+  ]
+}
