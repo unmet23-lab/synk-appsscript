@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 /**
- * 옷 GPT 굽기 — OpenAI gpt-image-2 에게 «몸 한 장 + 옷 한 장»을 함께 준다 (2026-09-08).
+ * 옷 GPT 굽기 — GPT Image 2.5 Sunburst에 «몸 한 장 + 옷 한 장»을 함께 준다.
+ * 09-09 유호 확정: 의상은 2.5만 사용. 2.0이나 다른 모델로 대체하지 않는다.
+ * 제작 정본 = docs/캐릭터/의상제작_정본.md. 아래 09-08 실측은 구버전의 이력이다.
  *
  * ■ 왜 생겼나 (유호 지시 09-08 「다른 거 안 쓰고 GPT 한테 시켜보고 싶다」)
  *   09-07 에 바깥 편집 모델 넷(FLUX Kontext · Qwen 편집기 둘 · FLUX.2)을 재봤는데 넷 다
  *   니들 펠트 재질을 못 지켰다. **GPT 는 그때 안 재봤다.** 09-08 에 ChatGPT 창으로 넉 장을
  *   구워 보니 «두른 것처럼 보이는가»에서 제미나이를 이겼다 — 닿는 자국·접촉 그림자·같은 조명.
  *
- * ■ 실측 (09-08)
+ * ■ 과거 실측 (09-08 · GPT Image 2 결과, 2.5 비용·한계의 근거가 아님)
  *   · 정사각 최대 = **2560×2560**. 3072 는 「화소 예산을 넘는다」로 거절. 정본은 4096 이라 조금 작다.
  *   · 값 = 한 장 **약 63원**($0.0427 · 넣은 것 3,287칸 + 낸 것 548칸). 제미나이 336원의 1/5.
  *   · 🔴 「팔이 만세로 올라간다」는 무늬는 지시에 «팔은 옆으로 뻗은 채로» 한 줄을 더하면 잡힌다.
@@ -17,11 +19,12 @@
  *   C:\Users\q1212\SYNK_보안\openai.txt (git 밖). env OPENAI_KEY_FILE 로 경로를 바꾼다.
  *
  * 쓰기:
+ *   node tools/옷GPT굽기.js --설정                        # 모델·대체 여부만 조회, 생성 없음
  *   node tools/옷GPT굽기.js --목록                        # 무엇을 고를 수 있나
  *   node tools/옷GPT굽기.js --것 "목도리"                  # 한 벌
- *   node tools/옷GPT굽기.js --전부                         # 까몽 21벌 (값을 먼저 찍고 묻는다)
+ *   node tools/옷GPT굽기.js --전부                         # 여러 벌은 --간다 없이 생성하지 않는다
  *   node tools/옷GPT굽기.js --전부 --간다                  # 묻지 않고 바로
- *   node tools/옷GPT굽기.js --것 "목도리" --크기 1024      # 싸게 시험
+ *   node tools/옷GPT굽기.js --것 "목도리" --크기 1024      # 작은 크기로 시험
  */
 'use strict';
 
@@ -37,10 +40,11 @@ const 참조방 = path.join(저장소, 'docs', 'Loom_자산', '옷', 'GPT참조'
 const 낼방 = path.join(저장소, 'docs', 'Loom_자산', '옷', 'GPT');
 const 열쇠경로 = process.env.OPENAI_KEY_FILE || 'C:\\Users\\q1212\\SYNK_보안\\openai.txt';
 
-const 모델 = 'gpt-image-2';
+const 모델 = 'gpt-image-2.5-sunburst';
 /** 앞발이 «있는» 캐릭터. 몽글은 팔도 다리도 없는 종 모양이라 앞발 지시를 걸면 안 된다. */
 const 앞발있음 = new Set(['까몽', '마린']);
-const 값 = { 넣은칸: 8 / 1e6, 낸칸: 30 / 1e6 };   // 달러/칸 (09-08 공시)
+// 09-09 공식 2.5 요율. 입력을 모두 이미지 요율로 잡은 참고값이며 실제 청구액은 아니다.
+const 값 = { 넣은칸: 8 / 1e6, 낸칸: 30 / 1e6 };
 const 환율 = 1470;
 
 const 인자 = (() => {
@@ -168,6 +172,13 @@ async function 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 }) {
 }
 
 (async () => {
+  if (인자.모델 && 인자.모델 !== 모델) {
+    throw new Error(`의상은 ${모델} 고정이다. ${인자.모델} 또는 다른 모델로 대체하지 않는다.`);
+  }
+  if (인자.설정) {
+    console.log(JSON.stringify({ 모델, 대체모델: null, 기본크기: 2560, 생성: false }));
+    return;
+  }
   const 마스코트이름 = 인자.마스코트 || '까몽';
   const 마스코트 = L.마스코트들.find((m) => m.이름 === 마스코트이름);
   if (!마스코트) throw new Error(`마스코트를 모른다 — ${마스코트이름}`);
@@ -203,8 +214,8 @@ async function 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 }) {
   } else throw new Error('--것 "옷 이름" · --겹 "옷+옷" · --전부 중 하나가 있어야 한다.');
 
   const 크기 = Number(인자.크기 || 2560);
-  const 어림 = 할것.length * 0.0427;
-  console.log(`■ ${마스코트이름} ${할것.length}장 · ${크기}×${크기} · 어림값 $${어림.toFixed(2)} ≈ ${Math.round(어림 * 환율)}원`);
+  console.log(`■ ${마스코트이름} ${할것.length}장 · ${크기}×${크기} · ${모델}`);
+  console.log('   종량제 API 경로. 2.5의 장당 비용은 미실측이며, 이전 2.0의 장당 예상값을 재사용하지 않는다.');
   if (!인자.간다 && 할것.length > 3) {
     console.log('   → 진짜 굽는다면 --간다 를 붙인다.');
     return;
@@ -224,14 +235,14 @@ async function 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 }) {
       try {
         const r = await 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 });
         합 += r.든돈;
-        console.log(`  ✅ ${이름} · ${Math.round((Date.now() - 시작) / 1000)}초 · ${r.칸}칸 · ${Math.round(r.든돈 * 환율)}원`);
+        console.log(`  ✅ ${이름} · ${Math.round((Date.now() - 시작) / 1000)}초 · ${r.칸}칸 · 요율 참고 약 ${Math.round(r.든돈 * 환율)}원`);
       } catch (e) {
         실패.push(이름);
         console.log(`  ❌ ${이름} — ${String(e.message).slice(0, 140)}`);
       }
     }));
   }
-  console.log(`\n■ 끝 — ${할것.length - 실패.length}/${할것.length}장 · 든 값 $${합.toFixed(4)} ≈ ${Math.round(합 * 환율)}원`);
+  console.log(`\n■ 끝 — ${할것.length - 실패.length}/${할것.length}장 · 토큰 요율 참고값 $${합.toFixed(4)} ≈ ${Math.round(합 * 환율)}원(실제 청구액 아님)`);
   console.log(`   낸 곳: ${낼방}`);
   /* 🔴 한 벌이라도 못 구웠으면 «비정상»으로 끝낸다 (09-08 이종 검수 32cc40911543).
      한 장씩의 예외를 배열에만 담고 정상 종료하면, 밤 사슬이나 && 로 이어 붙인 다음 걸음이
