@@ -691,10 +691,18 @@
   .account-collection .artboard[data-brand=SHIFT]{--signal:#24448C}
   .account-collection .artboard[data-brand=PULSE]{--signal:#99295D}
   .account-collection .artboard[data-brand=SYNK]{--signal:#2B2320}
-  .account-collection .brand-lock{position:absolute;top:48px;left:88px;height:64px;display:flex;align-items:center;gap:12px;z-index:3}
-  .account-collection .brand-lock svg{width:108px;height:64px}
-  .account-collection .division-label{position:relative;color:var(--signal);font-size:24px;font-weight:600;letter-spacing:.03em}
-  .account-collection .division-label img{position:absolute;top:100%;left:0;width:100%;height:6px;object-fit:cover;margin-top:4px}
+  .account-collection .brand-lock{position:absolute;top:40px;left:88px;height:112px;display:flex;align-items:center;gap:20px;z-index:3}
+  .account-collection .brand-synk{display:block;width:240px;height:auto;flex:none}
+  .account-collection .division-stitch-logo{display:block;width:auto;max-width:none;flex:none;transform:translateY(-3px);object-fit:contain}
+  .account-collection .division-stitch-logo[data-division=LAB]{height:59.47px}
+  .account-collection .division-stitch-logo[data-division=SHIFT]{height:60.87px}
+  .account-collection .division-stitch-logo[data-division=PULSE]{height:61.08px}
+  .account-collection.reference-brand{position:absolute;left:64px;top:16px;width:620px;height:112px;margin:0;z-index:3}
+  .account-collection.reference-brand .brand-lock{position:static;height:112px;gap:20px}
+  .account-collection.reference-brand .brand-synk{width:204px;height:auto}
+  .account-collection.reference-brand .division-stitch-logo[data-division=LAB]{height:46.73px}
+  .account-collection.reference-brand .division-stitch-logo[data-division=SHIFT]{height:47.83px}
+  .account-collection.reference-brand .division-stitch-logo[data-division=PULSE]{height:48px}
   .account-collection .copy{position:absolute;left:88px;right:88px;top:192px;z-index:2}
   .account-collection .eyebrow{font-size:26px;font-weight:600;color:var(--signal);margin:0 0 32px;line-height:1.4;letter-spacing:.01em}
   .account-collection .headline{font-size:88px;line-height:1.14;letter-spacing:-.03em;font-weight:800;margin:0;white-space:pre-line;max-width:890px}
@@ -733,6 +741,7 @@
   .account-collection .toolbar a{display:inline-flex;align-items:center;min-height:44px}
   .account-collection .collection-shell{max-width:1440px;padding:64px 48px;margin:auto}
   .account-collection .collection-intro{padding:48px 0 64px;border-bottom:1px solid #EDE7DC;margin-bottom:48px}
+  .account-collection .collection-intro>.brand-lock{position:static;height:auto;margin:0 0 40px}
   .account-collection .collection-intro h1{font-size:clamp(40px,6vw,88px);line-height:1.08;letter-spacing:-.04em;margin:16px 0 32px}
   .account-collection .collection-intro p{max-width:760px;font-size:20px;line-height:1.7;margin:16px 0}
   .account-collection .kicker{font-size:14px;font-weight:600;letter-spacing:.04em;color:#575046}

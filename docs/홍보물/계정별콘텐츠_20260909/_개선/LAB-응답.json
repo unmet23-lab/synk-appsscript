@@ -1,0 +1,41 @@
+[
+  {
+    "created_at": "2026-09-09T07:13:16.856944Z",
+    "display_name": "GPT Image 2.5",
+    "id": "2f43b687-7d88-4b69-86d0-c4a63950ec53",
+    "job_type": "gpt_image_2_5",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_071316_2f43b687-7d88-4b69-86d0-c4a63950ec53_min.webp",
+    "params": {
+      "aspect_ratio": "3:2",
+      "background": "transparent",
+      "height": 1360,
+      "medias": [
+        {
+          "data": {
+            "id": "aaf923a8-9536-4d94-8345-8ae4e9f0e01c",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/aaf923a8-9536-4d94-8345-8ae4e9f0e01c.png"
+          },
+          "role": "image"
+        },
+        {
+          "data": {
+            "id": "9dd825bf-d9cc-4780-8959-58ada19ca20f",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/9dd825bf-d9cc-4780-8959-58ada19ca20f_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "sunburst",
+      "prompt": "Use case: material application to exact existing brand lettering, not a new logo design.\nCreate ONLY the uppercase word \"LAB\" as three beautifully crafted wool-felt applique letters, genuinely isolated on transparent background. Input 1 is the mandatory flat typography reference: preserve the exact uppercase lettering, Inter Tight Semibold proportions, kerning, straight baseline, open counters and outlines. Input 2 is the official SYNK wool logo, a MATERIAL reference only; do not reproduce the word synk in this output.\nMatch the official logo's dense soft felt, subtle loft, cream hand-sewn running stitches inside the entire perimeter of every letter, microscopic fibers, light from upper left and restrained dimensional depth. Letter body color is the established LAB Coral 3, #AE322A, a warm deep coral red. Stitch thread is warm light cream, not bright white. LAB is warm, curious and youthful, expressed through gentle tactile softness, not extra symbols or childish bubble lettering. Keep the typography shape precise, restrained and immediately legible.\nFront view, horizontal word centered in the image, no perspective distortion, no tilt, equal letter heights. Large word occupies about 80 percent of canvas width with 12 percent clear transparent margin. Every letter must have intact continuous edges and visible tidy perimeter stitches; no stitch underline. No substrate, no badge, no border, no cloth rectangle, no other words, no watermark, no glow, no cast shadow, no halo, no grey fringe, no checkerboard backdrop. The open counters and all surrounding space must be truly transparent. Letter faces fully opaque. Premium textile macro detail, not plastic, embroidery cursive, sequins, or fuzzy noise. This should pair faithfully with the reference SYNK logo without redesigning either brand.",
+      "quality": "xhigh",
+      "reference_elements": [],
+      "remove_bg": false,
+      "resolution": "2k",
+      "width": 2048
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_071316_2f43b687-7d88-4b69-86d0-c4a63950ec53.png",
+    "status": "completed"
+  }
+]

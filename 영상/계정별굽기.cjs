@@ -16,6 +16,7 @@ const publicDir = path.join(videoRoot, 'public', '계정별20260909');
 const sourceDir = path.join(videoRoot, 'src', '계정별20260909');
 const scriptPath = path.join(collection, '콘텐츠원고.json');
 const intro = path.join(repo, 'docs', '홍보물', '브랜드소개_20260909');
+const improved = path.join(collection, '_개선');
 const cli = path.join(videoRoot, 'node_modules', '@remotion', 'cli', 'remotion-cli.js');
 const bin = path.join(videoRoot, 'node_modules', '@remotion', 'compositor-win32-x64-msvc');
 const ffmpeg = path.join(bin, 'ffmpeg.exe');
@@ -28,14 +29,32 @@ if (selected.some(id => !ids.includes(id))) throw new Error('Unknown scoped vide
 const sha = data => crypto.createHash('sha256').update(data).digest('hex');
 const readJson = p => JSON.parse(fs.readFileSync(p, 'utf8').replace(/^\uFEFF/, ''));
 function renderFingerprint(item) {
-  const files = ['index.tsx', 'types.ts', 'theme.ts', 'Frame.tsx', 'Video.tsx', item.id === '01-lab-youtube' ? 'ListeningScene.tsx' : 'ContentScene.tsx'];
+  const files = fs.readdirSync(sourceDir).filter(file => /\.tsx?$/.test(file)).sort();
+  const used = new Set(item.scenes.map(scene => scene.asset).filter(Boolean));
+  if (item.id !== '01-lab-youtube') {
+    used.add('brand-synk');
+    if (['LAB', 'SHIFT', 'PULSE'].includes(item.brand)) used.add(`brand-${item.brand.toLowerCase()}`);
+  }
+  const assets = [...used].sort().map(key => {
+    const asset = assetSources[key];
+    const source = sha(fs.readFileSync(asset.source));
+    const prepared = sha(fs.readFileSync(path.join(publicDir, asset.file)));
+    if (source !== prepared) throw new Error(`Prepared asset is stale: ${key}. Run --prepare before rendering.`);
+    return {key, source, prepared};
+  });
+  const audioFile = item.id === '01-lab-youtube' ? 'BGM_산뜻.wav' : 'BGM_60초.wav';
   return sha(JSON.stringify({scenes: item.scenes, code: files.map(file => [file, sha(fs.readFileSync(path.join(sourceDir, file)))]),
+    brand: item.brand, assets, audio: sha(fs.readFileSync(path.join(publicDir, audioFile))), renderer: sha(fs.readFileSync(__filename)),
     kit: ['색.ts', '폰트.ts', '폰트벌.json'].map(file => [file, sha(fs.readFileSync(path.join(videoRoot, 'src', '킷', file)))]),
     tokens: sha(fs.readFileSync(path.join(repo, 'docs', '디자인_토큰.json')))}));
 }
 const assetSources = Object.fromEntries(['night','notebook','letter','book','scissors','classroom','cafe','mong','smile','curious','korean','headphones','stitch','woolLogo'].map(key => [key, {source: path.join(intro, 'assets', `${key}.webp`), file: `${key}.webp`}]));
+assetSources.letter = {source: path.join(improved, '봉투-2.5.png'), file: 'letter.png'};
+assetSources.book = {source: path.join(improved, '책-2.5.png'), file: 'book.png'};
+assetSources.scissors = {source: path.join(improved, '가위-2.5.png'), file: 'scissors.png'};
+for (const brand of ['synk', 'lab', 'shift', 'pulse']) assetSources[`brand-${brand}`] = {source: path.join(improved, '배치용', `brand-${brand}.webp`), file: `brand-${brand}.webp`};
 assetSources.compass = {source: path.join(videoRoot, 'public', '공방', '공방_나침반.avif'), file: 'compass.avif'};
-for (const brand of ['lab', 'shift', 'pulse']) assetSources[`${brand}page`] = {source: path.join(intro, '소개서_4K', `${brand}-1.png`), file: `${brand}page.png`};
+for (const brand of ['lab', 'shift', 'pulse']) assetSources[`${brand}page`] = {source: path.join(improved, '지면스냅샷', `${brand}-1.png`), file: `${brand}page.png`};
 
 function run(exe, argv, name) {
   const result = spawnSync(exe, argv, {cwd: videoRoot, encoding: 'utf8', shell: false, maxBuffer: 64 * 1024 * 1024, windowsHide: true});
@@ -138,6 +157,12 @@ async function render(item) {
   captions(item);
   const started = Date.now();
   const renderSourceSha256 = renderFingerprint(item);
+  if (args.includes('--verify')) {
+    const prior = readJson(path.join(review, `영상_${item.id}_검증.json`));
+    if (prior.renderSourceSha256 !== renderSourceSha256 || prior.videoSha256 !== sha(fs.readFileSync(target))) {
+      throw new Error(`Verification cannot certify an old render against changed inputs: ${item.id}. Render first.`);
+    }
+  }
   if (!args.includes('--verify')) {
     console.log(`Rendering ${item.id}`);
     const log = run(process.execPath, [cli, 'render', 'src/계정별20260909/index.tsx', `account-${item.id}`, target,
@@ -176,9 +201,12 @@ async function render(item) {
   }
   if (args.includes('--still')) {
     const index = Number(args[args.indexOf('--scene') + 1]) || 0;
+    const secondIndex = args.indexOf('--second');
+    const second = secondIndex === -1 ? 1 : Number(args[secondIndex + 1]);
     for (const item of items) {
-      const frame = Math.round((item.scenes.slice(0, index).reduce((n, scene) => n + scene.duration, 0) + 1) * 30);
-      const target = path.join(review, `영상_${item.id}_scene${index + 1}_preview.png`);
+      if (!(second >= 0 && second < item.scenes[index].duration)) throw new Error('Preview second is outside selected scene');
+      const frame = Math.round((item.scenes.slice(0, index).reduce((n, scene) => n + scene.duration, 0) + second) * 30);
+      const target = path.join(review, `영상_${item.id}_scene${index + 1}_${second}s_preview.png`);
       const log = run(process.execPath, [cli, 'still', 'src/계정별20260909/index.tsx', `account-${item.id}`, target, `--frame=${frame}`, '--overwrite'], 'preview still');
       checkRenderLog(log);
       console.log(target);

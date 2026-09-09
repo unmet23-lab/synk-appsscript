@@ -18,19 +18,32 @@ export const Entrance: React.FC<{children: React.ReactNode; delay?: number; styl
 export const Artifact: React.FC<{asset: string; width?: number; height?: number; document?: boolean; duration: number}> = ({asset, width = 820, height = 550, document = false, duration}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
-  return <div style={{width, height, position: 'relative', overflow: 'hidden', borderRadius: document ? 8 : 40,
-    boxShadow: document ? `0 22px 42px ${theme.shadow(0.14)}` : undefined,
+  return <div style={{width, height, position: 'relative', overflow: document ? 'hidden' : 'visible', borderRadius: document ? 4 : 0,
+    boxShadow: document ? `0 14px 32px ${theme.shadow(0.10)}` : undefined,
     background: document ? theme.paper : undefined}}>
     <Img src={file(asset)} style={{width: '100%', height: '100%', objectFit: 'contain',
-      scale: interpolate(frame, [0, Math.max(1, duration * fps - 1)], document ? [1, 1.013] : [1, 1.035], {
+      scale: interpolate(frame, [0, 0.8 * fps, Math.max(0.9 * fps, duration * fps - 1)], [0.985, 1, 1], {
         easing: theme.ease.inOut, extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}),
-      translate: `0 ${Math.sin(frame / fps * 0.7) * (document ? 0.2 : 1.1)}px`}} />
+      translate: `0 ${interpolate(frame, [0, 0.8 * fps], [6, 0], {easing: theme.ease.out, extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}px`}} />
   </div>;
 };
 
-export const Background: React.FC = () => <AbsoluteFill style={{background: theme.paper}}>
-  <Img src={file('stitch')} style={{position: 'absolute', width: 380, height: 54, objectFit: 'contain', left: 100, top: 174, opacity: 0.7}} />
-</AbsoluteFill>;
+export const Background: React.FC = () => <AbsoluteFill style={{background: theme.paper}} />;
+
+// Align to the s/n letter body, not the tall k or the descending y bounding box.
+// The division's actual letter height is 58px; source padding is kept intact.
+export const BrandLockup: React.FC<{brand?: string}> = ({brand = 'SYNK'}) => {
+  const division = brand.toLowerCase();
+  const sizes: Record<string, {width: number; height: number}> = {
+    lab: {width: 1951 * 58 / 775, height: 823 * 58 / 775},
+    shift: {width: 1936 * 58 / 552, height: 600 * 58 / 552},
+    pulse: {width: 1987 * 58 / 529, height: 577 * 58 / 529},
+  };
+  return <div data-critical="brand-lockup" style={{position: 'absolute', left: theme.safe.left, top: theme.safe.top, width: 530, height: 120}}>
+    <Img src={file('brand-synk')} style={{position: 'absolute', left: 0, top: 0, width: 248, height: 248 * 1301 / 2820, objectFit: 'contain'}} />
+    {sizes[division] && <Img src={file(`brand-${division}`)} style={{position: 'absolute', left: 274, top: 27, ...sizes[division], objectFit: 'contain'}} />}
+  </div>;
+};
 
 export const Finish: React.FC = () => <AbsoluteFill style={{pointerEvents: 'none'}}>
   <AbsoluteFill style={{background: theme.light(0.018)}} />

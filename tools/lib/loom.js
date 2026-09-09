@@ -1578,10 +1578,18 @@ function 계정컬렉션() {
   .account-collection .artboard[data-brand=SHIFT]{--signal:${c['Lapis Deep']}}
   .account-collection .artboard[data-brand=PULSE]{--signal:${c['Pop Deep']}}
   .account-collection .artboard[data-brand=SYNK]{--signal:${c.Ink}}
-  .account-collection .brand-lock{position:absolute;top:${u(3)};left:${u(5.5)};height:${u(4)};display:flex;align-items:center;gap:${u(.75)};z-index:3}
-  .account-collection .brand-lock svg{width:108px;height:${u(4)}}
-  .account-collection .division-label{position:relative;color:var(--signal);font-size:${u(1.5)};font-weight:600;letter-spacing:.03em}
-  .account-collection .division-label img{position:absolute;top:100%;left:0;width:100%;height:${u(.375)};object-fit:cover;margin-top:${u(.25)}}
+  .account-collection .brand-lock{position:absolute;top:${u(2.5)};left:${u(5.5)};height:${u(7)};display:flex;align-items:center;gap:${u(1.25)};z-index:3}
+  .account-collection .brand-synk{display:block;width:${u(15)};height:auto;flex:none}
+  .account-collection .division-stitch-logo{display:block;width:auto;max-width:none;flex:none;transform:translateY(-3px);object-fit:contain}
+  .account-collection .division-stitch-logo[data-division=LAB]{height:59.47px}
+  .account-collection .division-stitch-logo[data-division=SHIFT]{height:60.87px}
+  .account-collection .division-stitch-logo[data-division=PULSE]{height:61.08px}
+  .account-collection.reference-brand{position:absolute;left:${u(4)};top:${u(1)};width:620px;height:${u(7)};margin:0;z-index:3}
+  .account-collection.reference-brand .brand-lock{position:static;height:${u(7)};gap:${u(1.25)}}
+  .account-collection.reference-brand .brand-synk{width:204px;height:auto}
+  .account-collection.reference-brand .division-stitch-logo[data-division=LAB]{height:46.73px}
+  .account-collection.reference-brand .division-stitch-logo[data-division=SHIFT]{height:47.83px}
+  .account-collection.reference-brand .division-stitch-logo[data-division=PULSE]{height:48px}
   .account-collection .copy{position:absolute;left:${u(5.5)};right:${u(5.5)};top:${u(12)};z-index:2}
   .account-collection .eyebrow{font-size:${u(1.625)};font-weight:600;color:var(--signal);margin:0 0 ${u(2)};line-height:1.4;letter-spacing:.01em}
   .account-collection .headline{font-size:${u(5.5)};line-height:1.14;letter-spacing:-.03em;font-weight:800;margin:0;white-space:pre-line;max-width:890px}
@@ -1620,6 +1628,7 @@ function 계정컬렉션() {
   .account-collection .toolbar a{display:inline-flex;align-items:center;min-height:44px}
   .account-collection .collection-shell{max-width:1440px;padding:${u(4)} ${u(3)};margin:auto}
   .account-collection .collection-intro{padding:${u(3)} 0 ${u(4)};border-bottom:1px solid ${c.Oat};margin-bottom:${u(3)}}
+  .account-collection .collection-intro>.brand-lock{position:static;height:auto;margin:0 0 ${u(2.5)}}
   .account-collection .collection-intro h1{font-size:clamp(40px,6vw,88px);line-height:1.08;letter-spacing:-.04em;margin:${u(1)} 0 ${u(2)}}
   .account-collection .collection-intro p{max-width:760px;font-size:20px;line-height:1.7;margin:${u(1)} 0}
   .account-collection .kicker{font-size:14px;font-weight:600;letter-spacing:.04em;color:${c['Deep Wool']}}

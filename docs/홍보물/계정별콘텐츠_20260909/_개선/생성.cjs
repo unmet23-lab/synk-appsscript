@@ -1,0 +1,23 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawn}=require('node:child_process');
+const base=__dirname;
+const [id,...references]=process.argv.slice(2);
+if(!id||!/^[-a-zA-Z0-9가-힣]+$/.test(id))throw Error('A safe asset id is required');
+const promptFile=path.join(base,id+'-제작지시.txt');
+const prompt=fs.readFileSync(promptFile,'utf8');
+const sha=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+const args=['generate','create','gpt_image_2_5','--variant','sunburst','--quality','xhigh','--resolution','2k','--aspect_ratio',id==='봉투'?'4:3':'3:2','--background','transparent',...references.flatMap(f=>['--image',path.resolve(f)]),'--wait','--wait-timeout','20m','--json'];
+const start={id,model:'gpt_image_2_5',variant:'sunburst',quality:'xhigh',resolution:'2k',background:'transparent',startedAt:new Date().toISOString(),promptSha256:sha(promptFile),references:references.map(f=>({path:path.resolve(f),sha256:sha(f)})),authorization:'User explicitly approved existing Higgsfield credits for GPT Image 2.5; no purchase or autocharge.'};
+fs.writeFileSync(path.join(base,id+'-실행.json'),JSON.stringify(start,null,2));
+const child=spawn('higgsfield.exe',args,{windowsHide:true,stdio:['pipe','pipe','pipe']});
+const out=[],err=[];
+child.stdout.on('data',b=>{out.push(b);process.stdout.write(b)});
+child.stderr.on('data',b=>{err.push(b);process.stderr.write(b)});
+child.on('error',e=>{console.error(e);process.exitCode=1});
+child.on('close',code=>{
+ fs.writeFileSync(path.join(base,id+'-응답.json'),Buffer.concat(out));
+ fs.writeFileSync(path.join(base,id+'-진행.log'),Buffer.concat(err));
+ fs.writeFileSync(path.join(base,id+'-실행.json'),JSON.stringify({...start,finishedAt:new Date().toISOString(),exitCode:code},null,2));
+ process.exitCode=code||0;
+});
+child.stdin.end(prompt);
