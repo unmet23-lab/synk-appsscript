@@ -1,0 +1,63 @@
+{
+  "at": "2026-09-09T18:24:47.457Z",
+  "mode": "--check",
+  "applied": true,
+  "restarted": false,
+  "initialState": "new",
+  "targets": [
+    {
+      "path": "/opt/synk-radio/지면/bots/오버레이/마스코트.html",
+      "sha256": "ff2fa6fd46b7d5dc2bcb92a8854e04891f9a0520d37cf5dff1fabf0569294450",
+      "backup": "/opt/synk-radio/지면/bots/오버레이/마스코트.html.before-radio13-20260910-64e3c25efc30"
+    },
+    {
+      "path": "/opt/synk-radio/송출/조율.json",
+      "sha256": "4abcbb70ab802fdf5659515788f3fce7417a3edb4ff6d63c25ed46b5b450c499",
+      "backup": "/opt/synk-radio/송출/조율.json.before-radio13-20260910-28b153e214d0"
+    },
+    {
+      "path": "/opt/synk-radio/무대차례/목록.txt",
+      "sha256": "19552c7713584218a93a1e72b7b8f20f57d034ad453ea3394159d8176c9885bc",
+      "backup": "/opt/synk-radio/무대차례/목록.txt.before-radio13-20260910-074f092875f9"
+    }
+  ],
+  "files": [
+    {
+      "path": "/opt/synk-radio/지면/docs/라디오/선정무대_20260910/라이브13/leaf-base-48823c235151.webp",
+      "sha256": "48823c235151fb0d7859883205f7f6c3bd2040ebfe6b1f85631186b7563379c6"
+    },
+    {
+      "path": "/opt/synk-radio/지면/bots/오버레이/radio13-497a16107fd3.js",
+      "sha256": "497a16107fd3b5be319e171d0eeb845b9a54b52f9d53e99d8ddb18e1376846f9"
+    },
+    {
+      "path": "/opt/synk-radio/무대차례/field-radio13-20260910-986177a55b4b.mp4",
+      "sha256": "986177a55b4bb21ae4d82c483f1c66a92e14d2e48d7a441a7ab76bd0f7e98a65"
+    }
+  ],
+  "protectedUnchanged": 12,
+  "before": {
+    "service": {
+      "MainPID": "154081",
+      "NRestarts": "2",
+      "ActiveState": "active",
+      "ActiveEnterTimestamp": "Wed 2026-09-09 18:20:19 UTC"
+    },
+    "opened": [
+      "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+      "/opt/synk-radio/무대차례/field-radio13-20260910-986177a55b4b.mp4"
+    ]
+  },
+  "after": {
+    "service": {
+      "MainPID": "154081",
+      "NRestarts": "2",
+      "ActiveState": "active",
+      "ActiveEnterTimestamp": "Wed 2026-09-09 18:20:19 UTC"
+    },
+    "opened": [
+      "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+      "/opt/synk-radio/무대차례/field-radio13-20260910-986177a55b4b.mp4"
+    ]
+  }
+}

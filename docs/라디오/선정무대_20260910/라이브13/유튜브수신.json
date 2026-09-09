@@ -1,0 +1,29 @@
+{
+  "started": "2026-09-09T18:15:55.055Z",
+  "finished": "2026-09-09T18:18:18.464Z",
+  "videoId": "eI-5vSy5mjY",
+  "formatId": "232+234",
+  "secondsRequested": 45,
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "codec_name": "aac",
+        "sample_rate": "44100"
+      }
+    ],
+    "format": {
+      "duration": "45.000272",
+      "size": "3578361"
+    }
+  },
+  "silence": [],
+  "captureWarnings": "[in#0/hls @ 0000014ca0f46640] keepalive request failed for '[수신 주소 생략]' with error: 'Invalid argument' when opening url, retrying with new connection\r\n    Last message repeated 9 times\r\n",
+  "source": "YouTube public playback, not local preview"
+}

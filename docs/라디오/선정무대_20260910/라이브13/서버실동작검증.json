@@ -1,0 +1,88 @@
+{
+  "passed": true,
+  "at": "2026-09-09T18:19:29.018Z",
+  "expressions": [
+    "기본",
+    "깜빡",
+    "눈웃음",
+    "안도"
+  ],
+  "visualExpressions": [
+    "기본",
+    "눈감음",
+    "눈웃음"
+  ],
+  "sampleCount": 306,
+  "first": {
+    "ready": true,
+    "DJ": "까몽",
+    "scene": "13",
+    "outfit": "반딧불노을들판",
+    "expression": "기본",
+    "checks": {
+      "maskPixels": 11609,
+      "waterEdgePixels": 29213,
+      "leafEdgePixels": 35434,
+      "expressionAlphaEqual": true,
+      "outsideEyeDifference": 0
+    },
+    "geometry": {
+      "x": 455,
+      "y": 305,
+      "width": 580,
+      "height": 580
+    },
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "keys": [
+      {
+        "key": "기본",
+        "loaded": true,
+        "alias": "기본"
+      },
+      {
+        "key": "깜빡",
+        "loaded": true,
+        "alias": "깜빡"
+      },
+      {
+        "key": "눈웃음",
+        "loaded": true,
+        "alias": "눈웃음"
+      },
+      {
+        "key": "궁금함",
+        "loaded": true,
+        "alias": "궁금함"
+      },
+      {
+        "key": "집중",
+        "loaded": true,
+        "alias": "집중"
+      },
+      {
+        "key": "안도",
+        "loaded": true,
+        "alias": "안도"
+      },
+      {
+        "key": "응원",
+        "loaded": true,
+        "alias": "응원"
+      },
+      {
+        "key": "기쁨",
+        "loaded": true,
+        "alias": "기쁨"
+      },
+      {
+        "key": "놀람",
+        "loaded": true,
+        "alias": "놀람"
+      }
+    ]
+  },
+  "scope": "Read-only actual radio-live Chromium runtime, not public playback"
+}

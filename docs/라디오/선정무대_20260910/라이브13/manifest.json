@@ -1,0 +1,27 @@
+{
+  "at": "2026-09-09T18:03:05.829Z",
+  "sourceHtmlSha": "64e3c25efc30375e999be983da7e6295de01108f8b7de0e676f44e32412da983",
+  "pixelKernelSha": "cc6a0d06cff7284415d9eeccd3e858a7c03ca8d5b831f5f87d4dd6c05d4f9fe2",
+  "helperName": "radio13-497a16107fd3.js",
+  "helperSha": "497a16107fd3b5be319e171d0eeb845b9a54b52f9d53e99d8ddb18e1376846f9",
+  "leafName": "leaf-base-48823c235151.webp",
+  "leafSha": "48823c235151fb0d7859883205f7f6c3bd2040ebfe6b1f85631186b7563379c6",
+  "htmlSha": "ff2fa6fd46b7d5dc2bcb92a8854e04891f9a0520d37cf5dff1fabf0569294450",
+  "stageSha": "986177a55b4bb21ae4d82c483f1c66a92e14d2e48d7a441a7ab76bd0f7e98a65",
+  "stageName": "field-radio13-20260910-986177a55b4b.mp4",
+  "expressions": [
+    "기본",
+    "깜빡",
+    "눈웃음"
+  ],
+  "otherEventExpressions": "Base/smile aliases; no unreviewed leaf sprites",
+  "layout": {
+    "left": 455,
+    "top": 305,
+    "size": 580,
+    "canvas": [
+      1920,
+      1080
+    ]
+  }
+}
