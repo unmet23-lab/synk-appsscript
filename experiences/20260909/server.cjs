@@ -4,7 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const os = require('node:os');
-const { roles, objects, clues, choiceOptions, endings } = require('./server/story.cjs');
+const { roles, objects, clues, choiceOptions, createRestorationState, applyRestorationAction, restorationReady, restorationObjective, buildEnding } = require('./server/story.cjs');
+const { createDialogueService } = require('./server/dialogue.cjs');
 
 const ROOT = __dirname;
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.avif': 'image/avif', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.mp4': 'video/mp4', '.vtt': 'text/vtt; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
@@ -13,10 +14,11 @@ const fail = (status, message) => { throw new RequestError(status, message); };
 const json = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };
 const cleanName = value => typeof value === 'string' ? value.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 24) : '';
 
-function createExperienceServer({ root = ROOT, maxRooms = 50, roomLifetime = 4 * 60 * 60 * 1000 } = {}) {
+function createExperienceServer({ root = ROOT, maxRooms = 50, roomLifetime = 4 * 60 * 60 * 1000, dialogueProvider } = {}) {
   const rooms = new Map();
   const rates = new Map();
   const clients = new Set();
+  const dialogue = createDialogueService({ provider: dialogueProvider });
   const getRole = id => roles.find(r => r.id === id);
   const touch = room => { room.updatedAt = Date.now(); };
   const requiredIds = roles.filter(r => r.required).flatMap(r => clues[r.id].map(c => c.id));
@@ -32,8 +34,9 @@ function createExperienceServer({ root = ROOT, maxRooms = 50, roomLifetime = 4 *
       roles, objects, requiredRoles: ['signal', 'archive'], privateClues, sharedClues: [...room.shared.values()],
       inspected: [...player.inspected], votes, choiceOptions, requiredShared: requiredIds.length,
       sharedRequired: requiredIds.filter(id => room.shared.has(id)).length,
+      restoration: structuredClone(room.restoration),
       voteFinalizable: room.phase === 'vote' && agreed,
-      objective: room.phase === 'lobby' ? '정비사와 기록원이 모이면 이야기를 시작할 수 있습니다.' : room.phase === 'explore' ? '자기 역할의 사물을 살펴보고, 발견한 단서를 함께 나누세요.' : room.phase === 'vote' ? '단서를 읽고 서로 이야기하세요. 모두 같은 곳을 고르면 마지막 불빛을 보낼 수 있습니다.' : '함께 고른 밤을 기억하세요.',
+      objective: room.phase === 'lobby' ? '정비사와 기록원이 모이면 이야기를 시작할 수 있습니다.' : room.phase === 'explore' ? restorationObjective(room.restoration) : room.phase === 'vote' ? '전원과 방송이 돌아왔습니다. 모두 같은 곳을 고르면 마지막 불빛을 보낼 수 있습니다.' : '우리가 바꾼 밤에 한 문장을 남겨 보세요.',
       ending: room.ending || null,
     };
   }
@@ -85,9 +88,14 @@ function createExperienceServer({ root = ROOT, maxRooms = 50, roomLifetime = 4 *
       const clue = clues[actor.role].find(c => c.id === payload.clueId && actor.inspected.includes(c.objectId));
       if (!clue) fail(403, '직접 살펴본 자신의 단서만 공유할 수 있습니다.');
       room.shared.set(clue.id, { ...clue, role: actor.role });
-      if (requiredIds.every(id => room.shared.has(id))) room.phase = 'vote';
+    } else if (type === 'restore') {
+      if (room.phase !== 'explore') fail(409, '복원은 탐색 중에 할 수 있습니다.');
+      const objectId = payload.kind === 'power' ? 'tram' : payload.kind === 'radio' ? 'radio' : null;
+      if (!objectId || !actor.inspected.includes(objectId)) fail(409, '먼저 그 장소를 살펴봐 주세요.');
+      applyRestorationAction(room.restoration, type, payload, actor);
+      if (restorationReady(room.restoration)) room.phase = 'vote';
     } else if (type === 'vote') {
-      if (room.phase !== 'vote') fail(409, '먼저 정비사와 기록원의 단서를 모두 나눠 주세요.');
+      if (room.phase !== 'vote') fail(409, '먼저 전차의 전원과 방송국의 신호를 복원해 주세요.');
       if (!choiceOptions.some(c => c.id === payload.choiceId)) fail(400, '불빛을 보낼 곳을 골라 주세요.');
       actor.vote = payload.choiceId;
     } else if (type === 'finalize') {
@@ -95,11 +103,17 @@ function createExperienceServer({ root = ROOT, maxRooms = 50, roomLifetime = 4 *
       if (!state(room, actor).voteFinalizable) fail(409, '참여한 사람들이 같은 곳을 고르면 불빛을 보낼 수 있습니다.');
       const choiceId = actor.vote;
       room.phase = 'ended';
-      room.ending = { ...endings[choiceId], choiceId };
+      room.ending = { ...buildEnding(choiceId, room.restoration), choiceId };
+    } else if (type === 'mark') {
+      if (room.phase !== 'ended') fail(409, '이야기를 마친 뒤 한 문장을 남길 수 있습니다.');
+      applyRestorationAction(room.restoration, type, payload, actor);
+      room.ending = { ...buildEnding(room.ending.choiceId, room.restoration), choiceId: room.ending.choiceId };
     } else if (type === 'reset') {
       if (!isHost) fail(403, '방을 만든 사람이 다시 시작할 수 있습니다.');
       if (room.phase !== 'ended') fail(409, '이야기를 마친 뒤 다시 시작할 수 있습니다.');
       room.phase = 'lobby'; room.shared.clear(); room.ending = null;
+      room.restoration = createRestorationState();
+      dialogue.forgetRoom(room.code);
       for (const p of room.players.values()) { p.inspected = []; p.vote = null; }
     } else if (type === 'remove') {
       if (!isHost || room.phase !== 'lobby') fail(403, '시작 전에 방을 만든 사람이 참여 자리를 정리할 수 있습니다.');
@@ -120,7 +134,7 @@ function createExperienceServer({ root = ROOT, maxRooms = 50, roomLifetime = 4 *
       if (url.pathname.startsWith('/api/')) {
         const origin = req.headers.origin;
         if (origin && origin !== `http://${req.headers.host}` && origin !== `https://${req.headers.host}`) fail(403, '이 화면에서 다시 시도해 주세요.');
-        const match = /^\/api\/rooms(?:\/([A-Z2-9]{6})(?:\/(join|events|actions))?)?$/.exec(url.pathname);
+        const match = /^\/api\/rooms(?:\/([A-Z2-9]{6})(?:\/(join|events|actions|dialogue))?)?$/.exec(url.pathname);
         if (!match) fail(404, '그 방 경로는 없습니다.');
         const [, code, operation] = match;
         if (req.method === 'POST') {
@@ -135,7 +149,7 @@ function createExperienceServer({ root = ROOT, maxRooms = 50, roomLifetime = 4 *
           const body = await readBody(req);
           let newCode;
           do { newCode = Array.from(crypto.randomBytes(6), n => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[n % 31]).join(''); } while (rooms.has(newCode));
-          const room = { code: newCode, hostId: null, phase: 'lobby', revision: 0, updatedAt: Date.now(), players: new Map(), shared: new Map(), ending: null };
+          const room = { code: newCode, hostId: null, phase: 'lobby', revision: 0, updatedAt: Date.now(), players: new Map(), shared: new Map(), ending: null, restoration: createRestorationState() };
           const p = addPlayer(room, body); room.hostId = p.id; rooms.set(newCode, room);
           return json(res, 201, { code: newCode, token: p.token, playerId: p.id, state: state(room, p) });
         }
@@ -150,6 +164,31 @@ function createExperienceServer({ root = ROOT, maxRooms = 50, roomLifetime = 4 *
         }
         const token = operation === 'events' ? url.searchParams.get('token') : req.headers.authorization?.replace(/^Bearer /, '');
         const actor = playerFor(room, token);
+        if (operation === 'dialogue' && req.method === 'GET') return json(res, 200, dialogue.status());
+        if (operation === 'dialogue' && req.method === 'POST') {
+          const body = await readBody(req);
+          if (rooms.get(code) !== room) fail(404, '방이 종료되었습니다. 새 방으로 들어와 주세요.');
+          const currentActor = playerFor(room, token);
+          if (room.phase === 'lobby') fail(409, '이야기를 시작하면 다온에게 말을 걸 수 있습니다.');
+          const controller = new AbortController();
+          const cancel = () => controller.abort();
+          res.on('close', cancel);
+          const liveState = state(room, currentActor);
+          try {
+            await dialogue.reply({ state: liveState, text: body.text, signal: controller.signal,
+              stillValid: () => rooms.get(code) === room && room.players.get(currentActor.id) === currentActor && room.phase !== 'lobby',
+              send: (event, data) => {
+                if (res.destroyed) return;
+                if (!res.headersSent) res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no' });
+                res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+              }
+            });
+          } catch (error) {
+            if (!res.headersSent) throw error;
+            if (!res.destroyed) res.write(`event: error\ndata: ${JSON.stringify({ error: error.status ? error.message : '다온과의 연결이 잠시 끊겼어요. 다시 말을 걸어 주세요.' })}\n\n`);
+          } finally { res.off('close', cancel); }
+          return res.end();
+        }
         // SSE hides HTTP errors from the client; this authenticated snapshot lets it
         // distinguish a lost room or revoked role from a temporary network outage.
         if (!operation && req.method === 'GET') return json(res, 200, { state: state(room, actor) });
@@ -191,21 +230,24 @@ function createExperienceServer({ root = ROOT, maxRooms = 50, roomLifetime = 4 *
   server.requestTimeout = 30000;
   const housekeeping = setInterval(() => {
     for (const room of rooms.values()) {
-      if (Date.now() - room.updatedAt > roomLifetime) { for (const p of room.players.values()) for (const r of p.connections) r.end(); rooms.delete(room.code); }
+      if (Date.now() - room.updatedAt > roomLifetime) { for (const p of room.players.values()) for (const r of p.connections) r.end(); rooms.delete(room.code); dialogue.forgetRoom(room.code); }
       else for (const p of room.players.values()) for (const r of p.connections) if (!r.destroyed) r.write(': keep-alive\n\n');
     }
     for (const [key, value] of rates) if (Date.now() - value.since > 60000) rates.delete(key);
   }, 20000);
   housekeeping.unref();
-  server.on('close', () => { clearInterval(housekeeping); for (const r of clients) r.end(); });
-  return { server, close: () => { for (const r of clients) r.end(); server.close(); }, rooms };
+  server.on('close', () => { clearInterval(housekeeping); for (const r of clients) r.end(); dialogue.close(); });
+  return { server, close: () => { dialogue.close(); for (const r of clients) r.end(); server.close(); }, rooms };
 }
 if (require.main === module) {
   const isLan = process.argv.includes('--lan');
   const portArg = process.argv.find(a => a.startsWith('--port='));
   const port = portArg ? Number(portArg.split('=')[1]) : 4399;
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('포트는 1~65535 사이의 정수여야 합니다.');
-  const { server } = createExperienceServer();
+  const app = createExperienceServer();
+  const { server } = app;
+  process.once('SIGINT', () => app.close());
+  process.once('SIGTERM', () => app.close());
   server.on('error', error => { process.stderr.write(`체험 서버를 열 수 없습니다: ${error.code}\n`); process.exitCode = 1; });
   server.listen(port, isLan ? '0.0.0.0' : '127.0.0.1', () => {
     process.stdout.write(`SYNK 첫 경험: http://127.0.0.1:${port}/\n`);

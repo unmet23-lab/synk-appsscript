@@ -1,0 +1,42 @@
+{
+  "recordedAtUtc": "2026-09-09T18:19:24.3939815Z",
+  "baseCommit": "a1d64fb04f8766dbef1cd3607c99577062f30f18",
+  "canonicalSources": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\AGENTS.md",
+      "sha256": "2a736bf91866703018bfd2ade35266388de3b48215b64072f9f3f6617b6589d4"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\AI_운영원칙.md",
+      "sha256": "e062c7964da828ddc43f0e61a85864f668e2ec2539fb5283f4c451bcea6b5868"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\DESIGN.md",
+      "sha256": "20559368f3c0764252720a007fbb0d00b5db34634d3cf4166942822f17f579c0"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\명품_기준_v1.md",
+      "sha256": "161b492a2291b026958e90323882bc11dc4ee93511ced53c3c69b7b340b0fc3c"
+    }
+  ],
+  "implementation": [
+    {
+      "path": "scene.js",
+      "sha256": "f16c152d89758082258ae2af6cceb7725745cf49132a5fba7dd96bfb51aacc3f"
+    },
+    {
+      "path": "world-navigation.js",
+      "sha256": "c2a08ff021b358b8f824812e5ae524fc0dc37322b3c8b87ae272b4b921eb76c2"
+    },
+    {
+      "path": "world-materials.js",
+      "sha256": "28a4f5b43bc535874f85cb9fb01fbc6dee58eee95ce035f05b404a973ccbcb4a"
+    },
+    {
+      "path": "world-atmosphere.js",
+      "sha256": "4354e08a56c56c4e0ec6553b756cca9c472f42126513f940d0ca53d081833b21"
+    }
+  ],
+  "imageOwner": "root; original image pixel data unchanged",
+  "imageSHA256": "863962cb3b70b2724b3f50cc1d5be7f8cda171ca77d0654990c8329ef6f87da9"
+}

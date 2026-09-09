@@ -1,0 +1,214 @@
+{
+  "date": "2026-09-09T18:10:19.048Z",
+  "environment": "Windows / installed Chrome / headless WebGL2 / 1440x900 DPR 1; local observation only",
+  "checks": [
+    {
+      "name": "W walks at elapsed-time speed",
+      "result": "passed",
+      "detail": {
+        "distance": 1.7002799769449737
+      }
+    },
+    {
+      "name": "S reverses direction",
+      "result": "passed"
+    },
+    {
+      "name": "D strafes",
+      "result": "passed"
+    },
+    {
+      "name": "A strafes back",
+      "result": "passed"
+    },
+    {
+      "name": "Input focus stops held movement; WASD text does not move",
+      "result": "passed"
+    },
+    {
+      "name": "Window blur clears held keys",
+      "result": "passed"
+    },
+    {
+      "name": "Pointer drag changes look without accidental inspect",
+      "result": "passed"
+    },
+    {
+      "name": "All four focus alternatives end at safe reachable inspection positions",
+      "result": "passed"
+    },
+    {
+      "name": "E inspects the nearest physical object once",
+      "result": "passed"
+    },
+    {
+      "name": "Swept collision blocks water, building edge, tram, postbox, desk and outer boundary",
+      "result": "passed",
+      "detail": {
+        "sea": {
+          "x": -9.699999999999998,
+          "z": 2
+        },
+        "building": {
+          "x": 9.699999999999994,
+          "z": 14
+        },
+        "tram": {
+          "x": 2.0999999999999983,
+          "z": -2
+        },
+        "back": {
+          "x": 4,
+          "z": 23.700000000000053
+        },
+        "valid": true,
+        "forbidden": [
+          false,
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "name": "Real held WASD stops against repair cabinet or tram",
+      "result": "passed"
+    },
+    {
+      "name": "Overview / walk return",
+      "result": "passed"
+    },
+    {
+      "name": "Entry prevents walking and hidden hotspot focus",
+      "result": "passed"
+    },
+    {
+      "name": "Shared rotations, frequency and solved lights affect 3D equipment",
+      "result": "passed",
+      "detail": {
+        "power": true,
+        "radio": true,
+        "rotations": [
+          1,
+          2,
+          3
+        ],
+        "frequency": 97.5,
+        "workLight": 13,
+        "radioLight": 2.8
+      }
+    },
+    {
+      "name": "Reset switches restored local lights off",
+      "result": "passed"
+    },
+    {
+      "name": "Manual light quality actually disables expensive effects",
+      "result": "passed"
+    },
+    {
+      "name": "Bounded sound events contain footsteps, zones and stop",
+      "result": "passed"
+    }
+  ],
+  "perf": [
+    {
+      "quality": "high",
+      "seconds": 5.002999999998511,
+      "frames": 300,
+      "fps": 59.96402158706562,
+      "p95FrameMs": 16.899999999999636,
+      "metrics": {
+        "renderer": "Three.js r180 / WebGL2",
+        "geometries": 101,
+        "drawCalls": 292,
+        "triangles": 5328502,
+        "pixelRatio": 1,
+        "quality": "high",
+        "autoReduced": false,
+        "reflections": true,
+        "silhouetteFibres": true,
+        "contactOcclusion": true,
+        "reducedMotion": false,
+        "textile": "SYNK needle felt fibres v2",
+        "navigation": {
+          "mode": "walk",
+          "enabled": true,
+          "moving": false,
+          "zone": "square",
+          "nearest": null,
+          "position": [
+            4.65,
+            2.03,
+            15.8
+          ],
+          "yaw": 0.234,
+          "pitch": 0.0422,
+          "collisions": 87,
+          "keys": []
+        },
+        "restoration": {
+          "power": false,
+          "radio": false,
+          "rotations": [
+            0,
+            0,
+            0
+          ],
+          "frequency": 93,
+          "workLight": 0,
+          "radioLight": 0
+        }
+      }
+    },
+    {
+      "quality": "low",
+      "seconds": 5.013399999997018,
+      "frames": 299,
+      "fps": 59.64016435955197,
+      "p95FrameMs": 16.900000000001455,
+      "metrics": {
+        "renderer": "Three.js r180 / WebGL2",
+        "geometries": 101,
+        "drawCalls": 102,
+        "triangles": 1606963,
+        "pixelRatio": 1,
+        "quality": "low",
+        "autoReduced": false,
+        "reflections": false,
+        "silhouetteFibres": false,
+        "contactOcclusion": false,
+        "reducedMotion": false,
+        "textile": "SYNK needle felt fibres v2",
+        "navigation": {
+          "mode": "walk",
+          "enabled": true,
+          "moving": false,
+          "zone": "square",
+          "nearest": null,
+          "position": [
+            4.65,
+            2.03,
+            15.8
+          ],
+          "yaw": 0.234,
+          "pitch": 0.0422,
+          "collisions": 87,
+          "keys": []
+        },
+        "restoration": {
+          "power": false,
+          "radio": false,
+          "rotations": [
+            0,
+            0,
+            0
+          ],
+          "frequency": 93,
+          "workLight": 0,
+          "radioLight": 0
+        }
+      }
+    }
+  ],
+  "errors": []
+}

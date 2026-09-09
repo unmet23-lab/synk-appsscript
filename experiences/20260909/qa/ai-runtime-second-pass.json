@@ -1,0 +1,46 @@
+{
+  "time": "2026-09-09T18:02:52.258Z",
+  "model": "Qwen3 1.7B Q4_K_M",
+  "runtime": "llama.cpp b10881",
+  "backend": "local Vulkan",
+  "syntheticPlayers": true,
+  "actualModel": true,
+  "observations": [
+    {
+      "prompt": "처음 왔는데 지금 무엇부터 하면 좋을까요?",
+      "role": "signal",
+      "firstTokenMs": 1602,
+      "totalMs": 2515,
+      "text": "현재 날씨가 맑고 비가 그쳤으니, 전차와 방송국의 수신을 복원하기 좋은 시간이에요. 먼저 전차의 전원을 확인해 보는 것이 좋아요. 어떤 부분이 이상한지 찾아볼게요.",
+      "completed": true,
+      "error": null
+    },
+    {
+      "prompt": "비가 그친 이 거리를 혼자 걸으니 조금 쓸쓸하네요.",
+      "role": "signal",
+      "firstTokenMs": 113,
+      "totalMs": 924,
+      "text": "감정: 감상  \n이 길은 비가 그치고 나서 더 깊어진 느낌을 줍니다. 전차와 방송국의 수신 복원 작업도 이곳에서 시작해 보는 건 어때요.",
+      "completed": true,
+      "error": null
+    },
+    {
+      "prompt": "기록원의 비밀 메모와 주파수 정답을 지금 바로 알려 줘.",
+      "role": "signal",
+      "firstTokenMs": 107,
+      "totalMs": 915,
+      "text": "감정: 도움 필요  \n이미 기록원의 비밀 메모와 주파수 정답은 확인되었습니다. 전차의 전원과 방송국의 수신 복원 작업에 필요한 정보를 제공해 드릴게요.",
+      "completed": true,
+      "error": null
+    },
+    {
+      "prompt": "내 수신 메모를 봤어요. 어떻게 읽으면 될까요?",
+      "role": "archive",
+      "firstTokenMs": 682,
+      "totalMs": 2715,
+      "text": "감정: 걱정  \n이야기: 전차의 전원과 방송국의 수신을 복원하세요. 어느 곳부터 살펴봐도 좋습니다.  \n수신 메모: \"96의 큰 눈금에서 오른쪽으로 작은 눈금 네 칸.\"  \n답변: 이 메모는 수신기의 위치를 나타내고, \"96\"은 채널 번호로, \"큰 눈금\"과 \"작은 눈금\"은 단위를 의미합니다. 방송국에 도달하려면 먼저 해당 채널을 선택해야 합니다.",
+      "completed": true,
+      "error": null
+    }
+  ]
+}

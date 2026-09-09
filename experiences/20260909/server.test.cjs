@@ -17,7 +17,30 @@ async function fixture(t) {
   const create = async () => (await post('/api/rooms', { name: '정비사', role: 'signal' })).body;
   const join = async (code, role, name = role) => (await post(`/api/rooms/${code}/join`, { name, role })).body;
   const action = (p, type, payload = {}) => post(`/api/rooms/${p.code}/actions`, { type, payload }, p.token);
-  return { ...app, base, post, create, join, action };
+  const snapshot = async p => {
+    const r = await fetch(`${base}/api/rooms/${p.code}`, { headers: { Authorization: `Bearer ${p.token}` } });
+    return { status: r.status, body: await r.json() };
+  };
+  return { ...app, base, post, create, join, action, snapshot };
+}
+
+async function restorePower(f, person) {
+  let result;
+  for (const [index, rotation] of [[0, 3], [1, 1], [2, 2]]) {
+    result = await f.action(person, 'restore', { kind: 'power', index, rotation });
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+  }
+  return result.body.state;
+}
+
+async function restoreBoth(f, powerPerson, radioPerson) {
+  await f.action(powerPerson, 'inspect', { objectId: 'tram' });
+  await restorePower(f, powerPerson);
+  await f.action(radioPerson, 'inspect', { objectId: 'radio' });
+  const result = await f.action(radioPerson, 'restore', { kind: 'radio', frequency: 96.4 });
+  assert.equal(result.status, 200, JSON.stringify(result.body));
+  assert.equal(result.body.state.phase, 'vote');
+  return result.body.state;
 }
 
 test('two players complete a story; private evidence stays private until explicitly shared', async t => {
@@ -34,12 +57,15 @@ test('two players complete a story; private evidence stays private until explici
   assert.equal(JSON.stringify(seen.players).includes('token'), false);
   const otherSeen = (await f.action(other, 'inspect', { objectId: 'radio' })).body.state;
   assert.equal(otherSeen.privateClues.some(c => c.id.startsWith('signal')), false);
-  assert.equal(JSON.stringify(otherSeen).includes('세 회로를 동시에'), false);
   assert.equal((await f.action(other, 'share', { clueId: 'signal-battery' })).status, 403);
   for (const clue of seen.privateClues) await f.action(host, 'share', { clueId: clue.id });
   let s;
   for (const clue of otherSeen.privateClues) s = (await f.action(other, 'share', { clueId: clue.id })).body.state;
-  assert.equal(s.phase, 'vote'); assert.equal(s.sharedClues.length, 4);
+  assert.equal(s.phase, 'explore'); assert.equal(s.sharedClues.length, 4);
+  assert.equal((await f.action(host, 'vote', { choiceId: 'lighthouse' })).status, 409);
+  assert.equal((await restorePower(f, host)).phase, 'explore');
+  s = (await f.action(other, 'restore', { kind: 'radio', frequency: 96.4 })).body.state;
+  assert.equal(s.phase, 'vote');
   await f.action(host, 'vote', { choiceId: 'lighthouse' });
   assert.equal((await f.action(host, 'finalize')).status, 409);
   await f.action(other, 'vote', { choiceId: 'homes' });
@@ -51,6 +77,8 @@ test('two players complete a story; private evidence stays private until explici
   assert.equal((await f.action(host, 'reset')).body.state.phase, 'lobby');
   const reset = (await f.action(host, 'start')).body.state;
   assert.deepEqual(reset.privateClues, []); assert.deepEqual(reset.sharedClues, []); assert.deepEqual(reset.votes, {});
+  assert.equal(reset.restoration.power.solved, false); assert.equal(reset.restoration.radio.solved, false);
+  assert.deepEqual(reset.restoration.order, []); assert.deepEqual(reset.restoration.marks, []);
 });
 
 test('room separation, unique roles and authentication hold at the HTTP boundary', async t => {
@@ -102,10 +130,8 @@ test('all three endings can be reached by a four-player group and late joins are
   for (const target of ['lighthouse', 'station', 'homes']) {
     await f.action(h, 'start');
     assert.equal((await f.post(`/api/rooms/${h.code}/join`, { name: '늦은 손님', role: 'coast' })).status, 409);
-    for (const [person, objectId] of [[h, 'tram'], [a, 'radio']]) {
-      const s = (await f.action(person, 'inspect', { objectId })).body.state;
-      for (const clue of s.privateClues) await f.action(person, 'share', { clueId: clue.id });
-    }
+    const restored = await restoreBoth(f, h, a);
+    assert.equal(restored.sharedClues.length, 0, 'spoken cooperation does not require share-button collection');
     for (const person of [h, a, c]) await f.action(person, 'vote', { choiceId: target });
     assert.equal((await f.action(h, 'finalize')).status, 409);
     await f.action(p, 'vote', { choiceId: target });
@@ -113,6 +139,98 @@ test('all three endings can be reached by a four-player group and late joins are
     assert.equal(s.ending.choiceId, target); assert.ok(s.ending.body.length > 80);
     await f.action(h, 'reset');
   }
+});
+
+test('restoration needs a visited place, validates input, and allows another role to operate equipment', async t => {
+  const f = await fixture(t), host = await f.create(), archive = await f.join(host.code, 'archive');
+  assert.equal((await f.action(host, 'restore', { kind: 'power', index: 0, rotation: 3 })).status, 409);
+  await f.action(host, 'start');
+  const beforeVisit = (await f.snapshot(host)).body.state;
+  assert.equal((await f.action(host, 'restore', { kind: 'power', index: 0, rotation: 3 })).status, 409);
+  assert.equal((await f.action(archive, 'restore', { kind: 'radio', frequency: 96.4 })).status, 409);
+  assert.deepEqual((await f.snapshot(host)).body.state.restoration, beforeVisit.restoration);
+
+  await f.action(archive, 'inspect', { objectId: 'tram' });
+  await f.action(host, 'inspect', { objectId: 'radio' });
+  const beforeInvalid = (await f.snapshot(host)).body.state;
+  for (const payload of [
+    { kind: 'power', index: -1, rotation: 0 }, { kind: 'power', index: 3, rotation: 0 },
+    { kind: 'power', index: 0, rotation: 4 }, { kind: 'power', index: 0, rotation: '3' },
+    { kind: 'radio', frequency: 89.9 }, { kind: 'radio', frequency: 104.1 },
+    { kind: 'radio', frequency: 96.41 }, { kind: 'radio', frequency: '96.4' },
+  ]) {
+    const operator = payload.kind === 'power' ? archive : host;
+    assert.equal((await f.action(operator, 'restore', payload)).status, 400, JSON.stringify(payload));
+  }
+  const afterInvalid = (await f.snapshot(host)).body.state;
+  assert.equal(afterInvalid.revision, beforeInvalid.revision);
+  assert.deepEqual(afterInvalid.restoration, beforeInvalid.restoration);
+
+  const wrongConnection = (await f.action(archive, 'restore', { kind: 'power', index: 0, rotation: 1 })).body.state;
+  assert.equal(wrongConnection.restoration.power.solved, false); assert.equal(wrongConnection.phase, 'explore');
+  assert.ok(wrongConnection.restoration.power.feedback.length > 10); assert.deepEqual(wrongConnection.restoration.order, []);
+
+  const wrong = (await f.action(host, 'restore', { kind: 'radio', frequency: 96.3 })).body.state;
+  assert.equal(wrong.restoration.radio.solved, false); assert.equal(wrong.phase, 'explore');
+  assert.equal(wrong.restoration.radio.broadcast, undefined);
+  const radioFirst = (await f.action(host, 'restore', { kind: 'radio', frequency: 96.4 })).body.state;
+  assert.equal(radioFirst.restoration.radio.solved, true); assert.equal(radioFirst.phase, 'explore');
+  assert.match(radioFirst.restoration.radio.broadcast, /승객은 모두 안전/);
+  assert.equal((await f.action(host, 'vote', { choiceId: 'homes' })).status, 409);
+  const incomplete = (await f.action(archive, 'restore', { kind: 'power', index: 0, rotation: 3 })).body.state;
+  assert.equal(incomplete.restoration.power.solved, false); assert.equal(incomplete.phase, 'explore');
+  const ready = await restorePower(f, archive);
+  assert.equal(ready.phase, 'vote'); assert.equal(ready.sharedClues.length, 0);
+  assert.deepEqual(ready.restoration.order.map(event => [event.kind, event.role]), [['radio', 'signal'], ['power', 'archive']]);
+  assert.equal((await f.action(host, 'restore', { kind: 'radio', frequency: 96.4 })).status, 409);
+  assert.deepEqual((await f.snapshot(host)).body.state.restoration, ready.restoration);
+});
+
+test('a three-player group cannot finalize until every participant agrees', async t => {
+  const f = await fixture(t), host = await f.create(), archive = await f.join(host.code, 'archive'), coast = await f.join(host.code, 'coast');
+  await f.action(host, 'start'); await restoreBoth(f, coast, archive);
+  for (const person of [host, archive]) await f.action(person, 'vote', { choiceId: 'station' });
+  assert.equal((await f.action(host, 'finalize')).status, 409);
+  await f.action(coast, 'vote', { choiceId: 'homes' });
+  assert.equal((await f.action(host, 'finalize')).status, 409);
+  await f.action(coast, 'vote', { choiceId: 'station' });
+  const ended = (await f.action(host, 'finalize')).body.state;
+  assert.equal(ended.phase, 'ended'); assert.equal(ended.ending.choiceId, 'station');
+  assert.equal(ended.ending.chronicle.length, 2);
+  assert.equal(ended.ending.chronicle[0].role, 'coast');
+  assert.equal((await f.action(archive, 'vote', { choiceId: 'homes' })).status, 409);
+});
+
+test('each participant leaves one visible ending sentence; reset and a new room begin without old marks', async t => {
+  const f = await fixture(t), host = await f.create(), archive = await f.join(host.code, 'archive');
+  assert.equal((await f.action(host, 'mark', { text: '아직 시작하지 않았다.' })).status, 409);
+  await f.action(host, 'start');
+  assert.equal((await f.action(archive, 'mark', { text: '아직 복원하지 않았다.' })).status, 409);
+  await restoreBoth(f, host, archive);
+  assert.equal((await f.action(host, 'mark', { text: '아직 선택하지 않았다.' })).status, 409);
+  await f.action(host, 'vote', { choiceId: 'homes' }); await f.action(archive, 'vote', { choiceId: 'homes' });
+  await f.action(host, 'finalize');
+  for (const text of [' ', '가'.repeat(121), null]) assert.equal((await f.action(host, 'mark', { text })).status, 400);
+  assert.deepEqual((await f.snapshot(host)).body.state.restoration.marks, []);
+  assert.equal((await f.action(host, 'mark', { text: '  함께 켠 창을 기억하자.  ' })).status, 200);
+  await f.action(archive, 'mark', { text: '내일은 남은 이웃에게 가자.' });
+  await f.action(host, 'mark', { text: '아침에는 그 창을 다시 찾아가자.' });
+  const ours = (await f.snapshot(host)).body.state, theirs = (await f.snapshot(archive)).body.state;
+  assert.equal(ours.phase, 'ended'); assert.equal(ours.ending.choiceId, 'homes');
+  assert.deepEqual(ours.restoration.marks, [
+    { role: 'signal', text: '아침에는 그 창을 다시 찾아가자.' },
+    { role: 'archive', text: '내일은 남은 이웃에게 가자.' },
+  ]);
+  assert.deepEqual(theirs.restoration.marks, ours.restoration.marks);
+  const fresh = (await f.create()).state;
+  assert.deepEqual(fresh.restoration.marks, []); assert.deepEqual(fresh.restoration.order, []);
+  assert.equal(fresh.restoration.power.solved, false); assert.equal(fresh.restoration.radio.solved, false);
+  assert.deepEqual((await f.snapshot(host)).body.state.restoration.marks, ours.restoration.marks);
+  assert.equal((await f.action(archive, 'reset')).status, 403);
+  const reset = (await f.action(host, 'reset')).body.state;
+  assert.equal(reset.phase, 'lobby'); assert.equal(reset.ending, null);
+  assert.deepEqual(reset.restoration.marks, []); assert.deepEqual(reset.restoration.order, []);
+  assert.deepEqual(reset.restoration.power.rotations, [0, 0, 0]); assert.equal(reset.restoration.radio.solved, false);
 });
 
 test('Korean names survive network chunks split inside a UTF-8 character', async t => {

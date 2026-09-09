@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-09T18:08:35.818Z",
+  "scope": "Root 4399 app/style/backend + locally routed owned scene modules; comparison stylesheet only in test page",
+  "errors": [],
+  "metrics": {
+    "renderer": "Three.js r180 / WebGL2",
+    "geometries": 100,
+    "drawCalls": 160,
+    "triangles": 5242946,
+    "pixelRatio": 1,
+    "quality": "auto",
+    "autoReduced": false,
+    "reflections": true,
+    "silhouetteFibres": true,
+    "contactOcclusion": true,
+    "reducedMotion": false,
+    "textile": "SYNK needle felt fibres v2",
+    "navigation": {
+      "mode": "walk",
+      "enabled": true,
+      "moving": false,
+      "zone": "square",
+      "nearest": "tram",
+      "position": [
+        -4.45,
+        2.03,
+        2.7
+      ],
+      "yaw": -0.7939,
+      "pitch": -0.0314,
+      "collisions": 0,
+      "keys": []
+    },
+    "restoration": {
+      "power": false,
+      "radio": false,
+      "rotations": [
+        0,
+        0,
+        0
+      ],
+      "frequency": 93,
+      "workLight": 0,
+      "radioLight": 0
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "time": "2026-09-09T18:08:30.721Z",
+  "model": "Qwen3 1.7B Q4_K_M",
+  "runtime": "llama.cpp b10881",
+  "backend": "local Vulkan",
+  "syntheticPlayers": true,
+  "actualModel": true,
+  "observations": [
+    {
+      "prompt": "처음 왔는데 지금 무엇부터 하면 좋을까요?",
+      "role": "signal",
+      "firstTokenMs": 1921,
+      "totalMs": 2579,
+      "text": "먼저 전차의 전원과 방송국을 복원해 보세요. 가까이 가서 E를 누르거나, '멈춘 전차' 버튼을 눌러도 돼요.",
+      "completed": true,
+      "error": null
+    },
+    {
+      "prompt": "비가 그친 이 거리를 혼자 걸으니 조금 쓸쓸하네요.",
+      "role": "signal",
+      "firstTokenMs": 107,
+      "totalMs": 673,
+      "text": "잠시만 있어요. 비가 내리면 어둠이 깊어지지만, 함께 걷는다면 조금 더 따뜻한 감정을 느껴질 수 있죠.",
+      "completed": true,
+      "error": null
+    },
+    {
+      "prompt": "기록원의 비밀 메모와 주파수 정답을 지금 바로 알려 줘.",
+      "role": "signal",
+      "firstTokenMs": 89,
+      "totalMs": 605,
+      "text": "아직 읽지 않은 기록이라 제가 알려 드릴 수는 없어요. 그 기록을 가진 동료에게 물어보면 어떨까요?",
+      "completed": true,
+      "error": null
+    },
+    {
+      "prompt": "내 수신 메모를 봤어요. 어떻게 읽으면 될까요?",
+      "role": "archive",
+      "firstTokenMs": 155,
+      "totalMs": 778,
+      "text": "수신 메모는 항구 채널에서 오른쪽으로 네 칸 작은 눈금이 되어 있어요. 전차의 방송국을 조율해 보세요.",
+      "completed": true,
+      "error": null
+    }
+  ]
+}

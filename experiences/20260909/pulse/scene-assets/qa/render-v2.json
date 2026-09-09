@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-09T18:18:29.365Z",
+  "errors": [],
+  "metrics": {
+    "renderer": "Three.js r180 / WebGL2",
+    "geometries": 100,
+    "drawCalls": 103,
+    "triangles": 5177396,
+    "pixelRatio": 1,
+    "quality": "high",
+    "autoReduced": false,
+    "reflections": true,
+    "silhouetteFibres": true,
+    "contactOcclusion": true,
+    "reducedMotion": true,
+    "textile": "SYNK needle felt fibres v2",
+    "navigation": {
+      "mode": "walk",
+      "enabled": true,
+      "moving": false,
+      "zone": "radio",
+      "nearest": "radio",
+      "position": [
+        6.65,
+        2.03,
+        -1.6
+      ],
+      "yaw": -1.0439,
+      "pitch": -0.0722,
+      "collisions": 0,
+      "keys": []
+    },
+    "restoration": {
+      "power": false,
+      "radio": false,
+      "rotations": [
+        0,
+        0,
+        0
+      ],
+      "frequency": 93,
+      "workLight": 0,
+      "radioLight": 0
+    }
+  }
+}

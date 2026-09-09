@@ -1,0 +1,25 @@
+.npc-dialogue{position:absolute;left:var(--켜,40px);bottom:104px;z-index:20;width:min(360px,calc(100vw - 32px));pointer-events:none}
+.npc-dialogue>*{pointer-events:auto}
+.npc-toggle{background:var(--ink,#2b2320);color:var(--paper,#fbf7f0);border:1px solid rgba(199,191,178,.35);box-shadow:0 8px 24px rgba(43,35,32,.2)}
+.npc-conversation{position:absolute;bottom:calc(100% + 16px);left:0;width:100%;padding:24px;max-height:min(620px,calc(100dvh - 260px));overflow:auto;overscroll-behavior:contain;background:rgba(43,35,32,.97);border:1px solid rgba(199,191,178,.35);color:#fbf7f0;box-shadow:0 16px 40px rgba(43,35,32,.3)}
+.npc-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+.npc-head h2{font-size:24px;margin:4px 0 0;letter-spacing:-.04em}
+.npc-caption,.npc-footnote{font-size:12px;line-height:1.7;color:#c7bfb2;margin:0 0 16px}
+.npc-footnote{margin:16px 0 0;font-size:11px}
+.npc-log{max-height:220px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.npc-message{padding:12px 0;border-bottom:1px solid rgba(199,191,178,.16)}
+.npc-message strong{font-size:11px;color:#c5d6f5}.npc-message.user strong{color:#c7bfb2}
+.npc-message p{margin:8px 0 0;font-size:14px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.npc-questions{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin:12px 0}
+.npc-questions .text-button{font-size:12px;min-height:40px;text-align:left;color:#c5d6f5}
+.npc-form{display:grid;grid-template-columns:1fr auto;gap:8px}
+.npc-form label{grid-column:1/-1;font-size:12px;color:#ede7dc}
+.npc-form input{width:100%;min-width:0;border:1px solid rgba(199,191,178,.4);border-radius:8px;padding:12px;background:rgba(8,6,5,.4);color:#fbf7f0;font:inherit;font-size:13px;min-height:44px}
+.npc-form input::placeholder{color:#c7bfb2}.npc-form .button{white-space:nowrap}
+.npc-form .text-button{grid-column:1/-1;justify-self:start;min-height:40px}
+.npc-status{font-size:12px;line-height:1.7;color:#c7bfb2;min-height:20px;margin:12px 0 0}
+.npc-read{font-size:12px;min-height:44px;margin-top:8px;color:#c5d6f5}
+.scene-only .npc-dialogue{display:none}
+@media(max-width:760px){.npc-dialogue{left:auto;right:16px;bottom:auto;top:88px;width:auto}.npc-conversation{left:auto;right:0;top:calc(100% + 8px);bottom:auto;width:min(360px,calc(100vw - 32px));max-height:calc(100dvh - 168px);padding:16px}.npc-toggle{font-size:12px;min-height:40px}.npc-log{max-height:160px}}
+@media(max-width:360px){.npc-form{grid-template-columns:1fr}.npc-form .button{justify-self:start}.npc-questions .text-button{font-size:11px}}
+
