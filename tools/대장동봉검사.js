@@ -3,7 +3,7 @@
 /* 이해대장 «동봉» 게이트 — 정본 개정이 화면을 두고 가는 커밋을 **커밋 전에** 막는다.
  *   (유호 지시 2026-08-14 「정본 고칠 때 이해대장 재생성 자동으로 되게 해줘」)
  *
- * ■ 무엇을 막나 — `docs/SYNK_철학.md` 는 이 커밋에 있는데 그 파생인 `docs/이해대장.html` 이 안 따라온 커밋.
+ * ■ 무엇을 막나 — `docs/철학_실물현황.md` 는 이 커밋에 있는데 그 파생인 `docs/이해대장.html` 이 안 따라온 커밋.
  *
  * ■ 왜 사전 차단인가 — 같은 자리가 **하루에 네 번**이었다(08-13 23:35 · 08-14 00:06 · 05:58 · 13:0x).
  *   전부 「fix: 이해대장 생성물 재생성 — 주인 없는 적색이 남의 배포를 막고 있었다」다. `tests/이해대장.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)`
@@ -40,7 +40,7 @@ const { 표기접기 } = require('../tests/lib/소스검사.js');
  *   이 파일의 자리가 곧 커밋되는 저장소다. git 에게 되묻는 판도 써 봤지만 그건 **cwd 를 따라가**
  *   남의 저장소에서 부르면 그 저장소를 답한다 — 더 많은 부품으로 더 넓은 사각을 만든다. */
 const ROOT = path.resolve(__dirname, '..');
-const 정본경로 = 'docs/SYNK_철학.md';
+const 정본경로 = 'docs/철학_실물현황.md';
 const 산출경로 = 'docs/이해대장.html';
 /* [F520] 화면의 부모는 **둘**이다 — 정본(무엇을 그리나)과 생성기(어떻게 그리나). */
 const 생성기경로 = 'tools/이해대장.js';
@@ -191,7 +191,7 @@ function main() {
    * 커밋 훅이 작업본을 흔들면 그 자체가 남의 트랙을 깨는 사고다(F073 축). */
   const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-대장-'));
   try {
-    const 정본tmp = path.join(방, 'SYNK_철학.md');
+    const 정본tmp = path.join(방, '철학_실물현황.md');
     const 산출tmp = path.join(방, '이해대장.html');
     fs.writeFileSync(정본tmp, 정본뒤, 'utf8');
     if (산출뒤 !== null) fs.writeFileSync(산출tmp, 산출뒤, 'utf8');
