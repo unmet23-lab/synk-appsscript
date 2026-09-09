@@ -1,0 +1,111 @@
+{
+  "checkedAt": "2026-09-09T11:01:24.807Z",
+  "service": {
+    "MainPID": "140581",
+    "NRestarts": "0",
+    "ActiveState": "active",
+    "ActiveEnterTimestamp": "Wed 2026-09-09 10:50:13 UTC"
+  },
+  "progress": [
+    {
+      "at": "2026-09-09T10:51:23+0000 ",
+      "speed": "0.993x",
+      "outTime": "00:00:53.468000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T10:52:23+0000 ",
+      "speed": "0.997x",
+      "outTime": "00:01:53.430000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T10:53:23+0000 ",
+      "speed": "0.998x",
+      "outTime": "00:02:53.499000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T10:54:23+0000 ",
+      "speed": "0.999x",
+      "outTime": "00:03:53.476000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T10:55:23+0000 ",
+      "speed": "0.999x",
+      "outTime": "00:04:53.036000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T10:56:23+0000 ",
+      "speed": "0.999x",
+      "outTime": "00:05:53.013000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T10:57:23+0000 ",
+      "speed": "0.999x",
+      "outTime": "00:06:53.524000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T10:58:23+0000 ",
+      "speed": "0.999x",
+      "outTime": "00:07:53.502000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T10:59:23+0000 ",
+      "speed": "0.999x",
+      "outTime": "00:08:53.270000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T11:00:23+0000 ",
+      "speed": "0.999x",
+      "outTime": "00:09:53.246000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    },
+    {
+      "at": "2026-09-09T11:01:23+0000 ",
+      "speed": "1x",
+      "outTime": "00:10:53.107000",
+      "drop": "0",
+      "dup": "0",
+      "captureFailures": "0"
+    }
+  ],
+  "errorCounts": {
+    "Broken pipe": 0,
+    "Non-monoton": 0,
+    "Invalid": 0,
+    "뜨기 실패": 0,
+    "제자리다(": 0,
+    "정체 감지": 0
+  },
+  "activeFiles": [
+    "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+    "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+  ]
+}
