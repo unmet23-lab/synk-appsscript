@@ -20,6 +20,7 @@
     python tools/옷담는꼴.py --들 GPT_표정_누끼_틀              # 4096 그대로 AVIF
     python tools/옷담는꼴.py --들 GPT_표정_누끼_틀 --크기 1024  # 1024 로 줄여서
     python tools/옷담는꼴.py --들 GPT_누끼_틀 --품질 70
+    python tools/옷담는꼴.py --들 GPT_표정_누끼_틀 --옷 목도리,안경
 """
 import os
 import sys
@@ -61,6 +62,9 @@ if __name__ == '__main__':
     꼬리 = f'_avif{크기}' if 크기 else '_avif'
     낼방 = os.path.join(옷방뿌리, 들 + 꼬리)
     파일 = [f for f in sorted(os.listdir(방)) if f.endswith('.png') and not f.startswith('_')]
+    if '--옷' in sys.argv:
+        고른옷 = {s.strip() for s in sys.argv[sys.argv.index('--옷') + 1].split(',') if s.strip()}
+        파일 = [f for f in 파일 if len(f[:-4].split('_')) >= 3 and f[:-4].split('_')[1] in 고른옷]
     if not 파일:
         raise SystemExit(f'담을 것이 없다 — {방}')
 

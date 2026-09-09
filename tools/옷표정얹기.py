@@ -27,6 +27,7 @@
     python tools/옷표정얹기.py --옷 목도리 --표정 윙크,졸림
     python tools/옷표정얹기.py --전부                          # 옷 21벌 x 표정 전부
     python tools/옷표정얹기.py --옷 목도리 --검사만            # 내지 않고 숫자만
+    python tools/옷표정얹기.py --옷 목도리 --보고 <파일.json>  # 병렬 작업은 보고서를 갈라 쓴다
 """
 import importlib.util
 import json
@@ -245,6 +246,19 @@ def 한벌(옷이름, 표정들=None, 검사만=False, 누구='까몽'):
     갈수있는곳 = 털 | 눈자리                          # 나머지(=옷)는 옷 그림을 남긴다
     마스크 = Image.fromarray((np.asarray(네모) * 갈수있는곳).astype(np.uint8))
     마스크 = 마스크.filter(ImageFilter.GaussianBlur(max(2, int(눈높 * .06))))
+    # 🔴 흐린 마스크의 가장자리가 빨강 안경 테·노랑 왕관 띠 안으로 번지면, 형태는 남아도
+    #    옷 화소가 표정 털과 섞인다. 초록 눈은 열어 두고, 채도가 높은 옷감 씨앗만 조금 넓혀
+    #    그 자리를 원본으로 다시 잠근다. 그래서 눈동자는 바뀌고 옷 경계는 화소 그대로 남는다.
+    초록눈 = (g0 > r0) & (g0 > b0)
+    색옷씨 = 옷몸 & (쨍 >= 52) & ~초록눈
+    보호폭 = max(3, int(눈높 * .12))
+    if 보호폭 % 2 == 0:
+        보호폭 += 1
+    색옷보호 = np.asarray(Image.fromarray((색옷씨 * 255).astype(np.uint8))
+                     .filter(ImageFilter.MaxFilter(보호폭))) > 0
+    마스크a = np.asarray(마스크).copy()
+    마스크a[색옷보호] = 0
+    마스크 = Image.fromarray(마스크a)
 
     밖 = np.asarray(마스크) == 0
     전 = int(밖.sum())
@@ -283,6 +297,9 @@ def 한벌(옷이름, 표정들=None, 검사만=False, 누구='까몽'):
 
 if __name__ == '__main__':
     검사만 = '--검사만' in sys.argv
+    보고경로 = os.path.join(낼방, '_보고.json')
+    if '--보고' in sys.argv:
+        보고경로 = os.path.abspath(sys.argv[sys.argv.index('--보고') + 1])
     누구 = '까몽'
     if '--누구' in sys.argv:
         누구 = sys.argv[sys.argv.index('--누구') + 1]
@@ -311,6 +328,8 @@ if __name__ == '__main__':
         for c in b.get('컷', []):
             if not c.get('결과', '').startswith('✅'):
                 print(f"    {c.get('컷')}: {c.get('결과')} ({c.get('창밖_같음')}%)")
-    with open(os.path.join(낼방, '_보고.json'), 'w', encoding='utf-8') as f:
+    os.makedirs(os.path.dirname(보고경로), exist_ok=True)
+    with open(보고경로, 'w', encoding='utf-8') as f:
         json.dump(전체, f, ensure_ascii=False, indent=1)
     print(f'\n낸 곳: {낼방}')
+    print(f'보고서: {보고경로}')

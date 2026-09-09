@@ -20,6 +20,7 @@
   쓰는 법
     python tools/옷틀맞추기.py --들 GPT_누끼
     python tools/옷틀맞추기.py --들 GPT_표정_누끼 --판 4096
+    python tools/옷틀맞추기.py --들 GPT_표정_누끼 --옷 목도리,안경
 """
 import importlib.util
 import os
@@ -135,13 +136,20 @@ if __name__ == '__main__':
           f'눈 사이 {자["눈사이비"]*100:.2f}% · 눈 중심 ({자["눈중심"][0]*100:.1f}%, {자["눈중심"][1]*100:.1f}%)')
 
     파일 = [f for f in sorted(os.listdir(방)) if f.startswith(누구 + '_') and f.endswith('.png')]
+    if '--옷' in sys.argv:
+        고른옷 = {s.strip() for s in sys.argv[sys.argv.index('--옷') + 1].split(',') if s.strip()}
+        파일 = [f for f in 파일 if len(f[:-4].split('_')) >= 3 and f[:-4].split('_')[1] in 고른옷]
 
     # 🔴 표정 컷은 «옷 한 벌마다 한 번» 재서 열넷에 같은 값을 쓴다 (09-08).
     #    장마다 따로 재면 ⓐ 눈감은 표정에서 홍채를 못 찾아 여섯 장이 아예 안 나오고
     #    ⓑ 몸 폭이 82.9% ± 6.4% 로 흩어져 앱에서 표정을 갈아 끼울 때 인형이 벌렁거린다.
     #    기준은 표정을 얹기 «전»의 옷 그림이다 — 눈이 가장 또렷하다.
-    기준방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷',
-                        들.replace('_표정', '').replace('표정_', '') or 'GPT_누끼')
+    기준이름 = 들.replace('_표정', '').replace('표정_', '') or 'GPT_누끼'
+    기준방들 = [os.path.join(저장소, 'docs', 'Loom_자산', '옷', 기준이름)]
+    # GPT 표정 원본은 종량제 GPT와 정액제 GPT 두 방에서 왔다. 새 조합의 기준 그림까지
+    # 찾아야 눈감은 컷도 같은 크기·자리에 앉고, 표정을 바꿀 때 몸이 벌렁거리지 않는다.
+    if 기준이름 == 'GPT_누끼':
+        기준방들.append(os.path.join(저장소, 'docs', 'Loom_자산', '옷', 'GPT정액시험_누끼'))
     값모음, 기준못찾음 = {}, []
     묶음 = {}
     for f in 파일:
@@ -152,8 +160,9 @@ if __name__ == '__main__':
         for 옷 in 묶음:
             if not 옷:
                 continue
-            기 = os.path.join(기준방, f'{누구}_{옷}.png')
-            if not os.path.exists(기):
+            기 = next((os.path.join(방, f'{누구}_{옷}.png') for 방 in 기준방들
+                      if os.path.exists(os.path.join(방, f'{누구}_{옷}.png'))), None)
+            if 기 is None:
                 기준못찾음.append(옷)
                 continue
             v = 맞춤값(기, 자, 판 or 자['판'])

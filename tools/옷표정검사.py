@@ -29,8 +29,18 @@ from PIL import Image
 _spec = importlib.util.spec_from_file_location('옷표정얹기', os.path.join(저장소, 'tools', '옷표정얹기.py'))
 _얹기 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_얹기)
-옷방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷', 'GPT')
+옷방들 = [os.path.join(저장소, 'docs', 'Loom_자산', '옷', 방)
+        for 방 in ('GPT', 'GPT정액시험')]
 결과방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷', 'GPT_표정')
+
+
+def 옷그림찾기(누구, 옷이름):
+    """두 원본 방을 앞에서부터 뒤져 같은 이름은 한 번만 검사한다."""
+    for 방 in 옷방들:
+        경로 = os.path.join(방, f'{누구}_{옷이름}.png')
+        if os.path.exists(경로):
+            return 경로
+    return None
 
 
 def 읽기(경로):
@@ -64,8 +74,8 @@ def 옷마스크(a, 눈상자=None):
 
 
 def 한벌(누구, 옷이름):
-    옷경로 = os.path.join(옷방, f'{누구}_{옷이름}.png')
-    if not os.path.exists(옷경로):
+    옷경로 = 옷그림찾기(누구, 옷이름)
+    if 옷경로 is None:
         return None
     옷a = 읽기(옷경로)
     # 정본 눈 비율을 기준으로 이 그림의 눈을 찾아, 그 자리를 «옷»에서 뺀다
@@ -117,7 +127,9 @@ if __name__ == '__main__':
     if '--옷' in sys.argv:
         옷들 = [s.strip() for s in sys.argv[sys.argv.index('--옷') + 1].split(',')]
     else:
-        옷들 = sorted({f[len(누구) + 1:-4] for f in os.listdir(옷방)
+        옷들 = sorted({f[len(누구) + 1:-4]
+                     for 방 in 옷방들 if os.path.isdir(방)
+                     for f in os.listdir(방)
                      if f.startswith(누구 + '_') and f.endswith('.png')})
 
     전체 = []
