@@ -1,0 +1,532 @@
+{
+  "version": 1,
+  "id": "15",
+  "input": "chapter-15.wav",
+  "audioSha256": "e0fd3bc82ddb4cbf3d41e36f8689b40c363d88562f9cf923b3f8e6e32d0539f0",
+  "language": "ko",
+  "durationSeconds": 30.32,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "검사 예시를 하나 보겠습니다. 원자료에는 수업에서 소개문 초안 한계를 작성한다고 적혀 있습니다. AI 초안이 고객 문의가 늘어나는 소개문을 완성한다로 바뀌었다면 문의 증가라는 새 약속이 생긴 것입니다. 이 효과를 뒷받침하는 근거가 원자료에 없다면 빼야 합니다. 수업에서 소개문 초안 한계를 작성합니다로 돌아올 수 있습니다. 부드러운 문장보다 정확한 제공 범위가 먼저입니다. 검사할 때는 확인된 문장, 근거가 필요한 새 주장 범위가 넓어진 표현을 나누어 보세요.",
+  "expectedNarration": "검사 예시를 하나 보겠습니다. 원자료에는 ‘수업에서 소개문 초안 한 개를 작성한다’고 적혀 있습니다. AI 초안이 ‘고객 문의가 늘어나는 소개문을 완성한다’로 바뀌었다면, 문의 증가라는 새 약속이 생긴 것입니다. 이 효과를 뒷받침하는 근거가 원자료에 없다면 빼야 합니다. ‘수업에서 소개문 초안 한 개를 작성합니다’로 돌아올 수 있습니다. 부드러운 문장보다 정확한 제공 범위가 먼저입니다. 검사할 때는 확인된 문장, 근거가 필요한 새 주장, 범위가 넓어진 표현을 나누어보세요.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9894179894179894,
+    "expectedCharacters": 189,
+    "transcribedCharacters": 189,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "개",
+        "transcribed": "계",
+        "expectedContext": "수업에서소개문초안한개를작성한다고적혀있습"
+      },
+      {
+        "type": "replace",
+        "expected": "개",
+        "transcribed": "계",
+        "expectedContext": "수업에서소개문초안한개를작성합니다로돌아올"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 1.48,
+      "text": " 검사 예시를 하나 보겠습니다.",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.34,
+          "word": " 검사",
+          "probability": 0.9383648931980133
+        },
+        {
+          "start": 0.34,
+          "end": 0.74,
+          "word": " 예시를",
+          "probability": 0.9200709660847982
+        },
+        {
+          "start": 0.74,
+          "end": 0.88,
+          "word": " 하나",
+          "probability": 0.9554697871208191
+        },
+        {
+          "start": 0.88,
+          "end": 1.48,
+          "word": " 보겠습니다.",
+          "probability": 0.9980993270874023
+        }
+      ]
+    },
+    {
+      "start": 2.14,
+      "end": 3.32,
+      "text": " 원자료에는 수업에서",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 2.14,
+          "end": 2.76,
+          "word": " 원자료에는",
+          "probability": 0.8884352147579193
+        },
+        {
+          "start": 2.76,
+          "end": 3.32,
+          "word": " 수업에서",
+          "probability": 0.8440495133399963
+        }
+      ]
+    },
+    {
+      "start": 3.32,
+      "end": 5.74,
+      "text": " 소개문 초안 한계를 작성한다고 적혀 있습니다.",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 3.32,
+          "end": 3.8,
+          "word": " 소개문",
+          "probability": 0.7100442945957184
+        },
+        {
+          "start": 3.8,
+          "end": 4.12,
+          "word": " 초안",
+          "probability": 0.8668177723884583
+        },
+        {
+          "start": 4.12,
+          "end": 4.48,
+          "word": " 한계를",
+          "probability": 0.8816279768943787
+        },
+        {
+          "start": 4.48,
+          "end": 5.14,
+          "word": " 작성한다고",
+          "probability": 0.992909237742424
+        },
+        {
+          "start": 5.14,
+          "end": 5.48,
+          "word": " 적혀",
+          "probability": 0.998263955116272
+        },
+        {
+          "start": 5.48,
+          "end": 5.74,
+          "word": " 있습니다.",
+          "probability": 0.8842537999153137
+        }
+      ]
+    },
+    {
+      "start": 6.58,
+      "end": 8.48,
+      "text": " AI 초안이 고객 문의가 늘어나는",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 6.58,
+          "end": 6.84,
+          "word": " AI",
+          "probability": 0.8295056223869324
+        },
+        {
+          "start": 6.84,
+          "end": 7.32,
+          "word": " 초안이",
+          "probability": 0.9544936021169027
+        },
+        {
+          "start": 7.32,
+          "end": 7.64,
+          "word": " 고객",
+          "probability": 0.9937476813793182
+        },
+        {
+          "start": 7.64,
+          "end": 8.02,
+          "word": " 문의가",
+          "probability": 0.7972618937492371
+        },
+        {
+          "start": 8.02,
+          "end": 8.48,
+          "word": " 늘어나는",
+          "probability": 0.9778608481089274
+        }
+      ]
+    },
+    {
+      "start": 8.48,
+      "end": 10.36,
+      "text": " 소개문을 완성한다로 바뀌었다면",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 8.48,
+          "end": 9.02,
+          "word": " 소개문을",
+          "probability": 0.9716195613145828
+        },
+        {
+          "start": 9.02,
+          "end": 9.66,
+          "word": " 완성한다로",
+          "probability": 0.9445850700139999
+        },
+        {
+          "start": 9.66,
+          "end": 10.36,
+          "word": " 바뀌었다면",
+          "probability": 0.9933755397796631
+        }
+      ]
+    },
+    {
+      "start": 10.36,
+      "end": 12.88,
+      "text": " 문의 증가라는 새 약속이 생긴 것입니다.",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 10.36,
+          "end": 11.0,
+          "word": " 문의",
+          "probability": 0.8539087772369385
+        },
+        {
+          "start": 11.0,
+          "end": 11.56,
+          "word": " 증가라는",
+          "probability": 0.9148077219724655
+        },
+        {
+          "start": 11.56,
+          "end": 11.74,
+          "word": " 새",
+          "probability": 0.9174647927284241
+        },
+        {
+          "start": 11.74,
+          "end": 12.18,
+          "word": " 약속이",
+          "probability": 0.9972827831904093
+        },
+        {
+          "start": 12.18,
+          "end": 12.48,
+          "word": " 생긴",
+          "probability": 0.995733767747879
+        },
+        {
+          "start": 12.48,
+          "end": 12.88,
+          "word": " 것입니다.",
+          "probability": 0.9862695634365082
+        }
+      ]
+    },
+    {
+      "start": 13.62,
+      "end": 15.3,
+      "text": " 이 효과를 뒷받침하는 근거가",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 13.62,
+          "end": 13.74,
+          "word": " 이",
+          "probability": 0.9968554973602295
+        },
+        {
+          "start": 13.74,
+          "end": 14.18,
+          "word": " 효과를",
+          "probability": 0.9916929205258688
+        },
+        {
+          "start": 14.18,
+          "end": 14.8,
+          "word": " 뒷받침하는",
+          "probability": 0.9495477577050527
+        },
+        {
+          "start": 14.8,
+          "end": 15.3,
+          "word": " 근거가",
+          "probability": 0.9803341825803121
+        }
+      ]
+    },
+    {
+      "start": 15.3,
+      "end": 16.84,
+      "text": " 원자료에 없다면 빼야 합니다.",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 15.3,
+          "end": 15.86,
+          "word": " 원자료에",
+          "probability": 0.9905869513750076
+        },
+        {
+          "start": 15.86,
+          "end": 16.24,
+          "word": " 없다면",
+          "probability": 0.9850191175937653
+        },
+        {
+          "start": 16.24,
+          "end": 16.56,
+          "word": " 빼야",
+          "probability": 0.824528306722641
+        },
+        {
+          "start": 16.56,
+          "end": 16.84,
+          "word": " 합니다.",
+          "probability": 0.9688770174980164
+        }
+      ]
+    },
+    {
+      "start": 17.52,
+      "end": 19.94,
+      "text": " 수업에서 소개문 초안 한계를 작성합니다로",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 17.52,
+          "end": 18.02,
+          "word": " 수업에서",
+          "probability": 0.9819164872169495
+        },
+        {
+          "start": 18.02,
+          "end": 18.42,
+          "word": " 소개문",
+          "probability": 0.9704918464024862
+        },
+        {
+          "start": 18.42,
+          "end": 18.76,
+          "word": " 초안",
+          "probability": 0.9857783019542694
+        },
+        {
+          "start": 18.76,
+          "end": 19.12,
+          "word": " 한계를",
+          "probability": 0.9872670571009318
+        },
+        {
+          "start": 19.12,
+          "end": 19.94,
+          "word": " 작성합니다로",
+          "probability": 0.9630534946918488
+        }
+      ]
+    },
+    {
+      "start": 19.94,
+      "end": 20.8,
+      "text": " 돌아올 수 있습니다.",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 19.94,
+          "end": 20.34,
+          "word": " 돌아올",
+          "probability": 0.9982861876487732
+        },
+        {
+          "start": 20.34,
+          "end": 20.44,
+          "word": " 수",
+          "probability": 0.9941955208778381
+        },
+        {
+          "start": 20.44,
+          "end": 20.8,
+          "word": " 있습니다.",
+          "probability": 0.9982328414916992
+        }
+      ]
+    },
+    {
+      "start": 21.56,
+      "end": 24.26,
+      "text": " 부드러운 문장보다 정확한 제공 범위가 먼저입니다.",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 21.56,
+          "end": 21.94,
+          "word": " 부드러운",
+          "probability": 0.9905884563922882
+        },
+        {
+          "start": 21.94,
+          "end": 22.5,
+          "word": " 문장보다",
+          "probability": 0.982368012269338
+        },
+        {
+          "start": 22.5,
+          "end": 23.1,
+          "word": " 정확한",
+          "probability": 0.9987397789955139
+        },
+        {
+          "start": 23.1,
+          "end": 23.34,
+          "word": " 제공",
+          "probability": 0.9741795361042023
+        },
+        {
+          "start": 23.34,
+          "end": 23.76,
+          "word": " 범위가",
+          "probability": 0.9495114535093307
+        },
+        {
+          "start": 23.76,
+          "end": 24.26,
+          "word": " 먼저입니다.",
+          "probability": 0.9713625013828278
+        }
+      ]
+    },
+    {
+      "start": 25.06,
+      "end": 26.62,
+      "text": " 검사할 때는 확인된 문장,",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 25.06,
+          "end": 25.52,
+          "word": " 검사할",
+          "probability": 0.946748157342275
+        },
+        {
+          "start": 25.52,
+          "end": 25.66,
+          "word": " 때는",
+          "probability": 0.9824751019477844
+        },
+        {
+          "start": 25.66,
+          "end": 26.2,
+          "word": " 확인된",
+          "probability": 0.987447182337443
+        },
+        {
+          "start": 26.2,
+          "end": 26.62,
+          "word": " 문장,",
+          "probability": 0.9965101182460785
+        }
+      ]
+    },
+    {
+      "start": 26.88,
+      "end": 28.52,
+      "text": " 근거가 필요한 새 주장 범위가",
+      "avgLogProbability": -0.12822999644674649,
+      "noSpeechProbability": 0.1238330602645874,
+      "words": [
+        {
+          "start": 26.88,
+          "end": 27.26,
+          "word": " 근거가",
+          "probability": 0.992905855178833
+        },
+        {
+          "start": 27.26,
+          "end": 27.62,
+          "word": " 필요한",
+          "probability": 0.9985174536705017
+        },
+        {
+          "start": 27.62,
+          "end": 27.74,
+          "word": " 새",
+          "probability": 0.8110896348953247
+        },
+        {
+          "start": 27.74,
+          "end": 28.06,
+          "word": " 주장",
+          "probability": 0.9900847673416138
+        },
+        {
+          "start": 28.06,
+          "end": 28.52,
+          "word": " 범위가",
+          "probability": 0.9939470738172531
+        }
+      ]
+    },
+    {
+      "start": 28.52,
+      "end": 29.92,
+      "text": " 넓어진 표현을 나누어 보세요.",
+      "avgLogProbability": -0.26477737511907307,
+      "noSpeechProbability": 0.18771453201770782,
+      "words": [
+        {
+          "start": 28.52,
+          "end": 28.94,
+          "word": " 넓어진",
+          "probability": 0.942311242222786
+        },
+        {
+          "start": 28.94,
+          "end": 29.34,
+          "word": " 표현을",
+          "probability": 0.9925597906112671
+        },
+        {
+          "start": 29.34,
+          "end": 29.7,
+          "word": " 나누어",
+          "probability": 0.8045303424199423
+        },
+        {
+          "start": 29.7,
+          "end": 29.92,
+          "word": " 보세요.",
+          "probability": 0.9977570176124573
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 5.9
+}

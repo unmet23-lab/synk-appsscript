@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "id": "01",
+  "input": "clinic-01.wav",
+  "audioSha256": "39685ea0ac80beee0670cc5d3d122269548aa95f54430781ea617539ffb44442",
+  "language": "ko",
+  "durationSeconds": 10.56,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "이번 공개 클리닉은 실제 받은 질문이 아닌 가상 초안의 시연입니다. 한 문장 안에서 실제 활동과 근거 없는 약속을 나누어 보겠습니다.",
+  "expectedNarration": "이번 공개 클리닉은 실제 받은 질문이 아닌 가상 초안의 시연입니다. 한 문장 안에서 실제 활동과 근거 없는 약속을 나누어보겠습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 1.0,
+    "expectedCharacters": 53,
+    "transcribedCharacters": 53,
+    "differences": [],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 4.38,
+      "text": " 이번 공개 클리닉은 실제 받은 질문이 아닌 가상 초안의 시연입니다.",
+      "avgLogProbability": -0.19330029159784318,
+      "noSpeechProbability": 0.0045545888133347034,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.22,
+          "word": " 이번",
+          "probability": 0.9822083115577698
+        },
+        {
+          "start": 0.22,
+          "end": 0.66,
+          "word": " 공개",
+          "probability": 0.9851539134979248
+        },
+        {
+          "start": 0.66,
+          "end": 1.28,
+          "word": " 클리닉은",
+          "probability": 0.9386784195899963
+        },
+        {
+          "start": 1.28,
+          "end": 1.86,
+          "word": " 실제",
+          "probability": 0.9294658303260803
+        },
+        {
+          "start": 1.86,
+          "end": 2.2,
+          "word": " 받은",
+          "probability": 0.9957445561885834
+        },
+        {
+          "start": 2.2,
+          "end": 2.66,
+          "word": " 질문이",
+          "probability": 0.9771942496299744
+        },
+        {
+          "start": 2.66,
+          "end": 2.82,
+          "word": " 아닌",
+          "probability": 0.998484194278717
+        },
+        {
+          "start": 2.82,
+          "end": 3.36,
+          "word": " 가상",
+          "probability": 0.968565046787262
+        },
+        {
+          "start": 3.36,
+          "end": 3.8,
+          "word": " 초안의",
+          "probability": 0.9190631707509359
+        },
+        {
+          "start": 3.8,
+          "end": 4.38,
+          "word": " 시연입니다.",
+          "probability": 0.9048322836558024
+        }
+      ]
+    },
+    {
+      "start": 6.0,
+      "end": 10.02,
+      "text": " 한 문장 안에서 실제 활동과 근거 없는 약속을 나누어 보겠습니다.",
+      "avgLogProbability": -0.19330029159784318,
+      "noSpeechProbability": 0.0045545888133347034,
+      "words": [
+        {
+          "start": 5.84,
+          "end": 6.28,
+          "word": " 한",
+          "probability": 0.9870408177375793
+        },
+        {
+          "start": 6.28,
+          "end": 6.66,
+          "word": " 문장",
+          "probability": 0.9935123324394226
+        },
+        {
+          "start": 6.66,
+          "end": 7.04,
+          "word": " 안에서",
+          "probability": 0.9776966571807861
+        },
+        {
+          "start": 7.04,
+          "end": 7.54,
+          "word": " 실제",
+          "probability": 0.9931452572345734
+        },
+        {
+          "start": 7.54,
+          "end": 8.12,
+          "word": " 활동과",
+          "probability": 0.9767314195632935
+        },
+        {
+          "start": 8.12,
+          "end": 8.5,
+          "word": " 근거",
+          "probability": 0.9605128169059753
+        },
+        {
+          "start": 8.5,
+          "end": 8.66,
+          "word": " 없는",
+          "probability": 0.6531878113746643
+        },
+        {
+          "start": 8.66,
+          "end": 9.28,
+          "word": " 약속을",
+          "probability": 0.998752772808075
+        },
+        {
+          "start": 9.28,
+          "end": 9.66,
+          "word": " 나누어",
+          "probability": 0.8042043248812357
+        },
+        {
+          "start": 9.66,
+          "end": 10.02,
+          "word": " 보겠습니다.",
+          "probability": 0.9983260035514832
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 2.15
+}

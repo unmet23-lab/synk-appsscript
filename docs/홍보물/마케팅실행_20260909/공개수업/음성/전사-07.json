@@ -1,0 +1,568 @@
+{
+  "version": 1,
+  "id": "07",
+  "input": "chapter-07.wav",
+  "audioSha256": "6db3971026d1d100bc8e36187834cb55e49ebb298690fd7bec44f0b198cf7db5",
+  "language": "ko",
+  "durationSeconds": 34.56,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "세 번째 칸은 끝에 남는 것입니다. 가상촬영 실습에서는 비교할 사진 3컷이 남습니다. 사진 3컷을 만든다는 것과 그 사진으로 제품이 더 잘 팔린다는 것은 다른 주장입니다. 앞에 것은 이 실습 안에서 확인할 수 있는 산출물이고, 뒤에 것은 외부 요인도 관련된 성과입니다. 오늘은 직접 만들고 확인할 수 있는 것을 씁니다. 소개문 초안, 상품 범위 한 장, 스스로 점검할 질문, 한 번 해본 연습도 가능합니다. 세컷이라는 숫자는 예시의 조건입니다. 자신의 실제 활동에 맞게 정하세요.",
+  "expectedNarration": "세 번째 칸은 끝에 남는 것입니다. 가상 촬영 실습에서는 비교할 사진 세 컷이 남습니다. 사진 세 컷을 만든다는 것과, 그 사진으로 제품이 더 잘 팔린다는 것은 다른 주장입니다. 앞의 것은 이 실습 안에서 확인할 수 있는 산출물이고, 뒤의 것은 외부 요인도 관련된 성과입니다. 오늘은 직접 만들고 확인할 수 있는 것을 씁니다. 소개문 초안, 상품 범위 한 장, 스스로 점검할 질문, 한 번 해본 연습도 가능합니다. 세 컷이라는 숫자는 예시의 조건입니다. 자신의 실제 활동에 맞게 정하세요.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.978494623655914,
+    "expectedCharacters": 186,
+    "transcribedCharacters": 186,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "세",
+        "transcribed": "3",
+        "expectedContext": "실습에서는비교할사진세컷이남습니다사진세컷"
+      },
+      {
+        "type": "replace",
+        "expected": "세",
+        "transcribed": "3",
+        "expectedContext": "진세컷이남습니다사진세컷을만든다는것과그사"
+      },
+      {
+        "type": "replace",
+        "expected": "의",
+        "transcribed": "에",
+        "expectedContext": "것은다른주장입니다앞의것은이실습안에서확인"
+      },
+      {
+        "type": "replace",
+        "expected": "의",
+        "transcribed": "에",
+        "expectedContext": "할수있는산출물이고뒤의것은외부요인도관련된"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.06,
+      "text": " 세 번째 칸은 끝에 남는 것입니다.",
+      "avgLogProbability": -0.1253646138488062,
+      "noSpeechProbability": 0.08364023268222809,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.16,
+          "word": " 세",
+          "probability": 0.36057451367378235
+        },
+        {
+          "start": 0.16,
+          "end": 0.44,
+          "word": " 번째",
+          "probability": 0.9536058306694031
+        },
+        {
+          "start": 0.44,
+          "end": 0.86,
+          "word": " 칸은",
+          "probability": 0.9254589279492696
+        },
+        {
+          "start": 0.86,
+          "end": 1.32,
+          "word": " 끝에",
+          "probability": 0.9712649583816528
+        },
+        {
+          "start": 1.32,
+          "end": 1.62,
+          "word": " 남는",
+          "probability": 0.9932969212532043
+        },
+        {
+          "start": 1.62,
+          "end": 2.06,
+          "word": " 것입니다.",
+          "probability": 0.9839682579040527
+        }
+      ]
+    },
+    {
+      "start": 2.76,
+      "end": 6.06,
+      "text": " 가상촬영 실습에서는 비교할 사진 3컷이 남습니다.",
+      "avgLogProbability": -0.1253646138488062,
+      "noSpeechProbability": 0.08364023268222809,
+      "words": [
+        {
+          "start": 2.76,
+          "end": 3.42,
+          "word": " 가상촬영",
+          "probability": 0.8470114469528198
+        },
+        {
+          "start": 3.42,
+          "end": 4.02,
+          "word": " 실습에서는",
+          "probability": 0.8796021938323975
+        },
+        {
+          "start": 4.02,
+          "end": 4.76,
+          "word": " 비교할",
+          "probability": 0.9654844800631205
+        },
+        {
+          "start": 4.76,
+          "end": 4.98,
+          "word": " 사진",
+          "probability": 0.9897340536117554
+        },
+        {
+          "start": 4.98,
+          "end": 5.58,
+          "word": " 3컷이",
+          "probability": 0.8709183931350708
+        },
+        {
+          "start": 5.58,
+          "end": 6.06,
+          "word": " 남습니다.",
+          "probability": 0.9867530167102814
+        }
+      ]
+    },
+    {
+      "start": 6.78,
+      "end": 12.18,
+      "text": " 사진 3컷을 만든다는 것과 그 사진으로 제품이 더 잘 팔린다는 것은 다른 주장입니다.",
+      "avgLogProbability": -0.1253646138488062,
+      "noSpeechProbability": 0.08364023268222809,
+      "words": [
+        {
+          "start": 6.78,
+          "end": 7.04,
+          "word": " 사진",
+          "probability": 0.9910785555839539
+        },
+        {
+          "start": 7.04,
+          "end": 7.6,
+          "word": " 3컷을",
+          "probability": 0.9464394748210907
+        },
+        {
+          "start": 7.6,
+          "end": 8.08,
+          "word": " 만든다는",
+          "probability": 0.9935081899166107
+        },
+        {
+          "start": 8.08,
+          "end": 8.5,
+          "word": " 것과",
+          "probability": 0.9921165704727173
+        },
+        {
+          "start": 8.5,
+          "end": 8.86,
+          "word": " 그",
+          "probability": 0.9333934187889099
+        },
+        {
+          "start": 8.86,
+          "end": 9.36,
+          "word": " 사진으로",
+          "probability": 0.9935185015201569
+        },
+        {
+          "start": 9.36,
+          "end": 9.9,
+          "word": " 제품이",
+          "probability": 0.9947365522384644
+        },
+        {
+          "start": 9.9,
+          "end": 10.12,
+          "word": " 더",
+          "probability": 0.9979070425033569
+        },
+        {
+          "start": 10.12,
+          "end": 10.38,
+          "word": " 잘",
+          "probability": 0.998446524143219
+        },
+        {
+          "start": 10.38,
+          "end": 10.8,
+          "word": " 팔린다는",
+          "probability": 0.9941536982854208
+        },
+        {
+          "start": 10.8,
+          "end": 11.16,
+          "word": " 것은",
+          "probability": 0.9889339804649353
+        },
+        {
+          "start": 11.16,
+          "end": 11.58,
+          "word": " 다른",
+          "probability": 0.9952941536903381
+        },
+        {
+          "start": 11.58,
+          "end": 12.18,
+          "word": " 주장입니다.",
+          "probability": 0.9937486251195272
+        }
+      ]
+    },
+    {
+      "start": 12.86,
+      "end": 16.04,
+      "text": " 앞에 것은 이 실습 안에서 확인할 수 있는 산출물이고,",
+      "avgLogProbability": -0.1253646138488062,
+      "noSpeechProbability": 0.08364023268222809,
+      "words": [
+        {
+          "start": 12.86,
+          "end": 13.12,
+          "word": " 앞에",
+          "probability": 0.927944004535675
+        },
+        {
+          "start": 13.12,
+          "end": 13.48,
+          "word": " 것은",
+          "probability": 0.7443432211875916
+        },
+        {
+          "start": 13.48,
+          "end": 13.82,
+          "word": " 이",
+          "probability": 0.9303269982337952
+        },
+        {
+          "start": 13.82,
+          "end": 14.16,
+          "word": " 실습",
+          "probability": 0.996251255273819
+        },
+        {
+          "start": 14.16,
+          "end": 14.5,
+          "word": " 안에서",
+          "probability": 0.9836891889572144
+        },
+        {
+          "start": 14.5,
+          "end": 14.94,
+          "word": " 확인할",
+          "probability": 0.9978092312812805
+        },
+        {
+          "start": 14.94,
+          "end": 15.08,
+          "word": " 수",
+          "probability": 0.9970903396606445
+        },
+        {
+          "start": 15.08,
+          "end": 15.24,
+          "word": " 있는",
+          "probability": 0.9977923631668091
+        },
+        {
+          "start": 15.24,
+          "end": 16.04,
+          "word": " 산출물이고,",
+          "probability": 0.9843919157981873
+        }
+      ]
+    },
+    {
+      "start": 16.34,
+      "end": 18.8,
+      "text": " 뒤에 것은 외부 요인도 관련된 성과입니다.",
+      "avgLogProbability": -0.1253646138488062,
+      "noSpeechProbability": 0.08364023268222809,
+      "words": [
+        {
+          "start": 16.34,
+          "end": 16.56,
+          "word": " 뒤에",
+          "probability": 0.9867842197418213
+        },
+        {
+          "start": 16.56,
+          "end": 16.92,
+          "word": " 것은",
+          "probability": 0.9903714060783386
+        },
+        {
+          "start": 16.92,
+          "end": 17.34,
+          "word": " 외부",
+          "probability": 0.9925059278806051
+        },
+        {
+          "start": 17.34,
+          "end": 17.76,
+          "word": " 요인도",
+          "probability": 0.9434841473897299
+        },
+        {
+          "start": 17.76,
+          "end": 18.26,
+          "word": " 관련된",
+          "probability": 0.9976978600025177
+        },
+        {
+          "start": 18.26,
+          "end": 18.8,
+          "word": " 성과입니다.",
+          "probability": 0.97722860177358
+        }
+      ]
+    },
+    {
+      "start": 19.52,
+      "end": 22.28,
+      "text": " 오늘은 직접 만들고 확인할 수 있는 것을 씁니다.",
+      "avgLogProbability": -0.1253646138488062,
+      "noSpeechProbability": 0.08364023268222809,
+      "words": [
+        {
+          "start": 19.52,
+          "end": 19.84,
+          "word": " 오늘은",
+          "probability": 0.9961066842079163
+        },
+        {
+          "start": 19.84,
+          "end": 20.22,
+          "word": " 직접",
+          "probability": 0.9992839694023132
+        },
+        {
+          "start": 20.22,
+          "end": 20.84,
+          "word": " 만들고",
+          "probability": 0.9965376257896423
+        },
+        {
+          "start": 20.84,
+          "end": 21.28,
+          "word": " 확인할",
+          "probability": 0.9942708611488342
+        },
+        {
+          "start": 21.28,
+          "end": 21.4,
+          "word": " 수",
+          "probability": 0.9982792139053345
+        },
+        {
+          "start": 21.4,
+          "end": 21.58,
+          "word": " 있는",
+          "probability": 0.997143566608429
+        },
+        {
+          "start": 21.58,
+          "end": 21.8,
+          "word": " 것을",
+          "probability": 0.9831092953681946
+        },
+        {
+          "start": 21.8,
+          "end": 22.28,
+          "word": " 씁니다.",
+          "probability": 0.9575552741686503
+        }
+      ]
+    },
+    {
+      "start": 23.0,
+      "end": 25.06,
+      "text": " 소개문 초안, 상품 범위 한 장,",
+      "avgLogProbability": -0.1253646138488062,
+      "noSpeechProbability": 0.08364023268222809,
+      "words": [
+        {
+          "start": 23.0,
+          "end": 23.38,
+          "word": " 소개문",
+          "probability": 0.7355886598428091
+        },
+        {
+          "start": 23.38,
+          "end": 23.82,
+          "word": " 초안,",
+          "probability": 0.8747209310531616
+        },
+        {
+          "start": 24.04,
+          "end": 24.36,
+          "word": " 상품",
+          "probability": 0.884170651435852
+        },
+        {
+          "start": 24.36,
+          "end": 24.7,
+          "word": " 범위",
+          "probability": 0.9681839148203532
+        },
+        {
+          "start": 24.7,
+          "end": 24.88,
+          "word": " 한",
+          "probability": 0.9760057926177979
+        },
+        {
+          "start": 24.88,
+          "end": 25.06,
+          "word": " 장,",
+          "probability": 0.8315918445587158
+        }
+      ]
+    },
+    {
+      "start": 25.4,
+      "end": 28.52,
+      "text": " 스스로 점검할 질문, 한 번 해본 연습도 가능합니다.",
+      "avgLogProbability": -0.1253646138488062,
+      "noSpeechProbability": 0.08364023268222809,
+      "words": [
+        {
+          "start": 25.4,
+          "end": 25.76,
+          "word": " 스스로",
+          "probability": 0.9979621171951294
+        },
+        {
+          "start": 25.76,
+          "end": 26.22,
+          "word": " 점검할",
+          "probability": 0.9902880638837814
+        },
+        {
+          "start": 26.22,
+          "end": 26.52,
+          "word": " 질문,",
+          "probability": 0.9664216041564941
+        },
+        {
+          "start": 26.9,
+          "end": 27.04,
+          "word": " 한",
+          "probability": 0.5775522589683533
+        },
+        {
+          "start": 27.04,
+          "end": 27.2,
+          "word": " 번",
+          "probability": 0.999626874923706
+        },
+        {
+          "start": 27.2,
+          "end": 27.46,
+          "word": " 해본",
+          "probability": 0.9050434529781342
+        },
+        {
+          "start": 27.46,
+          "end": 27.98,
+          "word": " 연습도",
+          "probability": 0.9980840981006622
+        },
+        {
+          "start": 27.98,
+          "end": 28.52,
+          "word": " 가능합니다.",
+          "probability": 0.9902976155281067
+        }
+      ]
+    },
+    {
+      "start": 28.52,
+      "end": 31.5,
+      "text": " 세컷이라는 숫자는 예시의 조건입니다.",
+      "avgLogProbability": -0.22271241943041484,
+      "noSpeechProbability": 0.5072749257087708,
+      "words": [
+        {
+          "start": 28.52,
+          "end": 29.82,
+          "word": " 세컷이라는",
+          "probability": 0.6963868886232376
+        },
+        {
+          "start": 29.82,
+          "end": 30.32,
+          "word": " 숫자는",
+          "probability": 0.9930763443311056
+        },
+        {
+          "start": 30.32,
+          "end": 30.94,
+          "word": " 예시의",
+          "probability": 0.809220016002655
+        },
+        {
+          "start": 30.94,
+          "end": 31.5,
+          "word": " 조건입니다.",
+          "probability": 0.9289317528406779
+        }
+      ]
+    },
+    {
+      "start": 32.18,
+      "end": 34.14,
+      "text": " 자신의 실제 활동에 맞게 정하세요.",
+      "avgLogProbability": -0.22271241943041484,
+      "noSpeechProbability": 0.5072749257087708,
+      "words": [
+        {
+          "start": 32.18,
+          "end": 32.64,
+          "word": " 자신의",
+          "probability": 0.9902147054672241
+        },
+        {
+          "start": 32.64,
+          "end": 32.96,
+          "word": " 실제",
+          "probability": 0.9939658939838409
+        },
+        {
+          "start": 32.96,
+          "end": 33.4,
+          "word": " 활동에",
+          "probability": 0.8785808384418488
+        },
+        {
+          "start": 33.4,
+          "end": 33.7,
+          "word": " 맞게",
+          "probability": 0.9967035055160522
+        },
+        {
+          "start": 33.7,
+          "end": 34.14,
+          "word": " 정하세요.",
+          "probability": 0.9707246124744415
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 6.91
+}

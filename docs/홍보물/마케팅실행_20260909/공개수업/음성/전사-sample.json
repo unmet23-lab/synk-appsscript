@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "id": "sample",
+  "input": "sample-kevin.wav",
+  "audioSha256": "1de7a491241055e4095255dcfd601ca014e2af0d0eb38b943219da004cb59ea6",
+  "language": "ko",
+  "durationSeconds": 14.8,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "안녕하세요. 오늘은 내일이 누구에게 무엇을 남기는지 소개 문장 하나로 정리해 보겠습니다. 먼저 화면에 예시를 보세요. 가상의 1인 편집자 사례입니다.",
+  "expectedNarration": "안녕하세요. 오늘은 내 일이 누구에게 무엇을 남기는지, 소개 문장 하나로 정리해보겠습니다. 먼저 화면의 예시를 보세요. 가상의 1인 편집자 사례입니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9836065573770492,
+    "expectedCharacters": 61,
+    "transcribedCharacters": 61,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "의",
+        "transcribed": "에",
+        "expectedContext": "해보겠습니다먼저화면의예시를보세요가상의1"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 5.16,
+      "text": " 안녕하세요. 오늘은 내일이 누구에게 무엇을 남기는지",
+      "avgLogProbability": -0.22001545046860316,
+      "noSpeechProbability": 0.004599469713866711,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.4,
+          "word": " 안녕하세요.",
+          "probability": 0.8520062565803528
+        },
+        {
+          "start": 1.54,
+          "end": 1.94,
+          "word": " 오늘은",
+          "probability": 0.9958739876747131
+        },
+        {
+          "start": 1.94,
+          "end": 2.84,
+          "word": " 내일이",
+          "probability": 0.8229807317256927
+        },
+        {
+          "start": 2.84,
+          "end": 3.58,
+          "word": " 누구에게",
+          "probability": 0.997473806142807
+        },
+        {
+          "start": 3.58,
+          "end": 4.36,
+          "word": " 무엇을",
+          "probability": 0.9970388412475586
+        },
+        {
+          "start": 4.36,
+          "end": 5.16,
+          "word": " 남기는지",
+          "probability": 0.9580159187316895
+        }
+      ]
+    },
+    {
+      "start": 5.72,
+      "end": 8.12,
+      "text": " 소개 문장 하나로 정리해 보겠습니다.",
+      "avgLogProbability": -0.22001545046860316,
+      "noSpeechProbability": 0.004599469713866711,
+      "words": [
+        {
+          "start": 5.420000000000002,
+          "end": 5.98,
+          "word": " 소개",
+          "probability": 0.587293803691864
+        },
+        {
+          "start": 5.98,
+          "end": 6.5,
+          "word": " 문장",
+          "probability": 0.9929243624210358
+        },
+        {
+          "start": 6.5,
+          "end": 7.04,
+          "word": " 하나로",
+          "probability": 0.9925620555877686
+        },
+        {
+          "start": 7.04,
+          "end": 7.6,
+          "word": " 정리해",
+          "probability": 0.9158219695091248
+        },
+        {
+          "start": 7.6,
+          "end": 8.12,
+          "word": " 보겠습니다.",
+          "probability": 0.9980882406234741
+        }
+      ]
+    },
+    {
+      "start": 9.32,
+      "end": 11.22,
+      "text": " 먼저 화면에 예시를 보세요.",
+      "avgLogProbability": -0.22001545046860316,
+      "noSpeechProbability": 0.004599469713866711,
+      "words": [
+        {
+          "start": 9.32,
+          "end": 9.74,
+          "word": " 먼저",
+          "probability": 0.9900894165039062
+        },
+        {
+          "start": 9.74,
+          "end": 10.5,
+          "word": " 화면에",
+          "probability": 0.9079304734865824
+        },
+        {
+          "start": 10.5,
+          "end": 10.96,
+          "word": " 예시를",
+          "probability": 0.9586155414581299
+        },
+        {
+          "start": 10.96,
+          "end": 11.22,
+          "word": " 보세요.",
+          "probability": 0.9927688837051392
+        }
+      ]
+    },
+    {
+      "start": 12.22,
+      "end": 14.32,
+      "text": " 가상의 1인 편집자 사례입니다.",
+      "avgLogProbability": -0.22001545046860316,
+      "noSpeechProbability": 0.004599469713866711,
+      "words": [
+        {
+          "start": 12.22,
+          "end": 12.78,
+          "word": " 가상의",
+          "probability": 0.9512273867925009
+        },
+        {
+          "start": 12.78,
+          "end": 13.18,
+          "word": " 1인",
+          "probability": 0.9463694095611572
+        },
+        {
+          "start": 13.18,
+          "end": 13.84,
+          "word": " 편집자",
+          "probability": 0.9852359692255656
+        },
+        {
+          "start": 13.84,
+          "end": 14.32,
+          "word": " 사례입니다.",
+          "probability": 0.9396263957023621
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 1.61
+}

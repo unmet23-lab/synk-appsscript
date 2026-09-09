@@ -1,0 +1,244 @@
+{
+  "version": 1,
+  "id": "03",
+  "input": "clinic-03.wav",
+  "audioSha256": "71e8158e5e01a4caf11fa8f5c9d77cd0b57cd5f772dd7d8a4b9193a85766584e",
+  "language": "ko",
+  "durationSeconds": 16.8,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "이 가상 수업의 원자료에는 첫 상품 소개를 준비하는 사람이 소개문 초안 한계를 작성한다고만 적혀 있습니다. 실제로 확인되는 것은 이 대상 장면과 활동입니다. 브랜드 전체를 완성하거나 매출을 높인다는 근거는 없습니다.",
+  "expectedNarration": "이 가상 수업의 원자료에는 첫 상품 소개를 준비하는 사람이 소개문 초안 한 개를 작성한다고만 적혀 있습니다. 실제로 확인되는 것은 이 대상 장면과 활동입니다. 브랜드 전체를 완성하거나 매출을 높인다는 근거는 없습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9887640449438202,
+    "expectedCharacters": 89,
+    "transcribedCharacters": 89,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "개",
+        "transcribed": "계",
+        "expectedContext": "는사람이소개문초안한개를작성한다고만적혀있"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 4.14,
+      "text": " 이 가상 수업의 원자료에는 첫 상품 소개를 준비하는 사람이",
+      "avgLogProbability": -0.15127583593130112,
+      "noSpeechProbability": 0.0034717307426035404,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.16,
+          "word": " 이",
+          "probability": 0.7765106558799744
+        },
+        {
+          "start": 0.16,
+          "end": 0.6,
+          "word": " 가상",
+          "probability": 0.9912877976894379
+        },
+        {
+          "start": 0.6,
+          "end": 1.06,
+          "word": " 수업의",
+          "probability": 0.9280717372894287
+        },
+        {
+          "start": 1.06,
+          "end": 1.8,
+          "word": " 원자료에는",
+          "probability": 0.9262628257274628
+        },
+        {
+          "start": 1.8,
+          "end": 2.22,
+          "word": " 첫",
+          "probability": 0.92706698179245
+        },
+        {
+          "start": 2.22,
+          "end": 2.68,
+          "word": " 상품",
+          "probability": 0.8735609352588654
+        },
+        {
+          "start": 2.68,
+          "end": 3.02,
+          "word": " 소개를",
+          "probability": 0.8553737699985504
+        },
+        {
+          "start": 3.02,
+          "end": 3.7,
+          "word": " 준비하는",
+          "probability": 0.9935333430767059
+        },
+        {
+          "start": 3.7,
+          "end": 4.14,
+          "word": " 사람이",
+          "probability": 0.9888330698013306
+        }
+      ]
+    },
+    {
+      "start": 4.14,
+      "end": 7.62,
+      "text": " 소개문 초안 한계를 작성한다고만 적혀 있습니다.",
+      "avgLogProbability": -0.15127583593130112,
+      "noSpeechProbability": 0.0034717307426035404,
+      "words": [
+        {
+          "start": 4.14,
+          "end": 4.94,
+          "word": " 소개문",
+          "probability": 0.6317713359991709
+        },
+        {
+          "start": 4.94,
+          "end": 5.4,
+          "word": " 초안",
+          "probability": 0.8266556859016418
+        },
+        {
+          "start": 5.4,
+          "end": 5.88,
+          "word": " 한계를",
+          "probability": 0.8917247653007507
+        },
+        {
+          "start": 5.88,
+          "end": 6.86,
+          "word": " 작성한다고만",
+          "probability": 0.9860905766487121
+        },
+        {
+          "start": 6.86,
+          "end": 7.28,
+          "word": " 적혀",
+          "probability": 0.9972469806671143
+        },
+        {
+          "start": 7.28,
+          "end": 7.62,
+          "word": " 있습니다.",
+          "probability": 0.7849293947219849
+        }
+      ]
+    },
+    {
+      "start": 8.08,
+      "end": 11.8,
+      "text": " 실제로 확인되는 것은 이 대상 장면과 활동입니다.",
+      "avgLogProbability": -0.15127583593130112,
+      "noSpeechProbability": 0.0034717307426035404,
+      "words": [
+        {
+          "start": 8.08,
+          "end": 8.42,
+          "word": " 실제로",
+          "probability": 0.9935029149055481
+        },
+        {
+          "start": 8.42,
+          "end": 9.16,
+          "word": " 확인되는",
+          "probability": 0.9532536069552103
+        },
+        {
+          "start": 9.16,
+          "end": 9.52,
+          "word": " 것은",
+          "probability": 0.9902337789535522
+        },
+        {
+          "start": 9.52,
+          "end": 9.96,
+          "word": " 이",
+          "probability": 0.9787160158157349
+        },
+        {
+          "start": 9.96,
+          "end": 10.4,
+          "word": " 대상",
+          "probability": 0.995227724313736
+        },
+        {
+          "start": 10.4,
+          "end": 11.0,
+          "word": " 장면과",
+          "probability": 0.8539854884147644
+        },
+        {
+          "start": 11.0,
+          "end": 11.8,
+          "word": " 활동입니다.",
+          "probability": 0.9909517765045166
+        }
+      ]
+    },
+    {
+      "start": 12.3,
+      "end": 16.16,
+      "text": " 브랜드 전체를 완성하거나 매출을 높인다는 근거는 없습니다.",
+      "avgLogProbability": -0.15127583593130112,
+      "noSpeechProbability": 0.0034717307426035404,
+      "words": [
+        {
+          "start": 12.3,
+          "end": 12.66,
+          "word": " 브랜드",
+          "probability": 0.9965049823125204
+        },
+        {
+          "start": 12.66,
+          "end": 13.26,
+          "word": " 전체를",
+          "probability": 0.9932427803675333
+        },
+        {
+          "start": 13.26,
+          "end": 14.08,
+          "word": " 완성하거나",
+          "probability": 0.9956384897232056
+        },
+        {
+          "start": 14.08,
+          "end": 14.7,
+          "word": " 매출을",
+          "probability": 0.9731951554616293
+        },
+        {
+          "start": 14.7,
+          "end": 15.28,
+          "word": " 높인다는",
+          "probability": 0.9848396380742391
+        },
+        {
+          "start": 15.28,
+          "end": 15.92,
+          "word": " 근거는",
+          "probability": 0.963068425655365
+        },
+        {
+          "start": 15.92,
+          "end": 16.16,
+          "word": " 없습니다.",
+          "probability": 0.9959243535995483
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 2.54
+}

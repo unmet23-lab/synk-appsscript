@@ -1,0 +1,525 @@
+{
+  "version": 1,
+  "id": "11",
+  "input": "chapter-11.wav",
+  "audioSha256": "58a28c337f6ceeb0f683d17dea62ca3ad933bf53c1e238fd6e38311b1fb2fecc",
+  "language": "ko",
+  "durationSeconds": 36.56,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "가상 촬영 실습에 포함되는 것은 실습 순서와 스스로 점검하는 질문입니다. 이번 예시에서 포함하지 않는 일은 제품을 대신 촬영해주는 것과 판매 성과를 보장하는 것입니다. 만약 실제 서비스가 개별 피드백을 제공한다면 그 범위도 구체적으로 정할 수 있습니다. 하지만 아직 운영하지 않는다면 소개를 좋아 보이게 하려고 포함하지 않습니다. 여러분은 포함하는 도움 한 줄과 오해할 수 있어 미리 구분할 일 한 줄을 적어보세요. 제외라는 말 대신 자연스러운 문장으로 안내해도 의미는 분명해야 합니다.",
+  "expectedNarration": "가상 촬영 실습에 포함되는 것은 실습 순서와 스스로 점검하는 질문입니다. 이번 예시에서 포함하지 않는 일은 제품을 대신 촬영해주는 것과 판매 성과를 보장하는 것입니다. 만약 실제 서비스가 개별 피드백을 제공한다면 그 범위도 구체적으로 정할 수 있습니다. 하지만 아직 운영하지 않는다면 소개를 좋아 보이게 하려고 포함하지 않습니다. 여러분은 포함하는 도움 한 줄과, 오해할 수 있어 미리 구분할 일 한 줄을 적어보세요. ‘제외’라는 말 대신 자연스러운 문장으로 안내해도 의미는 분명해야 합니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 1.0,
+    "expectedCharacters": 199,
+    "transcribedCharacters": 199,
+    "differences": [],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 4.74,
+      "text": " 가상 촬영 실습에 포함되는 것은 실습 순서와 스스로 점검하는 질문입니다.",
+      "avgLogProbability": -0.14313958770167218,
+      "noSpeechProbability": 0.009894813410937786,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.34,
+          "word": " 가상",
+          "probability": 0.9644729197025299
+        },
+        {
+          "start": 0.34,
+          "end": 0.58,
+          "word": " 촬영",
+          "probability": 0.27892962098121643
+        },
+        {
+          "start": 0.58,
+          "end": 1.1,
+          "word": " 실습에",
+          "probability": 0.9680961569150289
+        },
+        {
+          "start": 1.1,
+          "end": 1.5,
+          "word": " 포함되는",
+          "probability": 0.9741956889629364
+        },
+        {
+          "start": 1.5,
+          "end": 1.84,
+          "word": " 것은",
+          "probability": 0.9752786755561829
+        },
+        {
+          "start": 1.84,
+          "end": 2.6,
+          "word": " 실습",
+          "probability": 0.9763800501823425
+        },
+        {
+          "start": 2.6,
+          "end": 3.08,
+          "word": " 순서와",
+          "probability": 0.957666258017222
+        },
+        {
+          "start": 3.08,
+          "end": 3.48,
+          "word": " 스스로",
+          "probability": 0.9989515344301859
+        },
+        {
+          "start": 3.48,
+          "end": 4.04,
+          "word": " 점검하는",
+          "probability": 0.9785511940717697
+        },
+        {
+          "start": 4.04,
+          "end": 4.74,
+          "word": " 질문입니다.",
+          "probability": 0.9703963994979858
+        }
+      ]
+    },
+    {
+      "start": 6.2,
+      "end": 8.16,
+      "text": " 이번 예시에서 포함하지 않는 일은",
+      "avgLogProbability": -0.14313958770167218,
+      "noSpeechProbability": 0.009894813410937786,
+      "words": [
+        {
+          "start": 6.0,
+          "end": 6.48,
+          "word": " 이번",
+          "probability": 0.9670421481132507
+        },
+        {
+          "start": 6.48,
+          "end": 7.06,
+          "word": " 예시에서",
+          "probability": 0.8810117443402609
+        },
+        {
+          "start": 7.06,
+          "end": 7.6,
+          "word": " 포함하지",
+          "probability": 0.9899264375368754
+        },
+        {
+          "start": 7.6,
+          "end": 7.76,
+          "word": " 않는",
+          "probability": 0.9956707954406738
+        },
+        {
+          "start": 7.76,
+          "end": 8.16,
+          "word": " 일은",
+          "probability": 0.9933244585990906
+        }
+      ]
+    },
+    {
+      "start": 8.16,
+      "end": 11.78,
+      "text": " 제품을 대신 촬영해주는 것과 판매 성과를 보장하는 것입니다.",
+      "avgLogProbability": -0.14313958770167218,
+      "noSpeechProbability": 0.009894813410937786,
+      "words": [
+        {
+          "start": 8.16,
+          "end": 8.74,
+          "word": " 제품을",
+          "probability": 0.9567755162715912
+        },
+        {
+          "start": 8.74,
+          "end": 9.04,
+          "word": " 대신",
+          "probability": 0.9953347146511078
+        },
+        {
+          "start": 9.04,
+          "end": 9.68,
+          "word": " 촬영해주는",
+          "probability": 0.8763052821159363
+        },
+        {
+          "start": 9.68,
+          "end": 10.02,
+          "word": " 것과",
+          "probability": 0.991883397102356
+        },
+        {
+          "start": 10.02,
+          "end": 10.46,
+          "word": " 판매",
+          "probability": 0.9937779307365417
+        },
+        {
+          "start": 10.46,
+          "end": 10.9,
+          "word": " 성과를",
+          "probability": 0.9657126069068909
+        },
+        {
+          "start": 10.9,
+          "end": 11.38,
+          "word": " 보장하는",
+          "probability": 0.9933245629072189
+        },
+        {
+          "start": 11.38,
+          "end": 11.78,
+          "word": " 것입니다.",
+          "probability": 0.9906365871429443
+        }
+      ]
+    },
+    {
+      "start": 13.34,
+      "end": 16.2,
+      "text": " 만약 실제 서비스가 개별 피드백을 제공한다면",
+      "avgLogProbability": -0.14313958770167218,
+      "noSpeechProbability": 0.009894813410937786,
+      "words": [
+        {
+          "start": 13.34,
+          "end": 13.62,
+          "word": " 만약",
+          "probability": 0.9884824156761169
+        },
+        {
+          "start": 13.62,
+          "end": 14.08,
+          "word": " 실제",
+          "probability": 0.9952282905578613
+        },
+        {
+          "start": 14.08,
+          "end": 14.58,
+          "word": " 서비스가",
+          "probability": 0.9943413535753886
+        },
+        {
+          "start": 14.58,
+          "end": 15.02,
+          "word": " 개별",
+          "probability": 0.9767048954963684
+        },
+        {
+          "start": 15.02,
+          "end": 15.54,
+          "word": " 피드백을",
+          "probability": 0.9938263297080994
+        },
+        {
+          "start": 15.54,
+          "end": 16.2,
+          "word": " 제공한다면",
+          "probability": 0.9959817975759506
+        }
+      ]
+    },
+    {
+      "start": 16.2,
+      "end": 18.64,
+      "text": " 그 범위도 구체적으로 정할 수 있습니다.",
+      "avgLogProbability": -0.14313958770167218,
+      "noSpeechProbability": 0.009894813410937786,
+      "words": [
+        {
+          "start": 16.2,
+          "end": 16.74,
+          "word": " 그",
+          "probability": 0.847852885723114
+        },
+        {
+          "start": 16.74,
+          "end": 17.18,
+          "word": " 범위도",
+          "probability": 0.9494738578796387
+        },
+        {
+          "start": 17.18,
+          "end": 17.84,
+          "word": " 구체적으로",
+          "probability": 0.9976436098416647
+        },
+        {
+          "start": 17.84,
+          "end": 18.16,
+          "word": " 정할",
+          "probability": 0.9908979833126068
+        },
+        {
+          "start": 18.16,
+          "end": 18.28,
+          "word": " 수",
+          "probability": 0.9978637099266052
+        },
+        {
+          "start": 18.28,
+          "end": 18.64,
+          "word": " 있습니다.",
+          "probability": 0.9974887371063232
+        }
+      ]
+    },
+    {
+      "start": 19.9,
+      "end": 21.78,
+      "text": " 하지만 아직 운영하지 않는다면",
+      "avgLogProbability": -0.14313958770167218,
+      "noSpeechProbability": 0.009894813410937786,
+      "words": [
+        {
+          "start": 19.9,
+          "end": 20.42,
+          "word": " 하지만",
+          "probability": 0.9983761310577393
+        },
+        {
+          "start": 20.42,
+          "end": 20.74,
+          "word": " 아직",
+          "probability": 0.9702773094177246
+        },
+        {
+          "start": 20.74,
+          "end": 21.24,
+          "word": " 운영하지",
+          "probability": 0.9933825135231018
+        },
+        {
+          "start": 21.24,
+          "end": 21.78,
+          "word": " 않는다면",
+          "probability": 0.9977999031543732
+        }
+      ]
+    },
+    {
+      "start": 21.78,
+      "end": 24.26,
+      "text": " 소개를 좋아 보이게 하려고 포함하지 않습니다.",
+      "avgLogProbability": -0.14313958770167218,
+      "noSpeechProbability": 0.009894813410937786,
+      "words": [
+        {
+          "start": 21.78,
+          "end": 22.26,
+          "word": " 소개를",
+          "probability": 0.9454897344112396
+        },
+        {
+          "start": 22.26,
+          "end": 22.52,
+          "word": " 좋아",
+          "probability": 0.9206923246383667
+        },
+        {
+          "start": 22.52,
+          "end": 22.92,
+          "word": " 보이게",
+          "probability": 0.8722969889640808
+        },
+        {
+          "start": 22.92,
+          "end": 23.22,
+          "word": " 하려고",
+          "probability": 0.9949544370174408
+        },
+        {
+          "start": 23.22,
+          "end": 23.78,
+          "word": " 포함하지",
+          "probability": 0.9988713065783182
+        },
+        {
+          "start": 23.78,
+          "end": 24.26,
+          "word": " 않습니다.",
+          "probability": 0.9953659474849701
+        }
+      ]
+    },
+    {
+      "start": 25.86,
+      "end": 27.72,
+      "text": " 여러분은 포함하는 도움 한 줄과",
+      "avgLogProbability": -0.14313958770167218,
+      "noSpeechProbability": 0.009894813410937786,
+      "words": [
+        {
+          "start": 25.86,
+          "end": 26.4,
+          "word": " 여러분은",
+          "probability": 0.9832799136638641
+        },
+        {
+          "start": 26.4,
+          "end": 26.88,
+          "word": " 포함하는",
+          "probability": 0.9918102622032166
+        },
+        {
+          "start": 26.88,
+          "end": 27.16,
+          "word": " 도움",
+          "probability": 0.9498487710952759
+        },
+        {
+          "start": 27.16,
+          "end": 27.34,
+          "word": " 한",
+          "probability": 0.9736139178276062
+        },
+        {
+          "start": 27.34,
+          "end": 27.72,
+          "word": " 줄과",
+          "probability": 0.9856681227684021
+        }
+      ]
+    },
+    {
+      "start": 27.72,
+      "end": 30.54,
+      "text": " 오해할 수 있어 미리 구분할 일 한 줄을 적어보세요.",
+      "avgLogProbability": -0.22542494789082954,
+      "noSpeechProbability": 0.06734731048345566,
+      "words": [
+        {
+          "start": 27.72,
+          "end": 28.26,
+          "word": " 오해할",
+          "probability": 0.8794334530830383
+        },
+        {
+          "start": 28.26,
+          "end": 28.4,
+          "word": " 수",
+          "probability": 0.9969231486320496
+        },
+        {
+          "start": 28.4,
+          "end": 28.64,
+          "word": " 있어",
+          "probability": 0.9874902367591858
+        },
+        {
+          "start": 28.64,
+          "end": 29.0,
+          "word": " 미리",
+          "probability": 0.9686782658100128
+        },
+        {
+          "start": 29.0,
+          "end": 29.46,
+          "word": " 구분할",
+          "probability": 0.968127429485321
+        },
+        {
+          "start": 29.46,
+          "end": 29.56,
+          "word": " 일",
+          "probability": 0.9426449537277222
+        },
+        {
+          "start": 29.56,
+          "end": 29.76,
+          "word": " 한",
+          "probability": 0.9893664717674255
+        },
+        {
+          "start": 29.76,
+          "end": 30.04,
+          "word": " 줄을",
+          "probability": 0.8839802145957947
+        },
+        {
+          "start": 30.04,
+          "end": 30.54,
+          "word": " 적어보세요.",
+          "probability": 0.8586202263832092
+        }
+      ]
+    },
+    {
+      "start": 31.740000000000002,
+      "end": 36.18,
+      "text": " 제외라는 말 대신 자연스러운 문장으로 안내해도 의미는 분명해야 합니다.",
+      "avgLogProbability": -0.22542494789082954,
+      "noSpeechProbability": 0.06734731048345566,
+      "words": [
+        {
+          "start": 31.740000000000002,
+          "end": 32.56,
+          "word": " 제외라는",
+          "probability": 0.7609840631484985
+        },
+        {
+          "start": 32.56,
+          "end": 32.78,
+          "word": " 말",
+          "probability": 0.9608792066574097
+        },
+        {
+          "start": 32.78,
+          "end": 33.14,
+          "word": " 대신",
+          "probability": 0.9973365664482117
+        },
+        {
+          "start": 33.14,
+          "end": 33.82,
+          "word": " 자연스러운",
+          "probability": 0.9737024704615275
+        },
+        {
+          "start": 33.82,
+          "end": 34.34,
+          "word": " 문장으로",
+          "probability": 0.9902399778366089
+        },
+        {
+          "start": 34.34,
+          "end": 34.88,
+          "word": " 안내해도",
+          "probability": 0.7253283858299255
+        },
+        {
+          "start": 34.88,
+          "end": 35.4,
+          "word": " 의미는",
+          "probability": 0.9940834244092306
+        },
+        {
+          "start": 35.4,
+          "end": 35.9,
+          "word": " 분명해야",
+          "probability": 0.9774932066599528
+        },
+        {
+          "start": 35.9,
+          "end": 36.18,
+          "word": " 합니다.",
+          "probability": 0.9706310629844666
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 6.02
+}

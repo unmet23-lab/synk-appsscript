@@ -1,0 +1,65 @@
+[
+  {
+    "key": "night",
+    "path": "assets/night.webp",
+    "width": 2048,
+    "height": 2048,
+    "sha256": "e107255ad0bd8f708006fec668526833aa7e9674fff978a359a597f52e2616b6"
+  },
+  {
+    "key": "compass",
+    "path": "assets/compass.webp",
+    "width": 3840,
+    "height": 3840,
+    "sha256": "4cc7f71e95c6f37b89eec0425ab4ba4b2d26516d9380cc4caf6989a37ba43bbd"
+  },
+  {
+    "key": "cafe",
+    "path": "assets/cafe.webp",
+    "width": 3840,
+    "height": 3840,
+    "sha256": "a9d5fed8a4f69ce3e2944d4ec1a443ee1fc20ccd531f1d145bdfd2e4a35ec365"
+  },
+  {
+    "key": "notebook",
+    "path": "assets/notebook.webp",
+    "width": 3840,
+    "height": 3840,
+    "sha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4"
+  },
+  {
+    "key": "letter",
+    "path": "assets/letter.webp",
+    "width": 2336,
+    "height": 1744,
+    "sha256": "faa4d4443c175de1a9ceaf3c2a4194c4346844d86750d75b36d7d26d4b0be0c0"
+  },
+  {
+    "key": "classroom",
+    "path": "assets/classroom.webp",
+    "width": 3840,
+    "height": 3840,
+    "sha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7"
+  },
+  {
+    "key": "book",
+    "path": "assets/book.webp",
+    "width": 2048,
+    "height": 1360,
+    "sha256": "7ea277b275b1fcf58fdb7e4a6daa61b8e760bdf0e03192c102ea54d5048f8957"
+  },
+  {
+    "key": "scissors",
+    "path": "assets/scissors.webp",
+    "width": 2048,
+    "height": 1360,
+    "sha256": "6eb4bd715fdbbf36e77aedae5799f64c95f4456a1ab9911ebde78a1b0344a3e0"
+  },
+  {
+    "key": "labpage",
+    "path": "assets/labpage-neutral.webp",
+    "width": 3840,
+    "height": 2400,
+    "sha256": "4b989a590f6044156e0caa34af161ada5830cdc2293265f8ce55766e97abe1e9"
+  }
+]

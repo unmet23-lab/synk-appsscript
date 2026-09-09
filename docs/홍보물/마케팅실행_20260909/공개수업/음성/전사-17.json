@@ -1,0 +1,535 @@
+{
+  "version": 1,
+  "id": "17",
+  "input": "chapter-17.wav",
+  "audioSha256": "798ec2fa938a21508665f35f1befdb334edaa0c03f527d87cac0c9d438083950",
+  "language": "ko",
+  "durationSeconds": 30.64,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "쓰다가 막혔다면 전부 다시 시작할 필요는 없습니다. 대상 칸이 막혔으면 이 일을 언제 찾는가를 덧습니다. 범위가 커졌으면 이번에 끝까지 제공할 활동 하나와 남길 결과물 하나를 먼저 고릅니다. AI 문장이 과장되었으면 원자료에서 근거를 찾고 없는 주장을 빼세요. 이 세 갈래 도움은 설명그래도 적어 두었습니다. 다른 링크를 열지 않아도 지금 바로 적용할 수 있습니다. 필요한 것은 전체 수업을 다시 보는 일이 아니라 지금 막힌 한 곳을 다시 확인하는 일일 수 있습니다.",
+  "expectedNarration": "쓰다가 막혔다면 전부 다시 시작할 필요는 없습니다. 대상 칸이 막혔으면 ‘이 일을 언제 찾는가’를 더 씁니다. 범위가 커졌으면 이번에 끝까지 제공할 활동 하나와 남길 결과물 하나를 먼저 고릅니다. AI 문장이 과장되었으면 원자료에서 근거를 찾고 없는 주장을 빼세요. 이 세 갈래 도움은 설명글에도 적어두었습니다. 다른 링크를 열지 않아도 지금 바로 적용할 수 있습니다. 필요한 것은 전체 수업을 다시 보는 일이 아니라, 지금 막힌 한 곳을 다시 확인하는 일일 수 있습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.978494623655914,
+    "expectedCharacters": 186,
+    "transcribedCharacters": 186,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "더씁",
+        "transcribed": "덧습",
+        "expectedContext": "면이일을언제찾는가를더씁니다범위가커졌으면이"
+      },
+      {
+        "type": "replace",
+        "expected": "글에",
+        "transcribed": "그래",
+        "expectedContext": "요이세갈래도움은설명글에도적어두었습니다다른"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.88,
+      "text": " 쓰다가 막혔다면 전부 다시 시작할 필요는 없습니다.",
+      "avgLogProbability": -0.1302564539471451,
+      "noSpeechProbability": 0.05169421806931496,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.32,
+          "word": " 쓰다가",
+          "probability": 0.686894103884697
+        },
+        {
+          "start": 0.32,
+          "end": 0.94,
+          "word": " 막혔다면",
+          "probability": 0.9803001085917155
+        },
+        {
+          "start": 0.94,
+          "end": 1.48,
+          "word": " 전부",
+          "probability": 0.9552323520183563
+        },
+        {
+          "start": 1.48,
+          "end": 1.72,
+          "word": " 다시",
+          "probability": 0.9918642044067383
+        },
+        {
+          "start": 1.72,
+          "end": 2.24,
+          "word": " 시작할",
+          "probability": 0.9966351389884949
+        },
+        {
+          "start": 2.24,
+          "end": 2.6,
+          "word": " 필요는",
+          "probability": 0.998656153678894
+        },
+        {
+          "start": 2.6,
+          "end": 2.88,
+          "word": " 없습니다.",
+          "probability": 0.9957516193389893
+        }
+      ]
+    },
+    {
+      "start": 3.52,
+      "end": 6.68,
+      "text": " 대상 칸이 막혔으면 이 일을 언제 찾는가를 덧습니다.",
+      "avgLogProbability": -0.1302564539471451,
+      "noSpeechProbability": 0.05169421806931496,
+      "words": [
+        {
+          "start": 3.52,
+          "end": 3.84,
+          "word": " 대상",
+          "probability": 0.9239541590213776
+        },
+        {
+          "start": 3.84,
+          "end": 4.14,
+          "word": " 칸이",
+          "probability": 0.8100019693374634
+        },
+        {
+          "start": 4.14,
+          "end": 4.68,
+          "word": " 막혔으면",
+          "probability": 0.989974319934845
+        },
+        {
+          "start": 4.68,
+          "end": 5.08,
+          "word": " 이",
+          "probability": 0.7332298159599304
+        },
+        {
+          "start": 5.08,
+          "end": 5.4,
+          "word": " 일을",
+          "probability": 0.8370703160762787
+        },
+        {
+          "start": 5.4,
+          "end": 5.6,
+          "word": " 언제",
+          "probability": 0.9977982044219971
+        },
+        {
+          "start": 5.6,
+          "end": 6.24,
+          "word": " 찾는가를",
+          "probability": 0.966633066534996
+        },
+        {
+          "start": 6.24,
+          "end": 6.68,
+          "word": " 덧습니다.",
+          "probability": 0.7886771758397421
+        }
+      ]
+    },
+    {
+      "start": 7.3,
+      "end": 10.72,
+      "text": " 범위가 커졌으면 이번에 끝까지 제공할 활동 하나와 남길",
+      "avgLogProbability": -0.1302564539471451,
+      "noSpeechProbability": 0.05169421806931496,
+      "words": [
+        {
+          "start": 7.3,
+          "end": 7.66,
+          "word": " 범위가",
+          "probability": 0.9694879800081253
+        },
+        {
+          "start": 7.66,
+          "end": 8.2,
+          "word": " 커졌으면",
+          "probability": 0.9893847107887268
+        },
+        {
+          "start": 8.2,
+          "end": 8.6,
+          "word": " 이번에",
+          "probability": 0.9194023609161377
+        },
+        {
+          "start": 8.6,
+          "end": 9.18,
+          "word": " 끝까지",
+          "probability": 0.9978143870830536
+        },
+        {
+          "start": 9.18,
+          "end": 9.62,
+          "word": " 제공할",
+          "probability": 0.9829876025517782
+        },
+        {
+          "start": 9.62,
+          "end": 9.88,
+          "word": " 활동",
+          "probability": 0.9950374960899353
+        },
+        {
+          "start": 9.88,
+          "end": 10.34,
+          "word": " 하나와",
+          "probability": 0.9685589373111725
+        },
+        {
+          "start": 10.34,
+          "end": 10.72,
+          "word": " 남길",
+          "probability": 0.973467081785202
+        }
+      ]
+    },
+    {
+      "start": 10.72,
+      "end": 12.32,
+      "text": " 결과물 하나를 먼저 고릅니다.",
+      "avgLogProbability": -0.1302564539471451,
+      "noSpeechProbability": 0.05169421806931496,
+      "words": [
+        {
+          "start": 10.72,
+          "end": 11.2,
+          "word": " 결과물",
+          "probability": 0.9942444165547689
+        },
+        {
+          "start": 11.2,
+          "end": 11.6,
+          "word": " 하나를",
+          "probability": 0.9960573315620422
+        },
+        {
+          "start": 11.6,
+          "end": 11.9,
+          "word": " 먼저",
+          "probability": 0.9989610910415649
+        },
+        {
+          "start": 11.9,
+          "end": 12.32,
+          "word": " 고릅니다.",
+          "probability": 0.9586932261784872
+        }
+      ]
+    },
+    {
+      "start": 12.82,
+      "end": 17.22,
+      "text": " AI 문장이 과장되었으면 원자료에서 근거를 찾고 없는 주장을 빼세요.",
+      "avgLogProbability": -0.1302564539471451,
+      "noSpeechProbability": 0.05169421806931496,
+      "words": [
+        {
+          "start": 12.82,
+          "end": 13.12,
+          "word": " AI",
+          "probability": 0.6793287396430969
+        },
+        {
+          "start": 13.12,
+          "end": 13.62,
+          "word": " 문장이",
+          "probability": 0.9743909537792206
+        },
+        {
+          "start": 13.62,
+          "end": 14.5,
+          "word": " 과장되었으면",
+          "probability": 0.9670175552368164
+        },
+        {
+          "start": 14.5,
+          "end": 15.36,
+          "word": " 원자료에서",
+          "probability": 0.9329695552587509
+        },
+        {
+          "start": 15.36,
+          "end": 15.8,
+          "word": " 근거를",
+          "probability": 0.9095835089683533
+        },
+        {
+          "start": 15.8,
+          "end": 16.18,
+          "word": " 찾고",
+          "probability": 0.9942310750484467
+        },
+        {
+          "start": 16.18,
+          "end": 16.38,
+          "word": " 없는",
+          "probability": 0.9861549735069275
+        },
+        {
+          "start": 16.38,
+          "end": 16.76,
+          "word": " 주장을",
+          "probability": 0.9894122779369354
+        },
+        {
+          "start": 16.76,
+          "end": 17.22,
+          "word": " 빼세요.",
+          "probability": 0.9622707366943359
+        }
+      ]
+    },
+    {
+      "start": 17.72,
+      "end": 20.14,
+      "text": " 이 세 갈래 도움은 설명그래도 적어 두었습니다.",
+      "avgLogProbability": -0.1302564539471451,
+      "noSpeechProbability": 0.05169421806931496,
+      "words": [
+        {
+          "start": 17.72,
+          "end": 17.86,
+          "word": " 이",
+          "probability": 0.990947425365448
+        },
+        {
+          "start": 17.86,
+          "end": 18.04,
+          "word": " 세",
+          "probability": 0.8021774888038635
+        },
+        {
+          "start": 18.04,
+          "end": 18.3,
+          "word": " 갈래",
+          "probability": 0.8077532649040222
+        },
+        {
+          "start": 18.3,
+          "end": 18.74,
+          "word": " 도움은",
+          "probability": 0.9821478525797526
+        },
+        {
+          "start": 18.74,
+          "end": 19.4,
+          "word": " 설명그래도",
+          "probability": 0.7089339892069498
+        },
+        {
+          "start": 19.4,
+          "end": 19.76,
+          "word": " 적어",
+          "probability": 0.7737931609153748
+        },
+        {
+          "start": 19.76,
+          "end": 20.14,
+          "word": " 두었습니다.",
+          "probability": 0.8555528819561005
+        }
+      ]
+    },
+    {
+      "start": 20.74,
+      "end": 23.9,
+      "text": " 다른 링크를 열지 않아도 지금 바로 적용할 수 있습니다.",
+      "avgLogProbability": -0.1302564539471451,
+      "noSpeechProbability": 0.05169421806931496,
+      "words": [
+        {
+          "start": 20.74,
+          "end": 20.98,
+          "word": " 다른",
+          "probability": 0.991588294506073
+        },
+        {
+          "start": 20.98,
+          "end": 21.48,
+          "word": " 링크를",
+          "probability": 0.9949012249708176
+        },
+        {
+          "start": 21.48,
+          "end": 21.74,
+          "word": " 열지",
+          "probability": 0.6265182495117188
+        },
+        {
+          "start": 21.74,
+          "end": 22.2,
+          "word": " 않아도",
+          "probability": 0.9932979047298431
+        },
+        {
+          "start": 22.2,
+          "end": 22.6,
+          "word": " 지금",
+          "probability": 0.9546375274658203
+        },
+        {
+          "start": 22.6,
+          "end": 22.92,
+          "word": " 바로",
+          "probability": 0.998347282409668
+        },
+        {
+          "start": 22.92,
+          "end": 23.42,
+          "word": " 적용할",
+          "probability": 0.9947266976038615
+        },
+        {
+          "start": 23.42,
+          "end": 23.54,
+          "word": " 수",
+          "probability": 0.9966030120849609
+        },
+        {
+          "start": 23.54,
+          "end": 23.9,
+          "word": " 있습니다.",
+          "probability": 0.99866783618927
+        }
+      ]
+    },
+    {
+      "start": 24.42,
+      "end": 26.98,
+      "text": " 필요한 것은 전체 수업을 다시 보는 일이 아니라",
+      "avgLogProbability": -0.1302564539471451,
+      "noSpeechProbability": 0.05169421806931496,
+      "words": [
+        {
+          "start": 24.42,
+          "end": 24.84,
+          "word": " 필요한",
+          "probability": 0.9978951513767242
+        },
+        {
+          "start": 24.84,
+          "end": 25.04,
+          "word": " 것은",
+          "probability": 0.9944604635238647
+        },
+        {
+          "start": 25.04,
+          "end": 25.6,
+          "word": " 전체",
+          "probability": 0.9879607260227203
+        },
+        {
+          "start": 25.6,
+          "end": 26.0,
+          "word": " 수업을",
+          "probability": 0.9982316891352335
+        },
+        {
+          "start": 26.0,
+          "end": 26.22,
+          "word": " 다시",
+          "probability": 0.9974676370620728
+        },
+        {
+          "start": 26.22,
+          "end": 26.44,
+          "word": " 보는",
+          "probability": 0.9885379076004028
+        },
+        {
+          "start": 26.44,
+          "end": 26.7,
+          "word": " 일이",
+          "probability": 0.9846174716949463
+        },
+        {
+          "start": 26.7,
+          "end": 26.98,
+          "word": " 아니라",
+          "probability": 0.9841814041137695
+        }
+      ]
+    },
+    {
+      "start": 26.98,
+      "end": 30.26,
+      "text": " 지금 막힌 한 곳을 다시 확인하는 일일 수 있습니다.",
+      "avgLogProbability": -0.2649421625667148,
+      "noSpeechProbability": 0.2813522517681122,
+      "words": [
+        {
+          "start": 26.98,
+          "end": 27.8,
+          "word": " 지금",
+          "probability": 0.605044960975647
+        },
+        {
+          "start": 27.8,
+          "end": 28.28,
+          "word": " 막힌",
+          "probability": 0.9899961153666178
+        },
+        {
+          "start": 28.28,
+          "end": 28.42,
+          "word": " 한",
+          "probability": 0.9903814196586609
+        },
+        {
+          "start": 28.42,
+          "end": 28.76,
+          "word": " 곳을",
+          "probability": 0.9862983226776123
+        },
+        {
+          "start": 28.76,
+          "end": 29.02,
+          "word": " 다시",
+          "probability": 0.9919456839561462
+        },
+        {
+          "start": 29.02,
+          "end": 29.56,
+          "word": " 확인하는",
+          "probability": 0.9961673617362976
+        },
+        {
+          "start": 29.56,
+          "end": 29.84,
+          "word": " 일일",
+          "probability": 0.8102675080299377
+        },
+        {
+          "start": 29.84,
+          "end": 29.96,
+          "word": " 수",
+          "probability": 0.9700253009796143
+        },
+        {
+          "start": 29.96,
+          "end": 30.26,
+          "word": " 있습니다.",
+          "probability": 0.9947286248207092
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 6.06
+}

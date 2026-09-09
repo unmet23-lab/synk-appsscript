@@ -1,0 +1,516 @@
+{
+  "version": 1,
+  "id": "06",
+  "input": "chapter-06.wav",
+  "audioSha256": "57b42c98e5507cf1a6578d4d2d5195c3f1e69dbb585dd87fddece5944012fbdc",
+  "language": "ko",
+  "durationSeconds": 37.04,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "두 번째 칸은 함께하는 활동입니다. 실력을 키운다나 브랜드를 완성한 다만으로는 실제 순서가 잘 보이지 않습니다. 가상촬영 실습에서는 제품 하나를 놓고 빛과 배경을 바꿔 찍어봅니다. 설명을 듣는 일, 직접 촬영하는 일, 다른 사람에게 검토받는 일은 각각 다른 활동입니다. 실제로 설명만 제공하는데 개별 수정까지 해주는 것처럼 쓰면 범위가 넓어집니다. 여러분의 서비스에서 정말 함께하는 동작을 적어보세요. 읽기, 고르기, 쓰기, 찍기, 비교하기처럼 눈앞에서 할 수 있는 동사로 시작하면 됩니다.",
+  "expectedNarration": "두 번째 칸은 함께 하는 활동입니다. ‘실력을 키운다’나 ‘브랜드를 완성한다’만으로는 실제 순서가 잘 보이지 않습니다. 가상 촬영 실습에서는 제품 하나를 놓고 빛과 배경을 바꿔 찍어봅니다. 설명을 듣는 일, 직접 촬영하는 일, 다른 사람에게 검토받는 일은 각각 다른 활동입니다. 실제로 설명만 제공하는데 개별 수정까지 해주는 것처럼 쓰면 범위가 넓어집니다. 여러분의 서비스에서 정말 함께 하는 동작을 적어보세요. 읽기, 고르기, 쓰기, 찍기, 비교하기처럼 눈앞에서 할 수 있는 동사로 시작하면 됩니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 1.0,
+    "expectedCharacters": 197,
+    "transcribedCharacters": 197,
+    "differences": [],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 1.88,
+      "text": " 두 번째 칸은 함께하는 활동입니다.",
+      "avgLogProbability": -0.1394601026954858,
+      "noSpeechProbability": 0.09600969403982162,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.12,
+          "word": " 두",
+          "probability": 0.4102458953857422
+        },
+        {
+          "start": 0.12,
+          "end": 0.38,
+          "word": " 번째",
+          "probability": 0.9858298897743225
+        },
+        {
+          "start": 0.38,
+          "end": 0.74,
+          "word": " 칸은",
+          "probability": 0.8935459653536478
+        },
+        {
+          "start": 0.74,
+          "end": 1.24,
+          "word": " 함께하는",
+          "probability": 0.7562479078769684
+        },
+        {
+          "start": 1.24,
+          "end": 1.88,
+          "word": " 활동입니다.",
+          "probability": 0.9837793111801147
+        }
+      ]
+    },
+    {
+      "start": 2.42,
+      "end": 5.6,
+      "text": " 실력을 키운다나 브랜드를 완성한 다만으로는",
+      "avgLogProbability": -0.1394601026954858,
+      "noSpeechProbability": 0.09600969403982162,
+      "words": [
+        {
+          "start": 2.42,
+          "end": 2.98,
+          "word": " 실력을",
+          "probability": 0.9953252871831259
+        },
+        {
+          "start": 2.98,
+          "end": 3.6,
+          "word": " 키운다나",
+          "probability": 0.7279737368226051
+        },
+        {
+          "start": 3.6,
+          "end": 4.4,
+          "word": " 브랜드를",
+          "probability": 0.9763292471567789
+        },
+        {
+          "start": 4.4,
+          "end": 4.94,
+          "word": " 완성한",
+          "probability": 0.9701029062271118
+        },
+        {
+          "start": 4.94,
+          "end": 5.6,
+          "word": " 다만으로는",
+          "probability": 0.8938964009284973
+        }
+      ]
+    },
+    {
+      "start": 5.6,
+      "end": 7.94,
+      "text": " 실제 순서가 잘 보이지 않습니다.",
+      "avgLogProbability": -0.1394601026954858,
+      "noSpeechProbability": 0.09600969403982162,
+      "words": [
+        {
+          "start": 5.6,
+          "end": 6.16,
+          "word": " 실제",
+          "probability": 0.9851811826229095
+        },
+        {
+          "start": 6.16,
+          "end": 6.68,
+          "word": " 순서가",
+          "probability": 0.9967273275057474
+        },
+        {
+          "start": 6.68,
+          "end": 6.94,
+          "word": " 잘",
+          "probability": 0.9970717430114746
+        },
+        {
+          "start": 6.94,
+          "end": 7.32,
+          "word": " 보이지",
+          "probability": 0.9983690977096558
+        },
+        {
+          "start": 7.32,
+          "end": 7.94,
+          "word": " 않습니다.",
+          "probability": 0.9913277626037598
+        }
+      ]
+    },
+    {
+      "start": 8.54,
+      "end": 11.46,
+      "text": " 가상촬영 실습에서는 제품 하나를 놓고",
+      "avgLogProbability": -0.1394601026954858,
+      "noSpeechProbability": 0.09600969403982162,
+      "words": [
+        {
+          "start": 8.54,
+          "end": 9.1,
+          "word": " 가상촬영",
+          "probability": 0.9096216410398483
+        },
+        {
+          "start": 9.1,
+          "end": 9.8,
+          "word": " 실습에서는",
+          "probability": 0.9299102028210958
+        },
+        {
+          "start": 9.8,
+          "end": 10.5,
+          "word": " 제품",
+          "probability": 0.9830227494239807
+        },
+        {
+          "start": 10.5,
+          "end": 11.0,
+          "word": " 하나를",
+          "probability": 0.9930461645126343
+        },
+        {
+          "start": 11.0,
+          "end": 11.46,
+          "word": " 놓고",
+          "probability": 0.996184229850769
+        }
+      ]
+    },
+    {
+      "start": 11.46,
+      "end": 13.42,
+      "text": " 빛과 배경을 바꿔 찍어봅니다.",
+      "avgLogProbability": -0.1394601026954858,
+      "noSpeechProbability": 0.09600969403982162,
+      "words": [
+        {
+          "start": 11.46,
+          "end": 12.02,
+          "word": " 빛과",
+          "probability": 0.9145569602648417
+        },
+        {
+          "start": 12.02,
+          "end": 12.5,
+          "word": " 배경을",
+          "probability": 0.9947698513666788
+        },
+        {
+          "start": 12.5,
+          "end": 12.84,
+          "word": " 바꿔",
+          "probability": 0.9649167656898499
+        },
+        {
+          "start": 12.84,
+          "end": 13.42,
+          "word": " 찍어봅니다.",
+          "probability": 0.876547709107399
+        }
+      ]
+    },
+    {
+      "start": 14.08,
+      "end": 16.52,
+      "text": " 설명을 듣는 일, 직접 촬영하는 일,",
+      "avgLogProbability": -0.1394601026954858,
+      "noSpeechProbability": 0.09600969403982162,
+      "words": [
+        {
+          "start": 14.08,
+          "end": 14.58,
+          "word": " 설명을",
+          "probability": 0.9868344664573669
+        },
+        {
+          "start": 14.58,
+          "end": 14.88,
+          "word": " 듣는",
+          "probability": 0.9904655516147614
+        },
+        {
+          "start": 14.88,
+          "end": 15.06,
+          "word": " 일,",
+          "probability": 0.9646283984184265
+        },
+        {
+          "start": 15.42,
+          "end": 15.66,
+          "word": " 직접",
+          "probability": 0.9998190999031067
+        },
+        {
+          "start": 15.66,
+          "end": 16.28,
+          "word": " 촬영하는",
+          "probability": 0.9807859063148499
+        },
+        {
+          "start": 16.28,
+          "end": 16.52,
+          "word": " 일,",
+          "probability": 0.9977720379829407
+        }
+      ]
+    },
+    {
+      "start": 16.84,
+      "end": 20.02,
+      "text": " 다른 사람에게 검토받는 일은 각각 다른 활동입니다.",
+      "avgLogProbability": -0.1394601026954858,
+      "noSpeechProbability": 0.09600969403982162,
+      "words": [
+        {
+          "start": 16.84,
+          "end": 17.04,
+          "word": " 다른",
+          "probability": 0.9968804121017456
+        },
+        {
+          "start": 17.04,
+          "end": 17.6,
+          "word": " 사람에게",
+          "probability": 0.9990135133266449
+        },
+        {
+          "start": 17.6,
+          "end": 18.28,
+          "word": " 검토받는",
+          "probability": 0.9343178073565165
+        },
+        {
+          "start": 18.28,
+          "end": 18.7,
+          "word": " 일은",
+          "probability": 0.9970777034759521
+        },
+        {
+          "start": 18.7,
+          "end": 19.18,
+          "word": " 각각",
+          "probability": 0.9937867820262909
+        },
+        {
+          "start": 19.18,
+          "end": 19.4,
+          "word": " 다른",
+          "probability": 0.9990382194519043
+        },
+        {
+          "start": 19.4,
+          "end": 20.02,
+          "word": " 활동입니다.",
+          "probability": 0.9921313524246216
+        }
+      ]
+    },
+    {
+      "start": 20.66,
+      "end": 22.36,
+      "text": " 실제로 설명만 제공하는데",
+      "avgLogProbability": -0.1394601026954858,
+      "noSpeechProbability": 0.09600969403982162,
+      "words": [
+        {
+          "start": 20.66,
+          "end": 21.02,
+          "word": " 실제로",
+          "probability": 0.9814081788063049
+        },
+        {
+          "start": 21.02,
+          "end": 21.7,
+          "word": " 설명만",
+          "probability": 0.9953991770744324
+        },
+        {
+          "start": 21.7,
+          "end": 22.36,
+          "word": " 제공하는데",
+          "probability": 0.9752175410588583
+        }
+      ]
+    },
+    {
+      "start": 22.36,
+      "end": 26.06,
+      "text": " 개별 수정까지 해주는 것처럼 쓰면 범위가 넓어집니다.",
+      "avgLogProbability": -0.1394601026954858,
+      "noSpeechProbability": 0.09600969403982162,
+      "words": [
+        {
+          "start": 22.36,
+          "end": 23.06,
+          "word": " 개별",
+          "probability": 0.9678680499394735
+        },
+        {
+          "start": 23.06,
+          "end": 23.56,
+          "word": " 수정까지",
+          "probability": 0.953938364982605
+        },
+        {
+          "start": 23.56,
+          "end": 23.98,
+          "word": " 해주는",
+          "probability": 0.9707657098770142
+        },
+        {
+          "start": 23.98,
+          "end": 24.26,
+          "word": " 것처럼",
+          "probability": 0.9826961755752563
+        },
+        {
+          "start": 24.26,
+          "end": 24.72,
+          "word": " 쓰면",
+          "probability": 0.995386928319931
+        },
+        {
+          "start": 24.72,
+          "end": 25.4,
+          "word": " 범위가",
+          "probability": 0.9854039996862411
+        },
+        {
+          "start": 25.4,
+          "end": 26.06,
+          "word": " 넓어집니다.",
+          "probability": 0.9788523515065511
+        }
+      ]
+    },
+    {
+      "start": 26.06,
+      "end": 30.12,
+      "text": " 여러분의 서비스에서 정말 함께하는 동작을 적어보세요.",
+      "avgLogProbability": -0.10241860810380715,
+      "noSpeechProbability": 0.33510246872901917,
+      "words": [
+        {
+          "start": 26.06,
+          "end": 27.16,
+          "word": " 여러분의",
+          "probability": 0.9545401632785797
+        },
+        {
+          "start": 27.16,
+          "end": 27.84,
+          "word": " 서비스에서",
+          "probability": 0.9960677921772003
+        },
+        {
+          "start": 27.84,
+          "end": 28.4,
+          "word": " 정말",
+          "probability": 0.9454283714294434
+        },
+        {
+          "start": 28.4,
+          "end": 29.04,
+          "word": " 함께하는",
+          "probability": 0.8773000538349152
+        },
+        {
+          "start": 29.04,
+          "end": 29.56,
+          "word": " 동작을",
+          "probability": 0.9991447329521179
+        },
+        {
+          "start": 29.56,
+          "end": 30.12,
+          "word": " 적어보세요.",
+          "probability": 0.8557701110839844
+        }
+      ]
+    },
+    {
+      "start": 30.7,
+      "end": 36.56,
+      "text": " 읽기, 고르기, 쓰기, 찍기, 비교하기처럼 눈앞에서 할 수 있는 동사로 시작하면 됩니다.",
+      "avgLogProbability": -0.10241860810380715,
+      "noSpeechProbability": 0.33510246872901917,
+      "words": [
+        {
+          "start": 30.7,
+          "end": 31.14,
+          "word": " 읽기,",
+          "probability": 0.7489780485630035
+        },
+        {
+          "start": 31.38,
+          "end": 31.84,
+          "word": " 고르기,",
+          "probability": 0.9572822054227194
+        },
+        {
+          "start": 32.12,
+          "end": 32.46,
+          "word": " 쓰기,",
+          "probability": 0.9926975965499878
+        },
+        {
+          "start": 32.74,
+          "end": 33.14,
+          "word": " 찍기,",
+          "probability": 0.9359486699104309
+        },
+        {
+          "start": 33.36,
+          "end": 34.08,
+          "word": " 비교하기처럼",
+          "probability": 0.9917169511318207
+        },
+        {
+          "start": 34.08,
+          "end": 34.78,
+          "word": " 눈앞에서",
+          "probability": 0.9299866706132889
+        },
+        {
+          "start": 34.78,
+          "end": 34.98,
+          "word": " 할",
+          "probability": 0.991919994354248
+        },
+        {
+          "start": 34.98,
+          "end": 35.14,
+          "word": " 수",
+          "probability": 0.9961206316947937
+        },
+        {
+          "start": 35.14,
+          "end": 35.34,
+          "word": " 있는",
+          "probability": 0.9965794682502747
+        },
+        {
+          "start": 35.34,
+          "end": 35.84,
+          "word": " 동사로",
+          "probability": 0.9811280171076456
+        },
+        {
+          "start": 35.84,
+          "end": 36.34,
+          "word": " 시작하면",
+          "probability": 0.9888483285903931
+        },
+        {
+          "start": 36.34,
+          "end": 36.56,
+          "word": " 됩니다.",
+          "probability": 0.9988877177238464
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 6.11
+}

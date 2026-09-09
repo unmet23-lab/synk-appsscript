@@ -1,0 +1,240 @@
+{
+  "version": 1,
+  "id": "05",
+  "input": "clinic-05.wav",
+  "audioSha256": "225c5781517865263a2126ae3c2a9629b6d1a3f7c7be70e1055b2bb3b3dd7689",
+  "language": "ko",
+  "durationSeconds": 14.56,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "여러분의 문장에서도 넓은 대상, 막연한 활동, 근거 없는 결과 중 한 곳을 찾아 보세요. 고객명이나 비공개 자료를 공개하지 않고 자기 메모에서 비교해도 됩니다. 지금 고칠 수 있는 한 곳을 찾으면 충분합니다.",
+  "expectedNarration": "여러분의 문장에서도 넓은 대상, 막연한 활동, 근거 없는 결과 중 한 곳을 찾아보세요. 고객명이나 비공개 자료를 공개하지 않고 자기 메모에서 비교해도 됩니다. 지금 고칠 수 있는 한 곳을 찾으면 충분합니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 1.0,
+    "expectedCharacters": 81,
+    "transcribedCharacters": 81,
+    "differences": [],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 5.52,
+      "text": " 여러분의 문장에서도 넓은 대상, 막연한 활동, 근거 없는 결과 중 한 곳을 찾아 보세요.",
+      "avgLogProbability": -0.1465621999331883,
+      "noSpeechProbability": 0.003307420527562499,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.48,
+          "word": " 여러분의",
+          "probability": 0.9679791033267975
+        },
+        {
+          "start": 0.48,
+          "end": 1.08,
+          "word": " 문장에서도",
+          "probability": 0.9878005385398865
+        },
+        {
+          "start": 1.08,
+          "end": 1.58,
+          "word": " 넓은",
+          "probability": 0.9900316993395487
+        },
+        {
+          "start": 1.58,
+          "end": 1.96,
+          "word": " 대상,",
+          "probability": 0.9832605719566345
+        },
+        {
+          "start": 2.26,
+          "end": 2.7,
+          "word": " 막연한",
+          "probability": 0.8964575131734213
+        },
+        {
+          "start": 2.7,
+          "end": 3.0,
+          "word": " 활동,",
+          "probability": 0.9982969164848328
+        },
+        {
+          "start": 3.36,
+          "end": 3.68,
+          "word": " 근거",
+          "probability": 0.9724767804145813
+        },
+        {
+          "start": 3.68,
+          "end": 3.88,
+          "word": " 없는",
+          "probability": 0.895359992980957
+        },
+        {
+          "start": 3.88,
+          "end": 4.18,
+          "word": " 결과",
+          "probability": 0.9937567710876465
+        },
+        {
+          "start": 4.18,
+          "end": 4.5,
+          "word": " 중",
+          "probability": 0.9449241161346436
+        },
+        {
+          "start": 4.5,
+          "end": 4.68,
+          "word": " 한",
+          "probability": 0.9810996651649475
+        },
+        {
+          "start": 4.68,
+          "end": 5.0,
+          "word": " 곳을",
+          "probability": 0.9783075153827667
+        },
+        {
+          "start": 5.0,
+          "end": 5.2,
+          "word": " 찾아",
+          "probability": 0.9685046076774597
+        },
+        {
+          "start": 5.2,
+          "end": 5.52,
+          "word": " 보세요.",
+          "probability": 0.4507296681404114
+        }
+      ]
+    },
+    {
+      "start": 6.36,
+      "end": 10.66,
+      "text": " 고객명이나 비공개 자료를 공개하지 않고 자기 메모에서 비교해도 됩니다.",
+      "avgLogProbability": -0.1465621999331883,
+      "noSpeechProbability": 0.003307420527562499,
+      "words": [
+        {
+          "start": 6.36,
+          "end": 7.04,
+          "word": " 고객명이나",
+          "probability": 0.9792913645505905
+        },
+        {
+          "start": 7.04,
+          "end": 7.6,
+          "word": " 비공개",
+          "probability": 0.9306760430335999
+        },
+        {
+          "start": 7.6,
+          "end": 7.98,
+          "word": " 자료를",
+          "probability": 0.9845651984214783
+        },
+        {
+          "start": 7.98,
+          "end": 8.52,
+          "word": " 공개하지",
+          "probability": 0.9961744546890259
+        },
+        {
+          "start": 8.52,
+          "end": 8.82,
+          "word": " 않고",
+          "probability": 0.9984619617462158
+        },
+        {
+          "start": 8.82,
+          "end": 9.3,
+          "word": " 자기",
+          "probability": 0.8348687887191772
+        },
+        {
+          "start": 9.3,
+          "end": 9.84,
+          "word": " 메모에서",
+          "probability": 0.8776301542917887
+        },
+        {
+          "start": 9.84,
+          "end": 10.42,
+          "word": " 비교해도",
+          "probability": 0.9899071455001831
+        },
+        {
+          "start": 10.42,
+          "end": 10.66,
+          "word": " 됩니다.",
+          "probability": 0.9968146681785583
+        }
+      ]
+    },
+    {
+      "start": 11.46,
+      "end": 14.14,
+      "text": " 지금 고칠 수 있는 한 곳을 찾으면 충분합니다.",
+      "avgLogProbability": -0.1465621999331883,
+      "noSpeechProbability": 0.003307420527562499,
+      "words": [
+        {
+          "start": 11.46,
+          "end": 11.72,
+          "word": " 지금",
+          "probability": 0.9937660694122314
+        },
+        {
+          "start": 11.72,
+          "end": 12.18,
+          "word": " 고칠",
+          "probability": 0.9935313165187836
+        },
+        {
+          "start": 12.18,
+          "end": 12.34,
+          "word": " 수",
+          "probability": 0.9865961670875549
+        },
+        {
+          "start": 12.34,
+          "end": 12.56,
+          "word": " 있는",
+          "probability": 0.9962255954742432
+        },
+        {
+          "start": 12.56,
+          "end": 12.8,
+          "word": " 한",
+          "probability": 0.9983928799629211
+        },
+        {
+          "start": 12.8,
+          "end": 13.12,
+          "word": " 곳을",
+          "probability": 0.9914893209934235
+        },
+        {
+          "start": 13.12,
+          "end": 13.54,
+          "word": " 찾으면",
+          "probability": 0.996128261089325
+        },
+        {
+          "start": 13.54,
+          "end": 14.14,
+          "word": " 충분합니다.",
+          "probability": 0.9947583079338074
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 2.38
+}

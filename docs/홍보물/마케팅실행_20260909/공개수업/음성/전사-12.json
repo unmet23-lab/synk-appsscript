@@ -1,0 +1,492 @@
+{
+  "version": 1,
+  "id": "12",
+  "input": "chapter-12.wav",
+  "audioSha256": "90e9e197ff4bfa79a9cdd2840f5fe352630bfba200cbdb6282e68bafd4381c62",
+  "language": "ko",
+  "durationSeconds": 33.68,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "마지막 칸은 시작 전에 확인할 것입니다. 가상 예시에서는 사진을 사용할 권한과 촬영할 공간을 적었습니다. 비공개 고객 제품을 허락 없이 실습재료로 쓰지 않는지 살펴보는 뜻입니다. 다른 서비스라면 시작할 때 필요한 준비가 다를 수 있습니다. 중요한 것은 자료를 많이 받는 것이 아니라 필요한 최소한을 구분하는 것입니다. 고객명, 연락처, 계약 내용을 공개 게시물에 올려야 하는 양식으로 만들지 마세요. 개인 정보를 쓰지 않아도 되는 예시나 대체 자료를 먼저 고를 수 있습니다.",
+  "expectedNarration": "마지막 칸은 시작 전에 확인할 것입니다. 가상 예시에서는 사진을 사용할 권한과 촬영할 공간을 적었습니다. 비공개 고객 제품을 허락 없이 실습 재료로 쓰지 않는지 살펴보는 뜻입니다. 다른 서비스라면 시작할 때 필요한 준비가 다를 수 있습니다. 중요한 것은 자료를 많이 받는 것이 아니라 필요한 최소한을 구분하는 것입니다. 고객명, 연락처, 계약 내용을 공개 게시물에 올려야 하는 양식으로 만들지 마세요. 개인 정보를 쓰지 않아도 되는 예시나 대체 자료를 먼저 고를 수 있습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 1.0,
+    "expectedCharacters": 190,
+    "transcribedCharacters": 190,
+    "differences": [],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.6,
+      "text": " 마지막 칸은 시작 전에 확인할 것입니다.",
+      "avgLogProbability": -0.11343567756315072,
+      "noSpeechProbability": 0.002583963330835104,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.3,
+          "word": " 마지막",
+          "probability": 0.8649933934211731
+        },
+        {
+          "start": 0.3,
+          "end": 0.86,
+          "word": " 칸은",
+          "probability": 0.6806156486272812
+        },
+        {
+          "start": 0.86,
+          "end": 1.16,
+          "word": " 시작",
+          "probability": 0.9208497405052185
+        },
+        {
+          "start": 1.16,
+          "end": 1.52,
+          "word": " 전에",
+          "probability": 0.7854132652282715
+        },
+        {
+          "start": 1.52,
+          "end": 2.1,
+          "word": " 확인할",
+          "probability": 0.9903590977191925
+        },
+        {
+          "start": 2.1,
+          "end": 2.6,
+          "word": " 것입니다.",
+          "probability": 0.9818500280380249
+        }
+      ]
+    },
+    {
+      "start": 3.16,
+      "end": 7.32,
+      "text": " 가상 예시에서는 사진을 사용할 권한과 촬영할 공간을 적었습니다.",
+      "avgLogProbability": -0.11343567756315072,
+      "noSpeechProbability": 0.002583963330835104,
+      "words": [
+        {
+          "start": 3.16,
+          "end": 3.56,
+          "word": " 가상",
+          "probability": 0.9810443818569183
+        },
+        {
+          "start": 3.56,
+          "end": 4.1,
+          "word": " 예시에서는",
+          "probability": 0.7233803470929464
+        },
+        {
+          "start": 4.1,
+          "end": 4.82,
+          "word": " 사진을",
+          "probability": 0.9882494807243347
+        },
+        {
+          "start": 4.82,
+          "end": 5.28,
+          "word": " 사용할",
+          "probability": 0.996552050113678
+        },
+        {
+          "start": 5.28,
+          "end": 5.8,
+          "word": " 권한과",
+          "probability": 0.9839152544736862
+        },
+        {
+          "start": 5.8,
+          "end": 6.36,
+          "word": " 촬영할",
+          "probability": 0.9934463500976562
+        },
+        {
+          "start": 6.36,
+          "end": 6.84,
+          "word": " 공간을",
+          "probability": 0.9981396794319153
+        },
+        {
+          "start": 6.84,
+          "end": 7.32,
+          "word": " 적었습니다.",
+          "probability": 0.9925558865070343
+        }
+      ]
+    },
+    {
+      "start": 8.02,
+      "end": 12.88,
+      "text": " 비공개 고객 제품을 허락 없이 실습재료로 쓰지 않는지 살펴보는 뜻입니다.",
+      "avgLogProbability": -0.11343567756315072,
+      "noSpeechProbability": 0.002583963330835104,
+      "words": [
+        {
+          "start": 8.02,
+          "end": 8.48,
+          "word": " 비공개",
+          "probability": 0.9587818384170532
+        },
+        {
+          "start": 8.48,
+          "end": 8.86,
+          "word": " 고객",
+          "probability": 0.9647519290447235
+        },
+        {
+          "start": 8.86,
+          "end": 9.4,
+          "word": " 제품을",
+          "probability": 0.9523796439170837
+        },
+        {
+          "start": 9.4,
+          "end": 9.7,
+          "word": " 허락",
+          "probability": 0.9979783892631531
+        },
+        {
+          "start": 9.7,
+          "end": 10.02,
+          "word": " 없이",
+          "probability": 0.7134279608726501
+        },
+        {
+          "start": 10.02,
+          "end": 10.94,
+          "word": " 실습재료로",
+          "probability": 0.9302054728780474
+        },
+        {
+          "start": 10.94,
+          "end": 11.28,
+          "word": " 쓰지",
+          "probability": 0.9922668933868408
+        },
+        {
+          "start": 11.28,
+          "end": 11.72,
+          "word": " 않는지",
+          "probability": 0.8901585042476654
+        },
+        {
+          "start": 11.72,
+          "end": 12.38,
+          "word": " 살펴보는",
+          "probability": 0.9915169596672058
+        },
+        {
+          "start": 12.38,
+          "end": 12.88,
+          "word": " 뜻입니다.",
+          "probability": 0.9954586625099182
+        }
+      ]
+    },
+    {
+      "start": 13.44,
+      "end": 17.22,
+      "text": " 다른 서비스라면 시작할 때 필요한 준비가 다를 수 있습니다.",
+      "avgLogProbability": -0.11343567756315072,
+      "noSpeechProbability": 0.002583963330835104,
+      "words": [
+        {
+          "start": 13.44,
+          "end": 13.7,
+          "word": " 다른",
+          "probability": 0.9958662986755371
+        },
+        {
+          "start": 13.7,
+          "end": 14.46,
+          "word": " 서비스라면",
+          "probability": 0.9916750192642212
+        },
+        {
+          "start": 14.46,
+          "end": 15.22,
+          "word": " 시작할",
+          "probability": 0.9496614038944244
+        },
+        {
+          "start": 15.22,
+          "end": 15.36,
+          "word": " 때",
+          "probability": 0.99552321434021
+        },
+        {
+          "start": 15.36,
+          "end": 15.84,
+          "word": " 필요한",
+          "probability": 0.9962952136993408
+        },
+        {
+          "start": 15.84,
+          "end": 16.34,
+          "word": " 준비가",
+          "probability": 0.9927524924278259
+        },
+        {
+          "start": 16.34,
+          "end": 16.64,
+          "word": " 다를",
+          "probability": 0.9702917337417603
+        },
+        {
+          "start": 16.64,
+          "end": 16.82,
+          "word": " 수",
+          "probability": 0.9962559938430786
+        },
+        {
+          "start": 16.82,
+          "end": 17.22,
+          "word": " 있습니다.",
+          "probability": 0.997247040271759
+        }
+      ]
+    },
+    {
+      "start": 17.84,
+      "end": 22.62,
+      "text": " 중요한 것은 자료를 많이 받는 것이 아니라 필요한 최소한을 구분하는 것입니다.",
+      "avgLogProbability": -0.11343567756315072,
+      "noSpeechProbability": 0.002583963330835104,
+      "words": [
+        {
+          "start": 17.84,
+          "end": 18.14,
+          "word": " 중요한",
+          "probability": 0.989188551902771
+        },
+        {
+          "start": 18.14,
+          "end": 18.56,
+          "word": " 것은",
+          "probability": 0.9887838959693909
+        },
+        {
+          "start": 18.56,
+          "end": 19.12,
+          "word": " 자료를",
+          "probability": 0.9566748936971029
+        },
+        {
+          "start": 19.12,
+          "end": 19.42,
+          "word": " 많이",
+          "probability": 0.9985679388046265
+        },
+        {
+          "start": 19.42,
+          "end": 19.8,
+          "word": " 받는",
+          "probability": 0.9958146214485168
+        },
+        {
+          "start": 19.8,
+          "end": 20.04,
+          "word": " 것이",
+          "probability": 0.9915355443954468
+        },
+        {
+          "start": 20.04,
+          "end": 20.28,
+          "word": " 아니라",
+          "probability": 0.9962164759635925
+        },
+        {
+          "start": 20.28,
+          "end": 21.02,
+          "word": " 필요한",
+          "probability": 0.9730995893478394
+        },
+        {
+          "start": 21.02,
+          "end": 21.66,
+          "word": " 최소한을",
+          "probability": 0.8413899168372154
+        },
+        {
+          "start": 21.66,
+          "end": 22.14,
+          "word": " 구분하는",
+          "probability": 0.9881823062896729
+        },
+        {
+          "start": 22.14,
+          "end": 22.62,
+          "word": " 것입니다.",
+          "probability": 0.9913539588451385
+        }
+      ]
+    },
+    {
+      "start": 23.22,
+      "end": 28.54,
+      "text": " 고객명, 연락처, 계약 내용을 공개 게시물에 올려야 하는 양식으로 만들지 마세요.",
+      "avgLogProbability": -0.11343567756315072,
+      "noSpeechProbability": 0.002583963330835104,
+      "words": [
+        {
+          "start": 23.22,
+          "end": 23.78,
+          "word": " 고객명,",
+          "probability": 0.9537130991617838
+        },
+        {
+          "start": 24.02,
+          "end": 24.56,
+          "word": " 연락처,",
+          "probability": 0.9937141338984171
+        },
+        {
+          "start": 24.76,
+          "end": 25.0,
+          "word": " 계약",
+          "probability": 0.9302470982074738
+        },
+        {
+          "start": 25.0,
+          "end": 25.46,
+          "word": " 내용을",
+          "probability": 0.9820448756217957
+        },
+        {
+          "start": 25.46,
+          "end": 25.84,
+          "word": " 공개",
+          "probability": 0.9968499839305878
+        },
+        {
+          "start": 25.84,
+          "end": 26.38,
+          "word": " 게시물에",
+          "probability": 0.8847492784261703
+        },
+        {
+          "start": 26.38,
+          "end": 26.82,
+          "word": " 올려야",
+          "probability": 0.9971754749615988
+        },
+        {
+          "start": 26.82,
+          "end": 27.02,
+          "word": " 하는",
+          "probability": 0.8996445536613464
+        },
+        {
+          "start": 27.02,
+          "end": 27.62,
+          "word": " 양식으로",
+          "probability": 0.9949759046236674
+        },
+        {
+          "start": 27.62,
+          "end": 28.14,
+          "word": " 만들지",
+          "probability": 0.9966508746147156
+        },
+        {
+          "start": 28.14,
+          "end": 28.54,
+          "word": " 마세요.",
+          "probability": 0.9876006841659546
+        }
+      ]
+    },
+    {
+      "start": 28.54,
+      "end": 33.2,
+      "text": " 개인 정보를 쓰지 않아도 되는 예시나 대체 자료를 먼저 고를 수 있습니다.",
+      "avgLogProbability": -0.10801238509324881,
+      "noSpeechProbability": 0.10720359534025192,
+      "words": [
+        {
+          "start": 28.54,
+          "end": 29.28,
+          "word": " 개인",
+          "probability": 0.8753689527511597
+        },
+        {
+          "start": 29.28,
+          "end": 29.8,
+          "word": " 정보를",
+          "probability": 0.97258327404658
+        },
+        {
+          "start": 29.8,
+          "end": 30.12,
+          "word": " 쓰지",
+          "probability": 0.9931716024875641
+        },
+        {
+          "start": 30.12,
+          "end": 30.46,
+          "word": " 않아도",
+          "probability": 0.9919317960739136
+        },
+        {
+          "start": 30.46,
+          "end": 30.7,
+          "word": " 되는",
+          "probability": 0.9878419041633606
+        },
+        {
+          "start": 30.7,
+          "end": 31.24,
+          "word": " 예시나",
+          "probability": 0.8997888167699178
+        },
+        {
+          "start": 31.24,
+          "end": 31.64,
+          "word": " 대체",
+          "probability": 0.9748585522174835
+        },
+        {
+          "start": 31.64,
+          "end": 32.04,
+          "word": " 자료를",
+          "probability": 0.9849070111910502
+        },
+        {
+          "start": 32.04,
+          "end": 32.3,
+          "word": " 먼저",
+          "probability": 0.9988227486610413
+        },
+        {
+          "start": 32.3,
+          "end": 32.74,
+          "word": " 고를",
+          "probability": 0.9919395744800568
+        },
+        {
+          "start": 32.74,
+          "end": 32.88,
+          "word": " 수",
+          "probability": 0.9970464110374451
+        },
+        {
+          "start": 32.88,
+          "end": 33.2,
+          "word": " 있습니다.",
+          "probability": 0.9991084933280945
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 5.06
+}

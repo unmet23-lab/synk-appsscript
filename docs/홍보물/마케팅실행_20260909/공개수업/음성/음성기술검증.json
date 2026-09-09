@@ -1,0 +1,595 @@
+{
+  "version": 1,
+  "status": "technical-checks-passed-listening-not-performed",
+  "date": "2026-09-09",
+  "activeClips": 23,
+  "originalPcmPreserved": true,
+  "normalizedDecodeErrors": 0,
+  "currentNarrationHashMatches": true,
+  "offlineTranscriptionComplete": true,
+  "humanListeningVerified": false,
+  "timestamps": "automatic estimates from audio, not manually verified",
+  "notes": [
+    "ASR 인식 오류와 실제 발음 오류를 동일시하지 않음",
+    "문자 유사도는 음질·억양·교육 효과 점수가 아님",
+    "현재 활성 파일은 음성명세.json/클리닉_음성명세.json 경로를 사용; 01 r1은 보존된 이전판"
+  ],
+  "records": [
+    {
+      "group": "lecture",
+      "id": "01",
+      "wavFile": "chapter-01-r2.wav",
+      "durationSeconds": 26.24,
+      "samples": 629760,
+      "peakDbfs": -0.96,
+      "rmsDbfs": -15.96,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.136,
+      "transcript": "전사-01.json",
+      "wordTimestamps": 58,
+      "characterSimilarity": 1,
+      "differences": []
+    },
+    {
+      "group": "lecture",
+      "id": "02",
+      "wavFile": "chapter-02.wav",
+      "durationSeconds": 27.12,
+      "samples": 650880,
+      "peakDbfs": -0.38,
+      "rmsDbfs": -16.48,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2141,
+      "transcript": "전사-02.json",
+      "wordTimestamps": 55,
+      "characterSimilarity": 0.9716088328075709,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "1",
+          "transcribed": "일",
+          "expectedContext": "촬영을가르치는가상의1인강사입니다실제수강"
+        },
+        {
+          "type": "replace",
+          "expected": "꾸어",
+          "transcribed": "꿔",
+          "expectedContext": "공할수있는내용으로바꾸어쓰세요특히매출이나문"
+        },
+        {
+          "type": "replace",
+          "expected": "문의",
+          "transcribed": "무늬",
+          "expectedContext": "어쓰세요특히매출이나문의가늘어난다는말확인할"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "03",
+      "wavFile": "chapter-03.wav",
+      "durationSeconds": 29.52,
+      "samples": 708480,
+      "peakDbfs": -0.28,
+      "rmsDbfs": -16.39,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2142,
+      "transcript": "전사-03.json",
+      "wordTimestamps": 58,
+      "characterSimilarity": 0.9883720930232558,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "새",
+          "expectedContext": "만처음읽는사람에게는세질문이남습니다내가이"
+        },
+        {
+          "type": "replace",
+          "expected": "꿉",
+          "transcribed": "꾸",
+          "expectedContext": "사를찾지않고순서를바꿉니다경력은나중에확인"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "04",
+      "wavFile": "chapter-04.wav",
+      "durationSeconds": 32.32,
+      "samples": 775680,
+      "peakDbfs": 0,
+      "rmsDbfs": -16.53,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2209,
+      "transcript": "전사-04.json",
+      "wordTimestamps": 63,
+      "characterSimilarity": 0.9779005524861878,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "첫칸은",
+          "transcribed": "척하는",
+          "expectedContext": "첫칸은누구의어떤상황인지입"
+        },
+        {
+          "type": "replace",
+          "expected": "예",
+          "transcribed": "의",
+          "expectedContext": "니다예시의대상은수공예판매자입니다여기에새"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "05",
+      "wavFile": "chapter-05.wav",
+      "durationSeconds": 28.88,
+      "samples": 693120,
+      "peakDbfs": -1.05,
+      "rmsDbfs": -15.91,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2219,
+      "transcript": "전사-05.json",
+      "wordTimestamps": 59,
+      "characterSimilarity": 0.9938650306748467,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "에",
+          "transcribed": "의",
+          "expectedContext": "메모에누구의어떤상황이라고"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "06",
+      "wavFile": "chapter-06.wav",
+      "durationSeconds": 37.04,
+      "samples": 888960,
+      "peakDbfs": 0,
+      "rmsDbfs": -16.67,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2333,
+      "transcript": "전사-06.json",
+      "wordTimestamps": 65,
+      "characterSimilarity": 1,
+      "differences": []
+    },
+    {
+      "group": "lecture",
+      "id": "07",
+      "wavFile": "chapter-07.wav",
+      "durationSeconds": 34.56,
+      "samples": 829440,
+      "peakDbfs": -0.2,
+      "rmsDbfs": -16.56,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2148,
+      "transcript": "전사-07.json",
+      "wordTimestamps": 71,
+      "characterSimilarity": 0.978494623655914,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "3",
+          "expectedContext": "실습에서는비교할사진세컷이남습니다사진세컷"
+        },
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "3",
+          "expectedContext": "진세컷이남습니다사진세컷을만든다는것과그사"
+        },
+        {
+          "type": "replace",
+          "expected": "의",
+          "transcribed": "에",
+          "expectedContext": "것은다른주장입니다앞의것은이실습안에서확인"
+        },
+        {
+          "type": "replace",
+          "expected": "의",
+          "transcribed": "에",
+          "expectedContext": "할수있는산출물이고뒤의것은외부요인도관련된"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "08",
+      "wavFile": "chapter-08.wav",
+      "durationSeconds": 31.44,
+      "samples": 754560,
+      "peakDbfs": 0,
+      "rmsDbfs": -16.11,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.1682,
+      "transcript": "전사-08.json",
+      "wordTimestamps": 62,
+      "characterSimilarity": 0.9585492227979274,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "세칸",
+          "transcribed": "색한",
+          "expectedContext": "이제세칸을한문장으로연결하겠"
+        },
+        {
+          "type": "replace",
+          "expected": "예",
+          "transcribed": "의",
+          "expectedContext": "진을혼자준비하는수공예판매자가휴대폰으로빛"
+        },
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "3",
+          "expectedContext": "을바꿔찍고비교할사진세컷을남기는실습입니다"
+        },
+        {
+          "type": "replace",
+          "expected": "예",
+          "transcribed": "의",
+          "expectedContext": "은소개가필요하면수공예판매자가휴대폰으로제"
+        },
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "3",
+          "expectedContext": "가휴대폰으로제품사진세컷을찍어보는실습입니"
+        },
+        {
+          "type": "replace",
+          "expected": "세칸",
+          "transcribed": "색한",
+          "expectedContext": "요합니다지금여러분의세칸도연결해보세요아직멋"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "09",
+      "wavFile": "chapter-09.wav",
+      "durationSeconds": 24.32,
+      "samples": 583680,
+      "peakDbfs": -0.47,
+      "rmsDbfs": -16.26,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.1923,
+      "transcript": "전사-09.json",
+      "wordTimestamps": 45,
+      "characterSimilarity": 0.9779411764705882,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "의세",
+          "transcribed": "에새",
+          "expectedContext": "지금화면의세빈칸으로자기소개문을"
+        },
+        {
+          "type": "replace",
+          "expected": "메",
+          "transcribed": "매",
+          "expectedContext": "않은부분이생기면좋게메우지말고물음표를남겨"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "10",
+      "wavFile": "chapter-10.wav",
+      "durationSeconds": 30,
+      "samples": 720000,
+      "peakDbfs": -0.71,
+      "rmsDbfs": -16.25,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2005,
+      "transcript": "전사-10.json",
+      "wordTimestamps": 61,
+      "characterSimilarity": 0.9884393063583815,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "소",
+          "transcribed": "초",
+          "expectedContext": "소개문이생겼다면그아래"
+        },
+        {
+          "type": "replace",
+          "expected": "에",
+          "transcribed": "의",
+          "expectedContext": "개문이생겼다면그아래에경계세줄을붙여보겠습"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "11",
+      "wavFile": "chapter-11.wav",
+      "durationSeconds": 36.56,
+      "samples": 877440,
+      "peakDbfs": 0,
+      "rmsDbfs": -16.26,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2611,
+      "transcript": "전사-11.json",
+      "wordTimestamps": 68,
+      "characterSimilarity": 1,
+      "differences": []
+    },
+    {
+      "group": "lecture",
+      "id": "12",
+      "wavFile": "chapter-12.wav",
+      "durationSeconds": 33.68,
+      "samples": 808320,
+      "peakDbfs": -0.52,
+      "rmsDbfs": -16.07,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.1472,
+      "transcript": "전사-12.json",
+      "wordTimestamps": 67,
+      "characterSimilarity": 1,
+      "differences": []
+    },
+    {
+      "group": "lecture",
+      "id": "13",
+      "wavFile": "chapter-13.wav",
+      "durationSeconds": 39.84,
+      "samples": 956160,
+      "peakDbfs": -0.67,
+      "rmsDbfs": -16.15,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2348,
+      "transcript": "전사-13.json",
+      "wordTimestamps": 73,
+      "characterSimilarity": 0.9576059850374065,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "여섯",
+          "transcribed": "6",
+          "expectedContext": "화면의여섯칸을자기일로채워봅니"
+        },
+        {
+          "type": "replace",
+          "expected": "세줄을",
+          "transcribed": "3주를",
+          "expectedContext": "인입니다앞에서쓴소개세줄을옮기고나머지경계세줄"
+        },
+        {
+          "type": "replace",
+          "expected": "세줄을",
+          "transcribed": "3주를",
+          "expectedContext": "줄을옮기고나머지경계세줄을붙이면됩니다한칸에긴"
+        },
+        {
+          "type": "replace",
+          "expected": "에",
+          "transcribed": "의",
+          "expectedContext": "줄을붙이면됩니다한칸에긴설명을쓰기보다먼저"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "14",
+      "wavFile": "chapter-14.wav",
+      "durationSeconds": 36.24,
+      "samples": 869760,
+      "peakDbfs": -0.28,
+      "rmsDbfs": -16.06,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2373,
+      "transcript": "전사-14.json",
+      "wordTimestamps": 76,
+      "characterSimilarity": 1,
+      "differences": []
+    },
+    {
+      "group": "lecture",
+      "id": "15",
+      "wavFile": "chapter-15.wav",
+      "durationSeconds": 30.32,
+      "samples": 727680,
+      "peakDbfs": 0,
+      "rmsDbfs": -16.12,
+      "fullScaleSamples": 2,
+      "quietSampleFraction": 0.1932,
+      "transcript": "전사-15.json",
+      "wordTimestamps": 61,
+      "characterSimilarity": 0.9894179894179894,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "개",
+          "transcribed": "계",
+          "expectedContext": "수업에서소개문초안한개를작성한다고적혀있습"
+        },
+        {
+          "type": "replace",
+          "expected": "개",
+          "transcribed": "계",
+          "expectedContext": "수업에서소개문초안한개를작성합니다로돌아올"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "16",
+      "wavFile": "chapter-16.wav",
+      "durationSeconds": 40.16,
+      "samples": 963840,
+      "peakDbfs": -0.51,
+      "rmsDbfs": -16.41,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2542,
+      "transcript": "전사-16.json",
+      "wordTimestamps": 69,
+      "characterSimilarity": 1,
+      "differences": []
+    },
+    {
+      "group": "lecture",
+      "id": "17",
+      "wavFile": "chapter-17.wav",
+      "durationSeconds": 30.64,
+      "samples": 735360,
+      "peakDbfs": -0.14,
+      "rmsDbfs": -16.08,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.1617,
+      "transcript": "전사-17.json",
+      "wordTimestamps": 69,
+      "characterSimilarity": 0.978494623655914,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "더씁",
+          "transcribed": "덧습",
+          "expectedContext": "면이일을언제찾는가를더씁니다범위가커졌으면이"
+        },
+        {
+          "type": "replace",
+          "expected": "글에",
+          "transcribed": "그래",
+          "expectedContext": "요이세갈래도움은설명글에도적어두었습니다다른"
+        }
+      ]
+    },
+    {
+      "group": "lecture",
+      "id": "18",
+      "wavFile": "chapter-18.wav",
+      "durationSeconds": 28.56,
+      "samples": 685440,
+      "peakDbfs": 0,
+      "rmsDbfs": -15.96,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.1441,
+      "transcript": "전사-18.json",
+      "wordTimestamps": 65,
+      "characterSimilarity": 0.9887005649717514,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "에",
+          "transcribed": "해",
+          "expectedContext": "끝납니다이후실제적용에서막힌지점이생기면그"
+        },
+        {
+          "type": "replace",
+          "expected": "두",
+          "transcribed": "주",
+          "expectedContext": "만개인정보를빼고적어두세요다음에찾아볼도움"
+        }
+      ]
+    },
+    {
+      "group": "clinic",
+      "id": "01",
+      "wavFile": "clinic-01.wav",
+      "durationSeconds": 10.56,
+      "samples": 253440,
+      "peakDbfs": -1.84,
+      "rmsDbfs": -16.46,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.2473,
+      "transcript": "전사-클리닉01.json",
+      "wordTimestamps": 20,
+      "characterSimilarity": 1,
+      "differences": []
+    },
+    {
+      "group": "clinic",
+      "id": "02",
+      "wavFile": "clinic-02.wav",
+      "durationSeconds": 16.08,
+      "samples": 385920,
+      "peakDbfs": -0.92,
+      "rmsDbfs": -16.59,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.3091,
+      "transcript": "전사-클리닉02.json",
+      "wordTimestamps": 20,
+      "characterSimilarity": 0.9444444444444444,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "안은",
+          "transcribed": "화는",
+          "expectedContext": "가상초안은이렇습니다초보사장님"
+        },
+        {
+          "type": "replace",
+          "expected": "연하",
+          "transcribed": "여나",
+          "expectedContext": "지넓고무엇을하는지막연하며매출이라는성과약속"
+        }
+      ]
+    },
+    {
+      "group": "clinic",
+      "id": "03",
+      "wavFile": "clinic-03.wav",
+      "durationSeconds": 16.8,
+      "samples": 403200,
+      "peakDbfs": -0.23,
+      "rmsDbfs": -16.3,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.1348,
+      "transcript": "전사-클리닉03.json",
+      "wordTimestamps": 29,
+      "characterSimilarity": 0.9887640449438202,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "개",
+          "transcribed": "계",
+          "expectedContext": "는사람이소개문초안한개를작성한다고만적혀있"
+        }
+      ]
+    },
+    {
+      "group": "clinic",
+      "id": "04",
+      "wavFile": "clinic-04.wav",
+      "durationSeconds": 22.72,
+      "samples": 545280,
+      "peakDbfs": 0,
+      "rmsDbfs": -16.45,
+      "fullScaleSamples": 1,
+      "quietSampleFraction": 0.2294,
+      "transcript": "전사-클리닉04.json",
+      "wordTimestamps": 39,
+      "characterSimilarity": 0.9915966386554622,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "개",
+          "transcribed": "계",
+          "expectedContext": "는사람이소개문초안한개를작성하는실습이라고"
+        }
+      ]
+    },
+    {
+      "group": "clinic",
+      "id": "05",
+      "wavFile": "clinic-05.wav",
+      "durationSeconds": 14.56,
+      "samples": 349440,
+      "peakDbfs": -1.61,
+      "rmsDbfs": -16.16,
+      "fullScaleSamples": 0,
+      "quietSampleFraction": 0.1825,
+      "transcript": "전사-클리닉05.json",
+      "wordTimestamps": 31,
+      "characterSimilarity": 1,
+      "differences": []
+    }
+  ]
+}

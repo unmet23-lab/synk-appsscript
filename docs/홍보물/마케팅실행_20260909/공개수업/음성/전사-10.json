@@ -1,0 +1,478 @@
+{
+  "version": 1,
+  "id": "10",
+  "input": "chapter-10.wav",
+  "audioSha256": "5b1d4fe322afb22f5291bfd50a60dbbe989a32a5dc877c96f0c2ae9be34cc534",
+  "language": "ko",
+  "durationSeconds": 30.0,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "초개문이 생겼다면 그 아래의 경계 세줄을 붙여보겠습니다. 포함하는 도움, 포함하지 않는 일, 시작 전에 확인할 것입니다. 상품을 작아 보이게 만들려는 작업이 아닙니다. 서로 무엇을 기대하는지 확인할 수 있게 만드는 일입니다. 모든 세부 조건을 첫 화면에 몰아 넣을 필요는 없지만 기대가 크게 갈릴 지점은 소개와 가까운 곳에 두는 편이 좋습니다. 이 수업의 양식은 계약서가 아닙니다. 실제 운영 조건은 별도로 확인하고 정리해야 합니다.",
+  "expectedNarration": "소개문이 생겼다면 그 아래에 경계 세 줄을 붙여보겠습니다. 포함하는 도움, 포함하지 않는 일, 시작 전에 확인할 것입니다. 상품을 작아 보이게 만들려는 작업이 아닙니다. 서로 무엇을 기대하는지 확인할 수 있게 만드는 일입니다. 모든 세부 조건을 첫 화면에 몰아넣을 필요는 없지만, 기대가 크게 갈릴 지점은 소개와 가까운 곳에 두는 편이 좋습니다. 이 수업의 양식은 계약서가 아닙니다. 실제 운영 조건은 별도로 확인하고 정리해야 합니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9884393063583815,
+    "expectedCharacters": 173,
+    "transcribedCharacters": 173,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "소",
+        "transcribed": "초",
+        "expectedContext": "소개문이생겼다면그아래"
+      },
+      {
+        "type": "replace",
+        "expected": "에",
+        "transcribed": "의",
+        "expectedContext": "개문이생겼다면그아래에경계세줄을붙여보겠습"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 3.52,
+      "text": " 초개문이 생겼다면 그 아래의 경계 세줄을 붙여보겠습니다.",
+      "avgLogProbability": -0.11830109384443079,
+      "noSpeechProbability": 0.019896376878023148,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.5,
+          "word": " 초개문이",
+          "probability": 0.7840451076626778
+        },
+        {
+          "start": 0.5,
+          "end": 1.06,
+          "word": " 생겼다면",
+          "probability": 0.9974275529384613
+        },
+        {
+          "start": 1.06,
+          "end": 1.54,
+          "word": " 그",
+          "probability": 0.8417052030563354
+        },
+        {
+          "start": 1.54,
+          "end": 2.02,
+          "word": " 아래의",
+          "probability": 0.8796423474947611
+        },
+        {
+          "start": 2.02,
+          "end": 2.4,
+          "word": " 경계",
+          "probability": 0.9645178616046906
+        },
+        {
+          "start": 2.4,
+          "end": 2.88,
+          "word": " 세줄을",
+          "probability": 0.6796559790770212
+        },
+        {
+          "start": 2.88,
+          "end": 3.52,
+          "word": " 붙여보겠습니다.",
+          "probability": 0.9554389715194702
+        }
+      ]
+    },
+    {
+      "start": 4.22,
+      "end": 8.06,
+      "text": " 포함하는 도움, 포함하지 않는 일, 시작 전에 확인할 것입니다.",
+      "avgLogProbability": -0.11830109384443079,
+      "noSpeechProbability": 0.019896376878023148,
+      "words": [
+        {
+          "start": 4.22,
+          "end": 4.7,
+          "word": " 포함하는",
+          "probability": 0.9813065131505331
+        },
+        {
+          "start": 4.7,
+          "end": 5.06,
+          "word": " 도움,",
+          "probability": 0.9700608551502228
+        },
+        {
+          "start": 5.32,
+          "end": 5.84,
+          "word": " 포함하지",
+          "probability": 0.9973945021629333
+        },
+        {
+          "start": 5.84,
+          "end": 6.02,
+          "word": " 않는",
+          "probability": 0.9967972636222839
+        },
+        {
+          "start": 6.02,
+          "end": 6.3,
+          "word": " 일,",
+          "probability": 0.9536980390548706
+        },
+        {
+          "start": 6.62,
+          "end": 6.8,
+          "word": " 시작",
+          "probability": 0.9975021481513977
+        },
+        {
+          "start": 6.8,
+          "end": 7.14,
+          "word": " 전에",
+          "probability": 0.8796635270118713
+        },
+        {
+          "start": 7.14,
+          "end": 7.66,
+          "word": " 확인할",
+          "probability": 0.9932296872138977
+        },
+        {
+          "start": 7.66,
+          "end": 8.06,
+          "word": " 것입니다.",
+          "probability": 0.9905239045619965
+        }
+      ]
+    },
+    {
+      "start": 8.64,
+      "end": 11.28,
+      "text": " 상품을 작아 보이게 만들려는 작업이 아닙니다.",
+      "avgLogProbability": -0.11830109384443079,
+      "noSpeechProbability": 0.019896376878023148,
+      "words": [
+        {
+          "start": 8.64,
+          "end": 9.1,
+          "word": " 상품을",
+          "probability": 0.9940769672393799
+        },
+        {
+          "start": 9.1,
+          "end": 9.42,
+          "word": " 작아",
+          "probability": 0.7857098877429962
+        },
+        {
+          "start": 9.42,
+          "end": 9.76,
+          "word": " 보이게",
+          "probability": 0.9494018852710724
+        },
+        {
+          "start": 9.76,
+          "end": 10.34,
+          "word": " 만들려는",
+          "probability": 0.9682419002056122
+        },
+        {
+          "start": 10.34,
+          "end": 10.8,
+          "word": " 작업이",
+          "probability": 0.9956160485744476
+        },
+        {
+          "start": 10.8,
+          "end": 11.28,
+          "word": " 아닙니다.",
+          "probability": 0.9983956813812256
+        }
+      ]
+    },
+    {
+      "start": 11.78,
+      "end": 14.86,
+      "text": " 서로 무엇을 기대하는지 확인할 수 있게 만드는 일입니다.",
+      "avgLogProbability": -0.11830109384443079,
+      "noSpeechProbability": 0.019896376878023148,
+      "words": [
+        {
+          "start": 11.78,
+          "end": 11.98,
+          "word": " 서로",
+          "probability": 0.9978098273277283
+        },
+        {
+          "start": 11.98,
+          "end": 12.5,
+          "word": " 무엇을",
+          "probability": 0.9995836317539215
+        },
+        {
+          "start": 12.5,
+          "end": 13.18,
+          "word": " 기대하는지",
+          "probability": 0.988449772198995
+        },
+        {
+          "start": 13.18,
+          "end": 13.7,
+          "word": " 확인할",
+          "probability": 0.996116042137146
+        },
+        {
+          "start": 13.7,
+          "end": 13.84,
+          "word": " 수",
+          "probability": 0.9978355765342712
+        },
+        {
+          "start": 13.84,
+          "end": 14.02,
+          "word": " 있게",
+          "probability": 0.9984381794929504
+        },
+        {
+          "start": 14.02,
+          "end": 14.44,
+          "word": " 만드는",
+          "probability": 0.9987555146217346
+        },
+        {
+          "start": 14.44,
+          "end": 14.86,
+          "word": " 일입니다.",
+          "probability": 0.9909671247005463
+        }
+      ]
+    },
+    {
+      "start": 15.48,
+      "end": 18.64,
+      "text": " 모든 세부 조건을 첫 화면에 몰아 넣을 필요는 없지만",
+      "avgLogProbability": -0.11830109384443079,
+      "noSpeechProbability": 0.019896376878023148,
+      "words": [
+        {
+          "start": 15.48,
+          "end": 15.76,
+          "word": " 모든",
+          "probability": 0.9976702332496643
+        },
+        {
+          "start": 15.76,
+          "end": 16.1,
+          "word": " 세부",
+          "probability": 0.9625028669834137
+        },
+        {
+          "start": 16.1,
+          "end": 16.58,
+          "word": " 조건을",
+          "probability": 0.9771112203598022
+        },
+        {
+          "start": 16.58,
+          "end": 16.84,
+          "word": " 첫",
+          "probability": 0.996526300907135
+        },
+        {
+          "start": 16.84,
+          "end": 17.28,
+          "word": " 화면에",
+          "probability": 0.978817363580068
+        },
+        {
+          "start": 17.28,
+          "end": 17.58,
+          "word": " 몰아",
+          "probability": 0.802774449189504
+        },
+        {
+          "start": 17.58,
+          "end": 17.82,
+          "word": " 넣을",
+          "probability": 0.9401091635227203
+        },
+        {
+          "start": 17.82,
+          "end": 18.18,
+          "word": " 필요는",
+          "probability": 0.9990999102592468
+        },
+        {
+          "start": 18.18,
+          "end": 18.64,
+          "word": " 없지만",
+          "probability": 0.9980295896530151
+        }
+      ]
+    },
+    {
+      "start": 18.64,
+      "end": 23.1,
+      "text": " 기대가 크게 갈릴 지점은 소개와 가까운 곳에 두는 편이 좋습니다.",
+      "avgLogProbability": -0.11830109384443079,
+      "noSpeechProbability": 0.019896376878023148,
+      "words": [
+        {
+          "start": 18.64,
+          "end": 19.46,
+          "word": " 기대가",
+          "probability": 0.9534102380275726
+        },
+        {
+          "start": 19.46,
+          "end": 19.68,
+          "word": " 크게",
+          "probability": 0.9981430768966675
+        },
+        {
+          "start": 19.68,
+          "end": 20.1,
+          "word": " 갈릴",
+          "probability": 0.9003955125808716
+        },
+        {
+          "start": 20.1,
+          "end": 20.6,
+          "word": " 지점은",
+          "probability": 0.9904798070589701
+        },
+        {
+          "start": 20.6,
+          "end": 21.24,
+          "word": " 소개와",
+          "probability": 0.7657494246959686
+        },
+        {
+          "start": 21.24,
+          "end": 21.74,
+          "word": " 가까운",
+          "probability": 0.9990254342556
+        },
+        {
+          "start": 21.74,
+          "end": 22.06,
+          "word": " 곳에",
+          "probability": 0.9901649355888367
+        },
+        {
+          "start": 22.06,
+          "end": 22.34,
+          "word": " 두는",
+          "probability": 0.9937504529953003
+        },
+        {
+          "start": 22.34,
+          "end": 22.66,
+          "word": " 편이",
+          "probability": 0.982978343963623
+        },
+        {
+          "start": 22.66,
+          "end": 23.1,
+          "word": " 좋습니다.",
+          "probability": 0.992083877325058
+        }
+      ]
+    },
+    {
+      "start": 23.68,
+      "end": 25.94,
+      "text": " 이 수업의 양식은 계약서가 아닙니다.",
+      "avgLogProbability": -0.11830109384443079,
+      "noSpeechProbability": 0.019896376878023148,
+      "words": [
+        {
+          "start": 23.68,
+          "end": 23.82,
+          "word": " 이",
+          "probability": 0.9283212423324585
+        },
+        {
+          "start": 23.82,
+          "end": 24.22,
+          "word": " 수업의",
+          "probability": 0.9944903055826823
+        },
+        {
+          "start": 24.22,
+          "end": 24.76,
+          "word": " 양식은",
+          "probability": 0.9977425336837769
+        },
+        {
+          "start": 24.76,
+          "end": 25.46,
+          "word": " 계약서가",
+          "probability": 0.9787916094064713
+        },
+        {
+          "start": 25.46,
+          "end": 25.94,
+          "word": " 아닙니다.",
+          "probability": 0.9993357062339783
+        }
+      ]
+    },
+    {
+      "start": 25.94,
+      "end": 29.72,
+      "text": " 실제 운영 조건은 별도로 확인하고 정리해야 합니다.",
+      "avgLogProbability": -0.12947116579328263,
+      "noSpeechProbability": 0.06383942812681198,
+      "words": [
+        {
+          "start": 25.94,
+          "end": 26.76,
+          "word": " 실제",
+          "probability": 0.987316757440567
+        },
+        {
+          "start": 26.76,
+          "end": 27.12,
+          "word": " 운영",
+          "probability": 0.9948800404866537
+        },
+        {
+          "start": 27.12,
+          "end": 27.62,
+          "word": " 조건은",
+          "probability": 0.8991453647613525
+        },
+        {
+          "start": 27.62,
+          "end": 28.2,
+          "word": " 별도로",
+          "probability": 0.9899754524230957
+        },
+        {
+          "start": 28.2,
+          "end": 28.74,
+          "word": " 확인하고",
+          "probability": 0.9931975305080414
+        },
+        {
+          "start": 28.74,
+          "end": 29.34,
+          "word": " 정리해야",
+          "probability": 0.9933405121167501
+        },
+        {
+          "start": 29.34,
+          "end": 29.72,
+          "word": " 합니다.",
+          "probability": 0.9668916463851929
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 5.85
+}

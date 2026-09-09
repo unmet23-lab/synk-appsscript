@@ -1,0 +1,549 @@
+{
+  "version": 1,
+  "id": "16",
+  "input": "chapter-16.wav",
+  "audioSha256": "1100543293168a8c7cfd93c22d7c5a0f335396660256e5e67937f97939d5f2af",
+  "language": "ko",
+  "durationSeconds": 40.16,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "완성한 소개 문과 상품 한 장을 함께 놓고 네 가지를 확인합니다. 필요한 사람이 자기 상황을 알아볼 수 있나요? 실제로 함께하는 활동이 보이나요? 끝에 남는 것과 포함 제외가 서로 맞나요? 없던 경력이나 성과 약속이 새로 들어가지는 않았나요? 이 질문의 답을 AI에게만 맡기지 말고 원자료와 직접 대조하세요. 가능하다면 이후 실제 대상에게 무엇을 이해했는지 물어볼 수 있습니다. 그 확인은 오늘 문서를 쓴 것과 별개의 단계입니다. 지금은 확인하지 않은 결과까지 얻었다고 말하지 않습니다.",
+  "expectedNarration": "완성한 소개문과 상품 한 장을 함께 놓고 네 가지를 확인합니다. 필요한 사람이 자기 상황을 알아볼 수 있나요? 실제로 함께 하는 활동이 보이나요? 끝에 남는 것과 포함·제외가 서로 맞나요? 없던 경력이나 성과 약속이 새로 들어가지는 않았나요? 이 질문의 답을 AI에게만 맡기지 말고 원자료와 직접 대조하세요. 가능하다면 이후 실제 대상에게 무엇을 이해했는지 물어볼 수 있습니다. 그 확인은 오늘 문서를 쓴 것과 별개의 단계입니다. 지금은 확인하지 않은 결과까지 얻었다고 말하지 않습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 1.0,
+    "expectedCharacters": 195,
+    "transcribedCharacters": 195,
+    "differences": [],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.76,
+      "text": " 완성한 소개 문과 상품 한 장을 함께 놓고",
+      "avgLogProbability": -0.1247554612159729,
+      "noSpeechProbability": 0.01868867129087448,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.5,
+          "word": " 완성한",
+          "probability": 0.8721793591976166
+        },
+        {
+          "start": 0.5,
+          "end": 0.72,
+          "word": " 소개",
+          "probability": 0.5514621734619141
+        },
+        {
+          "start": 0.72,
+          "end": 1.16,
+          "word": " 문과",
+          "probability": 0.9471692442893982
+        },
+        {
+          "start": 1.16,
+          "end": 1.54,
+          "word": " 상품",
+          "probability": 0.9842398464679718
+        },
+        {
+          "start": 1.54,
+          "end": 1.78,
+          "word": " 한",
+          "probability": 0.9651663303375244
+        },
+        {
+          "start": 1.78,
+          "end": 2.02,
+          "word": " 장을",
+          "probability": 0.9759466648101807
+        },
+        {
+          "start": 2.02,
+          "end": 2.26,
+          "word": " 함께",
+          "probability": 0.9858001470565796
+        },
+        {
+          "start": 2.26,
+          "end": 2.76,
+          "word": " 놓고",
+          "probability": 0.9926164746284485
+        }
+      ]
+    },
+    {
+      "start": 2.76,
+      "end": 4.46,
+      "text": " 네 가지를 확인합니다.",
+      "avgLogProbability": -0.1247554612159729,
+      "noSpeechProbability": 0.01868867129087448,
+      "words": [
+        {
+          "start": 2.76,
+          "end": 3.3,
+          "word": " 네",
+          "probability": 0.3785223662853241
+        },
+        {
+          "start": 3.3,
+          "end": 3.74,
+          "word": " 가지를",
+          "probability": 0.9743169546127319
+        },
+        {
+          "start": 3.74,
+          "end": 4.46,
+          "word": " 확인합니다.",
+          "probability": 0.9764818251132965
+        }
+      ]
+    },
+    {
+      "start": 5.2,
+      "end": 8.1,
+      "text": " 필요한 사람이 자기 상황을 알아볼 수 있나요?",
+      "avgLogProbability": -0.1247554612159729,
+      "noSpeechProbability": 0.01868867129087448,
+      "words": [
+        {
+          "start": 5.2,
+          "end": 5.78,
+          "word": " 필요한",
+          "probability": 0.9654448628425598
+        },
+        {
+          "start": 5.78,
+          "end": 6.14,
+          "word": " 사람이",
+          "probability": 0.9904999136924744
+        },
+        {
+          "start": 6.14,
+          "end": 6.44,
+          "word": " 자기",
+          "probability": 0.9971951246261597
+        },
+        {
+          "start": 6.44,
+          "end": 7.02,
+          "word": " 상황을",
+          "probability": 0.9837634265422821
+        },
+        {
+          "start": 7.02,
+          "end": 7.46,
+          "word": " 알아볼",
+          "probability": 0.9454967975616455
+        },
+        {
+          "start": 7.46,
+          "end": 7.6,
+          "word": " 수",
+          "probability": 0.9871795773506165
+        },
+        {
+          "start": 7.6,
+          "end": 8.1,
+          "word": " 있나요?",
+          "probability": 0.9985747039318085
+        }
+      ]
+    },
+    {
+      "start": 8.96,
+      "end": 11.2,
+      "text": " 실제로 함께하는 활동이 보이나요?",
+      "avgLogProbability": -0.1247554612159729,
+      "noSpeechProbability": 0.01868867129087448,
+      "words": [
+        {
+          "start": 8.96,
+          "end": 9.32,
+          "word": " 실제로",
+          "probability": 0.984355092048645
+        },
+        {
+          "start": 9.32,
+          "end": 10.06,
+          "word": " 함께하는",
+          "probability": 0.8649270534515381
+        },
+        {
+          "start": 10.06,
+          "end": 10.6,
+          "word": " 활동이",
+          "probability": 0.9962723553180695
+        },
+        {
+          "start": 10.6,
+          "end": 11.2,
+          "word": " 보이나요?",
+          "probability": 0.9678264061609904
+        }
+      ]
+    },
+    {
+      "start": 12.02,
+      "end": 14.8,
+      "text": " 끝에 남는 것과 포함 제외가 서로 맞나요?",
+      "avgLogProbability": -0.1247554612159729,
+      "noSpeechProbability": 0.01868867129087448,
+      "words": [
+        {
+          "start": 12.02,
+          "end": 12.36,
+          "word": " 끝에",
+          "probability": 0.9957439303398132
+        },
+        {
+          "start": 12.36,
+          "end": 12.68,
+          "word": " 남는",
+          "probability": 0.9951591193675995
+        },
+        {
+          "start": 12.68,
+          "end": 13.1,
+          "word": " 것과",
+          "probability": 0.9909155070781708
+        },
+        {
+          "start": 13.1,
+          "end": 13.52,
+          "word": " 포함",
+          "probability": 0.9725164771080017
+        },
+        {
+          "start": 13.52,
+          "end": 13.96,
+          "word": " 제외가",
+          "probability": 0.9086326758066813
+        },
+        {
+          "start": 13.96,
+          "end": 14.18,
+          "word": " 서로",
+          "probability": 0.9985896944999695
+        },
+        {
+          "start": 14.18,
+          "end": 14.8,
+          "word": " 맞나요?",
+          "probability": 0.9022654294967651
+        }
+      ]
+    },
+    {
+      "start": 15.62,
+      "end": 18.98,
+      "text": " 없던 경력이나 성과 약속이 새로 들어가지는 않았나요?",
+      "avgLogProbability": -0.1247554612159729,
+      "noSpeechProbability": 0.01868867129087448,
+      "words": [
+        {
+          "start": 15.62,
+          "end": 16.0,
+          "word": " 없던",
+          "probability": 0.9870637257893881
+        },
+        {
+          "start": 16.0,
+          "end": 16.66,
+          "word": " 경력이나",
+          "probability": 0.982077976067861
+        },
+        {
+          "start": 16.66,
+          "end": 17.1,
+          "word": " 성과",
+          "probability": 0.9941322803497314
+        },
+        {
+          "start": 17.1,
+          "end": 17.62,
+          "word": " 약속이",
+          "probability": 0.9970836242039999
+        },
+        {
+          "start": 17.62,
+          "end": 17.82,
+          "word": " 새로",
+          "probability": 0.9905005693435669
+        },
+        {
+          "start": 17.82,
+          "end": 18.46,
+          "word": " 들어가지는",
+          "probability": 0.978500097990036
+        },
+        {
+          "start": 18.46,
+          "end": 18.98,
+          "word": " 않았나요?",
+          "probability": 0.9381493926048279
+        }
+      ]
+    },
+    {
+      "start": 19.4,
+      "end": 22.26,
+      "text": " 이 질문의 답을 AI에게만 맡기지 말고",
+      "avgLogProbability": -0.1247554612159729,
+      "noSpeechProbability": 0.01868867129087448,
+      "words": [
+        {
+          "start": 19.4,
+          "end": 19.54,
+          "word": " 이",
+          "probability": 0.9935399889945984
+        },
+        {
+          "start": 19.54,
+          "end": 20.08,
+          "word": " 질문의",
+          "probability": 0.8911640644073486
+        },
+        {
+          "start": 20.08,
+          "end": 20.48,
+          "word": " 답을",
+          "probability": 0.9974488615989685
+        },
+        {
+          "start": 20.48,
+          "end": 21.42,
+          "word": " AI에게만",
+          "probability": 0.8839112122853597
+        },
+        {
+          "start": 21.42,
+          "end": 22.0,
+          "word": " 맡기지",
+          "probability": 0.8932860891024271
+        },
+        {
+          "start": 22.0,
+          "end": 22.26,
+          "word": " 말고",
+          "probability": 0.9915115237236023
+        }
+      ]
+    },
+    {
+      "start": 22.26,
+      "end": 24.3,
+      "text": " 원자료와 직접 대조하세요.",
+      "avgLogProbability": -0.1247554612159729,
+      "noSpeechProbability": 0.01868867129087448,
+      "words": [
+        {
+          "start": 22.26,
+          "end": 23.2,
+          "word": " 원자료와",
+          "probability": 0.9342281818389893
+        },
+        {
+          "start": 23.2,
+          "end": 23.5,
+          "word": " 직접",
+          "probability": 0.9998579025268555
+        },
+        {
+          "start": 23.5,
+          "end": 24.3,
+          "word": " 대조하세요.",
+          "probability": 0.9357068339983622
+        }
+      ]
+    },
+    {
+      "start": 26.26,
+      "end": 28.84,
+      "text": " 가능하다면 이후 실제 대상에게",
+      "avgLogProbability": -0.1247554612159729,
+      "noSpeechProbability": 0.01868867129087448,
+      "words": [
+        {
+          "start": 26.26,
+          "end": 27.26,
+          "word": " 가능하다면",
+          "probability": 0.9899279475212097
+        },
+        {
+          "start": 27.26,
+          "end": 27.72,
+          "word": " 이후",
+          "probability": 0.9689109325408936
+        },
+        {
+          "start": 27.72,
+          "end": 28.22,
+          "word": " 실제",
+          "probability": 0.9845808446407318
+        },
+        {
+          "start": 28.22,
+          "end": 28.84,
+          "word": " 대상에게",
+          "probability": 0.9955986738204956
+        }
+      ]
+    },
+    {
+      "start": 28.84,
+      "end": 31.42,
+      "text": " 무엇을 이해했는지 물어볼 수 있습니다.",
+      "avgLogProbability": -0.1754257732629776,
+      "noSpeechProbability": 0.21748608350753784,
+      "words": [
+        {
+          "start": 28.84,
+          "end": 29.5,
+          "word": " 무엇을",
+          "probability": 0.9360973834991455
+        },
+        {
+          "start": 29.5,
+          "end": 30.24,
+          "word": " 이해했는지",
+          "probability": 0.9849864641825358
+        },
+        {
+          "start": 30.24,
+          "end": 30.82,
+          "word": " 물어볼",
+          "probability": 0.9272493720054626
+        },
+        {
+          "start": 30.82,
+          "end": 30.98,
+          "word": " 수",
+          "probability": 0.9929320812225342
+        },
+        {
+          "start": 30.98,
+          "end": 31.42,
+          "word": " 있습니다.",
+          "probability": 0.9982300400733948
+        }
+      ]
+    },
+    {
+      "start": 32.0,
+      "end": 35.46,
+      "text": " 그 확인은 오늘 문서를 쓴 것과 별개의 단계입니다.",
+      "avgLogProbability": -0.1754257732629776,
+      "noSpeechProbability": 0.21748608350753784,
+      "words": [
+        {
+          "start": 32.0,
+          "end": 32.22,
+          "word": " 그",
+          "probability": 0.9914159178733826
+        },
+        {
+          "start": 32.22,
+          "end": 32.8,
+          "word": " 확인은",
+          "probability": 0.8894676864147186
+        },
+        {
+          "start": 32.8,
+          "end": 33.08,
+          "word": " 오늘",
+          "probability": 0.9829765558242798
+        },
+        {
+          "start": 33.08,
+          "end": 33.66,
+          "word": " 문서를",
+          "probability": 0.9854735930760702
+        },
+        {
+          "start": 33.66,
+          "end": 33.92,
+          "word": " 쓴",
+          "probability": 0.9909880459308624
+        },
+        {
+          "start": 33.92,
+          "end": 34.28,
+          "word": " 것과",
+          "probability": 0.9868600964546204
+        },
+        {
+          "start": 34.28,
+          "end": 34.88,
+          "word": " 별개의",
+          "probability": 0.9162215789159139
+        },
+        {
+          "start": 34.88,
+          "end": 35.46,
+          "word": " 단계입니다.",
+          "probability": 0.9909301400184631
+        }
+      ]
+    },
+    {
+      "start": 36.12,
+      "end": 39.84,
+      "text": " 지금은 확인하지 않은 결과까지 얻었다고 말하지 않습니다.",
+      "avgLogProbability": -0.1754257732629776,
+      "noSpeechProbability": 0.21748608350753784,
+      "words": [
+        {
+          "start": 36.12,
+          "end": 36.48,
+          "word": " 지금은",
+          "probability": 0.9825154542922974
+        },
+        {
+          "start": 36.48,
+          "end": 37.14,
+          "word": " 확인하지",
+          "probability": 0.9939565360546112
+        },
+        {
+          "start": 37.14,
+          "end": 37.4,
+          "word": " 않은",
+          "probability": 0.9341831803321838
+        },
+        {
+          "start": 37.4,
+          "end": 38.22,
+          "word": " 결과까지",
+          "probability": 0.9967310428619385
+        },
+        {
+          "start": 38.22,
+          "end": 38.9,
+          "word": " 얻었다고",
+          "probability": 0.9921304434537888
+        },
+        {
+          "start": 38.9,
+          "end": 39.4,
+          "word": " 말하지",
+          "probability": 0.9918645024299622
+        },
+        {
+          "start": 39.4,
+          "end": 39.84,
+          "word": " 않습니다.",
+          "probability": 0.9959743916988373
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 5.26
+}
