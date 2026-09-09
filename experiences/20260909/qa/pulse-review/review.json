@@ -1,0 +1,90 @@
+{
+  "checkedAt": "2026-09-09T14:17:19.016Z",
+  "sources": [
+    {
+      "file": "pulse/index.html",
+      "sha256": "142a4385e388d28c0f37d01145e816af0ddcc4b1521587e67c16006b5bf1b7b9",
+      "changed": false
+    },
+    {
+      "file": "pulse/app.js",
+      "sha256": "7dd8828cebff66928073a92261f6432a85ac65c360a91460e97bee7d512b56ab",
+      "changed": false
+    },
+    {
+      "file": "pulse/scene.js",
+      "sha256": "41a16ba903585553dc38cd3d8d3fd7daa3f518e1c436b6f159758e7fb26047b6",
+      "changed": false
+    },
+    {
+      "file": "pulse/style.css",
+      "sha256": "bc49caae34fec2f13d6561193baffa6633a27389c214d61c780696cdf3d6a474",
+      "changed": false
+    }
+  ],
+  "records": [
+    {
+      "name": "entry first keyboard target",
+      "target": "이야기 조작으로 건너뛰기"
+    },
+    {
+      "name": "entry-desktop axe audit",
+      "violations": 0
+    },
+    {
+      "name": "two contexts create join and host start"
+    },
+    {
+      "name": "private evidence isolated before explicit share"
+    },
+    {
+      "name": "explore-desktop axe audit",
+      "violations": 0
+    },
+    {
+      "name": "four explicit shares unlock decision in both contexts"
+    },
+    {
+      "name": "disagreement blocks finalization and explains why"
+    },
+    {
+      "name": "vote-desktop axe audit",
+      "violations": 0
+    },
+    {
+      "name": "reload reconnect keeps role evidence and vote"
+    },
+    {
+      "name": "revote consensus reaches same authored ending"
+    },
+    {
+      "name": "ending-desktop axe audit",
+      "violations": 0
+    },
+    {
+      "name": "host reset returns all peers to lobby"
+    },
+    {
+      "name": "one device two role flow and ending at 390",
+      "horizontalOverflow": false
+    },
+    {
+      "name": "ending-mobile-390 axe audit",
+      "violations": 0
+    },
+    {
+      "name": "one device two role flow and ending at 320",
+      "horizontalOverflow": false
+    },
+    {
+      "name": "ending-mobile-320 axe audit",
+      "violations": 0
+    },
+    {
+      "name": "browser runtime errors",
+      "count": 0
+    }
+  ],
+  "failures": [],
+  "errors": []
+}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="마지막 불빛의 세 장면을 그림과 글로 감상합니다. 움직임과 읽어주기를 직접 선택할 수 있습니다.">
+  <title>마지막 불빛 · 접근성 감상실 | SYNK</title>
+  <link rel="stylesheet" href="./theme.css">
+  <link rel="stylesheet" href="./gallery.css">
+  <link rel="stylesheet" href="./a11y.css">
+  <script defer src="./a11y.js"></script>
+  <script defer src="./evidence.js"></script>
+  <script defer src="./gallery.js"></script>
+</head>
+<body class="loom-scope">
+  <a class="synk-skip-link" href="#main">감상 본문으로 건너뛰기</a>
+  <header class="site-header page-width">
+    <a class="wordmark" href="../">SYNK <span>EXPERIENCES</span></a>
+    <span class="room-label">접근성 감상실</span>
+  </header>
+  <main id="main" tabindex="-1" class="page-width">
+    <section class="intro" aria-labelledby="title">
+      <p class="eyebrow">PULSE · FELT CITY / 01</p>
+      <h1 id="title">마지막 불빛<span class="title-note">작품 시안</span></h1>
+      <p class="lead">비가 그친 도시. 서두르지 않고,<br class="desktop-break"> 나에게 편한 방식으로 머무는 밤.</p>
+      <p class="intro-note">그림과 글을 함께 보거나, 장면 설명만 읽어도 감상할 수 있습니다.</p>
+    </section>
+    <section class="gallery" aria-label="세 장면 감상">
+      <div class="art-column">
+        <figure class="scene-art">
+          <img id="city-image" src="../pulse/assets/felt-city.png" alt="비가 그친 펠트 해안 도시. 중앙 오른쪽에 트램과 방송국 건물, 왼쪽에 항구와 먼 등대가 있고 따뜻한 불빛이 젖은 길에 비칩니다." hidden>
+          <div id="asset-fallback" class="asset-fallback">
+            <p class="eyebrow">그림을 불러오기 전에도</p>
+            <p class="fallback-title">글로 먼저<br>도시에 도착해요.</p>
+            <p>그림을 불러오지 못해도<br>세 장면의 설명은 그대로 읽을 수 있습니다.</p>
+          </div>
+          <figcaption><span>한 도시, 세 번의 시선</span><span id="image-state">그림 확인 중</span></figcaption>
+        </figure>
+        <div class="light-line" aria-hidden="true"><span class="light-effect" data-synk-motion-effect></span><span>감상실의 작은 빛</span></div>
+        <div class="view-controls" role="group" aria-label="감상 설정">
+          <div class="motion-field"><label for="motion-choice">움직임</label><select id="motion-choice"><option value="system">기기 설정 따르기</option><option value="reduce">움직임 줄이기</option><option value="allow">작은 빛 움직임 허용</option></select></div>
+          <button id="pause-motion" type="button" aria-pressed="false">빛의 움직임 정지</button>
+          <p id="motion-state" class="control-note">기기의 움직임 설정을 따릅니다.</p>
+        </div>
+      </div>
+      <div class="reading-column">
+        <fieldset class="scene-picker">
+          <legend>어디에 머물까요?</legend>
+          <p id="scene-keyboard-help" class="keyboard-help">Tab으로 이동하고, 방향키로 장면을 고르세요.</p>
+          <div class="scene-options" aria-describedby="scene-keyboard-help">
+            <label><input type="radio" name="scene" value="tram" checked><span><small>01</small>트램 정류장</span></label>
+            <label><input type="radio" name="scene" value="square"><span><small>02</small>방송국 광장</span></label>
+            <label><input type="radio" name="scene" value="window"><span><small>03</small>마지막 불빛</span></label>
+          </div>
+        </fieldset>
+        <article class="scene-copy" aria-labelledby="scene-title">
+          <p class="eyebrow" id="scene-number">장면 01</p>
+          <h2 id="scene-title">다음 트램을 기다리는 자리</h2>
+          <div id="scene-description"><p>비가 그친 해안 도시입니다. 젖은 선로가 화면 아래에서 휘어져 중앙 오른쪽의 파란 트램으로 이어집니다. 트램 창과 앞등에는 따뜻한 빛이 켜져 있습니다.</p><p>트램 지붕 위의 작은 코랄빛 신호가 눈에 들어옵니다. 청금석빛 밤하늘 아래, 창과 가로등의 버터빛이 물웅덩이에 길게 비칩니다.</p></div>
+          <p class="draft-note">원본 그림과 대조한 장면 설명 초안입니다. 전문 음성해설과 장애 당사자의 이용 검수는 남아 있습니다.</p>
+          <div class="speech-controls"><button id="read-scene" class="primary" type="button">장면 설명 읽어주기</button><button id="stop-reading" type="button" disabled>읽기 중지</button></div>
+          <p id="speech-state" class="control-note">브라우저의 한국어 음성을 확인하고 있습니다.</p>
+        </article>
+        <section class="sound-note" aria-labelledby="sound-heading">
+          <h2 id="sound-heading">이 감상실의 소리</h2>
+          <p>배경음·효과음·대사·가사는 들어 있지 않습니다. 읽어주기는 위 장면 설명을 브라우저 음성으로 읽는 선택 기능입니다.</p>
+          <p class="small-note">실제 음원을 옮긴 전사나 완성된 전문 음성해설이 아닙니다. 재생은 버튼을 누를 때만 시작하며 언제든 중지할 수 있습니다.</p>
+        </section>
+      </div>
+    </section>
+    <section class="evidence-section" aria-labelledby="evidence-title">
+      <div class="section-heading"><div><p class="eyebrow">이 감상실을 확인한 범위</p><h2 id="evidence-title">작동과 검수는 나누어 기록합니다.</h2></div><button id="download-evidence" type="button">검수 기록 내려받기 · JSON</button></div>
+      <dl class="evidence-grid">
+        <div><dt>화면에 구현</dt><dd>장면 설명, 키보드 선택, 움직임 설정, 선택적 읽어주기</dd></div>
+        <div><dt>자동 확인</dt><dd id="automated-evidence">아직 실행 기록 없음</dd></div>
+        <div><dt>키보드 확인</dt><dd id="keyboard-evidence">아직 직접 확인 기록 없음</dd></div>
+        <div><dt>전문가·당사자</dt><dd>화면낭독기 실청취, 설명의 충분함, 실제 이용 편의는 미확인</dd></div>
+      </dl>
+      <p class="small-note">자동 검사 결과는 접근성 전체 준수를 인증하지 않습니다. <a href="./guide.html">제작 기준과 검수 범위</a></p>
+    </section>
+    <noscript><p class="no-script">JavaScript가 꺼져 있습니다. 첫 장면 설명과 소리 정보는 읽을 수 있습니다. 장면 전환·읽어주기·기록 내려받기는 JavaScript를 켜야 사용할 수 있습니다.</p></noscript>
+  </main>
+  <footer class="page-width site-footer"><p>SYNK · 사람이 자기 방식으로 만나는 작품</p><a href="../pulse/">작품으로 돌아가기</a></footer>
+  <div class="synk-sr-only" data-synk-live></div>
+</body>
+</html>

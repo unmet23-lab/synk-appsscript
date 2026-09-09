@@ -1,0 +1,39 @@
+{
+  "recordedAt": "2026-09-09T14:25:00.047Z",
+  "canonicalRoot": "C:/Users/q1212/Documents/SYNK-appsscript",
+  "worktreeBase": "7b5f29fc6aa0c3cb77d1dd1a8a23f91b3927e6bd",
+  "files": [
+    {
+      "file": "AGENTS.md",
+      "sha256": "2a736bf91866703018bfd2ade35266388de3b48215b64072f9f3f6617b6589d4"
+    },
+    {
+      "file": "docs/AI_운영원칙.md",
+      "sha256": "960ff41ba1a440f062ef73d1cf52a4b39af392627c22fc68979896436b19ae53"
+    },
+    {
+      "file": "DESIGN.md",
+      "sha256": "20559368f3c0764252720a007fbb0d00b5db34634d3cf4166942822f17f579c0"
+    },
+    {
+      "file": "docs/명품_기준_v1.md",
+      "sha256": "97b1f39638ce9d4be9375e5eadc8e2f0140732543cfc2bbdab66616aee961a11"
+    },
+    {
+      "file": "tools/lib/loom.js",
+      "sha256": "bc181b67226848533f7c608e0c6b8903f3b05f39286d74aadc4d19ebd2169f32"
+    },
+    {
+      "file": "docs/Loom_자산/구움/공방_무채펠트.avif",
+      "sha256": "e1b061c471e892cf9bf05e633250ba8e40bcdda0b975c74e886f01e8efe25dfa"
+    },
+    {
+      "file": "experiences/20260909/server/story.cjs",
+      "sha256": "1d459667e3dd575859c8a6c8b40ed3224c363168ca9baafbeebb64bd52486228"
+    },
+    {
+      "file": "experiences/20260909/accessibility/a11y.js",
+      "sha256": "264c5ae9d2924e4306de47e61acfa3b998757b0ac147b8cfd1220a00e3c8d0ad"
+    }
+  ]
+}

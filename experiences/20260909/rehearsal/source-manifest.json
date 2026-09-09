@@ -1,0 +1,96 @@
+{
+  "sourceRoot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript",
+  "sourceHead": "7b5f29fc6aa0c3cb77d1dd1a8a23f91b3927e6bd",
+  "sources": [
+    {
+      "file": "AGENTS.md",
+      "sha256": "2a736bf91866703018bfd2ade35266388de3b48215b64072f9f3f6617b6589d4"
+    },
+    {
+      "file": "docs/AI_운영원칙.md",
+      "sha256": "960ff41ba1a440f062ef73d1cf52a4b39af392627c22fc68979896436b19ae53"
+    },
+    {
+      "file": "DESIGN.md",
+      "sha256": "20559368f3c0764252720a007fbb0d00b5db34634d3cf4166942822f17f579c0"
+    },
+    {
+      "file": "docs/명품_기준_v1.md",
+      "sha256": "97b1f39638ce9d4be9375e5eadc8e2f0140732543cfc2bbdab66616aee961a11"
+    },
+    {
+      "file": "docs/디자인_토큰.json",
+      "sha256": "3bd08216ed6885490112daa5c8f4bb295cfbd6b407b828720c5d5cc08b608b44"
+    },
+    {
+      "file": "docs/로고_중립색_정본_v1.md",
+      "sha256": "f59c78455c6d64f767cd66175128d9d234513883810b406af53c66d4886e8dd2"
+    },
+    {
+      "file": "docs/마케팅_정본.md",
+      "sha256": "32bca9f73b3a448dabd4b6524a9804c4965dc23822697fb652edab7116a0fa6a"
+    },
+    {
+      "file": "docs/SYNK_철학.md",
+      "sha256": "282e11910181cccdec7992d004f68f8c5cad3e43bbb1b4dba8a136ab616191b4"
+    },
+    {
+      "file": "tools/lib/loom.js",
+      "sha256": "468c18f49329b61a8f2ddebbab87d9df169059c867a1100069ea3a064e6893de"
+    },
+    {
+      "file": "tools/lib/브랜드폰트.js",
+      "sha256": "a28f410cedbb60895317dbed4058afc6feedc334ea1ffe1c5f7d8356c8ce9c0d"
+    },
+    {
+      "file": "tools/lib/로고정본.js",
+      "sha256": "e7719357e6402e020d2bdd8b8f517b4abd40e06b735d707bfedddbb128e42cfc"
+    },
+    {
+      "file": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "file": "docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "file": "docs/브랜드_폰트/InterTight/InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "file": "docs/브랜드_폰트/SUIT/LICENSE_OFL.txt",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "file": "docs/브랜드_폰트/InterTight/OFL.txt",
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    }
+  ],
+  "outputs": [
+    {
+      "file": "loom.css",
+      "sha256": "6cec548cc69b9cf4cb4e88f0db3c88469491706449a3ec33c72056a311e90b71"
+    },
+    {
+      "file": "synk.svg",
+      "sha256": "9c3534d02f60c548d978f5c2dcca23e0122f9d4bc9ed2375d51faec86829efd4"
+    },
+    {
+      "file": "InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "file": "InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "file": "SUIT-LICENSE.txt",
+      "sha256": "cd80d331e7efaef0d1b240f3c9c11a2c30b520a8ef1d09f7a22fb3feef2d0be4"
+    },
+    {
+      "file": "InterTight-LICENSE.txt",
+      "sha256": "73aeb48eba2c48bb73c2b5a1718df9e0968b7f1f1f7bfd8e02cbd748766dd921"
+    }
+  ]
+}

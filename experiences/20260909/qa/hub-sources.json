@@ -1,0 +1,10 @@
+{
+  "generated": "2026-09-09T13:46:18.860Z",
+  "sources": {
+    "DESIGN.md": "20559368f3c0764252720a007fbb0d00b5db34634d3cf4166942822f17f579c0",
+    "docs/디자인_토큰.json": "3bd08216ed6885490112daa5c8f4bb295cfbd6b407b828720c5d5cc08b608b44",
+    "tools/lib/loom.js": "468c18f49329b61a8f2ddebbab87d9df169059c867a1100069ea3a064e6893de",
+    "tools/lib/로고정본.js": "e7719357e6402e020d2bdd8b8f517b4abd40e06b735d707bfedddbb128e42cfc",
+    "docs/AI_운영원칙.md": "960ff41ba1a440f062ef73d1cf52a4b39af392627c22fc68979896436b19ae53"
+  }
+}

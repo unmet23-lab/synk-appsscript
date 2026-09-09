@@ -1,0 +1,25 @@
+{
+  "sourceRepository": "SYNK-appsscript",
+  "sourceBaseCommit": "7b5f29fc6aa0c3cb77d1dd1a8a23f91b3927e6bd",
+  "themeSource": "tools/lib/loom.js",
+  "themeSourceSHA256": "468c18f49329b61a8f2ddebbab87d9df169059c867a1100069ea3a064e6893de",
+  "tokenSource": "docs/디자인_토큰.json",
+  "tokenSourceSHA256": "3bd08216ed6885490112daa5c8f4bb295cfbd6b407b828720c5d5cc08b608b44",
+  "fonts": [
+    {
+      "source": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "output": "assets/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "source": "docs/브랜드_폰트/InterTight/InterTight-Regular.ttf",
+      "output": "assets/InterTight-Regular.ttf",
+      "sha256": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699"
+    }
+  ],
+  "sharedImage": {
+    "path": "../pulse/assets/felt-city.png",
+    "status": "observed",
+    "sha256": "38ca26ebbf4f374b22033ae57efa8a2958f89565fe0e3f0d936bab33a9b0ebb3"
+  }
+}

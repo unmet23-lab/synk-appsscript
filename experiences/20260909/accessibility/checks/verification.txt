@@ -1,0 +1,19 @@
+2026-09-09 로컬 제작 확인
+
+node --test experiences/20260909/accessibility/a11y.test.cjs
+결과: 핵심 동작 시험 5개 통과, 0개 실패.
+
+node experiences/20260909/accessibility/browser-check.cjs
+결과: 실제 Chrome의 네이티브 키 입력 및 동작 확인 10개 통과.
+axe: 데스크톱 1440px, 모바일 390px, 그림 누락 320px의 3상태에서 위반 0건, 자동 판정 보류 0건.
+브라우저의 한국어 음성 시작 상태와 취소를 확인했으며 사람의 실제 청취는 하지 않음.
+상세 결과: browser.json. 실제 내려받은 JSON: downloaded-evidence.json.
+
+기존 tools/접근성검사.js로 index.html, guide.html에 --전부 검사 수행.
+결과: 2장 모두 어긴 규칙 0가지, 자리 0곳. 신규 강제 훅 설치 없음.
+
+직접 시각 확인: 원본 felt-city.png와 세 장면 설명 대조, desktop.png, mobile.png, guide-mobile.png 확인.
+guide.html: 390px 화면 가로 넘침 없음.
+
+미확인: 화면낭독기 실청취, 한국어 합성 음성 실제 청취, 접근성 전문가 및 장애 당사자의 이용 검수.
+자동검사와 제작자의 검토는 WCAG 전체 준수나 법규 준수의 인증이 아님.

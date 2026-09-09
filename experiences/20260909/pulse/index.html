@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080605">
+  <meta name="description" content="서로 다른 단서, 하나의 마지막 불빛. 2–4명이 함께 완성하는 PULSE의 짧은 협동 이야기.">
+  <title>마지막 불빛 — SYNK PULSE</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23283158'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23f96859'/%3E%3C/svg%3E">
+  <link rel="preload" href="./assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="./vendor/loom.css">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="../accessibility/a11y.css">
+  <script defer src="../accessibility/a11y.js"></script>
+  <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
+</head>
+<body>
+  <a class="skip-link" href="#story-panel">이야기 조작으로 건너뛰기</a>
+  <main id="experience" class="experience" data-phase="entry">
+    <div id="world" class="world" role="img" aria-label="비가 그친 펠트 해안 도시. 전차 정류장, 방송국, 항구와 등대를 둘러볼 수 있습니다."></div>
+    <div id="fallback" class="fallback" hidden><img src="./assets/felt-city.png" alt="미술 기준 이미지. 비가 그친 밤의 펠트 해안 도시"><p>정지 이미지로 감상 중 · 실시간 3D를 사용할 수 없어 미술 기준 이미지를 보여 드립니다. 장소 버튼으로 모든 조사를 진행할 수 있습니다.</p></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="film-grain" aria-hidden="true"></div>
+    <div id="hotspots" class="hotspots" aria-label="도시의 조사 장소"></div>
+
+    <header class="topbar">
+      <a href="../" class="wordmark" aria-label="SYNK 체험 홈">SYNK <span>PULSE</span></a>
+      <div class="edition"><span class="edition-rule"></span><span>COOPERATIVE STORY</span><span class="edition-number">01</span></div>
+      <div class="top-actions">
+        <span id="connection" class="connection" hidden><i></i><span>연결 중</span></span>
+        <button id="room-button" class="button small ghost" hidden aria-label="초대 링크 복사"><span id="room-code" class="mono"></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 6V3h9v10h-3M3 7h10v10H3z"/></svg></button>
+        <button id="display-toggle" class="icon-button" aria-label="장면 보기 설정" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v12H4zM9 21h6M12 17v4M7 9h3M7 12h5"/></svg></button>
+      </div>
+    </header>
+
+    <aside id="display-panel" class="display-panel surface" hidden>
+      <div class="eyebrow">장면 보기</div>
+      <label>시점 <select id="camera-mode"><option value="street">거리 안에서</option><option value="overview">도시 전체</option></select></label>
+      <label>화질 <select id="quality"><option value="auto">기기에 맞추기</option><option value="high">높음</option><option value="low">가볍게</option></select></label>
+      <label>움직임 <select id="motion-choice"><option value="system">기기 설정 따르기</option><option value="reduce">움직임 줄이기</option><option value="allow">움직임 허용</option></select></label>
+      <button id="scene-only" class="button ghost small">화면 가리고 감상</button>
+      <button id="leave-room" class="text-button" hidden>이 밤 잠시 접어 두기</button>
+      <p>화면을 드래그해 둘러보고, 휠로 가까이 다가가세요. 키보드 방향키도 사용할 수 있습니다.</p>
+      <span id="render-status" class="render-status">도시의 불빛을 불러오는 중</span>
+    </aside>
+    <button id="restore-ui" class="button small surface restore-ui" hidden>이야기로 돌아가기 <span aria-hidden="true">↗</span></button>
+
+    <section id="entry" class="entry" aria-labelledby="story-title">
+      <div class="eyebrow"><span class="signal-dot"></span> 비가 멎은 뒤, 23:17</div>
+      <h1 id="story-title">마지막<br><span>불빛</span><span class="title-period" aria-hidden="true">.</span></h1>
+      <p class="entry-copy">도시에 남은 전기는 단 한 번.<br>당신이 발견한 것과, 내가 아는 것을 모아<br>불빛이 도착할 곳을 정해 주세요.</p>
+      <div class="story-meta"><span>2–4명</span><span>약 10분</span><span>하나의 완결된 밤</span></div>
+      <div id="entry-main" class="entry-actions">
+        <button id="create-open" class="button primary">함께 시작하기 <span aria-hidden="true">↗</span></button>
+        <button id="dual-start" class="button ghost">한 기기로 두 역할 체험</button>
+        <button id="join-open" class="text-button">초대 코드를 받았어요 <span aria-hidden="true">→</span></button>
+      </div>
+      <div id="resume-actions" class="entry-actions" hidden><button id="resume-room" class="button primary">이 밤으로 돌아가기 →</button><a class="button ghost" href="./" target="_blank" rel="noopener">새 탭에서 다른 밤 시작 ↗</a><p class="small-copy">지금의 역할과 단서는 이 탭에 남아 있습니다.</p></div>
+      <form id="room-form" class="room-form" hidden>
+        <div class="form-top"><h2 id="form-title">이 밤에 합류하기</h2><button type="button" id="form-back" class="text-button">뒤로</button></div>
+        <label id="code-label" hidden>초대 코드<input id="code-input" name="code" class="mono" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="6자리 코드"></label>
+        <label>이름<input id="name-input" name="name" maxlength="24" autocomplete="nickname" placeholder="이 밤에 불릴 이름" required></label>
+        <label>나의 역할<select id="role-input" name="role"><option value="signal">전차 정비사 · 필수 역할</option><option value="archive">방송 기록원 · 필수 역할</option><option value="coast">등대 감시인 · 선택 역할</option><option value="courier">우편 배달인 · 선택 역할</option></select></label>
+        <p id="role-description" class="role-description">도시 아래로 이어지는 전선의 길을 알고 있습니다.</p>
+        <button type="submit" id="form-submit" class="button primary">방 만들기 <span aria-hidden="true">↗</span></button>
+      </form>
+      <p class="entry-note">각자 다른 단서를 만납니다.<br>정답을 겨루는 대신, 함께 결말을 만드세요.</p>
+    </section>
+
+    <section id="story-panel" class="story-panel surface" hidden tabindex="-1" aria-label="우리의 이야기">
+      <div class="panel-top"><div><span id="chapter" class="eyebrow">PROLOGUE</span><h2 id="panel-title">이 밤의 동료들</h2></div><button id="panel-collapse" class="icon-button" aria-label="이야기 패널 접기" aria-expanded="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 6-6 6 6"/></svg></button></div>
+      <div id="panel-body">
+        <div id="role-switch" class="role-switch" hidden aria-label="한 기기 체험 역할 전환"></div>
+        <p id="objective" class="objective"></p>
+        <div id="players" class="players"></div>
+        <div id="lobby-actions" class="lobby-actions" hidden>
+          <button id="invite-copy" class="button ghost">초대 링크 복사 <span aria-hidden="true">↗</span></button>
+          <a id="invite-tab" class="text-button" href="#" target="_blank" rel="noopener">다른 탭으로 초대 열기</a>
+          <button id="start-story" class="button primary">이야기 시작 <span aria-hidden="true">→</span></button>
+          <p id="start-hint" class="small-copy"></p>
+        </div>
+        <div id="investigation" hidden>
+          <nav id="object-nav" class="object-nav" aria-label="조사할 장소"></nav>
+          <article id="object-card" class="object-card" hidden></article>
+          <details id="evidence-book" class="evidence-book"><summary>함께 모은 단서 <span id="shared-count" class="mono">0</span></summary><div id="shared-clues" class="shared-clues"></div></details>
+          <button id="open-vote" class="button primary" disabled>불빛을 보낼 곳 정하기 <span aria-hidden="true">→</span></button>
+          <p id="vote-hint" class="small-copy"></p>
+        </div>
+        <div id="voting" hidden>
+          <button id="back-evidence" class="text-button">← 단서 다시 보기</button>
+          <div id="choices" class="choices"></div>
+          <p id="consensus" class="small-copy"></p>
+          <button id="finalize" class="button primary" disabled>이곳으로 불빛 보내기 <span aria-hidden="true">↗</span></button>
+        </div>
+        <article id="ending" class="ending" hidden></article>
+      </div>
+    </section>
+
+    <div id="role-label" class="role-label" hidden><i class="signal-dot"></i><div><span class="eyebrow">YOUR VIEW</span><strong id="current-role"></strong></div></div>
+    <footer class="scene-footer"><div class="scene-caption"><span class="tiny-rule"></span><div><span id="place-name">서쪽 해안, 오래된 전차 광장</span><small id="scene-instruction">드래그해 둘러보기 <span>·</span> 휠로 다가가기</small></div></div><span class="scene-coordinate mono">N 37° · 23:17</span></footer>
+    <div id="loading" class="loading" role="status"><span class="loading-thread"></span><span>도시에 도착하는 중</span></div>
+    <div id="toast" class="toast surface" role="status" aria-live="polite" hidden></div>
+    <div id="error" class="error surface" role="alert" hidden><p id="error-message"></p><button id="recover-room" class="text-button" hidden>새 방으로 시작</button><button id="error-close" class="text-button">닫기</button></div>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

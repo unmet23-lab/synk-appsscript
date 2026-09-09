@@ -1,0 +1,16 @@
+{
+  "temporaryNetwork": {
+    "recoveryVisible": false,
+    "credentialsRetained": true,
+    "sameRoomAfterReconnect": true
+  },
+  "missingRoom": {
+    "message": "이 방은 더 이상 열려 있지 않습니다. 새 방에서 새로운 밤을 시작할 수 있어요.",
+    "newRoomStarted": true
+  },
+  "revokedRole": {
+    "message": "이 역할의 자리가 정리되었습니다. 동료의 새 초대나 새로운 방으로 시작해 주세요.",
+    "newRoomStarted": true
+  },
+  "complete": true
+}

@@ -1,0 +1,44 @@
+{
+  "artifact": "마지막 불빛 · 접근성 감상실",
+  "date": "2026-09-09",
+  "implemented": [
+    "텍스트 장면 설명",
+    "키보드 장면 선택",
+    "움직임 줄이기·정지",
+    "선택적 브라우저 읽어주기·취소",
+    "그림 누락 대체 화면",
+    "검수 기록 내려받기"
+  ],
+  "automated": {
+    "status": "pass_in_tested_scope",
+    "summary": "핵심 동작 시험 5개 통과. Chrome에서 데스크톱·모바일·그림 누락 상태의 axe 위반 0건.",
+    "unitTests": { "command": "node --test experiences/20260909/accessibility/a11y.test.cjs", "passed": 5 },
+    "browserReport": "checks/browser.json",
+    "scope": ["1440px 데스크톱", "390px 모바일", "320px 좁은 화면", "그림 누락", "기기 동작감소 설정 변경", "한국어 읽기 요청·취소", "JSON 파일 실제 다운로드"],
+    "notClaimed": "자동 검사는 모든 접근성 요구와 실제 이용 편의를 보장하지 않음"
+  },
+  "keyboard": {
+    "status": "pass_in_tested_scope",
+    "summary": "실제 Chrome 키 입력으로 본문 건너뛰기, 장면 선택, 움직임 정지, 읽기·취소, 파일 다운로드 확인.",
+    "method": "Chrome headless에 네이티브 Tab·Enter·방향키·Space 입력. 사람이 기기를 조작한 사용성 시험은 아님.",
+    "scope": ["Tab과 Enter로 본문 이동", "방향키로 장면 선택", "방향키로 동작감소 선택", "Space로 정지", "Space로 한국어 읽기 요청", "Tab과 Space로 읽기 중지 및 초점 복귀", "Space로 기록 다운로드"],
+    "report": "checks/browser.json"
+  },
+  "imageDescription": {
+    "status": "draft_compared_by_maker",
+    "source": "../pulse/assets/felt-city.png",
+    "method": "제작 AI가 원본 이미지를 직접 열어 트램·방송국·등대·우체통·구명환을 대조함",
+    "notClaimed": "전문 음성해설 또는 당사자 검수 완료 아님"
+  },
+  "expertAndUser": {
+    "status": "not_verified",
+    "scope": [
+      "화면낭독기 실청취",
+      "한국어 합성 음성의 실제 청취",
+      "전문가·시각/청각장애 당사자 검수",
+      "설명이 감상에 충분한지와 실제 이용 편의"
+    ]
+  },
+  "certification": "WCAG 전체 준수 인증 아님",
+  "sourceAudio": "없음 — 음원 전사·가사·효과음 만들지 않음"
+}

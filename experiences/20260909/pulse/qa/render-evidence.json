@@ -1,0 +1,41 @@
+{
+  "capturedAt": "2026-09-09T14:24:30.720Z",
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "metrics": {
+    "renderer": "Three.js r180 / WebGL2",
+    "geometries": 84,
+    "drawCalls": 245,
+    "triangles": 3285332,
+    "pixelRatio": 1,
+    "quality": "high",
+    "autoReduced": false,
+    "reflections": true,
+    "silhouetteFibres": true,
+    "reducedMotion": false,
+    "textile": "SYNK felt tile"
+  },
+  "frames": {
+    "seconds": 5.0103999999992554,
+    "frames": 300,
+    "observedFps": 59.87545904519491,
+    "medianFrameMs": 16.69999999999891,
+    "p95FrameMs": 16.899999999999636
+  },
+  "lightMode": {
+    "renderer": "Three.js r180 / WebGL2",
+    "geometries": 85,
+    "drawCalls": 107,
+    "triangles": 1987615,
+    "pixelRatio": 1,
+    "quality": "low",
+    "autoReduced": false,
+    "reflections": false,
+    "silhouetteFibres": false,
+    "reducedMotion": true,
+    "textile": "SYNK felt tile"
+  },
+  "errors": []
+}

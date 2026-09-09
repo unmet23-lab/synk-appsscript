@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#FBF7F0">
+  <title>첫 제안의 리허설 · SYNK SHIFT</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/loom.css">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body class="account-collection execution rehearsal">
+  <a class="skip-link" href="#scene">연습으로 바로 가기</a>
+  <header class="site-header">
+    <div class="brand" aria-label="SYNK SHIFT"><img src="./assets/synk.svg" alt="SYNK" width="84" height="56"><span>SHIFT</span></div>
+    <span class="header-caption">실전 리허설</span>
+    <button type="button" class="quiet-button" id="open-tools" aria-expanded="false" aria-controls="storage-tools">기록 관리</button>
+  </header>
+  <section id="storage-tools" class="storage-tools" hidden aria-label="기록 관리">
+    <p>이 브라우저에 저장됩니다. 강사와 나눌 때는 파일을 내려받아 전달하세요.</p>
+    <div class="tool-actions">
+      <button type="button" data-export="json">JSON 저장</button>
+      <button type="button" data-export="txt">텍스트 저장</button>
+      <label class="file-button" for="import-file">저장 파일 열기<input type="file" id="import-file" accept=".json,application/json"></label>
+      <button type="button" id="reset-open">새 연습 시작</button>
+    </div>
+    <p class="small-note">파일 열기와 새 연습은 확인한 뒤 현재 브라우저 기록을 바꿉니다.</p>
+  </section>
+  <div id="recovery" class="recovery" hidden role="alert"></div>
+  <main id="main-content">
+    <nav id="step-nav" class="step-nav" aria-label="연습 단계"></nav>
+    <article id="scene" tabindex="-1" aria-labelledby="scene-title"></article>
+  </main>
+  <footer class="site-footer"><span>가상 고객 · 연습용 조건</span><span id="save-status" role="status" aria-live="polite">이 브라우저에 자동 저장</span></footer>
+  <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-copy">
+    <h2 id="confirm-title">현재 기록을 바꿀까요?</h2>
+    <p id="confirm-copy"></p>
+    <div class="dialog-actions"><button type="button" id="confirm-cancel" autofocus>취소</button><button type="button" id="confirm-yes" class="primary">계속</button></div>
+  </dialog>
+  <noscript><p>이 연습은 입력을 저장하기 위해 JavaScript가 필요합니다. 브라우저에서 JavaScript를 켠 뒤 다시 열어 주세요.</p></noscript>
+</body>
+</html>

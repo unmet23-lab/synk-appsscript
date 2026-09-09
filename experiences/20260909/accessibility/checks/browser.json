@@ -1,0 +1,87 @@
+{
+  "date": "2026-09-09T13:40:04.625Z",
+  "browser": "Chrome headless, native Input key events",
+  "checks": [
+    {
+      "name": "source image and no invented audio",
+      "status": "pass",
+      "details": "City image loaded; no audio/video source or autoplay."
+    },
+    {
+      "name": "skip link",
+      "status": "pass",
+      "details": "Tab exposes skip link; Enter focuses main."
+    },
+    {
+      "name": "motion choice and pause",
+      "status": "pass",
+      "details": "Native arrow keys select reduced motion; Space pauses effect."
+    },
+    {
+      "name": "scene selection",
+      "status": "pass",
+      "details": "Native radio ArrowRight selects 02 then 03; title and visible focus update."
+    },
+    {
+      "name": "speech start and cancel",
+      "status": "pass",
+      "details": "Space requested Korean speech; browser reported active speech; Tab/Space cancelled and restored focus. Human listening not verified."
+    },
+    {
+      "name": "system reduced motion",
+      "status": "pass",
+      "details": "A live OS preference change stops the effect in system mode."
+    },
+    {
+      "name": "mobile layout",
+      "status": "pass",
+      "details": "390px viewport has no horizontal overflow."
+    },
+    {
+      "name": "narrow reflow",
+      "status": "pass",
+      "details": "320px viewport has no horizontal overflow."
+    },
+    {
+      "name": "missing image fallback",
+      "status": "pass",
+      "details": "Visible text and scene controls remain; broken image is hidden."
+    },
+    {
+      "name": "download report",
+      "status": "pass",
+      "details": "Space downloaded a valid JSON evidence file into the scoped check folder."
+    }
+  ],
+  "axe": [
+    {
+      "state": "desktop 1440x1100, scene03",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "state": "mobile 390x844, reduced motion",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "state": "image unavailable, 320px",
+      "violations": [],
+      "incomplete": []
+    }
+  ],
+  "limitations": [
+    "사람의 한국어 음성 청취 미확인",
+    "화면낭독기 실청취 미확인",
+    "장애 당사자·접근성 전문가 검수 미확인"
+  ],
+  "sourceSHA256": {
+    "index.html": "78e842915d648c2ae7d44682135383465dcb8475d2d8b556e5e10e062d814142",
+    "a11y.js": "264c5ae9d2924e4306de47e61acfa3b998757b0ac147b8cfd1220a00e3c8d0ad",
+    "a11y.css": "10a83b858c356cadc0b26ed643c6bc55e6b187a896e213d36e713003680e941b",
+    "gallery.js": "02edda4db1fbe8410f0895220bab894e15f45bef0743fdc1d4b43c384e7779ab",
+    "gallery.css": "d60ca01e83daeee8aada931c8c8a008fec91eabc3c27e2c742b55b98fdbfc17a",
+    "theme.css": "73ab7cf27116d39b0a0d475d133e64e8bd2dd98172dbf93e557f683ef91c0601"
+  },
+  "status": "pass"
+}
