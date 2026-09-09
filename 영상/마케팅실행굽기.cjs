@@ -180,6 +180,10 @@ async function capture(item,target){
  return seconds;
 }
 async function render(item){
+ if(item.id==='01-lab-youtube'&&json(scriptPath).items.find(x=>x.id===item.id)?.music){
+  run(process.execPath,[path.join(videoRoot,'klofi신작굽기.cjs'),'--prepare'],'prepare current K-LOFI');
+  console.log(run(process.execPath,[path.join(videoRoot,'klofi신작굽기.cjs'),'--render'],'current K-LOFI'));return;
+ }
  const target=outputPath(item.id),reportPath=path.join(review,'영상_'+item.id+'_검증.json'),fp=fingerprint(item);
  if(args.includes('--resume')&&fs.existsSync(reportPath)&&fs.existsSync(target)){const r=json(reportPath);if(r.renderSourceSha256===fp&&r.videoSha256===sha(fs.readFileSync(target))){console.log('Verified unchanged output retained: '+item.id);return;}}
  if(item.id==='shift-public-class-01'&&!item.audioReady)throw new Error('Public class narration incomplete; short renders can proceed.');
