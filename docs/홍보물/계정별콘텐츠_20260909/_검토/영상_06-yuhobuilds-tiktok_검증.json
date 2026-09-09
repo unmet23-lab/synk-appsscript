@@ -1,0 +1,25 @@
+{
+  "id": "06-yuhobuilds-tiktok",
+  "renderedAt": "2026-09-09T00:00:54.410Z",
+  "durationSeconds": 25.045333,
+  "width": 1080,
+  "height": 1920,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "bytes": 19405159,
+  "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
+  "scenesSha256": "b1472b6f3d1d68312c5efc3b2a1b890136a006881d60273af18dd225de0ec350",
+  "renderSourceSha256": "ae3187a51291792b906580b93c3b5d97729a2625f1111afd854e9289686630ea",
+  "videoSha256": "6a5663e6987f361e51c184aa11b1d62c712e73d333474dfdca720d1ca0fec2f0",
+  "capturedSeconds": [
+    1,
+    4.55,
+    8,
+    12.850000000000001,
+    17,
+    21.85
+  ],
+  "visualInspection": "Encoded contact sheet visually inspected by strategy_b; see 영상_시각검토.md. Full real-time playback and human listening were not performed.",
+  "audioMeasurement": "measured; not a claim of human listening",
+  "externalPosting": false
+}

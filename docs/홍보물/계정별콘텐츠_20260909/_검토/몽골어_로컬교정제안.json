@@ -1,0 +1,50 @@
+{
+  "reviewer": "Codex research_gate direct review, not Gemini or native human",
+  "sourceSha256": "A327474AF6E568B41494CE130E65EBAFDDAB915689F9CBDA171ACBC2C329D4AE",
+  "manuscriptChangedByReviewer": false,
+  "resolution": {
+    "status": "applied_by_root_and_verified",
+    "verifiedAtKst": "2026-09-09 08:57",
+    "currentSha256": "416403FBA084500D2D0FA806A343F80AD223DD021318C4C910F40043AFCBFCD3",
+    "mongolianUnchanged": true,
+    "comparedExtractedPaths": 71,
+    "reverseReconstructionSha256": "A327474AF6E568B41494CE130E65EBAFDDAB915689F9CBDA171ACBC2C329D4AE",
+    "additionalSerializationChange": "736행 caption 키 앞 들여쓰기 6공백 소실. 한국어 네 번과 이 공백 차이만 메모리에서 역구성하면 최초 해시와 일치한다.",
+    "visualRerenderVerifiedByThisReviewer": false
+  },
+  "proposalGroup": "P2-14-general-plans-versus-appointment",
+  "issues": [
+    {
+      "path": "items[13].caption",
+      "before": "오늘은 약속이 있어요.",
+      "after": "오늘은 다른 일정이 있어요.",
+      "replaceAllCount": 2,
+      "severity": "minor",
+      "category": "meaning",
+      "reasonKo": "몽골어 도입과 풀이가 다른 계획 전반을 뜻하므로 사람과의 기존 약속으로 의미가 좁아지는 한국어를 일반 일정으로 맞춘다. 자연스러운 상황 의역을 중대한 반전 오역으로 판정한 것은 아니다."
+    },
+    {
+      "path": "items[13].alt",
+      "before": "오늘은 약속이 있어요.",
+      "after": "오늘은 다른 일정이 있어요.",
+      "replaceAllCount": 1,
+      "severity": "minor",
+      "category": "meaning",
+      "reasonKo": "본문과 같은 한국어 학습 문장으로 대체텍스트를 맞춘다."
+    },
+    {
+      "path": "items[13].cards[0].kr",
+      "before": "오늘은 약속이 있어요.",
+      "after": "오늘은 다른 일정이 있어요.",
+      "replaceAllCount": 1,
+      "severity": "minor",
+      "category": "meaning",
+      "reasonKo": "본문과 같은 한국어 학습 문장으로 카드를 맞춘다. 글자 길이가 늘어나므로 카드 줄바꿈과 완성 이미지를 다시 확인한다."
+    }
+  ],
+  "limits": [
+    "기존 원고의 몽골어는 자연스러움 모델 검사에서 지적이 없었다.",
+    "별도 한몽 의미 모델 호출은 승인 거절로 실행하지 못했고 이후 우회하지 않았다.",
+    "몽골어 원어민 사람 감수는 수행하지 않았다."
+  ]
+}

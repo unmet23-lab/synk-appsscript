@@ -1,0 +1,2418 @@
+{
+  "checkedAt": "2026-09-09T00:14:32.152675+00:00",
+  "archives": [
+    {
+      "id": "01-lab-youtube",
+      "file": "01-lab-youtube.zip",
+      "bytes": 8061450,
+      "sha256": "b245f6a0cf33e25e7cc270c83365547925917d11f238f44b90de8baccfa79879",
+      "entries": 8,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 1753013,
+          "sha256": "d6753fca24ab3b5e4fcb896e9486f7bda5f0c8e1c1d46a0ca369f3de64a0dbdc"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 224368,
+          "sha256": "011e74d3ec6193d7677a38859dc9b75ec92092a29e8ed7a6d48652e45a36f29a"
+        },
+        {
+          "entry": "video.mp4",
+          "bytes": 6884287,
+          "sha256": "4a37f5890f7b0e567a61f14680a1eb81b49d400aad2c9c1ebd2c90d0847c2522"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 454,
+          "sha256": "d08e10fb503c7846fc7581faa7773e941eee65fa629856fcb00cc16320aa758b"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 161,
+          "sha256": "b499f10eff5f7be3495a4eab08d4d45854d49be93c361c9605b6563d3063f537"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 974,
+          "sha256": "43d8fca99a70ad38a24182ea3e5f0afb706313f95b5a2219ae28deba708b2030"
+        },
+        {
+          "entry": "자막.srt",
+          "bytes": 53,
+          "sha256": "87597a2d1a06a9e714a72407b22661ccf4fdb50ea44649be62122e23a1052702"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 32,
+          "sha256": "1e44e6a0ba7b944867c51f3bacfba7e74c72fa9e7394abd315603ff6a6b03186"
+        }
+      ]
+    },
+    {
+      "id": "02-lab-instagram",
+      "file": "02-lab-instagram.zip",
+      "bytes": 3361431,
+      "sha256": "6f29adbd497cbc52e7e150b5e5065e3f1d170e00ca60efe133791ceba15e8de3",
+      "entries": 14,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 1360788,
+          "sha256": "620a51e2da07fc4e198914b94f64634f612c3a521f7b0ef1a9c88f01818d4bc6"
+        },
+        {
+          "entry": "master-02.png",
+          "bytes": 478539,
+          "sha256": "a5113ebf25594818a1ae1ead9edf86a4ccf09f60e40b4ac365ce107924d2046b"
+        },
+        {
+          "entry": "master-03.png",
+          "bytes": 460272,
+          "sha256": "a89bdc6bed5643317a64c2347a1aa2f8efd98bf5e583e426f66922763ef73944"
+        },
+        {
+          "entry": "master-04.png",
+          "bytes": 477959,
+          "sha256": "452f9a9b8b2930be0a58137de03d86b1214abe0fe9ec2953975c299523eef68c"
+        },
+        {
+          "entry": "master-05.png",
+          "bytes": 116418,
+          "sha256": "51cf0b904eeed02a234f43363769547c4d2f70d432c581c4fc447c790af0c71a"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 192874,
+          "sha256": "5c59353bebeb4f8a92663021074026fa09d9d7aa3bc65ab08a2f3b50a37bc435"
+        },
+        {
+          "entry": "upload-02.jpg",
+          "bytes": 133072,
+          "sha256": "24f838edcc116e3c10dc033e48c88b4a27bb793d1611fde9230aec596156c671"
+        },
+        {
+          "entry": "upload-03.jpg",
+          "bytes": 129468,
+          "sha256": "488333797c74daf500f2613f220ae92a9e4192c75e4056a3433c5d4eed7da966"
+        },
+        {
+          "entry": "upload-04.jpg",
+          "bytes": 130785,
+          "sha256": "771e10aefadd5a7b2e6cf69136513c4d92bf2005459f90e26dcf2fc6c78f4778"
+        },
+        {
+          "entry": "upload-05.jpg",
+          "bytes": 94170,
+          "sha256": "4bb045f17dd2c54449c97d0b0c72550dcab257a035d4074fbaf63acccc77b4a6"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 964,
+          "sha256": "06bb296c1783cf722f4652eb1f247aca083103db0c051cebebd47f108369587e"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 238,
+          "sha256": "af486004be2983013eae85fc0f12396800c82d2c845e1ee87bb99f31b8d40710"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1049,
+          "sha256": "4444a3028c1474bcfbe996f0fded525cfa2c085c2338c4200d1e501434810e61"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 35,
+          "sha256": "9f244baa4e3e0f97d5d6f82559c0f68198fb910fee9dadc1c7254f06d5d28080"
+        }
+      ]
+    },
+    {
+      "id": "03-lab-tiktok",
+      "file": "03-lab-tiktok.zip",
+      "bytes": 30926366,
+      "sha256": "39cd0ebf22b8d7adfa74361c66290b084521e123272918466d2be9c3b1121fdc",
+      "entries": 8,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 1250468,
+          "sha256": "af3b4d33f9a80c0230d224eb2a7549866e41cf9afe995634db67f9511bc32236"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 188837,
+          "sha256": "0b7ffb7466980c9952d25da6edfd5218f2f5e9a0ef44f49c7f0084551bf69cc8"
+        },
+        {
+          "entry": "video.mp4",
+          "bytes": 30127015,
+          "sha256": "835bdf64b58575e854f27699cfbdfd0e97385e920812b62cd930763554184599"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 856,
+          "sha256": "e19b7dd568117ebb4322ae792b8465589628b8908d7c45ee29b82ef67a0eb0c0"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 278,
+          "sha256": "c7d08c664c5cb1c0e2ea95b999974c26ca1ea74fbd0c976f7a2066083491f32f"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1044,
+          "sha256": "ce2feb5178755b5a87f225708ae8510c8c59beb8e121906d065f547a85f92663"
+        },
+        {
+          "entry": "자막.srt",
+          "bytes": 612,
+          "sha256": "d8fc11c864ab49bbf8f15eba806dd411af3939ba7e86ea55c9534fb822402e4f"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 53,
+          "sha256": "45e9d85838171c2e3efa6fe35752b48deaa4e982c9de11c822bb816ae59eb3b3"
+        }
+      ]
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "file": "04-yuhobuilds-youtube.zip",
+      "bytes": 42959811,
+      "sha256": "3c9c64c74a0047f225434cdc19cc5ec56d22de3dee2ad4fc66c541223e967aa1",
+      "entries": 8,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 635363,
+          "sha256": "9cb54ad36c687baef456b762f6c203988348eb85f164f4a93fae8896622e42e5"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 165486,
+          "sha256": "c36cbd0311b7930befeee5d46cc3c39b676dff0681d392b179cdaf3034d0bdc9"
+        },
+        {
+          "entry": "video.mp4",
+          "bytes": 43412208,
+          "sha256": "74bdf58a83163bc1a931611610ad6320b07e8922efb0fcd649271618dd1f5fdb"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 1126,
+          "sha256": "7c3fb43fab4e4680459304a2bdbbbc33554642138e877c3311b572e773709d4e"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 187,
+          "sha256": "9b2223449ded2a597cdf649e3cb7058d2f735e0d03b5b8c5ba4dc40bc7b11b2b"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1005,
+          "sha256": "0cf7269a2822d24a52a5a6a229830691effe45873590a5f08c9aa35c97dca039"
+        },
+        {
+          "entry": "자막.srt",
+          "bytes": 920,
+          "sha256": "90e78700188b1c706f56d043a452d71695f74cbdad383385eb63fb6d8bcdcb41"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 50,
+          "sha256": "c284761e24d0db1f6bba70cde0e6b49b1bc956022e228758a1c79b90068c44be"
+        }
+      ]
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "file": "05-yuhobuilds-instagram.zip",
+      "bytes": 23565877,
+      "sha256": "941301c773fc8c8010cd2585baaf0dbfdc5f6cab870dc34bf3b947a8512c4b54",
+      "entries": 8,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 1139294,
+          "sha256": "6ad01abf06a3820c37be65c5eedfc202c0df5b0e8010fb72bc0ffb1a7d5326f6"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 204535,
+          "sha256": "0cf4006af0b673d59a70dd1624bdd1b63085d41f46dd1baba7ac8174d87bf938"
+        },
+        {
+          "entry": "video.mp4",
+          "bytes": 22874322,
+          "sha256": "32f75662ec1e41cec65fca465d47dda0a05ae11f2e7e3174ef466504dd70195f"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 899,
+          "sha256": "09c935888ae1399b9d3b905bd7958485adf1181b64cf8888cf3515cede7d3836"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 157,
+          "sha256": "386fac41e9899783dd18f836fc0e8c072cfd9ea3df66a05567c6b10ac4f60246"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1020,
+          "sha256": "dff0bb6a9e4e7830d3169b5861a70356652a7276172543b9f34014286da0392f"
+        },
+        {
+          "entry": "자막.srt",
+          "bytes": 411,
+          "sha256": "17fae5a05f3a737a34a54ab8d6574f2c3a46dcd46374f8ef1cc89d3d4477e070"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 31,
+          "sha256": "ddb168e838166893c7618fd52c576b237369504c5453bebed3c04640ec09b79f"
+        }
+      ]
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "file": "06-yuhobuilds-tiktok.zip",
+      "bytes": 19652333,
+      "sha256": "f93a9cb6e7d4bdcd2583738ceed653792ea87cc257e967e4b67914d4c0e16331",
+      "entries": 8,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 630013,
+          "sha256": "6b367b5b3e38e1bd5787311b3fd8449eb7de5a12bd98f1b1bfd9b2365c5a9dd8"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 166738,
+          "sha256": "ed91338c6c2c5b56cf44502c5bc901aadecb87b9598de029f68e17d54dff6730"
+        },
+        {
+          "entry": "video.mp4",
+          "bytes": 19405159,
+          "sha256": "6a5663e6987f361e51c184aa11b1d62c712e73d333474dfdca720d1ca0fec2f0"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 721,
+          "sha256": "d07e215759873127f5ad83a24cdb0eedb29e582344c978dd0a60db52801e4bee"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 134,
+          "sha256": "2a88230d679487f0409a2e66097173d6678315c9cd3d8f9941abbeb15c245d57"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 942,
+          "sha256": "bad066dcca2f67d88269987781189603b959124f350f822595759f0c8de51dbe"
+        },
+        {
+          "entry": "자막.srt",
+          "bytes": 362,
+          "sha256": "47a571c081241f082a6ea1494f980fd9d54b652b6e1370a5fc0342838a1dce93"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 39,
+          "sha256": "e047b1f681e8099e3133dd6ee02584701f362b396e58789678c661ded6bd66c7"
+        }
+      ]
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "file": "07-synkbrief-youtube.zip",
+      "bytes": 39583128,
+      "sha256": "2884030c50c6781a76ac04d8fe8bfb144914706018a945c857c9d16633846bb8",
+      "entries": 8,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 1563749,
+          "sha256": "cf1833114d3074a2c3404e9aeca92df4bdd5f17b1c048ce5e91ee0afec73535c"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 230046,
+          "sha256": "7c960d9098f047d8fe6fb994b4d85c595287c28e51f8dccf14287efc686c8009"
+        },
+        {
+          "entry": "video.mp4",
+          "bytes": 38628742,
+          "sha256": "4cc854d5331f3d4f7e37480e8a04d5d04735dce94bbcca61501ce8a49dfac843"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 1106,
+          "sha256": "5a4238c3508941baeef222b8487c8d87b94f40112f88569fe0d2fe3de2266267"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 148,
+          "sha256": "c0e440a3e2809c2b5d816c3b0d936a9ce618245d1672edeebe5469d6d04b0d10"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1016,
+          "sha256": "a209f9a986028395c45a81ba7c6f7dd04c7d4f9a9cad3d05c983c3845ae8b434"
+        },
+        {
+          "entry": "자막.srt",
+          "bytes": 579,
+          "sha256": "c9a080e4ff936af8efe23ba6ffabdcb72a562452387a6a8b01ebc9e21e9456dc"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 48,
+          "sha256": "648187fa64f07e75d7ae45da92ce3768c0c715b8e69d8d7143da358b1e6a5fb9"
+        }
+      ]
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "file": "08-synkbrief-instagram.zip",
+      "bytes": 2188805,
+      "sha256": "ad50d62a16ff07c63d616ac7de0ac0c39af4e91876386a1856393702842847c4",
+      "entries": 16,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 1335119,
+          "sha256": "f8e7003a61a0a32bc85a90b74b78d357446eeac69c67bbdd8d6c93db73c274cf"
+        },
+        {
+          "entry": "master-02.png",
+          "bytes": 86018,
+          "sha256": "7c66b034d3f0f306f2a8dffd69273a4e1c48d7d7a1ef3f9833437d4edf4437ee"
+        },
+        {
+          "entry": "master-03.png",
+          "bytes": 97568,
+          "sha256": "8c767c84239f352c5fc4704c4acc168308dfa2fbee4f78de8f1ee2ca9cc91083"
+        },
+        {
+          "entry": "master-04.png",
+          "bytes": 96020,
+          "sha256": "b8a2c5e8ecbccebf0cce719aad477fb406fd25c472cbb316228ffae07f878fdc"
+        },
+        {
+          "entry": "master-05.png",
+          "bytes": 100216,
+          "sha256": "91ff1d2c5f0fd60ff11df93c24c32dc54c68c611e1c2de04afc896096fcc7ff3"
+        },
+        {
+          "entry": "master-06.png",
+          "bytes": 96848,
+          "sha256": "904f397c249238526515bf01ebb7e32163c5e619cd8ffcb130f5cbfcd67039fb"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 185829,
+          "sha256": "ef07c1263b33e2b718f3e55765049c04a16d8c3e64453a030473f5231f7512de"
+        },
+        {
+          "entry": "upload-02.jpg",
+          "bytes": 81880,
+          "sha256": "4bea4aa0772dd4ea95d04107eedb2faefe05ce3fc66774c3a73465e29df57cc2"
+        },
+        {
+          "entry": "upload-03.jpg",
+          "bytes": 87388,
+          "sha256": "4943ad84c99094ff33ba2065b1ea86c38646efb69d3c5f6fdb28c6c75315be5c"
+        },
+        {
+          "entry": "upload-04.jpg",
+          "bytes": 94424,
+          "sha256": "78ca8bcbbaec0e68edc33a39c97433b2d516e52de1a9afd879a7c93cb6d1a844"
+        },
+        {
+          "entry": "upload-05.jpg",
+          "bytes": 91974,
+          "sha256": "95814e8931099df4b32ee248738169dc437a9d4855dd9863f94e8cf12cfce5b7"
+        },
+        {
+          "entry": "upload-06.jpg",
+          "bytes": 90871,
+          "sha256": "232a3cdf88a0ea95f9961df1ead18f1e988d9cfdbde4832ac1019e8ba7e3434c"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 1303,
+          "sha256": "83ba6f59526391bfa99605ce8ac9f769ea7e6dd20828beee5cc4de3ce44419b6"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 224,
+          "sha256": "8d9a5fca30652185be29debd801b8aa3fede398b5e5bebd46567818ecbdca0ad"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1006,
+          "sha256": "a1f7a4e8b35e4534aaf68d41cbe19415cae26a010195763991b63daf646ae172"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 38,
+          "sha256": "9ef6c59c17915966c633ec16ff9ec54dab7b2806e409a017c8e27f2900613575"
+        }
+      ]
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "file": "09-synkbrief-tiktok.zip",
+      "bytes": 29217220,
+      "sha256": "7886b7f726ad7b8ccaa1c9886907bceec91f9e20ce45fd01aad26040b8436b59",
+      "entries": 8,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 1546579,
+          "sha256": "4073631aead64136d353e12e7edfe022f016336cf1e02224a6045e5bebe0d052"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 214218,
+          "sha256": "73a418ecf54c8b96724822d6076d1961aa5ced952cc66f6e787acf053b1fb154"
+        },
+        {
+          "entry": "video.mp4",
+          "bytes": 27996341,
+          "sha256": "7c08b1f9a6c5aa0adfd54560480956103693de04eb4a53ba8bbc91addf217037"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 783,
+          "sha256": "f2bb4139da2a6b86e2ab8d7555e276696d841f533b00e7a8254ce58451ead337"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 144,
+          "sha256": "d308f5168fe75c16657838524cdc1f0cbb70eb145750c53396f219cd8e3337e7"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 955,
+          "sha256": "fa978ecb05a665a22e243a8a3b361b0a7a182a76a013370023040d857172e421"
+        },
+        {
+          "entry": "자막.srt",
+          "bytes": 362,
+          "sha256": "0e607c82c75942c8fc60351fe9d7ff4eead1fbdcd7144e1d2af87f34c704481b"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 32,
+          "sha256": "a9670e43f337e6b11e818bd7c0978821b6a3a8f3abc7f115469cef1f84028048"
+        }
+      ]
+    },
+    {
+      "id": "10-lab-facebook",
+      "file": "10-lab-facebook.zip",
+      "bytes": 524962,
+      "sha256": "2b6b743760986a9dea9815cd83b269429ebadbe5498b04940021e08bd2657c5f",
+      "entries": 8,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 193947,
+          "sha256": "8ddc8fb33d7a17f2ef8907adc8cce9d560b4ce4f054545ef9112a2a794a6944d"
+        },
+        {
+          "entry": "master-02.png",
+          "bytes": 160236,
+          "sha256": "e8cee1cfc3295d19f87b5dc16f7a72a7967c4c8c3caffd6e294974bfe5b3dd9e"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 144367,
+          "sha256": "902d744802cb32ebd0f560cfcbe670fb67a4f0d5c35b0a9fdbbfc6ab9664b36d"
+        },
+        {
+          "entry": "upload-02.jpg",
+          "bytes": 122412,
+          "sha256": "893bb268e94e77dee2607a99e8d8d49522f3b7e1608fd8d9a47dbbdbc04c723c"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 1239,
+          "sha256": "762ac9b7f5b7273554c9320b71d72a96f83c05a45be1d757bf126c242534eddd"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 318,
+          "sha256": "e2d1319512b3872d38fc582ab5dd688833784f55137891695477361c11018f06"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1020,
+          "sha256": "362f1e518af9cb83a90863222f7fd607a5dd5288a88bec8c45e120f34df99ce8"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 37,
+          "sha256": "fbe3b3e76a680ea045187367525b3e40e834ed6aace1b52303be642c8bc7d7b6"
+        }
+      ]
+    },
+    {
+      "id": "11-yuhobuilds-threads",
+      "file": "11-yuhobuilds-threads.zip",
+      "bytes": 773531,
+      "sha256": "a8e18599baef851da9ce841ad92d9ee82a4e9d71ee842e1ad97ecb5caafb2e49",
+      "entries": 6,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 637723,
+          "sha256": "392000a22dc7935702afe570dee93c3034cc61921ec910597716cf67b780b0a7"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 175868,
+          "sha256": "90e14323ffae57590df249a824401b49d5320fb59d5f6b8b664dae6a2f568b5b"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 579,
+          "sha256": "cda764908de978d35929b782cd1294265bd3a37c509c4d57aa438418b98c87d8"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 125,
+          "sha256": "8e4759bf6ae2662f1b64bba710c8def1cdc17789dfc94879d3c6f5b870812ec7"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 967,
+          "sha256": "78dd93ecf6bafa53c445b4b4325ddc38ce168e882ff70c94ba48bcc21932faa1"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 34,
+          "sha256": "8c2e953ed800d6b1b595e8534cd9406c9be02dfc55d6d3a6d8d52fc2e3c89d91"
+        }
+      ]
+    },
+    {
+      "id": "12-synkbrief-threads",
+      "file": "12-synkbrief-threads.zip",
+      "bytes": 123343,
+      "sha256": "350ec92ba5723c161d019f0e8bf61a35980df0c0b51641827b853e4d8cbad979",
+      "entries": 6,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 86209,
+          "sha256": "4d95f550df6e89257fdffb4cdfb22a65e40e3b1d849a7735d627bc3c3ef68b9f"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 78860,
+          "sha256": "84654133626e90dbbdf85a9192dcafc46eeddde593a910dce616171150ff376a"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 548,
+          "sha256": "57e45669c23707c8eef2bb0845e6e7b20742bb974e4bd914863c5bdd8eb77a1b"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 79,
+          "sha256": "0835f7590cd414153cd442a22229acb22707826d3b6f9a0383ab8e9425029d07"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 929,
+          "sha256": "86f5b6443a876a7421530e5e3663995fba143c110f4c51401171ed9ef02f53d9"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 36,
+          "sha256": "a586245616e8dec0b043191f7ab0fe7288d8715b77f803441dea130aa0eccda1"
+        }
+      ]
+    },
+    {
+      "id": "13-yuhobuilds-linkedin",
+      "file": "13-yuhobuilds-linkedin.zip",
+      "bytes": 198024,
+      "sha256": "cceba6f80a61ab34852b379ae6762a929af0ba9780de3bed4eb4ffec8407639c",
+      "entries": 6,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 126097,
+          "sha256": "6179699930aded2b81012ca1bd18e822e6b5724c68ab3fe221230c4272862624"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 115710,
+          "sha256": "e25a026a7bc20c8d0a032fa3aee5db9abbbec206e9aa252c2f6d3475e32e20ad"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 1910,
+          "sha256": "52426da77ab5cae6403182b94010cc20f62927132eca34654cbe225b48992c29"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 185,
+          "sha256": "c8732ef2c0c52161cf9b0bad6440a144d709c8cfebed2eb672568456bf643011"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 967,
+          "sha256": "65f72fc32922c4eda9db552ad8be5ec4b9bbe7b86e746dd0b4f3fd098a227123"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 39,
+          "sha256": "5e6d8d66af159ad38f503bac9a65836364cedffaf2853c3dc85cdc8810534c16"
+        }
+      ]
+    },
+    {
+      "id": "14-lab-telegram",
+      "file": "14-lab-telegram.zip",
+      "bytes": 724700,
+      "sha256": "5f4b67bc38c1fef8d0c0ae5d49f245e2be1f21b28d9c8713e3b0d3b17cba3ca4",
+      "entries": 6,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 553548,
+          "sha256": "ade6c3f50401a12ff86eecc0c1e2276c0881df3c09af07b1d784f533a04a9313"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 214641,
+          "sha256": "556dd4359ee963dc235565419377fbf447d5bfabb0a26df512222425c36b5a01"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 948,
+          "sha256": "849473f9707fc0f6db4c767e32c50370c353ef9ab5ea5664680a6337fb7f4a44"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 215,
+          "sha256": "319a6536785c511d488493ceebef091f71d4772caff4ee4ee803c448c8eef96a"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1030,
+          "sha256": "871246ab383cb194e3f4dd3ed9fdb2bb00a73f054f1add021af6a2dca24e24a3"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 60,
+          "sha256": "a3f1e4aa960c5304e4fa3f84b799d73c5ded0e2e94335349642e22ee27bd03f2"
+        }
+      ]
+    },
+    {
+      "id": "15-synklab-substack",
+      "file": "15-synklab-substack.zip",
+      "bytes": 789990,
+      "sha256": "bd16e5e7ad9415d12bfe0cf7f805f0b212629cfc6ffa0c954045f523c3675f0a",
+      "entries": 7,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 646569,
+          "sha256": "ebd67476891a2c27ba11aa04013cd82b76608babc75228a595773bafabf69f95"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 182084,
+          "sha256": "8498dadec12e9ca962307bcf475e2a6e5b1fe082f98e285733cc91d58c83bfad"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 425,
+          "sha256": "a05f1d353c17cd58b25514f69903c2a48c657f737358c64850704f6572277157"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 145,
+          "sha256": "12cd510b978321bf65f0cf4810ba843c3d1384d0b2608bd386b6d77a9a342853"
+        },
+        {
+          "entry": "본문.md",
+          "bytes": 3358,
+          "sha256": "1bdcefd37ae7401073c39f314a252a2018a1c7e73d4a1f9a57983abd025f4898"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1245,
+          "sha256": "d27f880f3c9f73a54241edcda2e3abbca3aa390b54712922eb9b21ba86603224"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 48,
+          "sha256": "57fc1e02a9c259cd694d6287d51d5150228bd90c766c95ca4a5475a9c2147337"
+        }
+      ]
+    },
+    {
+      "id": "16-synk-instagram",
+      "file": "16-synk-instagram.zip",
+      "bytes": 1710192,
+      "sha256": "a537804dcded0c39486d6e1f79a0c99af5cb72110fe96b59bc0053a92d49fef8",
+      "entries": 6,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "master-01.png",
+          "bytes": 1523931,
+          "sha256": "89e23cb53cc32750d591fb54855d006364d472077a62f3455d836fbf7d2e4420"
+        },
+        {
+          "entry": "upload-01.jpg",
+          "bytes": 224798,
+          "sha256": "1b40f50532a189938c6b063a05ae1be786b5993605314ad1d133e115d6b7321f"
+        },
+        {
+          "entry": "게시문안.txt",
+          "bytes": 672,
+          "sha256": "fd9d109b0c379aba398e9f72051a8f626785a89339b44a29406c54cc6d6dab72"
+        },
+        {
+          "entry": "대체텍스트.txt",
+          "bytes": 247,
+          "sha256": "1f63173b8c6bf954d86671818f501457cb34989231adbee928ec1b223caa5b92"
+        },
+        {
+          "entry": "사용안내.md",
+          "bytes": 1015,
+          "sha256": "eadf7d940fab9055b7bf3b33917c543b95246f1227582480d4388beba69f004c"
+        },
+        {
+          "entry": "제목.txt",
+          "bytes": 26,
+          "sha256": "6f3055ac73db409b9de57bd565acef76edec21fcdf5aac0f6c95c60296b194a2"
+        }
+      ]
+    },
+    {
+      "id": "whole",
+      "file": "계정별콘텐츠_전체.zip",
+      "bytes": 460442838,
+      "sha256": "2f0a23522b4ab7484c9763fa8389a79570140b26830e7b42f884b1e89e60c8d4",
+      "entries": 314,
+      "verified": true,
+      "brokenHtmlLinks": [],
+      "files": [
+        {
+          "entry": "index.html",
+          "bytes": 37290,
+          "sha256": "fa97b83722bf8bc1b60279ef1632cd87f5236aa8eb16fb71556e611c1bcbf2d4"
+        },
+        {
+          "entry": "collection.css",
+          "bytes": 3120623,
+          "sha256": "aa9a7cb94a5f7bf4bef7f7a8cb9a1893cbb1ba0cc05ceac868df3b5c180679a8"
+        },
+        {
+          "entry": "assets/book.webp",
+          "bytes": 1735940,
+          "sha256": "8fab4b618b7e7a6d377dafe6ac5edf4e31fb3c45339f16209008b458621d421d"
+        },
+        {
+          "entry": "assets/cafe.webp",
+          "bytes": 1079958,
+          "sha256": "a9d5fed8a4f69ce3e2944d4ec1a443ee1fc20ccd531f1d145bdfd2e4a35ec365"
+        },
+        {
+          "entry": "assets/classroom.webp",
+          "bytes": 958686,
+          "sha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7"
+        },
+        {
+          "entry": "assets/compass.webp",
+          "bytes": 1080606,
+          "sha256": "4cc7f71e95c6f37b89eec0425ab4ba4b2d26516d9380cc4caf6989a37ba43bbd"
+        },
+        {
+          "entry": "assets/labpage.webp",
+          "bytes": 662536,
+          "sha256": "715ba983c693d18b16e9f1710167fabdde73f13e6a267be9842c2afe1b097908"
+        },
+        {
+          "entry": "assets/letter.webp",
+          "bytes": 1702792,
+          "sha256": "7d6728e3b1b65379c5b69af8e0eb3af0f9b1a7d1424906404cd111fb660bd3ac"
+        },
+        {
+          "entry": "assets/night.webp",
+          "bytes": 890850,
+          "sha256": "e107255ad0bd8f708006fec668526833aa7e9674fff978a359a597f52e2616b6"
+        },
+        {
+          "entry": "assets/notebook.webp",
+          "bytes": 1307360,
+          "sha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4"
+        },
+        {
+          "entry": "assets/paper.webp",
+          "bytes": 1384792,
+          "sha256": "99b7db5faef4e701674780401aaaec56dd4f99a76410b04a0bdff6b66e14c4b3"
+        },
+        {
+          "entry": "assets/pulsepage.webp",
+          "bytes": 952112,
+          "sha256": "5fa30e50e8831dfd13896dc49b4c085deb630593b540f728d919f221c78bde9b"
+        },
+        {
+          "entry": "assets/scissors.webp",
+          "bytes": 589056,
+          "sha256": "7dd27417990d688d9871d56d929679a07235f955b541b7b26621743478629ade"
+        },
+        {
+          "entry": "assets/shiftpage.webp",
+          "bytes": 386416,
+          "sha256": "13627a55d084391ea12344788e60ce2ca39f73e6c58d4df640cac10b1a414a30"
+        },
+        {
+          "entry": "assets/smile.webp",
+          "bytes": 2207746,
+          "sha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80"
+        },
+        {
+          "entry": "assets/stitch.webp",
+          "bytes": 298384,
+          "sha256": "4109d65ca82563989fe2490c1cb6d476cc1c2aca98991e453a64b67e904f3c9c"
+        },
+        {
+          "entry": "미리보기/01-lab-youtube.png",
+          "bytes": 90863,
+          "sha256": "ef350c5896ac9a22075b0163123c054cab46d21a9696e47bb650edd2d0e676eb"
+        },
+        {
+          "entry": "미리보기/02-lab-instagram.png",
+          "bytes": 221821,
+          "sha256": "4157658fd1c320def5161c75ba83430e1434fc655c3c364abec22407bf2f3810"
+        },
+        {
+          "entry": "미리보기/03-lab-tiktok.png",
+          "bytes": 78584,
+          "sha256": "21eae5ccc0fc148fa32315bd45af9d70baa8782b3f60868be86adcc11c6bcb0a"
+        },
+        {
+          "entry": "미리보기/04-yuhobuilds-youtube.png",
+          "bytes": 55753,
+          "sha256": "c1b6023c8c9078a3f45b3db60bf9b2f4909a5bd9325d6e7113022d6dfe1197cc"
+        },
+        {
+          "entry": "미리보기/05-yuhobuilds-instagram.png",
+          "bytes": 60954,
+          "sha256": "2b413468571ca472f77a6a83c888f13bdb42c0e8da6723358cd35beb4b18409b"
+        },
+        {
+          "entry": "미리보기/06-yuhobuilds-tiktok.png",
+          "bytes": 56047,
+          "sha256": "1829a139177dd18d5eb2b094556be433776fbcadeb9d3f694d9bc7b00690f70f"
+        },
+        {
+          "entry": "미리보기/07-synkbrief-youtube.png",
+          "bytes": 76523,
+          "sha256": "4f91e272587211afaed1a7f915883c8c6395ff9804d49e94fffb133bb22d597d"
+        },
+        {
+          "entry": "미리보기/08-synkbrief-instagram.png",
+          "bytes": 199073,
+          "sha256": "605019737b5bd1b71f77734d8f0dfb30680ebe828c536848cd91d1a5802f45a5"
+        },
+        {
+          "entry": "미리보기/09-synkbrief-tiktok.png",
+          "bytes": 71931,
+          "sha256": "ecec7546f33c7968d451196e926abe56cd1176ba9e07b397646947e480910055"
+        },
+        {
+          "entry": "미리보기/10-lab-facebook.png",
+          "bytes": 68935,
+          "sha256": "89938013318a2a141ea2f892c1db1c97df436ce16e68789d92dd3ca432376020"
+        },
+        {
+          "entry": "미리보기/11-yuhobuilds-threads.png",
+          "bytes": 59879,
+          "sha256": "cb2ce7b0d7dd6ee9ffb75aaaa3d819ad4ba22e9ff1bb89b350c4bfccd0120323"
+        },
+        {
+          "entry": "미리보기/12-synkbrief-threads.png",
+          "bytes": 23566,
+          "sha256": "74cc5488ad0dc9410c6c3de08cf7d16ee22ed60ab05d9cd6bd0aed19ee8ebeae"
+        },
+        {
+          "entry": "미리보기/13-yuhobuilds-linkedin.png",
+          "bytes": 35731,
+          "sha256": "5ce562b78598ef2b3ab54de9576c61165bd191c905764db705b4ada738666b70"
+        },
+        {
+          "entry": "미리보기/14-lab-telegram.png",
+          "bytes": 62150,
+          "sha256": "17649278fbbdbc22ac6a838be7b04d3d830b3d63161f74c37e2e19067ab05c5d"
+        },
+        {
+          "entry": "미리보기/15-synklab-substack.png",
+          "bytes": 60461,
+          "sha256": "bda8bd14f361ff0933f66f17f0ddebf9b500e26bc53a9d9c7e4ca00713c57bc1"
+        },
+        {
+          "entry": "미리보기/16-synk-instagram.png",
+          "bytes": 88280,
+          "sha256": "f8d40ca01e01f61a414d53f7228e3ad25e36ead29de903d675a7cb96882b285c"
+        },
+        {
+          "entry": "미리보기/모아보기-1440.png",
+          "bytes": 110108,
+          "sha256": "81c8681cb2c58da211053efc32bcdfad680673167cdd84ad8d44afb9dc803010"
+        },
+        {
+          "entry": "미리보기/모아보기-390.png",
+          "bytes": 58234,
+          "sha256": "c0bba624029ff2ea1fd896ffd8fbdf0aec910783544fb80ff329d525472342f4"
+        },
+        {
+          "entry": "미리보기/전체카드.png",
+          "bytes": 965704,
+          "sha256": "c566042e2a9335debb6d139fd52c0904484dd723b4f53ec32bffde71d22fc575"
+        },
+        {
+          "entry": "읽어주세요.md",
+          "bytes": 10371,
+          "sha256": "84fb6b4e68add0f4dd90d696294ba5d1ab20b6a7983f5aebe971a4fb4469a645"
+        },
+        {
+          "entry": "납품명세.json",
+          "bytes": 4510,
+          "sha256": "7c05d9bcd9041cffdb9e4cdecfb2c7cdb5efab0864cc07a0679b3beb04e1c697"
+        },
+        {
+          "entry": "사용자산.json",
+          "bytes": 6235,
+          "sha256": "78011ac24ba52c756cfccd16cf2ba2a22efd3fc9c3cab5c371ab09347b27030b"
+        },
+        {
+          "entry": "콘텐츠원고.json",
+          "bytes": 51172,
+          "sha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3"
+        },
+        {
+          "entry": "_검토/A_기획.md",
+          "bytes": 24829,
+          "sha256": "b60b7d2e24fc64267cdf949ef35674761771dace9789ef7964e09e65c9140a97"
+        },
+        {
+          "entry": "_검토/B_기획.md",
+          "bytes": 22898,
+          "sha256": "84bcb38b35eeb0bda92b192261cda878ed61ee447a688818e31346637abc0ae8"
+        },
+        {
+          "entry": "_검토/납품_QA.json",
+          "bytes": 13772,
+          "sha256": "04e37ba70f8acc137a48ce865e01c3cd5ed2dad519586ebcc1e02183ef311fa8"
+        },
+        {
+          "entry": "_검토/몽골어_natural_stderr.txt",
+          "bytes": 78,
+          "sha256": "3a7f8550106d86abb322e8ed0fb30a0296c0e97c6be03d5a8033b99d16737459"
+        },
+        {
+          "entry": "_검토/몽골어_natural_결과.json",
+          "bytes": 3170,
+          "sha256": "43b79365feedcb993e3057eb728e24091765b8595e042120103ba6d32e64c292"
+        },
+        {
+          "entry": "_검토/몽골어_natural_응답.jsonl",
+          "bytes": 13198,
+          "sha256": "160cdf093fbe3fc1510450188869b3e58ac2d14a127a3df1245674f6906e4567"
+        },
+        {
+          "entry": "_검토/몽골어_natural_프롬프트.txt",
+          "bytes": 15075,
+          "sha256": "8978fe6a542b71338ee9efa593e36f3b386c4e55d4748f09982c456f11465c20"
+        },
+        {
+          "entry": "_검토/몽골어_검토.md",
+          "bytes": 11885,
+          "sha256": "ac7d3b9529571f1bd6a369c4b73579fc05cd22cc6743ac821e4d724bad8d49cb"
+        },
+        {
+          "entry": "_검토/몽골어_검토입력.json",
+          "bytes": 16045,
+          "sha256": "37ab7e2668b5662a9def8e9a301bbc89d8043c7257aece6ab3bae979784348f4"
+        },
+        {
+          "entry": "_검토/몽골어_로컬교정제안.json",
+          "bytes": 2469,
+          "sha256": "d70e41a7538a74b06613977bbecee20e44e12c1122bf935a94c406c7817ef265"
+        },
+        {
+          "entry": "_검토/몽골어검토_실행.cjs",
+          "bytes": 8087,
+          "sha256": "ee5391e1cffea643e97ad00bcc6ea64cb5a6ef8757c5ca467213d01c3bc496a1"
+        },
+        {
+          "entry": "_검토/언어_근거.md",
+          "bytes": 8710,
+          "sha256": "d4126f608cb52ae47dcf98af25f4d55876dc37c04b1d189082bbf820d7eb648c"
+        },
+        {
+          "entry": "_검토/영상_01-lab-youtube_audio.log",
+          "bytes": 2106,
+          "sha256": "504b50d4c7dd7051892fff95533fe6522e309813eaacb6243ae31f4b493167b1"
+        },
+        {
+          "entry": "_검토/영상_01-lab-youtube_captions.json",
+          "bytes": 134,
+          "sha256": "a07147db1952a917bfdd8d950f1ccecdada7a21d3c28ab05b5afe3c2468518ed"
+        },
+        {
+          "entry": "_검토/영상_01-lab-youtube_contact.png",
+          "bytes": 732319,
+          "sha256": "165076e8284f78fae792f921e958da965fd72a2b182024d9b145569ebba57a4b"
+        },
+        {
+          "entry": "_검토/영상_01-lab-youtube_render.log",
+          "bytes": 37878,
+          "sha256": "b70f7d96290314d432e06723512dd00505aef8f1b70b9891fbaee735f86239e7"
+        },
+        {
+          "entry": "_검토/영상_01-lab-youtube_scene1_preview.png",
+          "bytes": 2734449,
+          "sha256": "bd0d83bd12970f4537c23b5edd5018234b61c2422eb52fc98b1cdb227324abf6"
+        },
+        {
+          "entry": "_검토/영상_01-lab-youtube_검증.json",
+          "bytes": 875,
+          "sha256": "39306922ed6b6acb0481b5fa4f4ba3657a37bc908f0c2bf0ba62726931f3dede"
+        },
+        {
+          "entry": "_검토/영상_03-lab-tiktok_audio.log",
+          "bytes": 2106,
+          "sha256": "18f0058d18f64cf0506f5e16cd612d2faba978680b31e0b81c4c352105d6c9bb"
+        },
+        {
+          "entry": "_검토/영상_03-lab-tiktok_captions.json",
+          "bytes": 1022,
+          "sha256": "c2110fa50a0cffe0e41555653697e8ea5b768c66d8e30e7efd4dd6898b77e9c5"
+        },
+        {
+          "entry": "_검토/영상_03-lab-tiktok_contact.png",
+          "bytes": 383893,
+          "sha256": "5ea2ee6d4b9c36fa66633cd57356641b39b416bfdcbb0902eaea3b1ee16c42f0"
+        },
+        {
+          "entry": "_검토/영상_03-lab-tiktok_render.log",
+          "bytes": 37560,
+          "sha256": "0c254a2a6b3e1ec7419f5f60b9fc883d1f6eda90698a798ae970330473f7d0bd"
+        },
+        {
+          "entry": "_검토/영상_03-lab-tiktok_scene1_preview.png",
+          "bytes": 266839,
+          "sha256": "d88ccf2135f1e32d993114aa2f8a37ebdfce4e852416462b8723874834f55d01"
+        },
+        {
+          "entry": "_검토/영상_03-lab-tiktok_scene2_preview.png",
+          "bytes": 582026,
+          "sha256": "160457ceff6479cc5be4c34cdcab8365c11683bb83613dc56a48696f716c838f"
+        },
+        {
+          "entry": "_검토/영상_03-lab-tiktok_검증.json",
+          "bytes": 940,
+          "sha256": "52d28930a166e91ac367cdeff6c7919fd89a346e90822200f9e4ba586fd9d468"
+        },
+        {
+          "entry": "_검토/영상_04-yuhobuilds-youtube_audio.log",
+          "bytes": 2168,
+          "sha256": "ddcab6a322847bad6286780071052c848b18aa222dc6585fd569fa6293887efc"
+        },
+        {
+          "entry": "_검토/영상_04-yuhobuilds-youtube_captions.json",
+          "bytes": 1417,
+          "sha256": "fa96544b85b96cb171934b4c7869357046a4ea42ffc8d59ee0589a50bf9ecfb3"
+        },
+        {
+          "entry": "_검토/영상_04-yuhobuilds-youtube_contact.png",
+          "bytes": 453152,
+          "sha256": "03cd33efc287a454fb3c3d02621e0c3a7b8ffbd5ce7d68179f87aa9606e6a209"
+        },
+        {
+          "entry": "_검토/영상_04-yuhobuilds-youtube_render.log",
+          "bytes": 75230,
+          "sha256": "78416795679d3f5254c969baafed29e0a7280e9667dfb1d36b494552d364d263"
+        },
+        {
+          "entry": "_검토/영상_04-yuhobuilds-youtube_scene1_preview.png",
+          "bytes": 285968,
+          "sha256": "e8b6e721590d9bc01c14244f9e03749e6d784712d691f59166b527fff1f6cd03"
+        },
+        {
+          "entry": "_검토/영상_04-yuhobuilds-youtube_검증.json",
+          "bytes": 964,
+          "sha256": "2727cfc54d06ac33db19897a05c87d97ad6528f6d507c8a3b3cfd6e363926a7e"
+        },
+        {
+          "entry": "_검토/영상_05-yuhobuilds-instagram_audio.log",
+          "bytes": 2116,
+          "sha256": "fecaf4467326629eb73ed28f4ed3826f70cf1895b38d886cd66af6aa7d10f94a"
+        },
+        {
+          "entry": "_검토/영상_05-yuhobuilds-instagram_captions.json",
+          "bytes": 658,
+          "sha256": "10ca0073d2e0b7a4dd4a825680e7f3892af87ef7c8bb708a1ea519453efd884a"
+        },
+        {
+          "entry": "_검토/영상_05-yuhobuilds-instagram_contact.png",
+          "bytes": 228273,
+          "sha256": "112805b1fb079bb9783b82342a4824d1a260f2c2eb757636e32814931ef16c62"
+        },
+        {
+          "entry": "_검토/영상_05-yuhobuilds-instagram_render.log",
+          "bytes": 37659,
+          "sha256": "2fff8063f7846c89aa02f7dc22114db3b2ee2a2ba57512292d591f4f331c2a80"
+        },
+        {
+          "entry": "_검토/영상_05-yuhobuilds-instagram_검증.json",
+          "bytes": 913,
+          "sha256": "8d398c384260a0416c1fee70b0f72a8b5b75149e1a6d29c772381b9975ce3fb1"
+        },
+        {
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_audio.log",
+          "bytes": 2113,
+          "sha256": "5bada62a74cac4ad7f2e761a78ddd6c36985693f5e6adf0b0aa94194a2964eed"
+        },
+        {
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_captions.json",
+          "bytes": 608,
+          "sha256": "52a8e6c03cef5cb02f3809dfd169adadd673acb0214b18ffb4833c46cc828855"
+        },
+        {
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_contact.png",
+          "bytes": 216238,
+          "sha256": "f316d2cddc0203eeb5c2b1c6906b4cd32876eec7a4fcf459ed84bcb8ad6908f2"
+        },
+        {
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_render.log",
+          "bytes": 31880,
+          "sha256": "e9a7884729729b1f528f12a5e588d749c123b4ce189ef4cebbe8dd41508b1a94"
+        },
+        {
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_검증.json",
+          "bytes": 924,
+          "sha256": "c9cf55c336215310ab923d5ccf0e47c9f30608ba7968f66fa74d0f57240f7c26"
+        },
+        {
+          "entry": "_검토/영상_07-synkbrief-youtube_audio.log",
+          "bytes": 2113,
+          "sha256": "ea8b597059f11a833ba4446f2c67b66960b53199b3fdfeeae462e93276b8678d"
+        },
+        {
+          "entry": "_검토/영상_07-synkbrief-youtube_captions.json",
+          "bytes": 988,
+          "sha256": "1a0f8aa49d479ce2b46bd52ed468e3f490c9c2d084bd0ce9cc353cb43f0de5b3"
+        },
+        {
+          "entry": "_검토/영상_07-synkbrief-youtube_contact.png",
+          "bytes": 343754,
+          "sha256": "0a01af355327486bd7c1a347acaee0c2ce0d78d80ee6f15b276184d838138d60"
+        },
+        {
+          "entry": "_검토/영상_07-synkbrief-youtube_render.log",
+          "bytes": 50506,
+          "sha256": "91d496a0f75d98f2304720e09f5befad23d65c7eea484f0e479a16282534ce21"
+        },
+        {
+          "entry": "_검토/영상_07-synkbrief-youtube_검증.json",
+          "bytes": 961,
+          "sha256": "1c520ee418cd583ef9c5701063c73139c509f3143ffbf631617e949501ebe24b"
+        },
+        {
+          "entry": "_검토/영상_09-synkbrief-tiktok_audio.log",
+          "bytes": 2058,
+          "sha256": "18ec587f03db6f0882ef1583698b3a564827aa6d0d2f07fe1f0b75a8ad1d0ed4"
+        },
+        {
+          "entry": "_검토/영상_09-synkbrief-tiktok_captions.json",
+          "bytes": 607,
+          "sha256": "8041831eb410408383c0064741fbd7e78abff2c1841134595673c1642d830450"
+        },
+        {
+          "entry": "_검토/영상_09-synkbrief-tiktok_contact.png",
+          "bytes": 248562,
+          "sha256": "73d6a8d5f3f4f37c9b6a8ec7ea4dffe4f5a840e63a63612c1c28853785d9fab1"
+        },
+        {
+          "entry": "_검토/영상_09-synkbrief-tiktok_render.log",
+          "bytes": 31837,
+          "sha256": "413ad231b98bc65a45873aa5c24855ec3d825159901fffb61e5eaf456c62cbae"
+        },
+        {
+          "entry": "_검토/영상_09-synkbrief-tiktok_scene2_preview.png",
+          "bytes": 350945,
+          "sha256": "6956ca9a32d049538fa01a9057ba07c240103b38c878816f5e6fc5824d6e212b"
+        },
+        {
+          "entry": "_검토/영상_09-synkbrief-tiktok_검증.json",
+          "bytes": 923,
+          "sha256": "370846b2399ec60041f0ba23f6a345c285bb0242d096e7e7e39b9a5a09aa8622"
+        },
+        {
+          "entry": "_검토/영상_시각검토.md",
+          "bytes": 5295,
+          "sha256": "111e0c363d1d54a9fcd044f29c7564a68317fe55a5edf8d689f4c6ebe3330a35"
+        },
+        {
+          "entry": "_검토/영상_원천명세.json",
+          "bytes": 4468,
+          "sha256": "46aca70c015f6f061429c158bdc6757b182d66ea274866b76bbcd63610e75d84"
+        },
+        {
+          "entry": "_검토/영상프레임-01-lab-youtube/frame-00.png",
+          "bytes": 2981613,
+          "sha256": "50ae84dbfbb97abcede9d9d6ebf76d8603a8700b0ccbcb313d29407abe82d32e"
+        },
+        {
+          "entry": "_검토/영상프레임-01-lab-youtube/frame-01.png",
+          "bytes": 3083827,
+          "sha256": "05a0da6e0adcf2f5ed4f69d07070afc898af26911f23d0293ca9d7e49acc5c76"
+        },
+        {
+          "entry": "_검토/영상프레임-01-lab-youtube/frame-02.png",
+          "bytes": 3084772,
+          "sha256": "f81125480471cfcd847b892665589c2ba22e52d9a9f4db42fc2123f133b48676"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-00.png",
+          "bytes": 249644,
+          "sha256": "388474e1e02186255c69d32776ecb1346e9d817282f3c690f96a95ad1abd6e0f"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-01.png",
+          "bytes": 253266,
+          "sha256": "f3659dec809060f51d48974c36e098e7ee951d9f060380fca61b8af335ba3035"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-02.png",
+          "bytes": 642412,
+          "sha256": "f3003afbaa3531186f8ecd2c6743ed03224995cc3bf9ec7176db55d010a9b274"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-03.png",
+          "bytes": 668307,
+          "sha256": "b61c997a0fc33ecbb53a7d47db5202a24d8898bdaeb74b377ec63c757d713917"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-04.png",
+          "bytes": 312185,
+          "sha256": "5bbef216fa4df74e9058e28839fd643efd984f81f097af29a75bd0fc2919d216"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-05.png",
+          "bytes": 321387,
+          "sha256": "aea5c6bc8ab3d5348901f89bc9897b662a5e2ccf53270a12c08fc1a2f18b4ed8"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-06.png",
+          "bytes": 285195,
+          "sha256": "ca8c8ced53f554d8d3a230e2c300884af67c96fdd5da5d708bfe80f1c09d97f8"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-07.png",
+          "bytes": 292453,
+          "sha256": "580e318319d895ab8891c3174af77cea3187eab99e8c72bcea3ce5fd25da9d98"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-08.png",
+          "bytes": 335600,
+          "sha256": "ddb4438fb0c4eb9a986c2c250f0c52d2ffe167a2a8d277e91b902d2da30b341c"
+        },
+        {
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-09.png",
+          "bytes": 343135,
+          "sha256": "66841f35259735c6b71d8f46a5fc76501e5bf4014c9212ece3c3259bb2a8709b"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-00.png",
+          "bytes": 275879,
+          "sha256": "6ead46513798c42b79e7221f88310368f10c34e5eab5765313f55b9faf746c5c"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-01.png",
+          "bytes": 266610,
+          "sha256": "4bbca7ab18ed49529a39587901eb6a5152fd1da6f4d6f70646572df28c71733f"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-02.png",
+          "bytes": 279337,
+          "sha256": "5b4dfee3a997e5b034aeb519897373e422c41bf4fe6c264f3fde1377fce8a584"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-03.png",
+          "bytes": 282592,
+          "sha256": "a1257c5c85c012cb3423f0dd53601879ca6b4f57f270729a6f76e984158acbce"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-04.png",
+          "bytes": 259199,
+          "sha256": "1d01e9adc1ab4db348190d28b89519de5e1f2686429cf2fe5a99cd6f05cada30"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-05.png",
+          "bytes": 260176,
+          "sha256": "88790d8bcc1803241897f5a3daac5f836c0e32c98f8c0276c65680b529fb75c9"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-06.png",
+          "bytes": 403088,
+          "sha256": "3b78cfb9339cb2ff607ba0041179b7a27f9479bbcb707a67b66e14272be5f0a8"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-07.png",
+          "bytes": 402767,
+          "sha256": "3130596c0d3212e10381a99e1925d13533a470d40c18617e9c104ba3adacf9e8"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-08.png",
+          "bytes": 339552,
+          "sha256": "675fb8331fbaedf507d1d3b9e647c4a75ef6936b93800edfa8350e706af40e41"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-09.png",
+          "bytes": 347287,
+          "sha256": "d9ab7e2d3c321404dc5b49e7c363277469ae078acbb118b2535e88a4fee8bd67"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-10.png",
+          "bytes": 272692,
+          "sha256": "39ee753a79e23f9095b306287aeb204dee4f3321b929ae9ce378a6215e39a338"
+        },
+        {
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-11.png",
+          "bytes": 277811,
+          "sha256": "9a12092c5efad40ba707209e9d9f1285207ae10b8d54c3230a88431f96d267c2"
+        },
+        {
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-00.png",
+          "bytes": 299382,
+          "sha256": "ffbe0c292896a0c58b7d947e9d6e87e332dc3717871ebd8917d92caa433e993f"
+        },
+        {
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-01.png",
+          "bytes": 291466,
+          "sha256": "72ef399e51530bd5ed106ed8d0fc2148c2f89b694f276d4a8ca473fcd05c809a"
+        },
+        {
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-02.png",
+          "bytes": 323308,
+          "sha256": "5d77239be304e403ed113ba583e173b9561cfd7aeb5ea383fcfcd0df87f3a812"
+        },
+        {
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-03.png",
+          "bytes": 335298,
+          "sha256": "910cbd6994838c31e1610cb57b6909c9d86522ad23af5e84e782fb16ce66659f"
+        },
+        {
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-04.png",
+          "bytes": 260701,
+          "sha256": "3e7ca14ab4bc8721b2e0a8d406ceb904b492059e1027c52ab6425927ded47865"
+        },
+        {
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-05.png",
+          "bytes": 260612,
+          "sha256": "9d1d605629605960e5158fb6c3c24846b083569ac1b95964cf57312bc9ba5229"
+        },
+        {
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-00.png",
+          "bytes": 265319,
+          "sha256": "9550527e0d62f786a79d2f5d758356504f075129e628e52b2c20e10d530309d5"
+        },
+        {
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-01.png",
+          "bytes": 258360,
+          "sha256": "52b979719757d901c5e72ee658e3959170c26f423fe6c7bdc2eb6a7fcd8d2eb9"
+        },
+        {
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-02.png",
+          "bytes": 279071,
+          "sha256": "d1724e501e9e6d9b4d3141b92d2c3955249ed993aca88d154b01293b69625a56"
+        },
+        {
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-03.png",
+          "bytes": 280192,
+          "sha256": "9987aba7fe11e2e0d316ee0b9049932736152828e67dfb672d349c13f9b3d053"
+        },
+        {
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-04.png",
+          "bytes": 316762,
+          "sha256": "1bc963afbd9c72f54750181b08a97052646b1f3658658278f984ba5739254bb0"
+        },
+        {
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-05.png",
+          "bytes": 329265,
+          "sha256": "29288fbbaf6e8662ba44e6a8901810d3a4a9efde29a96949112acaab16f6e63f"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-00.png",
+          "bytes": 371851,
+          "sha256": "20f40038f8a45d64ac30d77190e07ccc7f3d7b8d3f42dc72a7508904a0db54ec"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-01.png",
+          "bytes": 380494,
+          "sha256": "b62479cff0774aae9ac9c6c2a39a1826a43448111a32d38307d7923bda3361aa"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-02.png",
+          "bytes": 508846,
+          "sha256": "9d0cc45537c25635f3c13bcb50a60f27bed3aec955725534cf2c3d5bdb176a66"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-03.png",
+          "bytes": 530785,
+          "sha256": "ef729af5912d65e5625f79ed73e904b6c0bc850f852bd73e9454e5aefa9fb493"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-04.png",
+          "bytes": 164636,
+          "sha256": "0f6be7c6aab8d886661f554d6751108c15e2b2f389e94b499122ff249970e1ba"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-05.png",
+          "bytes": 169715,
+          "sha256": "88a816f94011f840e252e4d7d4dcd9433aab33ce8dff5876a40571ad1e8f1d8a"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-06.png",
+          "bytes": 306371,
+          "sha256": "73de3a14c9cac3811eac0a8332f4994ae21e966ce481ba58ae5ffe1191256b32"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-07.png",
+          "bytes": 319106,
+          "sha256": "c3854000792512b76e40cae7ba488622e06fa96333b4e767decb0f4065c7d1c5"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-08.png",
+          "bytes": 349884,
+          "sha256": "e4a7a504d1e8e403cc83185756f0a48755ee1b97628c2966db8d111b4f83d411"
+        },
+        {
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-09.png",
+          "bytes": 363192,
+          "sha256": "abbe363db56de1ed121a89d0b88599e63f473b2033978ec802b47de20fd045ab"
+        },
+        {
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-00.png",
+          "bytes": 352452,
+          "sha256": "d2d411a62a4a4585486470bfaf1bc4d08167597ae7668096dcfe14bad37342fc"
+        },
+        {
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-01.png",
+          "bytes": 361696,
+          "sha256": "ae7200e65f2718f317fa1bfdaf803ff2595664a1978042c5e9e3d80fe7ce97d1"
+        },
+        {
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-02.png",
+          "bytes": 319943,
+          "sha256": "bafcb0f1cc95626a23e455f76e35977fabde84e79455586e80107667c65088af"
+        },
+        {
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-03.png",
+          "bytes": 328590,
+          "sha256": "37e927f255d7f4401a576b91a0a92cb1e8737f212c555683204a2d10c924e662"
+        },
+        {
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-04.png",
+          "bytes": 520695,
+          "sha256": "a5b4b9540864f94c2de30056aaa7efc49ec4ddc7f5bd51ff9f0ed6a960a2494c"
+        },
+        {
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-05.png",
+          "bytes": 541770,
+          "sha256": "2a4969718755eaa222e1d362b43afd3e0c6324dfd21cf97cf9585517bed0b5ce"
+        },
+        {
+          "entry": "_검토/정적_경계검사.json",
+          "bytes": 37369,
+          "sha256": "84d31bdade3788e3377cc3db4991fcb4f149fe2d5cd22f2eb264f1360dad7586"
+        },
+        {
+          "entry": "_검토/정적_독립검토.md",
+          "bytes": 10644,
+          "sha256": "8ef5845921183e301fe82a205aa54d399ec10bc83b29148d70d6bbd469584c70"
+        },
+        {
+          "entry": "_검토/최종검증.md",
+          "bytes": 6662,
+          "sha256": "f12e00e25b91610341af900d2aff3c9e3f15491d176c79344c819b29c014cd14"
+        },
+        {
+          "entry": "_검토/하드게이트.md",
+          "bytes": 9868,
+          "sha256": "5852caee8c1331bd65565481d606c7f3a2f1ef402b68038b578dd6e4dadbd776"
+        },
+        {
+          "entry": "01-lab-youtube/cards.html",
+          "bytes": 2681,
+          "sha256": "99987b088bbac59a2fb3f2dd9e0da5026036e6cc70b5becea5d7429797aae9f7"
+        },
+        {
+          "entry": "01-lab-youtube/master-01.png",
+          "bytes": 1753013,
+          "sha256": "d6753fca24ab3b5e4fcb896e9486f7bda5f0c8e1c1d46a0ca369f3de64a0dbdc"
+        },
+        {
+          "entry": "01-lab-youtube/upload-01.jpg",
+          "bytes": 224368,
+          "sha256": "011e74d3ec6193d7677a38859dc9b75ec92092a29e8ed7a6d48652e45a36f29a"
+        },
+        {
+          "entry": "01-lab-youtube/video.mp4",
+          "bytes": 6884287,
+          "sha256": "4a37f5890f7b0e567a61f14680a1eb81b49d400aad2c9c1ebd2c90d0847c2522"
+        },
+        {
+          "entry": "01-lab-youtube/게시문안.txt",
+          "bytes": 454,
+          "sha256": "d08e10fb503c7846fc7581faa7773e941eee65fa629856fcb00cc16320aa758b"
+        },
+        {
+          "entry": "01-lab-youtube/대체텍스트.txt",
+          "bytes": 161,
+          "sha256": "b499f10eff5f7be3495a4eab08d4d45854d49be93c361c9605b6563d3063f537"
+        },
+        {
+          "entry": "01-lab-youtube/사용안내.md",
+          "bytes": 974,
+          "sha256": "43d8fca99a70ad38a24182ea3e5f0afb706313f95b5a2219ae28deba708b2030"
+        },
+        {
+          "entry": "01-lab-youtube/자막.srt",
+          "bytes": 53,
+          "sha256": "87597a2d1a06a9e714a72407b22661ccf4fdb50ea44649be62122e23a1052702"
+        },
+        {
+          "entry": "01-lab-youtube/제목.txt",
+          "bytes": 32,
+          "sha256": "1e44e6a0ba7b944867c51f3bacfba7e74c72fa9e7394abd315603ff6a6b03186"
+        },
+        {
+          "entry": "02-lab-instagram/cards.html",
+          "bytes": 11305,
+          "sha256": "4fe975a1553e17c14e088e68ef3631d5a8a7e85df7197cf6c087f0b1d039b142"
+        },
+        {
+          "entry": "02-lab-instagram/master-01.png",
+          "bytes": 1360788,
+          "sha256": "620a51e2da07fc4e198914b94f64634f612c3a521f7b0ef1a9c88f01818d4bc6"
+        },
+        {
+          "entry": "02-lab-instagram/master-02.png",
+          "bytes": 478539,
+          "sha256": "a5113ebf25594818a1ae1ead9edf86a4ccf09f60e40b4ac365ce107924d2046b"
+        },
+        {
+          "entry": "02-lab-instagram/master-03.png",
+          "bytes": 460272,
+          "sha256": "a89bdc6bed5643317a64c2347a1aa2f8efd98bf5e583e426f66922763ef73944"
+        },
+        {
+          "entry": "02-lab-instagram/master-04.png",
+          "bytes": 477959,
+          "sha256": "452f9a9b8b2930be0a58137de03d86b1214abe0fe9ec2953975c299523eef68c"
+        },
+        {
+          "entry": "02-lab-instagram/master-05.png",
+          "bytes": 116418,
+          "sha256": "51cf0b904eeed02a234f43363769547c4d2f70d432c581c4fc447c790af0c71a"
+        },
+        {
+          "entry": "02-lab-instagram/upload-01.jpg",
+          "bytes": 192874,
+          "sha256": "5c59353bebeb4f8a92663021074026fa09d9d7aa3bc65ab08a2f3b50a37bc435"
+        },
+        {
+          "entry": "02-lab-instagram/upload-02.jpg",
+          "bytes": 133072,
+          "sha256": "24f838edcc116e3c10dc033e48c88b4a27bb793d1611fde9230aec596156c671"
+        },
+        {
+          "entry": "02-lab-instagram/upload-03.jpg",
+          "bytes": 129468,
+          "sha256": "488333797c74daf500f2613f220ae92a9e4192c75e4056a3433c5d4eed7da966"
+        },
+        {
+          "entry": "02-lab-instagram/upload-04.jpg",
+          "bytes": 130785,
+          "sha256": "771e10aefadd5a7b2e6cf69136513c4d92bf2005459f90e26dcf2fc6c78f4778"
+        },
+        {
+          "entry": "02-lab-instagram/upload-05.jpg",
+          "bytes": 94170,
+          "sha256": "4bb045f17dd2c54449c97d0b0c72550dcab257a035d4074fbaf63acccc77b4a6"
+        },
+        {
+          "entry": "02-lab-instagram/게시문안.txt",
+          "bytes": 964,
+          "sha256": "06bb296c1783cf722f4652eb1f247aca083103db0c051cebebd47f108369587e"
+        },
+        {
+          "entry": "02-lab-instagram/대체텍스트.txt",
+          "bytes": 238,
+          "sha256": "af486004be2983013eae85fc0f12396800c82d2c845e1ee87bb99f31b8d40710"
+        },
+        {
+          "entry": "02-lab-instagram/사용안내.md",
+          "bytes": 1049,
+          "sha256": "4444a3028c1474bcfbe996f0fded525cfa2c085c2338c4200d1e501434810e61"
+        },
+        {
+          "entry": "02-lab-instagram/제목.txt",
+          "bytes": 35,
+          "sha256": "9f244baa4e3e0f97d5d6f82559c0f68198fb910fee9dadc1c7254f06d5d28080"
+        },
+        {
+          "entry": "03-lab-tiktok/cards.html",
+          "bytes": 2768,
+          "sha256": "638075e4d2bcb765a71e6f8ce77e8c3040bec9a6557580891d4ea0010bdfa397"
+        },
+        {
+          "entry": "03-lab-tiktok/master-01.png",
+          "bytes": 1250468,
+          "sha256": "af3b4d33f9a80c0230d224eb2a7549866e41cf9afe995634db67f9511bc32236"
+        },
+        {
+          "entry": "03-lab-tiktok/upload-01.jpg",
+          "bytes": 188837,
+          "sha256": "0b7ffb7466980c9952d25da6edfd5218f2f5e9a0ef44f49c7f0084551bf69cc8"
+        },
+        {
+          "entry": "03-lab-tiktok/video.mp4",
+          "bytes": 30127015,
+          "sha256": "835bdf64b58575e854f27699cfbdfd0e97385e920812b62cd930763554184599"
+        },
+        {
+          "entry": "03-lab-tiktok/게시문안.txt",
+          "bytes": 856,
+          "sha256": "e19b7dd568117ebb4322ae792b8465589628b8908d7c45ee29b82ef67a0eb0c0"
+        },
+        {
+          "entry": "03-lab-tiktok/대체텍스트.txt",
+          "bytes": 278,
+          "sha256": "c7d08c664c5cb1c0e2ea95b999974c26ca1ea74fbd0c976f7a2066083491f32f"
+        },
+        {
+          "entry": "03-lab-tiktok/사용안내.md",
+          "bytes": 1044,
+          "sha256": "ce2feb5178755b5a87f225708ae8510c8c59beb8e121906d065f547a85f92663"
+        },
+        {
+          "entry": "03-lab-tiktok/자막.srt",
+          "bytes": 612,
+          "sha256": "d8fc11c864ab49bbf8f15eba806dd411af3939ba7e86ea55c9534fb822402e4f"
+        },
+        {
+          "entry": "03-lab-tiktok/제목.txt",
+          "bytes": 53,
+          "sha256": "45e9d85838171c2e3efa6fe35752b48deaa4e982c9de11c822bb816ae59eb3b3"
+        },
+        {
+          "entry": "04-yuhobuilds-youtube/cards.html",
+          "bytes": 2745,
+          "sha256": "08fe7ccb5917aefe7f970b0b80eb7b8b85cd5cf916578d655da13459b31b180c"
+        },
+        {
+          "entry": "04-yuhobuilds-youtube/master-01.png",
+          "bytes": 635363,
+          "sha256": "9cb54ad36c687baef456b762f6c203988348eb85f164f4a93fae8896622e42e5"
+        },
+        {
+          "entry": "04-yuhobuilds-youtube/upload-01.jpg",
+          "bytes": 165486,
+          "sha256": "c36cbd0311b7930befeee5d46cc3c39b676dff0681d392b179cdaf3034d0bdc9"
+        },
+        {
+          "entry": "04-yuhobuilds-youtube/video.mp4",
+          "bytes": 43412208,
+          "sha256": "74bdf58a83163bc1a931611610ad6320b07e8922efb0fcd649271618dd1f5fdb"
+        },
+        {
+          "entry": "04-yuhobuilds-youtube/게시문안.txt",
+          "bytes": 1126,
+          "sha256": "7c3fb43fab4e4680459304a2bdbbbc33554642138e877c3311b572e773709d4e"
+        },
+        {
+          "entry": "04-yuhobuilds-youtube/대체텍스트.txt",
+          "bytes": 187,
+          "sha256": "9b2223449ded2a597cdf649e3cb7058d2f735e0d03b5b8c5ba4dc40bc7b11b2b"
+        },
+        {
+          "entry": "04-yuhobuilds-youtube/사용안내.md",
+          "bytes": 1005,
+          "sha256": "0cf7269a2822d24a52a5a6a229830691effe45873590a5f08c9aa35c97dca039"
+        },
+        {
+          "entry": "04-yuhobuilds-youtube/자막.srt",
+          "bytes": 920,
+          "sha256": "90e78700188b1c706f56d043a452d71695f74cbdad383385eb63fb6d8bcdcb41"
+        },
+        {
+          "entry": "04-yuhobuilds-youtube/제목.txt",
+          "bytes": 50,
+          "sha256": "c284761e24d0db1f6bba70cde0e6b49b1bc956022e228758a1c79b90068c44be"
+        },
+        {
+          "entry": "05-yuhobuilds-instagram/cards.html",
+          "bytes": 2732,
+          "sha256": "e7c910980c4acb81d74332e82eac0d1a21baef1f3448beab82397999f7077b1f"
+        },
+        {
+          "entry": "05-yuhobuilds-instagram/master-01.png",
+          "bytes": 1139294,
+          "sha256": "6ad01abf06a3820c37be65c5eedfc202c0df5b0e8010fb72bc0ffb1a7d5326f6"
+        },
+        {
+          "entry": "05-yuhobuilds-instagram/upload-01.jpg",
+          "bytes": 204535,
+          "sha256": "0cf4006af0b673d59a70dd1624bdd1b63085d41f46dd1baba7ac8174d87bf938"
+        },
+        {
+          "entry": "05-yuhobuilds-instagram/video.mp4",
+          "bytes": 22874322,
+          "sha256": "32f75662ec1e41cec65fca465d47dda0a05ae11f2e7e3174ef466504dd70195f"
+        },
+        {
+          "entry": "05-yuhobuilds-instagram/게시문안.txt",
+          "bytes": 899,
+          "sha256": "09c935888ae1399b9d3b905bd7958485adf1181b64cf8888cf3515cede7d3836"
+        },
+        {
+          "entry": "05-yuhobuilds-instagram/대체텍스트.txt",
+          "bytes": 157,
+          "sha256": "386fac41e9899783dd18f836fc0e8c072cfd9ea3df66a05567c6b10ac4f60246"
+        },
+        {
+          "entry": "05-yuhobuilds-instagram/사용안내.md",
+          "bytes": 1020,
+          "sha256": "dff0bb6a9e4e7830d3169b5861a70356652a7276172543b9f34014286da0392f"
+        },
+        {
+          "entry": "05-yuhobuilds-instagram/자막.srt",
+          "bytes": 411,
+          "sha256": "17fae5a05f3a737a34a54ab8d6574f2c3a46dcd46374f8ef1cc89d3d4477e070"
+        },
+        {
+          "entry": "05-yuhobuilds-instagram/제목.txt",
+          "bytes": 31,
+          "sha256": "ddb168e838166893c7618fd52c576b237369504c5453bebed3c04640ec09b79f"
+        },
+        {
+          "entry": "06-yuhobuilds-tiktok/cards.html",
+          "bytes": 2740,
+          "sha256": "7b51553a62290ec74713d719cc514fd44a837288353e238e0f2a4be0e7942dca"
+        },
+        {
+          "entry": "06-yuhobuilds-tiktok/master-01.png",
+          "bytes": 630013,
+          "sha256": "6b367b5b3e38e1bd5787311b3fd8449eb7de5a12bd98f1b1bfd9b2365c5a9dd8"
+        },
+        {
+          "entry": "06-yuhobuilds-tiktok/upload-01.jpg",
+          "bytes": 166738,
+          "sha256": "ed91338c6c2c5b56cf44502c5bc901aadecb87b9598de029f68e17d54dff6730"
+        },
+        {
+          "entry": "06-yuhobuilds-tiktok/video.mp4",
+          "bytes": 19405159,
+          "sha256": "6a5663e6987f361e51c184aa11b1d62c712e73d333474dfdca720d1ca0fec2f0"
+        },
+        {
+          "entry": "06-yuhobuilds-tiktok/게시문안.txt",
+          "bytes": 721,
+          "sha256": "d07e215759873127f5ad83a24cdb0eedb29e582344c978dd0a60db52801e4bee"
+        },
+        {
+          "entry": "06-yuhobuilds-tiktok/대체텍스트.txt",
+          "bytes": 134,
+          "sha256": "2a88230d679487f0409a2e66097173d6678315c9cd3d8f9941abbeb15c245d57"
+        },
+        {
+          "entry": "06-yuhobuilds-tiktok/사용안내.md",
+          "bytes": 942,
+          "sha256": "bad066dcca2f67d88269987781189603b959124f350f822595759f0c8de51dbe"
+        },
+        {
+          "entry": "06-yuhobuilds-tiktok/자막.srt",
+          "bytes": 362,
+          "sha256": "47a571c081241f082a6ea1494f980fd9d54b652b6e1370a5fc0342838a1dce93"
+        },
+        {
+          "entry": "06-yuhobuilds-tiktok/제목.txt",
+          "bytes": 39,
+          "sha256": "e047b1f681e8099e3133dd6ee02584701f362b396e58789678c661ded6bd66c7"
+        },
+        {
+          "entry": "07-synkbrief-youtube/cards.html",
+          "bytes": 2723,
+          "sha256": "b8fc9758e2c96630924b33206fd50f044aded3be8c2d01d095b873271aa5573e"
+        },
+        {
+          "entry": "07-synkbrief-youtube/master-01.png",
+          "bytes": 1563749,
+          "sha256": "cf1833114d3074a2c3404e9aeca92df4bdd5f17b1c048ce5e91ee0afec73535c"
+        },
+        {
+          "entry": "07-synkbrief-youtube/upload-01.jpg",
+          "bytes": 230046,
+          "sha256": "7c960d9098f047d8fe6fb994b4d85c595287c28e51f8dccf14287efc686c8009"
+        },
+        {
+          "entry": "07-synkbrief-youtube/video.mp4",
+          "bytes": 38628742,
+          "sha256": "4cc854d5331f3d4f7e37480e8a04d5d04735dce94bbcca61501ce8a49dfac843"
+        },
+        {
+          "entry": "07-synkbrief-youtube/게시문안.txt",
+          "bytes": 1106,
+          "sha256": "5a4238c3508941baeef222b8487c8d87b94f40112f88569fe0d2fe3de2266267"
+        },
+        {
+          "entry": "07-synkbrief-youtube/대체텍스트.txt",
+          "bytes": 148,
+          "sha256": "c0e440a3e2809c2b5d816c3b0d936a9ce618245d1672edeebe5469d6d04b0d10"
+        },
+        {
+          "entry": "07-synkbrief-youtube/사용안내.md",
+          "bytes": 1016,
+          "sha256": "a209f9a986028395c45a81ba7c6f7dd04c7d4f9a9cad3d05c983c3845ae8b434"
+        },
+        {
+          "entry": "07-synkbrief-youtube/자막.srt",
+          "bytes": 579,
+          "sha256": "c9a080e4ff936af8efe23ba6ffabdcb72a562452387a6a8b01ebc9e21e9456dc"
+        },
+        {
+          "entry": "07-synkbrief-youtube/제목.txt",
+          "bytes": 48,
+          "sha256": "648187fa64f07e75d7ae45da92ce3768c0c715b8e69d8d7143da358b1e6a5fb9"
+        },
+        {
+          "entry": "08-synkbrief-instagram/cards.html",
+          "bytes": 13581,
+          "sha256": "accfe46baad6e6aa2702af005733727c8f4195fed5dd812b44ceb62d4c961160"
+        },
+        {
+          "entry": "08-synkbrief-instagram/master-01.png",
+          "bytes": 1335119,
+          "sha256": "f8e7003a61a0a32bc85a90b74b78d357446eeac69c67bbdd8d6c93db73c274cf"
+        },
+        {
+          "entry": "08-synkbrief-instagram/master-02.png",
+          "bytes": 86018,
+          "sha256": "7c66b034d3f0f306f2a8dffd69273a4e1c48d7d7a1ef3f9833437d4edf4437ee"
+        },
+        {
+          "entry": "08-synkbrief-instagram/master-03.png",
+          "bytes": 97568,
+          "sha256": "8c767c84239f352c5fc4704c4acc168308dfa2fbee4f78de8f1ee2ca9cc91083"
+        },
+        {
+          "entry": "08-synkbrief-instagram/master-04.png",
+          "bytes": 96020,
+          "sha256": "b8a2c5e8ecbccebf0cce719aad477fb406fd25c472cbb316228ffae07f878fdc"
+        },
+        {
+          "entry": "08-synkbrief-instagram/master-05.png",
+          "bytes": 100216,
+          "sha256": "91ff1d2c5f0fd60ff11df93c24c32dc54c68c611e1c2de04afc896096fcc7ff3"
+        },
+        {
+          "entry": "08-synkbrief-instagram/master-06.png",
+          "bytes": 96848,
+          "sha256": "904f397c249238526515bf01ebb7e32163c5e619cd8ffcb130f5cbfcd67039fb"
+        },
+        {
+          "entry": "08-synkbrief-instagram/upload-01.jpg",
+          "bytes": 185829,
+          "sha256": "ef07c1263b33e2b718f3e55765049c04a16d8c3e64453a030473f5231f7512de"
+        },
+        {
+          "entry": "08-synkbrief-instagram/upload-02.jpg",
+          "bytes": 81880,
+          "sha256": "4bea4aa0772dd4ea95d04107eedb2faefe05ce3fc66774c3a73465e29df57cc2"
+        },
+        {
+          "entry": "08-synkbrief-instagram/upload-03.jpg",
+          "bytes": 87388,
+          "sha256": "4943ad84c99094ff33ba2065b1ea86c38646efb69d3c5f6fdb28c6c75315be5c"
+        },
+        {
+          "entry": "08-synkbrief-instagram/upload-04.jpg",
+          "bytes": 94424,
+          "sha256": "78ca8bcbbaec0e68edc33a39c97433b2d516e52de1a9afd879a7c93cb6d1a844"
+        },
+        {
+          "entry": "08-synkbrief-instagram/upload-05.jpg",
+          "bytes": 91974,
+          "sha256": "95814e8931099df4b32ee248738169dc437a9d4855dd9863f94e8cf12cfce5b7"
+        },
+        {
+          "entry": "08-synkbrief-instagram/upload-06.jpg",
+          "bytes": 90871,
+          "sha256": "232a3cdf88a0ea95f9961df1ead18f1e988d9cfdbde4832ac1019e8ba7e3434c"
+        },
+        {
+          "entry": "08-synkbrief-instagram/게시문안.txt",
+          "bytes": 1303,
+          "sha256": "83ba6f59526391bfa99605ce8ac9f769ea7e6dd20828beee5cc4de3ce44419b6"
+        },
+        {
+          "entry": "08-synkbrief-instagram/대체텍스트.txt",
+          "bytes": 224,
+          "sha256": "8d9a5fca30652185be29debd801b8aa3fede398b5e5bebd46567818ecbdca0ad"
+        },
+        {
+          "entry": "08-synkbrief-instagram/사용안내.md",
+          "bytes": 1006,
+          "sha256": "a1f7a4e8b35e4534aaf68d41cbe19415cae26a010195763991b63daf646ae172"
+        },
+        {
+          "entry": "08-synkbrief-instagram/제목.txt",
+          "bytes": 38,
+          "sha256": "9ef6c59c17915966c633ec16ff9ec54dab7b2806e409a017c8e27f2900613575"
+        },
+        {
+          "entry": "09-synkbrief-tiktok/cards.html",
+          "bytes": 2695,
+          "sha256": "2750865b29032bd06a5c4f4f32193f61335173999b0cd38ab3f1008db296586c"
+        },
+        {
+          "entry": "09-synkbrief-tiktok/master-01.png",
+          "bytes": 1546579,
+          "sha256": "4073631aead64136d353e12e7edfe022f016336cf1e02224a6045e5bebe0d052"
+        },
+        {
+          "entry": "09-synkbrief-tiktok/upload-01.jpg",
+          "bytes": 214218,
+          "sha256": "73a418ecf54c8b96724822d6076d1961aa5ced952cc66f6e787acf053b1fb154"
+        },
+        {
+          "entry": "09-synkbrief-tiktok/video.mp4",
+          "bytes": 27996341,
+          "sha256": "7c08b1f9a6c5aa0adfd54560480956103693de04eb4a53ba8bbc91addf217037"
+        },
+        {
+          "entry": "09-synkbrief-tiktok/게시문안.txt",
+          "bytes": 783,
+          "sha256": "f2bb4139da2a6b86e2ab8d7555e276696d841f533b00e7a8254ce58451ead337"
+        },
+        {
+          "entry": "09-synkbrief-tiktok/대체텍스트.txt",
+          "bytes": 144,
+          "sha256": "d308f5168fe75c16657838524cdc1f0cbb70eb145750c53396f219cd8e3337e7"
+        },
+        {
+          "entry": "09-synkbrief-tiktok/사용안내.md",
+          "bytes": 955,
+          "sha256": "fa978ecb05a665a22e243a8a3b361b0a7a182a76a013370023040d857172e421"
+        },
+        {
+          "entry": "09-synkbrief-tiktok/자막.srt",
+          "bytes": 362,
+          "sha256": "0e607c82c75942c8fc60351fe9d7ff4eead1fbdcd7144e1d2af87f34c704481b"
+        },
+        {
+          "entry": "09-synkbrief-tiktok/제목.txt",
+          "bytes": 32,
+          "sha256": "a9670e43f337e6b11e818bd7c0978821b6a3a8f3abc7f115469cef1f84028048"
+        },
+        {
+          "entry": "10-lab-facebook/cards.html",
+          "bytes": 5326,
+          "sha256": "97742ce9e3348c36cb2d20ee6b7939bb4caa291f0acb8c15507e5b89fe9e0b6e"
+        },
+        {
+          "entry": "10-lab-facebook/master-01.png",
+          "bytes": 193947,
+          "sha256": "8ddc8fb33d7a17f2ef8907adc8cce9d560b4ce4f054545ef9112a2a794a6944d"
+        },
+        {
+          "entry": "10-lab-facebook/master-02.png",
+          "bytes": 160236,
+          "sha256": "e8cee1cfc3295d19f87b5dc16f7a72a7967c4c8c3caffd6e294974bfe5b3dd9e"
+        },
+        {
+          "entry": "10-lab-facebook/upload-01.jpg",
+          "bytes": 144367,
+          "sha256": "902d744802cb32ebd0f560cfcbe670fb67a4f0d5c35b0a9fdbbfc6ab9664b36d"
+        },
+        {
+          "entry": "10-lab-facebook/upload-02.jpg",
+          "bytes": 122412,
+          "sha256": "893bb268e94e77dee2607a99e8d8d49522f3b7e1608fd8d9a47dbbdbc04c723c"
+        },
+        {
+          "entry": "10-lab-facebook/게시문안.txt",
+          "bytes": 1239,
+          "sha256": "762ac9b7f5b7273554c9320b71d72a96f83c05a45be1d757bf126c242534eddd"
+        },
+        {
+          "entry": "10-lab-facebook/대체텍스트.txt",
+          "bytes": 318,
+          "sha256": "e2d1319512b3872d38fc582ab5dd688833784f55137891695477361c11018f06"
+        },
+        {
+          "entry": "10-lab-facebook/사용안내.md",
+          "bytes": 1020,
+          "sha256": "362f1e518af9cb83a90863222f7fd607a5dd5288a88bec8c45e120f34df99ce8"
+        },
+        {
+          "entry": "10-lab-facebook/제목.txt",
+          "bytes": 37,
+          "sha256": "fbe3b3e76a680ea045187367525b3e40e834ed6aace1b52303be642c8bc7d7b6"
+        },
+        {
+          "entry": "11-yuhobuilds-threads/cards.html",
+          "bytes": 2741,
+          "sha256": "74b414a13bcc2f9e35e1e68e66f65356d2616d4efccfb6fb8ed63f4d6a3ad50e"
+        },
+        {
+          "entry": "11-yuhobuilds-threads/master-01.png",
+          "bytes": 637723,
+          "sha256": "392000a22dc7935702afe570dee93c3034cc61921ec910597716cf67b780b0a7"
+        },
+        {
+          "entry": "11-yuhobuilds-threads/upload-01.jpg",
+          "bytes": 175868,
+          "sha256": "90e14323ffae57590df249a824401b49d5320fb59d5f6b8b664dae6a2f568b5b"
+        },
+        {
+          "entry": "11-yuhobuilds-threads/게시문안.txt",
+          "bytes": 579,
+          "sha256": "cda764908de978d35929b782cd1294265bd3a37c509c4d57aa438418b98c87d8"
+        },
+        {
+          "entry": "11-yuhobuilds-threads/대체텍스트.txt",
+          "bytes": 125,
+          "sha256": "8e4759bf6ae2662f1b64bba710c8def1cdc17789dfc94879d3c6f5b870812ec7"
+        },
+        {
+          "entry": "11-yuhobuilds-threads/사용안내.md",
+          "bytes": 967,
+          "sha256": "78dd93ecf6bafa53c445b4b4325ddc38ce168e882ff70c94ba48bcc21932faa1"
+        },
+        {
+          "entry": "11-yuhobuilds-threads/제목.txt",
+          "bytes": 34,
+          "sha256": "8c2e953ed800d6b1b595e8534cd9406c9be02dfc55d6d3a6d8d52fc2e3c89d91"
+        },
+        {
+          "entry": "12-synkbrief-threads/cards.html",
+          "bytes": 2848,
+          "sha256": "24364e75685193cec3f5e36839a315fc3b3e5a361685b1e8302ca513b9ab7a39"
+        },
+        {
+          "entry": "12-synkbrief-threads/master-01.png",
+          "bytes": 86209,
+          "sha256": "4d95f550df6e89257fdffb4cdfb22a65e40e3b1d849a7735d627bc3c3ef68b9f"
+        },
+        {
+          "entry": "12-synkbrief-threads/upload-01.jpg",
+          "bytes": 78860,
+          "sha256": "84654133626e90dbbdf85a9192dcafc46eeddde593a910dce616171150ff376a"
+        },
+        {
+          "entry": "12-synkbrief-threads/게시문안.txt",
+          "bytes": 548,
+          "sha256": "57e45669c23707c8eef2bb0845e6e7b20742bb974e4bd914863c5bdd8eb77a1b"
+        },
+        {
+          "entry": "12-synkbrief-threads/대체텍스트.txt",
+          "bytes": 79,
+          "sha256": "0835f7590cd414153cd442a22229acb22707826d3b6f9a0383ab8e9425029d07"
+        },
+        {
+          "entry": "12-synkbrief-threads/사용안내.md",
+          "bytes": 929,
+          "sha256": "86f5b6443a876a7421530e5e3663995fba143c110f4c51401171ed9ef02f53d9"
+        },
+        {
+          "entry": "12-synkbrief-threads/제목.txt",
+          "bytes": 36,
+          "sha256": "a586245616e8dec0b043191f7ab0fe7288d8715b77f803441dea130aa0eccda1"
+        },
+        {
+          "entry": "13-yuhobuilds-linkedin/cards.html",
+          "bytes": 3118,
+          "sha256": "8f3a104ee2435cebb5c07fc81511ec5f76f7a04b6027f408b803444052d96e06"
+        },
+        {
+          "entry": "13-yuhobuilds-linkedin/master-01.png",
+          "bytes": 126097,
+          "sha256": "6179699930aded2b81012ca1bd18e822e6b5724c68ab3fe221230c4272862624"
+        },
+        {
+          "entry": "13-yuhobuilds-linkedin/upload-01.jpg",
+          "bytes": 115710,
+          "sha256": "e25a026a7bc20c8d0a032fa3aee5db9abbbec206e9aa252c2f6d3475e32e20ad"
+        },
+        {
+          "entry": "13-yuhobuilds-linkedin/게시문안.txt",
+          "bytes": 1910,
+          "sha256": "52426da77ab5cae6403182b94010cc20f62927132eca34654cbe225b48992c29"
+        },
+        {
+          "entry": "13-yuhobuilds-linkedin/대체텍스트.txt",
+          "bytes": 185,
+          "sha256": "c8732ef2c0c52161cf9b0bad6440a144d709c8cfebed2eb672568456bf643011"
+        },
+        {
+          "entry": "13-yuhobuilds-linkedin/사용안내.md",
+          "bytes": 967,
+          "sha256": "65f72fc32922c4eda9db552ad8be5ec4b9bbe7b86e746dd0b4f3fd098a227123"
+        },
+        {
+          "entry": "13-yuhobuilds-linkedin/제목.txt",
+          "bytes": 39,
+          "sha256": "5e6d8d66af159ad38f503bac9a65836364cedffaf2853c3dc85cdc8810534c16"
+        },
+        {
+          "entry": "14-lab-telegram/cards.html",
+          "bytes": 3023,
+          "sha256": "75810af7046aa9f769669b4e91c291ba4b541fb8f1d4eac72d24aae89cd936d9"
+        },
+        {
+          "entry": "14-lab-telegram/master-01.png",
+          "bytes": 553548,
+          "sha256": "ade6c3f50401a12ff86eecc0c1e2276c0881df3c09af07b1d784f533a04a9313"
+        },
+        {
+          "entry": "14-lab-telegram/upload-01.jpg",
+          "bytes": 214641,
+          "sha256": "556dd4359ee963dc235565419377fbf447d5bfabb0a26df512222425c36b5a01"
+        },
+        {
+          "entry": "14-lab-telegram/게시문안.txt",
+          "bytes": 948,
+          "sha256": "849473f9707fc0f6db4c767e32c50370c353ef9ab5ea5664680a6337fb7f4a44"
+        },
+        {
+          "entry": "14-lab-telegram/대체텍스트.txt",
+          "bytes": 215,
+          "sha256": "319a6536785c511d488493ceebef091f71d4772caff4ee4ee803c448c8eef96a"
+        },
+        {
+          "entry": "14-lab-telegram/사용안내.md",
+          "bytes": 1030,
+          "sha256": "871246ab383cb194e3f4dd3ed9fdb2bb00a73f054f1add021af6a2dca24e24a3"
+        },
+        {
+          "entry": "14-lab-telegram/제목.txt",
+          "bytes": 60,
+          "sha256": "a3f1e4aa960c5304e4fa3f84b799d73c5ded0e2e94335349642e22ee27bd03f2"
+        },
+        {
+          "entry": "15-synklab-substack/cards.html",
+          "bytes": 2757,
+          "sha256": "72f6b642f9beb2c738632582296ed7d0eaa35b61c82cd35fb88813ab58d81f9b"
+        },
+        {
+          "entry": "15-synklab-substack/letter.html",
+          "bytes": 4112,
+          "sha256": "036570e5eba882d9a2c76fde20adbf974e29c77a2a84ea212242bc71da5f1a1c"
+        },
+        {
+          "entry": "15-synklab-substack/master-01.png",
+          "bytes": 646569,
+          "sha256": "ebd67476891a2c27ba11aa04013cd82b76608babc75228a595773bafabf69f95"
+        },
+        {
+          "entry": "15-synklab-substack/upload-01.jpg",
+          "bytes": 182084,
+          "sha256": "8498dadec12e9ca962307bcf475e2a6e5b1fe082f98e285733cc91d58c83bfad"
+        },
+        {
+          "entry": "15-synklab-substack/게시문안.txt",
+          "bytes": 425,
+          "sha256": "a05f1d353c17cd58b25514f69903c2a48c657f737358c64850704f6572277157"
+        },
+        {
+          "entry": "15-synklab-substack/대체텍스트.txt",
+          "bytes": 145,
+          "sha256": "12cd510b978321bf65f0cf4810ba843c3d1384d0b2608bd386b6d77a9a342853"
+        },
+        {
+          "entry": "15-synklab-substack/본문.md",
+          "bytes": 3358,
+          "sha256": "1bdcefd37ae7401073c39f314a252a2018a1c7e73d4a1f9a57983abd025f4898"
+        },
+        {
+          "entry": "15-synklab-substack/사용안내.md",
+          "bytes": 1245,
+          "sha256": "d27f880f3c9f73a54241edcda2e3abbca3aa390b54712922eb9b21ba86603224"
+        },
+        {
+          "entry": "15-synklab-substack/제목.txt",
+          "bytes": 48,
+          "sha256": "57fc1e02a9c259cd694d6287d51d5150228bd90c766c95ca4a5475a9c2147337"
+        },
+        {
+          "entry": "16-synk-instagram/cards.html",
+          "bytes": 2819,
+          "sha256": "dc3a82518868616c2f23ef7a1da731c157d195b97ac5195eae9dc4aec67f0733"
+        },
+        {
+          "entry": "16-synk-instagram/master-01.png",
+          "bytes": 1523931,
+          "sha256": "89e23cb53cc32750d591fb54855d006364d472077a62f3455d836fbf7d2e4420"
+        },
+        {
+          "entry": "16-synk-instagram/upload-01.jpg",
+          "bytes": 224798,
+          "sha256": "1b40f50532a189938c6b063a05ae1be786b5993605314ad1d133e115d6b7321f"
+        },
+        {
+          "entry": "16-synk-instagram/게시문안.txt",
+          "bytes": 672,
+          "sha256": "fd9d109b0c379aba398e9f72051a8f626785a89339b44a29406c54cc6d6dab72"
+        },
+        {
+          "entry": "16-synk-instagram/대체텍스트.txt",
+          "bytes": 247,
+          "sha256": "1f63173b8c6bf954d86671818f501457cb34989231adbee928ec1b223caa5b92"
+        },
+        {
+          "entry": "16-synk-instagram/사용안내.md",
+          "bytes": 1015,
+          "sha256": "eadf7d940fab9055b7bf3b33917c543b95246f1227582480d4388beba69f004c"
+        },
+        {
+          "entry": "16-synk-instagram/제목.txt",
+          "bytes": 26,
+          "sha256": "6f3055ac73db409b9de57bd565acef76edec21fcdf5aac0f6c95c60296b194a2"
+        },
+        {
+          "entry": "packages/01-lab-youtube.zip",
+          "bytes": 8061450,
+          "sha256": "b245f6a0cf33e25e7cc270c83365547925917d11f238f44b90de8baccfa79879"
+        },
+        {
+          "entry": "packages/02-lab-instagram.zip",
+          "bytes": 3361431,
+          "sha256": "6f29adbd497cbc52e7e150b5e5065e3f1d170e00ca60efe133791ceba15e8de3"
+        },
+        {
+          "entry": "packages/03-lab-tiktok.zip",
+          "bytes": 30926366,
+          "sha256": "39cd0ebf22b8d7adfa74361c66290b084521e123272918466d2be9c3b1121fdc"
+        },
+        {
+          "entry": "packages/04-yuhobuilds-youtube.zip",
+          "bytes": 42959811,
+          "sha256": "3c9c64c74a0047f225434cdc19cc5ec56d22de3dee2ad4fc66c541223e967aa1"
+        },
+        {
+          "entry": "packages/05-yuhobuilds-instagram.zip",
+          "bytes": 23565877,
+          "sha256": "941301c773fc8c8010cd2585baaf0dbfdc5f6cab870dc34bf3b947a8512c4b54"
+        },
+        {
+          "entry": "packages/06-yuhobuilds-tiktok.zip",
+          "bytes": 19652333,
+          "sha256": "f93a9cb6e7d4bdcd2583738ceed653792ea87cc257e967e4b67914d4c0e16331"
+        },
+        {
+          "entry": "packages/07-synkbrief-youtube.zip",
+          "bytes": 39583128,
+          "sha256": "2884030c50c6781a76ac04d8fe8bfb144914706018a945c857c9d16633846bb8"
+        },
+        {
+          "entry": "packages/08-synkbrief-instagram.zip",
+          "bytes": 2188805,
+          "sha256": "ad50d62a16ff07c63d616ac7de0ac0c39af4e91876386a1856393702842847c4"
+        },
+        {
+          "entry": "packages/09-synkbrief-tiktok.zip",
+          "bytes": 29217220,
+          "sha256": "7886b7f726ad7b8ccaa1c9886907bceec91f9e20ce45fd01aad26040b8436b59"
+        },
+        {
+          "entry": "packages/10-lab-facebook.zip",
+          "bytes": 524962,
+          "sha256": "2b6b743760986a9dea9815cd83b269429ebadbe5498b04940021e08bd2657c5f"
+        },
+        {
+          "entry": "packages/11-yuhobuilds-threads.zip",
+          "bytes": 773531,
+          "sha256": "a8e18599baef851da9ce841ad92d9ee82a4e9d71ee842e1ad97ecb5caafb2e49"
+        },
+        {
+          "entry": "packages/12-synkbrief-threads.zip",
+          "bytes": 123343,
+          "sha256": "350ec92ba5723c161d019f0e8bf61a35980df0c0b51641827b853e4d8cbad979"
+        },
+        {
+          "entry": "packages/13-yuhobuilds-linkedin.zip",
+          "bytes": 198024,
+          "sha256": "cceba6f80a61ab34852b379ae6762a929af0ba9780de3bed4eb4ffec8407639c"
+        },
+        {
+          "entry": "packages/14-lab-telegram.zip",
+          "bytes": 724700,
+          "sha256": "5f4b67bc38c1fef8d0c0ae5d49f245e2be1f21b28d9c8713e3b0d3b17cba3ca4"
+        },
+        {
+          "entry": "packages/15-synklab-substack.zip",
+          "bytes": 789990,
+          "sha256": "bd16e5e7ad9415d12bfe0cf7f805f0b212629cfc6ffa0c954045f523c3675f0a"
+        },
+        {
+          "entry": "packages/16-synk-instagram.zip",
+          "bytes": 1710192,
+          "sha256": "a537804dcded0c39486d6e1f79a0c99af5cb72110fe96b59bc0053a92d49fef8"
+        }
+      ]
+    }
+  ],
+  "passed": true
+}

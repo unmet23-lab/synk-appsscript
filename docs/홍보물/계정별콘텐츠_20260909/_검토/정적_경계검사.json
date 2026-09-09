@@ -1,0 +1,1532 @@
+{
+  "sourceSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
+  "renderedAt": "2026-09-08T23:55:55.642Z",
+  "cards": 26,
+  "errors": [],
+  "results": [
+    {
+      "id": "01-lab-youtube",
+      "index": 1,
+      "master": "01-lab-youtube/master-01.png",
+      "upload": "01-lab-youtube/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "K-LOFI24",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Нэг өрөө.\nНэг мөч.",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "30 секунд",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 1,
+      "master": "02-lab-instagram/master-01.png",
+      "upload": "02-lab-instagram/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK LAB",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Миний дуртай\nгазар",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "Өөрийн ертөнцийг солонгосоор танилцуулъя.",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 2,
+      "master": "02-lab-instagram/master-02.png",
+      "upload": "02-lab-instagram/upload-02.jpg",
+      "card": "2",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 569.875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "ДУРТАЙ ГАЗАР",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Энэ газраас эхэлье",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "저는 이곳을 좋아해요.",
+          "top": 390.46875,
+          "bottom": 487.65625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Би энэ газарт дуртай.",
+          "top": 511.65625,
+          "bottom": 569.875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 1004,
+          "bottom": 1254,
+          "left": 692,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 3,
+      "master": "02-lab-instagram/master-03.png",
+      "upload": "02-lab-instagram/upload-03.jpg",
+      "card": "3",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 569.875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "ШАЛТГААН",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Яагаад дуртай вэ?",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "조용해서 좋아해요.",
+          "top": 390.46875,
+          "bottom": 487.65625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Чимээгүй болохоор дуртай.",
+          "top": 511.65625,
+          "bottom": 569.875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 1004,
+          "bottom": 1254,
+          "left": 692,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 4,
+      "master": "02-lab-instagram/master-04.png",
+      "upload": "02-lab-instagram/upload-04.jpg",
+      "card": "4",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 667.875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "УРИЛГА",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Хамт очих уу?",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "Найздаа хэлэх энгийн урилга.",
+          "top": 382.46875,
+          "bottom": 440.46875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "같이 가볼래요?",
+          "top": 488.46875,
+          "bottom": 585.65625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Хамт очиж үзэх үү?",
+          "top": 609.65625,
+          "bottom": 667.875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 1004,
+          "bottom": 1254,
+          "left": 692,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 5,
+      "master": "02-lab-instagram/master-05.png",
+      "upload": "02-lab-instagram/upload-05.jpg",
+      "card": "5",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 952.46875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "ӨӨРИЙНХӨӨ ТУХАЙ",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Таны гурван мөр",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "Хувийн хаяг, нэр бичих шаардлагагүй.",
+          "top": 366.46875,
+          "bottom": 424.46875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "Дуртай газар",
+          "top": 472.46875,
+          "bottom": 632.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Шалтгаан",
+          "top": 632.46875,
+          "bottom": 792.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Урилга",
+          "top": 792.46875,
+          "bottom": 952.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "03-lab-tiktok",
+      "index": 1,
+      "master": "03-lab-tiktok/master-01.png",
+      "upload": "03-lab-tiktok/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK LAB",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Багийн ажилд\nминий хийх зүйл",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "Өөрийн үүргийг сонгоорой.",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "index": 1,
+      "master": "04-yuhobuilds-youtube/master-01.png",
+      "upload": "04-yuhobuilds-youtube/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "유호 · 짓고 있습니다",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "무엇부터\n읽어야 할까요",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "완성한 소개서에서 정한 순서",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "index": 1,
+      "master": "05-yuhobuilds-instagram/master-01.png",
+      "upload": "05-yuhobuilds-instagram/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "유호 · 짓고 있습니다",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "캐릭터를\n덜 넣은 이유",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "좋아하는 자산에도 맡을 일이 있습니다.",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "index": 1,
+      "master": "06-yuhobuilds-tiktok/master-01.png",
+      "upload": "06-yuhobuilds-tiktok/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "유호 · 짓고 있습니다",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "더 넣기 전에,\n읽는 순서부터",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "완성 소개서에서 꺼낸 한 가지",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "index": 1,
+      "master": "07-synkbrief-youtube/master-01.png",
+      "upload": "07-synkbrief-youtube/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK BRIEF",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "파일을 받은 다음에도\n쓸 수 있나요",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "인수할 때 확인할 세 칸",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 1,
+      "master": "08-synkbrief-instagram/master-01.png",
+      "upload": "08-synkbrief-instagram/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK BRIEF",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "대학을 비교할 때,\n빈칸부터",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "학교 이름보다 먼저 적을 내 조건",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 2,
+      "master": "08-synkbrief-instagram/master-02.png",
+      "upload": "08-synkbrief-instagram/upload-02.jpg",
+      "card": "2",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 856.46875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "내 선택의 출발점",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "무엇을 배우고 싶나요",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "학교 이름은 그다음에 적습니다.",
+          "top": 366.46875,
+          "bottom": 424.46875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "배우고 싶은 분야",
+          "top": 472.46875,
+          "bottom": 664.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "살펴볼 과정",
+          "top": 664.46875,
+          "bottom": 856.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 3,
+      "master": "08-synkbrief-instagram/master-03.png",
+      "upload": "08-synkbrief-instagram/upload-03.jpg",
+      "card": "3",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 952.46875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "수업과 준비",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "어떤 언어로 배우나요",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "해당 과정의 공식 안내에서 확인합니다.",
+          "top": 366.46875,
+          "bottom": 424.46875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "수업 언어",
+          "top": 472.46875,
+          "bottom": 632.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "공식 지원 요건",
+          "top": 632.46875,
+          "bottom": 792.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "더 준비할 것",
+          "top": 792.46875,
+          "bottom": 952.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 4,
+      "master": "08-synkbrief-instagram/master-04.png",
+      "upload": "08-synkbrief-instagram/upload-04.jpg",
+      "card": "4",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 952.46875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "비교 범위",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "같은 범위로 비교하기",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "기간과 포함 항목이 다르면 총액만 비교하지 않습니다.",
+          "top": 366.46875,
+          "bottom": 424.46875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "비교 기간",
+          "top": 472.46875,
+          "bottom": 632.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "포함한 비용 항목",
+          "top": 632.46875,
+          "bottom": 792.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "미확인 비용 항목",
+          "top": 792.46875,
+          "bottom": 952.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 5,
+      "master": "08-synkbrief-instagram/master-05.png",
+      "upload": "08-synkbrief-instagram/upload-05.jpg",
+      "card": "5",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 952.46875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "정보의 근거",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "원문과 날짜를 함께",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "오래된 안내와 현재 조건을 섞지 않습니다.",
+          "top": 366.46875,
+          "bottom": 424.46875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "해당 학기 공식 안내",
+          "top": 472.46875,
+          "bottom": 632.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "확인한 날짜",
+          "top": 632.46875,
+          "bottom": 792.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "다시 물을 것",
+          "top": 792.46875,
+          "bottom": 952.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 6,
+      "master": "08-synkbrief-instagram/master-06.png",
+      "upload": "08-synkbrief-instagram/upload-06.jpg",
+      "card": "6",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 952.46875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "아직 모르는 것도 정보",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "빈칸을 남겨 두세요",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "이 자료는 대학 비교용 양식입니다.",
+          "top": 366.46875,
+          "bottom": 424.46875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "꼭 필요한 조건",
+          "top": 472.46875,
+          "bottom": 632.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "아직 모르는 것",
+          "top": 632.46875,
+          "bottom": 792.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "다음에 확인할 곳",
+          "top": 792.46875,
+          "bottom": 952.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "index": 1,
+      "master": "09-synkbrief-tiktok/master-01.png",
+      "upload": "09-synkbrief-tiktok/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK BRIEF",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "파일과 함께\n건넬 세 줄",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "원본 · 바꾸는 곳 · 확인법",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "10-lab-facebook",
+      "index": 1,
+      "master": "10-lab-facebook/master-01.png",
+      "upload": "10-lab-facebook/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 1034.546875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK LAB · ХҮҮХДИЙН СОНГОЛТ",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Юу хийж\nүзмээр байна?",
+          "top": 260.390625,
+          "bottom": 424.546875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "Хариултыг нь эхлээд сонсоорой.",
+          "top": 448.546875,
+          "bottom": 506.546875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "Солонгост юу хийж үзмээр байна?",
+          "top": 554.546875,
+          "bottom": 714.546875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Тэр үед юу гэж хэлмээр байна?",
+          "top": 714.546875,
+          "bottom": 874.546875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Юуг нэмж мэдмээр байна?",
+          "top": 874.546875,
+          "bottom": 1034.546875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "10-lab-facebook",
+      "index": 2,
+      "master": "10-lab-facebook/master-02.png",
+      "upload": "10-lab-facebook/upload-02.jpg",
+      "card": "2",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 1034.546875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "ГЭР БҮЛИЙН АСУУЛТ",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Юуг хамт\nшалгах вэ?",
+          "top": 260.390625,
+          "bottom": 424.546875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "Хувийн хариултаа нийтлэх шаардлагагүй.",
+          "top": 448.546875,
+          "bottom": 506.546875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "Ямар бэлтгэл хэрэгтэй вэ?",
+          "top": 554.546875,
+          "bottom": 714.546875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Юуг хамт шалгах вэ?",
+          "top": 714.546875,
+          "bottom": 874.546875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Хэнээс лавлах вэ?",
+          "top": 874.546875,
+          "bottom": 1034.546875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "11-yuhobuilds-threads",
+      "index": 1,
+      "master": "11-yuhobuilds-threads/master-01.png",
+      "upload": "11-yuhobuilds-threads/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "유호 · 짓고 있습니다",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "중복은 덜고,\n필요한 설명은 남기고",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "완성한 소개서의 편집 기록",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "12-synkbrief-threads",
+      "index": 1,
+      "master": "12-synkbrief-threads/master-01.png",
+      "upload": "12-synkbrief-threads/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 952.46875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK BRIEF · 설계 예시",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "같이 건넬 세 줄",
+          "top": 260.390625,
+          "bottom": 342.46875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "실제 제공 범위 안에서 채웁니다.",
+          "top": 366.46875,
+          "bottom": 424.46875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "원본",
+          "top": 472.46875,
+          "bottom": 632.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "바꾸는 곳",
+          "top": 632.46875,
+          "bottom": 792.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "확인법",
+          "top": 792.46875,
+          "bottom": 952.46875,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "13-yuhobuilds-linkedin",
+      "index": 1,
+      "master": "13-yuhobuilds-linkedin/master-01.png",
+      "upload": "13-yuhobuilds-linkedin/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 1178.546875,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK SHIFT · 설계 예시",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "다음 사람이\n이어받을 여섯 칸",
+          "top": 260.390625,
+          "bottom": 424.546875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "입학 전 안내와 첫 학기 사이",
+          "top": 448.546875,
+          "bottom": 506.546875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "전달할 일",
+          "top": 554.546875,
+          "bottom": 746.546875,
+          "left": 88,
+          "right": 520,
+          "overflow": false
+        },
+        {
+          "text": "받는 역할",
+          "top": 554.546875,
+          "bottom": 746.546875,
+          "left": 560,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "다음 확인 담당",
+          "top": 770.546875,
+          "bottom": 962.546875,
+          "left": 88,
+          "right": 520,
+          "overflow": false
+        },
+        {
+          "text": "확인할 시점",
+          "top": 770.546875,
+          "bottom": 962.546875,
+          "left": 560,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "문제 연락 경로",
+          "top": 986.546875,
+          "bottom": 1178.546875,
+          "left": 88,
+          "right": 520,
+          "overflow": false
+        },
+        {
+          "text": "종료 때 인계",
+          "top": 986.546875,
+          "bottom": 1178.546875,
+          "left": 560,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "14-lab-telegram",
+      "index": 1,
+      "master": "14-lab-telegram/master-01.png",
+      "upload": "14-lab-telegram/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 883.765625,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK LAB · ӨНӨӨДРИЙН ЯРИА",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Урилга ирлээ.\nХуваариа хэлээрэй.",
+          "top": 260.390625,
+          "bottom": 424.546875,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "Өөр өдөр санал болгож болно.",
+          "top": 464.546875,
+          "bottom": 522.546875,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "오늘은 다른 일정이 있어요.\n내일은 어때요?",
+          "top": 570.546875,
+          "bottom": 743.328125,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "Өнөөдөр өөр төлөвлөгөөтэй.\nМаргааш уулзвал ямар вэ?",
+          "top": 767.328125,
+          "bottom": 883.765625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 1004,
+          "bottom": 1254,
+          "left": 692,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "15-synklab-substack",
+      "index": 1,
+      "master": "15-synklab-substack/master-01.png",
+      "upload": "15-synklab-substack/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 553.203125,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "유호 · 짓고 있습니다",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "소개서 한 장을 완성하며\n덜어낸 것",
+          "top": 260.390625,
+          "bottom": 461.015625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "창업 섹션 · 제작 기록",
+          "top": 501.015625,
+          "bottom": 553.203125,
+          "left": 88,
+          "right": 938,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 734,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    },
+    {
+      "id": "16-synk-instagram",
+      "index": 1,
+      "master": "16-synk-instagram/master-01.png",
+      "upload": "16-synk-instagram/upload-01.jpg",
+      "card": "1",
+      "fonts": {
+        "suit": true,
+        "inter": true
+      },
+      "copyBottom": 739.015625,
+      "footerTop": 1278,
+      "text": [
+        {
+          "text": "SYNK",
+          "top": 192,
+          "bottom": 228.390625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "같은 결,\n다른 시간",
+          "top": 260.390625,
+          "bottom": 433.640625,
+          "left": 88,
+          "right": 978,
+          "overflow": false
+        },
+        {
+          "text": "배우는 장면과 곁에 두는 장면",
+          "top": 473.640625,
+          "bottom": 531.640625,
+          "left": 88,
+          "right": 958,
+          "overflow": false
+        },
+        {
+          "text": "왼쪽 · 완성한 LAB 소개서",
+          "top": 571.640625,
+          "bottom": 646.828125,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        },
+        {
+          "text": "오른쪽 · 밤의 방 연출 이미지",
+          "top": 646.828125,
+          "bottom": 739.015625,
+          "left": 88,
+          "right": 992,
+          "overflow": false
+        }
+      ],
+      "assets": [
+        {
+          "top": 790,
+          "bottom": 1254,
+          "left": 88,
+          "right": 992
+        }
+      ],
+      "textOverflow": false,
+      "collision": false
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "createdAt": "2026-09-08T23:42:40.205Z",
+  "assets": [
+    {
+      "key": "night",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/night.webp",
+      "file": "night.webp",
+      "sha256": "e107255ad0bd8f708006fec668526833aa7e9674fff978a359a597f52e2616b6"
+    },
+    {
+      "key": "notebook",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/notebook.webp",
+      "file": "notebook.webp",
+      "sha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4"
+    },
+    {
+      "key": "letter",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/letter.webp",
+      "file": "letter.webp",
+      "sha256": "7d6728e3b1b65379c5b69af8e0eb3af0f9b1a7d1424906404cd111fb660bd3ac"
+    },
+    {
+      "key": "book",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/book.webp",
+      "file": "book.webp",
+      "sha256": "8fab4b618b7e7a6d377dafe6ac5edf4e31fb3c45339f16209008b458621d421d"
+    },
+    {
+      "key": "scissors",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/scissors.webp",
+      "file": "scissors.webp",
+      "sha256": "7dd27417990d688d9871d56d929679a07235f955b541b7b26621743478629ade"
+    },
+    {
+      "key": "classroom",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/classroom.webp",
+      "file": "classroom.webp",
+      "sha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7"
+    },
+    {
+      "key": "cafe",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/cafe.webp",
+      "file": "cafe.webp",
+      "sha256": "a9d5fed8a4f69ce3e2944d4ec1a443ee1fc20ccd531f1d145bdfd2e4a35ec365"
+    },
+    {
+      "key": "mong",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/mong.webp",
+      "file": "mong.webp",
+      "sha256": "ea805eb1c832fd19e0be9ce1f333d6361c3e1532c00dc1e323ac24011540d34e"
+    },
+    {
+      "key": "smile",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/smile.webp",
+      "file": "smile.webp",
+      "sha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80"
+    },
+    {
+      "key": "curious",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/curious.webp",
+      "file": "curious.webp",
+      "sha256": "c292cee982469fd9a0742f953f161cfc205b0ca1ba60e569b98168c20cac96f2"
+    },
+    {
+      "key": "korean",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/korean.webp",
+      "file": "korean.webp",
+      "sha256": "9fc6a6c49526a47124e68fb22a28f66199ccea13eafbcbd897103f5ad209329b"
+    },
+    {
+      "key": "headphones",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/headphones.webp",
+      "file": "headphones.webp",
+      "sha256": "a8eebf7ed6f66022747f34375dda773b49bcb34dd7a40f9bf1fda654f7b140ec"
+    },
+    {
+      "key": "stitch",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/stitch.webp",
+      "file": "stitch.webp",
+      "sha256": "4109d65ca82563989fe2490c1cb6d476cc1c2aca98991e453a64b67e904f3c9c"
+    },
+    {
+      "key": "woolLogo",
+      "source": "docs/홍보물/브랜드소개_20260909/assets/woolLogo.webp",
+      "file": "woolLogo.webp",
+      "sha256": "6d1b8485a8fed973f222c106e8943818205405d0b24352e76fc8e0acfa6c2d82"
+    },
+    {
+      "key": "compass",
+      "source": "영상/public/공방/공방_나침반.avif",
+      "file": "compass.avif",
+      "sha256": "c0f657211c7e4c65751acf991671ca6f6a75d7daa45d223b1c104033310230b4"
+    },
+    {
+      "key": "labpage",
+      "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
+      "file": "labpage.png",
+      "sha256": "8d82ac1e45dfc6370dc069ace0e3dce35fa755510807ffb26b536c2254e3e649"
+    },
+    {
+      "key": "shiftpage",
+      "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-1.png",
+      "file": "shiftpage.png",
+      "sha256": "f36939e1eb432188f150aad4fd9dd1b4f8e4db66f6be1acf5bd55c652774e6a3"
+    },
+    {
+      "key": "pulsepage",
+      "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-1.png",
+      "file": "pulsepage.png",
+      "sha256": "a8e178bd3063ecba5654cc1247253783c7160c91696ad9eb7a705da1448599e8"
+    }
+  ],
+  "fontsVerified": 9,
+  "audio": {
+    "source": "영상/BGM만들기.js",
+    "generatorSha256": "bc2c1401b5325f378e98e26e54206187a3011ab501e7d7a8a60c2248551ad353",
+    "waveform": "sine / triangle",
+    "originalComposition": true,
+    "externallyLicensedSong": false,
+    "listenedByHuman": false
+  }
+}

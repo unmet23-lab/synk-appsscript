@@ -1,0 +1,373 @@
+{
+  "info": {
+    "sha256": "a327474af6e568b41494ce130e65ebafddab915689f9cbda171acbc2c329d4ae",
+    "inputFile": "콘텐츠원고.json",
+    "preparedAt": "2026-09-08T23:48:36.701Z",
+    "itemCount": 16,
+    "mongolianItemIds": [
+      "01-lab-youtube",
+      "02-lab-instagram",
+      "03-lab-tiktok",
+      "10-lab-facebook",
+      "14-lab-telegram"
+    ],
+    "fieldCount": 71
+  },
+  "records": [
+    {
+      "path": "items[0].title",
+      "itemId": "01-lab-youtube",
+      "text": "Нэг өрөө. Нэг мөч."
+    },
+    {
+      "path": "items[0].subtitle",
+      "itemId": "01-lab-youtube",
+      "text": "K-LOFI24 · 30 секунд"
+    },
+    {
+      "path": "items[0].caption",
+      "itemId": "01-lab-youtube",
+      "text": "Энэ өрөөнд түр саатаарай.\n\nK-LOFI24 сувагт зориулан шинээр бүтээсэн 30 секундийн дүрс, дуут бүтээл. Шууд дамжуулалт эсвэл өмнөх нэвтрүүлгийн хэсэг биш.\nДүрслэл нь бүтээсэн орчин бөгөөд сургуулийн бодит зураг биш.\n\nЭнэ мөчид тайлбар ч, хариулт ч хэрэггүй."
+    },
+    {
+      "path": "items[0].alt",
+      "itemId": "01-lab-youtube",
+      "text": "Зөөлөн гэрэлтэй, эсгий мэт бүтэцтэй шөнийн өрөө. Сургалтын мэдээлэлгүй, тайван дүрслэл."
+    },
+    {
+      "path": "items[0].cards[0].title",
+      "itemId": "01-lab-youtube",
+      "text": "Нэг өрөө.\nНэг мөч."
+    },
+    {
+      "path": "items[0].cards[0].body",
+      "itemId": "01-lab-youtube",
+      "text": "30 секунд"
+    },
+    {
+      "path": "items[1].title",
+      "itemId": "02-lab-instagram",
+      "text": "Миний дуртай газар"
+    },
+    {
+      "path": "items[1].subtitle",
+      "itemId": "02-lab-instagram",
+      "text": "Өөрийн ертөнцийг солонгосоор танилцуулъя"
+    },
+    {
+      "path": "items[1].caption",
+      "itemId": "02-lab-instagram",
+      "text": "Та Монголын ямар газрыг найздаа танилцуулах вэ?\n\nӨөрийн дуртай газрыг гурван өгүүлбэрээр танилцуулаарай.\n\n1. Дуртай газраа хэлэх\n저는 이곳을 좋아해요.\nБи энэ газарт дуртай.\n\n2. Яагаад дуртайгаа хэлэх\n조용해서 좋아해요.\nЧимээгүй болохоор дуртай.\n\n3. Найзыгаа урих\n같이 가볼래요?\nХамт очиж үзэх үү?\nЭнэ нь найздаа хэлэх энгийн урилга юм.\n\nӨөртөө бичиж үзэх гурван мөр:\nДуртай газар: ______\nШалтгаан: ______\nУрилга: ______\n\nБодит хаяг, хувийн зураг оруулах шаардлагагүй. Өөрийн тэмдэглэлдээ бичиж болно.\nДараа ашиглахаар хадгалаарай. Та ямар газрыг сонгох вэ?"
+    },
+    {
+      "path": "items[1].alt",
+      "itemId": "02-lab-instagram",
+      "text": "Таван карт. Монголын дуртай газраа солонгосоор танилцуулах, шалтгаанаа хэлэх, найзыгаа урих гурван өгүүлбэр болон бөглөх хуудас."
+    },
+    {
+      "path": "items[1].cards[0].title",
+      "itemId": "02-lab-instagram",
+      "text": "Миний дуртай\nгазар"
+    },
+    {
+      "path": "items[1].cards[0].body",
+      "itemId": "02-lab-instagram",
+      "text": "Өөрийн ертөнцийг солонгосоор танилцуулъя."
+    },
+    {
+      "path": "items[1].cards[1].eyebrow",
+      "itemId": "02-lab-instagram",
+      "text": "ДУРТАЙ ГАЗАР"
+    },
+    {
+      "path": "items[1].cards[1].title",
+      "itemId": "02-lab-instagram",
+      "text": "Энэ газраас эхэлье"
+    },
+    {
+      "path": "items[1].cards[1].mn",
+      "itemId": "02-lab-instagram",
+      "text": "Би энэ газарт дуртай."
+    },
+    {
+      "path": "items[1].cards[2].eyebrow",
+      "itemId": "02-lab-instagram",
+      "text": "ШАЛТГААН"
+    },
+    {
+      "path": "items[1].cards[2].title",
+      "itemId": "02-lab-instagram",
+      "text": "Яагаад дуртай вэ?"
+    },
+    {
+      "path": "items[1].cards[2].mn",
+      "itemId": "02-lab-instagram",
+      "text": "Чимээгүй болохоор дуртай."
+    },
+    {
+      "path": "items[1].cards[3].eyebrow",
+      "itemId": "02-lab-instagram",
+      "text": "УРИЛГА"
+    },
+    {
+      "path": "items[1].cards[3].title",
+      "itemId": "02-lab-instagram",
+      "text": "Хамт очих уу?"
+    },
+    {
+      "path": "items[1].cards[3].body",
+      "itemId": "02-lab-instagram",
+      "text": "Найздаа хэлэх энгийн урилга."
+    },
+    {
+      "path": "items[1].cards[3].mn",
+      "itemId": "02-lab-instagram",
+      "text": "Хамт очиж үзэх үү?"
+    },
+    {
+      "path": "items[1].cards[4].eyebrow",
+      "itemId": "02-lab-instagram",
+      "text": "ӨӨРИЙНХӨӨ ТУХАЙ"
+    },
+    {
+      "path": "items[1].cards[4].title",
+      "itemId": "02-lab-instagram",
+      "text": "Таны гурван мөр"
+    },
+    {
+      "path": "items[1].cards[4].body",
+      "itemId": "02-lab-instagram",
+      "text": "Хувийн хаяг, нэр бичих шаардлагагүй."
+    },
+    {
+      "path": "items[1].cards[4].lines[0]",
+      "itemId": "02-lab-instagram",
+      "text": "Дуртай газар: ______"
+    },
+    {
+      "path": "items[1].cards[4].lines[1]",
+      "itemId": "02-lab-instagram",
+      "text": "Шалтгаан: ______"
+    },
+    {
+      "path": "items[1].cards[4].lines[2]",
+      "itemId": "02-lab-instagram",
+      "text": "Урилга: ______"
+    },
+    {
+      "path": "items[2].title",
+      "itemId": "03-lab-tiktok",
+      "text": "Багийн ажилд миний хийх зүйл"
+    },
+    {
+      "path": "items[2].subtitle",
+      "itemId": "03-lab-tiktok",
+      "text": "Өөрийн үүргийг солонгосоор хэлээрэй"
+    },
+    {
+      "path": "items[2].caption",
+      "itemId": "03-lab-tiktok",
+      "text": "Та багийн ажилд ямар үүрэг авах вэ?\n\nТанилцуулга хийхээс гадна мэдээлэл хайх, зураг зурах ажил ч бий. Өөрийн хийх зүйлийг ингэж хэлж болно.\n\n1. Мэдээлэл хайх\n저는 자료를 찾아볼게요.\nБи мэдээлэл хайж үзье.\n\n2. Зураг зурах\n저는 그림을 그릴게요.\nБи зураг зуръя.\n\n3. Танилцуулах\n저는 발표할게요.\nБи танилцуулга хийе.\n\nӨөрт тохирох нэг өгүүлбэрийг сонгоод хэлж үзээрэй. Бодит баг, сургуулийнхаа нэрийг бичих шаардлагагүй.\nДараагийн багийн ажилдаа ашиглахаар хадгалаарай. Та аль ажлыг сонгох вэ?"
+    },
+    {
+      "path": "items[2].alt",
+      "itemId": "03-lab-tiktok",
+      "text": "Хийсвэр багийн ажилд мэдээлэл хайх, зураг зурах, танилцуулах гурван үүргийг тэнцүү харуулж, тус бүрийн солонгос өгүүлбэрийг монгол утгатай нь үзүүлнэ."
+    },
+    {
+      "path": "items[2].cards[0].title",
+      "itemId": "03-lab-tiktok",
+      "text": "Багийн ажилд\nминий хийх зүйл"
+    },
+    {
+      "path": "items[2].cards[0].body",
+      "itemId": "03-lab-tiktok",
+      "text": "Өөрийн үүргийг сонгоорой."
+    },
+    {
+      "path": "items[2].scenes[0].eyebrow",
+      "itemId": "03-lab-tiktok",
+      "text": "БАГИЙН АЖИЛ"
+    },
+    {
+      "path": "items[2].scenes[0].title",
+      "itemId": "03-lab-tiktok",
+      "text": "Та юу хийх вэ?"
+    },
+    {
+      "path": "items[2].scenes[0].body",
+      "itemId": "03-lab-tiktok",
+      "text": "Өөрийн үүргийг сонгоорой."
+    },
+    {
+      "path": "items[2].scenes[0].lines[0]",
+      "itemId": "03-lab-tiktok",
+      "text": "Мэдээлэл хайх · Зураг зурах · Танилцуулах"
+    },
+    {
+      "path": "items[2].scenes[1].eyebrow",
+      "itemId": "03-lab-tiktok",
+      "text": "МЭДЭЭЛЭЛ ХАЙХ"
+    },
+    {
+      "path": "items[2].scenes[1].mn",
+      "itemId": "03-lab-tiktok",
+      "text": "Би мэдээлэл хайж үзье."
+    },
+    {
+      "path": "items[2].scenes[2].eyebrow",
+      "itemId": "03-lab-tiktok",
+      "text": "ЗУРАГ ЗУРАХ"
+    },
+    {
+      "path": "items[2].scenes[2].mn",
+      "itemId": "03-lab-tiktok",
+      "text": "Би зураг зуръя."
+    },
+    {
+      "path": "items[2].scenes[3].eyebrow",
+      "itemId": "03-lab-tiktok",
+      "text": "ТАНИЛЦУУЛАХ"
+    },
+    {
+      "path": "items[2].scenes[3].mn",
+      "itemId": "03-lab-tiktok",
+      "text": "Би танилцуулга хийе."
+    },
+    {
+      "path": "items[2].scenes[4].eyebrow",
+      "itemId": "03-lab-tiktok",
+      "text": "ӨӨРИЙН СОНГОЛТ"
+    },
+    {
+      "path": "items[2].scenes[4].title",
+      "itemId": "03-lab-tiktok",
+      "text": "Нэгийг сонгоод\nхэлж үзээрэй."
+    },
+    {
+      "path": "items[2].scenes[4].body",
+      "itemId": "03-lab-tiktok",
+      "text": "Бүх өгүүлбэр тайлбарт бий."
+    },
+    {
+      "path": "items[9].title",
+      "itemId": "10-lab-facebook",
+      "text": "Хамт ярилцах хуудас"
+    },
+    {
+      "path": "items[9].subtitle",
+      "itemId": "10-lab-facebook",
+      "text": "Хүүхдийн сонголт, гэр бүлийн асуулт"
+    },
+    {
+      "path": "items[9].caption",
+      "itemId": "10-lab-facebook",
+      "text": "SYNK LAB энэ хоёр хуудсыг гэр бүлээрээ ярилцахад зориуллаа.\n\nХүүхэд юуг хүсэж байгааг сонсох асуулт, гэр бүлээрээ нягтлах асуулт хоёр өөр байж болно.\n\nХүүхдийн сонголт\n1. Солонгост юу хийж үзмээр байна?\n2. Тэр үед солонгосоор юу гэж хэлмээр байна?\n3. Юуг нэмж мэдмээр байна?\n\nГэр бүлийн асуулт\n1. Ямар бэлтгэл хэрэгтэй вэ?\n2. Юуг хамт шалгах вэ?\n3. Хэнээс лавлах вэ?\n\nХариултаа гэртээ ярилцаж, өөртөө тэмдэглэж болно. Нэр, сургууль, хувийн түүхээ сэтгэгдэлд бичих шаардлагагүй. Аль нэг асуултыг алгасаж болно.\n\nЭнэ бол гэр бүлийн ярианд зориулсан хоосон загвар. Бодит сурагчийн түүх, элсэлтийн зөвлөгөө, сургалтын үр дүнгийн тайлан биш.\n\nХамт хэрэглэхээр хадгалаарай. Та аль асуултаас эхлэх вэ?"
+    },
+    {
+      "path": "items[9].alt",
+      "itemId": "10-lab-facebook",
+      "text": "Гэр бүлийн ярианд зориулсан хоёр хуудас. Эхнийх нь хүүхдийн хүсэл, хэлэхийг хүссэн үг, мэдэхийг хүссэн зүйл. Хоёр дахь нь бэлтгэл, хамт шалгах зүйл, лавлах хүний тухай асуулт."
+    },
+    {
+      "path": "items[9].cards[0].eyebrow",
+      "itemId": "10-lab-facebook",
+      "text": "SYNK LAB · ХҮҮХДИЙН СОНГОЛТ"
+    },
+    {
+      "path": "items[9].cards[0].title",
+      "itemId": "10-lab-facebook",
+      "text": "Юу хийж\nүзмээр байна?"
+    },
+    {
+      "path": "items[9].cards[0].body",
+      "itemId": "10-lab-facebook",
+      "text": "Хариултыг нь эхлээд сонсоорой."
+    },
+    {
+      "path": "items[9].cards[0].lines[0]",
+      "itemId": "10-lab-facebook",
+      "text": "Солонгост юу хийж үзмээр байна?"
+    },
+    {
+      "path": "items[9].cards[0].lines[1]",
+      "itemId": "10-lab-facebook",
+      "text": "Тэр үед юу гэж хэлмээр байна?"
+    },
+    {
+      "path": "items[9].cards[0].lines[2]",
+      "itemId": "10-lab-facebook",
+      "text": "Юуг нэмж мэдмээр байна?"
+    },
+    {
+      "path": "items[9].cards[1].eyebrow",
+      "itemId": "10-lab-facebook",
+      "text": "ГЭР БҮЛИЙН АСУУЛТ"
+    },
+    {
+      "path": "items[9].cards[1].title",
+      "itemId": "10-lab-facebook",
+      "text": "Юуг хамт\nшалгах вэ?"
+    },
+    {
+      "path": "items[9].cards[1].body",
+      "itemId": "10-lab-facebook",
+      "text": "Хувийн хариултаа нийтлэх шаардлагагүй."
+    },
+    {
+      "path": "items[9].cards[1].lines[0]",
+      "itemId": "10-lab-facebook",
+      "text": "Ямар бэлтгэл хэрэгтэй вэ?"
+    },
+    {
+      "path": "items[9].cards[1].lines[1]",
+      "itemId": "10-lab-facebook",
+      "text": "Юуг хамт шалгах вэ?"
+    },
+    {
+      "path": "items[9].cards[1].lines[2]",
+      "itemId": "10-lab-facebook",
+      "text": "Хэнээс лавлах вэ?"
+    },
+    {
+      "path": "items[13].title",
+      "itemId": "14-lab-telegram",
+      "text": "Урилга ирлээ. Хуваариа хэлээрэй."
+    },
+    {
+      "path": "items[13].subtitle",
+      "itemId": "14-lab-telegram",
+      "text": "Найзтайгаа уулзах өөр өдөр санал болгох"
+    },
+    {
+      "path": "items[13].caption",
+      "itemId": "14-lab-telegram",
+      "text": "Найз тань өнөөдөр уулзъя гэжээ. Та өөр төлөвлөгөөтэй бол ингэж хэлж болно.\n\n오늘은 약속이 있어요.\nӨнөөдөр өөр төлөвлөгөөтэй.\n\n내일은 어때요?\nМаргааш уулзвал ямар вэ?\n\nЭхний өгүүлбэрээр өнөөдрийнхөө хуваарийг хэлнэ. Дараагийн өгүүлбэрээр өөр өдөр санал болгоно.\n\nХоёрыг холбоод хэлж үзээрэй:\n오늘은 약속이 있어요. 내일은 어때요?\nӨнөөдөр өөр төлөвлөгөөтэй. Маргааш уулзвал ямар вэ?\n\nӨөрийн бодит уулзалт, найзын нэрийг нийтлэх шаардлагагүй. Жишээ яриагаар давтаж болно.\nДараа хэрэглэхээр хадгалаарай. Та ямар өдөр санал болгох вэ?"
+    },
+    {
+      "path": "items[13].alt",
+      "itemId": "14-lab-telegram",
+      "text": "Найзын урилгад хариулах ‘오늘은 약속이 있어요. 내일은 어때요?’ гэсэн хоёр өгүүлбэрийг монгол утгатай нь харуулсан карт."
+    },
+    {
+      "path": "items[13].cards[0].eyebrow",
+      "itemId": "14-lab-telegram",
+      "text": "SYNK LAB · ӨНӨӨДРИЙН ЯРИА"
+    },
+    {
+      "path": "items[13].cards[0].title",
+      "itemId": "14-lab-telegram",
+      "text": "Урилга ирлээ.\nХуваариа хэлээрэй."
+    },
+    {
+      "path": "items[13].cards[0].body",
+      "itemId": "14-lab-telegram",
+      "text": "Өөр өдөр санал болгож болно."
+    },
+    {
+      "path": "items[13].cards[0].mn",
+      "itemId": "14-lab-telegram",
+      "text": "Өнөөдөр өөр төлөвлөгөөтэй.\nМаргааш уулзвал ямар вэ?"
+    }
+  ]
+}

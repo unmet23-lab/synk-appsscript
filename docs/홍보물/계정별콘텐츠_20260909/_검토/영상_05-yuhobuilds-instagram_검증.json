@@ -1,0 +1,25 @@
+{
+  "id": "05-yuhobuilds-instagram",
+  "renderedAt": "2026-09-09T00:00:52.453Z",
+  "durationSeconds": 30.058667,
+  "width": 1080,
+  "height": 1920,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "bytes": 22874322,
+  "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
+  "scenesSha256": "b588e56285a39ae4d70c2ba0cd88a821a40dc1dc0eb48b0bde105f91b5c1d16a",
+  "renderSourceSha256": "e0d5d08f6358f6bfd4aa480e4fb331085faf33ebc77a38693ca3c88ec3a0c771",
+  "videoSha256": "32f75662ec1e41cec65fca465d47dda0a05ae11f2e7e3174ef466504dd70195f",
+  "capturedSeconds": [
+    1,
+    5.2,
+    9,
+    15.15,
+    20,
+    26.15
+  ],
+  "visualInspection": "Encoded contact sheet visually inspected by strategy_b; see 영상_시각검토.md. Full real-time playback and human listening were not performed.",
+  "audioMeasurement": "measured; not a claim of human listening",
+  "externalPosting": false
+}

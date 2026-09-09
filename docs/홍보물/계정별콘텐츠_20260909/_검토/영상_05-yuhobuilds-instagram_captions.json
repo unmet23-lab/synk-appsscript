@@ -1,0 +1,23 @@
+[
+  {
+    "text": "캐릭터를\n덜 넣었습니다\n같은 그림의 반복보다 그 장에 필요한 뜻을 골랐습니다.",
+    "startMs": 0,
+    "endMs": 8000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "공책은 기록을,\n편지는 전달을\n그림이 내용과 연결되면 설명도 짧아집니다.",
+    "startMs": 8000,
+    "endMs": 19000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "이 그림은\n무엇을 보태나요?\n많이 쓰는 대신, 필요한 자리에 쓰기로 했습니다.",
+    "startMs": 19000,
+    "endMs": 30000,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

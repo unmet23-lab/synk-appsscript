@@ -1,0 +1,29 @@
+{
+  "id": "07-synkbrief-youtube",
+  "renderedAt": "2026-09-09T00:00:57.640Z",
+  "durationSeconds": 40.042667,
+  "width": 1080,
+  "height": 1920,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "bytes": 38628742,
+  "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
+  "scenesSha256": "1e632031b52998fbad56137bfd059734292a7fe8ea6359902225ccea0b1d2121",
+  "renderSourceSha256": "3bc86c22ee3876da88844627e85174c729541abf44998f2fce97aeb99bf3e776",
+  "videoSha256": "4cc854d5331f3d4f7e37480e8a04d5d04735dce94bbcca61501ce8a49dfac843",
+  "capturedSeconds": [
+    1,
+    5.2,
+    9,
+    13.850000000000001,
+    18,
+    22.85,
+    27,
+    31.85,
+    36,
+    38.25
+  ],
+  "visualInspection": "Encoded contact sheet visually inspected by strategy_b; see 영상_시각검토.md. Full real-time playback and human listening were not performed.",
+  "audioMeasurement": "measured; not a claim of human listening",
+  "externalPosting": false
+}

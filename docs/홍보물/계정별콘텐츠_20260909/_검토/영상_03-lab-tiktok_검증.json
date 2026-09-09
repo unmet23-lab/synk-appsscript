@@ -1,0 +1,29 @@
+{
+  "id": "03-lab-tiktok",
+  "renderedAt": "2026-09-09T00:00:46.269Z",
+  "durationSeconds": 30.058667,
+  "width": 1080,
+  "height": 1920,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "bytes": 30127015,
+  "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
+  "scenesSha256": "d71949dbfb6cdcd6a6a088ce7a474ca62ce35d2c265d2a6e680043a9e0d281a9",
+  "renderSourceSha256": "69156bcdadbf83b9aeefd63b50f2158fff96b01e52b1a7e69834db8aa6cc6470",
+  "videoSha256": "835bdf64b58575e854f27699cfbdfd0e97385e920812b62cd930763554184599",
+  "capturedSeconds": [
+    1,
+    3.25,
+    6,
+    9.55,
+    13,
+    16.55,
+    20,
+    23.55,
+    27,
+    28.6
+  ],
+  "visualInspection": "Encoded contact sheet visually inspected by strategy_b; see 영상_시각검토.md. Full real-time playback and human listening were not performed.",
+  "audioMeasurement": "measured; not a claim of human listening",
+  "externalPosting": false
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "text": "파일을 보낸 뒤에도\n받은 사람이 다시 쓸 수 있도록.",
+    "startMs": 0,
+    "endMs": 6000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "원본 · 바꾸는 곳 · 확인법\n무엇을 열고, 어디를 고치고, 어떻게 확인하는지.",
+    "startMs": 6000,
+    "endMs": 16000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "다음 사람이\n혼자 쓸 수 있나요?\n빈 메모와 설명은 본문에 있습니다.",
+    "startMs": 16000,
+    "endMs": 25000,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

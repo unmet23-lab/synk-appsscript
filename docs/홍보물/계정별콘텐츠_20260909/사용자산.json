@@ -1,0 +1,142 @@
+[
+  {
+    "key": "stitch",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/stitch.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 285,
+    "sourceSha256": "4109d65ca82563989fe2490c1cb6d476cc1c2aca98991e453a64b67e904f3c9c",
+    "output": "assets/stitch.webp",
+    "outputSha256": "4109d65ca82563989fe2490c1cb6d476cc1c2aca98991e453a64b67e904f3c9c",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "paper",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/paper.webp",
+    "sourceWidth": 3641,
+    "sourceHeight": 2825,
+    "sourceSha256": "99b7db5faef4e701674780401aaaec56dd4f99a76410b04a0bdff6b66e14c4b3",
+    "output": "assets/paper.webp",
+    "outputSha256": "99b7db5faef4e701674780401aaaec56dd4f99a76410b04a0bdff6b66e14c4b3",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "night",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/night.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "sourceSha256": "e107255ad0bd8f708006fec668526833aa7e9674fff978a359a597f52e2616b6",
+    "output": "assets/night.webp",
+    "outputSha256": "e107255ad0bd8f708006fec668526833aa7e9674fff978a359a597f52e2616b6",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "labpage",
+    "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
+    "sourceWidth": 3840,
+    "sourceHeight": 2400,
+    "sourceSha256": "8d82ac1e45dfc6370dc069ace0e3dce35fa755510807ffb26b536c2254e3e649",
+    "output": "assets/labpage.webp",
+    "outputSha256": "715ba983c693d18b16e9f1710167fabdde73f13e6a267be9842c2afe1b097908",
+    "note": "완성 소개서의 실제 지면"
+  },
+  {
+    "key": "compass",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/compass.webp",
+    "sourceWidth": 3840,
+    "sourceHeight": 3840,
+    "sourceSha256": "4cc7f71e95c6f37b89eec0425ab4ba4b2d26516d9380cc4caf6989a37ba43bbd",
+    "output": "assets/compass.webp",
+    "outputSha256": "4cc7f71e95c6f37b89eec0425ab4ba4b2d26516d9380cc4caf6989a37ba43bbd",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "cafe",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/cafe.webp",
+    "sourceWidth": 3840,
+    "sourceHeight": 3840,
+    "sourceSha256": "a9d5fed8a4f69ce3e2944d4ec1a443ee1fc20ccd531f1d145bdfd2e4a35ec365",
+    "output": "assets/cafe.webp",
+    "outputSha256": "a9d5fed8a4f69ce3e2944d4ec1a443ee1fc20ccd531f1d145bdfd2e4a35ec365",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "notebook",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/notebook.webp",
+    "sourceWidth": 3840,
+    "sourceHeight": 3840,
+    "sourceSha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4",
+    "output": "assets/notebook.webp",
+    "outputSha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "letter",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/letter.webp",
+    "sourceWidth": 3176,
+    "sourceHeight": 2680,
+    "sourceSha256": "7d6728e3b1b65379c5b69af8e0eb3af0f9b1a7d1424906404cd111fb660bd3ac",
+    "output": "assets/letter.webp",
+    "outputSha256": "7d6728e3b1b65379c5b69af8e0eb3af0f9b1a7d1424906404cd111fb660bd3ac",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "classroom",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/classroom.webp",
+    "sourceWidth": 3840,
+    "sourceHeight": 3840,
+    "sourceSha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7",
+    "output": "assets/classroom.webp",
+    "outputSha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "book",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/book.webp",
+    "sourceWidth": 3100,
+    "sourceHeight": 1990,
+    "sourceSha256": "8fab4b618b7e7a6d377dafe6ac5edf4e31fb3c45339f16209008b458621d421d",
+    "output": "assets/book.webp",
+    "outputSha256": "8fab4b618b7e7a6d377dafe6ac5edf4e31fb3c45339f16209008b458621d421d",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "shiftpage",
+    "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-1.png",
+    "sourceWidth": 3840,
+    "sourceHeight": 2400,
+    "sourceSha256": "f36939e1eb432188f150aad4fd9dd1b4f8e4db66f6be1acf5bd55c652774e6a3",
+    "output": "assets/shiftpage.webp",
+    "outputSha256": "13627a55d084391ea12344788e60ce2ca39f73e6c58d4df640cac10b1a414a30",
+    "note": "완성 소개서의 실제 지면"
+  },
+  {
+    "key": "pulsepage",
+    "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-1.png",
+    "sourceWidth": 3840,
+    "sourceHeight": 2400,
+    "sourceSha256": "a8e178bd3063ecba5654cc1247253783c7160c91696ad9eb7a705da1448599e8",
+    "output": "assets/pulsepage.webp",
+    "outputSha256": "5fa30e50e8831dfd13896dc49b4c085deb630593b540f728d919f221c78bde9b",
+    "note": "완성 소개서의 실제 지면"
+  },
+  {
+    "key": "smile",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/smile.webp",
+    "sourceWidth": 3840,
+    "sourceHeight": 3840,
+    "sourceSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
+    "output": "assets/smile.webp",
+    "outputSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  },
+  {
+    "key": "scissors",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/scissors.webp",
+    "sourceWidth": 2181,
+    "sourceHeight": 2687,
+    "sourceSha256": "7dd27417990d688d9871d56d929679a07235f955b541b7b26621743478629ade",
+    "output": "assets/scissors.webp",
+    "outputSha256": "7dd27417990d688d9871d56d929679a07235f955b541b7b26621743478629ade",
+    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+  }
+]

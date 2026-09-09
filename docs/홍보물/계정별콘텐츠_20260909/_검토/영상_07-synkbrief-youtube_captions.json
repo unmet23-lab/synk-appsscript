@@ -1,0 +1,37 @@
+[
+  {
+    "text": "파일을 보냈습니다.\n그다음은요?\n받은 사람이 혼자 다시 쓸 수 있어야 합니다.",
+    "startMs": 0,
+    "endMs": 8000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "원본\n열어야 할 파일과 함께 필요한 자산을 적습니다.",
+    "startMs": 8000,
+    "endMs": 17000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "바꾸는 곳\n수정할 자리와 지켜야 할 조건을 구분합니다.",
+    "startMs": 17000,
+    "endMs": 26000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "확인법\n고친 뒤 실제 사용 크기에서 무엇을 볼지 남깁니다.",
+    "startMs": 26000,
+    "endMs": 35000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "원본 · 바꾸는 곳 · 확인법\n빈 인수 메모는 설명글에 있습니다.",
+    "startMs": 35000,
+    "endMs": 40000,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

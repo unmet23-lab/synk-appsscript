@@ -1,0 +1,23 @@
+[
+  {
+    "text": "무엇부터\n읽어야 할까요\n먼저 읽힐 것을 정했습니다.",
+    "startMs": 0,
+    "endMs": 7000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "제목 → 설명 → 실물\n방향을 잡고, 의미를 잇고, 확인할 대상을 보여줍니다.",
+    "startMs": 7000,
+    "endMs": 16000,
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "text": "실제로 읽을\n크기로 보세요\n다섯 가지 질문은 설명글에 남겼습니다.",
+    "startMs": 16000,
+    "endMs": 25000,
+    "timestampMs": null,
+    "confidence": null
+  }
+]

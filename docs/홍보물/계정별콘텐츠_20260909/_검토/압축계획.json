@@ -1,0 +1,1887 @@
+{
+  "archives": [
+    {
+      "id": "01-lab-youtube",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\01-lab-youtube.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\video.mp4",
+          "entry": "video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\자막.srt",
+          "entry": "자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "02-lab-instagram",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\02-lab-instagram.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-02.png",
+          "entry": "master-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-03.png",
+          "entry": "master-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-04.png",
+          "entry": "master-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-05.png",
+          "entry": "master-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-02.jpg",
+          "entry": "upload-02.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-03.jpg",
+          "entry": "upload-03.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-04.jpg",
+          "entry": "upload-04.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-05.jpg",
+          "entry": "upload-05.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "03-lab-tiktok",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\03-lab-tiktok.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\video.mp4",
+          "entry": "video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\자막.srt",
+          "entry": "자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\04-yuhobuilds-youtube.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\video.mp4",
+          "entry": "video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\자막.srt",
+          "entry": "자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\05-yuhobuilds-instagram.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\video.mp4",
+          "entry": "video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\자막.srt",
+          "entry": "자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\06-yuhobuilds-tiktok.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\video.mp4",
+          "entry": "video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\자막.srt",
+          "entry": "자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\07-synkbrief-youtube.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\video.mp4",
+          "entry": "video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\자막.srt",
+          "entry": "자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\08-synkbrief-instagram.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-02.png",
+          "entry": "master-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-03.png",
+          "entry": "master-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-04.png",
+          "entry": "master-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-05.png",
+          "entry": "master-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-06.png",
+          "entry": "master-06.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-02.jpg",
+          "entry": "upload-02.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-03.jpg",
+          "entry": "upload-03.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-04.jpg",
+          "entry": "upload-04.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-05.jpg",
+          "entry": "upload-05.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-06.jpg",
+          "entry": "upload-06.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\09-synkbrief-tiktok.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\video.mp4",
+          "entry": "video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\자막.srt",
+          "entry": "자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "10-lab-facebook",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\10-lab-facebook.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\master-02.png",
+          "entry": "master-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\upload-02.jpg",
+          "entry": "upload-02.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "11-yuhobuilds-threads",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\11-yuhobuilds-threads.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "12-synkbrief-threads",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\12-synkbrief-threads.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "13-yuhobuilds-linkedin",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\13-yuhobuilds-linkedin.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "14-lab-telegram",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\14-lab-telegram.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "15-synklab-substack",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\15-synklab-substack.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\본문.md",
+          "entry": "본문.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "16-synk-instagram",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\16-synk-instagram.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\master-01.png",
+          "entry": "master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\upload-01.jpg",
+          "entry": "upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\게시문안.txt",
+          "entry": "게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\대체텍스트.txt",
+          "entry": "대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\사용안내.md",
+          "entry": "사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\제목.txt",
+          "entry": "제목.txt"
+        }
+      ]
+    },
+    {
+      "id": "whole",
+      "destination": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\계정별콘텐츠_전체.zip",
+      "files": [
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\index.html",
+          "entry": "index.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\collection.css",
+          "entry": "collection.css"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\book.webp",
+          "entry": "assets/book.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\cafe.webp",
+          "entry": "assets/cafe.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\classroom.webp",
+          "entry": "assets/classroom.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\compass.webp",
+          "entry": "assets/compass.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\labpage.webp",
+          "entry": "assets/labpage.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\letter.webp",
+          "entry": "assets/letter.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\night.webp",
+          "entry": "assets/night.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\notebook.webp",
+          "entry": "assets/notebook.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\paper.webp",
+          "entry": "assets/paper.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\pulsepage.webp",
+          "entry": "assets/pulsepage.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\scissors.webp",
+          "entry": "assets/scissors.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\shiftpage.webp",
+          "entry": "assets/shiftpage.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\smile.webp",
+          "entry": "assets/smile.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\stitch.webp",
+          "entry": "assets/stitch.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\01-lab-youtube.png",
+          "entry": "미리보기/01-lab-youtube.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\02-lab-instagram.png",
+          "entry": "미리보기/02-lab-instagram.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\03-lab-tiktok.png",
+          "entry": "미리보기/03-lab-tiktok.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\04-yuhobuilds-youtube.png",
+          "entry": "미리보기/04-yuhobuilds-youtube.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\05-yuhobuilds-instagram.png",
+          "entry": "미리보기/05-yuhobuilds-instagram.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\06-yuhobuilds-tiktok.png",
+          "entry": "미리보기/06-yuhobuilds-tiktok.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\07-synkbrief-youtube.png",
+          "entry": "미리보기/07-synkbrief-youtube.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\08-synkbrief-instagram.png",
+          "entry": "미리보기/08-synkbrief-instagram.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\09-synkbrief-tiktok.png",
+          "entry": "미리보기/09-synkbrief-tiktok.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\10-lab-facebook.png",
+          "entry": "미리보기/10-lab-facebook.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\11-yuhobuilds-threads.png",
+          "entry": "미리보기/11-yuhobuilds-threads.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\12-synkbrief-threads.png",
+          "entry": "미리보기/12-synkbrief-threads.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\13-yuhobuilds-linkedin.png",
+          "entry": "미리보기/13-yuhobuilds-linkedin.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\14-lab-telegram.png",
+          "entry": "미리보기/14-lab-telegram.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\15-synklab-substack.png",
+          "entry": "미리보기/15-synklab-substack.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\16-synk-instagram.png",
+          "entry": "미리보기/16-synk-instagram.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\모아보기-1440.png",
+          "entry": "미리보기/모아보기-1440.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\모아보기-390.png",
+          "entry": "미리보기/모아보기-390.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\전체카드.png",
+          "entry": "미리보기/전체카드.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\읽어주세요.md",
+          "entry": "읽어주세요.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\납품명세.json",
+          "entry": "납품명세.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\사용자산.json",
+          "entry": "사용자산.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\콘텐츠원고.json",
+          "entry": "콘텐츠원고.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\A_기획.md",
+          "entry": "_검토/A_기획.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\B_기획.md",
+          "entry": "_검토/B_기획.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\납품_QA.json",
+          "entry": "_검토/납품_QA.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\몽골어_natural_stderr.txt",
+          "entry": "_검토/몽골어_natural_stderr.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\몽골어_natural_결과.json",
+          "entry": "_검토/몽골어_natural_결과.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\몽골어_natural_응답.jsonl",
+          "entry": "_검토/몽골어_natural_응답.jsonl"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\몽골어_natural_프롬프트.txt",
+          "entry": "_검토/몽골어_natural_프롬프트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\몽골어_검토.md",
+          "entry": "_검토/몽골어_검토.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\몽골어_검토입력.json",
+          "entry": "_검토/몽골어_검토입력.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\몽골어_로컬교정제안.json",
+          "entry": "_검토/몽골어_로컬교정제안.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\몽골어검토_실행.cjs",
+          "entry": "_검토/몽골어검토_실행.cjs"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\언어_근거.md",
+          "entry": "_검토/언어_근거.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_01-lab-youtube_audio.log",
+          "entry": "_검토/영상_01-lab-youtube_audio.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_01-lab-youtube_captions.json",
+          "entry": "_검토/영상_01-lab-youtube_captions.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_01-lab-youtube_contact.png",
+          "entry": "_검토/영상_01-lab-youtube_contact.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_01-lab-youtube_render.log",
+          "entry": "_검토/영상_01-lab-youtube_render.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_01-lab-youtube_scene1_preview.png",
+          "entry": "_검토/영상_01-lab-youtube_scene1_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_01-lab-youtube_검증.json",
+          "entry": "_검토/영상_01-lab-youtube_검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_audio.log",
+          "entry": "_검토/영상_03-lab-tiktok_audio.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_captions.json",
+          "entry": "_검토/영상_03-lab-tiktok_captions.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_contact.png",
+          "entry": "_검토/영상_03-lab-tiktok_contact.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_render.log",
+          "entry": "_검토/영상_03-lab-tiktok_render.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_scene1_preview.png",
+          "entry": "_검토/영상_03-lab-tiktok_scene1_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_scene2_preview.png",
+          "entry": "_검토/영상_03-lab-tiktok_scene2_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_검증.json",
+          "entry": "_검토/영상_03-lab-tiktok_검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_audio.log",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_audio.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_captions.json",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_captions.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_contact.png",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_contact.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_render.log",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_render.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_scene1_preview.png",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_scene1_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_검증.json",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_05-yuhobuilds-instagram_audio.log",
+          "entry": "_검토/영상_05-yuhobuilds-instagram_audio.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_05-yuhobuilds-instagram_captions.json",
+          "entry": "_검토/영상_05-yuhobuilds-instagram_captions.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_05-yuhobuilds-instagram_contact.png",
+          "entry": "_검토/영상_05-yuhobuilds-instagram_contact.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_05-yuhobuilds-instagram_render.log",
+          "entry": "_검토/영상_05-yuhobuilds-instagram_render.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_05-yuhobuilds-instagram_검증.json",
+          "entry": "_검토/영상_05-yuhobuilds-instagram_검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_06-yuhobuilds-tiktok_audio.log",
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_audio.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_06-yuhobuilds-tiktok_captions.json",
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_captions.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_06-yuhobuilds-tiktok_contact.png",
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_contact.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_06-yuhobuilds-tiktok_render.log",
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_render.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_06-yuhobuilds-tiktok_검증.json",
+          "entry": "_검토/영상_06-yuhobuilds-tiktok_검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_07-synkbrief-youtube_audio.log",
+          "entry": "_검토/영상_07-synkbrief-youtube_audio.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_07-synkbrief-youtube_captions.json",
+          "entry": "_검토/영상_07-synkbrief-youtube_captions.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_07-synkbrief-youtube_contact.png",
+          "entry": "_검토/영상_07-synkbrief-youtube_contact.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_07-synkbrief-youtube_render.log",
+          "entry": "_검토/영상_07-synkbrief-youtube_render.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_07-synkbrief-youtube_검증.json",
+          "entry": "_검토/영상_07-synkbrief-youtube_검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_09-synkbrief-tiktok_audio.log",
+          "entry": "_검토/영상_09-synkbrief-tiktok_audio.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_09-synkbrief-tiktok_captions.json",
+          "entry": "_검토/영상_09-synkbrief-tiktok_captions.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_09-synkbrief-tiktok_contact.png",
+          "entry": "_검토/영상_09-synkbrief-tiktok_contact.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_09-synkbrief-tiktok_render.log",
+          "entry": "_검토/영상_09-synkbrief-tiktok_render.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_09-synkbrief-tiktok_scene2_preview.png",
+          "entry": "_검토/영상_09-synkbrief-tiktok_scene2_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_09-synkbrief-tiktok_검증.json",
+          "entry": "_검토/영상_09-synkbrief-tiktok_검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_시각검토.md",
+          "entry": "_검토/영상_시각검토.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_원천명세.json",
+          "entry": "_검토/영상_원천명세.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-01-lab-youtube\\frame-00.png",
+          "entry": "_검토/영상프레임-01-lab-youtube/frame-00.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-01-lab-youtube\\frame-01.png",
+          "entry": "_검토/영상프레임-01-lab-youtube/frame-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-01-lab-youtube\\frame-02.png",
+          "entry": "_검토/영상프레임-01-lab-youtube/frame-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-00.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-00.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-01.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-02.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-03.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-04.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-05.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-06.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-06.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-07.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-07.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-08.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-08.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-03-lab-tiktok\\frame-09.png",
+          "entry": "_검토/영상프레임-03-lab-tiktok/frame-09.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-00.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-00.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-01.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-02.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-03.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-04.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-05.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-06.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-06.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-07.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-07.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-08.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-08.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-09.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-09.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-10.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-10.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-04-yuhobuilds-youtube\\frame-11.png",
+          "entry": "_검토/영상프레임-04-yuhobuilds-youtube/frame-11.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-05-yuhobuilds-instagram\\frame-00.png",
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-00.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-05-yuhobuilds-instagram\\frame-01.png",
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-05-yuhobuilds-instagram\\frame-02.png",
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-05-yuhobuilds-instagram\\frame-03.png",
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-05-yuhobuilds-instagram\\frame-04.png",
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-05-yuhobuilds-instagram\\frame-05.png",
+          "entry": "_검토/영상프레임-05-yuhobuilds-instagram/frame-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-06-yuhobuilds-tiktok\\frame-00.png",
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-00.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-06-yuhobuilds-tiktok\\frame-01.png",
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-06-yuhobuilds-tiktok\\frame-02.png",
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-06-yuhobuilds-tiktok\\frame-03.png",
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-06-yuhobuilds-tiktok\\frame-04.png",
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-06-yuhobuilds-tiktok\\frame-05.png",
+          "entry": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-00.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-00.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-01.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-02.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-03.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-04.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-05.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-06.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-06.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-07.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-07.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-08.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-08.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-07-synkbrief-youtube\\frame-09.png",
+          "entry": "_검토/영상프레임-07-synkbrief-youtube/frame-09.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-09-synkbrief-tiktok\\frame-00.png",
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-00.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-09-synkbrief-tiktok\\frame-01.png",
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-09-synkbrief-tiktok\\frame-02.png",
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-09-synkbrief-tiktok\\frame-03.png",
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-09-synkbrief-tiktok\\frame-04.png",
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상프레임-09-synkbrief-tiktok\\frame-05.png",
+          "entry": "_검토/영상프레임-09-synkbrief-tiktok/frame-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\정적_경계검사.json",
+          "entry": "_검토/정적_경계검사.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\정적_독립검토.md",
+          "entry": "_검토/정적_독립검토.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\최종검증.md",
+          "entry": "_검토/최종검증.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\하드게이트.md",
+          "entry": "_검토/하드게이트.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\cards.html",
+          "entry": "01-lab-youtube/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\master-01.png",
+          "entry": "01-lab-youtube/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\upload-01.jpg",
+          "entry": "01-lab-youtube/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\video.mp4",
+          "entry": "01-lab-youtube/video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\게시문안.txt",
+          "entry": "01-lab-youtube/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\대체텍스트.txt",
+          "entry": "01-lab-youtube/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\사용안내.md",
+          "entry": "01-lab-youtube/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\자막.srt",
+          "entry": "01-lab-youtube/자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\01-lab-youtube\\제목.txt",
+          "entry": "01-lab-youtube/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\cards.html",
+          "entry": "02-lab-instagram/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-01.png",
+          "entry": "02-lab-instagram/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-02.png",
+          "entry": "02-lab-instagram/master-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-03.png",
+          "entry": "02-lab-instagram/master-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-04.png",
+          "entry": "02-lab-instagram/master-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\master-05.png",
+          "entry": "02-lab-instagram/master-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-01.jpg",
+          "entry": "02-lab-instagram/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-02.jpg",
+          "entry": "02-lab-instagram/upload-02.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-03.jpg",
+          "entry": "02-lab-instagram/upload-03.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-04.jpg",
+          "entry": "02-lab-instagram/upload-04.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\upload-05.jpg",
+          "entry": "02-lab-instagram/upload-05.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\게시문안.txt",
+          "entry": "02-lab-instagram/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\대체텍스트.txt",
+          "entry": "02-lab-instagram/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\사용안내.md",
+          "entry": "02-lab-instagram/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\02-lab-instagram\\제목.txt",
+          "entry": "02-lab-instagram/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\cards.html",
+          "entry": "03-lab-tiktok/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\master-01.png",
+          "entry": "03-lab-tiktok/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\upload-01.jpg",
+          "entry": "03-lab-tiktok/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\video.mp4",
+          "entry": "03-lab-tiktok/video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\게시문안.txt",
+          "entry": "03-lab-tiktok/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\대체텍스트.txt",
+          "entry": "03-lab-tiktok/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\사용안내.md",
+          "entry": "03-lab-tiktok/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\자막.srt",
+          "entry": "03-lab-tiktok/자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\03-lab-tiktok\\제목.txt",
+          "entry": "03-lab-tiktok/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\cards.html",
+          "entry": "04-yuhobuilds-youtube/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\master-01.png",
+          "entry": "04-yuhobuilds-youtube/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\upload-01.jpg",
+          "entry": "04-yuhobuilds-youtube/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\video.mp4",
+          "entry": "04-yuhobuilds-youtube/video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\게시문안.txt",
+          "entry": "04-yuhobuilds-youtube/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\대체텍스트.txt",
+          "entry": "04-yuhobuilds-youtube/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\사용안내.md",
+          "entry": "04-yuhobuilds-youtube/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\자막.srt",
+          "entry": "04-yuhobuilds-youtube/자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\04-yuhobuilds-youtube\\제목.txt",
+          "entry": "04-yuhobuilds-youtube/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\cards.html",
+          "entry": "05-yuhobuilds-instagram/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\master-01.png",
+          "entry": "05-yuhobuilds-instagram/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\upload-01.jpg",
+          "entry": "05-yuhobuilds-instagram/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\video.mp4",
+          "entry": "05-yuhobuilds-instagram/video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\게시문안.txt",
+          "entry": "05-yuhobuilds-instagram/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\대체텍스트.txt",
+          "entry": "05-yuhobuilds-instagram/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\사용안내.md",
+          "entry": "05-yuhobuilds-instagram/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\자막.srt",
+          "entry": "05-yuhobuilds-instagram/자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\05-yuhobuilds-instagram\\제목.txt",
+          "entry": "05-yuhobuilds-instagram/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\cards.html",
+          "entry": "06-yuhobuilds-tiktok/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\master-01.png",
+          "entry": "06-yuhobuilds-tiktok/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\upload-01.jpg",
+          "entry": "06-yuhobuilds-tiktok/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\video.mp4",
+          "entry": "06-yuhobuilds-tiktok/video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\게시문안.txt",
+          "entry": "06-yuhobuilds-tiktok/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\대체텍스트.txt",
+          "entry": "06-yuhobuilds-tiktok/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\사용안내.md",
+          "entry": "06-yuhobuilds-tiktok/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\자막.srt",
+          "entry": "06-yuhobuilds-tiktok/자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\06-yuhobuilds-tiktok\\제목.txt",
+          "entry": "06-yuhobuilds-tiktok/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\cards.html",
+          "entry": "07-synkbrief-youtube/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\master-01.png",
+          "entry": "07-synkbrief-youtube/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\upload-01.jpg",
+          "entry": "07-synkbrief-youtube/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\video.mp4",
+          "entry": "07-synkbrief-youtube/video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\게시문안.txt",
+          "entry": "07-synkbrief-youtube/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\대체텍스트.txt",
+          "entry": "07-synkbrief-youtube/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\사용안내.md",
+          "entry": "07-synkbrief-youtube/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\자막.srt",
+          "entry": "07-synkbrief-youtube/자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\07-synkbrief-youtube\\제목.txt",
+          "entry": "07-synkbrief-youtube/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\cards.html",
+          "entry": "08-synkbrief-instagram/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-01.png",
+          "entry": "08-synkbrief-instagram/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-02.png",
+          "entry": "08-synkbrief-instagram/master-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-03.png",
+          "entry": "08-synkbrief-instagram/master-03.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-04.png",
+          "entry": "08-synkbrief-instagram/master-04.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-05.png",
+          "entry": "08-synkbrief-instagram/master-05.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\master-06.png",
+          "entry": "08-synkbrief-instagram/master-06.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-01.jpg",
+          "entry": "08-synkbrief-instagram/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-02.jpg",
+          "entry": "08-synkbrief-instagram/upload-02.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-03.jpg",
+          "entry": "08-synkbrief-instagram/upload-03.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-04.jpg",
+          "entry": "08-synkbrief-instagram/upload-04.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-05.jpg",
+          "entry": "08-synkbrief-instagram/upload-05.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\upload-06.jpg",
+          "entry": "08-synkbrief-instagram/upload-06.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\게시문안.txt",
+          "entry": "08-synkbrief-instagram/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\대체텍스트.txt",
+          "entry": "08-synkbrief-instagram/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\사용안내.md",
+          "entry": "08-synkbrief-instagram/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\08-synkbrief-instagram\\제목.txt",
+          "entry": "08-synkbrief-instagram/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\cards.html",
+          "entry": "09-synkbrief-tiktok/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\master-01.png",
+          "entry": "09-synkbrief-tiktok/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\upload-01.jpg",
+          "entry": "09-synkbrief-tiktok/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\video.mp4",
+          "entry": "09-synkbrief-tiktok/video.mp4"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\게시문안.txt",
+          "entry": "09-synkbrief-tiktok/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\대체텍스트.txt",
+          "entry": "09-synkbrief-tiktok/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\사용안내.md",
+          "entry": "09-synkbrief-tiktok/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\자막.srt",
+          "entry": "09-synkbrief-tiktok/자막.srt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\09-synkbrief-tiktok\\제목.txt",
+          "entry": "09-synkbrief-tiktok/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\cards.html",
+          "entry": "10-lab-facebook/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\master-01.png",
+          "entry": "10-lab-facebook/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\master-02.png",
+          "entry": "10-lab-facebook/master-02.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\upload-01.jpg",
+          "entry": "10-lab-facebook/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\upload-02.jpg",
+          "entry": "10-lab-facebook/upload-02.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\게시문안.txt",
+          "entry": "10-lab-facebook/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\대체텍스트.txt",
+          "entry": "10-lab-facebook/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\사용안내.md",
+          "entry": "10-lab-facebook/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\10-lab-facebook\\제목.txt",
+          "entry": "10-lab-facebook/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\cards.html",
+          "entry": "11-yuhobuilds-threads/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\master-01.png",
+          "entry": "11-yuhobuilds-threads/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\upload-01.jpg",
+          "entry": "11-yuhobuilds-threads/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\게시문안.txt",
+          "entry": "11-yuhobuilds-threads/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\대체텍스트.txt",
+          "entry": "11-yuhobuilds-threads/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\사용안내.md",
+          "entry": "11-yuhobuilds-threads/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\11-yuhobuilds-threads\\제목.txt",
+          "entry": "11-yuhobuilds-threads/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\cards.html",
+          "entry": "12-synkbrief-threads/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\master-01.png",
+          "entry": "12-synkbrief-threads/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\upload-01.jpg",
+          "entry": "12-synkbrief-threads/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\게시문안.txt",
+          "entry": "12-synkbrief-threads/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\대체텍스트.txt",
+          "entry": "12-synkbrief-threads/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\사용안내.md",
+          "entry": "12-synkbrief-threads/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\12-synkbrief-threads\\제목.txt",
+          "entry": "12-synkbrief-threads/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\cards.html",
+          "entry": "13-yuhobuilds-linkedin/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\master-01.png",
+          "entry": "13-yuhobuilds-linkedin/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\upload-01.jpg",
+          "entry": "13-yuhobuilds-linkedin/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\게시문안.txt",
+          "entry": "13-yuhobuilds-linkedin/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\대체텍스트.txt",
+          "entry": "13-yuhobuilds-linkedin/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\사용안내.md",
+          "entry": "13-yuhobuilds-linkedin/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\13-yuhobuilds-linkedin\\제목.txt",
+          "entry": "13-yuhobuilds-linkedin/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\cards.html",
+          "entry": "14-lab-telegram/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\master-01.png",
+          "entry": "14-lab-telegram/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\upload-01.jpg",
+          "entry": "14-lab-telegram/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\게시문안.txt",
+          "entry": "14-lab-telegram/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\대체텍스트.txt",
+          "entry": "14-lab-telegram/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\사용안내.md",
+          "entry": "14-lab-telegram/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\14-lab-telegram\\제목.txt",
+          "entry": "14-lab-telegram/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\cards.html",
+          "entry": "15-synklab-substack/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\letter.html",
+          "entry": "15-synklab-substack/letter.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\master-01.png",
+          "entry": "15-synklab-substack/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\upload-01.jpg",
+          "entry": "15-synklab-substack/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\게시문안.txt",
+          "entry": "15-synklab-substack/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\대체텍스트.txt",
+          "entry": "15-synklab-substack/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\본문.md",
+          "entry": "15-synklab-substack/본문.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\사용안내.md",
+          "entry": "15-synklab-substack/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\15-synklab-substack\\제목.txt",
+          "entry": "15-synklab-substack/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\cards.html",
+          "entry": "16-synk-instagram/cards.html"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\master-01.png",
+          "entry": "16-synk-instagram/master-01.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\upload-01.jpg",
+          "entry": "16-synk-instagram/upload-01.jpg"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\게시문안.txt",
+          "entry": "16-synk-instagram/게시문안.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\대체텍스트.txt",
+          "entry": "16-synk-instagram/대체텍스트.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\사용안내.md",
+          "entry": "16-synk-instagram/사용안내.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\제목.txt",
+          "entry": "16-synk-instagram/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\01-lab-youtube.zip",
+          "entry": "packages/01-lab-youtube.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\02-lab-instagram.zip",
+          "entry": "packages/02-lab-instagram.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\03-lab-tiktok.zip",
+          "entry": "packages/03-lab-tiktok.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\04-yuhobuilds-youtube.zip",
+          "entry": "packages/04-yuhobuilds-youtube.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\05-yuhobuilds-instagram.zip",
+          "entry": "packages/05-yuhobuilds-instagram.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\06-yuhobuilds-tiktok.zip",
+          "entry": "packages/06-yuhobuilds-tiktok.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\07-synkbrief-youtube.zip",
+          "entry": "packages/07-synkbrief-youtube.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\08-synkbrief-instagram.zip",
+          "entry": "packages/08-synkbrief-instagram.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\09-synkbrief-tiktok.zip",
+          "entry": "packages/09-synkbrief-tiktok.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\10-lab-facebook.zip",
+          "entry": "packages/10-lab-facebook.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\11-yuhobuilds-threads.zip",
+          "entry": "packages/11-yuhobuilds-threads.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\12-synkbrief-threads.zip",
+          "entry": "packages/12-synkbrief-threads.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\13-yuhobuilds-linkedin.zip",
+          "entry": "packages/13-yuhobuilds-linkedin.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\14-lab-telegram.zip",
+          "entry": "packages/14-lab-telegram.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\15-synklab-substack.zip",
+          "entry": "packages/15-synklab-substack.zip"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\16-synk-instagram.zip",
+          "entry": "packages/16-synk-instagram.zip"
+        }
+      ]
+    }
+  ],
+  "report": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\압축검증.json"
+}
