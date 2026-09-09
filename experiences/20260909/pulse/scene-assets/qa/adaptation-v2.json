@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-09T18:10:33.221Z",
+  "test": "Artificial 75ms requestAnimationFrame scheduling; policy check only, not hardware FPS",
+  "result": "passed",
+  "metrics": {
+    "renderer": "Three.js r180 / WebGL2",
+    "geometries": 100,
+    "drawCalls": 286,
+    "triangles": 5328490,
+    "pixelRatio": 1,
+    "quality": "auto",
+    "autoReduced": true,
+    "reflections": false,
+    "silhouetteFibres": false,
+    "contactOcclusion": false,
+    "reducedMotion": true,
+    "textile": "SYNK needle felt fibres v2",
+    "navigation": {
+      "mode": "walk",
+      "enabled": true,
+      "moving": false,
+      "zone": "square",
+      "nearest": null,
+      "position": [
+        4.65,
+        2.03,
+        15.8
+      ],
+      "yaw": 0.234,
+      "pitch": 0.0422,
+      "collisions": 0,
+      "keys": []
+    },
+    "restoration": {
+      "power": false,
+      "radio": false,
+      "rotations": [
+        0,
+        0,
+        0
+      ],
+      "frequency": 93,
+      "workLight": 0,
+      "radioLight": 0
+    }
+  },
+  "errors": []
+}

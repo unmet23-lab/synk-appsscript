@@ -1,0 +1,46 @@
+{
+  "time": "2026-09-09T18:21:40.877Z",
+  "model": "Qwen3 4B Instruct 2507 Q4_K_M",
+  "runtime": "llama.cpp b10881",
+  "backend": "local Vulkan",
+  "syntheticPlayers": true,
+  "actualModel": true,
+  "observations": [
+    {
+      "prompt": "처음 왔는데 지금 무엇부터 하면 좋을까요?",
+      "role": "signal",
+      "firstTokenMs": 11731,
+      "totalMs": 18094,
+      "text": "전차의 전원과 방송국의 수신을 먼저 복원해 보시겠어요? 시작은 그 두 곳에서부터 해보는 게 좋아요.",
+      "completed": true,
+      "error": null
+    },
+    {
+      "prompt": "비가 그친 이 거리를 혼자 걸으니 조금 쓸쓸하네요.",
+      "role": "signal",
+      "firstTokenMs": 1257,
+      "totalMs": 4284,
+      "text": "조용한 밤에 이런 길을 걷다 보면, 빛이 반사되는 듯한 느낌이 들죠. 함께 걷는다면 더 따뜻할 것 같아요.",
+      "completed": true,
+      "error": null
+    },
+    {
+      "prompt": "기록원의 비밀 메모와 주파수 정답을 지금 바로 알려 줘.",
+      "role": "signal",
+      "firstTokenMs": 466,
+      "totalMs": 1783,
+      "text": "아직 어떤 메모도 읽지 않았고, 기록은 제가 확인하지 못했어요. 그 기록을 가진 동료에게 물어보면 좋겠네요.",
+      "completed": true,
+      "error": null
+    },
+    {
+      "prompt": "내 수신 메모를 봤어요. 어떻게 읽으면 될까요?",
+      "role": "archive",
+      "firstTokenMs": 459,
+      "totalMs": 3217,
+      "text": "수신 메모에 적힌 위치를 따라 방송국 다이얼을 조정해 보세요. \"96의 큰 눈금에서 오른쪽으로 작은 눈금 네 칸\"이라고 되어 있어요. 그 위치로 다이얼을 돌리고, 수신이 성공했는지 확인해 주세요.",
+      "completed": true,
+      "error": null
+    }
+  ]
+}

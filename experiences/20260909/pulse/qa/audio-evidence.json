@@ -1,0 +1,88 @@
+{
+  "at": "2026-09-09T17:15:41.523Z",
+  "source": "Original Web Audio synthesis; no imported recordings",
+  "checks": [
+    {
+      "name": "no context or playback before a user click",
+      "result": "passed"
+    },
+    {
+      "name": "real Chrome click starts nonzero audio output",
+      "result": "passed"
+    },
+    {
+      "name": "same-page repeated creation reuses one engine",
+      "result": "passed"
+    },
+    {
+      "name": "master mute ramps to silence",
+      "result": "passed"
+    },
+    {
+      "name": "mix and mute persist without autoplay after reload",
+      "result": "passed"
+    },
+    {
+      "name": "music and effects buses independently produce audio",
+      "result": "passed"
+    },
+    {
+      "name": "another same-origin tab takes ownership without double playback",
+      "result": "passed"
+    },
+    {
+      "name": "user can reclaim audio in the first tab",
+      "result": "passed"
+    },
+    {
+      "name": "visibility pause and return resume preserve one context",
+      "result": "passed"
+    },
+    {
+      "name": "all effects and ending transitions execute without browser errors",
+      "result": "passed"
+    },
+    {
+      "name": "42-second original stereo sample renders with headroom and no clipped frames",
+      "result": "passed"
+    }
+  ],
+  "metrics": {
+    "liveMix": {
+      "rms": 0.03370990415364881,
+      "peak": 0.12150771915912628
+    },
+    "muted": {
+      "rms": 0,
+      "peak": 0
+    },
+    "separateBuses": {
+      "effectsOnly": {
+        "rms": 0.023093310760311923,
+        "peak": 0.07739760726690292
+      },
+      "musicOnly": {
+        "rms": 0.03464619250311803,
+        "peak": 0.14165028929710388
+      }
+    },
+    "sample": {
+      "duration": 42,
+      "sampleRate": 44100,
+      "channels": 2,
+      "peak": 0.2893712520599365,
+      "peakDb": -10.770892331781745,
+      "rms": 0.0540525543597763,
+      "rmsDb": -25.343675555714583,
+      "clips": 0,
+      "stereoDifference": 0.047528201896848185,
+      "sha256": "cfdfc06296411f40fb547f7c10e6b981e4e4d1f6286b4618427304d0e5818ca5",
+      "bytes": 7408844
+    }
+  },
+  "limits": [
+    "Browser audio rendering and waveform measurements are not human headphone/speaker listening.",
+    "Hidden-tab pause is tested with a visibility event and hidden-property fixture; real OS tab suspension varies.",
+    "Spatial presence is a zone-based stereo mix, not measured surround acoustics."
+  ]
+}

@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./vendor/loom.css">
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="../accessibility/a11y.css">
+  <link rel="stylesheet" href="./ai-dialogue.css">
   <script defer src="../accessibility/a11y.js"></script>
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 </head>
@@ -35,12 +36,16 @@
 
     <aside id="display-panel" class="display-panel surface" hidden>
       <div class="eyebrow">장면 보기</div>
-      <label>시점 <select id="camera-mode"><option value="street">거리 안에서</option><option value="overview">도시 전체</option></select></label>
+      <label>시점 <select id="camera-mode"><option value="walk">직접 걸어 다니기</option><option value="orbit">한 자리에서 둘러보기</option><option value="overview">도시 전체</option></select></label>
       <label>화질 <select id="quality"><option value="auto">기기에 맞추기</option><option value="high">높음</option><option value="low">가볍게</option></select></label>
       <label>움직임 <select id="motion-choice"><option value="system">기기 설정 따르기</option><option value="reduce">움직임 줄이기</option><option value="allow">움직임 허용</option></select></label>
+      <button id="audio-toggle" class="button ghost small" aria-pressed="false">소리 켜기</button>
+      <label>음악 <input id="music-volume" type="range" min="0" max="100" value="35" aria-label="음악 음량"></label>
+      <label>환경과 효과 <input id="effects-volume" type="range" min="0" max="100" value="65" aria-label="환경과 효과 음량"></label>
+      <span id="audio-status" class="small-copy" role="status">소리는 시작 버튼을 누르면 함께 켜집니다.</span>
       <button id="scene-only" class="button ghost small">화면 가리고 감상</button>
       <button id="leave-room" class="text-button" hidden>이 밤 잠시 접어 두기</button>
-      <p>화면을 드래그해 둘러보고, 휠로 가까이 다가가세요. 키보드 방향키도 사용할 수 있습니다.</p>
+      <p>WASD로 걷고 드래그로 둘러보세요. 화면의 장소 버튼으로도 모든 조사와 장치 조작을 할 수 있습니다.</p>
       <span id="render-status" class="render-status">도시의 불빛을 불러오는 중</span>
     </aside>
     <button id="restore-ui" class="button small surface restore-ui" hidden>이야기로 돌아가기 <span aria-hidden="true">↗</span></button>
@@ -48,11 +53,12 @@
     <section id="entry" class="entry" aria-labelledby="story-title">
       <div class="eyebrow"><span class="signal-dot"></span> 비가 멎은 뒤, 23:17</div>
       <h1 id="story-title">마지막<br><span>불빛</span><span class="title-period" aria-hidden="true">.</span></h1>
-      <p class="entry-copy">도시에 남은 전기는 단 한 번.<br>당신이 발견한 것과, 내가 아는 것을 모아<br>불빛이 도착할 곳을 정해 주세요.</p>
-      <div class="story-meta"><span>2–4명</span><span>약 10분</span><span>하나의 완결된 밤</span></div>
+      <p class="entry-copy">폭풍이 지나간 도시. 전원도 방송도 끊겼다.<br>풀린 전선을 잇고, 마지막 목소리를 되찾아<br>우리가 밝힐 곳을 함께 정해 주세요.</p>
+      <div class="story-meta"><span>혼자 또는 2–4명</span><span>세 갈래의 결말</span></div>
+      <ol class="entry-route" aria-label="이 밤에 할 일"><li><span>01</span> 도시를 살피고</li><li><span>02</span> 전원과 방송을 고쳐</li><li><span>03</span> 한 곳에 불빛을 보낸다</li></ol>
       <div id="entry-main" class="entry-actions">
-        <button id="create-open" class="button primary">함께 시작하기 <span aria-hidden="true">↗</span></button>
-        <button id="dual-start" class="button ghost">한 기기로 두 역할 체험</button>
+        <button id="dual-start" class="button primary">혼자 이 밤에 들어가기 <span aria-hidden="true">→</span></button>
+        <button id="create-open" class="button ghost">친구와 함께 시작하기 <span aria-hidden="true">↗</span></button>
         <button id="join-open" class="text-button">초대 코드를 받았어요 <span aria-hidden="true">→</span></button>
       </div>
       <div id="resume-actions" class="entry-actions" hidden><button id="resume-room" class="button primary">이 밤으로 돌아가기 →</button><a class="button ghost" href="./" target="_blank" rel="noopener">새 탭에서 다른 밤 시작 ↗</a><p class="small-copy">지금의 역할과 단서는 이 탭에 남아 있습니다.</p></div>
@@ -64,7 +70,7 @@
         <p id="role-description" class="role-description">도시 아래로 이어지는 전선의 길을 알고 있습니다.</p>
         <button type="submit" id="form-submit" class="button primary">방 만들기 <span aria-hidden="true">↗</span></button>
       </form>
-      <p class="entry-note">각자 다른 단서를 만납니다.<br>정답을 겨루는 대신, 함께 결말을 만드세요.</p>
+      <p class="entry-note">혼자서는 두 역할을 바꿔 가며, 친구와는 각자의 시선으로.<br>서두르지 않아도 괜찮아요. 틀린 조작으로 밤을 잃지 않습니다.</p>
     </section>
 
     <section id="story-panel" class="story-panel surface" hidden tabindex="-1" aria-label="우리의 이야기">
@@ -72,6 +78,7 @@
       <div id="panel-body">
         <div id="role-switch" class="role-switch" hidden aria-label="한 기기 체험 역할 전환"></div>
         <p id="objective" class="objective"></p>
+        <div id="journey" class="journey" hidden aria-label="우리가 되찾은 것"><span id="power-progress">전원 연결</span><span id="radio-progress">방송 수신</span><span id="choice-progress">불빛 보내기</span></div>
         <div id="players" class="players"></div>
         <div id="lobby-actions" class="lobby-actions" hidden>
           <button id="invite-copy" class="button ghost">초대 링크 복사 <span aria-hidden="true">↗</span></button>
@@ -80,8 +87,31 @@
           <p id="start-hint" class="small-copy"></p>
         </div>
         <div id="investigation" hidden>
+          <p class="explore-tip">WASD로 걷거나 아래 장소를 눌러 이동하세요. 순서는 자유입니다.</p>
           <nav id="object-nav" class="object-nav" aria-label="조사할 장소"></nav>
           <article id="object-card" class="object-card" hidden></article>
+          <section id="power-workshop" class="workshop" hidden aria-labelledby="power-title">
+            <div class="workshop-heading"><span class="eyebrow">전차 · 비상 배전함</span><h3 id="power-title">끊긴 길을 이어 주세요.</h3></div>
+            <p class="workshop-copy">연결부를 누르면 90도씩 돌아갑니다. 전원은 1번의 왼쪽, 배전판은 오른쪽 아래에 있어요.</p>
+            <div class="circuit-grid" aria-label="세 연결부가 있는 배전함">
+              <button id="circuit-0" class="circuit-tile" data-index="0" type="button"><span class="tile-number">01</span><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 0V40H80"/></svg><span class="tile-direction"></span></button>
+              <button id="circuit-1" class="circuit-tile" data-index="1" type="button"><span class="tile-number">02</span><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 0V40H80"/></svg><span class="tile-direction"></span></button>
+              <button id="circuit-2" class="circuit-tile" data-index="2" type="button"><span class="tile-number">03</span><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 0V40H80"/></svg><span class="tile-direction"></span></button>
+              <div id="power-outlet" class="power-outlet"><i aria-hidden="true"></i><strong>비상 배전판</strong><span>아직 불이 꺼져 있어요</span></div>
+            </div>
+            <p id="power-feedback" class="device-feedback" role="status"></p>
+          </section>
+          <section id="radio-workshop" class="workshop" hidden aria-labelledby="radio-title">
+            <div class="workshop-heading"><span class="eyebrow">방송국 · 항구 수신기</span><h3 id="radio-title">잡음 사이의 목소리.</h3></div>
+            <p class="workshop-copy">다이얼을 움직인 뒤 수신을 확인해 보세요. 기록원의 메모와 정비사의 눈금 단위가 도움이 됩니다.</p>
+            <div class="radio-readout"><output id="radio-frequency" for="radio-dial">93.0</output><span>MHz</span><span id="radio-lock">탐색 중</span></div>
+            <label class="radio-dial-label" for="radio-dial">수신 주파수</label><input id="radio-dial" type="range" min="90" max="104" step="0.1" value="93">
+            <div class="radio-fine"><button id="radio-minus" class="button ghost small" type="button" aria-label="주파수 0.1 낮추기">− 0.1</button><button id="radio-plus" class="button ghost small" type="button" aria-label="주파수 0.1 높이기">+ 0.1</button><button id="radio-check" class="button primary small" type="button">수신 확인</button></div>
+            <label class="signal-label">신호 <meter id="radio-signal" min="0" max="100" value="0"></meter><span id="radio-signal-text">0%</span></label>
+            <p id="radio-feedback" class="device-feedback" role="status"></p>
+            <blockquote id="restored-broadcast" class="restored-broadcast" hidden></blockquote>
+          </section>
+          <div id="hint-area" class="hint-area" hidden><button id="hint-button" class="text-button" type="button">작은 힌트 보기</button><p id="hint-copy" role="status"></p></div>
           <details id="evidence-book" class="evidence-book"><summary>함께 모은 단서 <span id="shared-count" class="mono">0</span></summary><div id="shared-clues" class="shared-clues"></div></details>
           <button id="open-vote" class="button primary" disabled>불빛을 보낼 곳 정하기 <span aria-hidden="true">→</span></button>
           <p id="vote-hint" class="small-copy"></p>
@@ -93,15 +123,18 @@
           <button id="finalize" class="button primary" disabled>이곳으로 불빛 보내기 <span aria-hidden="true">↗</span></button>
         </div>
         <article id="ending" class="ending" hidden></article>
+        <section id="night-trace" class="night-trace" hidden aria-labelledby="trace-title"><h3 id="trace-title">우리가 남긴 밤</h3><ol id="chronicle" class="chronicle"></ol><div id="shared-marks" class="shared-marks"></div><form id="mark-form"><label for="mark-input">이 불빛을 받을 사람에게 <span>선택 · 120자까지</span></label><textarea id="mark-input" rows="3" maxlength="120" placeholder="우리가 이곳에 불빛을 보낸 이유는…"></textarea><button id="mark-save" class="button ghost small" type="submit">한 문장 남기기</button></form><button id="night-download" class="button primary" type="button">이 밤의 기록 내려받기 <span aria-hidden="true">↓</span></button></section>
       </div>
     </section>
 
     <div id="role-label" class="role-label" hidden><i class="signal-dot"></i><div><span class="eyebrow">YOUR VIEW</span><strong id="current-role"></strong></div></div>
-    <footer class="scene-footer"><div class="scene-caption"><span class="tiny-rule"></span><div><span id="place-name">서쪽 해안, 오래된 전차 광장</span><small id="scene-instruction">드래그해 둘러보기 <span>·</span> 휠로 다가가기</small></div></div><span class="scene-coordinate mono">N 37° · 23:17</span></footer>
+    <aside id="npc-dialogue" class="npc-dialogue" hidden aria-label="도시의 목소리와 대화"></aside>
+    <footer class="scene-footer"><div class="scene-caption"><span class="tiny-rule"></span><div><span id="place-name">서쪽 해안, 오래된 전차 광장</span><small id="scene-instruction">WASD로 걷기 <span>·</span> 드래그로 둘러보기</small></div></div><span class="scene-coordinate mono">N 37° · 23:17</span></footer>
     <div id="loading" class="loading" role="status"><span class="loading-thread"></span><span>도시에 도착하는 중</span></div>
     <div id="toast" class="toast surface" role="status" aria-live="polite" hidden></div>
     <div id="error" class="error surface" role="alert" hidden><p id="error-message"></p><button id="recover-room" class="text-button" hidden>새 방으로 시작</button><button id="error-close" class="text-button">닫기</button></div>
   </main>
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./ai-dialogue.js"></script>
 </body>
 </html>
