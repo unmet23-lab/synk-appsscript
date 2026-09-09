@@ -10,12 +10,14 @@
  *
  * ■ 무엇을 내나
  *   급한 순(파일럿 → 개원 → 그 밖)으로 「무엇이 사라지나 · 어디를 고치나 · 임자 · 확신」을 낸다.
- *   `--md` 를 주면 문서로 낸다.
+ *   `--md`는 짧은 실행 색인, `--상세`는 배경·당시 상태까지 낸다.
+ *   09-09 판정의 앞당긴 마감과 리허설/실학생 구분을 먼저 적용한다.
  *
  * 쓰기:
  *   node tools/소급실행표.js                  # 파일럿에 걸린 것
  *   node tools/소급실행표.js --임자 machine    # 내가 고칠 것만
  *   node tools/소급실행표.js --전량 --md > docs/소급_실행표_0908.md
+ *   node tools/소급실행표.js --항목 critic-8 --상세 --md
  */
 'use strict';
 
@@ -138,70 +140,87 @@ const 갈래말 = ['12-07 파일럿에 걸린 것', '🔴 언제인지 «모르�
  *   자 = 「이 값이 학생이 실제로 낸 것이라야 하나」 → 그렇다 = 데이터(2027-02-11) · 아니다 = 리허설(2026-12-07).
  *   🔑 판정을 «파일»에 두고 자가 읽게 하는 까닭: 여기 코드에 박으면 다음에 재료가 늘 때
  *      그 항목이 조용히 «판정 없음»으로 지나간다. 파일이면 아래 「판정 안 된 것」 줄이 그것을 센다. */
-const 어느학생판정 = (() => {
-  try {
-    const p = path.join(뿌리, 'docs', '_ops', '소급불가_울트라', '어느학생_판정_0909.json');
-    return JSON.parse(fs.readFileSync(p, 'utf8')).판정 || {};
-  } catch { return {}; }
-})();
-const 마감말 = { 리허설: '⏰ 2026-12-07 리허설', 데이터: '⏰ 2027-02-11 진짜 학생', 그밖: '· 학생 시계 밖' };
+const 판정경로 = path.join(뿌리, 'docs', '_ops', '소급불가_울트라', '어느학생_판정_0909.json');
+const 현재갈래말 = ['앞당긴 마감', '실제 수집 전 — 온라인·현장 적용 확인', '2026-12-07 리허설', '개별 사건의 마감', '판정 필요'];
 
-const 전부 = JSON.parse(fs.readFileSync(재료, 'utf8'));
-let 볼것 = 인자.전량 ? 전부 : 전부.filter((v) => 갈래(v) <= (인자.모르는것 ? 1 : 0));
-if (인자.임자) 볼것 = 볼것.filter((v) => v.owner === 인자.임자);
-
-/* 급한 순 — 갈래가 먼저, 그 안에서 확신이 높은 것이 먼저(자리가 확실하니 바로 손댈 수 있다) */
-const 확신순 = { high: 0, medium: 1, low: 2 };
-볼것.sort((a, b) => (갈래(a) - 갈래(b))
-  || (확신순[a.confidence] - 확신순[b.confidence])
-  || String(a.id).localeCompare(String(b.id)));
-
-if (인자.md) {
-  const 오늘 = new Date().toISOString().slice(0, 10);
-  console.log(`# 소급 불가 실행표 — 자리를 붙였다 (${오늘})\n`);
-  console.log('> 재료 `docs/_ops/소급불가_울트라/전량.json` 의 `source` 칸을 꺼낸 것이다.');
-  console.log('> 🔑 **자리는 처음부터 있었다** — 색인 마크다운이 옮길 때 그 칸을 버렸을 뿐이다.');
-  console.log('> 되뜨는 자 = `node tools/소급실행표.js --전량 --md`\n');
-  console.log(`총 ${볼것.length}건 · 파일럿(12-07)에 걸린 것 ${볼것.filter((v) => 갈래(v) === 0).length}건`
-    + ` · 🔴 언제인지 모르는 것 ${볼것.filter((v) => 갈래(v) === 1).length}건`
-    + ` · 파일럿 뒤가 확실한 것 ${볼것.filter((v) => 갈래(v) === 2).length}건\n`);
-  console.log('> ✅ **09-09 에 가운데 갈래 84건을 갈랐다** — 자는 「이 값이 학생이 실제로 낸 것이라야 하나」 하나다.');
-  console.log('> 그렇다면 **2027-02-11**(진짜 학생), 아니라면 **2026-12-07**(리허설 · 합성 학생으로도 걸린다).');
-  console.log('> 판정 원본 = `docs/_ops/소급불가_울트라/어느학생_판정_0909.json`\n');
-  const 안갈린것 = 볼것.filter((v) => 갈래(v) === 1 && !어느학생판정[v.id]);
-  if (안갈린것.length) {
-    console.log(`> 🔴 **아직 안 갈린 것 ${안갈린것.length}건** — 재료가 는 뒤에 판정 파일이 안 따라온 것이다: `
-      + 안갈린것.map((v) => `\`${v.id}\``).join(' · ') + '\n');
+/** 후속 판정이 먼저다. 미판정은 늦춰도 되는 것으로 취급하지 않는다. */
+function 현재마감(v, 판정문서) {
+  const 앞당김 = (판정문서._63건재판정 || {})[v.id];
+  if (앞당김 && 앞당김.새마감) return { 순: 0, 말: 앞당김.새마감, 까닭: 앞당김.까닭 };
+  const 판정 = (판정문서.판정 || {})[v.id];
+  if (판정) {
+    const 순 = { 리허설: 2, 데이터: 1, 그밖: 3 }[판정.마감];
+    if (순 !== undefined) return {
+      순, 말: 순 === 3 ? v.deadline_event : 순 === 1
+        ? '첫 실제 수집 전 — 온라인 1기 적용 여부 확인(09-09 판정: 현장 2027-02-11)'
+        : 현재갈래말[순], 까닭: 판정.까닭,
+    };
+    return { 순: 4, 말: `판정 값 확인 필요: ${판정.마감}`, 까닭: 판정.까닭 };
   }
+  const 옛갈래 = 갈래(v);
+  if (옛갈래 === 0) return { 순: 2, 말: v.deadline_event, 까닭: 앞당김 && 앞당김.까닭 };
+  if (옛갈래 === 1) return { 순: 4, 말: `날짜 미판정 — ${v.deadline_event}` };
+  return { 순: 3, 말: v.deadline_event };
+}
+
+function 선택(전부, 판정문서, 옵션) {
+  const 확신순 = { high: 0, medium: 1, low: 2 };
+  return 전부.filter((v) => {
+    if (옵션.항목 && v.id !== 옵션.항목) return false;
+    if (옵션.임자 && v.owner !== 옵션.임자) return false;
+    if (옵션.전량 || 옵션.항목) return true;
+    const 순 = 현재마감(v, 판정문서).순;
+    return 순 <= 2 || (!!옵션.모르는것 && 순 === 4);
+  }).sort((a, b) => 현재마감(a, 판정문서).순 - 현재마감(b, 판정문서).순
+    || (확신순[a.confidence] ?? 3) - (확신순[b.confidence] ?? 3)
+    || (String(a.id) < String(b.id) ? -1 : String(a.id) > String(b.id) ? 1 : 0));
+}
+
+function 마크다운(볼것, 판정문서, 옵션 = {}) {
+  const 한줄 = (s) => String(s || '').replace(/\r?\n/g, ' ');
+  const 출력 = [
+    '# 소급 불가 — 필요한 작업과 마감', '',
+    '> 09-03 발견 원본과 09-09 마감 판정을 합친 실행 색인이다. 항목의 현재 완료 여부·코드·실제 일정은 실행 전에 담당 정본과 대조한다. 원문의 옛 상태를 현재 미완료로 확정하지 않는다.', '',
+    '- 상세 원본: [전량 JSON](_ops/소급불가_울트라/전량.json). 각 항목의 ID로 `source`·`what_is_lost`·`current_state`를 찾는다.',
+    '- 마감 원천: [09-09 판정](_ops/소급불가_울트라/어느학생_판정_0909.json). `_63건재판정`의 앞당긴 마감과 `판정`의 리허설·진짜 학생 구분을 먼저 적용한다. 학생 시계 밖이어도 개별 사건의 마감은 남는다.',
+    '- **현재 일정의 우선 조건:** [개원 전 판매 설계](개원전판매_설계_v1.md)의 §⑨-㉦은 무료 진단의 첫 실제 답을 공개 전부터 보존하고, 온라인 1기 첫 주 **2026-11-30 전**에 동의·첫 제출·첫 녹음의 최소 기록 경로를 세우도록 한다. 09-09 판정의 현장 2027-02-11까지 온라인 자료 수집을 미뤄도 된다는 뜻이 아니다. 실학생 데이터 항목은 실제로 먼저 열릴 접점을 확인한다.',
+    '- 재생성: `node tools/소급실행표.js --전량 --md`. 한 항목의 배경: `node tools/소급실행표.js --항목 critic-8 --상세 --md`.',
+    '- 아래 수정 위치는 09-03 원문을 그대로 보존한 탐색 단서다. 옛 줄번호·과거 결정·사라진 파일을 현행 기준으로 쓰지 말고 현재 파일의 해당 함수·계약을 찾는다.', '',
+    `총 ${볼것.length}건 · ` + 현재갈래말.map((말, 순) => `${말} ${볼것.filter((v) => 현재마감(v, 판정문서).순 === 순).length}건`).join(' · '), '',
+  ];
   let 절 = null;
   for (const v of 볼것) {
-    const 새절 = 갈래말[갈래(v)];
-    if (새절 !== 절) { 절 = 새절; console.log(`\n## ${절}\n`); }
-    console.log(`### ${v.title}`);
-    console.log(`- **임자** ${임자말[v.owner] || v.owner} · **확신** ${확신말[v.confidence] || v.confidence} · \`${v.id}\``);
-    const 갈린것 = 어느학생판정[v.id];
-    if (갈린것) console.log(`- **갈랐다(09-09)** ${마감말[갈린것.마감] || 갈린것.마감} — ${갈린것.까닭}`);
-    console.log(`- **마감** ${v.deadline_event}`);
-    console.log(`- **사라지는 것** ${(v.what_is_lost || '').replace(/\n/g, ' ')}`);
-    console.log(`- **어디를 고치나** ${낡음표시(자리손질((v.source || '').replace(/\n/g, ' ')))}`);
-    // 🔴 「그날의 상태」 칸에도 자리가 섞여 있다 — source 만 손질하면 그 칸의 낡은 인용이 남는다
-    if (v.current_state) console.log(`- **09-03 그날의 상태** ${낡음표시(자리손질(String(v.current_state).replace(/\n/g, ' ')))}`);
-    console.log('');
+    const 마감 = 현재마감(v, 판정문서);
+    if (마감.순 !== 절) { 절 = 마감.순; 출력.push(`## ${현재갈래말[절]}`, ''); }
+    출력.push(`### ${v.title}`, `- **ID** \`${v.id}\` · **임자** ${임자말[v.owner] || v.owner} · **확신** ${확신말[v.confidence] || v.confidence}`,
+      `- **마감** ${한줄(마감.말)}`, `- **수정 위치 원문** ${한줄(v.source)}`);
+    if (옵션.상세) {
+      if (마감.까닭) 출력.push(`- **마감 판정 근거** ${한줄(마감.까닭)}`);
+      출력.push(`- **원문 마감 사건** ${한줄(v.deadline_event)}`, `- **사라지는 것** ${한줄(v.what_is_lost)}`);
+      if (v.current_state) 출력.push(`- **09-03 당시 상태** ${한줄(v.current_state)}`);
+    }
+    출력.push('');
   }
-} else {
-  console.log(`■ ${볼것.length}건 (전체 ${전부.length})\n`);
-  for (const v of 볼것) {
-    const 표 = { high: '🟢', medium: '🟡', low: '⬜' }[v.confidence] || ' ';
-    console.log(`${표} [${임자말[v.owner] || v.owner}] ${v.title}`);
-    console.log(`     자리: ${낡음표시(자리손질(String(v.source || ''))).slice(0, 96)}`);
-  }
-  const c = (k) => 볼것.filter((v) => v.owner === k).length;
-  console.log('\n' + '─'.repeat(60));
-  console.log(`갈래 — 파일럿 ${볼것.filter((v) => 갈래(v) === 0).length}`
-    + ` · 🔴 모른다 ${볼것.filter((v) => 갈래(v) === 1).length}`
-    + ` · 뒤가 확실 ${볼것.filter((v) => 갈래(v) === 2).length}`);
-  console.log(`임자 — 내가 ${c('machine')} · 유호님 ${c('yuho')} · 사람 손 ${c('person')}`);
-  console.log(`확신 — 높다 ${볼것.filter((v) => v.confidence === 'high').length}`
-    + ` · 보통 ${볼것.filter((v) => v.confidence === 'medium').length}`
-    + ` · 낮다 ${볼것.filter((v) => v.confidence === 'low').length}`);
+  return 출력.join('\n');
 }
+
+function main() {
+  const 전부 = JSON.parse(fs.readFileSync(재료, 'utf8'));
+  // 필수 판정을 못 읽으면 출력하지 않는다. 누락을 조용히 옛 분류로 되돌리지 않는다.
+  const 판정문서 = JSON.parse(fs.readFileSync(판정경로, 'utf8'));
+  if (!판정문서.판정 || typeof 판정문서.판정 !== 'object') throw new Error('마감 판정 원문에 판정 표가 없습니다');
+  const 볼것 = 선택(전부, 판정문서, 인자);
+  if (인자.항목 && !볼것.length) throw new Error(`항목을 찾지 못했습니다: ${인자.항목}`);
+  if (인자.md) process.stdout.write(마크다운(볼것, 판정문서, 인자));
+  else {
+    console.log(`■ ${볼것.length}건 (전체 ${전부.length})\n`);
+    for (const v of 볼것) {
+      console.log(`[${임자말[v.owner] || v.owner}] ${v.title} (${v.id})`);
+      console.log(`     마감: ${현재마감(v, 판정문서).말}`);
+      console.log(`     자리: ${낡음표시(자리손질(String(v.source || ''))).slice(0, 96)}`);
+    }
+  }
+}
+
+if (require.main === module) main();
+module.exports = { 현재마감, 선택, 마크다운 };

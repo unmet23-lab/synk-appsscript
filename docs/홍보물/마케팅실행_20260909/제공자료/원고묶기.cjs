@@ -14,6 +14,15 @@ const read = (file) => fs.readFileSync(path.join(base, file), 'utf8');
 const sha = (text) => crypto.createHash('sha256').update(text).digest('hex');
 const audience = '자기 전문성을 서비스·교육·콘텐츠로 소개하려는 초기 성인 1인 사업자';
 const fictionNotice = '채운 사례·질문·대화는 가상 교육용 예시이며 실제 고객·판매 상품·계약·성과가 아닙니다.';
+// 09-09 제작 때 읽은 원문의 지문이다. 재생성 때 오늘의 원문으로 덮지 않는다.
+const productionSources = [
+  ['AGENTS.md', '2a736bf91866703018bfd2ade35266388de3b48215b64072f9f3f6617b6589d4'],
+  ['docs/AI_운영원칙.md', 'a09124dc8bde12512f11678ca35358b22ec8bceea1b44f06117ddf4c8827217f'],
+  ['docs/마케팅_정본.md', '5dfb7d939c50706833b6b671ec024e73dc771f758083392198d6b98a50ed0f93'],
+  ['docs/마케팅_확장안_20260909.md', '114e9ae1e1362165b3d6b74aaca475f292ccddecb465c4fcf02e7a7ccf1b6050'],
+  ['docs/명품_기준_v1.md', 'b08ce646d7bc90799af6820b59723328f3da7c590a295fa6124d846a511c8889'],
+  ['DESIGN.md', '2e66688d9d8e51c6dc4ce4ef102f470bfabe31cd771dbbb319d8ef0dee003099'],
+].map(([path, sha256]) => ({ path, sha256 }));
 const catalog = [
   ['shift-intro', '01_소개문.md', '내 일을 설명하는 첫 문장', '대상·상황·결과를 나눠 소개문을 작성하고 읽는 자리별로 변형합니다.', '내 소개에서 직함보다 누구의 어떤 일을 돕는지 먼저 찾아보세요.', '대상이 둘일 때 첫 문장을 나눌지 판단하는 부분이 헷갈리나요?'],
   ['shift-offer', '02_상품한장.md', '첫 서비스를 설명하는 한 장', '고객·제공물·포함·제외·인수·미정 조건을 한 경험으로 정리합니다.', '고객이 원하는 결과와 내가 실제로 넘기는 결과물을 나눠 적어보세요.', '내가 제공하는 것과 제외하려는 것 중 어느 경계가 헷갈리나요?'],
@@ -40,7 +49,7 @@ function makeItem(row) {
 }
 
 function payload() {
-  const sources = ['AGENTS.md', 'docs/AI_운영원칙.md', 'docs/마케팅_정본.md', 'docs/마케팅_확장안_20260909.md', 'docs/명품_기준_v1.md', 'DESIGN.md'];
+  const sources = ['AGENTS.md', 'docs/AI_운영원칙.md', 'docs/마케팅_정본.md', 'docs/마케팅/SHIFT_공개수업.md', 'docs/명품_기준_v1.md', 'DESIGN.md'];
   return {
     version: 1, date: '2026-09-09', status: 'local-prepared', language: 'ko',
     canonicalFormat: 'markdown',
@@ -49,7 +58,11 @@ function payload() {
     materials: catalog.map(makeItem),
     supportGuides: [makeItem(['shift-followup', '소통_후속도움.md', '자료를 쓰다가 막혔을 때', '비식별 질문·답변·모름 처리·개정·선택적 후속 편지 원고 3편입니다.', '목표·해본 것·막힌 칸·원하는 도움을 가상 내용으로 정리해보세요.', '바로 적용할 답과 확인이 필요한 조건 중 어느 도움이 필요한가요?'])],
     productionOnly: ['A_끝맺음.md', '원고묶기.cjs', '검증.json', '제작검증.md'],
-    sourceReferences: sources.map((file) => ({ path: file, sha256: sha(fs.readFileSync(path.join(repo, file))) })),
+    sourceReferences: productionSources,
+    rebuild: {
+      date: '2026-09-10', scope: '문서 이동 뒤 로컬 재생성·구조 검사. 09-09 원고 검토를 다시 수행했다는 뜻이 아님',
+      sourceReferences: sources.map((file) => ({ path: file, sha256: sha(fs.readFileSync(path.join(repo, file))) })),
+    },
     visualHandoff: { stylesheet: 'Loom existing tokens only', fonts: 'approved fonts only', logo: 'neutral ink SYNK stitch + SHIFT division-color stitch', renderStatus: 'integration-pending' },
   };
 }
@@ -91,7 +104,7 @@ function check(data) {
   assert.equal((followup.match(/^## \d+\. 후속 편지 원고 /gm) || []).length, 3);
   assert.deepEqual(JSON.parse(read('제공자료.json')), data, 'JSON differs from source export');
   return {
-    status: 'passed', date: '2026-09-09', checks: { materialCount: 6, supportGuideCount: 1, completeSections: items.reduce((n, x) => n + x.sections.length, 0), editableExamples: 7, contentMapQuestions: 12, followupLetterDrafts: 3, localLinksResolved: checkedLinks, manuscriptHashAndJsonAgreement: true, inventedLiveUrls: 0, emailStrings: 0 },
+    status: 'passed', date: '2026-09-10', productionDate: data.date, scope: data.rebuild.scope, checks: { materialCount: 6, supportGuideCount: 1, completeSections: items.reduce((n, x) => n + x.sections.length, 0), editableExamples: 7, contentMapQuestions: 12, followupLetterDrafts: 3, localLinksResolved: checkedLinks, manuscriptHashAndJsonAgreement: true, inventedLiveUrls: 0, emailStrings: 0 },
     files: items.map((x) => ({ sourceFile: x.sourceFile, sha256: x.sourceSha256, sections: x.sections.length })),
     limits: ['구성·원고 일치·로컬 링크 검사이며 실제 독자 효용·매출을 검증한 결과가 아님', 'HTML/PDF/모바일 시각 QA는 통합 제작 단계에서 별도 수행', 'AI 실제 실행·외부 게시·구독·발송·계정 개설·현장 강의는 수행하지 않음', '독립 사실·약속 검토는 별도 담당 결과로 인수'],
   };
