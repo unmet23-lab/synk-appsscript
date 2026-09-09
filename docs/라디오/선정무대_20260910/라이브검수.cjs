@@ -2,7 +2,8 @@
 // Isolated local-render test, not control of a user's browser or live broadcast.
 const fs=require('fs'),path=require('path'),http=require('http'),assert=require('assert/strict');
 const {chromium}=require('playwright');
-const root=path.resolve(__dirname,'../../..'),out=path.join(__dirname,'라이브13'),manifest=require('./라이브13/manifest.json');
+const root=path.resolve(__dirname,'../../..'),out=path.join(__dirname,process.argv.includes('--speck')?'정수리수정':'라이브13');
+const manifest=JSON.parse(fs.readFileSync(path.join(out,'manifest.json'),'utf8'));
 const routes=new Map([
  ['/bots/오버레이/마스코트.html',path.join(out,'after-마스코트.html')],
  ['/bots/오버레이/'+manifest.helperName,path.join(out,manifest.helperName)],

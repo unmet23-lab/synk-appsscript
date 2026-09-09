@@ -1,0 +1,1778 @@
+{
+  "at": "2026-09-09T21:03:59.749Z",
+  "head": "61fe07f1193f7b94c372fea2b2c997fe9ee87ea2",
+  "scope": "Read-only exact leaf single-outfit 60-stage mapping, active 8 radio candidate hashes, archive manifests/receipts/journals, and earlier audit JSON integrity. Remote Drive ZIP bytes not reread; no writes outside this report.",
+  "readSources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "32222dab4c650029ef561b258b0442f7a920fdd78b3a706727f4c9f8c4d28f0c"
+    },
+    {
+      "path": "docs/AI_운영원칙.md",
+      "sha256": "d21f5e3bd4f1d72d0fde6f37b726da4dd71146e0fa8ed3e0c36d74c52eb3e03b"
+    },
+    {
+      "path": "docs/대용량자산_운영.md",
+      "sha256": "4796bc547cb216f3fa3a12002a7d3f471e31d640f4698387eaebdfa0fa20ffe2"
+    },
+    {
+      "path": "tools/drive-mascot-archive.py",
+      "sha256": "402b505135a0c6e77b6589325bb697a7a44735307fe5373af6ed05b71c24d3cb"
+    },
+    {
+      "path": "docs/_ops/마스코트_Drive이관_20260910/옷_manifest.json",
+      "sha256": "ea1f76f7019bfb450c543c14291a118601783d8d573aec9268692f2582239a6c"
+    },
+    {
+      "path": "docs/_ops/마스코트_Drive이관_20260910/pack-plan.json",
+      "sha256": "495713ebea94ef32a11d39154cb1bc20ac2b4bc4f9e974d4a66f3bff11ff44cf"
+    },
+    {
+      "path": "docs/라디오/선정무대_20260910/정수리수정/복원검증.json",
+      "sha256": "9acfbd953a284ecbfa10055908e517c71a4ffa16c89d7039053917e41687b93a"
+    },
+    {
+      "path": "docs/라디오/선정무대_20260910/라이브준비.cjs",
+      "sha256": "0891fbefdfb39b0fc2af9fe9baf8fd14052b8c7be463d02ea78c39ad0c6458b6"
+    }
+  ],
+  "integrity": [
+    {
+      "path": "docs/_ops/의상정본점검_20260910/경로/현행재고검사.json",
+      "bytes": 9104142,
+      "sha256": "1d6241fe028fc97b6e02cce43c14903bb1efee8b09f0597091d486ed8fe25fba",
+      "parse": true,
+      "endsWithObjectAfterWhitespace": true,
+      "trailingNul": false,
+      "recordCounts": {
+        "files": 9397,
+        "errors": 0,
+        "bytes": 31713763938,
+        "bodyMapped": 49,
+        "bodyExpressionOnly": 43,
+        "radioSets": 129,
+        "radioFiles": 1032,
+        "radioRecordMismatches": 0,
+        "radioInputMismatches": 0,
+        "radioOutputMismatches": 0
+      },
+      "actualFileCount": 9397,
+      "countMatches": true,
+      "createdAt": "2026-09-09T19:29:26.675Z"
+    },
+    {
+      "path": "docs/_ops/의상정본점검_20260910/경로/표정기술검사.json",
+      "bytes": 937600,
+      "sha256": "7d6799d89ed0677f7005b288b826e1035436cb81944385df32d2c7898d467a22",
+      "parse": true,
+      "endsWithObjectAfterWhitespace": true,
+      "trailingNul": false,
+      "recordCounts": {
+        "sets": 132,
+        "files": 1075,
+        "errors": 0,
+        "rgbaRecordMismatches": 0,
+        "dimensionMismatches": 0,
+        "alphaVaryingSets": [
+          "까몽",
+          "몽글",
+          "마린",
+          "털모자+겨울델"
+        ]
+      },
+      "actualFileCount": 1075,
+      "countMatches": true,
+      "createdAt": "2026-09-09T19:30:26.492Z"
+    }
+  ],
+  "stages": [
+    {
+      "stage": "구운것",
+      "cut": null,
+      "path": "docs/Loom_자산/옷/GPT/까몽_3개월출석잎망토.png",
+      "relativeToOutfit": "GPT/까몽_3개월출석잎망토.png",
+      "beforeAuditSha": "4f1481c2ecb224e115f2f53a5760cbbb617b7d5d65dc0eaffcc242147c5b380b",
+      "current": {
+        "bytes": 5961697,
+        "sha256": "3e9ecc50a6c972f528baffdc2bac55b647843fbb4e0a541552e606e997e4dbf3"
+      },
+      "archiveManifest": {
+        "path": "GPT/까몽_3개월출석잎망토.png",
+        "bytes": 5961697,
+        "mtime_ns": 1788982657857697800,
+        "sha256": "3e9ecc50a6c972f528baffdc2bac55b647843fbb4e0a541552e606e997e4dbf3"
+      },
+      "planPack": 60,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": false,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "본체",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_본체.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_본체.png",
+      "beforeAuditSha": "d8c383b223bbe99e8fe664f67cc4f000124a3b2713a546be9c1d0484c2816e2d",
+      "current": {
+        "bytes": 6190162,
+        "sha256": "d8c383b223bbe99e8fe664f67cc4f000124a3b2713a546be9c1d0484c2816e2d"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_본체.png",
+        "bytes": 6190162,
+        "mtime_ns": 1788913340477209300,
+        "sha256": "d8c383b223bbe99e8fe664f67cc4f000124a3b2713a546be9c1d0484c2816e2d"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "눈감음",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_눈감음.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_눈감음.png",
+      "beforeAuditSha": "37fa1978de84a89cb16a476edaae724b363932bd56eab9fce9fe70a2f2722ac7",
+      "current": {
+        "bytes": 6265896,
+        "sha256": "37fa1978de84a89cb16a476edaae724b363932bd56eab9fce9fe70a2f2722ac7"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_눈감음.png",
+        "bytes": 6265896,
+        "mtime_ns": 1788913337505523700,
+        "sha256": "37fa1978de84a89cb16a476edaae724b363932bd56eab9fce9fe70a2f2722ac7"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "눈웃음",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_눈웃음.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_눈웃음.png",
+      "beforeAuditSha": "93a7394022143d6d91374927e0554a9f85af0d75d2ac853d9cece7524ef4af86",
+      "current": {
+        "bytes": 6270698,
+        "sha256": "93a7394022143d6d91374927e0554a9f85af0d75d2ac853d9cece7524ef4af86"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_눈웃음.png",
+        "bytes": 6270698,
+        "mtime_ns": 1788913338477964000,
+        "sha256": "93a7394022143d6d91374927e0554a9f85af0d75d2ac853d9cece7524ef4af86"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "놀람",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_놀람.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_놀람.png",
+      "beforeAuditSha": "65632fa146ee6cbadc1d1f820d5033e0533560a4fa73bf965bb024b787572124",
+      "current": {
+        "bytes": 6274506,
+        "sha256": "65632fa146ee6cbadc1d1f820d5033e0533560a4fa73bf965bb024b787572124"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_놀람.png",
+        "bytes": 6274506,
+        "mtime_ns": 1788913336512741000,
+        "sha256": "65632fa146ee6cbadc1d1f820d5033e0533560a4fa73bf965bb024b787572124"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "윙크",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_윙크.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_윙크.png",
+      "beforeAuditSha": "3a74a8dfe533d8eee2461754c2854b3782c75cdb0777edb416044172ceb9be47",
+      "current": {
+        "bytes": 6324762,
+        "sha256": "3a74a8dfe533d8eee2461754c2854b3782c75cdb0777edb416044172ceb9be47"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_윙크.png",
+        "bytes": 6324762,
+        "mtime_ns": 1788913343418377500,
+        "sha256": "3a74a8dfe533d8eee2461754c2854b3782c75cdb0777edb416044172ceb9be47"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "졸림",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_졸림.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_졸림.png",
+      "beforeAuditSha": "e4bc60e09765f321d177f29c6ab639337d9743a13a26760f6eb771c7b05f647e",
+      "current": {
+        "bytes": 6287773,
+        "sha256": "e4bc60e09765f321d177f29c6ab639337d9743a13a26760f6eb771c7b05f647e"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_졸림.png",
+        "bytes": 6287773,
+        "mtime_ns": 1788913346347078400,
+        "sha256": "e4bc60e09765f321d177f29c6ab639337d9743a13a26760f6eb771c7b05f647e"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "으쓱",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_으쓱.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_으쓱.png",
+      "beforeAuditSha": "ef59f1fd62b6ca67a5719d9388ad01f6d00d9c354ef408654e18cec803b7cf02",
+      "current": {
+        "bytes": 6219994,
+        "sha256": "ef59f1fd62b6ca67a5719d9388ad01f6d00d9c354ef408654e18cec803b7cf02"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_으쓱.png",
+        "bytes": 6219994,
+        "mtime_ns": 1788913344388881000,
+        "sha256": "ef59f1fd62b6ca67a5719d9388ad01f6d00d9c354ef408654e18cec803b7cf02"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "민망",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_민망.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_민망.png",
+      "beforeAuditSha": "f08b2c54630215ad91834d2ca56c33c93f1124fef0b86ace371b28393925c208",
+      "current": {
+        "bytes": 6236025,
+        "sha256": "f08b2c54630215ad91834d2ca56c33c93f1124fef0b86ace371b28393925c208"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_민망.png",
+        "bytes": 6236025,
+        "mtime_ns": 1788913339479412700,
+        "sha256": "f08b2c54630215ad91834d2ca56c33c93f1124fef0b86ace371b28393925c208"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "집중",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_집중.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_집중.png",
+      "beforeAuditSha": "169128a920d3d461667ade2879e394d2392fe0719d8f48e65de5c34f375d3b66",
+      "current": {
+        "bytes": 6189147,
+        "sha256": "169128a920d3d461667ade2879e394d2392fe0719d8f48e65de5c34f375d3b66"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_집중.png",
+        "bytes": 6189147,
+        "mtime_ns": 1788913347320823000,
+        "sha256": "169128a920d3d461667ade2879e394d2392fe0719d8f48e65de5c34f375d3b66"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "응원",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_응원.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_응원.png",
+      "beforeAuditSha": "ad15c1ffe731e197978fbca294a394fcec72588525dd2400f2201a1f75b84f1b",
+      "current": {
+        "bytes": 6268269,
+        "sha256": "ad15c1ffe731e197978fbca294a394fcec72588525dd2400f2201a1f75b84f1b"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_응원.png",
+        "bytes": 6268269,
+        "mtime_ns": 1788913345372432400,
+        "sha256": "ad15c1ffe731e197978fbca294a394fcec72588525dd2400f2201a1f75b84f1b"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "감동",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_감동.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_감동.png",
+      "beforeAuditSha": "68d81174d51debbae617b5719c085a6a50dd4e9c29a2aecbcfdbba2bd3891a87",
+      "current": {
+        "bytes": 6196097,
+        "sha256": "68d81174d51debbae617b5719c085a6a50dd4e9c29a2aecbcfdbba2bd3891a87"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_감동.png",
+        "bytes": 6196097,
+        "mtime_ns": 1788913334536774000,
+        "sha256": "68d81174d51debbae617b5719c085a6a50dd4e9c29a2aecbcfdbba2bd3891a87"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "뾰로통",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_뾰로통.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_뾰로통.png",
+      "beforeAuditSha": "c8fe32f7653a9acc4d93ecb6c76d0d09f9e9f161c138eb1520412753b62410a4",
+      "current": {
+        "bytes": 6232201,
+        "sha256": "c8fe32f7653a9acc4d93ecb6c76d0d09f9e9f161c138eb1520412753b62410a4"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_뾰로통.png",
+        "bytes": 6232201,
+        "mtime_ns": 1788913341444568300,
+        "sha256": "c8fe32f7653a9acc4d93ecb6c76d0d09f9e9f161c138eb1520412753b62410a4"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "궁금함",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_궁금함.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_궁금함.png",
+      "beforeAuditSha": "cc6c7b20d5417f2039e63483fda76f64b33b20f1877c0af7b7a22c6c2d9b4b9b",
+      "current": {
+        "bytes": 6213860,
+        "sha256": "cc6c7b20d5417f2039e63483fda76f64b33b20f1877c0af7b7a22c6c2d9b4b9b"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_궁금함.png",
+        "bytes": 6213860,
+        "mtime_ns": 1788913335530259200,
+        "sha256": "cc6c7b20d5417f2039e63483fda76f64b33b20f1877c0af7b7a22c6c2d9b4b9b"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정",
+      "cut": "안도",
+      "path": "docs/Loom_자산/옷/GPT_표정/까몽_3개월출석잎망토_안도.png",
+      "relativeToOutfit": "GPT_표정/까몽_3개월출석잎망토_안도.png",
+      "beforeAuditSha": "c6e84121dc301638286eafe8ebb4d80b6935981e575784c5383a428ca0fc7d30",
+      "current": {
+        "bytes": 6200665,
+        "sha256": "c6e84121dc301638286eafe8ebb4d80b6935981e575784c5383a428ca0fc7d30"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정/까몽_3개월출석잎망토_안도.png",
+        "bytes": 6200665,
+        "mtime_ns": 1788913342442039300,
+        "sha256": "c6e84121dc301638286eafe8ebb4d80b6935981e575784c5383a428ca0fc7d30"
+      },
+      "planPack": 50,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "누끼",
+      "cut": null,
+      "path": "docs/Loom_자산/옷/GPT_누끼/까몽_3개월출석잎망토.png",
+      "relativeToOutfit": "GPT_누끼/까몽_3개월출석잎망토.png",
+      "beforeAuditSha": "2ae90f551f420434e349e715568da7209ffb27e5a0d36de6472b582781b599d7",
+      "current": {
+        "bytes": 6975804,
+        "sha256": "2ae90f551f420434e349e715568da7209ffb27e5a0d36de6472b582781b599d7"
+      },
+      "archiveManifest": {
+        "path": "GPT_누끼/까몽_3개월출석잎망토.png",
+        "bytes": 6975804,
+        "mtime_ns": 1788939983187043300,
+        "sha256": "2ae90f551f420434e349e715568da7209ffb27e5a0d36de6472b582781b599d7"
+      },
+      "planPack": 61,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "틀",
+      "cut": null,
+      "path": "docs/Loom_자산/옷/GPT_누끼_틀/까몽_3개월출석잎망토.png",
+      "relativeToOutfit": "GPT_누끼_틀/까몽_3개월출석잎망토.png",
+      "beforeAuditSha": "9c09c455a61076f4ee3cc5603f4fc8b6649e7a2f41cbd32c40602837339f48c2",
+      "current": {
+        "bytes": 10596950,
+        "sha256": "9c09c455a61076f4ee3cc5603f4fc8b6649e7a2f41cbd32c40602837339f48c2"
+      },
+      "archiveManifest": {
+        "path": "GPT_누끼_틀/까몽_3개월출석잎망토.png",
+        "bytes": 10596950,
+        "mtime_ns": 1788864125901642000,
+        "sha256": "9c09c455a61076f4ee3cc5603f4fc8b6649e7a2f41cbd32c40602837339f48c2"
+      },
+      "planPack": 62,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "본체",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_본체.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_본체.png",
+      "beforeAuditSha": "5264c1b6b10ba3c94930a922d9d68947b82e79299dab6523757cc753752e1eda",
+      "current": {
+        "bytes": 7004630,
+        "sha256": "5264c1b6b10ba3c94930a922d9d68947b82e79299dab6523757cc753752e1eda"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_본체.png",
+        "bytes": 7004630,
+        "mtime_ns": 1788915655325176800,
+        "sha256": "5264c1b6b10ba3c94930a922d9d68947b82e79299dab6523757cc753752e1eda"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "눈감음",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_눈감음.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_눈감음.png",
+      "beforeAuditSha": "e860f504e2a9adc80e8a55cb2b23b5548890a453bca40f4536263609870212d6",
+      "current": {
+        "bytes": 7092809,
+        "sha256": "e860f504e2a9adc80e8a55cb2b23b5548890a453bca40f4536263609870212d6"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_눈감음.png",
+        "bytes": 7092809,
+        "mtime_ns": 1788915651875252700,
+        "sha256": "e860f504e2a9adc80e8a55cb2b23b5548890a453bca40f4536263609870212d6"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "눈웃음",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_눈웃음.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_눈웃음.png",
+      "beforeAuditSha": "f432bce295a80d3f2d5530d48d655322cbd354150357fec66503ef87c09e7706",
+      "current": {
+        "bytes": 7096992,
+        "sha256": "f432bce295a80d3f2d5530d48d655322cbd354150357fec66503ef87c09e7706"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_눈웃음.png",
+        "bytes": 7096992,
+        "mtime_ns": 1788915653125582800,
+        "sha256": "f432bce295a80d3f2d5530d48d655322cbd354150357fec66503ef87c09e7706"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "놀람",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_놀람.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_놀람.png",
+      "beforeAuditSha": "82b8e7641751d0a15010b58763bafa8aadba455183f826e7b88f3c76a97d9634",
+      "current": {
+        "bytes": 7101310,
+        "sha256": "82b8e7641751d0a15010b58763bafa8aadba455183f826e7b88f3c76a97d9634"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_놀람.png",
+        "bytes": 7101310,
+        "mtime_ns": 1788915650765966600,
+        "sha256": "82b8e7641751d0a15010b58763bafa8aadba455183f826e7b88f3c76a97d9634"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "윙크",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_윙크.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_윙크.png",
+      "beforeAuditSha": "6ac79151b34bd1f942a0b63622c0b0d7c2488a175dcd644985fa7add3c724669",
+      "current": {
+        "bytes": 7149346,
+        "sha256": "6ac79151b34bd1f942a0b63622c0b0d7c2488a175dcd644985fa7add3c724669"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_윙크.png",
+        "bytes": 7149346,
+        "mtime_ns": 1788915658626506200,
+        "sha256": "6ac79151b34bd1f942a0b63622c0b0d7c2488a175dcd644985fa7add3c724669"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "졸림",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_졸림.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_졸림.png",
+      "beforeAuditSha": "0ce1d32b3c1efc92313d57f8517c0a43681b7a93b82444205e8c8e9e3f2f0079",
+      "current": {
+        "bytes": 7116104,
+        "sha256": "0ce1d32b3c1efc92313d57f8517c0a43681b7a93b82444205e8c8e9e3f2f0079"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_졸림.png",
+        "bytes": 7116104,
+        "mtime_ns": 1788915661924456000,
+        "sha256": "0ce1d32b3c1efc92313d57f8517c0a43681b7a93b82444205e8c8e9e3f2f0079"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "으쓱",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_으쓱.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_으쓱.png",
+      "beforeAuditSha": "4d7f3283a5c7223c760be96723aa54fbdaca4e56dda24cf027bb21bef13838d4",
+      "current": {
+        "bytes": 7042773,
+        "sha256": "4d7f3283a5c7223c760be96723aa54fbdaca4e56dda24cf027bb21bef13838d4"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_으쓱.png",
+        "bytes": 7042773,
+        "mtime_ns": 1788915659728189700,
+        "sha256": "4d7f3283a5c7223c760be96723aa54fbdaca4e56dda24cf027bb21bef13838d4"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "민망",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_민망.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_민망.png",
+      "beforeAuditSha": "f589fcf8b689fcf96ec5dabe843082589016e44d72c817a146b37999ea0f45d9",
+      "current": {
+        "bytes": 7059390,
+        "sha256": "f589fcf8b689fcf96ec5dabe843082589016e44d72c817a146b37999ea0f45d9"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_민망.png",
+        "bytes": 7059390,
+        "mtime_ns": 1788915654227084300,
+        "sha256": "f589fcf8b689fcf96ec5dabe843082589016e44d72c817a146b37999ea0f45d9"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "집중",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_집중.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_집중.png",
+      "beforeAuditSha": "44d71e2c04581b089f7ad0dd98a298686d7ccf05063186eef8a3f3aeb19b8194",
+      "current": {
+        "bytes": 7008276,
+        "sha256": "44d71e2c04581b089f7ad0dd98a298686d7ccf05063186eef8a3f3aeb19b8194"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_집중.png",
+        "bytes": 7008276,
+        "mtime_ns": 1788915663025527800,
+        "sha256": "44d71e2c04581b089f7ad0dd98a298686d7ccf05063186eef8a3f3aeb19b8194"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "응원",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_응원.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_응원.png",
+      "beforeAuditSha": "4d4b2c6d272cc56a1538914c6ccf3bc90b488594d36a00b1e72750a074983304",
+      "current": {
+        "bytes": 7095640,
+        "sha256": "4d4b2c6d272cc56a1538914c6ccf3bc90b488594d36a00b1e72750a074983304"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_응원.png",
+        "bytes": 7095640,
+        "mtime_ns": 1788915660834167600,
+        "sha256": "4d4b2c6d272cc56a1538914c6ccf3bc90b488594d36a00b1e72750a074983304"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "감동",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_감동.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_감동.png",
+      "beforeAuditSha": "bf1e1af3eb26f86cadbe5e6532b01f0eb4d756670793f9e63d6be3cf417bd01c",
+      "current": {
+        "bytes": 7015054,
+        "sha256": "bf1e1af3eb26f86cadbe5e6532b01f0eb4d756670793f9e63d6be3cf417bd01c"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_감동.png",
+        "bytes": 7015054,
+        "mtime_ns": 1788915648514162400,
+        "sha256": "bf1e1af3eb26f86cadbe5e6532b01f0eb4d756670793f9e63d6be3cf417bd01c"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "뾰로통",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_뾰로통.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_뾰로통.png",
+      "beforeAuditSha": "f06578ae1844b38bbe165421f22603267abfccd71e884d417e6d62d4f8d4e5d3",
+      "current": {
+        "bytes": 7059113,
+        "sha256": "f06578ae1844b38bbe165421f22603267abfccd71e884d417e6d62d4f8d4e5d3"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_뾰로통.png",
+        "bytes": 7059113,
+        "mtime_ns": 1788915656416545500,
+        "sha256": "f06578ae1844b38bbe165421f22603267abfccd71e884d417e6d62d4f8d4e5d3"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "궁금함",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_궁금함.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_궁금함.png",
+      "beforeAuditSha": "694dbe24c995080565527037a84e96dfb4f0ab965f4ab2aab9989e8b02a87068",
+      "current": {
+        "bytes": 7037216,
+        "sha256": "694dbe24c995080565527037a84e96dfb4f0ab965f4ab2aab9989e8b02a87068"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_궁금함.png",
+        "bytes": 7037216,
+        "mtime_ns": 1788915649648458000,
+        "sha256": "694dbe24c995080565527037a84e96dfb4f0ab965f4ab2aab9989e8b02a87068"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정누끼",
+      "cut": "안도",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_안도.png",
+      "relativeToOutfit": "GPT_표정_누끼/까몽_3개월출석잎망토_안도.png",
+      "beforeAuditSha": "5bcd28ee44b74ef190d939bc8da9caeda7350c21f9e53c679ef99437021cc62d",
+      "current": {
+        "bytes": 7022052,
+        "sha256": "5bcd28ee44b74ef190d939bc8da9caeda7350c21f9e53c679ef99437021cc62d"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼/까몽_3개월출석잎망토_안도.png",
+        "bytes": 7022052,
+        "mtime_ns": 1788915657517557500,
+        "sha256": "5bcd28ee44b74ef190d939bc8da9caeda7350c21f9e53c679ef99437021cc62d"
+      },
+      "planPack": 37,
+      "keptLocal": false,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "표정틀",
+      "cut": "본체",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_본체.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_본체.png",
+      "beforeAuditSha": "aeb9bc1c9bc3bf9a3eb462b9604f6609ce3951daed70d0737aee43462729ed54",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_본체.png",
+        "bytes": 10526633,
+        "mtime_ns": 1788916590979604000,
+        "sha256": "aeb9bc1c9bc3bf9a3eb462b9604f6609ce3951daed70d0737aee43462729ed54"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "aeb9bc1c9bc3bf9a3eb462b9604f6609ce3951daed70d0737aee43462729ed54"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "눈감음",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_눈감음.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_눈감음.png",
+      "beforeAuditSha": "ea5c235c48b2ca7c03f8ef77df1e5dd7f569f1375ad474c591670f637d944d6d",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_눈감음.png",
+        "bytes": 10685967,
+        "mtime_ns": 1788916586590589400,
+        "sha256": "ea5c235c48b2ca7c03f8ef77df1e5dd7f569f1375ad474c591670f637d944d6d"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "ea5c235c48b2ca7c03f8ef77df1e5dd7f569f1375ad474c591670f637d944d6d"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "눈웃음",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_눈웃음.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_눈웃음.png",
+      "beforeAuditSha": "9ae0a4edda015ce53b83fe3cc55b8778e3a69c4b6f5843352d16a0f1e9cab0b7",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_눈웃음.png",
+        "bytes": 10695244,
+        "mtime_ns": 1788916588050736600,
+        "sha256": "9ae0a4edda015ce53b83fe3cc55b8778e3a69c4b6f5843352d16a0f1e9cab0b7"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "9ae0a4edda015ce53b83fe3cc55b8778e3a69c4b6f5843352d16a0f1e9cab0b7"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "놀람",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_놀람.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_놀람.png",
+      "beforeAuditSha": "fb0449172d0d58b06b50f87be0a3f4b9e78b7a4cd58d765048566620f7e17473",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_놀람.png",
+        "bytes": 10706485,
+        "mtime_ns": 1788916585077144300,
+        "sha256": "fb0449172d0d58b06b50f87be0a3f4b9e78b7a4cd58d765048566620f7e17473"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "fb0449172d0d58b06b50f87be0a3f4b9e78b7a4cd58d765048566620f7e17473"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "윙크",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_윙크.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_윙크.png",
+      "beforeAuditSha": "0de59a44a1f68b06febaebc06586178f44df310974171306f37ba091ac61cbe6",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_윙크.png",
+        "bytes": 10805697,
+        "mtime_ns": 1788916595409285000,
+        "sha256": "0de59a44a1f68b06febaebc06586178f44df310974171306f37ba091ac61cbe6"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "0de59a44a1f68b06febaebc06586178f44df310974171306f37ba091ac61cbe6"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "졸림",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_졸림.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_졸림.png",
+      "beforeAuditSha": "40a16e9f0c143aea6aeb0cba0a25f6b793fe4e2f38f784c96876f37e22fbe727",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_졸림.png",
+        "bytes": 10733597,
+        "mtime_ns": 1788916599804841200,
+        "sha256": "40a16e9f0c143aea6aeb0cba0a25f6b793fe4e2f38f784c96876f37e22fbe727"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "40a16e9f0c143aea6aeb0cba0a25f6b793fe4e2f38f784c96876f37e22fbe727"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "으쓱",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_으쓱.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_으쓱.png",
+      "beforeAuditSha": "d06e418197a5722666962c2079a36f571ce7febe8e63705ca797ddba4f098bdb",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_으쓱.png",
+        "bytes": 10593118,
+        "mtime_ns": 1788916596909226500,
+        "sha256": "d06e418197a5722666962c2079a36f571ce7febe8e63705ca797ddba4f098bdb"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "d06e418197a5722666962c2079a36f571ce7febe8e63705ca797ddba4f098bdb"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "민망",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_민망.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_민망.png",
+      "beforeAuditSha": "06a4df34927a82f7568c7ddfd707024e6fe3c8a8a87f3b1af62b2c163d111bbd",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_민망.png",
+        "bytes": 10624326,
+        "mtime_ns": 1788916589510314500,
+        "sha256": "06a4df34927a82f7568c7ddfd707024e6fe3c8a8a87f3b1af62b2c163d111bbd"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "06a4df34927a82f7568c7ddfd707024e6fe3c8a8a87f3b1af62b2c163d111bbd"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "집중",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_집중.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_집중.png",
+      "beforeAuditSha": "90327d26da51ba40b3f34b818b3430732aaea9e14d9ae29008a297b3330dc382",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_집중.png",
+        "bytes": 10528713,
+        "mtime_ns": 1788916601319765800,
+        "sha256": "90327d26da51ba40b3f34b818b3430732aaea9e14d9ae29008a297b3330dc382"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "90327d26da51ba40b3f34b818b3430732aaea9e14d9ae29008a297b3330dc382"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "응원",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_응원.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_응원.png",
+      "beforeAuditSha": "8bc5522c87ce1d512ef18fb8196f7e5201423e098a3a990c5da21a84b6db64ec",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_응원.png",
+        "bytes": 10689638,
+        "mtime_ns": 1788916598356820500,
+        "sha256": "8bc5522c87ce1d512ef18fb8196f7e5201423e098a3a990c5da21a84b6db64ec"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "8bc5522c87ce1d512ef18fb8196f7e5201423e098a3a990c5da21a84b6db64ec"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "감동",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_감동.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_감동.png",
+      "beforeAuditSha": "0b4edd13e958059bc90f31d0ff5e845763d689aa18682b55b7647d54b8081b64",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_감동.png",
+        "bytes": 10540474,
+        "mtime_ns": 1788916582172482300,
+        "sha256": "0b4edd13e958059bc90f31d0ff5e845763d689aa18682b55b7647d54b8081b64"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "0b4edd13e958059bc90f31d0ff5e845763d689aa18682b55b7647d54b8081b64"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "뾰로통",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_뾰로통.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_뾰로통.png",
+      "beforeAuditSha": "3d9b3b8b8136b21ded016e03a43770e857ee410ca2688870f4fc086118e333a8",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_뾰로통.png",
+        "bytes": 10619324,
+        "mtime_ns": 1788916592447946800,
+        "sha256": "3d9b3b8b8136b21ded016e03a43770e857ee410ca2688870f4fc086118e333a8"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "3d9b3b8b8136b21ded016e03a43770e857ee410ca2688870f4fc086118e333a8"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "궁금함",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_궁금함.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_궁금함.png",
+      "beforeAuditSha": "a16eda0f968e28a096fde0b03ace6f3d6cc94916d689d98436740eb79c431d1c",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_궁금함.png",
+        "bytes": 10579167,
+        "mtime_ns": 1788916583652283000,
+        "sha256": "a16eda0f968e28a096fde0b03ace6f3d6cc94916d689d98436740eb79c431d1c"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "a16eda0f968e28a096fde0b03ace6f3d6cc94916d689d98436740eb79c431d1c"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "표정틀",
+      "cut": "안도",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀/까몽_3개월출석잎망토_안도.png",
+      "relativeToOutfit": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_안도.png",
+      "beforeAuditSha": "8a9e6429bc072f5ab2d9d19caddee71e2c6f58a682af2be850c3155c52a6884a",
+      "current": null,
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀/까몽_3개월출석잎망토_안도.png",
+        "bytes": 10551443,
+        "mtime_ns": 1788916593960364500,
+        "sha256": "8a9e6429bc072f5ab2d9d19caddee71e2c6f58a682af2be850c3155c52a6884a"
+      },
+      "planPack": 5,
+      "keptLocal": false,
+      "packReceipt": {
+        "path": "docs/_ops/마스코트_Drive이관_20260910/mascot-0005.json",
+        "archive": "mascot-0005.zip",
+        "sha256": "67c7564b84dffb6a660c81e4d8de2932d102aa3377a35eaea3ec5b86ebcc71a3",
+        "memberSha": "8a9e6429bc072f5ab2d9d19caddee71e2c6f58a682af2be850c3155c52a6884a"
+      },
+      "remoteVerifiedRecorded": true,
+      "reclaimedRecorded": true,
+      "currentSameAsBefore": null,
+      "currentSameAsArchiveManifest": null,
+      "archivedSameAsBefore": true
+    },
+    {
+      "stage": "앱",
+      "cut": "본체",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_본체.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_본체.avif",
+      "beforeAuditSha": "248b9ac379615ef00989d381cba932b8c9f301267c2a611ad65783bed15449a9",
+      "current": {
+        "bytes": 441117,
+        "sha256": "248b9ac379615ef00989d381cba932b8c9f301267c2a611ad65783bed15449a9"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_본체.avif",
+        "bytes": 441117,
+        "mtime_ns": 1788940275236166700,
+        "sha256": "248b9ac379615ef00989d381cba932b8c9f301267c2a611ad65783bed15449a9"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "눈감음",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_눈감음.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_눈감음.avif",
+      "beforeAuditSha": "c290da2ca764bb99356c0a598891ccb87e46dd45512f641c2d50e60b9defeb4b",
+      "current": {
+        "bytes": 456215,
+        "sha256": "c290da2ca764bb99356c0a598891ccb87e46dd45512f641c2d50e60b9defeb4b"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_눈감음.avif",
+        "bytes": 456215,
+        "mtime_ns": 1788940271802087200,
+        "sha256": "c290da2ca764bb99356c0a598891ccb87e46dd45512f641c2d50e60b9defeb4b"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "눈웃음",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_눈웃음.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_눈웃음.avif",
+      "beforeAuditSha": "7a33c55e5f2c483fee3bb940bb4c528d7472470c0f06342b1ff34a81e115abdf",
+      "current": {
+        "bytes": 459332,
+        "sha256": "7a33c55e5f2c483fee3bb940bb4c528d7472470c0f06342b1ff34a81e115abdf"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_눈웃음.avif",
+        "bytes": 459332,
+        "mtime_ns": 1788940272929247000,
+        "sha256": "7a33c55e5f2c483fee3bb940bb4c528d7472470c0f06342b1ff34a81e115abdf"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "놀람",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_놀람.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_놀람.avif",
+      "beforeAuditSha": "a347e71dd5910571c8273f0d84beac92ab427395825ecb7524e109babbf4db6e",
+      "current": {
+        "bytes": 460849,
+        "sha256": "a347e71dd5910571c8273f0d84beac92ab427395825ecb7524e109babbf4db6e"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_놀람.avif",
+        "bytes": 460849,
+        "mtime_ns": 1788940270738012700,
+        "sha256": "a347e71dd5910571c8273f0d84beac92ab427395825ecb7524e109babbf4db6e"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "윙크",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_윙크.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_윙크.avif",
+      "beforeAuditSha": "5f555cad76c2449fa822942c1b128971ab3df3c05f5d3ff52a17c1f84f3ac64d",
+      "current": {
+        "bytes": 472799,
+        "sha256": "5f555cad76c2449fa822942c1b128971ab3df3c05f5d3ff52a17c1f84f3ac64d"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_윙크.avif",
+        "bytes": 472799,
+        "mtime_ns": 1788940278972270800,
+        "sha256": "5f555cad76c2449fa822942c1b128971ab3df3c05f5d3ff52a17c1f84f3ac64d"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "졸림",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_졸림.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_졸림.avif",
+      "beforeAuditSha": "7fa7c99dfa55a06df5290d7964feed05156e4bd9a7e9a1f5036e3772953f993b",
+      "current": {
+        "bytes": 462264,
+        "sha256": "7fa7c99dfa55a06df5290d7964feed05156e4bd9a7e9a1f5036e3772953f993b"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_졸림.avif",
+        "bytes": 462264,
+        "mtime_ns": 1788940282397605600,
+        "sha256": "7fa7c99dfa55a06df5290d7964feed05156e4bd9a7e9a1f5036e3772953f993b"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "으쓱",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_으쓱.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_으쓱.avif",
+      "beforeAuditSha": "b29816409a30f852627b62344306896300d31d84fce8520716e77c7ffd3f1702",
+      "current": {
+        "bytes": 445908,
+        "sha256": "b29816409a30f852627b62344306896300d31d84fce8520716e77c7ffd3f1702"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_으쓱.avif",
+        "bytes": 445908,
+        "mtime_ns": 1788940280062631400,
+        "sha256": "b29816409a30f852627b62344306896300d31d84fce8520716e77c7ffd3f1702"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "민망",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_민망.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_민망.avif",
+      "beforeAuditSha": "8faac49112b0fd9173aba19adfe8c26a1ef042204d2488086f7f9cf8efebba1e",
+      "current": {
+        "bytes": 451136,
+        "sha256": "8faac49112b0fd9173aba19adfe8c26a1ef042204d2488086f7f9cf8efebba1e"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_민망.avif",
+        "bytes": 451136,
+        "mtime_ns": 1788940274094491100,
+        "sha256": "8faac49112b0fd9173aba19adfe8c26a1ef042204d2488086f7f9cf8efebba1e"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "집중",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_집중.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_집중.avif",
+      "beforeAuditSha": "a395ff8171dedc3324afee53cb5c9e124b361617c9d8d4a44730bb6d697cc875",
+      "current": {
+        "bytes": 437804,
+        "sha256": "a395ff8171dedc3324afee53cb5c9e124b361617c9d8d4a44730bb6d697cc875"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_집중.avif",
+        "bytes": 437804,
+        "mtime_ns": 1788940283585179100,
+        "sha256": "a395ff8171dedc3324afee53cb5c9e124b361617c9d8d4a44730bb6d697cc875"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "응원",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_응원.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_응원.avif",
+      "beforeAuditSha": "9ff49cc7b956310de8ea6b617f6e1d2969604321e7573c802218282f60c2b882",
+      "current": {
+        "bytes": 459849,
+        "sha256": "9ff49cc7b956310de8ea6b617f6e1d2969604321e7573c802218282f60c2b882"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_응원.avif",
+        "bytes": 459849,
+        "mtime_ns": 1788940281212267000,
+        "sha256": "9ff49cc7b956310de8ea6b617f6e1d2969604321e7573c802218282f60c2b882"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "감동",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_감동.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_감동.avif",
+      "beforeAuditSha": "36f1a78772fa3b5b9c02eda13c9788866ec1afa98baac04a4c903868d25a4644",
+      "current": {
+        "bytes": 439714,
+        "sha256": "36f1a78772fa3b5b9c02eda13c9788866ec1afa98baac04a4c903868d25a4644"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_감동.avif",
+        "bytes": 439714,
+        "mtime_ns": 1788940268638747100,
+        "sha256": "36f1a78772fa3b5b9c02eda13c9788866ec1afa98baac04a4c903868d25a4644"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "뾰로통",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_뾰로통.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_뾰로통.avif",
+      "beforeAuditSha": "e7aaae74478b4b0da4761345863d3e04ba6f6d61ccc7920645b7a4ed2a265d30",
+      "current": {
+        "bytes": 449939,
+        "sha256": "e7aaae74478b4b0da4761345863d3e04ba6f6d61ccc7920645b7a4ed2a265d30"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_뾰로통.avif",
+        "bytes": 449939,
+        "mtime_ns": 1788940276531314200,
+        "sha256": "e7aaae74478b4b0da4761345863d3e04ba6f6d61ccc7920645b7a4ed2a265d30"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "궁금함",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_궁금함.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_궁금함.avif",
+      "beforeAuditSha": "662cf992fd4147997b6088a71ed587f617035157968a03ca8194aa5e563e5950",
+      "current": {
+        "bytes": 444318,
+        "sha256": "662cf992fd4147997b6088a71ed587f617035157968a03ca8194aa5e563e5950"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_궁금함.avif",
+        "bytes": 444318,
+        "mtime_ns": 1788940269658455300,
+        "sha256": "662cf992fd4147997b6088a71ed587f617035157968a03ca8194aa5e563e5950"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱",
+      "cut": "안도",
+      "path": "docs/Loom_자산/옷/GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_안도.avif",
+      "relativeToOutfit": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_안도.avif",
+      "beforeAuditSha": "82653f7d1f711fd0436325e86626f858ae4b2d84c849d16c002198a5b0d8c2e5",
+      "current": {
+        "bytes": 440659,
+        "sha256": "82653f7d1f711fd0436325e86626f858ae4b2d84c849d16c002198a5b0d8c2e5"
+      },
+      "archiveManifest": {
+        "path": "GPT_표정_누끼_틀_avif/까몽_3개월출석잎망토_안도.avif",
+        "bytes": 440659,
+        "mtime_ns": 1788940277858190000,
+        "sha256": "82653f7d1f711fd0436325e86626f858ae4b2d84c849d16c002198a5b0d8c2e5"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    },
+    {
+      "stage": "앱옷만",
+      "cut": null,
+      "path": "docs/Loom_자산/옷/GPT_누끼_틀_avif/까몽_3개월출석잎망토.avif",
+      "relativeToOutfit": "GPT_누끼_틀_avif/까몽_3개월출석잎망토.avif",
+      "beforeAuditSha": "ade0cb2b7b55d5383d4faa3be9860d559bb7162203ad05ebf8fa6cae84055b8e",
+      "current": {
+        "bytes": 475971,
+        "sha256": "ade0cb2b7b55d5383d4faa3be9860d559bb7162203ad05ebf8fa6cae84055b8e"
+      },
+      "archiveManifest": {
+        "path": "GPT_누끼_틀_avif/까몽_3개월출석잎망토.avif",
+        "bytes": 475971,
+        "mtime_ns": 1788866813470939000,
+        "sha256": "ade0cb2b7b55d5383d4faa3be9860d559bb7162203ad05ebf8fa6cae84055b8e"
+      },
+      "planPack": null,
+      "keptLocal": true,
+      "packReceipt": null,
+      "remoteVerifiedRecorded": false,
+      "reclaimedRecorded": false,
+      "currentSameAsBefore": true,
+      "currentSameAsArchiveManifest": true,
+      "archivedSameAsBefore": null
+    }
+  ],
+  "radio": [
+    {
+      "cut": "본체",
+      "path": "docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_본체.webp",
+      "currentSha": "48823c235151fb0d7859883205f7f6c3bd2040ebfe6b1f85631186b7563379c6",
+      "recordSha": "48823c235151fb0d7859883205f7f6c3bd2040ebfe6b1f85631186b7563379c6",
+      "matchesRecord": true,
+      "input": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_본체.png",
+      "inputSha": "5264c1b6b10ba3c94930a922d9d68947b82e79299dab6523757cc753752e1eda",
+      "inputMatchesRecord": true,
+      "beforeAuditSha": "48823c235151fb0d7859883205f7f6c3bd2040ebfe6b1f85631186b7563379c6",
+      "unchangedSinceEarlierAudit": true
+    },
+    {
+      "cut": "눈감음",
+      "path": "docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_눈감음.webp",
+      "currentSha": "436c24010671a233570f709d9f2c6cacefb2f10afe5bce8d5eac3f4392121e18",
+      "recordSha": "436c24010671a233570f709d9f2c6cacefb2f10afe5bce8d5eac3f4392121e18",
+      "matchesRecord": true,
+      "input": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_눈감음.png",
+      "inputSha": "e860f504e2a9adc80e8a55cb2b23b5548890a453bca40f4536263609870212d6",
+      "inputMatchesRecord": true,
+      "beforeAuditSha": "436c24010671a233570f709d9f2c6cacefb2f10afe5bce8d5eac3f4392121e18",
+      "unchangedSinceEarlierAudit": true
+    },
+    {
+      "cut": "눈웃음",
+      "path": "docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_눈웃음.webp",
+      "currentSha": "90f05a2d1b99299f0ef1989dbab49ca7e0414f77da2ea871b99e9e55b6fc0f5e",
+      "recordSha": "90f05a2d1b99299f0ef1989dbab49ca7e0414f77da2ea871b99e9e55b6fc0f5e",
+      "matchesRecord": true,
+      "input": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_눈웃음.png",
+      "inputSha": "f432bce295a80d3f2d5530d48d655322cbd354150357fec66503ef87c09e7706",
+      "inputMatchesRecord": true,
+      "beforeAuditSha": "90f05a2d1b99299f0ef1989dbab49ca7e0414f77da2ea871b99e9e55b6fc0f5e",
+      "unchangedSinceEarlierAudit": true
+    },
+    {
+      "cut": "궁금함",
+      "path": "docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_궁금함.webp",
+      "currentSha": "23ca9d21a0aa751a1efc14b8693430fdd9b5947300bea3d0b5e64e8d307cd3b0",
+      "recordSha": "23ca9d21a0aa751a1efc14b8693430fdd9b5947300bea3d0b5e64e8d307cd3b0",
+      "matchesRecord": true,
+      "input": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_궁금함.png",
+      "inputSha": "694dbe24c995080565527037a84e96dfb4f0ab965f4ab2aab9989e8b02a87068",
+      "inputMatchesRecord": true,
+      "beforeAuditSha": "23ca9d21a0aa751a1efc14b8693430fdd9b5947300bea3d0b5e64e8d307cd3b0",
+      "unchangedSinceEarlierAudit": true
+    },
+    {
+      "cut": "집중",
+      "path": "docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_집중.webp",
+      "currentSha": "24385eab7978b6b88d095871bc309f92a0b7932664879f368a247c4734ae5e91",
+      "recordSha": "24385eab7978b6b88d095871bc309f92a0b7932664879f368a247c4734ae5e91",
+      "matchesRecord": true,
+      "input": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_집중.png",
+      "inputSha": "44d71e2c04581b089f7ad0dd98a298686d7ccf05063186eef8a3f3aeb19b8194",
+      "inputMatchesRecord": true,
+      "beforeAuditSha": "24385eab7978b6b88d095871bc309f92a0b7932664879f368a247c4734ae5e91",
+      "unchangedSinceEarlierAudit": true
+    },
+    {
+      "cut": "안도",
+      "path": "docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_안도.webp",
+      "currentSha": "da6b258a4d2e3a30b5808da7c38430e52d37ed3c23895f7ee0a600efb2dee16e",
+      "recordSha": "da6b258a4d2e3a30b5808da7c38430e52d37ed3c23895f7ee0a600efb2dee16e",
+      "matchesRecord": true,
+      "input": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_안도.png",
+      "inputSha": "5bcd28ee44b74ef190d939bc8da9caeda7350c21f9e53c679ef99437021cc62d",
+      "inputMatchesRecord": true,
+      "beforeAuditSha": "da6b258a4d2e3a30b5808da7c38430e52d37ed3c23895f7ee0a600efb2dee16e",
+      "unchangedSinceEarlierAudit": true
+    },
+    {
+      "cut": "응원",
+      "path": "docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_응원.webp",
+      "currentSha": "d23ccf243cb20e2b6dccf2d68faac75c97777ae0ff7f9298f275a41d4d81c3f7",
+      "recordSha": "d23ccf243cb20e2b6dccf2d68faac75c97777ae0ff7f9298f275a41d4d81c3f7",
+      "matchesRecord": true,
+      "input": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_응원.png",
+      "inputSha": "4d4b2c6d272cc56a1538914c6ccf3bc90b488594d36a00b1e72750a074983304",
+      "inputMatchesRecord": true,
+      "beforeAuditSha": "d23ccf243cb20e2b6dccf2d68faac75c97777ae0ff7f9298f275a41d4d81c3f7",
+      "unchangedSinceEarlierAudit": true
+    },
+    {
+      "cut": "놀람",
+      "path": "docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_놀람.webp",
+      "currentSha": "a514a1feb952f4d6dc0c87aa1ebf1bc5f0c34a4c4e2e28e34a22b0f52960f637",
+      "recordSha": "a514a1feb952f4d6dc0c87aa1ebf1bc5f0c34a4c4e2e28e34a22b0f52960f637",
+      "matchesRecord": true,
+      "input": "docs/Loom_자산/옷/GPT_표정_누끼/까몽_3개월출석잎망토_놀람.png",
+      "inputSha": "82b8e7641751d0a15010b58763bafa8aadba455183f826e7b88f3c76a97d9634",
+      "inputMatchesRecord": true,
+      "beforeAuditSha": "a514a1feb952f4d6dc0c87aa1ebf1bc5f0c34a4c4e2e28e34a22b0f52960f637",
+      "unchangedSinceEarlierAudit": true
+    }
+  ],
+  "extra": [
+    {
+      "path": "docs/라디오/선정무대_20260910/정수리수정/source-before-4f1481c2ecb2.png",
+      "exists": true,
+      "bytes": 6724227,
+      "sha256": "4f1481c2ecb224e115f2f53a5760cbbb617b7d5d65dc0eaffcc242147c5b380b"
+    },
+    {
+      "path": "docs/라디오/선정무대_20260910/라이브13/leaf-base-48823c235151.webp",
+      "exists": true,
+      "bytes": 535586,
+      "sha256": "48823c235151fb0d7859883205f7f6c3bd2040ebfe6b1f85631186b7563379c6"
+    },
+    {
+      "path": "docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png",
+      "exists": true,
+      "bytes": 1176159,
+      "sha256": "514d7886949ba0c139464be7b76215bce72edb7e575977912724963fda73324d"
+    }
+  ],
+  "totals": {
+    "stages": 60,
+    "localStageFiles": 46,
+    "missingStageFiles": 14,
+    "changedSinceEarlierAudit": [
+      "docs/Loom_자산/옷/GPT/까몽_3개월출석잎망토.png"
+    ],
+    "receiptMembers": 14,
+    "remoteVerifiedRecordedMembers": 14,
+    "reclaimedRecordedMembers": 14,
+    "planOnlyMembers": 31,
+    "keptLocalMembers": 15,
+    "radioUnchanged": 8
+  },
+  "originalHashSearch": [
+    {
+      "sha256": "4f1481c2ecb224e115f2f53a5760cbbb617b7d5d65dc0eaffcc242147c5b380b",
+      "manifestMatches": [],
+      "planMatches": [],
+      "priorInventoryMatches": [
+        "docs/Loom_자산/옷/GPT/까몽_3개월출석잎망토.png"
+      ]
+    },
+    {
+      "sha256": "3e9ecc50a6c972f528baffdc2bac55b647843fbb4e0a541552e606e997e4dbf3",
+      "manifestMatches": [
+        {
+          "path": "GPT/까몽_3개월출석잎망토.png",
+          "bytes": 5961697,
+          "mtime_ns": 1788982657857697800,
+          "sha256": "3e9ecc50a6c972f528baffdc2bac55b647843fbb4e0a541552e606e997e4dbf3"
+        }
+      ],
+      "planMatches": [
+        {
+          "number": 60,
+          "path": "GPT/까몽_3개월출석잎망토.png"
+        }
+      ],
+      "priorInventoryMatches": []
+    }
+  ]
+}

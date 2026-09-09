@@ -1,0 +1,13 @@
+{
+  "atUTC": "2026-09-09T21:03:53.035Z",
+  "scope": "YouTube official API only, not public player video or audio playback",
+  "streams": [
+    {
+      "state": "active",
+      "health": "good"
+    }
+  ],
+  "liveBroadcastCount": 1,
+  "publicLiveBroadcastCount": 1,
+  "configurationIssueCount": 0
+}

@@ -1,0 +1,124 @@
+{
+  "atUTC": "2026-09-09T21:02:51.733Z",
+  "readOnly": true,
+  "hashes": [
+    {
+      "kind": "html",
+      "sha256": "e305734b3a479d6402c7c7c2ad216362586ecb71749cc8740ee8c85455a3146d",
+      "expectedMatches": true
+    },
+    {
+      "kind": "helper",
+      "sha256": "06fdc6100afca914845cc53d3eb8dd6fca068460e367d7196f1cd0f629f74852",
+      "expectedMatches": true
+    },
+    {
+      "kind": "leaf",
+      "sha256": "514d7886949ba0c139464be7b76215bce72edb7e575977912724963fda73324d",
+      "expectedMatches": true
+    },
+    {
+      "kind": "stage",
+      "sha256": "986177a55b4bb21ae4d82c483f1c66a92e14d2e48d7a441a7ab76bd0f7e98a65",
+      "expectedMatches": true
+    },
+    {
+      "kind": "audio",
+      "sha256": "c9295db33abc8609bda2cdbc885dfce563b52cb6cc6a9db49f7ec276bf931f45",
+      "expectedMatches": true
+    },
+    {
+      "kind": "playlist",
+      "sha256": "374e9ce2cc0d6f81928c5639cf69ed0abb9252f2d9f8c2025a24ad330a0bee5c",
+      "expectedMatches": true
+    },
+    {
+      "kind": "stageList",
+      "sha256": "19552c7713584218a93a1e72b7b8f20f57d034ad453ea3394159d8176c9885bc",
+      "expectedMatches": true
+    }
+  ],
+  "service": {
+    "mainPid": 157610,
+    "automaticRestarts": 1,
+    "activeState": "active",
+    "subState": "running",
+    "startedUTC": "Wed 2026-09-09 19:40:01 UTC",
+    "uptimeSeconds": 4969
+  },
+  "ffmpegPid": 157744,
+  "opened": [
+    "expected-audio",
+    "expected-stage"
+  ],
+  "tcp": [
+    {
+      "state": "ESTAB",
+      "recvQueue": 0,
+      "sendQueue": 5611,
+      "bytesSent": 1711659690,
+      "bytesAcked": 1710633862
+    }
+  ],
+  "journalSinceUTC": "2026-09-09T18:00:00Z",
+  "stallCount": 4,
+  "lastStall": {
+    "atUTC": "2026-09-09T19:39:56.312Z",
+    "stalledSeconds": 35,
+    "outTime": "00:02:49.227000"
+  },
+  "stalls": [
+    {
+      "atUTC": "2026-09-09T18:16:53.763Z",
+      "stalledSeconds": 38,
+      "outTime": "00:01:05.248000"
+    },
+    {
+      "atUTC": "2026-09-09T18:20:13.897Z",
+      "stalledSeconds": 39,
+      "outTime": "00:02:24.359000"
+    },
+    {
+      "atUTC": "2026-09-09T19:16:58.106Z",
+      "stalledSeconds": 34,
+      "outTime": "00:01:39.729000"
+    },
+    {
+      "atUTC": "2026-09-09T19:39:56.312Z",
+      "stalledSeconds": 35,
+      "outTime": "00:02:49.227000"
+    }
+  ],
+  "progress": [
+    {
+      "atUTC": "2026-09-09T21:00:07.727Z",
+      "screenshots": 17077,
+      "emitted": 28797,
+      "failures": 0,
+      "speed": 1,
+      "dropped": 0,
+      "duplicated": 0,
+      "outTime": "01:19:53.534000"
+    },
+    {
+      "atUTC": "2026-09-09T21:01:07.727Z",
+      "screenshots": 17271,
+      "emitted": 29157,
+      "failures": 0,
+      "speed": 1,
+      "dropped": 0,
+      "duplicated": 0,
+      "outTime": "01:20:53.691000"
+    },
+    {
+      "atUTC": "2026-09-09T21:02:07.727Z",
+      "screenshots": 17472,
+      "emitted": 29517,
+      "failures": 0,
+      "speed": 1,
+      "dropped": 0,
+      "duplicated": 0,
+      "outTime": "01:21:53.668000"
+    }
+  ]
+}

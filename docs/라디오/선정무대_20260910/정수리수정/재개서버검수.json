@@ -1,0 +1,101 @@
+{
+  "passed": true,
+  "at": "2026-09-09T21:03:43.916Z",
+  "expressions": [
+    "기본",
+    "깜빡",
+    "집중",
+    "안도"
+  ],
+  "visualExpressions": [
+    "기본",
+    "눈감음",
+    "눈웃음"
+  ],
+  "sampleCount": 285,
+  "first": {
+    "ready": true,
+    "DJ": "까몽",
+    "scene": "13",
+    "outfit": "반딧불노을들판",
+    "expression": "기본",
+    "checks": {
+      "maskPixels": 11609,
+      "waterEdgePixels": 29213,
+      "leafEdgePixels": 35434,
+      "expressionAlphaEqual": true,
+      "outsideEyeDifference": 0
+    },
+    "geometry": {
+      "x": 455,
+      "y": 305,
+      "width": 580,
+      "height": 580
+    },
+    "script": "radio13-06fdc6100afc.js",
+    "uniqueImages": 3,
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "keys": [
+      {
+        "key": "기본",
+        "loaded": true,
+        "alias": "기본",
+        "source": "../../docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png"
+      },
+      {
+        "key": "깜빡",
+        "loaded": true,
+        "alias": "깜빡",
+        "source": "../../docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png"
+      },
+      {
+        "key": "눈웃음",
+        "loaded": true,
+        "alias": "눈웃음",
+        "source": "../../docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png"
+      },
+      {
+        "key": "궁금함",
+        "loaded": true,
+        "alias": "궁금함",
+        "source": "../../docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png"
+      },
+      {
+        "key": "집중",
+        "loaded": true,
+        "alias": "집중",
+        "source": "../../docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png"
+      },
+      {
+        "key": "안도",
+        "loaded": true,
+        "alias": "안도",
+        "source": "../../docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png"
+      },
+      {
+        "key": "응원",
+        "loaded": true,
+        "alias": "응원",
+        "source": "../../docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png"
+      },
+      {
+        "key": "기쁨",
+        "loaded": true,
+        "alias": "기쁨",
+        "source": "../../docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png"
+      },
+      {
+        "key": "놀람",
+        "loaded": true,
+        "alias": "놀람",
+        "source": "../../docs/라디오/선정무대_20260910/정수리수정/leaf-base-514d7886949b.png"
+      }
+    ]
+  },
+  "scope": "Read-only actual radio-live Chromium runtime, not public playback",
+  "allThreeVisualExpressionsObserved": true,
+  "correctedSourcesAllNine": true
+}

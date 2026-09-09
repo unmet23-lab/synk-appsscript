@@ -1,0 +1,48 @@
+{
+  "at": "2026-09-09T19:30:16.615Z",
+  "method": "Local same-image fur clone, cosine feather; user explicitly approved. Left comparison=before; right=after.",
+  "results": [
+    {
+      "name": "라디오",
+      "file": "docs/라디오/선정무대_20260910/라이브13/leaf-base-48823c235151.webp",
+      "cx": 417,
+      "cy": 215,
+      "rx": 10,
+      "ry": 13,
+      "dx": 24,
+      "dy": 0,
+      "ext": "png",
+      "sourceSha": "48823c235151fb0d7859883205f7f6c3bd2040ebfe6b1f85631186b7563379c6",
+      "filename": "leaf-base-514d7886949b.png",
+      "sha256": "514d7886949ba0c139464be7b76215bce72edb7e575977912724963fda73324d",
+      "bytes": 1176159,
+      "changedPixels": 368,
+      "outsideMaskChanged": 0,
+      "alphaChanged": 0,
+      "losslessRoundTrip": true
+    },
+    {
+      "name": "원본",
+      "file": "docs/Loom_자산/옷/GPT/까몽_3개월출석잎망토.png",
+      "cx": 924,
+      "cy": 282,
+      "rx": 27,
+      "ry": 35,
+      "dx": 65,
+      "dy": 0,
+      "ext": "png",
+      "sourceSha": "4f1481c2ecb224e115f2f53a5760cbbb617b7d5d65dc0eaffcc242147c5b380b",
+      "filename": "../../../Loom_자산/옷/GPT/까몽_3개월출석잎망토.png",
+      "sha256": "3e9ecc50a6c972f528baffdc2bac55b647843fbb4e0a541552e606e997e4dbf3",
+      "bytes": 5961697,
+      "changedPixels": 2664,
+      "outsideMaskChanged": 0,
+      "alphaChanged": 0,
+      "losslessRoundTrip": true,
+      "losslessCompression": "PNG compression9 adaptiveFiltering; decoded RGB exactly identical to approved patch",
+      "promotedTo": "docs/Loom_자산/옷/GPT/까몽_3개월출석잎망토.png",
+      "backup": "docs/라디오/선정무대_20260910/정수리수정/source-before-4f1481c2ecb2.png",
+      "promotedAt": "2026-09-09T19:38:35.553Z"
+    }
+  ]
+}
