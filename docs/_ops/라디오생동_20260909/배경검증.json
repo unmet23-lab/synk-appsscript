@@ -1,0 +1,28 @@
+{
+  "source": "docs\\Loom_자산\\라디오생동\\추석_기준.png",
+  "source_sha256": "43f821108bfaf25aea8b660adb69f35f2dd2cc5a4685b3528c45be3fa4bd1b74",
+  "duration": 60,
+  "fps": 30,
+  "size": [
+    1280,
+    720
+  ],
+  "cycle_seconds": 60.0,
+  "seam_pixel_max_difference": 0,
+  "fixed_building_ground_logo_pixel_difference": 0,
+  "motion": {
+    "moon_degrees": 3.2,
+    "cloud_max_px": 3.8,
+    "branch_max_px": 3.45,
+    "window_brightness_max_fraction": 0.112
+  },
+  "frame_mean_differences": [
+    0.0,
+    0.39696216724537037,
+    0.44423249421296296,
+    0.47617332175925925,
+    0.22259657118055556,
+    0.41053855613425927,
+    0.00866355613425926
+  ]
+}

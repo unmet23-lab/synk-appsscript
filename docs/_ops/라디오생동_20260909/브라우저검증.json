@@ -1,0 +1,4624 @@
+{
+  "scope": "실제 배포 HTML + 새 무대, 실시간 브라우저 65초, 방송과 같은 크기와 자리",
+  "errors": [],
+  "samples": [
+    {
+      "ms": 190,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 608,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 785.4000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 952.3000000007451,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 1114,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 1281,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 1443.7000000011176,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 1609.7000000011176,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 1776.6000000014901,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 1941.7000000011176,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 2109.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 2277,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 2443,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 2610.9000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 2776.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 2950.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 3116.9000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 3279.7000000011176,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 3444,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 3610.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 3778.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 3943.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 4110.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 4277.9000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 4444.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 4610.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 4778.4000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 4942.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 5109.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 5276.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 5442.9000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 5610.4000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 5776,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 5943.4000000003725,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 6317,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 6483.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 6649.9000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 6817.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 6984.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 7149.9000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 7315.9000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 7483.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 7650.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 7815.9000000003725,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 7983.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 8150.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 8316.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 8482.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 8649.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 8816.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 8982.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 9149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 9310,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 9477.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 9643.10000000149,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 9809,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 9973.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 10141.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 10308.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 10475.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 10643.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 10809.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 10975.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 11143.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 11307.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 11473.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 11640.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 11802,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 11968.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 12132.800000000745,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 12300.800000000745,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 12464.800000000745,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 12841.5,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 13007.400000000373,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 13174.900000000373,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 13341.400000000373,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 13507.900000000373,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 13674.5,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 13841.700000001118,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 14007.300000000745,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 14174.300000000745,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 14341.200000001118,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 14508.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 14673.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 14840.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 15007.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 15173.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 15340.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 15508.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 15672.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 15840.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 16007.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 16174.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 16340.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 16506.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 16673.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 16840.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 17008,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 17173.900000000373,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 17339.700000001118,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 17506.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 17673.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 17839.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 18007.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 18174,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 18340.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 18506.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 18672.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 18839.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 19007.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 19173.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 19339.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 19507.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 19672.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 19840.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 20006,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 20173,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 20340.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 20506.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 20672.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 20838,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 21006.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 21171.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 21340.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 21506,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 21673.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 21838.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 22007.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 22171.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 22340.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 22506.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 22673,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 22839.900000000373,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 23006.200000001118,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 23180.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 23345.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 23512.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 23680.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 23845.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 24013.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 24179.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 24345,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 24506.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 24668.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 24838.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 25004.5,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 25171.5,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 25339.300000000745,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 25506.10000000149,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 25871.700000001118,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 26037.700000001118,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 26204.60000000149,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 26370.60000000149,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 26537.200000001118,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 26704,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 26871.800000000745,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 27037.200000001118,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 27203.10000000149,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 27369.60000000149,
+      "DJ": "까몽",
+      "expression": "궁금함",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_궁금함.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 27536.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 27703.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 27869.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 28036.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 28203.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 28370,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 28538.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 28702.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 28870.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 29047.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 29212,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 29380.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 29545.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 29712.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 29878.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 30045.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 30210.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 30379,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 30544.400000000373,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 30710.700000001118,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 30877.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 31043.700000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 31210.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 31372.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 31538.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 31703.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 31870.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 32037.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 32202.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 32370.400000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 32536.900000000373,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 32703.200000001118,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 32869.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 33036.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 33203.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 33368.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 33536.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 33704.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 33869.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 34032.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 34201.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 34369,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 34536.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 34702.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 34870.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 35036.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 35201.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 35367.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 35535.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 35702.20000000112,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 35867.60000000149,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 36037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 36201.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 36368.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 36542.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 36709.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 36875.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 37042.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 37209.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 37375.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 37541.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 37708.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 37875.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 38043.40000000037,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 38208,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 38374.300000000745,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 38742.40000000037,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 38908,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 39074.60000000149,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 39236.5,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 39401.70000000112,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 39568.40000000037,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 39736,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 39901.5,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 40068.20000000112,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 40235.10000000149,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 40401.20000000112,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 40566.90000000037,
+      "DJ": "까몽",
+      "expression": "집중",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_집중.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 40732.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 40901.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 41071.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 41234.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 41400.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 41566.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 41735.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 41901.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 42067.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 42235,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 42399.800000000745,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 42567.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 42734.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 42900.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 43066.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 43233.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 43408.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 43569.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 43732.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 43900.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 44066.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 44234.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 44398.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 44567,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 44733,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 44899.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 45066.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 45232.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 45394.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 45556.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 45722.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 45891.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 46058,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 46223.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 46389.40000000037,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 46556.70000000112,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 46723.300000000745,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 46890.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 47056.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 47223.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 47389.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 47556.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 47723,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 47894.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 48057.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 48222.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 48390,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 48556.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 48718.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 48882,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 49056.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 49223,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 49389.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 49555.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 49721.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 49888.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 50056.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 50221.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 50390.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 50553.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 50722.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 50889,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 51055.10000000149,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 51223.20000000112,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 51388.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 51554.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 51718.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 51887.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 52054.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 52219.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 52388.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 52554.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 52717.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 52887.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 53054.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 53226.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 53391,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 53554.300000000745,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 53722,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 53889.70000000112,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 54055.300000000745,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 54223.300000000745,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 54387.90000000037,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 54565.20000000112,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 54727.5,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 54899.20000000112,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 55064.70000000112,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 55229.90000000037,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 55397.300000000745,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 55566.10000000149,
+      "DJ": "까몽",
+      "expression": "눈웃음",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈웃음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 55731.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 55907.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 56068.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 56236,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 56402.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 56571.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 56737.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 56904.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 57071.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 57235.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 57407.300000000745,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 57577.70000000112,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 57748.10000000149,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 57915.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 58082.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 58247.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 58408,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 58575.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 58736.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 58912.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 59076.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 59243,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 59409.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 59575.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 59746.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 59914.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 60077.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 60241.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 60405.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 60573.70000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 60735.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 60904.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 61072.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 61238,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 61402.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 61570.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 61738.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 61907.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 62069.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 62237.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 62406.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 62572,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 62734.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 62909.90000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 63071.60000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 63237.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 63412.40000000037,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 63581.800000000745,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 63743.60000000149,
+      "DJ": "까몽",
+      "expression": "깜빡",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_눈감음.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 63907.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 64071.10000000149,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 64237.800000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 64406.40000000037,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 64570.5,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 64737.300000000745,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 64904,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "ms": 65070.20000000112,
+      "DJ": "까몽",
+      "expression": "기본",
+      "transform": "translateY(0px) rotate(0deg) scale(1, 1)",
+      "visible": [
+        {
+          "src": "까몽_여름델+전설의팻말_본체.webp",
+          "width": 1024
+        }
+      ]
+    }
+  ],
+  "expressions": [
+    "기본",
+    "깜빡",
+    "눈웃음",
+    "궁금함",
+    "집중"
+  ],
+  "videoDuration": 60,
+  "elapsedSeconds": 65.054,
+  "passed": true
+}
