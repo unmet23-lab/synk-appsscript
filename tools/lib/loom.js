@@ -1720,6 +1720,57 @@ function 마케팅실행() {
   .execution .work-input{display:block;width:100%;min-height:420px;resize:vertical;padding:24px;border:1px solid ${c['Deep Wool']};border-radius:8px;background:${c.Paper};color:${c.Ink};font:inherit;font-size:18px;line-height:1.7}
   .execution .work-label{display:block;font-weight:650;font-size:20px;margin:24px 0 12px}
   .execution .work-status{min-height:32px;font-size:16px;color:${c['Lapis Deep']}}
+  .execution .intro-feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center}
+  .execution .intro-copy>.brand-lock{position:static;height:100px;margin-bottom:24px}
+  .execution .intro-feature h1{font-size:clamp(38px,4.5vw,68px);margin-bottom:24px}
+  .execution .craft-feature{margin:0;min-width:0}
+  .execution .craft-feature .film{aspect-ratio:16/9;object-fit:contain;margin:0;border-radius:12px}
+  .execution .craft-feature figcaption{font-size:14px;line-height:1.7;margin-top:16px;color:${c['Deep Wool']}}
+  .execution .craft-feature figcaption span{display:block;font-weight:650;font-size:18px;color:${c.Ink};margin-bottom:6px}
+  .execution button.download{font:inherit;cursor:pointer;min-height:44px;background:${c.Paper};color:${c.Ink};border:1px solid ${c.Oat};border-radius:8px;padding:10px 16px}
+  .execution .download:focus-visible{outline:2px solid ${c['Coral 3']};outline-offset:4px}
+  .execution .radio-entry{align-self:start;border-top:2px solid ${c.Ink};padding-top:24px}
+  .execution .radio-room{width:min(960px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:28px;border:1px solid ${c.Oat};border-radius:16px;background:${c.Paper};color:${c.Ink};overflow:auto}
+  .execution .radio-room::backdrop{background:${c.Ink}cc}
+  .execution .radio-room:not([open]){display:none}
+  .execution .radio-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .execution .radio-room h2{margin:22px 0 10px;padding:0;border:0;font-size:clamp(26px,4vw,40px);line-height:1.3;letter-spacing:-.025em}
+  .execution .radio-room .film{aspect-ratio:16/9;object-fit:contain;border-radius:8px}
+  .execution .radio-room p{font-size:16px;line-height:1.7}
+  .execution .radio-room .radio-credit{font-size:14px;color:${c['Deep Wool']}}
+  /* Field Notes: quieter typesetting; the existing felt glyphs carry the accent. */
+  .execution .field-edition{font-kerning:normal;text-rendering:optimizeLegibility}
+  .execution .field-edition h1,.execution .field-edition h2,.execution .field-edition h3{word-break:keep-all;overflow-wrap:anywhere;text-wrap:balance;font-weight:800}
+  .execution .field-edition p{word-break:keep-all;overflow-wrap:anywhere;text-wrap:pretty}
+  .execution .field-edition .intro-feature{grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:48px}
+  .execution .field-edition .intro-copy>.brand-lock{height:80px;margin-bottom:32px}
+  .execution .field-edition .intro-copy .kicker{font-size:.875rem;font-weight:600;letter-spacing:.06em;line-height:1.5}
+  .execution .field-edition .intro-feature h1{font-size:clamp(2rem,3.2vw,3.25rem);line-height:1.3;letter-spacing:-.025em;margin:24px 0}
+  .execution .field-edition .intro-deck{font-size:1.125rem;line-height:1.85;font-weight:500;letter-spacing:-.01em;margin:0;max-width:31em}
+  .execution .field-edition .provision-index{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;margin:40px 0 24px;padding:24px 0;border-block:1px solid ${c.Oat}}
+  .execution .field-edition .provision-index a{display:block;min-width:0;color:${c.Ink};text-decoration:none;min-height:44px;overflow-wrap:anywhere}
+  .execution .field-edition .proof-label{display:block;color:${c['Deep Wool']};font-size:.875rem;font-weight:500;line-height:1.6;margin-bottom:8px}
+  .execution .field-edition .provision-index strong{font-size:1.125rem;line-height:1.6;font-weight:600;word-break:keep-all}
+  .execution .field-edition .provision-index a:focus-visible{outline:2px solid ${c['Coral 3']};outline-offset:4px}
+  .execution .field-edition .quick-links{margin:24px 0;gap:8px}
+  .execution .field-edition .quick-links .download{font-size:.875rem;font-weight:500;line-height:1.5}
+  .execution .field-edition .chapter-title{display:flex;align-items:center;gap:24px;margin:80px 0 24px;font-size:clamp(1.5rem,2.4vw,2rem);line-height:1.45;letter-spacing:-.02em;scroll-margin-top:24px}
+  .execution .field-edition .chapter-title>span{min-width:0}
+  .execution .field-edition .chapter-glyph{height:64px;width:64px;object-fit:contain;flex:0 0 64px}
+  .execution .field-edition .chapter-index{display:block;font-family:'Inter Tight',sans-serif;font-size:.875rem;font-weight:600;letter-spacing:.06em;line-height:1.5;margin-bottom:8px;color:${c['Deep Wool']}}
+  .execution .field-edition .chapter-deck{font-size:1.125rem;line-height:1.8;max-width:52em;margin:0 0 16px}
+  .execution .field-edition .section-note{font-size:.875rem;line-height:1.7;color:${c['Deep Wool']};margin:0 0 24px}
+  .execution .field-edition .entry h2{font-size:1.375rem;line-height:1.5;letter-spacing:-.02em;margin:16px 0 8px}
+  .execution .field-edition .entry p{font-size:1rem;line-height:1.75;letter-spacing:-.005em}
+  .execution .field-edition .entry .metadata{font-size:.875rem;line-height:1.6;font-weight:500}
+  .execution .field-edition .resource-card h3{font-size:1.375rem;line-height:1.5;letter-spacing:-.02em;margin:16px 0}
+  .execution .field-edition .resource-card p{font-size:1rem;line-height:1.8}
+  .execution .field-edition .collection-notes{margin-top:64px;border-top:1px solid ${c.Oat};padding-top:24px}
+  .execution .field-edition .collection-notes .metadata{font-size:.875rem;line-height:1.8;max-width:70em;color:${c['Deep Wool']}}
+  @media(max-width:900px){.execution .field-edition .intro-feature{grid-template-columns:1fr;gap:32px}.execution .field-edition .provision-index{gap:24px}.execution .field-edition .intro-feature h1{font-size:clamp(2rem,5vw,3rem)}}
+  @media(max-width:640px){.execution .field-edition .intro-deck br{display:none}.execution .field-edition .provision-index{grid-template-columns:1fr;gap:24px;margin-top:32px}.execution .field-edition .chapter-title{gap:16px;margin-top:64px}.execution .field-edition .chapter-glyph{height:48px;width:48px;flex-basis:48px}.execution .field-edition .intro-copy>.brand-lock{height:64px;margin-bottom:24px}}
+  @media(max-width:900px){.execution .intro-feature{grid-template-columns:1fr;gap:24px}.execution .craft-feature{max-width:680px}.execution .intro-copy>.brand-lock{height:92px}}
+  @media(max-width:640px){.execution .radio-room{padding:16px}.execution .radio-top{align-items:flex-start}.execution .radio-top .kicker{font-size:12px}.execution .radio-top button{white-space:nowrap}}
   @media(max-width:640px){.execution .collection-intro>.brand-lock{gap:14px;height:92px}.execution .collection-intro .brand-synk{width:175px}.execution .collection-intro .division-stitch-logo[data-division]{height:36px;max-height:36px}}
   @media(max-width:900px){.execution .resources{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media(max-width:640px){.execution .resources{grid-template-columns:1fr}.execution .editorial{padding:30px 22px 60px;font-size:18px}.execution .editorial table{font-size:14px}.execution .editorial th,.execution .editorial td{padding:10px 5px}.execution .editorial .brand-lock{height:82px}.execution .editorial .brand-synk{width:190px}.execution .editorial .division-stitch-logo[data-division]{max-height:46px}}
