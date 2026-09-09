@@ -53,7 +53,8 @@ function 사본(t) {
     fs.copyFileSync(path.join(ROOT, 파일), path.join(방, 파일));
   }
   // 개인 memory·운영 데이터는 복사하지 않는다. 조립에 필요한 나머지는 합성 문서다.
-  쓰기(방, 'MEMORY.md', '# 시험 색인\n🚫 합성 시험의 금지 항목\n');
+  쓰기(방, 'docs/AI_운영원칙.md', '# 합성 운영 원칙\n현재 요청과 관련 원문을 확인한다.\n');
+  쓰기(방, 'docs/_ops/결정.md', '# 합성 결정\n| 2026-09-09 | 확정 | 이 시험은 모델을 부르지 않는다. | 합성 |\n');
   쓰기(방, 'docs/제품방향.md', '# 합성 방향\n\n## 목표\n프롬프트 측정 시험.\n');
   쓰기(방, 'docs/GPT_정본.md', ['공통', '실행자'].map((역할) =>
     `<!-- 역할: ${역할} 시작 -->\n합성 ${역할} 안내\n<!-- 역할: ${역할} 끝 -->`).join('\n'));
@@ -79,7 +80,6 @@ function 바꾸기(방, 파일, 이전, 이후) {
 function 실행(방, 인자 = ['--json']) {
   const env = {
     ...process.env,
-    SYNK_MEMORY_INDEX: path.join(방, 'MEMORY.md'),
     SYNK_INTERROGATION_TEMPLATE: path.join(방, 템플릿),
     SYNK_BUILD_LEDGER: path.join(방, '실행기록.jsonl'),
     SYNK_REVIEW_RUNS: path.join(방, '런'),
@@ -222,17 +222,12 @@ for (const 경우 of ['정본 파일 없음', '게이트 전부 없음', '추출
   });
 }
 
-test('반쪽 게이트도 추출된 문자열 길이로 재고 종료 0과 경고를 낸다', (t) => {
+test('반쪽 게이트는 역할 4/4의 전달 성공으로 세지 않고 종료 1이다', (t) => {
   const 방 = 사본(t);
-  // 정본 문장을 베끼지 않고, 추출 앵커 하나에 합성 본문만 둔다.
   쓰기(방, 철학, '**한 문장:** 합성 게이트 시험.\n');
-  const 본문 = require(path.join(방, 검수)).철학텍스트();
-  assert.ok(본문.includes('이 게이트는 **반쪽이다**'));
-  const 결과 = json(실행(방), 0);
-  assert.ok(결과.역할들.every((역할) => 역할.글자수 === 본문.length));
-  const 표 = 실행(방, []);
-  assert.equal(표.status, 0);
-  assert.ok(표.stdout.includes('⚠ 게이트가 반쪽이다'));
+  const 결과 = json(실행(방), 1);
+  assert.equal(결과.모두실렸나, false);
+  assert.ok(결과.역할들.every((역할) => 역할.글자수 === 0 && !역할.실렸나));
 });
 
 test('심문 함수의 게이트 없음 예외는 미측정으로 오인하지 않고 0자로 센다', (t) => {
@@ -286,4 +281,48 @@ test('자식 스크립트가 없어 실행 실패해도 함수로 재는 두 역
   const 결과 = json(실행(방), 2);
   assert.ok(결과.역할들.slice(0, 2).every((역할) => 역할.글자수 === null && !역할.쟀나));
   assert.ok(결과.역할들.slice(2).every((역할) => 역할.실렸나));
+});
+
+
+const 구획들 = ['purpose', 'criteria', 'boundaries', 'applicability', 'understanding'];
+const 구획본문 = () => 구획들.map((id) => '<!-- 철학: ' + id + ' 시작 -->\n### 바뀐 제목 ' + id
+  + '\n\n첫 문단.\n\n둘째 문단 ' + id + '.\n<!-- 철학: ' + id + ' 끝 -->').join('\n\n');
+
+test('제목·빈 줄과 무관하게 새 의미 구획 전부가 실제 역할 4/4에 도착한다', (t) => {
+  const 방 = 사본(t);
+  쓰기(방, 철학, 구획본문());
+  const 본문 = require(path.join(방, 검수)).철학텍스트();
+  for (const id of 구획들) assert.ok(본문.includes('둘째 문단 ' + id));
+  assert.equal(json(실행(방), 0).모두실렸나, true);
+});
+
+for (const id of 구획들) {
+  test('구획 ' + id + '의 끝 표식이 없으면 나머지가 있어도 전달 실패다', (t) => {
+    const 방 = 사본(t);
+    쓰기(방, 철학, 구획본문().replace('<!-- 철학: ' + id + ' 끝 -->', ''));
+    assert.equal(json(실행(방), 1).모두실렸나, false);
+  });
+}
+
+test('철학 상한 초과를 잘라서 전달 성공으로 세지 않는다', (t) => {
+  const 방 = 사본(t);
+  쓰기(방, 철학, 구획본문().replace('첫 문단.', '긴 문단'.repeat(3000)));
+  assert.equal(json(실행(방), 1).모두실렸나, false);
+});
+
+test('실제 검수 프롬프트에서 한 구획을 잘라내면 전달 실패다', (t) => {
+  const 방 = 사본(t);
+  쓰기(방, 철학, 구획본문());
+  바꾸기(방, 검수, 'return 제안프롬프트(diff텍스트, 기각제목들, 방향텍스트(), 철학텍스트());',
+    'return 제안프롬프트(diff텍스트, 기각제목들, 방향텍스트(), 철학텍스트().slice(0, 100));');
+  const 결과 = json(실행(방), 1);
+  assert.equal(결과.역할들[2].실렸나, false);
+});
+
+test('제품 방향 상한 초과를 일부 생략한 정상 조립으로 세지 않는다', (t) => {
+  const 방 = 사본(t);
+  쓰기(방, 'docs/제품방향.md', '# 방향\n## 로드맵\n' + '가'.repeat(6100));
+  const 결과 = json(실행(방), 2);
+  assert.equal(결과.모두실렸나, false);
+  assert.equal(결과.역할들[2].쟀나, false);
 });

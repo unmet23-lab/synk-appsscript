@@ -1,19 +1,5 @@
-/* 결정 정본 — 확정이 세션 경계를 넘고, 금지는 14일에 풀린다 (신설 2026-08-19 · 유호 확정)
- *
- * 무엇이 났나: 확정과 기각이 **정반대 자리**에 살았다 — 기각은 git 안 문서라 영구(🚫 1,289 ·
- *   재제안 금지 131 · 만료 장치 0), 확정은 git 밖 메모리라 휘발(클라우드 세션에서 0건).
- *   그래서 시스템이 「아니오」만 기억했다. `tools/결정.js` 가 그 비대칭을 뒤집는다.
- *
- * 🔑 **새는 방향은 「영원히 안 풀린다」다.** 성격을 못 알아본 줄을 「안전(영구)」으로 세면
- *   그게 정확히 이 도구가 고치려는 병이 되고, 게다가 **안 보인다**(맞는 얼굴로 틀린 값 · 맹점 ④).
- *   그래서 ③ 이 「모름 → 확정(만료됨)」을 못박는다. 반대로 틀리면 유호님이 다시 말하면 되는,
- *   보이는 사고다.
- *
- * ⚠ 탐지력은 **픽스처**가 진다(F296·맹점②) — 이 파일은 repo 밖(홈·메모리)도 시각도 안 읽는다.
- *   `읽기문(본문, 기준)` 이 순수 함수라 「오늘」을 얼려 14일 경계를 시각 의존 없이 못박는다.
- *   실저장소 갈래(⑧)는 **건수를 안 박는다** — 그 수는 그날 유호님이 정한 것에 달렸다.
- *   대신 불변식만 본다(정본이 파싱되고, 깨진 줄이 0이다).
- */
+/* 결정 정본 — 날짜 표시는 기존 API와 호환하고 재검토·실행 허가와 분리한다.
+ * 합성 문서로 0·14·15일과 안전 기록을 재며 실제 원문은 파싱 가능 여부만 확인한다. */
 'use strict';
 
 const { test } = require('node:test');
@@ -23,7 +9,7 @@ const path = require('node:path');
 
 const REPO = path.resolve(__dirname, '..');
 const 결정 = require(path.join(REPO, 'tools', '결정.js'));
-const { 읽기문, 구속일, 시작표식, 끝표식, 성격들, 기본성격, 아는플래그, 정본 } = 결정;
+const { 읽기문, 관찰일, 구속일, 시작표식, 끝표식, 성격들, 기본성격, 아는플래그, 정본 } = 결정;
 
 /** 픽스처 — 표식·머리줄·구분선을 갖춘 최소 정본 */
 const 본문 = (...줄들) => [
@@ -40,43 +26,58 @@ const 본문 = (...줄들) => [
 
 const 줄 = (날짜, 성격, 결정문 = '어떤 결정', 근거 = '어떤 근거') => `| ${날짜} | ${성격} | ${결정문} | ${근거} |`;
 
-/* ── ① 14일 경계 — 구속일째는 아직 구속, 그 다음날 풀린다 ──────────────────── */
+/* ── ① 최근성 표시의 14일 경계 — 재검토를 막는 기간이 아니다 ────────────────── */
 
-test('① 구속일(14)째는 아직 구속 중이다', () => {
+test('① 14일째는 최근 기록이다 — 구속중은 호환 표시이며 재검토 대기는 없다', () => {
   const r = 읽기문(본문(줄('2026-08-01', '확정')), '2026-08-15');   // D+14
   assert.equal(r.목록.length, 1);
   assert.equal(r.목록[0].지난일, 구속일);
-  assert.equal(r.목록[0].구속중, true, `D+${구속일} 는 아직 구속이어야 한다 — 경계를 하루 당기면 「방금 정한 걸 뒤집자」가 된다`);
+  assert.equal(r.목록[0].구속중, true);
+  assert.equal(r.목록[0].최근, true);
+  assert.equal(r.목록[0].관찰구분, '최근 확정');
+  assert.equal(r.정책.재검토대기일, 0);
+  assert.equal(관찰일, 구속일);
 });
 
-test('① 구속일+1 부터 재제안이 열린다', () => {
+test('① 15일째는 과거 기록으로 표시하되 실행 권한은 생기지 않는다', () => {
   const r = 읽기문(본문(줄('2026-08-01', '확정')), '2026-08-16');   // D+15
   assert.equal(r.목록[0].지난일, 구속일 + 1);
   assert.equal(r.목록[0].구속중, false);
+  assert.equal(r.목록[0].최근, false);
+  assert.equal(r.목록[0].관찰구분, '과거 기록');
+  assert.equal(r.정책.재검토대기일, 0);
+  assert.match(r.정책.실행권한, /실제 권한·가드를 변경하지 않는다/);
 });
 
-test('① 오늘 정한 것(D+0)은 구속 중이다', () => {
+test('① 오늘 정한 것(D+0)도 새 요청·근거가 있으면 재검토할 수 있다', () => {
   const r = 읽기문(본문(줄('2026-08-19', '확정')), '2026-08-19');
   assert.equal(r.목록[0].지난일, 0);
   assert.equal(r.목록[0].구속중, true);
+  assert.equal(r.정책.재검토대기일, 0);
+  assert.match(r.정책.재검토, /현재 사용자 요청.*달라진 전제.*경과일과 무관하게/);
 });
 
-/* ── ② 안전은 영구 — 아무리 지나도 안 풀린다 ─────────────────────────────── */
+/* ── ② 안전은 보호 절차 확인 — 기간이나 재검토로 자동 해제하지 않는다 ───────── */
 
-test('② 성격 «안전» 은 10년이 지나도 구속 중이다', () => {
+test('② 안전의 보호 절차는 10년이 지나도 유지하되 허용된 행동을 금지하지 않는다', () => {
   const r = 읽기문(본문(줄('2016-01-01', '안전', '자격증명은 git 밖에')), '2026-08-19');
   assert.equal(r.목록[0].영구, true);
   assert.equal(r.목록[0].구속중, true, '안전 결정에 만료가 붙으면 되돌림 비용이 큰 자리가 조용히 열린다');
+  assert.equal(r.목록[0].보호절차지속, true);
+  assert.equal(r.목록[0].관찰구분, '보호 경계 확인');
+  assert.equal(r.정책.재검토대기일, 0);
+  assert.match(r.정책.보호절차, /기간이 지나도 자동 해제되지 않는다/);
+  assert.match(r.정책.보호절차, /이미 허용된 행동까지 일괄 금지하는 뜻은 아니다/);
 });
 
-/* ── ③ 🔑 모름은 «확정»(만료됨)으로 센다 — 영구 구속으로 세지 않는다 ────────── */
+/* ── ③ 모르는 성격은 확정으로 표시하고 안전으로 자동 승격하지 않는다 ─────────── */
 
 test('③ 성격을 못 알아본 줄은 «확정»으로 세고, 그 사실을 드러낸다', () => {
   const r = 읽기문(본문(줄('2026-08-01', '취향', '옛 낱말로 적힌 줄')), '2026-08-19');   // D+18
   const d = r.목록[0];
   assert.equal(d.성격, 기본성격, '모름을 안전으로 승격하면 이 도구가 고치려는 병 그 자체가 된다');
   assert.equal(d.영구, false);
-  assert.equal(d.구속중, false, 'D+18 이면 풀려 있어야 한다');
+  assert.equal(d.구속중, false, 'D+18 이면 과거 기록으로 표시한다');
   assert.equal(d.미지성격, true, '모름은 조용히 삼키지 않고 표로 드러낸다 — 화면이 그 건수를 낸다');
 });
 
@@ -153,7 +154,7 @@ test('⑥ 추가한 줄은 구분선 «뒤»에 들어가고 그대로 다시 �
     assert.ok(새것, '추가한 줄이 다시 읽혀야 한다');
     assert.ok(!새것.결정.includes('|'), '파이프는 칸을 깨뜨리므로 접어야 한다');
     assert.ok(!새것.근거.includes('\n'), '개행은 한 줄 = 한 결정 계약을 깨뜨리므로 접어야 한다');
-    assert.equal(새것.성격, 기본성격, '성격을 안 주면 확정(=만료됨)이다');
+    assert.equal(새것.성격, 기본성격, '성격을 안 주면 확정이다');
   } finally {
     fs.rmSync(임시, { recursive: true, force: true });
   }
@@ -218,12 +219,49 @@ test('⑩-b 담는 쪽도 같은 통로다 — 날 파이프는 접히고 백틱
 
 /* ── ⑨ 상수는 한 곳에서만 파생한다 ───────────────────────────────────────── */
 
-test('⑨ 구속 기간은 도구 하나에서만 나온다 — 정본 문서가 다른 수를 적으면 갈라진다', () => {
+test('⑨ 호환용 기간 값은 도구의 관찰 기간과 같다', () => {
   if (!fs.existsSync(정본)) { console.log('    ↳ skip: 정본 없음'); return; }
   const 문 = fs.readFileSync(정본, 'utf8');
   const 머리 = 문.slice(0, 문.indexOf(시작표식));   // 표 «밖»의 산문만 본다
   const 다른수 = [...머리.matchAll(/(\d+)\s*일\s*(?:뒤|간|안|내)/g)].map((m) => +m[1]);
   for (const n of 다른수) {
     assert.equal(n, 구속일, `정본 산문이 ${n}일이라 적었는데 도구는 ${구속일}일이다 — 같은 판정을 두 곳에 적으면 갈라진다`);
+  }
+});
+
+test('화면·요약·추가·JSON은 같은 재검토 정책을 알리며 옛 필드는 표시용으로 남긴다', (t) => {
+  const os = require('node:os');
+  const { spawnSync } = require('node:child_process');
+  const 부모 = fs.realpathSync(os.tmpdir());
+  const 임시 = fs.mkdtempSync(path.join(부모, 'synk-decision-policy-'));
+  t.after(() => {
+    const 실제 = fs.realpathSync(임시);
+    assert.equal(path.dirname(실제), 부모);
+    assert.ok(path.basename(실제).startsWith('synk-decision-policy-'));
+    fs.rmSync(실제, { recursive: true, force: true });
+  });
+  fs.mkdirSync(path.join(임시, 'docs', '_ops'), { recursive: true });
+  fs.writeFileSync(path.join(임시, 'docs', '_ops', '결정.md'), 본문(
+    줄('2000-01-01', '안전', '합성 보호 절차'), 줄('2000-01-01', '확정', '합성 과거 선택')));
+  const 실행 = (args) => spawnSync(process.execPath, [path.join(REPO, 'tools', '결정.js'), ...args],
+    { env: { ...process.env, CLAUDE_PROJECT_DIR: 임시 }, encoding: 'utf8', windowsHide: true });
+  for (const args of [[], ['--훅'], ['--추가', '합성 현재 선택', '--근거', '합성 입력'],
+    ['--추가', '합성 새 보호 절차', '--근거', '합성 입력', '--성격', '안전']]) {
+    const r = 실행(args);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /경과일과 무관하게 재검토한다/);
+    assert.match(r.stdout, /실제 권한·가드를 변경하지 않는다/);
+    assert.doesNotMatch(r.stdout, /재제안 금지|반하는 제안을 내지 않는다|구속 중|🔒 영구/);
+  }
+  const r = 실행(['--json']);
+  assert.equal(r.status, 0, r.stderr);
+  const 값 = JSON.parse(r.stdout);
+  assert.equal(값.정책.관찰일, 관찰일);
+  assert.equal(값.정책.재검토대기일, 0);
+  assert.match(값.정책.호환필드, /관찰 구분 값/);
+  for (const d of 값.목록) {
+    assert.equal(d.구속중, d.보호절차지속 || d.최근);
+    assert.equal(d.영구, d.보호절차지속);
+    assert.ok(['보호 경계 확인', '최근 확정', '과거 기록'].includes(d.관찰구분));
   }
 });
