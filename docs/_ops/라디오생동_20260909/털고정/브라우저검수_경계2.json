@@ -1,0 +1,21 @@
+{
+  "at": "2026-09-09T12:45:58.176Z",
+  "method": "Actual browser decoded rendered sprites via 합성검수.html button",
+  "scope": "Local Canvas pixels, not YouTube compression",
+  "candidate": "65f92a753bb5416b",
+  "edgeVersion": "common-rim-v2",
+  "helperSha256": "b76f448ab55af135a5e2dc652683fc721edfc35ceaad7ae1af4bcac138a25a58",
+  "count": 8,
+  "expressions": ["본체", "눈감음", "눈웃음", "궁금함", "집중", "안도", "응원", "놀람"],
+  "everyExpression": {
+    "outsideEyeRGBA": 0,
+    "alphaDifferenceFromCommonRenderedBase": 0,
+    "edgeDisplayChangedPixelsFromRaw": 29213,
+    "protectedInnerChangedPixels": 0
+  },
+  "shapeBeforeAndAfter": "translateY(-4.17%) scale(1)",
+  "naturalWidth": 1024,
+  "cssOpacity": "1",
+  "cssFilter": "none",
+  "visualCheck": "1280x720 actual-size center crop; basic and eye-smile. Original bitmap files not modified."
+}

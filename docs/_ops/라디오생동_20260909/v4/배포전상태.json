@@ -1,0 +1,354 @@
+{
+  "scope": "v4 배경 수정 전 읽기 전용 기준. 기존 v3 보호 대상 정보를 재사용하되 현재 15개 SHA와 v3 무대 목록/영상/PID를 재조회함.",
+  "sourceHead": "23dd675233aa14b7974a6b299f6e0b7649d15be6",
+  "policySha256": "a09124dc8bde12512f11678ca35358b22ec8bceea1b44f06117ddf4c8827217f",
+  "observedAtUTC": "2026-09-09T11:42:33.594233+00:00",
+  "sourceBaseline": "docs/_ops/라디오생동_20260909/v3/배포전상태.json",
+  "sourceReceipt": "docs/_ops/라디오생동_20260909/v3/라이브반영.json",
+  "server": {
+    "observedAtUTC": "2026-09-09T11:42:33.594233+00:00",
+    "service": {
+      "MainPID": "142078",
+      "NRestarts": "0",
+      "ExecMainStartTimestamp": "Wed 2026-09-09 11:29:06 UTC",
+      "ActiveState": "active",
+      "SubState": "running"
+    },
+    "tuningFile": {
+      "path": "/opt/synk-radio/송출/조율.json",
+      "exists": true,
+      "bytes": 241,
+      "sha256": "28b153e214d0ee59f498696202f2f8237600ae3630fa998679d07053bb48a4c2"
+    },
+    "tuning": {
+      "프레임": 15,
+      "뜨기": 6,
+      "소리목록": "/opt/synk-radio/소리/playlist.txt",
+      "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+      "연속소리": true,
+      "장면분": 20,
+      "장면차례": "추석보름달마당"
+    },
+    "audioPlaylist": {
+      "path": "/opt/synk-radio/소리/playlist.txt",
+      "exists": true,
+      "bytes": 92,
+      "sha256": "374e9ce2cc0d6f81928c5639cf69ed0abb9252f2d9f8c2025a24ad330a0bee5c",
+      "entries": [
+        "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      ],
+      "uniqueCounts": {
+        "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac": 1
+      },
+      "media": [
+        {
+          "path": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+          "exists": true,
+          "bytes": 302247928
+        }
+      ]
+    },
+    "stagePlaylist": {
+      "path": "/opt/synk-radio/무대차례/목록.txt",
+      "exists": true,
+      "bytes": 1041,
+      "sha256": "0e7c7c6d29e2d5545f05d239cef178fac7325d6f449a8dcf0be0fa914f23daa0",
+      "entries": [
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4"
+      ],
+      "uniqueCounts": {
+        "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4": 20
+      },
+      "media": [
+        {
+          "path": "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4",
+          "exists": true,
+          "bytes": 16902079,
+          "sha256": "af2b83919d5b06758702829d1c36fcfb31fdcfa12453d944ffecbc6402956f50"
+        }
+      ]
+    },
+    "codeFiles": {
+      "bots/오버레이/겹쳐송출.js": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js",
+        "exists": true,
+        "bytes": 41072,
+        "sha256": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261"
+      },
+      "bots/오버레이/송출진척.js": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/송출진척.js",
+        "exists": true,
+        "bytes": 1791,
+        "sha256": "41cbe7c860f66452ef3c2fe89d78210fa2a21f4570558a54e791a7a9b86b6524"
+      },
+      "bots/오버레이/마스코트.html": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/마스코트.html",
+        "exists": true,
+        "bytes": 58438,
+        "sha256": "64a55da4e3cc1443e217481726acd898d192f1b3a780b8222f999a069238b4a2"
+      },
+      "bots/오버레이/라디오표정리듬.js": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/라디오표정리듬.js",
+        "exists": true,
+        "bytes": 7109,
+        "sha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8"
+      },
+      "bots/오버레이/방송층.html": {
+        "path": "/opt/synk-radio/지면/bots/오버레이/방송층.html",
+        "exists": true,
+        "bytes": 4185,
+        "sha256": "b4a4a0f9e2236bd29cc2ccf116d5d7162aaf390e5f8fea6232051ace5b9466ff"
+      }
+    },
+    "currentDJAssets": {
+      "본체": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_본체.webp",
+        "exists": true,
+        "bytes": 114744,
+        "sha256": "d3b92020a6ca212a3fff355952c80cc5fc8599dc919bb479833919415904ffdf"
+      },
+      "눈감음": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_눈감음.webp",
+        "exists": true,
+        "bytes": 118946,
+        "sha256": "381bf0e6e491fdc99da61f47f03681ed171384d9fc2780f2638d67e11d6467ad"
+      },
+      "눈웃음": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_눈웃음.webp",
+        "exists": true,
+        "bytes": 118826,
+        "sha256": "bb89f7333ac8f2145231f635dd5fe3462d10ec94338ec71f5129f9555126e654"
+      },
+      "궁금함": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_궁금함.webp",
+        "exists": true,
+        "bytes": 115708,
+        "sha256": "37c80c6e81642bf573ab6867a92b8a16242e9446f15a6a0bd04235a58e357fde"
+      },
+      "집중": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_집중.webp",
+        "exists": true,
+        "bytes": 114526,
+        "sha256": "775d5e0605f36e08b00c382d6837152c7eb6ef85c3a84a62ed841de1e4d941d9"
+      },
+      "안도": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_안도.webp",
+        "exists": true,
+        "bytes": 115908,
+        "sha256": "c6c3094b5b897b03745fb0459659af6f6180f7a1de22340be905cd4ddacf3499"
+      },
+      "응원": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_응원.webp",
+        "exists": true,
+        "bytes": 118986,
+        "sha256": "b9e630f237db119c77113d359934c4cfb6b57f739fe54c04d86097f2fcbec1ea"
+      },
+      "놀람": {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_놀람.webp",
+        "exists": true,
+        "bytes": 119386,
+        "sha256": "0c743f6664787bd2ca89d125b6829cac7b4e31cf68d625bb4794e1a3fb1d4634"
+      }
+    },
+    "recentProgress": [
+      {
+        "atUTC": "2026-09-09T11:38:14.571844+00:00",
+        "pid": "142078",
+        "speed": "0.999x",
+        "outTime": "00:08:53.688000",
+        "captureFps": "3.6",
+        "sentFps": "6.0",
+        "drop": "0",
+        "dup": "0",
+        "captureFail": "0"
+      },
+      {
+        "atUTC": "2026-09-09T11:39:14.574325+00:00",
+        "pid": "142078",
+        "speed": "0.999x",
+        "outTime": "00:09:53.455000",
+        "captureFps": "3.7",
+        "sentFps": "6.0",
+        "drop": "0",
+        "dup": "0",
+        "captureFail": "0"
+      },
+      {
+        "atUTC": "2026-09-09T11:40:14.577621+00:00",
+        "pid": "142078",
+        "speed": "0.999x",
+        "outTime": "00:10:53.224000",
+        "captureFps": "3.6",
+        "sentFps": "6.0",
+        "drop": "0",
+        "dup": "0",
+        "captureFail": "0"
+      },
+      {
+        "atUTC": "2026-09-09T11:41:14.574476+00:00",
+        "pid": "142078",
+        "speed": "1x",
+        "outTime": "00:11:53.712000",
+        "captureFps": "3.6",
+        "sentFps": "6.0",
+        "drop": "0",
+        "dup": "0",
+        "captureFail": "0"
+      },
+      {
+        "atUTC": "2026-09-09T11:42:14.575229+00:00",
+        "pid": "142078",
+        "speed": "1x",
+        "outTime": "00:12:53.689000",
+        "captureFps": "3.6",
+        "sentFps": "6.0",
+        "drop": "0",
+        "dup": "0",
+        "captureFail": "0"
+      }
+    ]
+  },
+  "verification": {
+    "protectedFilesChecked": 15,
+    "protectedFilesUnchanged": 15,
+    "protectedFileHashes": [
+      {
+        "path": "/opt/synk-radio/송출/조율.json",
+        "expectedSha256": "28b153e214d0ee59f498696202f2f8237600ae3630fa998679d07053bb48a4c2",
+        "actualSha256": "28b153e214d0ee59f498696202f2f8237600ae3630fa998679d07053bb48a4c2"
+      },
+      {
+        "path": "/opt/synk-radio/소리/playlist.txt",
+        "expectedSha256": "374e9ce2cc0d6f81928c5639cf69ed0abb9252f2d9f8c2025a24ad330a0bee5c",
+        "actualSha256": "374e9ce2cc0d6f81928c5639cf69ed0abb9252f2d9f8c2025a24ad330a0bee5c"
+      },
+      {
+        "path": "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js",
+        "expectedSha256": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261",
+        "actualSha256": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261"
+      },
+      {
+        "path": "/opt/synk-radio/지면/bots/오버레이/송출진척.js",
+        "expectedSha256": "41cbe7c860f66452ef3c2fe89d78210fa2a21f4570558a54e791a7a9b86b6524",
+        "actualSha256": "41cbe7c860f66452ef3c2fe89d78210fa2a21f4570558a54e791a7a9b86b6524"
+      },
+      {
+        "path": "/opt/synk-radio/지면/bots/오버레이/마스코트.html",
+        "expectedSha256": "64a55da4e3cc1443e217481726acd898d192f1b3a780b8222f999a069238b4a2",
+        "actualSha256": "64a55da4e3cc1443e217481726acd898d192f1b3a780b8222f999a069238b4a2"
+      },
+      {
+        "path": "/opt/synk-radio/지면/bots/오버레이/라디오표정리듬.js",
+        "expectedSha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8",
+        "actualSha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8"
+      },
+      {
+        "path": "/opt/synk-radio/지면/bots/오버레이/방송층.html",
+        "expectedSha256": "b4a4a0f9e2236bd29cc2ccf116d5d7162aaf390e5f8fea6232051ace5b9466ff",
+        "actualSha256": "b4a4a0f9e2236bd29cc2ccf116d5d7162aaf390e5f8fea6232051ace5b9466ff"
+      },
+      {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_본체.webp",
+        "expectedSha256": "d3b92020a6ca212a3fff355952c80cc5fc8599dc919bb479833919415904ffdf",
+        "actualSha256": "d3b92020a6ca212a3fff355952c80cc5fc8599dc919bb479833919415904ffdf"
+      },
+      {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_눈감음.webp",
+        "expectedSha256": "381bf0e6e491fdc99da61f47f03681ed171384d9fc2780f2638d67e11d6467ad",
+        "actualSha256": "381bf0e6e491fdc99da61f47f03681ed171384d9fc2780f2638d67e11d6467ad"
+      },
+      {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_눈웃음.webp",
+        "expectedSha256": "bb89f7333ac8f2145231f635dd5fe3462d10ec94338ec71f5129f9555126e654",
+        "actualSha256": "bb89f7333ac8f2145231f635dd5fe3462d10ec94338ec71f5129f9555126e654"
+      },
+      {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_궁금함.webp",
+        "expectedSha256": "37c80c6e81642bf573ab6867a92b8a16242e9446f15a6a0bd04235a58e357fde",
+        "actualSha256": "37c80c6e81642bf573ab6867a92b8a16242e9446f15a6a0bd04235a58e357fde"
+      },
+      {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_집중.webp",
+        "expectedSha256": "775d5e0605f36e08b00c382d6837152c7eb6ef85c3a84a62ed841de1e4d941d9",
+        "actualSha256": "775d5e0605f36e08b00c382d6837152c7eb6ef85c3a84a62ed841de1e4d941d9"
+      },
+      {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_안도.webp",
+        "expectedSha256": "c6c3094b5b897b03745fb0459659af6f6180f7a1de22340be905cd4ddacf3499",
+        "actualSha256": "c6c3094b5b897b03745fb0459659af6f6180f7a1de22340be905cd4ddacf3499"
+      },
+      {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_응원.webp",
+        "expectedSha256": "b9e630f237db119c77113d359934c4cfb6b57f739fe54c04d86097f2fcbec1ea",
+        "actualSha256": "b9e630f237db119c77113d359934c4cfb6b57f739fe54c04d86097f2fcbec1ea"
+      },
+      {
+        "path": "/opt/synk-radio/지면/docs/Loom_자산/라디오DJ/까몽_여름델+전설의팻말_놀람.webp",
+        "expectedSha256": "0c743f6664787bd2ca89d125b6829cac7b4e31cf68d625bb4794e1a3fb1d4634",
+        "actualSha256": "0c743f6664787bd2ca89d125b6829cac7b4e31cf68d625bb4794e1a3fb1d4634"
+      }
+    ],
+    "expectedStageSha256": "0e7c7c6d29e2d5545f05d239cef178fac7325d6f449a8dcf0be0fa914f23daa0",
+    "stageMatchesV3Receipt": true,
+    "expectedStageVideoSha256": "af2b83919d5b06758702829d1c36fcfb31fdcfa12453d944ffecbc6402956f50",
+    "stageVideoMatchesV3Receipt": true,
+    "expectedMainPID": "142078",
+    "mainPIDUnchanged": true,
+    "activeMedia": [
+      {
+        "pid": "142223",
+        "path": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "142223",
+        "path": "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4"
+      }
+    ],
+    "incidentCounts": {}
+  },
+  "youtubeHealth": {
+    "checkedAtUTC": "2026-09-09 11:42:36 UTC",
+    "stream": "active",
+    "health": "good",
+    "broadcast": "eI-5vSy5mjY",
+    "lifecycle": "live",
+    "privacy": "public"
+  },
+  "codeReviewSuggestions": [
+    "기본 호출의 v3 경로/파일명/백업 이름을 그대로 유지하고 명시적 --v4 때만 out/base/file 선택표를 분기한다.",
+    "--v4를 모드 인자로 오해하지 않도록 version 옵션을 제거한 인자에서 --upload/--check/--apply를 선택하고 알 수 없는 옵션은 거절한다.",
+    "v4 백업 이름은 .before-generated-20260909-v4 등 별도 이름으로 둔다. 기존 .before-generated-20260909는 v2 목록이라 v4의 oldStageSha(v3)와 일치하지 않는다.",
+    "SHA 기반 불변 대상 파일과 UUID 업로드, 현재 열린 파일 검사, 재개 시 필요할 때만 한 번 재시작, 15개 보호 SHA 검사는 그대로 유지한다.",
+    "v4 임시 목록 이름도 구분하거나 UUID로 만들어 v3 재실행의 임시 파일과 충돌하지 않게 한다."
+  ],
+  "unchecked": [
+    "FLAC 자체 전체 SHA는 이번에도 읽지 않았다. 소리 목록 SHA와 실제 열려 있는 FLAC 경로를 확인했다.",
+    "공개 화면과 음향은 이번 읽기 전용 확인에서 재생 검수하지 않았다."
+  ],
+  "mutations": {
+    "serverWrites": 0,
+    "serviceRestarts": 0,
+    "codeEdits": 0,
+    "gitMutations": 0,
+    "localEvidenceOnly": "docs/_ops/라디오생동_20260909/v4/배포전상태.json"
+  }
+}

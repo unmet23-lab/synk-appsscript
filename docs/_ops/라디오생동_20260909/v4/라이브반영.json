@@ -1,0 +1,50 @@
+{
+  "applied": true,
+  "already": false,
+  "restarted": true,
+  "at": "2026-09-09T11:55:53.064Z",
+  "file": "/opt/synk-radio/무대차례/chuseok-tree-light-20260909-dcc5a8fef2e5.mp4",
+  "sha256": "dcc5a8fef2e5efd9c0611166f53fac32846e16fb14f2d81a68a3c6d403ff3dfa",
+  "stageSha256": "074f092875f989c75d6fb0e9ed4549554eddb2db0e55fcc8e93dff44bc246db9",
+  "backup": "/opt/synk-radio/무대차례/목록.txt.before-generated-20260909-v4",
+  "protectedFilesUnchanged": 15,
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "30/1"
+      }
+    ],
+    "format": {
+      "duration": "60.000000"
+    }
+  },
+  "before": {
+    "service": {
+      "MainPID": "142078",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "ActiveEnterTimestamp": "Wed 2026-09-09 11:29:06 UTC"
+    },
+    "files": [
+      "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+      "/opt/synk-radio/무대차례/chuseok-generated-20260909-af2b83919d5b.mp4"
+    ]
+  },
+  "after": {
+    "service": {
+      "MainPID": "143182",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "ActiveEnterTimestamp": "Wed 2026-09-09 11:55:43 UTC"
+    },
+    "files": [
+      "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+      "/opt/synk-radio/무대차례/chuseok-tree-light-20260909-dcc5a8fef2e5.mp4"
+    ]
+  }
+}

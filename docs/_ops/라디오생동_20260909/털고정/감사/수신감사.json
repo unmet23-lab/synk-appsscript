@@ -1,0 +1,2051 @@
+{
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\털고정\\유튜브수신_털고정.mp4",
+  "sha256": "23c3ef568a79bc36921918c807814add85c204cc858bf4fd59138062dcac972a",
+  "decoded_frame_count": 2700,
+  "candidate": "first live rim helper: 6px; retained for comparison, not final acceptance",
+  "overall_verdict": "needs edge-integration improvement; do not report complete",
+  "fur_expression_verdict": "improvement confirmed in sampled received open/closed states",
+  "edge_verdict": "visible bright lower-belly/hand rim remains; first candidate rejected for final edge-quality acceptance",
+  "sample_interval_seconds": 0.2,
+  "sample_count": 450,
+  "full_decode_exit_code": 0,
+  "full_decode_errors": "",
+  "eye_contact_times": [
+    0.0,
+    3.2,
+    4.8,
+    5.0,
+    6.2,
+    10.0,
+    20.0,
+    20.4,
+    30.0,
+    31.0,
+    33.0,
+    40.0,
+    45.6,
+    50.0,
+    54.6,
+    60.0,
+    61.0,
+    66.0,
+    70.0,
+    74.4,
+    79.2,
+    80.0,
+    89.8
+  ],
+  "roi_diagnostics": {
+    "forehead": {
+      "bbox_xyxy": [
+        555,
+        320,
+        676,
+        350
+      ],
+      "adjacent_0p2sec_mean_absolute_difference_median": 0.0,
+      "adjacent_0p2sec_mean_absolute_difference_p95": 0.9982001836547274,
+      "largest_sample_pairs": [
+        {
+          "from": 6.6,
+          "to": 6.8,
+          "mae": 36.7078971533517
+        },
+        {
+          "from": 4.4,
+          "to": 4.6,
+          "mae": 27.72690541781451
+        },
+        {
+          "from": 6.4,
+          "to": 6.6,
+          "mae": 24.72828282828283
+        },
+        {
+          "from": 5.4,
+          "to": 5.6,
+          "mae": 12.870156106519742
+        },
+        {
+          "from": 5.2,
+          "to": 5.4,
+          "mae": 6.615702479338843
+        },
+        {
+          "from": 7.4,
+          "to": 7.6,
+          "mae": 5.803305785123967
+        },
+        {
+          "from": 6.8,
+          "to": 7.0,
+          "mae": 5.143342516069789
+        },
+        {
+          "from": 4.8,
+          "to": 5.0,
+          "mae": 4.831404958677686
+        }
+      ]
+    },
+    "left_cheek": {
+      "bbox_xyxy": [
+        539,
+        402,
+        564,
+        429
+      ],
+      "adjacent_0p2sec_mean_absolute_difference_median": 0.0,
+      "adjacent_0p2sec_mean_absolute_difference_p95": 0.8130370370370363,
+      "largest_sample_pairs": [
+        {
+          "from": 4.4,
+          "to": 4.6,
+          "mae": 47.30814814814815
+        },
+        {
+          "from": 7.4,
+          "to": 7.6,
+          "mae": 43.919506172839505
+        },
+        {
+          "from": 6.6,
+          "to": 6.8,
+          "mae": 40.50024691358025
+        },
+        {
+          "from": 6.8,
+          "to": 7.0,
+          "mae": 34.78913580246913
+        },
+        {
+          "from": 7.2,
+          "to": 7.4,
+          "mae": 23.956543209876543
+        },
+        {
+          "from": 5.4,
+          "to": 5.6,
+          "mae": 15.148148148148149
+        },
+        {
+          "from": 6.4,
+          "to": 6.6,
+          "mae": 13.533333333333333
+        },
+        {
+          "from": 9.8,
+          "to": 10.0,
+          "mae": 6.283950617283951
+        }
+      ]
+    },
+    "blue_garment": {
+      "bbox_xyxy": [
+        551,
+        471,
+        592,
+        520
+      ],
+      "adjacent_0p2sec_mean_absolute_difference_median": 0.0,
+      "adjacent_0p2sec_mean_absolute_difference_p95": 0.953044632487141,
+      "largest_sample_pairs": [
+        {
+          "from": 5.6,
+          "to": 5.8,
+          "mae": 129.48199767711964
+        },
+        {
+          "from": 5.4,
+          "to": 5.6,
+          "mae": 115.82478845196616
+        },
+        {
+          "from": 7.4,
+          "to": 7.6,
+          "mae": 49.51501576240252
+        },
+        {
+          "from": 7.2,
+          "to": 7.4,
+          "mae": 42.656213704994194
+        },
+        {
+          "from": 4.4,
+          "to": 4.6,
+          "mae": 41.752115480338475
+        },
+        {
+          "from": 6.4,
+          "to": 6.6,
+          "mae": 34.13223826115812
+        },
+        {
+          "from": 6.8,
+          "to": 7.0,
+          "mae": 31.19213539074166
+        },
+        {
+          "from": 6.6,
+          "to": 6.8,
+          "mae": 30.73585531773685
+        }
+      ]
+    }
+  },
+  "all_eye_green_samples": [
+    {
+      "t": 0.0,
+      "green_pixels": 399
+    },
+    {
+      "t": 0.2,
+      "green_pixels": 399
+    },
+    {
+      "t": 0.4,
+      "green_pixels": 399
+    },
+    {
+      "t": 0.6,
+      "green_pixels": 399
+    },
+    {
+      "t": 0.8,
+      "green_pixels": 399
+    },
+    {
+      "t": 1.0,
+      "green_pixels": 399
+    },
+    {
+      "t": 1.2,
+      "green_pixels": 399
+    },
+    {
+      "t": 1.4,
+      "green_pixels": 399
+    },
+    {
+      "t": 1.6,
+      "green_pixels": 399
+    },
+    {
+      "t": 1.8,
+      "green_pixels": 399
+    },
+    {
+      "t": 2.0,
+      "green_pixels": 399
+    },
+    {
+      "t": 2.2,
+      "green_pixels": 399
+    },
+    {
+      "t": 2.4,
+      "green_pixels": 399
+    },
+    {
+      "t": 2.6,
+      "green_pixels": 399
+    },
+    {
+      "t": 2.8,
+      "green_pixels": 399
+    },
+    {
+      "t": 3.0,
+      "green_pixels": 399
+    },
+    {
+      "t": 3.2,
+      "green_pixels": 0
+    },
+    {
+      "t": 3.4,
+      "green_pixels": 259
+    },
+    {
+      "t": 3.6,
+      "green_pixels": 259
+    },
+    {
+      "t": 3.8,
+      "green_pixels": 259
+    },
+    {
+      "t": 4.0,
+      "green_pixels": 259
+    },
+    {
+      "t": 4.2,
+      "green_pixels": 259
+    },
+    {
+      "t": 4.4,
+      "green_pixels": 0
+    },
+    {
+      "t": 4.6,
+      "green_pixels": 0
+    },
+    {
+      "t": 4.8,
+      "green_pixels": 0
+    },
+    {
+      "t": 5.0,
+      "green_pixels": 8
+    },
+    {
+      "t": 5.2,
+      "green_pixels": 8
+    },
+    {
+      "t": 5.4,
+      "green_pixels": 0
+    },
+    {
+      "t": 5.6,
+      "green_pixels": 0
+    },
+    {
+      "t": 5.8,
+      "green_pixels": 0
+    },
+    {
+      "t": 6.0,
+      "green_pixels": 0
+    },
+    {
+      "t": 6.2,
+      "green_pixels": 0
+    },
+    {
+      "t": 6.4,
+      "green_pixels": 0
+    },
+    {
+      "t": 6.6,
+      "green_pixels": 42
+    },
+    {
+      "t": 6.8,
+      "green_pixels": 86
+    },
+    {
+      "t": 7.0,
+      "green_pixels": 81
+    },
+    {
+      "t": 7.2,
+      "green_pixels": 81
+    },
+    {
+      "t": 7.4,
+      "green_pixels": 70
+    },
+    {
+      "t": 7.6,
+      "green_pixels": 65
+    },
+    {
+      "t": 7.8,
+      "green_pixels": 65
+    },
+    {
+      "t": 8.0,
+      "green_pixels": 65
+    },
+    {
+      "t": 8.2,
+      "green_pixels": 65
+    },
+    {
+      "t": 8.4,
+      "green_pixels": 65
+    },
+    {
+      "t": 8.6,
+      "green_pixels": 65
+    },
+    {
+      "t": 8.8,
+      "green_pixels": 65
+    },
+    {
+      "t": 9.0,
+      "green_pixels": 65
+    },
+    {
+      "t": 9.2,
+      "green_pixels": 65
+    },
+    {
+      "t": 9.4,
+      "green_pixels": 65
+    },
+    {
+      "t": 9.6,
+      "green_pixels": 65
+    },
+    {
+      "t": 9.8,
+      "green_pixels": 65
+    },
+    {
+      "t": 10.0,
+      "green_pixels": 389
+    },
+    {
+      "t": 10.2,
+      "green_pixels": 389
+    },
+    {
+      "t": 10.4,
+      "green_pixels": 389
+    },
+    {
+      "t": 10.6,
+      "green_pixels": 389
+    },
+    {
+      "t": 10.8,
+      "green_pixels": 389
+    },
+    {
+      "t": 11.0,
+      "green_pixels": 389
+    },
+    {
+      "t": 11.2,
+      "green_pixels": 389
+    },
+    {
+      "t": 11.4,
+      "green_pixels": 389
+    },
+    {
+      "t": 11.6,
+      "green_pixels": 389
+    },
+    {
+      "t": 11.8,
+      "green_pixels": 389
+    },
+    {
+      "t": 12.0,
+      "green_pixels": 389
+    },
+    {
+      "t": 12.2,
+      "green_pixels": 389
+    },
+    {
+      "t": 12.4,
+      "green_pixels": 389
+    },
+    {
+      "t": 12.6,
+      "green_pixels": 389
+    },
+    {
+      "t": 12.8,
+      "green_pixels": 389
+    },
+    {
+      "t": 13.0,
+      "green_pixels": 389
+    },
+    {
+      "t": 13.2,
+      "green_pixels": 389
+    },
+    {
+      "t": 13.4,
+      "green_pixels": 48
+    },
+    {
+      "t": 13.6,
+      "green_pixels": 48
+    },
+    {
+      "t": 13.8,
+      "green_pixels": 48
+    },
+    {
+      "t": 14.0,
+      "green_pixels": 48
+    },
+    {
+      "t": 14.2,
+      "green_pixels": 247
+    },
+    {
+      "t": 14.4,
+      "green_pixels": 247
+    },
+    {
+      "t": 14.6,
+      "green_pixels": 247
+    },
+    {
+      "t": 14.8,
+      "green_pixels": 247
+    },
+    {
+      "t": 15.0,
+      "green_pixels": 415
+    },
+    {
+      "t": 15.2,
+      "green_pixels": 415
+    },
+    {
+      "t": 15.4,
+      "green_pixels": 415
+    },
+    {
+      "t": 15.6,
+      "green_pixels": 415
+    },
+    {
+      "t": 15.8,
+      "green_pixels": 415
+    },
+    {
+      "t": 16.0,
+      "green_pixels": 415
+    },
+    {
+      "t": 16.2,
+      "green_pixels": 415
+    },
+    {
+      "t": 16.4,
+      "green_pixels": 415
+    },
+    {
+      "t": 16.6,
+      "green_pixels": 415
+    },
+    {
+      "t": 16.8,
+      "green_pixels": 415
+    },
+    {
+      "t": 17.0,
+      "green_pixels": 415
+    },
+    {
+      "t": 17.2,
+      "green_pixels": 415
+    },
+    {
+      "t": 17.4,
+      "green_pixels": 415
+    },
+    {
+      "t": 17.6,
+      "green_pixels": 415
+    },
+    {
+      "t": 17.8,
+      "green_pixels": 415
+    },
+    {
+      "t": 18.0,
+      "green_pixels": 415
+    },
+    {
+      "t": 18.2,
+      "green_pixels": 415
+    },
+    {
+      "t": 18.4,
+      "green_pixels": 415
+    },
+    {
+      "t": 18.6,
+      "green_pixels": 415
+    },
+    {
+      "t": 18.8,
+      "green_pixels": 415
+    },
+    {
+      "t": 19.0,
+      "green_pixels": 8
+    },
+    {
+      "t": 19.2,
+      "green_pixels": 8
+    },
+    {
+      "t": 19.4,
+      "green_pixels": 206
+    },
+    {
+      "t": 19.6,
+      "green_pixels": 206
+    },
+    {
+      "t": 19.8,
+      "green_pixels": 407
+    },
+    {
+      "t": 20.0,
+      "green_pixels": 407
+    },
+    {
+      "t": 20.2,
+      "green_pixels": 407
+    },
+    {
+      "t": 20.4,
+      "green_pixels": 0
+    },
+    {
+      "t": 20.6,
+      "green_pixels": 164
+    },
+    {
+      "t": 20.8,
+      "green_pixels": 164
+    },
+    {
+      "t": 21.0,
+      "green_pixels": 164
+    },
+    {
+      "t": 21.2,
+      "green_pixels": 164
+    },
+    {
+      "t": 21.4,
+      "green_pixels": 164
+    },
+    {
+      "t": 21.6,
+      "green_pixels": 164
+    },
+    {
+      "t": 21.8,
+      "green_pixels": 164
+    },
+    {
+      "t": 22.0,
+      "green_pixels": 164
+    },
+    {
+      "t": 22.2,
+      "green_pixels": 164
+    },
+    {
+      "t": 22.4,
+      "green_pixels": 164
+    },
+    {
+      "t": 22.6,
+      "green_pixels": 164
+    },
+    {
+      "t": 22.8,
+      "green_pixels": 164
+    },
+    {
+      "t": 23.0,
+      "green_pixels": 192
+    },
+    {
+      "t": 23.2,
+      "green_pixels": 192
+    },
+    {
+      "t": 23.4,
+      "green_pixels": 192
+    },
+    {
+      "t": 23.6,
+      "green_pixels": 192
+    },
+    {
+      "t": 23.8,
+      "green_pixels": 192
+    },
+    {
+      "t": 24.0,
+      "green_pixels": 192
+    },
+    {
+      "t": 24.2,
+      "green_pixels": 192
+    },
+    {
+      "t": 24.4,
+      "green_pixels": 192
+    },
+    {
+      "t": 24.6,
+      "green_pixels": 192
+    },
+    {
+      "t": 24.8,
+      "green_pixels": 415
+    },
+    {
+      "t": 25.0,
+      "green_pixels": 415
+    },
+    {
+      "t": 25.2,
+      "green_pixels": 415
+    },
+    {
+      "t": 25.4,
+      "green_pixels": 415
+    },
+    {
+      "t": 25.6,
+      "green_pixels": 415
+    },
+    {
+      "t": 25.8,
+      "green_pixels": 415
+    },
+    {
+      "t": 26.0,
+      "green_pixels": 415
+    },
+    {
+      "t": 26.2,
+      "green_pixels": 415
+    },
+    {
+      "t": 26.4,
+      "green_pixels": 415
+    },
+    {
+      "t": 26.6,
+      "green_pixels": 415
+    },
+    {
+      "t": 26.8,
+      "green_pixels": 415
+    },
+    {
+      "t": 27.0,
+      "green_pixels": 40
+    },
+    {
+      "t": 27.2,
+      "green_pixels": 216
+    },
+    {
+      "t": 27.4,
+      "green_pixels": 216
+    },
+    {
+      "t": 27.6,
+      "green_pixels": 216
+    },
+    {
+      "t": 27.8,
+      "green_pixels": 216
+    },
+    {
+      "t": 28.0,
+      "green_pixels": 216
+    },
+    {
+      "t": 28.2,
+      "green_pixels": 216
+    },
+    {
+      "t": 28.4,
+      "green_pixels": 216
+    },
+    {
+      "t": 28.6,
+      "green_pixels": 216
+    },
+    {
+      "t": 28.8,
+      "green_pixels": 216
+    },
+    {
+      "t": 29.0,
+      "green_pixels": 216
+    },
+    {
+      "t": 29.2,
+      "green_pixels": 216
+    },
+    {
+      "t": 29.4,
+      "green_pixels": 216
+    },
+    {
+      "t": 29.6,
+      "green_pixels": 216
+    },
+    {
+      "t": 29.8,
+      "green_pixels": 413
+    },
+    {
+      "t": 30.0,
+      "green_pixels": 413
+    },
+    {
+      "t": 30.2,
+      "green_pixels": 413
+    },
+    {
+      "t": 30.4,
+      "green_pixels": 413
+    },
+    {
+      "t": 30.6,
+      "green_pixels": 413
+    },
+    {
+      "t": 30.8,
+      "green_pixels": 413
+    },
+    {
+      "t": 31.0,
+      "green_pixels": 0
+    },
+    {
+      "t": 31.2,
+      "green_pixels": 126
+    },
+    {
+      "t": 31.4,
+      "green_pixels": 126
+    },
+    {
+      "t": 31.6,
+      "green_pixels": 126
+    },
+    {
+      "t": 31.8,
+      "green_pixels": 126
+    },
+    {
+      "t": 32.0,
+      "green_pixels": 126
+    },
+    {
+      "t": 32.2,
+      "green_pixels": 126
+    },
+    {
+      "t": 32.4,
+      "green_pixels": 126
+    },
+    {
+      "t": 32.6,
+      "green_pixels": 126
+    },
+    {
+      "t": 32.8,
+      "green_pixels": 126
+    },
+    {
+      "t": 33.0,
+      "green_pixels": 0
+    },
+    {
+      "t": 33.2,
+      "green_pixels": 0
+    },
+    {
+      "t": 33.4,
+      "green_pixels": 0
+    },
+    {
+      "t": 33.6,
+      "green_pixels": 188
+    },
+    {
+      "t": 33.8,
+      "green_pixels": 188
+    },
+    {
+      "t": 34.0,
+      "green_pixels": 188
+    },
+    {
+      "t": 34.2,
+      "green_pixels": 188
+    },
+    {
+      "t": 34.4,
+      "green_pixels": 188
+    },
+    {
+      "t": 34.6,
+      "green_pixels": 438
+    },
+    {
+      "t": 34.8,
+      "green_pixels": 200
+    },
+    {
+      "t": 35.0,
+      "green_pixels": 200
+    },
+    {
+      "t": 35.2,
+      "green_pixels": 200
+    },
+    {
+      "t": 35.4,
+      "green_pixels": 200
+    },
+    {
+      "t": 35.6,
+      "green_pixels": 200
+    },
+    {
+      "t": 35.8,
+      "green_pixels": 200
+    },
+    {
+      "t": 36.0,
+      "green_pixels": 200
+    },
+    {
+      "t": 36.2,
+      "green_pixels": 200
+    },
+    {
+      "t": 36.4,
+      "green_pixels": 200
+    },
+    {
+      "t": 36.6,
+      "green_pixels": 200
+    },
+    {
+      "t": 36.8,
+      "green_pixels": 200
+    },
+    {
+      "t": 37.0,
+      "green_pixels": 200
+    },
+    {
+      "t": 37.2,
+      "green_pixels": 200
+    },
+    {
+      "t": 37.4,
+      "green_pixels": 200
+    },
+    {
+      "t": 37.6,
+      "green_pixels": 200
+    },
+    {
+      "t": 37.8,
+      "green_pixels": 200
+    },
+    {
+      "t": 38.0,
+      "green_pixels": 200
+    },
+    {
+      "t": 38.2,
+      "green_pixels": 200
+    },
+    {
+      "t": 38.4,
+      "green_pixels": 200
+    },
+    {
+      "t": 38.6,
+      "green_pixels": 200
+    },
+    {
+      "t": 38.8,
+      "green_pixels": 200
+    },
+    {
+      "t": 39.0,
+      "green_pixels": 200
+    },
+    {
+      "t": 39.2,
+      "green_pixels": 200
+    },
+    {
+      "t": 39.4,
+      "green_pixels": 200
+    },
+    {
+      "t": 39.6,
+      "green_pixels": 411
+    },
+    {
+      "t": 39.8,
+      "green_pixels": 411
+    },
+    {
+      "t": 40.0,
+      "green_pixels": 0
+    },
+    {
+      "t": 40.2,
+      "green_pixels": 144
+    },
+    {
+      "t": 40.4,
+      "green_pixels": 144
+    },
+    {
+      "t": 40.6,
+      "green_pixels": 144
+    },
+    {
+      "t": 40.8,
+      "green_pixels": 144
+    },
+    {
+      "t": 41.0,
+      "green_pixels": 144
+    },
+    {
+      "t": 41.2,
+      "green_pixels": 144
+    },
+    {
+      "t": 41.4,
+      "green_pixels": 144
+    },
+    {
+      "t": 41.6,
+      "green_pixels": 144
+    },
+    {
+      "t": 41.8,
+      "green_pixels": 144
+    },
+    {
+      "t": 42.0,
+      "green_pixels": 144
+    },
+    {
+      "t": 42.2,
+      "green_pixels": 144
+    },
+    {
+      "t": 42.4,
+      "green_pixels": 144
+    },
+    {
+      "t": 42.6,
+      "green_pixels": 144
+    },
+    {
+      "t": 42.8,
+      "green_pixels": 144
+    },
+    {
+      "t": 43.0,
+      "green_pixels": 144
+    },
+    {
+      "t": 43.2,
+      "green_pixels": 144
+    },
+    {
+      "t": 43.4,
+      "green_pixels": 144
+    },
+    {
+      "t": 43.6,
+      "green_pixels": 144
+    },
+    {
+      "t": 43.8,
+      "green_pixels": 144
+    },
+    {
+      "t": 44.0,
+      "green_pixels": 144
+    },
+    {
+      "t": 44.2,
+      "green_pixels": 144
+    },
+    {
+      "t": 44.4,
+      "green_pixels": 144
+    },
+    {
+      "t": 44.6,
+      "green_pixels": 415
+    },
+    {
+      "t": 44.8,
+      "green_pixels": 415
+    },
+    {
+      "t": 45.0,
+      "green_pixels": 415
+    },
+    {
+      "t": 45.2,
+      "green_pixels": 415
+    },
+    {
+      "t": 45.4,
+      "green_pixels": 415
+    },
+    {
+      "t": 45.6,
+      "green_pixels": 0
+    },
+    {
+      "t": 45.8,
+      "green_pixels": 0
+    },
+    {
+      "t": 46.0,
+      "green_pixels": 248
+    },
+    {
+      "t": 46.2,
+      "green_pixels": 248
+    },
+    {
+      "t": 46.4,
+      "green_pixels": 248
+    },
+    {
+      "t": 46.6,
+      "green_pixels": 248
+    },
+    {
+      "t": 46.8,
+      "green_pixels": 248
+    },
+    {
+      "t": 47.0,
+      "green_pixels": 248
+    },
+    {
+      "t": 47.2,
+      "green_pixels": 248
+    },
+    {
+      "t": 47.4,
+      "green_pixels": 248
+    },
+    {
+      "t": 47.6,
+      "green_pixels": 248
+    },
+    {
+      "t": 47.8,
+      "green_pixels": 248
+    },
+    {
+      "t": 48.0,
+      "green_pixels": 248
+    },
+    {
+      "t": 48.2,
+      "green_pixels": 248
+    },
+    {
+      "t": 48.4,
+      "green_pixels": 248
+    },
+    {
+      "t": 48.6,
+      "green_pixels": 334
+    },
+    {
+      "t": 48.8,
+      "green_pixels": 334
+    },
+    {
+      "t": 49.0,
+      "green_pixels": 334
+    },
+    {
+      "t": 49.2,
+      "green_pixels": 334
+    },
+    {
+      "t": 49.4,
+      "green_pixels": 400
+    },
+    {
+      "t": 49.6,
+      "green_pixels": 400
+    },
+    {
+      "t": 49.8,
+      "green_pixels": 400
+    },
+    {
+      "t": 50.0,
+      "green_pixels": 400
+    },
+    {
+      "t": 50.2,
+      "green_pixels": 400
+    },
+    {
+      "t": 50.4,
+      "green_pixels": 400
+    },
+    {
+      "t": 50.6,
+      "green_pixels": 400
+    },
+    {
+      "t": 50.8,
+      "green_pixels": 400
+    },
+    {
+      "t": 51.0,
+      "green_pixels": 400
+    },
+    {
+      "t": 51.2,
+      "green_pixels": 48
+    },
+    {
+      "t": 51.4,
+      "green_pixels": 48
+    },
+    {
+      "t": 51.6,
+      "green_pixels": 48
+    },
+    {
+      "t": 51.8,
+      "green_pixels": 163
+    },
+    {
+      "t": 52.0,
+      "green_pixels": 163
+    },
+    {
+      "t": 52.2,
+      "green_pixels": 163
+    },
+    {
+      "t": 52.4,
+      "green_pixels": 163
+    },
+    {
+      "t": 52.6,
+      "green_pixels": 163
+    },
+    {
+      "t": 52.8,
+      "green_pixels": 163
+    },
+    {
+      "t": 53.0,
+      "green_pixels": 163
+    },
+    {
+      "t": 53.2,
+      "green_pixels": 163
+    },
+    {
+      "t": 53.4,
+      "green_pixels": 163
+    },
+    {
+      "t": 53.6,
+      "green_pixels": 163
+    },
+    {
+      "t": 53.8,
+      "green_pixels": 163
+    },
+    {
+      "t": 54.0,
+      "green_pixels": 163
+    },
+    {
+      "t": 54.2,
+      "green_pixels": 163
+    },
+    {
+      "t": 54.4,
+      "green_pixels": 421
+    },
+    {
+      "t": 54.6,
+      "green_pixels": 0
+    },
+    {
+      "t": 54.8,
+      "green_pixels": 0
+    },
+    {
+      "t": 55.0,
+      "green_pixels": 242
+    },
+    {
+      "t": 55.2,
+      "green_pixels": 242
+    },
+    {
+      "t": 55.4,
+      "green_pixels": 242
+    },
+    {
+      "t": 55.6,
+      "green_pixels": 242
+    },
+    {
+      "t": 55.8,
+      "green_pixels": 242
+    },
+    {
+      "t": 56.0,
+      "green_pixels": 242
+    },
+    {
+      "t": 56.2,
+      "green_pixels": 242
+    },
+    {
+      "t": 56.4,
+      "green_pixels": 242
+    },
+    {
+      "t": 56.6,
+      "green_pixels": 242
+    },
+    {
+      "t": 56.8,
+      "green_pixels": 242
+    },
+    {
+      "t": 57.0,
+      "green_pixels": 242
+    },
+    {
+      "t": 57.2,
+      "green_pixels": 242
+    },
+    {
+      "t": 57.4,
+      "green_pixels": 242
+    },
+    {
+      "t": 57.6,
+      "green_pixels": 242
+    },
+    {
+      "t": 57.8,
+      "green_pixels": 242
+    },
+    {
+      "t": 58.0,
+      "green_pixels": 242
+    },
+    {
+      "t": 58.2,
+      "green_pixels": 242
+    },
+    {
+      "t": 58.4,
+      "green_pixels": 242
+    },
+    {
+      "t": 58.6,
+      "green_pixels": 242
+    },
+    {
+      "t": 58.8,
+      "green_pixels": 242
+    },
+    {
+      "t": 59.0,
+      "green_pixels": 242
+    },
+    {
+      "t": 59.2,
+      "green_pixels": 242
+    },
+    {
+      "t": 59.4,
+      "green_pixels": 407
+    },
+    {
+      "t": 59.6,
+      "green_pixels": 407
+    },
+    {
+      "t": 59.8,
+      "green_pixels": 407
+    },
+    {
+      "t": 60.0,
+      "green_pixels": 407
+    },
+    {
+      "t": 60.2,
+      "green_pixels": 407
+    },
+    {
+      "t": 60.4,
+      "green_pixels": 407
+    },
+    {
+      "t": 60.6,
+      "green_pixels": 407
+    },
+    {
+      "t": 60.8,
+      "green_pixels": 407
+    },
+    {
+      "t": 61.0,
+      "green_pixels": 0
+    },
+    {
+      "t": 61.2,
+      "green_pixels": 0
+    },
+    {
+      "t": 61.4,
+      "green_pixels": 96
+    },
+    {
+      "t": 61.6,
+      "green_pixels": 96
+    },
+    {
+      "t": 61.8,
+      "green_pixels": 96
+    },
+    {
+      "t": 62.0,
+      "green_pixels": 96
+    },
+    {
+      "t": 62.2,
+      "green_pixels": 96
+    },
+    {
+      "t": 62.4,
+      "green_pixels": 96
+    },
+    {
+      "t": 62.6,
+      "green_pixels": 96
+    },
+    {
+      "t": 62.8,
+      "green_pixels": 96
+    },
+    {
+      "t": 63.0,
+      "green_pixels": 96
+    },
+    {
+      "t": 63.2,
+      "green_pixels": 200
+    },
+    {
+      "t": 63.4,
+      "green_pixels": 200
+    },
+    {
+      "t": 63.6,
+      "green_pixels": 200
+    },
+    {
+      "t": 63.8,
+      "green_pixels": 200
+    },
+    {
+      "t": 64.0,
+      "green_pixels": 200
+    },
+    {
+      "t": 64.2,
+      "green_pixels": 387
+    },
+    {
+      "t": 64.4,
+      "green_pixels": 387
+    },
+    {
+      "t": 64.6,
+      "green_pixels": 387
+    },
+    {
+      "t": 64.8,
+      "green_pixels": 387
+    },
+    {
+      "t": 65.0,
+      "green_pixels": 387
+    },
+    {
+      "t": 65.2,
+      "green_pixels": 387
+    },
+    {
+      "t": 65.4,
+      "green_pixels": 387
+    },
+    {
+      "t": 65.6,
+      "green_pixels": 387
+    },
+    {
+      "t": 65.8,
+      "green_pixels": 387
+    },
+    {
+      "t": 66.0,
+      "green_pixels": 0
+    },
+    {
+      "t": 66.2,
+      "green_pixels": 0
+    },
+    {
+      "t": 66.4,
+      "green_pixels": 0
+    },
+    {
+      "t": 66.6,
+      "green_pixels": 155
+    },
+    {
+      "t": 66.8,
+      "green_pixels": 155
+    },
+    {
+      "t": 67.0,
+      "green_pixels": 155
+    },
+    {
+      "t": 67.2,
+      "green_pixels": 155
+    },
+    {
+      "t": 67.4,
+      "green_pixels": 155
+    },
+    {
+      "t": 67.6,
+      "green_pixels": 155
+    },
+    {
+      "t": 67.8,
+      "green_pixels": 155
+    },
+    {
+      "t": 68.0,
+      "green_pixels": 155
+    },
+    {
+      "t": 68.2,
+      "green_pixels": 155
+    },
+    {
+      "t": 68.4,
+      "green_pixels": 155
+    },
+    {
+      "t": 68.6,
+      "green_pixels": 155
+    },
+    {
+      "t": 68.8,
+      "green_pixels": 155
+    },
+    {
+      "t": 69.0,
+      "green_pixels": 155
+    },
+    {
+      "t": 69.2,
+      "green_pixels": 415
+    },
+    {
+      "t": 69.4,
+      "green_pixels": 415
+    },
+    {
+      "t": 69.6,
+      "green_pixels": 415
+    },
+    {
+      "t": 69.8,
+      "green_pixels": 415
+    },
+    {
+      "t": 70.0,
+      "green_pixels": 415
+    },
+    {
+      "t": 70.2,
+      "green_pixels": 415
+    },
+    {
+      "t": 70.4,
+      "green_pixels": 415
+    },
+    {
+      "t": 70.6,
+      "green_pixels": 220
+    },
+    {
+      "t": 70.8,
+      "green_pixels": 220
+    },
+    {
+      "t": 71.0,
+      "green_pixels": 220
+    },
+    {
+      "t": 71.2,
+      "green_pixels": 220
+    },
+    {
+      "t": 71.4,
+      "green_pixels": 220
+    },
+    {
+      "t": 71.6,
+      "green_pixels": 220
+    },
+    {
+      "t": 71.8,
+      "green_pixels": 220
+    },
+    {
+      "t": 72.0,
+      "green_pixels": 220
+    },
+    {
+      "t": 72.2,
+      "green_pixels": 220
+    },
+    {
+      "t": 72.4,
+      "green_pixels": 220
+    },
+    {
+      "t": 72.6,
+      "green_pixels": 121
+    },
+    {
+      "t": 72.8,
+      "green_pixels": 121
+    },
+    {
+      "t": 73.0,
+      "green_pixels": 121
+    },
+    {
+      "t": 73.2,
+      "green_pixels": 121
+    },
+    {
+      "t": 73.4,
+      "green_pixels": 121
+    },
+    {
+      "t": 73.6,
+      "green_pixels": 121
+    },
+    {
+      "t": 73.8,
+      "green_pixels": 121
+    },
+    {
+      "t": 74.0,
+      "green_pixels": 121
+    },
+    {
+      "t": 74.2,
+      "green_pixels": 411
+    },
+    {
+      "t": 74.4,
+      "green_pixels": 0
+    },
+    {
+      "t": 74.6,
+      "green_pixels": 96
+    },
+    {
+      "t": 74.8,
+      "green_pixels": 96
+    },
+    {
+      "t": 75.0,
+      "green_pixels": 96
+    },
+    {
+      "t": 75.2,
+      "green_pixels": 96
+    },
+    {
+      "t": 75.4,
+      "green_pixels": 96
+    },
+    {
+      "t": 75.6,
+      "green_pixels": 96
+    },
+    {
+      "t": 75.8,
+      "green_pixels": 96
+    },
+    {
+      "t": 76.0,
+      "green_pixels": 96
+    },
+    {
+      "t": 76.2,
+      "green_pixels": 96
+    },
+    {
+      "t": 76.4,
+      "green_pixels": 96
+    },
+    {
+      "t": 76.6,
+      "green_pixels": 96
+    },
+    {
+      "t": 76.8,
+      "green_pixels": 96
+    },
+    {
+      "t": 77.0,
+      "green_pixels": 96
+    },
+    {
+      "t": 77.2,
+      "green_pixels": 96
+    },
+    {
+      "t": 77.4,
+      "green_pixels": 96
+    },
+    {
+      "t": 77.6,
+      "green_pixels": 96
+    },
+    {
+      "t": 77.8,
+      "green_pixels": 96
+    },
+    {
+      "t": 78.0,
+      "green_pixels": 96
+    },
+    {
+      "t": 78.2,
+      "green_pixels": 96
+    },
+    {
+      "t": 78.4,
+      "green_pixels": 96
+    },
+    {
+      "t": 78.6,
+      "green_pixels": 96
+    },
+    {
+      "t": 78.8,
+      "green_pixels": 96
+    },
+    {
+      "t": 79.0,
+      "green_pixels": 403
+    },
+    {
+      "t": 79.2,
+      "green_pixels": 0
+    },
+    {
+      "t": 79.4,
+      "green_pixels": 0
+    },
+    {
+      "t": 79.6,
+      "green_pixels": 0
+    },
+    {
+      "t": 79.8,
+      "green_pixels": 0
+    },
+    {
+      "t": 80.0,
+      "green_pixels": 142
+    },
+    {
+      "t": 80.2,
+      "green_pixels": 142
+    },
+    {
+      "t": 80.4,
+      "green_pixels": 142
+    },
+    {
+      "t": 80.6,
+      "green_pixels": 142
+    },
+    {
+      "t": 80.8,
+      "green_pixels": 142
+    },
+    {
+      "t": 81.0,
+      "green_pixels": 142
+    },
+    {
+      "t": 81.2,
+      "green_pixels": 142
+    },
+    {
+      "t": 81.4,
+      "green_pixels": 142
+    },
+    {
+      "t": 81.6,
+      "green_pixels": 142
+    },
+    {
+      "t": 81.8,
+      "green_pixels": 142
+    },
+    {
+      "t": 82.0,
+      "green_pixels": 142
+    },
+    {
+      "t": 82.2,
+      "green_pixels": 142
+    },
+    {
+      "t": 82.4,
+      "green_pixels": 142
+    },
+    {
+      "t": 82.6,
+      "green_pixels": 142
+    },
+    {
+      "t": 82.8,
+      "green_pixels": 142
+    },
+    {
+      "t": 83.0,
+      "green_pixels": 142
+    },
+    {
+      "t": 83.2,
+      "green_pixels": 142
+    },
+    {
+      "t": 83.4,
+      "green_pixels": 142
+    },
+    {
+      "t": 83.6,
+      "green_pixels": 142
+    },
+    {
+      "t": 83.8,
+      "green_pixels": 142
+    },
+    {
+      "t": 84.0,
+      "green_pixels": 407
+    },
+    {
+      "t": 84.2,
+      "green_pixels": 407
+    },
+    {
+      "t": 84.4,
+      "green_pixels": 407
+    },
+    {
+      "t": 84.6,
+      "green_pixels": 0
+    },
+    {
+      "t": 84.8,
+      "green_pixels": 0
+    },
+    {
+      "t": 85.0,
+      "green_pixels": 160
+    },
+    {
+      "t": 85.2,
+      "green_pixels": 160
+    },
+    {
+      "t": 85.4,
+      "green_pixels": 160
+    },
+    {
+      "t": 85.6,
+      "green_pixels": 160
+    },
+    {
+      "t": 85.8,
+      "green_pixels": 160
+    },
+    {
+      "t": 86.0,
+      "green_pixels": 160
+    },
+    {
+      "t": 86.2,
+      "green_pixels": 160
+    },
+    {
+      "t": 86.4,
+      "green_pixels": 160
+    },
+    {
+      "t": 86.6,
+      "green_pixels": 160
+    },
+    {
+      "t": 86.8,
+      "green_pixels": 160
+    },
+    {
+      "t": 87.0,
+      "green_pixels": 160
+    },
+    {
+      "t": 87.2,
+      "green_pixels": 160
+    },
+    {
+      "t": 87.4,
+      "green_pixels": 160
+    },
+    {
+      "t": 87.6,
+      "green_pixels": 186
+    },
+    {
+      "t": 87.8,
+      "green_pixels": 186
+    },
+    {
+      "t": 88.0,
+      "green_pixels": 186
+    },
+    {
+      "t": 88.2,
+      "green_pixels": 186
+    },
+    {
+      "t": 88.4,
+      "green_pixels": 186
+    },
+    {
+      "t": 88.6,
+      "green_pixels": 186
+    },
+    {
+      "t": 88.8,
+      "green_pixels": 186
+    },
+    {
+      "t": 89.0,
+      "green_pixels": 413
+    },
+    {
+      "t": 89.2,
+      "green_pixels": 413
+    },
+    {
+      "t": 89.4,
+      "green_pixels": 413
+    },
+    {
+      "t": 89.6,
+      "green_pixels": 413
+    },
+    {
+      "t": 89.8,
+      "green_pixels": 413
+    }
+  ],
+  "selected_open_closed_comparisons": [
+    {
+      "source": "old_open_to_closed",
+      "from_seconds": 0,
+      "to_seconds": 60,
+      "eyes_roi_mae": 21.01776578399955,
+      "cheek_fur_below_eyes_mae": 6.433839822728712,
+      "blue_garment_mae": 1.2309606769537083
+    },
+    {
+      "source": "new_open_to_closed",
+      "from_seconds": 20,
+      "to_seconds": 20.4,
+      "eyes_roi_mae": 13.927137797267667,
+      "cheek_fur_below_eyes_mae": 0.0,
+      "blue_garment_mae": 0.0
+    },
+    {
+      "source": "new_open_to_closed",
+      "from_seconds": 30,
+      "to_seconds": 31,
+      "eyes_roi_mae": 13.841401023219206,
+      "cheek_fur_below_eyes_mae": 0.0,
+      "blue_garment_mae": 0.0
+    }
+  ],
+  "visually_confirmed_expression_states": [
+    "base open eyes",
+    "closed-eye/blink state",
+    "focus: short narrow horizontal green eyelids at85seconds"
+  ],
+  "unconfirmed_expression_states": [
+    "smile as a separate full target state",
+    "curious",
+    "relief",
+    "cheer",
+    "surprise"
+  ],
+  "visual_findings": [
+    "The received recording starts with the old mascot for about0-4seconds. Around4.4-7.6seconds the character moves out below the frame and returns. This is a whole-character entry/exit transition, not evidence of fur instability.",
+    "At10seconds and the inspected later samples through89.8seconds, the fixed-fur candidate is visible. Open-eye and closed-eye states are both present; the old broad face-fur replacement around blinking no longer appears in these sampled new states.",
+    "Inspected new samples at20/20.4,30/31seconds retain the same forehead, lower cheek fur, blue clothes, ties, sign and body silhouette. Nonzero codec differences are expected; no claim of decoded-stream pixel equality is made.",
+    "The shadow in later new frames is closer to the lower body than in the old recording/prefix. The scene still intentionally depicts a footless floating mascot; changed grounding does not mean feet or physical floor contact were added.",
+    "At matching1:1 display size the new body still has a visible bright cream outline, particularly the lower belly and outer hands. The lower-belly line appears more continuous/clearer than the old received version. Therefore edge blending is not fully resolved despite confirmed new-asset delivery.",
+    "The eight local candidate expressions were separately pixel-audited earlier, but this90second broadcast sample does not independently demonstrate all eight full expression states."
+  ],
+  "limits": [
+    "Encoded public-receiving video: exact pixel equality is not expected or claimed.",
+    "Frame samples and contacts inspected, not a continuous-human-viewing claim.",
+    "Any zero values in individual numeric ROIs are narrow actual samples/codec reuse, not a claim that broadcast pixels or all fur stay exactly identical across the recording.",
+    "ROI changes can reflect existing mascot greeting/transition position as well as compression; not an automatic fur defect verdict."
+  ],
+  "source_server_git_modified": false
+}
