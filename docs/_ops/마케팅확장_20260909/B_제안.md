@@ -129,7 +129,7 @@ LAB은 현행 도움 제공형 릴을 자기 선택·변형 자료로 이어 붙
 
 ## 11. 읽은 근거와 통합할 때 주의할 충돌
 
-정독: `docs/마케팅_정본.md`, `docs/명품마케팅_회사별_v1.md`, `docs/명품_기준_v1.md`, `docs/명품브랜딩_v2.md`, `docs/SHIFT/설계_v1.md`, `docs/SHIFT/콘텐츠_배분_v1.md`, `docs/SHIFT/영상_공개선.md`, `docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt`. 승인 `소개서_문안.json`의 SHIFT 전량과 결정 원장의 관련 기록도 대조했다.
+정독: `docs/마케팅_정본.md`, [당시 명품마케팅_회사별_v1](https://github.com/unmet23-lab/synk-appsscript/blob/a02539a2b930492b1cc57c21cca105d774ce8102/docs/%EB%AA%85%ED%92%88%EB%A7%88%EC%BC%80%ED%8C%85_%ED%9A%8C%EC%82%AC%EB%B3%84_v1.md), `docs/명품_기준_v1.md`, `docs/명품브랜딩_v2.md`, `docs/SHIFT/설계_v1.md`, `docs/SHIFT/콘텐츠_배분_v1.md`, `docs/SHIFT/영상_공개선.md`, `docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt`. 승인 `소개서_문안.json`의 SHIFT 전량과 결정 원장의 관련 기록도 대조했다.
 적용 기준: AGENTS·AI 운영 원칙·DESIGN·forge·synk-design·synk-brand·synk-content. 명품 기준의 ‘직접 쓰기와 사용 뒤’를 중심으로 형식을 설계했다. 완성 광고 문안·몽골어 감수·계정 실사는 이번 범위가 아니다.
 **충돌 처리:** 옛 ‘SHIFT는 광고를 만들지 않는다’는 제작 과정 중심 편집의 당시 설명이며, 최신 요청의 기존 홍보릴스 유지+실용 공개 콘텐츠를 막지 않는다. 옛 대학/공인 중심 관객은 장기·기관 갈래에 보존하되 지금 메인은 새 결정대로 바꾼다.
 **제약 해제 범위:** 옛 ‘제작 둘뿐·틱톡 전용 제작 금지·시간 상한’은 이번 기획의 채널/형식 추가를 막는 근거로 쓰지 않는다. 데이터·권리·현재형·실제 판매 준비의 경계는 그대로다. 원래 소개서와 제작 코드 변경은 통합 담당의 후속 판단으로 남겼다.
