@@ -1,0 +1,37 @@
+{
+  "at": "2026-09-09T19:31:55.363Z",
+  "oldHtmlSha": "ff2fa6fd46b7d5dc2bcb92a8854e04891f9a0520d37cf5dff1fabf0569294450",
+  "oldHelperName": "radio13-497a16107fd3.js",
+  "oldHelperSha": "497a16107fd3b5be319e171d0eeb845b9a54b52f9d53e99d8ddb18e1376846f9",
+  "htmlSha": "e305734b3a479d6402c7c7c2ad216362586ecb71749cc8740ee8c85455a3146d",
+  "helperName": "radio13-06fdc6100afc.js",
+  "helperSha": "06fdc6100afca914845cc53d3eb8dd6fca068460e367d7196f1cd0f629f74852",
+  "leafName": "leaf-base-514d7886949b.png",
+  "leafSha": "514d7886949ba0c139464be7b76215bce72edb7e575977912724963fda73324d",
+  "source": "docs/라디오/선정무대_20260910/라이브13/leaf-base-48823c235151.webp",
+  "pixelKernelUnchanged": true,
+  "geometryUnchanged": true,
+  "expressions": {
+    "maskPixels": 11609,
+    "waterEdgePixels": 29213,
+    "leafEdgePixels": 35434,
+    "expressionAlphaEqual": true,
+    "outsideEyeDifference": 0
+  },
+  "changedPerExpression": [
+    368,
+    368,
+    368
+  ],
+  "outsidePatchChangedPerExpression": [
+    0,
+    0,
+    0
+  ],
+  "alphaChangedPerExpression": [
+    0,
+    0,
+    0
+  ],
+  "scope": "Only leaf URL and script URL changed; all scene geometry, background, music and expression kernel unchanged."
+}

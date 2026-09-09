@@ -1,0 +1,57 @@
+{
+  "at": "2026-09-09T21:01:08.269Z",
+  "passed": true,
+  "verified": [
+    {
+      "name": "라디오",
+      "before": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\선정무대_20260910\\라이브13\\leaf-base-48823c235151.webp",
+      "after": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\선정무대_20260910\\정수리수정\\leaf-base-514d7886949b.png",
+      "sha256": "514d7886949ba0c139464be7b76215bce72edb7e575977912724963fda73324d",
+      "changedPixels": 368,
+      "outsideMaskChanged": 0,
+      "alphaChanged": 0,
+      "reproducedMismatch": 0
+    },
+    {
+      "name": "원본",
+      "before": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\라디오\\선정무대_20260910\\정수리수정\\source-before-4f1481c2ecb2.png",
+      "after": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\옷\\GPT\\까몽_3개월출석잎망토.png",
+      "sha256": "3e9ecc50a6c972f528baffdc2bac55b647843fbb4e0a541552e606e997e4dbf3",
+      "changedPixels": 2664,
+      "outsideMaskChanged": 0,
+      "alphaChanged": 0,
+      "reproducedMismatch": 0
+    }
+  ],
+  "expressionChecks": [
+    {
+      "frame": 0,
+      "changedPixels": 368,
+      "outsideMaskChanged": 0,
+      "alphaChanged": 0
+    },
+    {
+      "frame": 1,
+      "changedPixels": 368,
+      "outsideMaskChanged": 0,
+      "alphaChanged": 0
+    },
+    {
+      "frame": 2,
+      "changedPixels": 368,
+      "outsideMaskChanged": 0,
+      "alphaChanged": 0
+    }
+  ],
+  "stats": {
+    "maskPixels": 11609,
+    "waterEdgePixels": 29213,
+    "leafEdgePixels": 35434,
+    "expressionAlphaEqual": true,
+    "outsideEyeDifference": 0
+  },
+  "htmlOnlyHelperUrlChanged": true,
+  "helperOnlyLeafUrlChanged": true,
+  "kernelUnchanged": true,
+  "scope": "Decoded local source/backup and all three rendered expression arrays; not a new image edit or live deployment."
+}

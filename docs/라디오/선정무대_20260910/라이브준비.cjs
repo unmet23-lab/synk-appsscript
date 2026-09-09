@@ -4,8 +4,9 @@ const root=path.resolve(__dirname,'../../..'),out=path.join(__dirname,'라이브
 const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const pixelPath=path.join(root,'영상/src/radioDreams20260910/pixels.cjs');
 const donor='../../docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/';
-const leafOriginal=path.join(root,'docs/Loom_자산/라디오차림/까몽/3개월출석잎망토_본체.webp');
-const leafName='leaf-base-'+sha(leafOriginal).slice(0,12)+'.webp',leaf=path.join(out,leafName);fs.copyFileSync(leafOriginal,leaf);
+// 09-10 user-approved local speck repair; keep the corrected leaf as the rebuild input.
+const leafOriginal=path.join(__dirname,'정수리수정/leaf-base-514d7886949b.png');
+const leafName='leaf-base-'+sha(leafOriginal).slice(0,12)+path.extname(leafOriginal),leaf=path.join(out,leafName);fs.copyFileSync(leafOriginal,leaf);
 const leafUrl='../../docs/라디오/선정무대_20260910/라이브13/'+leafName;
 let kernel=fs.readFileSync(pixelPath,'utf8');
 if(!kernel.includes("const edge=require('../../../bots/오버레이/라디오가장자리.js');")||!kernel.includes('module.exports={build,W,H};'))throw Error('Pixel kernel changed');
