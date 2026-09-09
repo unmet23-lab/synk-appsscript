@@ -87,8 +87,11 @@ const 무대목록 = 조율['무대목록'] || 값('--무대목록', '');
 // 무손실 루프를 연속 인코딩하여 AAC를 매 바퀴 다시 시작할 때 생기는 패딩 틈을 없앤다.
 const 연속소리 = 조율['연속소리'] === true || 있나('--연속소리');
 const 장면분 = 조율수('장면분', Number(값('--장면분', '20')));
-const 장면차례 = String(조율['장면차례'] || 값('--장면차례', '전자네온물가,시티팝노을휴양지,차분달빛호수'))
+const 장면차례 = String(조율['장면차례'] || 값('--장면차례', '추석보름달마당,전자네온물가,거울수면과문,반딧불노을들판'))
   .split(',').map((s) => s.trim()).filter(Boolean);
+const 보존장면 = new Set(['추석보름달마당', '전자네온물가', '거울수면과문', '반딧불노을들판']);
+const 삭제장면 = 장면차례.filter((결) => !보존장면.has(결));
+if (삭제장면.length) throw new Error('삭제되었거나 모르는 장면: ' + 삭제장면.join(' · ') + ' — 장면차례를 보존 목록으로 명시해 주세요.');
 const 지면포트 = Number(값('--지면포트', '8765'));
 const 사건포트 = Number(값('--사건포트', '8790'));
 const 크롬포트 = Number(값('--크롬포트', '9222'));
@@ -348,9 +351,12 @@ async function 채팅감시(사건넣기) {
    팩 파일 이름의 영어 키가 `-chuseok-air.ts` 이면 이 결이 층에 간다. */
 /* 🆕 09-08 house → 전자네온물가 — 유호 확정 09-07 「전자(하우스) 곡의 무대는 전자네온물가로 간다」(결정.md D+0).
    무대 영상도 그 결로 굽는다(tools/무대영상굽기.js → 층_house.mp4). 옛 값 = 전자밤도시. */
-const 결이름 = { house: '전자네온물가', citypop: '시티팝노을휴양지', calm: '차분달빛호수',
+/* house는 09-08부터 네온 층 영상의 편성 키다. 삭제한 house.png(밤도시)와 연결하지 않는다.
+   09-09 물·들판은 보존한 야외 원본의 명시적 장면 이름으로만 통지한다. */
+const 결이름 = { house: '전자네온물가', neon_water: '전자네온물가',
   chuseok: '추석보름달마당',
-  dream_sky: '드림하늘', dream_water: '드림물결', dream_field: '드림들판' };
+  dream_water: '거울수면과문', dream_field: '반딧불노을들판'
+};
 function 재생차례() {
   const 줄들 = fs.readFileSync(path.join(팩폴더, 'playlist.txt'), 'utf8').split(/\r?\n/);
   const 파일들 = 줄들.map((l) => (l.match(/^file\s+'(.+)'\s*$/) || [])[1]).filter(Boolean);
