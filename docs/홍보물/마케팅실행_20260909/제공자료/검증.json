@@ -1,0 +1,59 @@
+{
+  "status": "passed",
+  "date": "2026-09-09",
+  "checks": {
+    "materialCount": 6,
+    "supportGuideCount": 1,
+    "completeSections": 58,
+    "editableExamples": 7,
+    "contentMapQuestions": 12,
+    "followupLetterDrafts": 3,
+    "localLinksResolved": 28,
+    "manuscriptHashAndJsonAgreement": true,
+    "inventedLiveUrls": 0,
+    "emailStrings": 0
+  },
+  "files": [
+    {
+      "sourceFile": "01_소개문.md",
+      "sha256": "70c46856c3799b8c90ad9cd4965222cd99c6ab89d4debf9cad10980cd4908872",
+      "sections": 8
+    },
+    {
+      "sourceFile": "02_상품한장.md",
+      "sha256": "4f95f59e534b5cc0c98df2e90fe17d0272a647786761335bd389b24186918c48",
+      "sections": 8
+    },
+    {
+      "sourceFile": "03_콘텐츠지도.md",
+      "sha256": "3c19d1cba826ee8260ad683cd4b7e28065ff654c506daf9305dda9bd6934b77f",
+      "sections": 8
+    },
+    {
+      "sourceFile": "04_문의답변.md",
+      "sha256": "fdc8a229459a5aa9582dda89914fd570748c3e22f8cff64ac7ca1701e2319ca0",
+      "sections": 8
+    },
+    {
+      "sourceFile": "05_AI업무지도.md",
+      "sha256": "b91a0f657266d5b0766c1cd8c5c421300eef8de44b91d722738495a3906d392e",
+      "sections": 8
+    },
+    {
+      "sourceFile": "06_강의실습설계.md",
+      "sha256": "b17a62efff00db0d72be4bb4b68b18df14d3003e9cfc14c90828b603c7f81c73",
+      "sections": 8
+    },
+    {
+      "sourceFile": "소통_후속도움.md",
+      "sha256": "7ae2e280f715671fa1891dd449033905e19ad0c94f950110caf2fe9ec7f2273a",
+      "sections": 10
+    }
+  ],
+  "limits": [
+    "구성·원고 일치·로컬 링크 검사이며 실제 독자 효용·매출을 검증한 결과가 아님",
+    "HTML/PDF/모바일 시각 QA는 통합 제작 단계에서 별도 수행",
+    "AI 실제 실행·외부 게시·구독·발송·계정 개설·현장 강의는 수행하지 않음",
+    "독립 사실·약속 검토는 별도 담당 결과로 인수"
+  ]
+}

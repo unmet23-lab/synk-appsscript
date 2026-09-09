@@ -1,0 +1,32 @@
+[
+  {
+    "file": "01_소개문.pdf",
+    "bytes": 6742871,
+    "sha256": "238dbbfb89f4326d94c2a09c18f00a37286b15fdfb82976e32492a65368510c0"
+  },
+  {
+    "file": "02_상품한장.pdf",
+    "bytes": 6753893,
+    "sha256": "988f44d2ad3a221db356cd04a5cd1e5ebb9dbe883a09cce4fc26d2c18891154f"
+  },
+  {
+    "file": "03_콘텐츠지도.pdf",
+    "bytes": 6829629,
+    "sha256": "0d2e8efe1afb2dc48097942828b3121ba54d06a5422b5e079fbf949c5096f4bd"
+  },
+  {
+    "file": "04_문의답변.pdf",
+    "bytes": 6768681,
+    "sha256": "79a2eb820a610dcc2b3ac0a7d4b5e76e28d52d6fa10cbddc2c9f609054a6eba5"
+  },
+  {
+    "file": "05_AI업무지도.pdf",
+    "bytes": 6825450,
+    "sha256": "b19db4baff7c8990bb31c07b93601215a3d5116827111f099c0e1baf2e970beb"
+  },
+  {
+    "file": "06_강의실습설계.pdf",
+    "bytes": 6803015,
+    "sha256": "1c2896356aa46dcf7577f865f64ca59f82934e7d1c7d84abfc4cf2daae0a8eea"
+  }
+]

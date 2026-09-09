@@ -1,0 +1,505 @@
+{
+  "checkedAt": "2026-09-09T09:53:12.526Z",
+  "manuscriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+  "method": "기존 로컬 ASR 파일의 원고·음성 지문 대조, 차이 텍스트 독립 의미 검토. 새 전사 호출 없음.",
+  "humanListening": false,
+  "audioUploaded": false,
+  "counts": {
+    "files": 23,
+    "differences": 36
+  },
+  "review": "가상/실제 구분, 성과 미보장, 개인정보·댓글 불필요의 핵심 반전 발견 없음. ASR 철자·동음 표현과 실제 오발음을 구분하지 못하므로 음성 청취 합격이 아님. ASR 원문을 공개 자막으로 직접 사용하지 말 것.",
+  "targetedListeningCandidates": [
+    "04 첫 칸·수공예",
+    "08 세 칸·수공예",
+    "13 세 줄",
+    "18 적어두세요",
+    "클리닉02 가상 초안"
+  ],
+  "entries": [
+    {
+      "file": "전사-01.json",
+      "transcriptFileSha256": "334b17757156f63ef38de0bdd83ff5ae94a27aef5c0bb8462ae20dd7f7f0da0f",
+      "input": "chapter-01-r2.wav",
+      "audioSha256": "3066833d806cc80cf7c8110fbf7114b13273be94b781284bf248590c5dfbad66",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "file": "전사-02.json",
+      "transcriptFileSha256": "c8751bc7249478599bae8819b3c8f847f84b3d1932f72bbbee77e53167b36af0",
+      "input": "chapter-02.wav",
+      "audioSha256": "2405c1363837353ca77f349377252ce2450eec07b314101d66b9db2f215ea6d4",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 3,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "1",
+          "transcribed": "일",
+          "expectedContext": "촬영을가르치는가상의1인강사입니다실제수강"
+        },
+        {
+          "type": "replace",
+          "expected": "꾸어",
+          "transcribed": "꿔",
+          "expectedContext": "공할수있는내용으로바꾸어쓰세요특히매출이나문"
+        },
+        {
+          "type": "replace",
+          "expected": "문의",
+          "transcribed": "무늬",
+          "expectedContext": "어쓰세요특히매출이나문의가늘어난다는말확인할"
+        }
+      ]
+    },
+    {
+      "file": "전사-03.json",
+      "transcriptFileSha256": "4347697ea0a4cd11342573e1362d5384e0ff02db3dc69bb90de6c1fd87308f38",
+      "input": "chapter-03.wav",
+      "audioSha256": "b9097a8e2df3a10331f7ebd2b38468b60329d1d3a677fb2e66df0a07cfcdab20",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 2,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "새",
+          "expectedContext": "만처음읽는사람에게는세질문이남습니다내가이"
+        },
+        {
+          "type": "replace",
+          "expected": "꿉",
+          "transcribed": "꾸",
+          "expectedContext": "사를찾지않고순서를바꿉니다경력은나중에확인"
+        }
+      ]
+    },
+    {
+      "file": "전사-04.json",
+      "transcriptFileSha256": "7a4b91758736205d7f1c119deba453d7f615156f3bcdd3207cfea490cff3e927",
+      "input": "chapter-04.wav",
+      "audioSha256": "47371cc004aabd4f1bc47a378e419c59f4d5b62e650f98561fb43f646d62b11b",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 2,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "첫칸은",
+          "transcribed": "척하는",
+          "expectedContext": "첫칸은누구의어떤상황인지입"
+        },
+        {
+          "type": "replace",
+          "expected": "예",
+          "transcribed": "의",
+          "expectedContext": "니다예시의대상은수공예판매자입니다여기에새"
+        }
+      ]
+    },
+    {
+      "file": "전사-05.json",
+      "transcriptFileSha256": "5b9330419178db7f70612cef94494c1f7f97af829ed14dc10ba74ee0551498af",
+      "input": "chapter-05.wav",
+      "audioSha256": "36800b6ef16750ab3cf265a4c5c0dd2c98287e236e46640ba0d92b04bd625082",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 1,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "에",
+          "transcribed": "의",
+          "expectedContext": "메모에누구의어떤상황이라고"
+        }
+      ]
+    },
+    {
+      "file": "전사-06.json",
+      "transcriptFileSha256": "f313e298606ed64b3ec405922d7c7bb7cd40469796c4f05e9b149f9be0e35976",
+      "input": "chapter-06.wav",
+      "audioSha256": "57b42c98e5507cf1a6578d4d2d5195c3f1e69dbb585dd87fddece5944012fbdc",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "file": "전사-07.json",
+      "transcriptFileSha256": "aabdc16a31cff5a8e8e83dfbc4709b281601404a4b5e68005ca65e4bdcddba42",
+      "input": "chapter-07.wav",
+      "audioSha256": "6db3971026d1d100bc8e36187834cb55e49ebb298690fd7bec44f0b198cf7db5",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 4,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "3",
+          "expectedContext": "실습에서는비교할사진세컷이남습니다사진세컷"
+        },
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "3",
+          "expectedContext": "진세컷이남습니다사진세컷을만든다는것과그사"
+        },
+        {
+          "type": "replace",
+          "expected": "의",
+          "transcribed": "에",
+          "expectedContext": "것은다른주장입니다앞의것은이실습안에서확인"
+        },
+        {
+          "type": "replace",
+          "expected": "의",
+          "transcribed": "에",
+          "expectedContext": "할수있는산출물이고뒤의것은외부요인도관련된"
+        }
+      ]
+    },
+    {
+      "file": "전사-08.json",
+      "transcriptFileSha256": "765856c0926c87a408aff8dfe46f76ec5baedbad20eaf935e726c72b879ca233",
+      "input": "chapter-08.wav",
+      "audioSha256": "e821fa472f792346de75bdf21a2c945ab704bcb8e67371ab1a839fb82c5abe25",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 6,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "세칸",
+          "transcribed": "색한",
+          "expectedContext": "이제세칸을한문장으로연결하겠"
+        },
+        {
+          "type": "replace",
+          "expected": "예",
+          "transcribed": "의",
+          "expectedContext": "진을혼자준비하는수공예판매자가휴대폰으로빛"
+        },
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "3",
+          "expectedContext": "을바꿔찍고비교할사진세컷을남기는실습입니다"
+        },
+        {
+          "type": "replace",
+          "expected": "예",
+          "transcribed": "의",
+          "expectedContext": "은소개가필요하면수공예판매자가휴대폰으로제"
+        },
+        {
+          "type": "replace",
+          "expected": "세",
+          "transcribed": "3",
+          "expectedContext": "가휴대폰으로제품사진세컷을찍어보는실습입니"
+        },
+        {
+          "type": "replace",
+          "expected": "세칸",
+          "transcribed": "색한",
+          "expectedContext": "요합니다지금여러분의세칸도연결해보세요아직멋"
+        }
+      ]
+    },
+    {
+      "file": "전사-09.json",
+      "transcriptFileSha256": "35b3e99fd95819a6000b66eb5e6dc73749b7e012966d0f1d7bf9ecb316a8d341",
+      "input": "chapter-09.wav",
+      "audioSha256": "2f9e4343db0aff4653b930991b1b20699f0e8596425ced3f7869967b90a422e0",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 2,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "의세",
+          "transcribed": "에새",
+          "expectedContext": "지금화면의세빈칸으로자기소개문을"
+        },
+        {
+          "type": "replace",
+          "expected": "메",
+          "transcribed": "매",
+          "expectedContext": "않은부분이생기면좋게메우지말고물음표를남겨"
+        }
+      ]
+    },
+    {
+      "file": "전사-10.json",
+      "transcriptFileSha256": "2ce3bdb2965543a9502bcb0d8230e7cc5d075514c08d1b8df50bab8abede3837",
+      "input": "chapter-10.wav",
+      "audioSha256": "5b1d4fe322afb22f5291bfd50a60dbbe989a32a5dc877c96f0c2ae9be34cc534",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 2,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "소",
+          "transcribed": "초",
+          "expectedContext": "소개문이생겼다면그아래"
+        },
+        {
+          "type": "replace",
+          "expected": "에",
+          "transcribed": "의",
+          "expectedContext": "개문이생겼다면그아래에경계세줄을붙여보겠습"
+        }
+      ]
+    },
+    {
+      "file": "전사-11.json",
+      "transcriptFileSha256": "5f5792f90462138db2f0ea3f13cc6bc6c3d24f07c1ae5aa2214b62700151e229",
+      "input": "chapter-11.wav",
+      "audioSha256": "58a28c337f6ceeb0f683d17dea62ca3ad933bf53c1e238fd6e38311b1fb2fecc",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "file": "전사-12.json",
+      "transcriptFileSha256": "14d718b6b6d87c695055d883977278391994327ed209c07943dbcba6678fc078",
+      "input": "chapter-12.wav",
+      "audioSha256": "90e9e197ff4bfa79a9cdd2840f5fe352630bfba200cbdb6282e68bafd4381c62",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "file": "전사-13.json",
+      "transcriptFileSha256": "98f7f58f9ece21d112ba9d2f04f0647329fc0b50f34b7beb199d97d3e1c4fc19",
+      "input": "chapter-13.wav",
+      "audioSha256": "b5b6bfbb0bc0dd2050623d64a2bc4b5936d34646bf5e0171cca5b9100bc7f32f",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 4,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "여섯",
+          "transcribed": "6",
+          "expectedContext": "화면의여섯칸을자기일로채워봅니"
+        },
+        {
+          "type": "replace",
+          "expected": "세줄을",
+          "transcribed": "3주를",
+          "expectedContext": "인입니다앞에서쓴소개세줄을옮기고나머지경계세줄"
+        },
+        {
+          "type": "replace",
+          "expected": "세줄을",
+          "transcribed": "3주를",
+          "expectedContext": "줄을옮기고나머지경계세줄을붙이면됩니다한칸에긴"
+        },
+        {
+          "type": "replace",
+          "expected": "에",
+          "transcribed": "의",
+          "expectedContext": "줄을붙이면됩니다한칸에긴설명을쓰기보다먼저"
+        }
+      ]
+    },
+    {
+      "file": "전사-14.json",
+      "transcriptFileSha256": "6e000ad78f9629076f23d06e96d39c3fd85bc34fd58fd80303502531f3b0ba90",
+      "input": "chapter-14.wav",
+      "audioSha256": "706e67273acb01d1f6a563912287744bc2c826160add6736d857921edc8f87db",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "file": "전사-15.json",
+      "transcriptFileSha256": "1c5ab2a7a235f29f4644e6413f744e6126fb8437874ef748fdec8de8d5438f64",
+      "input": "chapter-15.wav",
+      "audioSha256": "e0fd3bc82ddb4cbf3d41e36f8689b40c363d88562f9cf923b3f8e6e32d0539f0",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 2,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "개",
+          "transcribed": "계",
+          "expectedContext": "수업에서소개문초안한개를작성한다고적혀있습"
+        },
+        {
+          "type": "replace",
+          "expected": "개",
+          "transcribed": "계",
+          "expectedContext": "수업에서소개문초안한개를작성합니다로돌아올"
+        }
+      ]
+    },
+    {
+      "file": "전사-16.json",
+      "transcriptFileSha256": "6f12e81293aadaa5364c10a9d241a8ae5f8d481f19fea4a6b6b11a1483c12148",
+      "input": "chapter-16.wav",
+      "audioSha256": "1100543293168a8c7cfd93c22d7c5a0f335396660256e5e67937f97939d5f2af",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "file": "전사-17.json",
+      "transcriptFileSha256": "0f2c64aa7258f189b4a49a2e0dd90d7a5ba741bd0fb2885d15de767da72c685d",
+      "input": "chapter-17.wav",
+      "audioSha256": "798ec2fa938a21508665f35f1befdb334edaa0c03f527d87cac0c9d438083950",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 2,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "더씁",
+          "transcribed": "덧습",
+          "expectedContext": "면이일을언제찾는가를더씁니다범위가커졌으면이"
+        },
+        {
+          "type": "replace",
+          "expected": "글에",
+          "transcribed": "그래",
+          "expectedContext": "요이세갈래도움은설명글에도적어두었습니다다른"
+        }
+      ]
+    },
+    {
+      "file": "전사-18.json",
+      "transcriptFileSha256": "013d0461ec031d5b7d03db454867446f28a5376e7e801f2d4a0a6cd9f5c8b592",
+      "input": "chapter-18.wav",
+      "audioSha256": "23fbbef26e0d517b49776c8de2aac9ef942d2726217af3caf53b64e01e67fd8e",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 2,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "에",
+          "transcribed": "해",
+          "expectedContext": "끝납니다이후실제적용에서막힌지점이생기면그"
+        },
+        {
+          "type": "replace",
+          "expected": "두",
+          "transcribed": "주",
+          "expectedContext": "만개인정보를빼고적어두세요다음에찾아볼도움"
+        }
+      ]
+    },
+    {
+      "file": "전사-클리닉01.json",
+      "transcriptFileSha256": "329b3dd6fd630c71ef55972648317e3b0710000ef1cd1cb9629adfdbc28b4dd2",
+      "input": "clinic-01.wav",
+      "audioSha256": "39685ea0ac80beee0670cc5d3d122269548aa95f54430781ea617539ffb44442",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "file": "전사-클리닉02.json",
+      "transcriptFileSha256": "9a47e4621f5228141c42f3f2086012f3ce2578e377b3c03ca52ea6610eb874c2",
+      "input": "clinic-02.wav",
+      "audioSha256": "c17083530a0a9a28816928aa507629c299340dd075ba2a1f56f225ac0ceff6fe",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 2,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "안은",
+          "transcribed": "화는",
+          "expectedContext": "가상초안은이렇습니다초보사장님"
+        },
+        {
+          "type": "replace",
+          "expected": "연하",
+          "transcribed": "여나",
+          "expectedContext": "지넓고무엇을하는지막연하며매출이라는성과약속"
+        }
+      ]
+    },
+    {
+      "file": "전사-클리닉03.json",
+      "transcriptFileSha256": "b90e83f9543ef0b6c07e2dd222d554c1a2871e01a358b09e7a078dd1360109ff",
+      "input": "clinic-03.wav",
+      "audioSha256": "71e8158e5e01a4caf11fa8f5c9d77cd0b57cd5f772dd7d8a4b9193a85766584e",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 1,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "개",
+          "transcribed": "계",
+          "expectedContext": "는사람이소개문초안한개를작성한다고만적혀있"
+        }
+      ]
+    },
+    {
+      "file": "전사-클리닉04.json",
+      "transcriptFileSha256": "179ddfbf69a200214eb872a7f0569b656523f5f426bf9a6f144da22fbf21fae6",
+      "input": "clinic-04.wav",
+      "audioSha256": "dc2d6b7e42f522a9adf84382d8356d3b24808bdd2f97b197963096d8600d3f7a",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 1,
+      "differences": [
+        {
+          "type": "replace",
+          "expected": "개",
+          "transcribed": "계",
+          "expectedContext": "는사람이소개문초안한개를작성하는실습이라고"
+        }
+      ]
+    },
+    {
+      "file": "전사-클리닉05.json",
+      "transcriptFileSha256": "f948cb55036e7df17fc791a82c7cbc9ada7c969958e5ad8fd5ec01abab60825a",
+      "input": "clinic-05.wav",
+      "audioSha256": "225c5781517865263a2126ae3c2a9629b6d1a3f7c7be70e1055b2bb3b3dd7689",
+      "audioExists": true,
+      "audioHashMatches": true,
+      "expectedNarrationMatchesCurrent": true,
+      "differenceCount": 0,
+      "differences": []
+    }
+  ]
+}

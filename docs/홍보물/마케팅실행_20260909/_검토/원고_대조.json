@@ -1,0 +1,312 @@
+{
+  "checkedAt": "2026-09-09T09:50:16.381Z",
+  "purpose": "문안 보존·계정 분모·로컬 링크 대조. 플랫폼 게시/사람 언어 감수/픽셀/교육 효과 검증과 별개.",
+  "sourceSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
+  "manuscriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+  "counts": {
+    "items": 19,
+    "uniqueIds": 19,
+    "uniqueUploadOrders": 19,
+    "oldCyrillicLeaves": 71,
+    "currentCyrillicLeaves": 132,
+    "lectures": 1,
+    "extras": 2
+  },
+  "preservedDifferences": [],
+  "preservedSceneTextDifferences": [],
+  "resources": {
+    "references": 22,
+    "unknownIds": [],
+    "missingSourceFiles": []
+  },
+  "newCyrillicNotContainedInOld": [],
+  "recordedAccountDifferences": [],
+  "captionLengths": [
+    {
+      "id": "01-lab-youtube",
+      "characters": 254
+    },
+    {
+      "id": "02-lab-instagram",
+      "characters": 533
+    },
+    {
+      "id": "03-lab-tiktok",
+      "characters": 463
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "characters": 472
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "characters": 357
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "characters": 265
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "characters": 492
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "characters": 435
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "characters": 324
+    },
+    {
+      "id": "10-lab-facebook",
+      "characters": 694
+    },
+    {
+      "id": "11-yuhobuilds-threads",
+      "characters": 223
+    },
+    {
+      "id": "12-synkbrief-threads",
+      "characters": 242
+    },
+    {
+      "id": "13-yuhobuilds-linkedin",
+      "characters": 505
+    },
+    {
+      "id": "14-lab-telegram",
+      "characters": 504
+    },
+    {
+      "id": "15-synklab-substack",
+      "characters": 1095
+    },
+    {
+      "id": "16-synk-instagram",
+      "characters": 281
+    },
+    {
+      "id": "17-shift-naverblog",
+      "characters": 1754
+    },
+    {
+      "id": "18-shift-kakao",
+      "characters": 595
+    },
+    {
+      "id": "19-shift-pinterest",
+      "characters": 208
+    }
+  ],
+  "localLinks": [
+    {
+      "source": "제공자료\\01_소개문.md",
+      "href": "02_상품한장.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\02_상품한장.md",
+      "href": "04_문의답변.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\02_상품한장.md",
+      "href": "03_콘텐츠지도.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\03_콘텐츠지도.md",
+      "href": "01_소개문.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\03_콘텐츠지도.md",
+      "href": "06_강의실습설계.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\03_콘텐츠지도.md",
+      "href": "05_AI업무지도.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\03_콘텐츠지도.md",
+      "href": "소통_후속도움.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\04_문의답변.md",
+      "href": "소통_후속도움.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\04_문의답변.md",
+      "href": "02_상품한장.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\05_AI업무지도.md",
+      "href": "06_강의실습설계.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\05_AI업무지도.md",
+      "href": "02_상품한장.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\06_강의실습설계.md",
+      "href": "05_AI업무지도.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\06_강의실습설계.md",
+      "href": "01_소개문.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\06_강의실습설계.md",
+      "href": "소통_후속도움.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\A_끝맺음.md",
+      "href": "01_소개문.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\소통_후속도움.md",
+      "href": "01_소개문.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\소통_후속도움.md",
+      "href": "05_AI업무지도.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\소통_후속도움.md",
+      "href": "02_상품한장.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\소통_후속도움.md",
+      "href": "06_강의실습설계.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\읽어주세요.md",
+      "href": "01_소개문.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\읽어주세요.md",
+      "href": "02_상품한장.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\읽어주세요.md",
+      "href": "03_콘텐츠지도.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\읽어주세요.md",
+      "href": "04_문의답변.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\읽어주세요.md",
+      "href": "05_AI업무지도.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\읽어주세요.md",
+      "href": "06_강의실습설계.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\읽어주세요.md",
+      "href": "소통_후속도움.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\읽어주세요.md",
+      "href": "제공자료.json",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\읽어주세요.md",
+      "href": "A_끝맺음.md",
+      "exists": true
+    },
+    {
+      "source": "제공자료\\제작검증.md",
+      "href": "검증.json",
+      "exists": true
+    }
+  ],
+  "missingLocalLinks": [],
+  "fileHashes": [
+    {
+      "path": "제공자료\\01_소개문.md",
+      "sha256": "70c46856c3799b8c90ad9cd4965222cd99c6ab89d4debf9cad10980cd4908872"
+    },
+    {
+      "path": "제공자료\\02_상품한장.md",
+      "sha256": "4f95f59e534b5cc0c98df2e90fe17d0272a647786761335bd389b24186918c48"
+    },
+    {
+      "path": "제공자료\\03_콘텐츠지도.md",
+      "sha256": "3c19d1cba826ee8260ad683cd4b7e28065ff654c506daf9305dda9bd6934b77f"
+    },
+    {
+      "path": "제공자료\\04_문의답변.md",
+      "sha256": "fdc8a229459a5aa9582dda89914fd570748c3e22f8cff64ac7ca1701e2319ca0"
+    },
+    {
+      "path": "제공자료\\05_AI업무지도.md",
+      "sha256": "b91a0f657266d5b0766c1cd8c5c421300eef8de44b91d722738495a3906d392e"
+    },
+    {
+      "path": "제공자료\\06_강의실습설계.md",
+      "sha256": "b17a62efff00db0d72be4bb4b68b18df14d3003e9cfc14c90828b603c7f81c73"
+    },
+    {
+      "path": "제공자료\\A_끝맺음.md",
+      "sha256": "8e0c9af1491d10b04b00c219771d4ead84f5ba8b24e7c9b319f70ec394b07b1b"
+    },
+    {
+      "path": "제공자료\\검증.json",
+      "sha256": "8cc952f6d3a45d4e98a38fa3abaf661a5bd8109227a2c3ca26d2c4a6b49e3fdb"
+    },
+    {
+      "path": "제공자료\\소통_후속도움.md",
+      "sha256": "7ae2e280f715671fa1891dd449033905e19ad0c94f950110caf2fe9ec7f2273a"
+    },
+    {
+      "path": "제공자료\\읽어주세요.md",
+      "sha256": "97dbfb399ff28909de55c465a022df909cefa5e6dfaed12f302f4119a222add8"
+    },
+    {
+      "path": "제공자료\\제공자료.json",
+      "sha256": "e7c170bd6e857977e17c71b41d5376470146b2290fa7ad5e8e0db6414e630753"
+    },
+    {
+      "path": "제공자료\\제작검증.md",
+      "sha256": "6e0c17865d13b41af0f07c24c8d3c5514249101213a338cc6d9d1aa37c6e3549"
+    },
+    {
+      "path": "원고\\B_끝맺음.md",
+      "sha256": "94267fe5dd265460eeec0235fdd0f8619ec324cb1b15db0a526ca87535ef63ee"
+    },
+    {
+      "path": "원고\\콘텐츠원고.json",
+      "sha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70"
+    },
+    {
+      "path": "원고\\후속운영.md",
+      "sha256": "ccd32b43de2c3fb97760fb0128eff9ce7bfd13435441731808e474ba1ee37040"
+    }
+  ]
+}

@@ -1,0 +1,1309 @@
+{
+  "generatedAt": "2026-09-09T10:14:24.920Z",
+  "passed": true,
+  "mediaCount": 9,
+  "sceneCount": 52,
+  "representativeFrameCount": 105,
+  "detailedFrameCount": 16,
+  "sourceScriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+  "videos": [
+    {
+      "id": "01-lab-youtube",
+      "file": "01-lab-youtube/video.mp4",
+      "videoSha256": "6e8ada00f286f1fd78ece68e5e6d56b62cfed3030d662382e5d79a7bd09a6b26",
+      "srtSha256": "87597a2d1a06a9e714a72407b22661ccf4fdb50ea44649be62122e23a1052702",
+      "renderSourceSha256": "499e9ffa7d057e4f011010ec1f77224167c90155d83d1a5886bcb10513efb6da",
+      "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+      "width": 1080,
+      "height": 1920,
+      "timelineSeconds": 30,
+      "containerSeconds": 30.058667,
+      "bytes": 6871082,
+      "captions": 1,
+      "captionMinSeconds": 30,
+      "captionMaxChars": 20,
+      "canonicalNarrationPreserved": null,
+      "loudness": {
+        "integratedLUFS": -18.17,
+        "truePeakDbTP": -5.66,
+        "loudnessRangeLU": 1.4
+      },
+      "chapters": [
+        {
+          "index": 1,
+          "title": "",
+          "startSeconds": 0,
+          "durationSeconds": 30
+        }
+      ],
+      "frames": [
+        {
+          "file": "_검토/영상프레임-01-lab-youtube/frame-00.png",
+          "second": 1,
+          "sha256": "7c95a2c6ef33d3a22866e556c8cc7a9402ccaace03c73ea71e8427c57af171bf"
+        },
+        {
+          "file": "_검토/영상프레임-01-lab-youtube/frame-01.png",
+          "second": 19.5,
+          "sha256": "3f1af8bfbb35ca1469b705f613034a87fd53bb2ec316aeb829310b733bdc1c84"
+        },
+        {
+          "file": "_검토/영상프레임-01-lab-youtube/frame-02.png",
+          "second": 29,
+          "sha256": "5a5fdd32cd89eafe40a6c75fe6acceeef0254a9552cc1d99a9fcf8d44d0db215"
+        }
+      ],
+      "contactSheetSha256": "8256c3347d52ebddae101b8c2a010f93ca7217e8ecde7030e8983326cfef500a"
+    },
+    {
+      "id": "03-lab-tiktok",
+      "file": "03-lab-tiktok/video.mp4",
+      "videoSha256": "f49bb3a561a2c444c1757b37f9ce00e2fcd6ecaf425c775d43a3da357c595c18",
+      "srtSha256": "d8fc11c864ab49bbf8f15eba806dd411af3939ba7e86ea55c9534fb822402e4f",
+      "renderSourceSha256": "a868a405065db9e4ebfd5535b0ef786c6fddf7ce4c6b26dfb193d25c07542106",
+      "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+      "width": 1080,
+      "height": 1920,
+      "timelineSeconds": 30,
+      "containerSeconds": 30.058667,
+      "bytes": 8955185,
+      "captions": 5,
+      "captionMinSeconds": 4,
+      "captionMaxChars": 82,
+      "canonicalNarrationPreserved": null,
+      "loudness": {
+        "integratedLUFS": -26.78,
+        "truePeakDbTP": -14.3,
+        "loudnessRangeLU": 1.4
+      },
+      "chapters": [
+        {
+          "index": 1,
+          "title": "Та юу хийх вэ?",
+          "startSeconds": 0,
+          "durationSeconds": 5
+        },
+        {
+          "index": 2,
+          "title": "",
+          "startSeconds": 5,
+          "durationSeconds": 7
+        },
+        {
+          "index": 3,
+          "title": "",
+          "startSeconds": 12,
+          "durationSeconds": 7
+        },
+        {
+          "index": 4,
+          "title": "",
+          "startSeconds": 19,
+          "durationSeconds": 7
+        },
+        {
+          "index": 5,
+          "title": "Нэгийг сонгоод\nхэлж үзээрэй.",
+          "startSeconds": 26,
+          "durationSeconds": 4
+        }
+      ],
+      "frames": [
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-00.png",
+          "second": 1,
+          "sha256": "fc435fc4ce7cfaa88e105d7ec772dac8810e78cbc5bfb28d3a21410d37e3a8df"
+        },
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-01.png",
+          "second": 3.25,
+          "sha256": "31d3a82c06356f2ef3efcdd65cc784f93a064925e02fb320a6e5f19499eb88c3"
+        },
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-02.png",
+          "second": 6,
+          "sha256": "58bece7360f9d7162026ffcba722dba977f672fd4c1fbff28d8363674a2351f9"
+        },
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-03.png",
+          "second": 9.55,
+          "sha256": "5ba672fa4496e538c23821d17548ad16f70a228906dc9e724dce160ca87b33fe"
+        },
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-04.png",
+          "second": 13,
+          "sha256": "e97cdf7be8b9c28a69637dc236ecf2cabaa7939980f0461470f5f9253cfdfc80"
+        },
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-05.png",
+          "second": 16.55,
+          "sha256": "f16dfeb18fd796d1058b30c829ad73e959ab70e544003a9942ff7e591e7d8dc5"
+        },
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-06.png",
+          "second": 20,
+          "sha256": "e8b3f8a488da8b61bd192ffef06ee41fa9f715cd9fe1d9ed37735f848c6f099e"
+        },
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-07.png",
+          "second": 23.55,
+          "sha256": "749ea7f05a7842b285d239d3cca837bb4b3a34de809611cfd48b5cdbcf7795ce"
+        },
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-08.png",
+          "second": 27,
+          "sha256": "cb68431e3bbe06586d77a20ec2f9657b65ba2362ad3e16c578054820e5cc34b8"
+        },
+        {
+          "file": "_검토/영상프레임-03-lab-tiktok/frame-09.png",
+          "second": 28.6,
+          "sha256": "34dc84aabfc2c82cc2dc2efbf75d6286b40e29cd18fd8f94251bafb5c41c9cfe"
+        }
+      ],
+      "contactSheetSha256": "0d056863e78c3f2fd06479ce42bb029b16b882dcd1e6a784df71de8179e7ab41"
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "file": "04-yuhobuilds-youtube/video.mp4",
+      "videoSha256": "506cb4b3fa5cda40e7dee271fe296a89e80d15b21d9f11a50cf01c871eeded71",
+      "srtSha256": "a6c22b57602d7055d9d5295a957724602d53009faa2344fb6d123d1bf7944e0e",
+      "renderSourceSha256": "e1e0991714dfb26c852dce4dd8f48fd26961222680997c3272ca13420360a953",
+      "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+      "width": 1080,
+      "height": 1920,
+      "timelineSeconds": 60,
+      "containerSeconds": 60.053333,
+      "bytes": 11274627,
+      "captions": 6,
+      "captionMinSeconds": 8,
+      "captionMaxChars": 63,
+      "canonicalNarrationPreserved": null,
+      "loudness": {
+        "integratedLUFS": -26.83,
+        "truePeakDbTP": -14.3,
+        "loudnessRangeLU": 1.5
+      },
+      "chapters": [
+        {
+          "index": 1,
+          "title": "첫 줄,\n경력부터 썼나요?",
+          "startSeconds": 0,
+          "durationSeconds": 8
+        },
+        {
+          "index": 2,
+          "title": "내 평가부터",
+          "startSeconds": 8,
+          "durationSeconds": 10
+        },
+        {
+          "index": 3,
+          "title": "독자의 장면부터",
+          "startSeconds": 18,
+          "durationSeconds": 13
+        },
+        {
+          "index": 4,
+          "title": "경력은 그다음",
+          "startSeconds": 31,
+          "durationSeconds": 9
+        },
+        {
+          "index": 5,
+          "title": "내 일로 바꾸기",
+          "startSeconds": 40,
+          "durationSeconds": 12
+        },
+        {
+          "index": 6,
+          "title": "한 번 더 확인",
+          "startSeconds": 52,
+          "durationSeconds": 8
+        }
+      ],
+      "frames": [
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-00.png",
+          "second": 1,
+          "sha256": "fcb8bdcf8afb654e9a2906b81866979df2f749d02a90cc6d14ddd61d98d82301"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-01.png",
+          "second": 5.2,
+          "sha256": "5d66c28dd8eb59f0bacdc8e608bd4e98c12a3813a83e6c319e253cc014019018"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-02.png",
+          "second": 9,
+          "sha256": "a2eabdbecd67641b397140e7b659bbb538563f4c0ca233e72b593acc61212a0c"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-03.png",
+          "second": 14.5,
+          "sha256": "381667ba35ca6511f4f5daefe8e1249a0b700038ce325b02c8c771667764b6cd"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-04.png",
+          "second": 19,
+          "sha256": "8efc450347c705703fd74a5ec16a6b8f76a98560f4cede2187bb54e00b0c44ce"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-05.png",
+          "second": 26.450000000000003,
+          "sha256": "a606470adbae45210b50b8d5b49abdf808f9f9d0d9e2162564120f13e81f3d25"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-06.png",
+          "second": 32,
+          "sha256": "da2e542a169042f72b0fa36790c4d4bd4f781a6d2d0b7cc332aea205b18de03f"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-07.png",
+          "second": 36.85,
+          "sha256": "78c61c4854f1126c7af59ed4ff03176d6126f94f733b3330b72db1d40c8a8696"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-08.png",
+          "second": 41,
+          "sha256": "76fa3e67061a9c1b82323f6c624b63828c4091315ad801809f5f5d1ac45af615"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-09.png",
+          "second": 47.8,
+          "sha256": "7db224ec252dc09f1af72af5d7dac0f1189441e243512d14dae3043203a9216f"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-10.png",
+          "second": 53,
+          "sha256": "8d58fd22aa83fed05a0adce996b05725732dd95deae52f8905536e1b0655ffb3"
+        },
+        {
+          "file": "_검토/영상프레임-04-yuhobuilds-youtube/frame-11.png",
+          "second": 57.2,
+          "sha256": "f7f9606eb16a37f03b647a2c1f5c2464e6613352866bbeb9339605dd48f6a0ac"
+        }
+      ],
+      "contactSheetSha256": "042897957a48c9d75d796a804939f326313352d3aa45fb914b0c13399909b72b"
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "file": "05-yuhobuilds-instagram/video.mp4",
+      "videoSha256": "7e6b07505e95e1a32de753bb2f14ccc26a481471de0c98a30959995aabdf729a",
+      "srtSha256": "318c6fc8b3ad1f8725eabec3d2ea743add6b7767554ee16e150238ff4a6e905a",
+      "renderSourceSha256": "545f354da78945a2edbc79b63ed788fa095e7cb56ce264d514a7ccf9a2ad4b9f",
+      "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+      "width": 1080,
+      "height": 1920,
+      "timelineSeconds": 30,
+      "containerSeconds": 30.058667,
+      "bytes": 7294196,
+      "captions": 4,
+      "captionMinSeconds": 6,
+      "captionMaxChars": 63,
+      "canonicalNarrationPreserved": null,
+      "loudness": {
+        "integratedLUFS": -26.78,
+        "truePeakDbTP": -14.3,
+        "loudnessRangeLU": 1.4
+      },
+      "chapters": [
+        {
+          "index": 1,
+          "title": "이름을 가려보세요",
+          "startSeconds": 0,
+          "durationSeconds": 6
+        },
+        {
+          "index": 2,
+          "title": "추상적인 소개",
+          "startSeconds": 6,
+          "durationSeconds": 6
+        },
+        {
+          "index": 3,
+          "title": "장면이 있는 소개",
+          "startSeconds": 12,
+          "durationSeconds": 10
+        },
+        {
+          "index": 4,
+          "title": "다시 올려보기",
+          "startSeconds": 22,
+          "durationSeconds": 8
+        }
+      ],
+      "frames": [
+        {
+          "file": "_검토/영상프레임-05-yuhobuilds-instagram/frame-00.png",
+          "second": 1,
+          "sha256": "39a147b5d9ce0f52bcc9a9f0193ab9220ddaa3e6ddf8a40435b50439851a3d31"
+        },
+        {
+          "file": "_검토/영상프레임-05-yuhobuilds-instagram/frame-01.png",
+          "second": 3.9000000000000004,
+          "sha256": "5cc25feabc239c2cb7a4ddba433656c91e516401640d113dcb98839f18474cec"
+        },
+        {
+          "file": "_검토/영상프레임-05-yuhobuilds-instagram/frame-02.png",
+          "second": 7,
+          "sha256": "4950a546ee94269df5fa0227a121d11305298f6da5f23a5594d140da95e8b6dd"
+        },
+        {
+          "file": "_검토/영상프레임-05-yuhobuilds-instagram/frame-03.png",
+          "second": 9.9,
+          "sha256": "284aa5e6d1c762a0fc1605a971a71bc8af97078a49eb2557be8da621ea11a71c"
+        },
+        {
+          "file": "_검토/영상프레임-05-yuhobuilds-instagram/frame-04.png",
+          "second": 13,
+          "sha256": "491a8d199290c919386cb92506a1dd8d560483de56e306827206f5b4b9512181"
+        },
+        {
+          "file": "_검토/영상프레임-05-yuhobuilds-instagram/frame-05.png",
+          "second": 18.5,
+          "sha256": "985df28c5619c31b1ff51af41c37c56989a3bb15219999db469c6b1ba96b25d1"
+        },
+        {
+          "file": "_검토/영상프레임-05-yuhobuilds-instagram/frame-06.png",
+          "second": 23,
+          "sha256": "a6bf1b68b29f3648c50bc52a73ccaa762a9e0ddd72a904740d25a7309c6724d0"
+        },
+        {
+          "file": "_검토/영상프레임-05-yuhobuilds-instagram/frame-07.png",
+          "second": 27.2,
+          "sha256": "422e2ed94d008ca5cdc6b45f9daff6e34a75ba830807fde77c95111a1ff3720f"
+        }
+      ],
+      "contactSheetSha256": "d5b9fc83e45cfb4583a7077c29a24c719fa9978e6b3695d79591091b519315a1"
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "file": "06-yuhobuilds-tiktok/video.mp4",
+      "videoSha256": "cb801603b2647ff92824bb186fd6ab1c91d3df0ce1fdff2f45afa407c5757865",
+      "srtSha256": "2018b8167b0199efc572b5769252bd41bcf19f4f14c8fa0c6d958495830bf1a1",
+      "renderSourceSha256": "4ab3d0cfc6df96733abc8d28074cc84cb72afe8a16d0b0f3bc154c267563d890",
+      "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+      "width": 1080,
+      "height": 1920,
+      "timelineSeconds": 25,
+      "containerSeconds": 25.045333,
+      "bytes": 5518245,
+      "captions": 4,
+      "captionMinSeconds": 4,
+      "captionMaxChars": 62,
+      "canonicalNarrationPreserved": null,
+      "loudness": {
+        "integratedLUFS": -26.94,
+        "truePeakDbTP": -14.3,
+        "loudnessRangeLU": 1.5
+      },
+      "chapters": [
+        {
+          "index": 1,
+          "title": "‘맞춤형’ 다음에",
+          "startSeconds": 0,
+          "durationSeconds": 5
+        },
+        {
+          "index": 2,
+          "title": "형용사를 걷고",
+          "startSeconds": 5,
+          "durationSeconds": 8
+        },
+        {
+          "index": 3,
+          "title": "이렇게 적기",
+          "startSeconds": 13,
+          "durationSeconds": 8
+        },
+        {
+          "index": 4,
+          "title": "내 문장에 적용",
+          "startSeconds": 21,
+          "durationSeconds": 4
+        }
+      ],
+      "frames": [
+        {
+          "file": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-00.png",
+          "second": 1,
+          "sha256": "9669eabf2e761e04e2257d434533fdcec6523dd34cc34e580e9214de71d87e1f"
+        },
+        {
+          "file": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-01.png",
+          "second": 3.25,
+          "sha256": "e5dfcd8237d3b16d496dccf50586e5f9f7c7e4b3c7fb2062bc57701927c72150"
+        },
+        {
+          "file": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-02.png",
+          "second": 6,
+          "sha256": "ca49802516ab0be0d377723276d6d4b2c4958ecdb25a284e469e0730f4548898"
+        },
+        {
+          "file": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-03.png",
+          "second": 10.2,
+          "sha256": "bc0b6adb3977f9a032dd782b7033376d59d86eec07413b435ab2404a5d5c775e"
+        },
+        {
+          "file": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-04.png",
+          "second": 14,
+          "sha256": "63b8fa7c63deb567fe56209e00f4805f0c7bdcb7a4651759047df4c5356e54ba"
+        },
+        {
+          "file": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-05.png",
+          "second": 18.2,
+          "sha256": "296fd29a3cc840a41b5b5943903561645ec3c1af3a720b4460e18ad3f30868b8"
+        },
+        {
+          "file": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-06.png",
+          "second": 22,
+          "sha256": "0e501848fadbbde106261a886a68c24eb9a0ea087eb585ca833872f9b8c9b633"
+        },
+        {
+          "file": "_검토/영상프레임-06-yuhobuilds-tiktok/frame-07.png",
+          "second": 23.6,
+          "sha256": "84ed0a09013d7c4cec412fec2519523181bdf633c883105bf7277b1ef9ef4b66"
+        }
+      ],
+      "contactSheetSha256": "015ea2efb3e22b98e4764358efb59cc13afdc9ce34ea885d6e1a32c4195f95f7"
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "file": "07-synkbrief-youtube/video.mp4",
+      "videoSha256": "14afddfe35dfb43984f6797a34dc37bbe8d5e876a937735bf645148f54f68846",
+      "srtSha256": "e542864f874def02dd67c7a51e800fd29779f19e81397459610535c0d8abbbb2",
+      "renderSourceSha256": "1517aeaee73c18b2548e90c8a92779aac90a8cf4a7568267f94036ce991bced1",
+      "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+      "width": 1080,
+      "height": 1920,
+      "timelineSeconds": 40,
+      "containerSeconds": 40.042667,
+      "bytes": 7898966,
+      "captions": 5,
+      "captionMinSeconds": 6,
+      "captionMaxChars": 54,
+      "canonicalNarrationPreserved": null,
+      "loudness": {
+        "integratedLUFS": -26.85,
+        "truePeakDbTP": -14.3,
+        "loudnessRangeLU": 1.3
+      },
+      "chapters": [
+        {
+          "index": 1,
+          "title": "잘 썼지만,\n사실인가요?",
+          "startSeconds": 0,
+          "durationSeconds": 6
+        },
+        {
+          "index": 2,
+          "title": "원자료",
+          "startSeconds": 6,
+          "durationSeconds": 7
+        },
+        {
+          "index": 3,
+          "title": "덧붙은 약속",
+          "startSeconds": 13,
+          "durationSeconds": 8
+        },
+        {
+          "index": 4,
+          "title": "근거로 되돌리기",
+          "startSeconds": 21,
+          "durationSeconds": 9
+        },
+        {
+          "index": 5,
+          "title": "검수 요청 세 갈래",
+          "startSeconds": 30,
+          "durationSeconds": 10
+        }
+      ],
+      "frames": [
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-00.png",
+          "second": 1,
+          "sha256": "28036eb727b5a868605db68d0ae74bf620c495bf8fb6dba58528c7b372727008"
+        },
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-01.png",
+          "second": 3.9000000000000004,
+          "sha256": "dda04e7fa5d94c2fcd9a1ed377d76fe7932ddc853178dd2cb096cf2714d7d9fc"
+        },
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-02.png",
+          "second": 7,
+          "sha256": "dfd8fef29d31416e2a9958e8b4c23115d2c5aa7cc08f5db6dcd42d1ad9e77af0"
+        },
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-03.png",
+          "second": 10.55,
+          "sha256": "865a12d284df9f9ad6a86bf385e0f82d8ae85f9e189e4b6ac0a131ab1b12bd05"
+        },
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-04.png",
+          "second": 14,
+          "sha256": "bfc9baf4c93b6a19ef67cccb67d2e4c132d4a6fc6006f09f28407a7d3b6a21e1"
+        },
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-05.png",
+          "second": 18.2,
+          "sha256": "8236a7e511376e9a60f177a5747396d450b3a08ce67861d275c6cc85241bb3d8"
+        },
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-06.png",
+          "second": 22,
+          "sha256": "d8a520fb660f29779542a0d3d625901396980e93789a7731ed94dace0bbee338"
+        },
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-07.png",
+          "second": 26.85,
+          "sha256": "546735c837cb3db3e42a01b26d4968a897c40e8899ed2e3e77509058a0a7e37d"
+        },
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-08.png",
+          "second": 31,
+          "sha256": "ce4782c53238fa44e3df9ae732599d85ad29e756a4c40133fab8d651ed29f71a"
+        },
+        {
+          "file": "_검토/영상프레임-07-synkbrief-youtube/frame-09.png",
+          "second": 36.5,
+          "sha256": "e401eb9d5a15d06f67b70950d605f94a310a3d92bb7048d626a9bdea42fc6d92"
+        }
+      ],
+      "contactSheetSha256": "c1a9ffb28a54849bcca892dafe7a05d973fbd2751cb246df175f8d65bd0f9ba0"
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "file": "09-synkbrief-tiktok/video.mp4",
+      "videoSha256": "5163b4db634c607ca42ee81c26e1d645034ae1ea506b25da6730a933c7641e4d",
+      "srtSha256": "85e7062a060e9816ee211c30b0305a3b7cd58f8aed3efeb6988f4f3ffaf137f0",
+      "renderSourceSha256": "6c70234b10083ff7c2b252236dc07cea6f5950fca48df87fd13d43395121fc06",
+      "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+      "width": 1080,
+      "height": 1920,
+      "timelineSeconds": 25,
+      "containerSeconds": 25.045333,
+      "bytes": 6220221,
+      "captions": 4,
+      "captionMinSeconds": 5,
+      "captionMaxChars": 56,
+      "canonicalNarrationPreserved": null,
+      "loudness": {
+        "integratedLUFS": -26.94,
+        "truePeakDbTP": -14.3,
+        "loudnessRangeLU": 1.5
+      },
+      "chapters": [
+        {
+          "index": 1,
+          "title": "더 고급스럽게?",
+          "startSeconds": 0,
+          "durationSeconds": 5
+        },
+        {
+          "index": 2,
+          "title": "먼저 보일 것",
+          "startSeconds": 5,
+          "durationSeconds": 6
+        },
+        {
+          "index": 3,
+          "title": "바꿀 것 · 남길 것",
+          "startSeconds": 11,
+          "durationSeconds": 8
+        },
+        {
+          "index": 4,
+          "title": "요청 세 줄",
+          "startSeconds": 19,
+          "durationSeconds": 6
+        }
+      ],
+      "frames": [
+        {
+          "file": "_검토/영상프레임-09-synkbrief-tiktok/frame-00.png",
+          "second": 1,
+          "sha256": "ede6b1aa950d7f1ea659bba130f69cdc4a9a339e500e39d40e9b3462b666d626"
+        },
+        {
+          "file": "_검토/영상프레임-09-synkbrief-tiktok/frame-01.png",
+          "second": 3.25,
+          "sha256": "de76adc5c572e4c3d92ea8205720a65fda123e149865990ddb714c5ee586c936"
+        },
+        {
+          "file": "_검토/영상프레임-09-synkbrief-tiktok/frame-02.png",
+          "second": 6,
+          "sha256": "7150ffc1031a3ac5fda3c8009e260e2daa2a4b7904732722c4c6a2339dc3a8bb"
+        },
+        {
+          "file": "_검토/영상프레임-09-synkbrief-tiktok/frame-03.png",
+          "second": 8.9,
+          "sha256": "e2a76bc339cfa5c8d7c5cad4a620a7fb17cb38fb7d8a2f8ed3ed0844bf5e1917"
+        },
+        {
+          "file": "_검토/영상프레임-09-synkbrief-tiktok/frame-04.png",
+          "second": 12,
+          "sha256": "57c1ece02c8cc432f65a39bd7930d34161ff59677bda6943c836ed2fa72eeba7"
+        },
+        {
+          "file": "_검토/영상프레임-09-synkbrief-tiktok/frame-05.png",
+          "second": 16.2,
+          "sha256": "930ab059bfee758a6c7b29bfe70dac5673265c41a93130c4f36baa1a08c324b0"
+        },
+        {
+          "file": "_검토/영상프레임-09-synkbrief-tiktok/frame-06.png",
+          "second": 20,
+          "sha256": "dccb55c12befb7879d9b0d0b1f03dc47ce046dad4c77751d0452535028b198d1"
+        },
+        {
+          "file": "_검토/영상프레임-09-synkbrief-tiktok/frame-07.png",
+          "second": 22.9,
+          "sha256": "102ef522874d827f8cfa93fc11036f282b9327b43bb2ae31957e6d30dc7b71fd"
+        }
+      ],
+      "contactSheetSha256": "406de6e05c40e253157932b95370f1b1156060e7305b5bd7384e15a8e237285c"
+    },
+    {
+      "id": "shift-public-class-01",
+      "file": "공개수업/수업.mp4",
+      "videoSha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9",
+      "srtSha256": "a3ce76fd8049c5f601ac9a57dd646ddbc654b728753cf43a53f54a3d75ead3d6",
+      "renderSourceSha256": "262b3ebd9ff6e9a6056d7b5bd07502988732eb639a413003d4399873f7c3d403",
+      "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+      "width": 1920,
+      "height": 1080,
+      "timelineSeconds": 629.1333333333334,
+      "containerSeconds": 629.184,
+      "bytes": 70750341,
+      "captions": 131,
+      "captionMinSeconds": 1.1,
+      "captionMaxChars": 64,
+      "canonicalNarrationPreserved": true,
+      "loudness": {
+        "integratedLUFS": -18.24,
+        "truePeakDbTP": -4.82,
+        "loudnessRangeLU": 2.3
+      },
+      "chapters": [
+        {
+          "index": 1,
+          "title": "오늘 남길 두 장",
+          "startSeconds": 0,
+          "durationSeconds": 27.066666666666666,
+          "audioDurationSeconds": 26.24,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0
+        },
+        {
+          "index": 2,
+          "title": "예시는 가상입니다",
+          "startSeconds": 27.066666666666666,
+          "durationSeconds": 27.933333333333334,
+          "audioDurationSeconds": 27.12,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.031446540880503145
+        },
+        {
+          "index": 3,
+          "title": "먼저 원문을 봅니다",
+          "startSeconds": 55,
+          "durationSeconds": 30.333333333333332,
+          "audioDurationSeconds": 29.52,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.011627906976744186
+        },
+        {
+          "index": 4,
+          "title": "대상에 순간을 더하기",
+          "startSeconds": 85.33333333333333,
+          "durationSeconds": 33.13333333333333,
+          "audioDurationSeconds": 32.32,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.022099447513812154
+        },
+        {
+          "index": 5,
+          "title": "내 대상 한 줄",
+          "startSeconds": 118.46666666666667,
+          "durationSeconds": 41.7,
+          "audioDurationSeconds": 28.88,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.006134969325153374
+        },
+        {
+          "index": 6,
+          "title": "활동은 동사로",
+          "startSeconds": 160.16666666666669,
+          "durationSeconds": 37.86666666666667,
+          "audioDurationSeconds": 37.04,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0
+        },
+        {
+          "index": 7,
+          "title": "남는 것은 무엇인가요",
+          "startSeconds": 198.03333333333336,
+          "durationSeconds": 35.36666666666667,
+          "audioDurationSeconds": 34.56,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.021505376344086023
+        },
+        {
+          "index": 8,
+          "title": "세 줄을 연결합니다",
+          "startSeconds": 233.40000000000003,
+          "durationSeconds": 32.266666666666666,
+          "audioDurationSeconds": 31.44,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.04145077720207254
+        },
+        {
+          "index": 9,
+          "title": "소개문을 직접 써보기",
+          "startSeconds": 265.6666666666667,
+          "durationSeconds": 40.13333333333333,
+          "audioDurationSeconds": 24.32,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.022058823529411766
+        },
+        {
+          "index": 10,
+          "title": "이제 경계를 붙입니다",
+          "startSeconds": 305.8,
+          "durationSeconds": 30.8,
+          "audioDurationSeconds": 30,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.011560693641618497
+        },
+        {
+          "index": 11,
+          "title": "포함과 제외",
+          "startSeconds": 336.6,
+          "durationSeconds": 37.36666666666667,
+          "audioDurationSeconds": 36.56,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0
+        },
+        {
+          "index": 12,
+          "title": "시작 전 확인",
+          "startSeconds": 373.9666666666667,
+          "durationSeconds": 34.5,
+          "audioDurationSeconds": 33.68,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0
+        },
+        {
+          "index": 13,
+          "title": "상품 한 장 완성",
+          "startSeconds": 408.4666666666667,
+          "durationSeconds": 50.666666666666664,
+          "audioDurationSeconds": 39.84,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.04477611940298507
+        },
+        {
+          "index": 14,
+          "title": "AI에게 맡길 범위",
+          "startSeconds": 459.1333333333334,
+          "durationSeconds": 37.06666666666667,
+          "audioDurationSeconds": 36.24,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0
+        },
+        {
+          "index": 15,
+          "title": "그럴듯한 약속을 찾기",
+          "startSeconds": 496.20000000000005,
+          "durationSeconds": 31.133333333333333,
+          "audioDurationSeconds": 30.32,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.010582010582010581
+        },
+        {
+          "index": 16,
+          "title": "마지막 네 질문",
+          "startSeconds": 527.3333333333334,
+          "durationSeconds": 40.96666666666667,
+          "audioDurationSeconds": 40.16,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0
+        },
+        {
+          "index": 17,
+          "title": "막힌 자리별 도움",
+          "startSeconds": 568.3000000000001,
+          "durationSeconds": 31.466666666666665,
+          "audioDurationSeconds": 30.64,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.021505376344086023
+        },
+        {
+          "index": 18,
+          "title": "원문도 함께 남기기",
+          "startSeconds": 599.7666666666668,
+          "durationSeconds": 29.366666666666667,
+          "audioDurationSeconds": 28.56,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.011299435028248588
+        }
+      ],
+      "frames": [
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-00.png",
+          "second": 1,
+          "sha256": "092634d1b85f410d519b153ca2420877835f3464d776dcb519746c4d24c33b3f"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-01.png",
+          "second": 17.593333333333334,
+          "sha256": "a034fcb2f74d821672a5453b2f4f8ebacb04b33ce64bead70a3c35d7d59afe09"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-02.png",
+          "second": 28.066666666666666,
+          "sha256": "bd9504302c91d3c11e67e28b1596437c46f5a8c87d169634c5e57118271a619c"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-03.png",
+          "second": 45.22333333333333,
+          "sha256": "66c4aaea6800c36b6bd60415d706483c7b5a5bc83a75b4a2e28a254a8cbe5a92"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-04.png",
+          "second": 56,
+          "sha256": "c5cd19c433907e998fecf865ffd89800cb5fe7a0798c98cebdf5221b7cdcce75"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-05.png",
+          "second": 74.71666666666667,
+          "sha256": "58349153c3dff62256295a90e82e5acdc8f9d1394ee21e89964432f917d4b64e"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-06.png",
+          "second": 86.33333333333333,
+          "sha256": "952c2127cac8109d02f1dd98e88cf45178c954871ff6b87157cab144cf99cb7c"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-07.png",
+          "second": 106.87,
+          "sha256": "68bec802b80ced189346f095d0937013925895c28f936d4988b8681ec4fa9a59"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-08.png",
+          "second": 119.46666666666667,
+          "sha256": "c0de365c73e37abb713fe271ae40c49d813dbe7078ef6799d47de3ca82e3f7c3"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-09.png",
+          "second": 145.57166666666666,
+          "sha256": "3295dc33368daec45304b58d4f85d1f82c4ef609470927a510ad385de9aabe51"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-10.png",
+          "second": 161.16666666666669,
+          "sha256": "bda6d30798130c3b4ea39d3d5b993d36738893ff69c6f7335818d89a4290f72c"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-11.png",
+          "second": 184.78000000000003,
+          "sha256": "e9a2dd3ae3ea340f85372a58a647476f28399c255c22f099b7c7f0f3c2b3d47a"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-12.png",
+          "second": 199.03333333333336,
+          "sha256": "07cdd483b68e13c3cf15c87c94518273ee20ed476d43e674ef8a3b0d49183faf"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-13.png",
+          "second": 221.0216666666667,
+          "sha256": "83f148a2ec2a137c562646fd8099ed59545d17d8d479f9492fea982b865321cd"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-14.png",
+          "second": 234.40000000000003,
+          "sha256": "b3c9bc98bce31d5c1292921de150a63a77ef4f75914756248eec42e2ff4eb317"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-15.png",
+          "second": 254.37333333333336,
+          "sha256": "32f824f4157ccc33862593d748fa77cd4ce3f1c09be29bff4a120f0f6461b47e"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-16.png",
+          "second": 266.6666666666667,
+          "sha256": "7a2930b5f7943c4114a541b74cd8cc1c6f3d72519bb9333d209abdb4d9429cee"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-17.png",
+          "second": 291.75333333333333,
+          "sha256": "0efc2e22cb51409a33596c5ff779b52fc3e2a8769426ff34a11d7185d7753ebf"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-18.png",
+          "second": 306.8,
+          "sha256": "781c8bb74eb7e57e944d21f69f9132511d26a5bc9a212a8674d48ee781aadb89"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-19.png",
+          "second": 325.82,
+          "sha256": "6b33e7e649aa8564425799f42be135fbbab24928ca4914f0766101392c39c2db"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-20.png",
+          "second": 337.6,
+          "sha256": "fa8ab6fd647010277db7e52f7b0a762f7f95dfaf6222c06d81de97869bb323fe"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-21.png",
+          "second": 360.8883333333334,
+          "sha256": "516fb2fdb7630521a34e7e8c4288c2b298a298b87f663dcf03e2dc8abfa7bbd6"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-22.png",
+          "second": 374.9666666666667,
+          "sha256": "c525d542ba37b478fb713fbebb5d506bd450b1272de889c420e2a3555e389482"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-23.png",
+          "second": 396.3916666666667,
+          "sha256": "d44df087324f48c303bb251a95088a7823f61293a85a0e7ef4423bf3447098b6"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-24.png",
+          "second": 409.4666666666667,
+          "sha256": "3e9af164e77bbf581a16d94587c34ce156c870ebd5ff7478115e7c7a04f66a0d"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-25.png",
+          "second": 441.40000000000003,
+          "sha256": "35736ce7465c3ced8d02214401cb8a4392544d7e651fbddb4415eb3c890e9916"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-26.png",
+          "second": 460.1333333333334,
+          "sha256": "dc9ce5133c4f47c16edf40cc241c2b6ed27ad78a5f04c74851ab70cf0d0e07ae"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-27.png",
+          "second": 483.22666666666674,
+          "sha256": "f25233bd15d65713d5e4cd6626cc34ca3ab3e5e9792daa8e93dd26340be3b2e1"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-28.png",
+          "second": 497.20000000000005,
+          "sha256": "3f8884921a0b9ffbdda6cacf70d4876434ed31c4e9b6aed2c3c76923d0b8cdef"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-29.png",
+          "second": 516.4366666666667,
+          "sha256": "fc7224c34380def3bf0f2d87ff5676749294de5dca06dad8f92d2d2714f3f64b"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-30.png",
+          "second": 528.3333333333334,
+          "sha256": "20a1eff2f87fb3ef2570a0c4afc24ec8a19eb8643a9b3471eebc394f55a97a7a"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-31.png",
+          "second": 553.9616666666667,
+          "sha256": "e4e14f7f85ac8654270384dcb3bec9d06c98f454f3d33343698d2ec508bf86a0"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-32.png",
+          "second": 569.3000000000001,
+          "sha256": "15678bce8f7bd2c28f73ce3800e0b633abb73616e49d26b01fc4b63969dbeb4d"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-33.png",
+          "second": 588.7533333333334,
+          "sha256": "0392cd4367b6c2436e9bd41d3e7e2a3c8b6325cfada47bb4ddf14423ab57b8d7"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-34.png",
+          "second": 600.7666666666668,
+          "sha256": "344c9566b98b9841d7bbe052809530b588a5cc008f495b93ae7d494433a732ba"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-class-01/frame-35.png",
+          "second": 618.8550000000001,
+          "sha256": "2defbb1be58ea3439135821fc8622dbaff54f90d1dc23919a3eb81cdf258d275"
+        }
+      ],
+      "contactSheetSha256": "a1e2e74a028f8c5fc0bce6981c05e6bd46c14848bbdad10d4d62347654defb2a"
+    },
+    {
+      "id": "shift-public-clinic-demo-01",
+      "file": "공개수업/클리닉.mp4",
+      "videoSha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15",
+      "srtSha256": "030ce3d20cea2bffd3651a30ca4741b171e28dedd47a62b66abc70c37aa3af04",
+      "renderSourceSha256": "945af1b77f3303d5bf63b6766ac41e15e7b75ddceb4758f5c9d3198ef3a826cf",
+      "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+      "width": 1920,
+      "height": 1080,
+      "timelineSeconds": 84.76666666666668,
+      "containerSeconds": 84.821333,
+      "bytes": 12148740,
+      "captions": 15,
+      "captionMinSeconds": 1.68,
+      "captionMaxChars": 63,
+      "canonicalNarrationPreserved": true,
+      "loudness": {
+        "integratedLUFS": -18.32,
+        "truePeakDbTP": -4.76,
+        "loudnessRangeLU": 3.1
+      },
+      "chapters": [
+        {
+          "index": 1,
+          "title": "가상 공개 클리닉",
+          "startSeconds": 0,
+          "durationSeconds": 11.366666666666667,
+          "audioDurationSeconds": 10.56,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0
+        },
+        {
+          "index": 2,
+          "title": "고치기 전",
+          "startSeconds": 11.366666666666667,
+          "durationSeconds": 16.9,
+          "audioDurationSeconds": 16.08,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.05555555555555555
+        },
+        {
+          "index": 3,
+          "title": "원자료에서 확인",
+          "startSeconds": 28.266666666666666,
+          "durationSeconds": 17.6,
+          "audioDurationSeconds": 16.8,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.011235955056179775
+        },
+        {
+          "index": 4,
+          "title": "고친 문장",
+          "startSeconds": 45.86666666666667,
+          "durationSeconds": 23.533333333333335,
+          "audioDurationSeconds": 22.72,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0.008403361344537815
+        },
+        {
+          "index": 5,
+          "title": "내 문장에서 찾기",
+          "startSeconds": 69.4,
+          "durationSeconds": 15.366666666666667,
+          "audioDurationSeconds": 14.56,
+          "captionTimingBasis": "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+          "captionAlignmentDifferenceRatio": 0
+        }
+      ],
+      "frames": [
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-00.png",
+          "second": 1,
+          "sha256": "22497743354435b564e9c6799beddaefc5ea861d255b8d4fcdb8ab78cb11b696"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-01.png",
+          "second": 7.388333333333334,
+          "sha256": "577064c2860ba564677f5113947f1a6c467b8b73c709cff10acd8105ac4cf81d"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-02.png",
+          "second": 12.366666666666667,
+          "sha256": "b785cfc1c296812c9dd52aa3d41f79bfc2d57c383188bdf103929a8b8ac3ac42"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-03.png",
+          "second": 22.351666666666667,
+          "sha256": "bfe7fa17d95b36dcf2388a2d95928e3752295a531dd0782a881e0250789a630b"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-04.png",
+          "second": 29.266666666666666,
+          "sha256": "b2ab7a56e27664ca673835cb3b4f905491154f86be814e53a75ee6e260a89e20"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-05.png",
+          "second": 39.70666666666666,
+          "sha256": "58b671508cd825673bc5452fb9667d8a8ee710a61e0835212eebc53d05057d8d"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-06.png",
+          "second": 46.86666666666667,
+          "sha256": "a29de8c6a9ac0e06dd8673ed01405c46d51fb66662dbd23ddfb04c5909b6c56b"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-07.png",
+          "second": 61.163333333333334,
+          "sha256": "f2830380ad801ead0e1dd4052926e34745bc297a5ca8e61419644ef7b1c9d79d"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-08.png",
+          "second": 70.4,
+          "sha256": "5066863752915c10eb71d0b1ffe827fc13b5c4d4984fcaf3c66c3704098024c9"
+        },
+        {
+          "file": "_검토/영상프레임-shift-public-clinic-demo-01/frame-09.png",
+          "second": 79.38833333333334,
+          "sha256": "fbcf50a15b86654b0b1712b531caafd2851b860a665f35f171a0aa5caab982b9"
+        }
+      ],
+      "contactSheetSha256": "4f529840298fecf12fa01284a408f80464c457fbe01c53fde08b49c23e77b7c5"
+    }
+  ],
+  "detailedFrames": [
+    {
+      "id": "03-lab-tiktok",
+      "second": 1,
+      "label": "lab-role-list",
+      "file": "_검토/영상_상세프레임/03-lab-tiktok-lab-role-list.png",
+      "sha256": "fc435fc4ce7cfaa88e105d7ec772dac8810e78cbc5bfb28d3a21410d37e3a8df",
+      "sourceVideoSha256": "f49bb3a561a2c444c1757b37f9ce00e2fcd6ecaf425c775d43a3da357c595c18"
+    },
+    {
+      "id": "03-lab-tiktok",
+      "second": 13,
+      "label": "lab-korean-mongolian",
+      "file": "_검토/영상_상세프레임/03-lab-tiktok-lab-korean-mongolian.png",
+      "sha256": "e97cdf7be8b9c28a69637dc236ecf2cabaa7939980f0461470f5f9253cfdfc80",
+      "sourceVideoSha256": "f49bb3a561a2c444c1757b37f9ce00e2fcd6ecaf425c775d43a3da357c595c18"
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "second": 25,
+      "label": "intro-specific-scene",
+      "file": "_검토/영상_상세프레임/04-yuhobuilds-youtube-intro-specific-scene.png",
+      "sha256": "3666b514ea1fb5875a2a7ebe36b8397eb2546b6d38368918c2d988be58cfa169",
+      "sourceVideoSha256": "506cb4b3fa5cda40e7dee271fe296a89e80d15b21d9f11a50cf01c871eeded71"
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "second": 20,
+      "label": "envelope-outline",
+      "file": "_검토/영상_상세프레임/05-yuhobuilds-instagram-envelope-outline.png",
+      "sha256": "5af3285c6cb4bb408903eff5725141733c150e23c9cc4596521f0f0f7cb227f9",
+      "sourceVideoSha256": "7e6b07505e95e1a32de753bb2f14ccc26a481471de0c98a30959995aabdf729a"
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "second": 9,
+      "label": "scissors-and-copy",
+      "file": "_검토/영상_상세프레임/06-yuhobuilds-tiktok-scissors-and-copy.png",
+      "sha256": "bc0b6adb3977f9a032dd782b7033376d59d86eec07413b435ab2404a5d5c775e",
+      "sourceVideoSha256": "cb801603b2647ff92824bb186fd6ab1c91d3df0ce1fdff2f45afa407c5757865"
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "second": 27,
+      "label": "source-scope",
+      "file": "_검토/영상_상세프레임/07-synkbrief-youtube-source-scope.png",
+      "sha256": "546735c837cb3db3e42a01b26d4968a897c40e8899ed2e3e77509058a0a7e37d",
+      "sourceVideoSha256": "14afddfe35dfb43984f6797a34dc37bbe8d5e876a937735bf645148f54f68846"
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "second": 16,
+      "label": "conditions-retained",
+      "file": "_검토/영상_상세프레임/09-synkbrief-tiktok-conditions-retained.png",
+      "sha256": "2aaabf902b0d33c11beffd12b38113e1f536a9fc7fc6b2c6808e65a3a744ebbb",
+      "sourceVideoSha256": "5163b4db634c607ca42ee81c26e1d645034ae1ea506b25da6730a933c7641e4d"
+    },
+    {
+      "id": "shift-public-class-01",
+      "second": 8,
+      "label": "opening-caption",
+      "file": "_검토/영상_상세프레임/shift-public-class-01-opening-caption.png",
+      "sha256": "b28fe30d7a53091c61b2b66553491beec038380eba8cb4ba7148bee3e489f3af",
+      "sourceVideoSha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9"
+    },
+    {
+      "id": "shift-public-class-01",
+      "second": 92,
+      "label": "situation-caption",
+      "file": "_검토/영상_상세프레임/shift-public-class-01-situation-caption.png",
+      "sha256": "300e4260a797ae357b9c1f45317cee6fe6f29cc9c4eb34ddd9b48d7885d341fa",
+      "sourceVideoSha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9"
+    },
+    {
+      "id": "shift-public-class-01",
+      "second": 241,
+      "label": "long-two-line-caption",
+      "file": "_검토/영상_상세프레임/shift-public-class-01-long-two-line-caption.png",
+      "sha256": "63425012d3e7530098ad59ccae2345c40dc4db80814b0788e3aa6bba0309f0cb",
+      "sourceVideoSha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9"
+    },
+    {
+      "id": "shift-public-class-01",
+      "second": 420,
+      "label": "six-fields-caption",
+      "file": "_검토/영상_상세프레임/shift-public-class-01-six-fields-caption.png",
+      "sha256": "5130851f9b4abfcc76df490a4598dfa2f2ede43004e7e49e75f83cf2fb072cb6",
+      "sourceVideoSha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9"
+    },
+    {
+      "id": "shift-public-class-01",
+      "second": 507,
+      "label": "promise-caution",
+      "file": "_검토/영상_상세프레임/shift-public-class-01-promise-caution.png",
+      "sha256": "fba22b862bd74f1651a55ba034bcea3c039885133702d3e4e9f40d8d8a537dd0",
+      "sourceVideoSha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9"
+    },
+    {
+      "id": "shift-public-class-01",
+      "second": 623,
+      "label": "final-followup",
+      "file": "_검토/영상_상세프레임/shift-public-class-01-final-followup.png",
+      "sha256": "c94806b3a289e475360c817a61be3d99dd5f307b62f6d9e3b68acf6dce56b082",
+      "sourceVideoSha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9"
+    },
+    {
+      "id": "shift-public-clinic-demo-01",
+      "second": 7,
+      "label": "fiction-label",
+      "file": "_검토/영상_상세프레임/shift-public-clinic-demo-01-fiction-label.png",
+      "sha256": "577064c2860ba564677f5113947f1a6c467b8b73c709cff10acd8105ac4cf81d",
+      "sourceVideoSha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15"
+    },
+    {
+      "id": "shift-public-clinic-demo-01",
+      "second": 61,
+      "label": "corrected-offer",
+      "file": "_검토/영상_상세프레임/shift-public-clinic-demo-01-corrected-offer.png",
+      "sha256": "78d2d2b476064c3742b562b6c53e6b494166784e038d3421cecff9c4e789c807",
+      "sourceVideoSha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15"
+    },
+    {
+      "id": "shift-public-clinic-demo-01",
+      "second": 79,
+      "label": "complete-help",
+      "file": "_검토/영상_상세프레임/shift-public-clinic-demo-01-complete-help.png",
+      "sha256": "fbcf50a15b86654b0b1712b531caafd2851b860a665f35f171a0aa5caab982b9",
+      "sourceVideoSha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15"
+    }
+  ],
+  "posters": [
+    {
+      "id": "shift-public-class-01",
+      "second": 26.439999999999998,
+      "file": "공개수업/표지.jpg",
+      "sha256": "8c026817640861b79100055acb96e9a24c41fc144b998833f0d86b3903c2938a",
+      "sourceVideoSha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9"
+    },
+    {
+      "id": "shift-public-clinic-demo-01",
+      "second": 10.76,
+      "file": "공개수업/클리닉-표지.jpg",
+      "sha256": "fc0d46d7d0736830f597fda4fcde3cc213c34e37b84f9221a59a520895825c54",
+      "sourceVideoSha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15"
+    }
+  ],
+  "visualInspection": "Not inferred by this script. See separate final visual inspection report keyed by the same video hashes.",
+  "listening": "Human listening not performed; local ASR and audio technical tests are separate.",
+  "externalPosting": false
+}

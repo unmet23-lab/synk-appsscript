@@ -1,0 +1,499 @@
+{
+  "version": 1,
+  "id": "04",
+  "input": "chapter-04.wav",
+  "audioSha256": "47371cc004aabd4f1bc47a378e419c59f4d5b62e650f98561fb43f646d62b11b",
+  "language": "ko",
+  "durationSeconds": 32.32,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "척하는 누구의 어떤 상황인지입니다. 예시의 대상은 수공의 판매자입니다. 여기에 새 제품 사진을 혼자 준비하는 이라는 순간을 더해 보겠습니다. 직업명만 있을 때보다 왜 이 활동이 필요한지 보입니다. 이것이 고객을 이 한 부류로 영원히 고정하라는 뜻은 아닙니다. 오늘 한 장을 쓰기 위해 먼저 한 상황을 고르는 것입니다. 실제 사람들이 그 상황을 겪는지 그때 어떤 도움이 필요한지는 이후에 확인해야 합니다. 예시를 시장 조사 결과처럼 취급하지 않습니다.",
+  "expectedNarration": "첫 칸은 누구의 어떤 상황인지입니다. 예시의 대상은 수공예 판매자입니다. 여기에 ‘새 제품 사진을 혼자 준비하는’이라는 순간을 더해보겠습니다. 직업명만 있을 때보다 왜 이 활동이 필요한지 보입니다. 이것이 고객을 이 한 부류로 영원히 고정하라는 뜻은 아닙니다. 오늘 한 장을 쓰기 위해 먼저 한 상황을 고르는 것입니다. 실제 사람들이 그 상황을 겪는지, 그때 어떤 도움이 필요한지는 이후에 확인해야 합니다. 예시를 시장 조사 결과처럼 취급하지 않습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9779005524861878,
+    "expectedCharacters": 181,
+    "transcribedCharacters": 181,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "첫칸은",
+        "transcribed": "척하는",
+        "expectedContext": "첫칸은누구의어떤상황인지입"
+      },
+      {
+        "type": "replace",
+        "expected": "예",
+        "transcribed": "의",
+        "expectedContext": "니다예시의대상은수공예판매자입니다여기에새"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.08,
+      "text": " 척하는 누구의 어떤 상황인지입니다.",
+      "avgLogProbability": -0.11672705353370734,
+      "noSpeechProbability": 0.01796085573732853,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.4,
+          "word": " 척하는",
+          "probability": 0.6356642494599024
+        },
+        {
+          "start": 0.4,
+          "end": 0.86,
+          "word": " 누구의",
+          "probability": 0.8680999279022217
+        },
+        {
+          "start": 0.86,
+          "end": 1.08,
+          "word": " 어떤",
+          "probability": 0.9994086027145386
+        },
+        {
+          "start": 1.08,
+          "end": 2.08,
+          "word": " 상황인지입니다.",
+          "probability": 0.9152683814366659
+        }
+      ]
+    },
+    {
+      "start": 2.76,
+      "end": 5.0,
+      "text": " 예시의 대상은 수공의 판매자입니다.",
+      "avgLogProbability": -0.11672705353370734,
+      "noSpeechProbability": 0.01796085573732853,
+      "words": [
+        {
+          "start": 2.76,
+          "end": 3.34,
+          "word": " 예시의",
+          "probability": 0.6702430546283722
+        },
+        {
+          "start": 3.34,
+          "end": 3.8,
+          "word": " 대상은",
+          "probability": 0.9959976474444071
+        },
+        {
+          "start": 3.8,
+          "end": 4.3,
+          "word": " 수공의",
+          "probability": 0.9498692353566488
+        },
+        {
+          "start": 4.3,
+          "end": 5.0,
+          "word": " 판매자입니다.",
+          "probability": 0.9907129645347595
+        }
+      ]
+    },
+    {
+      "start": 5.84,
+      "end": 9.58,
+      "text": " 여기에 새 제품 사진을 혼자 준비하는 이라는 순간을 더해 보겠습니다.",
+      "avgLogProbability": -0.11672705353370734,
+      "noSpeechProbability": 0.01796085573732853,
+      "words": [
+        {
+          "start": 5.84,
+          "end": 6.2,
+          "word": " 여기에",
+          "probability": 0.8880743384361267
+        },
+        {
+          "start": 6.2,
+          "end": 6.48,
+          "word": " 새",
+          "probability": 0.7593242526054382
+        },
+        {
+          "start": 6.48,
+          "end": 6.72,
+          "word": " 제품",
+          "probability": 0.9665093421936035
+        },
+        {
+          "start": 6.72,
+          "end": 7.26,
+          "word": " 사진을",
+          "probability": 0.9795877039432526
+        },
+        {
+          "start": 7.26,
+          "end": 7.52,
+          "word": " 혼자",
+          "probability": 0.9844240546226501
+        },
+        {
+          "start": 7.52,
+          "end": 8.1,
+          "word": " 준비하는",
+          "probability": 0.9902868568897247
+        },
+        {
+          "start": 8.1,
+          "end": 8.38,
+          "word": " 이라는",
+          "probability": 0.89084592461586
+        },
+        {
+          "start": 8.38,
+          "end": 8.94,
+          "word": " 순간을",
+          "probability": 0.9918575584888458
+        },
+        {
+          "start": 8.94,
+          "end": 9.2,
+          "word": " 더해",
+          "probability": 0.82848060131073
+        },
+        {
+          "start": 9.2,
+          "end": 9.58,
+          "word": " 보겠습니다.",
+          "probability": 0.9987679421901703
+        }
+      ]
+    },
+    {
+      "start": 10.56,
+      "end": 13.66,
+      "text": " 직업명만 있을 때보다 왜 이 활동이 필요한지 보입니다.",
+      "avgLogProbability": -0.11672705353370734,
+      "noSpeechProbability": 0.01796085573732853,
+      "words": [
+        {
+          "start": 10.56,
+          "end": 11.18,
+          "word": " 직업명만",
+          "probability": 0.8722603619098663
+        },
+        {
+          "start": 11.18,
+          "end": 11.38,
+          "word": " 있을",
+          "probability": 0.9971317052841187
+        },
+        {
+          "start": 11.38,
+          "end": 11.8,
+          "word": " 때보다",
+          "probability": 0.955170214176178
+        },
+        {
+          "start": 11.8,
+          "end": 12.1,
+          "word": " 왜",
+          "probability": 0.9753376245498657
+        },
+        {
+          "start": 12.1,
+          "end": 12.32,
+          "word": " 이",
+          "probability": 0.9395418167114258
+        },
+        {
+          "start": 12.32,
+          "end": 12.76,
+          "word": " 활동이",
+          "probability": 0.9898425340652466
+        },
+        {
+          "start": 12.76,
+          "end": 13.24,
+          "word": " 필요한지",
+          "probability": 0.9742130835851034
+        },
+        {
+          "start": 13.24,
+          "end": 13.66,
+          "word": " 보입니다.",
+          "probability": 0.994787355264028
+        }
+      ]
+    },
+    {
+      "start": 14.54,
+      "end": 18.0,
+      "text": " 이것이 고객을 이 한 부류로 영원히 고정하라는 뜻은 아닙니다.",
+      "avgLogProbability": -0.11672705353370734,
+      "noSpeechProbability": 0.01796085573732853,
+      "words": [
+        {
+          "start": 14.54,
+          "end": 14.96,
+          "word": " 이것이",
+          "probability": 0.9931658506393433
+        },
+        {
+          "start": 14.96,
+          "end": 15.44,
+          "word": " 고객을",
+          "probability": 0.9982200264930725
+        },
+        {
+          "start": 15.44,
+          "end": 15.58,
+          "word": " 이",
+          "probability": 0.993263840675354
+        },
+        {
+          "start": 15.58,
+          "end": 15.76,
+          "word": " 한",
+          "probability": 0.41393834352493286
+        },
+        {
+          "start": 15.76,
+          "end": 16.12,
+          "word": " 부류로",
+          "probability": 0.794756643474102
+        },
+        {
+          "start": 16.12,
+          "end": 16.6,
+          "word": " 영원히",
+          "probability": 0.9694510897000631
+        },
+        {
+          "start": 16.6,
+          "end": 17.16,
+          "word": " 고정하라는",
+          "probability": 0.9795527756214142
+        },
+        {
+          "start": 17.16,
+          "end": 17.56,
+          "word": " 뜻은",
+          "probability": 0.9977281987667084
+        },
+        {
+          "start": 17.56,
+          "end": 18.0,
+          "word": " 아닙니다.",
+          "probability": 0.9895631670951843
+        }
+      ]
+    },
+    {
+      "start": 18.78,
+      "end": 21.78,
+      "text": " 오늘 한 장을 쓰기 위해 먼저 한 상황을 고르는 것입니다.",
+      "avgLogProbability": -0.11672705353370734,
+      "noSpeechProbability": 0.01796085573732853,
+      "words": [
+        {
+          "start": 18.78,
+          "end": 19.04,
+          "word": " 오늘",
+          "probability": 0.9762011766433716
+        },
+        {
+          "start": 19.04,
+          "end": 19.24,
+          "word": " 한",
+          "probability": 0.9957029223442078
+        },
+        {
+          "start": 19.24,
+          "end": 19.5,
+          "word": " 장을",
+          "probability": 0.9497129917144775
+        },
+        {
+          "start": 19.5,
+          "end": 19.78,
+          "word": " 쓰기",
+          "probability": 0.9954003393650055
+        },
+        {
+          "start": 19.78,
+          "end": 20.04,
+          "word": " 위해",
+          "probability": 0.8424884080886841
+        },
+        {
+          "start": 20.04,
+          "end": 20.36,
+          "word": " 먼저",
+          "probability": 0.9956875443458557
+        },
+        {
+          "start": 20.36,
+          "end": 20.6,
+          "word": " 한",
+          "probability": 0.9771236181259155
+        },
+        {
+          "start": 20.6,
+          "end": 21.04,
+          "word": " 상황을",
+          "probability": 0.997883528470993
+        },
+        {
+          "start": 21.04,
+          "end": 21.36,
+          "word": " 고르는",
+          "probability": 0.9926270842552185
+        },
+        {
+          "start": 21.36,
+          "end": 21.78,
+          "word": " 것입니다.",
+          "probability": 0.9900364875793457
+        }
+      ]
+    },
+    {
+      "start": 22.72,
+      "end": 24.74,
+      "text": " 실제 사람들이 그 상황을 겪는지",
+      "avgLogProbability": -0.11672705353370734,
+      "noSpeechProbability": 0.01796085573732853,
+      "words": [
+        {
+          "start": 22.72,
+          "end": 23.08,
+          "word": " 실제",
+          "probability": 0.9892806708812714
+        },
+        {
+          "start": 23.08,
+          "end": 23.5,
+          "word": " 사람들이",
+          "probability": 0.9407320022583008
+        },
+        {
+          "start": 23.5,
+          "end": 23.8,
+          "word": " 그",
+          "probability": 0.9980775117874146
+        },
+        {
+          "start": 23.8,
+          "end": 24.26,
+          "word": " 상황을",
+          "probability": 0.9993771314620972
+        },
+        {
+          "start": 24.26,
+          "end": 24.74,
+          "word": " 겪는지",
+          "probability": 0.9674619833628336
+        }
+      ]
+    },
+    {
+      "start": 25.32,
+      "end": 28.24,
+      "text": " 그때 어떤 도움이 필요한지는 이후에 확인해야 합니다.",
+      "avgLogProbability": -0.11672705353370734,
+      "noSpeechProbability": 0.01796085573732853,
+      "words": [
+        {
+          "start": 25.139999999999997,
+          "end": 25.56,
+          "word": " 그때",
+          "probability": 0.5229753255844116
+        },
+        {
+          "start": 25.56,
+          "end": 25.98,
+          "word": " 어떤",
+          "probability": 0.9981200098991394
+        },
+        {
+          "start": 25.98,
+          "end": 26.36,
+          "word": " 도움이",
+          "probability": 0.9932478666305542
+        },
+        {
+          "start": 26.36,
+          "end": 26.98,
+          "word": " 필요한지는",
+          "probability": 0.9886346459388733
+        },
+        {
+          "start": 26.98,
+          "end": 27.56,
+          "word": " 이후에",
+          "probability": 0.9869402348995209
+        },
+        {
+          "start": 27.56,
+          "end": 27.96,
+          "word": " 확인해야",
+          "probability": 0.9844792187213898
+        },
+        {
+          "start": 27.96,
+          "end": 28.24,
+          "word": " 합니다.",
+          "probability": 0.984403133392334
+        }
+      ]
+    },
+    {
+      "start": 28.24,
+      "end": 32.0,
+      "text": " 예시를 시장 조사 결과처럼 취급하지 않습니다.",
+      "avgLogProbability": -0.1550682857632637,
+      "noSpeechProbability": 0.3393000662326813,
+      "words": [
+        {
+          "start": 28.24,
+          "end": 29.64,
+          "word": " 예시를",
+          "probability": 0.9438487490018209
+        },
+        {
+          "start": 29.64,
+          "end": 30.0,
+          "word": " 시장",
+          "probability": 0.9915727078914642
+        },
+        {
+          "start": 30.0,
+          "end": 30.32,
+          "word": " 조사",
+          "probability": 0.9205739796161652
+        },
+        {
+          "start": 30.32,
+          "end": 30.92,
+          "word": " 결과처럼",
+          "probability": 0.9880464971065521
+        },
+        {
+          "start": 30.92,
+          "end": 31.5,
+          "word": " 취급하지",
+          "probability": 0.9939778248469034
+        },
+        {
+          "start": 31.5,
+          "end": 32.0,
+          "word": " 않습니다.",
+          "probability": 0.9956976175308228
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 5.71
+}

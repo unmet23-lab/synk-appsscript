@@ -1,0 +1,110 @@
+{
+  "basis": "per-scene captionTimingBasis, or screen text if no voice",
+  "captions": [
+    {
+      "text": "이번 공개 클리닉은 실제 받은 질문이 아닌 가상 초안의 시연입니다.",
+      "startMs": 0,
+      "endMs": 4380,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "한 문장 안에서 실제 활동과 근거 없는 약속을 나누어보겠습니다.",
+      "startMs": 5840,
+      "endMs": 10020,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "가상 초안은 이렇습니다.",
+      "startMs": 11366.666666666668,
+      "endMs": 13046.666666666668,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "초보 사장님도 AI로 브랜드를 완성하고 매출을 높입니다.",
+      "startMs": 14286.666666666668,
+      "endMs": 18426.666666666668,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "누구의 어떤 상황인지 넓고, 무엇을 하는지 막연하며, 매출이라는 성과 약속까지 붙어 있습니다.",
+      "startMs": 20026.666666666668,
+      "endMs": 27066.666666666668,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "이 가상 수업의 원자료에는 첫 상품 소개를 준비하는 사람이 소개문 초안 한 개를 작성한다고만 적혀 있습니다.",
+      "startMs": 28266.666666666668,
+      "endMs": 35886.66666666667,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "실제로 확인되는 것은 이 대상 장면과 활동입니다.",
+      "startMs": 36346.66666666667,
+      "endMs": 40066.66666666667,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "브랜드 전체를 완성하거나 매출을 높인다는 근거는 없습니다.",
+      "startMs": 40566.66666666667,
+      "endMs": 44426.66666666667,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "확인된 범위로 고치면, 첫 상품 소개를 준비하는 사람이 소개문 초안 한 개를 작성하는 실습이라고 쓸 수 있습니다.",
+      "startMs": 45866.66666666667,
+      "endMs": 53246.66666666667,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "이 클리닉에서는 그 수정 과정을 원자료와 대조하고 있습니다.",
+      "startMs": 54306.66666666667,
+      "endMs": 58126.66666666667,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "AI에게 검사를 맡겼더라도 사람이 직접 확인해야 합니다.",
+      "startMs": 59226.66666666667,
+      "endMs": 63206.66666666667,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "실제 운영 범위가 다르다면 예시를 그대로 사용하지 않습니다.",
+      "startMs": 64386.66666666667,
+      "endMs": 68266.66666666667,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "여러분의 문장에서도 넓은 대상, 막연한 활동, 근거 없는 결과 중 한 곳을 찾아보세요.",
+      "startMs": 69400,
+      "endMs": 74920,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "고객명이나 비공개 자료를 공개하지 않고 자기 메모에서 비교해도 됩니다.",
+      "startMs": 75760,
+      "endMs": 80060,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "지금 고칠 수 있는 한 곳을 찾으면 충분합니다.",
+      "startMs": 80860,
+      "endMs": 83540,
+      "timestampMs": null,
+      "confidence": null
+    }
+  ]
+}

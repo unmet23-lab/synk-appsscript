@@ -1,0 +1,106 @@
+{
+  "passed": true,
+  "count": 9,
+  "scope": "Actual local Chrome video decoding and muted playback; not human listening",
+  "results": [
+    {
+      "id": "01-lab-youtube",
+      "file": "01-lab-youtube/video.mp4",
+      "sha256": "6e8ada00f286f1fd78ece68e5e6d56b62cfed3030d662382e5d79a7bd09a6b26",
+      "width": 1080,
+      "height": 1920,
+      "duration": 30.058667,
+      "readyState": 4,
+      "frameDecoded": true,
+      "muted": true
+    },
+    {
+      "id": "03-lab-tiktok",
+      "file": "03-lab-tiktok/video.mp4",
+      "sha256": "f49bb3a561a2c444c1757b37f9ce00e2fcd6ecaf425c775d43a3da357c595c18",
+      "width": 1080,
+      "height": 1920,
+      "duration": 30.058667,
+      "readyState": 4,
+      "frameDecoded": true,
+      "muted": true
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "file": "04-yuhobuilds-youtube/video.mp4",
+      "sha256": "506cb4b3fa5cda40e7dee271fe296a89e80d15b21d9f11a50cf01c871eeded71",
+      "width": 1080,
+      "height": 1920,
+      "duration": 60.053333,
+      "readyState": 4,
+      "frameDecoded": true,
+      "muted": true
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "file": "05-yuhobuilds-instagram/video.mp4",
+      "sha256": "7e6b07505e95e1a32de753bb2f14ccc26a481471de0c98a30959995aabdf729a",
+      "width": 1080,
+      "height": 1920,
+      "duration": 30.058667,
+      "readyState": 4,
+      "frameDecoded": true,
+      "muted": true
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "file": "06-yuhobuilds-tiktok/video.mp4",
+      "sha256": "cb801603b2647ff92824bb186fd6ab1c91d3df0ce1fdff2f45afa407c5757865",
+      "width": 1080,
+      "height": 1920,
+      "duration": 25.045333,
+      "readyState": 4,
+      "frameDecoded": true,
+      "muted": true
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "file": "07-synkbrief-youtube/video.mp4",
+      "sha256": "14afddfe35dfb43984f6797a34dc37bbe8d5e876a937735bf645148f54f68846",
+      "width": 1080,
+      "height": 1920,
+      "duration": 40.042667,
+      "readyState": 4,
+      "frameDecoded": true,
+      "muted": true
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "file": "09-synkbrief-tiktok/video.mp4",
+      "sha256": "5163b4db634c607ca42ee81c26e1d645034ae1ea506b25da6730a933c7641e4d",
+      "width": 1080,
+      "height": 1920,
+      "duration": 25.045333,
+      "readyState": 4,
+      "frameDecoded": true,
+      "muted": true
+    },
+    {
+      "id": "shift-public-class-01",
+      "file": "공개수업/수업.mp4",
+      "sha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9",
+      "width": 1920,
+      "height": 1080,
+      "duration": 629.184,
+      "readyState": 4,
+      "frameDecoded": true,
+      "muted": true
+    },
+    {
+      "id": "shift-public-clinic-demo-01",
+      "file": "공개수업/클리닉.mp4",
+      "sha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15",
+      "width": 1920,
+      "height": 1080,
+      "duration": 84.821333,
+      "readyState": 4,
+      "frameDecoded": true,
+      "muted": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "basis": "approved screen text, not speech transcription",
+  "captions": [
+    {
+      "text": "[Instrumental music]",
+      "startMs": 0,
+      "endMs": 30000,
+      "timestampMs": null,
+      "confidence": null
+    }
+  ]
+}

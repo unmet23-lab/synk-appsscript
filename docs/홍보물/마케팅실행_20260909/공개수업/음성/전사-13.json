@@ -1,0 +1,580 @@
+{
+  "version": 1,
+  "id": "13",
+  "input": "chapter-13.wav",
+  "audioSha256": "b5b6bfbb0bc0dd2050623d64a2bc4b5936d34646bf5e0171cca5b9100bc7f32f",
+  "language": "ko",
+  "durationSeconds": 39.84,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "화면의 6칸을 자기일로 채워봅니다. 대상, 활동, 남는 것, 포함, 제외, 시작 전 확인입니다. 앞에서 쓴 소개 3주를 옮기고, 나머지 경계 3주를 붙이면 됩니다. 한 칸의 긴 설명을 쓰기보다 먼저 한 줄씩 적으세요. 서로 모순되는 문장이 있는지 봅니다. 예를 들어, 소개에서는 함께 고친다고 했는데 포함에는 설명만 적혀 있다면 어느 범위가 사실인지 다시 확인해야 합니다. 아직 결정하지 않은 조건은 미확정이라고 표시해 두세요. 이 한 장을 다 채웠다는 사실만으로 상품 검증이나 계약 준비가 끝나는 것은 아닙니다.",
+  "expectedNarration": "화면의 여섯 칸을 자기 일로 채워봅니다. 대상, 활동, 남는 것, 포함, 제외, 시작 전 확인입니다. 앞에서 쓴 소개 세 줄을 옮기고 나머지 경계 세 줄을 붙이면 됩니다. 한 칸에 긴 설명을 쓰기보다 먼저 한 줄씩 적으세요. 서로 모순되는 문장이 있는지 봅니다. 예를 들어 소개에서는 함께 고친다고 했는데 포함에는 설명만 적혀 있다면 어느 범위가 사실인지 다시 확인해야 합니다. 아직 결정하지 않은 조건은 미확정이라고 표시해두세요. 이 한 장을 다 채웠다는 사실만으로 상품 검증이나 계약 준비가 끝나는 것은 아닙니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9576059850374065,
+    "expectedCharacters": 201,
+    "transcribedCharacters": 200,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "여섯",
+        "transcribed": "6",
+        "expectedContext": "화면의여섯칸을자기일로채워봅니"
+      },
+      {
+        "type": "replace",
+        "expected": "세줄을",
+        "transcribed": "3주를",
+        "expectedContext": "인입니다앞에서쓴소개세줄을옮기고나머지경계세줄"
+      },
+      {
+        "type": "replace",
+        "expected": "세줄을",
+        "transcribed": "3주를",
+        "expectedContext": "줄을옮기고나머지경계세줄을붙이면됩니다한칸에긴"
+      },
+      {
+        "type": "replace",
+        "expected": "에",
+        "transcribed": "의",
+        "expectedContext": "줄을붙이면됩니다한칸에긴설명을쓰기보다먼저"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.56,
+      "text": " 화면의 6칸을 자기일로 채워봅니다.",
+      "avgLogProbability": -0.11700361521101334,
+      "noSpeechProbability": 0.04977556690573692,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.4,
+          "word": " 화면의",
+          "probability": 0.8553841312726339
+        },
+        {
+          "start": 0.4,
+          "end": 1.08,
+          "word": " 6칸을",
+          "probability": 0.9022922664880753
+        },
+        {
+          "start": 1.08,
+          "end": 1.74,
+          "word": " 자기일로",
+          "probability": 0.74867049853007
+        },
+        {
+          "start": 1.74,
+          "end": 2.56,
+          "word": " 채워봅니다.",
+          "probability": 0.9663425922393799
+        }
+      ]
+    },
+    {
+      "start": 3.18,
+      "end": 8.4,
+      "text": " 대상, 활동, 남는 것, 포함, 제외, 시작 전 확인입니다.",
+      "avgLogProbability": -0.11700361521101334,
+      "noSpeechProbability": 0.04977556690573692,
+      "words": [
+        {
+          "start": 3.18,
+          "end": 3.72,
+          "word": " 대상,",
+          "probability": 0.7286398112773895
+        },
+        {
+          "start": 4.06,
+          "end": 4.4,
+          "word": " 활동,",
+          "probability": 0.9884067177772522
+        },
+        {
+          "start": 4.96,
+          "end": 5.3,
+          "word": " 남는",
+          "probability": 0.9916447997093201
+        },
+        {
+          "start": 5.3,
+          "end": 5.48,
+          "word": " 것,",
+          "probability": 0.8832245469093323
+        },
+        {
+          "start": 5.86,
+          "end": 6.2,
+          "word": " 포함,",
+          "probability": 0.9967219829559326
+        },
+        {
+          "start": 6.58,
+          "end": 6.86,
+          "word": " 제외,",
+          "probability": 0.9423640370368958
+        },
+        {
+          "start": 7.12,
+          "end": 7.36,
+          "word": " 시작",
+          "probability": 0.995489776134491
+        },
+        {
+          "start": 7.36,
+          "end": 7.7,
+          "word": " 전",
+          "probability": 0.5705018639564514
+        },
+        {
+          "start": 7.7,
+          "end": 8.4,
+          "word": " 확인입니다.",
+          "probability": 0.9617772698402405
+        }
+      ]
+    },
+    {
+      "start": 9.22,
+      "end": 13.54,
+      "text": " 앞에서 쓴 소개 3주를 옮기고, 나머지 경계 3주를 붙이면 됩니다.",
+      "avgLogProbability": -0.11700361521101334,
+      "noSpeechProbability": 0.04977556690573692,
+      "words": [
+        {
+          "start": 9.22,
+          "end": 9.62,
+          "word": " 앞에서",
+          "probability": 0.9964083731174469
+        },
+        {
+          "start": 9.62,
+          "end": 9.9,
+          "word": " 쓴",
+          "probability": 0.9910932183265686
+        },
+        {
+          "start": 9.9,
+          "end": 10.12,
+          "word": " 소개",
+          "probability": 0.8106832504272461
+        },
+        {
+          "start": 10.12,
+          "end": 10.64,
+          "word": " 3주를",
+          "probability": 0.7278052965799967
+        },
+        {
+          "start": 10.64,
+          "end": 11.22,
+          "word": " 옮기고,",
+          "probability": 0.9969322234392166
+        },
+        {
+          "start": 11.46,
+          "end": 11.92,
+          "word": " 나머지",
+          "probability": 0.9983339707056681
+        },
+        {
+          "start": 11.92,
+          "end": 12.26,
+          "word": " 경계",
+          "probability": 0.9849938452243805
+        },
+        {
+          "start": 12.26,
+          "end": 12.74,
+          "word": " 3주를",
+          "probability": 0.9808216293652853
+        },
+        {
+          "start": 12.74,
+          "end": 13.14,
+          "word": " 붙이면",
+          "probability": 0.9935593008995056
+        },
+        {
+          "start": 13.14,
+          "end": 13.54,
+          "word": " 됩니다.",
+          "probability": 0.998239278793335
+        }
+      ]
+    },
+    {
+      "start": 14.36,
+      "end": 17.62,
+      "text": " 한 칸의 긴 설명을 쓰기보다 먼저 한 줄씩 적으세요.",
+      "avgLogProbability": -0.11700361521101334,
+      "noSpeechProbability": 0.04977556690573692,
+      "words": [
+        {
+          "start": 14.36,
+          "end": 14.56,
+          "word": " 한",
+          "probability": 0.9861469864845276
+        },
+        {
+          "start": 14.56,
+          "end": 14.88,
+          "word": " 칸의",
+          "probability": 0.9602118929227194
+        },
+        {
+          "start": 14.88,
+          "end": 15.14,
+          "word": " 긴",
+          "probability": 0.9895288944244385
+        },
+        {
+          "start": 15.14,
+          "end": 15.62,
+          "word": " 설명을",
+          "probability": 0.9968646466732025
+        },
+        {
+          "start": 15.62,
+          "end": 16.08,
+          "word": " 쓰기보다",
+          "probability": 0.9844855666160583
+        },
+        {
+          "start": 16.08,
+          "end": 16.48,
+          "word": " 먼저",
+          "probability": 0.9856457114219666
+        },
+        {
+          "start": 16.48,
+          "end": 16.74,
+          "word": " 한",
+          "probability": 0.9923425316810608
+        },
+        {
+          "start": 16.74,
+          "end": 17.14,
+          "word": " 줄씩",
+          "probability": 0.9454972445964813
+        },
+        {
+          "start": 17.14,
+          "end": 17.62,
+          "word": " 적으세요.",
+          "probability": 0.9960861603418986
+        }
+      ]
+    },
+    {
+      "start": 18.44,
+      "end": 20.56,
+      "text": " 서로 모순되는 문장이 있는지 봅니다.",
+      "avgLogProbability": -0.11700361521101334,
+      "noSpeechProbability": 0.04977556690573692,
+      "words": [
+        {
+          "start": 18.44,
+          "end": 18.66,
+          "word": " 서로",
+          "probability": 0.9932602047920227
+        },
+        {
+          "start": 18.66,
+          "end": 19.24,
+          "word": " 모순되는",
+          "probability": 0.863927349448204
+        },
+        {
+          "start": 19.24,
+          "end": 19.76,
+          "word": " 문장이",
+          "probability": 0.9840318560600281
+        },
+        {
+          "start": 19.76,
+          "end": 20.24,
+          "word": " 있는지",
+          "probability": 0.9865922033786774
+        },
+        {
+          "start": 20.24,
+          "end": 20.56,
+          "word": " 봅니다.",
+          "probability": 0.9833460450172424
+        }
+      ]
+    },
+    {
+      "start": 21.36,
+      "end": 24.04,
+      "text": " 예를 들어, 소개에서는 함께 고친다고 했는데",
+      "avgLogProbability": -0.11700361521101334,
+      "noSpeechProbability": 0.04977556690573692,
+      "words": [
+        {
+          "start": 21.36,
+          "end": 21.68,
+          "word": " 예를",
+          "probability": 0.9970583617687225
+        },
+        {
+          "start": 21.68,
+          "end": 21.96,
+          "word": " 들어,",
+          "probability": 0.9910619258880615
+        },
+        {
+          "start": 22.18,
+          "end": 22.72,
+          "word": " 소개에서는",
+          "probability": 0.8450668752193451
+        },
+        {
+          "start": 22.72,
+          "end": 23.1,
+          "word": " 함께",
+          "probability": 0.9766046404838562
+        },
+        {
+          "start": 23.1,
+          "end": 23.76,
+          "word": " 고친다고",
+          "probability": 0.9851163228352865
+        },
+        {
+          "start": 23.76,
+          "end": 24.04,
+          "word": " 했는데",
+          "probability": 0.9892559051513672
+        }
+      ]
+    },
+    {
+      "start": 24.6,
+      "end": 26.38,
+      "text": " 포함에는 설명만 적혀 있다면",
+      "avgLogProbability": -0.11700361521101334,
+      "noSpeechProbability": 0.04977556690573692,
+      "words": [
+        {
+          "start": 24.6,
+          "end": 25.04,
+          "word": " 포함에는",
+          "probability": 0.87759929895401
+        },
+        {
+          "start": 25.04,
+          "end": 25.66,
+          "word": " 설명만",
+          "probability": 0.9906040132045746
+        },
+        {
+          "start": 25.66,
+          "end": 26.02,
+          "word": " 적혀",
+          "probability": 0.9979202151298523
+        },
+        {
+          "start": 26.02,
+          "end": 26.38,
+          "word": " 있다면",
+          "probability": 0.8823119699954987
+        }
+      ]
+    },
+    {
+      "start": 26.38,
+      "end": 29.08,
+      "text": " 어느 범위가 사실인지 다시 확인해야 합니다.",
+      "avgLogProbability": -0.11700361521101334,
+      "noSpeechProbability": 0.04977556690573692,
+      "words": [
+        {
+          "start": 26.38,
+          "end": 26.86,
+          "word": " 어느",
+          "probability": 0.8522917032241821
+        },
+        {
+          "start": 26.86,
+          "end": 27.28,
+          "word": " 범위가",
+          "probability": 0.9841296672821045
+        },
+        {
+          "start": 27.28,
+          "end": 27.84,
+          "word": " 사실인지",
+          "probability": 0.9931655824184418
+        },
+        {
+          "start": 27.84,
+          "end": 28.24,
+          "word": " 다시",
+          "probability": 0.9887669682502747
+        },
+        {
+          "start": 28.24,
+          "end": 28.76,
+          "word": " 확인해야",
+          "probability": 0.9893304705619812
+        },
+        {
+          "start": 28.76,
+          "end": 29.08,
+          "word": " 합니다.",
+          "probability": 0.9861786365509033
+        }
+      ]
+    },
+    {
+      "start": 29.08,
+      "end": 33.42,
+      "text": " 아직 결정하지 않은 조건은 미확정이라고 표시해 두세요.",
+      "avgLogProbability": -0.17396040699061224,
+      "noSpeechProbability": 0.2399226427078247,
+      "words": [
+        {
+          "start": 29.08,
+          "end": 30.16,
+          "word": " 아직",
+          "probability": 0.751494824886322
+        },
+        {
+          "start": 30.16,
+          "end": 30.84,
+          "word": " 결정하지",
+          "probability": 0.9961053530375162
+        },
+        {
+          "start": 30.84,
+          "end": 31.06,
+          "word": " 않은",
+          "probability": 0.9792307019233704
+        },
+        {
+          "start": 31.06,
+          "end": 31.66,
+          "word": " 조건은",
+          "probability": 0.9855717221895853
+        },
+        {
+          "start": 31.66,
+          "end": 32.54,
+          "word": " 미확정이라고",
+          "probability": 0.9032282680273056
+        },
+        {
+          "start": 32.54,
+          "end": 33.08,
+          "word": " 표시해",
+          "probability": 0.8707178036371866
+        },
+        {
+          "start": 33.08,
+          "end": 33.42,
+          "word": " 두세요.",
+          "probability": 0.6514144688844681
+        }
+      ]
+    },
+    {
+      "start": 34.02,
+      "end": 39.52,
+      "text": " 이 한 장을 다 채웠다는 사실만으로 상품 검증이나 계약 준비가 끝나는 것은 아닙니다.",
+      "avgLogProbability": -0.17396040699061224,
+      "noSpeechProbability": 0.2399226427078247,
+      "words": [
+        {
+          "start": 34.02,
+          "end": 34.24,
+          "word": " 이",
+          "probability": 0.9843542575836182
+        },
+        {
+          "start": 34.24,
+          "end": 34.42,
+          "word": " 한",
+          "probability": 0.9834949374198914
+        },
+        {
+          "start": 34.42,
+          "end": 34.74,
+          "word": " 장을",
+          "probability": 0.8325393795967102
+        },
+        {
+          "start": 34.74,
+          "end": 34.94,
+          "word": " 다",
+          "probability": 0.9955525994300842
+        },
+        {
+          "start": 34.94,
+          "end": 35.48,
+          "word": " 채웠다는",
+          "probability": 0.9767253597577413
+        },
+        {
+          "start": 35.48,
+          "end": 36.3,
+          "word": " 사실만으로",
+          "probability": 0.8504549562931061
+        },
+        {
+          "start": 36.3,
+          "end": 36.82,
+          "word": " 상품",
+          "probability": 0.9719317853450775
+        },
+        {
+          "start": 36.82,
+          "end": 37.46,
+          "word": " 검증이나",
+          "probability": 0.8760683337847391
+        },
+        {
+          "start": 37.46,
+          "end": 37.86,
+          "word": " 계약",
+          "probability": 0.9878639280796051
+        },
+        {
+          "start": 37.86,
+          "end": 38.3,
+          "word": " 준비가",
+          "probability": 0.8478967845439911
+        },
+        {
+          "start": 38.3,
+          "end": 38.72,
+          "word": " 끝나는",
+          "probability": 0.984245777130127
+        },
+        {
+          "start": 38.72,
+          "end": 38.9,
+          "word": " 것은",
+          "probability": 0.9926647543907166
+        },
+        {
+          "start": 38.9,
+          "end": 39.52,
+          "word": " 아닙니다.",
+          "probability": 0.9962117373943329
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 5.6
+}

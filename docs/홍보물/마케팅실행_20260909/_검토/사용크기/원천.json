@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-09-09T09:53:54.228Z",
+  "records": [
+    {
+      "source": "02-lab-instagram/upload-04.jpg",
+      "sha256": "c29267966743a861a3f3bc345be83e5e238af621707b0189e0077d18090e1bb0",
+      "qa": "02-lab-instagram__upload-04__390.png",
+      "width": 390
+    },
+    {
+      "source": "08-synkbrief-instagram/upload-06.jpg",
+      "sha256": "b2e52eb3808b66fd3895c5d8492e09b57d19d14a679f5f9ad7456f78b7807e46",
+      "qa": "08-synkbrief-instagram__upload-06__390.png",
+      "width": 390
+    },
+    {
+      "source": "13-yuhobuilds-linkedin/upload-01.jpg",
+      "sha256": "a358e7a7b5d7cd6ab7149f5966cba7f97d2c24af0a15a767e279abdeee4243cb",
+      "qa": "13-yuhobuilds-linkedin__upload-01__390.png",
+      "width": 390
+    },
+    {
+      "source": "14-lab-telegram/upload-01.jpg",
+      "sha256": "156d1d26df5b75870cdeefb6b5ce411ec26489d0662f707a61a9ea0c535df64a",
+      "qa": "14-lab-telegram__upload-01__390.png",
+      "width": 390
+    },
+    {
+      "source": "16-synk-instagram/upload-01.jpg",
+      "sha256": "2b7c07893a3726420fbcba9b9ab9ada8c6ff6f7efa93b91f1769f2a519608b44",
+      "qa": "16-synk-instagram__upload-01__390.png",
+      "width": 390
+    },
+    {
+      "source": "19-shift-pinterest/upload-01.jpg",
+      "sha256": "b5d3a9baa826cb77f5b6efd36bf3bf0a95aa7c9a71047a801a3dfd73a24cc54f",
+      "qa": "19-shift-pinterest__upload-01__390.png",
+      "width": 390
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "01-lab-youtube",
+  "renderedAt": "2026-09-09T10:09:06.409Z",
+  "width": 1080,
+  "height": 1920,
+  "durationSeconds": 30.058667,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "bytes": 6871082,
+  "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+  "renderSourceSha256": "499e9ffa7d057e4f011010ec1f77224167c90155d83d1a5886bcb10513efb6da",
+  "videoSha256": "6e8ada00f286f1fd78ece68e5e6d56b62cfed3030d662382e5d79a7bd09a6b26",
+  "capturedSeconds": [
+    1,
+    19.5,
+    29
+  ],
+  "visualInspection": "passed: final encoded representative frames directly inspected; see 영상_최종시각검수.md and matching videoSha256 in 영상_종합기계검증.json",
+  "audioMeasurement": "technical measurement; no claim of human listening",
+  "captionTiming": [
+    "screen text"
+  ],
+  "externalPosting": false
+}

@@ -1,0 +1,430 @@
+{
+  "version": 1,
+  "id": "02",
+  "input": "chapter-02.wav",
+  "audioSha256": "2405c1363837353ca77f349377252ce2450eec07b314101d66b9db2f215ea6d4",
+  "language": "ko",
+  "durationSeconds": 27.12,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "함께 볼 재료는 휴대폰 제품 촬영을 가르치는 가상의 일인 강사입니다. 실제 수강생이나 고객의 사례가 아니고 현재 모집중인 상품의 안내도 아닙니다. 화면의 조건은 수업을 이해하기 위한 예시일 뿐입니다. 여러분은 자신의 일에서 실제 제공할 수 있는 내용으로 바꿔 쓰세요. 특히 매출이나 무늬가 늘어난다는 말, 확인할 수 없는 경력, 아직 제공하지 않는 개별 지원은 빈칸을 채우려고 넣지 않습니다.",
+  "expectedNarration": "함께 볼 재료는 휴대폰 제품 촬영을 가르치는 가상의 1인 강사입니다. 실제 수강생이나 고객의 사례가 아니고, 현재 모집 중인 상품의 안내도 아닙니다. 화면의 조건은 수업을 이해하기 위한 예시일 뿐입니다. 여러분은 자신의 일에서 실제 제공할 수 있는 내용으로 바꾸어 쓰세요. 특히 매출이나 문의가 늘어난다는 말, 확인할 수 없는 경력, 아직 제공하지 않는 개별 지원은 빈칸을 채우려고 넣지 않습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9716088328075709,
+    "expectedCharacters": 159,
+    "transcribedCharacters": 158,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "1",
+        "transcribed": "일",
+        "expectedContext": "촬영을가르치는가상의1인강사입니다실제수강"
+      },
+      {
+        "type": "replace",
+        "expected": "꾸어",
+        "transcribed": "꿔",
+        "expectedContext": "공할수있는내용으로바꾸어쓰세요특히매출이나문"
+      },
+      {
+        "type": "replace",
+        "expected": "문의",
+        "transcribed": "무늬",
+        "expectedContext": "어쓰세요특히매출이나문의가늘어난다는말확인할"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 4.34,
+      "text": " 함께 볼 재료는 휴대폰 제품 촬영을 가르치는 가상의 일인 강사입니다.",
+      "avgLogProbability": -0.11147354733223883,
+      "noSpeechProbability": 0.0018848942127078772,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.3,
+          "word": " 함께",
+          "probability": 0.975704550743103
+        },
+        {
+          "start": 0.3,
+          "end": 0.52,
+          "word": " 볼",
+          "probability": 0.9976171851158142
+        },
+        {
+          "start": 0.52,
+          "end": 0.98,
+          "word": " 재료는",
+          "probability": 0.9881670673688253
+        },
+        {
+          "start": 0.98,
+          "end": 1.66,
+          "word": " 휴대폰",
+          "probability": 0.9892487525939941
+        },
+        {
+          "start": 1.66,
+          "end": 1.9,
+          "word": " 제품",
+          "probability": 0.793923556804657
+        },
+        {
+          "start": 1.9,
+          "end": 2.5,
+          "word": " 촬영을",
+          "probability": 0.8914100825786591
+        },
+        {
+          "start": 2.5,
+          "end": 3.02,
+          "word": " 가르치는",
+          "probability": 0.9857722997665406
+        },
+        {
+          "start": 3.02,
+          "end": 3.52,
+          "word": " 가상의",
+          "probability": 0.9634914398193359
+        },
+        {
+          "start": 3.52,
+          "end": 3.76,
+          "word": " 일인",
+          "probability": 0.8589291274547577
+        },
+        {
+          "start": 3.76,
+          "end": 4.34,
+          "word": " 강사입니다.",
+          "probability": 0.98072216908137
+        }
+      ]
+    },
+    {
+      "start": 4.82,
+      "end": 10.06,
+      "text": " 실제 수강생이나 고객의 사례가 아니고 현재 모집중인 상품의 안내도 아닙니다.",
+      "avgLogProbability": -0.11147354733223883,
+      "noSpeechProbability": 0.0018848942127078772,
+      "words": [
+        {
+          "start": 4.82,
+          "end": 5.46,
+          "word": " 실제",
+          "probability": 0.9919736385345459
+        },
+        {
+          "start": 5.46,
+          "end": 6.16,
+          "word": " 수강생이나",
+          "probability": 0.9828023314476013
+        },
+        {
+          "start": 6.16,
+          "end": 6.64,
+          "word": " 고객의",
+          "probability": 0.996488610903422
+        },
+        {
+          "start": 6.64,
+          "end": 7.02,
+          "word": " 사례가",
+          "probability": 0.9841735561688741
+        },
+        {
+          "start": 7.02,
+          "end": 7.24,
+          "word": " 아니고",
+          "probability": 0.9909640550613403
+        },
+        {
+          "start": 7.24,
+          "end": 8.04,
+          "word": " 현재",
+          "probability": 0.8281054496765137
+        },
+        {
+          "start": 8.04,
+          "end": 8.7,
+          "word": " 모집중인",
+          "probability": 0.9359638392925262
+        },
+        {
+          "start": 8.7,
+          "end": 9.18,
+          "word": " 상품의",
+          "probability": 0.9875964124997457
+        },
+        {
+          "start": 9.18,
+          "end": 9.52,
+          "word": " 안내도",
+          "probability": 0.9572484294573466
+        },
+        {
+          "start": 9.52,
+          "end": 10.06,
+          "word": " 아닙니다.",
+          "probability": 0.9965833723545074
+        }
+      ]
+    },
+    {
+      "start": 10.68,
+      "end": 13.68,
+      "text": " 화면의 조건은 수업을 이해하기 위한 예시일 뿐입니다.",
+      "avgLogProbability": -0.11147354733223883,
+      "noSpeechProbability": 0.0018848942127078772,
+      "words": [
+        {
+          "start": 10.68,
+          "end": 11.1,
+          "word": " 화면의",
+          "probability": 0.8621784845987955
+        },
+        {
+          "start": 11.1,
+          "end": 11.58,
+          "word": " 조건은",
+          "probability": 0.9841928283373514
+        },
+        {
+          "start": 11.58,
+          "end": 12.02,
+          "word": " 수업을",
+          "probability": 0.9961719711621603
+        },
+        {
+          "start": 12.02,
+          "end": 12.42,
+          "word": " 이해하기",
+          "probability": 0.981352686882019
+        },
+        {
+          "start": 12.42,
+          "end": 12.76,
+          "word": " 위한",
+          "probability": 0.9943256974220276
+        },
+        {
+          "start": 12.76,
+          "end": 13.18,
+          "word": " 예시일",
+          "probability": 0.8697034319241842
+        },
+        {
+          "start": 13.18,
+          "end": 13.68,
+          "word": " 뿐입니다.",
+          "probability": 0.9905481338500977
+        }
+      ]
+    },
+    {
+      "start": 14.34,
+      "end": 18.2,
+      "text": " 여러분은 자신의 일에서 실제 제공할 수 있는 내용으로 바꿔 쓰세요.",
+      "avgLogProbability": -0.11147354733223883,
+      "noSpeechProbability": 0.0018848942127078772,
+      "words": [
+        {
+          "start": 14.34,
+          "end": 14.9,
+          "word": " 여러분은",
+          "probability": 0.987335592508316
+        },
+        {
+          "start": 14.9,
+          "end": 15.34,
+          "word": " 자신의",
+          "probability": 0.9791498780250549
+        },
+        {
+          "start": 15.34,
+          "end": 15.68,
+          "word": " 일에서",
+          "probability": 0.9712883234024048
+        },
+        {
+          "start": 15.68,
+          "end": 16.14,
+          "word": " 실제",
+          "probability": 0.9971098601818085
+        },
+        {
+          "start": 16.14,
+          "end": 16.58,
+          "word": " 제공할",
+          "probability": 0.9939194122950236
+        },
+        {
+          "start": 16.58,
+          "end": 16.7,
+          "word": " 수",
+          "probability": 0.9967345595359802
+        },
+        {
+          "start": 16.7,
+          "end": 16.9,
+          "word": " 있는",
+          "probability": 0.9968067407608032
+        },
+        {
+          "start": 16.9,
+          "end": 17.44,
+          "word": " 내용으로",
+          "probability": 0.9975767731666565
+        },
+        {
+          "start": 17.44,
+          "end": 17.82,
+          "word": " 바꿔",
+          "probability": 0.814314991235733
+        },
+        {
+          "start": 17.82,
+          "end": 18.2,
+          "word": " 쓰세요.",
+          "probability": 0.9670244455337524
+        }
+      ]
+    },
+    {
+      "start": 18.88,
+      "end": 22.66,
+      "text": " 특히 매출이나 무늬가 늘어난다는 말, 확인할 수 없는 경력,",
+      "avgLogProbability": -0.11147354733223883,
+      "noSpeechProbability": 0.0018848942127078772,
+      "words": [
+        {
+          "start": 18.88,
+          "end": 19.12,
+          "word": " 특히",
+          "probability": 0.9960312247276306
+        },
+        {
+          "start": 19.12,
+          "end": 19.78,
+          "word": " 매출이나",
+          "probability": 0.9715162118275961
+        },
+        {
+          "start": 19.78,
+          "end": 20.22,
+          "word": " 무늬가",
+          "probability": 0.8407031148672104
+        },
+        {
+          "start": 20.22,
+          "end": 20.84,
+          "word": " 늘어난다는",
+          "probability": 0.9922647178173065
+        },
+        {
+          "start": 20.84,
+          "end": 21.06,
+          "word": " 말,",
+          "probability": 0.9988728165626526
+        },
+        {
+          "start": 21.46,
+          "end": 21.86,
+          "word": " 확인할",
+          "probability": 0.9947331845760345
+        },
+        {
+          "start": 21.86,
+          "end": 22.0,
+          "word": " 수",
+          "probability": 0.9974746108055115
+        },
+        {
+          "start": 22.0,
+          "end": 22.18,
+          "word": " 없는",
+          "probability": 0.9970685839653015
+        },
+        {
+          "start": 22.18,
+          "end": 22.66,
+          "word": " 경력,",
+          "probability": 0.971876710653305
+        }
+      ]
+    },
+    {
+      "start": 23.06,
+      "end": 26.82,
+      "text": " 아직 제공하지 않는 개별 지원은 빈칸을 채우려고 넣지 않습니다.",
+      "avgLogProbability": -0.11147354733223883,
+      "noSpeechProbability": 0.0018848942127078772,
+      "words": [
+        {
+          "start": 23.06,
+          "end": 23.28,
+          "word": " 아직",
+          "probability": 0.995749831199646
+        },
+        {
+          "start": 23.28,
+          "end": 23.88,
+          "word": " 제공하지",
+          "probability": 0.9983837604522705
+        },
+        {
+          "start": 23.88,
+          "end": 24.08,
+          "word": " 않는",
+          "probability": 0.9796465039253235
+        },
+        {
+          "start": 24.08,
+          "end": 24.56,
+          "word": " 개별",
+          "probability": 0.9734190106391907
+        },
+        {
+          "start": 24.56,
+          "end": 25.0,
+          "word": " 지원은",
+          "probability": 0.9608100354671478
+        },
+        {
+          "start": 25.0,
+          "end": 25.56,
+          "word": " 빈칸을",
+          "probability": 0.9478079795837402
+        },
+        {
+          "start": 25.56,
+          "end": 26.04,
+          "word": " 채우려고",
+          "probability": 0.9907285372416178
+        },
+        {
+          "start": 26.04,
+          "end": 26.38,
+          "word": " 넣지",
+          "probability": 0.954846054315567
+        },
+        {
+          "start": 26.38,
+          "end": 26.82,
+          "word": " 않습니다.",
+          "probability": 0.9940348565578461
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 3.62
+}

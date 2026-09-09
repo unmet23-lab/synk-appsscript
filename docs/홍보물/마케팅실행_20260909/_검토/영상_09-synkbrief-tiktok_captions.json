@@ -1,0 +1,33 @@
+{
+  "basis": "approved screen text, not speech transcription",
+  "captions": [
+    {
+      "text": "더 고급스럽게?\n수정할 선택까지 적어봅니다.\n가상 요청",
+      "startMs": 0,
+      "endMs": 5000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "먼저 보일 것\n실습 제목이\n첫 화면에서 먼저 보이게\n독자의 읽는 순서를 정합니다.",
+      "startMs": 5000,
+      "endMs": 11000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "바꿀 것 · 남길 것\n겹친 설명은 하나로\n사용 조건은 그대로\n조건을 빼서 깔끔하게 만들지는 않습니다.",
+      "startMs": 11000,
+      "endMs": 19000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "요청 세 줄\n먼저 보일 것 / 바꿀 것 / 남길 것\n빈칸과 예시는 설명글에 있습니다.",
+      "startMs": 19000,
+      "endMs": 25000,
+      "timestampMs": null,
+      "confidence": null
+    }
+  ]
+}

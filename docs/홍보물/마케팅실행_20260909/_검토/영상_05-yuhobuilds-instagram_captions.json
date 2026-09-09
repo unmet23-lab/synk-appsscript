@@ -1,0 +1,33 @@
+{
+  "basis": "approved screen text, not speech transcription",
+  "captions": [
+    {
+      "text": "이름을 가려보세요\n소개 화면의 이름과 로고를\n잠깐 가립니다.\n설명 문장만으로 무슨 일인지 보이나요?",
+      "startMs": 0,
+      "endMs": 6000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "추상적인 소개\n나만의 감각으로\n브랜드를 완성합니다.\n가상 예시",
+      "startMs": 6000,
+      "endMs": 12000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "장면이 있는 소개\n첫 수업을 준비하는 강사와\n수업 소개 한 장을 정리합니다.\n누구의 상황 · 하는 일 · 남는 것",
+      "startMs": 12000,
+      "endMs": 22000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "다시 올려보기\n설명이 홀로 서면\n이름과 로고를 다시 올립니다.\n세 질문은 설명글에서 바로 쓸 수 있습니다.",
+      "startMs": 22000,
+      "endMs": 30000,
+      "timestampMs": null,
+      "confidence": null
+    }
+  ]
+}

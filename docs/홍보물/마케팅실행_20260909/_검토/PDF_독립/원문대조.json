@@ -1,0 +1,101 @@
+{
+  "checkedAt": "2026-09-09T09:56:14.859196+00:00",
+  "method": "원본 MD의 내용 단위를 구두점·공백 제외 후 PDF 추출 텍스트에 대조. 표는 셀별. U+02BC도 따옴표로 제외. 이 검사는 실제 픽셀 검토와 별개.",
+  "coordinateLimitation": "pdfminer가 일부 FontBBox 없는 서체에서 fallback 경고를 냈으므로 좌표 0건을 정밀 글리프 경계 보증으로 쓰지 않는다. 실제 Poppler 렌더를 병행한다.",
+  "files": [
+    {
+      "file": "01_소개문.pdf",
+      "sha256": "238dbbfb89f4326d94c2a09c18f00a37286b15fdfb82976e32492a65368510c0",
+      "bytes": 6742871,
+      "pages": 3,
+      "pageTextChars": [
+        1029,
+        1570,
+        1456
+      ],
+      "testedUnits": 55,
+      "missingUnits": [],
+      "links": [],
+      "outsidePageChars": []
+    },
+    {
+      "file": "02_상품한장.pdf",
+      "sha256": "988f44d2ad3a221db356cd04a5cd1e5ebb9dbe883a09cce4fc26d2c18891154f",
+      "bytes": 6753893,
+      "pages": 3,
+      "pageTextChars": [
+        1360,
+        1588,
+        1439
+      ],
+      "testedUnits": 56,
+      "missingUnits": [],
+      "links": [],
+      "outsidePageChars": []
+    },
+    {
+      "file": "03_콘텐츠지도.pdf",
+      "sha256": "0d2e8efe1afb2dc48097942828b3121ba54d06a5422b5e079fbf949c5096f4bd",
+      "bytes": 6829629,
+      "pages": 4,
+      "pageTextChars": [
+        1125,
+        1445,
+        1404,
+        932
+      ],
+      "testedUnits": 117,
+      "missingUnits": [],
+      "links": [],
+      "outsidePageChars": []
+    },
+    {
+      "file": "04_문의답변.pdf",
+      "sha256": "79a2eb820a610dcc2b3ac0a7d4b5e76e28d52d6fa10cbddc2c9f609054a6eba5",
+      "bytes": 6768681,
+      "pages": 4,
+      "pageTextChars": [
+        1238,
+        1232,
+        1392,
+        830
+      ],
+      "testedUnits": 60,
+      "missingUnits": [],
+      "links": [],
+      "outsidePageChars": []
+    },
+    {
+      "file": "05_AI업무지도.pdf",
+      "sha256": "b19db4baff7c8990bb31c07b93601215a3d5116827111f099c0e1baf2e970beb",
+      "bytes": 6825450,
+      "pages": 4,
+      "pageTextChars": [
+        1089,
+        1336,
+        1520,
+        1237
+      ],
+      "testedUnits": 92,
+      "missingUnits": [],
+      "links": [],
+      "outsidePageChars": []
+    },
+    {
+      "file": "06_강의실습설계.pdf",
+      "sha256": "1c2896356aa46dcf7577f865f64ca59f82934e7d1c7d84abfc4cf2daae0a8eea",
+      "bytes": 6803015,
+      "pages": 4,
+      "pageTextChars": [
+        1256,
+        1129,
+        1215,
+        1456
+      ],
+      "testedUnits": 76,
+      "missingUnits": [],
+      "links": [],
+      "outsidePageChars": []
+    }
+  ]
+}

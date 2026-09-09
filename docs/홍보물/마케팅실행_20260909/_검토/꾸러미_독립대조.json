@@ -1,0 +1,19 @@
+{
+  "method": "ZIP 이름 목록과 출고목록만 읽음. 압축 해제·재출고 없음. 멤버 실제 SHA 전량 재계산 검사를 대체하지 않음.",
+  "archive": "마케팅실행_20260909_업로드꾸러미.zip",
+  "members": 293,
+  "indexMembers": 292,
+  "videoCount": 9,
+  "uploadJpgCount": 29,
+  "accountCoverJpgCount": 19,
+  "longVideoPosters": [
+    "공개수업/클리닉-표지.jpg",
+    "공개수업/표지.jpg"
+  ],
+  "forbiddenMembers": [],
+  "duplicateNames": 0,
+  "windowsNameCollisions": 0,
+  "unicodeNamesWithoutUtf8Flag": [],
+  "videoIndexHashMismatches": [],
+  "passed": true
+}

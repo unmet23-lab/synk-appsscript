@@ -1,0 +1,412 @@
+{
+  "sourceSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+  "cards": 29,
+  "results": [
+    {
+      "id": "01-lab-youtube",
+      "index": 1,
+      "file": "01-lab-youtube/upload-01.jpg",
+      "bytes": 176256,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "7e2ed4acc661b1a968b23579550dd77b9742034c44acc3ee7364295fd03242f0",
+      "check": {
+        "copyBottom": 561.1875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 1,
+      "file": "02-lab-instagram/upload-01.jpg",
+      "bytes": 155476,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "2a39fa5ec3e60e731a668ead3bb79939e98371f77e532584b9b607c5d83364de",
+      "check": {
+        "copyBottom": 561.1875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 2,
+      "file": "02-lab-instagram/upload-02.jpg",
+      "bytes": 145494,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "584d472f49a1ac9dc807dd2f5a1254084499ff605881ad6492c0d5a32608122b",
+      "check": {
+        "copyBottom": 591.046875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 3,
+      "file": "02-lab-instagram/upload-03.jpg",
+      "bytes": 142026,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "9550210a6fe96975bcd03508ac52d6f36c1e7887bdee2318f37d8fb5b991d994",
+      "check": {
+        "copyBottom": 591.046875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 4,
+      "file": "02-lab-instagram/upload-04.jpg",
+      "bytes": 126867,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "c29267966743a861a3f3bc345be83e5e238af621707b0189e0077d18090e1bb0",
+      "check": {
+        "copyBottom": 673.546875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "02-lab-instagram",
+      "index": 5,
+      "file": "02-lab-instagram/upload-05.jpg",
+      "bytes": 119009,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "93f545f0f1221b6a256bca7d84ab0f99faecaa3d908e8b95137273e855c772a5",
+      "check": {
+        "copyBottom": 753.109375,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "03-lab-tiktok",
+      "index": 1,
+      "file": "03-lab-tiktok/upload-01.jpg",
+      "bytes": 148963,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "bc640135d219394da6dcf2e648b57eda2a17e7e7a82a6136e3efecaf15cfcf93",
+      "check": {
+        "copyBottom": 561.1875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "index": 1,
+      "file": "04-yuhobuilds-youtube/upload-01.jpg",
+      "bytes": 258158,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "91ac1482cbfe9f391d491c07ecdce03b994e53bfd43f0bd68fa5405d085ba69b",
+      "check": {
+        "copyBottom": 663.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "index": 1,
+      "file": "05-yuhobuilds-instagram/upload-01.jpg",
+      "bytes": 266861,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "ad12bab4ecfa2d1e7c788d4fae896837bffcabfaf2f50302c7a3735265e5d2f2",
+      "check": {
+        "copyBottom": 663.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "index": 1,
+      "file": "06-yuhobuilds-tiktok/upload-01.jpg",
+      "bytes": 142835,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "81c4fdec933ea3afbed4c287fdd8532ca12df1c042d10c4f867276236970fd9a",
+      "check": {
+        "copyBottom": 663.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "index": 1,
+      "file": "07-synkbrief-youtube/upload-01.jpg",
+      "bytes": 264673,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "d1d1ca1c3805f41084487c42cc2017727144f452cbc8829ff0621bc8595e9e10",
+      "check": {
+        "copyBottom": 663.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 1,
+      "file": "08-synkbrief-instagram/upload-01.jpg",
+      "bytes": 185664,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "43d92d2a64fd25b27db3359ab61b4a286ebc77d057fa348d91c71d6a1e582c32",
+      "check": {
+        "copyBottom": 663.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 2,
+      "file": "08-synkbrief-instagram/upload-02.jpg",
+      "bytes": 129442,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "0bad496cd0218224f9bdc867e72b525b16d375ed6692405326cc76fce37ecb1d",
+      "check": {
+        "copyBottom": 612.609375,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 3,
+      "file": "08-synkbrief-instagram/upload-03.jpg",
+      "bytes": 131272,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "9e04065f7acdcd252d45da26ad211657c75c2a99e56bd1d24b10c65a408f0a7a",
+      "check": {
+        "copyBottom": 612.609375,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 4,
+      "file": "08-synkbrief-instagram/upload-04.jpg",
+      "bytes": 108567,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "e4dba63604cab8b314816ea33268d789c6fa83523c3b98c70ad5fe753ece694b",
+      "check": {
+        "copyBottom": 612.609375,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 5,
+      "file": "08-synkbrief-instagram/upload-05.jpg",
+      "bytes": 125537,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "335989d1794ace902bd90e943fe41019913e935b88df37e9e56bb5985b2b1a56",
+      "check": {
+        "copyBottom": 612.609375,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "08-synkbrief-instagram",
+      "index": 6,
+      "file": "08-synkbrief-instagram/upload-06.jpg",
+      "bytes": 118979,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "b2e52eb3808b66fd3895c5d8492e09b57d19d14a679f5f9ad7456f78b7807e46",
+      "check": {
+        "copyBottom": 612.609375,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "index": 1,
+      "file": "09-synkbrief-tiktok/upload-01.jpg",
+      "bytes": 132787,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "4bd6749f17896a2ca803b66bdef6256123d885fe7bdc3e7d7a0b3ca195f8ad59",
+      "check": {
+        "copyBottom": 663.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "10-lab-facebook",
+      "index": 1,
+      "file": "10-lab-facebook/upload-01.jpg",
+      "bytes": 150126,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "1129ddad8148d82d59cbf94d51783b698baf123ff2132ad121e7a16e65c0c0b0",
+      "check": {
+        "copyBottom": 836.625,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "10-lab-facebook",
+      "index": 2,
+      "file": "10-lab-facebook/upload-02.jpg",
+      "bytes": 128697,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "6a56c6fdddeed0448ec7bb5c068b61f26e9a72072af32b9f0a40b1d012e20e6c",
+      "check": {
+        "copyBottom": 836.625,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "11-yuhobuilds-threads",
+      "index": 1,
+      "file": "11-yuhobuilds-threads/upload-01.jpg",
+      "bytes": 154294,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "f97850fffa5070f0e3f96c3a8ffb878e072ec543201e486667e26b4bc2ee6e0a",
+      "check": {
+        "copyBottom": 663.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "12-synkbrief-threads",
+      "index": 1,
+      "file": "12-synkbrief-threads/upload-01.jpg",
+      "bytes": 180321,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "22f36f25bd8c061073b7059f094cd917ff04b6967c5284c98eff5f44a0d55f84",
+      "check": {
+        "copyBottom": 663.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "13-yuhobuilds-linkedin",
+      "index": 1,
+      "file": "13-yuhobuilds-linkedin/upload-01.jpg",
+      "bytes": 278080,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "a358e7a7b5d7cd6ab7149f5966cba7f97d2c24af0a15a767e279abdeee4243cb",
+      "check": {
+        "copyBottom": 717.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "14-lab-telegram",
+      "index": 1,
+      "file": "14-lab-telegram/upload-01.jpg",
+      "bytes": 200655,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "156d1d26df5b75870cdeefb6b5ce411ec26489d0662f707a61a9ea0c535df64a",
+      "check": {
+        "copyBottom": 894.90625,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "15-synklab-substack",
+      "index": 1,
+      "file": "15-synklab-substack/upload-01.jpg",
+      "bytes": 199223,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "36dff8d476953e35416a6d1d4779b628104feef4a1fc541ff12090146d7ed674",
+      "check": {
+        "copyBottom": 717.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "16-synk-instagram",
+      "index": 1,
+      "file": "16-synk-instagram/upload-01.jpg",
+      "bytes": 201027,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "2b7c07893a3726420fbcba9b9ab9ada8c6ff6f7efa93b91f1769f2a519608b44",
+      "check": {
+        "copyBottom": 727.40625,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "17-shift-naverblog",
+      "index": 1,
+      "file": "17-shift-naverblog/upload-01.jpg",
+      "bytes": 177693,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "3d74ecc1d2324afc4a0440dc4baef9d1b7392cfa8a6f93986523ea4de7776c3e",
+      "check": {
+        "copyBottom": 717.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "18-shift-kakao",
+      "index": 1,
+      "file": "18-shift-kakao/upload-01.jpg",
+      "bytes": 189646,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "e0cfe78ac534b7d0d3e344c5e9f49c605112a85c3eae82b0fdff8fbf6e4475f0",
+      "check": {
+        "copyBottom": 663.6875,
+        "height": 1350,
+        "overflow": false
+      }
+    },
+    {
+      "id": "19-shift-pinterest",
+      "index": 1,
+      "file": "19-shift-pinterest/upload-01.jpg",
+      "bytes": 173238,
+      "width": 1080,
+      "height": 1620,
+      "sha256": "b5d3a9baa826cb77f5b6efd36bf3bf0a95aa7c9a71047a801a3dfd73a24cc54f",
+      "check": {
+        "copyBottom": 771.6875,
+        "height": 1620,
+        "overflow": false
+      }
+    }
+  ]
+}

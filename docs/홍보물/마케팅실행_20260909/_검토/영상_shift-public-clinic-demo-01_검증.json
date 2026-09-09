@@ -1,0 +1,35 @@
+{
+  "id": "shift-public-clinic-demo-01",
+  "renderedAt": "2026-09-09T10:07:33.678Z",
+  "width": 1920,
+  "height": 1080,
+  "durationSeconds": 84.821333,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "bytes": 12148740,
+  "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+  "renderSourceSha256": "945af1b77f3303d5bf63b6766ac41e15e7b75ddceb4758f5c9d3198ef3a826cf",
+  "videoSha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15",
+  "capturedSeconds": [
+    1,
+    7.388333333333334,
+    12.366666666666667,
+    22.351666666666667,
+    29.266666666666666,
+    39.70666666666666,
+    46.86666666666667,
+    61.163333333333334,
+    70.4,
+    79.38833333333334
+  ],
+  "visualInspection": "passed: final encoded representative frames directly inspected; see 영상_최종시각검수.md and matching videoSha256 in 영상_종합기계검증.json",
+  "audioMeasurement": "technical measurement; no claim of human listening",
+  "captionTiming": [
+    "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+    "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+    "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+    "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
+    "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned"
+  ],
+  "externalPosting": false
+}

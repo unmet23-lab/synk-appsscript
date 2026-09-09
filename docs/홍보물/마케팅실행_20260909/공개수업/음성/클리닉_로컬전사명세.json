@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "method": "faster-whisper-small automatic transcription on local CPU",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "audioUploaded": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "humanListening": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "chapters": [
+    {
+      "id": "01",
+      "file": "전사-클리닉01.json",
+      "durationSeconds": 10.56,
+      "characterSimilarity": 1.0,
+      "differenceCount": 0,
+      "segments": 2,
+      "wordTimestamps": 20,
+      "meaningReviewed": false
+    },
+    {
+      "id": "02",
+      "file": "전사-클리닉02.json",
+      "durationSeconds": 16.08,
+      "characterSimilarity": 0.9444444444444444,
+      "differenceCount": 2,
+      "segments": 4,
+      "wordTimestamps": 20,
+      "meaningReviewed": false
+    },
+    {
+      "id": "03",
+      "file": "전사-클리닉03.json",
+      "durationSeconds": 16.8,
+      "characterSimilarity": 0.9887640449438202,
+      "differenceCount": 1,
+      "segments": 4,
+      "wordTimestamps": 29,
+      "meaningReviewed": false
+    },
+    {
+      "id": "04",
+      "file": "전사-클리닉04.json",
+      "durationSeconds": 22.72,
+      "characterSimilarity": 0.9915966386554622,
+      "differenceCount": 1,
+      "segments": 5,
+      "wordTimestamps": 39,
+      "meaningReviewed": false
+    },
+    {
+      "id": "05",
+      "file": "전사-클리닉05.json",
+      "durationSeconds": 14.56,
+      "characterSimilarity": 1.0,
+      "differenceCount": 0,
+      "segments": 3,
+      "wordTimestamps": 31,
+      "meaningReviewed": false
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "basis": "approved screen text, not speech transcription",
+  "captions": [
+    {
+      "text": "Та юу хийх вэ?\nӨөрийн үүргийг сонгоорой.\nМэдээлэл хайх · Зураг зурах · Танилцуулах",
+      "startMs": 0,
+      "endMs": 5000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "저는 자료를 찾아볼게요.\nБи мэдээлэл хайж үзье.",
+      "startMs": 5000,
+      "endMs": 12000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "저는 그림을 그릴게요.\nБи зураг зуръя.",
+      "startMs": 12000,
+      "endMs": 19000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "저는 발표할게요.\nБи танилцуулга хийе.",
+      "startMs": 19000,
+      "endMs": 26000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "Нэгийг сонгоод\nхэлж үзээрэй.\nБүх өгүүлбэр тайлбарт бий.",
+      "startMs": 26000,
+      "endMs": 30000,
+      "timestampMs": null,
+      "confidence": null
+    }
+  ]
+}

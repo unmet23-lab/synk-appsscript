@@ -1,0 +1,354 @@
+{
+  "pages": [
+    {
+      "file": "index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "브랜드킷/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "자료실/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "공개수업/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "실행적용.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "원고/후속운영.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/소통_후속도움.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "01-lab-youtube/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "01-lab-youtube/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "02-lab-instagram/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "02-lab-instagram/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "03-lab-tiktok/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "03-lab-tiktok/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "04-yuhobuilds-youtube/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "04-yuhobuilds-youtube/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "05-yuhobuilds-instagram/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "05-yuhobuilds-instagram/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "06-yuhobuilds-tiktok/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "06-yuhobuilds-tiktok/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "07-synkbrief-youtube/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "07-synkbrief-youtube/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "08-synkbrief-instagram/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "08-synkbrief-instagram/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "09-synkbrief-tiktok/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "09-synkbrief-tiktok/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "10-lab-facebook/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "10-lab-facebook/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "11-yuhobuilds-threads/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "11-yuhobuilds-threads/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "12-synkbrief-threads/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "12-synkbrief-threads/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "13-yuhobuilds-linkedin/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "13-yuhobuilds-linkedin/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "14-lab-telegram/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "14-lab-telegram/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "15-synklab-substack/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "15-synklab-substack/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "16-synk-instagram/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "16-synk-instagram/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "17-shift-naverblog/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "17-shift-naverblog/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "18-shift-kakao/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "18-shift-kakao/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "19-shift-pinterest/index.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "19-shift-pinterest/cards.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/01_소개문.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/01_소개문_실습.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/02_상품한장.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/02_상품한장_실습.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/03_콘텐츠지도.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/03_콘텐츠지도_실습.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/04_문의답변.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/04_문의답변_실습.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/05_AI업무지도.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/05_AI업무지도_실습.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/06_강의실습설계.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "제공자료/06_강의실습설계_실습.html",
+      "overflow": false,
+      "missingImages": 0
+    },
+    {
+      "file": "index.html",
+      "mobile": true,
+      "overflow": false
+    },
+    {
+      "file": "자료실/index.html",
+      "mobile": true,
+      "overflow": false
+    },
+    {
+      "file": "공개수업/index.html",
+      "mobile": true,
+      "overflow": false
+    },
+    {
+      "file": "실행적용.html",
+      "mobile": true,
+      "overflow": false
+    },
+    {
+      "file": "제공자료/01_소개문.html",
+      "mobile": true,
+      "overflow": false
+    },
+    {
+      "file": "제공자료/01_소개문_실습.html",
+      "mobile": true,
+      "overflow": false
+    }
+  ],
+  "downloads": [
+    {
+      "id": "shift-intro",
+      "file": "shift-intro-my-work.txt",
+      "matches": true
+    },
+    {
+      "id": "shift-offer",
+      "file": "shift-offer-my-work.txt",
+      "matches": true
+    },
+    {
+      "id": "shift-content-map",
+      "file": "shift-content-map-my-work.txt",
+      "matches": true
+    },
+    {
+      "id": "shift-inquiry",
+      "file": "shift-inquiry-my-work.txt",
+      "matches": true
+    },
+    {
+      "id": "shift-ai-workflow",
+      "file": "shift-ai-workflow-my-work.txt",
+      "matches": true
+    },
+    {
+      "id": "shift-lesson",
+      "file": "shift-lesson-my-work.txt",
+      "matches": true
+    }
+  ],
+  "missing": [],
+  "errors": [],
+  "filterVisible": 13
+}

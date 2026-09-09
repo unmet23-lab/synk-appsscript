@@ -1,0 +1,493 @@
+{
+  "version": 1,
+  "id": "18",
+  "input": "chapter-18.wav",
+  "audioSha256": "23fbbef26e0d517b49776c8de2aac9ef942d2726217af3caf53b64e01e67fd8e",
+  "language": "ko",
+  "durationSeconds": 28.56,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "오늘 만든 문장만 저장하지 말고 고치기 전 원문과 바꾼 이유도 한 줄 함께 남겨보세요. 다음에 다시 수정할 때 어떤 판단을 지키려 했는지 돌아볼 수 있습니다. 오늘의 결과는 소개문과 상품 범위 한 장입니다. 시장 반응이나 매출 결과를 확인한 것은 아닙니다. 개인 자료를 공개하거나 댓글을 남기지 않아도 실습은 끝납니다. 이후 실제 적용해서 막힌 지점이 생기면 그 부분만 개인 정보를 빼고 적어주세요. 다음에 찾아볼 도움을 고르는 기준이 됩니다.",
+  "expectedNarration": "오늘 만든 문장만 저장하지 말고, 고치기 전 원문과 바꾼 이유도 한 줄 함께 남겨보세요. 다음에 다시 수정할 때 어떤 판단을 지키려 했는지 돌아볼 수 있습니다. 오늘의 결과는 소개문과 상품 범위 한 장입니다. 시장 반응이나 매출 결과를 확인한 것은 아닙니다. 개인 자료를 공개하거나 댓글을 남기지 않아도 실습은 끝납니다. 이후 실제 적용에서 막힌 지점이 생기면 그 부분만 개인 정보를 빼고 적어두세요. 다음에 찾아볼 도움을 고르는 기준이 됩니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9887005649717514,
+    "expectedCharacters": 177,
+    "transcribedCharacters": 177,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "에",
+        "transcribed": "해",
+        "expectedContext": "끝납니다이후실제적용에서막힌지점이생기면그"
+      },
+      {
+        "type": "replace",
+        "expected": "두",
+        "transcribed": "주",
+        "expectedContext": "만개인정보를빼고적어두세요다음에찾아볼도움"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 5.46,
+      "text": " 오늘 만든 문장만 저장하지 말고 고치기 전 원문과 바꾼 이유도 한 줄 함께 남겨보세요.",
+      "avgLogProbability": -0.10634703598007923,
+      "noSpeechProbability": 0.003194897435605526,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.24,
+          "word": " 오늘",
+          "probability": 0.9563050270080566
+        },
+        {
+          "start": 0.24,
+          "end": 0.62,
+          "word": " 만든",
+          "probability": 0.9967459440231323
+        },
+        {
+          "start": 0.62,
+          "end": 1.14,
+          "word": " 문장만",
+          "probability": 0.9922518134117126
+        },
+        {
+          "start": 1.14,
+          "end": 1.68,
+          "word": " 저장하지",
+          "probability": 0.990701695283254
+        },
+        {
+          "start": 1.68,
+          "end": 1.96,
+          "word": " 말고",
+          "probability": 0.992595374584198
+        },
+        {
+          "start": 1.96,
+          "end": 2.82,
+          "word": " 고치기",
+          "probability": 0.8202924331029257
+        },
+        {
+          "start": 2.82,
+          "end": 2.98,
+          "word": " 전",
+          "probability": 0.9508951902389526
+        },
+        {
+          "start": 2.98,
+          "end": 3.5,
+          "word": " 원문과",
+          "probability": 0.973851720492045
+        },
+        {
+          "start": 3.5,
+          "end": 3.88,
+          "word": " 바꾼",
+          "probability": 0.97740238904953
+        },
+        {
+          "start": 3.88,
+          "end": 4.22,
+          "word": " 이유도",
+          "probability": 0.7880848348140717
+        },
+        {
+          "start": 4.22,
+          "end": 4.48,
+          "word": " 한",
+          "probability": 0.9943954944610596
+        },
+        {
+          "start": 4.48,
+          "end": 4.6,
+          "word": " 줄",
+          "probability": 0.944774329662323
+        },
+        {
+          "start": 4.6,
+          "end": 4.92,
+          "word": " 함께",
+          "probability": 0.9917734265327454
+        },
+        {
+          "start": 4.92,
+          "end": 5.46,
+          "word": " 남겨보세요.",
+          "probability": 0.9851042479276657
+        }
+      ]
+    },
+    {
+      "start": 5.82,
+      "end": 9.74,
+      "text": " 다음에 다시 수정할 때 어떤 판단을 지키려 했는지 돌아볼 수 있습니다.",
+      "avgLogProbability": -0.10634703598007923,
+      "noSpeechProbability": 0.003194897435605526,
+      "words": [
+        {
+          "start": 5.82,
+          "end": 6.18,
+          "word": " 다음에",
+          "probability": 0.9668881893157959
+        },
+        {
+          "start": 6.18,
+          "end": 6.44,
+          "word": " 다시",
+          "probability": 0.9985795021057129
+        },
+        {
+          "start": 6.44,
+          "end": 6.94,
+          "word": " 수정할",
+          "probability": 0.9869381785392761
+        },
+        {
+          "start": 6.94,
+          "end": 7.1,
+          "word": " 때",
+          "probability": 0.99759441614151
+        },
+        {
+          "start": 7.1,
+          "end": 7.4,
+          "word": " 어떤",
+          "probability": 0.987949013710022
+        },
+        {
+          "start": 7.4,
+          "end": 7.96,
+          "word": " 판단을",
+          "probability": 0.9982285102208456
+        },
+        {
+          "start": 7.96,
+          "end": 8.36,
+          "word": " 지키려",
+          "probability": 0.9733754247426987
+        },
+        {
+          "start": 8.36,
+          "end": 8.76,
+          "word": " 했는지",
+          "probability": 0.9695954620838165
+        },
+        {
+          "start": 8.76,
+          "end": 9.3,
+          "word": " 돌아볼",
+          "probability": 0.9708226124445597
+        },
+        {
+          "start": 9.3,
+          "end": 9.42,
+          "word": " 수",
+          "probability": 0.9919083714485168
+        },
+        {
+          "start": 9.42,
+          "end": 9.74,
+          "word": " 있습니다.",
+          "probability": 0.9984379410743713
+        }
+      ]
+    },
+    {
+      "start": 10.16,
+      "end": 12.88,
+      "text": " 오늘의 결과는 소개문과 상품 범위 한 장입니다.",
+      "avgLogProbability": -0.10634703598007923,
+      "noSpeechProbability": 0.003194897435605526,
+      "words": [
+        {
+          "start": 10.16,
+          "end": 10.54,
+          "word": " 오늘의",
+          "probability": 0.9924528896808624
+        },
+        {
+          "start": 10.54,
+          "end": 11.0,
+          "word": " 결과는",
+          "probability": 0.994372546672821
+        },
+        {
+          "start": 11.0,
+          "end": 11.68,
+          "word": " 소개문과",
+          "probability": 0.8363641574978828
+        },
+        {
+          "start": 11.68,
+          "end": 12.06,
+          "word": " 상품",
+          "probability": 0.7795194089412689
+        },
+        {
+          "start": 12.06,
+          "end": 12.36,
+          "word": " 범위",
+          "probability": 0.9717350800832113
+        },
+        {
+          "start": 12.36,
+          "end": 12.5,
+          "word": " 한",
+          "probability": 0.9240970015525818
+        },
+        {
+          "start": 12.5,
+          "end": 12.88,
+          "word": " 장입니다.",
+          "probability": 0.9566073715686798
+        }
+      ]
+    },
+    {
+      "start": 13.28,
+      "end": 16.14,
+      "text": " 시장 반응이나 매출 결과를 확인한 것은 아닙니다.",
+      "avgLogProbability": -0.10634703598007923,
+      "noSpeechProbability": 0.003194897435605526,
+      "words": [
+        {
+          "start": 13.28,
+          "end": 13.58,
+          "word": " 시장",
+          "probability": 0.9873279929161072
+        },
+        {
+          "start": 13.58,
+          "end": 14.1,
+          "word": " 반응이나",
+          "probability": 0.9838394522666931
+        },
+        {
+          "start": 14.1,
+          "end": 14.52,
+          "word": " 매출",
+          "probability": 0.9335815608501434
+        },
+        {
+          "start": 14.52,
+          "end": 15.0,
+          "word": " 결과를",
+          "probability": 0.9904391169548035
+        },
+        {
+          "start": 15.0,
+          "end": 15.4,
+          "word": " 확인한",
+          "probability": 0.9903627336025238
+        },
+        {
+          "start": 15.4,
+          "end": 15.6,
+          "word": " 것은",
+          "probability": 0.9923511147499084
+        },
+        {
+          "start": 15.6,
+          "end": 16.14,
+          "word": " 아닙니다.",
+          "probability": 0.9953392446041107
+        }
+      ]
+    },
+    {
+      "start": 16.4,
+      "end": 20.18,
+      "text": " 개인 자료를 공개하거나 댓글을 남기지 않아도 실습은 끝납니다.",
+      "avgLogProbability": -0.10634703598007923,
+      "noSpeechProbability": 0.003194897435605526,
+      "words": [
+        {
+          "start": 16.4,
+          "end": 16.6,
+          "word": " 개인",
+          "probability": 0.9717957377433777
+        },
+        {
+          "start": 16.6,
+          "end": 17.0,
+          "word": " 자료를",
+          "probability": 0.9282728234926859
+        },
+        {
+          "start": 17.0,
+          "end": 17.7,
+          "word": " 공개하거나",
+          "probability": 0.9947964400053024
+        },
+        {
+          "start": 17.7,
+          "end": 18.24,
+          "word": " 댓글을",
+          "probability": 0.9091045260429382
+        },
+        {
+          "start": 18.24,
+          "end": 18.68,
+          "word": " 남기지",
+          "probability": 0.989006757736206
+        },
+        {
+          "start": 18.68,
+          "end": 19.04,
+          "word": " 않아도",
+          "probability": 0.9955414235591888
+        },
+        {
+          "start": 19.04,
+          "end": 19.7,
+          "word": " 실습은",
+          "probability": 0.9938843448956808
+        },
+        {
+          "start": 19.7,
+          "end": 20.18,
+          "word": " 끝납니다.",
+          "probability": 0.9576699137687683
+        }
+      ]
+    },
+    {
+      "start": 20.54,
+      "end": 25.6,
+      "text": " 이후 실제 적용해서 막힌 지점이 생기면 그 부분만 개인 정보를 빼고 적어주세요.",
+      "avgLogProbability": -0.10634703598007923,
+      "noSpeechProbability": 0.003194897435605526,
+      "words": [
+        {
+          "start": 20.54,
+          "end": 20.82,
+          "word": " 이후",
+          "probability": 0.9971031546592712
+        },
+        {
+          "start": 20.82,
+          "end": 21.26,
+          "word": " 실제",
+          "probability": 0.9951485097408295
+        },
+        {
+          "start": 21.26,
+          "end": 21.78,
+          "word": " 적용해서",
+          "probability": 0.8948706984519958
+        },
+        {
+          "start": 21.78,
+          "end": 22.16,
+          "word": " 막힌",
+          "probability": 0.9916736682256063
+        },
+        {
+          "start": 22.16,
+          "end": 22.54,
+          "word": " 지점이",
+          "probability": 0.9960217475891113
+        },
+        {
+          "start": 22.54,
+          "end": 22.96,
+          "word": " 생기면",
+          "probability": 0.9977166453997294
+        },
+        {
+          "start": 22.96,
+          "end": 23.44,
+          "word": " 그",
+          "probability": 0.909125566482544
+        },
+        {
+          "start": 23.44,
+          "end": 23.88,
+          "word": " 부분만",
+          "probability": 0.991850733757019
+        },
+        {
+          "start": 23.88,
+          "end": 24.14,
+          "word": " 개인",
+          "probability": 0.9895846247673035
+        },
+        {
+          "start": 24.14,
+          "end": 24.64,
+          "word": " 정보를",
+          "probability": 0.969004213809967
+        },
+        {
+          "start": 24.64,
+          "end": 25.02,
+          "word": " 빼고",
+          "probability": 0.9991199672222137
+        },
+        {
+          "start": 25.02,
+          "end": 25.6,
+          "word": " 적어주세요.",
+          "probability": 0.7534153362115225
+        }
+      ]
+    },
+    {
+      "start": 25.9,
+      "end": 28.08,
+      "text": " 다음에 찾아볼 도움을 고르는 기준이 됩니다.",
+      "avgLogProbability": -0.10634703598007923,
+      "noSpeechProbability": 0.003194897435605526,
+      "words": [
+        {
+          "start": 25.9,
+          "end": 26.22,
+          "word": " 다음에",
+          "probability": 0.9872038960456848
+        },
+        {
+          "start": 26.22,
+          "end": 26.74,
+          "word": " 찾아볼",
+          "probability": 0.9540883302688599
+        },
+        {
+          "start": 26.74,
+          "end": 27.06,
+          "word": " 도움을",
+          "probability": 0.9696539441744486
+        },
+        {
+          "start": 27.06,
+          "end": 27.46,
+          "word": " 고르는",
+          "probability": 0.9588891863822937
+        },
+        {
+          "start": 27.46,
+          "end": 27.92,
+          "word": " 기준이",
+          "probability": 0.9968817234039307
+        },
+        {
+          "start": 27.92,
+          "end": 28.08,
+          "word": " 됩니다.",
+          "probability": 0.994047999382019
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 5.56
+}

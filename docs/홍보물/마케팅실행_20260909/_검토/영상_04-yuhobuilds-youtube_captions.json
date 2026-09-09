@@ -1,0 +1,47 @@
+{
+  "basis": "approved screen text, not speech transcription",
+  "captions": [
+    {
+      "text": "첫 줄,\n경력부터 썼나요?\n가상 예시 · 촬영 강사\n오늘은 소개의 읽는 순서를 고칩니다.",
+      "startMs": 0,
+      "endMs": 8000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "내 평가부터\n다양한 경험을 바탕으로\n최상의 촬영 노하우를 전합니다.\n누구에게 필요한지는 아직 안 보입니다.",
+      "startMs": 8000,
+      "endMs": 18000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "독자의 장면부터\n수공예 판매자가 휴대폰으로\n제품 사진 세 컷을 찍어 보는 실습\n누구 · 활동 · 남는 것",
+      "startMs": 18000,
+      "endMs": 31000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "경력은 그다음\n확인 가능한 경험은\n소개 뒤에 근거로 붙입니다.\n없던 경력이나 성과를 만들지 않습니다.",
+      "startMs": 31000,
+      "endMs": 40000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "내 일로 바꾸기\n누구에게: ____\n활동: ____\n남는 것: ____\n빈칸과 가상 예시 모두 설명글에 있습니다.",
+      "startMs": 40000,
+      "endMs": 52000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "한 번 더 확인\n실제로 제공하지 않는 약속은\n지우거나 준비 중으로 분리합니다.\n막힌 곳: 대상 / 활동 / 결과물",
+      "startMs": 52000,
+      "endMs": 60000,
+      "timestampMs": null,
+      "confidence": null
+    }
+  ]
+}

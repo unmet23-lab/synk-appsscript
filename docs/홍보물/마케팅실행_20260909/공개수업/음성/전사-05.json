@@ -1,0 +1,469 @@
+{
+  "version": 1,
+  "id": "05",
+  "input": "chapter-05.wav",
+  "audioSha256": "36800b6ef16750ab3cf265a4c5c0dd2c98287e236e46640ba0d92b04bd625082",
+  "language": "ko",
+  "durationSeconds": 28.88,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "메모의 누구의 어떤 상황이라고 쓰고 한 줄을 채워보세요. 너무 넓으면 이 질문을 써도 됩니다. 그 사람이 오늘 어떤 일을 하다가 이 도움을 찾을까요? 처음 강의를 여는 순간일 수도 있고 이미 만든 상품을 한 문장으로 설명해야 하는 순간일 수도 있습니다. 개인 이름은 필요하지 않습니다. 지금 맞는 답을 확정하기보다 먼저 하나를 써보고 확인해야 할 가정에는 표시를 남겨주세요. 잠시 멈추고 작성하셔도 좋습니다.",
+  "expectedNarration": "메모에 ‘누구의 어떤 상황’이라고 쓰고 한 줄을 채워보세요. 너무 넓으면 이 질문을 써도 됩니다. 그 사람이 오늘 어떤 일을 하다가 이 도움을 찾을까요? 처음 강의를 여는 순간일 수도 있고, 이미 만든 상품을 한 문장으로 설명해야 하는 순간일 수도 있습니다. 개인 이름은 필요하지 않습니다. 지금 맞는 답을 확정하기보다 먼저 하나를 써보고, 확인해야 할 가정에는 표시를 남겨주세요. 잠시 멈추고 작성하셔도 좋습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9938650306748467,
+    "expectedCharacters": 163,
+    "transcribedCharacters": 163,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "에",
+        "transcribed": "의",
+        "expectedContext": "메모에누구의어떤상황이라고"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 3.14,
+      "text": " 메모의 누구의 어떤 상황이라고 쓰고 한 줄을 채워보세요.",
+      "avgLogProbability": -0.10350944304466247,
+      "noSpeechProbability": 0.009317644871771336,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.46,
+          "word": " 메모의",
+          "probability": 0.7407959500948588
+        },
+        {
+          "start": 0.46,
+          "end": 0.88,
+          "word": " 누구의",
+          "probability": 0.8558026552200317
+        },
+        {
+          "start": 0.88,
+          "end": 1.08,
+          "word": " 어떤",
+          "probability": 0.9992460012435913
+        },
+        {
+          "start": 1.08,
+          "end": 1.68,
+          "word": " 상황이라고",
+          "probability": 0.9923818111419678
+        },
+        {
+          "start": 1.68,
+          "end": 2.0,
+          "word": " 쓰고",
+          "probability": 0.9933974742889404
+        },
+        {
+          "start": 2.0,
+          "end": 2.3,
+          "word": " 한",
+          "probability": 0.9699128866195679
+        },
+        {
+          "start": 2.3,
+          "end": 2.58,
+          "word": " 줄을",
+          "probability": 0.8438116610050201
+        },
+        {
+          "start": 2.58,
+          "end": 3.14,
+          "word": " 채워보세요.",
+          "probability": 0.9470742791891098
+        }
+      ]
+    },
+    {
+      "start": 4.06,
+      "end": 6.06,
+      "text": " 너무 넓으면 이 질문을 써도 됩니다.",
+      "avgLogProbability": -0.10350944304466247,
+      "noSpeechProbability": 0.009317644871771336,
+      "words": [
+        {
+          "start": 4.06,
+          "end": 4.34,
+          "word": " 너무",
+          "probability": 0.9386242628097534
+        },
+        {
+          "start": 4.34,
+          "end": 4.82,
+          "word": " 넓으면",
+          "probability": 0.9914312958717346
+        },
+        {
+          "start": 4.82,
+          "end": 5.1,
+          "word": " 이",
+          "probability": 0.9834669232368469
+        },
+        {
+          "start": 5.1,
+          "end": 5.54,
+          "word": " 질문을",
+          "probability": 0.9964955747127533
+        },
+        {
+          "start": 5.54,
+          "end": 5.86,
+          "word": " 써도",
+          "probability": 0.9774657785892487
+        },
+        {
+          "start": 5.86,
+          "end": 6.06,
+          "word": " 됩니다.",
+          "probability": 0.991950511932373
+        }
+      ]
+    },
+    {
+      "start": 7.04,
+      "end": 9.86,
+      "text": " 그 사람이 오늘 어떤 일을 하다가 이 도움을 찾을까요?",
+      "avgLogProbability": -0.10350944304466247,
+      "noSpeechProbability": 0.009317644871771336,
+      "words": [
+        {
+          "start": 7.04,
+          "end": 7.2,
+          "word": " 그",
+          "probability": 0.9521793723106384
+        },
+        {
+          "start": 7.2,
+          "end": 7.48,
+          "word": " 사람이",
+          "probability": 0.991769552230835
+        },
+        {
+          "start": 7.48,
+          "end": 7.8,
+          "word": " 오늘",
+          "probability": 0.9924943447113037
+        },
+        {
+          "start": 7.8,
+          "end": 8.1,
+          "word": " 어떤",
+          "probability": 0.9970623850822449
+        },
+        {
+          "start": 8.1,
+          "end": 8.42,
+          "word": " 일을",
+          "probability": 0.9961804151535034
+        },
+        {
+          "start": 8.42,
+          "end": 8.74,
+          "word": " 하다가",
+          "probability": 0.9977453649044037
+        },
+        {
+          "start": 8.74,
+          "end": 9.0,
+          "word": " 이",
+          "probability": 0.9900550842285156
+        },
+        {
+          "start": 9.0,
+          "end": 9.32,
+          "word": " 도움을",
+          "probability": 0.9846688111623129
+        },
+        {
+          "start": 9.32,
+          "end": 9.86,
+          "word": " 찾을까요?",
+          "probability": 0.9982782403628031
+        }
+      ]
+    },
+    {
+      "start": 10.78,
+      "end": 12.68,
+      "text": " 처음 강의를 여는 순간일 수도 있고",
+      "avgLogProbability": -0.10350944304466247,
+      "noSpeechProbability": 0.009317644871771336,
+      "words": [
+        {
+          "start": 10.78,
+          "end": 11.02,
+          "word": " 처음",
+          "probability": 0.9799889922142029
+        },
+        {
+          "start": 11.02,
+          "end": 11.42,
+          "word": " 강의를",
+          "probability": 0.9882454673449198
+        },
+        {
+          "start": 11.42,
+          "end": 11.76,
+          "word": " 여는",
+          "probability": 0.8898043632507324
+        },
+        {
+          "start": 11.76,
+          "end": 12.22,
+          "word": " 순간일",
+          "probability": 0.9909246265888214
+        },
+        {
+          "start": 12.22,
+          "end": 12.36,
+          "word": " 수도",
+          "probability": 0.9645347595214844
+        },
+        {
+          "start": 12.36,
+          "end": 12.68,
+          "word": " 있고",
+          "probability": 0.9950769543647766
+        }
+      ]
+    },
+    {
+      "start": 12.68,
+      "end": 16.62,
+      "text": " 이미 만든 상품을 한 문장으로 설명해야 하는 순간일 수도 있습니다.",
+      "avgLogProbability": -0.10350944304466247,
+      "noSpeechProbability": 0.009317644871771336,
+      "words": [
+        {
+          "start": 12.68,
+          "end": 13.26,
+          "word": " 이미",
+          "probability": 0.675388514995575
+        },
+        {
+          "start": 13.26,
+          "end": 13.6,
+          "word": " 만든",
+          "probability": 0.9977608919143677
+        },
+        {
+          "start": 13.6,
+          "end": 14.14,
+          "word": " 상품을",
+          "probability": 0.9963341554005941
+        },
+        {
+          "start": 14.14,
+          "end": 14.32,
+          "word": " 한",
+          "probability": 0.9980010390281677
+        },
+        {
+          "start": 14.32,
+          "end": 14.84,
+          "word": " 문장으로",
+          "probability": 0.9938287734985352
+        },
+        {
+          "start": 14.84,
+          "end": 15.32,
+          "word": " 설명해야",
+          "probability": 0.988397091627121
+        },
+        {
+          "start": 15.32,
+          "end": 15.64,
+          "word": " 하는",
+          "probability": 0.9672684073448181
+        },
+        {
+          "start": 15.64,
+          "end": 16.08,
+          "word": " 순간일",
+          "probability": 0.9987440407276154
+        },
+        {
+          "start": 16.08,
+          "end": 16.26,
+          "word": " 수도",
+          "probability": 0.9935965538024902
+        },
+        {
+          "start": 16.26,
+          "end": 16.62,
+          "word": " 있습니다.",
+          "probability": 0.9973577857017517
+        }
+      ]
+    },
+    {
+      "start": 17.6,
+      "end": 19.26,
+      "text": " 개인 이름은 필요하지 않습니다.",
+      "avgLogProbability": -0.10350944304466247,
+      "noSpeechProbability": 0.009317644871771336,
+      "words": [
+        {
+          "start": 17.6,
+          "end": 17.8,
+          "word": " 개인",
+          "probability": 0.9678023457527161
+        },
+        {
+          "start": 17.8,
+          "end": 18.24,
+          "word": " 이름은",
+          "probability": 0.9986146986484528
+        },
+        {
+          "start": 18.24,
+          "end": 18.72,
+          "word": " 필요하지",
+          "probability": 0.9946826994419098
+        },
+        {
+          "start": 18.72,
+          "end": 19.26,
+          "word": " 않습니다.",
+          "probability": 0.995434045791626
+        }
+      ]
+    },
+    {
+      "start": 20.08,
+      "end": 22.92,
+      "text": " 지금 맞는 답을 확정하기보다 먼저 하나를 써보고",
+      "avgLogProbability": -0.10350944304466247,
+      "noSpeechProbability": 0.009317644871771336,
+      "words": [
+        {
+          "start": 20.08,
+          "end": 20.34,
+          "word": " 지금",
+          "probability": 0.9892849326133728
+        },
+        {
+          "start": 20.34,
+          "end": 20.62,
+          "word": " 맞는",
+          "probability": 0.9931721687316895
+        },
+        {
+          "start": 20.62,
+          "end": 21.02,
+          "word": " 답을",
+          "probability": 0.995592474937439
+        },
+        {
+          "start": 21.02,
+          "end": 21.74,
+          "word": " 확정하기보다",
+          "probability": 0.9798781394958496
+        },
+        {
+          "start": 21.74,
+          "end": 22.1,
+          "word": " 먼저",
+          "probability": 0.9978467226028442
+        },
+        {
+          "start": 22.1,
+          "end": 22.54,
+          "word": " 하나를",
+          "probability": 0.9937576353549957
+        },
+        {
+          "start": 22.54,
+          "end": 22.92,
+          "word": " 써보고",
+          "probability": 0.9694927930831909
+        }
+      ]
+    },
+    {
+      "start": 22.92,
+      "end": 25.5,
+      "text": " 확인해야 할 가정에는 표시를 남겨주세요.",
+      "avgLogProbability": -0.10350944304466247,
+      "noSpeechProbability": 0.009317644871771336,
+      "words": [
+        {
+          "start": 22.92,
+          "end": 23.72,
+          "word": " 확인해야",
+          "probability": 0.93901327252388
+        },
+        {
+          "start": 23.72,
+          "end": 23.96,
+          "word": " 할",
+          "probability": 0.9500330090522766
+        },
+        {
+          "start": 23.96,
+          "end": 24.42,
+          "word": " 가정에는",
+          "probability": 0.9732838670412699
+        },
+        {
+          "start": 24.42,
+          "end": 24.94,
+          "word": " 표시를",
+          "probability": 0.9931511481602987
+        },
+        {
+          "start": 24.94,
+          "end": 25.5,
+          "word": " 남겨주세요.",
+          "probability": 0.8258969783782959
+        }
+      ]
+    },
+    {
+      "start": 25.5,
+      "end": 28.52,
+      "text": " 잠시 멈추고 작성하셔도 좋습니다.",
+      "avgLogProbability": -0.21127822819878073,
+      "noSpeechProbability": 0.17201602458953857,
+      "words": [
+        {
+          "start": 25.5,
+          "end": 26.8,
+          "word": " 잠시",
+          "probability": 0.9518238008022308
+        },
+        {
+          "start": 26.8,
+          "end": 27.32,
+          "word": " 멈추고",
+          "probability": 0.9913960844278336
+        },
+        {
+          "start": 27.32,
+          "end": 28.04,
+          "word": " 작성하셔도",
+          "probability": 0.9809094667434692
+        },
+        {
+          "start": 28.04,
+          "end": 28.52,
+          "word": " 좋습니다.",
+          "probability": 0.9950427711009979
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 5.45
+}

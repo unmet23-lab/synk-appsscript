@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "policy": "Neutral SYNK, unchanged colored divisions. Source geometry remains authoritative SVG; photographic generated material variants preserve recognizable shape, not pixel identity.",
+  "items": [
+    {
+      "brand": "SYNK",
+      "variant": "Ink",
+      "file": "배치용/SYNK-Ink.png",
+      "width": 2200,
+      "height": 1064,
+      "sha256": "92e376fca8412bcd66b32375dc4ebc9678def2ea084b2b10590a983b9f7b6aef",
+      "sourceSha256": "18176aad636e1c2572bb4b917dd99c1cd6109e1430916abbd0f144490ed47e3b"
+    },
+    {
+      "brand": "LAB",
+      "variant": "Ink",
+      "file": "배치용/SYNK-LAB-Ink.png",
+      "width": 3468,
+      "height": 1064,
+      "sha256": "3d893a76599932d75309bf48727ffab9916982065a6deb395a92061a1e5a63d8",
+      "sourceSha256": "18176aad636e1c2572bb4b917dd99c1cd6109e1430916abbd0f144490ed47e3b"
+    },
+    {
+      "brand": "SHIFT",
+      "variant": "Ink",
+      "file": "배치용/SYNK-SHIFT-Ink.png",
+      "width": 3907,
+      "height": 1064,
+      "sha256": "d23aac0ee23c0775044aa9746a3302b669beaacc4f26e162b6ed15f3ffff0d75",
+      "sourceSha256": "18176aad636e1c2572bb4b917dd99c1cd6109e1430916abbd0f144490ed47e3b"
+    },
+    {
+      "brand": "PULSE",
+      "variant": "Ink",
+      "file": "배치용/SYNK-PULSE-Ink.png",
+      "width": 4018,
+      "height": 1064,
+      "sha256": "505a65e008b09d4504645d6b10ef194fb7cdad327d2cffaaf926a97fb41e4f54",
+      "sourceSha256": "18176aad636e1c2572bb4b917dd99c1cd6109e1430916abbd0f144490ed47e3b"
+    },
+    {
+      "brand": "SYNK",
+      "variant": "Paper",
+      "file": "배치용/SYNK-Paper.png",
+      "width": 2200,
+      "height": 1082,
+      "sha256": "1de06e5f23dd91ce09b5c7a34cd2921167cf71db75619bfa446f8774468c6896",
+      "sourceSha256": "4ae4e041594194a2cd381b390e8001316432a4c794adc1351d1f700552630ec8"
+    },
+    {
+      "brand": "LAB",
+      "variant": "Paper",
+      "file": "배치용/SYNK-LAB-Paper.png",
+      "width": 3468,
+      "height": 1082,
+      "sha256": "12b1ee5f1abab319a1aea14ba168012a408f1b3fcb6faa426ccd3a80a4366653",
+      "sourceSha256": "4ae4e041594194a2cd381b390e8001316432a4c794adc1351d1f700552630ec8"
+    },
+    {
+      "brand": "SHIFT",
+      "variant": "Paper",
+      "file": "배치용/SYNK-SHIFT-Paper.png",
+      "width": 3907,
+      "height": 1082,
+      "sha256": "8df94b3b981ddddad5d2cbe45ac3a9f90c901f22d18d5f6e0c444ec72079233c",
+      "sourceSha256": "4ae4e041594194a2cd381b390e8001316432a4c794adc1351d1f700552630ec8"
+    },
+    {
+      "brand": "PULSE",
+      "variant": "Paper",
+      "file": "배치용/SYNK-PULSE-Paper.png",
+      "width": 4018,
+      "height": 1082,
+      "sha256": "991a4e5e0509693c7760eb2114904050ceeb795bf1652fc93ed3f9a476638508",
+      "sourceSha256": "4ae4e041594194a2cd381b390e8001316432a4c794adc1351d1f700552630ec8"
+    }
+  ]
+}

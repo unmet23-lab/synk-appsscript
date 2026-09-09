@@ -1,0 +1,32 @@
+{
+  "id": "09-synkbrief-tiktok",
+  "renderedAt": "2026-09-09T09:51:36.238Z",
+  "width": 1080,
+  "height": 1920,
+  "durationSeconds": 25.045333,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "bytes": 6220221,
+  "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+  "renderSourceSha256": "6c70234b10083ff7c2b252236dc07cea6f5950fca48df87fd13d43395121fc06",
+  "videoSha256": "5163b4db634c607ca42ee81c26e1d645034ae1ea506b25da6730a933c7641e4d",
+  "capturedSeconds": [
+    1,
+    3.25,
+    6,
+    8.9,
+    12,
+    16.2,
+    20,
+    22.9
+  ],
+  "visualInspection": "passed: final encoded representative frames directly inspected; see 영상_최종시각검수.md and matching videoSha256 in 영상_종합기계검증.json",
+  "audioMeasurement": "technical measurement; no claim of human listening",
+  "captionTiming": [
+    "screen text",
+    "screen text",
+    "screen text",
+    "screen text"
+  ],
+  "externalPosting": false
+}

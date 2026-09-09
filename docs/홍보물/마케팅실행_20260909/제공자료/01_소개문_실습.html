@@ -1,0 +1,15 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>내 일을 설명하는 첫 문장 · 직접 작성</title><link rel="stylesheet" href="../execution.css"><body class="account-collection execution"><article class="editorial"><div class="brand-lock" role="img" aria-label="SYNK SHIFT"><img class="brand-synk" src="../assets/brand-synk.webp" alt=""><img class="division-stitch-logo" data-division="SHIFT" src="../assets/brand-shift.webp" alt=""></div><p class="kicker">SHIFT WORKBOOK · shift-intro</p><h1>내 일을 설명하는 첫 문장</h1><p>대상·상황·결과를 나눠 소개문을 작성하고 읽는 자리별로 변형합니다.</p><p class="notice">예시는 가상 교육용입니다. 아래 글은 이 화면에서만 편집하며 서버로 보내거나 자동 저장하지 않습니다. 창을 닫기 전 텍스트 파일로 보관하세요. 고객 원문·개인정보·비밀번호는 넣지 마세요.</p><div class="material-actions"><a class="download" href="01_소개문.html">설명·예외·확인법 읽기</a><a class="download" href="../자료실/index.html">다른 문제 고르기</a></div><details><summary>참고할 채운 예시</summary><pre>대상: 처음 기관에 강의를 제안하는 독립 강사
+상황: 강의의 대상·실습·결과를 소개자료에서 설명하기 어려움
+내가 실제로 할 일: 받은 강의 내용을 읽고 정보 순서를 정리함
+남길 것: 편집 가능한 소개자료 한 장과 읽는 순서 안내
+내가 맡지 않는 것: 강의 계약 성사, 경력 인증, 강의 내용의 전문적 검증
+소개문: 처음 강의를 제안하는 독립 강사가 수업을 설명할 수 있도록,
+        대상·실습·결과가 보이는 소개자료 한 장을 정리합니다.
+</pre></details><label class="work-label" for="work">예시를 나의 실제 조건으로 고쳐 보세요</label><textarea class="work-input" id="work" spellcheck="false">대상: 처음 기관에 강의를 제안하는 독립 강사
+상황: 강의의 대상·실습·결과를 소개자료에서 설명하기 어려움
+내가 실제로 할 일: 받은 강의 내용을 읽고 정보 순서를 정리함
+남길 것: 편집 가능한 소개자료 한 장과 읽는 순서 안내
+내가 맡지 않는 것: 강의 계약 성사, 경력 인증, 강의 내용의 전문적 검증
+소개문: 처음 강의를 제안하는 독립 강사가 수업을 설명할 수 있도록,
+        대상·실습·결과가 보이는 소개자료 한 장을 정리합니다.
+</textarea><div class="material-actions"><button id="save">내 작업 텍스트 받기</button><button id="select">전체 선택</button></div><p class="work-status" id="work-status" role="status"></p><h2>보관하기 전에</h2><p>누구의 어떤 상황인지, 실제로 맡을 일인지, 남는 결과와 제외 범위가 맞는지 확인하세요. 예시의 고객·지원·성과를 나의 사실처럼 남겨두지 않습니다.</p><p><a href="01_소개문.html">조건별 변형과 막혔을 때의 도움으로 돌아가기</a></p></article><script>const w=document.querySelector('#work'),status=document.querySelector('#work-status');document.querySelector('#save').onclick=()=>{const text=w.value.trim();if(!text){status.textContent='보관할 내용을 먼저 적어주세요.';w.focus();return}const a=document.createElement('a'),u=URL.createObjectURL(new Blob([text+'\n'],{type:'text/plain;charset=utf-8'}));a.href=u;a.download='shift-intro-my-work.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);status.textContent='작성한 내용의 다운로드를 요청했습니다. 브라우저의 다운로드 위치를 확인하세요.'};document.querySelector('#select').onclick=()=>{w.focus();w.select();status.textContent='내용을 선택했습니다. 필요한 곳에 복사해서 사용하세요.'}</script></body></html>

@@ -1,0 +1,196 @@
+{
+  "version": 1,
+  "id": "02",
+  "input": "clinic-02.wav",
+  "audioSha256": "c17083530a0a9a28816928aa507629c299340dd075ba2a1f56f225ac0ceff6fe",
+  "language": "ko",
+  "durationSeconds": 16.08,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "가상 초화는 이렇습니다. 초보사장님도 AI로 브랜드를 완성하고 매출을 높입니다. 누구의 어떤 상황인지 넓고, 무엇을 하는지 막여나며 매출이라는 성과 약속까지 붙어있습니다.",
+  "expectedNarration": "가상 초안은 이렇습니다. 초보 사장님도 AI로 브랜드를 완성하고 매출을 높입니다. 누구의 어떤 상황인지 넓고, 무엇을 하는지 막연하며, 매출이라는 성과 약속까지 붙어 있습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9444444444444444,
+    "expectedCharacters": 72,
+    "transcribedCharacters": 72,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "안은",
+        "transcribed": "화는",
+        "expectedContext": "가상초안은이렇습니다초보사장님"
+      },
+      {
+        "type": "replace",
+        "expected": "연하",
+        "transcribed": "여나",
+        "expectedContext": "지넓고무엇을하는지막연하며매출이라는성과약속"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 1.68,
+      "text": " 가상 초화는 이렇습니다.",
+      "avgLogProbability": -0.2682707318619116,
+      "noSpeechProbability": 0.02205771766602993,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.36,
+          "word": " 가상",
+          "probability": 0.9830984175205231
+        },
+        {
+          "start": 0.36,
+          "end": 0.86,
+          "word": " 초화는",
+          "probability": 0.86726180712382
+        },
+        {
+          "start": 0.86,
+          "end": 1.68,
+          "word": " 이렇습니다.",
+          "probability": 0.9842366973559061
+        }
+      ]
+    },
+    {
+      "start": 2.92,
+      "end": 7.06,
+      "text": " 초보사장님도 AI로 브랜드를 완성하고 매출을 높입니다.",
+      "avgLogProbability": -0.2682707318619116,
+      "noSpeechProbability": 0.02205771766602993,
+      "words": [
+        {
+          "start": 2.92,
+          "end": 4.14,
+          "word": " 초보사장님도",
+          "probability": 0.7840051998694738
+        },
+        {
+          "start": 4.14,
+          "end": 4.78,
+          "word": " AI로",
+          "probability": 0.982465922832489
+        },
+        {
+          "start": 4.78,
+          "end": 5.3,
+          "word": " 브랜드를",
+          "probability": 0.9928679267565409
+        },
+        {
+          "start": 5.3,
+          "end": 6.04,
+          "word": " 완성하고",
+          "probability": 0.9935923516750336
+        },
+        {
+          "start": 6.04,
+          "end": 6.58,
+          "word": " 매출을",
+          "probability": 0.9180298646291097
+        },
+        {
+          "start": 6.58,
+          "end": 7.06,
+          "word": " 높입니다.",
+          "probability": 0.914661705493927
+        }
+      ]
+    },
+    {
+      "start": 8.66,
+      "end": 12.82,
+      "text": " 누구의 어떤 상황인지 넓고, 무엇을 하는지 막여나며",
+      "avgLogProbability": -0.2682707318619116,
+      "noSpeechProbability": 0.02205771766602993,
+      "words": [
+        {
+          "start": 8.66,
+          "end": 9.36,
+          "word": " 누구의",
+          "probability": 0.9496896266937256
+        },
+        {
+          "start": 9.36,
+          "end": 9.62,
+          "word": " 어떤",
+          "probability": 0.9993048906326294
+        },
+        {
+          "start": 9.62,
+          "end": 10.26,
+          "word": " 상황인지",
+          "probability": 0.9865987002849579
+        },
+        {
+          "start": 10.26,
+          "end": 10.84,
+          "word": " 넓고,",
+          "probability": 0.9854930440584818
+        },
+        {
+          "start": 11.18,
+          "end": 11.68,
+          "word": " 무엇을",
+          "probability": 0.9985284507274628
+        },
+        {
+          "start": 11.68,
+          "end": 12.1,
+          "word": " 하는지",
+          "probability": 0.9820339977741241
+        },
+        {
+          "start": 12.1,
+          "end": 12.82,
+          "word": " 막여나며",
+          "probability": 0.7875637114048004
+        }
+      ]
+    },
+    {
+      "start": 12.82,
+      "end": 15.7,
+      "text": " 매출이라는 성과 약속까지 붙어있습니다.",
+      "avgLogProbability": -0.2682707318619116,
+      "noSpeechProbability": 0.02205771766602993,
+      "words": [
+        {
+          "start": 12.82,
+          "end": 13.7,
+          "word": " 매출이라는",
+          "probability": 0.853274405002594
+        },
+        {
+          "start": 13.7,
+          "end": 14.26,
+          "word": " 성과",
+          "probability": 0.9922958314418793
+        },
+        {
+          "start": 14.26,
+          "end": 14.96,
+          "word": " 약속까지",
+          "probability": 0.9929091731707255
+        },
+        {
+          "start": 14.96,
+          "end": 15.7,
+          "word": " 붙어있습니다.",
+          "probability": 0.9052013754844666
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 2.46
+}

@@ -1660,7 +1660,72 @@ function 계정컬렉션() {
   `;
 }
 
-module.exports = { css, 율, 분모, 시연, 지면들, 림레시피, 정본, 마커, 범위씌우기, 기본범위, 기본천, 엔진전시, 계정컬렉션 };
+/** 2026-09-09 실행 컬렉션: 기존 Loom 지면 위의 편집·자료·게시 준비 표현. */
+function 마케팅실행() {
+  const c=정본().색;
+  return `
+  .execution .artboard{background:${c.Paper};height:var(--card-height,1350px)}
+  .execution .brand-lock{top:52px;left:88px;height:116px;gap:22px}
+  .execution .brand-synk{width:262px}
+  .execution .division-stitch-logo[data-division=LAB]{height:60px}
+  .execution .division-stitch-logo[data-division=SHIFT]{height:61px}
+  .execution .division-stitch-logo[data-division=PULSE]{height:62px}
+  .execution .copy{top:228px;left:88px;right:88px}
+  .execution .headline{font-size:80px;line-height:1.16;letter-spacing:-.035em;font-weight:800;word-break:keep-all}
+  .execution .eyebrow{font-size:24px;line-height:1.4;margin-bottom:30px;font-weight:650}
+  .execution .body-copy{font-size:35px;line-height:1.5;margin-top:30px;max-width:880px;word-break:keep-all}
+  .execution .lines{font-size:34px;line-height:1.5;margin-top:32px}
+  .execution .lines li{padding:14px 0;border-color:${c.Oat}}
+  .execution .tip{font-size:29px;line-height:1.5;white-space:pre-line;margin-top:30px;color:var(--signal);font-weight:550;word-break:keep-all}
+  .execution .hero-asset{left:auto;right:88px;bottom:100px;width:430px;height:350px;object-fit:contain}
+  .execution .artboard[data-layout=hero] .hero-asset{left:88px;right:88px;width:904px;height:440px}
+  .execution .artboard[data-layout=lesson] .headline,.execution .artboard[data-layout=worksheet] .headline{font-size:72px}
+  .execution .artboard[data-layout=worksheet] .lines{font-size:34px}
+  .execution .artboard[data-layout=worksheet] .lines li{min-height:82px;padding:10px 0}
+  .execution .artboard[data-layout=worksheet] .hero-asset{width:220px;height:220px}
+  .execution .kr{font-size:67px;line-height:1.35;margin-top:48px}
+  .execution .mn{font-size:37px;line-height:1.5;margin-top:22px}
+  .execution .folio{left:88px;right:88px;bottom:40px;font-size:19px}
+  .execution .diptych{top:auto;bottom:112px;height:410px;gap:24px}
+  .execution .canvas-wrap{aspect-ratio:auto;height:calc(var(--card-height,1350px) * var(--scale,1))}
+  .execution .collection-intro>.brand-lock{height:120px}
+  .execution .collection-intro h1{font-size:clamp(42px,6vw,90px);max-width:1000px;margin-bottom:32px}
+  .execution .collection-intro p{max-width:850px}
+  .execution .entry-cover{object-fit:contain}
+  .execution .quick-links{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0}
+  .execution .chapter-heading{margin:68px 0 28px;font-size:36px;line-height:1.3;letter-spacing:-.025em}
+  .execution .resources{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+  .execution .resource-card{border-top:2px solid ${c.Ink};padding:24px 0 28px}
+  .execution .resource-card h3{font-size:26px;line-height:1.4;margin:12px 0}
+  .execution .resource-card p{font-size:17px;line-height:1.7}
+  .execution .resource-number{font-size:14px;color:${c['Lapis Deep']};font-weight:650}
+  .execution .editorial{max-width:1000px;margin:0 auto;padding:52px 40px 90px;font-size:19px;line-height:1.85;word-break:keep-all}
+  .execution .editorial .brand-lock{position:static;height:105px;margin-bottom:48px}
+  .execution .editorial h1{font-size:clamp(36px,5vw,58px);line-height:1.24;letter-spacing:-.03em;margin:30px 0 34px}
+  .execution .editorial h2{font-size:29px;line-height:1.4;margin-top:54px;border-top:1px solid ${c.Oat};padding-top:26px}
+  .execution .editorial h3{font-size:22px;line-height:1.5;margin-top:32px}
+  .execution .editorial blockquote{margin:28px 0;padding:18px 24px;border-left:3px solid ${c['Lapis Deep']};background:${c.Oat}}
+  .execution .editorial pre{font:inherit;font-size:17px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;padding:24px;background:${c.Oat}}
+  .execution .editorial code{font-family:inherit;overflow-wrap:anywhere}
+  .execution .editorial table{width:100%;border-collapse:collapse;font-size:16px;line-height:1.6;margin:26px 0}
+  .execution .editorial th,.execution .editorial td{text-align:left;vertical-align:top;padding:12px 10px;border-bottom:1px solid ${c.Oat}}
+  .execution .editorial th{color:${c['Lapis Deep']}}
+  .execution .editorial li{margin:9px 0}
+  .execution .editorial img{max-width:100%;height:auto}
+  .execution .editorial .notice{font-size:16px;color:${c['Deep Wool']};padding:18px 0;border-bottom:1px solid ${c.Oat}}
+  .execution .copy-text{white-space:pre-wrap;font-family:inherit;line-height:1.75;font-size:18px;background:${c.Oat};padding:26px;max-width:100%;overflow-wrap:anywhere}
+  .execution .logo-proof{width:100%;height:auto;display:block;margin:20px 0}
+  .execution .material-actions{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}
+  .execution .work-input{display:block;width:100%;min-height:420px;resize:vertical;padding:24px;border:1px solid ${c['Deep Wool']};border-radius:8px;background:${c.Paper};color:${c.Ink};font:inherit;font-size:18px;line-height:1.7}
+  .execution .work-label{display:block;font-weight:650;font-size:20px;margin:24px 0 12px}
+  .execution .work-status{min-height:32px;font-size:16px;color:${c['Lapis Deep']}}
+  @media(max-width:640px){.execution .collection-intro>.brand-lock{gap:14px;height:92px}.execution .collection-intro .brand-synk{width:175px}.execution .collection-intro .division-stitch-logo[data-division]{height:36px;max-height:36px}}
+  @media(max-width:900px){.execution .resources{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:640px){.execution .resources{grid-template-columns:1fr}.execution .editorial{padding:30px 22px 60px;font-size:18px}.execution .editorial table{font-size:14px}.execution .editorial th,.execution .editorial td{padding:10px 5px}.execution .editorial .brand-lock{height:82px}.execution .editorial .brand-synk{width:190px}.execution .editorial .division-stitch-logo[data-division]{max-height:46px}}
+  @media print{@page{size:A4;margin:18mm 17mm 18mm}.execution{background:${c.Paper};print-color-adjust:exact;-webkit-print-color-adjust:exact}.execution .no-print{display:none!important}.execution .editorial{max-width:none;padding:0;font-size:10.5pt;line-height:1.72}.execution .editorial .brand-lock{height:52px;margin-bottom:20px}.execution .editorial .brand-synk{width:130px}.execution .editorial .division-stitch-logo[data-division]{height:30px;max-height:30px}.execution .editorial h1{font-size:25pt;margin:20px 0}.execution .editorial h2{font-size:16pt;margin-top:26px;padding-top:16px;break-after:avoid}.execution .editorial h3{font-size:12pt;break-after:avoid}.execution .editorial p,.execution .editorial li{orphans:3;widows:3}.execution .editorial pre{font-size:9pt;padding:14px;break-inside:avoid}.execution .editorial table{font-size:9pt}.execution .editorial tr{break-inside:avoid}.execution .editorial thead{display:table-header-group}.execution .editorial blockquote{break-inside:avoid}.execution .editorial a{color:inherit;text-decoration:none}}
+  `;
+}
+module.exports = { css, 율, 분모, 시연, 지면들, 림레시피, 정본, 마커, 범위씌우기, 기본범위, 기본천, 엔진전시, 계정컬렉션, 마케팅실행 };
 
 /* ── CLI ──────────────────────────────────────────────────────────────────── */
 if (require.main === module) {

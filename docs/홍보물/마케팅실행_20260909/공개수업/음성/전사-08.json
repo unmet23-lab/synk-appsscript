@@ -1,0 +1,508 @@
+{
+  "version": 1,
+  "id": "08",
+  "input": "chapter-08.wav",
+  "audioSha256": "e821fa472f792346de75bdf21a2c945ab704bcb8e67371ab1a839fb82c5abe25",
+  "language": "ko",
+  "durationSeconds": 31.44,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "이제 색한을 한 문장으로 연결하겠습니다. 새 제품 사진을 혼자 준비하는 수공의 판매자가 휴대폰으로 빛과 배경을 바꿔 찍고 비교할 사진 3컷을 남기는 실습입니다. 짧은 소개가 필요하면 수공의 판매자가 휴대폰으로 제품 사진 3컷을 찍어보는 실습입니다로 줄일 수 있습니다. 무엇을 줄여도 실제 활동과 범위를 바꾸지 않는지가 중요합니다. 지금 여러분의 색한도 연결해 보세요. 아직 멋있게 들리지 않아도 괜찮습니다. 다음 단계에서 무엇이 빠졌는지 확인할 재료가 생긴 것입니다.",
+  "expectedNarration": "이제 세 칸을 한 문장으로 연결하겠습니다. ‘새 제품 사진을 혼자 준비하는 수공예 판매자가, 휴대폰으로 빛과 배경을 바꿔 찍고, 비교할 사진 세 컷을 남기는 실습입니다.’ 짧은 소개가 필요하면 ‘수공예 판매자가 휴대폰으로 제품 사진 세 컷을 찍어 보는 실습입니다’로 줄일 수 있습니다. 무엇을 줄여도 실제 활동과 범위를 바꾸지 않는지가 중요합니다. 지금 여러분의 세 칸도 연결해보세요. 아직 멋있게 들리지 않아도 괜찮습니다. 다음 단계에서 무엇이 빠졌는지 확인할 재료가 생긴 것입니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9585492227979274,
+    "expectedCharacters": 193,
+    "transcribedCharacters": 193,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "세칸",
+        "transcribed": "색한",
+        "expectedContext": "이제세칸을한문장으로연결하겠"
+      },
+      {
+        "type": "replace",
+        "expected": "예",
+        "transcribed": "의",
+        "expectedContext": "진을혼자준비하는수공예판매자가휴대폰으로빛"
+      },
+      {
+        "type": "replace",
+        "expected": "세",
+        "transcribed": "3",
+        "expectedContext": "을바꿔찍고비교할사진세컷을남기는실습입니다"
+      },
+      {
+        "type": "replace",
+        "expected": "예",
+        "transcribed": "의",
+        "expectedContext": "은소개가필요하면수공예판매자가휴대폰으로제"
+      },
+      {
+        "type": "replace",
+        "expected": "세",
+        "transcribed": "3",
+        "expectedContext": "가휴대폰으로제품사진세컷을찍어보는실습입니"
+      },
+      {
+        "type": "replace",
+        "expected": "세칸",
+        "transcribed": "색한",
+        "expectedContext": "요합니다지금여러분의세칸도연결해보세요아직멋"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.22,
+      "text": " 이제 색한을 한 문장으로 연결하겠습니다.",
+      "avgLogProbability": -0.12201151212319633,
+      "noSpeechProbability": 0.025267934426665306,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.22,
+          "word": " 이제",
+          "probability": 0.8561455011367798
+        },
+        {
+          "start": 0.22,
+          "end": 0.78,
+          "word": " 색한을",
+          "probability": 0.6360513170560201
+        },
+        {
+          "start": 0.78,
+          "end": 0.96,
+          "word": " 한",
+          "probability": 0.9962875843048096
+        },
+        {
+          "start": 0.96,
+          "end": 1.5,
+          "word": " 문장으로",
+          "probability": 0.9937190810839335
+        },
+        {
+          "start": 1.5,
+          "end": 2.22,
+          "word": " 연결하겠습니다.",
+          "probability": 0.9925716320673624
+        }
+      ]
+    },
+    {
+      "start": 3.0,
+      "end": 8.4,
+      "text": " 새 제품 사진을 혼자 준비하는 수공의 판매자가 휴대폰으로 빛과 배경을 바꿔 찍고",
+      "avgLogProbability": -0.12201151212319633,
+      "noSpeechProbability": 0.025267934426665306,
+      "words": [
+        {
+          "start": 3.0,
+          "end": 3.14,
+          "word": " 새",
+          "probability": 0.9066480398178101
+        },
+        {
+          "start": 3.14,
+          "end": 3.54,
+          "word": " 제품",
+          "probability": 0.9961887001991272
+        },
+        {
+          "start": 3.54,
+          "end": 4.0,
+          "word": " 사진을",
+          "probability": 0.947458416223526
+        },
+        {
+          "start": 4.0,
+          "end": 4.2,
+          "word": " 혼자",
+          "probability": 0.9916911125183105
+        },
+        {
+          "start": 4.2,
+          "end": 4.74,
+          "word": " 준비하는",
+          "probability": 0.9956914782524109
+        },
+        {
+          "start": 4.74,
+          "end": 5.22,
+          "word": " 수공의",
+          "probability": 0.9375244776407877
+        },
+        {
+          "start": 5.22,
+          "end": 5.76,
+          "word": " 판매자가",
+          "probability": 0.9933821856975555
+        },
+        {
+          "start": 5.76,
+          "end": 6.78,
+          "word": " 휴대폰으로",
+          "probability": 0.993284285068512
+        },
+        {
+          "start": 6.78,
+          "end": 7.18,
+          "word": " 빛과",
+          "probability": 0.8916513323783875
+        },
+        {
+          "start": 7.18,
+          "end": 7.64,
+          "word": " 배경을",
+          "probability": 0.9952513774236044
+        },
+        {
+          "start": 7.64,
+          "end": 7.98,
+          "word": " 바꿔",
+          "probability": 0.9410868287086487
+        },
+        {
+          "start": 7.98,
+          "end": 8.4,
+          "word": " 찍고",
+          "probability": 0.9199608564376831
+        }
+      ]
+    },
+    {
+      "start": 8.4,
+      "end": 10.88,
+      "text": " 비교할 사진 3컷을 남기는 실습입니다.",
+      "avgLogProbability": -0.12201151212319633,
+      "noSpeechProbability": 0.025267934426665306,
+      "words": [
+        {
+          "start": 8.4,
+          "end": 9.02,
+          "word": " 비교할",
+          "probability": 0.844452957312266
+        },
+        {
+          "start": 9.02,
+          "end": 9.24,
+          "word": " 사진",
+          "probability": 0.9750728011131287
+        },
+        {
+          "start": 9.24,
+          "end": 9.84,
+          "word": " 3컷을",
+          "probability": 0.7839924544095993
+        },
+        {
+          "start": 9.84,
+          "end": 10.18,
+          "word": " 남기는",
+          "probability": 0.989884078502655
+        },
+        {
+          "start": 10.18,
+          "end": 10.88,
+          "word": " 실습입니다.",
+          "probability": 0.9873064557711283
+        }
+      ]
+    },
+    {
+      "start": 11.4,
+      "end": 17.7,
+      "text": " 짧은 소개가 필요하면 수공의 판매자가 휴대폰으로 제품 사진 3컷을 찍어보는 실습입니다로 줄일 수 있습니다.",
+      "avgLogProbability": -0.12201151212319633,
+      "noSpeechProbability": 0.025267934426665306,
+      "words": [
+        {
+          "start": 11.4,
+          "end": 11.78,
+          "word": " 짧은",
+          "probability": 0.9975871741771698
+        },
+        {
+          "start": 11.78,
+          "end": 12.16,
+          "word": " 소개가",
+          "probability": 0.9376058578491211
+        },
+        {
+          "start": 12.16,
+          "end": 12.6,
+          "word": " 필요하면",
+          "probability": 0.9975404143333435
+        },
+        {
+          "start": 12.6,
+          "end": 13.12,
+          "word": " 수공의",
+          "probability": 0.95618603626887
+        },
+        {
+          "start": 13.12,
+          "end": 13.62,
+          "word": " 판매자가",
+          "probability": 0.9990381598472595
+        },
+        {
+          "start": 13.62,
+          "end": 14.34,
+          "word": " 휴대폰으로",
+          "probability": 0.9975845098495484
+        },
+        {
+          "start": 14.34,
+          "end": 14.62,
+          "word": " 제품",
+          "probability": 0.9789533019065857
+        },
+        {
+          "start": 14.62,
+          "end": 14.96,
+          "word": " 사진",
+          "probability": 0.9214513897895813
+        },
+        {
+          "start": 14.96,
+          "end": 15.58,
+          "word": " 3컷을",
+          "probability": 0.9636411368846893
+        },
+        {
+          "start": 15.58,
+          "end": 16.1,
+          "word": " 찍어보는",
+          "probability": 0.9080253392457962
+        },
+        {
+          "start": 16.1,
+          "end": 16.9,
+          "word": " 실습입니다로",
+          "probability": 0.981956884264946
+        },
+        {
+          "start": 16.9,
+          "end": 17.22,
+          "word": " 줄일",
+          "probability": 0.9939085245132446
+        },
+        {
+          "start": 17.22,
+          "end": 17.36,
+          "word": " 수",
+          "probability": 0.9875603318214417
+        },
+        {
+          "start": 17.36,
+          "end": 17.7,
+          "word": " 있습니다.",
+          "probability": 0.9979987740516663
+        }
+      ]
+    },
+    {
+      "start": 18.3,
+      "end": 21.92,
+      "text": " 무엇을 줄여도 실제 활동과 범위를 바꾸지 않는지가 중요합니다.",
+      "avgLogProbability": -0.12201151212319633,
+      "noSpeechProbability": 0.025267934426665306,
+      "words": [
+        {
+          "start": 18.3,
+          "end": 18.7,
+          "word": " 무엇을",
+          "probability": 0.997177004814148
+        },
+        {
+          "start": 18.7,
+          "end": 19.08,
+          "word": " 줄여도",
+          "probability": 0.9550125201543173
+        },
+        {
+          "start": 19.08,
+          "end": 19.5,
+          "word": " 실제",
+          "probability": 0.9909986853599548
+        },
+        {
+          "start": 19.5,
+          "end": 20.06,
+          "word": " 활동과",
+          "probability": 0.9816965162754059
+        },
+        {
+          "start": 20.06,
+          "end": 20.46,
+          "word": " 범위를",
+          "probability": 0.9552172869443893
+        },
+        {
+          "start": 20.46,
+          "end": 20.9,
+          "word": " 바꾸지",
+          "probability": 0.9920620123545328
+        },
+        {
+          "start": 20.9,
+          "end": 21.3,
+          "word": " 않는지가",
+          "probability": 0.944601982831955
+        },
+        {
+          "start": 21.3,
+          "end": 21.92,
+          "word": " 중요합니다.",
+          "probability": 0.9965057373046875
+        }
+      ]
+    },
+    {
+      "start": 22.42,
+      "end": 24.4,
+      "text": " 지금 여러분의 색한도 연결해 보세요.",
+      "avgLogProbability": -0.12201151212319633,
+      "noSpeechProbability": 0.025267934426665306,
+      "words": [
+        {
+          "start": 22.42,
+          "end": 22.7,
+          "word": " 지금",
+          "probability": 0.9847893714904785
+        },
+        {
+          "start": 22.7,
+          "end": 23.24,
+          "word": " 여러분의",
+          "probability": 0.9837915897369385
+        },
+        {
+          "start": 23.24,
+          "end": 23.66,
+          "word": " 색한도",
+          "probability": 0.7580558558305105
+        },
+        {
+          "start": 23.66,
+          "end": 24.24,
+          "word": " 연결해",
+          "probability": 0.861705462137858
+        },
+        {
+          "start": 24.24,
+          "end": 24.4,
+          "word": " 보세요.",
+          "probability": 0.9968544840812683
+        }
+      ]
+    },
+    {
+      "start": 25.04,
+      "end": 27.12,
+      "text": " 아직 멋있게 들리지 않아도 괜찮습니다.",
+      "avgLogProbability": -0.12201151212319633,
+      "noSpeechProbability": 0.025267934426665306,
+      "words": [
+        {
+          "start": 25.04,
+          "end": 25.28,
+          "word": " 아직",
+          "probability": 0.9844262599945068
+        },
+        {
+          "start": 25.28,
+          "end": 25.74,
+          "word": " 멋있게",
+          "probability": 0.978503942489624
+        },
+        {
+          "start": 25.74,
+          "end": 26.12,
+          "word": " 들리지",
+          "probability": 0.9760470986366272
+        },
+        {
+          "start": 26.12,
+          "end": 26.46,
+          "word": " 않아도",
+          "probability": 0.9938720464706421
+        },
+        {
+          "start": 26.46,
+          "end": 27.12,
+          "word": " 괜찮습니다.",
+          "probability": 0.9956792593002319
+        }
+      ]
+    },
+    {
+      "start": 27.12,
+      "end": 31.08,
+      "text": " 다음 단계에서 무엇이 빠졌는지 확인할 재료가 생긴 것입니다.",
+      "avgLogProbability": -0.13183505765416406,
+      "noSpeechProbability": 0.1336967647075653,
+      "words": [
+        {
+          "start": 27.12,
+          "end": 27.88,
+          "word": " 다음",
+          "probability": 0.9795357584953308
+        },
+        {
+          "start": 27.88,
+          "end": 28.48,
+          "word": " 단계에서",
+          "probability": 0.9886199037233988
+        },
+        {
+          "start": 28.48,
+          "end": 28.94,
+          "word": " 무엇이",
+          "probability": 0.9921061098575592
+        },
+        {
+          "start": 28.94,
+          "end": 29.48,
+          "word": " 빠졌는지",
+          "probability": 0.9945123195648193
+        },
+        {
+          "start": 29.48,
+          "end": 29.96,
+          "word": " 확인할",
+          "probability": 0.9950149953365326
+        },
+        {
+          "start": 29.96,
+          "end": 30.36,
+          "word": " 재료가",
+          "probability": 0.9912731051445007
+        },
+        {
+          "start": 30.36,
+          "end": 30.7,
+          "word": " 생긴",
+          "probability": 0.9942920506000519
+        },
+        {
+          "start": 30.7,
+          "end": 31.08,
+          "word": " 것입니다.",
+          "probability": 0.9875030219554901
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 5.88
+}

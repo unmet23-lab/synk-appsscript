@@ -1,0 +1,40 @@
+{
+  "basis": "approved screen text, not speech transcription",
+  "captions": [
+    {
+      "text": "잘 썼지만,\n사실인가요?\nAI 문장도 원자료와 대조합니다.\n가상 예시 · 사실 검수",
+      "startMs": 0,
+      "endMs": 6000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "원자료\n소개문 초안 한 개를\n수업에서 작성한다.\n여기까지 확인된 내용",
+      "startMs": 6000,
+      "endMs": 13000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "덧붙은 약속\n고객 문의가 늘어나는\n소개문을 완성한다.\n문의 증가 근거는 없습니다.",
+      "startMs": 13000,
+      "endMs": 21000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "근거로 되돌리기\n수업에서 소개문 초안\n한 개를 작성합니다.\n없는 성과를 지웁니다.",
+      "startMs": 21000,
+      "endMs": 30000,
+      "timestampMs": null,
+      "confidence": null
+    },
+    {
+      "text": "검수 요청 세 갈래\n확인된 문장 / 새 주장\n넓어진 제공 범위\n복사용 요청문은 설명글에 있습니다.",
+      "startMs": 30000,
+      "endMs": 40000,
+      "timestampMs": null,
+      "confidence": null
+    }
+  ]
+}

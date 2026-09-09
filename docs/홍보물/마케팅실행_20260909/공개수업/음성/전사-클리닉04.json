@@ -1,0 +1,313 @@
+{
+  "version": 1,
+  "id": "04",
+  "input": "clinic-04.wav",
+  "audioSha256": "dc2d6b7e42f522a9adf84382d8356d3b24808bdd2f97b197963096d8600d3f7a",
+  "language": "ko",
+  "durationSeconds": 22.72,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "확인된 범위로 고치면 첫 상품 소개를 준비하는 사람이 소개문 초안 한계를 작성하는 실습이라고 쓸 수 있습니다. 이 클리닉에서는 그 수정 과정을 원자료와 대조하고 있습니다. AI에게 검사를 맡겼더라도 사람이 직접 확인해야 합니다. 실제 운영 범위가 다르다면 예시를 그대로 사용하지 않습니다.",
+  "expectedNarration": "확인된 범위로 고치면, 첫 상품 소개를 준비하는 사람이 소개문 초안 한 개를 작성하는 실습이라고 쓸 수 있습니다. 이 클리닉에서는 그 수정 과정을 원자료와 대조하고 있습니다. AI에게 검사를 맡겼더라도 사람이 직접 확인해야 합니다. 실제 운영 범위가 다르다면 예시를 그대로 사용하지 않습니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9915966386554622,
+    "expectedCharacters": 119,
+    "transcribedCharacters": 119,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "개",
+        "transcribed": "계",
+        "expectedContext": "는사람이소개문초안한개를작성하는실습이라고"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 3.74,
+      "text": " 확인된 범위로 고치면 첫 상품 소개를 준비하는 사람이",
+      "avgLogProbability": -0.13336965586375266,
+      "noSpeechProbability": 0.0007946966798044741,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.44,
+          "word": " 확인된",
+          "probability": 0.9646228750546774
+        },
+        {
+          "start": 0.44,
+          "end": 0.88,
+          "word": " 범위로",
+          "probability": 0.9675815552473068
+        },
+        {
+          "start": 0.88,
+          "end": 1.4,
+          "word": " 고치면",
+          "probability": 0.9760004281997681
+        },
+        {
+          "start": 1.4,
+          "end": 1.92,
+          "word": " 첫",
+          "probability": 0.7257038950920105
+        },
+        {
+          "start": 1.92,
+          "end": 2.32,
+          "word": " 상품",
+          "probability": 0.7758305966854095
+        },
+        {
+          "start": 2.32,
+          "end": 2.66,
+          "word": " 소개를",
+          "probability": 0.9396449327468872
+        },
+        {
+          "start": 2.66,
+          "end": 3.28,
+          "word": " 준비하는",
+          "probability": 0.9960551261901855
+        },
+        {
+          "start": 3.28,
+          "end": 3.74,
+          "word": " 사람이",
+          "probability": 0.9907833337783813
+        }
+      ]
+    },
+    {
+      "start": 3.74,
+      "end": 7.38,
+      "text": " 소개문 초안 한계를 작성하는 실습이라고 쓸 수 있습니다.",
+      "avgLogProbability": -0.13336965586375266,
+      "noSpeechProbability": 0.0007946966798044741,
+      "words": [
+        {
+          "start": 3.74,
+          "end": 4.44,
+          "word": " 소개문",
+          "probability": 0.6326372524102529
+        },
+        {
+          "start": 4.44,
+          "end": 4.82,
+          "word": " 초안",
+          "probability": 0.8404401242733002
+        },
+        {
+          "start": 4.82,
+          "end": 5.26,
+          "word": " 한계를",
+          "probability": 0.8842058976491293
+        },
+        {
+          "start": 5.26,
+          "end": 5.84,
+          "word": " 작성하는",
+          "probability": 0.9970301787058512
+        },
+        {
+          "start": 5.84,
+          "end": 6.5,
+          "word": " 실습이라고",
+          "probability": 0.9843924045562744
+        },
+        {
+          "start": 6.5,
+          "end": 6.78,
+          "word": " 쓸",
+          "probability": 0.9982436895370483
+        },
+        {
+          "start": 6.78,
+          "end": 6.96,
+          "word": " 수",
+          "probability": 0.9978728294372559
+        },
+        {
+          "start": 6.96,
+          "end": 7.38,
+          "word": " 있습니다.",
+          "probability": 0.9974386692047119
+        }
+      ]
+    },
+    {
+      "start": 8.44,
+      "end": 12.26,
+      "text": " 이 클리닉에서는 그 수정 과정을 원자료와 대조하고 있습니다.",
+      "avgLogProbability": -0.13336965586375266,
+      "noSpeechProbability": 0.0007946966798044741,
+      "words": [
+        {
+          "start": 8.44,
+          "end": 8.58,
+          "word": " 이",
+          "probability": 0.995215654373169
+        },
+        {
+          "start": 8.58,
+          "end": 9.26,
+          "word": " 클리닉에서는",
+          "probability": 0.9568342924118042
+        },
+        {
+          "start": 9.26,
+          "end": 9.86,
+          "word": " 그",
+          "probability": 0.9928721785545349
+        },
+        {
+          "start": 9.86,
+          "end": 10.18,
+          "word": " 수정",
+          "probability": 0.9948090016841888
+        },
+        {
+          "start": 10.18,
+          "end": 10.58,
+          "word": " 과정을",
+          "probability": 0.9386130571365356
+        },
+        {
+          "start": 10.58,
+          "end": 11.38,
+          "word": " 원자료와",
+          "probability": 0.9129604548215866
+        },
+        {
+          "start": 11.38,
+          "end": 11.88,
+          "word": " 대조하고",
+          "probability": 0.9880438248316447
+        },
+        {
+          "start": 11.88,
+          "end": 12.26,
+          "word": " 있습니다.",
+          "probability": 0.9984585046768188
+        }
+      ]
+    },
+    {
+      "start": 13.36,
+      "end": 17.34,
+      "text": " AI에게 검사를 맡겼더라도 사람이 직접 확인해야 합니다.",
+      "avgLogProbability": -0.13336965586375266,
+      "noSpeechProbability": 0.0007946966798044741,
+      "words": [
+        {
+          "start": 13.36,
+          "end": 14.04,
+          "word": " AI에게",
+          "probability": 0.9730849266052246
+        },
+        {
+          "start": 14.04,
+          "end": 14.54,
+          "word": " 검사를",
+          "probability": 0.9938949048519135
+        },
+        {
+          "start": 14.54,
+          "end": 15.4,
+          "word": " 맡겼더라도",
+          "probability": 0.8988543272018432
+        },
+        {
+          "start": 15.4,
+          "end": 16.04,
+          "word": " 사람이",
+          "probability": 0.834658682346344
+        },
+        {
+          "start": 16.04,
+          "end": 16.38,
+          "word": " 직접",
+          "probability": 0.9999011754989624
+        },
+        {
+          "start": 16.38,
+          "end": 16.96,
+          "word": " 확인해야",
+          "probability": 0.993270218372345
+        },
+        {
+          "start": 16.96,
+          "end": 17.34,
+          "word": " 합니다.",
+          "probability": 0.974405825138092
+        }
+      ]
+    },
+    {
+      "start": 18.52,
+      "end": 22.4,
+      "text": " 실제 운영 범위가 다르다면 예시를 그대로 사용하지 않습니다.",
+      "avgLogProbability": -0.13336965586375266,
+      "noSpeechProbability": 0.0007946966798044741,
+      "words": [
+        {
+          "start": 18.52,
+          "end": 18.94,
+          "word": " 실제",
+          "probability": 0.9969039559364319
+        },
+        {
+          "start": 18.94,
+          "end": 19.28,
+          "word": " 운영",
+          "probability": 0.9927564462025961
+        },
+        {
+          "start": 19.28,
+          "end": 19.68,
+          "word": " 범위가",
+          "probability": 0.8676199838519096
+        },
+        {
+          "start": 19.68,
+          "end": 20.24,
+          "word": " 다르다면",
+          "probability": 0.9834170341491699
+        },
+        {
+          "start": 20.24,
+          "end": 20.98,
+          "word": " 예시를",
+          "probability": 0.9332698186238607
+        },
+        {
+          "start": 20.98,
+          "end": 21.24,
+          "word": " 그대로",
+          "probability": 0.9970043301582336
+        },
+        {
+          "start": 21.24,
+          "end": 21.9,
+          "word": " 사용하지",
+          "probability": 0.997578352689743
+        },
+        {
+          "start": 21.9,
+          "end": 22.4,
+          "word": " 않습니다.",
+          "probability": 0.9929369688034058
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 3.41
+}

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "method": "faster-whisper-small automatic transcription on local CPU",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "audioUploaded": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "humanListening": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "chapters": [
+    {
+      "id": "sample",
+      "file": "전사-sample.json",
+      "durationSeconds": 14.8,
+      "characterSimilarity": 0.9836065573770492,
+      "differenceCount": 1,
+      "segments": 4,
+      "wordTimestamps": 19,
+      "meaningReviewed": false
+    }
+  ]
+}

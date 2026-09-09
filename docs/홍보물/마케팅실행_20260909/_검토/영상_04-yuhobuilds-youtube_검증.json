@@ -1,0 +1,38 @@
+{
+  "id": "04-yuhobuilds-youtube",
+  "renderedAt": "2026-09-09T10:11:47.206Z",
+  "width": 1080,
+  "height": 1920,
+  "durationSeconds": 60.053333,
+  "videoCodec": "h264",
+  "audioCodec": "aac",
+  "bytes": 11274627,
+  "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
+  "renderSourceSha256": "e1e0991714dfb26c852dce4dd8f48fd26961222680997c3272ca13420360a953",
+  "videoSha256": "506cb4b3fa5cda40e7dee271fe296a89e80d15b21d9f11a50cf01c871eeded71",
+  "capturedSeconds": [
+    1,
+    5.2,
+    9,
+    14.5,
+    19,
+    26.450000000000003,
+    32,
+    36.85,
+    41,
+    47.8,
+    53,
+    57.2
+  ],
+  "visualInspection": "passed: final encoded representative frames directly inspected; see 영상_최종시각검수.md and matching videoSha256 in 영상_종합기계검증.json",
+  "audioMeasurement": "technical measurement; no claim of human listening",
+  "captionTiming": [
+    "screen text",
+    "screen text",
+    "screen text",
+    "screen text",
+    "screen text",
+    "screen text"
+  ],
+  "externalPosting": false
+}

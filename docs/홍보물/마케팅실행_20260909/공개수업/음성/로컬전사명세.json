@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "method": "faster-whisper-small automatic transcription on local CPU",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "audioUploaded": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "humanListening": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "chapters": [
+    {
+      "id": "01",
+      "file": "전사-01.json",
+      "durationSeconds": 26.24,
+      "characterSimilarity": 1.0,
+      "differenceCount": 0,
+      "segments": 10,
+      "wordTimestamps": 58,
+      "meaningReviewed": false
+    },
+    {
+      "id": "02",
+      "file": "전사-02.json",
+      "durationSeconds": 27.12,
+      "characterSimilarity": 0.9716088328075709,
+      "differenceCount": 3,
+      "segments": 6,
+      "wordTimestamps": 55,
+      "meaningReviewed": false
+    },
+    {
+      "id": "03",
+      "file": "전사-03.json",
+      "durationSeconds": 29.52,
+      "characterSimilarity": 0.9883720930232558,
+      "differenceCount": 2,
+      "segments": 11,
+      "wordTimestamps": 58,
+      "meaningReviewed": false
+    },
+    {
+      "id": "04",
+      "file": "전사-04.json",
+      "durationSeconds": 32.32,
+      "characterSimilarity": 0.9779005524861878,
+      "differenceCount": 2,
+      "segments": 9,
+      "wordTimestamps": 63,
+      "meaningReviewed": false
+    },
+    {
+      "id": "05",
+      "file": "전사-05.json",
+      "durationSeconds": 28.88,
+      "characterSimilarity": 0.9938650306748467,
+      "differenceCount": 1,
+      "segments": 9,
+      "wordTimestamps": 59,
+      "meaningReviewed": false
+    },
+    {
+      "id": "06",
+      "file": "전사-06.json",
+      "durationSeconds": 37.04,
+      "characterSimilarity": 1.0,
+      "differenceCount": 0,
+      "segments": 11,
+      "wordTimestamps": 65,
+      "meaningReviewed": false
+    },
+    {
+      "id": "07",
+      "file": "전사-07.json",
+      "durationSeconds": 34.56,
+      "characterSimilarity": 0.978494623655914,
+      "differenceCount": 4,
+      "segments": 10,
+      "wordTimestamps": 71,
+      "meaningReviewed": false
+    },
+    {
+      "id": "08",
+      "file": "전사-08.json",
+      "durationSeconds": 31.44,
+      "characterSimilarity": 0.9585492227979274,
+      "differenceCount": 6,
+      "segments": 8,
+      "wordTimestamps": 62,
+      "meaningReviewed": false
+    },
+    {
+      "id": "09",
+      "file": "전사-09.json",
+      "durationSeconds": 24.32,
+      "characterSimilarity": 0.9779411764705882,
+      "differenceCount": 2,
+      "segments": 6,
+      "wordTimestamps": 45,
+      "meaningReviewed": false
+    },
+    {
+      "id": "10",
+      "file": "전사-10.json",
+      "durationSeconds": 30.0,
+      "characterSimilarity": 0.9884393063583815,
+      "differenceCount": 2,
+      "segments": 8,
+      "wordTimestamps": 61,
+      "meaningReviewed": false
+    },
+    {
+      "id": "11",
+      "file": "전사-11.json",
+      "durationSeconds": 36.56,
+      "characterSimilarity": 1.0,
+      "differenceCount": 0,
+      "segments": 10,
+      "wordTimestamps": 68,
+      "meaningReviewed": false
+    },
+    {
+      "id": "12",
+      "file": "전사-12.json",
+      "durationSeconds": 33.68,
+      "characterSimilarity": 1.0,
+      "differenceCount": 0,
+      "segments": 7,
+      "wordTimestamps": 67,
+      "meaningReviewed": false
+    },
+    {
+      "id": "13",
+      "file": "전사-13.json",
+      "durationSeconds": 39.84,
+      "characterSimilarity": 0.9576059850374065,
+      "differenceCount": 4,
+      "segments": 10,
+      "wordTimestamps": 73,
+      "meaningReviewed": false
+    },
+    {
+      "id": "14",
+      "file": "전사-14.json",
+      "durationSeconds": 36.24,
+      "characterSimilarity": 1.0,
+      "differenceCount": 0,
+      "segments": 11,
+      "wordTimestamps": 76,
+      "meaningReviewed": false
+    },
+    {
+      "id": "15",
+      "file": "전사-15.json",
+      "durationSeconds": 30.32,
+      "characterSimilarity": 0.9894179894179894,
+      "differenceCount": 2,
+      "segments": 14,
+      "wordTimestamps": 61,
+      "meaningReviewed": false
+    },
+    {
+      "id": "16",
+      "file": "전사-16.json",
+      "durationSeconds": 40.16,
+      "characterSimilarity": 1.0,
+      "differenceCount": 0,
+      "segments": 12,
+      "wordTimestamps": 69,
+      "meaningReviewed": false
+    },
+    {
+      "id": "17",
+      "file": "전사-17.json",
+      "durationSeconds": 30.64,
+      "characterSimilarity": 0.978494623655914,
+      "differenceCount": 2,
+      "segments": 9,
+      "wordTimestamps": 69,
+      "meaningReviewed": false
+    },
+    {
+      "id": "18",
+      "file": "전사-18.json",
+      "durationSeconds": 28.56,
+      "characterSimilarity": 0.9887005649717514,
+      "differenceCount": 2,
+      "segments": 7,
+      "wordTimestamps": 65,
+      "meaningReviewed": false
+    }
+  ]
+}

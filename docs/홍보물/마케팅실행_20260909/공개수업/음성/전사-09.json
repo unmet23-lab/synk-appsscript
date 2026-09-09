@@ -1,0 +1,364 @@
+{
+  "version": 1,
+  "id": "09",
+  "input": "chapter-09.wav",
+  "audioSha256": "2f9e4343db0aff4653b930991b1b20699f0e8596425ced3f7869967b90a422e0",
+  "language": "ko",
+  "durationSeconds": 24.32,
+  "model": "Systran/faster-whisper-small",
+  "modelSnapshot": "536b0662742c02347bc0e980a01041f333bce120",
+  "offline": true,
+  "humanListening": false,
+  "expectedNarrationUsedAsPrompt": false,
+  "timestampStatus": "estimated from audio by ASR; not manually aligned",
+  "transcript": "지금 화면에 새 빈칸으로 자기소개문을 한 번 써보세요. 대상이 막히면 필요한 순간을, 활동이 막히면 실제 동작을, 결과물이 막히면 직접 만드는 형태를 떠올립니다. 쓰다가 확인되지 않은 부분이 생기면 좋게 매우지 말고 물음표를 남겨두세요. 완성한 문장을 공개하거나 제출할 필요는 없습니다. 계속 쓰고 싶다면 여기서 영상을 멈춰도 됩니다.",
+  "expectedNarration": "지금 화면의 세 빈칸으로 자기 소개문을 한 번 써보세요. 대상이 막히면 필요한 순간을, 활동이 막히면 실제 동작을, 결과물이 막히면 직접 만드는 형태를 떠올립니다. 쓰다가 확인되지 않은 부분이 생기면 좋게 메우지 말고 물음표를 남겨두세요. 완성한 문장을 공개하거나 제출할 필요는 없습니다. 계속 쓰고 싶다면 여기서 영상을 멈춰도 됩니다.",
+  "comparison": {
+    "normalization": "NFKC, lowercase, Hangul/ASCII letters/digits only; no semantic substitution",
+    "characterSimilarity": 0.9779411764705882,
+    "expectedCharacters": 136,
+    "transcribedCharacters": 136,
+    "differences": [
+      {
+        "type": "replace",
+        "expected": "의세",
+        "transcribed": "에새",
+        "expectedContext": "지금화면의세빈칸으로자기소개문을"
+      },
+      {
+        "type": "replace",
+        "expected": "메",
+        "transcribed": "매",
+        "expectedContext": "않은부분이생기면좋게메우지말고물음표를남겨"
+      }
+    ],
+    "meaningReviewed": false
+  },
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 3.14,
+      "text": " 지금 화면에 새 빈칸으로 자기소개문을 한 번 써보세요.",
+      "avgLogProbability": -0.12955672316826305,
+      "noSpeechProbability": 0.0024827485904097557,
+      "words": [
+        {
+          "start": 0.0,
+          "end": 0.22,
+          "word": " 지금",
+          "probability": 0.9882591962814331
+        },
+        {
+          "start": 0.22,
+          "end": 0.68,
+          "word": " 화면에",
+          "probability": 0.9522713224093119
+        },
+        {
+          "start": 0.68,
+          "end": 0.8,
+          "word": " 새",
+          "probability": 0.9650989174842834
+        },
+        {
+          "start": 0.8,
+          "end": 1.44,
+          "word": " 빈칸으로",
+          "probability": 0.9065990567207336
+        },
+        {
+          "start": 1.44,
+          "end": 2.4,
+          "word": " 자기소개문을",
+          "probability": 0.8029926419258118
+        },
+        {
+          "start": 2.4,
+          "end": 2.54,
+          "word": " 한",
+          "probability": 0.4690331220626831
+        },
+        {
+          "start": 2.54,
+          "end": 2.68,
+          "word": " 번",
+          "probability": 0.9998795986175537
+        },
+        {
+          "start": 2.68,
+          "end": 3.14,
+          "word": " 써보세요.",
+          "probability": 0.9530179699261984
+        }
+      ]
+    },
+    {
+      "start": 3.92,
+      "end": 8.0,
+      "text": " 대상이 막히면 필요한 순간을, 활동이 막히면 실제 동작을,",
+      "avgLogProbability": -0.12955672316826305,
+      "noSpeechProbability": 0.0024827485904097557,
+      "words": [
+        {
+          "start": 3.92,
+          "end": 4.26,
+          "word": " 대상이",
+          "probability": 0.9038499593734741
+        },
+        {
+          "start": 4.26,
+          "end": 4.78,
+          "word": " 막히면",
+          "probability": 0.9867261797189713
+        },
+        {
+          "start": 4.78,
+          "end": 5.26,
+          "word": " 필요한",
+          "probability": 0.9908349215984344
+        },
+        {
+          "start": 5.26,
+          "end": 5.8,
+          "word": " 순간을,",
+          "probability": 0.994527280330658
+        },
+        {
+          "start": 6.06,
+          "end": 6.5,
+          "word": " 활동이",
+          "probability": 0.9890540242195129
+        },
+        {
+          "start": 6.5,
+          "end": 6.96,
+          "word": " 막히면",
+          "probability": 0.9964556246995926
+        },
+        {
+          "start": 6.96,
+          "end": 7.44,
+          "word": " 실제",
+          "probability": 0.9663555920124054
+        },
+        {
+          "start": 7.44,
+          "end": 8.0,
+          "word": " 동작을,",
+          "probability": 0.9980435768763224
+        }
+      ]
+    },
+    {
+      "start": 8.28,
+      "end": 11.22,
+      "text": " 결과물이 막히면 직접 만드는 형태를 떠올립니다.",
+      "avgLogProbability": -0.12955672316826305,
+      "noSpeechProbability": 0.0024827485904097557,
+      "words": [
+        {
+          "start": 8.28,
+          "end": 8.82,
+          "word": " 결과물이",
+          "probability": 0.9722076058387756
+        },
+        {
+          "start": 8.82,
+          "end": 9.28,
+          "word": " 막히면",
+          "probability": 0.9975791126489639
+        },
+        {
+          "start": 9.28,
+          "end": 9.6,
+          "word": " 직접",
+          "probability": 0.9925341606140137
+        },
+        {
+          "start": 9.6,
+          "end": 10.14,
+          "word": " 만드는",
+          "probability": 0.9976838231086731
+        },
+        {
+          "start": 10.14,
+          "end": 10.66,
+          "word": " 형태를",
+          "probability": 0.9854645927747091
+        },
+        {
+          "start": 10.66,
+          "end": 11.22,
+          "word": " 떠올립니다.",
+          "probability": 0.9962044209241867
+        }
+      ]
+    },
+    {
+      "start": 12.06,
+      "end": 16.6,
+      "text": " 쓰다가 확인되지 않은 부분이 생기면 좋게 매우지 말고 물음표를 남겨두세요.",
+      "avgLogProbability": -0.12955672316826305,
+      "noSpeechProbability": 0.0024827485904097557,
+      "words": [
+        {
+          "start": 12.06,
+          "end": 12.36,
+          "word": " 쓰다가",
+          "probability": 0.9912296831607819
+        },
+        {
+          "start": 12.36,
+          "end": 13.0,
+          "word": " 확인되지",
+          "probability": 0.9918904155492783
+        },
+        {
+          "start": 13.0,
+          "end": 13.18,
+          "word": " 않은",
+          "probability": 0.9720346927642822
+        },
+        {
+          "start": 13.18,
+          "end": 13.5,
+          "word": " 부분이",
+          "probability": 0.9933274984359741
+        },
+        {
+          "start": 13.5,
+          "end": 14.14,
+          "word": " 생기면",
+          "probability": 0.9979089697202047
+        },
+        {
+          "start": 14.14,
+          "end": 14.58,
+          "word": " 좋게",
+          "probability": 0.9746220111846924
+        },
+        {
+          "start": 14.58,
+          "end": 14.96,
+          "word": " 매우지",
+          "probability": 0.8895567059516907
+        },
+        {
+          "start": 14.96,
+          "end": 15.2,
+          "word": " 말고",
+          "probability": 0.9928425550460815
+        },
+        {
+          "start": 15.2,
+          "end": 15.86,
+          "word": " 물음표를",
+          "probability": 0.9581311643123627
+        },
+        {
+          "start": 15.86,
+          "end": 16.6,
+          "word": " 남겨두세요.",
+          "probability": 0.9873398542404175
+        }
+      ]
+    },
+    {
+      "start": 17.34,
+      "end": 20.18,
+      "text": " 완성한 문장을 공개하거나 제출할 필요는 없습니다.",
+      "avgLogProbability": -0.12955672316826305,
+      "noSpeechProbability": 0.0024827485904097557,
+      "words": [
+        {
+          "start": 17.34,
+          "end": 17.84,
+          "word": " 완성한",
+          "probability": 0.9770711064338684
+        },
+        {
+          "start": 17.84,
+          "end": 18.22,
+          "word": " 문장을",
+          "probability": 0.9952521026134491
+        },
+        {
+          "start": 18.22,
+          "end": 19.0,
+          "word": " 공개하거나",
+          "probability": 0.9968106895685196
+        },
+        {
+          "start": 19.0,
+          "end": 19.52,
+          "word": " 제출할",
+          "probability": 0.9726249575614929
+        },
+        {
+          "start": 19.52,
+          "end": 19.9,
+          "word": " 필요는",
+          "probability": 0.9991870522499084
+        },
+        {
+          "start": 19.9,
+          "end": 20.18,
+          "word": " 없습니다.",
+          "probability": 0.9923906922340393
+        }
+      ]
+    },
+    {
+      "start": 21.12,
+      "end": 23.84,
+      "text": " 계속 쓰고 싶다면 여기서 영상을 멈춰도 됩니다.",
+      "avgLogProbability": -0.12955672316826305,
+      "noSpeechProbability": 0.0024827485904097557,
+      "words": [
+        {
+          "start": 21.12,
+          "end": 21.32,
+          "word": " 계속",
+          "probability": 0.9961793422698975
+        },
+        {
+          "start": 21.32,
+          "end": 21.6,
+          "word": " 쓰고",
+          "probability": 0.9962465167045593
+        },
+        {
+          "start": 21.6,
+          "end": 22.1,
+          "word": " 싶다면",
+          "probability": 0.994775265455246
+        },
+        {
+          "start": 22.1,
+          "end": 22.56,
+          "word": " 여기서",
+          "probability": 0.9115099906921387
+        },
+        {
+          "start": 22.56,
+          "end": 23.1,
+          "word": " 영상을",
+          "probability": 0.9828406572341919
+        },
+        {
+          "start": 23.1,
+          "end": 23.62,
+          "word": " 멈춰도",
+          "probability": 0.9105773717164993
+        },
+        {
+          "start": 23.62,
+          "end": 23.84,
+          "word": " 됩니다.",
+          "probability": 0.9929134249687195
+        }
+      ]
+    }
+  ],
+  "processingSeconds": 3.55
+}
