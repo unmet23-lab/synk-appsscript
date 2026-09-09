@@ -1,0 +1,205 @@
+{
+  "status": "design_only_not_connected_to_production",
+  "questionnaire_version": "first-meeting-1.1",
+  "language": "ko_draft_for_review",
+  "student_language_target": "mn_after_review",
+  "title": "나에게 맞는 친구 찾기",
+  "experience_title": "우리의 첫 한국어 하루",
+  "timing": {"target_seconds": [180, 240], "intro": 12, "chapter_transitions_total": 6, "result_review": 30, "measured": false},
+  "default_common_answer_ids": ["varies", "unknown", "skip"],
+  "common_answers": [
+    {"id": "varies", "label": "상황마다 달라요", "meaning": "explicit_context_dependence"},
+    {"id": "unknown", "label": "아직 잘 모르겠어요", "meaning": "no_declared_preference"},
+    {"id": "skip", "label": "이 질문은 넘어갈게요", "meaning": "not_answered"},
+    {"id": "no_recent_block", "label": "그런 일이 없었어요", "meaning": "no_episode_in_stated_period"},
+    {"id": "other_action", "label": "다른 일을 먼저 했어요", "meaning": "unlisted_action_no_inference"},
+    {"id": "recall_unknown", "label": "떠오르지 않아요", "meaning": "episode_not_recalled"}
+  ],
+  "recommendation": {
+    "version": "mascot-context-1.1",
+    "questions": ["M03", "M08", "M11"],
+    "equal_weight": 1,
+    "minimum_matching_answers": 2,
+    "unknown_policy": "no_score_no_imputation",
+    "tie_policy": "show_relevant_candidates_and_let_student_choose",
+    "score_is_probability": false,
+    "guide_choice_overrides_recommendation": true,
+    "contexts_preserved": ["start", "retry", "finish"]
+  },
+  "questions": [
+    {
+      "id": "M01", "chapter": "1. 한국어로 해 보고 싶은 것", "seconds": 12,
+      "title": "한국어로 먼저 해 보고 싶은 장면을 골라 주세요.",
+      "interaction": "choose_one_scene", "source_type": "explicit_goal",
+      "field": "near_context", "lifetime": "current_season_review_without_auto_deletion",
+      "consumer": "first_practice_context_selector", "presenter": "mongle",
+      "options": [
+        {"id": "school", "label": "학교에서 질문하기", "preview": "질문이 있어요.", "effect": "school_question_scene"},
+        {"id": "culture", "label": "좋아하는 영상 이야기하기", "preview": "이 장면을 좋아해요.", "effect": "culture_conversation_scene"},
+        {"id": "introduction", "label": "처음 만난 사람에게 나를 소개하기", "preview": "저는 몽골에서 왔어요.", "effect": "first_meeting_scene"},
+        {"id": "everyday", "label": "일상에서 부탁하기", "preview": "다시 말해 주세요.", "effect": "everyday_request_scene"}
+      ],
+      "later_check": "new_context_independent_attempt_same_language_goal",
+      "do_not_infer": ["career_goal", "ability_level"]
+    },
+    {
+      "id": "M02", "chapter": "1. 한국어로 해 보고 싶은 것", "seconds": 14,
+      "title": "그 장면에서 무엇부터 편해지고 싶어요?",
+      "interaction": "choose_one_priority", "source_type": "explicit_goal",
+      "field": "near_priority", "lifetime": "current_season_review_without_auto_deletion",
+      "consumer": "practice_entry_selector", "presenter": "marin",
+      "options": [
+        {"id": "understand", "label": "상대의 말 알아듣기", "preview": "상대의 말부터 살펴봐요.", "effect": "incoming_utterance_first"},
+        {"id": "express", "label": "내 생각 말하기", "preview": "내가 하고 싶은 답부터 준비해요.", "effect": "own_response_first"},
+        {"id": "initiate", "label": "내가 먼저 말 걸기", "preview": "먼저 건넬 한마디를 준비해요.", "effect": "conversation_opener_first"}
+      ],
+      "later_check": "student_goal_review_and_new_independent_attempt",
+      "do_not_infer": ["listening_weakness", "introversion", "skill_exemption"]
+    },
+    {
+      "id": "M03", "chapter": "1. 한국어로 해 보고 싶은 것", "seconds": 12,
+      "title": "연습을 시작해요. 어떤 반응이 좋아요?",
+      "interaction": "compare_three_character_reactions", "source_type": "explicit_preference",
+      "field": "guide_reaction.start", "lifetime": "until_changed_or_withdrawn",
+      "consumer": "guide_recommender_and_start_support", "presenter": "all_equal",
+      "options": [
+        {"id": "mongle", "label": "몽글 · 함께 시작", "preview": "어? 이 장면 재밌겠다! 같이 해 보자!", "effect": "together_start"},
+        {"id": "kkamong", "label": "까몽 · 장난스러운 시작", "preview": "이 몸의 연습 비법을 보여 주지. …같이 해 볼래?", "effect": "playful_start"},
+        {"id": "marin", "label": "마린 · 첫 행동 안내", "preview": "연습 준비. 첫 문장부터 간다.", "effect": "next_action_start"}
+      ],
+      "later_check": "explicit_reaction_preference_revision",
+      "do_not_infer": ["personality_type", "gender", "recommendation_accuracy"]
+    },
+    {
+      "id": "M04", "chapter": "2. 나에게 편한 도움", "seconds": 28,
+      "title": "같은 설명을 두 순서로 봤어요. 어느 쪽부터 보고 싶어요?",
+      "interaction": "same_content_order_comparison", "source_type": "preview_based_preference",
+      "field": "explanation_order", "lifetime": "until_changed_or_withdrawn",
+      "consumer": "explanation_renderer", "presenter": "kkamong",
+      "comparison_content": {"id": "like-sentence-1", "example": "저는 이 노래를 좋아해요.", "reason": "좋아하는 것을 말할 때 ‘좋아해요’를 써요."},
+      "options": [
+        {"id": "example_first", "label": "예문을 보고 뜻과 이유 보기", "preview": "예문 → 뜻과 이유", "effect": "example_then_reason"},
+        {"id": "reason_first", "label": "뜻과 이유를 보고 예문 보기", "preview": "뜻과 이유 → 예문", "effect": "reason_then_example"},
+        {"id": "both", "label": "둘 다 편해요", "preview": "두 순서를 모두 열어 둘게요.", "effect": "standard_order_with_both_available"}
+      ],
+      "later_check": "different_item_independent_retrieval_with_exposure_control",
+      "do_not_infer": ["visual_learner", "comprehension_score", "learning_effect"]
+    },
+    {
+      "id": "M05", "chapter": "2. 나에게 편한 도움", "seconds": 12,
+      "title": "내 문장을 만들어요. 힌트는 언제 볼까요?",
+      "interaction": "hint_preview_toggle", "source_type": "explicit_preference",
+      "field": "hint_timing", "lifetime": "until_changed_or_withdrawn",
+      "consumer": "practice_hint_controller", "presenter": "mongle",
+      "options": [
+        {"id": "before", "label": "시작하기 전에", "preview": "힌트 카드가 먼저 열려요.", "effect": "offer_before_attempt"},
+        {"id": "after_attempt", "label": "스스로 한 번 해 본 뒤에", "preview": "내 시도 뒤에 힌트를 제안해요.", "effect": "offer_after_actual_attempt"},
+        {"id": "on_request", "label": "내가 누를 때", "preview": "힌트 버튼에서 직접 열어요.", "effect": "offer_on_request"}
+      ],
+      "later_check": "actual_hint_exposure_linked_to_attempt_and_later_independent_item",
+      "do_not_infer": ["low_ability", "high_ability", "hint_used_from_preference_only"]
+    },
+    {
+      "id": "M06", "chapter": "2. 나에게 편한 도움", "seconds": 16,
+      "title": "말하기 전에 무엇이 있으면 편해요?",
+      "interaction": "preparation_preview", "source_type": "explicit_preference",
+      "field": "speaking_preparation", "lifetime": "until_changed_or_withdrawn",
+      "consumer": "speaking_preparation_view", "presenter": "marin",
+      "options": [
+        {"id": "think", "label": "잠깐 생각할 자리", "preview": "준비되면 시작 버튼을 눌러요.", "effect": "self_paced_ready_step"},
+        {"id": "keywords", "label": "쓸 낱말을 적는 자리", "preview": "낱말 메모를 보고 시작해요.", "effect": "optional_keyword_note"},
+        {"id": "direct", "label": "바로 시작하기", "preview": "말하기 시작 버튼부터 보여요.", "effect": "direct_start_with_help_available"}
+      ],
+      "later_check": "actual_preparation_exposure_and_new_independent_speech",
+      "do_not_infer": ["anxiety", "introversion", "preparation_used_from_preference_only"]
+    },
+    {
+      "id": "M07", "chapter": "3. 멈춘 곳에서 이어가기", "seconds": 14,
+      "title": "연습한 말의 답장이 왔어요. 어떻게 볼까요?",
+      "interaction": "same_correction_layout_preview", "source_type": "explicit_preference",
+      "field": "correction_layout", "lifetime": "until_changed_or_withdrawn",
+      "consumer": "correction_reply_renderer", "presenter": "kkamong",
+      "options": [
+        {"id": "one_by_one", "label": "한 부분씩 보기", "preview": "한 부분 → 다음 부분", "effect": "progressive_disclosure_all_corrections"},
+        {"id": "overview", "label": "전체를 보고 고르기", "preview": "전체 목록 → 원하는 부분", "effect": "overview_then_detail"},
+        {"id": "own_question", "label": "내가 궁금한 부분부터", "preview": "내 문장 → 궁금한 부분 → 나머지", "effect": "student_selected_entry_all_corrections"}
+      ],
+      "later_check": "correction_exposure_revision_and_new_item_error_recurrence",
+      "do_not_infer": ["error_exemption", "attention_span"]
+    },
+    {
+      "id": "M08", "chapter": "3. 멈춘 곳에서 이어가기", "seconds": 16,
+      "title": "같은 문장을 다시 연습하려 해요. 어떤 말이 좋아요?",
+      "interaction": "compare_three_character_reactions", "source_type": "explicit_preference",
+      "field": "guide_reaction.retry", "lifetime": "until_changed_or_withdrawn",
+      "consumer": "guide_recommender_and_retry_support", "presenter": "all_equal",
+      "options": [
+        {"id": "mongle", "label": "몽글 · 함께 다시", "preview": "나도… 여기서 잠깐 멈췄어! 같이 다시 해 볼까?", "effect": "together_retry"},
+        {"id": "kkamong", "label": "까몽 · 장난 섞어 다시", "preview": "나도 처음엔… 아니, 이 몸은 연습 중이었지. 한 번 더 해 볼래?", "effect": "playful_retry"},
+        {"id": "marin", "label": "마린 · 다음 행동부터", "preview": "다음 연습. 이 부분부터 간다. …서두를 일은 아니다.", "effect": "next_action_retry"}
+      ],
+      "later_check": "explicit_retry_support_revision",
+      "do_not_infer": ["low_resilience", "personality_type"]
+    },
+    {
+      "id": "M09", "chapter": "3. 멈춘 곳에서 이어가기", "seconds": 20,
+      "title": "지난 7일, 공부하다가 막힌 가장 최근 한 번을 떠올려 봐요. 그다음에 무엇을 먼저 했나요?",
+      "helper": "한국어 공부가 아니어도 괜찮아요. 떠오르지 않으면 그대로 골라 주세요.",
+      "interaction": "report_one_recent_episode", "source_type": "self_reported_episode",
+      "field": "reported_recent_help_action", "lifetime": "dated_episode_not_a_current_setting",
+      "consumer": "help_offer_candidate_then_explicit_confirmation", "presenter": "marin",
+      "common_answers": ["no_recent_block", "other_action", "recall_unknown", "skip"],
+      "options": [
+        {"id": "example", "label": "다른 예를 찾아봤어요", "preview": "도움 메뉴에 ‘다른 예문’을 먼저 둘지 마지막에 골라요.", "effect": "candidate_another_example"},
+        {"id": "retry", "label": "스스로 다시 해 봤어요", "preview": "먼저 다시 해 볼 자리를 둘지 마지막에 골라요.", "effect": "candidate_retry_then_help"},
+        {"id": "ask", "label": "누군가에게 물어봤어요", "preview": "궁금한 부분을 표시할 자리를 둘지 마지막에 골라요.", "effect": "candidate_question_bookmark"},
+        {"id": "pause", "label": "잠깐 쉬었어요", "preview": "이어갈 위치를 먼저 보여 줄지 마지막에 골라요.", "effect": "candidate_resume_marker"}
+      ],
+      "requires_separate_confirmation_before_setting": true,
+      "later_check": "student_confirmed_help_route_and_actual_later_action_separate",
+      "do_not_infer": ["observed_behavior", "stable_habit", "laziness", "resilience", "automatic_help_preference"]
+    },
+    {
+      "id": "M10", "chapter": "4. 내 방식으로 계속하기", "seconds": 12,
+      "title": "연습을 어떻게 나누면 편해요?",
+      "interaction": "same_required_work_chunk_preview", "source_type": "explicit_preference",
+      "field": "practice_chunking", "lifetime": "until_changed_or_withdrawn",
+      "consumer": "practice_segment_presenter", "presenter": "mongle",
+      "options": [
+        {"id": "short_blocks", "label": "짧게 나누어 하기", "preview": "같은 연습을 작은 묶음으로 나눠요.", "effect": "small_segments_same_required_work"},
+        {"id": "continuous", "label": "한 번 시작하면 이어 하기", "preview": "다음 연습을 이어서 열어요.", "effect": "continuous_segments_same_required_work"},
+        {"id": "decide_today", "label": "그날 정하기", "preview": "시작할 때 오늘의 나눔 방식을 골라요.", "effect": "session_specific_chunking_choice"}
+      ],
+      "later_check": "actual_segments_and_user_changes_without_personality_inference",
+      "do_not_infer": ["attention_span", "diligence", "reduced_required_work"]
+    },
+    {
+      "id": "M11", "chapter": "4. 내 방식으로 계속하기", "seconds": 12,
+      "title": "처음 고른 장면을 연습했다고 생각해 봐요. 어떤 반응이 좋아요?",
+      "interaction": "compare_three_character_reactions", "source_type": "explicit_preference",
+      "field": "guide_reaction.finish", "lifetime": "until_changed_or_withdrawn",
+      "consumer": "guide_recommender_and_finish_support", "presenter": "all_equal",
+      "options": [
+        {"id": "mongle", "label": "몽글 · 함께 기뻐하기", "preview": "우와! 처음 고른 장면까지 같이 왔어!", "effect": "shared_joy_finish"},
+        {"id": "kkamong", "label": "까몽 · 장난스러운 뿌듯함", "preview": "훗. 이 몸이 함께했지. …내가 더 신난 건가?", "effect": "playful_pride_finish"},
+        {"id": "marin", "label": "마린 · 해낸 일 확인", "preview": "첫 연습 완료. …함께한 기록에 남긴다.", "effect": "completion_acknowledgement"}
+      ],
+      "later_check": "explicit_finish_support_revision",
+      "do_not_infer": ["actual_lesson_completed", "recommendation_accuracy"]
+    },
+    {
+      "id": "M12", "chapter": "4. 내 방식으로 계속하기", "seconds": 10,
+      "title": "하다가 멈춘 연습에 다시 왔어요. 무엇부터 볼까요?",
+      "interaction": "resume_preview", "source_type": "explicit_preference",
+      "field": "return_support", "lifetime": "until_changed_or_withdrawn",
+      "consumer": "practice_resume_view", "presenter": "kkamong",
+      "options": [
+        {"id": "resume", "label": "하던 부분 바로 보기", "preview": "저장한 위치부터 이어가요.", "effect": "resume_at_saved_position"},
+        {"id": "recap", "label": "앞 내용을 짧게 보고 이어가기", "preview": "짧은 요약 → 저장한 위치", "effect": "recap_then_saved_position"},
+        {"id": "choose", "label": "오늘 할 것 다시 고르기", "preview": "진행한 기록을 남기고 오늘 시작점을 골라요.", "effect": "choose_entry_preserving_required_work"}
+      ],
+      "later_check": "actual_resume_result_and_student_support_change",
+      "do_not_infer": ["dropout_risk", "poor_persistence", "habit_from_hypothetical_choice"]
+    }
+  ]
+}
