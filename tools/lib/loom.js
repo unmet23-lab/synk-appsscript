@@ -1641,6 +1641,7 @@ function 계정컬렉션() {
   .account-collection .entry{min-width:0;border-bottom:1px solid ${c.Oat};padding-bottom:${u(1.5)}}
   .account-collection .entry[hidden]{display:none}
   .account-collection .entry-cover{display:block;aspect-ratio:4/5;width:100%;object-fit:cover;background:${c.Oat}}
+  .account-collection .entry-cover.listening-cover{aspect-ratio:16/9;object-fit:contain}
   .account-collection .entry h2{font-size:24px;line-height:1.35;letter-spacing:-.025em;margin:${u(1)} 0 ${u(.5)}}
   .account-collection .entry p{font-size:16px;line-height:1.6;margin:${u(.5)} 0}
   .account-collection .entry .metadata{font-size:13px;color:${c['Deep Wool']};line-height:1.5}

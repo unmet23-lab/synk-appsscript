@@ -755,6 +755,7 @@
   .account-collection .entry{min-width:0;border-bottom:1px solid #EDE7DC;padding-bottom:24px}
   .account-collection .entry[hidden]{display:none}
   .account-collection .entry-cover{display:block;aspect-ratio:4/5;width:100%;object-fit:cover;background:#EDE7DC}
+  .account-collection .entry-cover.listening-cover{aspect-ratio:16/9;object-fit:contain}
   .account-collection .entry h2{font-size:24px;line-height:1.35;letter-spacing:-.025em;margin:16px 0 8px}
   .account-collection .entry p{font-size:16px;line-height:1.6;margin:8px 0}
   .account-collection .entry .metadata{font-size:13px;color:#575046;line-height:1.5}

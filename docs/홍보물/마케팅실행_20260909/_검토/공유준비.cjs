@@ -26,7 +26,7 @@ for(const id of ids){
  s=clean(s).replace(/<p class="notice">([\s\S]*?)<\/p>/,(_,t)=>'<p class="notice">제작 컬렉션'+(t.includes('감수')?' · 몽골어 사람 원어민 감수 전':'')+'</p>');
  s=s.replace(/<p class="kicker">([^<]*?) · [^<]*<\/p>/,'<p class="kicker">$1</p>').replace('이 계정에 올릴 본문','콘텐츠 본문');
  write(id+'/index.html',s);write(id+'/cards.html',clean(read(id+'/cards.html')));
- for(const f of fs.readdirSync(path.join(src,id)))if(/^(upload-\d+\.jpg|video\.mp4|게시문안\.txt|본문\.md|제목\.txt|대체텍스트\.txt)$/.test(f))copy(id+'/'+f);
+ for(const f of fs.readdirSync(path.join(src,id)))if(/^(upload-\d+\.jpg|video\.mp4|게시문안\.txt|본문\.md|제목\.txt|대체텍스트\.txt|감상노트\.md)$/.test(f))copy(id+'/'+f);
 }
 const mats=JSON.parse(read('제공자료/제공자료.json')).materials;
 for(const m of mats){const stem=m.sourceFile.replace(/\.md$/,'');for(const ext of ['.html','_실습.html','_완성예시.html','_완성예시.txt','.md','.pdf']){const f='제공자료/'+stem+ext;if(ext.endsWith('.html'))write(f,clean(read(f)));else copy(f)}}

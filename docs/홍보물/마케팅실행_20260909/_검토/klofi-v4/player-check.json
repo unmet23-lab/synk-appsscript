@@ -1,0 +1,143 @@
+{
+  "checkedAt": "2026-09-09T12:33:26.144Z",
+  "pass": true,
+  "method": "File/string assertions and isolated Node VM with stubbed DOM and play Promise",
+  "browserQA": false,
+  "realMediaPlayback": false,
+  "screenshots": false,
+  "mediaHashOrFrameQARepeated": false,
+  "summary": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0
+  },
+  "observations": [
+    "Public SRT is not distributed; generated SRT is required and checked."
+  ],
+  "checks": [
+    {
+      "scope": "source",
+      "name": "title-duration-and-new-mongolian-flag",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "html-readable",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "exactly-one-player-script",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "video-controls-without-muted-or-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "start-button-and-accessible-status",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "title-and-61-6-second-copy",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "note-link-and-note-title",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "vm-success-unmutes-and-restarts",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "vm-denial-shows-manual-play-guidance",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "vm-ended-offers-replay",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "vm-error-offers-download",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "html-readable",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "exactly-one-player-script",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "video-controls-without-muted-or-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "start-button-and-accessible-status",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "title-and-61-6-second-copy",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "note-link-and-note-title",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "no-posting-guide-or-local-paths",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "vm-success-unmutes-and-restarts",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "vm-denial-shows-manual-play-guidance",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "vm-ended-offers-replay",
+      "pass": true
+    },
+    {
+      "scope": "public",
+      "name": "vm-error-offers-download",
+      "pass": true
+    },
+    {
+      "scope": "generated",
+      "name": "srt-full-duration-and-no-instrumental-claim",
+      "pass": true,
+      "detail": {
+        "cues": 1,
+        "endSeconds": 61.6
+      }
+    },
+    {
+      "scope": "copies",
+      "name": "same-player-script",
+      "pass": true
+    }
+  ]
+}

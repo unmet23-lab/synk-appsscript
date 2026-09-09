@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-09",
+  "url": "https://synk-field-notes.unmet23.chatgpt.site/01-lab-youtube/",
+  "versionNumber": 2,
+  "sourceCommit": "837bbfef8ca5ec1fbc061491fdd62f7dda16b034",
+  "deploymentId": "appgdep_6aa152d477fc8191a5b26ca7a813ea0d",
+  "deploymentStatus": "succeeded",
+  "deployedAt": "2026-09-09T12:39:37.456985+00:00",
+  "anonymousFiles": 230,
+  "totalFiles": 230,
+  "failures": [],
+  "rootStatus": 200,
+  "detailStatus": 200,
+  "titleAndPlayer": "pass",
+  "videoStatus": 200,
+  "videoBytes": 9379584,
+  "videoSha256": "87757806770a4c135aa8560d7e4e5504a75589269157b291d66ce9c21010de31",
+  "entireRemoteVideoMatchesLocal": true,
+  "browserQA": false,
+  "humanListening": false,
+  "youtubePosting": false,
+  "liveRadioChanged": false
+}
