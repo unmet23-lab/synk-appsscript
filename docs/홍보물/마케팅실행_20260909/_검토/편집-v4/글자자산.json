@@ -1,0 +1,71 @@
+[
+  {
+    "number": 1,
+    "source": "docs\\Loom_자산\\구움\\공방_숫자1.avif",
+    "sourceWidth": 2773,
+    "sourceHeight": 2729,
+    "sourceSha256": "7441ad8a94f93ed496838eaea87ef954a9ac1f4ab20126c7d22a51ebf26a6e46",
+    "output": "assets\\felt-number-1.webp",
+    "format": "webp",
+    "mediaType": "image/webp",
+    "width": 488,
+    "height": 480,
+    "space": "srgb",
+    "channels": 4,
+    "depth": "uchar",
+    "isProgressive": false,
+    "isPalette": false,
+    "hasProfile": false,
+    "hasAlpha": true,
+    "autoOrient": {
+      "width": 488,
+      "height": 480
+    }
+  },
+  {
+    "number": 2,
+    "source": "docs\\Loom_자산\\구움\\공방_숫자2.avif",
+    "sourceWidth": 2144,
+    "sourceHeight": 2919,
+    "sourceSha256": "2dd497ac12dba6e8a82e13955b4770eb7f40c994e65918d68d866c26b5b3787e",
+    "output": "assets\\felt-number-2.webp",
+    "format": "webp",
+    "mediaType": "image/webp",
+    "width": 353,
+    "height": 480,
+    "space": "srgb",
+    "channels": 4,
+    "depth": "uchar",
+    "isProgressive": false,
+    "isPalette": false,
+    "hasProfile": false,
+    "hasAlpha": true,
+    "autoOrient": {
+      "width": 353,
+      "height": 480
+    }
+  },
+  {
+    "number": 3,
+    "source": "docs\\Loom_자산\\구움\\공방_숫자3.avif",
+    "sourceWidth": 2971,
+    "sourceHeight": 3378,
+    "sourceSha256": "bd36cbf24f6e7aefd2ded15f87af3eabaa393f8349e7eb5fcbe1d2c9cdde4042",
+    "output": "assets\\felt-number-3.webp",
+    "format": "webp",
+    "mediaType": "image/webp",
+    "width": 422,
+    "height": 480,
+    "space": "srgb",
+    "channels": 4,
+    "depth": "uchar",
+    "isProgressive": false,
+    "isPalette": false,
+    "hasProfile": false,
+    "hasAlpha": true,
+    "autoOrient": {
+      "width": 422,
+      "height": 480
+    }
+  }
+]

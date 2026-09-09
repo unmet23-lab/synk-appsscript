@@ -1,0 +1,341 @@
+{
+  "checkedAt": "2026-09-09T14:16:35.704Z",
+  "pass": true,
+  "method": "Static HTML/source assertions and Node VM; exact sanitizer snippets evaluated with in-memory IO stubs",
+  "browserQA": false,
+  "nativeEscapeTestedInBrowser": false,
+  "realMediaPlayback": false,
+  "screenshots": false,
+  "sitesCheckoutAccessed": false,
+  "interfaceReview": {
+    "mode": "full-with-requested-read-only-boundary",
+    "framework": "Generated HTML and native dialog",
+    "styling": "Existing Loom CSS only",
+    "coverage": [
+      {
+        "category": "Typography",
+        "evidence": "Loom diff: inherited fonts and responsive title sizes",
+        "result": "No new font system; actual wrapping and readability unverified"
+      },
+      {
+        "category": "Surfaces",
+        "evidence": "Loom diff and static checks: dialog size/overflow, 44px button, Coral 3 focus ring",
+        "result": "No remaining actionable source finding; rendered hit areas unverified"
+      },
+      {
+        "category": "Animations",
+        "evidence": "No new CSS animation; dialog close and media play states modeled in VM",
+        "result": "No animation introduced; native keyboard and focus trap unverified"
+      },
+      {
+        "category": "Icons",
+        "evidence": "Text-labeled open/close controls; no new custom icon set",
+        "result": "No applicable icon change"
+      },
+      {
+        "category": "Performance",
+        "evidence": "All video preload=none, autoplay absent, mutual pause and closed-room guards",
+        "result": "VM/static checks recorded below; network and media load unverified"
+      }
+    ],
+    "consideredButRejected": [
+      {
+        "candidate": "Add a custom Escape key handler",
+        "reason": "Native dialog cancel/default-close already reaches the close handler; duplicating keyboard handling is unnecessary"
+      },
+      {
+        "candidate": "Animate the dialog or autoplay the intro",
+        "reason": "The requested menu is deliberately closed and silent until user action; extra motion is outside scope"
+      }
+    ],
+    "verdict": "Approve within static and VM scope only"
+  },
+  "limitations": [
+    "Escape uses a modeled native cancel/default-close sequence; actual browser focus trap and keyboard behavior are unverified.",
+    "Media bytes, 4K resolution, full film content, playback/download behavior and visual layout are not tested here."
+  ],
+  "summary": {
+    "total": 53,
+    "passed": 53,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "scope": "generated-home",
+      "name": "one-current-radio-script-and-closed-native-dialog",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "radio-film-and-cover-only-inside-dialog",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "all-video-controls-none-preload-no-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "menu-button-labels-targets-and-status",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "vm-load-and-menu-open-never-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "vm-play-success-and-close-button-pause-focus",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "vm-native-cancel-default-close-pause-focus",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "vm-play-denial-guidance",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "vm-ended-and-error-guidance",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "vm-close-while-play-promise-pending",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "vm-closed-dialog-cannot-keep-radio-playing",
+      "pass": true
+    },
+    {
+      "scope": "generated-home",
+      "name": "vm-any-video-play-pauses-every-other-video",
+      "pass": true,
+      "detail": {
+        "videos": 3
+      }
+    },
+    {
+      "scope": "generated-home",
+      "name": "intro-craft-film-and-19-account-entries-retained",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "one-current-radio-script-and-closed-native-dialog",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "radio-film-and-cover-only-inside-dialog",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "all-video-controls-none-preload-no-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "menu-button-labels-targets-and-status",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "vm-load-and-menu-open-never-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "vm-play-success-and-close-button-pause-focus",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "vm-native-cancel-default-close-pause-focus",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "vm-play-denial-guidance",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "vm-ended-and-error-guidance",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "vm-close-while-play-promise-pending",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "vm-closed-dialog-cannot-keep-radio-playing",
+      "pass": true
+    },
+    {
+      "scope": "generated-detail",
+      "name": "vm-any-video-play-pauses-every-other-video",
+      "pass": true,
+      "detail": {
+        "videos": 1
+      }
+    },
+    {
+      "scope": "sanitizer",
+      "name": "execute-exact-clean-and-cut-in-memory",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "one-current-radio-script-and-closed-native-dialog",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "radio-film-and-cover-only-inside-dialog",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "all-video-controls-none-preload-no-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "menu-button-labels-targets-and-status",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "vm-load-and-menu-open-never-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "vm-play-success-and-close-button-pause-focus",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "vm-native-cancel-default-close-pause-focus",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "vm-play-denial-guidance",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "vm-ended-and-error-guidance",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "vm-close-while-play-promise-pending",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "vm-closed-dialog-cannot-keep-radio-playing",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "vm-any-video-play-pauses-every-other-video",
+      "pass": true,
+      "detail": {
+        "videos": 3
+      }
+    },
+    {
+      "scope": "sanitized-home-in-memory",
+      "name": "intro-craft-film-and-19-account-entries-retained",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "one-current-radio-script-and-closed-native-dialog",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "radio-film-and-cover-only-inside-dialog",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "all-video-controls-none-preload-no-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "menu-button-labels-targets-and-status",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "vm-load-and-menu-open-never-autoplay",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "vm-play-success-and-close-button-pause-focus",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "vm-native-cancel-default-close-pause-focus",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "vm-play-denial-guidance",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "vm-ended-and-error-guidance",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "vm-close-while-play-promise-pending",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "vm-closed-dialog-cannot-keep-radio-playing",
+      "pass": true
+    },
+    {
+      "scope": "sanitized-detail-in-memory",
+      "name": "vm-any-video-play-pauses-every-other-video",
+      "pass": true,
+      "detail": {
+        "videos": 1
+      }
+    },
+    {
+      "scope": "sanitizer",
+      "name": "private-guide-removed-dialog-script-survives",
+      "pass": true
+    },
+    {
+      "scope": "styles",
+      "name": "new-presentation-css-stays-in-loom",
+      "pass": true
+    }
+  ]
+}
