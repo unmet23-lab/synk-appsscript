@@ -22,4 +22,4 @@
 .scene-only .npc-dialogue{display:none}
 @media(max-width:760px){.npc-dialogue{left:auto;right:16px;bottom:auto;top:88px;width:auto}.npc-conversation{left:auto;right:0;top:calc(100% + 8px);bottom:auto;width:min(360px,calc(100vw - 32px));max-height:calc(100dvh - 168px);padding:16px}.npc-toggle{font-size:12px;min-height:40px}.npc-log{max-height:160px}}
 @media(max-width:360px){.npc-form{grid-template-columns:1fr}.npc-form .button{justify-self:start}.npc-questions .text-button{font-size:11px}}
-
+.npc-conversation{scrollbar-width:thin;scrollbar-color:rgba(237,231,220,.2) transparent}
