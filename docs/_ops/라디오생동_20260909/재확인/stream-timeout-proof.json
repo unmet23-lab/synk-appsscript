@@ -1,0 +1,42 @@
+{
+  "timeUTC": "2026-09-09T10:33:23.459Z",
+  "ffmpeg": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers\r",
+  "results": [
+    {
+      "protocol": "tcp",
+      "timeoutUs": 2000000,
+      "elapsedMs": 2266,
+      "code": 4294967158,
+      "signal": null,
+      "safetyKilled": false,
+      "stderr": "[aost#0:0/pcm_s16le @ 000002040c730680] Error submitting a packet to the muxer: Error number -138 occurred\r\n    Last message repeated 1 times\r\n[out#0/s16le @ 000002040c71dcc0] Error muxing a packet\r\n[out#0/s16le @ 000002040c71dcc0] Task finished with error code: -138 (Error number -138 occurred)\r\n[out#0/s16le @ 000002040c71dcc0] Terminating thread with return code -138 (Error number -138 occurred)\r\n[out#0/s16le @ 000002040c71dcc0] Error writing trailer: Error number -138 occurred\r\n[out#0/s16le @ 000002040c71dcc0] Error closing file: Error number -138 occurred\r\n"
+    },
+    {
+      "protocol": "tcp",
+      "timeoutUs": 0,
+      "elapsedMs": 6517,
+      "code": null,
+      "signal": "SIGKILL",
+      "safetyKilled": true,
+      "stderr": ""
+    },
+    {
+      "protocol": "rtmp",
+      "timeoutUs": 2000000,
+      "elapsedMs": 2254,
+      "code": 4294967158,
+      "signal": null,
+      "safetyKilled": false,
+      "stderr": "[rtmp @ 000001f77a87be40] Cannot read RTMP handshake response\r\n[out#0/flv @ 000001f778cb4600] Error opening output [LOOPBACK] Error number -138 occurred\r\nError opening output file [LOOPBACK]\r\nError opening output files: Error number -138 occurred\r\n"
+    },
+    {
+      "protocol": "rtmp",
+      "timeoutUs": 0,
+      "elapsedMs": 6523,
+      "code": null,
+      "signal": "SIGKILL",
+      "safetyKilled": true,
+      "stderr": ""
+    }
+  ]
+}

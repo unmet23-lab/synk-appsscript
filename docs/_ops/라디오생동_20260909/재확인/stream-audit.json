@@ -1,0 +1,521 @@
+{
+  "timeUTC": "2026-09-09T10:30:57.036123+00:00",
+  "service": "MainPID=138122\nNRestarts=1\nExecMainStartTimestamp=Wed 2026-09-09 09:32:40 UTC\nExecMainCode=0\nExecMainStatus=0\nMemoryCurrent=819699712\nCPUUsageNSec=4123384463000\nActiveState=active\nSubState=running\n",
+  "processes": "    PID    PPID %CPU %MEM ELAPSED STAT COMMAND\n 138129  138122 30.8  6.4    3496 Rl   chromium\n 138154  138129  0.0  1.5    3493 S    chromium\n 138155  138129  0.0  1.5    3493 S    chromium\n 138157  138155  0.0  0.5    3493 S    chromium\n 138178  138154 18.2  3.2    3493 Sl   chromium\n 138190  138129  0.0  2.7    3493 Sl   chromium\n 138191  138157  0.0  1.2    3493 Sl   chromium\n 138219  138157  0.0  8.0    3493 Sl   chromium\n 138228  138157  0.0  1.9    3493 Sl   chromium\n 138229  138157 15.0  5.1    3493 Rl   chromium\n 138256  138122 50.4  4.3    3489 SLl  ffmpeg\n 138534  138154  0.0  2.3    3313 Sl   chromium\n 138536  138534  0.0  0.7    3313 S    chromium\n",
+  "cpuPressure": "some avg10=39.04 avg60=39.50 avg300=31.45 total=83048499651\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n",
+  "memPressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=96302326\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=34950637\n",
+  "speedSummary": {
+    "132860": {
+      "count": 24,
+      "min": 1,
+      "max": 1,
+      "first": {
+        "t": "2026-09-09T09:01:17.410909+00:00",
+        "speed": 1
+      },
+      "last": {
+        "t": "2026-09-09T09:24:17.414227+00:00",
+        "speed": 1
+      },
+      "below098": []
+    },
+    "137314": {
+      "count": 7,
+      "min": 0.577,
+      "max": 0.998,
+      "first": {
+        "t": "2026-09-09T09:25:35.495566+00:00",
+        "speed": 0.993
+      },
+      "last": {
+        "t": "2026-09-09T09:31:35.493327+00:00",
+        "speed": 0.577
+      },
+      "below098": [
+        {
+          "t": "2026-09-09T09:29:35.493450+00:00",
+          "speed": 0.813
+        },
+        {
+          "t": "2026-09-09T09:30:35.494532+00:00",
+          "speed": 0.675
+        },
+        {
+          "t": "2026-09-09T09:31:35.493327+00:00",
+          "speed": 0.577
+        }
+      ]
+    },
+    "138122": {
+      "count": 58,
+      "min": 0.993,
+      "max": 1,
+      "first": {
+        "t": "2026-09-09T09:33:47.206950+00:00",
+        "speed": 0.993
+      },
+      "last": {
+        "t": "2026-09-09T10:30:47.246484+00:00",
+        "speed": 1
+      },
+      "below098": []
+    }
+  },
+  "lastStats": [
+    {
+      "t": "2026-09-09T10:16:47.240186+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:16:47] 층 10074장 떴다(초당 3.9) · 내보낸 것 15838(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.6/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:17:47.239893+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:17:47] 층 10313장 떴다(초당 4.0) · 내보낸 것 16198(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.5/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:18:47.239925+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:18:47] 층 10546장 떴다(초당 3.9) · 내보낸 것 16558(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.5/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:19:47.240931+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:19:47] 층 10781장 떴다(초당 3.9) · 내보낸 것 16918(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.6/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:20:47.240530+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:20:47] 층 11013장 떴다(초당 3.9) · 내보낸 것 17277(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.6/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:21:47.240166+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:21:47] 층 11244장 떴다(초당 3.9) · 내보낸 것 17638(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.5/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:22:47.240494+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:22:47] 층 11479장 떴다(초당 3.9) · 내보낸 것 17997(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.7/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:23:47.240732+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:23:47] 층 11718장 떴다(초당 4.0) · 내보낸 것 18357(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.6/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:24:47.240710+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:24:47] 층 11953장 떴다(초당 3.9) · 내보낸 것 18717(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.7/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:25:47.241302+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:25:47] 층 12179장 떴다(초당 3.8) · 내보낸 것 19078(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.5/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:26:47.241420+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:26:47] 층 12406장 떴다(초당 3.8) · 내보낸 것 19437(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.3/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:27:47.246757+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:27:47] 층 12636장 떴다(초당 3.8) · 내보낸 것 19798(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.6/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:28:47.246162+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:28:47] 층 12867장 떴다(초당 3.9) · 내보낸 것 20157(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.5/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:29:47.246921+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:29:47] 층 13090장 떴다(초당 3.7) · 내보낸 것 20517(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.4/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T10:30:47.246484+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 10:30:47] 층 13265장 떴다(초당 2.9) · 내보낸 것 20877(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.0/6 · 거른 박자 2 · 실시간대비 1x · 버린장 0 · 겹친장 0"
+    }
+  ],
+  "priorRestartStats": [
+    {
+      "t": "2026-09-09T09:25:35.495566+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:25:35] 층 225장 떴다(초당 3.8) · 내보낸 것 358(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.5/6 · 거른 박자 0 · 실시간대비 0.993x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T09:26:35.493038+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:26:35] 층 435장 떴다(초당 3.5) · 내보낸 것 717(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.3/6 · 거른 박자 0 · 실시간대비 0.997x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T09:27:35.492833+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:27:35] 층 659장 떴다(초당 3.7) · 내보낸 것 1077(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.4/6 · 거른 박자 0 · 실시간대비 0.998x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T09:28:35.493195+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:28:35] 층 881장 떴다(초당 3.7) · 내보낸 것 1438(초당 6.0/6) · 실패 0 · 불린 박자 초당 5.4/6 · 거른 박자 0 · 실시간대비 0.998x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T09:29:35.493450+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:29:35] 층 1226장 떴다(초당 5.8) · 내보낸 것 1797(초당 6.0/6) · 실패 0 · 불린 박자 초당 6.0/6 · 거른 박자 0 · 실시간대비 0.813x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T09:30:35.494532+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:30:35] 층 1585장 떴다(초당 6.0) · 내보낸 것 2158(초당 6.0/6) · 실패 0 · 불린 박자 초당 6.0/6 · 거른 박자 0 · 실시간대비 0.675x · 버린장 0 · 겹친장 0"
+    },
+    {
+      "t": "2026-09-09T09:31:35.493327+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:31:35] 층 1943장 떴다(초당 6.0) · 내보낸 것 2518(초당 6.0/6) · 실패 0 · 불린 박자 초당 6.0/6 · 거른 박자 0 · 실시간대비 0.577x · 버린장 0 · 겹친장 0"
+    }
+  ],
+  "incidentCounts": {
+    "Stopping radio-live.service - SYNK radioN live overlay stream (chromium overlay + ffmpeg)...": 1,
+    "Stopped radio-live.service - SYNK radioN live overlay stream (chromium overlay + ffmpeg).": 2,
+    "radio-live.service: Consumed Nh Nmin N.Ns CPU time.": 1,
+    "Started radio-live.service - SYNK radioN live overlay stream (chromium overlay + ffmpeg).": 2,
+    "[겹쳐송출 N:N:N] 크로미움: [N:N:N/N.N:ERROR:dbus/bus.cc:N] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid": 11,
+    "[겹쳐송출 N:N:N] 크로미움: [N:N:N/N.N:ERROR:dbus/object_proxy.cc:N] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus": 16,
+    "[겹쳐송출 N:N:N] 크로미움: [N:N:N/N.N:ERROR:google_apis/gcm/engine/registration_request.cc:N] Registration response error message: PHONE_REGISTRATION_ERROR": 5,
+    "[겹쳐송출 N:N:N] 크로미움: [N:N:N/N.N:ERROR:google_apis/gcm/engine/registration_request.cc:N] Registration response error message: DEPRECATED_ENDPOINT": 10,
+    "[겹쳐송출 N:N:N] 크로미움: error: XDG_RUNTIME_DIR is invalid or not set in the environment.": 4,
+    "[겹쳐송출 N:N:N] 크로미움: [N:N:N/N.N:ERROR:services/on_device_model/public/cpp/service_client.cc:N] Unexpected on_device_model service disconnect; reason: N, de": 2,
+    "[겹쳐송출 N:N:N] ffmpeg: av_interleaved_write_frame(): Broken pipe": 1,
+    "[겹쳐송출 N:N:N] ffmpeg: [flv @ NxNbddcN] Failed to update header with correct duration. [flv @ NxNbddcN] Failed to update header with correct filesize. Error writing tr": 1,
+    "[겹쳐송출 N:N:N] ffmpeg: Error closing file [RTMP REDACTED] 안 찍는다) Broken pipe": 1,
+    "[겹쳐송출 N:N:N] ffmpeg 끝 · 코드 N": 1,
+    "radio-live.service: Main process exited, code=exited, status=N/FAILURE": 1,
+    "radio-live.service: Failed with result 'exit-code'.": 1,
+    "radio-live.service: Consumed Nmin N.Ns CPU time.": 2,
+    "radio-live.service: Scheduled restart job, restart counter is at N.": 1,
+    "[겹쳐송출 N:N:N] 크로미움: [N:N:N/N.N:ERROR:google_apis/gcm/engine/mcs_client.cc:N]   Error code: N  Error message: Authentication Failed: wrong_secret": 1
+  },
+  "incidents": [
+    {
+      "t": "2026-09-09T09:24:26.135916+00:00",
+      "pid": "1",
+      "message": "Stopping radio-live.service - SYNK radio24 live overlay stream (chromium overlay + ffmpeg)..."
+    },
+    {
+      "t": "2026-09-09T09:24:26.372284+00:00",
+      "pid": "1",
+      "message": "Stopped radio-live.service - SYNK radio24 live overlay stream (chromium overlay + ffmpeg)."
+    },
+    {
+      "t": "2026-09-09T09:24:26.372451+00:00",
+      "pid": "1",
+      "message": "radio-live.service: Consumed 1h 8min 21.498s CPU time."
+    },
+    {
+      "t": "2026-09-09T09:24:26.386737+00:00",
+      "pid": "1",
+      "message": "Started radio-live.service - SYNK radio24 live overlay stream (chromium overlay + ffmpeg)."
+    },
+    {
+      "t": "2026-09-09T09:24:31.481837+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:31] 크로미움: [137323:137360:0909/092431.480324:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:24:31.482897+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:31] 크로미움: [137323:137360:0909/092431.481494:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:24:31.926033+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:31] 크로미움: [137323:137360:0909/092431.925469:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:24:32.475028+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:32] 크로미움: [137323:137360:0909/092432.474374:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:24:33.377078+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137323:0909/092433.376118:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:24:33.377078+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137323:0909/092433.376196:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:24:33.378011+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137360:0909/092433.377024:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:24:33.422033+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137323:0909/092433.418248:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:24:33.474009+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137323:0909/092433.473454:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:24:33.531383+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137323:0909/092433.518302:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:24:33.572157+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137323:0909/092433.559650:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:24:33.597375+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137323:0909/092433.597164:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:24:33.598065+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137360:0909/092433.597911:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:24:33.616627+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:33] 크로미움: [137323:137323:0909/092433.614691:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:24:37.444420+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:37] 크로미움: [137323:137362:0909/092437.443870:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR"
+    },
+    {
+      "t": "2026-09-09T09:24:37.448938+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:37] 크로미움: [137323:137362:0909/092437.448522:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR"
+    },
+    {
+      "t": "2026-09-09T09:24:37.451316+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:24:37] 크로미움: [137323:137362:0909/092437.450738:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR"
+    },
+    {
+      "t": "2026-09-09T09:25:04.744394+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:25:04] 크로미움: [137323:137362:0909/092504.743788:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    },
+    {
+      "t": "2026-09-09T09:25:45.336218+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:25:45] 크로미움: [137323:137362:0909/092545.335676:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    },
+    {
+      "t": "2026-09-09T09:27:29.043085+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:27:29] 크로미움: [137323:137362:0909/092729.042694:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    },
+    {
+      "t": "2026-09-09T09:27:34.612262+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:27:34] 크로미움: error: XDG_RUNTIME_DIR is invalid or not set in the environment."
+    },
+    {
+      "t": "2026-09-09T09:27:34.614870+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:27:34] 크로미움: error: XDG_RUNTIME_DIR is invalid or not set in the environment."
+    },
+    {
+      "t": "2026-09-09T09:27:34.841198+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:27:34] 크로미움: [137323:137323:0909/092734.840618:ERROR:services/on_device_model/public/cpp/service_client.cc:37] Unexpected on_device_model service disconnect; reason: 1, description: Error loading backend."
+    },
+    {
+      "t": "2026-09-09T09:30:35.233441+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:30:35] 크로미움: [137323:137362:0909/093035.232866:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    },
+    {
+      "t": "2026-09-09T09:32:35.170874+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:32:35] ffmpeg: av_interleaved_write_frame(): Broken pipe"
+    },
+    {
+      "t": "2026-09-09T09:32:35.313637+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:32:35] ffmpeg: [flv @ 0x55bddc017180] Failed to update header with correct duration. [flv @ 0x55bddc017180] Failed to update header with correct filesize. Error writing trailer of [RTMP REDACTED] 안 찍는다) Broken pipe"
+    },
+    {
+      "t": "2026-09-09T09:32:35.313835+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:32:35] ffmpeg: Error closing file [RTMP REDACTED] 안 찍는다) Broken pipe"
+    },
+    {
+      "t": "2026-09-09T09:32:35.367380+00:00",
+      "pid": "137314",
+      "message": "[겹쳐송출 09:32:35] ffmpeg 끝 · 코드 1"
+    },
+    {
+      "t": "2026-09-09T09:32:35.407186+00:00",
+      "pid": "1",
+      "message": "radio-live.service: Main process exited, code=exited, status=1/FAILURE"
+    },
+    {
+      "t": "2026-09-09T09:32:35.502089+00:00",
+      "pid": "1",
+      "message": "radio-live.service: Failed with result 'exit-code'."
+    },
+    {
+      "t": "2026-09-09T09:32:35.521749+00:00",
+      "pid": "1",
+      "message": "radio-live.service: Consumed 7min 34.846s CPU time."
+    },
+    {
+      "t": "2026-09-09T09:32:40.582909+00:00",
+      "pid": "1",
+      "message": "radio-live.service: Scheduled restart job, restart counter is at 1."
+    },
+    {
+      "t": "2026-09-09T09:32:40.583974+00:00",
+      "pid": "1",
+      "message": "Stopped radio-live.service - SYNK radio24 live overlay stream (chromium overlay + ffmpeg)."
+    },
+    {
+      "t": "2026-09-09T09:32:40.584220+00:00",
+      "pid": "1",
+      "message": "radio-live.service: Consumed 7min 34.846s CPU time."
+    },
+    {
+      "t": "2026-09-09T09:32:40.604935+00:00",
+      "pid": "1",
+      "message": "Started radio-live.service - SYNK radio24 live overlay stream (chromium overlay + ffmpeg)."
+    },
+    {
+      "t": "2026-09-09T09:32:43.287642+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:43] 크로미움: [138129:138164:0909/093243.285610:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:32:43.354560+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:43] 크로미움: [138129:138164:0909/093243.288507:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:32:43.669682+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:43] 크로미움: [138129:138164:0909/093243.668887:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:32:43.708424+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:43] 크로미움: [138129:138164:0909/093243.707038:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:32:43.964132+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:43] 크로미움: [138129:138129:0909/093243.963595:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:32:43.964757+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:43] 크로미움: [138129:138129:0909/093243.963681:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:32:43.964757+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:43] 크로미움: [138129:138164:0909/093243.964485:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")"
+    },
+    {
+      "t": "2026-09-09T09:32:43.967115+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:43] 크로미움: [138129:138129:0909/093243.966962:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:32:43.979198+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:43] 크로미움: [138129:138129:0909/093243.977501:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:32:44.071855+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:44] 크로미움: [138129:138129:0909/093244.019871:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:32:44.084457+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:44] 크로미움: [138129:138129:0909/093244.074589:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:32:44.129128+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:44] 크로미움: [138129:138129:0909/093244.121626:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:32:44.177810+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:44] 크로미움: [138129:138129:0909/093244.177474:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:"
+    },
+    {
+      "t": "2026-09-09T09:32:47.043679+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:47] 크로미움: [138129:138167:0909/093247.043068:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    },
+    {
+      "t": "2026-09-09T09:32:47.045161+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:47] 크로미움: [138129:138167:0909/093247.044825:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR"
+    },
+    {
+      "t": "2026-09-09T09:32:47.047814+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:47] 크로미움: [138129:138167:0909/093247.047193:ERROR:google_apis/gcm/engine/mcs_client.cc:702]   Error code: 401  Error message: Authentication Failed: wrong_secret"
+    },
+    {
+      "t": "2026-09-09T09:32:47.065351+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:32:47] 크로미움: [138129:138167:0909/093247.064864:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR"
+    },
+    {
+      "t": "2026-09-09T09:33:07.783642+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:33:07] 크로미움: [138129:138167:0909/093307.783103:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    },
+    {
+      "t": "2026-09-09T09:33:55.984740+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:33:55] 크로미움: [138129:138167:0909/093355.984162:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    },
+    {
+      "t": "2026-09-09T09:35:24.986237+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:35:24] 크로미움: [138129:138167:0909/093524.985353:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    },
+    {
+      "t": "2026-09-09T09:35:43.812220+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:35:43] 크로미움: error: XDG_RUNTIME_DIR is invalid or not set in the environment."
+    },
+    {
+      "t": "2026-09-09T09:35:43.812721+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:35:43] 크로미움: error: XDG_RUNTIME_DIR is invalid or not set in the environment."
+    },
+    {
+      "t": "2026-09-09T09:35:44.013613+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:35:44] 크로미움: [138129:138129:0909/093544.012736:ERROR:services/on_device_model/public/cpp/service_client.cc:37] Unexpected on_device_model service disconnect; reason: 1, description: Error loading backend."
+    },
+    {
+      "t": "2026-09-09T09:39:16.392769+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:39:16] 크로미움: [138129:138167:0909/093916.392129:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    },
+    {
+      "t": "2026-09-09T09:46:37.987451+00:00",
+      "pid": "138122",
+      "message": "[겹쳐송출 09:46:37] 크로미움: [138129:138167:0909/094637.986704:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT"
+    }
+  ]
+}

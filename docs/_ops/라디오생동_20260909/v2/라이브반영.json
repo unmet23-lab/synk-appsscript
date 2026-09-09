@@ -1,0 +1,37 @@
+{
+  "applied": true,
+  "at": "2026-09-09T10:50:13.356Z",
+  "files": [
+    {
+      "path": "/opt/synk-radio/지면/bots/오버레이/stream-natural-v2.next.js",
+      "sha256": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261"
+    },
+    {
+      "path": "/opt/synk-radio/지면/bots/오버레이/송출진척.js",
+      "sha256": "41cbe7c860f66452ef3c2fe89d78210fa2a21f4570558a54e791a7a9b86b6524"
+    },
+    {
+      "path": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4",
+      "sha256": "c0e984f2ce771cabd1704c5ac25335c1b05519731566de7dfa98cf6622827df7"
+    }
+  ],
+  "audioFile": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+  "audioSha256": "c9295db33abc8609bda2cdbc885dfce563b52cb6cc6a9db49f7ec276bf931f45",
+  "backups": [
+    "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js.before-natural-v2-20260909",
+    "/opt/synk-radio/무대차례/목록.txt.before-natural-v2-20260909",
+    "/opt/synk-radio/소리/playlist.txt.before-natural-v2-20260909",
+    "/opt/synk-radio/송출/조율.json.before-natural-v2-20260909"
+  ],
+  "activeCodeSha256": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261",
+  "config": {
+    "프레임": 15,
+    "뜨기": 6,
+    "소리목록": "/opt/synk-radio/소리/playlist.txt",
+    "무대목록": "/opt/synk-radio/무대차례/목록.txt",
+    "장면분": 20,
+    "장면차례": "추석보름달마당",
+    "연속소리": true
+  },
+  "service": "MainPID=140581\nNRestarts=0\nActiveState=active\nActiveEnterTimestamp=Wed 2026-09-09 10:50:13 UTC"
+}

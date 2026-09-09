@@ -1,0 +1,35 @@
+{
+  "observedAt": "2026-09-09T10:57:28.096Z",
+  "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\라디오생동_20260909\\v2\\유튜브수신_수정후.mp4",
+  "bytes": 10109420,
+  "sha256": "8024fe5f22a77d34327db21f4e1c8012159871f6f48128e3b4dd496142d8aad9",
+  "codec": "aac",
+  "sampleRate": 44100,
+  "channels": 2,
+  "durationSeconds": 120.000726,
+  "packets": {
+    "count": 5168,
+    "firstPtsSeconds": 0,
+    "lastPtsSeconds": 119.977506,
+    "maxGapSeconds": 0.000001000000007824603,
+    "maxOverlapSeconds": 0.0000010000000037896362,
+    "eventsAbove1_1ms": []
+  },
+  "decoded": {
+    "frameCount": 5168,
+    "totalSamples": 5292032,
+    "samplesPerFrame": 1024,
+    "firstPtsSeconds": 0,
+    "lastPtsSeconds": 119.977506,
+    "maxGapSeconds": 0.00002304535148181866,
+    "maxOverlapSeconds": 0.000022954648529940197,
+    "eventsAbove1_1ms": [],
+    "warnings": ""
+  },
+  "silenceThresholdDb": -45,
+  "silenceMinimumSeconds": 0.003,
+  "silenceEvents": [],
+  "listeningPerformed": false,
+  "scope": "The complete 120.000726-second received YouTube file was analyzed. This file alone does not establish continuity over the complete 28-minute radio loop.",
+  "conclusion": "No packet or decoded-frame discontinuity above 1.1ms, no decoder warning, and no silence lasting at least 3ms below -45dB were detected in the received file. The largest decoded timing difference is about one 44.1kHz sample."
+}

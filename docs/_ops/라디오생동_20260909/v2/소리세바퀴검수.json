@@ -1,0 +1,91 @@
+{
+  "at": "2026-09-09T10:39:02.731Z",
+  "name": "gapless",
+  "input": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\radio-audio-20260909\\synk-radio-blok11-20260909-air.aac",
+  "inputSha256": "3894cbb7499093ce8446030e9b301b9c3d739453615569fd2e16f6f3c7ac4183",
+  "sourceFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\radio-audio-20260909\\recheck\\gapless.flac",
+  "sourceSha256": "c9295db33abc8609bda2cdbc885dfce563b52cb6cc6a9db49f7ec276bf931f45",
+  "commandArgs": [
+    "-hide_banner",
+    "-nostats",
+    "-loglevel",
+    "warning",
+    "-y",
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-stream_loop",
+    "2",
+    "-i",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\radio-audio-20260909\\recheck\\gapless.ffconcat",
+    "-map",
+    "0:a",
+    "-af",
+    "asetpts=N/SR/TB",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "192k",
+    "-ar",
+    "44100",
+    "-ac",
+    "2",
+    "-f",
+    "flv",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\radio-audio-20260909\\recheck\\gapless-continuous-3cycles.flv"
+  ],
+  "realtimeThrottleOmitted": "No -re so three full cycles finish quickly; -re only paces demuxed timestamps.",
+  "stderr": "Existing completed render analyzed; see commandArgs for render recipe.",
+  "source": {
+    "packetCount": 16281,
+    "first": [
+      0,
+      0,
+      0.10449
+    ],
+    "last": [
+      1701.093878,
+      1701.093878,
+      0.098322
+    ],
+    "endTime": 1701.1922,
+    "maxGapSeconds": 1.689481887723332e-13,
+    "discontinuities": []
+  },
+  "repeated": {
+    "packetCount": 219794,
+    "first": [
+      0,
+      0,
+      0.023
+    ],
+    "last": [
+      5103.583,
+      5103.583,
+      0.023
+    ],
+    "endTime": 5103.606,
+    "maxGapSeconds": 0.0010000000003419704,
+    "discontinuities": []
+  },
+  "decoded": {
+    "frameCount": 219794,
+    "totalSamples": 225069056,
+    "first": [
+      0,
+      0,
+      1024
+    ],
+    "last": [
+      5103.583,
+      5103.583,
+      1024
+    ],
+    "maxGapSeconds": 0.0007800453518158924,
+    "discontinuities": [],
+    "decodeWarnings": ""
+  },
+  "continuous": true,
+  "silenceEvents": []
+}

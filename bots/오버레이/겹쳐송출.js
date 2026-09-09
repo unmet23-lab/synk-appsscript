@@ -34,6 +34,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { spawn, execFileSync } = require('child_process');
+const 송출진척 = require('./송출진척.js');
 
 const 인자 = process.argv.slice(2);
 const 값 = (이름, 기본) => { const i = 인자.indexOf(이름); return i > -1 && 인자[i + 1] ? 인자[i + 1] : 기본; };
@@ -83,6 +84,8 @@ const 뜨기 = 조율수('뜨기', Number(값('--뜨기', '10')));
      장면분    = 한 무대가 서 있는 시간(분) — 결 신호를 이 시계로 던진다 */
 const 소리목록 = 조율['소리목록'] || 값('--소리목록', '');
 const 무대목록 = 조율['무대목록'] || 값('--무대목록', '');
+// 무손실 루프를 연속 인코딩하여 AAC를 매 바퀴 다시 시작할 때 생기는 패딩 틈을 없앤다.
+const 연속소리 = 조율['연속소리'] === true || 있나('--연속소리');
 const 장면분 = 조율수('장면분', Number(값('--장면분', '20')));
 const 장면차례 = String(조율['장면차례'] || 값('--장면차례', '전자네온물가,시티팝노을휴양지,차분달빛호수'))
   .split(',').map((s) => s.trim()).filter(Boolean);
@@ -219,11 +222,12 @@ function ffmpeg띄우기() {
        유튜브가 굶는다(videoIngestionStarved). ultrafast 는 화질을 조금 내주고 인코딩 CPU 를 크게 아낀다 —
        방송이 1280×720 · 2.5Mbps 라 눈에 띄는 차이는 작다. 값은 아래 1분 보고의 «실시간대비»가 판정한다. */
     '-c:v', 'libx264', '-preset', 'ultrafast', '-b:v', '2500k', '-maxrate', '3000k', '-bufsize', '5000k',
-    '-g', String(프레임 * 2), '-c:a', 'copy',
+    '-g', String(프레임 * 2),
+    ...(연속소리 ? ['-af', 'asetpts=N/SR/TB', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '2'] : ['-c:a', 'copy']),
     '-progress', 'pipe:2'];   // 09-07 · 실시간을 따라가나(speed)를 재려고 — 값은 아래 1분 보고로만 나간다
   const 뒤 = 시늉파일
     ? ['-t', String(시늉초), '-y', 시늉파일]
-    : ['-f', 'flv', `rtmp://a.rtmp.youtube.com/live2/${열쇠읽기()}`];
+    : ['-rw_timeout', '15000000', '-f', 'flv', `rtmp://a.rtmp.youtube.com/live2/${열쇠읽기()}`];
   말(시늉파일 ? `시늉 — ${시늉초}초를 ${시늉파일} 로 뽑는다` : '유튜브로 민다(열쇠는 안 찍는다)');
   const p = spawn('ffmpeg', 앞.concat(뒤), { stdio: ['pipe', 'ignore', 'pipe'] });
   /* 🆕 2026-09-07 «뒤처짐을 재는 자» — 유튜브가 `videoIngestionStarved`(영상이 모자라게 들어온다)를
@@ -232,17 +236,14 @@ function ffmpeg띄우기() {
      🔑 읽는 법: `speed` 가 1.0 이면 실시간 · 0.9 면 10% 뒤처져 유튜브가 굶는다 · `drop`·`dup` 은 버린/겹친 장.
      ⚠ 이 값들은 초당 한 번씩 쏟아지므로 **일지에 안 찍는다** — 아래 1분 보고에 한 줄로 실린다. */
   p.stderr.on('data', (d) => {
-    const 글 = String(d);
-    for (const m of 글.matchAll(/^(speed|drop_frames|dup_frames|out_time)=(.+)$/gm)) 진척[m[1]] = m[2].trim();
-    /* 진짜 경고만 남긴다 — progress 블록의 key=value 줄은 위에서 걷어 냈다. */
-    /* 키에 숫자도 온다(`stream_0_0_q=12.0`) — 09-07 저녁 실측 · 그 줄이 10분에 978번 일지에 새어 들어갔다. */
-    const 남은 = 글.split(/\r?\n/).filter((l) => l && !/^[a-z_0-9]+=/.test(l)).join(' ').trim();
+    const 남은 = 진척읽기.받기(d).join(' ').trim();
     if (남은) 말('ffmpeg:', 열쇠가리기(남은).slice(0, 200));
   });
   return p;
 }
 /* ffmpeg 이 스스로 알려 주는 진척 — 위 리스너가 채우고 1분 보고가 읽는다. */
-const 진척 = { speed: '?', drop_frames: '?', dup_frames: '?', out_time: '?' };
+const 진척읽기 = 송출진척.만들기();
+const 진척 = 진척읽기.상태;
 
 /* ── ④-2 채팅 감시 — «처음 말을 건 사람»에게 인사한다 ─────────────────────────
    (유호 지시 2026-09-06 「이런 반응을 캐치해서 인사같은거 하게 못만드나?」)
@@ -527,14 +528,15 @@ function 사건문세우기(사건넣기) {
      🔑 가르는 자 = **`out_time`(ffmpeg 이 실제로 내보낸 방송 시각)이 나아가나.**
         · 기계가 바빠서 느린 것 → out_time 은 «느리게라도» 나아간다(옆 세션 인코딩 때 실측 0.5~0.7배).
         · 받는 쪽이 닫힌 것 → out_time 이 **멈춘다.** 이 둘을 speed 하나로는 못 가른다.
-     3분 내리 한 발도 안 나아가면 스스로 나간다 — systemd(Restart=always)가 5초 뒤 새로 붙는다.
-     ⚠ 3분인 까닭: 1분은 보고 간격의 흔들림에 걸릴 수 있고, 그보다 길면 끊긴 시간이 그만큼 길어진다. */
-  const 초로바꾸기 = (t) => {
-    const m = /^(\d+):(\d+):(\d+(?:\.\d+)?)$/.exec(String(t || ''));
-    return m ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) : NaN;
-  };
-  let 앞방송시각 = NaN;
-  let 멎은분 = 0;
+     09-09: 실제 연결 정체 뒤 약 4분 기다린 사례가 있어 점검을 10초/무진전30초로 단축한다.
+     시작60초 유예와 느리더라도 진행 중이면 유지하는 조건은 송출진척.js가 검사한다. */
+  setInterval(() => {
+    const 상태 = 진척읽기.확인();
+    if (!상태.재시작) return;
+    말(`🔴 방송 시각이 ${Math.round(상태.멎은ms / 1000)}초째 제자리다(${상태.out_time}) — 기존 자동 복구로 다시 연결한다.`);
+    try { 크롬프로.kill(); ff.kill('SIGKILL'); } catch { /* 이미 갔다 */ }
+    process.exit(1);
+  }, 10000);
   let 앞수 = { 센것: 0, 다시쓴것: 0, 불린것: 0 };
   setInterval(() => {
     const 뜬속 = ((센것 - 앞수.센것) / 60).toFixed(1);
@@ -543,19 +545,7 @@ function 사건문세우기(사건넣기) {
     앞수 = { 센것, 다시쓴것, 불린것 };
     말(`층 ${센것}장 떴다(초당 ${뜬속}) · 내보낸 것 ${다시쓴것}(초당 ${낸속}/${뜨기}) · 실패 ${실패}`
       + ` · 불린 박자 초당 ${불린속}/${뜨기} · 거른 박자 ${거른것}`
-      + ` · 실시간대비 ${진척.speed} · 버린장 ${진척.drop_frames} · 겹친장 ${진척.dup_frames}`);
-
-    const 지금방송시각 = 초로바꾸기(진척.out_time);
-    if (!Number.isNaN(지금방송시각)) {
-      /* 1초는 «흔들림»으로 본다 — 진짜 나아가는 중이면 1분에 50초 넘게 는다 */
-      멎은분 = (!Number.isNaN(앞방송시각) && 지금방송시각 - 앞방송시각 < 1) ? 멎은분 + 1 : 0;
-      앞방송시각 = 지금방송시각;
-      if (멎은분 >= 3) {
-        말(`🔴 방송 시각이 ${멎은분}분째 제자리다(${진척.out_time}) — 받는 쪽이 닫힌 것으로 본다. 스스로 나간다(systemd 가 되살린다).`);
-        try { 크롬프로.kill(); ff.kill('SIGKILL'); } catch { /* 이미 갔다 */ }
-        process.exit(1);
-      }
-    }
+      + ` · 실시간대비 ${진척.speed} · 버린장 ${진척.drop_frames} · 겹친장 ${진척.dup_frames} · 방송시각 ${진척.out_time}`);
   }, 60000);
   process.on('SIGINT', () => { try { 크롬프로.kill(); ff.kill('SIGINT'); } catch {} process.exit(0); });
 })().catch((e) => { console.error('🔴 ' + e.message); process.exit(1); });
