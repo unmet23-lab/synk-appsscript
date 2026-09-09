@@ -483,7 +483,7 @@ def main(argv=None):
                 manifest(data)
                 print(f'phase {phase}/{len(phases)} · {number}/{len(items)} · {key}', flush=True)
         current = manifest(data)
-        if phase == 1:
+        if phase == 1 and input_dir is None:
             sheets = make_contacts(current)
             print(f'본체 연락판 {len(sheets)}장 준비 완료', flush=True)
     current = manifest(data)

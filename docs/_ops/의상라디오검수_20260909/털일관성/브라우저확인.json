@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-09",
+  "surface": "기존 Codex in-app browser localhost:8765 검수보기.html",
+  "method": "실제 버튼 클릭 + iframe img의 읽기 전용 DOM/CSS 대조 + 화면 캡처 확인",
+  "version": "65f92a753bb5416b",
+  "pathPrefix": "../../docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/",
+  "observations": [
+    {"expression":"기본","file":"여름델+전설의팻말_본체.webp","visible":1,"width":1024,"height":1024,"opacity":"1","filter":"none"},
+    {"expression":"깜빡","file":"여름델+전설의팻말_눈감음.webp","visible":1,"width":1024,"height":1024,"opacity":"1","filter":"none"},
+    {"expression":"눈웃음","file":"여름델+전설의팻말_눈웃음.webp","visible":1,"width":1024,"height":1024,"opacity":"1","filter":"none"},
+    {"expression":"궁금함","file":"여름델+전설의팻말_궁금함.webp","visible":1,"width":1024,"height":1024,"opacity":"1","filter":"none"},
+    {"expression":"집중","file":"여름델+전설의팻말_집중.webp","visible":1,"width":1024,"height":1024,"opacity":"1","filter":"none"},
+    {"expression":"안도","file":"여름델+전설의팻말_안도.webp","visible":1,"width":1024,"height":1024,"opacity":"1","filter":"none"},
+    {"expression":"응원","file":"여름델+전설의팻말_응원.webp","visible":1,"width":1024,"height":1024,"opacity":"1","filter":"none"},
+    {"expression":"놀람","file":"여름델+전설의팻말_놀람.webp","visible":1,"width":1024,"height":1024,"opacity":"1","filter":"none"}
+  ],
+  "screenshotsInspected": ["기본", "깜빡", "눈웃음", "궁금함", "응원", "놀람"],
+  "allEightEnlargedImagesInspected": "표정8개_전후.png",
+  "cycle": {"start":"1/8 · 기본","later":"3/8 · 눈웃음","stop":"비교 중지 · 현재 표정 고정","final":"자연 표정"},
+  "stateAtBlink": {"explicitSelection":true,"activeImages":8,"pendingImages":0,"transitioning":false,"error":null},
+  "expandedStatusOverflow": {"viewport":650,"scrollWidth":650},
+  "console": "수정 전 09:54:14 UTC MutationObserver.observe 오류 1건이 이 탭 로그에 있음. 이번 수정 뒤의 새 error/warn은 조회 결과 없음. 해당 원인을 이 검수에서 해결했다고 주장하지 않음.",
+  "limitations": "현재 로컬 대표 차림 확인. 실제 방송 송출/추가 128차림 전수/기기별 색감은 미검사. 캡처는 대화 도구에 표시했으며 별도 이미지 파일로 저장하지 않음."
+}
