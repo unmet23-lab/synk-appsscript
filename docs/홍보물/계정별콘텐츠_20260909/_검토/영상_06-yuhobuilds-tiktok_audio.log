@@ -6,14 +6,11 @@ Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'C:\Users\q1212\Documents\SYNK-appsscrip
     compatible_brands: isomiso2avc1mp41
     encoder         : Lavf61.7.100
     comment         : Made with Remotion 4.0.517
-  Duration: 00:00:25.05, start: 0.000000, bitrate: 6198 kb/s
-  Stream #0:0[0x1](und): Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709/unknown/unknown, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 5946 kb/s, 30 fps, 30 tbr, 90k tbn (default)
+  Duration: 00:00:25.05, start: 0.000000, bitrate: 1699 kb/s
+  Stream #0:0[0x1](und): Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709/unknown/unknown, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 1439 kb/s, 30 fps, 30 tbr, 90k tbn (default)
       Metadata:
         handler_name    : VideoHandler
         vendor_id       : [0][0][0][0]
-        encoder         : Lavc61.19.100 libx264
-      Side data:
-        ICC Profile
   Stream #0:1[0x2](und): Audio: aac (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 253 kb/s (default)
       Metadata:
         handler_name    : SoundHandler
@@ -33,7 +30,8 @@ Output #0, null, to 'pipe:':
         handler_name    : SoundHandler
         vendor_id       : [0][0][0][0]
         encoder         : Lavc61.19.100 pcm_s16le
-size=N/A time=00:00:22.10 bitrate=N/A speed=43.8x    [Parsed_loudnorm_0 @ 00000218120acc00] 
+size=N/A time=00:00:16.60 bitrate=N/A speed=32.1x
+[Parsed_loudnorm_0 @ 000001fe4bfcd480]
 {
 	"input_i" : "-25.71",
 	"input_tp" : "-13.05",
@@ -46,5 +44,5 @@ size=N/A time=00:00:22.10 bitrate=N/A speed=43.8x    [Parsed_loudnorm_0 @ 00000
 	"normalization_type" : "dynamic",
 	"target_offset" : "-0.04"
 }
-[out#0/null @ 0000021812057880] video:0KiB audio:18784KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
-size=N/A time=00:00:25.10 bitrate=N/A speed=49.6x    
+[out#0/null @ 000001fe4c0389c0] video:0KiB audio:18784KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+size=N/A time=00:00:25.10 bitrate=N/A speed=35.8x

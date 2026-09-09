@@ -1,22 +1,22 @@
 {
   "id": "01-lab-youtube",
-  "renderedAt": "2026-09-09T00:00:43.073Z",
+  "renderedAt": "2026-09-09T07:55:14.351Z",
   "durationSeconds": 30.058667,
   "width": 1080,
   "height": 1920,
   "videoCodec": "h264",
   "audioCodec": "aac",
-  "bytes": 6884287,
+  "bytes": 6882558,
   "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
   "scenesSha256": "3b4b5ae309815e2fbb4a1811b7c3bbe98e6d050821978a896e4406a790205166",
-  "renderSourceSha256": "3d3bdfc050d27ceebe8e398118a441413f3a3b9f264a383fb992eac7f2c32f5b",
-  "videoSha256": "4a37f5890f7b0e567a61f14680a1eb81b49d400aad2c9c1ebd2c90d0847c2522",
+  "renderSourceSha256": "d05b9f5d81b23fbe8473ac9872f194ab82f01634a1d58be7d725ce3a8960f6ef",
+  "videoSha256": "8c0d30f2dcb7d51bf8eb1770675f300f30026931d49ca5db935e68582cf5b954",
   "capturedSeconds": [
     1,
     19.5,
     29
   ],
-  "visualInspection": "Encoded contact sheet visually inspected by strategy_b; see 영상_시각검토.md. Full real-time playback and human listening were not performed.",
+  "visualInspection": "strategy_b directly inspected every captured encoded frame at 1080x1920 on 2026-09-09; no material clipping, damaged object contours, or unreadable main copy found. See 영상_시각검토.md and 영상_상세검증.json for scope and limits.",
   "audioMeasurement": "measured; not a claim of human listening",
   "externalPosting": false
 }

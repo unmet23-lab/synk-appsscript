@@ -1,0 +1,33 @@
+[
+  {
+    "created_at": "2026-09-09T07:29:06.827946Z",
+    "display_name": "GPT Image 2.5",
+    "id": "84ebed23-c82c-4df1-82ad-e7dbe939b8a2",
+    "job_type": "gpt_image_2_5",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_072906_84ebed23-c82c-4df1-82ad-e7dbe939b8a2_min.webp",
+    "params": {
+      "aspect_ratio": "3:2",
+      "background": "transparent",
+      "height": 1360,
+      "medias": [
+        {
+          "data": {
+            "id": "5f05d010-1031-45e8-9445-6378e24ff8c1",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/5f05d010-1031-45e8-9445-6378e24ff8c1_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "sunburst",
+      "prompt": "Use case: exact object preservation and clean background isolation.\nInput 1 is the authoritative intact object: one pair of partly open scissors with coral wool-felt covered handles and natural brushed-silver metal blades. Keep the same diagonal pose pointing toward upper left, exact two round finger loops, one central rivet, two solid metal blades, and coral wool handle identity. Produce a beautiful isolated textile craft prop on genuinely transparent background, centered with the entire object and all tips and loops fully visible, at least 10 percent clear space on all sides.\nCritical: retain BOTH opaque silver blades, including the bright almost-white face of the left blade. Bright reflective metal is part of the object, never background. Show both broad complete metal surfaces, precise tips, center pivot and coherent blade overlap. Do not erase bright metal, do not leave only an outline of a blade, and do not invent an extra blade. The interiors of the two finger loops are transparent, the felt ring bodies are continuous and intact. Restrained natural wool fibers on dense coral handles, clean metal with soft directional reflection, soft diffuse light. No cloth backdrop, no glow, no matte rectangle, no grey fringe, no detached artifacts, no checkerboard pattern, no extra props, no text, no watermark. Refine craft finish while preserving the source shape and functional construction.",
+      "quality": "xhigh",
+      "reference_elements": [],
+      "remove_bg": false,
+      "resolution": "2k",
+      "width": 2048
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_072906_84ebed23-c82c-4df1-82ad-e7dbe939b8a2.png",
+    "status": "completed"
+  }
+]

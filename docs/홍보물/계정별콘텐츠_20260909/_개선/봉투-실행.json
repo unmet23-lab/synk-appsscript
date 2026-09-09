@@ -1,0 +1,19 @@
+{
+  "id": "봉투",
+  "model": "gpt_image_2_5",
+  "variant": "sunburst",
+  "quality": "xhigh",
+  "resolution": "2k",
+  "background": "transparent",
+  "startedAt": "2026-09-09T07:02:59.324Z",
+  "promptSha256": "6ff7b623a616104cf2aae23df8056711a8756e75060867d333374601ffec3444",
+  "references": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\letter.webp",
+      "sha256": "7d6728e3b1b65379c5b69af8e0eb3af0f9b1a7d1424906404cd111fb660bd3ac"
+    }
+  ],
+  "authorization": "User explicitly approved existing Higgsfield credits for GPT Image 2.5; no purchase or autocharge.",
+  "finishedAt": "2026-09-09T07:04:20.635Z",
+  "exitCode": 0
+}

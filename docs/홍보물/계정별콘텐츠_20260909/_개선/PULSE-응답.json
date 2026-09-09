@@ -1,0 +1,41 @@
+[
+  {
+    "created_at": "2026-09-09T07:13:26.934928Z",
+    "display_name": "GPT Image 2.5",
+    "id": "f4b7ab78-4f76-4962-b557-30aa7b6a2779",
+    "job_type": "gpt_image_2_5",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_071326_f4b7ab78-4f76-4962-b557-30aa7b6a2779_min.webp",
+    "params": {
+      "aspect_ratio": "3:2",
+      "background": "transparent",
+      "height": 1360,
+      "medias": [
+        {
+          "data": {
+            "id": "a054a6fa-50b2-4ae2-8206-206f0a6cc5ea",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/a054a6fa-50b2-4ae2-8206-206f0a6cc5ea.png"
+          },
+          "role": "image"
+        },
+        {
+          "data": {
+            "id": "d9d94e70-7382-466f-95eb-d585f6e8a524",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/d9d94e70-7382-466f-95eb-d585f6e8a524_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "sunburst",
+      "prompt": "Use case: material application to exact existing brand lettering, not a new logo design.\nCreate ONLY the uppercase word \"PULSE\" as five beautifully crafted wool-felt applique letters, genuinely isolated on transparent background. Input 1 is the mandatory flat typography reference: preserve the exact uppercase lettering, Inter Tight Semibold proportions, kerning, straight baseline, open counters and outlines. Input 2 is the official SYNK wool logo, a MATERIAL reference only; do not reproduce the word synk in this output.\nMatch the official logo's dense soft felt, subtle loft, cream hand-sewn running stitches inside the entire perimeter of every letter, microscopic fibers, light from upper left and restrained dimensional depth. Letter body color is the established PULSE Pop Deep, #99295D, a deep warm berry pink. Stitch thread is warm light cream, not bright white. PULSE is quiet, sensory and rhythmic, expressed through softly rounded felt edges and naturally paced stitches, not soundwave icons or added decorations. Keep the typography shape precise, restrained and immediately legible.\nFront view, horizontal word centered in the image, no perspective distortion, no tilt, equal letter heights. Large word occupies about 80 percent of canvas width with 12 percent clear transparent margin. Every letter must have intact continuous edges and visible tidy perimeter stitches; no stitch underline. No substrate, no badge, no border, no cloth rectangle, no other words, no watermark, no glow, no cast shadow, no halo, no grey fringe, no checkerboard backdrop. Open counters and all surrounding space must be truly transparent. Letter faces fully opaque. Premium textile macro detail, not plastic, embroidery cursive, sequins, or fuzzy noise. This should pair faithfully with the reference SYNK logo without redesigning either brand.",
+      "quality": "xhigh",
+      "reference_elements": [],
+      "remove_bg": false,
+      "resolution": "2k",
+      "width": 2048
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_071326_f4b7ab78-4f76-4962-b557-30aa7b6a2779.png",
+    "status": "completed"
+  }
+]

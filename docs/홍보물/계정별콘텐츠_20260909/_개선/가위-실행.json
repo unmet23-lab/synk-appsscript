@@ -1,0 +1,19 @@
+{
+  "id": "가위",
+  "model": "gpt_image_2_5",
+  "variant": "sunburst",
+  "quality": "xhigh",
+  "resolution": "2k",
+  "background": "transparent",
+  "startedAt": "2026-09-09T07:28:55.789Z",
+  "promptSha256": "2653e7f8b2372bc957b9be6a285f03578d38f147f148ad3be9729b59ce37f201",
+  "references": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\공방_가위.png",
+      "sha256": "cf6ef827a63c7581e21548741dc5551cc358dcc0131b041d24de445d89a55f31"
+    }
+  ],
+  "authorization": "User explicitly approved existing Higgsfield credits for GPT Image 2.5; no purchase or autocharge.",
+  "finishedAt": "2026-09-09T07:29:55.748Z",
+  "exitCode": 0
+}

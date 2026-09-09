@@ -1,0 +1,30 @@
+[
+  {
+    "file": "SYNK.png",
+    "width": 2160,
+    "height": 1083,
+    "sha256": "c8e5bd54631fcc974298d0b4c21ba4d17ab02f24a9cd3808e2732ca33b2d7f8c",
+    "method": "Exact inspected source assets, aspect-preserving downscale and optical composition only; no generative redrawing or color replacement."
+  },
+  {
+    "file": "SYNK-LAB.png",
+    "width": 3502,
+    "height": 1083,
+    "sha256": "d28ab9bbdbd77fc91e1f4a99901d18f69d6c0b336922e09a3dcd7b87c73e282a",
+    "method": "Exact inspected source assets, aspect-preserving downscale and optical composition only; no generative redrawing or color replacement."
+  },
+  {
+    "file": "SYNK-SHIFT.png",
+    "width": 3964,
+    "height": 1083,
+    "sha256": "eefd44afea68e1591ac9bf3fa9f8254d2cb53d8e58f724807761309ef9c5d1ce",
+    "method": "Exact inspected source assets, aspect-preserving downscale and optical composition only; no generative redrawing or color replacement."
+  },
+  {
+    "file": "SYNK-PULSE.png",
+    "width": 4080,
+    "height": 1083,
+    "sha256": "14c32a6967e354ac00aa68548e00225438e192a6ee7fd60010fafe633de29411",
+    "method": "Exact inspected source assets, aspect-preserving downscale and optical composition only; no generative redrawing or color replacement."
+  }
+]

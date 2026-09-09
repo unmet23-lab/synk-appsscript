@@ -1,0 +1,33 @@
+[
+  {
+    "created_at": "2026-09-09T07:29:00.3356Z",
+    "display_name": "GPT Image 2.5",
+    "id": "00c56b25-23fe-4ce6-bd49-1544aaa3a471",
+    "job_type": "gpt_image_2_5",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_072900_00c56b25-23fe-4ce6-bd49-1544aaa3a471_min.webp",
+    "params": {
+      "aspect_ratio": "3:2",
+      "background": "transparent",
+      "height": 1360,
+      "medias": [
+        {
+          "data": {
+            "id": "9509e88c-2987-4c34-b39b-1558f143b88d",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/9509e88c-2987-4c34-b39b-1558f143b88d_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "sunburst",
+      "prompt": "Use case: precise restoration of an existing textile prop, not a new brand identity.\nInput 1 is the damaged edit target: an open coral wool-felt book with blank cream felt pages. Preserve its front/top near-flat view, balanced spread, coral cover, several layered cream pages, central binding thread and warm soft light. Reconstruct the missing upper edges: the source cutout has severe jagged holes, eaten-away page tops, pixelated black fringes and missing parts at the upper-left page. These are damage, NOT intentional fraying. Restore complete continuous page silhouettes with gently rounded corners and layered physical page thickness, a coherent center fold and tidy fine binding stitches.\nOne intact open book centered, entire cover and all pages visible, generous 10 percent clear space on all sides. Truly transparent background and page-surrounding space; the cream pages themselves must be opaque and unpunctured. No aggressive white-background removal; no white or black matte, no glow or halo, no checkerboard. No extra props, no text, no symbols, no letters on the pages, no watermark. Dense luxurious wool felt with restrained microscopic fibers and believable tactile depth, not shaggy fiber noise. Preserve the original coral and cream palette and same open-book role. Clean modern textile product rendering, soft gentle shadow close to the object only.",
+      "quality": "xhigh",
+      "reference_elements": [],
+      "remove_bg": false,
+      "resolution": "2k",
+      "width": 2048
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_072900_00c56b25-23fe-4ce6-bd49-1544aaa3a471.png",
+    "status": "completed"
+  }
+]

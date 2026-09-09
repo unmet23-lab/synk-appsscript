@@ -1,6 +1,6 @@
 {
   "sourceSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
-  "checkedAt": "2026-09-09T00:14:05.997Z",
+  "checkedAt": "2026-09-09T08:00:41.534Z",
   "viewports": [
     {
       "width": 1440,
@@ -189,298 +189,298 @@
   "deliverables": [
     {
       "path": "01-lab-youtube/upload-01.jpg",
-      "bytes": 224368,
-      "sha256": "011e74d3ec6193d7677a38859dc9b75ec92092a29e8ed7a6d48652e45a36f29a"
+      "bytes": 247238,
+      "sha256": "0b2b45cfa2cc695dae1d71495fa527b4ad7f81b72459ba31b3c598c062b1fdc7"
     },
     {
       "path": "01-lab-youtube/master-01.png",
-      "bytes": 1753013,
-      "sha256": "d6753fca24ab3b5e4fcb896e9486f7bda5f0c8e1c1d46a0ca369f3de64a0dbdc"
+      "bytes": 1928911,
+      "sha256": "d00e78bd562b581a3938e06751d6b9a416af7ba6a40e3aa5dcac691a505ffc3a"
     },
     {
       "path": "01-lab-youtube/video.mp4",
-      "bytes": 6884287,
-      "sha256": "4a37f5890f7b0e567a61f14680a1eb81b49d400aad2c9c1ebd2c90d0847c2522"
+      "bytes": 6882558,
+      "sha256": "8c0d30f2dcb7d51bf8eb1770675f300f30026931d49ca5db935e68582cf5b954"
     },
     {
       "path": "02-lab-instagram/upload-01.jpg",
-      "bytes": 192874,
-      "sha256": "5c59353bebeb4f8a92663021074026fa09d9d7aa3bc65ab08a2f3b50a37bc435"
+      "bytes": 213520,
+      "sha256": "e0e5f1b5778d45624abd3f517a9b8c7871b8fc9409e0a6405b5b7475ab375e07"
     },
     {
       "path": "02-lab-instagram/master-01.png",
-      "bytes": 1360788,
-      "sha256": "620a51e2da07fc4e198914b94f64634f612c3a521f7b0ef1a9c88f01818d4bc6"
+      "bytes": 1514460,
+      "sha256": "af794aaa310d8cf9a97e3b3adfc8653cde090985eb72b7e72b6be52bccb27bfa"
     },
     {
       "path": "02-lab-instagram/upload-02.jpg",
-      "bytes": 133072,
-      "sha256": "24f838edcc116e3c10dc033e48c88b4a27bb793d1611fde9230aec596156c671"
+      "bytes": 154544,
+      "sha256": "dcdf5f3b24785c9747e83983498d5f11c3e09c2dfe6bf28ce6ecd64b5c0454fa"
     },
     {
       "path": "02-lab-instagram/master-02.png",
-      "bytes": 478539,
-      "sha256": "a5113ebf25594818a1ae1ead9edf86a4ccf09f60e40b4ac365ce107924d2046b"
+      "bytes": 635251,
+      "sha256": "05f4adec2e8b64c1c0a1325ce480a225e83cfabd95f2a3e4dfa7821b12edaf48"
     },
     {
       "path": "02-lab-instagram/upload-03.jpg",
-      "bytes": 129468,
-      "sha256": "488333797c74daf500f2613f220ae92a9e4192c75e4056a3433c5d4eed7da966"
+      "bytes": 150889,
+      "sha256": "77ca1b5b79364206ebd49a3767c0e4a6818d6d285b23899dc4524c862d978ab7"
     },
     {
       "path": "02-lab-instagram/master-03.png",
-      "bytes": 460272,
-      "sha256": "a89bdc6bed5643317a64c2347a1aa2f8efd98bf5e583e426f66922763ef73944"
+      "bytes": 618405,
+      "sha256": "d1f31e2063da602185ec726ee5aed5a5a82fad795d1f538c39a4a7348f2fd373"
     },
     {
       "path": "02-lab-instagram/upload-04.jpg",
-      "bytes": 130785,
-      "sha256": "771e10aefadd5a7b2e6cf69136513c4d92bf2005459f90e26dcf2fc6c78f4778"
+      "bytes": 145589,
+      "sha256": "556ea62ad7174a3e4cee9642efe9c7ded7218df40edcd945ed32f60c1362f672"
     },
     {
       "path": "02-lab-instagram/master-04.png",
-      "bytes": 477959,
-      "sha256": "452f9a9b8b2930be0a58137de03d86b1214abe0fe9ec2953975c299523eef68c"
+      "bytes": 571922,
+      "sha256": "7d46a580d602e77558a1acf5deba4d452b30f15009e8aff5634c4719a489bc57"
     },
     {
       "path": "02-lab-instagram/upload-05.jpg",
-      "bytes": 94170,
-      "sha256": "4bb045f17dd2c54449c97d0b0c72550dcab257a035d4074fbaf63acccc77b4a6"
+      "bytes": 115761,
+      "sha256": "015d8a429bebc6291125ce793156db20517ec0550b62c0eee8863fb1351852e3"
     },
     {
       "path": "02-lab-instagram/master-05.png",
-      "bytes": 116418,
-      "sha256": "51cf0b904eeed02a234f43363769547c4d2f70d432c581c4fc447c790af0c71a"
+      "bytes": 274091,
+      "sha256": "54bf1ef2ea8db0ffcc0f088ddba83a4178ac6598513b9b978d4dbad4cf0e90fe"
     },
     {
       "path": "03-lab-tiktok/upload-01.jpg",
-      "bytes": 188837,
-      "sha256": "0b7ffb7466980c9952d25da6edfd5218f2f5e9a0ef44f49c7f0084551bf69cc8"
+      "bytes": 209027,
+      "sha256": "d3aeee917a49e16a552187f4421f7b2a00f173105211b863ab5ddb9478a27d89"
     },
     {
       "path": "03-lab-tiktok/master-01.png",
-      "bytes": 1250468,
-      "sha256": "af3b4d33f9a80c0230d224eb2a7549866e41cf9afe995634db67f9511bc32236"
+      "bytes": 1407028,
+      "sha256": "9a78335f4f9a0d045fbb647fb14f13a44a484f4e5eec1ff6e3088f6e151a63bc"
     },
     {
       "path": "03-lab-tiktok/video.mp4",
-      "bytes": 30127015,
-      "sha256": "835bdf64b58575e854f27699cfbdfd0e97385e920812b62cd930763554184599"
+      "bytes": 8067015,
+      "sha256": "c39999a661a3ec578661fe01705259c1fe3bd50e043c98c67c1ba21837231abe"
     },
     {
       "path": "04-yuhobuilds-youtube/upload-01.jpg",
-      "bytes": 165486,
-      "sha256": "c36cbd0311b7930befeee5d46cc3c39b676dff0681d392b179cdaf3034d0bdc9"
+      "bytes": 189325,
+      "sha256": "9da3dd8f900f1b19598c7e4890280c45a2d191317b68281ed21a908f03e35c50"
     },
     {
       "path": "04-yuhobuilds-youtube/master-01.png",
-      "bytes": 635363,
-      "sha256": "9cb54ad36c687baef456b762f6c203988348eb85f164f4a93fae8896622e42e5"
+      "bytes": 825369,
+      "sha256": "484f84d6adb51b39a79e1453741ffa6a6ba59bf736ada3b66bf51297d8906b09"
     },
     {
       "path": "04-yuhobuilds-youtube/video.mp4",
-      "bytes": 43412208,
-      "sha256": "74bdf58a83163bc1a931611610ad6320b07e8922efb0fcd649271618dd1f5fdb"
+      "bytes": 10850691,
+      "sha256": "08388d3fd08a2f29185ab4502449c98b7e6e6f19fbf23eaaa6551b8ab14d2268"
     },
     {
       "path": "05-yuhobuilds-instagram/upload-01.jpg",
-      "bytes": 204535,
-      "sha256": "0cf4006af0b673d59a70dd1624bdd1b63085d41f46dd1baba7ac8174d87bf938"
+      "bytes": 226394,
+      "sha256": "05ab9be2a9c0ad4fd0f176b2cc37b99c3de691ea912ac58ad83f08af3aa79322"
     },
     {
       "path": "05-yuhobuilds-instagram/master-01.png",
-      "bytes": 1139294,
-      "sha256": "6ad01abf06a3820c37be65c5eedfc202c0df5b0e8010fb72bc0ffb1a7d5326f6"
+      "bytes": 1308718,
+      "sha256": "6dd2e731e0b2b9e95ac14a47cce8ad0172a3201bba38c21db99b99126164d694"
     },
     {
       "path": "05-yuhobuilds-instagram/video.mp4",
-      "bytes": 22874322,
-      "sha256": "32f75662ec1e41cec65fca465d47dda0a05ae11f2e7e3174ef466504dd70195f"
+      "bytes": 6205884,
+      "sha256": "36d1097d8b809a3b911a3bf84e41038c48033b66e25fe6f9d3263a4d60b0ac99"
     },
     {
       "path": "06-yuhobuilds-tiktok/upload-01.jpg",
-      "bytes": 166738,
-      "sha256": "ed91338c6c2c5b56cf44502c5bc901aadecb87b9598de029f68e17d54dff6730"
+      "bytes": 190575,
+      "sha256": "9689faf989002ffb9b145be74583bad52ae4cd9df7a73527fdde5054f1659029"
     },
     {
       "path": "06-yuhobuilds-tiktok/master-01.png",
-      "bytes": 630013,
-      "sha256": "6b367b5b3e38e1bd5787311b3fd8449eb7de5a12bd98f1b1bfd9b2365c5a9dd8"
+      "bytes": 818757,
+      "sha256": "23d0c4e173aa8ff77c7fefefc0cdf1a061649204f88aafc2411d86fee33c4095"
     },
     {
       "path": "06-yuhobuilds-tiktok/video.mp4",
-      "bytes": 19405159,
-      "sha256": "6a5663e6987f361e51c184aa11b1d62c712e73d333474dfdca720d1ca0fec2f0"
+      "bytes": 5319482,
+      "sha256": "48bf778108f5dd63f25b99b5feefa582a85b30f8a76477d216dc3a4766efcfab"
     },
     {
       "path": "07-synkbrief-youtube/upload-01.jpg",
-      "bytes": 230046,
-      "sha256": "7c960d9098f047d8fe6fb994b4d85c595287c28e51f8dccf14287efc686c8009"
+      "bytes": 254774,
+      "sha256": "cb1f078389420f587933e2eb37535353ef8d78c29a9d4b9e650ec118c5969f3b"
     },
     {
       "path": "07-synkbrief-youtube/master-01.png",
-      "bytes": 1563749,
-      "sha256": "cf1833114d3074a2c3404e9aeca92df4bdd5f17b1c048ce5e91ee0afec73535c"
+      "bytes": 1778358,
+      "sha256": "be601ace521b978c5cef2353adb430b69173360d86dfe321074128233dfedc4f"
     },
     {
       "path": "07-synkbrief-youtube/video.mp4",
-      "bytes": 38628742,
-      "sha256": "4cc854d5331f3d4f7e37480e8a04d5d04735dce94bbcca61501ce8a49dfac843"
+      "bytes": 8960758,
+      "sha256": "5d7fe633c98cd0ab0ccc4aaf352ba05747755050f22fbe6aceb57533abf4e489"
     },
     {
       "path": "08-synkbrief-instagram/upload-01.jpg",
-      "bytes": 185829,
-      "sha256": "ef07c1263b33e2b718f3e55765049c04a16d8c3e64453a030473f5231f7512de"
+      "bytes": 208742,
+      "sha256": "c06946136a8617937cd17e53eb51a7ba0bb5ad010f6be3e2b6365a9587ddb466"
     },
     {
       "path": "08-synkbrief-instagram/master-01.png",
-      "bytes": 1335119,
-      "sha256": "f8e7003a61a0a32bc85a90b74b78d357446eeac69c67bbdd8d6c93db73c274cf"
+      "bytes": 1501090,
+      "sha256": "6b3381d7698178b5c5c20fa943971616d29a8d603ef0025ff898554af07e87cf"
     },
     {
       "path": "08-synkbrief-instagram/upload-02.jpg",
-      "bytes": 81880,
-      "sha256": "4bea4aa0772dd4ea95d04107eedb2faefe05ce3fc66774c3a73465e29df57cc2"
+      "bytes": 105850,
+      "sha256": "f5d745eae14a032557ad7c38d23d74920b3a47fa686ad4cacc15e26aba36535f"
     },
     {
       "path": "08-synkbrief-instagram/master-02.png",
-      "bytes": 86018,
-      "sha256": "7c66b034d3f0f306f2a8dffd69273a4e1c48d7d7a1ef3f9833437d4edf4437ee"
+      "bytes": 260171,
+      "sha256": "2d5e51c9e6fbe64ee69e9783c8ffdb2ac379a64636e8ee80a434a0b89f0fb068"
     },
     {
       "path": "08-synkbrief-instagram/upload-03.jpg",
-      "bytes": 87388,
-      "sha256": "4943ad84c99094ff33ba2065b1ea86c38646efb69d3c5f6fdb28c6c75315be5c"
+      "bytes": 111352,
+      "sha256": "d964946547c85af8545d2e49959faf179348a2c37220e47e5cc183f5081728cc"
     },
     {
       "path": "08-synkbrief-instagram/master-03.png",
-      "bytes": 97568,
-      "sha256": "8c767c84239f352c5fc4704c4acc168308dfa2fbee4f78de8f1ee2ca9cc91083"
+      "bytes": 271576,
+      "sha256": "5a435c952a8bea85002544884314658395475c6643b07386f7f614553c09d8bf"
     },
     {
       "path": "08-synkbrief-instagram/upload-04.jpg",
-      "bytes": 94424,
-      "sha256": "78ca8bcbbaec0e68edc33a39c97433b2d516e52de1a9afd879a7c93cb6d1a844"
+      "bytes": 118496,
+      "sha256": "bb5d0b7430bf8292bd1068033109726ce88f11264b17b70ea268a85bd6202b33"
     },
     {
       "path": "08-synkbrief-instagram/master-04.png",
-      "bytes": 96020,
-      "sha256": "b8a2c5e8ecbccebf0cce719aad477fb406fd25c472cbb316228ffae07f878fdc"
+      "bytes": 269910,
+      "sha256": "9dcaa37121d7a4e18b2d8520e1189063f99754df4d1b0477f9784e63fdd732e4"
     },
     {
       "path": "08-synkbrief-instagram/upload-05.jpg",
-      "bytes": 91974,
-      "sha256": "95814e8931099df4b32ee248738169dc437a9d4855dd9863f94e8cf12cfce5b7"
+      "bytes": 116015,
+      "sha256": "23b1f531c68672184dc904c7d19298ec3c70a6698b759be545ef240af5111ca0"
     },
     {
       "path": "08-synkbrief-instagram/master-05.png",
-      "bytes": 100216,
-      "sha256": "91ff1d2c5f0fd60ff11df93c24c32dc54c68c611e1c2de04afc896096fcc7ff3"
+      "bytes": 274244,
+      "sha256": "be87a195f987790e234c7af973892731e4138338fa177e915df9ecef63da8006"
     },
     {
       "path": "08-synkbrief-instagram/upload-06.jpg",
-      "bytes": 90871,
-      "sha256": "232a3cdf88a0ea95f9961df1ead18f1e988d9cfdbde4832ac1019e8ba7e3434c"
+      "bytes": 114885,
+      "sha256": "7d66e9c4f6e8da317d2e7fb21cd41aa67fdbd2e64dc9c43e8a24d23c35adc69a"
     },
     {
       "path": "08-synkbrief-instagram/master-06.png",
-      "bytes": 96848,
-      "sha256": "904f397c249238526515bf01ebb7e32163c5e619cd8ffcb130f5cbfcd67039fb"
+      "bytes": 270740,
+      "sha256": "c37234ffe9891ae99dc376a713cfa6919b74c29c4ee3e4adaf18238bfa143f67"
     },
     {
       "path": "09-synkbrief-tiktok/upload-01.jpg",
-      "bytes": 214218,
-      "sha256": "73a418ecf54c8b96724822d6076d1961aa5ced952cc66f6e787acf053b1fb154"
+      "bytes": 239561,
+      "sha256": "ca5144b027c0eb6253333e12087d4ff7a3c8414023ec9241e9aab6821735c1d9"
     },
     {
       "path": "09-synkbrief-tiktok/master-01.png",
-      "bytes": 1546579,
-      "sha256": "4073631aead64136d353e12e7edfe022f016336cf1e02224a6045e5bebe0d052"
+      "bytes": 1757264,
+      "sha256": "01604a6ae1d4af864df837a3e615f94ff16d873c80de5967062f9db88d9f64e3"
     },
     {
       "path": "09-synkbrief-tiktok/video.mp4",
-      "bytes": 27996341,
-      "sha256": "7c08b1f9a6c5aa0adfd54560480956103693de04eb4a53ba8bbc91addf217037"
+      "bytes": 5474243,
+      "sha256": "c416aeed3a9c7809a1c408be254cee84f356dd2046ac23405a7b9901ddf931fd"
     },
     {
       "path": "10-lab-facebook/upload-01.jpg",
-      "bytes": 144367,
-      "sha256": "902d744802cb32ebd0f560cfcbe670fb67a4f0d5c35b0a9fdbbfc6ab9664b36d"
+      "bytes": 165039,
+      "sha256": "719d6c2a1a7366f59711ebd8925bcff24828095626a5e42df2ff65bed651ccd3"
     },
     {
       "path": "10-lab-facebook/master-01.png",
-      "bytes": 193947,
-      "sha256": "8ddc8fb33d7a17f2ef8907adc8cce9d560b4ce4f054545ef9112a2a794a6944d"
+      "bytes": 349468,
+      "sha256": "0a19b5671530c8213ec2f7db09d062f6afad10273bfe2a85d78e832d2cd96763"
     },
     {
       "path": "10-lab-facebook/upload-02.jpg",
-      "bytes": 122412,
-      "sha256": "893bb268e94e77dee2607a99e8d8d49522f3b7e1608fd8d9a47dbbdbc04c723c"
+      "bytes": 143985,
+      "sha256": "129dfaf71a38286174500b014f600b1bb7ed366d8521d1e86fb11972c2f5bde6"
     },
     {
       "path": "10-lab-facebook/master-02.png",
-      "bytes": 160236,
-      "sha256": "e8cee1cfc3295d19f87b5dc16f7a72a7967c4c8c3caffd6e294974bfe5b3dd9e"
+      "bytes": 317824,
+      "sha256": "7fd8cdfc69a6cce9ebd97fa279ad1def643e2d3f605c3d5ca99834788c1fe675"
     },
     {
       "path": "11-yuhobuilds-threads/upload-01.jpg",
-      "bytes": 175868,
-      "sha256": "90e14323ffae57590df249a824401b49d5320fb59d5f6b8b664dae6a2f568b5b"
+      "bytes": 199772,
+      "sha256": "854172dec0156f07c958b493a561bc5f36d44bdb82363ae4c6ad8bd2d40b7088"
     },
     {
       "path": "11-yuhobuilds-threads/master-01.png",
-      "bytes": 637723,
-      "sha256": "392000a22dc7935702afe570dee93c3034cc61921ec910597716cf67b780b0a7"
+      "bytes": 828741,
+      "sha256": "1b98ee8afdb490d2614ec0eba20816c1a4c919722d703fe535a1c23dbfc55ded"
     },
     {
       "path": "12-synkbrief-threads/upload-01.jpg",
-      "bytes": 78860,
-      "sha256": "84654133626e90dbbdf85a9192dcafc46eeddde593a910dce616171150ff376a"
+      "bytes": 101913,
+      "sha256": "aa3a752225cbe140eeddbc0961e32824bd628051f24ca1a1fe72593a2448b8b7"
     },
     {
       "path": "12-synkbrief-threads/master-01.png",
-      "bytes": 86209,
-      "sha256": "4d95f550df6e89257fdffb4cdfb22a65e40e3b1d849a7735d627bc3c3ef68b9f"
+      "bytes": 256177,
+      "sha256": "4c404533be8c221d58c4b9e2e0e85fb15d8f597baeb21bf8b4277a334be6d364"
     },
     {
       "path": "13-yuhobuilds-linkedin/upload-01.jpg",
-      "bytes": 115710,
-      "sha256": "e25a026a7bc20c8d0a032fa3aee5db9abbbec206e9aa252c2f6d3475e32e20ad"
+      "bytes": 138902,
+      "sha256": "d6522d5260dc2c90e56e1cef44f63d5c4ff79666937cf150113c0d345cb7ec65"
     },
     {
       "path": "13-yuhobuilds-linkedin/master-01.png",
-      "bytes": 126097,
-      "sha256": "6179699930aded2b81012ca1bd18e822e6b5724c68ab3fe221230c4272862624"
+      "bytes": 296457,
+      "sha256": "37e96a1df499e8f6d576fa6d6a264cd8f336f3dea302d896c76f46b8a319a2a6"
     },
     {
       "path": "14-lab-telegram/upload-01.jpg",
-      "bytes": 214641,
-      "sha256": "556dd4359ee963dc235565419377fbf447d5bfabb0a26df512222425c36b5a01"
+      "bytes": 228762,
+      "sha256": "01561539aa0525bd2b9b008138b3d798397f8272755ae47a6506b7fde26fa01d"
     },
     {
       "path": "14-lab-telegram/master-01.png",
-      "bytes": 553548,
-      "sha256": "ade6c3f50401a12ff86eecc0c1e2276c0881df3c09af07b1d784f533a04a9313"
+      "bytes": 644547,
+      "sha256": "275e02269cca7bc536f30dc27ce15ab3faf37ae23f8232b7102632f20b174765"
     },
     {
       "path": "15-synklab-substack/upload-01.jpg",
-      "bytes": 182084,
-      "sha256": "8498dadec12e9ca962307bcf475e2a6e5b1fe082f98e285733cc91d58c83bfad"
+      "bytes": 205867,
+      "sha256": "dfc9568cab4593712575555e33b29c0c4206e42b9528d16fc5f8ef1b74bca2ef"
     },
     {
       "path": "15-synklab-substack/master-01.png",
-      "bytes": 646569,
-      "sha256": "ebd67476891a2c27ba11aa04013cd82b76608babc75228a595773bafabf69f95"
+      "bytes": 836312,
+      "sha256": "6bceebe21f25423bea4b25d02dc3f9e312fe1118a22f1555b95a850e532ce81b"
     },
     {
       "path": "16-synk-instagram/upload-01.jpg",
-      "bytes": 224798,
-      "sha256": "1b40f50532a189938c6b063a05ae1be786b5993605314ad1d133e115d6b7321f"
+      "bytes": 238722,
+      "sha256": "c9d5b20051bb0597b3deeffb920afc0ed14fbeeeef117d81583703e14280d55b"
     },
     {
       "path": "16-synk-instagram/master-01.png",
-      "bytes": 1523931,
-      "sha256": "89e23cb53cc32750d591fb54855d006364d472077a62f3455d836fbf7d2e4420"
+      "bytes": 1637172,
+      "sha256": "8c2d8e13796070ec87a9abe0a0363683b1fe2f5a68651a842acc8f7c97f94497"
     }
   ]
 }

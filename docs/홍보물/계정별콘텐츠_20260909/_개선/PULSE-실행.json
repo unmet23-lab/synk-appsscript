@@ -1,0 +1,23 @@
+{
+  "id": "PULSE",
+  "model": "gpt_image_2_5",
+  "variant": "sunburst",
+  "quality": "xhigh",
+  "resolution": "2k",
+  "background": "transparent",
+  "startedAt": "2026-09-09T07:13:03.468Z",
+  "promptSha256": "a0c219bf8290b4e0b476b1f880f886a3441a384aaf0deb22ba63e037c11b2322",
+  "references": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\PULSE-글자참고.png",
+      "sha256": "8609982a71f39d2ad10b2a7ac950b88594720094e4988eb62821364d1dbfeaae"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\Loom_자산\\구움\\양모워드마크_누끼.png",
+      "sha256": "917a66a7127cb03dcc491a079aa21d75ae07ab4d744b99d0669c05bbed50c665"
+    }
+  ],
+  "authorization": "User explicitly approved existing Higgsfield credits for GPT Image 2.5; no purchase or autocharge.",
+  "finishedAt": "2026-09-09T07:14:11.116Z",
+  "exitCode": 0
+}

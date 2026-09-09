@@ -637,6 +637,22 @@
           "entry": "assets/book.webp"
         },
         {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\brand-lab.webp",
+          "entry": "assets/brand-lab.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\brand-pulse.webp",
+          "entry": "assets/brand-pulse.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\brand-shift.webp",
+          "entry": "assets/brand-shift.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\brand-synk.webp",
+          "entry": "assets/brand-synk.webp"
+        },
+        {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\cafe.webp",
           "entry": "assets/cafe.webp"
         },
@@ -669,8 +685,8 @@
           "entry": "assets/paper.webp"
         },
         {
-          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\pulsepage.webp",
-          "entry": "assets/pulsepage.webp"
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\pulsepage-r2.webp",
+          "entry": "assets/pulsepage-r2.webp"
         },
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\scissors.webp",
@@ -683,10 +699,6 @@
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\smile.webp",
           "entry": "assets/smile.webp"
-        },
-        {
-          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\stitch.webp",
-          "entry": "assets/stitch.webp"
         },
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\01-lab-youtube.png",
@@ -751,6 +763,10 @@
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\16-synk-instagram.png",
           "entry": "미리보기/16-synk-instagram.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\모바일-모아보기.png",
+          "entry": "미리보기/모바일-모아보기.png"
         },
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\미리보기\\모아보기-1440.png",
@@ -825,6 +841,98 @@
           "entry": "_검토/몽골어검토_실행.cjs"
         },
         {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\봉투_QA\\봉투25-Ink.png",
+          "entry": "_검토/봉투_QA/봉투25-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\봉투_QA\\봉투25-Paper.png",
+          "entry": "_검토/봉투_QA/봉투25-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품25_QA\\가위-Ink.png",
+          "entry": "_검토/소품25_QA/가위-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품25_QA\\가위-Paper.png",
+          "entry": "_검토/소품25_QA/가위-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품25_QA\\책-Ink.png",
+          "entry": "_검토/소품25_QA/책-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품25_QA\\책-Paper.png",
+          "entry": "_검토/소품25_QA/책-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품_QA\\book-Ink.png",
+          "entry": "_검토/소품_QA/book-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품_QA\\book-Paper.png",
+          "entry": "_검토/소품_QA/book-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품_QA\\compass-Ink.png",
+          "entry": "_검토/소품_QA/compass-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품_QA\\compass-Paper.png",
+          "entry": "_검토/소품_QA/compass-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품_QA\\notebook-Ink.png",
+          "entry": "_검토/소품_QA/notebook-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품_QA\\notebook-Paper.png",
+          "entry": "_검토/소품_QA/notebook-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품_QA\\scissors-Ink.png",
+          "entry": "_검토/소품_QA/scissors-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품_QA\\scissors-Paper.png",
+          "entry": "_검토/소품_QA/scissors-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\소품_QA\\사용소품-접촉시트.png",
+          "entry": "_검토/소품_QA/사용소품-접촉시트.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\스티치_자산검증.json",
+          "entry": "_검토/스티치_자산검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\스티치로고_QA\\LAB-Ink.png",
+          "entry": "_검토/스티치로고_QA/LAB-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\스티치로고_QA\\LAB-Paper.png",
+          "entry": "_검토/스티치로고_QA/LAB-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\스티치로고_QA\\PULSE-Ink.png",
+          "entry": "_검토/스티치로고_QA/PULSE-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\스티치로고_QA\\PULSE-Paper.png",
+          "entry": "_검토/스티치로고_QA/PULSE-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\스티치로고_QA\\SHIFT-Ink.png",
+          "entry": "_검토/스티치로고_QA/SHIFT-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\스티치로고_QA\\SHIFT-Paper.png",
+          "entry": "_검토/스티치로고_QA/SHIFT-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\시각마감_독립검수.md",
+          "entry": "_검토/시각마감_독립검수.md"
+        },
+        {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\언어_근거.md",
           "entry": "_검토/언어_근거.md"
         },
@@ -869,8 +977,20 @@
           "entry": "_검토/영상_03-lab-tiktok_render.log"
         },
         {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_scene1_2s_preview.png",
+          "entry": "_검토/영상_03-lab-tiktok_scene1_2s_preview.png"
+        },
+        {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_scene1_preview.png",
           "entry": "_검토/영상_03-lab-tiktok_scene1_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_scene2_2s_preview.png",
+          "entry": "_검토/영상_03-lab-tiktok_scene2_2s_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_scene2_3s_preview.png",
+          "entry": "_검토/영상_03-lab-tiktok_scene2_3s_preview.png"
         },
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_03-lab-tiktok_scene2_preview.png",
@@ -901,6 +1021,22 @@
           "entry": "_검토/영상_04-yuhobuilds-youtube_scene1_preview.png"
         },
         {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_scene2_3s_preview.png",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_scene2_3s_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_scene3_3s_preview.png",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_scene3_3s_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_scene4_3s_preview.png",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_scene4_3s_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_scene5_3s_preview.png",
+          "entry": "_검토/영상_04-yuhobuilds-youtube_scene5_3s_preview.png"
+        },
+        {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_04-yuhobuilds-youtube_검증.json",
           "entry": "_검토/영상_04-yuhobuilds-youtube_검증.json"
         },
@@ -919,6 +1055,10 @@
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_05-yuhobuilds-instagram_render.log",
           "entry": "_검토/영상_05-yuhobuilds-instagram_render.log"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_05-yuhobuilds-instagram_scene3_3s_preview.png",
+          "entry": "_검토/영상_05-yuhobuilds-instagram_scene3_3s_preview.png"
         },
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_05-yuhobuilds-instagram_검증.json",
@@ -961,6 +1101,14 @@
           "entry": "_검토/영상_07-synkbrief-youtube_render.log"
         },
         {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_07-synkbrief-youtube_scene1_2.5s_preview.png",
+          "entry": "_검토/영상_07-synkbrief-youtube_scene1_2.5s_preview.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_07-synkbrief-youtube_scene3_3s_preview.png",
+          "entry": "_검토/영상_07-synkbrief-youtube_scene3_3s_preview.png"
+        },
+        {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_07-synkbrief-youtube_검증.json",
           "entry": "_검토/영상_07-synkbrief-youtube_검증.json"
         },
@@ -987,6 +1135,174 @@
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_09-synkbrief-tiktok_검증.json",
           "entry": "_검토/영상_09-synkbrief-tiktok_검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_03-lab-tiktok_8s_book.png",
+          "entry": "_검토/영상_상세_03-lab-tiktok_8s_book.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_03-lab-tiktok_8s_book_100pct.png",
+          "entry": "_검토/영상_상세_03-lab-tiktok_8s_book_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_03-lab-tiktok_8s_book_logo100pct.png",
+          "entry": "_검토/영상_상세_03-lab-tiktok_8s_book_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_03-lab-tiktok_8s_book_phone.png",
+          "entry": "_검토/영상_상세_03-lab-tiktok_8s_book_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_13s_title.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_13s_title.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_13s_title_100pct.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_13s_title_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_13s_title_logo100pct.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_13s_title_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_13s_title_phone.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_13s_title_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_23s_body.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_23s_body.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_23s_body_100pct.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_23s_body_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_23s_body_logo100pct.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_23s_body_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_23s_body_phone.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_23s_body_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_33s_object.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_33s_object.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_33s_object_100pct.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_33s_object_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_33s_object_logo100pct.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_33s_object_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_04-yuhobuilds-youtube_33s_object_phone.png",
+          "entry": "_검토/영상_상세_04-yuhobuilds-youtube_33s_object_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_05-yuhobuilds-instagram_24s_notebook.png",
+          "entry": "_검토/영상_상세_05-yuhobuilds-instagram_24s_notebook.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_05-yuhobuilds-instagram_24s_notebook_100pct.png",
+          "entry": "_검토/영상_상세_05-yuhobuilds-instagram_24s_notebook_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_05-yuhobuilds-instagram_24s_notebook_logo100pct.png",
+          "entry": "_검토/영상_상세_05-yuhobuilds-instagram_24s_notebook_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_05-yuhobuilds-instagram_24s_notebook_phone.png",
+          "entry": "_검토/영상_상세_05-yuhobuilds-instagram_24s_notebook_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_12s_body.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_12s_body.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_12s_body_100pct.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_12s_body_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_12s_body_logo100pct.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_12s_body_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_12s_body_phone.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_12s_body_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_14.5s_object.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_14.5s_object.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_14.5s_object_100pct.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_14.5s_object_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_14.5s_object_logo100pct.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_14.5s_object_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_14.5s_object_phone.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_14.5s_object_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_9.5s_title.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_9.5s_title.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_9.5s_title_100pct.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_9.5s_title_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_9.5s_title_logo100pct.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_9.5s_title_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_06-yuhobuilds-tiktok_9.5s_title_phone.png",
+          "entry": "_검토/영상_상세_06-yuhobuilds-tiktok_9.5s_title_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_07-synkbrief-youtube_20s_scissors.png",
+          "entry": "_검토/영상_상세_07-synkbrief-youtube_20s_scissors.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_07-synkbrief-youtube_20s_scissors_100pct.png",
+          "entry": "_검토/영상_상세_07-synkbrief-youtube_20s_scissors_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_07-synkbrief-youtube_20s_scissors_logo100pct.png",
+          "entry": "_검토/영상_상세_07-synkbrief-youtube_20s_scissors_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_07-synkbrief-youtube_20s_scissors_phone.png",
+          "entry": "_검토/영상_상세_07-synkbrief-youtube_20s_scissors_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_07-synkbrief-youtube_3s_letter.png",
+          "entry": "_검토/영상_상세_07-synkbrief-youtube_3s_letter.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_07-synkbrief-youtube_3s_letter_100pct.png",
+          "entry": "_검토/영상_상세_07-synkbrief-youtube_3s_letter_100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_07-synkbrief-youtube_3s_letter_logo100pct.png",
+          "entry": "_검토/영상_상세_07-synkbrief-youtube_3s_letter_logo100pct.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세_07-synkbrief-youtube_3s_letter_phone.png",
+          "entry": "_검토/영상_상세_07-synkbrief-youtube_3s_letter_phone.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세검증.cjs",
+          "entry": "_검토/영상_상세검증.cjs"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_상세검증.json",
+          "entry": "_검토/영상_상세검증.json"
         },
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\영상_시각검토.md",
@@ -1215,6 +1531,38 @@
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\정적_독립검토.md",
           "entry": "_검토/정적_독립검토.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\조합로고_QA\\SYNK-Ink.png",
+          "entry": "_검토/조합로고_QA/SYNK-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\조합로고_QA\\SYNK-LAB-Ink.png",
+          "entry": "_검토/조합로고_QA/SYNK-LAB-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\조합로고_QA\\SYNK-LAB-Paper.png",
+          "entry": "_검토/조합로고_QA/SYNK-LAB-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\조합로고_QA\\SYNK-Paper.png",
+          "entry": "_검토/조합로고_QA/SYNK-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\조합로고_QA\\SYNK-PULSE-Ink.png",
+          "entry": "_검토/조합로고_QA/SYNK-PULSE-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\조합로고_QA\\SYNK-PULSE-Paper.png",
+          "entry": "_검토/조합로고_QA/SYNK-PULSE-Paper.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\조합로고_QA\\SYNK-SHIFT-Ink.png",
+          "entry": "_검토/조합로고_QA/SYNK-SHIFT-Ink.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\조합로고_QA\\SYNK-SHIFT-Paper.png",
+          "entry": "_검토/조합로고_QA/SYNK-SHIFT-Paper.png"
         },
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_검토\\최종검증.md",
@@ -1815,6 +2163,126 @@
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\16-synk-instagram\\제목.txt",
           "entry": "16-synk-instagram/제목.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\배치용\\brand-lab.webp",
+          "entry": "_개선/배치용/brand-lab.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\배치용\\brand-pulse.webp",
+          "entry": "_개선/배치용/brand-pulse.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\배치용\\brand-shift.webp",
+          "entry": "_개선/배치용/brand-shift.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\배치용\\brand-synk.webp",
+          "entry": "_개선/배치용/brand-synk.webp"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\조합로고\\SYNK-LAB.png",
+          "entry": "_개선/조합로고/SYNK-LAB.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\조합로고\\SYNK-PULSE.png",
+          "entry": "_개선/조합로고/SYNK-PULSE.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\조합로고\\SYNK-SHIFT.png",
+          "entry": "_개선/조합로고/SYNK-SHIFT.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\조합로고\\SYNK.png",
+          "entry": "_개선/조합로고/SYNK.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\조합로고\\명세.json",
+          "entry": "_개선/조합로고/명세.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\지면스냅샷\\lab-1.png",
+          "entry": "_개선/지면스냅샷/lab-1.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\지면스냅샷\\lab-2.png",
+          "entry": "_개선/지면스냅샷/lab-2.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\지면스냅샷\\pulse-1.png",
+          "entry": "_개선/지면스냅샷/pulse-1.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\지면스냅샷\\shift-1.png",
+          "entry": "_개선/지면스냅샷/shift-1.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\지면스냅샷\\synk-1.png",
+          "entry": "_개선/지면스냅샷/synk-1.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\지면스냅샷\\검증.json",
+          "entry": "_개선/지면스냅샷/검증.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\자산_생성명세.json",
+          "entry": "_개선/자산_생성명세.json"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\브랜드_고정조건.md",
+          "entry": "_개선/브랜드_고정조건.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\스티치_적용기록.md",
+          "entry": "_개선/스티치_적용기록.md"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\봉투-2.5.png",
+          "entry": "_개선/봉투-2.5.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\봉투-제작지시.txt",
+          "entry": "_개선/봉투-제작지시.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\책-2.5.png",
+          "entry": "_개선/책-2.5.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\책-제작지시.txt",
+          "entry": "_개선/책-제작지시.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\가위-2.5.png",
+          "entry": "_개선/가위-2.5.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\가위-제작지시.txt",
+          "entry": "_개선/가위-제작지시.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\LAB-2.5.png",
+          "entry": "_개선/LAB-2.5.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\LAB-제작지시.txt",
+          "entry": "_개선/LAB-제작지시.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\SHIFT-2.5.png",
+          "entry": "_개선/SHIFT-2.5.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\SHIFT-제작지시.txt",
+          "entry": "_개선/SHIFT-제작지시.txt"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\PULSE-2.5.png",
+          "entry": "_개선/PULSE-2.5.png"
+        },
+        {
+          "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\_개선\\PULSE-제작지시.txt",
+          "entry": "_개선/PULSE-제작지시.txt"
         },
         {
           "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\01-lab-youtube.zip",

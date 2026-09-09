@@ -5,15 +5,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const {pathToFileURL} = require('node:url');
-const sharp = require('sharp');
-const {chromium} = require('playwright');
 const ROOT = path.resolve(__dirname, '../../..');
 const loom = require(path.join(ROOT, 'tools/lib/loom.js'));
 const fonts = require(path.join(ROOT, 'tools/lib/브랜드폰트.js'));
-const logo = require(path.join(ROOT, 'tools/lib/로고정본.js'));
 const C = loom.정본().색;
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const write = (p, s) => {fs.mkdirSync(path.dirname(p), {recursive:true});fs.writeFileSync(p, s, 'utf8');};
+const write = (p, s) => {
+  // Preserve identical authored/exported files, including harmless line endings.
+  if(fs.existsSync(p)&&fs.readFileSync(p,'utf8').replace(/\r\n/g,'\n')===s.replace(/\r\n/g,'\n'))return;
+  fs.mkdirSync(path.dirname(p), {recursive:true});fs.writeFileSync(p, s, 'utf8');
+};
 const read = p => JSON.parse(fs.readFileSync(p, 'utf8'));
 const hash = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const dataFile = path.join(__dirname, '콘텐츠원고.json');
@@ -27,30 +28,38 @@ for (const p of data.items) {
   if (p.derivativeOf && !data.items.some(x=>x.id===p.derivativeOf)) throw new Error('없는 원작: '+p.id);
 }
 const SOURCE = path.join(ROOT, 'docs/홍보물/브랜드소개_20260909');
+const IMPROVED = path.join(__dirname, '_개선');
+const ASSET_TRANSFORM = 'inside3840-webp-lossless-v2';
+// Preserve the earlier file while Windows has it open; all consumers use this map.
+const assetFile = key => key==='pulsepage'?'pulsepage-r2.webp':key+'.webp';
 const assetSources = Object.fromEntries(['paper','ink','texture','mong','smile','curious','notebook','compass','letter','book','scissors','radio','window','classroom','roof','cafe','house','lake','meadow','city','clipboard','seal','logo','korean','headphones','night','moon','woolLogo','stitch'].map(k=>[k,path.join(SOURCE,'assets',k+'.webp')]));
 Object.assign(assetSources, {
-  labpage:path.join(SOURCE,'소개서_4K/lab-1.png'),
-  labinside:path.join(SOURCE,'소개서_4K/lab-2.png'),
-  shiftpage:path.join(SOURCE,'소개서_4K/shift-1.png'),
-  pulsepage:path.join(SOURCE,'소개서_4K/pulse-1.png'),
-  synkpage:path.join(SOURCE,'소개서_4K/synk-1.png'),
+  letter:path.join(IMPROVED,'봉투-2.5.png'),
+  book:path.join(IMPROVED,'책-2.5.png'),
+  scissors:path.join(IMPROVED,'가위-2.5.png'),
+  labpage:path.join(IMPROVED,'지면스냅샷/lab-1.png'),
+  labinside:path.join(IMPROVED,'지면스냅샷/lab-2.png'),
+  shiftpage:path.join(IMPROVED,'지면스냅샷/shift-1.png'),
+  pulsepage:path.join(IMPROVED,'지면스냅샷/pulse-1.png'),
+  synkpage:path.join(IMPROVED,'지면스냅샷/synk-1.png'),
+  ...Object.fromEntries(['synk','lab','shift','pulse'].map(b=>['brand-'+b,path.join(IMPROVED,'배치용','brand-'+b+'.webp')])),
 });
-const selected = new Set(['stitch','paper','night','labpage']);
+const selected = new Set(['paper','night','labpage','book','scissors','brand-synk','brand-lab','brand-shift','brand-pulse']);
 for (const p of data.items) for (const x of [...p.cards,...(p.scenes||[])]) {
   if(x.asset) selected.add(x.asset);
   for(const a of x.assets || []) selected.add(a);
 }
-function lockup(brand, large=false) {
-  return `<div class="brand-lock">${logo.워드마크({판:'라이트',표현:'민',신호:'k',색갈래:'단색'})}${brand==='SYNK'?'':`<span class="division-label">${esc(brand)}${large?'<img src="../assets/stitch.webp" alt="">':''}</span>`}</div>`;
+function lockup(brand, relative='../') {
+  return `<div class="brand-lock" role="img" aria-label="${brand==='SYNK'?'SYNK':'SYNK '+esc(brand)}"><img class="brand-synk" src="${relative}assets/brand-synk.webp" alt="" decoding="sync">${brand==='SYNK'?'':`<img class="division-stitch-logo" data-division="${esc(brand)}" src="${relative}assets/brand-${brand.toLowerCase()}.webp" alt="" decoding="sync">`}</div>`;
 }
 function card(p, x, i) {
   const layout = x.layout || 'lesson';
   const asset = x.asset;
   const footer = p.brand==='PULSE' ? 'PULSE · 소리와 장면' : p.brand==='SYNK' ? 'SYNK · 배움과 다음 경험' : p.language==='mn' ? 'SYNK LAB · Солонгос хэл' : p.account.split(' · ')[0].replace(/^@/,'');
-  const image = asset && !['diptych','worksheet'].includes(layout) ? `<img class="hero-asset" data-asset="${esc(asset)}" src="../assets/${esc(asset)}.webp" alt="${esc(x.alt||'브랜드 제작 자산')}" decoding="sync">` : '';
-  const diptych = layout==='diptych' ? `<div class="diptych">${(x.assets||['labpage','night']).map(a=>`<img data-asset="${esc(a)}" src="../assets/${esc(a)}.webp" alt="${esc(a==='night'?'PULSE 밤 장면':'완성된 LAB 소개서')}">`).join('')}</div>` : '';
+  const image = asset && !['diptych','worksheet'].includes(layout) ? `<img class="hero-asset" data-asset="${esc(asset)}" src="../assets/${esc(assetFile(asset))}" alt="${esc(x.alt||'브랜드 제작 자산')}" decoding="sync">` : '';
+  const diptych = layout==='diptych' ? `<div class="diptych">${(x.assets||['labpage','night']).map(a=>`<img data-asset="${esc(a)}" src="../assets/${esc(assetFile(a))}" alt="${esc(a==='night'?'PULSE 밤 장면':'완성된 LAB 소개서')}">`).join('')}</div>` : '';
   const lines=x.lines?.length?`<ul class="lines" data-count="${x.lines.length}">${x.lines.map(s=>`<li>${esc(layout==='worksheet'?s.replace(/:\s*_+/g,''):s)}${layout==='worksheet'?'<span class="write-line" aria-hidden="true"></span>':''}</li>`).join('')}</ul>`:'';
-return `<div class="canvas-wrap"><section class="artboard" data-id="${p.id}" data-card="${i+1}" data-brand="${p.brand}" data-layout="${layout}">${lockup(p.brand,i===0)}<div class="copy"><p class="eyebrow">${esc(x.eyebrow)}</p><h1 class="headline">${esc(x.title)}</h1>${x.body?`<p class="body-copy">${esc(x.body)}</p>`:''}${x.kr?`<p class="kr" lang="ko">${esc(x.kr)}</p>`:''}${x.mn?`<p class="mn" lang="mn">${esc(x.mn)}</p>`:''}${lines}</div>${image}${diptych}<footer class="folio"><span>${esc(footer)}</span><span>${String(i+1).padStart(2,'0')} / ${String(p.cards.length).padStart(2,'0')}</span></footer></section></div>`;
+return `<div class="canvas-wrap"><section class="artboard" data-id="${p.id}" data-card="${i+1}" data-brand="${p.brand}" data-layout="${layout}">${lockup(p.brand)}<div class="copy"><p class="eyebrow">${esc(x.eyebrow)}</p><h1 class="headline">${esc(x.title)}</h1>${x.body?`<p class="body-copy">${esc(x.body)}</p>`:''}${x.kr?`<p class="kr" lang="ko">${esc(x.kr)}</p>`:''}${x.mn?`<p class="mn" lang="mn">${esc(x.mn)}</p>`:''}${lines}</div>${image}${diptych}<footer class="folio"><span>${esc(footer)}</span><span>${String(i+1).padStart(2,'0')} / ${String(p.cards.length).padStart(2,'0')}</span></footer></section></div>`;
 }
 const html = (title, body, relative='') => `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><link rel="stylesheet" href="${relative}collection.css"></head><body class="account-collection">${body}</body></html>`;
 const formatNames={video:'영상',carousel:'캐러셀',image:'이미지',text:'글 + 이미지',letter:'편지 + 표지'};
@@ -85,23 +94,36 @@ function buildPages() {
   // The extracted gallery must not link to its own enclosing ZIP: it cannot
   // contain that archive recursively. Individual account ZIPs remain available.
   const galleryFile=path.join(__dirname,'index.html');
-  write(galleryFile,fs.readFileSync(galleryFile,'utf8').replace('<a class="download" href="계정별콘텐츠_전체.zip" download>전체 꾸러미 내려받기</a> ',''));
+  write(galleryFile,fs.readFileSync(galleryFile,'utf8').replace('<header class="collection-intro">',`<header class="collection-intro">${lockup('SYNK','')}`).replace('<a class="download" href="계정별콘텐츠_전체.zip" download>전체 꾸러미 내려받기</a> ',''));
+}
+function assetNeedsRefresh(previous, sourceSha256, outputSha256) {
+  return !previous || previous.sourceSha256!==sourceSha256 || previous.outputSha256!==outputSha256 || previous.transform!==ASSET_TRANSFORM;
 }
 async function prepare() {
+  const sharp = require('sharp');
+  const manifestFile=path.join(__dirname,'사용자산.json');
+  const previous=new Map((fs.existsSync(manifestFile)?read(manifestFile):[]).map(x=>[x.key,x]));
   const manifest=[];
   for(const key of selected){
     const source=assetSources[key];if(!source||!fs.existsSync(source))throw new Error('없는 자산: '+key);
-    const target=path.join(__dirname,'assets',key+'.webp');fs.mkdirSync(path.dirname(target),{recursive:true});
+    const target=path.join(__dirname,'assets',assetFile(key));fs.mkdirSync(path.dirname(target),{recursive:true});
     const meta=await sharp(source).metadata();
-    if(!fs.existsSync(target)){
-      if(path.extname(source)==='.webp')fs.copyFileSync(source,target);
-      else await sharp(source).resize({width:3840,height:3840,fit:'inside',withoutEnlargement:true}).webp({quality:96}).toFile(target);
+    const sourceSha256=hash(source);
+    const refresh=assetNeedsRefresh(previous.get(key),sourceSha256,fs.existsSync(target)?hash(target):null);
+    if(refresh){
+      const completed=path.extname(source)==='.webp'?fs.readFileSync(source):await sharp(source).resize({width:3840,height:3840,fit:'inside',withoutEnlargement:true}).webp({lossless:true}).toBuffer();
+      const pending=path.join(path.dirname(target),'.pending-'+key+'.webp');
+      fs.writeFileSync(pending,completed);
+      fs.renameSync(pending,target);
     }
-    manifest.push({key,source:path.relative(ROOT,source).split(path.sep).join('/'),sourceWidth:meta.width,sourceHeight:meta.height,sourceSha256:hash(source),output:'assets/'+key+'.webp',outputSha256:hash(target),note:key.endsWith('page')||key==='labinside'?'완성 소개서의 실제 지면':'기존 승인 브랜드 자산. 실사 시설/학생 사진 아님'});
+    const note=key.endsWith('page')||key==='labinside'?'기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면':['letter','book','scissors'].includes(key)?'윤곽과 밝은 재질을 복구한 신규 연출 자산. 실제 수작업 기록 아님':key==='brand-synk'?'기존 SYNK 원본 픽셀을 유지한 배치용 자산':key.startsWith('brand-')?'동일 사업명 형태와 색에 스티치를 적용한 배치용 자산':'기존 승인 브랜드 자산. 실사 시설/학생 사진 아님';
+    manifest.push({key,source:path.relative(ROOT,source).split(path.sep).join('/'),sourceWidth:meta.width,sourceHeight:meta.height,sourceSha256,output:'assets/'+assetFile(key),outputSha256:hash(target),transform:ASSET_TRANSFORM,note});
   }
   write(path.join(__dirname,'사용자산.json'),JSON.stringify(manifest,null,2));
 }
 async function render() {
+  const sharp = require('sharp');
+  const {chromium} = require('playwright');
   const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--allow-file-access-from-files']});
   const context=await browser.newContext({viewport:{width:1080,height:1350},deviceScaleFactor:2});
   const page=await context.newPage();
@@ -115,7 +137,10 @@ async function render() {
       const br=b.getBoundingClientRect(),copy=b.querySelector('.copy'),cr=copy.getBoundingClientRect(),f=b.querySelector('.folio').getBoundingClientRect();
       const text=Array.from(copy.querySelectorAll('h1,p,li')).map(e=>{const r=e.getBoundingClientRect();return {text:e.textContent,top:r.top-br.top,bottom:r.bottom-br.top,left:r.left-br.left,right:r.right-br.left,overflow:e.scrollWidth>e.clientWidth+1};});
       const assets=Array.from(b.querySelectorAll('.hero-asset,.diptych')).map(e=>{const r=e.getBoundingClientRect();return{top:r.top-br.top,bottom:r.bottom-br.top,left:r.left-br.left,right:r.right-br.left};});
-      return{card:b.dataset.card,fonts:{suit:document.fonts.check('800 48px "SUIT Variable"','한국어'),inter:document.fonts.check('600 48px "Inter Tight"','Өөрийн үг')},copyBottom:cr.bottom-br.top,footerTop:f.top-br.top,text,assets,textOverflow:text.some(x=>x.overflow||x.right>992||x.bottom>f.top-br.top-16),collision:assets.some(a=>a.top<cr.bottom-br.top+24&&a.right>cr.left-br.left)};
+      const brandBox=b.querySelector('.brand-lock').getBoundingClientRect();
+      const brandImages=Array.from(b.querySelectorAll('.brand-lock img')).map(e=>{const r=e.getBoundingClientRect();return{source:e.getAttribute('src'),width:r.width,height:r.height,loaded:e.complete&&e.naturalWidth>0,top:r.top-br.top,bottom:r.bottom-br.top};});
+      const brand={images:brandImages,flatSvg:b.querySelectorAll('.brand-lock svg').length,flatDivision:b.querySelectorAll('.division-label').length,overlapCopy:brandBox.bottom>cr.top-24,outside:brandBox.left<br.left||brandBox.right>br.right};
+      return{card:b.dataset.card,brand,fonts:{suit:document.fonts.check('800 48px "SUIT Variable"','한국어'),inter:document.fonts.check('600 48px "Inter Tight"','Өөрийн үг')},copyBottom:cr.bottom-br.top,footerTop:f.top-br.top,text,assets,textOverflow:text.some(x=>x.overflow||x.right>992||x.bottom>f.top-br.top-16),collision:assets.some(a=>a.top<cr.bottom-br.top+24&&a.right>cr.left-br.left)};
     }));
     for(let i=0;i<p.cards.length;i++){
       const n=String(i+1).padStart(2,'0');const master=path.join(folder,`master-${n}.png`);
@@ -125,7 +150,6 @@ async function render() {
     }
     console.log(`${p.id}: ${p.cards.length}장`);
   }
-  await browser.close();
   const report={sourceSha256:hash(dataFile),renderedAt:new Date().toISOString(),cards:results.length,errors,results};
   write(path.join(__dirname,'_검토/정적_경계검사.json'),JSON.stringify(report,null,2));
   const thumbs=await Promise.all(results.map(async(r,i)=>({input:await sharp(path.join(__dirname,r.upload)).resize(270,338).png().toBuffer(),left:(i%6)*286,top:Math.floor(i/6)*366})));
@@ -133,5 +157,11 @@ async function render() {
   await sharp({create:{width:6*286,height:Math.ceil(results.length/6)*366,channels:3,background:C.Oat}}).composite(thumbs).png().toFile(path.join(__dirname,'미리보기/전체카드.png'));
   for(const p of data.items){const rs=results.filter(x=>x.id===p.id);const composites=await Promise.all(rs.map(async(r,i)=>({input:await sharp(path.join(__dirname,r.upload)).resize(324,405).png().toBuffer(),left:i*340,top:0})));await sharp({create:{width:rs.length*340-16,height:405,channels:3,background:C.Oat}}).composite(composites).png().toFile(path.join(__dirname,'미리보기',p.id+'.png'));}
   console.log(JSON.stringify({cards:results.length,overflow:results.filter(x=>x.textOverflow).map(x=>[x.id,x.index]),collision:results.filter(x=>x.collision).map(x=>[x.id,x.index]),errors}));
+  // Persist the completed artwork before graceful browser teardown, which can
+  // be slow on Windows. Close the owned page/context before the browser.
+  await page.close();
+  await context.close();
+  await browser.close();
 }
-(async()=>{await prepare();buildPages();if(process.argv.includes('--render'))await render();console.log('계정별 지면/원고 생성 완료');})().catch(e=>{console.error(e.stack);process.exitCode=1;});
+module.exports={assetNeedsRefresh,ASSET_TRANSFORM};
+if(require.main===module)(async()=>{await prepare();buildPages();if(process.argv.includes('--render'))await render();console.log('계정별 지면/원고 생성 완료');})().catch(e=>{console.error(e.stack);process.exitCode=1;});

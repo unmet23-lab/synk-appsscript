@@ -1,0 +1,19 @@
+{
+  "id": "책",
+  "model": "gpt_image_2_5",
+  "variant": "sunburst",
+  "quality": "xhigh",
+  "resolution": "2k",
+  "background": "transparent",
+  "startedAt": "2026-09-09T07:28:55.393Z",
+  "promptSha256": "e60347457ba7b9ca4bb118d78f1663565a48975241c457fb3a07fc90f28a3be9",
+  "references": [
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\assets\\book.webp",
+      "sha256": "8fab4b618b7e7a6d377dafe6ac5edf4e31fb3c45339f16209008b458621d421d"
+    }
+  ],
+  "authorization": "User explicitly approved existing Higgsfield credits for GPT Image 2.5; no purchase or autocharge.",
+  "finishedAt": "2026-09-09T07:29:47.882Z",
+  "exitCode": 0
+}

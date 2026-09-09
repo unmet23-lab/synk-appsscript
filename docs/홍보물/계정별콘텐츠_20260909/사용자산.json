@@ -1,15 +1,5 @@
 [
   {
-    "key": "stitch",
-    "source": "docs/홍보물/브랜드소개_20260909/assets/stitch.webp",
-    "sourceWidth": 2048,
-    "sourceHeight": 285,
-    "sourceSha256": "4109d65ca82563989fe2490c1cb6d476cc1c2aca98991e453a64b67e904f3c9c",
-    "output": "assets/stitch.webp",
-    "outputSha256": "4109d65ca82563989fe2490c1cb6d476cc1c2aca98991e453a64b67e904f3c9c",
-    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
-  },
-  {
     "key": "paper",
     "source": "docs/홍보물/브랜드소개_20260909/assets/paper.webp",
     "sourceWidth": 3641,
@@ -17,6 +7,7 @@
     "sourceSha256": "99b7db5faef4e701674780401aaaec56dd4f99a76410b04a0bdff6b66e14c4b3",
     "output": "assets/paper.webp",
     "outputSha256": "99b7db5faef4e701674780401aaaec56dd4f99a76410b04a0bdff6b66e14c4b3",
+    "transform": "inside3840-webp-lossless-v2",
     "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
   },
   {
@@ -27,17 +18,85 @@
     "sourceSha256": "e107255ad0bd8f708006fec668526833aa7e9674fff978a359a597f52e2616b6",
     "output": "assets/night.webp",
     "outputSha256": "e107255ad0bd8f708006fec668526833aa7e9674fff978a359a597f52e2616b6",
+    "transform": "inside3840-webp-lossless-v2",
     "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
   },
   {
     "key": "labpage",
-    "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/lab-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "8d82ac1e45dfc6370dc069ace0e3dce35fa755510807ffb26b536c2254e3e649",
+    "sourceSha256": "e81b6a2900ea049c26f4ee213ad0206d44b4928667b436cb9e0e3f924d323ea0",
     "output": "assets/labpage.webp",
-    "outputSha256": "715ba983c693d18b16e9f1710167fabdde73f13e6a267be9842c2afe1b097908",
-    "note": "완성 소개서의 실제 지면"
+    "outputSha256": "08b1b627bcbad015cb356b1ca81ec79a9c959ecb3dac55e7386a93ad3ec46842",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
+  },
+  {
+    "key": "book",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/책-2.5.png",
+    "sourceWidth": 2048,
+    "sourceHeight": 1360,
+    "sourceSha256": "d76eb90eed33679326106f6c59f139356cf2cc35c1949d02919b220267de62f1",
+    "output": "assets/book.webp",
+    "outputSha256": "7ea277b275b1fcf58fdb7e4a6daa61b8e760bdf0e03192c102ea54d5048f8957",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "윤곽과 밝은 재질을 복구한 신규 연출 자산. 실제 수작업 기록 아님"
+  },
+  {
+    "key": "scissors",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/가위-2.5.png",
+    "sourceWidth": 2048,
+    "sourceHeight": 1360,
+    "sourceSha256": "6e53d5d1baf081428ce79fa80e4796e28258c432ad1849319df40bc2ca433b74",
+    "output": "assets/scissors.webp",
+    "outputSha256": "6eb4bd715fdbbf36e77aedae5799f64c95f4456a1ab9911ebde78a1b0344a3e0",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "윤곽과 밝은 재질을 복구한 신규 연출 자산. 실제 수작업 기록 아님"
+  },
+  {
+    "key": "brand-synk",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-synk.webp",
+    "sourceWidth": 2820,
+    "sourceHeight": 1301,
+    "sourceSha256": "9be5c8dccac9c3da088cd3517ad87fcf21d85e9aeb6bf29fe52a234d65cb2ae9",
+    "output": "assets/brand-synk.webp",
+    "outputSha256": "9be5c8dccac9c3da088cd3517ad87fcf21d85e9aeb6bf29fe52a234d65cb2ae9",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "기존 SYNK 원본 픽셀을 유지한 배치용 자산"
+  },
+  {
+    "key": "brand-lab",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-lab.webp",
+    "sourceWidth": 1951,
+    "sourceHeight": 823,
+    "sourceSha256": "6c92afe5ba49d701c0942eed725127e73b86723c72d94f566224c158613d8f65",
+    "output": "assets/brand-lab.webp",
+    "outputSha256": "6c92afe5ba49d701c0942eed725127e73b86723c72d94f566224c158613d8f65",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "동일 사업명 형태와 색에 스티치를 적용한 배치용 자산"
+  },
+  {
+    "key": "brand-shift",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-shift.webp",
+    "sourceWidth": 1936,
+    "sourceHeight": 600,
+    "sourceSha256": "294b5a309321183a518da010dc31de93160d49dbdec6423a8b07fdfebfab500c",
+    "output": "assets/brand-shift.webp",
+    "outputSha256": "294b5a309321183a518da010dc31de93160d49dbdec6423a8b07fdfebfab500c",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "동일 사업명 형태와 색에 스티치를 적용한 배치용 자산"
+  },
+  {
+    "key": "brand-pulse",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-pulse.webp",
+    "sourceWidth": 1987,
+    "sourceHeight": 577,
+    "sourceSha256": "b61c98490e421e9d6d1b93c7f593b97fee4740d1837ece145ba557cb366a775b",
+    "output": "assets/brand-pulse.webp",
+    "outputSha256": "b61c98490e421e9d6d1b93c7f593b97fee4740d1837ece145ba557cb366a775b",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "동일 사업명 형태와 색에 스티치를 적용한 배치용 자산"
   },
   {
     "key": "compass",
@@ -47,6 +106,7 @@
     "sourceSha256": "4cc7f71e95c6f37b89eec0425ab4ba4b2d26516d9380cc4caf6989a37ba43bbd",
     "output": "assets/compass.webp",
     "outputSha256": "4cc7f71e95c6f37b89eec0425ab4ba4b2d26516d9380cc4caf6989a37ba43bbd",
+    "transform": "inside3840-webp-lossless-v2",
     "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
   },
   {
@@ -57,6 +117,7 @@
     "sourceSha256": "a9d5fed8a4f69ce3e2944d4ec1a443ee1fc20ccd531f1d145bdfd2e4a35ec365",
     "output": "assets/cafe.webp",
     "outputSha256": "a9d5fed8a4f69ce3e2944d4ec1a443ee1fc20ccd531f1d145bdfd2e4a35ec365",
+    "transform": "inside3840-webp-lossless-v2",
     "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
   },
   {
@@ -67,17 +128,19 @@
     "sourceSha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4",
     "output": "assets/notebook.webp",
     "outputSha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4",
+    "transform": "inside3840-webp-lossless-v2",
     "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
   },
   {
     "key": "letter",
-    "source": "docs/홍보물/브랜드소개_20260909/assets/letter.webp",
-    "sourceWidth": 3176,
-    "sourceHeight": 2680,
-    "sourceSha256": "7d6728e3b1b65379c5b69af8e0eb3af0f9b1a7d1424906404cd111fb660bd3ac",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/봉투-2.5.png",
+    "sourceWidth": 2336,
+    "sourceHeight": 1744,
+    "sourceSha256": "093bab29250c4437866cd6f975c3e2d05e8710ba4a41b63f7cb35001728bd6ad",
     "output": "assets/letter.webp",
-    "outputSha256": "7d6728e3b1b65379c5b69af8e0eb3af0f9b1a7d1424906404cd111fb660bd3ac",
-    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
+    "outputSha256": "faa4d4443c175de1a9ceaf3c2a4194c4346844d86750d75b36d7d26d4b0be0c0",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "윤곽과 밝은 재질을 복구한 신규 연출 자산. 실제 수작업 기록 아님"
   },
   {
     "key": "classroom",
@@ -87,37 +150,30 @@
     "sourceSha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7",
     "output": "assets/classroom.webp",
     "outputSha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7",
-    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
-  },
-  {
-    "key": "book",
-    "source": "docs/홍보물/브랜드소개_20260909/assets/book.webp",
-    "sourceWidth": 3100,
-    "sourceHeight": 1990,
-    "sourceSha256": "8fab4b618b7e7a6d377dafe6ac5edf4e31fb3c45339f16209008b458621d421d",
-    "output": "assets/book.webp",
-    "outputSha256": "8fab4b618b7e7a6d377dafe6ac5edf4e31fb3c45339f16209008b458621d421d",
+    "transform": "inside3840-webp-lossless-v2",
     "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
   },
   {
     "key": "shiftpage",
-    "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-1.png",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/shift-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "f36939e1eb432188f150aad4fd9dd1b4f8e4db66f6be1acf5bd55c652774e6a3",
+    "sourceSha256": "f470158daa72414f554e3ee4e0a0d5a3c28a819eb5dd2e61320e49ba5736d2cc",
     "output": "assets/shiftpage.webp",
-    "outputSha256": "13627a55d084391ea12344788e60ce2ca39f73e6c58d4df640cac10b1a414a30",
-    "note": "완성 소개서의 실제 지면"
+    "outputSha256": "4773699f245612bd46c9f1c526035f94e1ba40368c6046dbbc9eb191ecca3edd",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
   },
   {
     "key": "pulsepage",
-    "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-1.png",
+    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/pulse-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "a8e178bd3063ecba5654cc1247253783c7160c91696ad9eb7a705da1448599e8",
-    "output": "assets/pulsepage.webp",
-    "outputSha256": "5fa30e50e8831dfd13896dc49b4c085deb630593b540f728d919f221c78bde9b",
-    "note": "완성 소개서의 실제 지면"
+    "sourceSha256": "0e86e9046c6211bdf3808da493581e4308028f258e214bb28f45dc36096acf1e",
+    "output": "assets/pulsepage-r2.webp",
+    "outputSha256": "32d0f436018795064ef2867da9426622a730c5e5c6f92cb8fe5da7a73fc357fa",
+    "transform": "inside3840-webp-lossless-v2",
+    "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
   },
   {
     "key": "smile",
@@ -127,16 +183,7 @@
     "sourceSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
     "output": "assets/smile.webp",
     "outputSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
-    "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
-  },
-  {
-    "key": "scissors",
-    "source": "docs/홍보물/브랜드소개_20260909/assets/scissors.webp",
-    "sourceWidth": 2181,
-    "sourceHeight": 2687,
-    "sourceSha256": "7dd27417990d688d9871d56d929679a07235f955b541b7b26621743478629ade",
-    "output": "assets/scissors.webp",
-    "outputSha256": "7dd27417990d688d9871d56d929679a07235f955b541b7b26621743478629ade",
+    "transform": "inside3840-webp-lossless-v2",
     "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
   }
 ]

@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-09-09T07:37:07.559Z",
+  "sourceTextUnchanged": true,
+  "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
+  "checks": [
+    {
+      "name": "LAB",
+      "width": 2048,
+      "height": 1360,
+      "hasAlpha": true,
+      "sourceSha256": "8ae45f2508e1003f1b68843ac871e44a9c58fb9ddcefa2fd408d05d22f0b3920",
+      "visibleRgbaMismatch": 0,
+      "exportSha256": "6c92afe5ba49d701c0942eed725127e73b86723c72d94f566224c158613d8f65"
+    },
+    {
+      "name": "SHIFT",
+      "width": 2048,
+      "height": 1360,
+      "hasAlpha": true,
+      "sourceSha256": "2a30f5c4c50bbfd84e9385be520aca16beb9b73d606d2cc14101830e6c0e892e",
+      "visibleRgbaMismatch": 0,
+      "exportSha256": "294b5a309321183a518da010dc31de93160d49dbdec6423a8b07fdfebfab500c"
+    },
+    {
+      "name": "PULSE",
+      "width": 2048,
+      "height": 1360,
+      "hasAlpha": true,
+      "sourceSha256": "60561081c441a9121f3622f89098c468ea2ab4a7c0cbaf58950aeb68ccea160e",
+      "visibleRgbaMismatch": 0,
+      "exportSha256": "b61c98490e421e9d6d1b93c7f593b97fee4740d1837ece145ba557cb366a775b"
+    },
+    {
+      "name": "SYNK",
+      "width": 2820,
+      "height": 1301,
+      "hasAlpha": true,
+      "sourceSha256": "917a66a7127cb03dcc491a079aa21d75ae07ab4d744b99d0669c05bbed50c665",
+      "visibleRgbaMismatch": 0,
+      "exportSha256": "9be5c8dccac9c3da088cd3517ad87fcf21d85e9aeb6bf29fe52a234d65cb2ae9"
+    },
+    {
+      "name": "envelope",
+      "width": 2336,
+      "height": 1744,
+      "hasAlpha": true,
+      "sourceSha256": "093bab29250c4437866cd6f975c3e2d05e8710ba4a41b63f7cb35001728bd6ad"
+    },
+    {
+      "name": "book",
+      "width": 2048,
+      "height": 1360,
+      "hasAlpha": true,
+      "sourceSha256": "d76eb90eed33679326106f6c59f139356cf2cc35c1949d02919b220267de62f1"
+    },
+    {
+      "name": "scissors",
+      "width": 2048,
+      "height": 1360,
+      "hasAlpha": true,
+      "sourceSha256": "6e53d5d1baf081428ce79fa80e4796e28258c432ad1849319df40bc2ca433b74"
+    }
+  ],
+  "note": "This confirms file identity, real alpha and pixel-preserving export only. Visual silhouette, stitching and actual-size readability are reviewed separately."
+}

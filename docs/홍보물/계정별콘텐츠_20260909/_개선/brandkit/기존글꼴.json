@@ -1,0 +1,1 @@
+{"source_summary":"DESIGN.md 및 브랜드_폰트_정본.md의 기존 서체. 본문은 이미지 생성하지 않고 기존 편집 가능한 텍스트로 보존한다. 사업명 글자 형상은 사업명.js의 Inter Tight 600을 별도 참고한다.","typography":{"display":{"family":"Inter Tight","source":"local:docs/브랜드_폰트/InterTight","style":"normal","weight":800},"body":{"family":"SUIT Variable","source":"local:docs/브랜드_폰트","style":"normal","weight":500},"font_links":[]}}

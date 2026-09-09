@@ -1,0 +1,199 @@
+{
+  "createdAt": "2026-09-09T07:59:33.318Z",
+  "evidence": [
+    {
+      "id": "03-lab-tiktok",
+      "second": 8,
+      "detail": "book",
+      "crop": {
+        "left": 120,
+        "top": 910,
+        "width": 790,
+        "height": 520
+      },
+      "videoSha256": "c39999a661a3ec578661fe01705259c1fe3bd50e043c98c67c1ba21837231abe",
+      "fullFrame": "영상_상세_03-lab-tiktok_8s_book.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "second": 13,
+      "detail": "title",
+      "crop": {
+        "left": 90,
+        "top": 720,
+        "width": 840,
+        "height": 530
+      },
+      "videoSha256": "08388d3fd08a2f29185ab4502449c98b7e6e6f19fbf23eaaa6551b8ab14d2268",
+      "fullFrame": "영상_상세_04-yuhobuilds-youtube_13s_title.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "second": 23,
+      "detail": "body",
+      "crop": {
+        "left": 90,
+        "top": 720,
+        "width": 840,
+        "height": 530
+      },
+      "videoSha256": "08388d3fd08a2f29185ab4502449c98b7e6e6f19fbf23eaaa6551b8ab14d2268",
+      "fullFrame": "영상_상세_04-yuhobuilds-youtube_23s_body.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "second": 33,
+      "detail": "object",
+      "crop": {
+        "left": 90,
+        "top": 720,
+        "width": 840,
+        "height": 530
+      },
+      "videoSha256": "08388d3fd08a2f29185ab4502449c98b7e6e6f19fbf23eaaa6551b8ab14d2268",
+      "fullFrame": "영상_상세_04-yuhobuilds-youtube_33s_object.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "second": 24,
+      "detail": "notebook",
+      "crop": {
+        "left": 90,
+        "top": 720,
+        "width": 840,
+        "height": 530
+      },
+      "videoSha256": "36d1097d8b809a3b911a3bf84e41038c48033b66e25fe6f9d3263a4d60b0ac99",
+      "fullFrame": "영상_상세_05-yuhobuilds-instagram_24s_notebook.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "second": 9.5,
+      "detail": "title",
+      "crop": {
+        "left": 90,
+        "top": 720,
+        "width": 840,
+        "height": 530
+      },
+      "videoSha256": "48bf778108f5dd63f25b99b5feefa582a85b30f8a76477d216dc3a4766efcfab",
+      "fullFrame": "영상_상세_06-yuhobuilds-tiktok_9.5s_title.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "second": 12,
+      "detail": "body",
+      "crop": {
+        "left": 90,
+        "top": 720,
+        "width": 840,
+        "height": 530
+      },
+      "videoSha256": "48bf778108f5dd63f25b99b5feefa582a85b30f8a76477d216dc3a4766efcfab",
+      "fullFrame": "영상_상세_06-yuhobuilds-tiktok_12s_body.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "second": 14.5,
+      "detail": "object",
+      "crop": {
+        "left": 90,
+        "top": 720,
+        "width": 840,
+        "height": 530
+      },
+      "videoSha256": "48bf778108f5dd63f25b99b5feefa582a85b30f8a76477d216dc3a4766efcfab",
+      "fullFrame": "영상_상세_06-yuhobuilds-tiktok_14.5s_object.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "second": 3,
+      "detail": "letter",
+      "crop": {
+        "left": 170,
+        "top": 900,
+        "width": 700,
+        "height": 530
+      },
+      "videoSha256": "5d7fe633c98cd0ab0ccc4aaf352ba05747755050f22fbe6aceb57533abf4e489",
+      "fullFrame": "영상_상세_07-synkbrief-youtube_3s_letter.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "second": 20,
+      "detail": "scissors",
+      "crop": {
+        "left": 120,
+        "top": 910,
+        "width": 790,
+        "height": 520
+      },
+      "videoSha256": "5d7fe633c98cd0ab0ccc4aaf352ba05747755050f22fbe6aceb57533abf4e489",
+      "fullFrame": "영상_상세_07-synkbrief-youtube_20s_scissors.png",
+      "cropResize": false,
+      "phoneSize": [
+        360,
+        640
+      ],
+      "visualInspection": "strategy_b directly inspected the native-pixel detail crop and 360x640 phone view on 2026-09-09; contours and relevant text passed. LAB and SHIFT logo crops additionally inspected at native pixels."
+    }
+  ],
+  "independentInspection": "research_gate confirmed all 10 native-pixel detail crops and checked final MP4 hashes on 2026-09-09; final 7-video visual review passed.",
+  "fullRealtimePlayback": false,
+  "humanAudioListening": false,
+  "externalPosting": false
+}

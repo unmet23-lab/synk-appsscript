@@ -1,0 +1,41 @@
+[
+  {
+    "created_at": "2026-09-09T07:13:23.146298Z",
+    "display_name": "GPT Image 2.5",
+    "id": "6c102828-b73e-45b1-b20a-a1b8ac6c6d4e",
+    "job_type": "gpt_image_2_5",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_071323_6c102828-b73e-45b1-b20a-a1b8ac6c6d4e_min.webp",
+    "params": {
+      "aspect_ratio": "3:2",
+      "background": "transparent",
+      "height": 1360,
+      "medias": [
+        {
+          "data": {
+            "id": "d566b3ba-cda3-497f-b553-70179f694709",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/d566b3ba-cda3-497f-b553-70179f694709.png"
+          },
+          "role": "image"
+        },
+        {
+          "data": {
+            "id": "19ea669f-9e4e-43b8-8496-23bb7cde5fd0",
+            "type": "media_input",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/19ea669f-9e4e-43b8-8496-23bb7cde5fd0_resize.jpg"
+          },
+          "role": "image"
+        }
+      ],
+      "model": "sunburst",
+      "prompt": "Use case: material application to exact existing brand lettering, not a new logo design.\nCreate ONLY the uppercase word \"SHIFT\" as five beautifully crafted wool-felt applique letters, genuinely isolated on transparent background. Input 1 is the mandatory flat typography reference: preserve the exact uppercase lettering, Inter Tight Semibold proportions, kerning, straight baseline and outlines. Input 2 is the official SYNK wool logo, a MATERIAL reference only; do not reproduce the word synk in this output.\nMatch the official logo's dense soft felt, subtle loft, cream hand-sewn running stitches inside the entire perimeter of every letter, microscopic fibers, light from upper left and restrained dimensional depth. Letter body color is the established SHIFT Lapis Deep, #24448C, a deep lapis blue. Stitch thread is warm light cream, not bright white. SHIFT is exact, dependable and clear, expressed through finely controlled even stitches and a composed baseline, not extra symbols or formal crests. Keep the typography shape precise, restrained and immediately legible. Capital I must remain the simple vertical stem from the reference, not an invented serif.\nFront view, horizontal word centered in the image, no perspective distortion, no tilt, equal letter heights. Large word occupies about 80 percent of canvas width with 12 percent clear transparent margin. Every letter must have intact continuous edges and visible tidy perimeter stitches; no stitch underline. No substrate, no badge, no border, no cloth rectangle, no other words, no watermark, no glow, no cast shadow, no halo, no grey fringe, no checkerboard backdrop. All surrounding space must be truly transparent. Letter faces fully opaque. Premium textile macro detail, not plastic, embroidery cursive, sequins, or fuzzy noise. This should pair faithfully with the reference SYNK logo without redesigning either brand.",
+      "quality": "xhigh",
+      "reference_elements": [],
+      "remove_bg": false,
+      "resolution": "2k",
+      "width": 2048
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260909_071323_6c102828-b73e-45b1-b20a-a1b8ac6c6d4e.png",
+    "status": "completed"
+  }
+]

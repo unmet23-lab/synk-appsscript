@@ -1,0 +1,141 @@
+{
+  "createdAt": "2026-09-09T07:37:06.378Z",
+  "authorization": "Existing Higgsfield credits only, explicitly approved GPT Image 2.5. No purchases or autocharge.",
+  "officialBrandMasterOverwritten": false,
+  "entries": [
+    {
+      "name": "LAB",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/LAB-2.5.png",
+      "sourceSha256": "8ae45f2508e1003f1b68843ac871e44a9c58fb9ddcefa2fd408d05d22f0b3920",
+      "jobId": "2f43b687-7d88-4b69-86d0-c4a63950ec53",
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "xhigh",
+      "sourceWidth": 2048,
+      "sourceHeight": 1360,
+      "alphaBounds": {
+        "left": 96,
+        "top": 271,
+        "width": 1903,
+        "height": 775,
+        "visibleAlphaPixels": 926852,
+        "thresholdForBoundsOnly": 8
+      },
+      "crop": {
+        "left": 72,
+        "top": 247,
+        "width": 1951,
+        "height": 823
+      },
+      "export": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-lab.webp",
+      "width": 1951,
+      "height": 823,
+      "sha256": "6c92afe5ba49d701c0942eed725127e73b86723c72d94f566224c158613d8f65",
+      "operation": "Lossless WebP; optical bounds alpha>=8 plus 24px padding cropped from original. Alpha values inside crop unchanged; no recoloring or color-key removal. Original PNG retained. Generated material interpretation, not a geometrically exact new corporate master."
+    },
+    {
+      "name": "SHIFT",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/SHIFT-2.5.png",
+      "sourceSha256": "2a30f5c4c50bbfd84e9385be520aca16beb9b73d606d2cc14101830e6c0e892e",
+      "jobId": "6c102828-b73e-45b1-b20a-a1b8ac6c6d4e",
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "xhigh",
+      "sourceWidth": 2048,
+      "sourceHeight": 1360,
+      "alphaBounds": {
+        "left": 83,
+        "top": 426,
+        "width": 1888,
+        "height": 552,
+        "visibleAlphaPixels": 634287,
+        "thresholdForBoundsOnly": 8
+      },
+      "crop": {
+        "left": 59,
+        "top": 402,
+        "width": 1936,
+        "height": 600
+      },
+      "export": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-shift.webp",
+      "width": 1936,
+      "height": 600,
+      "sha256": "294b5a309321183a518da010dc31de93160d49dbdec6423a8b07fdfebfab500c",
+      "operation": "Lossless WebP; optical bounds alpha>=8 plus 24px padding cropped from original. Alpha values inside crop unchanged; no recoloring or color-key removal. Original PNG retained. Generated material interpretation, not a geometrically exact new corporate master."
+    },
+    {
+      "name": "PULSE",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/PULSE-2.5.png",
+      "sourceSha256": "60561081c441a9121f3622f89098c468ea2ab4a7c0cbaf58950aeb68ccea160e",
+      "jobId": "f4b7ab78-4f76-4962-b557-30aa7b6a2779",
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "xhigh",
+      "sourceWidth": 2048,
+      "sourceHeight": 1360,
+      "alphaBounds": {
+        "left": 61,
+        "top": 398,
+        "width": 1939,
+        "height": 529,
+        "visibleAlphaPixels": 653287,
+        "thresholdForBoundsOnly": 8
+      },
+      "crop": {
+        "left": 37,
+        "top": 374,
+        "width": 1987,
+        "height": 577
+      },
+      "export": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-pulse.webp",
+      "width": 1987,
+      "height": 577,
+      "sha256": "b61c98490e421e9d6d1b93c7f593b97fee4740d1837ece145ba557cb366a775b",
+      "operation": "Lossless WebP; optical bounds alpha>=8 plus 24px padding cropped from original. Alpha values inside crop unchanged; no recoloring or color-key removal. Original PNG retained. Generated material interpretation, not a geometrically exact new corporate master."
+    },
+    {
+      "name": "SYNK",
+      "source": "docs/Loom_자산/구움/양모워드마크_누끼.png",
+      "sourceSha256": "917a66a7127cb03dcc491a079aa21d75ae07ab4d744b99d0669c05bbed50c665",
+      "export": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-synk.webp",
+      "sha256": "9be5c8dccac9c3da088cd3517ad87fcf21d85e9aeb6bf29fe52a234d65cb2ae9",
+      "operation": "Existing official raster; unchanged dimensions and visible pixels; lossless WebP only. Not newly generated."
+    },
+    {
+      "name": "envelope",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/봉투-2.5.png",
+      "sourceSha256": "093bab29250c4437866cd6f975c3e2d05e8710ba4a41b63f7cb35001728bd6ad",
+      "jobId": "e2a24178-db0f-41f2-b117-809245656369",
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "xhigh",
+      "width": 2336,
+      "height": 1744,
+      "operation": "Original generated RGBA preserved; no additional background removal."
+    },
+    {
+      "name": "book",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/책-2.5.png",
+      "sourceSha256": "d76eb90eed33679326106f6c59f139356cf2cc35c1949d02919b220267de62f1",
+      "jobId": "00c56b25-23fe-4ce6-bd49-1544aaa3a471",
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "xhigh",
+      "width": 2048,
+      "height": 1360,
+      "operation": "Original generated RGBA preserved; no additional background removal."
+    },
+    {
+      "name": "scissors",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/가위-2.5.png",
+      "sourceSha256": "6e53d5d1baf081428ce79fa80e4796e28258c432ad1849319df40bc2ca433b74",
+      "jobId": "84ebed23-c82c-4df1-82ad-e7dbe939b8a2",
+      "model": "gpt_image_2_5",
+      "variant": "sunburst",
+      "quality": "xhigh",
+      "width": 2048,
+      "height": 1360,
+      "operation": "Original generated RGBA preserved; no additional background removal."
+    }
+  ]
+}

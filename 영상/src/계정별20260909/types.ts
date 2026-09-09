@@ -27,9 +27,11 @@ export const videoIds = [
 
 export const assetFiles: Record<string, string> = {
   night: 'night.webp', notebook: 'notebook.webp', compass: 'compass.avif',
-  letter: 'letter.webp', book: 'book.webp', scissors: 'scissors.webp',
+  letter: 'letter.png', book: 'book.png', scissors: 'scissors.png',
   classroom: 'classroom.webp', cafe: 'cafe.webp', mong: 'mong.webp',
   smile: 'smile.webp', curious: 'curious.webp', korean: 'korean.webp',
   headphones: 'headphones.webp', stitch: 'stitch.webp', woolLogo: 'woolLogo.webp',
   labpage: 'labpage.png', shiftpage: 'shiftpage.png', pulsepage: 'pulsepage.png',
+  'brand-synk': 'brand-synk.webp', 'brand-lab': 'brand-lab.webp',
+  'brand-shift': 'brand-shift.webp', 'brand-pulse': 'brand-pulse.webp',
 };

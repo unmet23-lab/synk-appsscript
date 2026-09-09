@@ -1,6 +1,6 @@
 {
   "sourceSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
-  "renderedAt": "2026-09-08T23:55:55.642Z",
+  "renderedAt": "2026-09-09T07:40:22.971Z",
   "cards": 26,
   "errors": [],
   "results": [
@@ -10,6 +10,30 @@
       "master": "01-lab-youtube/master-01.png",
       "upload": "01-lab-youtube/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-pulse.webp",
+            "width": 210.328125,
+            "height": 61.078125,
+            "loaded": true,
+            "top": 62.453125,
+            "bottom": 123.53125
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -59,6 +83,30 @@
       "master": "02-lab-instagram/master-01.png",
       "upload": "02-lab-instagram/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-lab.webp",
+            "width": 140.96875,
+            "height": 59.46875,
+            "loaded": true,
+            "top": 63.265625,
+            "bottom": 122.734375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -108,6 +156,30 @@
       "master": "02-lab-instagram/master-02.png",
       "upload": "02-lab-instagram/upload-02.jpg",
       "card": "2",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-lab.webp",
+            "width": 140.96875,
+            "height": 59.46875,
+            "loaded": true,
+            "top": 63.265625,
+            "bottom": 122.734375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -165,6 +237,30 @@
       "master": "02-lab-instagram/master-03.png",
       "upload": "02-lab-instagram/upload-03.jpg",
       "card": "3",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-lab.webp",
+            "width": 140.96875,
+            "height": 59.46875,
+            "loaded": true,
+            "top": 63.265625,
+            "bottom": 122.734375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -222,6 +318,30 @@
       "master": "02-lab-instagram/master-04.png",
       "upload": "02-lab-instagram/upload-04.jpg",
       "card": "4",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-lab.webp",
+            "width": 140.96875,
+            "height": 59.46875,
+            "loaded": true,
+            "top": 63.265625,
+            "bottom": 122.734375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -287,6 +407,30 @@
       "master": "02-lab-instagram/master-05.png",
       "upload": "02-lab-instagram/upload-05.jpg",
       "card": "5",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-lab.webp",
+            "width": 140.96875,
+            "height": 59.46875,
+            "loaded": true,
+            "top": 63.265625,
+            "bottom": 122.734375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -353,6 +497,30 @@
       "master": "03-lab-tiktok/master-01.png",
       "upload": "03-lab-tiktok/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-lab.webp",
+            "width": 140.96875,
+            "height": 59.46875,
+            "loaded": true,
+            "top": 63.265625,
+            "bottom": 122.734375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -402,6 +570,30 @@
       "master": "04-yuhobuilds-youtube/master-01.png",
       "upload": "04-yuhobuilds-youtube/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -451,6 +643,30 @@
       "master": "05-yuhobuilds-instagram/master-01.png",
       "upload": "05-yuhobuilds-instagram/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -500,6 +716,30 @@
       "master": "06-yuhobuilds-tiktok/master-01.png",
       "upload": "06-yuhobuilds-tiktok/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -549,6 +789,30 @@
       "master": "07-synkbrief-youtube/master-01.png",
       "upload": "07-synkbrief-youtube/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -598,6 +862,30 @@
       "master": "08-synkbrief-instagram/master-01.png",
       "upload": "08-synkbrief-instagram/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -647,6 +935,30 @@
       "master": "08-synkbrief-instagram/master-02.png",
       "upload": "08-synkbrief-instagram/upload-02.jpg",
       "card": "2",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -705,6 +1017,30 @@
       "master": "08-synkbrief-instagram/master-03.png",
       "upload": "08-synkbrief-instagram/upload-03.jpg",
       "card": "3",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -771,6 +1107,30 @@
       "master": "08-synkbrief-instagram/master-04.png",
       "upload": "08-synkbrief-instagram/upload-04.jpg",
       "card": "4",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -837,6 +1197,30 @@
       "master": "08-synkbrief-instagram/master-05.png",
       "upload": "08-synkbrief-instagram/upload-05.jpg",
       "card": "5",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -903,6 +1287,30 @@
       "master": "08-synkbrief-instagram/master-06.png",
       "upload": "08-synkbrief-instagram/upload-06.jpg",
       "card": "6",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -969,6 +1377,30 @@
       "master": "09-synkbrief-tiktok/master-01.png",
       "upload": "09-synkbrief-tiktok/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -1018,6 +1450,30 @@
       "master": "10-lab-facebook/master-01.png",
       "upload": "10-lab-facebook/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-lab.webp",
+            "width": 140.96875,
+            "height": 59.46875,
+            "loaded": true,
+            "top": 63.265625,
+            "bottom": 122.734375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -1084,6 +1540,30 @@
       "master": "10-lab-facebook/master-02.png",
       "upload": "10-lab-facebook/upload-02.jpg",
       "card": "2",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-lab.webp",
+            "width": 140.96875,
+            "height": 59.46875,
+            "loaded": true,
+            "top": 63.265625,
+            "bottom": 122.734375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -1150,6 +1630,30 @@
       "master": "11-yuhobuilds-threads/master-01.png",
       "upload": "11-yuhobuilds-threads/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -1199,6 +1703,30 @@
       "master": "12-synkbrief-threads/master-01.png",
       "upload": "12-synkbrief-threads/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -1265,6 +1793,30 @@
       "master": "13-yuhobuilds-linkedin/master-01.png",
       "upload": "13-yuhobuilds-linkedin/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -1355,6 +1907,30 @@
       "master": "14-lab-telegram/master-01.png",
       "upload": "14-lab-telegram/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-lab.webp",
+            "width": 140.96875,
+            "height": 59.46875,
+            "loaded": true,
+            "top": 63.265625,
+            "bottom": 122.734375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -1420,6 +1996,30 @@
       "master": "15-synklab-substack/master-01.png",
       "upload": "15-synklab-substack/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          },
+          {
+            "source": "../assets/brand-shift.webp",
+            "width": 196.359375,
+            "height": 60.859375,
+            "loaded": true,
+            "top": 62.5625,
+            "bottom": 123.421875
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true
@@ -1469,6 +2069,22 @@
       "master": "16-synk-instagram/master-01.png",
       "upload": "16-synk-instagram/upload-01.jpg",
       "card": "1",
+      "brand": {
+        "images": [
+          {
+            "source": "../assets/brand-synk.webp",
+            "width": 240,
+            "height": 110.71875,
+            "loaded": true,
+            "top": 40.640625,
+            "bottom": 151.359375
+          }
+        ],
+        "flatSvg": 0,
+        "flatDivision": 0,
+        "overlapCopy": false,
+        "outside": false
+      },
       "fonts": {
         "suit": true,
         "inter": true

@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-09-08T23:42:40.205Z",
+  "createdAt": "2026-09-09T07:41:23.969Z",
   "assets": [
     {
       "key": "night",
@@ -15,21 +15,21 @@
     },
     {
       "key": "letter",
-      "source": "docs/홍보물/브랜드소개_20260909/assets/letter.webp",
-      "file": "letter.webp",
-      "sha256": "7d6728e3b1b65379c5b69af8e0eb3af0f9b1a7d1424906404cd111fb660bd3ac"
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/봉투-2.5.png",
+      "file": "letter.png",
+      "sha256": "093bab29250c4437866cd6f975c3e2d05e8710ba4a41b63f7cb35001728bd6ad"
     },
     {
       "key": "book",
-      "source": "docs/홍보물/브랜드소개_20260909/assets/book.webp",
-      "file": "book.webp",
-      "sha256": "8fab4b618b7e7a6d377dafe6ac5edf4e31fb3c45339f16209008b458621d421d"
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/책-2.5.png",
+      "file": "book.png",
+      "sha256": "d76eb90eed33679326106f6c59f139356cf2cc35c1949d02919b220267de62f1"
     },
     {
       "key": "scissors",
-      "source": "docs/홍보물/브랜드소개_20260909/assets/scissors.webp",
-      "file": "scissors.webp",
-      "sha256": "7dd27417990d688d9871d56d929679a07235f955b541b7b26621743478629ade"
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/가위-2.5.png",
+      "file": "scissors.png",
+      "sha256": "6e53d5d1baf081428ce79fa80e4796e28258c432ad1849319df40bc2ca433b74"
     },
     {
       "key": "classroom",
@@ -86,6 +86,30 @@
       "sha256": "6d1b8485a8fed973f222c106e8943818205405d0b24352e76fc8e0acfa6c2d82"
     },
     {
+      "key": "brand-synk",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-synk.webp",
+      "file": "brand-synk.webp",
+      "sha256": "9be5c8dccac9c3da088cd3517ad87fcf21d85e9aeb6bf29fe52a234d65cb2ae9"
+    },
+    {
+      "key": "brand-lab",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-lab.webp",
+      "file": "brand-lab.webp",
+      "sha256": "6c92afe5ba49d701c0942eed725127e73b86723c72d94f566224c158613d8f65"
+    },
+    {
+      "key": "brand-shift",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-shift.webp",
+      "file": "brand-shift.webp",
+      "sha256": "294b5a309321183a518da010dc31de93160d49dbdec6423a8b07fdfebfab500c"
+    },
+    {
+      "key": "brand-pulse",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-pulse.webp",
+      "file": "brand-pulse.webp",
+      "sha256": "b61c98490e421e9d6d1b93c7f593b97fee4740d1837ece145ba557cb366a775b"
+    },
+    {
       "key": "compass",
       "source": "영상/public/공방/공방_나침반.avif",
       "file": "compass.avif",
@@ -93,21 +117,21 @@
     },
     {
       "key": "labpage",
-      "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/lab-1.png",
       "file": "labpage.png",
-      "sha256": "8d82ac1e45dfc6370dc069ace0e3dce35fa755510807ffb26b536c2254e3e649"
+      "sha256": "e81b6a2900ea049c26f4ee213ad0206d44b4928667b436cb9e0e3f924d323ea0"
     },
     {
       "key": "shiftpage",
-      "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-1.png",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/shift-1.png",
       "file": "shiftpage.png",
-      "sha256": "f36939e1eb432188f150aad4fd9dd1b4f8e4db66f6be1acf5bd55c652774e6a3"
+      "sha256": "f470158daa72414f554e3ee4e0a0d5a3c28a819eb5dd2e61320e49ba5736d2cc"
     },
     {
       "key": "pulsepage",
-      "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-1.png",
+      "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/pulse-1.png",
       "file": "pulsepage.png",
-      "sha256": "a8e178bd3063ecba5654cc1247253783c7160c91696ad9eb7a705da1448599e8"
+      "sha256": "0e86e9046c6211bdf3808da493581e4308028f258e214bb28f45dc36096acf1e"
     }
   ],
   "fontsVerified": 9,
