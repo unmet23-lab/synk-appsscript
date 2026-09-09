@@ -1,0 +1,318 @@
+[
+  {
+    "id": "0076",
+    "status": "valid"
+  },
+  {
+    "id": "0077",
+    "status": "valid"
+  },
+  {
+    "id": "0078",
+    "status": "valid"
+  },
+  {
+    "id": "0079",
+    "status": "valid"
+  },
+  {
+    "id": "0080",
+    "status": "valid"
+  },
+  {
+    "id": "0081",
+    "status": "valid"
+  },
+  {
+    "id": "0082",
+    "status": "valid"
+  },
+  {
+    "id": "0083",
+    "status": "valid"
+  },
+  {
+    "id": "0084",
+    "status": "valid"
+  },
+  {
+    "id": "0085",
+    "status": "valid"
+  },
+  {
+    "id": "0086",
+    "status": "valid"
+  },
+  {
+    "id": "0087",
+    "status": "valid"
+  },
+  {
+    "id": "0088",
+    "status": "valid"
+  },
+  {
+    "id": "0089",
+    "status": "valid"
+  },
+  {
+    "id": "0090",
+    "status": "valid"
+  },
+  {
+    "id": "0091",
+    "status": "valid"
+  },
+  {
+    "id": "0092",
+    "status": "valid"
+  },
+  {
+    "id": "0093",
+    "status": "valid"
+  },
+  {
+    "id": "0094",
+    "status": "valid"
+  },
+  {
+    "id": "0095",
+    "status": "valid"
+  },
+  {
+    "id": "0096",
+    "status": "valid"
+  },
+  {
+    "id": "0097",
+    "status": "valid"
+  },
+  {
+    "id": "0098",
+    "status": "valid"
+  },
+  {
+    "id": "0099",
+    "status": "valid"
+  },
+  {
+    "id": "0100",
+    "status": "valid"
+  },
+  {
+    "id": "0101",
+    "status": "valid"
+  },
+  {
+    "id": "0102",
+    "status": "valid"
+  },
+  {
+    "id": "0103",
+    "status": "valid"
+  },
+  {
+    "id": "0104",
+    "status": "correct",
+    "reasonKo": "문장 중간 '2 өгүүлбэр —' 부분에 동사가 빠져 있어 다소 어색하므로 'бичээд(작성하고)'를 추가하여 자연스럽게 연결합니다.",
+    "newText": "Эсрэгцүүлсэн -지만 хэлбэрээр 2 өгүүлбэр бичээд — 1-ийг нь сурах бичгийн эх бичвэрээс 하지만 эсвэл -지만 орсон өгүүлбэр олж хуулж бичээрэй.",
+    "intendedKo": "대조를 나타내는 -지만 형태로 2문장을 작성하고, 그 중 1문장은 본문에서 찾아서 쓰세요.",
+    "newMeaningKo": "대조를 나타내는 -지만 형태로 2문장을 작성하되, 그 중 1개는 교재 본문에서 하지만 또는 -지만이 들어간 문장을 찾아 베껴 쓰세요."
+  },
+  {
+    "id": "0105",
+    "status": "valid"
+  },
+  {
+    "id": "0106",
+    "status": "valid"
+  },
+  {
+    "id": "0107",
+    "status": "valid"
+  },
+  {
+    "id": "0108",
+    "status": "valid"
+  },
+  {
+    "id": "0109",
+    "status": "valid"
+  },
+  {
+    "id": "0110",
+    "status": "valid"
+  },
+  {
+    "id": "0111",
+    "status": "valid"
+  },
+  {
+    "id": "0112",
+    "status": "valid"
+  },
+  {
+    "id": "0113",
+    "status": "valid"
+  },
+  {
+    "id": "0114",
+    "status": "valid"
+  },
+  {
+    "id": "0115",
+    "status": "valid"
+  },
+  {
+    "id": "0116",
+    "status": "correct",
+    "reasonKo": "'утсандаа бичээрэй'는 휴대전화에 문자로 적으라는 의미로 오해될 수 있으므로, 목소리를 녹음하라는 의미가 명확하도록 'бичлэг хийгээрэй'로 수정합니다.",
+    "newText": "Өнөөдөр сурсан хэллэгээрээ 30 секунд ганцаараа ярьж, утсандаа бичлэг хийгээрэй.",
+    "intendedKo": "배운 표현으로 30초간 혼자 말하고 전화기에 녹음하세요.",
+    "newMeaningKo": "오늘 배운 표현으로 30초 동안 혼자 말하고 휴대전화에 녹음해 두세요."
+  },
+  {
+    "id": "0117",
+    "status": "valid"
+  },
+  {
+    "id": "0118",
+    "status": "valid"
+  },
+  {
+    "id": "0119",
+    "status": "valid"
+  },
+  {
+    "id": "0120",
+    "status": "valid"
+  },
+  {
+    "id": "0121",
+    "status": "valid"
+  },
+  {
+    "id": "0122",
+    "status": "valid"
+  },
+  {
+    "id": "0123",
+    "status": "valid"
+  },
+  {
+    "id": "0124",
+    "status": "valid"
+  },
+  {
+    "id": "0125",
+    "status": "valid"
+  },
+  {
+    "id": "0126",
+    "status": "valid"
+  },
+  {
+    "id": "0127",
+    "status": "correct",
+    "reasonKo": "'чангаар дуудаж'는 큰 소리로 누군가를 부른다는 의미가 될 수 있으므로, 큰 소리로 말하며 연습하라는 의미의 'чанга хэлж'로 수정합니다.",
+    "newText": "Зам асуух 3 өгүүлбэрийг чанга хэлж дасгал хийгээрэй.",
+    "intendedKo": "길을 묻는 3문장을 큰 소리로 말하며 연습하세요.",
+    "newMeaningKo": "길을 묻는 3개의 문장을 큰 소리로 말하며 연습하세요."
+  },
+  {
+    "id": "0128",
+    "status": "valid"
+  },
+  {
+    "id": "0129",
+    "status": "valid"
+  },
+  {
+    "id": "0130",
+    "status": "valid"
+  },
+  {
+    "id": "0131",
+    "status": "valid"
+  },
+  {
+    "id": "0132",
+    "status": "valid"
+  },
+  {
+    "id": "0133",
+    "status": "valid"
+  },
+  {
+    "id": "0134",
+    "status": "valid"
+  },
+  {
+    "id": "0135",
+    "status": "valid"
+  },
+  {
+    "id": "0136",
+    "status": "correct",
+    "reasonKo": "'хэл эргэдэг(혀가 구르는)'보다는 발음하기 어려워 '혀가 꼬이는'이라는 잰말놀이 느낌의 'хэл орооцолддог'가 자연스러운 몽골어 표현입니다.",
+    "newText": "Дуудахад хэл орооцолддог 1 өгүүлбэрийг 5 удаа давтаарай.",
+    "intendedKo": "발음하기 어려워 혀가 꼬이는 1문장을 5번 반복하세요.",
+    "newMeaningKo": "발음할 때 혀가 꼬이는 1문장을 5번 반복하세요."
+  },
+  {
+    "id": "0137",
+    "status": "valid"
+  },
+  {
+    "id": "0138",
+    "status": "valid"
+  },
+  {
+    "id": "0139",
+    "status": "valid"
+  },
+  {
+    "id": "0140",
+    "status": "valid"
+  },
+  {
+    "id": "0141",
+    "status": "valid"
+  },
+  {
+    "id": "0142",
+    "status": "valid"
+  },
+  {
+    "id": "0143",
+    "status": "valid"
+  },
+  {
+    "id": "0144",
+    "status": "valid"
+  },
+  {
+    "id": "0145",
+    "status": "valid"
+  },
+  {
+    "id": "0146",
+    "status": "valid"
+  },
+  {
+    "id": "0147",
+    "status": "valid"
+  },
+  {
+    "id": "0148",
+    "status": "valid"
+  },
+  {
+    "id": "0149",
+    "status": "valid"
+  },
+  {
+    "id": "0150",
+    "status": "valid"
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-09-08T23:49:00.636Z",
+  "count": 40,
+  "changed": 40,
+  "summary": [
+    {
+      "file": "Code.js",
+      "changedStringLiterals": 1,
+      "codeStructureUnchanged": true,
+      "escapesUnchanged": true
+    },
+    {
+      "file": "엔진_운영배치.js",
+      "changedStringLiterals": 2,
+      "codeStructureUnchanged": true,
+      "escapesUnchanged": true
+    },
+    {
+      "file": "엔진_콘텐츠AI.js",
+      "changedStringLiterals": 37,
+      "codeStructureUnchanged": true,
+      "escapesUnchanged": true
+    }
+  ]
+}
