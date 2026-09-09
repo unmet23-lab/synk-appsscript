@@ -1,0 +1,5 @@
+# Hash-addressed live helpers and receipts must preserve LF on Windows checkout.
+*.html text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.json text eol=lf

@@ -1,0 +1,12 @@
+{
+  "at": "2026-09-09T18:05:23.125Z",
+  "sourceFiles": 6,
+  "sourceHashes": "pass",
+  "sourceMutation": 0,
+  "alphaMismatch": 0,
+  "outsideEyeDifference": 0,
+  "clothingDifference": 0,
+  "eyeMaskPixels": 11609,
+  "expressionScheduleFrames": 1848,
+  "corruptDonorRejected": true
+}

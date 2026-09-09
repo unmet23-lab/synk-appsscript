@@ -1,0 +1,71 @@
+{
+  "atUTC": "2026-09-09T18:25:04.518Z",
+  "readOnly": true,
+  "service": {
+    "mainPid": 154081,
+    "automaticRestarts": 2,
+    "activeState": "active",
+    "subState": "running",
+    "ffmpegPid": 154216
+  },
+  "tcp": [
+    {
+      "state": "ESTAB",
+      "recvQueue": 8,
+      "sendQueue": 0,
+      "bytesSent": 99202573,
+      "bytesAcked": 99195901,
+      "bytesReceived": 9310
+    }
+  ],
+  "progress": [
+    {
+      "secondsUTC": "18:22:22",
+      "screenshots": 472,
+      "emitted": 717,
+      "failures": 0,
+      "speed": 0.997,
+      "dropped": 0,
+      "duplicated": 0,
+      "outTime": "00:01:53.848000"
+    },
+    {
+      "secondsUTC": "18:23:22",
+      "screenshots": 688,
+      "emitted": 1077,
+      "failures": 0,
+      "speed": 0.998,
+      "dropped": 0,
+      "duplicated": 0,
+      "outTime": "00:02:53.709000"
+    },
+    {
+      "secondsUTC": "18:24:22",
+      "screenshots": 915,
+      "emitted": 1437,
+      "failures": 0,
+      "speed": 0.998,
+      "dropped": 0,
+      "duplicated": 0,
+      "outTime": "00:03:53.593000"
+    }
+  ],
+  "recordedStalls": [
+    {
+      "secondsUTC": "18:16:53",
+      "stalledSeconds": 38,
+      "outTime": "00:01:05.248000"
+    },
+    {
+      "secondsUTC": "18:20:13",
+      "stalledSeconds": 39,
+      "outTime": "00:02:24.359000"
+    }
+  ],
+  "status": "현재 송출 진행과 연결 정상; 반영 후 자동 복구 2회; 근본 원인 미확인",
+  "limitations": [
+    "한 시점과 최근 로그의 읽기 확인",
+    "전체 장시간 안정성 보장 아님",
+    "서버 변경 및 추가 재시작 없음"
+  ]
+}

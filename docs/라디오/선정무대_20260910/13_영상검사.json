@@ -1,0 +1,28 @@
+{
+  "at": "2026-09-09T17:57:38.849Z",
+  "original": "docs\\라디오\\선정무대_20260910\\13_생성원본.mp4",
+  "originalSha256": "a599027b2d50eb32c02cb8f9681426378c715e1f0a212aa9932a9e753b6a5dce",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_type": "video",
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "24/1",
+        "nb_read_frames": "289"
+      }
+    ],
+    "format": {
+      "duration": "12.041667"
+    }
+  },
+  "output": "영상\\public\\radioDreams20260910\\field-loop.mp4",
+  "outputSha256": "30ecf105d3218fb9a19e5e23143051a55cf3cc96a8be53580c71250fbc9e7046",
+  "playbackSpeed": 0.7083333333333333,
+  "cycleSeconds": 15,
+  "frames": 450,
+  "method": "Whole generated scene retimed to 17s, 2s cosine-weight cyclic overlap, yielding 15s continuous loop. No camera transform, optical flow, region warp or generated mascot.",
+  "visualQA": "pending"
+}
