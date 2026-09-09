@@ -2,7 +2,7 @@
 // One music film only. No stream/server/SNS mutation. Canonical approved assets stay untouched.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawnSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..'),collection=path.join(root,'docs/홍보물/마케팅실행_20260909');
-const publicDir=path.join(__dirname,'public/klofi20260909'),review=path.join(collection,'_검토/klofi-v4');
+const publicDir=path.join(__dirname,'public/klofi20260909'),review=path.join(collection,'_검토/klofi-v5');
 const ff='ffmpeg',probeExe='ffprobe'; // Installed full build: bundled Remotion binary omits audio filters.
 const args=process.argv.slice(2),hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const json=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,''));
@@ -17,16 +17,19 @@ function prepare(){
  fs.copyFileSync(stage,path.join(publicDir,'stage-v4.mp4'));
  // Preserve the complete source and its -15 LUFS level. Only 40ms edge de-click fades.
  run(ff,['-v','error','-y','-i',song,'-af','afade=t=in:st=0:d=0.04,afade=t=out:st=61.56:d=0.04','-ar','48000','-c:a','pcm_s16le',path.join(publicDir,'song.wav')]);
- const dir=path.join(root,'docs/Loom_자산/라디오DJ'),manifest=json(path.join(dir,'판.json')),files={};
+ run(process.execPath,[path.join(__dirname,'klofi경계준비.cjs'),'--out',publicDir]);
+ const manifest=json(path.join(publicDir,'경계-source.json')),files={};
  const names={본체:'기본',눈감음:'깜빡',눈웃음:'눈웃음',궁금함:'궁금함',집중:'집중',안도:'안도',응원:'응원',놀람:'놀람'};
- for(const [key,item] of Object.entries(manifest.표정)){
-  const file=path.join(dir,item.파일);if(hash(file)!==item.sha256)throw Error('Approved DJ changed: '+key);
-  const target='dj-'+key+'.webp';fs.copyFileSync(file,path.join(publicDir,target));files[names[key]]=target;
- }
+ for(const key of Object.keys(names))files[names[key]]='dj-'+key+'.png';
  const rhythm=require(path.join(root,'bots/오버레이/라디오표정리듬.js')).만들기({seed:20260909});
  const faces=Array.from({length:1848},(_,f)=>rhythm.읽기(f*1000/30,{밤:false,가능표정:Object.keys(files)}).표정);
  const logo=path.join(collection,'assets/brand-synk-paper.webp');fs.copyFileSync(logo,path.join(publicDir,'synk-paper.webp'));
- write(path.join(publicDir,'plan.json'),{title:'오늘 밤 제일 환한 사람',duration:61.6,faces,files});
+ // Exact grounding from the deployed after-마스코트.html, not the in-progress wardrobe UI.
+ const groundingSource=path.join(root,'docs/_ops/라디오생동_20260909/털고정/after-마스코트.html');
+ if(hash(groundingSource)!=='64e3c25efc30375e999be983da7e6295de01108f8b7de0e676f44e32412da983')throw Error('Approved grounding snapshot changed');
+ const shadow={bottom:'20.6%',color:'rgba(58,38,24,0.66)'};
+ write(path.join(publicDir,'plan.json'),{title:'오늘 밤 제일 환한 사람',duration:61.6,faces,files,shadow});
+ write(path.join(review,'grounding.json'),{source:path.relative(root,groundingSource),sha256:hash(groundingSource),shadow,body:{left:652.8,bottom:94.5,width:614.4,height:614.4,translateY:'-4.17%'},wholeBodyOpacity:1,blur:false});
  write(path.join(review,'source.json'),{at:new Date().toISOString(),stage:{path:path.relative(root,stage),sha256:hash(stage),nativeSize:[1280,720],approved:'v4'},song:{path:song,sha256:hash(song),duration:61.6,edit:'whole source; edge-only40ms fades; no speed/pitch change/no crossfade to next song'},dj:manifest,rhythmSha256:hash(path.join(root,'bots/오버레이/라디오표정리듬.js')),faces:[...new Set(faces)],logoSha256:hash(logo),renderSize:[1920,1080],liveStreamChanged:false});
  console.log('Prepared complete 61.6s source track, approved v4 stage and 8 verified DJ sprites.');
 }

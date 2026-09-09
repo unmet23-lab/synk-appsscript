@@ -1,0 +1,84 @@
+{
+  "at": "2026-09-09T13:29:17.675Z",
+  "url": "https://synk-field-notes.unmet23.chatgpt.site/",
+  "anonymous": true,
+  "files": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "bytes": 22410,
+      "transportSha256": "b9258125c5f9261f7b83981db54dec2e9ce602c7007633151cb2e2d0f36da411",
+      "sourceSha256": "e762eae9782c26e152a7c61a592c095e282fc3e689e6e2c9b10096be4648bd31",
+      "match": true,
+      "hostingInsertion": true
+    },
+    {
+      "file": "01-lab-youtube/index.html",
+      "status": 200,
+      "bytes": 7703,
+      "transportSha256": "9aa37b98cb0ebec135eb7410b865e7e2b0ca76f3e44408678ba5ec569e3f2280",
+      "sourceSha256": "1cd55c9495ac58b169b8f880099dd97521a9f6d33bcb7edfb4c80c58dd2ae455",
+      "match": true,
+      "hostingInsertion": true
+    },
+    {
+      "file": "01-lab-youtube/video.mp4",
+      "status": 200,
+      "bytes": 9256869,
+      "transportSha256": "dc49a898dbb3fff7699747a41b12bc12686034dc329f34b615e50443967017dd",
+      "sourceSha256": "dc49a898dbb3fff7699747a41b12bc12686034dc329f34b615e50443967017dd",
+      "match": true,
+      "hostingInsertion": false
+    },
+    {
+      "file": "01-lab-youtube/upload-01.jpg",
+      "status": 200,
+      "bytes": 345269,
+      "transportSha256": "cf77df3b16224f46b4ab58c1a9c9dde2a8a5bc7c1a332a60637b1ad1ad345d76",
+      "sourceSha256": "cf77df3b16224f46b4ab58c1a9c9dde2a8a5bc7c1a332a60637b1ad1ad345d76",
+      "match": true,
+      "hostingInsertion": false
+    },
+    {
+      "file": "01-lab-youtube/감상노트.md",
+      "status": 200,
+      "bytes": 1946,
+      "transportSha256": "c2e140e98d4ada63591254d99f397fc29983a00a367ac47d690016ae84f80eb5",
+      "sourceSha256": "c2e140e98d4ada63591254d99f397fc29983a00a367ac47d690016ae84f80eb5",
+      "match": true,
+      "hostingInsertion": false
+    },
+    {
+      "file": "assets/craft-film-4k.mp4",
+      "status": 200,
+      "bytes": 18416725,
+      "transportSha256": "81152c35029ada4ed51ec9ebf5a3c5f580d3925aeffd69f4158c0e34de9ac8a6",
+      "sourceSha256": "81152c35029ada4ed51ec9ebf5a3c5f580d3925aeffd69f4158c0e34de9ac8a6",
+      "match": true,
+      "hostingInsertion": false
+    },
+    {
+      "file": "assets/craft-film-poster.jpg",
+      "status": 200,
+      "bytes": 701459,
+      "transportSha256": "590af5ba86b69ae14a33e25af6f7def880ac178643ff071c4784c50e7e0b1005",
+      "sourceSha256": "590af5ba86b69ae14a33e25af6f7def880ac178643ff071c4784c50e7e0b1005",
+      "match": true,
+      "hostingInsertion": false
+    },
+    {
+      "file": "execution.css",
+      "status": 200,
+      "bytes": 3130342,
+      "transportSha256": "15d29bb412f35d5eb791409159df9a470a5c18c3d2dc1f3c6f3213eb96499d03",
+      "sourceSha256": "15d29bb412f35d5eb791409159df9a470a5c18c3d2dc1f3c6f3213eb96499d03",
+      "match": true,
+      "hostingInsertion": false
+    }
+  ],
+  "firstIntroCraft": true,
+  "radioMenuOnly": true,
+  "oldScheduleVersion": true,
+  "accounts": 19,
+  "browserPlaybackTested": false
+}

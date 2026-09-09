@@ -1,0 +1,185 @@
+{
+  "generatedAt": "2026-09-09T13:09:21.975Z",
+  "scriptSha256": "01003a72d44da28c8f2bd76cde36a3f8f4e2936e15d5739ec4c30f95d7a843ff",
+  "source": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\out\\홍보_4K_v2\\SYNK_홍보_4K.mp4",
+    "sha256Before": "4373848ad4451b05aef388486014dd9f5b71464f03bb6da4d2e92b2a4de525b7",
+    "sha256After": "4373848ad4451b05aef388486014dd9f5b71464f03bb6da4d2e92b2a4de525b7",
+    "unchanged": true
+  },
+  "selection": {
+    "firstFrame": 0,
+    "lastFrameInclusive": 499,
+    "frameCount": 500,
+    "fps": 24,
+    "durationSeconds": 20.833333333333332,
+    "lastFrameTimestampSeconds": 20.791666666666668,
+    "explanation": "0–499 포함은 500프레임. 20.791667초는 마지막 프레임 시각, 재생 길이는20.833333초."
+  },
+  "output": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\마케팅실행_20260909\\assets\\craft-film-4k.mp4",
+    "sha256": "e59bca1648febff20612541f5634aa70396952850a1979d06faf9a0bd0f2f475",
+    "bytes": 22100244,
+    "sizeMiB": 21.076435089111328,
+    "maxBytesExclusive": 26214400,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 3840,
+          "height": 2160,
+          "avg_frame_rate": "24/1",
+          "duration": "20.833333",
+          "nb_read_frames": "500"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "20.833000",
+          "nb_read_frames": "977"
+        }
+      ],
+      "format": {
+        "duration": "20.833333",
+        "size": "22100244"
+      }
+    }
+  },
+  "poster": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\마케팅실행_20260909\\assets\\craft-film-poster.jpg",
+    "sha256": "590af5ba86b69ae14a33e25af6f7def880ac178643ff071c4784c50e7e0b1005",
+    "bytes": 701459,
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\마케팅실행_20260909\\assets\\craft-film-4k.mp4",
+    "atSeconds": 1,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "mjpeg",
+          "codec_type": "video",
+          "width": 3840,
+          "height": 2160,
+          "avg_frame_rate": "25/1",
+          "duration": "0.040000",
+          "nb_read_frames": "1"
+        }
+      ],
+      "format": {
+        "duration": "0.040000",
+        "size": "701459"
+      }
+    }
+  },
+  "encoding": {
+    "crf": 22,
+    "maxrate": "8M",
+    "bufsize": "16M",
+    "preset": "medium",
+    "filter": "atrim=start=0:end=20.833333333333332,asetpts=PTS-STARTPTS,afade=t=out:st=20.48333333333333:d=0.35:curve=qsin",
+    "sameOriginalBgm": true,
+    "additionalMusicOrGeneration": false,
+    "endFadeSeconds": 0.35,
+    "fadeCurve": "qsin"
+  },
+  "checks": {
+    "decodeErrors": 0,
+    "requiredDimensions": true,
+    "requiredFrameCount": true,
+    "under25MiB": true,
+    "sourceUnchanged": true,
+    "overallAudio": {
+      "startSeconds": 0,
+      "durationSeconds": 20.833333333333332,
+      "meanDb": -17.1,
+      "maxDb": -3.4
+    },
+    "preFadeAudio": {
+      "startSeconds": 20.133333333333333,
+      "durationSeconds": 0.3,
+      "meanDb": -15.5,
+      "maxDb": -5.9
+    },
+    "finalAudio": {
+      "startSeconds": 20.753333333333334,
+      "durationSeconds": 0.08,
+      "meanDb": -31.9,
+      "maxDb": -19
+    }
+  },
+  "evidence": [
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/craft-source-20.75s.jpg",
+      "atSeconds": 20.75,
+      "sha256": "dee439332e3610c01bab6ee690e7fedc6905f92320b3cc6ae0ce66005bc98294"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/craft-source-frame499.jpg",
+      "atSeconds": 20.791666666666668,
+      "sha256": "a1c69b294792ac3b9fa546094c72223a2f7b621cff1597731edc4d67b416407f"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/craft-output-00.jpg",
+      "atSeconds": 1,
+      "sha256": "590af5ba86b69ae14a33e25af6f7def880ac178643ff071c4784c50e7e0b1005"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/craft-output-01.jpg",
+      "atSeconds": 4,
+      "sha256": "7989337f2c994a6acedc58c70c75c34ef91a07f489d367a330858e61b25e2240"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/craft-output-02.jpg",
+      "atSeconds": 8.5,
+      "sha256": "1c4544c2130fa94ec651e6e7a1963f06e799bd4c513e38f36985fe100354a67c"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/craft-output-03.jpg",
+      "atSeconds": 11.5,
+      "sha256": "9ce05f178378182576a2c3de3e74d6c8096aadf1f0e16c7f7209f25030791a69"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/craft-output-04.jpg",
+      "atSeconds": 16,
+      "sha256": "728c083ba914bdd804a56905251066a7bb355228e19a845f7a76e41960247039"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/craft-output-05.jpg",
+      "atSeconds": 19.5,
+      "sha256": "24e5a8c9050c93addfce04a83ed2af070658e5321399f1e498c661a8cf542d1d"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/craft-output-06.jpg",
+      "atSeconds": 20.791666666666668,
+      "sha256": "5a732b08b8b08c5fd1b2ca046e6943482fb0ddc1cc1f420a2bbbc06a4d677f58"
+    }
+  ],
+  "visualInspection": {
+    "status": "passed",
+    "reviewer": "Codex /root/research_gate — 이 파생본 제작자 직접 확인",
+    "boundOutputSha256": "e59bca1648febff20612541f5634aa70396952850a1979d06faf9a0bd0f2f475",
+    "boundPosterSha256": "590af5ba86b69ae14a33e25af6f7def880ac178643ff071c4784c50e7e0b1005",
+    "scope": "원본 20.75초·499/24초, 최종 인코딩 출력 1/4/8.5/11.5/16/19.5/499/24초의 7장과 포스터를 직접 확인했다.",
+    "findings": [
+      "선택한 원본 끝 두 시점과 최종 출력 마지막 프레임에 옛 체험일·CTA·마무리 로고 글자 없음",
+      "공예 솜·바늘·눈·몽글·까몽·둘 장면 유지, 확인 프레임에서 새 잘림이나 큰 압축 깨짐 없음",
+      "포스터는 출력 영상 1초의 솜 질감 실제 프레임이며 3840×2160 JPEG",
+      "검수 화면은 도구에서 2048×1152로 표시되었으므로 4K 전 픽셀 1:1 검수로 표현하지 않음"
+    ],
+    "notChecked": ["연속 사람 청취", "공개 사이트 재생", "실제 사용자 선호"]
+  },
+  "boundaries": [
+    "원본·HTML·Sites 미수정",
+    "신규 생성·과금·외부 전송 없음",
+    "사람 청취 및 공개 재생 검증 아님"
+  ]
+}

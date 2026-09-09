@@ -1,0 +1,242 @@
+{
+  "generatedAt": "2026-09-09T13:16:27.601Z",
+  "variant": "full-original-web-delivery",
+  "scriptSha256": "189a7e63c3adb9d975bd4055bf26e6fc847022268ce2a2e1ee425c7e58d294d5",
+  "approval": {
+    "date": "2026-09-09",
+    "basis": "사용자 후속 지시: 이번 버전에는 옛 체험 일정도 유지하고 추후 대표가 직접 수정한다.",
+    "oldScheduleRetainedByExplicitRequest": true,
+    "scheduleText": "2027. 02. 11 체험 2주",
+    "doesNotAssertScheduleRevalidated": true
+  },
+  "source": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\영상\\out\\홍보_4K_v2\\SYNK_홍보_4K.mp4",
+    "sha256Before": "4373848ad4451b05aef388486014dd9f5b71464f03bb6da4d2e92b2a4de525b7",
+    "sha256After": "4373848ad4451b05aef388486014dd9f5b71464f03bb6da4d2e92b2a4de525b7",
+    "unchanged": true,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 3840,
+          "height": 2160,
+          "avg_frame_rate": "24/1",
+          "duration": "27.833333",
+          "nb_read_frames": "668"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "27.800000",
+          "nb_read_frames": "1304"
+        }
+      ],
+      "format": {
+        "duration": "27.833333",
+        "size": "87363153"
+      }
+    }
+  },
+  "selection": {
+    "mode": "full",
+    "firstFrame": 0,
+    "lastFrameInclusive": 667,
+    "frameCount": 668,
+    "fps": 24,
+    "durationSeconds": 27.833333333333332,
+    "lastFrameTimestampSeconds": 27.791666666666668,
+    "sourceFramesOmitted": 0
+  },
+  "priorTrimmedVersion": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\마케팅실행_20260909\\_검토\\klofi-v5\\craft-trim-0-499-before-full.mp4",
+    "sha256": "e59bca1648febff20612541f5634aa70396952850a1979d06faf9a0bd0f2f475",
+    "report": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\마케팅실행_20260909\\_검토\\klofi-v5\\craft-trim-0-499-before-full.json",
+    "reportSha256": "5f25bacc519bebbfa5147b6550a6f4a2f622ea1690e7ff9e943c659edea21f3c",
+    "evidencePrefix": "craft-output-",
+    "note": "이전500프레임 판의 증거이며 현재 전체본 증거와 혼합하지 않는다."
+  },
+  "output": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\마케팅실행_20260909\\assets\\craft-film-4k.mp4",
+    "sha256": "81152c35029ada4ed51ec9ebf5a3c5f580d3925aeffd69f4158c0e34de9ac8a6",
+    "bytes": 18416725,
+    "sizeMiB": 17.563557624816895,
+    "maxBytesExclusive": 26214400,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 3840,
+          "height": 2160,
+          "avg_frame_rate": "24/1",
+          "duration": "27.833333",
+          "nb_read_frames": "668"
+        },
+        {
+          "index": 1,
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 2,
+          "avg_frame_rate": "0/0",
+          "duration": "27.800000",
+          "nb_read_frames": "1304"
+        }
+      ],
+      "format": {
+        "duration": "27.833333",
+        "size": "18416725"
+      }
+    }
+  },
+  "poster": {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\마케팅실행_20260909\\assets\\craft-film-poster.jpg",
+    "sha256": "590af5ba86b69ae14a33e25af6f7def880ac178643ff071c4784c50e7e0b1005",
+    "bytes": 701459,
+    "unchanged": true,
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\마케팅실행_20260909\\_검토\\klofi-v5\\craft-trim-0-499-before-full.mp4",
+    "atSeconds": 1,
+    "note": "앞선 파생본1초의 솜 질감 포스터를 요청대로 그대로 유지.",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "mjpeg",
+          "codec_type": "video",
+          "width": 3840,
+          "height": 2160,
+          "avg_frame_rate": "25/1",
+          "duration": "0.040000",
+          "nb_read_frames": "1"
+        }
+      ],
+      "format": {
+        "duration": "0.040000",
+        "size": "701459"
+      }
+    }
+  },
+  "encoding": {
+    "crf": 22,
+    "maxrate": "6M",
+    "bufsize": "12M",
+    "preset": "medium",
+    "audioCodec": "copy",
+    "sameOriginalBgm": true,
+    "additionalMusicOrGeneration": false,
+    "additionalEndFadeSeconds": 0,
+    "originalAudioFadePreserved": true,
+    "sourceAudioHash": "SHA256=b5501920fff49937a125b25141bbf5ea19438fafbdcdd1c746213290e915e746",
+    "outputAudioHash": "SHA256=b5501920fff49937a125b25141bbf5ea19438fafbdcdd1c746213290e915e746"
+  },
+  "checks": {
+    "decodeErrors": 0,
+    "requiredDimensions": true,
+    "requiredFrameCount": true,
+    "under25MiB": true,
+    "sourceUnchanged": true,
+    "posterUnchanged": true,
+    "compressedAudioPayloadIdentical": true,
+    "overallAudio": {
+      "startSeconds": 0,
+      "durationSeconds": 27.833333333333332,
+      "meanDb": -17.1,
+      "maxDb": -2.8
+    },
+    "finalAudio": {
+      "startSeconds": 27.753333333333334,
+      "durationSeconds": 0.08,
+      "meanDb": -56.5,
+      "maxDb": -42.8
+    }
+  },
+  "evidence": [
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-source-25s.jpg",
+      "atSeconds": 25,
+      "sha256": "b970a7dbff7f621602396c222acc60a4430545a9047c65cd88be27cfba68b856"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-00.jpg",
+      "atSeconds": 1,
+      "sha256": "d558d61b030b7577a13698df8338928855a12425d0883b514856012e5c5d9600"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-01.jpg",
+      "atSeconds": 4,
+      "sha256": "37c6855559c47119f3adc04f4b03386df27ce2c3fb0469a7e930abcd45636252"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-02.jpg",
+      "atSeconds": 8.5,
+      "sha256": "ba3e5aede4d7fc82355ac2557c8e26349336fb271a1c1de4f49d5d4957863392"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-03.jpg",
+      "atSeconds": 11.5,
+      "sha256": "deab650793bc76579fa4b903d0ebffbc564beb1d6c0744739c404adad8fd6285"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-04.jpg",
+      "atSeconds": 16,
+      "sha256": "c92c6276ecd047987155d88f278fed09a48e1f27a046c8919f1ecc4196c45535"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-05.jpg",
+      "atSeconds": 19.5,
+      "sha256": "201f1f2701e877ca3c1d141fe812c03f88502deb387a4ae6111be2b821ba00df"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-06.jpg",
+      "atSeconds": 23,
+      "sha256": "2d7c78ef967a25cd552a645f65d48d1bce28dc6cf5c483922eaf165544f5c2d8"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-07.jpg",
+      "atSeconds": 25,
+      "sha256": "bc0e762cb6f3e7f79dc1177dcd90b799f826d4b132928eadfcc784f1195e81aa"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-08.jpg",
+      "atSeconds": 26.75,
+      "sha256": "b0e0e3ec612e21dee90e387d375fa3cde5bdf88f2cfaaee4d45b2291d8c59de1"
+    },
+    {
+      "file": "docs/홍보물/마케팅실행_20260909/_검토/klofi-v5/fullcraft-output-09.jpg",
+      "atSeconds": 27.791666666666668,
+      "sha256": "bbfae110fef200fd4be046162b34e1c536d296ebb85b07fc4b21780bd44df022"
+    }
+  ],
+  "visualInspection": {
+    "status": "passed",
+    "reviewer": "Codex /root/research_gate — 전체본 전달판 제작자 직접 확인",
+    "boundOutputSha256": "81152c35029ada4ed51ec9ebf5a3c5f580d3925aeffd69f4158c0e34de9ac8a6",
+    "scope": "새 전체본 fullcraft-output-00/02/04/05/06/07/08/09의 8시점(1·8.5·16·19.5·23·25·26.75·27.791667초)을 직접 확인했다. 이전 trim판의 시각 판정을 전용하지 않았다.",
+    "findings": [
+      "공예 장면과 마스코트, 기존 SYNK LAB 마무리를 끝까지 유지했고 선택 프레임에서 새 잘림·큰 압축 깨짐이 보이지 않음",
+      "25초와26.75초에 한국어 학원 및 2027.02.11 체험2주 문구가 포함됨. 사용자 후속 지시로 유지한 것이며 현재 일정 재검증을 뜻하지 않음",
+      "27.791667초에는 기존 끝맺음의 글자가 어두워지는 모습이 유지됨",
+      "포스터는 앞서 직접 확인한 동일 SHA 파일을 수정 없이 유지함",
+      "도구의 표시 크기는2048×1152이므로4K 전 픽셀1:1 시각 검사로 보고하지 않음"
+    ],
+    "notChecked": ["연속 사람 청취", "공개 사이트 재생", "일정의 현재 유효성", "실제 사용자 반응"]
+  },
+  "boundaries": [
+    "원본·HTML·Sites 미수정",
+    "신규 생성·과금·외부 전송 없음",
+    "사람 청취 및 공개 재생 검증 아님"
+  ]
+}

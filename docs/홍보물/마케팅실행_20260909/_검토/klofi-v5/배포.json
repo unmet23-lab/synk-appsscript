@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-09T13:30:08.807Z",
+  "projectId": "appgprj_6aa13be8f6948191961b459575723f00",
+  "version": 3,
+  "versionId": "appgprj_6aa13be8f6948191961b459575723f00~appgver_04456a09831881919183b001acb6bdf2",
+  "sourceCommit": "a8e29e97c93fd3015f6ea9ba4a7d178f53ae2ddd",
+  "deploymentId": "appgdep_6aa15e38371881919d0d374f38007c49",
+  "status": "succeeded",
+  "completedAt": "2026-09-09T13:26:45.668951+00:00",
+  "url": "https://synk-field-notes.unmet23.chatgpt.site",
+  "audience": "public",
+  "anonymousFiles": 232,
+  "anonymousTotal": 232,
+  "allFilesPrefixCheck": true,
+  "changedFilesFullHashCheck": "공개반영검증.json (8 files; observed Cloudflare HTML insertion separately identified)",
+  "archiveSha256": "sha256:2bb69f688427bdfb1a0155eb2974160393c574bd36bbed27abdba4e9c8937723",
+  "scope": "Existing public collection only; no SNS posting or live radio mutation"
+}

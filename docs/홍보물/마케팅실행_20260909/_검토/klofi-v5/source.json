@@ -1,0 +1,317 @@
+{
+  "at": "2026-09-09T13:15:13.268Z",
+  "stage": {
+    "path": "docs\\라디오\\무대영상\\추석_나무고정_조명_20260909.mp4",
+    "sha256": "dcc5a8fef2e5efd9c0611166f53fac32846e16fb14f2d81a68a3c6d403ff3dfa",
+    "nativeSize": [
+      1280,
+      720
+    ],
+    "approved": "v4"
+  },
+  "song": {
+    "path": "C:\\Users\\q1212\\Downloads\\오늘 밤 제일 환한 사람.wav",
+    "sha256": "d087776d60e2b24593c081fba689cd85ddbb17ab6ca8479aea4c264b0ba3910d",
+    "duration": 61.6,
+    "edit": "whole source; edge-only40ms fades; no speed/pitch change/no crossfade to next song"
+  },
+  "dj": {
+    "version": 1,
+    "createdAt": "2026-09-09T13:15:13.168Z",
+    "baselineHead": "7b5f29fc6aa0c3cb77d1dd1a8a23f91b3927e6bd",
+    "purpose": "승인 까몽 8표정의 표시 전용 경계2를 Remotion용 무손실 PNG로 변환. 원본과 모듈은 불변.",
+    "scope": "로컬 자산 제작. 합성 영상·실제 표시 크기 반복 재생·방송 반영의 검수는 포함하지 않음.",
+    "approval": {
+      "path": "docs/_ops/라디오생동_20260909/털고정/라이브반영.json",
+      "sha256": "7901a0c41055c41ceeaccbc476d87a86a0b4b4007c53910c86ea4d317b9d65e2",
+      "at": "2026-09-09T12:47:17.574Z"
+    },
+    "module": {
+      "path": "bots/오버레이/라디오가장자리.js",
+      "sha256": "b76f448ab55af135a5e2dc652683fc721edfc35ceaad7ae1af4bcac138a25a58"
+    },
+    "recipe": {
+      "computedFrom": "본체",
+      "computationCount": 1,
+      "width": 1024,
+      "height": 1024,
+      "radius": 12,
+      "opaqueRim": true,
+      "softAlpha": true,
+      "protect": [
+        [
+          180,
+          430,
+          280,
+          665
+        ],
+        [
+          620,
+          445,
+          716,
+          577
+        ],
+        [
+          281,
+          431,
+          620,
+          750
+        ]
+      ],
+      "pixelCount": 29213,
+      "indicesSha256": "0416c3dda3bb5060b286bdb26e03a981d7c8b1219aeafc8dcc30be719419069c",
+      "rgbaSha256": "3c56e1559881201b73fcfd4801af3553279d54611bada9b8dae490c21f232700"
+    },
+    "checks": {
+      "approvedInputCount": 8,
+      "originalFilesUnchanged": true,
+      "moduleUnchanged": true,
+      "approvalRecordUnchanged": true,
+      "allAlphaDifferencesZero": true,
+      "protectedChangesZero": true,
+      "outsideRecipeChangesZero": true,
+      "allPngRoundTripsExact": true
+    },
+    "files": [
+      {
+        "expression": "본체",
+        "input": {
+          "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_본체.webp",
+          "sha256": "eff5870074874ed22d64fef995ed6ef4acf5f9f10711ea895b7e5ea8be3b9713",
+          "sizeBytes": 457084,
+          "width": 1024,
+          "height": 1024
+        },
+        "output": {
+          "path": "영상/public/klofi20260909/dj-본체.png",
+          "sha256": "7adb641d1fe5312f9166c1ac1ebed315f277f265f03565178b1dcc584bdb3e86",
+          "sizeBytes": 980333,
+          "width": 1024,
+          "height": 1024,
+          "channels": 4,
+          "format": "PNG"
+        },
+        "checks": {
+          "inputAlphaDifferenceFromBase": 0,
+          "derivedAlphaDifferenceFromBase": 0,
+          "losslessPngRoundTrip": true,
+          "changedPixels": 29213,
+          "changedOutsideRecipe": 0,
+          "protectedChangedPixels": 0,
+          "changedFromBaseOutsideOriginalExpressionDelta": 0
+        }
+      },
+      {
+        "expression": "눈감음",
+        "input": {
+          "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈감음.webp",
+          "sha256": "7dcfe1f5edafcad44a2fa74b90254ecce153bad59ab7e5b2455804290b24dca9",
+          "sizeBytes": 456234,
+          "width": 1024,
+          "height": 1024
+        },
+        "output": {
+          "path": "영상/public/klofi20260909/dj-눈감음.png",
+          "sha256": "cc5cfeae3a16043563075a0e8358eb545c3b205c4e427be0a829b1f68a2793b7",
+          "sizeBytes": 977301,
+          "width": 1024,
+          "height": 1024,
+          "channels": 4,
+          "format": "PNG"
+        },
+        "checks": {
+          "inputAlphaDifferenceFromBase": 0,
+          "derivedAlphaDifferenceFromBase": 0,
+          "losslessPngRoundTrip": true,
+          "changedPixels": 29213,
+          "changedOutsideRecipe": 0,
+          "protectedChangedPixels": 0,
+          "changedFromBaseOutsideOriginalExpressionDelta": 0
+        }
+      },
+      {
+        "expression": "눈웃음",
+        "input": {
+          "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_눈웃음.webp",
+          "sha256": "c19871e6eb72a57c9d0a75f8d5d62ef8408a42cb12b81c2ceea10770a408dc2d",
+          "sizeBytes": 457202,
+          "width": 1024,
+          "height": 1024
+        },
+        "output": {
+          "path": "영상/public/klofi20260909/dj-눈웃음.png",
+          "sha256": "30bbf431e0cf2cd58f7881ab5398f4637fe34ca97801f446218c9d0e576152de",
+          "sizeBytes": 977849,
+          "width": 1024,
+          "height": 1024,
+          "channels": 4,
+          "format": "PNG"
+        },
+        "checks": {
+          "inputAlphaDifferenceFromBase": 0,
+          "derivedAlphaDifferenceFromBase": 0,
+          "losslessPngRoundTrip": true,
+          "changedPixels": 29213,
+          "changedOutsideRecipe": 0,
+          "protectedChangedPixels": 0,
+          "changedFromBaseOutsideOriginalExpressionDelta": 0
+        }
+      },
+      {
+        "expression": "궁금함",
+        "input": {
+          "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_궁금함.webp",
+          "sha256": "4ceebec6a148a4c99cf8b67a31c831bd7fc1a04d327d79548ede6e55c6c351fc",
+          "sizeBytes": 457348,
+          "width": 1024,
+          "height": 1024
+        },
+        "output": {
+          "path": "영상/public/klofi20260909/dj-궁금함.png",
+          "sha256": "87e961005105d600340303357ba0b2da440218d07b48df987f0060c8cdca7162",
+          "sizeBytes": 981672,
+          "width": 1024,
+          "height": 1024,
+          "channels": 4,
+          "format": "PNG"
+        },
+        "checks": {
+          "inputAlphaDifferenceFromBase": 0,
+          "derivedAlphaDifferenceFromBase": 0,
+          "losslessPngRoundTrip": true,
+          "changedPixels": 29213,
+          "changedOutsideRecipe": 0,
+          "protectedChangedPixels": 0,
+          "changedFromBaseOutsideOriginalExpressionDelta": 0
+        }
+      },
+      {
+        "expression": "집중",
+        "input": {
+          "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_집중.webp",
+          "sha256": "b6fc3deb07db384e3d717089bf34ddddaa2e90e938674b3fe8d2e3685f101239",
+          "sizeBytes": 455478,
+          "width": 1024,
+          "height": 1024
+        },
+        "output": {
+          "path": "영상/public/klofi20260909/dj-집중.png",
+          "sha256": "dbf65b2b725e6278232577bc4ef8798fc1acabec4ea82619cea4c89fc8042e7d",
+          "sizeBytes": 976572,
+          "width": 1024,
+          "height": 1024,
+          "channels": 4,
+          "format": "PNG"
+        },
+        "checks": {
+          "inputAlphaDifferenceFromBase": 0,
+          "derivedAlphaDifferenceFromBase": 0,
+          "losslessPngRoundTrip": true,
+          "changedPixels": 29213,
+          "changedOutsideRecipe": 0,
+          "protectedChangedPixels": 0,
+          "changedFromBaseOutsideOriginalExpressionDelta": 0
+        }
+      },
+      {
+        "expression": "안도",
+        "input": {
+          "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_안도.webp",
+          "sha256": "bdf7db3fa592ecfb86c5f5129e78402550d667faf18e9dbb63048d80f440d78e",
+          "sizeBytes": 457462,
+          "width": 1024,
+          "height": 1024
+        },
+        "output": {
+          "path": "영상/public/klofi20260909/dj-안도.png",
+          "sha256": "4e530c5b0b889af25f2544f40fbe596ecc97da91ff337d4d7e5710822fff183a",
+          "sizeBytes": 978038,
+          "width": 1024,
+          "height": 1024,
+          "channels": 4,
+          "format": "PNG"
+        },
+        "checks": {
+          "inputAlphaDifferenceFromBase": 0,
+          "derivedAlphaDifferenceFromBase": 0,
+          "losslessPngRoundTrip": true,
+          "changedPixels": 29213,
+          "changedOutsideRecipe": 0,
+          "protectedChangedPixels": 0,
+          "changedFromBaseOutsideOriginalExpressionDelta": 0
+        }
+      },
+      {
+        "expression": "응원",
+        "input": {
+          "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_응원.webp",
+          "sha256": "15ac333084ecc1d69686be24e0572f41e5b896305c3f6b54cba76a7a8faf09cd",
+          "sizeBytes": 459436,
+          "width": 1024,
+          "height": 1024
+        },
+        "output": {
+          "path": "영상/public/klofi20260909/dj-응원.png",
+          "sha256": "28c92186824f01a202811d5f1aabd970af44cb7ccc2b262de2f524babde967a5",
+          "sizeBytes": 984898,
+          "width": 1024,
+          "height": 1024,
+          "channels": 4,
+          "format": "PNG"
+        },
+        "checks": {
+          "inputAlphaDifferenceFromBase": 0,
+          "derivedAlphaDifferenceFromBase": 0,
+          "losslessPngRoundTrip": true,
+          "changedPixels": 29213,
+          "changedOutsideRecipe": 0,
+          "protectedChangedPixels": 0,
+          "changedFromBaseOutsideOriginalExpressionDelta": 0
+        }
+      },
+      {
+        "expression": "놀람",
+        "input": {
+          "path": "docs/Loom_자산/라디오차림/까몽/_후보/여름델+전설의팻말/65f92a753bb5416b/여름델+전설의팻말_놀람.webp",
+          "sha256": "e95361b7d5ebb7d14591266a5efefa205ec21fce904217270bc8a6386f534590",
+          "sizeBytes": 459574,
+          "width": 1024,
+          "height": 1024
+        },
+        "output": {
+          "path": "영상/public/klofi20260909/dj-놀람.png",
+          "sha256": "cff3f4fbdba97f78072b774a90fdb52e13cf1274a715aebca1d29c580f1aed15",
+          "sizeBytes": 988359,
+          "width": 1024,
+          "height": 1024,
+          "channels": 4,
+          "format": "PNG"
+        },
+        "checks": {
+          "inputAlphaDifferenceFromBase": 0,
+          "derivedAlphaDifferenceFromBase": 0,
+          "losslessPngRoundTrip": true,
+          "changedPixels": 29213,
+          "changedOutsideRecipe": 0,
+          "protectedChangedPixels": 0,
+          "changedFromBaseOutsideOriginalExpressionDelta": 0
+        }
+      }
+    ]
+  },
+  "rhythmSha256": "7d583cbb9334358ee4f5676dba9286ec37a3e6f5ad5adeea92d034aa0cc457c8",
+  "faces": [
+    "기본",
+    "깜빡",
+    "눈웃음",
+    "안도",
+    "집중",
+    "궁금함"
+  ],
+  "logoSha256": "83e08d8791d7bc4030d26c65f732ada0e17f8c1512205bd0610af032f44abdde",
+  "renderSize": [
+    1920,
+    1080
+  ],
+  "liveStreamChanged": false
+}
