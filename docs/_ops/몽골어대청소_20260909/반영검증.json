@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-09-09T00:06:57.467Z",
+  "sourceChecks": [
+    {
+      "file": "Code.js",
+      "changedLiterals": 1,
+      "unchangedCodeStructure": true
+    },
+    {
+      "file": "엔진_운영배치.js",
+      "changedLiterals": 2,
+      "unchangedCodeStructure": true
+    },
+    {
+      "file": "엔진_콘텐츠AI.js",
+      "changedLiterals": 68,
+      "unchangedCodeStructure": true
+    }
+  ],
+  "corrected": 71,
+  "totalUnique": 875,
+  "notSeen": 0,
+  "missingGrammarOrSpell": 0,
+  "changedWithDictionarySuspects": 13,
+  "sheetCandidateCount": 43
+}

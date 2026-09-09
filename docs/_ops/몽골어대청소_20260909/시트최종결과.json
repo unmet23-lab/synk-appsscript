@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-09-09T00:13:27Z",
+  "sheetName": "contents",
+  "gid": 1573768478,
+  "header": "몽골어",
+  "column": "M",
+  "backups": ["시트1차백업.json", "시트2차백업.json"],
+  "updated": 43,
+  "verifiedInFreshTab": 43,
+  "mColumnRowsRead": "M1:M554",
+  "actualChangedRowsComparedWithBefore": 43,
+  "unexpectedChangedRows": 0,
+  "saveStatus": "드라이브에 저장됨",
+  "cells": ["M296","M308","M316","M319","M328","M347","M372","M381","M424","M431","M437","M442","M102","M248","M249","M251","M253","M255","M260","M261","M265","M267","M270","M271","M273","M275","M279","M282","M283","M286","M289","M292","M294","M295","M298","M303","M304","M305","M307","M321","M342","M392","M390"],
+  "method": "매 셀 A열 콘텐츠 ID/기존 M셀 원문을 정확 비교하고 단일 셀에만 확정 문구 붙여넣기. 직후 복사로 재확인. 마지막에는 별도 새 탭에서 M1:M554를 읽어 43개 새 값 및 대상 밖 무변경을 확인.",
+  "recoveredIncident": {
+    "cell": "M390",
+    "cause": "기존 탭에서 Ctrl+R을 새로고침으로 시도했으나 Google Sheets가 오른쪽 채우기로 해석하여 선택 셀에 인접 빈 값을 채움.",
+    "observed": "전체 M열 전후 대조에서 HW523의 M390만 빈 값, 대상 밖 변경 0 확인. 개별 셀 복사값은 CRLF로 확인.",
+    "recovery": "A390=HW523 확인 후 백업의 승인된 새 문구로 M390만 복구. 즉시 정확 일치 확인하고, 별도 새 탭에서 43개 전체를 다시 읽어 확인.",
+    "remainingDamage": false
+  },
+  "otherColumnsOrStudentDataWritten": false,
+  "sourceDeploymentDone": false,
+  "scopeLimit": "D=value_mn, G=Row ID는 수정하지 않음. Apps Script 상수 직독 경로는 미배포이므로 전체 앱 노출 반영 완료가 아님."
+}

@@ -1,0 +1,56 @@
+{
+  "checkedAt": "2026-09-09T00:12:40.674Z",
+  "rootJsSyntaxPassed": 22,
+  "appsscriptJsonPassed": true,
+  "results": [
+    {
+      "suite": "몽골어관련",
+      "startedAt": "2026-09-09T00:12:00.586Z",
+      "finishedAt": "2026-09-09T00:12:00.794Z",
+      "exitCode": 0,
+      "summary": [
+        "ℹ tests 21",
+        "ℹ suites 0",
+        "ℹ pass 21",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 144.8096"
+      ]
+    },
+    {
+      "suite": "전체CI모사",
+      "startedAt": "2026-09-09T00:12:00.794Z",
+      "finishedAt": "2026-09-09T00:12:40.674Z",
+      "exitCode": 1,
+      "summary": [
+        "[test-ci] CI 모사: TZ=UTC · HOME=C:\\Users\\q1212\\AppData\\Local\\Temp\\synk-ci-home-ncTjjT(빈 폴더) · plat=win32 · 테스트 120파일",
+        "✖ 실저장소 — 입은 지면 전량에 흐린 잉크 0건 (6821.4608ms)",
+        "✖ 현재 저장소 규칙이 실제 Gemini 프롬프트에 들어간다 (1.5793ms)",
+        "✖ 🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록층 — 가드는 로직보다 여기서 샌다) (6126.0753ms)",
+        "✖ 🔑 실물 docs/GPT_정본.md 에 역할 넷의 마커와 공통지침 펜스가 다 있다 (6.1003ms)",
+        "ℹ tests 2054",
+        "ℹ suites 1",
+        "ℹ pass 2039",
+        "ℹ fail 4",
+        "ℹ cancelled 0",
+        "ℹ skipped 6",
+        "ℹ todo 5",
+        "ℹ duration_ms 38742.8692",
+        "✖ failing tests:",
+        "test at tests\\룸잉크.test.js:136:1",
+        "✖ 실저장소 — 입은 지면 전량에 흐린 잉크 0건 (6821.4608ms)",
+        "test at tests\\수용증거.test.js:75:1",
+        "✖ 현재 저장소 규칙이 실제 Gemini 프롬프트에 들어간다 (1.5793ms)",
+        "test at tests\\이종검수.test.js:504:1",
+        "✖ 🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록층 — 가드는 로직보다 여기서 샌다) (6126.0753ms)",
+        "test at tests\\코덱스실행.test.js:108:1",
+        "✖ 🔑 실물 docs/GPT_정본.md 에 역할 넷의 마커와 공통지침 펜스가 다 있다 (6.1003ms)",
+        "[test-ci] ❌ CI 모사 실패 — 로컬에서는 통과해도 CI는 여기서 막힌다",
+        "[test-ci] ⚠ **이 적색은 못 믿을 수 있다** — 도는 동안 1개 파일의 **내용이** 달라졌다(밖에서 편집 중).",
+        "[test-ci] ℹ 이 런이 스스로 다시 구운 산출물 1벌 — **바이트 무변경**이라 적색과 무관하다: .claude\\skills\\외부반입_출처.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-09-08T23:38:57.994Z",
+  "claspLoginRead": true,
+  "scriptTitle": "SYNK_앱데이터",
+  "parentId": "1sv6cim9BET2oQqJFXQU9xgyEMlhxDAu0lrojQJwDx1M",
+  "writes": 0,
+  "sheetsRead": false,
+  "sheetsError": {
+    "status": 403,
+    "message": "Google Sheets API has not been used in project 1072944905499 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/sheets.googleapis.com/overview?project=1072944905499 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."
+  }
+}
