@@ -1,0 +1,457 @@
+{
+  "archive": "mascot-0062.zip",
+  "bytes": 400935499,
+  "sha256": "7b1790245f50931b0f754d4af50b75751469a50c5b46c3f55b9eae453967c7be",
+  "files": [
+    {
+      "path": "GPT_누끼/까몽_한달출석새싹.png",
+      "bytes": 6337244,
+      "mtime_ns": 1788940008159668800,
+      "sha256": "716dfccc645b85e6023c9176f2b99bf1aaadd057e7a79ef60f1683c9c365b4bb"
+    },
+    {
+      "path": "GPT_누끼/몽글_1급배지코트.png",
+      "bytes": 9090931,
+      "mtime_ns": 1788940009592770700,
+      "sha256": "3b7e288ec95830c12ccb769b0bd571e86da11338f0df8c5197fe726f8d9d3b3c"
+    },
+    {
+      "path": "GPT_누끼/몽글_2급배지코트.png",
+      "bytes": 8489208,
+      "mtime_ns": 1788940010963447800,
+      "sha256": "fec29dfa5abcc248abf9de977291701be28920e378177b3b708a00c1b80e64ab"
+    },
+    {
+      "path": "GPT_누끼/몽글_3개월출석잎망토.png",
+      "bytes": 10325658,
+      "mtime_ns": 1788940012316855600,
+      "sha256": "3fd69abca812814bae0fed7dd24e5dc402bde0c52dd0783ceb1be4f6f8211923"
+    },
+    {
+      "path": "GPT_누끼/몽글_3급왕관.png",
+      "bytes": 8932054,
+      "mtime_ns": 1788940013499787400,
+      "sha256": "d41af8c3404a0fd9ec5b2ce476ed0cadba0941c231473cb2f6078aa150c9940c"
+    },
+    {
+      "path": "GPT_누끼/몽글_SYNK후드.png",
+      "bytes": 9204050,
+      "mtime_ns": 1788940014799660100,
+      "sha256": "4756bcea376c5d0bd13b9aab54f8746f6dca3a2c5186350fe2b3fd092226ac79"
+    },
+    {
+      "path": "GPT_누끼/몽글_겨울델.png",
+      "bytes": 9182514,
+      "mtime_ns": 1788940016038643700,
+      "sha256": "fd343e30648ad6aafb060891781fb8c31143aeca7a4f0c68b06d9b49c65b4339"
+    },
+    {
+      "path": "GPT_누끼/몽글_목도리.png",
+      "bytes": 9526807,
+      "mtime_ns": 1788940017383846400,
+      "sha256": "acde60502d5b91ce3d83b8fc8b0045a82cc7e6d040cdb65777224bf3716c5e05"
+    },
+    {
+      "path": "GPT_누끼/몽글_몽골모자.png",
+      "bytes": 7863427,
+      "mtime_ns": 1788940018556371900,
+      "sha256": "2ed49c84fc07f7c7ca91fb1ff8f7b809911bbffa45886210728b6e216dc7a063"
+    },
+    {
+      "path": "GPT_누끼/몽글_안경.png",
+      "bytes": 10140252,
+      "mtime_ns": 1788940019711934100,
+      "sha256": "795cc4d22a4ae0255394f0b45d7a3d16e33d88708b550e05918f0712a008cf8f"
+    },
+    {
+      "path": "GPT_누끼/몽글_앞치마.png",
+      "bytes": 9844020,
+      "mtime_ns": 1788940020942144200,
+      "sha256": "09c8d63b33349a0cf593effc51173d245e527ef4138235aa22fd60cbbdb27f3b"
+    },
+    {
+      "path": "GPT_누끼/몽글_여름델.png",
+      "bytes": 8676837,
+      "mtime_ns": 1788940022441679000,
+      "sha256": "5742685c51eed35719358864c4d20f132de91755caeb71bcb24cfde56c44c4b6"
+    },
+    {
+      "path": "GPT_누끼/몽글_털모자.png",
+      "bytes": 7298850,
+      "mtime_ns": 1788940023786840700,
+      "sha256": "708629bb702a56fdd5a352db2f15eda9a73814cad8b3c693b18ead3f4ba839a0"
+    },
+    {
+      "path": "GPT_누끼/몽글_펠트헤드폰.png",
+      "bytes": 10414210,
+      "mtime_ns": 1788940025108498200,
+      "sha256": "71f6cd7020a839bbd2afc4af125c9968a24d8fecf07044eebf012da696e581a9"
+    },
+    {
+      "path": "GPT_누끼/몽글_학생가방.png",
+      "bytes": 9095563,
+      "mtime_ns": 1788940026365125000,
+      "sha256": "cf2da7042b1c532b6e29b2993fe22eec6682ef07c58e38ac6fd068727cfb99f8"
+    },
+    {
+      "path": "GPT_누끼/몽글_한달출석새싹.png",
+      "bytes": 9170198,
+      "mtime_ns": 1788940027520928000,
+      "sha256": "da3af956d249da8b174e113b1f61bf39e609cfb9cb887d438a9c9b43f9209c0e"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_1급배지코트.png",
+      "bytes": 9857728,
+      "mtime_ns": 1788864122315913000,
+      "sha256": "f87741ec694d498828c6316eef2f6aca839deb02cca14cd56a5e8aab5f2087a9"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_2급배지코트.png",
+      "bytes": 8413753,
+      "mtime_ns": 1788864124033434400,
+      "sha256": "c70881ec1c72187935bf14fde660370aa903b5cd6f8d790488a068ae96b1b7e3"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_3개월출석잎망토.png",
+      "bytes": 10596950,
+      "mtime_ns": 1788864125901642000,
+      "sha256": "9c09c455a61076f4ee3cc5603f4fc8b6649e7a2f41cbd32c40602837339f48c2"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_3급왕관.png",
+      "bytes": 8200094,
+      "mtime_ns": 1788864127655101300,
+      "sha256": "adc57519e9f10ffedeeb069f5f29e7b3300143da49af0745c6f13c9eb800f151"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_6개월출석화관.png",
+      "bytes": 8366299,
+      "mtime_ns": 1788864129412073200,
+      "sha256": "e69ed632d6fd022a7b63d8ca676c69cd27429ee8bdbdc1e9269c1d0ebcdedef9"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_SYNK후드.png",
+      "bytes": 9331346,
+      "mtime_ns": 1788864131225997300,
+      "sha256": "a3b2c0240d4a016e37fc55403e6a215ab263d73af45558d390e654cedc0336fc"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_겨울델.png",
+      "bytes": 10177728,
+      "mtime_ns": 1788864133130527800,
+      "sha256": "936c0849c13d66f02d4803d052ed7dc453a542b36c07bc5bd4552f6c2d83c0cd"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_담요망토.png",
+      "bytes": 10111604,
+      "mtime_ns": 1788864134813832200,
+      "sha256": "cba7e1ff8d6a05d07b969cebd9057cd199bdac47bd9458edb86600269fac46de"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_목도리.png",
+      "bytes": 8712000,
+      "mtime_ns": 1788864136385546500,
+      "sha256": "2015ef0d064d2d30af209c06b17156b04c675e879a356bd6b8e8ed0b652ee5d0"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_몽골모자.png",
+      "bytes": 8752090,
+      "mtime_ns": 1788864137955306400,
+      "sha256": "2754e3c113fab417b4d56df1f82fb94e3ce4456e4a0f37b5d6725bf394ea2ef8"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_반짝이목걸이.png",
+      "bytes": 8681618,
+      "mtime_ns": 1788864139421338200,
+      "sha256": "2b428eba0833d945bd957a0a8f49d04f75f0071eb26ae0b6c63a0188af847504"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_안경.png",
+      "bytes": 8104219,
+      "mtime_ns": 1788864141006704000,
+      "sha256": "7162635e9ffcd17ac487a78e667f14e891ac82b4e7140aca46d79e823e940a85"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_앞치마.png",
+      "bytes": 9625179,
+      "mtime_ns": 1788864142541541600,
+      "sha256": "0d91625d4e14ce7608ec5f24311269d0fc14c1480e72321719ff77ae8c16f3a1"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_여름델.png",
+      "bytes": 8341388,
+      "mtime_ns": 1788864143972617700,
+      "sha256": "6542cbb5de129a903051c1f8ec61d7a81e9cec1d59580c6234f023a51f822f8c"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_전설의팻말.png",
+      "bytes": 8117552,
+      "mtime_ns": 1788864145517297500,
+      "sha256": "4e5d219c93e226621dcac7d95b1756110c59d3d5d107d4d9f5d8df876823a54a"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_조끼.png",
+      "bytes": 9616926,
+      "mtime_ns": 1788864147158124900,
+      "sha256": "70f0e9e8d87bfb03b29747caf123b628c0d9436cfe6e420a8b3979e4833e0fb8"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_첫목소리목도리.png",
+      "bytes": 8541790,
+      "mtime_ns": 1788864149179415700,
+      "sha256": "29353b3c92dfaf40c13f143f2099e0cd9a14edefcbaa2413437ce8fd0b96c788"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_털모자.png",
+      "bytes": 8739024,
+      "mtime_ns": 1788864150828873800,
+      "sha256": "ad59d91d919082e8d6b9a323b90a6d42ee5a88b2e43a94c5fd45c7f11fad8ab1"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_펠트헤드폰.png",
+      "bytes": 9128726,
+      "mtime_ns": 1788864152650067000,
+      "sha256": "5827dede7ec04f504b8eb15793c498bce6627e3ecc2e755e4049e5566be169bb"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_학생가방.png",
+      "bytes": 8723372,
+      "mtime_ns": 1788864154348469100,
+      "sha256": "22cb0332e3b6e8e3b6b329cfba4b39ec0438370a80eceadef77a76ec8f3a151f"
+    },
+    {
+      "path": "GPT_누끼_틀/까몽_한달출석새싹.png",
+      "bytes": 9027849,
+      "mtime_ns": 1788864156123629700,
+      "sha256": "554b24b86c3a457be769d90774a6304d43069bf65ef8b907cd02a1e5199fb397"
+    },
+    {
+      "path": "GPT시험/견줌판_까몽_목도리.jpg",
+      "bytes": 304423,
+      "mtime_ns": 1788844813831054800,
+      "sha256": "5f08b2bb07a55f7ef6a45a56a29b0bea0af476a7d86376652c6c1b8c0431d9d6"
+    },
+    {
+      "path": "GPT시험/견줌판_세벌.jpg",
+      "bytes": 481072,
+      "mtime_ns": 1788853991186093700,
+      "sha256": "6b65c162b6469ae3eb2c81696026738d19d3958347f19e8df07bdad5b1aa72e8"
+    },
+    {
+      "path": "GPT시험/까몽_6개월출석화관_gptimage2.png",
+      "bytes": 1832647,
+      "mtime_ns": 1788853964921950000,
+      "sha256": "6404b8fbc773ee21ffed9b6f49ab05d74f4c5c6141d6b1e39ea603a388deccdc"
+    },
+    {
+      "path": "GPT시험/까몽_SYNK후드_gptimage2.png",
+      "bytes": 1927282,
+      "mtime_ns": 1788853964945084200,
+      "sha256": "69dfa0dd51826ae521277028c4c34143ae062ba6fd2ae96c0133ec5be5bc1751"
+    },
+    {
+      "path": "GPT시험/까몽_목도리_gptimage2.png",
+      "bytes": 1994710,
+      "mtime_ns": 1788844744447675600,
+      "sha256": "c10f631e992e8a87ba38fb663d87d35ce33722e4c57df6beeaacecbf6faa69ea"
+    },
+    {
+      "path": "GPT시험/까몽_목도리_gptimage2_2560.png",
+      "bytes": 4804338,
+      "mtime_ns": 1788855967014131500,
+      "sha256": "ab408eee4b99e116ac4a1d2681fb4299883255de5fea65e40106dcf041911714"
+    },
+    {
+      "path": "GPT시험/까몽_반짝이목걸이_gptimage2.png",
+      "bytes": 1874030,
+      "mtime_ns": 1788853964966807800,
+      "sha256": "584004d5c99ab9d3cc9131b8f44636c286272cdaa164df087b7e130853272bde"
+    },
+    {
+      "path": "GPT시험/털결확대_까몽.jpg",
+      "bytes": 230834,
+      "mtime_ns": 1788851796979220100,
+      "sha256": "006ca0cfbc3dba7c26d5f3440a6fd8aa224afe4e0291b51868d864c895d0dc56"
+    },
+    {
+      "path": "GPT정액시험/까몽_1급배지코트+3급왕관.png",
+      "bytes": 1726653,
+      "mtime_ns": 1788911055227655800,
+      "sha256": "fedb50a1449d672b7d75570765eec4655ff800ebcadba1dff4c6d914d4d9094a"
+    },
+    {
+      "path": "GPT정액시험/까몽_1급배지코트+6개월출석화관.png",
+      "bytes": 1767476,
+      "mtime_ns": 1788911094828180600,
+      "sha256": "08f2c43a105f2142ed46788d50ea96df42fe2937545e60be2407c7f115f492c2"
+    },
+    {
+      "path": "GPT정액시험/까몽_1급배지코트+반짝이목걸이.png",
+      "bytes": 1798271,
+      "mtime_ns": 1788939202932134500,
+      "sha256": "929b96c3f0f4a5343355d3603f9dc25ca8e45c084b74a2349f690dd50ff72d4b"
+    },
+    {
+      "path": "GPT정액시험/까몽_1급배지코트+전설의팻말.png",
+      "bytes": 1732047,
+      "mtime_ns": 1788911200814761800,
+      "sha256": "2974995b3e8a8c499174136343395316842eabaec25698344fc4a4c49a37460e"
+    },
+    {
+      "path": "GPT정액시험/까몽_1급배지코트+첫목소리목도리.png",
+      "bytes": 1696809,
+      "mtime_ns": 1788911161519853600,
+      "sha256": "9be19c9042a40ee6dfb184e7839e301bebe71d9bc8ee34a7e4e048791faf7243"
+    },
+    {
+      "path": "GPT정액시험/까몽_1급배지코트+한달출석새싹.png",
+      "bytes": 1689550,
+      "mtime_ns": 1788911128955414200,
+      "sha256": "2d5f9d04e3c53ca2652329ae5d6ec2d76703d6641fc54c081b75ed02d663ac44"
+    },
+    {
+      "path": "GPT정액시험/까몽_2급배지코트+3급왕관.png",
+      "bytes": 1738645,
+      "mtime_ns": 1788911465116869600,
+      "sha256": "ccb8383c525c0a420870ec01cb7f1a74e8877be1d1b7b9972b4c3a65cfa15729"
+    },
+    {
+      "path": "GPT정액시험/까몽_2급배지코트+6개월출석화관.png",
+      "bytes": 1816190,
+      "mtime_ns": 1788911594448774400,
+      "sha256": "53f8642f2fab2401f6cb52daa2aea1ff3895ce000221f6aa4be0d2f730cdd7f3"
+    },
+    {
+      "path": "GPT정액시험/까몽_2급배지코트+반짝이목걸이.png",
+      "bytes": 1758245,
+      "mtime_ns": 1788911698180599100,
+      "sha256": "fd989303b17abb8cc75564a36056d1558e6a16c74132a7200ea0848e1de491b9"
+    },
+    {
+      "path": "GPT정액시험/까몽_2급배지코트+전설의팻말.png",
+      "bytes": 1760542,
+      "mtime_ns": 1788911665113684500,
+      "sha256": "41dc62a6a695d88aa63da95e0c97f59dce37cf56dfb1d346686834e2bbe4ab78"
+    },
+    {
+      "path": "GPT정액시험/까몽_2급배지코트+첫목소리목도리.png",
+      "bytes": 1758097,
+      "mtime_ns": 1788911633250546300,
+      "sha256": "a1add84d3a2c7817b20a702f03ccfc3495fc7ba26a1b9942729f1a704db1042d"
+    },
+    {
+      "path": "GPT정액시험/까몽_2급배지코트+한달출석새싹.png",
+      "bytes": 1722137,
+      "mtime_ns": 1788911537244603900,
+      "sha256": "c8e85ce700ff65ddb83a3139542002bd05cd0ce4b597cc2fa5dbfcb04f45331e"
+    },
+    {
+      "path": "GPT정액시험/까몽_3개월출석잎망토+6개월출석화관.png",
+      "bytes": 2841200,
+      "mtime_ns": 1788873216350485100,
+      "sha256": "0cc8297c2e538e571120a3434285e962e98b6de6fa529bb24ae4ef6170fe2626"
+    },
+    {
+      "path": "GPT정액시험/까몽_3개월출석잎망토+반짝이목걸이.png",
+      "bytes": 1785728,
+      "mtime_ns": 1788912090237224600,
+      "sha256": "52e1212ae15aba13e108d9b79d5ca8e3cfc8279d4f79bba3c151a272efc5f7ca"
+    },
+    {
+      "path": "GPT정액시험/까몽_3개월출석잎망토+전설의팻말.png",
+      "bytes": 1811403,
+      "mtime_ns": 1788912056976510600,
+      "sha256": "7b3cfcb73a2b20ad443356d9e5cca8a40e5aaf02bd49efb7b1d490ec985447c0"
+    },
+    {
+      "path": "GPT정액시험/까몽_3개월출석잎망토+첫목소리목도리.png",
+      "bytes": 1734011,
+      "mtime_ns": 1788912021264831700,
+      "sha256": "2af6d26f203ed6acd9fd9d49cf4c772e6c04a36540619e2e1d01d4889d914b4a"
+    },
+    {
+      "path": "GPT정액시험/까몽_3급왕관+3개월출석잎망토.png",
+      "bytes": 1694890,
+      "mtime_ns": 1788911935450040300,
+      "sha256": "69a1f1d75bedaa3c359b5b42f7bde0738a7e262e7bdd4ff49bf046c358b205ec"
+    },
+    {
+      "path": "GPT정액시험/까몽_3급왕관+담요망토.png",
+      "bytes": 1804207,
+      "mtime_ns": 1788912790962710200,
+      "sha256": "5b88d4a684740dd60a45334262a17e22bfb190d6ef9336c0aa0d0520eab87706"
+    },
+    {
+      "path": "GPT정액시험/까몽_3급왕관+조끼.png",
+      "bytes": 1697208,
+      "mtime_ns": 1788912393406082800,
+      "sha256": "e507f22eb000b105c76c37c61453929a689d55768a3df0c6442037658eee14a3"
+    },
+    {
+      "path": "GPT정액시험/까몽_6개월출석화관+담요망토.png",
+      "bytes": 1772983,
+      "mtime_ns": 1788912859970183500,
+      "sha256": "fae2d8c0e9ee5882b87d98ac602b59f31a90ae0dc6d86e7ada26686ec242ee3f"
+    },
+    {
+      "path": "GPT정액시험/까몽_6개월출석화관+조끼.png",
+      "bytes": 1778375,
+      "mtime_ns": 1788912467246147200,
+      "sha256": "5b00947458cde91d1b24e0aede6ba1806d9c3f250c28f851cd6a54b4028c1b34"
+    },
+    {
+      "path": "GPT정액시험/까몽_SYNK후드+3급왕관.png",
+      "bytes": 1741590,
+      "mtime_ns": 1788910582190684100,
+      "sha256": "aec1172c081400ae6397b6281032022a9b97877f4a73ba48dd4fb654a418bfcf"
+    },
+    {
+      "path": "GPT정액시험/까몽_SYNK후드+6개월출석화관.png",
+      "bytes": 1760506,
+      "mtime_ns": 1788910652421327100,
+      "sha256": "6f5e69c6d01b152fdc0c5b75dc1a280ce3d0571f812aceac7ab3c9ada9ded9e6"
+    },
+    {
+      "path": "GPT정액시험/까몽_SYNK후드+반짝이목걸이.png",
+      "bytes": 1772655,
+      "mtime_ns": 1788910798948041600,
+      "sha256": "ddc7c881e1a8db91455352a0226fcc73b4a6ebe55509600d0689fe61efa0d595"
+    },
+    {
+      "path": "GPT정액시험/까몽_SYNK후드+안경.png",
+      "bytes": 2598840,
+      "mtime_ns": 1788873497785687900,
+      "sha256": "2d2a3b13581d73bc6fcc6f27f5bffab63481d2fa054a9a88d9fe61c4b1b1d30b"
+    },
+    {
+      "path": "GPT정액시험/까몽_SYNK후드+전설의팻말.png",
+      "bytes": 1791746,
+      "mtime_ns": 1788910720585640000,
+      "sha256": "215e0be92aa90fd72ff9648ce3515517e7cf6ec20c07f9692c290097a16e451e"
+    },
+    {
+      "path": "GPT정액시험/까몽_SYNK후드+첫목소리목도리.png",
+      "bytes": 1705822,
+      "mtime_ns": 1788910685543143400,
+      "sha256": "5b2c4fb9df120021a002113f5ad7bdf3825219484adf3cfa2c7bc18fd9f1d431"
+    },
+    {
+      "path": "GPT정액시험/까몽_SYNK후드+한달출석새싹.png",
+      "bytes": 1769077,
+      "mtime_ns": 1788910620855197000,
+      "sha256": "c6395fa1728d60352ef215610bfe0a869516af2176c62c0358dc22c1192522b1"
+    },
+    {
+      "path": "GPT정액시험/까몽_겨울델+3급왕관.png",
+      "bytes": 1840460,
+      "mtime_ns": 1788910159988010100,
+      "sha256": "1af3e3685105d452a69059ce7e41b72fdd620a3f6d70a8c17dd7cab4dbba9cb5"
+    },
+    {
+      "path": "GPT정액시험/까몽_겨울델+6개월출석화관.png",
+      "bytes": 1834765,
+      "mtime_ns": 1788910263815473300,
+      "sha256": "59d2b15cb11991206620ac5fe202734cbe5b3e0b6be6a4e405e242e2c98595f4"
+    }
+  ]
+}

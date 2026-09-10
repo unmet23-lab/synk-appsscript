@@ -20,6 +20,11 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+try:
+    from mascot_originals import ensure_folder
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_folder
+
 루트 = Path(__file__).resolve().parent.parent
 층방 = 루트 / 'docs/Loom_자산/옷/층'
 정본방 = 루트 / 'docs/캐릭터/정본_4K'
@@ -94,6 +99,10 @@ def main():
     a = ap.parse_args()
 
     몸 = 정본방 / 몸그림[a.마스코트]
+    ensure_folder(
+        층방,
+        lambda name: name.startswith(f'옷_{a.마스코트}_') and name.endswith('.png'),
+    )
     층들 = 층찾기(a.마스코트)
     if not 층들:
         sys.exit(f'🔴 {a.마스코트} 의 옷 조각이 없다 — 먼저 node tools/옷굽기.js')

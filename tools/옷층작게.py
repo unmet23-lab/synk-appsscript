@@ -23,6 +23,11 @@ from pathlib import Path
 
 from PIL import Image
 
+try:
+    from mascot_originals import ensure_folder
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_folder
+
 루트 = Path(__file__).resolve().parent.parent
 든곳 = 루트 / 'docs/Loom_자산/옷/층'
 낼곳 = 루트 / 'docs/Loom_자산/옷층'
@@ -32,6 +37,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--크기', type=int, default=1024)
     a = ap.parse_args()
+    ensure_folder(든곳, lambda name: name.endswith('.png'))
     낼곳.mkdir(parents=True, exist_ok=True)
     했다 = 0
     잰바이트 = 0

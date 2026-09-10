@@ -14,6 +14,11 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+try:
+    from mascot_originals import ensure_files
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_files
+
 ROOT = Path(__file__).resolve().parent.parent
 KEY = '여름델+전설의팻말'
 OUT = ROOT / 'docs/_ops/의상라디오검수_20260909/털일관성'
@@ -167,6 +172,7 @@ def build(frames, boxes, reviewed_masks=None, donor_offset=None):
 def main():
     source = ROOT / 'docs/Loom_자산/옷/GPT_표정_누끼'
     paths = {cut: source/f'까몽_{KEY}_{cut}.png' for cut in CUTS}
+    ensure_files(paths.values())
     frames = {cut: np.asarray(Image.open(path).convert('RGBA')) for cut, path in paths.items()}
     finder = module('옷표정얹기')
     boxes = {}

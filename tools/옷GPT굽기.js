@@ -34,6 +34,7 @@ const { spawnSync } = require('child_process');
 
 const 저장소 = path.join(__dirname, '..');
 const L = require(path.join(저장소, 'tools', 'lib', '옷목록.js'));
+const 원본보관 = require(path.join(저장소, 'tools', 'lib', '마스코트원본.js'));
 
 const 조각방 = path.join(저장소, 'docs', 'Loom_자산', '옷', '층');
 const 참조방 = path.join(저장소, 'docs', 'Loom_자산', '옷', 'GPT참조');
@@ -68,6 +69,7 @@ function 열쇠() {
 /** 옷 조각(투명 바탕)을 «흰 바탕 + 여백 잘라내기 + 긴 변 1536» 으로 바꿔 둔다.
  *  투명 바탕은 모델이 빈 그림으로 읽고, 큰 그림은 넣는 칸(=돈)만 늘린다. */
 function 참조만들기(원본, 낼곳, 긴변 = 1536) {
+  원본보관.ensureFiles([원본, 낼곳]);
   if (fs.existsSync(낼곳) && fs.statSync(낼곳).mtimeMs > fs.statSync(원본).mtimeMs) return 낼곳;
   fs.mkdirSync(path.dirname(낼곳), { recursive: true });
   const r = spawnSync('python', ['-c', `
@@ -139,6 +141,7 @@ async function 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 }) {
   const 옷참조들 = 옷들.map((옷) => {
     const 파일 = 옷.이름.replace(/ /g, '');
     const 옷조각 = path.join(조각방, `옷_${마스코트.이름}_${파일}.png`);
+    원본보관.ensureFiles([옷조각]);
     if (!fs.existsSync(옷조각)) throw new Error(`옷 조각이 없다 — ${옷조각}`);
     return 참조만들기(옷조각, path.join(참조방, 마스코트.이름, `${파일}.jpg`));
   });

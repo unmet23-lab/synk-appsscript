@@ -27,6 +27,7 @@ const path = require('path');
 
 const 저장소 = path.join(__dirname, '..');
 const L = require(path.join(저장소, 'tools', 'lib', '옷목록.js'));
+const 원본 = require(path.join(저장소, 'tools', 'lib', '마스코트원본.js'));
 
 /* 🔴 구운 것을 찾는 방은 «둘»이다 — 열쇠로 구운 것과 정액제 창으로 구운 것.
    한 곳만 보면 이미 있는 것을 또 굽는다(정액제는 한 장에 3~5분이라 비싸다). */
@@ -43,8 +44,7 @@ function 있는것(누구) {
   const 본 = new Set();
   for (const 방 of 굽힌방들) {
     const p = path.join(저장소, L.옷방뿌리, 방);
-    if (!fs.existsSync(p)) continue;
-    for (const f of fs.readdirSync(p)) {
+    for (const f of 원본.names(p)) {
       if (!f.endsWith('.png') || !f.startsWith(누구 + '_')) continue;
       본.add(f.slice(누구.length + 1, -4));      // <옷토막> 부분만
     }

@@ -14,6 +14,11 @@ import cv2
 import numpy as np
 from PIL import Image
 
+try:
+    from mascot_originals import ensure_files
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_files
+
 ROOT = Path(__file__).resolve().parent.parent
 KEY = '여름델+전설의팻말'
 SIZE = (1290, 1219)
@@ -85,6 +90,7 @@ def validate_sources(root=ROOT, include_registration=True):
     evidence = {source_path(cut, root): digest for cut, digest in SOURCE_SHA256.items()}
     if include_registration:
         evidence.update({root/path: digest for path, digest in REGISTRATION_SOURCES.items()})
+    ensure_files(evidence)
     checked = {}
     for path, expected in evidence.items():
         actual = hashlib.sha256(path.read_bytes()).hexdigest()

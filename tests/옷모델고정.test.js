@@ -30,6 +30,7 @@ async function run(args, apiError = null) {
     마스코트들: [{ 이름: '까몽', 참조: 'test-body.png', 표식: 'Preserve the reference dragon.' }],
     목록: () => [{ 이름: '목도리', 설명: 'A felt scarf around the neck.' }],
   };
+  const originals = { ensureFiles: () => ({ requested: 0, restored: 0 }) };
   await vm.runInNewContext(source, {
     __dirname: path.dirname(tool), Buffer, Blob, FormData, process: fakeProcess,
     console: { log: (...xs) => logs.push(xs.join(' ')), error: (...xs) => logs.push(xs.join(' ')) },
@@ -38,6 +39,7 @@ async function run(args, apiError = null) {
       if (id === 'path') return path;
       if (id === 'child_process') return { spawnSync: () => { preparations++; return { status: 0 }; } };
       if (id.endsWith('옷목록.js')) return list;
+      if (id.endsWith('마스코트원본.js')) return originals;
       throw new Error(`Unexpected dependency: ${id}`);
     },
     fetch: async (url, options) => {

@@ -18,6 +18,7 @@ const docs = {
     'docs/엔진7종_상향설계_v3.md', 'docs/명품_기준_v1.md',
     'docs/명품브랜딩_v2.md', 'docs/명품브랜딩_조사_2026-09-09.md',
     'docs/마케팅_정본.md', 'docs/명품눈금_v1.md',
+    'docs/대용량자산_운영.md',
     'docs/로고_중립색_정본_v1.md', 'docs/홈페이지_설계_v1.md',
     'docs/디자인_컨셉_정본_v1.md', 'docs/디자인_토큰.json',
     'docs/브랜드_폰트_정본.md', 'docs/양모공방_요소사전.md', 'docs/캐릭터/의상제작_정본.md'],
@@ -76,7 +77,11 @@ function 목록(root = ROOT) {
     if (original !== source && fs.existsSync(within(root, original)))
       add('SYNK', original, '확정 자산/요소/' + path.basename(original), true);
   }
-  for (const stage of ['GPT', 'GPT정액시험', 'GPT_표정_누끼_틀', 'GPT_표정_누끼_틀_avif', 'GPT_누끼_틀', 'GPT_누끼_틀_avif'])
+  // 고해상도 PNG 원본은 검증된 Drive 묶음이 보관한다. 여기서는 앱이 바로 쓰는 작은 AVIF만 갱신한다.
+  folder('SYNK', 'docs/_ops/마스코트_Drive이관_20260910',
+    '보관 기록/마스코트 의상 원본',
+    p => !p.startsWith('transfer/') && /\.(?:md|json|jsonl)$/.test(p));
+  for (const stage of ['GPT_표정_누끼_틀_avif', 'GPT_누끼_틀_avif'])
     folder('SYNK', 'docs/Loom_자산/옷/' + stage, '확정 자산/마스코트 의상/' + stage, p => /\.(png|avif)$/.test(p));
   return [...rows.values()];
 }

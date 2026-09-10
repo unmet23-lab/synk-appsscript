@@ -30,6 +30,11 @@ import sys
 import numpy as np
 from PIL import Image
 
+try:
+    from mascot_originals import ensure_folder
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_folder
+
 저장소 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 정본방 = os.path.join(저장소, 'docs', '캐릭터', '정본_4K')
 
@@ -159,13 +164,19 @@ if __name__ == '__main__':
             raise SystemExit('--출력 뒤에 별도 결과 폴더 경로가 있어야 한다')
         지정출력 = sys.argv[순서]
     낼방 = 출력방(방, os.path.join(저장소, 'docs', 'Loom_자산', '옷', f'{들}_틀'), 지정출력)
+    if '--옷' in sys.argv:
+        고른옷 = {s.strip() for s in sys.argv[sys.argv.index('--옷') + 1].split(',') if s.strip()}
+        ensure_folder(방, lambda name: name.startswith(누구 + '_')
+                      and len(name[:-4].split('_')) >= 3
+                      and name[:-4].split('_')[1] in 고른옷)
+    else:
+        ensure_folder(방, lambda name: name.startswith(누구 + '_'))
     자 = 정본자(누구)
     print(f'■ 정본 {누구} — 판 {자["판"]} · 몸 폭 {자["몸폭비"]*100:.1f}% · '
           f'눈 사이 {자["눈사이비"]*100:.2f}% · 눈 중심 ({자["눈중심"][0]*100:.1f}%, {자["눈중심"][1]*100:.1f}%)')
 
     파일 = [f for f in sorted(os.listdir(방)) if f.startswith(누구 + '_') and f.endswith('.png')]
     if '--옷' in sys.argv:
-        고른옷 = {s.strip() for s in sys.argv[sys.argv.index('--옷') + 1].split(',') if s.strip()}
         파일 = [f for f in 파일 if len(f[:-4].split('_')) >= 3 and f[:-4].split('_')[1] in 고른옷]
 
     # 🔴 표정 컷은 «옷 한 벌마다 한 번» 재서 열넷에 같은 값을 쓴다 (09-08).
@@ -178,6 +189,11 @@ if __name__ == '__main__':
     # 찾아야 눈감은 컷도 같은 크기·자리에 앉고, 표정을 바꿀 때 몸이 벌렁거리지 않는다.
     if 기준이름 == 'GPT_누끼':
         기준방들.append(os.path.join(저장소, 'docs', 'Loom_자산', '옷', 'GPT정액시험_누끼'))
+    고른기준 = 고른옷 if '--옷' in sys.argv else None
+    for 기준방 in 기준방들:
+        ensure_folder(기준방, lambda name: name.startswith(누구 + '_')
+                      and (고른기준 is None
+                           or any(item.replace(' ', '') in name for item in 고른기준)))
     값모음, 기준못찾음 = {}, []
     묶음 = {}
     for f in 파일:

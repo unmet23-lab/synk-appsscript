@@ -13,6 +13,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter
 
+try:
+    from mascot_originals import ensure_files
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_files
+
 루트 = Path(r'C:\Users\q1212\Documents\SYNK-appsscript')
 층방 = 루트 / 'docs/Loom_자산/옷/층'
 몸경로 = 루트 / 'docs/캐릭터/정본_4K/까몽_본체.png'
@@ -68,6 +73,7 @@ def 잘라흰바탕(판: Image.Image) -> Image.Image:
 
 def main():
     것들 = sys.argv[1:] or ['겨울델', '1급배지코트', '앞치마']
+    ensure_files([층방 / f'옷_까몽_{이름}.png' for 이름 in 것들])
     몸 = Image.open(몸경로).convert('RGBA')
     흐름 = 조명흐름(몸)
     칸 = []

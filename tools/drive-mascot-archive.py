@@ -77,18 +77,25 @@ def pack(number):
     if shutil.disk_usage(REPO).free < needed:
         raise RuntimeError('Insufficient staging headroom; verify/reclaim uploaded packs first')
     STAGE.mkdir(exist_ok=True)
-    with zipfile.ZipFile(output,'x',compression=zipfile.ZIP_STORED,allowZip64=True) as z:
-        for r in rows:
-            src=source_path(r['path'])
-            if src.stat().st_mtime_ns != r['mtime_ns'] or src.stat().st_size != r['bytes']:
-                raise RuntimeError('Source changed before archive: '+r['path'])
-            z.write(src,r['path'])
-        z.writestr('MANIFEST.json',json.dumps(dict(source=str(SOURCE),files=rows),ensure_ascii=False))
-    with zipfile.ZipFile(output) as z:
-        for r in rows:
-            with z.open(r['path']) as f:
-                if hashlib.file_digest(f,'sha256').hexdigest()!=r['sha256']:
-                    raise RuntimeError('Archive member hash mismatch')
+    if output.exists():
+        raise RuntimeError('Unreceipted staging archive already exists: '+name)
+    temporary=output.with_name(output.name+f'.pack-{os.getpid()}.part')
+    try:
+        with zipfile.ZipFile(temporary,'x',compression=zipfile.ZIP_STORED,allowZip64=True) as z:
+            for r in rows:
+                src=source_path(r['path'])
+                if src.stat().st_mtime_ns != r['mtime_ns'] or src.stat().st_size != r['bytes']:
+                    raise RuntimeError('Source changed before archive: '+r['path'])
+                z.write(src,r['path'])
+            z.writestr('MANIFEST.json',json.dumps(dict(source=str(SOURCE),files=rows),ensure_ascii=False))
+        with zipfile.ZipFile(temporary) as z:
+            for r in rows:
+                with z.open(r['path']) as f:
+                    if hashlib.file_digest(f,'sha256').hexdigest()!=r['sha256']:
+                        raise RuntimeError('Archive member hash mismatch')
+        os.link(temporary,output)
+    finally:
+        if temporary.exists():temporary.unlink()
     result=dict(archive=name,bytes=output.stat().st_size,sha256=digest(output),files=rows)
     write_new(receipt,result)
     print(json.dumps(dict(number=number,status='packed',files=len(rows),bytes=result['bytes'])),flush=True)
@@ -112,39 +119,130 @@ def reclaim(number):
                 continue
             before=src.stat()
             if before.st_size!=r['bytes'] or before.st_mtime_ns!=r['mtime_ns'] or digest(src)!=r['sha256']:
-                changed.append(r['path']);continue
+                changed.append(r['path'])
+                f.write(json.dumps(dict(event='changed-preserved',path=r['path']),ensure_ascii=False)+'\n');f.flush()
+                continue
             after=src.stat()
             if (before.st_size,before.st_mtime_ns)!=(after.st_size,after.st_mtime_ns):
-                changed.append(r['path']);continue
+                changed.append(r['path'])
+                f.write(json.dumps(dict(event='changed-preserved',path=r['path']),ensure_ascii=False)+'\n');f.flush()
+                continue
             # Commit the recovery location before removing the validated local copy.
             f.write(json.dumps(dict(event='source-verified',path=r['path'],sha256=r['sha256']),ensure_ascii=False)+'\n');f.flush();os.fsync(f.fileno())
             src.unlink()
             freed+=r['bytes']
             f.write(json.dumps(dict(event='reclaimed',path=r['path'],bytes=r['bytes']),ensure_ascii=False)+'\n');f.flush()
+        f.write(json.dumps(dict(event='reclaim-complete',reclaimed_bytes=freed,
+                                changed_preserved=changed),ensure_ascii=False)+'\n');f.flush()
         os.fsync(f.fileno())
     local=STAGE/receipt['archive']
     if local.exists() and digest(local)==receipt['sha256']:
         local.unlink()
     print(json.dumps(dict(number=number,remote_verified=True,reclaimed_bytes=freed,changed_preserved=changed,free_bytes=shutil.disk_usage(REPO).free),ensure_ascii=True),flush=True)
 
-def restore(relative):
-    target=source_path(relative)
-    for item in plan()['packs']:
-        match=next((r for r in item['files'] if r['path']==relative),None)
-        if match is None:
+def reclaim_complete(number):
+    """Accept sealed audits, or prove a legacy audit has no exact source left."""
+    audit=OPS/f'mascot-{number:04}-reclaimed.jsonl'
+    receipt_path=OPS/f'mascot-{number:04}.json'
+    if not audit.exists() or not receipt_path.exists():
+        return False
+    events=[json.loads(line) for line in audit.read_text(encoding='utf-8').splitlines() if line.strip()]
+    if any(event.get('event')=='reclaim-complete' for event in events):
+        return True
+    if not any(event.get('event')=='remote-sha256-verified' for event in events):
+        return False
+    for row in read(receipt_path)['files']:
+        src=source_path(row['path'])
+        if not src.exists():
             continue
-        if target.exists():
-            print(json.dumps(dict(status='local-exists',matches=digest(target)==match['sha256'])));return
-        receipt=read(OPS/f"mascot-{item['number']:04}.json")
-        with zipfile.ZipFile(REMOTE/receipt['archive']) as z:
-            payload=z.read(relative)
-        if hashlib.sha256(payload).hexdigest()!=match['sha256']:
-            raise RuntimeError('Remote member hash mismatch')
-        target.parent.mkdir(parents=True,exist_ok=True)
-        with target.open('xb') as f:
-            f.write(payload)
-        print(json.dumps(dict(status='restored',path=str(target),sha256=match['sha256']),ensure_ascii=True));return
-    raise ValueError('Asset not in archive plan')
+        before=src.stat()
+        if before.st_size!=row['bytes'] or before.st_mtime_ns!=row['mtime_ns']:
+            continue
+        if digest(src)==row['sha256']:
+            return False
+    return True
+
+def archive_rows():
+    """Yield each archived source row together with its numbered ZIP."""
+    for item in plan()['packs']:
+        for row in item['files']:
+            yield item['number'], row
+
+def restore_rows(rows):
+    """Restore missing rows without overwriting any current local work."""
+    missing=[]
+    for number,row in rows:
+        target=source_path(row['path'])
+        if not target.exists():
+            missing.append((number,row))
+    needed=sum(row['bytes'] for _,row in missing)
+    if needed and shutil.disk_usage(REPO).free < needed+512*1024*1024:
+        raise RuntimeError('Insufficient local space to restore requested originals')
+    by_archive={}
+    for number,row in missing:
+        by_archive.setdefault(number,[]).append(row)
+    restored=0;restored_files=0
+    for number in sorted(by_archive):
+        receipt=read(OPS/f'mascot-{number:04}.json')
+        remote=REMOTE/receipt['archive']
+        if not remote.exists() or remote.stat().st_size!=receipt['bytes']:
+            raise RuntimeError('Cloud archive absent or size incomplete')
+        with zipfile.ZipFile(remote) as z:
+            for row in by_archive[number]:
+                target=source_path(row['path'])
+                if target.exists():
+                    continue
+                target.parent.mkdir(parents=True,exist_ok=True)
+                temporary=target.with_name(target.name+f'.restore-{os.getpid()}.part')
+                hasher=hashlib.sha256()
+                try:
+                    with z.open(row['path']) as source, temporary.open('xb') as output:
+                        for block in iter(lambda:source.read(4*1024*1024),b''):
+                            output.write(block);hasher.update(block)
+                        output.flush();os.fsync(output.fileno())
+                    if hasher.hexdigest()!=row['sha256'] or temporary.stat().st_size!=row['bytes']:
+                        raise RuntimeError('Remote member hash mismatch: '+row['path'])
+                    os.utime(temporary,ns=(row['mtime_ns'],row['mtime_ns']))
+                    # An exclusive hard link preserves a file another process created meanwhile.
+                    os.link(temporary,target)
+                    restored+=row['bytes']
+                    restored_files+=1
+                except FileExistsError:
+                    pass
+                finally:
+                    if temporary.exists():temporary.unlink()
+    return dict(restored_files=restored_files,restored_bytes=restored,requested_files=len(rows))
+
+def restore(relative):
+    match=next(((number,row) for number,row in archive_rows() if row['path']==relative),None)
+    if match is None:
+        raise ValueError('Asset not in archive plan')
+    target=source_path(relative)
+    if target.exists():
+        print(json.dumps(dict(status='local-exists',matches=digest(target)==match[1]['sha256'])));return
+    result=restore_rows([match])
+    print(json.dumps(dict(status='restored',path=str(target),sha256=match[1]['sha256'],
+                               bytes=result['restored_bytes']),ensure_ascii=True))
+
+def restore_many(relatives):
+    wanted=set(relatives)
+    matches=[(number,row) for number,row in archive_rows() if row['path'] in wanted]
+    missing=sorted(wanted-{row['path'] for _,row in matches})
+    if missing:
+        raise ValueError('Assets not in archive plan: '+', '.join(missing))
+    result=restore_rows(matches)
+    print(json.dumps(dict(status='ready',**result),ensure_ascii=True),flush=True)
+
+def restore_prefix(prefix):
+    clean=Path(prefix).as_posix().strip('/')
+    if not clean or '..' in Path(clean).parts or Path(clean).is_absolute():
+        raise ValueError('Unsafe restore prefix')
+    rows=[(number,row) for number,row in archive_rows()
+          if row['path']==clean or row['path'].startswith(clean+'/')]
+    if not rows:
+        raise ValueError('No archived assets under prefix: '+clean)
+    result=restore_rows(rows)
+    print(json.dumps(dict(status='ready',prefix=clean,**result),ensure_ascii=True),flush=True)
 
 if __name__=='__main__':
     command=sys.argv[1]
@@ -156,5 +254,9 @@ if __name__=='__main__':
             (pack if command=='pack' else reclaim)(number)
     elif command=='restore':
         restore(sys.argv[2])
+    elif command=='restore-many':
+        restore_many(sys.argv[2:])
+    elif command=='restore-prefix':
+        restore_prefix(sys.argv[2])
     else:
-        raise ValueError('Use plan, pack N..., reclaim N..., restore RELATIVE_PATH')
+        raise ValueError('Use plan, pack N..., reclaim N..., restore PATH, restore-many PATH..., restore-prefix PREFIX')

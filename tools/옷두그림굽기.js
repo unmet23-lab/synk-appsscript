@@ -35,6 +35,7 @@ const path = require('path');
 const 저장소 = path.join(__dirname, '..');
 const { 키, 한컷, 배치게이트 } = require(path.join(저장소, 'tools', 'lib', '이미지굽기.js'));
 const L = require(path.join(저장소, 'tools', 'lib', '옷목록.js'));
+const 원본보관 = require(path.join(저장소, 'tools', 'lib', '마스코트원본.js'));
 
 const 조각방 = path.join(저장소, 'docs', 'Loom_자산', '옷', '층');
 const 흰바탕방 = path.join(저장소, 'docs', 'Loom_자산', '옷', '두그림_참조');
@@ -51,8 +52,9 @@ const 인자 = (() => {
 function 흰바탕참조(마스코트, 이름) {
   const 파일 = `${이름.replace(/ /g, '')}.png`;
   const 원본 = path.join(조각방, `옷_${마스코트}_${파일}`);
-  if (!fs.existsSync(원본)) throw new Error(`옷 조각이 없다 — ${원본}`);
   const 낼곳 = path.join(흰바탕방, 마스코트, 파일);
+  원본보관.ensureFiles([원본, 낼곳]);
+  if (!fs.existsSync(원본)) throw new Error(`옷 조각이 없다 — ${원본}`);
   if (fs.existsSync(낼곳) && fs.statSync(낼곳).mtimeMs > fs.statSync(원본).mtimeMs) return 낼곳;
   fs.mkdirSync(path.dirname(낼곳), { recursive: true });
   const r = require('child_process').spawnSync('python', ['-c', `

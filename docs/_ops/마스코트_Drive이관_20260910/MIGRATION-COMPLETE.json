@@ -1,0 +1,43 @@
+{
+  "status": "complete",
+  "completed_at": "2026-09-10T09:51:44+09:00",
+  "source": "docs/Loom_자산/옷",
+  "remote_drive_path": "내 드라이브/SYNK/대용량 자산/마스코트/20260910",
+  "drive_url": "https://drive.google.com/drive/u/0/folders/1DE-dLlD1FEoUmopDFS0ayTuJpZhINn9B",
+  "archive": {
+    "packs": 76,
+    "files": 6353,
+    "source_bytes": 30104140261,
+    "zip_bytes": 30106659027,
+    "remote_size_matches": 76,
+    "remote_sha256_verified": 76,
+    "completed_audits": 76
+  },
+  "local_cleanup": {
+    "reclaimed_files": 6352,
+    "reclaimed_bytes": 30097763805,
+    "empty_directories_removed": 28,
+    "staged_archives_remaining": 0,
+    "temporary_files_remaining": 0,
+    "preserved_files": [
+      {
+        "path": "GPT_표정_누끼_틀/까몽_1급배지코트+3급왕관_감동.png",
+        "bytes": 6376456,
+        "reason": "최초 목록 뒤 수정시각이 바뀌어 현재 작업 보호 규칙에 따라 로컬 보존",
+        "content_matches_archived_sha256": true
+      }
+    ]
+  },
+  "kept_local": {
+    "files": 1895,
+    "bytes": 524297129,
+    "scope": "앱용 AVIF와 JSON 등 설명·실행 자료"
+  },
+  "real_restore_round_trip": {
+    "path": "편집시험/까몽_몽골모자_kontext.png",
+    "archive": "mascot-0075.zip",
+    "bytes": 40626,
+    "sha256": "533fa504a723d72cbdf29dc93ea2c6a2609b2e3288d6c213e1306415e4d27c6d",
+    "restored_and_reclaimed": true
+  }
+}

@@ -113,3 +113,8 @@
 {"event": "reclaimed", "path": "GPT_표정_누끼_틀/까몽_1급배지코트+전설의팻말_집중.png", "bytes": 6795922}
 {"event": "source-verified", "path": "GPT_표정_누끼_틀/까몽_1급배지코트+첫목소리목도리_감동.png", "sha256": "fc78b686f95f37103ecbfd43fbd54bd34f63395740b0b5568051afdd679e76a8"}
 {"event": "reclaimed", "path": "GPT_표정_누끼_틀/까몽_1급배지코트+첫목소리목도리_감동.png", "bytes": 6483228}
+{"event": "remote-sha256-verified", "archive": "mascot-0001.zip", "sha256": "8f5ef62d8bf73a2254972f5f0b9f480d0c340803b02c272560e6330496540b1c"}
+{"event": "changed-preserved", "path": "GPT_표정_누끼_틀/까몽_1급배지코트+3급왕관_감동.png"}
+{"event": "source-verified", "path": "GPT_표정_누끼_틀/까몽_1급배지코트+3급왕관_궁금함.png", "sha256": "74ec421bf855b2fe86512f16bb2963c52a5031405e67eebdd6f8d436e81c67ab"}
+{"event": "reclaimed", "path": "GPT_표정_누끼_틀/까몽_1급배지코트+3급왕관_궁금함.png", "bytes": 6414046}
+{"event": "reclaim-complete", "reclaimed_bytes": 6414046, "changed_preserved": ["GPT_표정_누끼_틀/까몽_1급배지코트+3급왕관_감동.png"]}

@@ -32,10 +32,36 @@ class MigrationTests(unittest.TestCase):
         self.src.write_bytes(b'updated-source')
         mod.reclaim(1)
         self.assertEqual(self.src.read_bytes(),b'updated-source')
+        self.assertTrue(mod.reclaim_complete(1))
+        events=[json.loads(line) for line in (mod.OPS/'mascot-0001-reclaimed.jsonl').read_text('utf-8').splitlines()]
+        self.assertIn('changed-preserved',{event['event'] for event in events})
 
     def test_verified_reclaim_and_exact_restore(self):
+        original_mtime=self.src.stat().st_mtime_ns
         mod.reclaim(1);self.assertFalse(self.src.exists())
+        self.assertTrue(mod.reclaim_complete(1))
         mod.restore('asset.png');self.assertEqual(self.src.read_bytes(),b'original-asset')
+        self.assertEqual(self.src.stat().st_mtime_ns,original_mtime)
+
+    def test_unsealed_audit_is_incomplete_while_exact_source_remains(self):
+        audit=mod.OPS/'mascot-0001-reclaimed.jsonl'
+        audit.write_text(json.dumps({'event':'remote-sha256-verified'})+'\n',encoding='utf-8')
+        self.assertFalse(mod.reclaim_complete(1))
+        self.src.unlink()
+        self.assertTrue(mod.reclaim_complete(1))
+
+    def test_restore_prefix_preserves_current_work(self):
+        mod.reclaim(1)
+        mod.restore_prefix('asset.png')
+        self.src.write_bytes(b'current-work')
+        mod.restore_prefix('asset.png')
+        self.assertEqual(self.src.read_bytes(),b'current-work')
+
+    def test_restore_many_rejects_unknown_without_partial_write(self):
+        mod.reclaim(1)
+        with self.assertRaises(ValueError):
+            mod.restore_many(['asset.png','unknown.png'])
+        self.assertFalse(self.src.exists())
 
     def test_escape_rejected(self):
         with self.assertRaises(ValueError):mod.source_path('../outside.png')

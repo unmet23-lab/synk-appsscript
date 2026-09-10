@@ -21,6 +21,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const 저장소 = path.join(__dirname, '..');
+const 원본 = require(path.join(저장소, 'tools', 'lib', '마스코트원본.js'));
 const 인자 = (() => {
   const a = process.argv.slice(2);
   const o = {};
@@ -66,6 +67,7 @@ function 한벌(이름, 표정) {
     const 꼬리 = 이름.split('+').map((s) => s.trim().replace(/ /g, '')).join('+') + (표정 !== '본체' ? `_${표정}` : '');
     const 표시 = 이름 + (표정 !== '본체' ? ` · ${표정}` : '');
     const 파일 = path.join(낼방, `${마스코트}_${꼬리}.png`);
+    원본.ensureFiles([파일]);
     if (fs.existsSync(파일) && fs.statSync(파일).size > 100000) { 적기(`⏭ ${표시} — 이미 있다(${파일})`); 건너뜀++; continue; }
     if (구움 > 0) await 잠(사이);
     적기(`▶ ${표시} 굽는다`);

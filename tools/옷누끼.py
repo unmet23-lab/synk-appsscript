@@ -22,6 +22,11 @@ import numpy as np
 from PIL import Image, ImageFilter
 from scipy import ndimage
 
+try:
+    from mascot_originals import ensure_folder
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_folder
+
 저장소 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -58,9 +63,13 @@ if __name__ == '__main__':
     방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷', 들)
     낼방 = os.path.join(저장소, 'docs', 'Loom_자산', '옷', f'{들}_누끼')
 
-    파일 = [f for f in sorted(os.listdir(방)) if f.endswith('.png') and not f.startswith('_')]
     if '--옷' in sys.argv:
         고른 = [s.strip() for s in sys.argv[sys.argv.index('--옷') + 1].split(',')]
+        ensure_folder(방, lambda name: any(item in name for item in 고른))
+    else:
+        ensure_folder(방)
+    파일 = [f for f in sorted(os.listdir(방)) if f.endswith('.png') and not f.startswith('_')]
+    if '--옷' in sys.argv:
         파일 = [f for f in 파일 if any(g in f for g in 고른)]
 
     낮은것 = []
