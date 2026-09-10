@@ -65,6 +65,20 @@ test('Instagram 답장은 Instagram v26 호스트와 전용 토큰만 쓴다', (
   assert.doesNotMatch(요청[0].url, /page-token/);
 });
 
+test('채널별 전송 실패 알림이 올바른 토큰과 권한을 안내한다', () => {
+  const 실패 = () => ({ getResponseCode: () => 400, getContentText: () => '{"error":"denied"}' });
+  const ig = 엔진로드({}, 실패);
+  assert.equal(ig.ctx.상담_전송_('ig-user', '답장', { 플랫폼: 'ig' }), false);
+  assert.match(ig.메일[0][1], /상담AI_IG토큰/);
+  assert.match(ig.메일[0][1], /instagram_business_basic/);
+  assert.doesNotMatch(ig.메일[0][1], /페이지 액세스 토큰 만료/);
+
+  const fb = 엔진로드({}, 실패);
+  assert.equal(fb.ctx.상담_전송_('fb-user', '답장', { 플랫폼: 'fb' }), false);
+  assert.match(fb.메일[0][1], /상담AI_페이지토큰/);
+  assert.match(fb.메일[0][1], /pages_messaging/);
+});
+
 test('Instagram 전용 토큰이 없으면 페이지 토큰으로 우회하지 않고 닫는다', () => {
   const { ctx, 요청, 기록 } = 엔진로드({ 상담AI_IG토큰: '' });
   assert.equal(ctx.상담_전송_('i1', 'hello', { 플랫폼: 'ig' }), false);
