@@ -266,3 +266,16 @@ test('한 표 내부 예산이 끝나면 헤더 이름을 덮거나 다음 표�
   assert.equal(h.run(plan).status, 'waiting'); assert.equal(h.state().slice.next, 0);
   assert.equal(h.run(plan, true).status, 'complete'); assert.deepEqual(s.data[1], ['a', 'b', 'c']);
 });
+test('야간 AI 오류와 시간 보류가 겹치면 같은 밤 실패 요청을 즉시 재시도하지 않는다', () => {
+  const x = studioHarness(); let calls = 0;
+  x.h.ctx.aiCall_ = () => { calls++; x.h.advance(151000); const error = new Error('synthetic permanent'); error.permanent = true; throw error; };
+  assert.equal(x.h.run(x.plan, false, 'nightJobs').status, 'partial');
+  assert.equal(x.h.run(x.plan, true, 'nightJobs').status, 'no_pending'); assert.equal(calls, 1);
+  assert.equal(x.h.props.getProperty('야간배치완료일'), null);
+});
+test('배치 날짜와 완주 도장은 스크립트 개인 TZ가 아니라 기존 시트 TZ를 따른다', () => {
+  const h = harness(), zones = [];
+  h.ctx.SpreadsheetApp.getActiveSpreadsheet = () => ({ getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar' });
+  const original = h.ctx.Utilities.formatDate; h.ctx.Utilities.formatDate = (d, tz, pattern) => { zones.push(tz); return original(d, tz, pattern); };
+  h.run([h.effect('night')], false, 'nightJobs'); assert.ok(zones.length >= 2); assert.ok(zones.every(z => z === 'Asia/Ulaanbaatar'));
+});
