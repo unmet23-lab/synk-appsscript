@@ -15,10 +15,11 @@
 | Apps Script 웹앱 | ✅ | 고정 배포 URL 사용 |
 | 웹훅 URL 키·검증 토큰 | ✅ | 새 임의값으로 생성해 스크립트 속성에 저장. 값은 문서에 기록하지 않음 |
 | 페이지·Instagram 계정 ID 잠금 | ✅ | 스크립트 속성에 저장 |
-| Meta 앱 | ✅ | `SYNK Guide` 생성 완료. Messenger·Instagram 이용 사례와 공개 정책 URL 저장 |
+| Meta 앱 | ✅ | `SYNK Guide` 생성·기본 설정·앱 아이콘 저장 후 **게시됨** 상태 확인 |
 | Facebook 페이지 토큰 | ⏳ | SYNK 페이지 연결 뒤 발급하여 `상담AI_페이지토큰`에 저장 |
-| Instagram 전용 토큰 | ⏳ | `@synk.mn` 계정 연결 뒤 발급하여 `상담AI_IG토큰`에 저장 |
-| 웹훅 구독 | ⏳ | Facebook·Instagram의 `messages`를 같은 웹앱에 연결 |
+| Instagram 전용 토큰 | ✅ | `@synk.mn` 테스터 승인 뒤 최소 권한 토큰을 발급하여 `상담AI_IG토큰`에 저장. 발급시각도 기록 |
+| Instagram 웹훅 | ✅ | 계정 구독 스위치 활성화, 고정 웹앱 콜백 검증·저장. 버전 49 `doGet` 완료 기록 확인 |
+| Facebook 웹훅 | ⏳ | 페이지 토큰 발급 뒤 같은 웹앱에 `messages`를 연결 |
 | 일반 사용자 고급 액세스 | ⏳ | `pages_messaging` + `instagram_business_basic` + `instagram_business_manage_messages` |
 | 사업자 인증 | ⛔ 보류 | 신규 사업자등록증 발급 전에는 신청하지 않음. 폐업한 예전 등록번호를 재사용하지 않음 |
 
@@ -32,9 +33,9 @@
 | `상담AI_페이지ID` | ✅ SYNK 페이지만 받도록 잠금 |
 | `상담AI_IG계정ID` | ✅ `@synk.mn`만 받도록 잠금 |
 | `상담AI_페이지토큰` | Meta 앱에서 발급 뒤 저장 |
-| `상담AI_IG토큰` | Instagram API에서 발급 뒤 저장. 페이지 토큰으로 대체하지 않음 |
+| `상담AI_IG토큰` | ✅ Instagram API 전용 장기 토큰 저장. 값 비공개. 페이지 토큰으로 대체하지 않음 |
 | `상담AI_IG토큰만료시각` | 자동 갱신 성공 때 코드가 기록. 사람이 직접 입력하지 않음 |
-| `상담AI_IG토큰발급시각` | 새 장기 토큰 저장 직후 `상담AI_IG토큰발급시각기록` 실행 시 자동 기록 |
+| `상담AI_IG토큰발급시각` | ✅ 이번 발급 시각 기록. 이후 새 장기 토큰 저장 직후 다시 기록 |
 | `상담AI_OFF` | 긴급 정지 시에만 `1` |
 
 ## Meta 앱 설정값
@@ -48,6 +49,8 @@
 | 이용약관 | `https://synk.im/terms/` |
 | 데이터 삭제 안내 | `https://synk.im/data-deletion/` |
 | 카테고리 | 교육 |
+| 게시 상태 | 게시됨 |
+| Instagram 앱 | `SYNK Guide-IG` · `@synk.mn` 테스터 승인 |
 | Facebook 권한 | `pages_messaging` |
 | Instagram 권한 | `instagram_business_basic` + `instagram_business_manage_messages` |
 | 웹훅 객체 | `page`, `instagram` |
@@ -65,19 +68,19 @@
 - 첫 답장에서 자동 상담 봇임을 밝히고, 지식에 없는 가격·일정·정책은 만들어내지 않고 사람에게 넘깁니다.
 - 미성년자로 보이는 사용자에게 연락처를 요구하거나 저장하지 않습니다.
 
-## 개통 확인 순서
+## 개통 확인 순서와 현재 진행
 
-1. 앱 생성과 기본 정보 저장
-2. SYNK Facebook 페이지와 `@synk.mn` 연결
-3. 페이지 토큰과 Instagram 전용 토큰을 각 스크립트 속성에 저장
-4. Facebook·Instagram 웹훅 콜백 확인 후 메시지 필드 구독
+1. ✅ 앱 생성·기본 정보·정책 URL·앱 아이콘 저장과 게시
+2. ✅ SYNK Facebook 페이지와 `@synk.mn` 연결
+3. 🔄 Instagram 전용 토큰은 저장 완료. Facebook 페이지 토큰은 남음
+4. 🔄 Instagram 콜백 검증과 계정 구독은 완료. Facebook 웹훅은 남음
 5. 앱 관리자 계정으로 Facebook Messenger와 Instagram DM을 각각 1건 전송
 6. 첫 응답의 자동화 고지, 몽골어 답변, `상담로그` 기록, 인계 메일을 확인
 7. 신규 사업자등록증 발급 뒤 비즈니스 인증과 고급 액세스 제출
 
 ## 사업자 인증 전 가능한 범위
 
-앱 관리자·개발자·테스터 계정으로는 연결과 실제 응답 시험까지 할 수 있습니다. 일반 학부모에게 여는 고급 액세스 제출은 신규 사업자등록증과 Meta 비즈니스 인증 뒤 마무리합니다. 사업자 서류가 없는 동안에는 인증 상태를 성공으로 기록하지 않습니다.
+`@synk.mn` 테스터 승인, 전용 토큰, 공개 앱, Instagram 콜백 검증과 계정 구독까지 완료했습니다. 현재 권한 화면의 `instagram_business_basic`·`instagram_business_manage_messages`는 **테스트 준비 완료**이며, 댓글·게시·인사이트 권한은 추가하지 않았습니다. 일반 학부모의 실계정 메시지에 답하는 고급 액세스 제출은 신규 사업자등록증과 Meta 비즈니스 인증 뒤 마무리합니다. 사업자 서류가 없는 동안에는 일반 사용자 개방이나 인증 상태를 성공으로 기록하지 않습니다.
 
 ## 장애 확인
 

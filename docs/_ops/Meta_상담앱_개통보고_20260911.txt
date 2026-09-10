@@ -1,0 +1,60 @@
+SYNK Guide Meta 상담 앱 개통 보고
+작성일: 2026-09-11
+
+1. 공개 식별 정보
+- Meta 앱: SYNK Guide
+- Meta 앱 ID: 2188817965852860
+- Instagram 하위 앱: SYNK Guide-IG
+- Instagram 앱 ID: 3931923747102965
+- Instagram 계정: @synk.mn
+- Instagram 프로필 ID: 17841411304755030
+- Facebook 페이지: SYNK
+- Facebook 페이지 ID: 1140051542527584
+- 공식 도메인: synk.im
+- 개인정보처리방침: https://synk.im/privacy/
+- 이용약관: https://synk.im/terms/
+- 데이터 삭제 안내: https://synk.im/data-deletion/
+
+2. 이번에 실제 완료한 것
+- Instagram 권한 화면에 instagram_business_basic과 instagram_business_manage_messages만 추가했다.
+- 토큰 승인 화면이 처음 제시한 댓글·게시·인사이트 권한은 제외하고 위 두 권한만 허용했다.
+- @synk.mn에 보낸 SYNK Guide-IG 테스터 초대를 해당 계정에서 수락했다.
+- Instagram 전용 장기 토큰을 발급해 Apps Script 스크립트 속성 상담AI_IG토큰에 저장했다.
+- 상담AI_IG토큰발급시각을 함께 기록했다.
+- Instagram 계정 행의 Webhook 구독 스위치를 켰다.
+- Apps Script 고정 배포 URL과 비공개 URL 키를 조합한 콜백을 Meta에 저장했다.
+- 웹훅 검증 토큰은 검수 중 화면 노출 가능성을 없애기 위해 새 값으로 교체한 뒤 Meta와 Apps Script 양쪽에 다시 저장했다.
+- 교체 뒤 Apps Script 실행 기록에서 버전 49 doGet, 2026-09-11 06:47:21, 완료됨을 확인했다.
+- Meta 앱의 도메인·연락처·정책 URL·교육 카테고리·앱 아이콘을 저장하고 게시됨 상태를 확인했다.
+- 앱 아이콘은 Meta 자르기 화면에서 s와 k가 잘리는 문제를 발견해 로고 크기를 줄이고 안전 여백을 늘린 1024x1024 정본으로 교체했다.
+
+3. 비밀정보 처리
+- 액세스 토큰, 웹훅 검증 토큰, URL 키, 앱 시크릿은 이 보고서와 Git에 넣지 않았다.
+- 액세스 토큰과 발급시각은 Apps Script 스크립트 속성에만 둔다.
+- Meta 오류 본문과 예외에 토큰이 기록되지 않도록 배포 코드가 값을 남기지 않는다.
+- Instagram 토큰과 Facebook 페이지 토큰은 서로 대체하지 않는다.
+
+4. 코드와 배포 확인
+- Instagram 발송 주소: graph.instagram.com/v26.0/{Instagram 계정 ID}/messages
+- Instagram 인증: Bearer 토큰 헤더
+- Facebook 발송 주소: graph.facebook.com/v26.0/me/messages
+- Apps Script 고정 배포: @49
+- 프로젝트 HEAD 23/23, 고정 배포 @49 23/23 파일 바이트 일치 확인
+- 로컬 전체 검사: 2,332건 중 실패 0
+- GitHub Actions 원격 CI: 성공
+- 최종 독립 검수: 새 지적 0
+
+5. 현재 제한과 남은 일
+- Instagram 두 권한은 테스트 준비 완료 상태다. 일반 사용자 데이터를 처리하는 고급 액세스와 앱 검수는 아직 제출하지 않았다.
+- 신규 사업자등록증이 없고 Meta 비즈니스 인증이 완료되지 않아 일반 학부모 대상 개방 완료로 판단하지 않는다.
+- Instagram 실계정 DM의 수신-자동응답-상담로그-인계메일 전체 흐름은 일반 사용자 고급 액세스 뒤 실제 메시지로 다시 확인해야 한다.
+- Facebook 페이지 토큰 발급과 Facebook 웹훅 설정은 별도 남은 작업이다.
+- 폐업한 기존 사업자등록번호를 인증에 재사용하지 않는다.
+- 유료 Meta Verified는 구매하지 않는다.
+
+6. 보안 검토자가 볼 핵심 질문
+- 공개 앱 상태와 테스트 준비 권한 사이의 구분이 문서에서 충분히 명확한가.
+- 일반 사용자 고급 액세스 전까지 비역할 계정의 메시지를 처리하지 않는다고 보수적으로 판단했는가.
+- 스크립트 속성 외 경로에 토큰·URL 키·검증 토큰이 남을 가능성이 있는가.
+- 콜백 로그·오류 로그·운영 메일에 메시지 원문이나 Meta 응답 본문이 과도하게 남지 않는가.
+- 미성년자 메시지의 연락처 요구 금지, 24시간 창, 자동화 고지와 사람 인계 경계가 충분한가.
