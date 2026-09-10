@@ -450,7 +450,7 @@ test('[#Q99] 도달 장부의 talk_log 칸이 이 판정관을 지목하고, 래
   const { 읽다 } = require('../tools/lib/시트도달.js');
   const r = 읽다(ROOT);
   assert.deepEqual(r.위반, [], '도달 장부에 위반이 있다: ' + JSON.stringify(r.위반));
-  assert.deepEqual(r.장부['talk_log'], { 소비자: '교재연동.js:masteryFromTalk_', 층: '제품', 회수: '밤마다', 대장칸: '㉠' },
+  assert.deepEqual(r.장부['talk_log'], { 소비자: '교재연동.js:masteryFromTalk_', 층: '제품', 회수: '밤마다', 대장칸: '㉠', 수신자: '학생' },
     'talk_log 칸이 이 판정관을 안 가리킨다 — 코드만 세우고 장부를 안 고치면 화면은 계속 빚으로 센다');
   assert.equal(r.셈.도달0, r.상한.도달0,
     `래칫에 슬랙이 생겼다(실측 ${r.셈.도달0} · 상한 ${r.상한.도달0}) — 빚을 갚았으면 상한도 같은 커밋에서 내려라`);

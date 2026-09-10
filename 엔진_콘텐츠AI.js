@@ -3061,6 +3061,10 @@ function 오류뱅크전진_(상태들, 제출일들, 기준시각) {
  * (aiFeedbackBatch_ 리뷰 M1 포이즌 필과 같은 축 — 그쪽은 행 단위, 이쪽은 호출이 슬라이스 단위라 슬라이스 단위).
  * ⚠ 전진 폭은 커서.전진(확정 접두)까지만 — 판정 전(대기·격리 복구 창) 행을 넘으면 v9.212 불변식
  *   (승인·복구 뒤 재수집)이 깨진다. 전진 폭 0이면 집을 행도 없어 애초에 호출이 없다. */
+/* [발전안 20260911 갈래 ③] 오류사전 킬 스위치 판정 — 값이 정확히 '1' 일 때만 꺼진다(다른 값·빈칸·미설정은 켜짐 = 옛 동작 그대로).
+ *   두뇌_OFF 와 같은 꼴이다. 순수 함수라 시험이 직접 태운다(tests/오류사전스위치.test.js). */
+function 오류사전꺼짐_(값) { return String(값 == null ? '' : 값).trim() === '1'; }
+
 function 오류뱅크포이즌_(연속실패, 전진폭) {
   const n = (Number(연속실패) || 0) + 1;
   if (n >= 3 && 전진폭 > 0) return { 전진: true, 카운터: 0 };
@@ -3387,9 +3391,13 @@ function aiStudioBatch_() {
   } catch (e) { errs.push('한문장 준비: ' + String(e.message || e).slice(0, 80)); }
 
   // ② G 오류사전 — 첨삭 신규분에서 몽골어 화자 오류 패턴 축적(학생 식별 정보 저장 안 함 — 비식별 원칙)
+  /* [발전안 20260911 갈래 ③] 09-11 코드 검토에서 error_bank 의 생성 소비자를 찾지 못했다(Prism 집계층 설계 · 엔진 v3 §8 U1).
+   *   AI 호출은 새 유효 첨삭 행과 잔여 예산이 있을 때만 한다. 이 조건만으로 실제 학생 수·호출 횟수·지출액을 단정하지 않는다.
+   *   철학 §2 「미래에 쓸 수 있다는 설명이 현재 소비자의 부재를 대신하지 않는다」. 기본은 «켜짐»(동작 변화 0) —
+   *   Script Properties `오류사전_OFF=1` 이면 끈다. 실제 운영 설정 변경은 이번 구현과 별개다. 판정은 `오류사전꺼짐_` 하나. */
   try {
     const fb = ss.getSheetByName('hw_feedback');
-    if (fb && fb.getLastRow() >= 2 && can()) {
+    if (fb && fb.getLastRow() >= 2 && can() && !오류사전꺼짐_(props.getProperty('오류사전_OFF'))) {
       const from = Number(props.getProperty('오류뱅크_포인터')) || 1;
       const last = fb.getLastRow();
       if (from < last) {
