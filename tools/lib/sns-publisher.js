@@ -373,7 +373,7 @@ function renderPlanMarkdown(plan) {
     `- 만든 때: ${plan.createdAt}`,
     `- 원본: \`${plan.sourceRoot}\``,
     `- 직접 발행 대상 ${direct}개 / 공식 편집기 보조 ${manual}개 / 계정 확정 대기 ${blocked}개`,
-    '- 현재 판은 전부 미승인입니다. 승인 해시와 실제 파일이 같아야 발행합니다.',
+    `- 현재 형식 승인 기록 ${plan.items.filter((item) => item.approval?.version === 2).length}/${plan.items.length}개. 발행 직전에 본문·계정·미디어·발행 설정을 다시 검증합니다.`,
     '',
     '| ID | 계정 | 형식 | 통로 | 연결 | 파일 검사 |',
     '|---|---|---|---|---|---|',
@@ -383,7 +383,7 @@ function renderPlanMarkdown(plan) {
   }
   lines.push('', '## 유호님이 실제로 하는 일', '',
     '1. 이 한 판에서 계정·본문·파일·공개범위·예약시각을 한 번 검수합니다.',
-    '2. 승인 후 직접 통로는 자동 발행하고, 네이버·카카오·Substack은 본문이 복사된 채 공식 편집기와 자료 폴더가 열립니다.',
+    '2. 직접 통로는 --발행으로 처리합니다. 네이버·카카오·티스토리·Substack은 --수동열기로 본문을 복사하고 공식 편집기와 자료 폴더를 엽니다.',
     '3. 본인인증·최초 연결·재인증·광고비 집행만 사람 단계로 남깁니다.', '');
   return `${lines.join('\n')}\n`;
 }
@@ -398,16 +398,71 @@ function verifyDependencies(item) {
   return changed;
 }
 
-function approvePlan(planFile, ids, note = '') {
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).filter((key) => value[key] !== undefined).sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+// Only public routing/settings belong in the approval. Never include tokens or
+// secrets: rotating an access token must not change the reviewed publication.
+function publicationHash(item, account, credential = {}) {
+  const pick = (source, keys) => Object.fromEntries(keys.map((key) => [key, source?.[key] ?? null]));
+  const media = [
+    [item.video, 'video'], [item.thumbnail, 'thumbnail'], [item.document, 'document'],
+    ...(item.images || []).map((file) => [file, 'image']),
+    ...(item.subtitles || []).map((file) => [file, 'subtitle']),
+  ].filter(([file]) => file).map(([file, role]) => dependency(resolveRepoPath(file), role));
+  return sha256(stableJson({
+    version: 2,
+    item: pick(item, ['id', 'accountKey', 'account', 'platform', 'publisher', 'language',
+      'title', 'text', 'alt', 'link', 'folder', 'video', 'images', 'thumbnail', 'document',
+      'subtitles', 'remoteMediaUrls', 'publish', 'dependencies']),
+    account: pick(account, ['platform', 'handle', 'publisher', 'expectedChannelId',
+      'expectedHandle', 'expectedChannelTitle', 'categoryId', 'madeForKids', 'chatId',
+      'graphVersion', 'apiVersion', 'editorUrl']),
+    routing: pick(credential, ['channelId', 'pageId', 'igUserId', 'userId', 'authorUrn',
+      'boardId', 'graphVersion', 'apiVersion']),
+    media,
+  }));
+}
+
+function verifyPublication(item, account, credential) {
+  if (!account || item.platform !== account.platform) throw new Error(`${item.id} 발행 계정/플랫폼이 다릅니다.`);
+  const errors = validateItem(item);
+  if (errors.length) throw new Error(`${item.id} 파일 검사 실패: ${errors.join(', ')}`);
+  const changed = verifyDependencies(item);
+  if (changed.length) throw new Error(`${item.id} 원본이 계획 후 바뀌었습니다: ${changed.join(', ')}`);
+  return publicationHash(item, account, credential);
+}
+
+function verifyApproval(item, account, credential) {
+  if (item.approval?.version !== 2 || !item.approval.publicationHash
+      || item.approval.contentHash !== item.contentHash) {
+    throw new Error(`${item.id}는 현재 발행 설정으로 최종 승인되지 않았습니다. 기존 형식 승인은 다시 검수해야 합니다.`);
+  }
+  const currentHash = verifyPublication(item, account, credential);
+  if (item.approval.publicationHash !== currentHash) {
+    throw new Error(`${item.id} 승인 후 본문·계정·미디어·발행 설정이 바뀌었습니다. 다시 검수해야 합니다.`);
+  }
+  return currentHash;
+}
+
+function approvePlan(planFile, ids, note = '', { accountsFile, readCredentialImpl = readCredential } = {}) {
   const plan = readJson(planFile);
+  const config = loadAccounts(accountsFile || resolveRepoPath(plan.accountsFile));
   const selected = new Set(ids && ids.length ? ids : plan.items.map((item) => item.id));
   const now = new Date().toISOString();
   for (const item of plan.items) {
     if (!selected.has(item.id)) continue;
-    if (item.errors && item.errors.length) throw new Error(`${item.id}는 파일 검사를 통과하지 못했습니다.`);
-    const changed = verifyDependencies(item);
-    if (changed.length) throw new Error(`${item.id} 원본이 계획 후 바뀌었습니다: ${changed.join(', ')}`);
-    item.approval = { contentHash: item.contentHash, approvedAt: now, note };
+    const account = config.accounts[item.accountKey];
+    const credential = account?.publisher.startsWith('direct')
+      ? readCredentialImpl(item.accountKey, { allowLegacy: true }) : null;
+    const hash = verifyPublication(item, account, credential);
+    item.approval = { version: 2, contentHash: item.contentHash, publicationHash: hash, approvedAt: now, note };
   }
   writeJsonAtomic(planFile, plan);
   fs.writeFileSync(planFile.replace(/\.json$/i, '.md'), renderPlanMarkdown(plan), 'utf8');
@@ -477,14 +532,14 @@ function matchesYoutubeAccount(channel, account) {
   return !account.expectedChannelTitle || channel.snippet?.title === account.expectedChannelTitle;
 }
 
-async function checkConnection(accountKey, account, { fetchImpl = fetch } = {}) {
+async function checkConnection(accountKey, account, { fetchImpl = fetch, readCredentialImpl = readCredential } = {}) {
   if (account.publisher === 'manual-assisted') {
     return { state: 'manual-ready', detail: '공식 편집기 보조' };
   }
   if (account.publisher.startsWith('blocked')) {
     return { state: 'blocked', detail: account.connection };
   }
-  const credential = readCredential(accountKey, { allowLegacy: true });
+  const credential = readCredentialImpl(accountKey, { allowLegacy: true });
   if (!credential) return { state: 'needs-auth', detail: account.connection };
 
   if (account.platform === 'youtube') {
@@ -822,38 +877,49 @@ async function youtubeUpload(item, account, credential, options = {}) {
   }
   if (!video?.id) throw new Error('YouTube가 영상 ID를 돌려주지 않았습니다.');
 
-  let thumbnail = null;
-  if (item.thumbnail) {
-    const thumbnailFile = resolveRepoPath(item.thumbnail);
-    const response = await fetchWithRetry(`https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${encodeURIComponent(video.id)}&uploadType=media`, {
-      method: 'POST',
-      headers: { authorization: `Bearer ${token.accessToken}`, 'content-type': mimeFor(thumbnailFile) },
-      body: fs.readFileSync(thumbnailFile),
-    }, { fetchImpl });
-    const body = await responseJson(response);
-    if (!response.ok) throw new Error(`YouTube 썸네일 업로드 실패 ${response.status}: ${apiMessage(body)}`);
-    thumbnail = true;
-  }
+  const partial = { state: 'partial', id: video.id, url: `https://www.youtube.com/watch?v=${video.id}`, thumbnail: null, captions: [] };
+  const snapshot = () => ({ ...partial, captions: [...partial.captions] });
+  const checkpoint = async () => { await options.onProgress?.(snapshot()); };
+  try {
+    // Persist the remote ID before any request that can fail after video creation.
+    await checkpoint();
+    if (item.thumbnail) {
+      const thumbnailFile = resolveRepoPath(item.thumbnail);
+      const response = await fetchWithRetry(`https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${encodeURIComponent(video.id)}&uploadType=media`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token.accessToken}`, 'content-type': mimeFor(thumbnailFile) },
+        body: fs.readFileSync(thumbnailFile),
+      }, { fetchImpl });
+      const body = await responseJson(response);
+      if (!response.ok) throw new Error(`YouTube 썸네일 업로드 실패 ${response.status}: ${apiMessage(body)}`);
+      partial.thumbnail = true;
+      await checkpoint();
+    }
 
-  const captions = [];
-  for (const subtitlePath of item.subtitles || []) {
-    const subtitleFile = resolveRepoPath(subtitlePath);
-    const language = /subtitles-([a-z-]+)\.srt$/i.exec(path.basename(subtitleFile))?.[1] || item.language || 'ko';
-    const boundary = `synk-${crypto.randomBytes(12).toString('hex')}`;
-    const metadataPart = Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ snippet: { videoId: video.id, language, name: language, isDraft: false } })}\r\n`);
-    const mediaHead = Buffer.from(`--${boundary}\r\nContent-Type: application/x-subrip\r\n\r\n`);
-    const media = fs.readFileSync(subtitleFile);
-    const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
-    const response = await fetchWithRetry('https://www.googleapis.com/upload/youtube/v3/captions?part=snippet&uploadType=multipart', {
-      method: 'POST',
-      headers: { authorization: `Bearer ${token.accessToken}`, 'content-type': `multipart/related; boundary=${boundary}` },
-      body: Buffer.concat([metadataPart, mediaHead, media, tail]),
-    }, { fetchImpl });
-    const body = await responseJson(response);
-    if (!response.ok) throw new Error(`YouTube ${language} 자막 업로드 실패 ${response.status}: ${apiMessage(body)}`);
-    captions.push({ language, id: body.id || null });
+    for (const subtitlePath of item.subtitles || []) {
+      const subtitleFile = resolveRepoPath(subtitlePath);
+      const language = /subtitles-([a-z-]+)\.srt$/i.exec(path.basename(subtitleFile))?.[1] || item.language || 'ko';
+      const boundary = `synk-${crypto.randomBytes(12).toString('hex')}`;
+      const metadataPart = Buffer.from(`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ snippet: { videoId: video.id, language, name: language, isDraft: false } })}\r\n`);
+      const mediaHead = Buffer.from(`--${boundary}\r\nContent-Type: application/x-subrip\r\n\r\n`);
+      const media = fs.readFileSync(subtitleFile);
+      const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
+      const response = await fetchWithRetry('https://www.googleapis.com/upload/youtube/v3/captions?part=snippet&uploadType=multipart', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token.accessToken}`, 'content-type': `multipart/related; boundary=${boundary}` },
+        body: Buffer.concat([metadataPart, mediaHead, media, tail]),
+      }, { fetchImpl });
+      const body = await responseJson(response);
+      if (!response.ok) throw new Error(`YouTube ${language} 자막 업로드 실패 ${response.status}: ${apiMessage(body)}`);
+      partial.captions.push({ language, id: body.id || null });
+      await checkpoint();
+    }
+    return { ...snapshot(), state: item.publish?.publishAt ? 'scheduled' : visibility };
+  } catch (error) {
+    error.partialResult = snapshot();
+    error.message += ` (기존 YouTube 영상 ${video.id}; 새로 업로드하지 말고 기존 영상 확인 필요)`;
+    throw error;
   }
-  return { state: item.publish?.publishAt ? 'scheduled' : visibility, id: video.id, url: `https://www.youtube.com/watch?v=${video.id}`, thumbnail, captions };
 }
 
 function splitText(text, limit) {
@@ -1095,7 +1161,7 @@ function resultFileFor(planFile) {
   return planFile.replace(/\.json$/i, '.결과.json');
 }
 
-async function publishPlan(planFile, ids, { accountsFile, fetchImpl = fetch, force = false } = {}) {
+async function publishPlan(planFile, ids, { accountsFile, fetchImpl = fetch, readCredentialImpl = readCredential, force = false } = {}) {
   const plan = readJson(planFile);
   const config = loadAccounts(accountsFile || resolveRepoPath(plan.accountsFile));
   const selected = new Set(ids && ids.length ? ids : plan.items.map((item) => item.id));
@@ -1106,27 +1172,39 @@ async function publishPlan(planFile, ids, { accountsFile, fetchImpl = fetch, for
     if (!selected.has(item.id)) continue;
     const account = config.accounts[item.accountKey];
     if (!account) throw new Error(`${item.accountKey} 계정 설정이 없습니다.`);
+    const previous = result.items[item.id];
+    // A changed plan/hash or force must not create another video after a partial
+    // success. An interrupted attempt without an ID is also not safe to repeat.
+    if (previous && ['partial', 'publishing'].includes(previous.state)) {
+      throw new Error(`${item.id}는 ${previous.state} 상태입니다${previous.id ? ` (기존 영상 ${previous.id})` : ''}. 원격 결과를 확인하기 전 재발행하지 않습니다.`);
+    }
+    const credential = account.publisher.startsWith('direct')
+      ? readCredentialImpl(item.accountKey, { allowLegacy: true }) : null;
+    const approvedHash = verifyApproval(item, account, credential);
     if (account.publisher === 'manual-assisted') {
-      result.items[item.id] = { state: 'manual-required', at: new Date().toISOString(), contentHash: item.contentHash };
+      result.items[item.id] = { state: 'manual-required', at: new Date().toISOString(), contentHash: item.contentHash, publicationHash: approvedHash };
       writeJsonAtomic(resultFile, result);
       continue;
     }
-    if (!item.approval || item.approval.contentHash !== item.contentHash) throw new Error(`${item.id}는 현재 내용으로 최종 승인되지 않았습니다.`);
-    const changed = verifyDependencies(item);
-    if (changed.length) throw new Error(`${item.id} 승인 후 원본이 바뀌었습니다: ${changed.join(', ')}`);
-    const previous = result.items[item.id];
     if (!force && previous?.contentHash === item.contentHash && ['published', 'scheduled', 'processing', 'private', 'unlisted', 'public'].includes(previous.state)) {
       continue;
     }
-    const credential = readCredential(item.accountKey, { allowLegacy: true });
     if (!credential) throw new Error(`${item.id} 공식 계정 연결이 없습니다.`);
-    result.items[item.id] = { state: 'publishing', startedAt: new Date().toISOString(), contentHash: item.contentHash };
+    const attempt = { contentHash: item.contentHash, publicationHash: approvedHash, startedAt: new Date().toISOString() };
+    result.items[item.id] = { ...attempt, state: 'publishing' };
     writeJsonAtomic(resultFile, result);
     try {
-      const published = await publishItem(item, account, credential, { fetchImpl });
-      result.items[item.id] = { ...published, contentHash: item.contentHash, finishedAt: new Date().toISOString() };
+      const published = await publishItem(item, account, credential, {
+        fetchImpl,
+        onProgress: (progress) => {
+          result.items[item.id] = { ...attempt, ...progress, updatedAt: new Date().toISOString() };
+          writeJsonAtomic(resultFile, result);
+        },
+      });
+      result.items[item.id] = { ...attempt, ...published, finishedAt: new Date().toISOString() };
     } catch (error) {
-      result.items[item.id] = { state: 'failed', contentHash: item.contentHash, failedAt: new Date().toISOString(), error: error.message };
+      const partial = error.partialResult || (result.items[item.id]?.state === 'partial' ? result.items[item.id] : null);
+      result.items[item.id] = { ...attempt, ...partial, state: partial ? 'partial' : 'failed', failedAt: new Date().toISOString(), error: error.message };
       writeJsonAtomic(resultFile, result);
       throw error;
     }
@@ -1151,6 +1229,7 @@ function openManualItem(planFile, itemId, accountsFile) {
   if (!item) throw new Error(`계획에 ${itemId}가 없습니다.`);
   const account = config.accounts[item.accountKey];
   if (!account?.editorUrl) throw new Error(`${itemId}에 공식 편집기 URL이 없습니다.`);
+  verifyApproval(item, account, null);
   setClipboard(item.text);
   openChrome(account.editorUrl);
   const folder = resolveRepoPath(item.folder);
@@ -1172,6 +1251,8 @@ module.exports = {
   renderPlanMarkdown,
   approvePlan,
   verifyDependencies,
+  publicationHash,
+  verifyApproval,
   hasCredential,
   readCredential,
   writeCredential,
