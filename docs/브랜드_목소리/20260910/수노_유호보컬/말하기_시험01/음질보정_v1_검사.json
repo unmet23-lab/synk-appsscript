@@ -1,0 +1,78 @@
+{
+  "source": "A_raw.wav",
+  "sourceSha256": "55f02b5dbf699b08346175c9577f9e6b5904aa2f2f129839d5158c2a4b2ee34f",
+  "reference": "A_들어보기.wav",
+  "referenceSha256": "c4b93874203c0ca680444e63780da6f65b16f923b9d47673fff2e0f081049211",
+  "output": "A_음질보정_v1.wav",
+  "outputSha256": "367b6013e5595abdf90d869c9bcb6938cf07002e55d507c23357dd0415770e53",
+  "filters": [
+    "highpass=f=45:p=2:r=f64",
+    "equalizer=f=190:t=q:w=0.7:g=-1.2:r=f64",
+    "equalizer=f=2300:t=q:w=0.8:g=1.1:r=f64",
+    "equalizer=f=6500:t=q:w=1.5:g=-0.6:r=f64",
+    "stereotools=slev=0.65"
+  ],
+  "fixedGainDb": -5.300000000000001,
+  "sourceProbe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "pcm_s16le",
+        "sample_rate": "48000",
+        "channels": 2,
+        "bits_per_sample": 16,
+        "time_base": "1/48000",
+        "duration_ts": 652800
+      }
+    ],
+    "format": {
+      "duration": "13.600000"
+    }
+  },
+  "outputProbe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "pcm_s24le",
+        "sample_rate": "48000",
+        "channels": 2,
+        "bits_per_sample": 24,
+        "time_base": "1/48000",
+        "duration_ts": 652800
+      }
+    ],
+    "format": {
+      "duration": "13.600000"
+    }
+  },
+  "referenceLoudness": {
+    "input_i": "-23.00",
+    "input_tp": "-9.79",
+    "input_lra": "3.20",
+    "input_thresh": "-33.16",
+    "output_i": "-23.53",
+    "output_tp": "-10.59",
+    "output_lra": "2.60",
+    "output_thresh": "-33.65",
+    "normalization_type": "dynamic",
+    "target_offset": "0.53"
+  },
+  "outputLoudness": {
+    "input_i": "-23.00",
+    "input_tp": "-9.03",
+    "input_lra": "3.30",
+    "input_thresh": "-33.16",
+    "output_i": "-23.52",
+    "output_tp": "-10.08",
+    "output_lra": "2.80",
+    "output_thresh": "-33.65",
+    "normalization_type": "dynamic",
+    "target_offset": "0.52"
+  },
+  "fullDecodePassed": true,
+  "sourceAndReferencePreserved": true,
+  "humanListening": false,
+  "limits": "Local EQ and stereo-width adjustment only. No lost detail reconstruction. 24-bit output is a processing container, not added source resolution. No regeneration, denoising, compression, pitch, tempo or cut changes."
+}
