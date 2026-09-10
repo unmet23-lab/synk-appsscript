@@ -28,6 +28,7 @@
 'use strict';
 
 const fs = require('node:fs');
+const { execFileSync } = require('node:child_process');
 
 /* ── Loom — 이 지면이 부품을 «입는» 통로 (2026-08-18 · ④ 지면 배선) ──────────────
  * 판정(훅 게이트·얹을 자리·멱등·범위진단)은 전부 `tools/lib/loom얹기.js` 하나가 진다.
@@ -81,8 +82,16 @@ function 함께볼것구역() {
    *   생성기+검사기를 함께 담은 첫 커밋에서 발화 — 임시방에 카드가 있을 리 없다).
    *   카드가 실제로 사는 자리는 화면이 배포되는 자리(docs/)이지 산출 파일의 옆이 아니다. */
   const 폴더 = path.join(ROOT, 'docs');
+  /* [발전안 20260911 · 독립 검토 09-11] git 이 무시하는 산출물(홍보물/브랜드소개_20260909/synk.html 은 그 폴더 .gitignore 의 *.html)은
+   *   분리 작업 사본에 없다. 존재만 재면 그 사본에서 그린 화면이 「파일이 없다」 빨간 상자를 싣고, 그 화면을 커밋하면 master 의
+   *   `--검사` 가 «안 따라왔다»로 빨개진다(실측 09-11). 무시 파일은 «게시 산출물이 그 자리에 선다»는 선언이라 링크로 그리고,
+   *   추적 대상인데 없는 것만 빨간 상자다 — 「없다」와 「이 사본에 없다」를 가른다. git 조회 실패는 옛 판정(존재 검사)으로 떨어진다. */
+  const 무시파일 = (rel) => {
+    try { execFileSync('git', ['check-ignore', '-q', path.join('docs', rel)], { cwd: ROOT, stdio: 'ignore' }); return true; }
+    catch (_) { return false; }
+  };
   const 줄 = 함께볼것.map((d) => {
-    if (!fs.existsSync(path.join(폴더, d.파일))) {
+    if (!fs.existsSync(path.join(폴더, d.파일)) && !무시파일(d.파일)) {
       return `  <div style="padding:11px 14px;border:2px dashed ${킷.coral3};border-radius:10px;color:${킷.coral3};font-size:12.5px;line-height:1.6">`
         + `🔴 <b>${d.제목}</b> — 파일이 없다(<code>${d.파일}</code>). 이 목록이 낡았다는 뜻이다 — <code>tools/이해대장.js</code> 의 <code>함께볼것</code> 을 고친다.</div>`;
     }
