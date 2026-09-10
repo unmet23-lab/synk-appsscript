@@ -106,6 +106,7 @@ const 나가는자리_ = [
   { file: '엔진_콘텐츠AI.js', vendor: 'anthropic',    n: 3, 뭐: '첨삭 · 공용 헬퍼 aiCall_ · aiText_' },
   { file: '엔진_두뇌.js',     vendor: 'anthropic',    n: 1, 뭐: '벤더 중립 어댑터(3층)' },
   { file: '엔진_수집.js',     vendor: 'anthropic',    n: 1, 뭐: 'callClaudeTalk_(대화)' },
+  { file: '엔진_계정점검.js', vendor: 'anthropic',    n: 1, 뭐: '관리자 본인만 실행하는 고정 합성 연결 점검(학생 데이터 0·호출당 요청 1회)' },
   { file: '교재연동.js',      vendor: 'GoogleSTT',    n: 1, 뭐: '🔒 stt요청_ — 학생 음성이 나가는 유일한 문(08-29 통합 전 2자리)' },
   { file: '교재연동.js',      vendor: 'GoogleOAuth',  n: 1, 뭐: '서비스 계정 토큰 발급(학생 데이터 0)' },
   { file: '엔진_폼리포트.js', vendor: '변수URL',      n: 1, 뭐: 'exportSlidePng — url 변수에 docs.google.com 이 담긴다(학생 데이터 0)' },
