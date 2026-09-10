@@ -266,7 +266,7 @@ test('[증언] 골격 — testimony_log 가 수집 표식으로 서고, 헤더 �
 
 test('[증언] 도달 장부 — 소비자 = 엔진_콘텐츠AI.js:aiStudioBatch_ · 제품층 · 밤마다 · 대장칸 ㉢(삶) — 그릇만 서고 안 읽히면 미완이다', () => {
   const 장부 = section('function 수집도달_() {', 'function 시트도달상한_() {');
-  assert.ok(/\[TESTIMONY_TAB_\]: \{ 소비자: '엔진_콘텐츠AI\.js:aiStudioBatch_', 층: '제품', 회수: '밤마다', 대장칸: '㉢' \}/.test(장부),
+  assert.ok(/\[TESTIMONY_TAB_\]: \{ 소비자: '엔진_콘텐츠AI\.js:aiStudioBatch_', 층: '제품', 회수: '밤마다', 대장칸: '㉢', 수신자: '학생' \}/.test(장부),
     '증언 탭의 도달 칸이 없거나 다르다');
 });
 
