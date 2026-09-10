@@ -1,0 +1,44 @@
+{
+  "date": "2026-09-11",
+  "id": "공방_편지봉투",
+  "status": "current",
+  "canonical": {
+    "path": "docs/Loom_자산/구움/공방_편지봉투.avif",
+    "sha256": "7f0a23c1354fa989f373be2e54c27c649160735dbedc2a9fd202e6521769e3aa",
+    "width": 1536,
+    "height": 1024,
+    "bytes": 260664,
+    "has_alpha": true
+  },
+  "source": {
+    "path": "docs/Loom_자산/구움/공방_편지봉투.png",
+    "sha256": "d9de6f031081593b0befb535a2e902aa9a03bfe816a4f63ec4d72b45a4285794",
+    "width": 1536,
+    "height": 1024,
+    "generated_path": "C:/Users/q1212/.codex/generated_images/01a08bec-1f1d-7903-b772-c36f94a712f1/exec-18e67bf3-9e00-4c62-91cd-2fbe1b8b2b1d.png",
+    "git_note": "원본 PNG는 기존 Git 제외 정책을 따른다. 배포·반입 원천은 함께 커밋하는 canonical AVIF."
+  },
+  "generation": {
+    "tool": "Codex built-in ImageGen",
+    "model": "도구가 정확한 모델명을 제공하지 않음",
+    "prompt": "Transparent background. One single handcrafted cream wool felt closed envelope game inventory sprite, coral round stitched seal. Premium stop motion felt miniature, rich soft short wool texture, neat sewn hems, continuous straight softly rounded intact edges and four whole corners, gentle counterclockwise angle. Full object centered with generous clear space. Only the envelope isolated. RGBA alpha transparency.",
+    "cleanup_prompt": "This is an isolated felt envelope sprite on transparent background. Make a clean production cutout: remove the entire blurry pale halo/glow outside the envelope. Keep the envelope itself fully opaque, its cream wool felt and coral seal unchanged. Everything outside the neat sewn envelope contour must be fully transparent. Preserve a smooth unbroken sewn outline and all four full corners. No drop shadow, no light bloom, no translucent plume, no vignette, no backdrop. Transparent PNG.",
+    "reference_path": "C:/Users/q1212/.codex/generated_images/01a08bec-1f1d-7903-b772-c36f94a712f1/exec-d822e14c-be26-4808-a35a-bdbab8c12e09.png"
+  },
+  "encoding": {
+    "tool": "sharp",
+    "format": "avif",
+    "quality": 90,
+    "effort": 7,
+    "chromaSubsampling": "4:4:4",
+    "crop": false,
+    "resize": false,
+    "background_removal": false
+  },
+  "reason": "사용자가 찢긴 가장자리를 지적해 온전한 윤곽의 봉투로 새로 생성했다. 과거 거부본은 활성 정본에서 교체한다.",
+  "validation": {
+    "visual": "1536×1024 원본을 어두운 Ink 카드 500px와 밝은 Paper 바탕 200px에서 브라우저로 확인. 봉투 모서리 온전함·잔상과 배경 무늬 없음.",
+    "approval": "제작 지시에 따른 교체본이며 사용자 최종 만족 확인과 구분한다.",
+    "resolution": "실제 원본 1536×1024. 4K 또는 확대본이 아니다."
+  }
+}

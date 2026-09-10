@@ -1077,8 +1077,9 @@
             "이름": "편지봉투",
             "상태": "구웠다",
             "쇠": "공방_편지봉투",
-            "규격": "장면",
-            "지시": "A closed envelope sewn from pale cream wool felt, its flap sealed with a small round coral felt seal.",
+            "규격": "부품",
+            "지시": "One closed cream wool felt envelope with a round coral felt seal, neat sewn hems, a continuous intact outline and four whole corners. Keep the full envelope opaque and isolated on genuine RGBA alpha transparency, with generous clear space. No torn edges, missing corners, background, checkerboard, white halo, glow, drop shadow or translucent plume outside the envelope.",
+            "메모": "2026-09-11 찢긴 윤곽 교체. Codex ImageGen 생성·브라우저 확인본, 실제 1536×1024이며 4K가 아니다. 공방_편지봉투.출처.json에 원본·변환·검수 근거를 보존한다. 자리 물건의 중복 봉투도 이 한 원천을 사용한다.",
             "파일": "공방_편지봉투.avif"
           },
           {
@@ -1962,14 +1963,6 @@
             "지시": "A single wardrobe door of warm oatmeal wool felt with a small round coral felt knob, its panel outlined in cream running stitch.",
             "쇠": "공방_옷장문",
             "파일": "공방_옷장문.png"
-          },
-          {
-            "이름": "편지 봉투",
-            "상태": "구웠다",
-            "규격": "부품",
-            "지시": "A small sealed envelope of cream wool felt, its flap folded down and held by a round coral felt seal, edges finished in fine cream stitch.",
-            "쇠": "공방_편지봉투",
-            "파일": "공방_편지봉투.png"
           },
           {
             "이름": "우편함",
