@@ -47,8 +47,8 @@ function 킷블록() {
 }
 
 function 굽기(낼곳) {
-  const md = fs.readFileSync(정본, 'utf8');
-  const { 본문 } = 바꾸기(md);
+  const md = require('./lib/비전정본.js').withVisionBlock(fs.readFileSync(정본, 'utf8'), 'shift');
+  const { 본문 } = 바꾸기(md.replace(/^<!-- synk-vision:(?:start|end) -->\r?\n?/gm, ''));
 
   /* 머리 = 첫 제목 한 줄. 본문에서 떼어 내 표지로 세운다(같은 글이 두 번 안 나오게). */
   const 제목 = (md.match(/^#\s+(.+)$/m) || [, 'SYNK SHIFT 소개서'])[1].trim();

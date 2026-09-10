@@ -14,7 +14,7 @@ const 금지인가 = p => forbidden.some(re => re.test(p));
 const 문서인가 = p => p.endsWith('.md') || p.startsWith('docs/_ops/') ||
   (p.startsWith('docs/') && p.endsWith('.json'));
 const docs = {
-  SYNK: ['DESIGN.md', 'docs/AI_운영원칙.md', 'docs/SYNK_철학.md', 'docs/제품방향.md',
+  SYNK: ['DESIGN.md', 'docs/AI_운영원칙.md', 'docs/SYNK_철학.md', 'docs/비전_정본.md', 'docs/제품방향.md',
     'docs/엔진7종_상향설계_v3.md', 'docs/명품_기준_v1.md',
     'docs/명품브랜딩_v2.md', 'docs/명품브랜딩_조사_2026-09-09.md',
     'docs/마케팅_정본.md', 'docs/명품눈금_v1.md',
@@ -127,6 +127,7 @@ function copy(root, destination, rows) {
 function main() {
   const args = process.argv.slice(2);
   if (args.includes('--저장소')) throw new Error('전체 이력 복제는 종료했습니다. 일반 핵심 자료 갱신을 사용하세요.');
+  if (!args.includes('--재기')) require('./비전동기화.js').syncVisionSources();
   const rows = 목록();
   if (args.includes('--재기')) {
     for (const brand of brands) {
