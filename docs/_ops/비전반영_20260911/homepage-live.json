@@ -1,0 +1,32 @@
+{
+  "url": "https://synk.im/",
+  "results": [
+    {
+      "width": 1440,
+      "headlines": 4,
+      "completeSubtexts": 4,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 768,
+      "headlines": 4,
+      "completeSubtexts": 4,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 390,
+      "headlines": 4,
+      "completeSubtexts": 4,
+      "horizontalOverflow": false
+    },
+    {
+      "width": 320,
+      "headlines": 4,
+      "completeSubtexts": 4,
+      "horizontalOverflow": false
+    }
+  ],
+  "questionsStayLocal": true,
+  "storageWrites": 0,
+  "pageErrors": []
+}
