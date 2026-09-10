@@ -15,10 +15,10 @@
 | Apps Script 웹앱 | ✅ | 고정 배포 URL 사용 |
 | 웹훅 URL 키·검증 토큰 | ✅ | 새 임의값으로 생성해 스크립트 속성에 저장. 값은 문서에 기록하지 않음 |
 | 페이지·Instagram 계정 ID 잠금 | ✅ | 스크립트 속성에 저장 |
-| Meta 앱 | ⏳ | `SYNK Guide` 생성 흐름 진행 중. Meta가 앱 생성 확인용 비밀번호 재입력을 요구함 |
-| Facebook 페이지 토큰 | ⏳ | 앱 생성 뒤 발급하여 `상담AI_페이지토큰`에 저장 |
-| Instagram 전용 토큰 | ⏳ | 앱 생성 뒤 발급하여 `상담AI_IG토큰`에 저장 |
-| 웹훅 구독 | ⏳ | 앱 생성 뒤 Facebook·Instagram의 `messages`를 같은 웹앱에 연결 |
+| Meta 앱 | ✅ | `SYNK Guide` 생성 완료. Messenger·Instagram 이용 사례와 공개 정책 URL 저장 |
+| Facebook 페이지 토큰 | ⏳ | SYNK 페이지 연결 뒤 발급하여 `상담AI_페이지토큰`에 저장 |
+| Instagram 전용 토큰 | ⏳ | `@synk.mn` 계정 연결 뒤 발급하여 `상담AI_IG토큰`에 저장 |
+| 웹훅 구독 | ⏳ | Facebook·Instagram의 `messages`를 같은 웹앱에 연결 |
 | 일반 사용자 고급 액세스 | ⏳ | `pages_messaging` + `instagram_business_basic` + `instagram_business_manage_messages` |
 | 사업자 인증 | ⛔ 보류 | 신규 사업자등록증 발급 전에는 신청하지 않음. 폐업한 예전 등록번호를 재사용하지 않음 |
 
@@ -44,7 +44,8 @@
 | 사용 사례 | Messenger 고객 소통 + Instagram 메시지·콘텐츠 관리 |
 | 앱 도메인 | `synk.im` |
 | 개인정보처리방침 | `https://synk.im/privacy/` |
-| 데이터 삭제 안내 | `https://synk.im/privacy/` |
+| 이용약관 | `https://synk.im/terms/` |
+| 데이터 삭제 안내 | `https://synk.im/data-deletion/` |
 | 카테고리 | 교육 |
 | Facebook 권한 | `pages_messaging` |
 | Instagram 권한 | `instagram_business_basic` + `instagram_business_manage_messages` |
