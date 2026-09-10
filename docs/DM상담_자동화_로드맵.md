@@ -46,10 +46,10 @@ adminMail('[SYNK] 🙋 상담AI 인계 요청', '사유: ' + 사유 + '\n세션:
 Meta 공식 문서상 인스타 DM 웹훅은 **`object: "instagram"`**으로 온다. 우리 코드는 `null`을 반환하고 **조용히 버린다**(오류도 로그도 없다).
 
 > 안쪽 구조(`entry[].messaging[].sender.id`)는 페북과 동일 → 분기 추가는 작다.
-> 단 **발송 토큰·권한이 별개**다(`instagram_business_manage_messages` · `pages_messaging`).
+> 단 **발송 토큰·권한이 별개**다(`instagram_business_basic` + `instagram_business_manage_messages` · `pages_messaging`).
 >
 > ✅ **[v9.185] 해소** — `object:'instagram'` 분기 + IG 계정ID 잠금 + IG 전용 토큰 + 퀵리플라이·postback 수신.
-> 남은 게이트 = Meta 앱 연결·검수(`instagram_business_manage_messages`) — 설치 정본 STEP 6.
+> 남은 게이트 = Meta 앱 연결·검수(`instagram_business_basic` + `instagram_business_manage_messages`) — 설치 정본 STEP 6.
 
 ### ③ 답할 수 있는 질문이 절반뿐이다
 
@@ -148,7 +148,7 @@ ManyChat이 진짜 이기는 자리는 둘뿐:
 2. `상담_전송_`에 **퀵리플라이 + 제네릭 템플릿** 지원 추가 (현재 `message:{text}`만)
 3. **팔로우 게이트** — `is_user_follow_business` 조회
 
-**게이트: Meta 앱 검수**(`pages_messaging` + `instagram_business_manage_messages`). 검수 전엔 관리자·테스터에게만 답장이 간다 → **광고 켜기 전에 신청해야 한다.**
+**게이트: Meta 앱 검수**(`pages_messaging` + `instagram_business_basic` + `instagram_business_manage_messages`). 검수 전엔 관리자·테스터에게만 답장이 간다 → **광고 켜기 전에 신청해야 한다.**
 
 ---
 
@@ -235,4 +235,4 @@ ManyChat이 진짜 이기는 자리는 둘뿐:
 | 2 | Phase 0 클릭 단위 절차서 작성 | AI | ✅ [DM상담_Phase0_절차서.md](DM상담_Phase0_절차서.md) — 실행은 유호님 10분 |
 | 3 | Phase 1 구현 (인계 번역 + 답변 초안 3개 + 한국어→몽골어 발송) | AI | ✅ [v9.185] 코드 착지 — 남은 것: 몽골어 초안 검수(주기 감수 묶음) |
 | 4 | Phase 2 구현 (인스타 분기 + 퀵리플라이/카드 + 팔로우 게이트) | AI | ✅ [v9.185] 코드 착지 — 전송층까지. 어떤 메시지에 버튼·카드를 붙일지는 콘텐츠 결정(별도) · 게이트=검수 |
-| 5 | Meta 앱 검수 신청 (`pages_messaging` + `instagram_business_manage_messages` 같이) | Codex 준비·유호님 보호 단계 수행 | ⏳ 사업자 인증 뒤 제출 가능 — 설치 정본 STEP 5·6 |
+| 5 | Meta 앱 검수 신청 (`pages_messaging` + `instagram_business_basic` + `instagram_business_manage_messages` 같이) | Codex 준비·유호님 보호 단계 수행 | ⏳ 사업자 인증 뒤 제출 가능 — 설치 정본 STEP 5·6 |
