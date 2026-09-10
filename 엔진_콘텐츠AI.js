@@ -2688,6 +2688,9 @@ const MN_GUIDE_SPEAK = {
  *   기본값은 가장 큰 4096**: 모르면 「못 넘는다」로 접혀야 한다(fail-closed). 반대로 접히면 켰다고 착각한다. */
 const AI_캐시최소토큰_ = {
   'claude-opus-5': 512, 'claude-fable-5': 512, 'claude-mythos-5': 512,
+  // Anthropic Prompt caching > Cache limitations, 2026-09-11 확인: Fable 5.1·Mythos 5.1은 512토큰.
+  // https://platform.claude.com/docs/en/build-with-claude/prompt-caching#cache-limitations
+  'claude-fable-5-1': 512, 'claude-mythos-5-1': 512,
   'claude-opus-4-8': 1024, 'claude-sonnet-5': 1024, 'claude-sonnet-4-6': 1024,
   'claude-opus-4-7': 2048, 'claude-haiku-3-5': 2048,
   'claude-opus-4-6': 4096, 'claude-opus-4-5': 4096, 'claude-haiku-4-5': 4096
