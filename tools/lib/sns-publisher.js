@@ -25,6 +25,7 @@ const PLATFORM_NAMES = {
   'substack': 'Substack',
   'naver-blog': '네이버 블로그',
   'kakao-channel': '카카오톡 채널',
+  'tistory': '티스토리',
   'pinterest': 'Pinterest',
 };
 
@@ -39,6 +40,7 @@ const PLATFORM_MAP = new Map([
   ['substack', 'substack'],
   ['naver blog', 'naver-blog'],
   ['kakao channel', 'kakao-channel'],
+  ['tistory', 'tistory'],
   ['pinterest', 'pinterest'],
 ]);
 
@@ -334,7 +336,7 @@ function validateItem(item) {
       && !item.video && item.images.length === 0) errors.push('게시할 이미지/영상 없음');
   if (item.platform === 'tiktok' && !item.video) errors.push('video.mp4 없음');
   if (item.platform === 'linkedin' && !item.document && item.images.length === 0) errors.push('PDF/이미지 없음');
-  if (['naver-blog', 'substack'].includes(item.platform)) {
+  if (['naver-blog', 'substack', 'tistory'].includes(item.platform)) {
     const hasArticle = item.dependencies.some((d) => d.role === 'article');
     if (!hasArticle) errors.push('본문.md 없음');
   }

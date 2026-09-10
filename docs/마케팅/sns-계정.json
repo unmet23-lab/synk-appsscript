@@ -149,6 +149,14 @@
       "editorUrl": "https://center-pf.kakao.com/",
       "connection": "official-admin-center"
     },
+    "shift-tistory": {
+      "brand": "SHIFT",
+      "platform": "tistory",
+      "handle": "yuhobuilds.tistory.com",
+      "publisher": "manual-assisted",
+      "editorUrl": "https://yuhobuilds.tistory.com/manage/newpost",
+      "connection": "official-editor"
+    },
     "shift-pinterest": {
       "brand": "SHIFT",
       "platform": "pinterest",

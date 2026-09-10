@@ -9,6 +9,7 @@ const {
   DEFAULT_ACCOUNTS,
   loadAccounts,
   scanPackages,
+  validateItem,
   buildPlan,
   approvePlan,
   verifyDependencies,
@@ -46,13 +47,40 @@ function tempDir() {
 
 test('현재 첫 게시물 19계정을 계정 지도와 한 번에 묶는다', () => {
   const items = scanPackages(PACKAGE_ROOT, DEFAULT_ACCOUNTS);
+  const accounts = loadAccounts(DEFAULT_ACCOUNTS);
   assert.equal(items.length, 19);
   assert.equal(new Set(items.map((item) => item.accountKey)).size, 19);
+  assert.deepEqual(accounts.accounts['shift-tistory'], {
+    brand: 'SHIFT',
+    platform: 'tistory',
+    handle: 'yuhobuilds.tistory.com',
+    publisher: 'manual-assisted',
+    editorUrl: 'https://yuhobuilds.tistory.com/manage/newpost',
+    connection: 'official-editor',
+  });
   assert.deepEqual(items.map((item) => item.id).slice(0, 3), [
     '01-lab-youtube', '02-lab-instagram', '03-lab-tiktok',
   ]);
   assert.equal(items.find((item) => item.id === '01-lab-youtube').video.endsWith('video.mp4'), true);
   assert.equal(items.find((item) => item.id === '17-shift-naverblog').dependencies.some((dep) => dep.role === 'article'), true);
+});
+
+test('티스토리 원문 묶음은 본문 파일을 요구하고 수동 편집기로 넘긴다', () => {
+  const dir = tempDir();
+  const packageDir = path.join(dir, '20-shift-tistory');
+  fs.mkdirSync(packageDir, { recursive: true });
+  fs.writeFileSync(path.join(packageDir, '원고.json'), JSON.stringify({
+    id: '20-shift-tistory', brand: 'SHIFT', platform: 'Tistory',
+    account: 'yuhobuilds.tistory.com', format: 'article', language: 'ko', title: '시험',
+  }));
+  fs.writeFileSync(path.join(packageDir, '본문.md'), '# 회사 기록\n\n실제 시도와 수정입니다.');
+  const items = scanPackages(dir, DEFAULT_ACCOUNTS);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].platformName, '티스토리');
+  assert.equal(items[0].publisher, 'manual-assisted');
+  assert.deepEqual(validateItem(items[0]), []);
+  fs.rmSync(path.join(packageDir, '본문.md'));
+  assert.deepEqual(validateItem(scanPackages(dir, DEFAULT_ACCOUNTS)[0]), ['본문 없음', '본문.md 없음']);
 });
 
 test('발행 검수판에 자격증명을 담지 않고 모든 자료를 검사한다', () => {
