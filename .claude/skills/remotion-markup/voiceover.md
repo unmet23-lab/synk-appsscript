@@ -55,11 +55,11 @@ writeFileSync(`public/voiceover/${compositionId}/${scene.id}.mp3`, audioBuffer);
 
 ## Dynamic composition duration with calculateMetadata
 
-Use [`calculateMetadata`](./calculate-metadata.md) to measure the [audio durations](../remotion-multimedia/get-audio-duration.md) and set the composition length accordingly.
+Use [`calculateMetadata`](./calculate-metadata.md) with Remotion's current [Mediabunny metadata guide](https://www.remotion.dev/docs/mediabunny/metadata) to measure each audio duration and set the composition length accordingly.
 
 ```tsx
 import { CalculateMetadataFunction, staticFile } from "remotion";
-import { getAudioDuration } from "./get-audio-duration";
+import { getMediaMetadata } from "./get-media-metadata";
 
 const FPS = 30;
 
@@ -72,11 +72,11 @@ const SCENE_AUDIO_FILES = [
 export const calculateMetadata: CalculateMetadataFunction<Props> = async ({
   props,
 }) => {
-  const durations = await Promise.all(
-    SCENE_AUDIO_FILES.map((file) => getAudioDuration(staticFile(file))),
+  const metadata = await Promise.all(
+    SCENE_AUDIO_FILES.map((file) => getMediaMetadata(staticFile(file))),
   );
 
-  const sceneDurations = durations.map((durationInSeconds) => {
+  const sceneDurations = metadata.map(({ durationInSeconds }) => {
     return durationInSeconds * FPS;
   });
 

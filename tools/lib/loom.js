@@ -1531,7 +1531,7 @@ function 엔진전시() {
   .엔진전시 .표지 .한줄{font-size:1.05rem;line-height:1.72;max-width:34ch;color:${c.Oat};font-weight:500}
   .엔진전시 .표지 .메타{margin-top:var(--켜);color:${c.Stone}}
   .엔진전시 h2{margin-top:var(--막);font-size:clamp(1.6rem,2.6vw,2.5rem);letter-spacing:-.04em;text-wrap:balance}
-  .엔진전시 .번호{color:${c.Ink};text-shadow:none}
+  .엔진전시 .번호{color:${c.Paper};text-shadow:none}
   .엔진전시 .번호.구운번호{width:var(--장);height:var(--장);flex:0 0 var(--장);background:none!important;box-shadow:none!important;border:none;padding:0;border-radius:0;font-size:0;line-height:0;overflow:visible}
   .엔진전시 .번호.구운번호::before,.엔진전시 .번호.구운번호::after{content:none!important;display:none!important}
   .엔진전시 .구운번호 img{display:block;width:100%;height:100%;object-fit:contain;max-width:none}

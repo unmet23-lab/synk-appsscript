@@ -9,7 +9,7 @@
  *   "내가 지금 뭘 갖고 있나"다(몽골 검수자 채용·투자자·파트너 설명 전부 이 질문).
  *
  * 사용법:
- *   node tools/시스템대장.js --check    정본 형식 검증(CI·훅 — repo 파일만 보므로 어디서든 돈다)
+ *   node tools/시스템대장.js --check    정본 표 형식 검증(repo 파일만 보며 실제 가동 상태는 증명하지 않는다)
  *   node tools/시스템대장.js --render   바탕화면 SYNK_지도 에 내부판·대외판 HTML+PDF 굽기(+README 표)
  *
  * 기입은 이 CLI 가 아니라 bump-version 이 한다(잊을 수 있는 통로는 통로가 아니다):
