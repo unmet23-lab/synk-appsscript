@@ -1830,7 +1830,7 @@ function 배치불확실알림_(c) {
 function 배치실행_(name, resumeOnly, body) {
   const config = 배치설정_(name), props = PropertiesService.getScriptProperties();
   const key = '배치진행_' + name, now = Date.now();
-  const tz = Session.getScriptTimeZone();
+  const tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(); // 기존 업무 날짜/야간 도장과 같은 시트 기준
   const today = Utilities.formatDate(new Date(now), tz, 'yyyy-MM-dd');
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(1000)) return { name: name, status: 'busy' };
@@ -1960,7 +1960,7 @@ function resolveAutomationBatch(name, expectedUpdatedAt, action) {
       return { ok: false, stage: 'state' };
     if (action === 'skip_confirmed_step') {
       if (s.status !== 'uncertain' || !s.running || s.plan[s.next] !== s.running.name ||
-        s.date !== Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')) return { ok: false, stage: 'state' };
+        s.date !== Utilities.formatDate(new Date(), SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), 'yyyy-MM-dd')) return { ok: false, stage: 'state' };
       if (s.failures.indexOf(s.running.name) === -1) s.failures.push(s.running.name);
       // 확인한 한 단계만 반복 금지. 후속은 기존 계획·기존 날짜를 재확인한 다음 이어한다.
       s.next++; s.running = null; s.slice = null; s.status = 'waiting';

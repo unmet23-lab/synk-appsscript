@@ -3526,8 +3526,8 @@ function aiStudioBatch_() {
     '호출 ' + calls + '회 (상한 ' + AI_STUDIO_MAX_CALLS + ')\n' + (errs.length ? '오류:\n' + errs.join('\n') + '\n(실패 항목은 내일 밤 자동 재시도)' : '정상'));
   if (조각) {
     조각.calls += calls; 조각.failed = 조각.failed || errs.length > 0; 배치저장_(배치);
-    if (시간보류) return { batchYield: true };
     if (조각.failed) throw new Error('AI 스튜디오 일부 실패 — 기존 재시도 계약 유지');
+    if (시간보류) return { batchYield: true };
   }
 }
 
