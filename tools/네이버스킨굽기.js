@@ -64,9 +64,9 @@ ${브랜드폰트.블록()}
 <main class="safe">
   <img class="logo" alt="SYNK SHIFT" src="data:image/png;base64,${logo}">
   <section class="copy">
-    <div class="eyebrow"><i class="signal"></i><span>유호 짓고 있습니다</span></div>
-    <h1>AI와 실제 회사를<br>짓는 과정</h1>
-    <p>시도 · 실패 · 수정 · 사람의 판단 · 결과</p>
+    <div class="eyebrow"><i class="signal"></i><span>유호</span></div>
+    <h1>AI와 회사 만들기</h1>
+    <p>브랜드와 콘텐츠를 만들고, 반복 업무를 줄이는 방법</p>
   </section>
   <div class="meta">SYNK SHIFT · SYNKSHIFT</div>
 </main>
