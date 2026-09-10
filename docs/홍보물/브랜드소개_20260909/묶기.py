@@ -15,6 +15,9 @@ with ZipFile(root/'SYNK-division-logos.zip','w',ZIP_DEFLATED,compresslevel=6) as
         z.write(p,p.name)
     z.write(root/'로고디테일/로고설명.md','읽어주세요.md')
     z.write(root/'로고디테일/완성로고.png','모아보기.png')
+    kit=root.parent/'마케팅실행_20260909/브랜드킷'
+    for p in sorted((kit/'배치용').glob('*.png')): z.write(p,'승인정본8종/'+p.name)
+    z.write(kit/'배치명세.json','승인정본8종/배치명세.json')
 with ZipFile(root/'SYNK-LAB-carousel.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
     for folder,dimensions in [('캐러셀_업로드',(1080,1350)),('캐러셀_고해상도',(2160,2700))]:
         for p in sorted((root/folder).glob('*.png')):
@@ -27,6 +30,7 @@ with ZipFile(root/'SYNK-brand-introductions.zip','w',ZIP_DEFLATED,compresslevel=
     names=['읽어주세요.md','carousel.html','SYNK-LAB-carousel.zip','SYNK-division-logos.zip','로고디테일/완성로고.png','로고디테일/로고설명.md','자산명세.json','사용자산.json','소개서_문안.json','캐러셀_문안.json']
     names += [f'{b}.{ext}' for b in brands for ext in ['html','pdf']]
     names += [f'assets/{key}.webp' for key in keys]
+    names += [str(p.relative_to(root)).replace('\\','/') for p in (root/'assets').glob('brand-full-*.webp')]
     names += [f'미리보기/{b}-1.png' for b in brands]+['미리보기/캐러셀-전체.png','미리보기/소개서-표지.png']
     for name in names:z.write(root/name,name)
     index=(root/'index.html').read_text(encoding='utf-8')

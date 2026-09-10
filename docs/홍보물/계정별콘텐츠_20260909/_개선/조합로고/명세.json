@@ -1,30 +1,34 @@
 [
   {
     "file": "SYNK.png",
-    "width": 2160,
-    "height": 1083,
-    "sha256": "c8e5bd54631fcc974298d0b4c21ba4d17ab02f24a9cd3808e2732ca33b2d7f8c",
-    "method": "Exact inspected source assets, aspect-preserving downscale and optical composition only; no generative redrawing or color replacement."
+    "source": "배치용/SYNK-Ink.png",
+    "sha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc",
+    "width": 2200,
+    "height": 1064,
+    "method": "Approved complete Ink composition copied exactly. SYNK has no stitches; division stitches retained."
   },
   {
     "file": "SYNK-LAB.png",
-    "width": 3502,
-    "height": 1083,
-    "sha256": "d28ab9bbdbd77fc91e1f4a99901d18f69d6c0b336922e09a3dcd7b87c73e282a",
-    "method": "Exact inspected source assets, aspect-preserving downscale and optical composition only; no generative redrawing or color replacement."
+    "source": "배치용/SYNK-LAB-Ink.png",
+    "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201",
+    "width": 3468,
+    "height": 1064,
+    "method": "Approved complete Ink composition copied exactly. SYNK has no stitches; division stitches retained."
   },
   {
     "file": "SYNK-SHIFT.png",
-    "width": 3964,
-    "height": 1083,
-    "sha256": "eefd44afea68e1591ac9bf3fa9f8254d2cb53d8e58f724807761309ef9c5d1ce",
-    "method": "Exact inspected source assets, aspect-preserving downscale and optical composition only; no generative redrawing or color replacement."
+    "source": "배치용/SYNK-SHIFT-Ink.png",
+    "sha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0",
+    "width": 3907,
+    "height": 1064,
+    "method": "Approved complete Ink composition copied exactly. SYNK has no stitches; division stitches retained."
   },
   {
     "file": "SYNK-PULSE.png",
-    "width": 4080,
-    "height": 1083,
-    "sha256": "14c32a6967e354ac00aa68548e00225438e192a6ee7fd60010fafe633de29411",
-    "method": "Exact inspected source assets, aspect-preserving downscale and optical composition only; no generative redrawing or color replacement."
+    "source": "배치용/SYNK-PULSE-Ink.png",
+    "sha256": "f5dc1c08a81976e5cdea4b9d9a6755d71efec681deb4d0ea9861fa7c3e3aad9d",
+    "width": 4018,
+    "height": 1064,
+    "method": "Approved complete Ink composition copied exactly. SYNK has no stitches; division stitches retained."
   }
 ]

@@ -2,16 +2,19 @@
 
 왜 조립인가(사본 3중화의 교훈 · _브랜드킷.md 머리말): 색표를 손으로 또 쓰면 네 번째 사본이 된다.
   이 도구는 값을 전부 정본에서 읽는다 — hex·직책 = 디자인_토큰.json · 재질 역할 = 라이브러리.json ·
-  로고 도형 = _브랜드킷.md §3 정본에서 «복사»(좌표 재작도 금지 — 아래 SVG 가 그 복사본이고,
-  좌표가 바뀌면 그 문서에서 다시 복사한다). 값이 바뀌면 이 도구를 재실행한다 — 손 편집 금지.
+  대외 사진형 로고 = 현행 펠트 킷 배치명세의 승인 완성 조합,
+  작은 도형·내부 표식 = tools/lib/로고정본.js. 값이 바뀌면 이 도구를 재실행한다.
 
 사용법:  python tools/브랜드킷조립.py          → docs/브랜드킷.html
+         python tools/브랜드킷조립.py --logos-only  → 기존 문서의 로고·로고 안내만 갱신
 """
 import base64
 import datetime
 import io
 import json
 import os
+import re
+import hashlib
 import subprocess
 import sys
 
@@ -36,6 +39,26 @@ except ImportError:
 #     묻고, 없으면 던진다(홈페이지 시안 굽기와 같은 규율).
 펠트표정어휘 = ['눈웃음', '눈감음']   # «감정»이 아니라 그림 컷 이름 — 모듈이 파일로 옮겨 준다
 출력 = os.path.join(뿌리, 'docs', '브랜드킷.html')
+사진형킷 = os.path.join(뿌리, 'docs', '홍보물', '마케팅실행_20260909', '브랜드킷')
+
+
+def 사진형로고():
+    """승인 PNG의 종횡비·알파를 보존해 자립형 문서에 포함한다."""
+    with open(os.path.join(사진형킷, '배치명세.json'), encoding='utf-8') as f:
+        명세 = json.load(f)
+    명세문자 = json.dumps(명세, ensure_ascii=False)
+    결과 = {}
+    for 사업 in ['', '-LAB', '-SHIFT', '-PULSE']:
+        for 색 in ['Ink', 'Paper']:
+            이름 = f'SYNK{사업}-{색}'
+            경로 = os.path.join(사진형킷, '배치용', 이름 + '.png')
+            with open(경로, 'rb') as f:
+                지문 = hashlib.sha256(f.read()).hexdigest()
+            if 지문 not in 명세문자:
+                raise SystemExit(f'승인 배치명세와 로고 파일이 다르다: {이름}')
+            결과[이름] = (f'<img data-synk-logo="{이름}" data-source-sha256="{지문}" '
+                          f'src="{png_uri(경로, 960)}" alt="{이름.replace("-", " ")}" decoding="async">')
+    return 결과
 
 
 def 정본컷경로(컷: str) -> str:
@@ -115,6 +138,11 @@ def main():
     잉크, 종이 = 라['잉크'], 라['바탕']
     마 = 토큰['색']['마스코트']
     로고 = 로고표준형()
+    사진 = 사진형로고()
+    사업조합 = ''.join(
+        f'<div class="logocard" style="background:var(--{바탕})">{사진[f"SYNK-{사업}-{색}"]}</div>'
+        for 사업 in ['LAB', 'SHIFT', 'PULSE']
+        for 색, 바탕 in [('Ink', 'paper'), ('Paper', 'navy2')])
     펠트 = 토큰['재질']['펠트']
     with open(os.path.join(패치뿌리, '라이브러리.json'), encoding='utf-8') as f:
         장부 = json.load(f)['패치']
@@ -216,7 +244,7 @@ def main():
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SYNK 브랜드 킷</title>
 <!-- 파생: docs/디자인_토큰.json · docs/캐릭터/펠트패치_0815/라이브러리.json · docs/발표물/_브랜드킷.md -->
-<!-- 로고 도형 = 위 _브랜드킷.md §3 복사 · 조립: python tools/브랜드킷조립.py — 손 편집 금지(재조립이 덮는다) -->
+<!-- 로고 = docs/로고_중립색_정본_v1.md · 사진형 배치명세 · 조립: python tools/브랜드킷조립.py -->
 <style>
 /* 값은 전부 토큰 «시맨틱»에서 온다 — 어느 색을 어디 쓸지는 이 파일이 정하지 않는다. */
 :root {{ --paper:{라["바탕"]}; --ink:{라["잉크"]}; --navy2:{다["바탕"]}; --navy3:{라["보조잉크"]};
@@ -271,7 +299,7 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 </style></head><body class="룸">
 
 <div class="band">
-  {로고['펠트다크_슬래시']}
+  {사진['SYNK-Paper']}
   <h1>SYNK 브랜드 킷 — 완성본</h1>
   <p>값 원천 = 디자인_토큰.json({len(현행)}색+마스코트+재질+사운드+감각) · 이 문서는 조립 산출물(마지막 조립 {오늘}) — 고칠 땐 토큰을 고치고 <code>python tools/브랜드킷조립.py</code></p>
 </div>
@@ -283,16 +311,22 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 
 <section>
   <h2><span class="번호">2</span> 로고</h2>
-  <p class="lead">로고는 그림이 아니라 글자다 — <code>synk</code> 넉 자(k = Inter Tight 실제 글리프 · <b>언제나 Coral</b>).
-  기호 <code>&lt;</code> 는 워드마크에서 독립한 표식이다(상단바·진행·도장·워터마크 — 이름을 반복하지 않는 자리).
-  <code>//</code> 는 세 번째 색이 아니라 잉크의 저채도. 실행 정본 = <code>tools/lib/로고정본.js</code>(재작도·복붙 금지).</p>
+  <p class="lead"><code>synk</code>는 밝은 바탕에서 Ink, 어두운 바탕에서 Paper입니다.
+  <b>SYNK 네 글자는 실땀 없이</b> 펠트 섬유·두께·그늘·기존 형태를 유지합니다.
+  LAB·SHIFT·PULSE에는 각자의 고유색과 기존 스티치를 남깁니다(2026-09-10 승인).
+  사업명은 일반 글자로 재조립하지 않고 아래 완성 조합 전체를 사용합니다.</p>
   <div class="logogrid">
     <div class="logocard" style="background:var(--navy2)">
-      {로고['펠트다크']}
+      {사진['SYNK-Paper']}
     </div>
     <div class="logocard" style="background:var(--paper); outline:1px solid var(--line)">
-      {로고['펠트라이트']}
+      {사진['SYNK-Ink']}
     </div>
+  </div>
+  <div class="logogrid">{사업조합}</div>
+  <p class="lead" style="margin-top:18px">내부 이름 <code>syn&lt;</code>·기호·도장·마스코트는 별도 용도입니다.
+  아래 S1은 승인된 별도 심볼이며 대외 기본 워드마크를 대신하지 않습니다.</p>
+  <div class="logogrid">
     <div class="logocard" style="background:var(--navy2)">
       <svg viewBox="0 0 240 110" role="img" aria-label="SYNK">
         <g fill="none" stroke="{다["잉크"]}" stroke-width="11" stroke-linecap="butt" stroke-linejoin="miter">
@@ -305,9 +339,11 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
     </div>
   </div>
   <table><tr><th>자리</th><th>쓰는 것</th></tr>
-  <tr><td>인쇄물 머리 띠 · 명함 · 표지</td><td>워드마크 <code>synk</code> — 벡터 펠트(기본) · 소형은 민판</td></tr>
+  <tr><td>기업 소개·홍보의 큰 로고</td><td>사진형 펠트 킷의 단독 SYNK 또는 사업명 완성 조합</td></tr>
+  <tr><td>작은 인쇄 · 정확한 도형 · 1도 인쇄</td><td>현행 정밀 SVG — 실제 크기의 철자와 윤곽 확인</td></tr>
   <tr><td>앱 상단바 · 진행 · 로딩 · 도장 · 워터마크</td><td>기호 <code>&lt;</code> 자수판 — 이름을 반복하지 않는 자리</td></tr>
-  <tr><td>정사각 · 워터마크 · 앱 아이콘</td><td>심볼 <code>~ ^ ^ &lt;</code> (= s·y·n·k)</td></tr></table>
+  <tr><td>별도 승인 심볼 자리</td><td>S1 · 고리 · 배지 원본을 승인 용도에 맞게 사용</td></tr></table>
+  <p class="lead" style="margin-top:14px">원본·비율·사용 기준: <a href="홍보물/마케팅실행_20260909/브랜드킷/index.html">현행 사진형 펠트 킷</a> · <a href="로고_중립색_정본_v1.md">로고 정본</a></p>
 </section>
 
 <section>
@@ -383,10 +419,30 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 마스코트 렌더 정본: {마스코트정본폴더}</footer>
 </body></html>'''
 
+    로고css = '<style id="synk-logo-role-20260910">.band img[data-synk-logo]{width:220px;max-width:100%;height:auto;display:block}.logocard img[data-synk-logo]{width:300px;max-width:100%;height:auto;display:block}.logocard{max-width:100%;min-width:min(100%,230px)}</style>'
+    html = html.replace('</head>', 로고css + '</head>', 1)
+    if '--logos-only' in sys.argv:
+        with open(출력, encoding='utf-8') as f:
+            기존 = f.read()
+        절 = r'<section>\s*<h2><span class="번호">2</span> 로고</h2>[\s\S]*?</section>'
+        새절 = re.search(절, html)
+        if not 새절 or len(re.findall(절, 기존)) != 1:
+            raise SystemExit('기존 로고 절을 하나로 확인하지 못해 문서를 덮지 않았다')
+        기존 = re.sub(절, lambda _: 새절.group(0), 기존, count=1)
+        머리 = r'(<div class="band">\s*)(?:<svg[\s\S]*?</svg>|<img\s[^>]*data-synk-logo[^>]*>)'
+        기존, 개수 = re.subn(머리, lambda m: m.group(1) + 사진['SYNK-Paper'], 기존, count=1)
+        if 개수 != 1:
+            raise SystemExit('기존 머리 로고를 확인하지 못해 문서를 덮지 않았다')
+        기존 = re.sub(r'<style id="synk-logo-role-20260910">[\s\S]*?</style>', '', 기존)
+        html = 기존.replace('</head>', 로고css + '</head>', 1)
     with open(출력, 'w', encoding='utf-8') as f:
         f.write(html)
-    print(f'■ 조립  {os.path.relpath(출력, 뿌리)}  ({len(html)//1024} KB · 현행 {len(현행)}색(퇴역 {len(킷)-len(현행)} 제외) · 패치 {len(장부)}장)')
-    _룸입히기(출력)
+    if '--logos-only' in sys.argv:
+        print(f'■ 로고 갱신  {os.path.relpath(출력, 뿌리)}  (승인 8조합 · 기존 다른 절 보존)')
+    else:
+        print(f'■ 조립  {os.path.relpath(출력, 뿌리)}  ({len(html)//1024} KB · 현행 {len(현행)}색(퇴역 {len(킷)-len(현행)} 제외) · 패치 {len(장부)}장)')
+    if '--logos-only' not in sys.argv:
+        _룸입히기(출력)
 
 
 def _룸입히기(경로):

@@ -1,17 +1,23 @@
 [
   {
-    "file": "SYNK-LAB-carousel.zip",
-    "files": 16,
-    "bytes": 2262178
+    "file": "SYNK-division-logos.zip",
+    "entries": 25,
+    "sha256": "d4165874698ad6f470aa364191b392cf8af65f5750c75a0279647f9dc4d16dbb",
+    "utf8AndSourceSha256": "passed",
+    "errors": []
   },
   {
-    "file": "SYNK-division-logos.zip",
-    "files": 8,
-    "bytes": 1881680
+    "file": "SYNK-LAB-carousel.zip",
+    "entries": 16,
+    "sha256": "6638f9a97ecb44df5854613f1dda695d3b2d45e64eada3e6df7b45b20d1ad608",
+    "utf8AndSourceSha256": "passed",
+    "errors": []
   },
   {
     "file": "SYNK-brand-introductions.zip",
-    "files": 41,
-    "bytes": 61315277
+    "entries": 49,
+    "sha256": "d4e2fcd67630fc12571e7f16bc2289836fefe0adb6a50852cd209303252dbf7c",
+    "utf8AndSourceSha256": "passed",
+    "errors": []
   }
 ]

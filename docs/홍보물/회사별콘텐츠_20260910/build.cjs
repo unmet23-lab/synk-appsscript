@@ -1,4 +1,5 @@
 'use strict';
+const approvedLogos=require('../로고갱신_20260910.cjs');
 // 이번 네 편 전용 빌더. 현행 Loom과 승인 자산을 읽으며 기존 제작물을 덮지 않는다.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {pathToFileURL}=require('node:url');
@@ -8,7 +9,7 @@ const sharp=require('sharp'),{chromium}=require('playwright'),{marked}=require('
 const c=loom.정본().색;
 const esc=s=>String(s??'').replace(/[&<>"']/g,v=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[v]));
 const br=s=>esc(s).replace(/\n/g,'<br>');
-const put=(p,v)=>{p=path.join(__dirname,p);fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,v)};
+const put=(p,v)=>{p=path.join(__dirname,p);fs.mkdirSync(path.dirname(p),{recursive:true});approvedLogos.replaceFile(p,v)};
 const read=p=>JSON.parse(fs.readFileSync(path.join(__dirname,p),'utf8'));
 const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const b=read('content-b.json');
@@ -51,15 +52,15 @@ async function render(){
 const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--allow-file-access-from-files']});const page=await browser.newPage({viewport:{width:1080,height:1600},deviceScaleFactor:2});
 const smd=fs.readFileSync(path.join(__dirname,'02-shift/material.md'),'utf8');
 const sample=smd.match(/## 3\.[\s\S]*?(?=## 4\.)/)[0];
-put('02-shift/완성예시.html',html('수정 제안 완성 예시',`<article class="editorial">${lock('SHIFT')}<p class="kicker">SYNK SHIFT / 가상 교육용 예시</p><h1>바뀐 요청에 답하는<br>수정 제안</h1>${marked.parse(sample.replace(/^##[^\n]*\n/,''))}</article>`,'../'));
-await page.goto(pathToFileURL(path.join(__dirname,'02-shift/완성예시.html')).href);await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:path.join(__dirname,'assets/material-proof.png'),clip:{x:0,y:0,width:1080,height:950}});
+if(!process.argv.includes('--logo-only'))put('02-shift/완성예시.html',html('수정 제안 완성 예시',`<article class="editorial">${lock('SHIFT')}<p class="kicker">SYNK SHIFT / 가상 교육용 예시</p><h1>바뀐 요청에 답하는<br>수정 제안</h1>${marked.parse(sample.replace(/^##[^\n]*\n/,''))}</article>`,'../'));
+await approvedLogos.refreshFolder(__dirname);await page.goto(pathToFileURL(path.join(__dirname,'02-shift/완성예시.html')).href);await page.evaluate(()=>document.fonts.ready);approvedLogos.replaceFile(path.join(__dirname,'assets/material-proof.png'),await page.screenshot({clip:{x:0,y:0,width:1080,height:950}}));
 const results=[];
 for(const p of data){await page.goto(pathToFileURL(path.join(__dirname,p.id,'cards.html')).href);await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(i=>i.decode()));});
 const checks=await page.evaluate(()=>[...document.querySelectorAll('.artboard')].map(a=>{const copy=a.querySelector('.copy'),img=a.querySelector('.hero-asset'),r=a.getBoundingClientRect(),bottom=copy.getBoundingClientRect().bottom-r.top;if(img){const available=Math.min(440,r.height-bottom-150);img.style.height=Math.max(0,available)+'px';if(available<100)img.style.display='none';}return {bottom,overflow:bottom>r.height-105,imageShown:!img||img.style.display!=='none'}}));
 if(checks.some(x=>x.overflow))throw new Error(p.id+' copy overflow '+JSON.stringify(checks));
-for(let i=0;i<p.slides.length;i++){const n=String(i+1).padStart(2,'0'),file=`${p.id}/upload-${n}.jpg`,master=path.join(__dirname,p.id,`master-${n}.png`);await page.locator('.artboard').nth(i).screenshot({path:master});await sharp(master).resize(1080,1350).jpeg({quality:95,chromaSubsampling:'4:4:4'}).toFile(path.join(__dirname,file));results.push({file,sha256:hash(path.join(__dirname,file)),...checks[i]})}}
+for(let i=0;i<p.slides.length;i++){const n=String(i+1).padStart(2,'0'),file=`${p.id}/upload-${n}.jpg`,master=path.join(__dirname,p.id,`master-${n}.png`);approvedLogos.replaceFile(master,await page.locator('.artboard').nth(i).screenshot());approvedLogos.replaceFile(path.join(__dirname,file),await sharp(master).resize(1080,1350).jpeg({quality:95,chromaSubsampling:'4:4:4'}).toBuffer());results.push({file,sha256:hash(path.join(__dirname,file)),...checks[i]})}}
 const tiles=await Promise.all(results.map(async(r,i)=>({input:await sharp(path.join(__dirname,r.file)).resize(216,270).png().toBuffer(),left:i%6*228,top:Math.floor(i/6)*282})));
-await sharp({create:{width:1368,height:Math.ceil(results.length/6)*282,channels:3,background:c.Oat}}).composite(tiles).png().toFile(path.join(__dirname,'_검토/전체카드.png'));
+approvedLogos.replaceFile(path.join(__dirname,'_검토/전체카드.png'),await sharp({create:{width:1368,height:Math.ceil(results.length/6)*282,channels:3,background:c.Oat}}).composite(tiles).png().toBuffer());
 put('_검토/렌더검증.json',JSON.stringify({cards:results.length,results},null,2));await browser.close();console.log(JSON.stringify({cards:results.length,overflow:0}));
 }
-(async()=>{await prepare();if(process.argv.includes('--render'))await render();console.log('prepared')})().catch(e=>{console.error(e);process.exitCode=1});
+(async()=>{if(!process.argv.includes('--logo-only'))await prepare();await approvedLogos.refreshFolder(__dirname);if(process.argv.includes('--render'))await render();console.log('prepared')})().catch(e=>{console.error(e);process.exitCode=1});

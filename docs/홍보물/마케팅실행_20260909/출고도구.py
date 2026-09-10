@@ -28,7 +28,7 @@ ROOT_REQUIRED = {
     '원고/후속운영.md', '원고/후속운영.html', '자료실/index.html',
     '브랜드킷/index.html', '브랜드킷/사용규칙.md', '_검토/업로드조건.md',
     '브랜드킷/SYNK-Ink-정밀.svg', '브랜드킷/SYNK-Paper-정밀.svg',
-    '브랜드킷/SYNK-Ink.png', '브랜드킷/SYNK-Paper.png',
+    '브랜드킷/SYNK-Ink.png', '브랜드킷/SYNK-Paper.png', '브랜드킷/배치명세.json',
     '공개수업/index.html', '공개수업/수업.mp4', '공개수업/클리닉.mp4',
     '공개수업/수업.srt', '공개수업/클리닉.srt',
     '공개수업/영상제작범위_읽어주세요.md',
@@ -187,6 +187,7 @@ class ExportPlan:
         if len(self.brandkit) != 8 or any(not re.fullmatch(r'배치용/SYNK(?:-(?:LAB|SHIFT|PULSE))?-(?:Ink|Paper)\.png', item['file']) for item in self.brandkit):
             raise ValueError('승인된 브랜드 배치 PNG 8종 계약을 확인하세요')
         self.entries, self.errors, self.packages = {}, [], {}
+        self.disabled_local_refs = []
         self.whole = set()
         self.video_paths = {f'{x}/video.mp4' for x in self.ids if x[:2] in ACCOUNT_VIDEO_NUMBERS}
         self.video_paths |= {'공개수업/수업.mp4', '공개수업/클리닉.mp4'}
@@ -202,11 +203,12 @@ class ExportPlan:
         if relative in ROOT_REQUIRED:
             return True
         if p.parts[0] in self.ids and len(p.parts) == 2:
-            return p.name in COPY_NAMES | {'index.html', 'cards.html', 'cover.jpg', 'video.mp4', '자막.srt'} or bool(re.fullmatch(r'upload-\d{2}\.jpg', p.name))
+            return p.name in COPY_NAMES | {'index.html', 'cards.html', 'cover.jpg', 'video.mp4', '자막.srt', '업로드용-원본.mp4', '감상노트.md'} or bool(re.fullmatch(r'upload-\d{2}\.jpg', p.name))
         if p.parts[0] == 'assets':
+            if relative == 'assets/craft-film-4k.mp4': return True
             return p.suffix.lower() in {'.png', '.jpg', '.jpeg', '.webp', '.svg', '.woff', '.woff2', '.ttf', '.css', '.js'}
         if p.parts[0] == '제공자료' and len(p.parts) == 2:
-            return any(p.name in {f'{stem}.md', f'{stem}.pdf', f'{stem}.html', f'{stem}_실습.html'} for stem in self.resource_map.values()) or p.name in {'소통_후속도움.md', '소통_후속도움.html'}
+            return any(p.name in {f'{stem}.md', f'{stem}.pdf', f'{stem}.html', f'{stem}_실습.html', f'{stem}_완성예시.html', f'{stem}_완성예시.txt'} for stem in self.resource_map.values()) or p.name in {'소통_후속도움.md', '소통_후속도움.html'}
         if p.parts[0] == '브랜드킷':
             return len(p.parts) == 3 and p.parts[1] == '배치용' and p.suffix.lower() == '.png'
         if p.parts[0] == '공개수업' and len(p.parts) == 2:
@@ -235,6 +237,16 @@ class ExportPlan:
             data, removed = PortableButtons(raw.decode('utf-8'), relative, self.zip_paths).result()
             if not removed:
                 data = raw
+        if path.suffix.lower() == '.md':
+            # Preserve the local source; internal repository references are plain text in portable delivery only.
+            def portable_reference(match):
+                try:
+                    target_of(relative, match.group(2))
+                    return match.group(0)
+                except ValueError:
+                    self.disabled_local_refs.append({'source':relative,'reference':match.group(2)})
+                    return match.group(1)
+            data = re.sub(r'\[([^\]]+)\]\(([^\s)]+)\)', portable_reference, path.read_text(encoding='utf-8')).encode('utf-8')
         output_hash = hashlib.sha256(data).hexdigest() if data is not None else source_hash
         entry = Entry(relative, path, source_hash, output_hash, len(data) if data is not None else path.stat().st_size, data, removed)
         if entry.size == 0:
@@ -301,6 +313,8 @@ class ExportPlan:
                     continue
                 stem = self.resource_map[resource_id]
                 seeds |= {f'제공자료/{stem}.md', f'제공자료/{stem}.pdf'}
+            if item.get('music'):
+                seeds |= {f'{item_id}/업로드용-원본.mp4', f'{item_id}/감상노트.md'}
             self.packages[item_id] = self.closure(seeds, web=False)
             whole_seeds |= self.packages[item_id] | {f'{item_id}/index.html', f'{item_id}/cards.html'}
         self.whole = self.closure(whole_seeds, web=True)
@@ -419,8 +433,12 @@ def execute(plan: ExportPlan):
     output += f'- 전체 수록 파일: {len(plan.whole)}개 + 출고목록. 필수 영상 9개 읽힘 확인.\n- 휴대판 ZIP 다운로드 버튼 제거: {sum(e.removed_zip_buttons for e in plan.entries.values())}개. 원본 HTML은 수정하지 않음.\n- 전체 ZIP 안에 계정 ZIP·master PNG·생성 로그·실행 환경·원천 WAV·ASR JSON·검수 화면·제작 스크립트를 넣지 않음.\n\n'
     output += '| ZIP | 항목 | 바이트 | SHA-256 |\n|---|---:|---:|---|\n'
     output += ''.join(f"| {r['zip']} | {r['entries']} | {r['bytes']} | {r['sha256']} |\n" for r in results)
-    report_path.write_text(old_report + output, encoding='utf-8')
-    return {'mode': 'export-completed', 'archives': results, 'report': str(report_path)}
+    if plan.disabled_local_refs:
+        output += '\n- ZIP 내부에서만 저장소 밖 기준 문서 링크를 일반 글자로 바꿈: ' + str(len(plan.disabled_local_refs)) + '개. 로컬 원문은 보존.\n'
+    staged_report=report_path.with_name(report_path.name+'.logo-tmp')
+    staged_report.write_text(old_report + output, encoding='utf-8')
+    os.replace(staged_report,report_path)
+    return {'mode': 'export-completed', 'archives': results, 'report': str(report_path), 'disabledLocalReferencesInArchiveOnly': plan.disabled_local_refs}
 
 
 def main():

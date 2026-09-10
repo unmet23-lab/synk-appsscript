@@ -7,7 +7,7 @@ const sharp=runtime('sharp'),{chromium}=runtime('playwright');
 const root=path.resolve(__dirname,'../../..'),port=8767;
 const mime={'.html':'text/html; charset=utf-8','.mp4':'video/mp4','.png':'image/png','.ttf':'font/ttf','.otf':'font/otf','.md':'text/plain; charset=utf-8','.txt':'text/plain; charset=utf-8','.json':'application/json'};
 const inDir=(f,d)=>f===d||f.startsWith(d+path.sep);
-const allowed=[__dirname,path.join(root,'docs/브랜드_폰트'),path.join(root,'docs/홍보물/브랜드소개_20260909/로고디테일/로고_투명')];
+const allowed=[__dirname,path.join(root,'docs/브랜드_폰트'),path.join(root,'docs/홍보물/마케팅실행_20260909/브랜드킷/배치용')];
 function server(){return http.createServer((req,res)=>{
   if(!['GET','HEAD'].includes(req.method)){res.writeHead(405).end();return;}
   let file;try{file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://localhost').pathname));}catch{res.writeHead(400).end();return;}

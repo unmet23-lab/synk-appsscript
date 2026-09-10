@@ -1,0 +1,33 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>한 줄 바뀐 요청, 어디를 고칠까? · 직접 작성</title><link rel="stylesheet" href="../edition.css"></head><body class="account-collection execution"><article class="editorial"><div class="brand-lock" role="img" aria-label="SYNK SHIFT" data-approved-logo="SHIFT"><img src="../assets/brand-full-shift-ink.webp" alt="SYNK SHIFT" style="display:block;height:100%;max-height:116px;width:auto;max-width:100%;object-fit:contain;object-position:left center;flex:none" decoding="sync"></div><a href="index.html">게시 준비로</a><h1>내 상황으로 고쳐 쓰기</h1><p>예시와 확인 기준을 옆에 두고, 시간·역할·사용처를 바꿔보세요. 입력 내용은 이 화면에만 머뭅니다. 창을 닫기 전에 파일로 보관하세요.</p><a class="download" href="material.html" target="_blank" rel="noopener">예시와 확인 기준</a><label class="work-label" for="work">내가 고칠 원본</label><textarea class="work-input" id="work" spellcheck="false">처음 고객 요청:
+처음 제안:
+
+바뀐 고객 요청:
+바뀐 조건:
+달라질 결과물:
+그대로인 범위:
+새로 확인할 것:
+
+내가 먼저 물을 질문 1:
+내가 먼저 물을 질문 2:
+내가 먼저 물을 질문 3:
+고객 답변에서 실제 확인한 것:
+추가 확인할 것(배포일 / 파일 전달일 / 권한 등):
+
+수정 제안:
+수정한 부분:
+수정한 이유:
+실제 사용 장면에서 확인할 것:
+
+다른 상황 적용 — 행사 슬라이드를 혼자 읽는 자료로도 요청받았어요.
+새 독자와 읽는 상황:
+먼저 확인할 세 질문:
+달라질 결과물:
+그대로인 범위:
+수정 제안 두 문장:
+수정 이유 한 문장:
+
+내 확인:
+처음 요청과 바뀐 요청을 둘 다 남겼나요?
+고객의 답변에서 확인한 내용으로 제안을 바꿨나요?
+새 범위·일정·비용 중 합의할 것을 남겼나요?
+</textarea><div class="material-actions"><button class="download" id="save" type="button">내 글 TXT 받기</button></div><p class="work-status" role="status" id="status"></p></article><script>document.getElementById('save').addEventListener('click',()=>{const value=document.getElementById('work').value;const url=URL.createObjectURL(new Blob([value],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='내가쓴자료.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);document.getElementById('status').textContent='파일을 만들었어요. 기기의 다운로드 폴더에서 확인하세요.'})</script></body></html>

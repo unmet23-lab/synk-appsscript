@@ -19,7 +19,7 @@ const Film:React.FC<{plan:Plan}>=({plan})=>{
    <Img src={src(plan.files[face])} style={{width:'100%',height:'100%',transform:'translateY(-4.17%) scale(1)',transformOrigin:'50% 50%'}}/>
   </div>
   {/* Editorial label also covers the older colored-k imprint baked into the stage.
-      Supplied neutral stitched logo is used unchanged; no repainting of bitmap letters. */}
+      Approved neutral felt SYNK without stitches is used unchanged. */}
   <div style={{position:'absolute',left:64,bottom:48,width:560,height:222,boxSizing:'border-box',padding:'24px 28px',background:theme.ink,borderRadius:12,boxShadow:`0 8px 28px ${theme.shadow(.16)}`}}>
    <div style={{display:'flex',alignItems:'center',gap:24,height:48}}>
     <Img src={src('synk-paper.webp')} style={{width:115,height:48,objectFit:'contain'}}/>

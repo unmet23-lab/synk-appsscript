@@ -1,4 +1,5 @@
 'use strict';
+const approvedLogos=require('../로고갱신_20260910.cjs');
 // 원고/승인 자산 -> Loom 지면. 원본과 기존 16계정 패키지는 읽기 전용.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {pathToFileURL}=require('node:url');
@@ -6,7 +7,7 @@ const root=path.resolve(__dirname,'../../..'),loom=require(path.join(root,'tools
 const sharp=require('sharp'),{chromium}=require('playwright'),{marked}=require('marked'),c=loom.정본().색;
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8')),hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const write=(p,s)=>{fs.mkdirSync(path.dirname(p),{recursive:true});if(fs.existsSync(p)&&fs.readFileSync(p,'utf8')===s)return;fs.writeFileSync(p,s)};
+const write=(p,s)=>{fs.mkdirSync(path.dirname(p),{recursive:true});if(fs.existsSync(p)&&fs.readFileSync(p,'utf8')===s)return;approvedLogos.replaceFile(p,s)};
 const data=read(path.join(__dirname,'원고/콘텐츠원고.json')),materials=read(path.join(__dirname,'제공자료/제공자료.json'));
 if(data.items.length!==19||new Set(data.items.map(x=>x.id)).size!==19)throw new Error('Expected 19 distinct package IDs');
 const h=(title,body,rel='')=>`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><link rel="stylesheet" href="${rel}execution.css"><body class="account-collection execution">${body}</body></html>`;
@@ -137,16 +138,16 @@ async function render(){
   await page.goto(pathToFileURL(path.join(__dirname,p.id,'cards.html')).href);await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(i=>i.decode()))});
   const checks=await page.evaluate(()=>[...document.querySelectorAll('.artboard')].map(a=>{const copy=a.querySelector('.copy'),img=a.querySelector('.hero-asset'),rect=a.getBoundingClientRect(),bottom=copy.getBoundingClientRect().bottom-rect.top;if(img){const available=Math.min(440,rect.height-bottom-165);img.style.height=Math.max(0,available)+'px';if(available<100)img.style.display='none';}return {copyBottom:bottom,height:rect.height,overflow:bottom>rect.height-110}}));
   if(checks.some(x=>x.overflow))throw new Error('Text exceeds safe area '+p.id+' '+JSON.stringify(checks));
-  for(let i=0;i<p.slides.length;i++){const n=String(i+1).padStart(2,'0'),dir=path.join(__dirname,p.id),master=path.join(dir,`master-${n}.png`),upload=path.join(dir,`upload-${n}.jpg`);await page.locator('.artboard').nth(i).screenshot({path:master});await sharp(master).resize(1080,cardHeight(p)).jpeg({quality:95,chromaSubsampling:'4:4:4'}).toFile(upload);results.push({id:p.id,index:i+1,file:p.id+`/upload-${n}.jpg`,bytes:fs.statSync(upload).size,width:1080,height:cardHeight(p),sha256:hash(upload),check:checks[i]});}
-  fs.copyFileSync(path.join(__dirname,p.id,'upload-01.jpg'),path.join(__dirname,p.id,'cover.jpg'));
+  for(let i=0;i<p.slides.length;i++){const n=String(i+1).padStart(2,'0'),dir=path.join(__dirname,p.id),master=path.join(dir,`master-${n}.png`),upload=path.join(dir,`upload-${n}.jpg`);approvedLogos.replaceFile(master,await page.locator('.artboard').nth(i).screenshot());approvedLogos.replaceFile(upload,await sharp(master).resize(1080,cardHeight(p)).jpeg({quality:95,chromaSubsampling:'4:4:4'}).toBuffer());results.push({id:p.id,index:i+1,file:p.id+`/upload-${n}.jpg`,bytes:fs.statSync(upload).size,width:1080,height:cardHeight(p),sha256:hash(upload),check:checks[i]});}
+  approvedLogos.replaceFile(path.join(__dirname,p.id,'cover.jpg'),fs.readFileSync(path.join(__dirname,p.id,'upload-01.jpg')));
  }
  fs.mkdirSync(path.join(__dirname,'_검토/미리보기'),{recursive:true});
  const tiles=await Promise.all(results.map(async(x,i)=>({input:await sharp(path.join(__dirname,x.file)).resize({width:240,height:300,fit:'contain',background:c.Paper}).png().toBuffer(),left:(i%6)*258,top:Math.floor(i/6)*320})));
- await sharp({create:{width:6*258,height:Math.ceil(tiles.length/6)*320,channels:3,background:c.Oat}}).composite(tiles).png().toFile(path.join(__dirname,'_검토/미리보기/전체카드.png'));
+ approvedLogos.replaceFile(path.join(__dirname,'_검토/미리보기/전체카드.png'),await sharp({create:{width:6*258,height:Math.ceil(tiles.length/6)*320,channels:3,background:c.Oat}}).composite(tiles).png().toBuffer());
  await browser.close();write(path.join(__dirname,'_검토/카드검증.json'),JSON.stringify({sourceSha256:hash(path.join(__dirname,'원고/콘텐츠원고.json')),cards:results.length,results},null,2));console.log(JSON.stringify({cards:results.length,overflow:0}));
 }
 async function pdf(){
  const browser=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--allow-file-access-from-files']}),page=await browser.newPage();const out=[];
  for(const m of materials.materials){const base=path.join(__dirname,'제공자료',m.sourceFile.replace('.md',''));await page.goto(pathToFileURL(base+'.html').href);await page.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.images].map(x=>x.decode()));document.querySelectorAll('a[href]').forEach(a=>{if(!/^https?:/i.test(a.getAttribute('href')))a.removeAttribute('href')})});await page.pdf({path:base+'.pdf',format:'A4',printBackground:true,preferCSSPageSize:true,displayHeaderFooter:true,headerTemplate:'<span></span>',footerTemplate:'<div style="font-size:8px;width:100%;text-align:center;color:#2B2320">SYNK SHIFT · 실습자료 · <span class="pageNumber"></span> / <span class="totalPages"></span></div>'});out.push({file:path.basename(base)+'.pdf',bytes:fs.statSync(base+'.pdf').size,sha256:hash(base+'.pdf')})}await browser.close();write(path.join(__dirname,'_검토/PDF명세.json'),JSON.stringify(out,null,2));console.log(JSON.stringify({pdf:out.length}));
 }
-(async()=>{await prepare();if(modes.has('--render'))await render();if(modes.has('--pdf'))await pdf();console.log('Pages and source exports prepared')})().catch(e=>{console.error(e);process.exitCode=1});
+(async()=>{if(!modes.has('--logo-only'))await prepare();await approvedLogos.refreshFolder(__dirname);if(modes.has('--render'))await render();if(modes.has('--pdf'))await pdf();console.log('Pages and source exports prepared')})().catch(e=>{console.error(e);process.exitCode=1});

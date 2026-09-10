@@ -1,86 +1,40 @@
 {
-  "createdAt": "2026-09-09T07:22:26.296Z",
-  "change": "Only header lockup replaced in derived DOM. Original HTML and all non-logo text retained.",
+  "createdAt": "2026-09-10T09:58:06.478Z",
   "items": [
     {
       "file": "lab-1.png",
-      "source": "docs/홍보물/브랜드소개_20260909/lab.html",
-      "sourceSha256": "6b2aec730a7805197767e28b93bd63c28a71b04c925644386141a4b278ea3095",
+      "source": "브랜드소개_20260909/소개서_4K/lab-1.png",
+      "sha256": "b8124c697ea49e2028cef83b7e4218c51668a7fe72418cac06db583630cdef10",
       "sourceFileUnchanged": true,
-      "textUnchanged": true,
-      "bodyTextSha256": "0496262f88b4d3b5bd0b729bbbac02aacc3ae40f11abd30bb4195ba50a3c67a3",
-      "outputSha256": "e81b6a2900ea049c26f4ee213ad0206d44b4928667b436cb9e0e3f924d323ea0",
-      "logo": {
-        "left": 64,
-        "top": 16,
-        "right": 684,
-        "bottom": 128
-      },
-      "flatLogoCount": 0
+      "operation": "Exact copy of the current complete-logo introduction page."
     },
     {
       "file": "lab-2.png",
-      "source": "docs/홍보물/브랜드소개_20260909/lab.html",
-      "sourceSha256": "6b2aec730a7805197767e28b93bd63c28a71b04c925644386141a4b278ea3095",
+      "source": "브랜드소개_20260909/소개서_4K/lab-2.png",
+      "sha256": "e5f503198c5543e6dc3a60cd28f06dead1d73279d7bc6dd86734fde3970efbff",
       "sourceFileUnchanged": true,
-      "textUnchanged": true,
-      "bodyTextSha256": "2d8175d1ee41405be8080a80532b2da26b9fd451c47530fe1089998a6563326c",
-      "outputSha256": "9507c1d2c04bc2e3d8541cbef21d67be4c5fb2386c277280a7918c375e852ad5",
-      "logo": {
-        "left": 64,
-        "top": 16,
-        "right": 684,
-        "bottom": 128
-      },
-      "flatLogoCount": 0
+      "operation": "Exact copy of the current complete-logo introduction page."
     },
     {
       "file": "shift-1.png",
-      "source": "docs/홍보물/브랜드소개_20260909/shift.html",
-      "sourceSha256": "d887112eb9ed31ef5d60895099ce7bcf43c77c9fa8b45d486e96d5bb683856f3",
+      "source": "브랜드소개_20260909/소개서_4K/shift-1.png",
+      "sha256": "3925b9f2a9639a0ac26ba7708f70d56fea3045d2c540cbd0d62e99765ba51574",
       "sourceFileUnchanged": true,
-      "textUnchanged": true,
-      "bodyTextSha256": "e92d6a9083c97496526cbc1abca77fb10885cd57f77950496061951b1530ad52",
-      "outputSha256": "f470158daa72414f554e3ee4e0a0d5a3c28a819eb5dd2e61320e49ba5736d2cc",
-      "logo": {
-        "left": 64,
-        "top": 16,
-        "right": 684,
-        "bottom": 128
-      },
-      "flatLogoCount": 0
+      "operation": "Exact copy of the current complete-logo introduction page."
     },
     {
       "file": "pulse-1.png",
-      "source": "docs/홍보물/브랜드소개_20260909/pulse.html",
-      "sourceSha256": "a0fdd143fa40c838399ea493fd895f1686350e902f850691a1bad3be4798b8d4",
+      "source": "브랜드소개_20260909/소개서_4K/pulse-1.png",
+      "sha256": "204fb3f6351bf5a6966c03d7f9e22659c446e9d4d7d29a7361957f9fbdf4f106",
       "sourceFileUnchanged": true,
-      "textUnchanged": true,
-      "bodyTextSha256": "0bccb4e6826d02d2b350fe7ff6f6e084fcfedf8ebf006546ac6d150a181e26e9",
-      "outputSha256": "0e86e9046c6211bdf3808da493581e4308028f258e214bb28f45dc36096acf1e",
-      "logo": {
-        "left": 64,
-        "top": 16,
-        "right": 684,
-        "bottom": 128
-      },
-      "flatLogoCount": 0
+      "operation": "Exact copy of the current complete-logo introduction page."
     },
     {
       "file": "synk-1.png",
-      "source": "docs/홍보물/브랜드소개_20260909/synk.html",
-      "sourceSha256": "e6a80780c68cca95afd315e9bc308864ae435ef139f3ec04981c8ac2980fbcfe",
+      "source": "브랜드소개_20260909/소개서_4K/synk-1.png",
+      "sha256": "df49d1d98849543cc894e716e3f2e57b53c1005aefee08cc2c91fa5e840e2e69",
       "sourceFileUnchanged": true,
-      "textUnchanged": true,
-      "bodyTextSha256": "ea1758b07bb9b368dd396aa3ace56d625eef4e0b432ccd34526421ad2dac7d04",
-      "outputSha256": "244b10db1899e54bdcf8333452cffe0391d1556f9cc13803c97dfa3428fb8eae",
-      "logo": {
-        "left": 64,
-        "top": 16,
-        "right": 684,
-        "bottom": 128
-      },
-      "flatLogoCount": 0
+      "operation": "Exact copy of the current complete-logo introduction page."
     }
   ]
 }

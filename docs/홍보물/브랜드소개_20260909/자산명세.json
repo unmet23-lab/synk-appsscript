@@ -209,11 +209,12 @@
   },
   {
     "key": "woolLogo",
-    "source": "docs/Loom_자산/구움/양모워드마크_누끼.png",
+    "source": "docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink.png",
     "width": 2820,
-    "height": 1301,
+    "height": 1218,
     "alpha": true,
-    "output": "assets/woolLogo.webp"
+    "output": "assets/woolLogo.webp",
+    "transform": "Approved complete logo or current introduction snapshot; existing display dimensions retained."
   },
   {
     "key": "stitch",

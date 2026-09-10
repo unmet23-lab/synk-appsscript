@@ -23,13 +23,13 @@
   },
   {
     "key": "labpage",
-    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/lab-1.png",
+    "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "e81b6a2900ea049c26f4ee213ad0206d44b4928667b436cb9e0e3f924d323ea0",
+    "sourceSha256": "b8124c697ea49e2028cef83b7e4218c51668a7fe72418cac06db583630cdef10",
     "output": "assets/labpage.webp",
-    "outputSha256": "08b1b627bcbad015cb356b1ca81ec79a9c959ecb3dac55e7386a93ad3ec46842",
-    "transform": "inside3840-webp-lossless-v2",
+    "outputSha256": "6f792a4bd6fef93d6e6d4fd7453c9c2970076324db4c0cbf24f6dfee00a8dc72",
+    "transform": "Approved complete logo or current introduction snapshot; existing display dimensions retained.",
     "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
   },
   {
@@ -56,13 +56,13 @@
   },
   {
     "key": "brand-synk",
-    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-synk.webp",
-    "sourceWidth": 2820,
-    "sourceHeight": 1301,
-    "sourceSha256": "9be5c8dccac9c3da088cd3517ad87fcf21d85e9aeb6bf29fe52a234d65cb2ae9",
+    "source": "docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink.png",
+    "sourceWidth": 3840,
+    "sourceHeight": 1648,
+    "sourceSha256": "ab8561ef0dec1e12d4274c4ed6dfda7fb07abf5c0a2f13a937a00ddcc9af5e4f",
     "output": "assets/brand-synk.webp",
-    "outputSha256": "9be5c8dccac9c3da088cd3517ad87fcf21d85e9aeb6bf29fe52a234d65cb2ae9",
-    "transform": "inside3840-webp-lossless-v2",
+    "outputSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+    "transform": "Approved complete logo or current introduction snapshot; existing display dimensions retained.",
     "note": "기존 SYNK 원본 픽셀을 유지한 배치용 자산"
   },
   {
@@ -155,24 +155,24 @@
   },
   {
     "key": "shiftpage",
-    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/shift-1.png",
+    "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "f470158daa72414f554e3ee4e0a0d5a3c28a819eb5dd2e61320e49ba5736d2cc",
+    "sourceSha256": "3925b9f2a9639a0ac26ba7708f70d56fea3045d2c540cbd0d62e99765ba51574",
     "output": "assets/shiftpage.webp",
-    "outputSha256": "4773699f245612bd46c9f1c526035f94e1ba40368c6046dbbc9eb191ecca3edd",
-    "transform": "inside3840-webp-lossless-v2",
+    "outputSha256": "6bbec3d90873aa458678990faf17eda430967ba1540d75300e4286df90aae3d4",
+    "transform": "Approved complete logo or current introduction snapshot; existing display dimensions retained.",
     "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
   },
   {
     "key": "pulsepage",
-    "source": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/pulse-1.png",
+    "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "0e86e9046c6211bdf3808da493581e4308028f258e214bb28f45dc36096acf1e",
+    "sourceSha256": "204fb3f6351bf5a6966c03d7f9e22659c446e9d4d7d29a7361957f9fbdf4f106",
     "output": "assets/pulsepage-r2.webp",
-    "outputSha256": "32d0f436018795064ef2867da9426622a730c5e5c6f92cb8fe5da7a73fc357fa",
-    "transform": "inside3840-webp-lossless-v2",
+    "outputSha256": "6c39b48f9ee91889d52ebcae5d8bb4f8358f45bfd95df3571a9572130817d1b2",
+    "transform": "Approved complete logo or current introduction snapshot; existing display dimensions retained.",
     "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
   },
   {

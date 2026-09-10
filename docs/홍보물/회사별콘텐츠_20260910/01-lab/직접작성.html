@@ -1,0 +1,23 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>내일까지? 몇 시까지? · 직접 작성</title><link rel="stylesheet" href="../edition.css"></head><body class="account-collection execution"><article class="editorial"><div class="brand-lock" role="img" aria-label="SYNK LAB" data-approved-logo="LAB"><img src="../assets/brand-full-lab-ink.webp" alt="SYNK LAB" style="display:block;height:100%;max-height:116px;width:auto;max-width:100%;object-fit:contain;object-position:left center;flex:none" decoding="sync"></div><a href="index.html">게시 준비로</a><h1>내 상황으로 고쳐 쓰기</h1><p>예시와 확인 기준을 옆에 두고, 시간·역할·사용처를 바꿔보세요. 입력 내용은 이 화면에만 머뭅니다. 창을 닫기 전에 파일로 보관하세요.</p><a class="download" href="material.html" target="_blank" rel="noopener">예시와 확인 기준</a><label class="work-label" for="work">내가 고칠 원본</label><textarea class="work-input" id="work" spellcheck="false">Миний хийх зүйл / 내가 할 일: 사진 보내기
+Хүсэлт / 들은 요청: 내일까지 사진을 보내 주세요.
+Өдөр / 들은 날짜:
+Асуулт / 내 질문: ___ 몇 시까지 보내면 돼요?
+Хариу / 상대가 말한 시간:
+Батлах / 내 말로 확인: 네, ___까지 보낼게요.
+
+Шинэ нөхцөл / 바뀐 조건: Цаг өөрчлөгдлөө. / 시간이 달라졌어요.
+Шинээр хэлсэн цаг / 새로 들은 시간:
+Өөрчилсөн өгүүлбэр / 바꾼 문장:
+Яагаад өөрчилсөн бэ? / 바꾼 이유:
+
+Өөр нөхцөлд / 다른 상황 적용
+Явуулах зүйл / 이번에 보낼 것:
+Өдөр / 날짜:
+Асуулт / 시간 질문:
+Сонссон хариу / 들은 답:
+Батлах өгүүлбэр / 확인 문장:
+
+Өөрөө шалгах / 내 확인
+Өдөр, цаг хоорондоо таарч байна уу? / 질문의 날짜와 답의 시간이 이어지나요?
+Шинэ цагийг өөрийн өгүүлбэртээ оруулсан уу? / 상대가 바꾼 시간을 내 확인 문장에도 넣었나요?
+</textarea><div class="material-actions"><button class="download" id="save" type="button">내 글 TXT 받기</button></div><p class="work-status" role="status" id="status"></p></article><script>document.getElementById('save').addEventListener('click',()=>{const value=document.getElementById('work').value;const url=URL.createObjectURL(new Blob([value],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='내가쓴자료.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);document.getElementById('status').textContent='파일을 만들었어요. 기기의 다운로드 폴더에서 확인하세요.'})</script></body></html>

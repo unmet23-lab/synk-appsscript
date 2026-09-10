@@ -24,6 +24,7 @@
  *     싣고, 맑은고딕 등장은 공백 글리프뿐이다(memory pdf-font-audit-type3-trap).
  *
  * 사용법:  node tools/브랜드킷색상조립.js          → docs/브랜드킷_색상.html · docs/브랜드킷_색상.pdf
+ *          node tools/브랜드킷색상조립.js --logos-only → 기존 문서의 로고와 PDF만 갱신
  */
 'use strict';
 const fs = require('fs');
@@ -159,7 +160,7 @@ footer{margin-top:var(--장);font-size:.74rem;}
 <div class="글">
 
 <header class="표지머리">
-  <!-- 로고 = 실행 정본(tools/lib/로고정본.js · 유호 확정 08-24 synk 승격) — 인쇄 지면이라 라이트 민판(필터 없는 순수 벡터가 300dpi 에서 정직하다) -->
+  <!-- 로고 = 실행 정본(tools/lib/로고정본.js · 09-10 중립색·무실땀) — 작은 인쇄 자리의 라이트 민판 -->
   ${로고정본.워드마크({ 판: '라이트', 표현: '민', 슬래시: true })}
   <h1>SYNK 브랜드 킷 — 색</h1>
   <p class="메타 흐린">2027 킷 「내일 꾸러미」 · 현행 ${총수}색 · 값 원천 = 디자인_토큰.json · ${오늘}</p>
@@ -220,6 +221,25 @@ ${칩들(KC)}
    직접 쓰면 액세스 거부가 난 전력). 임베드 실패는 «조용히» 넘기지 않는다. ── */
 function main() {
   const 임시 = fs.mkdtempSync(path.join(os.tmpdir(), '색상킷-'));
+  if (process.argv.includes('--logos-only')) {
+    const 출력html = path.join(루트, 'docs', '브랜드킷_색상.html');
+    const 출력pdf = path.join(루트, 'docs', '브랜드킷_색상.pdf');
+    const 기존 = fs.readFileSync(출력html, 'utf8');
+    const 자리 = /(<header class="표지머리">\s*<!--[^]*?-->\s*)<svg[^]*?<\/svg>/;
+    if (!자리.test(기존)) throw new Error('기존 색상 킷의 로고 자리를 확인하지 못했다');
+    const 갱신 = 기존.replace(자리, (_, 머리) => 머리.replace(/<!--[^]*?-->/,
+      '<!-- 로고 = 실행 정본(tools/lib/로고정본.js · 09-10 중립색·무실땀) — 작은 인쇄 자리의 라이트 민판 -->')
+      + 로고정본.워드마크({ 판: '라이트', 표현: '민', 슬래시: true }));
+    const 임시html = path.join(임시, '브랜드킷_색상.html');
+    const 임시pdf = path.join(임시, '브랜드킷_색상.pdf');
+    fs.writeFileSync(임시html, 갱신);
+    const 결과 = spawnSync(process.execPath, [path.join(루트, 'tools', '지면인쇄.js'), 임시html, 임시pdf], { encoding: 'utf8' });
+    if (결과.status !== 0 || !fs.existsSync(임시pdf)) throw new Error(`로고 PDF 갱신 실패: ${결과.stderr || 결과.stdout}`);
+    fs.copyFileSync(임시html, 출력html);
+    fs.copyFileSync(임시pdf, 출력pdf);
+    console.log('■ 로고 갱신 docs/브랜드킷_색상.html + .pdf');
+    return;
+  }
   const 원고 = path.join(임시, '색상_src.html');
   const 임베드html = path.join(임시, '브랜드킷_색상.html');
   const 임베드pdf = path.join(임시, '브랜드킷_색상.pdf');

@@ -6,8 +6,8 @@
 //   (실측 — 후보시트에서 심볼 좌표를 한 곳만 고쳤다가 락업 두 개가 조용히 깨졌다).
 //   그래서 도형은 정본 한 곳에서 오고, 주입은 명령 한 번이다.
 //
-// 정본: 판정 = docs/발표물/_브랜드킷.md §3 · 도형·표현 = tools/lib/로고정본.js (유호 확정 08-24)
-//   워드마크 = `synk`(벡터 펠트 · k Coral) — 예전 `syn<`(벡터+렌더판 B2)는 은퇴.
+// 정본: 선택 = docs/로고_중립색_정본_v1.md · 도형·표현 = tools/lib/로고정본.js.
+//   대외 `synk`는 중립색·무실땀(09-10 승인), 내부 `syn<`·기호·도장은 별도 용도다.
 //   벡터 펠트라 렌더판 PNG(git 밖) 의존이 사라졌다 — 어느 기계에서나 같은 로고가 선다
 //   (08-24 실사고: 렌더판이 없는 화면에서 꺾쇠가 그림자만 남았다).
 //
@@ -23,16 +23,8 @@ const 로고 = require('./lib/로고정본.js');
 const 루트 = path.resolve(__dirname, '..');
 const DIR = path.resolve(루트, 'docs', '발표물');
 
-/* 🔑 08-28 — 홈페이지가 이 통로에 들어왔다.
- *   까닭이 이 도구의 머리말과 «같은 문장»이다: 홈페이지도 자립형 1파일이라 로고가 파일에 복사된다.
- *   그런데 병합판 헤더는 손으로 친 글자 `syn<` 였다 — 정본 SVG 가 아니라 **텍스트**였고,
- *   그 꼴은 08-24 확정이 **두 번** 막아 둔 자리다: ①`syn<` 워드마크 은퇴(「syn+화살표」 오인)
- *   ②기호 `<` 는 «안에 들어온 자리»용이고 **상단바 왼쪽 금지**. 홈페이지 헤더는 처음 오는
- *   학부모가 보는 «보여주는 순간»이라 이름 `synk` 가 서야 하는 자리다.
- *   ⇒ 도구가 안 보던 폴더라 정본에서 새어 있었다. 과녁을 넓혀 같은 명령이 여기도 덮게 한다. */
-const 낱개과녁 = [
-  path.resolve(루트, 'docs', '홈페이지_시안', '병합판.html'),   // 홈페이지 정본(유호 확정 08-28)
-].filter((p) => fs.existsSync(p));
+// 기업 홈페이지의 현재 제작·배포 원천은 SYNK-website다. 과거 홈페이지 시안은
+// 비교 기록이므로 발표물의 일괄 주입 대상으로 삼지 않는다.
 
 /**
  * LOGO SLOT 주석 바로 뒤의 <svg>…</svg> 를 확정 로고로 갈아끼운다.
@@ -70,12 +62,11 @@ const check = process.argv.includes('--check');
 const 표현 = process.argv.includes('--펠트') ? '펠트' : '민';
 const 과녁 = [
   ...(fs.existsSync(DIR) ? fs.readdirSync(DIR).filter((x) => x.endsWith('.html')).map((x) => path.join(DIR, x)) : []),
-  ...낱개과녁,
 ];
 if (!과녁.length) { console.log('[로고주입] 과녁 0 — 할 일 없음'); process.exit(0); }
 
 const 쓸것 = 로고.워드마크({ 판: '다크', 표현 });
-console.log(`[로고주입] synk 벡터 펠트(${표현}판) — 정본 = tools/lib/로고정본.js\n`);
+console.log(`[로고주입] synk 중립색·무실땀(${표현}판) — 정본 = tools/lib/로고정본.js\n`);
 
 let changed = 0, stale = 0, slots = 0;
 for (const p of 과녁) {
