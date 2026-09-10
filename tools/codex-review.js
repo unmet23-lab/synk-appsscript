@@ -1906,7 +1906,50 @@ function gemini프롬프트(대상, diff, 규칙) {
   ].join('\n');
 }
 
-const 제미나이호출경로 = path.join(__dirname, 'lib', '제미나이호출.js');
+const 제미나이API호출경로 = path.join(__dirname, 'lib', '제미나이호출.js');
+const 제미나이구독호출경로 = path.join(__dirname, 'lib', '제미나이구독호출.js');
+const 제미나이통로들 = new Set(['subscription', 'free-api', 'vertex']);
+
+/** 로컬은 Google AI Pro 구독, GitHub Actions는 개인 로그인을 쓸 수 없으므로 무료 API가 기본이다. */
+function 제미나이통로(env = process.env) {
+  const 명시 = String(env.SYNK_GEMINI_ROUTE || '').trim();
+  if (명시 && !제미나이통로들.has(명시)) {
+    throw 확인불가(`SYNK_GEMINI_ROUTE는 subscription|free-api|vertex 중 하나다(받은 값 ${명시})`);
+  }
+  return 명시 || (env.GITHUB_ACTIONS === 'true' ? 'free-api' : 'subscription');
+}
+
+/** 호출 파일·픽·비용 경로를 한 번에 고른다. 지원하지 않는 조합은 자동 하향 없이 멈춘다. */
+function 제미나이호출명세(요청픽 = null, env = process.env) {
+  const 통로 = 제미나이통로(env);
+  if (통로 === 'subscription') {
+    return {
+      통로, 표시: 'Google AI Pro 구독', 경로: 제미나이구독호출경로,
+      픽: 요청픽 || 정책.제미나이설정('최상'), 추가인자: [],
+    };
+  }
+  if (통로 === 'free-api') {
+    const 무료픽 = 정책.제미나이설정('무료최상');
+    if (요청픽 && 요청픽.model !== 무료픽.model) {
+      throw 확인불가(`요청 픽 ${요청픽.model}은 무료 API 픽 ${무료픽.model}과 다르다. 다른 모델로 조용히 내리지 않는다.`);
+    }
+    return {
+      통로, 표시: 'AI Studio 무료 API', 경로: 제미나이API호출경로,
+      픽: 요청픽 || 무료픽, 추가인자: ['--용도', '글'],
+    };
+  }
+  return {
+    통로, 표시: 'Vertex 유료 API(명시)', 경로: 제미나이API호출경로,
+    픽: 요청픽 || 정책.제미나이설정('최상'), 추가인자: ['--용도', '돈', '--유료-api'],
+  };
+}
+
+function 제미나이응답일치(r, 픽, 통로) {
+  if (통로 === 'subscription') {
+    return r && r.route === 'google-ai-pro-subscription' && r.requestedModel === 픽.model;
+  }
+  return !r.modelVersion || String(r.modelVersion).startsWith(픽.model);
+}
 
 /* gemini 한 회차 — codex한회 와 같은 조각 규약(산문-i · 구조-i)을 지켜 이어받기·단계끝났나 가 그대로 선다.
  * 동기 세상이라 HTTP 는 자식 프로세스(`제미나이호출.js` CLI)가 하고, 이 함수는 파일만 읽는다(codex 와 같은 꼴). */
@@ -1917,16 +1960,18 @@ function gemini한회(대상, timeoutMs, 방, i, 총) {
     console.log(`  ↩ ${i}/${총}회(gemini) 이어받음 — 이미 끝난 회차다(호출 0 · 지적 ${이전.지적.length}건).`);
     return { ...이전, 원문: 런.조각읽기(방, '산문', i) || '', 벤더: 'gemini' };
   }
-  const 픽 = 정책.제미나이설정();
+  const 명세 = 제미나이호출명세();
+  const 픽 = 명세.픽;
   const 규칙 = 검수규칙읽기();
   const diff = 디프수집(대상);
   if (/^\(diff 가 .*상한을 넘어 접었다/.test(diff)) throw 확인불가('변경 내용이 상한을 넘어 파일 목록만 남았다. 저장소를 못 읽는 Gemini 회차는 검사하지 않는다.');
   const 프롬프트 = gemini프롬프트(대상, diff, 규칙);
   const out = 런.조각경로(방, '제미나이', i);
-  const 라벨 = `gemini 검수(둘째 검수자${꼬리} · ${픽.model}/${픽.thinking_level || '기본'})`;
+  const 라벨 = `gemini 검수(둘째 검수자${꼬리} · ${픽.model}/${픽.thinking_level || '기본'} · ${명세.표시})`;
   try {
     execFileSync(process.execPath,
-      [제미나이호출경로, '--model', 픽.model, ...(픽.thinking_level ? ['--thinking', 픽.thinking_level] : []),
+      [명세.경로, '--model', 픽.model, ...(픽.thinking_level ? ['--thinking', 픽.thinking_level] : []),
+        ...명세.추가인자,
         '--schema', 스키마경로, '-o', out, '--timeout', String(Math.min(timeoutMs, 300000))],
       자식옵션({ cwd: 대상ROOT, input: 프롬프트, encoding: 'utf8', timeout: timeoutMs, stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 16 * 1024 * 1024 }));
   } catch (e) {
@@ -1944,8 +1989,9 @@ function gemini한회(대상, timeoutMs, 방, i, 총) {
     err.확인불가 = true; err.벤더 = 'gemini'; throw err;
   }
   j.벤더 = 'gemini';
+  j.통로 = r.route || 명세.통로;
   j.서빙모델 = r.modelVersion || null;          // «무엇이 답했나» — 픽과 다르면 장부가 그 사실을 들고 나간다
-  if (r.modelVersion && !String(r.modelVersion).startsWith(픽.model)) {
+  if (!제미나이응답일치(r, 픽, 명세.통로)) {
     console.error(`   ⚠ gemini 서빙 모델이 픽과 다르다 — 픽 ${픽.model} · 답한 것 ${r.modelVersion}`);
   }
   런.조각쓰기(방, '산문', i, r.text);
@@ -2511,19 +2557,16 @@ function 심문벤더한회(프롬프트, timeoutMs, 결과, i, 총, 픽) {
 }
 
 function gemini심문한회(프롬프트, timeoutMs, 결과, i, 총, 픽) {
-  const 라벨 = `설계 심문 ${i}/${총}(gemini · ${픽.model}/${픽.thinking_level || '기본'})`;
+  const 명세 = 제미나이호출명세(픽);
+  픽 = 명세.픽;
+  const 라벨 = `설계 심문 ${i}/${총}(gemini · ${픽.model}/${픽.thinking_level || '기본'} · ${명세.표시})`;
   const 원본 = `${결과}.gemini.json`;            // 서빙 모델·사용량이 든 원 응답 — 결과 옆에 남긴다
   fs.mkdirSync(path.dirname(결과), { recursive: true });
   try {
     execFileSync(process.execPath,
-      [제미나이호출경로, '--model', 픽.model,
+      [명세.경로, '--model', 픽.model,
         ...(픽.thinking_level ? ['--thinking', 픽.thinking_level] : []),
-        /* 🔴 09-04 실측 — 심문은 «돈» 창구로 간다. 첫 판이 공짜 몫(하루 20발)에서 죽었다:
-         *   `Quota exceeded ... free_tier_requests, limit: 20`. 심문은 문서 전문을 통째로 보내는
-         *   무거운 호출이고 빈도가 낮다(통틀어 네 번 돌았다) — 크레딧이 덮기에 딱 맞는 모양이다.
-         *   (09-04 판) 검수 둘째 눈은 「글」이었다 — 🔄 09-05 밤 유호 확정으로 정책 기본이 「돈」이 되어 그쪽도 Vertex 로
-         *   간다(용도를 안 주면 정책 `기본용도()`). 여기 '돈' 은 그 기본과 같아 명시로만 남는다. */
-        '--용도', '돈',
+        ...명세.추가인자,
         '-o', 원본, '--timeout', String(Math.min(timeoutMs, 900000))],
       자식옵션({
         cwd: 대상ROOT, input: 프롬프트, encoding: 'utf8', timeout: timeoutMs,
@@ -2540,10 +2583,10 @@ function gemini심문한회(프롬프트, timeoutMs, 결과, i, 총, 픽) {
   if (!r || !String(r.text || '').trim()) throw 확인불가(`${라벨} 가 빈 답을 냈다 — 확인 불가이므로 동결 불가다`);
   /* «무엇이 답했나»를 눈에 보이게 남긴다 — 픽과 다른 모델이 답하면 그 회차의 조건이 우리가 적은 것과
    * 다르다(제미나이 CLI 가 픽을 무시하고 다른 판으로 서빙한 실측이 있다 · 기억 subscription-cli-review-lanes). */
-  if (r.modelVersion && !String(r.modelVersion).startsWith(픽.model)) {
+  if (!제미나이응답일치(r, 픽, 명세.통로)) {
     console.error(`   ⚠ 제미나이 서빙 모델이 픽과 다르다 — 픽 ${픽.model} · 답한 것 ${r.modelVersion}`);
   }
-  console.log(`  ${라벨} — 답한 모델 ${r.modelVersion || '(안 알려준다)'}`);
+  console.log(`  ${라벨} — 답한 모델 ${r.modelVersion || '(안 알려준다)'} · 통로 ${r.route || 명세.통로}`);
   fs.writeFileSync(결과, String(r.text).trim() + '\n', 'utf8');
   return r;
 }
@@ -3661,6 +3704,7 @@ module.exports = {
   검수방, 단계끝났나, 아는단계, 완료칸, 회차실행플래그, 직렬플래그, 던지기플래그, 런현황,
   // 벤더 편성(09-02) — 회귀가 「편성·거절·합의 분모」를 출력으로 잰다 · `codex` 는 밖의사실.js 의 라이브 검색 반박이 빌린다
   codex, 검수한회, 벤더편성, 벤더모드, 벤더플래그, 아는벤더모드, gemini프롬프트, 검수규칙읽기, 검수규칙추출, 병렬계획,
+  제미나이통로, 제미나이호출명세, 제미나이응답일치,
   병렬계획, 입력쓰기, 회차별줄,
   자식옵션, 창숨김누락,
   사유_파일어긋남,

@@ -2,7 +2,7 @@
 /**
  * 구글 계정 세우기 — 붙인 계정(tools/구글계정붙이기.js)에 굽기가 돌 자리를 만든다.
  *
- * 하는 일 넷(전부 손 없이):
+ * `--적용`을 붙였을 때만 하는 일 넷:
  *   ① 그 계정의 결제 계정을 찾는다 → 크레딧이 붙은 자리다
  *   ② 프로젝트를 찾는다(없으면 만든다)
  *   ③ 그 프로젝트에 결제 계정을 붙이고 Vertex 문(aiplatform)을 켠다
@@ -11,7 +11,10 @@
  * 🔴 문 켜기와 결제 조회는 «청구지 헤더»가 서로 반대다(09-04 실측):
  *   serviceusage = 청구지를 «안» 준다 · cloudbilling·cloudresourcemanager = 「줘야」 한다.
  *
- * 쓰는 법: node tools/구글계정세우기.js [--프로젝트 <id>] [--재보기]
+ * 기본·`--재보기`는 조회만 하며 프로젝트·API·결제·자격 파일을 바꾸지 않는다.
+ * 쓰는 법:
+ *   node tools/구글계정세우기.js [--프로젝트 <id>] [--재보기]  # 조회 전용
+ *   node tools/구글계정세우기.js --적용 [--프로젝트 <id>]       # 실제 변경
  */
 'use strict';
 
@@ -52,7 +55,11 @@ async function 부르기(주소, { tok, 청구지, 방법 = 'GET', 몸 } = {}) {
 
 (async () => {
   const 인자 = process.argv.slice(2);
+  const 적용 = 인자.includes('--적용');
   const 고른프로젝트 = 인자.includes('--프로젝트') ? 인자[인자.indexOf('--프로젝트') + 1] : null;
+  if (인자.includes('--프로젝트') && (!고른프로젝트 || 고른프로젝트.startsWith('--'))) {
+    죽는다('--프로젝트 뒤에 정확한 프로젝트 ID가 필요하다.');
+  }
   const tok = await 토큰();
   const j = JSON.parse(fs.readFileSync(자격파일, 'utf8'));
   const t = (j.tokens && j.tokens.default) || j;
@@ -74,6 +81,11 @@ async function 부르기(주소, { tok, 청구지, 방법 = 'GET', 몸 } = {}) {
   }
   if (!프로젝트 && 있는것.length) 프로젝트 = 있는것[0].id;
 
+  if (!프로젝트 && !적용) {
+    console.log('\n🛡 조회 전용이라 프로젝트를 만들지 않았다. 실제로 만들고 연결할 때만 --적용을 붙인다.');
+    return;
+  }
+
   if (!프로젝트) {
     프로젝트 = `synk-bake-${Math.random().toString(36).slice(2, 8)}`;
     console.log(`\n🆕 프로젝트가 없어 만든다: ${프로젝트}  (이름에 한글은 못 쓴다 — 400)`);
@@ -88,7 +100,7 @@ async function 부르기(주소, { tok, 청구지, 방법 = 'GET', 몸 } = {}) {
   }
   console.log(`\n🎯 쓸 프로젝트 = ${프로젝트}`);
 
-  // ── ① 결제 계정 = 크레딧이 붙은 자리
+  // ── 조회: 결제 계정·현재 연결·켜진 API. 여기까지는 자원을 바꾸지 않는다.
   const 결목 = await 부르기('https://cloudbilling.googleapis.com/v1/billingAccounts', { tok, 청구지: 프로젝트 });
   if (!결목.ok) {
     console.log(`\n⚠ 결제 계정을 못 봤다 ${결목.코드}: ${결목.답.error?.message || ''}`);
@@ -98,8 +110,24 @@ async function 부르기(주소, { tok, 청구지, 방법 = 'GET', 몸 } = {}) {
   결제들.forEach((b) => console.log(`   💳 ${b.name}  (${b.displayName})`));
   const 결제 = 결제들[0];
 
-  // ── ③ 문 켜기 (청구지를 «안» 준다) + 결제 붙이기 (청구지를 «준다»)
+  const 현재결제 = await 부르기(`https://cloudbilling.googleapis.com/v1/projects/${프로젝트}/billingInfo`, { tok, 청구지: 프로젝트 });
+  console.log(`\n💳 현재 프로젝트 결제 = ${현재결제.ok
+    ? (현재결제.답.billingEnabled ? `${현재결제.답.billingAccountName || '(계정명 미보고)'} · 켜짐` : '꺼짐')
+    : `확인 불가 ${현재결제.코드}: ${(현재결제.답.error?.message || '').slice(0, 160)}`}`);
+
   const 켤것 = ['aiplatform.googleapis.com', 'cloudbilling.googleapis.com', 'cloudresourcemanager.googleapis.com', 'serviceusage.googleapis.com'];
+  const 서비스목 = await 부르기(`https://serviceusage.googleapis.com/v1/projects/${프로젝트}/services?filter=state:ENABLED&pageSize=200`, { tok });
+  const 켜진것 = new Set((서비스목.답.services || []).map((s) => s.config && s.config.name).filter(Boolean));
+  console.log('\n🔌 API 현재 상태');
+  for (const api of 켤것) console.log(`   ${켜진것.has(api) ? '✅ 켜짐' : 서비스목.ok ? '· 꺼짐' : '⚠ 확인 불가'} ${api}`);
+
+  if (!적용) {
+    console.log('\n🛡 조회 전용으로 끝냈다 — 프로젝트 생성·API 켜기·결제 연결·자격 파일 쓰기 모두 0건.');
+    console.log('   실제 변경: node tools/구글계정세우기.js --적용' + (고른프로젝트 ? ` --프로젝트 ${고른프로젝트}` : ''));
+    return;
+  }
+
+  // ── ③ 문 켜기 (청구지를 «안» 준다) + 결제 붙이기 (청구지를 «준다»)
   console.log('\n🔌 문 켜기');
   for (const api of 켤것) {
     const r = await 부르기(`https://serviceusage.googleapis.com/v1/projects/${프로젝트}/services/${api}:enable`, { tok, 방법: 'POST', 몸: {} });
@@ -123,5 +151,5 @@ async function 부르기(주소, { tok, 청구지, 방법 = 'GET', 몸 } = {}) {
   try { fs.unlinkSync(토큰캐시); } catch { /* 없으면 그만 */ }
 
   console.log(`\n✅ 적어 뒀다 — 앞으로 굽기는 ${누구} 의 ${프로젝트} 로 간다.`);
-  console.log('   재보기: node tools/모델정책.js --제미나이확인 돈\n');
+  console.log('   재보기(유료 프로브): node tools/모델정책.js --제미나이확인 돈 --유료-api\n');
 })().catch((e) => 죽는다(e.message));

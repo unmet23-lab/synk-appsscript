@@ -12,8 +12,8 @@
  *   Veo 3 4k Video Generation = $0.40/초 ⇒ 8초 한 컷 $3.20 ≈ ₩4,646
  *
  * ■ 쓰기
- *   node tools/홍보영상굽기.js            — 전부
- *   node tools/홍보영상굽기.js --컷 2      — 그 컷만 (다시 굽기)
+ *   node tools/홍보영상굽기.js --유료-api            — 전부
+ *   node tools/홍보영상굽기.js --컷 2 --유료-api      — 그 컷만 (다시 굽기)
  *   node tools/홍보영상굽기.js --값만      — 0원. 얼마 드는지만 말한다
  */
 'use strict';

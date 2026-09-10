@@ -21,6 +21,24 @@
 
 ## 1. 기존 도구를 사용할 때
 
+### 1-0 구독 통로와 종량제 API 경계
+
+| 쓰임 | 기본 통로 | 비용 경계 |
+|---|---|---|
+| Codex 로컬 작업 | ChatGPT/Codex 구독 로그인 | OpenAI Platform API와 별도다 |
+| Claude Code 로컬·GitHub 검수 | Claude 구독 OAuth | 대화형 로컬은 구독 한도, 비대화형·GitHub는 플랜 연계 Agent SDK 월별 크레딧을 쓴다. 추가 사용 크레딧이 꺼져 있으면 소진 뒤 멈추며 Anthropic Console API 키 과금으로 바뀌지 않는다 |
+| 로컬 Gemini 검수·심문 | Google AI Pro 로그인으로 `tools/lib/제미나이구독호출.js` | API 키·Vertex를 쓰지 않고, 지원하지 않는 모델로 자동 하향하지 않는다 |
+| GitHub Gemini 자동 검수 | 결제가 연결되지 않은 AI Studio 무료 키 | 무료 몫 소진 시 멈추며 Vertex로 넘어가지 않는다 |
+| Vertex 이미지·영상·음악·TTS·유료 평가 | Google Cloud 종량제 API | `--유료-api` 또는 의식적으로 관리하는 `SYNK_ALLOW_PAID_API=1` 없이는 자격 토큰을 만들기 전에 막는다 |
+| OpenAI 이미지 생성 | OpenAI Platform 종량제 API | 실제 생성은 `--유료-api` 없이는 키 읽기·네트워크 전에 막는다 |
+| Apps Script·SYNK-talk의 Claude 기능 | Anthropic Console 종량제 API | 무인 제품 실행은 Claude 소비자 구독을 쓸 수 없다. 키를 빼면 해당 기능이 정해진 폴백·중단 동작으로 간다 |
+| SYNK-talk 음성 받아쓰기 | OpenAI Platform 종량제 API | Codex 구독에 포함되지 않는 제품 백엔드 호출이다 |
+| Apps Script 녹음 받아쓰기 | Google Cloud Speech-to-Text API | Gemini 구독과 별개이며 실제 GCP 자격·프로젝트의 과금 조건을 따른다 |
+
+`tools/codex-review.js`의 로컬 기본은 `subscription`, GitHub Actions 기본은 `free-api`다. Vertex를 일부러 쓸 때만 `SYNK_GEMINI_ROUTE=vertex`와 `--유료-api` 경로가 열린다. Antigravity의 `useG1Credits` 기본값은 `false`이며, 구독 호출기는 이 값이 `true`이거나 API-key `modelProvider`가 설정되면 실행을 거절한다. 어느 통로도 한도·자격 실패를 다른 유료 통로로 조용히 우회하지 않는다. 계정 소유자·잔액·무료 크레딧·자동 충전 여부는 코드가 아니라 각 제공자의 현재 결제 화면에서 다시 확인한다. 신규 결제·구독·자동 충전은 설정 도구가 만들지 않는다.
+
+모델 선택은 [운영 원칙의 성능 우선 기준](AI_운영원칙.md#계정원본완료)을 따른다. 정액제의 한도를 소비하는 호출과 Console API 비용을 구분한다. Vertex 무료 체험판은 Google의 해당 서비스에 적용되며 AI Studio의 Gemini 비용이나 Claude 같은 파트너 모델 비용을 대신 내지 않는다. `tools/구글크레딧.js`의 사용량 지표는 결제 장부가 아니므로 토큰 수로 현재 크레딧 잔액을 꾸며 계산하지 않는다.
+
 ### 1-1 검수·심문·발주
 
 - `node tools/codex-review.js --미처분`은 남은 지적 조회다. 형제 저장소 검토는 `--저장소 ../SYNK-talk --commit <sha>`처럼 실제 대상을 지정한다.

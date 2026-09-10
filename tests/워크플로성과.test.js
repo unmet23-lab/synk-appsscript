@@ -46,12 +46,18 @@ test('발주 최신 상태만 세고 소요 시간 없는 옛 기록을 0초로 
   assert.match(글, /확인 불가/);
 });
 test('수용 재개는 같은 커밋·깨끗한 작업본·시험과 검수 완료일 때만 허용한다', () => {
-  const r = { 상태:'수용확인불가', 라운드들:[{ sha:'abc', 검수:{ 종료:0, 차단수:0 }, 시험:[{ 통과:true }], 수용검사:{ 미충족:[] } }] };
-  assert.equal(빌드.수용재개가능(r, 'abc', 0), true);
-  assert.equal(빌드.수용재개가능({ ...r, 라운드들:[{ ...r.라운드들[0], sha:null, 검수대상:null, 대상커밋:'abc' }] }, 'abc', 0), true, '재개 뒤 재개도 같은 과녁을 유지한다');
-  assert.equal(빌드.수용재개가능(r, 'changed', 0), false);
-  assert.equal(빌드.수용재개가능(r, 'abc', 1), false);
-  for (const patch of [{ 검수:null }, { 검수:{ 종료:0, 차단수:1 } }, { 시험:[] }, { 수용검사:{ 미충족:[{}] } }]) {
-    assert.equal(빌드.수용재개가능({ ...r, 라운드들:[{ ...r.라운드들[0], ...patch }] }, 'abc', 0), false);
+  const sha = 'a'.repeat(40);
+  const 검수 = { 벤더:'claude', 종료:0, 차단수:0 };
+  const r = { 상태:'수용확인불가', 라운드들:[{ sha, 검수, 시험:[{ 통과:true }], 수용검사:{ 미충족:[] } }] };
+  assert.equal(빌드.수용재개가능(r, sha, 0), true);
+  assert.equal(빌드.수용재개가능({ ...r, 라운드들:[{ ...r.라운드들[0], sha:null, 검수대상:null, 대상커밋:sha }] }, sha, 0), true, '재개 뒤 재개도 같은 과녁을 유지한다');
+  assert.equal(빌드.수용재개가능(r, 'b'.repeat(40), 0), false);
+  assert.equal(빌드.수용재개가능(r, sha, 1), false);
+  for (const patch of [
+    { 검수:null }, { 검수:{ 종료:0, 차단수:0 } }, { 검수:{ ...검수, 벤더:'codex' } },
+    { 검수:{ ...검수, 종료:2 } }, { 검수:{ ...검수, 차단수:1 } },
+    { 시험:[] }, { 수용검사:{ 미충족:[{}] } },
+  ]) {
+    assert.equal(빌드.수용재개가능({ ...r, 라운드들:[{ ...r.라운드들[0], ...patch }] }, sha, 0), false);
   }
 });

@@ -54,12 +54,12 @@ async function run(args, apiError = null) {
 
 test('설정 조회는 2.5 Sunburst 고정이며 자격증명·생성·가공에 닿지 않는다', async () => {
   const r = await run(['--설정']);
-  assert.deepEqual(JSON.parse(r.logs[0]), { 모델: expectedModel, 대체모델: null, 기본크기: 2560, 생성: false });
+  assert.deepEqual(JSON.parse(r.logs[0]), { 모델: expectedModel, 대체모델: null, 기본크기: 2560, 생성: false, 유료API필요: true });
   assert.equal(r.reads + r.preparations + r.calls.length + r.writes.length, 0);
 });
 
 test('실제 전송 폼의 모델만 2.5로 바꾸고 몸·옷 참조와 크기를 유지한다', async () => {
-  const r = await run(['--것', '목도리']);
+  const r = await run(['--것', '목도리', '--유료-api']);
   assert.equal(r.exitCode, 0);
   assert.equal(r.calls.length, 1);
   assert.equal(r.calls[0].url, 'https://api.openai.com/v1/images/edits');
@@ -79,8 +79,15 @@ test('2.0 지정은 자격증명 읽기나 생성 전에 거절한다', async ()
   assert.ok(r.logs.some(s => s.includes('고정')));
 });
 
+test('명시적인 --유료-api 없이는 자격증명·가공·네트워크·쓰기에 닿지 않는다', async () => {
+  const r = await run(['--것', '목도리']);
+  assert.equal(r.exitCode, 1);
+  assert.equal(r.reads + r.preparations + r.calls.length + r.writes.length, 0);
+  assert.ok(r.logs.some(s => s.includes('종량제 API라 기본 차단')));
+});
+
 test('2.5 사용 불가여도 2.0이나 다른 모델로 다시 요청하지 않는다', async () => {
-  const r = await run(['--것', '목도리'], 'Model unavailable');
+  const r = await run(['--것', '목도리', '--유료-api'], 'Model unavailable');
   assert.equal(r.exitCode, 1);
   assert.deepEqual(r.calls.map(c => c.model), [expectedModel]);
   assert.equal(r.writes.length, 0);
