@@ -181,6 +181,11 @@ docs/_ops/마스코트_Drive이관_20260910/transfer/
 /tmp/pdfs/modoo_tech_20260910/
 /tmp/modoo_close_20260910/
 
+# 09-11 공통 IR 신청 원문·개인 접수 증거는 외부 연결 없는 개인 로컬 Git에 보존한다.
+# 현재 산출물은 삭제하지 않고 공개 저장소 추적에서만 제외한다.
+/docs/지원사업/공통IR_20260911_개선/
+/output/pdf/SYNK_LAB_IR_20260911.pdf
+
 # Puppeteer가 만드는 브라우저 임시 프로필만 제외한다. 렌더·원본·검토 결과와 폴더 자체는 보존한다.
 # 프로필에는 쿠키·로그인 상태가 포함될 수 있다. Git 제외는 삭제나 공간 회수가 아니다.
 /docs/홍보물/첫게시물_20260910/_검토/01-표정편집엔딩/render-temp/puppeteer_dev_chrome_profile-*/
