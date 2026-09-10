@@ -40,9 +40,11 @@ function 로드() {
   const 시트들 = {};
   const ss = { getSheetByName: (n) => 시트들[n] || null, insertSheet: (n) => (시트들[n] = 가짜시트([])), getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar' };
   const 메일 = [];
+  const 잠금 = { 잡힘: false, 획득: 0, 해제: 0, flush: 0 };
   const ctx = {
-    console, 메일, 시트들,
-    SpreadsheetApp: { getActiveSpreadsheet: () => ss },
+    console, 메일, 시트들, 잠금,
+    SpreadsheetApp: { getActiveSpreadsheet: () => ss, flush: () => { assert.equal(잠금.잡힘, true); 잠금.flush++; } },
+    LockService: { getScriptLock: () => ({ tryLock: () => { if (잠금.잡힘) return false; 잠금.잡힘 = true; 잠금.획득++; return true; }, releaseLock: () => { 잠금.잡힘 = false; 잠금.해제++; } }) },
     ContentService: { createTextOutput: (t) => ({ t, setMimeType() { return this; } }), MimeType: { JSON: 'json' } },
     Utilities: { formatDate: (d, tz, f) => (f === 'yyyyMMdd' ? '20261001' : '2026-10-01 10:00:00'), getUuid: (() => { let n = 0; return () => 'uuid' + String(++n).padStart(4, '0') + '-0000'; })(),
       computeDigest: () => [1, 2, 3, 4], DigestAlgorithm: { MD5: 1 }, Charset: { UTF_8: 1 } },
@@ -241,6 +243,92 @@ test('[㉠-1] 「이 자리, 맞아요?」 — 고침은 옆에 남고 관측(�
   같다(후.다음문형, 전.다음문형, '고침이 관측을 지웠다 — 기록은 덧붙이기만 한다');
   assert.equal(후.고침.판정, '아니에요'); assert.equal(후.고침.한줄, '이건 아는 건데 급해서 눌렀어요');
   같다(후.고침.다음문형, 전.다음문형.map((g) => g.번호), '무엇에 대한 고침인지(그때의 다음문형)가 같이 남아야 한다');
+});
+
+test('[고침 이력] 옛 object를 그대로 첫 이력에 보존하고 재채점 뒤 다른 문형 정정을 추가한다 · 최신 응답 형식과 다른 세션은 보존', () => {
+  const T = 로드();
+  const a = T.진단시작_({ 역할: '시작', 이메일: 'synthetic-a@example.invalid' });
+  const b = T.진단시작_({ 역할: '시작', 이메일: 'synthetic-b@example.invalid' });
+  const row = T.시트들.진단세션.rows[1], 다른행 = T.시트들.진단세션.rows[2];
+  const col = (n) => T.DIAG_SESSION_HEADERS.indexOf(n);
+  const 옛답 = { 판정: '아니에요', 한줄: '첫 정정', 시각: '2026-09-01T00:00:00Z', 다음문형: ['G502'], 출처메모: '옛 값' };
+  row[col('학생고침')] = JSON.stringify(옛답);
+  row[col('다음문형')] = '["G708"]';
+  다른행[col('학생고침')] = JSON.stringify({ 판정: '맞아요', 다음문형: ['G502'] });
+  const 다른전 = 다른행.slice();
+  assert.equal(T.진단고침_({ 세션번호: a.세션번호, 판정: '아니에요', 한줄: '새 정정' }).ok, true);
+  const 저장 = JSON.parse(row[col('학생고침')]);
+  assert.equal(저장.이력.length, 2);
+  같다(저장.이력[0], 옛답, '옛 고침의 시각·스냅샷·원래 필드를 손실 없이 보존한다');
+  assert.equal(저장.판정, '아니에요'); assert.equal(저장.한줄, '새 정정');
+  같다(저장.다음문형, ['G708']);
+  같다(T.진단결과_({ 세션번호: a.세션번호 }).고침, 저장, '기존 소비자는 최상위 최신 답을 그대로 읽는다');
+  같다(T.진단부정문형_(저장), ['G502', 'G708'], '다른 자리의 새 정정이 옛 부정을 지우면 안 된다');
+  assert.equal(row[col('다음문형')], '["G708"]', '원관측을 수정하면 안 된다');
+  같다(다른행, 다른전, '다른 세션의 고침에 섞이면 안 된다');
+  assert.ok(b.세션번호 !== a.세션번호);
+});
+
+test('[고침 이력] 같은 문형은 최신 명시 판정이 이기며 다른 문형 부정은 유지 · 즉시 재전송은 중복 추가하지 않는다', () => {
+  const T = 로드();
+  const s = T.진단시작_({ 역할: '시작', 이메일: 'synthetic@example.invalid' });
+  const row = T.시트들.진단세션.rows[1], col = (n) => T.DIAG_SESSION_HEADERS.indexOf(n);
+  row[col('다음문형')] = '["G502","G708"]';
+  T.진단고침_({ 세션번호: s.세션번호, 판정: '아니에요' });
+  row[col('다음문형')] = '["G502"]';
+  T.진단고침_({ 세션번호: s.세션번호, 판정: '맞아요' });
+  let 저장 = JSON.parse(row[col('학생고침')]);
+  같다(T.진단부정문형_(저장), ['G708']);
+  assert.equal(저장.이력.length, 2);
+  const 전 = row[col('학생고침')], flush전 = T.잠금.flush;
+  assert.equal(T.진단고침_({ 세션번호: s.세션번호, 판정: '맞아요' }).중복, true);
+  assert.equal(row[col('학생고침')], 전, '같은 재전송이 시각을 바꾸거나 이력을 불려서는 안 된다');
+  assert.equal(T.잠금.flush, flush전);
+  T.진단고침_({ 세션번호: s.세션번호, 판정: '아니에요' });
+  저장 = JSON.parse(row[col('학생고침')]);
+  assert.equal(저장.이력.length, 3, '맞아요 뒤 다시 아니에요는 새 명시 정정이다');
+  // 시계 해상도와 무관하게 저장 순서가 효력 순서다.
+  저장.이력.forEach((답) => { 답.시각 = '2026-09-11T00:00:00Z'; });
+  같다(T.진단부정문형_(저장), ['G502', 'G708']);
+});
+
+test('[고침 이력] 동시 요청은 잠금으로 직렬화하고 바쁜 요청 재시도는 최신 이력 뒤에 붙는다', () => {
+  const T = 로드();
+  const s = T.진단시작_({ 역할: '시작', 이메일: 'synthetic@example.invalid' });
+  const row = T.시트들.진단세션.rows[1], col = (n) => T.DIAG_SESSION_HEADERS.indexOf(n);
+  row[col('다음문형')] = '["G502"]';
+  const 쓰기 = T.진단칸쓰기_, 찾기 = T.진단행찾기_;
+  let 겹침;
+  T.진단행찾기_ = function (...args) { assert.equal(T.잠금.잡힘, true, '잠금 전에 읽은 이전 이력은 낡을 수 있다'); return 찾기(...args); };
+  T.진단칸쓰기_ = function (...args) {
+    assert.equal(T.잠금.잡힘, true);
+    겹침 = T.진단고침_({ 세션번호: s.세션번호, 판정: '맞아요' });
+    return 쓰기(...args);
+  };
+  assert.equal(T.진단고침_({ 세션번호: s.세션번호, 판정: '아니에요' }).ok, true);
+  assert.equal(겹침.error, 'busy');
+  T.진단칸쓰기_ = 쓰기;
+  assert.equal(T.진단고침_({ 세션번호: s.세션번호, 판정: '맞아요' }).ok, true);
+  const 저장 = JSON.parse(row[col('학생고침')]);
+  같다(저장.이력.map((x) => x.판정), ['아니에요', '맞아요']);
+  같다(T.진단부정문형_(저장), []);
+  assert.equal(T.잠금.flush, 2); assert.equal(T.잠금.획득, 2); assert.equal(T.잠금.해제, 2); assert.equal(T.잠금.잡힘, false);
+});
+
+test('[고침 이력] 읽지 못한 원기록은 덮지 않고 잠금을 놓는다 · 쓰기 예외도 잠금을 놓는다', () => {
+  const T = 로드();
+  const s = T.진단시작_({ 역할: '시작', 이메일: 'synthetic@example.invalid' });
+  const row = T.시트들.진단세션.rows[1], col = (n) => T.DIAG_SESSION_HEADERS.indexOf(n);
+  for (const 원문 of ['{깨짐', '[{"판정":"아니에요"}]', '{"판정":"아니에요","이력":"깨짐"}']) {
+    row[col('학생고침')] = 원문;
+    assert.equal(T.진단고침_({ 세션번호: s.세션번호, 판정: '맞아요' }).error, 'bad-fix-history');
+    assert.equal(row[col('학생고침')], 원문);
+    assert.equal(T.잠금.잡힘, false);
+  }
+  row[col('학생고침')] = '';
+  T.진단칸쓰기_ = () => { throw new Error('synthetic-write-failure'); };
+  assert.throws(() => T.진단고침_({ 세션번호: s.세션번호, 판정: '맞아요' }), /synthetic-write-failure/);
+  assert.equal(T.잠금.잡힘, false);
 });
 
 test('[㉠-1] 카드 메일 — 「첫 주 숙제」로 자를 향해 가르치지 않는다 · 멈춘 까닭은 쓴 사람에게만 · 결핍 낱말 0', () => {

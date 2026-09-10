@@ -44,7 +44,7 @@ const DIAG_SESSION_HEADERS = ['세션번호', '진단코드', '이메일', '전�
   'created_at', 'schema_ver',
   /* [v9.320] ㉠-1 「다음 자리」 층(브랜드 v2) — 칸 둘은 «끝에만» 는다(읽는 쪽은 이름으로 찾지만 시트는 자리로 산다 · 라이브 증분은 진단시트_ 가 한다).
    *   멈춘까닭 = 학생이 «스스로» 쓴 한 줄(선택) — 36문항은 문형을 재지 «왜 멈췄나»를 못 재므로, 비면 결과에도 비워 둔다(지어내지 않는다).
-   *   학생고침 = 「이 자리, 맞아요?」에 대한 학생 답(JSON · 맞아요/아니에요 + 한 줄 + 그때의 다음문형) — 관측(다음문형)은 안 지운다. */
+   *   학생고침 = 학생 답 JSON. 최상위는 최신 답(맞아요/아니에요 + 한 줄 + 그때의 다음문형), 이력은 이전 답부터 누적한다. 옛 단일 object도 읽는다. */
   '멈춘까닭', '학생고침'];
 const DIAG_SCHEMA_VER = 2;                   // [v9.320] 칸 둘이 끝에 늘었다(멈춘까닭·학생고침) — 1판 행은 그 두 칸이 비어 있다
 const DIAG_WRITE_BATCH_MAX_ = 20;            // 밤 배치가 하룻밤에 태깅하는 쓰기 문장 상한(AI 호출 상한)
@@ -281,7 +281,7 @@ function 진단결과_(입력) {
     다음문형: 결과.다음문형.map(function (g) { return { 번호: g, 이름: 진단문형이름_(g) }; }),
     쓰기: { 문장: 문장, 상태: !문장 ? '없음' : (ai ? '완료' : '대기'), 카드: ai ? { 태그: ai.태그 || [], 교정문: ai.교정문 || '', 규칙: ai.규칙 || '' } : null },
     멈춘까닭: String(f.r[진단칸_('멈춘까닭')] || ''),               // [v9.320] 학생이 쓴 한 줄 그대로 · 없으면 '' — 36문항에서 지어내지 않는다(브랜드 v2 ㉠-1 ⑥-㉯)
-    고침: 진단JSON_(f.r[진단칸_('학생고침')], null),                // [v9.320] 「이 자리, 맞아요?」 답 · 없으면 null
+    고침: 진단JSON_(f.r[진단칸_('학생고침')], null),                // 최상위는 최신 답(옛 응답 호환) · 이력이 있으면 이전 답까지 · 없으면 null
     상태: 상태 };
 }
 
@@ -302,20 +302,54 @@ function 진단멈춘까닭_(입력) {
 /* [v9.320] ㉠-1 「이 자리, 맞아요?」 — 학생은 자기 기록의 공동 저자다(철학 v2 §5 · 적용 기준 §2 「관측과 성향」 · 엔진 v3 D7 · 「맞아?」 카드).
  *   「아니야」면 다음 생성에서 뺀다 — 그 첫 소비자는 엔진_운영배치.js `회고_알게된것_` 이다(«아니에요» 고침이 붙은 그때의 다음문형을 시즌 회고 편지에
  *   «다음 자리»로 다시 내지 않는다 · 발전안 20260911 갈래 ②). 09-11 전까지 이 줄은 구현 없는 선언이었다 — 소비자 없이 적힌 문장은 다음 독자가 실측처럼 읽는다(F531).
- *   고침은 «옆에» 남고 관측(다음문형)은 안 지운다 — 기록은 덧붙이기만 한다. 판정은 둘뿐(맞아요 · 아니에요) · 한 줄은 선택.
+ *   고침은 «옆에» 남고 관측(다음문형)은 안 지운다. 판정은 둘뿐(맞아요 · 아니에요) · 한 줄은 선택.
+ *   최상위 최신 답을 유지하며 이력에 덧붙인다. 옛 단일 object는 첫 이력으로 그대로 보존하며 이미 덮여 사라진 답을 복구하지는 못한다.
+ *   같은 문형은 마지막 명시 판정이 현재 효력을 갖고, 다른 문형에 대한 정정은 바뀌지 않는다.
  *   무엇에 대한 고침인지 남기려고 그때의 다음문형을 같이 적는다(나중에 다시 채점해 다음문형이 바뀌어도 고침이 가리키던 것이 남는다). */
+function 진단고침이력_(고침) {
+  if (고침 == null) return [];
+  if (typeof 고침 !== 'object' || Array.isArray(고침)) return null;
+  if (고침.이력 === undefined) return [고침];
+  return Array.isArray(고침.이력) ? 고침.이력.slice() : null;
+}
+
+/** 회고에서 제외할 문형 — 저장 순서가 곧 정정 순서다. 같은 시각의 답도 뒤에 저장된 명시 판정을 따른다. */
+function 진단부정문형_(고침) {
+  const 판정들 = Object.create(null);
+  (진단고침이력_(고침) || []).forEach(function (답) {
+    if (!답 || (답.판정 !== '맞아요' && 답.판정 !== '아니에요') || !Array.isArray(답.다음문형)) return;
+    답.다음문형.forEach(function (g) { 판정들[String(g)] = 답.판정; });
+  });
+  return Object.keys(판정들).filter(function (g) { return 판정들[g] === '아니에요'; });
+}
+
 function 진단고침_(입력) {
   입력 = 입력 || {};
   const 판정 = String(입력.판정 || '').trim();
   if (판정 !== '맞아요' && 판정 !== '아니에요') return { ok: false, error: 'bad-verdict' };
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = 진단시트_(ss);
-  const f = 진단행찾기_(sh, 입력.세션번호);
-  if (!f) return { ok: false, error: 'no-session' };
   const 한줄 = String(입력.한줄 || '').replace(/\s+/g, ' ').trim().slice(0, 200);
-  const 고침 = { 판정: 판정, 한줄: 한줄, 시각: new Date().toISOString(), 다음문형: 진단JSON_(f.r[진단칸_('다음문형')], []) };
-  진단칸쓰기_(sh, f.row, { 학생고침: JSON.stringify(고침) });
-  return { ok: true, 판정: 판정 };
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return { ok: false, error: 'busy' };
+  try {
+    // 잠금을 얻은 뒤 다시 읽어야 두 요청이 같은 이전 이력에 각각 덮어쓰지 않는다.
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sh = 진단시트_(ss);
+    const f = 진단행찾기_(sh, 입력.세션번호);
+    if (!f) return { ok: false, error: 'no-session' };
+    const 이전원문 = String(f.r[진단칸_('학생고침')] || '');
+    let 이전 = null;
+    try { 이전 = 이전원문 ? JSON.parse(이전원문) : null; } catch (e) { return { ok: false, error: 'bad-fix-history' }; }
+    const 이력 = 진단고침이력_(이전);
+    if (!이력) return { ok: false, error: 'bad-fix-history' }; // 못 읽은 기록을 빈 이력으로 덮지 않는다.
+    const 고침 = { 판정: 판정, 한줄: 한줄, 시각: new Date().toISOString(), 다음문형: 진단JSON_(f.r[진단칸_('다음문형')], []) };
+    const 마지막 = 이력[이력.length - 1];
+    if (마지막 && 마지막.판정 === 고침.판정 && 마지막.한줄 === 고침.한줄
+        && JSON.stringify(마지막.다음문형) === JSON.stringify(고침.다음문형)) return { ok: true, 판정: 판정, 중복: true };
+    이력.push(고침);
+    진단칸쓰기_(sh, f.row, { 학생고침: JSON.stringify(Object.assign({}, 고침, { 이력: 이력 })) });
+    SpreadsheetApp.flush(); // 시트 쓰기를 확정한 뒤 잠금을 놓는다.
+    return { ok: true, 판정: 판정 };
+  } finally { lock.releaseLock(); }
 }
 
 /* 「지금은 안 할래요」 — 사유는 선택. 안 고르고 닫아도 «눌렀다»는 남는다(그 자체가 분모 · 설계 §⑭-㉣). */
