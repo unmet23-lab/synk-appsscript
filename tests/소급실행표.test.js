@@ -56,9 +56,11 @@ test('짧은 색인은 모든 ID·수정 위치를 남기고 상세 조회는 �
 
 test('저장된 MD는 재생성 결과와 같고 반복 실행에서 날짜·환경 때문에 바뀌지 않는다', () => {
   const run = () => execFileSync(process.execPath, ['tools/소급실행표.js', '--전량', '--md'], { cwd: root });
+  const text = (bytes) => bytes.toString('utf8').replace(/\r\n/g, '\n');
   const generated = run();
   assert.deepEqual(generated, run());
-  assert.deepEqual(generated, fs.readFileSync(path.join(root, 'docs/소급_실행표_0908.md')));
+  assert.equal(text(generated), text(fs.readFileSync(path.join(root, 'docs/소급_실행표_0908.md'))),
+    'Git/Windows 체크아웃의 CRLF 차이는 내용 변경이 아니다');
 });
 
 test('없는 ID의 상세 조회는 조용히 빈 성공을 내지 않는다', () => {

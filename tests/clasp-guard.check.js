@@ -1,14 +1,7 @@
 // clasp-guard 회귀 점검 — 실행: node tests/clasp-guard.check.js
 //
-// 🔴 2026-09-09 — 이 파일은 «옛 행동»을 재고 있다. 아직 안 고쳤다.
-//   유호 지시 09-09 「이것도 풀어」로 배포 게이트가 «막기»에서 «알리기»로 내려갔다
-//   (clasp-guard.js 의 `게이트풀림` 스위치). 그래서 아래 세 항목은 이제 반드시 어긋난다:
-//     · '워크트리 push 차단'                 — 이제 차단이 아니라 알림이다
-//     · '워크트리 차단 사유에 복구 절차 포함'  — 문구가 바뀌었다
-//     · 배포 게이트 종합 차단을 재는 항목들     — deny JSON 대신 stderr 로 나간다
-//   ⚠ 이 파일은 이름이 `*.check.js` 라 `node --test tests/*.test.js` 에 안 잡힌다 —
-//     그래서 원격 검사(CI)는 빨개지지 «않는다». 손으로 돌릴 때만 어긋남이 보인다.
-//   → 고칠 자리 = 위 항목을 「알림이 나오고 통과한다」로 뒤집기. 트랙에 적어 두었다.
+// 2026-09-10 — 사용자가 해제한 게이트는 구조화 알림, pull·보안 위험은 deny JSON이라는 현행 정책을 잰다.
+// ⚠ 파일명이 `*.check.js` 라 `node --test tests/*.test.js` 에 안 잡힌다. 가드 수정 때 직접 실행한다.
 // (파일명이 *.test.js가 아닌 이유: node --test tests/ 가 이 파일을 실행하면
 //  가드가 다시 node --test tests/ 를 부르는 재귀가 생긴다. 이 점검은 수동/훅 수정 시 실행.)
 'use strict';
@@ -54,14 +47,32 @@ function feed(command, cwd) {
      * (문제가 이미 있는 호출은 게이트가 테스트 앞에서 끊어 초 단위다 — 느린 건 깨끗할 때뿐이다.) */
     timeout: 600000,
   });
-  return { code: r.status, out: (r.stdout || '').trim() };
+  return { code: r.status, out: (r.stdout || '').trim(), err: (r.stderr || '').trim() };
 }
 const PUSH = '"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd" push --force';
+function 다른워크트리() {
+  try {
+    return require('child_process')
+      .execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: 메인, encoding: 'utf8' })
+      .split(String.fromCharCode(10)).filter((l) => l.startsWith('worktree '))
+      .map((l) => l.slice('worktree '.length).trim())
+      .find((d) => !같은곳(d, 메인)) || '';
+  } catch (_) { return ''; }
+}
 function denyReason(r) {
   try {
     const j = JSON.parse(r.out);
     return (j.hookSpecificOutput && j.hookSpecificOutput.permissionDecision === 'deny')
       ? String(j.hookSpecificOutput.permissionDecisionReason || '') : '';
+  } catch (_) { return ''; }
+}
+function warningReason(r) {
+  try {
+    const j = JSON.parse(r.out);
+    const hso = j.hookSpecificOutput || {};
+    const 글 = String(hso.additionalContext || '');
+    return r.code === 0 && r.err === '' && !hso.permissionDecision
+      && j.systemMessage === 글 && /\[clasp-guard\]/.test(글) ? 글 : '';
   } catch (_) { return ''; }
 }
 
@@ -90,22 +101,30 @@ check('무관 명령 통과', r.code === 0 && r.out === '');
 r = feed('"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd" list-deployments');
 check('list-deployments 통과', r.code === 0 && r.out === '');
 
+// 2-A) 사용자가 해제하지 않은 덮어쓰기 위험은 계속 deny JSON이다.
+r = feed('"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd" pull');
+check('clasp pull 덮어쓰기는 계속 차단', r.code === 0 && /덮어쓰기/.test(denyReason(r)));
+
 // 3) 의식적 우회 → 무개입
 r = feed('CLASP_GUARD_BYPASS=1 "/c/Users/q1212/AppData/Roaming/npm/clasp.cmd" push --force');
 check('BYPASS 우회 통과', r.code === 0 && r.out === '');
 
-/* 4) clasp push → 게이트 가동. 얼굴이 **셋**이다(저장소 상태에 따라 갈리므로 형식만 고정 검증한다):
+/* 4) clasp push → 게이트 가동. 얼굴이 **넷**이다(저장소 상태에 따라 갈리므로 형식만 고정 검증한다):
  *      (a) 무출력            — 불변식 전부 통과
- *      (b) deny JSON         — 차단
+ *      (b) deny JSON         — 손실·보안 위험 차단
  *      (c) 통과 + 안내 JSON  — 불변식은 통과했고 «배포 뒤 실행할 API» 안내를 붙였다(실행층점검 · 08-04 `ffc220053`)
+ *      (d) 구조화 알림 JSON  — 사람(systemMessage)과 모델(additionalContext)에 알리고 막지 않는다
  *
  *  🔴 2026-09-01 수리 — 옛 판은 (c) 를 몰랐다. 그래서 (c) 가 나오면 (b) 로 재단해 **거짓 적색**을 냈고,
  *     그 직후 `permissionDecisionReason.split()` 을 무조건 불러 **테스트 프로세스가 그 자리에서 죽었다.**
  *     피해는 그 한 줄이 아니다 — 뒤따르는 검사 **넷(5·6·7·8)이 통째로 안 돌았다.**
  *     즉 안전 4종의 하나를 재는 자가 절반 넘게 침묵한 채 「적색 1건」 얼굴을 하고 있었다.
  *     ⇒ 그래서 여기서는 **어떤 얼굴이든 뒤 검사로 넘어간다**(죽지 않는다). */
-r = feed('"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd" push --force');
-if (r.out === '') {
+r = feed('"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd" push --force', 이체크아웃);
+if (warningReason(r)) {
+  check('push 게이트: 사람·모델 구조화 알림 형식', r.code === 0 && r.err === '');
+  console.log('  (현재 저장소 상태 기준 알림 첫 줄) ' + warningReason(r).split(String.fromCharCode(10))[0]);
+} else if (r.out === '' && r.err === '') {
   check('push 게이트: 불변식 전부 통과(무개입)', r.code === 0);
 } else {
   let j = null;
@@ -124,29 +143,22 @@ if (r.out === '') {
   }
 }
 
-// 5) 워크트리에서의 push → 워크트리 사유로 차단(08-01: 메인 상태를 보고 엉뚱한 진단을 내던 결함)
-//    라이브 타깃이 하나라 미병합 브랜치를 밀면 master의 최신 코드가 라이브에서 사라진다 → 허용이 아니라 정확한 차단.
+// 5) 워크트리에서의 push → 워크트리 위험을 구조화 JSON으로 알리고 통과한다(09-09 사용자 정책).
 {
   // 워크트리는 **메인** 아래에만 생긴다 — 이 체크아웃에서 찾으면 워크트리 세션에서 늘 0건이다.
   /* 🔴 자리를 «폴더 모양»으로 찾지 않는다(08-26 실측·수리). 옛 판은 `.claude/worktrees/<한 마디>`
    *   밑에서 `.git` 을 찾았는데, 하네스가 허용하는 **두 마디 이름**(`엔진/두마디점검`)은 한 칸 더
    *   깊어서 **못 찾고 skip** 했다 — 그리고 그 skip 문구가 「정상」이라 미실행이 통과처럼 보였다.
    * 🔑 목록은 git 이 이미 안다 — `git worktree list --porcelain` 이 깊이와 무관하게 답한다. */
-  let wt = '';
-  try {
-    const 줄들 = require('child_process')
-      .execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: 메인, encoding: 'utf8' })
-      .split(String.fromCharCode(10)).filter((l) => l.startsWith('worktree '))
-      .map((l) => l.slice('worktree '.length).trim());
-    wt = 줄들.find((d) => path.resolve(d) !== path.resolve(메인)) || '';
-  } catch (_) {}
+  const wt = 다른워크트리();
   if (!wt) {
     /* ⚠ 통과가 아니라 **미실행**이다(F207) — 문구가 그렇게 말해야 다음 사람이 초록으로 안 읽는다. */
-    console.log('skip 워크트리 차단 — **이 검사는 안 돌았다**(작업 트리가 메인 하나뿐이라 잴 자리가 없다 · 통과 아님)');
+    console.log('skip 워크트리 알림 — **이 검사는 안 돌았다**(작업 트리가 메인 하나뿐이라 잴 자리가 없다 · 통과 아님)');
   } else {
-    const reason = denyReason(feed(PUSH, wt));
-    check('워크트리 push 차단', /워크트리에서는 clasp push/.test(reason));
-    check('워크트리 차단 사유에 복구 절차 포함', /메인 저장소.*\/deploy/s.test(reason));
+    const result = feed(PUSH, wt);
+    const reason = warningReason(result);
+    check('워크트리 push 위험 알림', result.code === 0 && /워크트리에서의 배포/.test(reason));
+    check('워크트리 알림에 통합·메인 배포 절차 포함', /master에 반영.*메인 저장소/s.test(reason));
   }
 }
 
@@ -154,9 +166,9 @@ if (r.out === '') {
 {
   const main = 메인;                     // ← 이 한 줄이 F217 둘째 자리다(옛 판: path.resolve(__dirname,'..'))
   const r = feed(PUSH, main);
-  const reason = denyReason(r);
-  check('메인 cwd는 워크트리로 오판하지 않음', !/워크트리에서는 clasp push/.test(reason));
-  check('메인 cwd 응답 형식 유지', r.code === 0 && (r.out === '' || reason !== '' || 통과안내(r)));
+  const reason = denyReason(r) || warningReason(r);
+  check('메인 cwd는 워크트리로 오판하지 않음', !/워크트리에서의 배포/.test(reason));
+  check('메인 cwd 응답 형식 유지', r.code === 0 && ((r.out === '' && r.err === '') || reason !== '' || 통과안내(r)));
 }
 
 /* 7) [2026-08-01 감사] **배포되는 파일 전부**가 미커밋 검사에 걸리는가.
@@ -195,9 +207,10 @@ if (워크트리인가) {
     const orig = fs.readFileSync(p);
     try {
       fs.appendFileSync(p, f.endsWith('.json') ? ' ' : '\n// clasp-guard 회귀 임시 한 줄\n');
-      const reason = denyReason(feed(PUSH, ROOT));
+      const result = feed(PUSH, ROOT);
+      const reason = warningReason(result);
       const esc = f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      check('미커밋 배포 파일 차단: ' + f, new RegExp('미커밋 배포 파일\\([^)]*' + esc).test(reason));
+      check('미커밋 배포 파일 알림: ' + f, result.code === 0 && new RegExp('미커밋 배포 파일\\([^)]*' + esc).test(reason));
     } finally {
       fs.writeFileSync(p, orig); // 실패해도 반드시 원복 — 저장소를 더럽힌 채 끝내지 않는다
     }
@@ -210,7 +223,8 @@ if (워크트리인가) {
   const nonTarget = path.join(ROOT, 'tests', probeName);
   try {
     fs.writeFileSync(nonTarget, '// 임시\n');
-    const reason = denyReason(feed(PUSH, ROOT));
+    const result = feed(PUSH, ROOT);
+    const reason = denyReason(result) || warningReason(result);
     check('배포 대상 아닌 파일은 미커밋 사유에 오르지 않는다', !reason.includes(probeName));
   } finally {
     try { fs.unlinkSync(nonTarget); } catch (_) {}
@@ -222,16 +236,24 @@ if (워크트리인가) {
  *    사람은 BYPASS를 남발하는 법을 배우고, 그때 가드는 실질적으로 죽는다. */
 {
   const heredoc = "git commit -F - <<'EOF'\nfix: 순서 설명\n\n손 clasp push 단독 금지 — clasp push 는 커밋 뒤에.\nEOF";
-  check('커밋 메시지 heredoc 안의 "clasp push"는 발동시키지 않는다', feed(heredoc, path.resolve(__dirname, '..')).out === '');
+  const heredoc결과 = feed(heredoc, path.resolve(__dirname, '..'));
+  check('커밋 메시지 heredoc 안의 "clasp push"는 발동시키지 않는다', heredoc결과.out === '' && heredoc결과.err === '');
 
   const dashM = 'git commit -m "docs: clasp push 순서를 지침에 명문화"';
-  check('-m 메시지 안의 "clasp push"는 발동시키지 않는다', feed(dashM, path.resolve(__dirname, '..')).out === '');
+  const dashM결과 = feed(dashM, path.resolve(__dirname, '..'));
+  check('-m 메시지 안의 "clasp push"는 발동시키지 않는다', dashM결과.out === '' && dashM결과.err === '');
 
   // 반대로, 진짜 실행되는 clasp push는 heredoc이 섞여 있어도 잡아야 한다(오탐을 고치다 놓치면 더 나쁘다)
   const real = "git commit -F - <<'EOF'\n메시지\nEOF\n\"/c/Users/q1212/AppData/Roaming/npm/clasp.cmd\" push --force";
-  const r8 = feed(real, path.resolve(__dirname, '..'));
-  check('heredoc 뒤에 실제 clasp push가 오면 게이트가 가동된다', r8.out !== '' || r8.code === 0);
-  check('  └ 가동 시 형식은 deny JSON 또는 통과+안내 JSON', r8.out === '' ? true : (/\[clasp-guard\]/.test(denyReason(r8)) || 통과안내(r8)));
+  const wt = 다른워크트리();
+  if (!wt) {
+    console.log('skip heredoc 뒤 실제 push 탐지 — **이 검사는 안 돌았다**(결정적인 알림을 낼 워크트리가 없다 · 통과 아님)');
+  } else {
+    const r8 = feed(real, wt);
+    check('heredoc 뒤에 실제 clasp push가 오면 게이트가 가동된다',
+      r8.code === 0 && (/\[clasp-guard\]/.test(denyReason(r8)) || !!warningReason(r8) || 통과안내(r8)));
+    check('  └ 무출력은 가동 증거가 아니다', r8.out !== '' && r8.err === '');
+  }
 }
 
 process.exit(fails ? 1 : 0);

@@ -548,10 +548,18 @@ test('explicit file comparison rejects traversal, secrets, ignored files, direct
   fs.truncateSync(path.join(secured, 'docs/large.md'), 64 * 1024 * 1024 + 1);
   const files = ['../outside-files/external.md', '.env', 'credentials.json', 'docs/ignored.md',
     'linked/external.md', path.join(outside, 'external.md'), 'fixture.txt:stream', '.git/index', 'docs/large.md'];
-  const report = await collect({ cwd: secured, repo: secured, files });
+  const calls = [];
+  const report = await collect({ cwd: secured, repo: secured, files, run(command, args, options, callback) {
+    calls.push(args);
+    require('node:child_process').execFile(command, args, options, callback);
+  } });
   assert.equal(report.status, 'observed');
   assert.deepEqual(report.files.slice(0, -1).map(file => file.current.state), files.slice(0, -1).map(() => 'refused'));
   assert.equal(report.files.at(-1).current.state, 'incomplete');
+  assert.equal(calls.some(args => args.includes('check-ignore') && args.at(-1) === 'linked/external.md'), false,
+    'unsafe linked paths must be refused before Git is allowed to traverse them');
+  assert.equal(calls.some(args => args.includes('check-ignore') && args.at(-1) === 'docs/ignored.md'), true,
+    'safe regular paths still need the Git ignore check after the symlink preflight');
   assert.ok(!JSON.stringify(report).includes(SECRET));
   assert.ok(!JSON.stringify(report).includes('external.md'));
   assert.ok(report.files.every(file => !file.current.sha256));
