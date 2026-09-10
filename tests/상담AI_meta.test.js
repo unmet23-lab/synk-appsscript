@@ -104,7 +104,7 @@ test('Instagram 장기 토큰은 만료 14일 전 자동 갱신하고 새 만료
   });
   const { ctx, 요청, props } = 엔진로드({
     상담AI_IG토큰만료시각: '0',
-    상담AI_IG토큰최초확인시각: String(Date.now() - 25 * 3600 * 1000),
+    상담AI_IG토큰발급시각: String(Date.now() - 25 * 3600 * 1000),
   }, 응답);
   const 결과 = ctx.상담AI_IG토큰수명점검_();
   assert.equal(결과.ok, true);
@@ -114,14 +114,29 @@ test('Instagram 장기 토큰은 만료 14일 전 자동 갱신하고 새 만료
 });
 
 test('새 Instagram 토큰은 최초 24시간 동안 갱신하지 않는다', () => {
-  const { ctx, 요청, props } = 엔진로드({ 상담AI_IG토큰만료시각: '0' });
+  const { ctx, 요청 } = 엔진로드({
+    상담AI_IG토큰만료시각: '0',
+    상담AI_IG토큰발급시각: String(Date.now()),
+  });
   const 처음 = ctx.상담AI_IG토큰수명점검_();
   assert.equal(처음.ok, true);
   assert.equal(처음.skip, 'fresh-token');
-  assert.ok(Number(props.상담AI_IG토큰최초확인시각) > 0);
   assert.equal(요청.length, 0);
   assert.equal(ctx.상담AI_IG토큰수명점검_().skip, 'fresh-token');
   assert.equal(요청.length, 0);
+});
+
+test('발급시각을 모르는 기존 Instagram 토큰은 즉시 갱신한다', () => {
+  const 응답 = () => ({
+    getResponseCode: () => 200,
+    getContentText: () => JSON.stringify({ access_token: 'renewed-legacy-token', expires_in: 5184000 }),
+  });
+  const { ctx, 요청, props } = 엔진로드({ 상담AI_IG토큰만료시각: '0' }, 응답);
+  const 결과 = ctx.상담AI_IG토큰수명점검_();
+  assert.equal(결과.ok, true);
+  assert.equal(요청.length, 1);
+  assert.equal(props.상담AI_IG토큰, 'renewed-legacy-token');
+  assert.ok(Number(props.상담AI_IG토큰만료시각) > Date.now());
 });
 
 test('Instagram 토큰 만료가 멀면 갱신 API를 호출하지 않는다', () => {
@@ -137,7 +152,7 @@ test('Instagram 토큰 갱신 실패는 기존 토큰을 보존하고 값 없이
   const 실패 = () => ({ getResponseCode: () => 400, getContentText: () => '{"error":"invalid"}' });
   const { ctx, 메일, props } = 엔진로드({
     상담AI_IG토큰만료시각: '0',
-    상담AI_IG토큰최초확인시각: String(Date.now() - 25 * 3600 * 1000),
+    상담AI_IG토큰발급시각: String(Date.now() - 25 * 3600 * 1000),
   }, 실패);
   assert.equal(ctx.상담AI_IG토큰수명점검_().ok, false);
   assert.equal(props.상담AI_IG토큰, 'ig-token');
@@ -149,7 +164,7 @@ test('Instagram 토큰 갱신 예외문에 토큰이 섞여도 메일과 반환�
   const 예외 = () => { throw new Error('request failed: https://graph.instagram.com/?access_token=ig-token'); };
   const { ctx, 메일, props } = 엔진로드({
     상담AI_IG토큰만료시각: '0',
-    상담AI_IG토큰최초확인시각: String(Date.now() - 25 * 3600 * 1000),
+    상담AI_IG토큰발급시각: String(Date.now() - 25 * 3600 * 1000),
   }, 예외);
   const 결과 = ctx.상담AI_IG토큰수명점검_();
   assert.equal(결과.ok, false);

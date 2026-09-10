@@ -465,7 +465,8 @@ function 상담_팔로우확인_(igsid) {
 
 /* Instagram Login 장기 토큰은 유효기간이 있으므로 아침 배치에서 수명을 관리한다.
  * - 만료시각을 알면 14일 전까지 네트워크 호출 0
- * - 처음 넣은 토큰처럼 만료시각을 모르면 최초 확인 시각을 적고 24시간 뒤부터 갱신한다
+ * - 방금 발급한 시각을 명시한 토큰만 Meta 제한에 맞춰 최초 24시간 갱신을 미룬다
+ * - 발급시각을 모르는 기존 토큰은 만료 직전일 수 있으므로 즉시 갱신을 시도한다
  * - 실패해도 기존 토큰을 절대 덮지 않고, 토큰 본문 없이 주 1회만 운영자에게 알린다 */
 function 상담AI_IG토큰수명점검_() {
   const props = PropertiesService.getScriptProperties();
@@ -477,12 +478,8 @@ function 상담AI_IG토큰수명점검_() {
   if (만료 && 만료 - now > 상담AI_IG토큰갱신여유_MS) return { ok: true, skip: 'not-due' };
 
   if (!만료) {
-    const 최초확인 = Number(props.getProperty('상담AI_IG토큰최초확인시각')) || 0;
-    if (!최초확인) {
-      props.setProperty('상담AI_IG토큰최초확인시각', String(now));
-      return { ok: true, skip: 'fresh-token' };
-    }
-    if (now - 최초확인 < 24 * 3600 * 1000) return { ok: true, skip: 'fresh-token' };
+    const 발급시각 = Number(props.getProperty('상담AI_IG토큰발급시각')) || 0;
+    if (발급시각 && now - 발급시각 < 24 * 3600 * 1000) return { ok: true, skip: 'fresh-token' };
   }
 
   const 오늘 = new Date(now).toISOString().slice(0, 10);
@@ -503,6 +500,7 @@ function 상담AI_IG토큰수명점검_() {
       props.setProperties({
         상담AI_IG토큰: 새토큰,
         상담AI_IG토큰만료시각: String(now + 수명초 * 1000),
+        상담AI_IG토큰발급시각: String(now),
         상담AI_IG토큰갱신성공일: 오늘
       }, false);
       props.deleteProperty('상담AI_IG토큰갱신경고시각');
@@ -913,6 +911,17 @@ function 점검_답결함_(답) {
    * 본 자리는 이미 「한글이 모자라다」로 판정했고, 이 꼬리는 «무엇으로 답했나»의 힌트일 뿐이다. */
   return '한국어로 물었는데 답의 한글이 ' + Math.round(몫 * 100) + '%뿐이다 — 【말투】 규칙 위반'
     + (/[Ѐ-ӿ]/.test(답s) ? '(키릴 문자로 답했다)' : '');
+}
+
+/* 새 Instagram 장기 토큰을 Script Properties에 저장한 직후 한 번 실행한다.
+ * 토큰값은 인수·로그로 받지 않고 이미 저장된 비밀 속성의 존재만 확인한다. */
+function 상담AI_IG토큰발급시각기록() {
+  const props = PropertiesService.getScriptProperties();
+  if (!props.getProperty('상담AI_IG토큰')) throw new Error('상담AI_IG토큰을 먼저 저장해 주세요.');
+  props.setProperty('상담AI_IG토큰발급시각', String(Date.now()));
+  props.deleteProperty('상담AI_IG토큰만료시각');
+  props.deleteProperty('상담AI_IG토큰갱신시도일');
+  return { ok: true };
 }
 
 function 상담AI_연결경고_(props) {
