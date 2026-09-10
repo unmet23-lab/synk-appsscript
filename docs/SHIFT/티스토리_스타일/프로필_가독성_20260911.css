@@ -1,0 +1,19 @@
+/* SYNK profile readability · 2026-09-11 · append to Odyssey style.css */
+.area-aside .box-profile-invert .tit-g {
+  color: #FBF7F0;
+  font-size: 16px;
+  line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.area-aside .box-profile-invert .text-profile {
+  color: #FBF7F0;
+  width: calc(100% - 48px);
+  max-width: 260px;
+  line-height: 1.7;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
