@@ -75,6 +75,9 @@ test('코드 예시 안의 제목을 건너뛰고 뒤쪽 검수 규칙까지 전
 test('현재 저장소 규칙이 실제 Gemini 프롬프트에 들어간다', () => {
   const 규칙 = 검수.검수규칙읽기();
   const p = 검수.gemini프롬프트({ 종류: 'commit', 값: 'abc', 파일들: ['a.js'] }, 'diff', 규칙);
-  assert.match(규칙, /값비싼 변경/);
+  const 원문 = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'AGENTS.md'), 'utf8')
+    .replace(/\r\n/g, '\n');
+  assert.match(규칙, /^## .*Code Review Rules/m);
+  assert.ok(원문.includes(규칙), '현재 원문에 없는 과거 검수 규칙을 전달했다');
   assert.ok(p.includes(규칙));
 });
