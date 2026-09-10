@@ -242,7 +242,9 @@ function MJ_send_(psid, text) {
     const payload = { recipient: { id: String(psid) }, message: { text: String(text).slice(0, 1900) } };
     if (MJ_MSG_TAG) { payload.messaging_type = 'MESSAGE_TAG'; payload.tag = MJ_MSG_TAG; }
     else payload.messaging_type = 'RESPONSE';
-    const res = UrlFetchApp.fetch('https://graph.facebook.com/v21.0/me/messages?access_token=' + encodeURIComponent(tok), {
+    // 상담AI와 같은 Graph 버전을 쓴다. 반쪽 배포에서도 죽지 않도록 현재값을 폴백으로 둔다.
+    const apiVersion = typeof 상담AI_META_API_VERSION === 'undefined' ? 'v26.0' : 상담AI_META_API_VERSION;
+    const res = UrlFetchApp.fetch('https://graph.facebook.com/' + apiVersion + '/me/messages?access_token=' + encodeURIComponent(tok), {
       method: 'post', contentType: 'application/json', payload: JSON.stringify(payload), muteHttpExceptions: true
     });
     if (res.getResponseCode() !== 200) return { ok: false, err: res.getResponseCode() + ':' + String(res.getContentText()).slice(0, 120) };

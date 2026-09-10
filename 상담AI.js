@@ -20,8 +20,8 @@
  *   상담AI_페이지ID     … (선택) 우리 페이지 웹훅만 받도록 거르는 잠금
  * 선택
  *   상담AI_토큰        … 매니챗·자체 폼에서 호출할 때만 필요(Meta 직결에는 불필요)
- *   상담AI_IG토큰      … [v9.185] 인스타 DM 발송 토큰. 없으면 페이지토큰을 그대로 쓴다(연결 계정이면 보통 동일).
- *                        ⚠ 권한은 별개다 — 인스타는 instagram_manage_messages 검수 승인이 있어야 실사용자에게 나간다
+ *   상담AI_IG토큰      … 인스타 DM 전용 토큰. 없으면 인스타 발송을 닫는다(fail-closed).
+ *                        실사용자 답장에는 instagram_business_manage_messages 권한이 필요하다.
  *   상담AI_IG계정ID    … [v9.185] (선택) 우리 인스타 비즈니스 계정 웹훅만 받도록 거르는 잠금(페이지ID와 별개 값)
  *   상담AI_OFF=1       … 즉시 정지(킬 스위치). 봇은 인계문만 돌려준다
  *   상담AI_일일상한    … 하루 최대 호출 수(기본 300)
@@ -41,6 +41,7 @@ const 상담AI_기본상한 = 300;             // 하루 호출 상한 기본값
  *   클릭 한 번이 되면서 생겼다: **접근성을 올렸으면 게이트도 같이 올린다**).
  *   6 = 점검 1회가 질문 2건이므로 하루 세 번 눌러볼 수 있는 크기. 늘리려면 스크립트 속성 `상담AI_진단상한`. */
 const 상담AI_진단기본상한 = 6;
+const 상담AI_META_API_VERSION = 'v26.0'; // 2026-09 Meta Graph/Instagram API 실조회 기준
 /* ⚠ 칸은 **끝에만** 늘린다 — 읽는 쪽이 전부 열 번호로 집는다(`r[8]`·`setValue(draftRow, 9)`).
  *   중간에 끼우면 발송 표식이 엉뚱한 칸에 찍히고, 그 증상은 「조용함」이다. */
 /* [v9.259 · Ⅰ-④] 헤더 정본은 골격 파일로 이관 — `상담로그_HEADERS`(엔진_셋업확장.js). 골격 편입으로
@@ -405,19 +406,22 @@ function 상담_창열림_(마지막수신, 지금) {
   return ((지금 || new Date()).getTime() - 마지막수신.getTime()) < 24 * 3600 * 1000;
 }
 
-/* 메신저 답장 전송 (Meta Send API — 페북·인스타 공용 엔드포인트).
+/* 메신저 답장 전송 (Meta Send API — 페북·인스타별 호스트와 토큰을 분리한다).
  * 24시간 창: 상대가 마지막으로 보낸 지 24시간 안에만 자유 전송 가능하다. 봇은 방금 받은 말에 답하는 것이라 항상 창 안이다.
  * (우리가 먼저 거는 홍보 발송은 이 창 밖이라 별도 승인 태그가 필요 — 이 봇의 범위 아님)
  * [v9.185] opts = { 플랫폼: 'fb'|'ig', 퀵리플라이: [{title,payload}], 카드들: [제네릭 템플릿 element] }.
- *   인스타는 토큰이 갈릴 수 있어(상담AI_IG토큰) 플랫폼으로 고른다 — 권한(instagram_manage_messages)은 Meta 검수 사안. */
+ *   인스타는 graph.instagram.com + 전용 토큰만 쓴다. 페이지 토큰으로의 묵시적 폴백은 권한 혼선을 숨기므로 금지한다. */
 function 상담_전송_(psid, text, opts) {
   opts = opts || {};
   const props = PropertiesService.getScriptProperties();
-  const tok = (opts.플랫폼 === 'ig' ? props.getProperty('상담AI_IG토큰') : '') || props.getProperty('상담AI_페이지토큰');
-  if (!tok) { 상담_기록_(psid, 'system', '전송 불가 — 상담AI_페이지토큰 미설정', true, null, '', opts.플랫폼); return false; }
+  const 인스타 = opts.플랫폼 === 'ig';
+  const 토큰속성 = 인스타 ? '상담AI_IG토큰' : '상담AI_페이지토큰';
+  const tok = props.getProperty(토큰속성);
+  if (!tok) { 상담_기록_(psid, 'system', '전송 불가 — ' + 토큰속성 + ' 미설정', true, null, '', opts.플랫폼); return false; }
   if (!psid || (!text && !(opts.카드들 && opts.카드들.length))) return false;
   try {
-    const res = UrlFetchApp.fetch('https://graph.facebook.com/v21.0/me/messages?access_token=' + encodeURIComponent(tok), {
+    const host = 인스타 ? 'https://graph.instagram.com/' : 'https://graph.facebook.com/';
+    const res = UrlFetchApp.fetch(host + 상담AI_META_API_VERSION + '/me/messages?access_token=' + encodeURIComponent(tok), {
       method: 'post', contentType: 'application/json',
       payload: JSON.stringify({
         recipient: { id: String(psid) }, messaging_type: 'RESPONSE',
@@ -444,9 +448,9 @@ function 상담_전송_(psid, text, opts) {
 function 상담_팔로우확인_(igsid) {
   try {
     const props = PropertiesService.getScriptProperties();
-    const tok = props.getProperty('상담AI_IG토큰') || props.getProperty('상담AI_페이지토큰');
+    const tok = props.getProperty('상담AI_IG토큰');
     if (!tok || !igsid) return null;
-    const res = UrlFetchApp.fetch('https://graph.facebook.com/v21.0/' + encodeURIComponent(String(igsid)) +
+    const res = UrlFetchApp.fetch('https://graph.instagram.com/' + 상담AI_META_API_VERSION + '/' + encodeURIComponent(String(igsid)) +
       '?fields=is_user_follow_business&access_token=' + encodeURIComponent(tok), { muteHttpExceptions: true });
     if (res.getResponseCode() !== 200) return null;
     const j = JSON.parse(res.getContentText());
@@ -858,9 +862,9 @@ function 상담AI_점검() {
   Logger.log('■ 준비 상태: ' + (준비.length ? '❌ ' + 준비.join(' / ') : '✅ 정상'));
   if (경고.length) Logger.log('■ 경고: ⚠ ' + 경고.join('\n         ⚠ '));
   Logger.log('■ 모델: ' + 상담AI_모델_() + ' · 사고: ' + (상담AI_사고 ? 'ON' : 'OFF') + ' · 일일상한: ' + (props.getProperty('상담AI_일일상한') || 상담AI_기본상한));
-  Logger.log('■ 인스타: 발송 토큰 ' + (props.getProperty('상담AI_IG토큰') ? 'IG 전용' : '페이지토큰 공용') + // [v9.185]
+  Logger.log('■ 인스타: 발송 토큰 ' + (props.getProperty('상담AI_IG토큰') ? 'IG 전용' : '없음(fail-closed)') +
     ' · 계정ID 잠금 ' + (props.getProperty('상담AI_IG계정ID') ? 'ON' : '없음') +
-    ' — 실사용자 답장은 instagram_manage_messages 검수 승인 뒤부터');
+    ' — 실사용자 답장은 instagram_business_manage_messages 고급 액세스 승인 뒤부터');
   if (props.getProperty('상담AI_페이지ID') && !props.getProperty('상담AI_IG계정ID')) {
     Logger.log('   ⚠ 페이지ID는 잠갔는데 IG계정ID가 없습니다 — 인스타 웹훅은 **차단**됩니다(무잠금 통과 대신 fail-closed).\n' +
       '     인스타를 쓰시려면 상담AI_IG계정ID 를 채우세요. 인스타를 안 쓰시면 그대로 두셔도 됩니다.');
