@@ -279,3 +279,14 @@ test('배치 날짜와 완주 도장은 스크립트 개인 TZ가 아니라 기�
   const original = h.ctx.Utilities.formatDate; h.ctx.Utilities.formatDate = (d, tz, pattern) => { zones.push(tz); return original(d, tz, pattern); };
   h.run([h.effect('night')], false, 'nightJobs'); assert.ok(zones.length >= 2); assert.ok(zones.every(z => z === 'Asia/Ulaanbaatar'));
 });
+test('보호 때문에 보류한 헤더는 값을 보존하면서 배치를 complete 대신 partial로 남긴다', () => {
+  const h = harness(), s = sheet([['A', 'X', 'C'], ['a', 'private synthetic', 'c']]); s.getMaxColumns = () => 3;
+  const { ss, state } = installSheets(h, { one: s }); h.ctx.sheetSkeleton_ = () => [['one', ['A', 'B', 'C']]];
+  const collect = fs.readFileSync(path.join(__dirname, '..', '엔진_수집.js'), 'utf8');
+  vm.runInContext(['열밀기켜졌나_', '열에값있나_', '시트칸정본맞추기_', '시트칸맞추기한판_', '시트칸맞추기기록_'].map(n => fn(source, n)).join('\n') + '\n' + fn(collect, '헤더보정_'), h.ctx);
+  const result = h.run([{ name: '시트칸맞추기', run: () => h.ctx.시트칸맞추기한판_(ss) }, h.effect('independent')]);
+  assert.equal(result.status, 'partial'); assert.deepEqual(result.failures, ['시트칸맞추기']);
+  assert.equal(JSON.parse(state.get('시트칸맞추기_마지막')).보류표.length, 1);
+  assert.deepEqual(s.data, [['A', 'X', 'C'], ['a', 'private synthetic', 'c']]);
+  assert.ok(!JSON.stringify(result).includes('private synthetic')); assert.deepEqual(h.effects, ['independent']);
+});
