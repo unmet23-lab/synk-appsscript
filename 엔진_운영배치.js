@@ -446,6 +446,7 @@ function syncProfiles() {
         '※ 상태가 바뀌기 전까지 이 알림은 다시 오지 않습니다.');
       setState(stHold, '동기화보류_상태', holdSig);
     }
+    if (typeof 배치분할중_ === 'function' && 배치분할중_('morningJobs')) throw new Error('상담 동기화 보류 — 후속 계산·명부 전송 중단');
     return;
   }
   // [v9.151] 소급 불가 수리 ②·④ (판정 정본 = memory masterplan-v3-2026-08-04)
@@ -611,11 +612,15 @@ function syncProfiles() {
    * 🔴 try 는 그대로 둔다 — 이 함수는 네트워크를 탄다. Supabase 가 느린 아침에 여기서 던지면
    *   위 catch 가 「상담 동기화 실패」로 잘못 보고하고 관리자 메일이 나간다(원인은 명부인데).
    *   순서가 바뀌어도 «명부 실패가 다른 것을 끌고 내려가지 않는다»는 값은 이 try 가 계속 진다. */
-  calcAll();
-  try { 명부스윕_(); } catch (eR) { Logger.log('명부스윕 스킵: ' + eR); }
+  // 아침 배치는 둘을 별도 단계로 실행한다. 다른 기존 호출은 동기화→계산→명부 순서를 유지한다.
+  if (!(typeof 배치분할중_ === 'function' && 배치분할중_('morningJobs'))) {
+    calcAll();
+    try { 명부스윕_(); } catch (eR) { Logger.log('명부스윕 스킵: ' + eR); }
+  }
   } catch (e) { // [v9.19] 조용한 실패 방지 — 연결 끊기면 매일 아침 알림 (profiles 스테일 조기 감지)
     Logger.log('syncProfiles 스킵(상담시트 연결 확인): ' + e);
     adminMail('[SYNK] ⚠️ 상담 동기화 실패', 'syncProfiles가 상담시트를 읽지 못했습니다: ' + e + '\nCONSULT_SHEET_ID·권한·탭명(상담데이터입력)을 확인하세요. profiles는 마지막 정상 상태로 유지됩니다.');
+    if (typeof 배치분할중_ === 'function' && 배치분할중_('morningJobs')) throw new Error('상담 동기화 실패');
   }
 }
 
