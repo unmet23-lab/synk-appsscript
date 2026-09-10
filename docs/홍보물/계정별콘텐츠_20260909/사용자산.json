@@ -26,11 +26,11 @@
     "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341",
+    "sourceSha256": "76de8849d9f6c1a824d959456a6d534a326c0984012d22b68b08ca390fc65ad3",
     "output": "assets/labpage.webp",
-    "outputSha256": "01c0312c6aea5ef3997c3b4fd92b5f1a3d079d8b23e16f37a4f1aae463ab9b3d",
+    "outputSha256": "a457a0e28632ca7d408bddd05e76864f20b09bcf5a95c62818a4c0e5326d70ec",
     "transform": "Approved complete logo or current introduction snapshot; existing display dimensions retained.",
-    "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
+    "note": "확정 비전과 승인 로고를 담은 현재 소개서의 완성 지면"
   },
   {
     "key": "book",
@@ -158,22 +158,22 @@
     "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "49f49133e87c796e112f8d198c48ef76a4eb2d57307d938a5d28846631a8c9d9",
+    "sourceSha256": "434a714e99bcb492791bfda8f514fa283c3153909f1300352505d1fb28ae18be",
     "output": "assets/shiftpage.webp",
-    "outputSha256": "711228bbf7bed045b4c4cd89c2a59caeeeb84d79fbd17c7896f41707318d57f8",
+    "outputSha256": "132850c035ebfdb77737b272b5c451b186976cae5cc706bd443566445f3a5a13",
     "transform": "Approved complete logo or current introduction snapshot; existing display dimensions retained.",
-    "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
+    "note": "확정 비전과 승인 로고를 담은 현재 소개서의 완성 지면"
   },
   {
     "key": "pulsepage",
     "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "0afc5da7ef98e220c46ea6dc6d5c7a3043d9d0b5672b8754d3012aed28224dfc",
+    "sourceSha256": "e630acdd3dd6dc02deda2333e7e0cdb2183400e0eced0805385055a13c5d905c",
     "output": "assets/pulsepage-r2.webp",
-    "outputSha256": "5c4e9c762a6f502943f34fb10ac5036074a170c8a2a156054d083973dbaf99d8",
+    "outputSha256": "588531a8d552b1bb1835962ab5e9026c736a0688fe6038b19fd8b1df32d39d6c",
     "transform": "Approved complete logo or current introduction snapshot; existing display dimensions retained.",
-    "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
+    "note": "확정 비전과 승인 로고를 담은 현재 소개서의 완성 지면"
   },
   {
     "key": "smile",
