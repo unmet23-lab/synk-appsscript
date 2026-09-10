@@ -30,8 +30,8 @@ const 소개서 = [
 
 const 판 = [];
 for (const s of 소개서) {
-  const md = fs.readFileSync(뿌리 + s.길, 'utf8');
-  const { 본문, 목차 } = 바꾸기(md);
+  const md = require('./lib/비전정본.js').withVisionBlock(fs.readFileSync(뿌리 + s.길, 'utf8'), s.키 === 'corp' ? 'synk' : s.키);
+  const { 본문, 목차 } = 바꾸기(md.replace(/^<!-- synk-vision:(?:start|end) -->\r?\n?/gm, ''));
   판.push({ ...s, 본문, 목차, 글자: md.replace(/\s/g, '').length });
 }
 const esc = (x) => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -154,7 +154,7 @@ const 탭줄 = 판.map((p, i) =>
 const 머리 = [
 '<header class="머리">',
 '  <div class="머리안">',
-'    <div class="표찰"><b>SYNK</b><span>소개서 세 벌 · 2026-09-03 판</span></div>',
+'    <div class="표찰"><b>SYNK</b><span>소개서 세 벌 · 2026-09-11 비전 반영</span></div>',
 '    <div class="탭들" role="tablist">',
 탭줄,
 '    </div>',
@@ -175,7 +175,7 @@ p.목차.map((t) => '    <a href="#' + t.id + '"' + (t.급 >= 2 ? ' class="깊"'
 
 const 꼬리 = [
 '<footer class="꼬리">',
-'  <div>세 벌 모두 한국어 글 검사 지적 <strong>0건</strong>입니다. 색과 서체는 <code>docs/디자인_토큰.json</code> 킷을 그대로 씁니다.</div>',
+'  <div>SYNK · 우리가 지향하는 미래와 각 사업의 이야기를 전합니다.</div>',
 '  <div class="셈">' + 판.map((p) => '<span>' + esc(p.이름) + ' · ' + p.글자.toLocaleString() + '자</span>').join('') + '</div>',
 '</footer>',
 ].join('\n');
@@ -196,7 +196,7 @@ const 붙임 = [
 '</script>',
 ].join('\n');
 
-const html = [머리부, '', 머리, '', 판들, '', 꼬리, '', 붙임].join('\n');
+const html = ['<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">', 머리부, '</head><body>', 머리, '', 판들, '', 꼬리, '', 붙임, '</body></html>'].join('\n');
 const 길 = process.argv[2] || (require('path').resolve(__dirname,'..') + '/docs/소개서_지면.html');
 fs.writeFileSync(길, html, 'utf8');
 console.log('✔ 지었다 · ' + Math.round(Buffer.byteLength(html, 'utf8') / 1024) + 'KB');
