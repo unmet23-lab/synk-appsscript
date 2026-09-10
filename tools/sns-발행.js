@@ -33,10 +33,14 @@ SYNK SNS 발행기
   node tools/sns-발행.js --발행 <계획.json> [--항목 id,id]
   node tools/sns-발행.js --수동열기 <계획.json> --항목 <id>
 
+  --계정설정 <계정.json>  명시한 계정 설정 사용 (계획 작업은 기본적으로 계획의 설정 사용)
+
 원칙
   · --준비는 파일만 검사하며 게시하지 않습니다.
   · --발행은 현재 해시로 승인된 항목만 처리합니다.
-  · 성공 결과는 계획 옆 .결과.json에 남아 중복 발행을 막습니다.
+  · 같은 계획의 성공 결과와 YouTube 부분 완료 ID는 옆 .결과.json에 남습니다.
+  · partial/publishing 항목은 원격 결과 확인 전 재발행하지 않습니다.
+  · 다른 계획이나 브라우저에서 게시한 콘텐츠의 중복은 감지하지 못합니다.
   · 비밀키는 Windows 자격 증명 보관소에만 들어갑니다.
 `);
 }
@@ -120,15 +124,15 @@ async function main() {
   if (arg('--승인')) {
     const planFile = absolute(arg('--승인'));
     const note = arg('--근거') || '유호님 최종 검수';
-    const plan = approvePlan(planFile, ids(), note);
-    const count = plan.items.filter((item) => item.approval).length;
-    console.log(`\n✅ 현재 해시로 ${count}개 항목 승인 기록\n`);
+    const plan = approvePlan(planFile, ids(), note, { accountsFile: arg('--계정설정') ? accountsFile : undefined });
+    const count = plan.items.filter((item) => item.approval?.version === 2).length;
+    console.log(`\n✅ 현재 형식 승인 기록 ${count}개 (발행 직전 재검증)\n`);
     return;
   }
 
   if (arg('--발행')) {
     const planFile = absolute(arg('--발행'));
-    const { resultFile, result } = await publishPlan(planFile, ids(), { accountsFile });
+    const { resultFile, result } = await publishPlan(planFile, ids(), { accountsFile: arg('--계정설정') ? accountsFile : undefined });
     console.log(`\n✅ 발행 처리 종료\n   결과: ${resultFile}\n`);
     for (const [id, item] of Object.entries(result.items)) console.log(`   · ${id}: ${item.state}${item.url ? ` · ${item.url}` : ''}`);
     console.log('');
@@ -139,7 +143,7 @@ async function main() {
     const planFile = absolute(arg('--수동열기'));
     const selected = ids();
     if (selected.length !== 1) throw new Error('--수동열기는 --항목을 하나만 지정합니다.');
-    const result = openManualItem(planFile, selected[0], accountsFile);
+    const result = openManualItem(planFile, selected[0], arg('--계정설정') ? accountsFile : undefined);
     console.log(`\n✅ 본문을 클립보드에 넣고 Chrome 공식 편집기·자료 폴더를 열었습니다.\n   ${result.folder}\n`);
     return;
   }
