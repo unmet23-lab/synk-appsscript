@@ -36,8 +36,21 @@ function harness(options = {}) {
   };
   vm.createContext(ctx);
   vm.runInContext(source, ctx);
-  return { calls, reads, run: (...args) => JSON.parse(JSON.stringify(ctx.aiConnectionCheck(...args))) };
+  return { calls, reads, allowed: () => ctx.automationOwnerAllowed_(), run: (...args) => JSON.parse(JSON.stringify(ctx.aiConnectionCheck(...args))) };
 }
+
+test('shared owner check is a boolean and reads no properties or API', () => {
+  for (const [options, expected] of [
+    [{}, true],
+    [{ active: ' OWNER@example.test ', effective: 'Owner@example.test', admin: 'owner@EXAMPLE.test' }, true],
+    [{ active: '' }, false], [{ effective: '' }, false], [{ admin: '' }, false],
+    [{ active: 'someone@example.test' }, false], [{ sessionError: true }, false]
+  ]) {
+    const h = harness(options);
+    assert.equal(h.allowed(), expected);
+    assert.equal(h.reads.length, 0); assert.equal(h.calls.length, 0);
+  }
+});
 
 for (const [label, options] of [
   ['anonymous', { active: '' }], ['other account', { active: 'teacher@example.test' }],
