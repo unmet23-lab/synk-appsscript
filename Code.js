@@ -1921,17 +1921,40 @@ function groupHudsByClass_(ss, tz, when) {
  * 재적·이탈·TOP3를 두 통으로 반복하던 것을 한 본으로 합침: 콕핏 카드 = 압축 9줄, 메일 = 월보 전문 1통.
  * 로그는 readPointLogs_ 병합 읽기(라이브+아카이브) — 월중 수동 실행 시 지난달 왕관·레이드가 0으로 잡히던 것도 해소. */
 function buildExecReport_() {
+  return monthlyDeliveryRun_('monthlyReportContinue', function () { return buildExecReportLocked_(); });
+}
+
+// 월보 생성과 전달은 별개다. 호출자는 monthlyDeliveryRun_의 잠금을 보유한다.
+function buildExecReportLocked_(requestedYm) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
-  const lastM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const ym = Utilities.formatDate(lastM, tz, 'yyyy-MM');
+  const ym = requestedYm || ymShift_(Utilities.formatDate(now, tz, 'yyyy-MM'), -1);
   const st = ensureSheet(ss, 'app_state', ['key','value']);
   const doneKey = '경영리포트발송_' + ym;
+  const deliveryKey = '경영리포트전달_' + ym;
   const stData = st.getLastRow() < 2 ? [] : st.getRange(2, 1, st.getLastRow() - 1, 2).getValues();
-  if (stData.some(r => String(r[0]) === doneKey)) return; // 멱등
+  if (stData.filter(r => String(r[0]) === deliveryKey).length > 1 ||
+      stData.filter(r => String(r[0]) === '경영리포트메일_' + ym).length > 1) return { uncertain: 1, ym: ym, reason: 'duplicate_state' };
+  const stateRow = stData.find(r => String(r[0]) === deliveryKey);
+  const delivery = monthlyDeliveryParse_(stateRow && stateRow[1]);
+  if (stateRow && !delivery) return { uncertain: 1, ym: ym, reason: 'invalid_state' };
+  // 구 키는 보내기 전에 쓰였으므로 발송 여부를 추정하지 않는다. 과거 기록은 변경하지 않는다.
+  if (!delivery && stData.some(r => String(r[0]) === doneKey)) return { legacy_unknown: 1, ym: ym };
+  if (delivery && delivery.status !== 'pending') {
+    const state = monthlyDeliveryAttempt_(delivery, function (v) { setAppState_(ss, deliveryKey, JSON.stringify(v)); });
+    if (state.status === 'sent') setAppState_(ss, doneKey, state.at || 'operator_verified');
+    return { [state.status]: 1, ym: ym };
+  }
+  const saved = stData.find(r => String(r[0]) === '경영리포트메일_' + ym);
+  if (saved) {
+    if (!delivery) setAppState_(ss, deliveryKey, JSON.stringify({ status: 'pending', reason: 'saved_message' }));
+    let message;
+    try { message = JSON.parse(saved[1]); } catch (e) { return { pending: 1, ym: ym, reason: 'invalid_payload' }; }
+    return sendExecReport_(ss, ym, delivery || { status: 'pending' }, message);
+  }
   const pf = ss.getSheetByName('profiles');
-  if (!pf || pf.getLastRow() < 2) return;
+  if (!pf || pf.getLastRow() < 2) return { skipped: 1, reason: 'no_profiles', ym: ym };
   const regYM = v => { const d = toDate_(v); return d ? Utilities.formatDate(d, tz, 'yyyy-MM') : ''; };
   const stu = {}; let total = 0, newN = 0, riskHigh = 0, riskMid = 0;
   pf.getRange(2, 1, pf.getLastRow() - 1, 63).getValues().forEach(r => {
@@ -1982,7 +2005,7 @@ function buildExecReport_() {
   const tNamed = tRows.filter(r => String(r[0]).indexOf(TEACHER_UNASSIGNED) !== 0);
   if (tNamed.length >= 2 && tNamed[0][5] > 0) insights.push('이달의 강사: ' + tNamed[0][0] + ' (케어지수 ' + tNamed[0][5] + ').');
   if (!insights.length) insights.push('특이사항 없이 안정적으로 운영되고 있습니다.');
-  const mNum = lastM.getMonth() + 1;
+  const mNum = Number(ym.slice(5, 7));
   const lines = [ // 콕핏 카드 — 한눈 9줄(압축), 상세는 메일 월보
     '📊 SYNK 경영 월보 — ' + mNum + '월',
     '재적 ' + total + '명 · 신규 +' + newN,
@@ -1996,8 +2019,7 @@ function buildExecReport_() {
   ].filter(String);
   const html = CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:#fff;border:2px solid #D1D2D4;border-radius:14px;padding:12px 14px;font-size:13px;line-height:2;">' + lines.map((l, i) => i === 0 ? '<b style="font-size:14px;">' + l + '</b>' : escHtml_(l)).join('<br/>') + '</div>';
   setAppState_(ss, '경영리포트HTML', html);
-  setAppState_(ss, doneKey, Utilities.formatDate(now, tz, 'yyyy-MM-dd'));
-  if (quotaOk(1)) { // 메일 = 월보 전문 1통(구 monthlyReport 완전 흡수 — 07시 트리거는 위임 shim이 멱등 통과)
+  { // 재시도 때 원래 월보를 보낸다. 다음 달 profiles로 과거 본문을 다시 조립하지 않는다.
     let mail = '📊 SYNK 경영 월보 — ' + ym + '\n\n';
     mail += '👥 크루  재적 ' + total + '명 · 지난달 신규 ' + newN + '명\n';
     mail += '⚡ 활동  활성률 ' + actPct + '% (' + actN + '명) · 발행 ' + issued + 'P / 사용 ' + deducted + 'P (사용률 ' + usePct + '%)\n';
@@ -2007,9 +2029,122 @@ function buildExecReport_() {
     if (tRows.length) mail += '🧑‍🏫 강사 케어지수\n' + tRows.map(r => '· ' + r[0] + ': ' + r[5] + '점 (담당 ' + r[1] + '명)').join('\n') + '\n\n';
     mail += '✨ 하이라이트  🔥 도전 ' + mvpN2 + ' · 🌱 성장 ' + synN2 + '회 · ⚔️ 레이드 보상 ' + raidN + '건 · 📖 싱크 스토리 ' + (issuedStory ? '발간 완료' : '발간 예정') + '\n\n';
     mail += '💡 인사이트\n' + insights.map(s => '→ ' + s).join('\n');
-    MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📊 ' + mNum + '월 경영 월보', mail);
+    const message = { to: ADMIN_EMAIL, subject: '[SYNK] 📊 ' + mNum + '월 경영 월보', body: mail };
+    setAppState_(ss, '경영리포트메일_' + ym, JSON.stringify(message));
+    setAppState_(ss, deliveryKey, JSON.stringify({ status: 'pending', reason: 'ready' }));
+    return sendExecReport_(ss, ym, { status: 'pending' }, message);
   }
-  Logger.log('경영 월보 ' + ym + ' 발간(콕핏+메일 단일화)');
+}
+
+function sendExecReport_(ss, ym, delivery, message) {
+  const state = monthlyDeliveryAttempt_(delivery, function (v) {
+    setAppState_(ss, '경영리포트전달_' + ym, JSON.stringify(v));
+  }, function () { return message; });
+  if (state.status === 'sent') setAppState_(ss, '경영리포트발송_' + ym, state.at);
+  Logger.log('경영 월보 ' + ym + ' 생성됨 · 전달 ' + state.status);
+  return { [state.status]: 1, ym: ym };
+}
+
+function monthlyReportContinue() {
+  return monthlyDeliveryRun_('monthlyReportContinue', function () {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const st = ensureSheet(ss, 'app_state', ['key','value']);
+    const rows = st.getLastRow() < 2 ? [] : st.getRange(2, 1, st.getLastRow() - 1, 2).getValues();
+    const pending = rows.filter(function (r) {
+      const s = monthlyDeliveryParse_(r[1]);
+      return /^경영리포트전달_\d{4}-\d{2}$/.test(String(r[0])) && s && (s.status === 'pending' || s.status === 'sending');
+    });
+    if (!pending.length) return { skipped: 1 };
+    const out = { sent: 0, pending: Math.max(0, pending.length - 3), uncertain: 0 };
+    pending.slice(0, 3).forEach(function (r) {
+      try {
+        const result = buildExecReportLocked_(String(r[0]).slice('경영리포트전달_'.length));
+        ['sent', 'pending', 'uncertain', 'legacy_unknown', 'skipped'].forEach(k => { if (result[k]) out[k] = (out[k] || 0) + result[k]; });
+      } catch (e) { out.pending++; } // 한 달의 준비/저장 실패가 다른 달 전달을 막지 않는다.
+    });
+    return out;
+  });
+}
+
+// 두 월간 전달 작업만 쓰는 상태 기계. sending을 먼저 영속화한 뒤 MailApp을 호출한다.
+// MailApp에는 멱등 요청 ID/수신 확인 API가 없다. 예외/강제종료는 미발송으로 단정하지 않는다.
+function monthlyDeliveryParse_(value) {
+  if (!value) return null;
+  try {
+    const out = JSON.parse(String(value));
+    if (out && ['pending', 'sending', 'sent', 'uncertain', 'legacy_unknown'].indexOf(out.status) >= 0) return out;
+  } catch (e) {}
+  return { status: 'uncertain', reason: 'invalid_state' };
+}
+
+function monthlyDeliveryAttempt_(state, save, prepare) {
+  if (!state) return { status: 'legacy_unknown' };
+  if (state.status === 'sending') {
+    state = { status: 'uncertain', reason: 'interrupted', at: state.at || '' };
+    save(state); SpreadsheetApp.flush();
+  }
+  if (state.status !== 'pending') return state;
+  let message;
+  try {
+    message = prepare(); // 파일/수신자/본문 준비는 발송 시도 전에 끝낸다.
+    if (!message || !/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(String(message.to || '')) ||
+        typeof message.subject !== 'string' || !message.subject.trim() ||
+        typeof message.body !== 'string' || !message.body.trim()) throw new Error('message_unavailable');
+  } catch (e) {
+    state = { status: 'pending', reason: 'prepare_failed', at: new Date().toISOString() };
+    save(state); return state;
+  }
+  if (!quotaOk(1)) {
+    state = { status: 'pending', reason: 'quota', at: new Date().toISOString() };
+    save(state); return state;
+  }
+  state = { status: 'sending', at: new Date().toISOString() };
+  save(state); SpreadsheetApp.flush(); // 이 저장 실패는 MailApp 호출 0, 다음 실행에서도 pending이다.
+  try {
+    MailApp.sendEmail(message.to, message.subject, message.body, message.options || {});
+  } catch (e) {
+    state = { status: 'uncertain', reason: 'send_exception', at: state.at };
+    save(state); SpreadsheetApp.flush(); return state;
+  }
+  state = { status: 'sent', at: new Date().toISOString() };
+  save(state); SpreadsheetApp.flush(); // 이 저장 실패/하드킬은 sending으로 남아 자동 중복 발송을 막는다.
+  return state;
+}
+
+function monthlyDeliverySchedule_(handler, delay) {
+  if (!ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === handler)) {
+    ScriptApp.newTrigger(handler).timeBased().after(delay).create();
+  }
+}
+
+function monthlyDeliveryRun_(handler, work) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(1000)) {
+    monthlyDeliverySchedule_(handler, 4 * 60 * 1000);
+    return { busy: 1 };
+  }
+  let result;
+  try {
+    // 실행 중 하드킬에도 다음 점검이 남도록 먼저 예약. 정상 완료는 아래에서 걷는다.
+    ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === handler).forEach(t => ScriptApp.deleteTrigger(t));
+    monthlyDeliverySchedule_(handler, 24 * 60 * 60 * 1000);
+    result = work() || { skipped: 1 };
+    ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === handler).forEach(t => ScriptApp.deleteTrigger(t));
+    if (result.pending || result.generation_pending) monthlyDeliverySchedule_(handler,
+      result.more ? 4 * 60 * 1000 : 24 * 60 * 60 * 1000);
+  } finally { lock.releaseLock(); }
+  // adminMail은 자체 ScriptLock을 쓰므로 잠금을 놓은 뒤 호출한다. 이름·이메일·카드ID는 알리지 않는다.
+  Logger.log(handler + ': ' + JSON.stringify(result));
+  if (result.pending || result.uncertain || result.legacy_unknown || result.generation_pending) {
+    const props = PropertiesService.getScriptProperties(), today = new Date().toISOString().slice(0, 10);
+    const signature = today + '|' + JSON.stringify(result), key = '월간전달알림_' + handler;
+    if (props.getProperty(key) !== signature) {
+      adminMail('[SYNK] 월간 전달 확인 필요', handler + ' 집계: ' + JSON.stringify(result) +
+        '\n발송 전 대기는 자동 재시도합니다. uncertain/legacy_unknown은 수신 기록 확인 후에만 해소합니다.');
+      props.setProperty(key, signature);
+    }
+  }
+  return result;
 }
 
 // [v9.14] app_state 키-값 갱신 헬퍼 (변경 시에만 쓰기)

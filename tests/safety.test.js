@@ -219,7 +219,7 @@ test('월간 아카이브는 태그(H열)까지 8열로 이관·정리한다', (
 
 test('성장 리포트 메일은 공개 URL 링크 대신 PNG를 첨부로 보낸다', () => {
   const body = section('function runReportCards_()', 'function exportSlidePng');
-  assert.ok(body.includes('blob: blob.copyBlob()'));
+  assert.ok(body.includes('getFileById(fileId)') && body.includes('file.getBlob()'), '재시도는 기록된 비공개 PNG를 다시 읽는다');
   assert.ok(body.includes('{ attachments: [m.blob] }'));
   // 공개 URL(m.url)을 메일 본문에 실으면 미성년 실명·성적이 전달·캡처로 샌다
   assert.equal(코드만(body).includes("'리포트 카드 보기: ' + m.url"), false);

@@ -3412,189 +3412,257 @@ function setupTables() {
 
 
 /* ===================== [v5] 월간 리포트 카드 (1일 아침 6~7시) =====================
- * monthly_snapshot(게임배치 산출물) 기반 → Slides 복제·치환 → PNG →
- * Drive(SYNK_리포트카드 폴더) → report_cards 시트. 재실행 안전:
- * 이미 생성된 학생은 스킵, 60장 초과분은 4분 뒤 자동 이어하기.        */
+ * 현재월 profiles·academic_log → Slides 복제·치환 → 비공개 PNG → report_cards.
+ * 생성된 PNG는 재사용하고 보호자 전달 상태를 따로 기록한다.
+ * 생성은 한 번에 최대 5장, 전달은 MAX_CARDS_PER_RUN장. 잔여는 4분 뒤,
+ * 발송 전 준비/쿼터 대기는 다음 날 이어하기. */
 
 function monthlyReportCards() { runReportCards_(); }
 // [v9.19] 죽은 최상단 nickOf 블록 삭제 — 리포트카드 v2는 별명을 profiles AO(r[40])에서 직접 읽음.
 //          (구 블록은 미사용 + 매 트리거 실행마다 profiles 조회 + safeRun 밖 크래시 위험이었음)
 
-function reportCardsContinue() {
-  ScriptApp.getProjectTriggers().forEach(t => {
-    if (t.getHandlerFunction() === 'reportCardsContinue') ScriptApp.deleteTrigger(t);
-  });
-  runReportCards_();
-}
+function reportCardsContinue() { return runReportCards_(); }
 
 function runReportCards_() {
-  if (!REPORT_TEMPLATE_ID) { Logger.log('REPORT_TEMPLATE_ID 미설정 — 카드 생성 스킵'); return; }
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const tz = ss.getSpreadsheetTimeZone();
-  const now = new Date();
-  const ym = Utilities.formatDate(now, tz, 'yyyy-MM'); // [v9.19] 현재월 스냅샷 — 포인트·출석·학업 모두 현재 profiles 기준
-  const label = Number(ym.substring(0, 4)) + '년 ' + Number(ym.substring(5, 7)) + '월';
+  return monthlyDeliveryRun_('reportCardsContinue', runReportCardsLocked_);
+}
 
+function runReportCardsLocked_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet(), tz = ss.getSpreadsheetTimeZone(), now = new Date();
+  const started = Date.now(), ym = Utilities.formatDate(now, tz, 'yyyy-MM');
+  const label = Number(ym.slice(0, 4)) + '년 ' + Number(ym.slice(5, 7)) + '월';
   const pf = ss.getSheetByName('profiles');
-  if (!pf || pf.getLastRow() < 2) return; // [v8.2]
-  const w = Math.min(pf.getLastColumn(), 81); // [v9.19→함께한날 막4] CC81(맞힌말수)까지 — 카드가 「함께한 날·맞힌 말」을 싣는다
-  const pfData = pf.getRange(2, 1, pf.getLastRow() - 1, w).getValues();
+  const pfData = !pf || pf.getLastRow() < 2 ? [] :
+    pf.getRange(2, 1, pf.getLastRow() - 1, Math.min(pf.getLastColumn(), 81)).getValues();
   const students = pfData.filter(r => r[0] && r[3] === 'student');
-  const logsById = readAcademicLogs_(ss, tz); // [v9.19] academic_log — 급수변화·모의 점수 차트
-  const monMap = monsterImgMap_(ss);          // [v9.19] 단계명 → 이미지URL
-
+  const byId = {}, profileCounts = {};
+  students.forEach(r => {
+    const id = String(r[0]);
+    profileCounts[id] = (profileCounts[id] || 0) + 1;
+    byId[id] = profileCounts[id] === 1 ? r : null;
+  });
   const rc = ensureSheet(ss, 'report_cards',
     ['card_id', 'student_id', '월', 'image_url', '칭호', '코멘트', 'created_at']);
-  /* [v9.126] 🔴 월 열 Date 오염 = 이 멱등 가드의 사망 지점 — 08-02 라이브에서 37행(정상 9행)이 발견됐다.
-   *   `setValues`로 '2026-08' 문자열을 쓰면 시트가 날짜로 자동 파싱해 Date로 되읽히고, 셀 표시는 여전히
-   *   '2026-08'이라 눈으로는 멀쩡하다. 그런데 String(Date)='Fri Aug 01 2026…' ≠ ym → **가드가 영영 안 맞고
-   *   매 실행이 전원 카드를 다시 만든다**(Slides 복제·Drive 파일·학부모 메일이 매번 중복). 학부모 화면엔
-   *   같은 카드가 6장 쌓여 있었다. v9.97이 스토리북에서 잡은 것과 같은 계급인데 이 시트만 배선이 빠져 있었다.
-   *   ①열을 텍스트로 정상화 ②비교값도 ymTextOf_로 정규화 — 둘 다 해야 과거 오염분까지 산다. */
+  // 기존 A:G 계약은 보존한다. 빈 H는 과거 발송 미확정이며 자동으로 pending으로 바꾸지 않는다.
+  const extra = ['delivery_status', 'delivery_updated_at', 'delivery_reason', 'delivery_body', 'delivery_subject'];
+  if (rc.getMaxColumns() < 12) rc.insertColumnsAfter(rc.getMaxColumns(), 12 - rc.getMaxColumns());
+  extra.forEach((h, i) => {
+    const existing = String(rc.getRange(1, 8 + i).getValue() || '');
+    if (existing && existing !== h) throw new Error('report_cards 전달 열 충돌');
+    if (!existing) rc.getRange(1, 8 + i).setValue(h);
+  });
   ymTextColFix_(rc, 3, tz);
-  const done = new Set();
-  if (rc.getLastRow() >= 2) {
-    rc.getRange(2, 1, rc.getLastRow() - 1, 3).getValues().forEach(r => {
-      done.add(ymTextOf_(r[2], tz) + '|' + r[1]);
-    });
-  }
-  const pendingAll = students.filter(r => !done.has(ym + '|' + r[0]));
-  if (!pendingAll.length) { Logger.log('리포트카드: ' + ym + ' 전원 생성 완료'); return; }
-  const pending = pendingAll.slice(0, MAX_CARDS_PER_RUN);
-
-  // [v9.19b] Phase 1a: 복제만 (구조 변경) → saveAndClose
-  const pres = SlidesApp.openById(REPORT_TEMPLATE_ID);
-  const tpl = reportTemplateSlide_(pres); // [v9.19b] 빈 슬라이드가 아니라 자리표시자 디자인 슬라이드를 복제
-  const made = [];
-  pending.forEach(r => {
-    const d = reportCardData_(r, logsById[r[0]], monMap, now);
-    d.month = label;
-    made.push({ d: d, pageId: tpl.duplicate().getObjectId() });
-  });
-  pres.saveAndClose();
-  // [v9.19b] Phase 1b: 재열기 후 채우기 (복제+편집 동일 배치의 "This request cannot be applied" 회피)
-  const presF = SlidesApp.openById(REPORT_TEMPLATE_ID);
-  const slById = {};
-  presF.getSlides().forEach(s => { slById[s.getObjectId()] = s; });
-  made.forEach(m => { const s = slById[m.pageId]; if (s) fillReportCardSlide_(s, m.d); });
-  presF.saveAndClose();
-
-  // Phase 2: PNG 추출 → Drive 저장 → 시트 기록 (+옵션: 학부모 메일)
-  const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
-  const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
-  const rows = [], mails = [];
-  // [v9.155] shareFail/shareFirstErr 제거 — 공개 공유를 하지 않으므로 실패할 대상이 없다(감시는 미발송으로 이관)
-  made.forEach(m => {
-    Utilities.sleep(350); // [v5.3] 연속 export 429 방지
-    try { // [v9.19] 카드별 격리 — 1건(429 등) 실패가 배치 전체를 중단·중복 생성시키지 않도록
-      const blob = exportSlidePng(REPORT_TEMPLATE_ID, m.pageId)
-        .setName(ym + '_' + m.d.sid + '_' + m.d.name + '.png');
-      const file = folder.createFile(blob);
-      /* [v9.138] ⚠ 여기의 공개 공유는 **의도적으로 남긴다** — 지우면 학부모 화면이 빈다.
-       *   이 URL은 아래 report_cards.image_url(D열)에 박히고, Glide 학부모 「성장 리포트」 탭의
-       *   Image 컴포넌트가 그 주소로 그림을 읽는다. Glide는 이 Drive 파일에 로그인할 수단이 없어서
-       *   비공개로 바꾸면 카드가 전부 깨진 이미지가 된다. 게다가 SEND_REPORT_EMAIL=false라
-       *   **지금은 메일도 안 나가므로 이 탭이 학부모에게 카드가 닿는 유일한 통로**다.
-       *   같은 세션에서 previewOneReportCard의 공개 공유는 없앴는데(그건 호출자가 0이라 아무것도
-       *   사지 못하는 공유였다) 여기를 남긴 건 봐준 게 아니라 **기능이 매달려 있어서**다.
-       *   ▣ 남은 위험(축소했지만 0은 아니다): 링크를 아는 사람은 인증 없이 카드를 본다. Drive
-       *     공개 링크에는 만료가 없어서 한 번 새면 영구다. 완화책은 둘이고 성격이 다르다 —
-       *     ①**폴더를 「제한됨」으로 잠근다** — 2026-08-03 실행 결과로 **손실 0이 아님이 판명**됐다.
-       *       잠그기 전 이 폴더는 익명으로 목록 조회·전체 다운로드까지 됐고, 잠그자 유출은 닫혔지만
-       *       **학부모 카드도 함께 죽었다.** 원인: 아래 setSharing이 「액세스가 거부됨: DriveApp」으로
-       *       **줄곧 실패해 catch로 빠지고 있었고**, 카드의 공개는 전부 폴더 상속이었다(카드마다
-       *       자기 공유가 있다는 것은 코드의 의도였을 뿐 라이브의 사실이 아니었다 — 잠근 뒤
-       *       `2026-08_SYNK-001_*.png`가 「비공개」로 바뀌는 것으로 확인). 그러니 폴더를 잠근 상태를
-       *       유지하려면 **이 setSharing이 실제로 성공하도록 고치는 일이 선행**돼야 한다.
-       *     ②「N개월 지난 카드는 공유 해제」: 그만큼 과거 달 카드가 앱에서 사라진다 —
-       *       보안과 학부모 편의의 교환이라 유호님 결정 사안으로 올렸다(2026-08-03).
-       *   ▣ 여기를 고치려는 다음 세션에게: 먼저 Glide 「성장 리포트」 탭이 이 URL을 안 쓰게
-       *     바꾼 다음에 닫아라. 순서가 반대면 라이브 화면이 먼저 죽는다. — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md) */
-      /* [v9.140] 실패를 세고 **알린다**. 구 코드는 '폴더 공유 설정으로 대체'라고만 로그했는데,
-       *   그 문장이 문제를 몇 달 숨겼다 — 실제로 이 호출은 줄곧 실패하고 있었고, 카드가 열려 보인 건
-       *   폴더가 공개였기 때문이다. 폴더를 잠근 지금 그 대체 수단은 **존재하지 않으므로**,
-       *   조용히 넘어가면 학부모 화면이 이유 없이 빈 채로 남는다. */
-      /* [v9.155] 🔒 공개 공유를 **하지 않는다**(유호님 08-04 「B로 가자」 결정 · 근거·경위 = docs/개인정보처리방침_초안_v1.md §0-B).
-       *   구 설계는 학생 실명·급수·포인트가 박힌 PNG를 ANYONE_WITH_LINK로 열어 Glide 학부모 탭이 읽게 했다.
-       *   Drive 공개 링크에는 만료가 없어 한 번 새면 영구이고, 그 상태를 개인정보처리방침에 정직하게 적으려니
-       *   「링크를 아는 사람은 누구나 봅니다」가 되어 — 유호님이 그 문장을 쓰는 대신 구조를 바꾸기로 했다.
-       *   ⚠ **지금이 가장 싼 시점이다**: 실학생 0명(카드는 데모·테스트분뿐)이라 깨질 학부모 화면이 없다.
-       *   대체 통로 = **메일 PNG 첨부**(SEND_REPORT_EMAIL을 기본 true로 승격 · Code.js).
-       *   ⚠ url은 계속 기록한다 — 원장이 로그인 상태로 열어 확인하는 내부 경로이고, 학부모 화면은
-       *     Glide에서 이미지 컴포넌트를 걷어내는 것으로 정리한다(유호님 몫 · 설치 문서에 안내). */
-      const url = 'https://lh3.googleusercontent.com/d/' + file.getId();
-      rows.push([ym + '-' + m.d.sid, m.d.sid, ym, url,
-        m.d.title, m.d.comment, new Date()]);
-      if (SEND_REPORT_EMAIL && m.d.pEmail.indexOf('@') > -1) {
-        // [v9.31] 공개 URL 링크 대신 PNG를 메일 첨부로 — 미성년 실명·성적이 메일 전달·캡처로 새는 경로 차단
-        mails.push({ to: m.d.pEmail, name: m.d.name, blob: blob.copyBlob(), pts: m.d.pointsText, attend: m.d.attendText });
-      }
-    } catch (e) { Logger.log('카드 생성 실패(' + m.d.name + ') — 스킵, 다음 실행 때 재시도: ' + e); }
-  });
-  if (rows.length) rc.getRange(rc.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
-
-  /* [v9.155] 감시 대상 교체 — 「공유 실패」에서 **「카드가 학부모에게 못 간 학생」**으로.
-   *   구 감시(v9.140·143)는 공개 공유가 실패하면 학부모 탭이 빈다는 것을 잡았다. 이제 공개 공유를
-   *   하지 않으므로 그 실패는 존재하지 않고, 대신 **보낼 이메일이 없으면 카드가 아무에게도 닿지 않는다**
-   *   — 조용한 실패의 자리가 그리로 옮겨간 것이다(장치를 지울 때는 그 장치가 지키던 것이 어디로
-   *   갔는지 함께 옮긴다). 카드는 만들어지고 시트에도 적히므로 배치는 여전히 "성공"이라 말한다. */
-  const noMail = rows.length - mails.length;
-  if (noMail > 0) {
-    Logger.log('⚠ 리포트카드 ' + noMail + '장이 발송되지 않았습니다(보호자 이메일 없음)');
-    adminMail('[SYNK] ⚠️ 리포트카드 ' + noMail + '장 미발송 — 보호자 이메일 없음',
-      '이번 ' + label + ' 카드 ' + rows.length + '장 중 ' + noMail + '장을 **보내지 못했습니다.**\n' +
-      '보호자 이메일(profiles Z열)이 비어 있는 학생입니다.\n\n' +
-      '[v9.155] 카드는 이제 **메일 첨부로만** 전달됩니다(공개 링크 폐지 — 유호님 08-04 결정).\n' +
-      '즉 이메일이 없는 학생의 카드는 만들어져도 보호자에게 닿지 않습니다.\n\n' +
-      '조치: 상담시트에서 그 학생의 보호자 이메일을 채우면 다음 배치부터 자동 발송됩니다.\n' +
-      '(기획자님은 Drive ' + REPORT_FOLDER_NAME + ' 폴더에서 로그인 상태로 직접 보실 수 있습니다.)');
-  }
-
-  if (mails.length && quotaOk(mails.length)) {
-    mails.forEach(m => {
-      MailApp.sendEmail(m.to, '[SYNK] 📮 ' + m.name + ' 학생 ' + label + ' 성장 리포트',
-        m.name + ' 학생의 ' + label + ' 성장 리포트가 도착했어요!\n\n' +
-        '포인트 ' + m.pts + ' · 출석 ' + m.attend + '\n' +
-        '리포트 카드는 첨부된 이미지로 확인해 주세요. 📎\n\n' +
-        '한 달 동안 수고 많았습니다. 다음 달도 함께 성장해요!\n- 뇌과학으로 배우는 한국어, SYNK',
-        { attachments: [m.blob] });
-    });
-  }
-
-  // Phase 3: 임시 슬라이드 정리 (템플릿 1장만 유지)
-  const pres2 = SlidesApp.openById(REPORT_TEMPLATE_ID);
-  const rm = new Set(made.map(m => m.pageId));
-  pres2.getSlides().forEach(sl => { if (rm.has(sl.getObjectId())) sl.remove(); });
-  pres2.saveAndClose();
-
-  // [v9.34] 잔여에 이번 배치 실패분(pending - rows)도 가산 — 마지막 배치에서 실패하면 remaining=0으로 굳어
-  //   '전원 완료' 거짓 메일 + 그달 카드 영구 미생성(다음 달 ym이 바뀌어 재시도 없음)되던 결함 수정
-  const remaining = pendingAll.length - rows.length;
-  const propsRC = PropertiesService.getScriptProperties();
-  if (rows.length === 0 && pending.length > 0) { // [v9.34] 연속 0장 = 영구 오류(권한·템플릿) 의심 → 무한 4분 재시도 루프 차단
-    const zeroN = (Number(propsRC.getProperty('리포트카드_연속0장')) || 0) + 1;
-    propsRC.setProperty('리포트카드_연속0장', String(zeroN));
-    if (zeroN >= 2) {
-      adminMail('[SYNK] ⚠️ 리포트카드 생성 중단 (' + label + ')',
-        '연속 ' + zeroN + '회 실행에서 카드가 1장도 생성되지 않아 자동 이어하기를 중단했습니다. 잔여 ' + remaining + '장.\n' +
-        '실행 로그·Drive 권한·리포트 템플릿(REPORT_TEMPLATE_ID)을 확인한 뒤 monthlyReportCards()를 수동 실행하세요.');
-      Logger.log('리포트카드: 연속 ' + zeroN + '회 0장 — 체인 중단');
-      return;
+  const existing = rc.getLastRow() < 2 ? [] : rc.getRange(2, 1, rc.getLastRow() - 1, 12).getValues();
+  const done = new Set(existing.map(r => ymTextOf_(r[2], tz) + '|' + r[1]));
+  const pendingAll = students.filter(r => profileCounts[String(r[0])] === 1 && !done.has(ym + '|' + r[0]));
+  const pending = REPORT_TEMPLATE_ID ? pendingAll.slice(0, Math.min(MAX_CARDS_PER_RUN, 5)) : [];
+  const rows = [], made = [];
+  let generationFailures = 0;
+  if (pending.length) {
+    const logsById = readAcademicLogs_(ss, tz), monMap = monsterImgMap_(ss);
+    try {
+      const pres = SlidesApp.openById(REPORT_TEMPLATE_ID), tpl = reportTemplateSlide_(pres);
+      pending.forEach(r => {
+        if (Date.now() - started > 60000) return;
+        try {
+          const d = reportCardData_(r, logsById[r[0]], monMap, now);
+          d.month = label;
+          made.push({ d: d, pageId: tpl.duplicate().getObjectId(), ready: false });
+        } catch (e) { generationFailures++; }
+      });
+      pres.saveAndClose();
+      const presF = SlidesApp.openById(REPORT_TEMPLATE_ID), slById = {};
+      presF.getSlides().forEach(s => { slById[s.getObjectId()] = s; });
+      made.forEach(m => {
+        if (Date.now() - started > 120000) return;
+        try {
+          if (!slById[m.pageId]) throw new Error('카드 임시 슬라이드 없음');
+          fillReportCardSlide_(slById[m.pageId], m.d);
+          m.ready = true;
+        } catch (e) { generationFailures++; }
+      });
+      presF.saveAndClose();
+      const it = DriveApp.getFoldersByName(REPORT_FOLDER_NAME);
+      const folder = it.hasNext() ? it.next() : DriveApp.createFolder(REPORT_FOLDER_NAME);
+      made.forEach(m => {
+        if (!m.ready || Date.now() - started > 150000) return;
+        try {
+          // createFile 후 행 기록 전에 하드킬됐어도 다음 실행은 같은 이름의 PNG를 재사용한다.
+          const cardId = ym + '-' + m.d.sid, filename = 'SYNK_card_' + cardId + '.png';
+          const files = folder.getFilesByName(filename);
+          let file = files.hasNext() ? files.next() : null;
+          if (files.hasNext()) throw new Error('동명 카드 파일 여러 개');
+          if (!file) {
+            Utilities.sleep(350);
+            const blob = exportSlidePng(REPORT_TEMPLATE_ID, m.pageId).setName(filename);
+            file = folder.createFile(blob); // 비공개 유지: 공개 공유 호출 없음.
+          }
+          const body = m.d.name + ' 학생의 ' + label + ' 성장 리포트가 도착했어요!\n\n' +
+            '포인트 ' + m.d.pointsText + ' · 출석 ' + m.d.attendText + '\n' +
+            '리포트 카드는 첨부된 이미지로 확인해 주세요. 📎\n\n' +
+            '한 달 동안 수고 많았습니다. 다음 달도 함께 성장해요!\n- 뇌과학으로 배우는 한국어, SYNK';
+          const row = [cardId, m.d.sid, ym, 'https://lh3.googleusercontent.com/d/' + file.getId(),
+            m.d.title, m.d.comment, new Date(), 'pending', new Date(), 'ready', body,
+            '[SYNK] 📮 ' + m.d.name + ' 학생 ' + label + ' 성장 리포트'];
+          // 생성 행과 pending을 한 번에 적는다. 행이 존재하면 절대 새로 만들지 않는다.
+          rc.getRange(rc.getLastRow() + 1, 1, 1, 12).setValues(행소독_([row]));
+          rows.push(row);
+        } catch (e) {
+          generationFailures++;
+          Logger.log('리포트카드 생성 실패 1건 — 원문/학생 식별정보 생략');
+        }
+      });
+    } catch (e) {
+      generationFailures += pending.length - rows.length;
+      Logger.log('리포트카드 생성 준비 실패 — 기존 카드 전달은 계속');
+    } finally {
+      // 정리 실패가 이미 생성된 카드의 전달을 막지 않는다. 우리 복제본만 지운다.
+      try {
+        const pres2 = SlidesApp.openById(REPORT_TEMPLATE_ID), rm = new Set(made.map(m => m.pageId));
+        pres2.getSlides().forEach(sl => { if (rm.has(sl.getObjectId())) sl.remove(); });
+        pres2.saveAndClose();
+      } catch (e) { Logger.log('리포트카드 임시 슬라이드 정리 실패'); }
     }
-  } else if (rows.length > 0) propsRC.setProperty('리포트카드_연속0장', '0');
-  if (remaining > 0) {
-    ScriptApp.newTrigger('reportCardsContinue').timeBased().after(4 * 60 * 1000).create();
-    Logger.log('카드 ' + rows.length + '장 생성 · 잔여 ' + remaining + '장(실패 재시도 포함) — 4분 후 자동 이어하기');
-  } else {
-    if (quotaOk(1)) {
-      MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] 📮 ' + label + ' 리포트카드 생성 완료',
-        '이번 실행 ' + rows.length + '장 생성 — ' + label + ' 카드 전원 완료.\n' +
-        'Drive 폴더: ' + REPORT_FOLDER_NAME + '\n앱의 report_cards에서 확인하세요.');
-    }
-    Logger.log('리포트카드 완료: ' + rows.length + '장');
   }
+  const ambiguousProfiles = Object.keys(profileCounts).filter(id => profileCounts[id] > 1).length;
+  const result = { ym: ym, generated: rows.length, generation_pending: pendingAll.length - rows.length + ambiguousProfiles,
+    sent: 0, pending: 0, uncertain: 0, legacy_unknown: 0, noMail: 0 };
+  if (pendingAll.length > rows.length && REPORT_TEMPLATE_ID && (rows.length || !generationFailures)) result.more = true;
+  const all = rc.getLastRow() < 2 ? [] : rc.getRange(2, 1, rc.getLastRow() - 1, 12).getValues();
+  const counts = {};
+  all.forEach(r => { counts[String(r[0])] = (counts[String(r[0])] || 0) + 1; });
+  let attempts = 0, quotaBlocked = false;
+  // 이미 알려진 과거 대기는 회수하되 이번 달 신규 전달이 먼저다. 원래 행 번호는 보존한다.
+  all.map((r, i) => ({ r: r, i: i })).sort((a, b) =>
+    Number(ymTextOf_(b.r[2], tz) === ym) - Number(ymTextOf_(a.r[2], tz) === ym)).forEach(entry => {
+    const r = entry.r, i = entry.i;
+    const rowYm = ymTextOf_(r[2], tz), status = String(r[7] || '');
+    // 과거 데이터 일괄 이관/발송 추정 없음. 과거 pending/sending만 별도로 회수한다.
+    if (rowYm !== ym && status !== 'pending' && status !== 'sending') return;
+    if (!status) { result.legacy_unknown++; return; }
+    if (['pending', 'sending', 'sent', 'uncertain', 'legacy_unknown'].indexOf(status) < 0) { result.uncertain++; return; }
+    if (counts[String(r[0])] !== 1) { result.uncertain++; return; }
+    if (status === 'pending' && (attempts >= MAX_CARDS_PER_RUN || Date.now() - started > 240000)) {
+      result.pending++; if (!quotaBlocked) result.more = true; return;
+    }
+    const state = monthlyDeliveryAttempt_({ status: status, at: r[8], reason: r[9] },
+      function (s) { rc.getRange(i + 2, 8, 1, 3).setValues([[s.status, s.at || '', s.reason || '']]); },
+      function () {
+        const student = byId[String(r[1])], email = student && String(student[25] || '').trim();
+        if (!SEND_REPORT_EMAIL || !student || !email) {
+          result.noMail++; throw new Error('recipient_unavailable');
+        }
+        const fileId = reportCardFileId_(r[3]);
+        if (!fileId || !r[10] || !r[11]) throw new Error('card_payload_unavailable');
+        const file = DriveApp.getFileById(fileId);
+        if (!reportCardFileMatches_(file.getName(), r[0], r[1], rowYm)) throw new Error('card_identity_mismatch');
+        const blob = file.getBlob();
+        if (!blob || blob.getContentType() !== 'image/png' || !blob.getBytes().length) throw new Error('card_blob_unavailable');
+        const m = { blob: blob };
+        return { to: email, subject: String(r[11]), body: String(r[10]), options: { attachments: [m.blob] } };
+      });
+    if (status === 'pending' && state.status !== 'pending') attempts++;
+    if (state.status === 'pending' && state.reason === 'quota') { quotaBlocked = true; attempts = MAX_CARDS_PER_RUN; }
+    result[state.status] = (result[state.status] || 0) + 1;
+  });
+  Logger.log('리포트카드 생성 ' + result.generated + ' · 전달 확인 ' + result.sent +
+    ' · 대기 ' + result.pending + ' · 불확실 ' + (result.uncertain + result.legacy_unknown));
+  return result;
 }
-// [v9.20] 죽은 코드 정리: reportComment 삭제 — v9.19 리포트카드 v2가 reportCardComment_로 대체(호출부 0).
+
+function reportCardFileId_(url) {
+  const value = String(url || '');
+  const patterns = [
+    /^https:\/\/lh3\.googleusercontent\.com\/d\/([A-Za-z0-9_-]{10,})$/,
+    /^https:\/\/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]{10,})\/view(?:\?[^#]*)?$/,
+    /^https:\/\/drive\.google\.com\/open\?id=([A-Za-z0-9_-]{10,})$/
+  ];
+  for (let i = 0; i < patterns.length; i++) {
+    const match = value.match(patterns[i]);
+    if (match) return match[1];
+  }
+  return '';
+}
+
+function reportCardFileMatches_(name, cardId, sid, month) {
+  if (!/^\d{4}-\d{2}$/.test(String(month)) || String(cardId) !== month + '-' + sid) return false;
+  if (String(name) === 'SYNK_card_' + cardId + '.png') return true;
+  // 구 생성기는 YYYY-MM_SID_이름.png였다. SID에 구분자 '_'가 있으면 추정하지 않는다.
+  return /^[A-Za-z0-9-]+$/.test(String(sid)) && String(name).indexOf(month + '_' + sid + '_') === 0 &&
+    String(name).endsWith('.png');
+}
+
+// 운영 점검용 읽기 전용 집계. 명단/이메일/본문/파일ID/Script Properties를 읽거나 반환하지 않는다.
+function monthlyDeliveryHealth_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet(), tz = ss.getSpreadsheetTimeZone(), now = new Date();
+  const month = Utilities.formatDate(now, tz, 'yyyy-MM');
+  const previous = ymShift_(month, -1);
+  const counts = { pending: 0, sending: 0, sent: 0, uncertain: 0, legacy_unknown: 0 };
+  const rc = ss.getSheetByName('report_cards');
+  if (rc && rc.getLastRow() >= 2) {
+    const n = rc.getLastRow() - 1, months = rc.getRange(2, 3, n, 1).getValues();
+    const states = rc.getMaxColumns() >= 8 ? rc.getRange(2, 8, n, 1).getValues() : months.map(() => ['']);
+    months.forEach((r, i) => {
+      if (ymTextOf_(r[0], tz) !== month) return;
+      const s = String(states[i][0] || 'legacy_unknown');
+      counts[Object.prototype.hasOwnProperty.call(counts, s) ? s : 'uncertain']++;
+    });
+  }
+  const st = ss.getSheetByName('app_state');
+  let report = 'missing';
+  if (st && st.getLastRow() >= 2) {
+    // 키 열만 검색하고 대상 상태 셀만 읽는다. 저장된 월보 본문에는 접근하지 않는다.
+    const keys = st.getRange(2, 1, st.getLastRow() - 1, 1).getValues();
+    const row = keys.findIndex(r => String(r[0]) === '경영리포트전달_' + previous);
+    if (row >= 0) {
+      const state = monthlyDeliveryParse_(st.getRange(row + 2, 2).getValue());
+      report = state ? state.status : 'uncertain';
+    }
+    else if (keys.some(r => String(r[0]) === '경영리포트발송_' + previous)) report = 'legacy_unknown';
+  }
+  return { cards: { month: month, counts: counts }, report: { month: previous, status: report } };
+}
+
+// 관리자가 수신 기록을 확인한 한 건만 해소하는 내부 함수. 자동 추정/일괄 초기화는 없다.
+// outcome='sent': 확인된 전달, 'not_sent': 미전달이 확인되어 재시도 허용. true는 그 확인을 뜻한다.
+function resolveMonthlyDelivery_(kind, id, outcome, verified) {
+  if (typeof automationOwnerAllowed_ !== 'function' || automationOwnerAllowed_() !== true) throw new Error('운영 소유자 확인 필요');
+  if (verified !== true || ['sent', 'not_sent'].indexOf(outcome) < 0) throw new Error('수신 기록의 명시적 확인 필요');
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(1000)) throw new Error('월간 전달 작업 진행 중');
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet(), status = outcome === 'sent' ? 'sent' : 'pending';
+    const at = new Date().toISOString();
+    if (kind === 'report' && /^\d{4}-\d{2}$/.test(String(id))) {
+      const st = ensureSheet(ss, 'app_state', ['key','value']);
+      const current = monthlyDeliveryParse_(getState(st, '경영리포트전달_' + id).val);
+      if (current && current.status === 'sent') return { status: 'sent' };
+      if (status === 'pending' && !getState(st, '경영리포트메일_' + id).val) throw new Error('과거 월보 원본문안 없음 — 자동 재구성 불가');
+      setAppState_(ss, '경영리포트전달_' + id, JSON.stringify({ status: status, at: at, reason: 'operator_verified' }));
+      if (status === 'sent') setAppState_(ss, '경영리포트발송_' + id, at);
+      if (status === 'pending') monthlyDeliverySchedule_('monthlyReportContinue', 4 * 60 * 1000);
+    } else if (kind === 'card') {
+      const rc = ss.getSheetByName('report_cards');
+      const data = rc && rc.getLastRow() >= 2 ? rc.getRange(2, 1, rc.getLastRow() - 1, 12).getValues() : [];
+      const found = data.map((r, i) => ({ r: r, i: i })).filter(x => String(x.r[0]) === String(id));
+      if (found.length !== 1) throw new Error('정확한 카드 한 건 필요');
+      const card = found[0];
+      if (card.r[7] === 'sent') return { status: 'sent' };
+      if (status === 'pending' && !reportCardFileId_(card.r[3])) throw new Error('카드 원본 파일 경로 없음');
+      if (status === 'pending' && !reportCardFileMatches_(DriveApp.getFileById(reportCardFileId_(card.r[3])).getName(),
+          card.r[0], card.r[1], ymTextOf_(card.r[2], ss.getSpreadsheetTimeZone()))) throw new Error('카드 원본 학생/월 불일치');
+      if (status === 'pending' && (!card.r[10] || !card.r[11])) {
+        // 명시 확인한 구 카드 한 건: PNG를 그대로 보내고 과거 점수/출석을 현재 값으로 재구성하지 않는다.
+        rc.getRange(card.i + 2, 11, 1, 2).setValues([['리포트 카드는 첨부된 이미지로 확인해 주세요. 📎',
+          '[SYNK] 📮 ' + ymTextOf_(card.r[2], ss.getSpreadsheetTimeZone()) + ' 성장 리포트']]);
+      }
+      rc.getRange(card.i + 2, 8, 1, 3).setValues([[status, at, 'operator_verified']]);
+      if (status === 'pending') monthlyDeliverySchedule_('reportCardsContinue', 4 * 60 * 1000);
+    } else throw new Error('월간 전달 대상 불일치');
+    SpreadsheetApp.flush();
+    return { status: status };
+  } finally { lock.releaseLock(); }
+}
 
 function exportSlidePng(presId, pageId) {
   const url = 'https://docs.google.com/presentation/d/' + presId +
