@@ -465,7 +465,7 @@ function 상담_팔로우확인_(igsid) {
 
 /* Instagram Login 장기 토큰은 유효기간이 있으므로 아침 배치에서 수명을 관리한다.
  * - 만료시각을 알면 14일 전까지 네트워크 호출 0
- * - 처음 넣은 토큰처럼 만료시각을 모르면 하루 1회 갱신을 시도해 60일 수명을 받아 적는다
+ * - 처음 넣은 토큰처럼 만료시각을 모르면 최초 확인 시각을 적고 24시간 뒤부터 갱신한다
  * - 실패해도 기존 토큰을 절대 덮지 않고, 토큰 본문 없이 주 1회만 운영자에게 알린다 */
 function 상담AI_IG토큰수명점검_() {
   const props = PropertiesService.getScriptProperties();
@@ -475,6 +475,15 @@ function 상담AI_IG토큰수명점검_() {
   const now = Date.now();
   const 만료 = Number(props.getProperty('상담AI_IG토큰만료시각')) || 0;
   if (만료 && 만료 - now > 상담AI_IG토큰갱신여유_MS) return { ok: true, skip: 'not-due' };
+
+  if (!만료) {
+    const 최초확인 = Number(props.getProperty('상담AI_IG토큰최초확인시각')) || 0;
+    if (!최초확인) {
+      props.setProperty('상담AI_IG토큰최초확인시각', String(now));
+      return { ok: true, skip: 'fresh-token' };
+    }
+    if (now - 최초확인 < 24 * 3600 * 1000) return { ok: true, skip: 'fresh-token' };
+  }
 
   const 오늘 = new Date(now).toISOString().slice(0, 10);
   if (props.getProperty('상담AI_IG토큰갱신시도일') === 오늘) return { ok: false, skip: 'already-tried' };
@@ -906,16 +915,24 @@ function 점검_답결함_(답) {
     + (/[Ѐ-ӿ]/.test(답s) ? '(키릴 문자로 답했다)' : '');
 }
 
+function 상담AI_연결경고_(props) {
+  const 경고 = [];
+  if (!props.getProperty('상담AI_URL키')) 경고.push('상담AI_URL키 없음 — 메신저 요청을 전부 거부합니다(fail-closed)');
+  if (!props.getProperty('상담AI_페이지토큰')) 경고.push('상담AI_페이지토큰 없음 — 답을 만들어도 메신저로 안 나감');
+  if (!props.getProperty('상담AI_검증토큰')) 경고.push('상담AI_검증토큰 없음 — Meta 웹훅 등록이 안 됨');
+  if (props.getProperty('상담AI_IG계정ID') && !props.getProperty('상담AI_IG토큰')) {
+    경고.push('상담AI_IG토큰 없음 — Instagram 계정은 잠갔지만 답장을 보낼 수 없음');
+  }
+  if (props.getProperty('상담AI_OFF') === '1') 경고.push('상담AI_OFF=1 — 봇이 정지 상태');
+  return 경고;
+}
+
 /* ── 유호님이 직접 돌리는 점검 함수 ────────────────────────
  * Apps Script 편집기에서 실행 → 실행 로그에 결과가 뜬다. 메신저 연결 전에 여기서 먼저 검증. */
 function 상담AI_점검() {
   const props = PropertiesService.getScriptProperties();
-  const 준비 = [], 경고 = [];
+  const 준비 = [], 경고 = 상담AI_연결경고_(props);
   if (!props.getProperty('CLAUDE_API_KEY')) 준비.push('CLAUDE_API_KEY 없음 — 답변 자체가 불가');
-  if (!props.getProperty('상담AI_URL키')) 경고.push('상담AI_URL키 없음 — 메신저 요청을 전부 거부합니다(fail-closed)');
-  if (!props.getProperty('상담AI_페이지토큰')) 경고.push('상담AI_페이지토큰 없음 — 답을 만들어도 메신저로 안 나감');
-  if (!props.getProperty('상담AI_검증토큰')) 경고.push('상담AI_검증토큰 없음 — Meta 웹훅 등록이 안 됨');
-  if (props.getProperty('상담AI_OFF') === '1') 경고.push('상담AI_OFF=1 — 봇이 정지 상태');
   const 확정수 = 상담_지식.filter(k => k.확정).length;
   const 미확정 = 상담_지식.filter(k => !k.확정).map(k => k.주제);
 
