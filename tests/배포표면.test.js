@@ -126,3 +126,222 @@ test('topLevelFunctions — 문자열·주석 안의 중괄호에 속지 않는�
   assert.deepStrictEqual(fns.map((f) => f.name), ['doGet', 'next']);
   assert.ok(fns[0].body.includes('return s;'), 'doGet 본문이 문자열 중괄호에서 조기 종료됐다');
 });
+
+/* 배포 내용 검증은 PATH·실제 자격증명·네트워크를 쓰지 않는다. child_process만 모의로 바꾸고
+ * 실제 임시 파일을 받아 비교하는 라이브대조·점검·도장 접기를 함께 통과시킨다. */
+function 배포내용모의(t, options = {}) {
+  const os = require('node:os');
+  const { createRequire } = require('node:module');
+  const 기준 = fs.realpathSync(os.tmpdir());
+  const root = fs.mkdtempSync(path.join(기준, 'synk-deploy-test-'));
+  const projRoot = options.하위 ? path.join(root, 'crewcard') : root;
+  fs.mkdirSync(projRoot, { recursive: true });
+  const 파일들 = options.파일들 || { 'Code.js': 'const current = 1;\n', 'appsscript.json': '{}\n' };
+  const 쓰기 = (dir, files) => {
+    for (const [rel, value] of Object.entries(files)) {
+      fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+      fs.writeFileSync(path.join(dir, rel), value);
+    }
+  };
+  쓰기(projRoot, 파일들);
+  fs.writeFileSync(path.join(projRoot, '.clasp.json'), JSON.stringify({ scriptId: 'fixture-project', scriptExtensions: ['.js'] }));
+  fs.writeFileSync(path.join(projRoot, '.claspignore'), '**/*\n!Code.js\n!appsscript.json\n');
+  const pulls = [], 명령들 = [];
+  t.after(() => {
+    for (const p of pulls) assert.strictEqual(fs.existsSync(p.cwd), false, '받은 임시 파일이 남았다');
+    assert.strictEqual(path.dirname(path.resolve(root)), 기준, '시험 정리 경로가 임시 기준 밖이다');
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  let D;
+  const 실행 = (bin, args, opts) => {
+    명령들.push({ bin, args, opts });
+    if (bin === 'git') {
+      if (args.includes('status')) return options.미커밋 || '';
+      if (args[0] === 'log') return ''; // 다른 원문은 과거 판을 지어내지 않고 모름으로 남긴다.
+      if (args[0] === 'rev-list') return '1';
+      throw new Error('예상 밖 git 호출: ' + args.join(' '));
+    }
+    if (args.includes('deployments')) {
+      if (options.목록실패) throw new Error('모의 배포 목록 조회 실패');
+      const fp = D.지문(projRoot, root);
+      return (options.배포들 || [{ id: 'fixture-head', ver: 'HEAD' }])
+        .map((d) => `- ${d.id} @${d.ver} - ${d.desc === '일치' ? '#fp:' + fp : d.desc || ''}`).join('\n');
+    }
+    if (args.includes('pull')) {
+      const at = args.indexOf('--versionNumber');
+      const version = at < 0 ? 'HEAD' : args[at + 1];
+      pulls.push({ version, cwd: opts.cwd, args, opts });
+      const files = Object.prototype.hasOwnProperty.call(options.원격 || {}, version) ? options.원격[version] : 파일들;
+      if (files instanceof Error) throw files;
+      쓰기(opts.cwd, files);
+      if (options.받은뒤) options.받은뒤(version, projRoot);
+      return '받음';
+    }
+    throw new Error('예상 밖 외부 명령 — 실제로 실행하지 않음');
+  };
+  const entry = path.resolve(__dirname, '../tools/배포판점검.js');
+  const localRequire = createRequire(entry);
+  const module = { exports: {} };
+  new Function('require', 'module', '__dirname', fs.readFileSync(entry, 'utf8').replace(/^#![^\r\n]*/, ''))(
+    (id) => id === 'child_process' ? { execFileSync: 실행 } : localRequire(id), module, path.dirname(entry));
+  D = module.exports;
+  return { D, root, projRoot, pulls, 명령들, 파일들 };
+}
+
+test('라이브 — 설명 지문이 맞아도 HEAD와 실제 고정 버전 둘을 읽어 낡은 원문을 잡는다', (t) => {
+  const f = 배포내용모의(t, {
+    배포들: [{ id: 'live-44', ver: '44', desc: '일치' }],
+    원격: { 44: { 'Code.js': 'const current = 0;\n', 'appsscript.json': '{}\n' } },
+  });
+  const r = f.D.점검(f.projRoot, f.root, { 라이브: true, 시간제한: 3456 });
+  assert.deepStrictEqual(f.pulls.map((p) => p.version), ['HEAD', '44']);
+  assert.strictEqual(r.level, 'stale');
+  assert.strictEqual(r.측정, true);
+  assert.strictEqual(r.프로젝트HEAD.level, 'ok');
+  assert.strictEqual(r.고정버전들[0].level, 'stale');
+  assert.deepStrictEqual(r.파일들, ['Code.js']);
+  assert.strictEqual(f.D.실측접기(r, f.projRoot, f.root).초록, false);
+  assert.match(r.lines.join('\n'), /프로젝트 HEAD.*고정 버전/);
+  for (const c of f.명령들) {
+    assert.strictEqual(c.opts.windowsHide, true, '외부 명령 창을 숨긴다');
+    assert.ok(c.opts.timeout > 0, '외부 명령에 제한 시간이 있다');
+  }
+  for (const p of f.pulls) {
+    assert.strictEqual(p.opts.timeout, 3456);
+    assert.ok(path.relative(f.root, p.cwd).startsWith('..'), '작업본 밖에서 받는다');
+  }
+});
+
+test('라이브 — 설명이 없거나 틀려도 실제 원문이 같으면 확인되며 같은 버전은 한 번만 받는다', (t) => {
+  const f = 배포내용모의(t, {
+    배포들: [
+      { id: 'head', ver: 'HEAD' }, { id: 'one', ver: '44' },
+      { id: 'two', ver: '44', desc: '#fp:00000000' }, { id: 'three', ver: '45' },
+      { id: 'ephemeral', ver: '46', desc: 'temp-fixture' },
+    ],
+  });
+  const r = f.D.점검(f.projRoot, f.root, { 라이브: true });
+  assert.deepStrictEqual(f.pulls.map((p) => p.version), ['HEAD', '44', '45']);
+  assert.strictEqual(r.level, 'ok');
+  assert.strictEqual(r.측정, true);
+  assert.deepStrictEqual(r.고정버전들[0].배포들, ['one', 'two']);
+  assert.strictEqual(f.D.실측접기(r, f.projRoot, f.root).초록, true);
+});
+
+test('라이브 — 고정 배포가 없어도 프로젝트 HEAD 원문을 읽는다', (t) => {
+  const f = 배포내용모의(t);
+  const r = f.D.점검(f.projRoot, f.root, { 라이브: true });
+  assert.deepStrictEqual(f.pulls.map((p) => p.version), ['HEAD']);
+  assert.strictEqual(r.level, 'ok');
+  assert.strictEqual(r.고정버전들.length, 0);
+  assert.strictEqual(r.측정, true);
+});
+
+test('라이브 — HEAD 또는 고정 버전 다운로드 실패는 다른 대상까지 재고 전체 도장을 미확인으로 남긴다', (t) => {
+  for (const 실패 of ['HEAD', '44']) {
+    const f = 배포내용모의(t, {
+      배포들: [{ id: 'one', ver: '44', desc: '일치' }],
+      원격: { [실패]: new Error('모의 다운로드 실패') },
+    });
+    const r = f.D.점검(f.projRoot, f.root, { 라이브: true });
+    assert.deepStrictEqual(f.pulls.map((p) => p.version), ['HEAD', '44']);
+    assert.strictEqual(r.level, 'unreachable');
+    assert.strictEqual(r.측정, false);
+    assert.strictEqual(f.D.실측접기(r, f.projRoot, f.root).초록, false);
+    assert.match(r.lines.join('\n'), /확인 불가/);
+  }
+});
+
+test('라이브 — 배포 목록을 못 읽어도 HEAD는 재지만 고정 버전 0으로 접지 않는다', (t) => {
+  const f = 배포내용모의(t, { 목록실패: true });
+  const r = f.D.점검(f.projRoot, f.root, { 라이브: true });
+  assert.deepStrictEqual(f.pulls.map((p) => p.version), ['HEAD']);
+  assert.strictEqual(r.프로젝트HEAD.level, 'ok');
+  assert.strictEqual(r.배포목록확인, false);
+  assert.strictEqual(r.측정, false);
+  assert.strictEqual(f.D.실측접기(r, f.projRoot, f.root).초록, false);
+});
+
+test('라이브대조 — 하위 프로젝트 경로를 맞추고 로컬에 있어도 배포집합 밖인 원격 파일은 잡는다', (t) => {
+  const f = 배포내용모의(t, { 하위: true });
+  const equal = f.D.라이브대조(f.projRoot, f.root, { versionNumber: 44 });
+  assert.deepStrictEqual(equal.다름, []);
+  assert.deepStrictEqual(equal.라이브없음, []);
+  assert.deepStrictEqual(equal.저장소없음, []);
+  const g = 배포내용모의(t, {
+    하위: true,
+    파일들: { 'Code.js': 'x\n', 'appsscript.json': '{}\n', 'unused.js': 'ignored\n' },
+  });
+  const extra = g.D.라이브대조(g.projRoot, g.root, { versionNumber: 44 });
+  assert.deepStrictEqual(extra.저장소없음, ['crewcard/unused.js']);
+  assert.strictEqual(extra.총, 2);
+});
+
+test('라이브 — 줄바꿈만 다르면 내용 일치와 원문 바이트 불일치를 구분해 영구 뒤처짐으로 만들지 않는다', (t) => {
+  const f = 배포내용모의(t, { 원격: { HEAD: { 'Code.js': 'const current = 1;\r\n', 'appsscript.json': '{}\n' } } });
+  const r = f.D.점검(f.projRoot, f.root, { 라이브: true });
+  assert.strictEqual(r.level, 'ok');
+  assert.strictEqual(r.측정, true);
+  assert.strictEqual(r.원문바이트일치, false);
+  assert.match(r.lines.join('\n'), /CRLF\/LF만 바꾸면 같음\(원문 바이트는 다름\)/);
+  assert.strictEqual(f.D.실측접기(r, f.projRoot, f.root).초록, true);
+});
+
+test('라이브 — 템플릿 문자열 줄끝 공백 차이를 정상 내용 일치로 숨기지 않는다', (t) => {
+  const f = 배포내용모의(t, {
+    파일들: { 'Code.js': 'const text = `line \nnext`;\n', 'appsscript.json': '{}\n' },
+    원격: { HEAD: { 'Code.js': 'const text = `line\nnext`;\n', 'appsscript.json': '{}\n' } },
+  });
+  const r = f.D.점검(f.projRoot, f.root, { 라이브: true });
+  assert.strictEqual(r.level, 'stale');
+  assert.strictEqual(r.원문바이트일치, false);
+  assert.deepStrictEqual(r.프로젝트HEAD.표기차이, []);
+  assert.strictEqual(f.D.실측접기(r, f.projRoot, f.root).초록, false);
+});
+
+test('라이브 — 대상 사이에 작업본이 바뀌면 각각 같아 보여도 전체 일치 도장은 찍지 않는다', (t) => {
+  const newer = { 'Code.js': 'const current = 2;\n', 'appsscript.json': '{}\n' };
+  const f = 배포내용모의(t, {
+    배포들: [{ id: 'one', ver: '44' }], 원격: { 44: newer },
+    받은뒤: (v, dir) => { if (v === '44') fs.writeFileSync(path.join(dir, 'Code.js'), newer['Code.js']); },
+  });
+  const r = f.D.점검(f.projRoot, f.root, { 라이브: true });
+  assert.strictEqual(r.프로젝트HEAD.level, 'ok');
+  assert.strictEqual(r.고정버전들[0].level, 'ok');
+  assert.strictEqual(r.측정, false);
+  assert.strictEqual(f.D.실측접기(r, f.projRoot, f.root).초록, false);
+});
+
+test('비라이브 — 설명 지문 일치도 간접 증거이며 원문 실측 도장을 만들지 않는다', (t) => {
+  const f = 배포내용모의(t, { 배포들: [{ id: 'one', ver: '44', desc: '일치' }] });
+  const r = f.D.점검(f.projRoot, f.root);
+  assert.deepStrictEqual(f.pulls, []);
+  assert.strictEqual(r.level, 'ok');
+  assert.strictEqual(r.측정, false);
+  assert.match(r.lines.join('\n'), /간접 증거.*실제 내용은 미확인/);
+  assert.doesNotMatch(r.lines.join('\n'), /라이브 최신|옛 코드를 서빙한다/);
+  assert.strictEqual(f.D.실측접기(r, f.projRoot, f.root).초록, false);
+});
+
+test('라이브대조 — 잘못된 버전 번호는 외부 명령 전에 거부한다', (t) => {
+  const f = 배포내용모의(t);
+  assert.throws(() => f.D.라이브대조(f.projRoot, f.root, { versionNumber: '44 & echo unexpected' }), /버전 번호/);
+  assert.deepStrictEqual(f.명령들, []);
+});
+
+test('실측접기 — 점검 반환 뒤 파일이 바뀌면 검증 당시 지문을 보존하고 초록을 해제한다', (t) => {
+  const f = 배포내용모의(t);
+  const r = f.D.점검(f.projRoot, f.root, { 라이브: true });
+  assert.strictEqual(r.level, 'ok');
+  assert.strictEqual(r.localFp, f.D.지문(f.projRoot, f.root));
+  const 같은판 = f.D.실측접기(r, f.projRoot, f.root);
+  assert.strictEqual(같은판.측정, true);
+  assert.strictEqual(같은판.초록, true);
+  fs.writeFileSync(path.join(f.projRoot, 'Code.js'), 'const current = 9;\n');
+  const 다른판 = f.D.실측접기(r, f.projRoot, f.root);
+  assert.notStrictEqual(f.D.지문(f.projRoot, f.root), r.localFp);
+  assert.strictEqual(다른판.지문, r.localFp, '검증하지 않은 새 작업본 지문에 옛 결과를 붙이지 않는다');
+  assert.strictEqual(다른판.측정, false);
+  assert.strictEqual(다른판.초록, false);
+  assert.strictEqual(r.측정, true, '과거 관찰 자체를 현재 미측정으로 바꿔 쓰지 않는다');
+});
