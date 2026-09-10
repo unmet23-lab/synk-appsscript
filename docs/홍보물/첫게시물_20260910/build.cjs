@@ -1,4 +1,11 @@
 'use strict';
+// Caption sync uses only Python's standard library; artwork dependencies are unnecessary.
+if(process.argv.includes('--captions-only')){
+ const args=process.argv.slice(2).filter(x=>x!=='--captions-only');
+ if(args.some(x=>x!=='--dry-run'&&!x.startsWith('--id=')))throw Error('Captions-only accepts --id=<static account> and optional --dry-run');
+ const run=require('node:child_process').spawnSync('python',['-X','utf8',require('node:path').join(__dirname,'sync-captions.py'),...args],{stdio:'inherit',windowsHide:true});
+ if(run.error)throw run.error;process.exit(run.status??1);
+}
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {pathToFileURL}=require('node:url');
 const root=path.resolve(__dirname,'../../..'),loom=require(path.join(root,'tools/lib/loom')),font=require(path.join(root,'tools/lib/브랜드폰트'));
@@ -23,6 +30,14 @@ function art(item,s,i,shape='portrait'){
 }
 function getItems(){
  const result=['원고/static.json','원고/video.json'].flatMap(f=>{if(!fs.existsSync(path.join(__dirname,f)))return [];const x=read(f);return Array.isArray(x)?x:x.items});
+ const copySource=path.join(__dirname,'../첫게시물_20260911/비전_소개문안.json');
+ if(fs.existsSync(copySource)){
+  const copy=JSON.parse(fs.readFileSync(copySource,'utf8').replace(/^\uFEFF/,''));
+  for(const entry of copy.items.filter(x=>x.collection===path.basename(__dirname))){
+   const item=result.find(x=>x.id===entry.id);if(!item)throw Error('Unknown caption override: '+entry.id);
+   for(const field of ['caption','captionKo'])if(field in entry){if(typeof entry[field]!=='string'||!entry[field].trim())throw Error('Invalid '+field+': '+entry.id);item[field]=entry[field];}
+  }
+ }
  return result.sort((a,b)=>a.id.localeCompare(b.id));
 }
 function stylesheet(){
