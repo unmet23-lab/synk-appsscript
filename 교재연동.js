@@ -587,89 +587,109 @@ function writeVoiceLinks_(ss) {
   if (col) writeIfChanged(pf, 2, col, out);
 }
 
-/* ── A-2b. [v9.105] 🗑 음성 동의 철회 실행 — 무기한 보관의 **유일한 삭제 트리거** ──────────
- * v9.104가 보관을 무기한으로 바꾸면서 시간 기반 자동 삭제가 사라졌다. 그러면 동의서의
- * "철회하시면 보관 중인 녹음을 모두 삭제합니다"가 **코드로 실행할 수단이 없는 약속**이 된다
- * — 문장이 참이 되려면 지울 수 있어야 한다. 지워야 할 곳은 세 군데다:
- *   ① Drive 원본 파일  ② voice_log 행  ③ profiles 목소리성장카드(첫 목소리 URL이 박혀 있다)
- * 여기에 ④ 상담시트 음성동의를 '아니요'로 되돌려 **다음 제출이 자동 보류**되게 한다
- * (안 되돌리면 지운 그날 밤 스위프가 새 녹음을 다시 적재한다).
- *
- * ⚠ 비가역이므로 **미리보기가 기본**이다. voiceWithdraw('SYNK-001')은 무엇이 지워질지만 보여주고,
- *   실제 실행은 voiceWithdraw('SYNK-001', true). Drive는 완전 삭제가 아니라 휴지통으로 보낸다
- *   (30일 복구 창 — 오판을 되돌릴 수 있고, 30일 뒤 자동 영구 삭제라 약속에도 어긋나지 않는다). */
+/* ── A-2b. 음성 동의 철회: 이 함수가 처리하는 네 곳의 상태만 보고한다 ──────────
+ * 상담시트 동의를 먼저 철회하고, voice_log에 연결된 Drive 파일을 휴지통으로 옮긴 뒤
+ * 성공한 파일의 voice_log 행만 지운다. 실패·파일ID 미확인 행은 재시도 근거로 남긴다.
+ * profiles 목소리성장카드도 비운다. 원본 폼·파생자료·별도 사본·백업 삭제는 이 함수의 범위 밖이다.
+ * 미리보기가 기본이며 confirm === true일 때만 실행한다. 휴지통 이동을 영구 삭제로 보고하지 않는다. */
 function voiceWithdraw(studentId, confirm) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sid = String(studentId || '').trim();
   if (!sid) {
     const usage = '사용법: voiceWithdraw("학생ID") → 무엇이 지워질지 미리보기\n' +
-      '        voiceWithdraw("학생ID", true) → 실제 삭제(Drive는 휴지통 30일 보관)';
+      '        voiceWithdraw("학생ID", true) → 범위 내 철회 처리(Drive는 휴지통 이동)';
     Logger.log(usage); return usage;
   }
   const vl = ss.getSheetByName('voice_log');
   const rows = (vl && vl.getLastRow() >= 2) ? vl.getRange(2, 1, vl.getLastRow() - 1, 6).getValues() : [];
   const mine = [];
-  rows.forEach((r, i) => { if (String(r[0] || '').trim() === sid) mine.push({ row: i + 2, date: r[1], mission: r[2], url: r[3], fid: String(r[4] || '') }); });
+  rows.forEach((r, i) => { if (String(r[0] || '').trim() === sid) mine.push({ row: i + 2, fid: String(r[4] || '').trim() }); });
 
-  const head = ['🗑 음성 동의 철회 — ' + sid + (confirm === true ? ' (실행)' : ' (미리보기)'),
+  const head = ['🗑 음성 동의 철회' + (confirm === true ? ' (실행)' : ' (미리보기)'),
     '녹음 기록: ' + mine.length + '건'];
-  mine.slice(0, 10).forEach(m => head.push('  · ' + (m.date instanceof Date ? Utilities.formatDate(m.date, ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd') : String(m.date)) + ' ' + (m.mission || '')));
-  if (mine.length > 10) head.push('  … 외 ' + (mine.length - 10) + '건');
+  const scopeNote = '처리 범위: ①상담시트 음성동의 ②voice_log에 연결된 Drive 파일 ③voice_log 행 ④profiles 목소리성장카드.\n'
+    + '원본 제출 폼·응답 시트, 파생자료(전사·평가·전달 기록 등), 별도 사본·백업은 이 함수에서 삭제하지 않습니다. 해당 경로는 별도 확인·후속 처리가 필요하며, 이 결과는 전체 자료의 삭제 완료를 뜻하지 않습니다.';
 
   if (confirm !== true) {
-    head.push('', '지울 곳: ①Drive 파일 ' + mine.filter(m => m.fid).length + '개(휴지통) ②voice_log ' + mine.length + '행 ③목소리성장카드 ④상담시트 음성동의 → 「아니요」',
-      '', '실제로 지우려면: voiceWithdraw("' + sid + '", true)');
+    head.push('', '처리 예정: 동의 → 「아니요」, 파일ID가 있는 녹음 ' + mine.filter(m => m.fid).length + '행의 Drive 파일 → 휴지통, 성공한 파일의 voice_log 행 삭제, 성장 카드 초기화.',
+      '파일ID 미확인 ' + mine.filter(m => !m.fid).length + '행은 남겨 두고 수기 확인합니다. 실패한 파일의 행도 재시도를 위해 보존합니다.',
+      '', scopeNote, '', '실제 실행은 같은 학생ID와 confirm=true를 지정하세요.');
     Logger.log(head.join('\n')); return head.join('\n');
   }
 
   // [v9.125] 실행 순서 재편: ④동의 되돌리기를 **맨 앞**으로 — 뒤 단계가 예외로 죽어도 재유입(그날 밤 스위프의
   //   재적재)만은 반드시 차단된다. 구 순서(①②③④)는 ③이 던지면 ④가 안 돌아 철회가 조용히 무효화됐다.
   // ④→① 동의를 '아니요'로
-  let consentSet = '실패(수기 확인 필요)';
+  let consentSet = '미처리(상담시트·동의 열 수기 확인 필요)';
   try {
     const consult = SpreadsheetApp.openById(CONSULT_SHEET_ID).getSheetByName('상담데이터입력');
     const w = consult.getLastColumn();
     const hdr = consult.getRange(2, 1, 1, w).getValues()[0].map(h => String(h || '').trim());
     const ci = hdr.indexOf(CONSENT_EXT_HEADERS[0]), si = hdr.indexOf('학생ID');
     if (ci > -1 && si > -1) {
-      const body = consult.getRange(3, 1, consult.getLastRow() - 2, w).getValues();
-      let hit = 0;
+      const body = consult.getLastRow() > 2 ? consult.getRange(3, 1, consult.getLastRow() - 2, w).getValues() : [];
+      let hit = 0, consentFailed = 0;
       body.forEach((r, i) => {
         if (String(r[si] || '').trim() !== sid) return;
-        consult.getRange(i + 3, ci + 1).setValue('아니요, 원하지 않습니다'); hit++;
+        try { consult.getRange(i + 3, ci + 1).setValue('아니요, 원하지 않습니다'); hit++; }
+        catch (e) { consentFailed++; }
       });
-      consentSet = hit ? hit + '행 「아니요」로 변경' : '해당 학생 행 없음(수기 확인)';
+      consentSet = (hit ? hit + '행 「아니요」로 변경' : '미처리(해당 동의 행 없음 또는 변경 실패)')
+        + (consentFailed ? ' · 변경 실패 ' + consentFailed + '행(재확인 필요)' : '');
     }
-  } catch (e) { Logger.log('동의 되돌리기 실패: ' + e); }
-  // ② Drive 휴지통 — 실패해도 나머지는 진행한다(파일이 이미 없을 수 있다)
-  let trashed = 0, failed = 0;
+  } catch (e) { consentSet = '실패(상담시트 접근·동의 변경 재확인 필요)'; }
+  // ② Drive 휴지통 — 실패·ID 미확인 파일의 행은 삭제하지 않는다. URL에서 삭제 대상을 추정하지 않는다.
+  let trashed = 0, failed = 0, unidentified = 0;
+  const fileResults = Object.create(null);
   mine.forEach(m => {
-    if (!m.fid) return;
-    try { DriveApp.getFileById(m.fid).setTrashed(true); trashed++; }
-    catch (e) { failed++; Logger.log('파일 휴지통 실패(' + m.fid + '): ' + e); }
+    if (!m.fid) { unidentified++; return; }
+    if (!Object.prototype.hasOwnProperty.call(fileResults, m.fid)) {
+      try { DriveApp.getFileById(m.fid).setTrashed(true); fileResults[m.fid] = true; trashed++; }
+      catch (e) { fileResults[m.fid] = false; failed++; }
+    }
+    m.trashed = fileResults[m.fid];
   });
-  // ③ voice_log 행 삭제 — 아래에서 위로 지워야 인덱스가 밀리지 않는다
-  mine.map(m => m.row).sort((a, b) => b - a).forEach(r => vl.deleteRow(r));
+  // ③ 휴지통 이동 성공분만 아래에서 위로 삭제한다. 행 삭제 실패도 재시도 근거를 남긴다.
+  let deletedRows = 0, failedRows = 0;
+  mine.filter(m => m.trashed).map(m => m.row).sort((a, b) => b - a).forEach(r => {
+    try { vl.deleteRow(r); deletedRows++; } catch (e) { failedRows++; }
+  });
   /* [v9.241] **의도한 축소이므로 기준선도 내린다** — 안 그러면 주간 워치독이 다음 주부터
    *   「수집 장부가 줄었다」를 매주 외친다. 우리가 시킨 삭제라 따를 처방이 없는 경보다(F103).
    *   데모 퇴장(`wipe`)과 같은 규칙을 이 통로에도 적는다 — 수집 탭에서 **행을 지우는 자리**는
    *   여기와 거기 둘뿐이고, 둘 다 그 자리에서 내린다(①배포 검수 P2 · 723c1d0137a4). */
-  if (mine.length) 탭수축기준선지움_('voice_log');
+  let baselineNote = '';
+  if (deletedRows) {
+    try { 탭수축기준선지움_('voice_log'); } catch (e) { baselineNote = ' · 수집량 기준선 갱신 실패(재확인 필요)'; }
+  }
   // ④ 성장 카드 비우기 — 첫 목소리 URL이 카드 HTML에 박혀 있어 지우지 않으면 링크가 남는다.
   //    [v9.125] 헤더만 있는 profiles(getLastRow()=1) 가드 — getRange(2,1,0,1) 예외가 뒤 단계를 죽이던 구멍
-  const pf = ss.getSheetByName('profiles');
-  const col = pf ? tbProfileCol_(pf, '목소리성장카드') : 0;
-  if (pf && col && pf.getLastRow() >= 2) {
-    const ids = pf.getRange(2, 1, pf.getLastRow() - 1, 1).getValues();
-    ids.forEach((r, i) => { if (String(r[0] || '').trim() === sid) pf.getRange(i + 2, col).clearContent(); });
-  }
+  let cardStatus = '미처리(profiles·성장 카드 열 재확인 필요)';
+  try {
+    const pf = ss.getSheetByName('profiles');
+    const col = pf ? tbProfileCol_(pf, '목소리성장카드') : 0;
+    if (pf && col) {
+      const ids = pf.getLastRow() >= 2 ? pf.getRange(2, 1, pf.getLastRow() - 1, 1).getValues() : [];
+      let cleared = 0, cardFailed = 0;
+      ids.forEach((r, i) => {
+        if (String(r[0] || '').trim() !== sid) return;
+        try { pf.getRange(i + 2, col).clearContent(); cleared++; } catch (e) { cardFailed++; }
+      });
+      cardStatus = ((cleared || cardFailed) ? cleared + '행 초기화' : '초기화 대상 없음')
+        + (cardFailed ? ' · 실패 ' + cardFailed + '행(재확인 필요)' : '');
+    }
+  } catch (e) { cardStatus = '실패(성장 카드 재확인 필요)'; }
 
-  head.push('', '✅ Drive 휴지통 ' + trashed + '개' + (failed ? ' (실패 ' + failed + ')' : '') +
-    ' · voice_log ' + mine.length + '행 삭제 · 성장 카드 초기화 · 동의: ' + consentSet,
-    'ⓘ Drive 휴지통은 30일 뒤 자동 영구 삭제됩니다(그 전엔 복구 가능).');
+  head.push('', '처리 결과', '① 동의: ' + consentSet,
+    '② Drive: 휴지통 이동 ' + trashed + '개 · 실패 ' + failed + '개 · 파일ID 미확인 ' + unidentified + '행',
+    '③ voice_log: ' + deletedRows + '행 삭제 · 남은 ' + (mine.length - deletedRows) + '행'
+      + (failedRows ? ' · 행 삭제 실패 ' + failedRows + '행' : '') + baselineNote,
+    '④ 성장 카드: ' + cardStatus,
+    '실패·미처리 항목은 완료되지 않았습니다. 남은 voice_log 행은 원인을 확인한 뒤 같은 함수로 재시도할 수 있습니다.',
+    'Drive 휴지통 이동은 영구 삭제 완료가 아닙니다.', '', scopeNote);
   const msg = head.join('\n');
   Logger.log(msg);
-  adminMail('[SYNK] 🗑 음성 동의 철회 처리 — ' + sid, msg);
+  adminMail('[SYNK] 🗑 음성 동의 철회 처리 결과', msg);
   return msg;
 }
 
