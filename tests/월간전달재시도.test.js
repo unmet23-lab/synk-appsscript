@@ -263,6 +263,8 @@ test('카드: 생성 후 행 기록 전 중단으로 남은 PNG는 이름이 유
   h.files.set('ORPHAN_______1', h.file('ORPHAN_______1', 'SYNK_card_2026-09-S1.png'));
   h.E.runReportCards_(); assert.equal(h.calls.create.length, 0); assert.equal(h.calls.renders, 0);
   assert.equal(h.calls.mail.length, 1);
+  assert.doesNotMatch(h.calls.mail[0].body, /10P|2회|포인트|출석/);
+  assert.match(h.calls.mail[0].body, /첨부된 이미지/);
 });
 
 test('명시 확인한 legacy 카드 한 건만 기존 PNG로 회수하며 confirmed sent는 다시 열지 않는다', () => {
@@ -280,6 +282,15 @@ test('해소함수는 verified=true라도 운영 소유자 확인이 없으면 I
   assert.equal(h.calls.reads.length, 0); assert.equal(h.calls.mail.length, 0);
   delete h.E.automationOwnerAllowed_;
   assert.throws(() => h.E.resolveMonthlyDelivery_('card', '2026-09-S1', 'sent', true), /소유자/);
+});
+
+test('월간 명시적 API 입구도 같은 소유자/실제 확인 검증을 통과해야 한다', () => {
+  const h = harness({ owner: false });
+  assert.throws(() => h.E.resolveMonthlyDelivery('card', '2026-09-S1', 'not_sent', true), /소유자/);
+  assert.equal(h.calls.mail.length, 0); assert.equal(h.calls.reads.length, 0);
+  const owner = harness();
+  assert.throws(() => owner.E.resolveMonthlyDelivery('card', '2026-09-S1', 'not_sent', false), /확인/);
+  assert.equal(owner.calls.reads.length, 0);
 });
 
 test('카드: URL이 다른 학생 PNG를 가리키면 실제 파일명/월/SID가 달라 발송하지 않는다', () => {

@@ -3491,6 +3491,8 @@ function runReportCardsLocked_() {
           const cardId = ym + '-' + m.d.sid, filename = 'SYNK_card_' + cardId + '.png';
           const files = folder.getFilesByName(filename);
           let file = files.hasNext() ? files.next() : null;
+          // 복구한 PNG의 생성 시점 수치는 알 수 없다. 현재 수치로 과거 첨부를 설명하지 않는다.
+          const recoveredFile = !!file;
           if (files.hasNext()) throw new Error('동명 카드 파일 여러 개');
           if (!file) {
             Utilities.sleep(350);
@@ -3498,7 +3500,7 @@ function runReportCardsLocked_() {
             file = folder.createFile(blob); // 비공개 유지: 공개 공유 호출 없음.
           }
           const body = m.d.name + ' 학생의 ' + label + ' 성장 리포트가 도착했어요!\n\n' +
-            '포인트 ' + m.d.pointsText + ' · 출석 ' + m.d.attendText + '\n' +
+            (recoveredFile ? '' : '포인트 ' + m.d.pointsText + ' · 출석 ' + m.d.attendText + '\n') +
             '리포트 카드는 첨부된 이미지로 확인해 주세요. 📎\n\n' +
             '한 달 동안 수고 많았습니다. 다음 달도 함께 성장해요!\n- 뇌과학으로 배우는 한국어, SYNK';
           const row = [cardId, m.d.sid, ym, 'https://lh3.googleusercontent.com/d/' + file.getId(),
@@ -3625,6 +3627,11 @@ function monthlyDeliveryHealth_() {
 
 // 관리자가 수신 기록을 확인한 한 건만 해소하는 내부 함수. 자동 추정/일괄 초기화는 없다.
 // outcome='sent': 확인된 전달, 'not_sent': 미전달이 확인되어 재시도 허용. true는 그 확인을 뜻한다.
+// 실행 API는 '_'로 끝나는 private 함수를 거절한다. 같은 소유자 검증을 지나는 명시적 입구다.
+function resolveMonthlyDelivery(kind, id, outcome, verified) {
+  return resolveMonthlyDelivery_(kind, id, outcome, verified);
+}
+
 function resolveMonthlyDelivery_(kind, id, outcome, verified) {
   if (typeof automationOwnerAllowed_ !== 'function' || automationOwnerAllowed_() !== true) throw new Error('운영 소유자 확인 필요');
   if (verified !== true || ['sent', 'not_sent'].indexOf(outcome) < 0) throw new Error('수신 기록의 명시적 확인 필요');
