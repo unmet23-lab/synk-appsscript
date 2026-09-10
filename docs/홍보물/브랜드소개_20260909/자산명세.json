@@ -67,10 +67,13 @@
   {
     "key": "letter",
     "source": "영상/public/공방/공방_편지봉투.avif",
-    "width": 3176,
-    "height": 2680,
+    "width": 1536,
+    "height": 1024,
     "alpha": true,
-    "output": "assets/letter.webp"
+    "output": "assets/letter.webp",
+    "sourceSha256": "7f0a23c1354fa989f373be2e54c27c649160735dbedc2a9fd202e6521769e3aa",
+    "outputSha256": "ff5d2826fa934a078f41e38fe8a8138f0dd6e8569f69238d090230cfd9f5da08",
+    "recipe": "inside-3840-webp-q94-alpha100-v1"
   },
   {
     "key": "book",

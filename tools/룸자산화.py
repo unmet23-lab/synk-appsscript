@@ -11,7 +11,8 @@
 # 몸·접지 두 장은 **같은 상자**로 자른다(따로 자르면 그림자가 어긋난다).
 #
 # 사용: python tools/룸자산화.py
-import sys, os, io, json, time, base64
+#       python tools/룸자산화.py --이름 공방_편지봉투  # 이 키만 변환, 나머지 값 보존
+import sys, os, io, json, time, base64, argparse
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -128,6 +129,11 @@ from PIL import Image
     "공방_열쇠":         {"크기": 256, "쓰임": "절 머리 — 여는 것·입장권·권한(SHIFT 의 «입학 정원 협상의 입장권»)"},
 })
 
+인자판 = argparse.ArgumentParser(description="Loom 구운 재질을 사용 크기로 변환한다")
+인자판.add_argument('--이름', choices=tuple(규격), help='이 키만 변환하고 다른 부품은 기존 값 그대로 둔다')
+인자 = 인자판.parse_args()
+실행규격 = {인자.이름: 규격[인자.이름]} if 인자.이름 else 규격
+
 
 def 상자(a, 문턱=6):
     """알파가 사는 최소 사각형. 없으면 None."""
@@ -218,21 +224,28 @@ def 원본고르기(이름):
 #   같이 사라졌고, 지면은 그 자리를 CSS 흉내로 되돌렸다. 그런데 `node tools/lib/loom.js --분모`
 #   는 「그 CSS 가 나갔나」만 보므로 그래도 초록을 냈다 — 빠진 줄 아무도 모르는 상태다.
 #   ⇒ 이제 원본이 없으면 **옛 값을 그대로 지키고, 지킨 수와 이름을 보고한다.**
-옛판 = {}
+옛문서, 옛판 = {}, {}
 if os.path.exists(낼곳):
     try:
-        옛판 = json.load(io.open(낼곳, encoding="utf-8")).get("부품", {}) or {}
+        옛문서 = json.load(io.open(낼곳, encoding="utf-8"))
+        옛판 = 옛문서.get("부품", {}) or {}
     except Exception as e:                                        # noqa: BLE001
+        if 인자.이름:
+            sys.exit("선택 변환은 기존 값을 보존해야 한다 — 옛 판을 못 읽었다: " + str(e))
         print("  ⚠ 옛 판을 못 읽었다(%s) — 지킬 값이 없다" % str(e)[:80])
+elif 인자.이름:
+    sys.exit("선택 변환은 기존 구운재질.json이 있어야 한다")
 
 낸것, 지킨것, 빈것, 되살린것 = {}, [], [], []
 합계 = 0
 print("■ Loom 자산화 — 구운 판 → 지면이 삼킬 수 있는 것\n")
-for 이름, spec in 규격.items():
+for 이름, spec in 실행규격.items():
     고른 = 원본고르기(이름)
     옛 = 옛판.get(이름)
 
     if 고른 is None:
+        if 인자.이름:
+            sys.exit("선택한 부품의 변환 가능한 원본이 없다: " + 이름)
         if 옛:
             낸것[이름] = 옛
             지킨것.append(이름)
@@ -281,7 +294,7 @@ for 이름, spec in 규격.items():
 
 # 🔑 0은 분모와 함께 쓴다 — 「몇 개 냈다」만 적으면 안 낸 것이 이름 없이 사라진다.
 print("\n  합계 = 새로 담은 것 %d + 옛 값을 지킨 것 %d + 빈 것 %d (전체 %d)"
-      % (len(낸것) - len(지킨것), len(지킨것), len(빈것), len(규격)))
+      % (len(낸것) - len(지킨것), len(지킨것), len(빈것), len(실행규격)))
 if 지킨것:
     print("  🧷 옛 값을 지킨 것: " + ", ".join(지킨것))
     print("     ↳ 이 부품들은 원본 그림이 폴더에 없다. 다시 구우려면 그 이름으로 굽기 일감을 세운다.")
@@ -292,7 +305,7 @@ if 되살린것:
 print("  지면에 실리는 무게 = %.1fKB (base64 전 · 실제 %.1fKB)" % (합계 / 1024, 합계 * 4 / 3 / 1024))
 
 # 🔴 장부는 «옆에 다 쓰고 나서» 바꿔 낀다(09-05 실사고 — `open(...,'w')` 는 여는 순간 0바이트다).
-글자 = json.dumps({
+문서 = {
     "판": "loom-구운재질 v2",
     "만든날": "2026-08-16",
     "고친날": time.strftime("%Y-%m-%d"),
@@ -300,7 +313,10 @@ print("  지면에 실리는 무게 = %.1fKB (base64 전 · 실제 %.1fKB)" % (�
     "원본 고르는 자": "가장 새로 구운 것이 이긴다(만든 시각). 흰 바탕이 안 걷힌 생 PNG 은 원본으로 안 친다",
     "왜 base64 인가": "외부 참조는 첨부 단독 지면에서 전멸한다(실측 08-15 · 7/7)",
     "부품": 낸것,
-}, ensure_ascii=False)
+}
+if 인자.이름:
+    문서 = {**옛문서, "부품": {**옛판, **낸것}}
+글자 = json.dumps(문서, ensure_ascii=False)
 임시 = 낼곳 + ".tmp"
 with open(임시, "w", encoding="utf-8", newline="") as f:
     f.write(글자)
