@@ -1,0 +1,124 @@
+{
+  "baseline": "cf2fb17",
+  "file": "docs/홍보물/마케팅실행_20260909/공개수업/index.html",
+  "bodyOutsideLogoIdentical": true,
+  "before320": {
+    "viewport": 320,
+    "scrollWidth": 382,
+    "images": [
+      {
+        "src": "../assets/brand-synk.webp",
+        "left": 22,
+        "right": 212,
+        "top": 29.96875,
+        "bottom": 112.03125,
+        "width": 190,
+        "height": 82.0625,
+        "loaded": true,
+        "objectFit": "fill"
+      },
+      {
+        "src": "../assets/brand-shift.webp",
+        "left": 234,
+        "right": 382.421875,
+        "top": 45,
+        "bottom": 91,
+        "width": 148.421875,
+        "height": 46,
+        "loaded": true,
+        "objectFit": "contain"
+      }
+    ]
+  },
+  "after": [
+    {
+      "viewport": 320,
+      "scrollWidth": 320,
+      "images": [
+        {
+          "src": "../assets/brand-full-shift-ink.webp",
+          "left": 22,
+          "right": 298,
+          "top": 30,
+          "bottom": 112,
+          "width": 276,
+          "height": 82,
+          "loaded": true,
+          "objectFit": "contain"
+        }
+      ]
+    },
+    {
+      "viewport": 390,
+      "scrollWidth": 390,
+      "images": [
+        {
+          "src": "../assets/brand-full-shift-ink.webp",
+          "left": 22,
+          "right": 323.15625,
+          "top": 30,
+          "bottom": 112,
+          "width": 301.15625,
+          "height": 82,
+          "loaded": true,
+          "objectFit": "contain"
+        }
+      ]
+    },
+    {
+      "viewport": 768,
+      "scrollWidth": 768,
+      "images": [
+        {
+          "src": "../assets/brand-full-shift-ink.webp",
+          "left": 40,
+          "right": 425.640625,
+          "top": 52,
+          "bottom": 157,
+          "width": 385.640625,
+          "height": 105,
+          "loaded": true,
+          "objectFit": "contain"
+        }
+      ]
+    },
+    {
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "images": [
+        {
+          "src": "../assets/brand-full-shift-ink.webp",
+          "left": 260,
+          "right": 645.640625,
+          "top": 52,
+          "bottom": 157,
+          "width": 385.640625,
+          "height": 105,
+          "loaded": true,
+          "objectFit": "contain"
+        }
+      ]
+    }
+  ],
+  "independentAudit": {
+    "allHtml": 105,
+    "currentHtml": 104,
+    "reviewBundle": 1,
+    "logoWrappers": 155,
+    "splitLogos": 0,
+    "representativePagesAt320": 6,
+    "overflowAfterLoad": 0
+  },
+  "aggregateZip": {
+    "zip": "마케팅실행_20260909_업로드꾸러미.zip",
+    "entries": 313,
+    "bytes": 197980494,
+    "sha256": "0405f0a75eb33cf2b39fd2015ef50a633c4cced1dc482e9cd26c126df643aded",
+    "utf8AndReopenedSha256": "passed",
+    "localLinksCheckedInsideZip": 623,
+    "missingLocalLinks": 0,
+    "classHtmlSameBytesAsCurrentSource": true,
+    "accountZipsUnchanged": 19,
+    "reason": "Only public class header and root usage note changed; account package members are unaffected."
+  }
+}

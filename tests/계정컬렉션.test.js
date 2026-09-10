@@ -98,3 +98,17 @@ test('완성 조합은 현행 승인 명세와 일치하며 사업명 원본과 
   for(const [key,file] of [['letter','봉투'],['book','책'],['scissors','가위']])assert.ok(manifest.find(x=>x.key===key).source.endsWith('/_개선/'+file+'-2.5.png'));
   for(const a of manifest.filter(x=>x.key.endsWith('page')))assert.ok(a.source.includes('/브랜드소개_20260909/소개서_4K/'),a.key);
 });
+
+test('공개수업도 현행 HTML 탐색에 포함하고 한 장의 완성 SHIFT 로고를 표시한다',()=>{
+  const {currentHtmlFiles}=require('../docs/홍보물/로고갱신_20260910.cjs');
+  const marketing=path.join(root,'docs/홍보물/마케팅실행_20260909');
+  const lecture=path.join(marketing,'공개수업/index.html');
+  assert.ok(currentHtmlFiles(marketing).includes(lecture),'media siblings must not exclude a public HTML page');
+  const html=fs.readFileSync(lecture,'utf8');
+  const header=html.match(/<div class="brand-lock"[^>]*>[\s\S]*?<\/div>/);
+  assert.ok(header,'public class logo header exists');
+  assert.equal((header[0].match(/<img\b/g)||[]).length,1);
+  assert.match(header[0],/data-approved-logo="SHIFT"/);
+  assert.match(header[0],/src="\.\.\/assets\/brand-full-shift-ink\.webp"/);
+  assert.doesNotMatch(header[0],/division-stitch-logo|brand-synk\.webp|brand-shift\.webp/);
+});

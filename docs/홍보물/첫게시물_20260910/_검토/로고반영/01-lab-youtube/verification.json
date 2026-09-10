@@ -1,0 +1,17 @@
+{
+  "at": "2026-09-10T10:05:44.830Z",
+  "sourceSha256": "5c2701a46c7a405ba9c7ffa31d933db922bd29b735b8dc47f77eec76b2200f31",
+  "sha256": "e59b927ccf6e232d5fc20280652580479e6bcb01d2ef4ebbe6397f777af7d533",
+  "audioStreamIdentical": true,
+  "audioStreamHash": "SHA256=5b1a275a5e11f061a4002abdc69bebc43e37293fe06773b06ed828e4b6dcc3ab",
+  "width": 1920,
+  "height": 1080,
+  "frames": 2855,
+  "duration": 95.166667,
+  "fullDecode": true,
+  "inputSha256": "862a249fe9f3b2370ef0a936ea618cb0d341a30a3731ff27fde339af91592304",
+  "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters",
+  "scope": "same accepted 01 timeline; new approved logos and updated same music film",
+  "externalPosting": false,
+  "appliedAt": "2026-09-10T10:07:41.908Z"
+}

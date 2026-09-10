@@ -1,0 +1,587 @@
+{
+  "at": "2026-09-10T10:34:57.925Z",
+  "status": "pass",
+  "policy": "SYNK만 무실땀 펠트. LAB/SHIFT/PULSE 사업명 고유색·스티치 보존.",
+  "approvedSource": "../마케팅실행_20260909/브랜드킷/배치용/",
+  "counts": {
+    "accounts": 19,
+    "uploadImages": 48,
+    "films": 7,
+    "pdfs": 7,
+    "logoVariants": 8
+  },
+  "records": [
+    {
+      "id": "01-lab-youtube",
+      "sha256": "e59b927ccf6e232d5fc20280652580479e6bcb01d2ef4ebbe6397f777af7d533",
+      "frames": 2855,
+      "duration": 95.166667,
+      "width": 1920,
+      "height": 1080,
+      "audioStreamIdentical": true,
+      "file": "01-lab-youtube/video.mp4",
+      "fullDecode": true,
+      "originalAudioStreamSha256": "SHA256=5b1a275a5e11f061a4002abdc69bebc43e37293fe06773b06ed828e4b6dcc3ab",
+      "proof": "_검토/로고반영/01-lab-youtube/verification.json",
+      "sourceSha256": "5c2701a46c7a405ba9c7ffa31d933db922bd29b735b8dc47f77eec76b2200f31",
+      "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters"
+    },
+    {
+      "id": "03-lab-tiktok",
+      "sha256": "ec92128f36fa9ebbc5bda3a573485f4048b437a73e32204cdd2c925c501ec82b",
+      "frames": 1230,
+      "duration": 41,
+      "width": 1080,
+      "height": 1920,
+      "audioStreamIdentical": true,
+      "file": "03-lab-tiktok/video.mp4",
+      "fullDecode": true,
+      "originalAudioStreamSha256": "SHA256=cb6f92c60fc7f6e22fa1130258f7660964eadc6cc72b4ee3bbc7aec93670af9a",
+      "proof": "_검토/로고반영/기존6편/03-lab-tiktok/verification.json",
+      "sourceSha256": "0dfb5f735f3f3157b5c87a8404fbe3501b0ddd9a95181a9e4a2f8390e0404ac9",
+      "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters"
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "sha256": "0617fc1dbfe9508802fa7b821d952961cae1d355ecaa8e55453dc2a372b75185",
+      "frames": 3510,
+      "duration": 117,
+      "width": 1920,
+      "height": 1080,
+      "audioStreamIdentical": true,
+      "file": "04-yuhobuilds-youtube/video.mp4",
+      "fullDecode": true,
+      "originalAudioStreamSha256": "SHA256=eac036b720c692d5471c6bca2c220f2a52a9f5237177663887ed9490e0510539",
+      "proof": "_검토/로고반영/기존6편/04-yuhobuilds-youtube/verification.json",
+      "sourceSha256": "76c2b794efac7c4ad4f0782000405207eb463907d53cbcdc1bce9ec9d868d822",
+      "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters"
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "sha256": "02b7f3ec656d4f40dd79cfc9d61ee3ef4aeb1c3c72ffe1f479588c425a29f182",
+      "frames": 1427,
+      "duration": 47.566667,
+      "width": 1080,
+      "height": 1920,
+      "audioStreamIdentical": true,
+      "file": "05-yuhobuilds-instagram/video.mp4",
+      "fullDecode": true,
+      "originalAudioStreamSha256": "SHA256=550eba2a35cf19396f139888b2096f4bbee1155457bdf0bce3fd50c7ae666c3f",
+      "proof": "_검토/로고반영/05-yuhobuilds-instagram/verification.json",
+      "sourceSha256": "63fe31d53e54d303ca408316fd0b84dea99dc6cb5c278e6a68d90a79db2060ef",
+      "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters"
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "sha256": "d6b72aa2f4f81223d9b29a41b613d2e8e8e0d54f10adcbe7b0e2774076d07a35",
+      "frames": 1350,
+      "duration": 45,
+      "width": 1080,
+      "height": 1920,
+      "audioStreamIdentical": true,
+      "file": "06-yuhobuilds-tiktok/video.mp4",
+      "fullDecode": true,
+      "originalAudioStreamSha256": "SHA256=3d5b86ee5c4c5b8b25f2164b3a21d17ede0b6cd421b72791b0e43a58f3541e52",
+      "proof": "_검토/로고반영/기존6편/06-yuhobuilds-tiktok/verification.json",
+      "sourceSha256": "72caf2afe11df7ba1c4194cd37cfb634f18213305f01e397d0340d1f0a9c15cb",
+      "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters"
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "sha256": "9895b8c050d3be57df3099e91a551673e2bd5bdd0f2d35e26a04824d0bb5a2d7",
+      "frames": 1407,
+      "duration": 46.9,
+      "width": 1080,
+      "height": 1920,
+      "audioStreamIdentical": true,
+      "file": "07-synkbrief-youtube/video.mp4",
+      "fullDecode": true,
+      "originalAudioStreamSha256": "SHA256=e503d5fa155ddbc439a58e76ac0282fc84ed213893a43048d7cbd1f452b718ad",
+      "proof": "_검토/로고반영/기존6편/07-synkbrief-youtube/verification.json",
+      "sourceSha256": "642dd198bd156bdfbd22e7a6dee91c48026014c598f207740990547c5ebd5f48",
+      "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters"
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "sha256": "dce8fdfca6db909d371dce5e6e51ed23dd5c3d72657ffad3ce0955b37526fd84",
+      "frames": 1330,
+      "duration": 44.333333,
+      "width": 1080,
+      "height": 1920,
+      "audioStreamIdentical": true,
+      "file": "09-synkbrief-tiktok/video.mp4",
+      "fullDecode": true,
+      "originalAudioStreamSha256": "SHA256=eec35d50e042736f704d0ab3780056dc065b83932ad9f2e48924e01856ac3bfa",
+      "proof": "_검토/로고반영/기존6편/09-synkbrief-tiktok/verification.json",
+      "sourceSha256": "8c9ec0b7fcd25d5d5b96ed2b3f04a4991e48fefa8abce24d597d98944c6e90f2",
+      "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters"
+    }
+  ],
+  "images": [
+    {
+      "file": "01-lab-youtube/upload-01.jpg",
+      "sha256": "dc346041af6fa80a31fc921a101cfcc14bdbec2ebdd3bfe11179efbd7157567d",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "02-lab-instagram/upload-01.jpg",
+      "sha256": "cd7933c9f3a3051c4502d362be35c69f46de0d4125ef721f21f8952ac0669e5a",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "02-lab-instagram/upload-02.jpg",
+      "sha256": "007387c4444566b033caa89bcb695e1b565e86c051347f154cc9b4c81e835a1c",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 992.1875,
+      "overflow": false
+    },
+    {
+      "file": "02-lab-instagram/upload-03.jpg",
+      "sha256": "82fdf11c4a9e90c35d4cd7e4b1027bbee9ca8aaee694f3115e64083cb2527d6a",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 1199.1875,
+      "overflow": false
+    },
+    {
+      "file": "02-lab-instagram/upload-04.jpg",
+      "sha256": "99466ffafed6d4e768646213b43d77d0f81739e07955889da4e28b7b0395630d",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 856.84375,
+      "overflow": false
+    },
+    {
+      "file": "02-lab-instagram/upload-05.jpg",
+      "sha256": "24cf92ef8fd42380d200d73cddf18d066ab6e9d3be40389d6fbf05399a0e93cf",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 879.1875,
+      "overflow": false
+    },
+    {
+      "file": "02-lab-instagram/upload-06.jpg",
+      "sha256": "0fba0a62a8fd85d6630a34144202e1b142a53c8b5b5d7791a0831df0cb56212f",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 722.1875,
+      "overflow": false
+    },
+    {
+      "file": "02-lab-instagram/upload-07.jpg",
+      "sha256": "b2d4dbabdfde1757ddc49f5af86e6bb510d8fe44e238b2bca13bd5c548074b38",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 702.375,
+      "overflow": false
+    },
+    {
+      "file": "03-lab-tiktok/upload-01.jpg",
+      "sha256": "e1b9f3a1f00f6e341a75ca89db45e4543c8bcac6fda2999501478f0df8310f01",
+      "width": 1080,
+      "height": 1920,
+      "copyBottom": 670.375,
+      "overflow": false
+    },
+    {
+      "file": "04-yuhobuilds-youtube/upload-01.jpg",
+      "sha256": "e27bb220b8a87f46c2e219c016922e4a3872f0a5cd6e209e72d0a9bd6d9c834a",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 642.375,
+      "overflow": false
+    },
+    {
+      "file": "05-yuhobuilds-instagram/upload-01.jpg",
+      "sha256": "f5d4218390cc883cbce1a3963ff6814439aa7a6201767acd374f418c27ead20f",
+      "width": 1080,
+      "height": 1920,
+      "copyBottom": 670.375,
+      "overflow": false
+    },
+    {
+      "file": "06-yuhobuilds-tiktok/upload-01.jpg",
+      "sha256": "8e176c4e806eaea415d5888aca1d99c7a544f422b5341fcce0211f9e6fda9f18",
+      "width": 1080,
+      "height": 1920,
+      "copyBottom": 670.375,
+      "overflow": false
+    },
+    {
+      "file": "07-synkbrief-youtube/upload-01.jpg",
+      "sha256": "77dcdec567d400a9a0be57fc5c06cde25987a88c905f9ec01cf3bb14a008d9f8",
+      "width": 1080,
+      "height": 1920,
+      "copyBottom": 670.375,
+      "overflow": false
+    },
+    {
+      "file": "08-synkbrief-instagram/upload-01.jpg",
+      "sha256": "774f9b5ae082e87d518ace3cba3a6fd5472432f20fb76a12f01a2677e4ec9b9b",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "08-synkbrief-instagram/upload-02.jpg",
+      "sha256": "18ff25e8c5485700639027e2a42d3e00aef02ccd32bc506b842031230551bab0",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 837.1875,
+      "overflow": false
+    },
+    {
+      "file": "08-synkbrief-instagram/upload-03.jpg",
+      "sha256": "9a92f4ccfb3fe3fa6fdbdd28fb02d079acf7fef79288668b3d4f9d6f87ee89bd",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 765.1875,
+      "overflow": false
+    },
+    {
+      "file": "08-synkbrief-instagram/upload-04.jpg",
+      "sha256": "21a14e9ec37bbb38286408e2914bfedde9142e433f03e4559004f34d80c45850",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 765.1875,
+      "overflow": false
+    },
+    {
+      "file": "08-synkbrief-instagram/upload-05.jpg",
+      "sha256": "07c68fe65816fc649bb7a25ae77d65877cab1e77ca0287a5502104c424eb1820",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 992.1875,
+      "overflow": false
+    },
+    {
+      "file": "08-synkbrief-instagram/upload-06.jpg",
+      "sha256": "6382b07bb656ddf3ecc4ee27beb3d343ad59c257990c222e4f1a681aed053329",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 992.1875,
+      "overflow": false
+    },
+    {
+      "file": "08-synkbrief-instagram/upload-07.jpg",
+      "sha256": "b1195fa9c616c24374cd9e654925d5bbb0d3d285e4e3d6efc1264402782965b5",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "09-synkbrief-tiktok/upload-01.jpg",
+      "sha256": "8d3044e387c9184b392fe163e51a36a856641286e2d9e50603cb4c986e77a570",
+      "width": 1080,
+      "height": 1920,
+      "copyBottom": 670.375,
+      "overflow": false
+    },
+    {
+      "file": "10-lab-facebook/upload-01.jpg",
+      "sha256": "0f04903b2d7b1137f8e02248e6d55a7112b2950a7d82ddcf071f54da21d95931",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "10-lab-facebook/upload-02.jpg",
+      "sha256": "2037786e1ce2f289e9fe98287972319b553a50d505a04a88e1afe8fa62142e54",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 765.1875,
+      "overflow": false
+    },
+    {
+      "file": "10-lab-facebook/upload-03.jpg",
+      "sha256": "75f2a8798a0a66a432432ae2252a992d627715f3ffecffa4a16c51d98b01ee2e",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 856.84375,
+      "overflow": false
+    },
+    {
+      "file": "10-lab-facebook/upload-04.jpg",
+      "sha256": "5762f8c34a06d81f503dee29f6042cc3e04d4cb341b8d31f0bac2995ac3767cd",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 920.1875,
+      "overflow": false
+    },
+    {
+      "file": "10-lab-facebook/upload-05.jpg",
+      "sha256": "5c923848ab0427698f8c3adcad1f23bbc6bcf575ae7304597e3b662630e93d9c",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 794.1875,
+      "overflow": false
+    },
+    {
+      "file": "10-lab-facebook/upload-06.jpg",
+      "sha256": "1c677043646270749af06a7bf257ec5a0f34179046f03273a546fcfe090f87c3",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 912.1875,
+      "overflow": false
+    },
+    {
+      "file": "10-lab-facebook/upload-07.jpg",
+      "sha256": "c83b8a8ad525964df7f3d514646adf35a755ea77ba0eaef490371754650a53be",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 872.375,
+      "overflow": false
+    },
+    {
+      "file": "11-yuhobuilds-threads/upload-01.jpg",
+      "sha256": "a961e4a4e29fb858ca94d70a1cdf94d70042947a885e2511e86ad35cc1a25981",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "12-synkbrief-threads/upload-01.jpg",
+      "sha256": "7c4191aaa8b4d14ed050608eb5d1a505d99a34429f720059c1c447dd613e46ba",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 955.375,
+      "overflow": false
+    },
+    {
+      "file": "13-yuhobuilds-linkedin/upload-01.jpg",
+      "sha256": "02ca4d737932f6239f5fc67fba3a26ef38fcfd60892f0a3d0745dc120d19265e",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "13-yuhobuilds-linkedin/upload-02.jpg",
+      "sha256": "2eeb92f500e26cd75bf0ea3dd7e5935346e5a9565ed576c3427028cf0c7edae5",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 1001.1875,
+      "overflow": false
+    },
+    {
+      "file": "13-yuhobuilds-linkedin/upload-03.jpg",
+      "sha256": "2ca3937de7fe949a6ff00fd70b6a9d97e35569cc7c484b25c2956a87d95dc4e6",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 1008.84375,
+      "overflow": false
+    },
+    {
+      "file": "13-yuhobuilds-linkedin/upload-04.jpg",
+      "sha256": "fa948bb7e62c9e88ff8096fc30f6e0df1d348eb304111d14b582cd6a949b4ff1",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 802.84375,
+      "overflow": false
+    },
+    {
+      "file": "13-yuhobuilds-linkedin/upload-05.jpg",
+      "sha256": "d4e92f37a3ffad2e80b8a2e7dea3705999718f346cf112eff29f1ed10003dc75",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 702.375,
+      "overflow": false
+    },
+    {
+      "file": "14-lab-telegram/upload-01.jpg",
+      "sha256": "04a19eed84811547117f17ab0cea238cfe148d1bf847b23de9084e13be00b304",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 773.203125,
+      "overflow": false
+    },
+    {
+      "file": "15-synklab-substack/upload-01.jpg",
+      "sha256": "913347991351d714078f4d5eba69dea38d8fa7607e2e267e71f93eb2f2211d8f",
+      "width": 1200,
+      "height": 800,
+      "copyBottom": 614.375,
+      "overflow": false
+    },
+    {
+      "file": "16-synk-instagram/upload-01.jpg",
+      "sha256": "f72897a995a408b60cf713c933e7628aa698adabf944ee5daba8098ac25c137c",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "16-synk-instagram/upload-02.jpg",
+      "sha256": "8ef0887138f22bddf95c4debdc2b80325cd6b45cc483ae630c8d11db8564039b",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 929.84375,
+      "overflow": false
+    },
+    {
+      "file": "16-synk-instagram/upload-03.jpg",
+      "sha256": "160925cab200078fd764dc3e89dcc309ea48cc48894cf6f0fcd6f09866808923",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 929.84375,
+      "overflow": false
+    },
+    {
+      "file": "16-synk-instagram/upload-04.jpg",
+      "sha256": "2dd953c28ea23ccfed6212432fff1248e1bb7632d9512e6691d494fe58b6267a",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 920.015625,
+      "overflow": false
+    },
+    {
+      "file": "16-synk-instagram/upload-05.jpg",
+      "sha256": "098e7ac366de1a157847269d02c2252708476161bfa2bfc98c4b55d7423b1f77",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 920.1875,
+      "overflow": false
+    },
+    {
+      "file": "16-synk-instagram/upload-06.jpg",
+      "sha256": "2b80c40843993b27d487c28604643e73e15a1b9d8e2c2fd468f25f94bc47eaaa",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "17-shift-naverblog/upload-01.jpg",
+      "sha256": "c25d611b1eb44797267ae4e9e9e30d1d0fbf6ce9be9a9dc80f52644db9bc98a8",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 630.375,
+      "overflow": false
+    },
+    {
+      "file": "17-shift-naverblog/upload-02.jpg",
+      "sha256": "ec6a9595d36fae0f44215c74d7ac7d200acb456714cef08d33f4fb8b497d2c04",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 992.1875,
+      "overflow": false
+    },
+    {
+      "file": "17-shift-naverblog/upload-03.jpg",
+      "sha256": "8dc3a478c0082d5f69b88d82c8346cca125684f347913ecf6d8e4bfeb3e29226",
+      "width": 1080,
+      "height": 1350,
+      "copyBottom": 702.375,
+      "overflow": false
+    },
+    {
+      "file": "18-shift-kakao/upload-01.jpg",
+      "sha256": "7c7c28ed1a7faf6eff8e6bc412d87de829374a2ffd559fa382e00b9f13324e45",
+      "width": 1080,
+      "height": 1080,
+      "copyBottom": 621.5625,
+      "overflow": false
+    },
+    {
+      "file": "19-shift-pinterest/upload-01.jpg",
+      "sha256": "04bf9ae46d6815b9c0a96a9da456ea2d20f04a57620d5186f51746af411b80f7",
+      "width": 1000,
+      "height": 1500,
+      "copyBottom": 1140.78125,
+      "overflow": false
+    }
+  ],
+  "assets": [
+    {
+      "file": "assets/logo-lab-paper.png",
+      "sha256": "d6a033898e123c30c7109483e6508bfc13668352588b9d431c713ec7c5759e2a"
+    },
+    {
+      "file": "assets/logo-lab.png",
+      "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201"
+    },
+    {
+      "file": "assets/logo-pulse-paper.png",
+      "sha256": "dea85c94b1872e932b6be9234cddc468dc879f46bed74822d0f353fb1dca6521"
+    },
+    {
+      "file": "assets/logo-pulse.png",
+      "sha256": "f5dc1c08a81976e5cdea4b9d9a6755d71efec681deb4d0ea9861fa7c3e3aad9d"
+    },
+    {
+      "file": "assets/logo-shift-paper.png",
+      "sha256": "1d7396f08c69af348e9a9764aca57bce3ef68441b785287c59507350b781eeda"
+    },
+    {
+      "file": "assets/logo-shift.png",
+      "sha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0"
+    },
+    {
+      "file": "assets/logo-synk-paper.png",
+      "sha256": "78de96ceb567f245281df78d01b82e5c3aba9fc0cc959dc3763967367fc3b7fe"
+    },
+    {
+      "file": "assets/logo-synk.png",
+      "sha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc"
+    }
+  ],
+  "pdfs": [
+    {
+      "file": "resources/shift-ai-workflow.pdf",
+      "sha256": "0656229fb0d690089357050cfd9c8a605cd3c91fdf7b46b02312a1fcf9aefb3d"
+    },
+    {
+      "file": "resources/shift-content-map.pdf",
+      "sha256": "d37e8dd4fc12567be9969a17711e7ad64f7d89d5ccc235967fd66d0ba3154e24"
+    },
+    {
+      "file": "resources/shift-inquiry.pdf",
+      "sha256": "52eddd9521da542e687cfc84944bcaa35a405e5c5556772670ad1460611e6e1d"
+    },
+    {
+      "file": "resources/shift-intro.pdf",
+      "sha256": "29d3ea2a114a1ab69a4b75520137c78e76e656c4ff755fffa21ae801dcbad8da"
+    },
+    {
+      "file": "resources/shift-lesson.pdf",
+      "sha256": "4d8caffbef3e25d93d2f80a54208d83fb4bd3fcb4f848c72970ef7bee1e98995"
+    },
+    {
+      "file": "resources/shift-offer.pdf",
+      "sha256": "4e0dc84668b21edbc702c406d8e7e9b1e636300ec05b9765cbf3af6d40fd8d0d"
+    },
+    {
+      "file": "13-yuhobuilds-linkedin/게시할자료.pdf",
+      "sha256": "6dcc3b34ee25faa6822f6094de8f443f1dc9a7fbe48b399133b40f9f42852453",
+      "pages": 5
+    }
+  ],
+  "scope": "현재 제공 영상·정적 실물의 로고 교체. 영상 AAC 원본 스트림, 기존 원고·음성·타이밍·승인 엔딩 보존. 05 영상 안 소개서와 01 음악 영상 안 로고도 포함.",
+  "visualProofs": [
+    "_검토/전체이미지.png",
+    "_검토/로고반영/linkedin-page1.png",
+    "_검토/로고반영/01-lab-youtube/review.png",
+    "_검토/로고반영/기존6편/review.png",
+    "_검토/로고반영/기존6편/entry-exit-review.png",
+    "_검토/로고반영/05-yuhobuilds-instagram/frame-1.8.png"
+  ],
+  "remaining": "현재 내레이션·대사·안내 음성은 전부 교체 대기. DIVE·유호 본인 목소리의 새 적용 기준이 준비된 뒤 사용처 전반을 교체하며, 그전에는 기존 음성 추가 보정·생성을 보류한다. AAC 보존 검사는 음성 품질 승인이 아니다.",
+  "voiceAcceptance": {
+    "status": "replacement_pending",
+    "voiceQualityApproved": false,
+    "speechOnly": true,
+    "source": "docs/브랜드_목소리/20260910/한국어_자연스러운_음성_설정.md"
+  }
+}

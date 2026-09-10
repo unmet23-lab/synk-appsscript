@@ -8,7 +8,8 @@ const manifest=()=>JSON.parse(fs.readFileSync(path.join(kit,'배치명세.json')
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 // Windows image previews can retain a mapped read handle. Replace the finished file without truncating that handle.
 function replaceFile(target,bytes){const data=Buffer.isBuffer(bytes)?bytes:Buffer.from(bytes);if(fs.existsSync(target)&&sha(fs.readFileSync(target))===sha(data))return;const tmp=target+'.logo-tmp';fs.writeFileSync(tmp,data);fs.renameSync(tmp,target);}
-const excluded=new Set(['_검토','미리보기','소개서_4K','캐러셀_업로드','캐러셀_고해상도','로고디테일','브랜드킷','_개선','packages','음성','공개수업','첫게시물_20260910']);
+const excluded=new Set(['_검토','미리보기','소개서_4K','캐러셀_업로드','캐러셀_고해상도','로고디테일','브랜드킷','_개선','packages','음성','첫게시물_20260910']);
+// Public-class HTML belongs to the public site even though its sibling media is managed separately.
 function files(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?(excluded.has(e.name)?[]:files(path.join(dir,e.name))):e.name.endsWith('.html')?[path.join(dir,e.name)]:[]);}
 function rewrite(html,file,base=path.dirname(file)){
  const relative=path.relative(path.dirname(file),path.join(base,'assets')).replaceAll('\\','/')||'.';
@@ -60,5 +61,5 @@ async function refreshFolder(base){
  fs.mkdirSync(path.join(base,'_검토'),{recursive:true});replaceFile(path.join(base,'_검토/로고갱신_20260910.json'),JSON.stringify(report,null,2));
  console.log(JSON.stringify({folder:path.basename(base),logos:report.assets.length,pages:report.pages.length}));return report;
 }
-module.exports={rewrite,refreshFolder,replaceFile};
+module.exports={rewrite,refreshFolder,replaceFile,currentHtmlFiles:files};
 if(require.main===module)(async()=>{for(const folder of process.argv.slice(2))await refreshFolder(path.resolve(folder));})().catch(e=>{console.error(e);process.exitCode=1});

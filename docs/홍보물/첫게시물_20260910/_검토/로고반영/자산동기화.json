@@ -1,0 +1,156 @@
+{
+  "at": "2026-09-10T09:46:20.197Z",
+  "policy": "SYNK: no stitches, felt preserved. Division lettering: existing color and stitches preserved.",
+  "copies": [
+    {
+      "file": "docs/홍보물/첫게시물_20260910/assets/logo-synk.png",
+      "beforeSha256": "92e376fca8412bcd66b32375dc4ebc9678def2ea084b2b10590a983b9f7b6aef",
+      "sha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc"
+    },
+    {
+      "file": "영상/public/firstposts20260910/logo-synk.png",
+      "beforeSha256": "92e376fca8412bcd66b32375dc4ebc9678def2ea084b2b10590a983b9f7b6aef",
+      "sha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/assets/logo-synk-paper.png",
+      "beforeSha256": null,
+      "sha256": "78de96ceb567f245281df78d01b82e5c3aba9fc0cc959dc3763967367fc3b7fe"
+    },
+    {
+      "file": "영상/public/firstposts20260910/logo-synk-paper.png",
+      "beforeSha256": null,
+      "sha256": "78de96ceb567f245281df78d01b82e5c3aba9fc0cc959dc3763967367fc3b7fe"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/assets/logo-lab.png",
+      "beforeSha256": "3d893a76599932d75309bf48727ffab9916982065a6deb395a92061a1e5a63d8",
+      "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201"
+    },
+    {
+      "file": "영상/public/firstposts20260910/logo-lab.png",
+      "beforeSha256": "3d893a76599932d75309bf48727ffab9916982065a6deb395a92061a1e5a63d8",
+      "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/assets/logo-lab-paper.png",
+      "beforeSha256": "12b1ee5f1abab319a1aea14ba168012a408f1b3fcb6faa426ccd3a80a4366653",
+      "sha256": "d6a033898e123c30c7109483e6508bfc13668352588b9d431c713ec7c5759e2a"
+    },
+    {
+      "file": "영상/public/firstposts20260910/logo-lab-paper.png",
+      "beforeSha256": "12b1ee5f1abab319a1aea14ba168012a408f1b3fcb6faa426ccd3a80a4366653",
+      "sha256": "d6a033898e123c30c7109483e6508bfc13668352588b9d431c713ec7c5759e2a"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/assets/logo-shift.png",
+      "beforeSha256": "d23aac0ee23c0775044aa9746a3302b669beaacc4f26e162b6ed15f3ffff0d75",
+      "sha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0"
+    },
+    {
+      "file": "영상/public/firstposts20260910/logo-shift.png",
+      "beforeSha256": "d23aac0ee23c0775044aa9746a3302b669beaacc4f26e162b6ed15f3ffff0d75",
+      "sha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/assets/logo-shift-paper.png",
+      "beforeSha256": "8df94b3b981ddddad5d2cbe45ac3a9f90c901f22d18d5f6e0c444ec72079233c",
+      "sha256": "1d7396f08c69af348e9a9764aca57bce3ef68441b785287c59507350b781eeda"
+    },
+    {
+      "file": "영상/public/firstposts20260910/logo-shift-paper.png",
+      "beforeSha256": "8df94b3b981ddddad5d2cbe45ac3a9f90c901f22d18d5f6e0c444ec72079233c",
+      "sha256": "1d7396f08c69af348e9a9764aca57bce3ef68441b785287c59507350b781eeda"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/assets/logo-pulse.png",
+      "beforeSha256": "505a65e008b09d4504645d6b10ef194fb7cdad327d2cffaaf926a97fb41e4f54",
+      "sha256": "f5dc1c08a81976e5cdea4b9d9a6755d71efec681deb4d0ea9861fa7c3e3aad9d"
+    },
+    {
+      "file": "영상/public/firstposts20260910/logo-pulse.png",
+      "beforeSha256": "505a65e008b09d4504645d6b10ef194fb7cdad327d2cffaaf926a97fb41e4f54",
+      "sha256": "f5dc1c08a81976e5cdea4b9d9a6755d71efec681deb4d0ea9861fa7c3e3aad9d"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/assets/logo-pulse-paper.png",
+      "beforeSha256": null,
+      "sha256": "dea85c94b1872e932b6be9234cddc468dc879f46bed74822d0f353fb1dca6521"
+    },
+    {
+      "file": "영상/public/firstposts20260910/logo-pulse-paper.png",
+      "beforeSha256": null,
+      "sha256": "dea85c94b1872e932b6be9234cddc468dc879f46bed74822d0f353fb1dca6521"
+    },
+    {
+      "file": "영상/public/계정별20260909/brand-synk.webp",
+      "beforeSha256": "9be5c8dccac9c3da088cd3517ad87fcf21d85e9aeb6bf29fe52a234d65cb2ae9",
+      "sha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40"
+    },
+    {
+      "file": "영상/public/마케팅실행20260909/brand-synk.webp",
+      "beforeSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "sha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40"
+    },
+    {
+      "file": "영상/public/마케팅실행20260909/brand-synk-paper.webp",
+      "beforeSha256": "ff2bb79a73d894fc179f653721e2ecf83f5d65c5091fd087ed0e9e3c0e7a5fcc",
+      "sha256": "ff2bb79a73d894fc179f653721e2ecf83f5d65c5091fd087ed0e9e3c0e7a5fcc"
+    },
+    {
+      "file": "영상/public/klofi20260909/synk-paper.webp",
+      "beforeSha256": "83e08d8791d7bc4030d26c65f732ada0e17f8c1512205bd0610af032f44abdde",
+      "sha256": "ff2bb79a73d894fc179f653721e2ecf83f5d65c5091fd087ed0e9e3c0e7a5fcc"
+    },
+    {
+      "file": "영상/public/릴10편/로고.png",
+      "beforeSha256": "b0d698208f7853bc45a60d97bc6712b51d85b57aa1d7f43f2103af1128cca4d0",
+      "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201"
+    },
+    {
+      "file": "영상/out/릴10편_사용자산/릴10편/로고.png",
+      "beforeSha256": "b0d698208f7853bc45a60d97bc6712b51d85b57aa1d7f43f2103af1128cca4d0",
+      "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/_검토/video/public/firstposts20260910/logo-synk.png",
+      "beforeSha256": null,
+      "sha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/_검토/video/public/firstposts20260910/logo-lab.png",
+      "beforeSha256": "3d893a76599932d75309bf48727ffab9916982065a6deb395a92061a1e5a63d8",
+      "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/_검토/video/public/firstposts20260910/logo-shift.png",
+      "beforeSha256": "d23aac0ee23c0775044aa9746a3302b669beaacc4f26e162b6ed15f3ffff0d75",
+      "sha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/_검토/video/public/firstposts20260910/logo-pulse.png",
+      "beforeSha256": null,
+      "sha256": "f5dc1c08a81976e5cdea4b9d9a6755d71efec681deb4d0ea9861fa7c3e3aad9d"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/_검토/video/public/firstposts20260910/logo-lab-paper.png",
+      "beforeSha256": "12b1ee5f1abab319a1aea14ba168012a408f1b3fcb6faa426ccd3a80a4366653",
+      "sha256": "d6a033898e123c30c7109483e6508bfc13668352588b9d431c713ec7c5759e2a"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/_검토/video/public/firstposts20260910/logo-shift-paper.png",
+      "beforeSha256": "8df94b3b981ddddad5d2cbe45ac3a9f90c901f22d18d5f6e0c444ec72079233c",
+      "sha256": "1d7396f08c69af348e9a9764aca57bce3ef68441b785287c59507350b781eeda"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/_검토/video/public/firstposts20260910/logo-synk-paper.png",
+      "beforeSha256": null,
+      "sha256": "78de96ceb567f245281df78d01b82e5c3aba9fc0cc959dc3763967367fc3b7fe"
+    },
+    {
+      "file": "docs/홍보물/첫게시물_20260910/_검토/video/public/firstposts20260910/logo-pulse-paper.png",
+      "beforeSha256": null,
+      "sha256": "dea85c94b1872e932b6be9234cddc468dc879f46bed74822d0f353fb1dca6521"
+    }
+  ]
+}

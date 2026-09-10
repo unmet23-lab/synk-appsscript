@@ -1,0 +1,20 @@
+{
+  "at": "2026-09-10T09:57:06.675Z",
+  "id": "07-synkbrief-youtube",
+  "sourceSha256": "642dd198bd156bdfbd22e7a6dee91c48026014c598f207740990547c5ebd5f48",
+  "sha256": "9895b8c050d3be57df3099e91a551673e2bd5bdd0f2d35e26a04824d0bb5a2d7",
+  "audioStreamIdentical": true,
+  "audioStreamHash": "SHA256=e503d5fa155ddbc439a58e76ac0282fc84ed213893a43048d7cbd1f452b718ad",
+  "logoRect": {
+    "x": 75,
+    "y": 166,
+    "w": 370,
+    "h": 174
+  },
+  "frames": 1407,
+  "scope": "Existing six movies with original content, voices, endings and timing. Only the existing FirstScene logo area was composed from approved current logo.",
+  "fullDecode": true,
+  "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters",
+  "externalPosting": false,
+  "appliedAt": "2026-09-10T10:00:44.141Z"
+}

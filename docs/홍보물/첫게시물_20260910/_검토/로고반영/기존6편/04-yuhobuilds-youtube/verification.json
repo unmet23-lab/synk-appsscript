@@ -1,0 +1,20 @@
+{
+  "at": "2026-09-10T09:56:32.339Z",
+  "id": "04-yuhobuilds-youtube",
+  "sourceSha256": "76c2b794efac7c4ad4f0782000405207eb463907d53cbcdc1bce9ec9d868d822",
+  "sha256": "0617fc1dbfe9508802fa7b821d952961cae1d355ecaa8e55453dc2a372b75185",
+  "audioStreamIdentical": true,
+  "audioStreamHash": "SHA256=eac036b720c692d5471c6bca2c220f2a52a9f5237177663887ed9490e0510539",
+  "logoRect": {
+    "x": 95,
+    "y": 35,
+    "w": 360,
+    "h": 160
+  },
+  "frames": 3510,
+  "scope": "Existing six movies with original content, voices, endings and timing. Only the existing FirstScene logo area was composed from approved current logo.",
+  "fullDecode": true,
+  "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters",
+  "externalPosting": false,
+  "appliedAt": "2026-09-10T10:00:42.534Z"
+}

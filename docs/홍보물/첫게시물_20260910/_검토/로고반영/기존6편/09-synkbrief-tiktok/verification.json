@@ -1,0 +1,20 @@
+{
+  "at": "2026-09-10T09:57:17.403Z",
+  "id": "09-synkbrief-tiktok",
+  "sourceSha256": "8c9ec0b7fcd25d5d5b96ed2b3f04a4991e48fefa8abce24d597d98944c6e90f2",
+  "sha256": "dce8fdfca6db909d371dce5e6e51ed23dd5c3d72657ffad3ce0955b37526fd84",
+  "audioStreamIdentical": true,
+  "audioStreamHash": "SHA256=eec35d50e042736f704d0ab3780056dc065b83932ad9f2e48924e01856ac3bfa",
+  "logoRect": {
+    "x": 75,
+    "y": 166,
+    "w": 370,
+    "h": 174
+  },
+  "frames": 1330,
+  "scope": "Existing six movies with original content, voices, endings and timing. Only the existing FirstScene logo area was composed from approved current logo.",
+  "fullDecode": true,
+  "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters",
+  "externalPosting": false,
+  "appliedAt": "2026-09-10T10:00:44.523Z"
+}

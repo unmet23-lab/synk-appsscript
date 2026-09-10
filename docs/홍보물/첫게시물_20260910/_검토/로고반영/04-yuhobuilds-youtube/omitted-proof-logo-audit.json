@@ -1,0 +1,41 @@
+{
+  "at": "2026-09-10T10:35:22.956883+00:00",
+  "id": "04-yuhobuilds-youtube",
+  "decision": "Stopped optional proof-capture re-render; retained current delivered film because the revised screenshot header logo is outside the visible crop. No apply script executed.",
+  "deliveredSha256": "0617fc1dbfe9508802fa7b821d952961cae1d355ecaa8e55453dc2a372b75185",
+  "deliveredReportMatches": true,
+  "currentFilmHeader": "Approved neutral SYNK without stitches; SHIFT stitches retained, verified in original encoded frame1.8.",
+  "savedInputFile": "_검토/video/04-yuhobuilds-youtube/render-input.json",
+  "savedInputSha256": "29fdbfcb19a032aef9f296f9913f5df9e790d1167df81d141b279664f5b77b48",
+  "source": "영상/src/firstposts20260910/FirstScene.tsx",
+  "sourceSha256": "3f5ff0e13ac50a0dde4edfbcee58e5299b5c6c6bd706b1f3777a49ce44a2b7cc",
+  "sourceLines": [
+    37,
+    41
+  ],
+  "landscapeProofCrop": {
+    "imageWidth": 1100,
+    "left": -95,
+    "top": -475,
+    "scene7Top": -1040,
+    "visiblePanelWidth": 860,
+    "visiblePanelHeight": 630
+  },
+  "evidenceFrames": [
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-0.1.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-1.8.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-106.8.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-116.9.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-12.9.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-13.1.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-14.8.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-25.8.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-40.8.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-52.8.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-68.8.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-80.8.png",
+    "_검토/로고반영/04-yuhobuilds-youtube/before-frame-94.8.png"
+  ],
+  "additionalNote": "proof-start/proof-ready source capture updates and static card delivery belong to video_logo_rollout. This interrupted candidate must not be published.",
+  "externalPosting": false
+}

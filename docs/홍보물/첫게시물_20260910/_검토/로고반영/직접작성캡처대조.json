@@ -1,0 +1,47 @@
+{
+  "at": "2026-09-10T10:31:37.885Z",
+  "records": [
+    {
+      "id": "proof-start",
+      "width": 1100,
+      "height": 1611,
+      "outsideLogoMeanRGB": 2.2543263981617803,
+      "outsideLogoMaxRGB": 212,
+      "outsideLogoChangedChannels": 95687,
+      "sha256": "94ff860ab5598541a667702629513120eeae4a06052d7a357f4b9b947ba199e8"
+    },
+    {
+      "id": "proof-ready",
+      "width": 1100,
+      "height": 1611,
+      "outsideLogoMeanRGB": 2.0871587100504825,
+      "outsideLogoMaxRGB": 212,
+      "outsideLogoChangedChannels": 98994,
+      "sha256": "e57e33920cf1ec408dc8672009ba59cebe0530da9a7cd4c54113706554c1b62d"
+    }
+  ],
+  "currentUses": [
+    "04-yuhobuilds-youtube",
+    "07-synkbrief-youtube",
+    "11-yuhobuilds-threads"
+  ],
+  "scope": "Same existing HTML, values, and input focus. Current logo source only.",
+  "visualInspection": "Both screenshots inspected. Same words, fields, result and focus; current native font rasterization differs slightly outside the logo. SYNK no-stitch, SHIFT stitches retained.",
+  "currentVideoScope": {
+    "headerAlreadyUpdated": [
+      "04-yuhobuilds-youtube",
+      "07-synkbrief-youtube"
+    ],
+    "embeddedLogoVisible": false,
+    "source": "영상/src/firstposts20260910/FirstScene.tsx:37,41",
+    "portraitCropTop": [
+      -451,
+      -1045
+    ],
+    "landscapeCropTop": [
+      -475,
+      -1040
+    ],
+    "additionalVideoRenderApplied": false
+  }
+}

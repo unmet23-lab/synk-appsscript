@@ -1,0 +1,17 @@
+{
+  "at": "2026-09-10T10:17:49.139Z",
+  "sourceSha256": "63fe31d53e54d303ca408316fd0b84dea99dc6cb5c278e6a68d90a79db2060ef",
+  "sha256": "02b7f3ec656d4f40dd79cfc9d61ee3ef4aeb1c3c72ffe1f479588c425a29f182",
+  "audioStreamIdentical": true,
+  "audioStreamHash": "SHA256=550eba2a35cf19396f139888b2096f4bbee1155457bdf0bce3fd50c7ae666c3f",
+  "width": 1080,
+  "height": 1920,
+  "frames": 1427,
+  "duration": 47.566667,
+  "fullDecode": true,
+  "inputSha256": "eb6cc7e9625433ce0cedab0d74b79d7515ab1e5d6a4790b59283489453313050",
+  "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters",
+  "scope": "Same existing timeline and original AAC; current approved logos in header and embedded artifact.",
+  "externalPosting": false,
+  "appliedAt": "2026-09-10T10:18:30.215Z"
+}

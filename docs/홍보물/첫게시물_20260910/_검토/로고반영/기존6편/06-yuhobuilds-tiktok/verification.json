@@ -1,0 +1,20 @@
+{
+  "at": "2026-09-10T09:56:55.236Z",
+  "id": "06-yuhobuilds-tiktok",
+  "sourceSha256": "72caf2afe11df7ba1c4194cd37cfb634f18213305f01e397d0340d1f0a9c15cb",
+  "sha256": "d6b72aa2f4f81223d9b29a41b613d2e8e8e0d54f10adcbe7b0e2774076d07a35",
+  "audioStreamIdentical": true,
+  "audioStreamHash": "SHA256=3d5b86ee5c4c5b8b25f2164b3a21d17ede0b6cd421b72791b0e43a58f3541e52",
+  "logoRect": {
+    "x": 75,
+    "y": 166,
+    "w": 370,
+    "h": 174
+  },
+  "frames": 1350,
+  "scope": "Existing six movies with original content, voices, endings and timing. Only the existing FirstScene logo area was composed from approved current logo.",
+  "fullDecode": true,
+  "visualInspection": "Actual complete frames, logo edges, scene entry/exit inspected; no visible panel seam or clipped letters",
+  "externalPosting": false,
+  "appliedAt": "2026-09-10T10:00:43.638Z"
+}

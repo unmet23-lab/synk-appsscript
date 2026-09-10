@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-10T09:52:08.185Z",
+  "logoSha256": "ff2bb79a73d894fc179f653721e2ecf83f5d65c5091fd087ed0e9e3c0e7a5fcc",
+  "geometry": {
+    "left": 92,
+    "top": 834,
+    "width": 115,
+    "height": 48
+  },
+  "sourceGeometry": "영상/src/klofi20260909/index.tsx: logo inside fixed Ink editorial panel",
+  "outputs": [
+    {
+      "file": "01-lab-youtube/업로드용-원본.mp4",
+      "beforeSha256": "a127c613ac727a3dd28dc95c53a0529743295e040b434a29eb272f6c97a0e8ea",
+      "sha256": "6ab771060902ecf5c295e0e4574a7f205bfadb7ddfc2abb6a1ad920831ee2256",
+      "audioStreamHash": "SHA256=821a1476e8a0d2135f534a8864704009a7e56baf147e1acad36a56267730f09b",
+      "audioStreamIdentical": true,
+      "fullDecode": true
+    },
+    {
+      "file": "01-lab-youtube/video.mp4",
+      "beforeSha256": "dc49a898dbb3fff7699747a41b12bc12686034dc329f34b615e50443967017dd",
+      "sha256": "8172ba9efc415334533f37590cc93161dd608ab516ad4370b21eb1483aacf894",
+      "audioStreamHash": "SHA256=4726c4061e00340a2979a3c6503529305c73ac1c4eccabe3a98e88dd6450beb9",
+      "audioStreamIdentical": true,
+      "fullDecode": true
+    }
+  ],
+  "scope": "Logo panel only; encoded visual stream refreshed, AAC original bytes preserved. Original music, body and expression frames are retained.",
+  "visualInspection": "3s before/after inspected; unchanged panel edges and new stitch-free SYNK",
+  "externalPosting": false
+}

@@ -435,6 +435,12 @@
       "changed": false,
       "before": "e0eb4f401e9d47fdfc23d0317c4fea466d8b33f4842ff6d3aab7936b38770ce8",
       "after": "e0eb4f401e9d47fdfc23d0317c4fea466d8b33f4842ff6d3aab7936b38770ce8"
+    },
+    {
+      "file": "공개수업/index.html",
+      "before": "3b7f793df964779cd2d40f9584baf06e1fe7b6fc5c1234c5f74a347fff5fed78",
+      "after": "1306ea7f8c85fcc82ae69c21533ad60de723912e99de830f034817498e055a51",
+      "changed": true
     }
   ]
 }
