@@ -2391,8 +2391,7 @@
     }
   },
   "remaining": [
-    "Existing first-post movies 03/04/05/06/07/09 differ in duration from current voiced scene sources; video/voice regeneration remains deferred. Static correction is not video verification.",
-    "Field Notes source two images updated; build/deploy/live QA belongs to root."
+    "Existing first-post movies 03/04/05/06/07/09 differ in duration from current voiced scene sources; video/voice regeneration remains deferred. Static correction is not video verification."
   ],
   "temporaryToolsNotForCommit": [
     "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\sync.cjs",
@@ -2402,5 +2401,16 @@
     "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\records.py",
     "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\final-manifest.py"
   ],
-  "manifestSelfExcludedFromHashes": true
+  "manifestSelfExcludedFromHashes": true,
+  "integration": {
+    "owner": "root",
+    "fieldNotes": {
+      "source": "6d134ad0e7507d8f54f35aa5504fa204366e41d4",
+      "version": 10,
+      "deployment": "appgdep_6aa2a6233dd48191b52f222e3eaf53e8",
+      "status": "succeeded",
+      "publicImageHashesMatch": true
+    },
+    "rootAssetsRemoteCommit": "b36372b1acb28723a68b6cbef238e530fc64ff33"
+  }
 }

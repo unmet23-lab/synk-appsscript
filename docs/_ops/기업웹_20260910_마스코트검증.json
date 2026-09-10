@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-09-10T12:54:37.013Z",
+  "createdAt": "2026-09-10T13:14:19.600Z",
   "method": "Preserve per-pixel fibre variation while removing estimated white matte only within 24px of canvas-connected exterior. Alpha/interior holes/inside RGBA unchanged.",
   "sourceProvenance": {
     "generator": "tools/마스코트4K굽기.js",
@@ -269,7 +269,11 @@
     },
     {
       "file": "기업웹_20260910_자산/mongle-talk-verification.json",
-      "sha256": "922eba1f4ee65632ac035df8dcae03a76f10ed0d42cedb421d0fc1f068ceaa7f"
+      "sha256": "d412e3628f9967360095f36dac89be7f4fa8d823938040ee5e11ba781bc98595"
+    },
+    {
+      "file": "기업웹_20260910_자산/mongle-talk-preview-current.png",
+      "sha256": "b9fe684e6ba8bcbd5468482632d39ed935ffa5ed1c2996457d52908e8da552e4"
     },
     {
       "file": "기업웹_20260910_자산/mongle-homepage-review.json",
@@ -286,7 +290,7 @@
   ],
   "marketing": {
     "file": "기업웹_20260910_자산/marketing-sync-files.json",
-    "sha256": "1dd2f6039ab8948cb68c4a2c20a30f1fa621af6a8fb9137d29b067476a8f2a3c",
+    "sha256": "ca23905a6b9c31571eac634e1b34b6f281925fda7bc74331758f7dbf4169fa66",
     "qa": {
       "htmlCssChanged": [],
       "frozenBackgrounds": [
