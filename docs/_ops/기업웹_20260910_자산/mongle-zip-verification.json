@@ -1,0 +1,154 @@
+[
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\브랜드소개_20260909\\SYNK-LAB-carousel.zip",
+    "before": "6638f9a97ecb44df5854613f1dda695d3b2d45e64eada3e6df7b45b20d1ad608",
+    "sha256": "7851682d6dd37f327fca2e6d4586049e04330cee6d10ba912aabb3709ccb8d7e",
+    "entries": 16,
+    "replaced": [
+      "캐러셀_업로드/01.png",
+      "캐러셀_업로드/07.png",
+      "캐러셀_고해상도/01.png",
+      "캐러셀_고해상도/02.png",
+      "캐러셀_고해상도/03.png",
+      "캐러셀_고해상도/04.png",
+      "캐러셀_고해상도/05.png",
+      "캐러셀_고해상도/06.png",
+      "캐러셀_고해상도/07.png"
+    ],
+    "mediaPreserved": [],
+    "streamingReadbackSha256": true
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\브랜드소개_20260909\\SYNK-brand-introductions.zip",
+    "before": "d4e2fcd67630fc12571e7f16bc2289836fefe0adb6a50852cd209303252dbf7c",
+    "sha256": "5a00f1ca8222456eb40186bda05b521c7404d13ccc0bf8f5833c3748cbe58c14",
+    "entries": 49,
+    "replaced": [
+      "SYNK-LAB-carousel.zip",
+      "자산명세.json",
+      "synk.pdf",
+      "lab.pdf",
+      "shift.pdf",
+      "pulse.pdf",
+      "assets/curious.webp",
+      "assets/mong.webp",
+      "assets/smile.webp",
+      "미리보기/synk-1.png",
+      "미리보기/lab-1.png",
+      "미리보기/shift-1.png",
+      "미리보기/pulse-1.png",
+      "미리보기/캐러셀-전체.png",
+      "미리보기/소개서-표지.png"
+    ],
+    "mediaPreserved": [],
+    "streamingReadbackSha256": true
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\05-yuhobuilds-instagram.zip",
+    "before": "202f09eb4d3e8822d6cda4b3aa48267298924f6aed6cd52497591373cd279c42",
+    "sha256": "8c9e3302fdcb6f067df7cfc9a8c3e0eb083344438cf19baf3345711ca5f3dd62",
+    "entries": 8,
+    "replaced": [
+      "master-01.png",
+      "upload-01.jpg"
+    ],
+    "mediaPreserved": [
+      "video.mp4"
+    ],
+    "streamingReadbackSha256": true
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\packages\\16-synk-instagram.zip",
+    "before": "4f85c751111d9e6aa239767db906cb69d1c0cccdbcf212738fb966e58ac0ecc8",
+    "sha256": "45b07298fa093dbfad5581551dbfb28df70f40049342f3e9d92ba108f735c27f",
+    "entries": 6,
+    "replaced": [
+      "master-01.png",
+      "upload-01.jpg"
+    ],
+    "mediaPreserved": [],
+    "streamingReadbackSha256": true
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\계정별콘텐츠_20260909\\계정별콘텐츠_전체.zip",
+    "before": "896cbb38a7e84e399347d9e9ebf4ac519d230d99e85c2acd7679a55105b68fb2",
+    "sha256": "5ecfab11cc7ae3f1d536d8e6a397f7fa765059bb45caf8c4c50650391424bdd4",
+    "entries": 245,
+    "replaced": [
+      "assets/labpage.webp",
+      "assets/smile.webp",
+      "미리보기/05-yuhobuilds-instagram.png",
+      "미리보기/16-synk-instagram.png",
+      "미리보기/전체카드.png",
+      "사용자산.json",
+      "05-yuhobuilds-instagram/master-01.png",
+      "05-yuhobuilds-instagram/upload-01.jpg",
+      "16-synk-instagram/master-01.png",
+      "16-synk-instagram/upload-01.jpg",
+      "_개선/지면스냅샷/lab-1.png",
+      "_개선/지면스냅샷/lab-2.png",
+      "_개선/지면스냅샷/pulse-1.png",
+      "_개선/지면스냅샷/shift-1.png",
+      "_개선/지면스냅샷/synk-1.png",
+      "_개선/지면스냅샷/검증.json",
+      "packages/05-yuhobuilds-instagram.zip",
+      "packages/16-synk-instagram.zip"
+    ],
+    "mediaPreserved": [
+      "01-lab-youtube/video.mp4",
+      "03-lab-tiktok/video.mp4",
+      "04-yuhobuilds-youtube/video.mp4",
+      "05-yuhobuilds-instagram/video.mp4",
+      "06-yuhobuilds-tiktok/video.mp4",
+      "07-synkbrief-youtube/video.mp4",
+      "09-synkbrief-tiktok/video.mp4"
+    ],
+    "streamingReadbackSha256": true
+  },
+  {
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\홍보물\\첫게시물_20260910\\전체_업로드.zip",
+    "before": "cc605172d4c72f3cd4681064ca61632c7ee3a22e75db4b408f94a4963ce1bbbe",
+    "sha256": "6110d27efb81a5fcaad5f5f59960916f6b1562a15a620ee2f8b2fe80450e56e7",
+    "entries": 368,
+    "replaced": [
+      "01-lab-youtube/cover.jpg",
+      "01-lab-youtube/thumbnail.jpg",
+      "01-lab-youtube/upload-01.jpg",
+      "02-lab-instagram/cover.jpg",
+      "02-lab-instagram/upload-01.jpg",
+      "02-lab-instagram/upload-03.jpg",
+      "02-lab-instagram/upload-06.jpg",
+      "02-lab-instagram/upload-07.jpg",
+      "03-lab-tiktok/cover.jpg",
+      "03-lab-tiktok/upload-01.jpg",
+      "05-yuhobuilds-instagram/cover.jpg",
+      "05-yuhobuilds-instagram/upload-01.jpg",
+      "08-synkbrief-instagram/cover.jpg",
+      "08-synkbrief-instagram/upload-01.jpg",
+      "08-synkbrief-instagram/upload-07.jpg",
+      "16-synk-instagram/cover.jpg",
+      "16-synk-instagram/upload-01.jpg",
+      "16-synk-instagram/upload-02.jpg",
+      "16-synk-instagram/upload-03.jpg",
+      "16-synk-instagram/upload-04.jpg",
+      "16-synk-instagram/upload-06.jpg",
+      "_검토/납품실물검증.json",
+      "assets/curious.png",
+      "assets/mong.png",
+      "assets/smile.png",
+      "assets/synk-intro.png",
+      "검증결과.md"
+    ],
+    "mediaPreserved": [
+      "01-lab-youtube/video.mp4",
+      "01-lab-youtube/voice-studio.wav",
+      "03-lab-tiktok/video.mp4",
+      "04-yuhobuilds-youtube/video.mp4",
+      "05-yuhobuilds-instagram/video.mp4",
+      "06-yuhobuilds-tiktok/video.mp4",
+      "07-synkbrief-youtube/video.mp4",
+      "09-synkbrief-tiktok/video.mp4"
+    ],
+    "streamingReadbackSha256": true
+  }
+]

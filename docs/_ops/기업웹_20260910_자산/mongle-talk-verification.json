@@ -1,0 +1,405 @@
+{
+  "observedAt": "2026-09-10T12:52:35.231520+00:00",
+  "repository": "C:\\Users\\q1212\\Documents\\SYNK-talk",
+  "beforeHead": "e5e74414c4350b880594aa0e106186412aa370f2",
+  "scope": [
+    "assets/마스코트/몽글_본체.webp",
+    "assets/마스코트/몽글_놀람.webp",
+    "assets/마스코트/몽글_눈웃음.webp",
+    "assets/마스코트/몽글_눈감음.webp",
+    "assets/마스코트/몽글_윙크.webp",
+    "assets/마스코트/몽글_으쓱.webp",
+    "assets/마스코트/몽글_졸림.webp",
+    "assets/마스코트/몽글_민망.webp",
+    "assets/마스코트/마스코트_시트.png"
+  ],
+  "beforeTargetStatus": "clean; checked immediately before generation",
+  "beforeStagedDiffSha256": "1d6cc617143018268a9a18391273247dd1969ae953060684c5851bd057312f0a",
+  "recipe": {
+    "command": "python tools/마스코트변환.py 몽글",
+    "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K",
+    "sourceSize": [
+      4096,
+      4096
+    ],
+    "outputSize": [
+      336,
+      336
+    ],
+    "resample": "Pillow LANCZOS",
+    "format": "WebP",
+    "quality": 92,
+    "method": 6
+  },
+  "items": [
+    {
+      "name": "몽글_본체",
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\몽글_본체.png",
+      "sourceSha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "sourceAlphaSha256": "3bae25efbd5e546e1b07348510209ad5cd6a81dbb3709152c80417ce3ef8006f",
+      "outputPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\assets\\마스코트\\몽글_본체.webp",
+      "beforeOutputSha256": "18a9d538fab87003c3752ce08481065087905ed19d7d934fd85f39063b0ca0f4",
+      "outputSha256": "092b31d3d90dbd4757ee717825fe31151b20d17a97048e268d3de83b8d8e1e2a",
+      "outputSize": [
+        336,
+        336
+      ],
+      "outputAlphaSha256": "67c2dbfa86d71f20167baebc9d7a7d2a1874a5bca5d5e368d8c88f46aa903e18",
+      "alphaChangedPixelsFromBeforeApp": 0,
+      "alphaChangedPixelsFromResizedCurrentSource": 0,
+      "beforeAppAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "outputAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "centerAlpha": 255
+    },
+    {
+      "name": "몽글_놀람",
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\몽글_놀람.png",
+      "sourceSha256": "28f91ec18ff6be65f0ab41c8b7e3090c99f0b44fa563ad49c2ccf7101dcd8dfd",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "sourceAlphaSha256": "4227a6b371c81673a40b0956b37cf8b25cd9d83a5815610b3586aafcdb4aabb9",
+      "outputPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\assets\\마스코트\\몽글_놀람.webp",
+      "beforeOutputSha256": "5fa7e2a9b6d9ce4a1f275726a092440c45a4353dc949f57385df9ef39bb7f168",
+      "outputSha256": "360ac21677a5e45f1f55dedf6677d7098278ac9e8d005a228b936c1934381776",
+      "outputSize": [
+        336,
+        336
+      ],
+      "outputAlphaSha256": "7acdaef95ed05502753b75ea7fae807334f796281551a8cdf1865c2462607796",
+      "alphaChangedPixelsFromBeforeApp": 4364,
+      "alphaChangedPixelsFromResizedCurrentSource": 0,
+      "beforeAppAlphaBbox": [
+        37,
+        30,
+        300,
+        288
+      ],
+      "outputAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "centerAlpha": 255
+    },
+    {
+      "name": "몽글_눈웃음",
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\몽글_눈웃음.png",
+      "sourceSha256": "7b1a8b9070d847a69b349c66f95d5c6fe824b4371b304f44ef4f2865b22f4a14",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "sourceAlphaSha256": "d0c298537a585ad7d7a296b60c2d9692d82349aad80af6a6eae5d567baf81565",
+      "outputPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\assets\\마스코트\\몽글_눈웃음.webp",
+      "beforeOutputSha256": "d97dfcf51d87537d72234436bdbdfd8f06bfda9d31f6297e99c3ff5ad5295550",
+      "outputSha256": "b21709a86d1eb9cf0fe3dc14c4521b3db4fad8ce0134de19c02c2a4af51c51a2",
+      "outputSize": [
+        336,
+        336
+      ],
+      "outputAlphaSha256": "70d226f91b4cb2de8776162a46c6cd51355bd58b3d9bca6906f07b0afdf7bfe0",
+      "alphaChangedPixelsFromBeforeApp": 4277,
+      "alphaChangedPixelsFromResizedCurrentSource": 0,
+      "beforeAppAlphaBbox": [
+        37,
+        31,
+        300,
+        288
+      ],
+      "outputAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "centerAlpha": 255
+    },
+    {
+      "name": "몽글_눈감음",
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\몽글_눈감음.png",
+      "sourceSha256": "5b1c4840462dc87781241f0983a7aa5dba3b8a0498357427e99218fee7ab2c14",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "sourceAlphaSha256": "d0c298537a585ad7d7a296b60c2d9692d82349aad80af6a6eae5d567baf81565",
+      "outputPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\assets\\마스코트\\몽글_눈감음.webp",
+      "beforeOutputSha256": "ac2a760ba597fbeada362f941a7aec3a50c8632183144531cf4db50bf142e722",
+      "outputSha256": "2e32869d127194dc88d49770bb40c301cce46433d3ecca8b7abe6985809c6c40",
+      "outputSize": [
+        336,
+        336
+      ],
+      "outputAlphaSha256": "70d226f91b4cb2de8776162a46c6cd51355bd58b3d9bca6906f07b0afdf7bfe0",
+      "alphaChangedPixelsFromBeforeApp": 4205,
+      "alphaChangedPixelsFromResizedCurrentSource": 0,
+      "beforeAppAlphaBbox": [
+        36,
+        31,
+        300,
+        330
+      ],
+      "outputAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "centerAlpha": 255
+    },
+    {
+      "name": "몽글_윙크",
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\몽글_윙크.png",
+      "sourceSha256": "72b5e65a980496c6ac645dd23d18d9e6a3172d057bb1f6e25526ebe409231cc5",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "sourceAlphaSha256": "40466e362b9ee0521f8f8e403fc7b7e3b2502b98fb5edeaf507083d1153b55ef",
+      "outputPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\assets\\마스코트\\몽글_윙크.webp",
+      "beforeOutputSha256": "8c03e73812be6a090dbc32840931cf63ddd4d0b03a6abf6d0f84a3626a5569d0",
+      "outputSha256": "4c67a63bf696a19d7831bf2c73b62ebcca363f22664262e7d8d4362af58bc48d",
+      "outputSize": [
+        336,
+        336
+      ],
+      "outputAlphaSha256": "8d3ee6b951bb27d664cef965d107d1338c9f926db0e9421cc82278823d0d6642",
+      "alphaChangedPixelsFromBeforeApp": 3509,
+      "alphaChangedPixelsFromResizedCurrentSource": 0,
+      "beforeAppAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "outputAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "centerAlpha": 255
+    },
+    {
+      "name": "몽글_으쓱",
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\몽글_으쓱.png",
+      "sourceSha256": "7be56c6300132f274cc70a3fd27a3f9fe250f72d9168e9dd19f27867b60b22bb",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "sourceAlphaSha256": "d0c298537a585ad7d7a296b60c2d9692d82349aad80af6a6eae5d567baf81565",
+      "outputPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\assets\\마스코트\\몽글_으쓱.webp",
+      "beforeOutputSha256": "a4559eadc3a56832f8292321bbe92ae6549f99b3f76887b461bdb7e6431ab1cc",
+      "outputSha256": "c538cb45708938bac51382352a0249175a99cc95d46af9a0cccdaae797b1b599",
+      "outputSize": [
+        336,
+        336
+      ],
+      "outputAlphaSha256": "70d226f91b4cb2de8776162a46c6cd51355bd58b3d9bca6906f07b0afdf7bfe0",
+      "alphaChangedPixelsFromBeforeApp": 3478,
+      "alphaChangedPixelsFromResizedCurrentSource": 0,
+      "beforeAppAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "outputAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "centerAlpha": 255
+    },
+    {
+      "name": "몽글_졸림",
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\몽글_졸림.png",
+      "sourceSha256": "5ae8e8f52a20c447126cba626e9703ab46b9864dcc569ab0228966bca2eb0cbb",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "sourceAlphaSha256": "94d734b10b436f60caa582f656fa4ee0905577e01417a4ad21f95ef56ea4c944",
+      "outputPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\assets\\마스코트\\몽글_졸림.webp",
+      "beforeOutputSha256": "0fbe8fafa615fc9b187f4c860efe3aaa677ac18b0afa20f06601d3d14fa13663",
+      "outputSha256": "278461037fdd5a4c93f09683ab71b22dfaba7627dd4f08bbbc0718ae578c12d0",
+      "outputSize": [
+        336,
+        336
+      ],
+      "outputAlphaSha256": "70d226f91b4cb2de8776162a46c6cd51355bd58b3d9bca6906f07b0afdf7bfe0",
+      "alphaChangedPixelsFromBeforeApp": 3374,
+      "alphaChangedPixelsFromResizedCurrentSource": 0,
+      "beforeAppAlphaBbox": [
+        37,
+        30,
+        300,
+        287
+      ],
+      "outputAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "centerAlpha": 255
+    },
+    {
+      "name": "몽글_민망",
+      "sourcePath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\캐릭터\\정본_4K\\몽글_민망.png",
+      "sourceSha256": "6424c648a53be607a40f228931d4918c7ed8df3694bdf04ae94eaed06d33038f",
+      "sourceSize": [
+        4096,
+        4096
+      ],
+      "sourceAlphaSha256": "b7bf5be838fd1bbf866d983649e6dd88b0ff7bd69fce565650c96159a5b3ad5b",
+      "outputPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\assets\\마스코트\\몽글_민망.webp",
+      "beforeOutputSha256": "8344ef220fc61bfe5f0e856efa54fb3d2a9ef4ef07d1134a87b2bdd83dceff13",
+      "outputSha256": "3508f43350a22bff4bd9e0f19d74099df70bf64bba257c3cd6f8191637f0a64d",
+      "outputSize": [
+        336,
+        336
+      ],
+      "outputAlphaSha256": "23fbda9ae2ed20c970bea8f3116178b79bd72d454d6d72076d7a87c70df1c1db",
+      "alphaChangedPixelsFromBeforeApp": 3426,
+      "alphaChangedPixelsFromResizedCurrentSource": 0,
+      "beforeAppAlphaBbox": [
+        37,
+        31,
+        300,
+        287
+      ],
+      "outputAlphaBbox": [
+        37,
+        30,
+        300,
+        289
+      ],
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "centerAlpha": 255
+    }
+  ],
+  "generatorExitCode": 0,
+  "tests": {
+    "command": "node --test tests/마스코트자산.test.js tests/마스코트배선.test.js tests/마스코트생명.test.js",
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "warning": "Existing pointerEvents deprecation warning"
+  },
+  "visualReview": {
+    "artifact": "assets/마스코트/마스코트_시트.png",
+    "inspected": true,
+    "background": "#080605",
+    "observations": [
+      "All eight faces are distinct and retain a consistent shared fur/body silhouette.",
+      "No rectangular matte, stray old shadow, or cut-off body is visible in the generated sheet."
+    ],
+    "limitation": "Static generated sheet inspection; no phone or production app deployment."
+  },
+  "appDeployment": "not_requested_not_performed",
+  "buildOutputs": "Existing dist/first-flow-preview and other worktree build copies were not rebuilt; explicit app deployment exclusion.",
+  "commit": "42eddf4460b98e62016f2aab0d75f758a68579bc",
+  "push": {
+    "remote": "origin",
+    "branch": "master",
+    "remoteHead": "42eddf4460b98e62016f2aab0d75f758a68579bc",
+    "confirmedAt": "2026-09-10T12:53:37.682250+00:00",
+    "matchesCommit": true
+  },
+  "alphaConclusion": "All eight output alpha planes equal the resized current canonical alpha exactly. Only the base also equals the previous app alpha; seven previous app variants differ and are now synchronized to current canonical sources.",
+  "sheet": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-talk\\assets\\마스코트\\마스코트_시트.png",
+    "sha256": "b436d8208c989be0e1560377d465a477ec58114e9bf3339ad57522f635c1d8f5",
+    "size": [
+      2728,
+      376
+    ]
+  },
+  "beforeStagedPaths": [
+    "docs/_ops/배포장부.jsonl"
+  ],
+  "committedPaths": [
+    "assets/마스코트/마스코트_시트.png",
+    "assets/마스코트/몽글_놀람.webp",
+    "assets/마스코트/몽글_눈감음.webp",
+    "assets/마스코트/몽글_눈웃음.webp",
+    "assets/마스코트/몽글_민망.webp",
+    "assets/마스코트/몽글_본체.webp",
+    "assets/마스코트/몽글_윙크.webp",
+    "assets/마스코트/몽글_으쓱.webp",
+    "assets/마스코트/몽글_졸림.webp"
+  ],
+  "afterCommitStagedDiffSha256": "1d6cc617143018268a9a18391273247dd1969ae953060684c5851bd057312f0a",
+  "unrelatedStagingPreserved": true,
+  "afterCommitStagedPaths": [
+    "docs/_ops/배포장부.jsonl"
+  ],
+  "ownedWorkingTreeClean": true
+}
