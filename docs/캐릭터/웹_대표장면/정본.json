@@ -1,0 +1,43 @@
+{
+  "version": "20260910-group",
+  "scope": "Corporate homepage group scene only; individual 4K and expression assets remain separate.",
+  "file": "docs/캐릭터/웹_대표장면/세친구_20260910.png",
+  "sha256": "2f34cecd7f4016a9042e55ee276ad60fd54ca0471c7b1e6ad1ce0b111ea8ff37",
+  "width": 1586,
+  "height": 992,
+  "mode": "RGB",
+  "generator": "Built-in ImageGen; exact model version not exposed",
+  "prompt": "docs/캐릭터/웹_대표장면/생성프롬프트_20260910.txt",
+  "references": [
+    {
+      "role": "layout",
+      "file": "docs/_ops/기업웹_20260910_자산/mongle-homepage-1440.png",
+      "sha256": "cc9a9f11631d68e851b0ccd2433dbaa3cb63a36ae532d46dde354f212c402d29"
+    },
+    {
+      "role": "character",
+      "file": "docs/캐릭터/정본_4K/몽글_본체.png",
+      "sha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c"
+    },
+    {
+      "role": "character",
+      "file": "docs/캐릭터/정본_4K/까몽_본체.png",
+      "sha256": "fea5f2b66db16a1089f4475492c59fb8273bfcf80b18fbcde4909a950e3796ab"
+    },
+    {
+      "role": "character",
+      "file": "docs/캐릭터/정본_4K/마린_본체.png",
+      "sha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13"
+    }
+  ],
+  "render": {
+    "background": "SYNK Paper token",
+    "blend": "multiply",
+    "maximumCssWidth": 600
+  },
+  "consumers": [
+    "SYNK-website/dist/index.html",
+    "synk-policy/index.html"
+  ],
+  "decision": "User authorized recreation and application; agent visual review. Not blanket approval for individual character replacement."
+}
