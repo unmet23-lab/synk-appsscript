@@ -399,7 +399,7 @@ test('[v9.156] 🔴 배치가 카드를 공개로 열지 않는다 — 이게 �
   /* 닫는 함수가 있어도 배치가 매달 다시 열면 아무 의미가 없다. 결과(코드)로 검사한다. */
   /* 🔑 `구간()` 으로 자른다 — 손으로 `slice(s, indexOf(끝, s))` 하면 끝앵커를 못 찾을 때
    *   `slice(s, -1)` 이 되어 **파일 나머지 전부**가 본문이 된다(아래 부정 단언이 그때 뒤집힌다). */
-  const body = 구간(readSrc('엔진_폼리포트.js'), 'function runReportCards_(', '\n}\n');
+  const body = 구간(readSrc('엔진_폼리포트.js'), 'function runReportCardsLocked_(', '\n}\n');
   assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다');
   assert.ok(!/setSharing/.test(body), 'runReportCards_가 아직 공개 공유를 한다 — 매달 카드가 다시 열린다');
   assert.ok(body.includes('SEND_REPORT_EMAIL'), '메일 발송 경로가 사라졌다 — 카드가 학부모에게 닿을 길이 없다');
@@ -424,12 +424,13 @@ test('[v9.156] 미발송 감시로 교체됐다 — 「공유 실패」가 아�
   /* 장치를 지울 때는 그 장치가 지키던 것이 어디로 갔는지 함께 옮긴다.
    * 공개 링크를 없앴으므로 조용한 실패의 자리는 「보낼 이메일이 없어 카드가 안 감」으로 이동했다. */
   const src = readSrc('엔진_폼리포트.js');
-  const s = src.indexOf('function runReportCards_(');
+  const s = src.indexOf('function runReportCardsLocked_(');
   // ⚠ 주석 제거 후 검사 — 「무엇을 왜 제거했는가」를 적은 주석에 옛 변수명이 나온다(주석≠코드)
   const body = 코드만(src.slice(s, src.indexOf('\n}\n', s)));
   assert.ok(body.includes('createFile('), '주석 제거가 코드까지 지웠다');
   assert.ok(/noMail/.test(body), '미발송 감시가 없다 — 카드가 아무에게도 안 가도 배치는 "성공"이라 말한다');
-  assert.ok(/adminMail\(/.test(body), '미발송을 알리지 않는다');
+  const wrapper = 코드만(readSrc('Code.js'));
+  assert.ok(/adminMail\(/.test(wrapper) && /result\.pending/.test(wrapper), '잠금 해제 뒤 전달 집계를 알리지 않는다');
   assert.ok(!/shareFail/.test(body), '죽은 공유 실패 변수가 남아 있다');
 });
 
