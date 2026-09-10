@@ -32,6 +32,7 @@ const 앞절 = section("const RETRO_SOURCE_ = '회고물음';", 'function 회고
 const API시작 = code.indexOf('function 회고API_(e, method) {');
 const API절 = code.slice(API시작, code.indexOf('\n}\n', API시작) + 3);
 const 주차절 = section('function seasonWeekOf_(', '/* --- 역할·짝');
+const 고침절 = section('function 진단고침이력_(', 'function 진단고침_(');
 
 /** 시트 흉내 — 헤더 + 행. */
 function 시트(헤더, rows) {
@@ -78,7 +79,7 @@ function 엔진(o) {
   calls.logs = [];
   const E = new Function('toDate_', '진단문형이름_', '증언맵_', 'seasonStartOf_', 'seasonKeyOf_', 'Utilities', 'SEASON_WEEKS', 'HW_FEEDBACK_HEADERS', 'LECTURE_SRC_PREFIX',
     'ENTRY_SEASON_HEADS_', 'getState', 'setState', 'ensureSheet', 'quotaOk', 'MailApp', 'PropertiesService', 'LockService', 'ContentService', 'SpreadsheetApp', 'Logger', '증언남기기_',
-    `${주차절}\n${앞절}\n${API절}\nreturn { 회고_알게된것_, 회고편지글_, 회고물음_, 회고대상시즌_, 시즌있었나_, 회고수신자_, 시즌회고발송_, 회고API_, 회고토큰_ };`)(
+    `${주차절}\n${고침절}\n${앞절}\n${API절}\nreturn { 회고_알게된것_, 회고편지글_, 회고물음_, 회고대상시즌_, 시즌있었나_, 회고수신자_, 시즌회고발송_, 회고API_, 회고토큰_ };`)(
     toDate_, 진단문형이름_, 증언맵_, seasonStartOf_, seasonKeyOf_, Utilities, 8, HWH, '강의:', ['입학시즌'], getState, setState, ensureSheet, quotaOk, MailApp, PropertiesService,
     LockService, ContentService, { getActiveSpreadsheet: () => ss }, { log: (m) => { calls.logs.push(String(m)); } }, 증언남기기_);
   return { E, ss, state, calls };
@@ -142,6 +143,30 @@ test('[회고 · 발전안 20260911 갈래 ②] ㉠ 「아니야」의 효력 �
   assert.ok(/아직 안 닿았습니다/.test(일부부정), '남은 자리(G708)의 닿음 셈이 이상하다: ' + 일부부정);
   assert.notEqual(전부부정, 긍정, '부정과 긍정의 편지가 같다 — 고침이 출력을 못 바꿨다');
   assert.notEqual(일부부정, 전부부정, '일부 부정과 전부 부정이 같다 — 스냅샷을 안 읽는다');
+});
+
+test('[회고 · 고침 이력] 다른 문형의 나중 정정은 앞선 부정을 보존하며 같은 문형의 최신 맞아요만 다시 포함한다 · 실제 도달 사실은 보존', () => {
+  const 답 = (판정, 다음문형) => ({ 판정, 다음문형, 한줄: '', 시각: '2026-12-01T00:00:00Z' });
+  const 이력 = [답('아니에요', ['G502']), 답('아니에요', ['G708'])];
+  const rows = [['d1', 'S1', '✓', 3, '["G502","G708","G777"]', ''], ['d2', 'S2', '✓', 4, '["G777"]', JSON.stringify(답('아니에요', ['G777']))]];
+  const dg = 시트(['세션번호', '학생번호', '시작점', '표본급수', '다음문형', '학생고침'], rows);
+  const ml = 시트(['student_id', 'grammar_id', '상태', '첫기록일', '도달일'], [['S1', 'G502', '도달', D('2026-12-01'), D('2026-12-02')]]);
+  const { E, ss } = 엔진({ sheets: { 진단세션: dg, mastery_log: ml } });
+  const 읽다 = () => {
+    rows[0][5] = JSON.stringify({ ...이력[이력.length - 1], 이력 });
+    return E.회고_알게된것_(ss, 'S1', 시즌).줄들[0].글;
+  };
+  const 모두부정 = 읽다();
+  assert.match(모두부정, /그때 다음 자리 「G777」/, '학생이 부정하지 않은 새 문형·다른 학생의 부정은 유지 대상이 아니다');
+  assert.match(모두부정, /다음 자리 2개는 학생이 「아니에요」/);
+  assert.match(모두부정, /이번 시즌에 도달로 적힌 문법 1개/, '추천 부정이 실제 학습 도달 사실을 지우면 안 된다');
+  이력.push(답('맞아요', ['G502']));
+  const 일부해제 = 읽다();
+  assert.match(일부해제, /그때 다음 자리 「-\(으\)ㄹ 것 같다·G777」/);
+  assert.match(일부해제, /다음 자리 1개는 학생이 「아니에요」/);
+  assert.match(일부해제, /시작 때의 다음 자리 중 1개에 닿았습니다/);
+  assert.match(일부해제, /이번 시즌에 도달로 적힌 문법 1개/);
+  assert.equal(rows[0][4], '["G502","G708","G777"]', '재생성은 원관측을 바꾸지 않는다');
 });
 
 test('[회고] ㉡ 사람 — 숙제는 강의 요약 행을 빼고 같은 날은 한 번 · 업적 리듬 문장은 안 싣는다 · ㉢ 삶 — 드림 한 줄은 시즌 끝까지의 기록만 · 스스로 한 말은 시즌 창', () => {
