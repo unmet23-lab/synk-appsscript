@@ -1,117 +1,112 @@
 #!/usr/bin/env node
-/* 문서 상태 조회 — 「무엇을 판단 정본으로 삼아도 되나」를 한 명령으로 답한다.
- *
- * 발단(유호님 지시 2026-08-09): 철학·시스템 문서를 대화로 계속 업그레이드하는데,
- *   **커밋 ≠ 확정**이라 다른 세션이 「이 문서를 근거로 만들어도 되나」를 구분할 수 없었다.
- *   초안도 커밋되고 확정본도 커밋된다 — 그래서 상태를 문서 머리에 한 줄로 박고, 이 도구가 읽는다.
- *
- * 세 상태(실측이 요구한 갈래 — 두 개로 뭉개면 「지금 이걸 따라야 하나」가 사라진다):
- *   ✅확정   = 따른다 + 안 바뀐다        → 판단 정본
- *   🔄개편중 = 따른다(현행) + 곧 바뀐다  → 새로 굳히는 근거로는 쓰지 않는다
- *   🔵논의중 = 아직 안 따른다            → 참고만
- *
- * 🔑 **분모를 같이 낸다** — 상태 줄이 없는 문서가 몇 개인지 안 보이면 「전부 확정이구나」로 읽힌다
- *   (이 저장소 규칙: 초록은 분모와 함께 읽는다). 미표기는 침묵이지 확정이 아니다.
- * 🔑 렌더링되는 문서(홈페이지 원고 등)는 상태를 **HTML 주석**으로 둔다 — 본문에 내부 표기가 새면
- *   그건 대외 노출 사고다. 그래서 두 표기를 **같은 정규식 하나**로 읽는다(두 벌로 적으면 갈라진다).
- */
 'use strict';
-const fs = require('fs');
+// 문서 머리의 실제 선언과 탐색 위치를 조회한다. 현행·커밋·정본 파일명은 사용자 확정과 같지 않다.
 const path = require('path');
-
-/* 🔴 뿌리는 **이 스크립트가 사는 체크아웃**이다 — `CLAUDE_PROJECT_DIR` 을 앞에 두지 않는다.
- *   [08-26 실측] 워크트리 세션에서 그 env 는 워크트리를 가리키는데 스크립트는 다른 트리의 것일 수
- *   있어, 「어느 체크아웃이 정본인가」가 호출 방식마다 갈렸다. 자리를 아는 것은 스크립트 자신이다
- *   (`tools/인용검사.js:43`·`tools/대장동봉검사.js:36` 이 이미 쓰는 규약). */
+const fs = require('fs');
+const { inventory, safeRead, maskCode } = require('./lib/knowledge-files');
 const ROOT = path.resolve(__dirname, '..');
 const 상태들 = ['✅확정', '🔄개편중', '🔵논의중'];
-/* 한 정규식이 인용문 표기와 주석 표기를 **둘 다** 읽는다.
- * ☠️ 첫 판은 `\*{0,2}` 를 자리마다 박았다가 **내가 실제로 쓴 표기(`✅**확정**`)를 못 봤다** — 8줄 중 1줄만
- *   잡혔다(굵게가 이모지와 낱말 **사이**에 들어갈 줄 몰랐다). 자리를 세는 정규식은 사람이 굵게를 어디
- *   찍느냐에 따라 조용히 눈이 먼다. 그래서 **별표를 먼저 지우고** 본다 — 변이 다섯 벌을 회귀가 못박는다
- *   (`tests/문서상태.test.js(⚠삭제됨 e75fc7fc 2026-08-19 — 지금 없다)`). 이 저장소 규칙: 가드는 「사람이 실제로 쓰는 표기」로 검사한다. */
 const 상태식 = /^\s*(?:>|<!--)\s*상태\s*[:：]\s*(✅\s*확정|🔄\s*개편중|🔵\s*논의중)/;
 const 별표지우기 = (줄) => String(줄).replace(/\*/g, '');
 
-function 상태읽기(절대) {
-  let 머리;
-  try {
-    머리 = fs.readFileSync(절대, 'utf8').split(/\r?\n/, 12);  // 머리 12줄만 — 본문 중간의 인용은 상태가 아니다
-  } catch { return null; }
-  for (const 줄 of 머리) {
-    const m = 상태식.exec(별표지우기(줄));
-    if (!m) continue;
-    return {
-      상태: m[1].replace(/\s+/g, ''),   // `✅ 확정` 처럼 띄어 써도 한 값으로 접는다
-      줄: 별표지우기(줄).trim().replace(/^<!--\s*|\s*-->$/g, '').replace(/^>\s*/, ''),
-    };
+function 선언읽기(text) {
+  const lines = maskCode(text).split(/\r?\n/).slice(0, 12);
+  for (let i = 0; i < lines.length; i++) {
+    const line = 별표지우기(lines[i]);
+    const m = 상태식.exec(line);
+    if (m) return { 상태: m[1].replace(/\s+/g, ''), 줄: line.trim().replace(/^<!--\s*|\s*-->$/g, '').replace(/^>\s*/, ''), line: i + 1 };
+  }
+  // 머리 인용문·주석의 명시적 문구만. 본문의 정본 인용은 현행 승격의 근거가 아니다.
+  for (let i = 0; i < lines.length; i++) {
+    const line = 별표지우기(lines[i]);
+    if (!/^\s*(?:>|<!--)/.test(line)) continue;
+    const own = line.trim().replace(/^(?:>\s*|<!--\s*)/, '');
+    const notCurrent = /현행\s*(?:기준|정본|진입점|안내)(?:이|가|은|는)?\s*(?:아니|아님)/.test(own);
+    const state = /(?:초안|검토 중|검토중|제안|논의중)/.test(line) ? '초안·검토 표기' :
+      !notCurrent && /(?:^|[·.]\s*|의\s*)현행 (?:진입점|안내)(?=\s*(?:[·.—]|$))/.test(own) ? '현행 안내 표기' :
+      !notCurrent && /^(?:\d{4}-\d{2}-\d{2}\s*[·—]\s*)?현행 (?:기준|정본)(?=\s*(?:[·.—]|$))/.test(own) ? '현행 기준 표기' :
+      /<!--\s*정본(?:\s*:\s*v\d+(?:\.\d+)*)?\s*-->/.test(line) ? '정본 선언' : null;
+    if (state) return { 상태: state, 줄: line.trim(), line: i + 1 };
   }
   return null;
 }
 
-function 대상들(전체) {
-  const 목록 = [];
-  for (const f of fs.readdirSync(ROOT)) {
-    if (f.endsWith('.md') && f !== 'MEMORY.md') 목록.push(f);
-  }
-  const docs = path.join(ROOT, 'docs');
-  if (fs.existsSync(docs)) {
-    for (const f of fs.readdirSync(docs)) {
-      if (!f.endsWith('.md')) continue;
-      목록.push(path.join('docs', f));
-    }
-    if (전체) {  // docs/정본/ 하위까지 — 대외 자료라 평소엔 소음이다
-      const 정본 = path.join(docs, '정본');
-      if (fs.existsSync(정본)) 훑기(정본, 목록);
-    }
-  }
-  return 목록;
+// 기존 호출자 호환: 옛 명시 상태만 반환한다. 새 조회 결과는 inspectText를 사용한다.
+function 상태읽기(absolute) {
+  try {
+    const result = 선언읽기(fs.readFileSync(absolute, 'utf8'));
+    return result && 상태들.includes(result.상태) ? { 상태: result.상태, 줄: result.줄 } : null;
+  } catch { return null; }
 }
 
-function 훑기(디렉, 목록) {
-  for (const e of fs.readdirSync(디렉, { withFileTypes: true })) {
-    const p = path.join(디렉, e.name);
-    if (e.isDirectory()) 훑기(p, 목록);
-    else if (e.name.endsWith('.md')) 목록.push(path.relative(ROOT, p));
-  }
+function inspectText(text) {
+  const headings = [];
+  maskCode(text).split(/\r?\n/).forEach((line, i) => {
+    const m = line.match(/^(#{1,6})\s+(.+)/);
+    if (m) headings.push({ line: i + 1, level: m[1].length, title: m[2].replace(/\s+#+\s*$/, '') });
+  });
+  return { declaration: 선언읽기(text), headings };
 }
 
-function 출력() {
-  const 전체 = process.argv.includes('--전체');
-  const 파일들 = 대상들(전체);
-  const 묶음 = new Map(상태들.map((s) => [s, []]));
-  const 미표기 = [];
-
-  for (const rel of 파일들) {
-    const r = 상태읽기(path.join(ROOT, rel));
-    if (r) 묶음.get(r.상태).push({ rel, 줄: r.줄 });
-    else 미표기.push(rel);
+function query({ root = ROOT, all = false, file, search } = {}) {
+  const listed = inventory(root);
+  const errors = [...listed.errors];
+  const eligible = listed.files.filter((r) => r !== 'MEMORY.md' && /\.md$/i.test(r) &&
+    (!r.includes('/') || (r.startsWith('docs/') && (all || r.split('/').length === 2))));
+  const normalized = file && file.replace(/\\/g, '/');
+  if (normalized && (!listed.files.includes(normalized) || !/\.md$/i.test(normalized))) errors.push({ file: normalized, kind: 'not-in-git-markdown-inventory' });
+  const files = normalized ? listed.files.filter((r) => r === normalized && /\.md$/i.test(r)) : eligible;
+  const documents = [];
+  for (const relative of files) {
+    try {
+      const info = inspectText(safeRead(root, relative));
+      const term = search && search.toLocaleLowerCase();
+      const matches = term ? info.headings.filter((h) => h.title.toLocaleLowerCase().includes(term)) : [];
+      if (term && !relative.toLocaleLowerCase().includes(term) && !matches.length) continue;
+      documents.push({ file: relative, tracked: listed.tracked.has(relative), declaration: info.declaration,
+        ...(normalized ? { headings: info.headings } : term ? { matches } : {}) });
+    } catch { errors.push({ file: relative, kind: 'read-unavailable' }); }
   }
+  return { scope: all ? 'root + docs recursive, Git non-ignored Markdown' : 'root + docs top-level, Git non-ignored Markdown',
+    note: '머리 12줄의 문서 자체 표기다. 미표기는 결함 판정이 아니며 현행·정본·커밋은 사용자 확정 증거가 아니다.',
+    examined: files.length, documents, errors };
+}
 
-  console.log('■ 문서 상태 — 「무엇을 판단 정본으로 삼나」\n');
-  for (const s of 상태들) {
-    const 들 = 묶음.get(s);
-    console.log(`${s} (${들.length})`);
-    if (!들.length) console.log('   (없음)');
-    for (const { rel, 줄 } of 들) {
-      const 꼬리 = 줄.replace(/^상태\s*[:：]\s*(✅\s*확정|🔄\s*개편중|🔵\s*논의중)\s*[·-]?\s*/, '');
-      console.log(`   · ${rel}${꼬리 ? '\n       ' + 꼬리.slice(0, 150) : ''}`);
+function main(args = process.argv.slice(2)) {
+  const options = {};
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === '--전체') options.all = true;
+    else if (arg === '--json' || arg === '--미표기') continue;
+    else if (arg === '--file' || arg === '--목차' || arg === '--찾기') {
+      if (!args[i + 1] || args[i + 1].startsWith('--')) throw new Error(`${arg}: 값이 필요하다`);
+      options[arg === '--찾기' ? 'search' : 'file'] = args[++i];
+    } else if (arg === '--help') {
+      console.log('문서상태.js [--전체] [--json] [--미표기] [--찾기 이름/제목] [--file 경로 | --목차 경로]\n읽기 전용. 검색은 파일명·절 제목이며 본문·승인 여부를 대신 읽지 않는다.');
+      return;
+    } else throw new Error(`알 수 없는 옵션: ${arg}`);
+  }
+  const result = query(options);
+  if (args.includes('--json')) console.log(JSON.stringify(result, null, 2));
+  else {
+    console.log(`문서 조회: ${result.documents.length}개 / 조회 대상 ${result.examined}개\n${result.note}`);
+    const counts = {};
+    for (const d of result.documents) {
+      const state = d.declaration?.상태 || '머리 상태 미표기';
+      counts[state] = (counts[state] || 0) + 1;
+      if (options.file || options.search || d.declaration || args.includes('--미표기')) {
+        console.log(`${d.file}${d.tracked ? '' : ' [작업 중·미추적]'} — ${state}`);
+        if (d.declaration) console.log(`  ${d.declaration.line}: ${d.declaration.줄}`);
+        for (const h of d.headings || d.matches || []) console.log(`  ${h.line}: ${h.title}`);
+      }
     }
-    console.log('');
+    console.log(JSON.stringify(counts));
+    if (result.errors.length) console.error(`확인 불가 ${result.errors.length}건 (--json의 errors)`);
   }
-
-  /* 🔴 분모 — 이 줄이 없으면 위 목록이 「전부」로 읽힌다. 미표기는 확정이 아니라 **모름**이다. */
-  console.log(`❔ 상태 줄 없음 (${미표기.length} / 전체 ${파일들.length}) — **모름이지 확정이 아니다**`);
-  if (미표기.length && process.argv.includes('--미표기')) {
-    for (const rel of 미표기) console.log(`   · ${rel}`);
-  } else if (미표기.length) {
-    console.log('   목록: node tools/문서상태.js --미표기' + (전체 ? ' --전체' : ''));
-  }
-  if (!전체) console.log('\n(docs/정본/ 하위 대외 자료까지: --전체)');
-  console.log('\n상태를 바꾸는 사람 = 유호님. 문서 머리 한 줄을 고쳐 커밋하면 그 순간부터 모든 세션이 그렇게 읽는다.');
-  return 0;
+  if (result.errors.length) process.exitCode = 2;
 }
 
-module.exports = { 상태읽기, 상태식, 상태들 };
-
-if (require.main === module) process.exit(출력());
+module.exports = { 상태읽기, 상태식, 상태들, 선언읽기, inspectText, query, main };
+if (require.main === module) {
+  try { main(); } catch (error) { console.error(error.message); process.exitCode = 2; }
+}

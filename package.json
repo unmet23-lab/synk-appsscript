@@ -7,6 +7,9 @@
     "odiff-bin": "^4.5.0"
   },
   "scripts": {
+    "test": "node tools/test-ci.js",
+    "check:knowledge": "node tools/doc-graph.js --summary",
+    "check:worktree": "node tools/worktree-hygiene.js",
     "글검사": "node tools/글검사.js"
   }
 }

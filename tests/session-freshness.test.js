@@ -241,6 +241,92 @@ test('rename counting and CLI argument parsing are bounded and exact', () => {
   assert.equal(trackedCount('R  new\0old\0 M other\0'), 2);
   assert.deepEqual(parseArgs(['--repo', repo, '--json']), { hook: false, json: true, repo });
   assert.throws(() => parseArgs(['--repo']));
+  assert.throws(() => parseArgs(['--files', 'a.md', 'b.md', 'c.md']));
+});
+
+test('manual timeout CLI accepts only one bounded integer and preserves repeated file arguments', () => {
+  for (const timeoutMs of [1, 1700, 5000, 30000]) {
+    const args = ['--repo', repo, '--files', 'fixture.txt', '--files', POLICY,
+      '--timeout-ms', String(timeoutMs), '--json'];
+    const options = parseArgs(args);
+    assert.equal(options.timeoutMs, timeoutMs);
+    assert.deepEqual(options.files, ['fixture.txt', POLICY]);
+    const result = cli(args);
+    assert.equal(result.status, 0);
+    assert.equal(result.stderr, '');
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.status, timeoutMs === 1 ? 'unavailable' : 'observed');
+    if (timeoutMs !== 1) assert.deepEqual(report.files.map(file => file.comparison), ['same', 'same']);
+    assert.ok(!result.stdout.includes(SECRET));
+  }
+  for (const value of ['', '0', '-1', '1.5', 'NaN', 'Infinity', '1e3', '30001', '99999999999999999999']) {
+    assert.throws(() => parseArgs(['--timeout-ms', value]));
+  }
+  assert.throws(() => parseArgs(['--timeout-ms']));
+  assert.throws(() => parseArgs(['--timeout-ms', '100', '--timeout-ms', '200']));
+  assert.equal(parseArgs([]).timeoutMs, undefined);
+});
+
+test('both automatic CLI modes reject timeout overrides in either argument order without disclosing input', () => {
+  for (const hook of ['--hook', '--antigravity-hook']) {
+    for (const timeout of ['1', '30000']) {
+      for (const args of [[hook, '--timeout-ms', timeout], ['--timeout-ms', timeout, hook]]) {
+        assert.throws(() => parseArgs(args));
+        const result = cli([...args, '--repo', repo], JSON.stringify({
+          cwd: repo, hook_event_name: 'SessionStart', workspacePaths: [repo], invocationNum: 0, prompt: SECRET,
+        }));
+        assert.equal(result.status, 0);
+        assert.equal(result.stderr, '');
+        assert.match(result.stdout, /최신 확인 불가/);
+        assert.ok(!result.stdout.includes(SECRET));
+        assert.ok(!result.stdout.includes('HEAD'));
+      }
+    }
+  }
+});
+
+test('only explicit manual collection can finish past 1700ms; all budgets remain capped', async () => {
+  // Simulate slow status with real Git for scope, refs and commit consistency.
+  function slowRun(budgets) {
+    return (command, args, options, callback) => {
+      budgets.push(options.timeout);
+      if (args.includes('status')) {
+        const duration = 1800;
+        setTimeout(() => callback(options.timeout < duration ? { killed: true } : null, ''),
+          Math.min(duration, options.timeout));
+      } else require('node:child_process').execFile(command, args, options, callback);
+    };
+  }
+  const manualBudgets = [];
+  const extended = await collect({ cwd: repo, repo, timeoutMs: 5000, manual: true, run: slowRun(manualBudgets) });
+  assert.equal(extended.status, 'observed');
+  assert.equal(extended.working.current.state, 'observed');
+  assert.ok(manualBudgets.some(budget => budget > 1700));
+  assert.ok(manualBudgets.every(budget => budget <= 5000));
+  const automaticBudgets = [];
+  const automatic = await collect({ cwd: repo, repo, timeoutMs: 30000, run: slowRun(automaticBudgets) });
+  assert.equal(automatic.status, 'unavailable');
+  assert.ok(automaticBudgets.every(budget => budget <= 1700));
+  for (const [options, cap] of [[{ manual: true, timeoutMs: 100000 }, 30000],
+    [{ manual: true }, 1700], [{ manual: 'true', timeoutMs: 30000 }, 1700]]) {
+    const budgets = [];
+    await collect({ cwd: repo, repo, ...options, run(command, args, settings, callback) {
+      budgets.push(settings.timeout);
+      callback(new Error(SECRET), '', SECRET);
+    } });
+    assert.ok(budgets.length > 0);
+    assert.ok(budgets.every(budget => budget > 0 && budget <= cap));
+    if (cap === 30000) assert.ok(budgets[0] > 1700);
+  }
+  const budgets = [];
+  await collectAntigravity({ invocationNum: 0, workspacePaths: [repo] }, {
+    repo, timeoutMs: 30000, manual: true, run(command, args, options, callback) {
+      budgets.push(options.timeout);
+      callback(new Error(SECRET), '', SECRET);
+    },
+  });
+  assert.ok(budgets.length > 0);
+  assert.ok(budgets.every(budget => budget <= 1700));
 });
 
 test('origin/HEAD fallback uses only local refs; main fallback works without remote refs', async () => {
@@ -483,6 +569,64 @@ test('metadata file-count limit reports incomplete instead of a misleading compl
   assert.equal(report.working.current.fingerprint.state, 'incomplete');
   assert.ok(!report.working.current.fingerprint.sha256);
   assert.match(output(report), /incomplete/);
+});
+
+test('status above 512 KiB counts thousands of multibyte entries without publishing names or a partial fingerprint', async () => {
+  let statusBytes = 0;
+  const report = await collect({ cwd: repo, repo, manual: true, timeoutMs: 5000,
+    run(command, args, options, callback) {
+      if (!args.includes('status')) {
+        assert.equal(options.maxBuffer, 512 * 1024, 'only status needs the larger buffer');
+        return require('node:child_process').execFile(command, args, options, callback);
+      }
+      const raw = 'R  moved.md\0before.md\0 M changed.md\0 D deleted.md\0' +
+        Array.from({ length: 7000 }, (_, i) => '?? 자료/' + '가'.repeat(32) + '-' + i + '.md\0').join('');
+      statusBytes = Buffer.byteLength(raw);
+      assert.ok(statusBytes > 512 * 1024);
+      assert.ok(options.maxBuffer >= statusBytes && options.maxBuffer <= 16 * 1024 * 1024);
+      // Use the actual child-process buffer limit, not a callback returning an unbounded string.
+      require('node:child_process').execFile(process.execPath, ['-e',
+        "process.stdout.write('R  moved.md\\0before.md\\0 M changed.md\\0 D deleted.md\\0' + " +
+        "Array.from({length:7000},(_,i)=>'?? 자료/'+'가'.repeat(32)+'-'+i+'.md\\0').join(''))"], options, callback);
+    },
+  });
+  assert.ok(statusBytes > 0);
+  assert.equal(report.status, 'observed');
+  for (const snapshot of [report.working.current, report.working.canonical]) {
+    assert.equal(snapshot.trackedDirty, 3);
+    assert.equal(snapshot.untracked, 7000);
+    assert.equal(snapshot.state, 'incomplete');
+    assert.equal(snapshot.fingerprint.state, 'incomplete');
+    assert.ok(!('sha256' in snapshot.fingerprint));
+  }
+  for (const formatted of [output(report, { json: true }), output(report, { hookEvent: 'SessionStart' })]) {
+    assert.ok(!formatted.includes('moved.md'));
+    assert.ok(!formatted.includes('자료/'));
+    assert.ok(!formatted.includes(SECRET));
+  }
+});
+
+test('status exceeding its bounded buffer discards partial counts and fingerprints', async () => {
+  let overflow = false;
+  const report = await collect({ cwd: repo, repo, manual: true, timeoutMs: 5000,
+    run(command, args, options, callback) {
+      if (!args.includes('status')) return require('node:child_process').execFile(command, args, options, callback);
+      assert.ok(options.maxBuffer <= 16 * 1024 * 1024);
+      require('node:child_process').execFile(process.execPath, ['-e',
+        "process.stdout.write('?? hidden.md\\0'.repeat(" + (Math.ceil(options.maxBuffer / 13) + 1) + '))'],
+      options, (error, stdout, stderr) => {
+        overflow = error?.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER';
+        callback(error, stdout, stderr);
+      });
+    },
+  });
+  assert.equal(overflow, true);
+  assert.equal(report.status, 'observed');
+  assert.equal(report.working.current.trackedDirty, null);
+  assert.equal(report.working.current.untracked, null);
+  assert.equal(report.working.current.fingerprint.state, 'incomplete');
+  assert.ok(!report.working.current.fingerprint.sha256);
+  assert.ok(!JSON.stringify(report).includes('hidden.md'));
 });
 
 test('external linked-worktree timeout emits only neutral unavailable context and remains bounded', async () => {

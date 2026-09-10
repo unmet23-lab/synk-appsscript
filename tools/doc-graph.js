@@ -28,9 +28,9 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { inventory, safeRead, maskCode, localLinks } = require('./lib/knowledge-files');
 
 const ROOT = path.resolve(__dirname, '..');
-const SCAN_DIRS = ['docs'];
 const SKIP = [/[\\/]_archive[\\/]/, /[\\/]worktrees[\\/]/, /세션보드_아카이브/, /[\\/]_구본[\\/]/, /[\\/]pixelart_draft[\\/]/];
 /* [2026-08-09] `.html`이 빠져 있었다. 새는 방향이 **「통과」가 아니라 「0」**이라 더 나빴다:
  * `docs/홈페이지_시안/시안.html`·`시안.tpl.html`은 `<!-- 파생: docs/SYNK_철학.md@v1.0 -->`를
@@ -57,32 +57,6 @@ const rel = (p) => path.relative(ROOT, p).replace(/\\/g, '/');
 
 /** 제외 판정 — 반드시 **상대경로**를 받는다(절대경로를 넣으면 저장소 위치가 규칙을 바꾼다). */
 const shouldSkip = (relPath) => SKIP.some((r) => r.test(relPath));
-
-function walk(dir, out = []) {
-  let entries;
-  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (_) { return out; }
-  for (const e of entries) {
-    const full = path.join(dir, e.name);
-    /* [2026-08-03] SKIP은 **저장소 기준 상대경로**에 걸어야 한다 — 절대경로에 걸면 저장소가 놓인
-     * 자리가 규칙을 바꾼다. 실제 사고: Claude Code 세션 worktree는 `.claude/worktrees/<이름>/`에
-     * 만들어지는데, 그 절대경로에 `worktrees`가 들어 있어 `/worktrees/` 규칙이 **docs 전체**를
-     * 걸러냈다. 결과는 에러가 아니라 침묵 — 그래프가 0개로 build되고, 정본을 고쳐도 파생 알림이
-     * 안 뜬다. 「장치가 죽었다」가 「알릴 게 없다」와 똑같이 생겼다. */
-    if (shouldSkip(rel(full))) continue;
-    if (e.isDirectory()) walk(full, out);
-    else if (TEXT_EXT.test(e.name)) out.push(full);
-  }
-  return out;
-}
-
-/** 저장소 루트의 코드 파일만 **얕게**. 하위 폴더로 안 내려간다(위 CODE_EXT 주석의 이유). */
-function rootCode() {
-  let entries;
-  try { entries = fs.readdirSync(ROOT, { withFileTypes: true }); } catch (_) { return []; }
-  return entries
-    .filter((e) => e.isFile() && CODE_EXT.test(e.name) && !shouldSkip(e.name))
-    .map((e) => path.join(ROOT, e.name));
-}
 
 // 정본 판별 — 파일명에 '정본'이 있거나 docs/정본/ 아래에 있으면 정본.
 function isCanon(relPath) {
@@ -122,9 +96,6 @@ function looksLikePath(target) {
  * 도구가 자기 자신을 못 믿는다.
  * 길이를 보존하는 이유 — addEdge가 이 결과의 **인덱스로 원문을 자른다**.
  * 공백으로 안 채우고 삭제하면 치환이 엉뚱한 자리를 먹는다. */
-function maskCode(text) {
-  return String(text).replace(/```[\s\S]*?```|`[^`\n]*`/g, (m) => ' '.repeat(m.length));
-}
 
 /** 엣지 전문(버전 포함). build()가 쓴다. */
 function parseEdgesFull(text) {
@@ -182,7 +153,7 @@ function lineVersion(line) {
   return m ? `v${m[1]}`.toLowerCase() : null;
 }
 function canonVersion(text) {
-  const lines = String(text).split('\n');
+  const lines = maskCode(text).split('\n');
   for (const line of lines.slice(0, VERSION_SCAN_LINES)) {
     const v = lineVersion(line);
     if (v) return v;
@@ -289,20 +260,28 @@ function findMapGaps(docs) {
   return { noMap: false, missing };
 }
 
-function build() {
-  const files = [...SCAN_DIRS.flatMap((d) => walk(path.join(ROOT, d))), ...rootCode()];
+function build({ root = ROOT } = {}) {
+  const listed = inventory(root);
+  const files = listed.files.filter((r) => !shouldSkip(r) &&
+    ((r.startsWith('docs/') && TEXT_EXT.test(r)) || (!r.includes('/') && CODE_EXT.test(r))));
+  const scanErrors = [...listed.errors];
   const docs = new Map(); // relPath -> {rel, full, canon, follows:[], text}
-  for (const full of files) {
-    const r = rel(full);
+  for (const r of files) {
+    const full = path.join(root, r);
     let text = '';
-    try { text = fs.readFileSync(full, 'utf8'); } catch (_) { continue; }
+    try {
+      text = safeRead(root, r, 64 * 1024 * 1024);
+      // 자체 포함 HTML의 이미지 바이트는 문서 관계가 아니다. 원문을 바꾸지 않고 검색 사본에서만 제외.
+      if (/\.html$/i.test(r)) text = text.replace(/data:[\w.+/-]+;base64,[A-Za-z0-9+/=\r\n]+/g,
+        (m) => 'data:omitted' + m.replace(/[^\r\n]/g, ''));
+    } catch (_) { scanErrors.push({ file: r, kind: 'read-unavailable' }); continue; }
     // 정본 지위는 경로 규칙 **또는** 자기 선언. 판까지 적은 선언이면 버전도 그쪽이 이긴다 —
     // 명시한 값이 머리말에서 주워 온 값보다 정확하다.
     // 판 없는 선언(`<!-- 정본 -->`)은 지위만 세우고 판은 canonVersion 이 본문에서 읽는다.
     const 선언 = selfDeclaredCanon(text);
     const canon = isCanon(r) || !!선언 || selfDeclaredCanonBare(text);
     docs.set(r, {
-      rel: r, full, canon,
+      rel: r, full, canon, tracked: listed.tracked.has(r),
       edges: parseEdgesFull(text),
       follows: parseEdges(text),
       version: canon ? (선언 || canonVersion(text)) : null,
@@ -320,7 +299,8 @@ function build() {
   for (const d of docs.values()) {
     for (const e of d.edges) {
       const target = e.target;
-      if (!docs.has(target) && !fs.existsSync(path.join(ROOT, target))) {
+      const unsafe = path.isAbsolute(target) || /[\x00-\x1f]/.test(target) || target.split(/[\\/]/).includes('..');
+      if (unsafe || (!docs.has(target) && !fs.existsSync(path.join(root, target)))) {
         broken.push({ from: d.rel, target, kind: looksLikePath(target) ? '없는파일' : '산문' });
         continue;
       }
@@ -344,17 +324,27 @@ function build() {
   // 자동으로 심지 않는다(오탐이 엣지를 오염시키면 알림 전체가 신뢰를 잃는다). 후보만 보여준다.
   const canons = [...docs.values()].filter((d) => d.canon);
   const candidates = [];
+  const references = [];
   for (const d of docs.values()) {
+    const links = /\.md$/i.test(d.rel) ? localLinks(d.text, d.rel) : [];
+    references.push(...links);
+    const linked = new Set(links.map((l) => l.target));
     if (d.canon) continue;
+    const prose = maskCode(d.text);
     for (const c of canons) {
       const stem = path.basename(c.rel).replace(TEXT_EXT, '');
-      if (d.follows.includes(c.rel)) continue;
-      if (d.text.includes(stem)) candidates.push({ doc: d.rel, canon: c.rel });
+      if (d.follows.includes(c.rel) || linked.has(c.rel) || /^(README|AGENTS|CLAUDE|GEMINI)$/i.test(stem)) continue;
+      if (prose.includes(stem)) candidates.push({ doc: d.rel, canon: c.rel });
     }
   }
+  const trackedDocs = new Map([...docs].filter(([, d]) => d.tracked));
+  const allMapGaps = findMapGaps(docs);
   return {
     docs, derivedOf, broken, candidates, canons, stale, staleHeld, unversioned, canonUnknown,
-    mapGaps: findMapGaps(docs),
+    references, candidateDocuments: new Set(candidates.map((c) => c.doc)).size,
+    scanErrors, scope: 'Git tracked + non-ignored working files; docs md/txt/html + root js',
+    mapGaps: findMapGaps(trackedDocs),
+    workingMapGaps: allMapGaps.missing.filter((r) => !listed.tracked.has(r)),
   };
 }
 
@@ -522,6 +512,19 @@ function main() {
   }
 
   const g = build();
+  if (g.scanErrors.length || g.mapGaps.noMap) process.exitCode = 2;
+  const summary = {
+    documents: g.docs.size, canons: g.canons.length,
+    dependencies: [...g.derivedOf.values()].reduce((n, a) => n + a.length, 0),
+    references: g.references.length, mentionPairs: g.candidates.length, mentionDocuments: g.candidateDocuments,
+    broken: g.broken.length, stale: g.stale.length, unversioned: g.unversioned.length,
+    canonUnknown: g.canonUnknown.length, mapAbsent: g.mapGaps.noMap, mapMissing: g.mapGaps.missing.length,
+    workingMapMissing: g.workingMapGaps.length, scanErrors: g.scanErrors.length, scope: g.scope,
+  };
+  if (args.includes('--summary')) {
+    console.log(JSON.stringify(summary, null, 2));
+    return;
+  }
 
   const ofIdx = args.indexOf('--of');
   if (ofIdx !== -1) {
@@ -535,6 +538,7 @@ function main() {
 
   if (args.includes('--json')) {
     console.log(JSON.stringify({
+      summary, scanErrors: g.scanErrors, workingMapGaps: g.workingMapGaps,
       derivedOf: Object.fromEntries(g.derivedOf),
       broken: g.broken,
       stale: g.stale,
@@ -543,6 +547,7 @@ function main() {
       canonUnknown: g.canonUnknown,
       mapGaps: g.mapGaps,
       candidates: g.candidates,
+      ...(args.includes('--references') ? { references: g.references } : {}),
       canons: g.canons.map((c) => ({ rel: c.rel, version: c.version })),
     }, null, 2));
     return;
@@ -550,6 +555,9 @@ function main() {
 
   const totalEdges = [...g.derivedOf.values()].reduce((a, l) => a + l.length, 0);
   console.log(`\n[doc-graph] 문서 ${g.docs.size}개 · 정본 ${g.canons.length}개 · 파생 엣지 ${totalEdges}개\n`);
+  console.log(`  일반 링크 ${g.references.length}개는 탐색 관계이며 파생 선언·승인 증거가 아니다.`);
+  if (g.scanErrors.length) console.log(`  ⚠ ${g.scanErrors.length}건 확인 불가 — 검사 미완료(--json의 scanErrors).`);
+  if (g.workingMapGaps.length) console.log(`  작업 중 미추적 문서 ${g.workingMapGaps.length}개는 확정 색인 누락과 분리한다(--json의 workingMapGaps).`);
 
   if (g.derivedOf.size) {
     console.log('  정본별 파생:');
@@ -620,8 +628,8 @@ function main() {
       if (!byCanon.has(c.canon)) byCanon.set(c.canon, []);
       byCanon.get(c.canon).push(c.doc);
     }
-    console.log(`\n  ℹ 심을 후보 — 정본을 언급하는데 파생 선언이 없는 문서 ${g.candidates.length}건`);
-    console.log('    (자동으로 심지 않는다. 진짜 파생인지는 사람이 판정한다.)');
+    console.log(`\n  ℹ 단순 이름 언급 — ${g.candidates.length}쌍 / 서로 다른 문서 ${g.candidateDocuments}개`);
+    console.log('    일반 링크·명시 파생·코드 예시는 제외. 이 숫자는 결함 수가 아니며 파생 표기를 일괄 추가하지 않는다.');
     for (const [canon, docs] of [...byCanon].sort((a, b) => b[1].length - a[1].length).slice(0, 10)) {
       console.log(`    ${canon}`);
       for (const d of docs.slice(0, 8)) console.log(`        ${d}`);

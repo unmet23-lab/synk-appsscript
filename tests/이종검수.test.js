@@ -501,8 +501,9 @@ test('🔑 등록층은 **워크트리 아닌 cwd** 로 훅을 띄운다 — 호
     'cwd 가 워크트리다 — clasp-guard 규칙 0 이 발화해 아래 등록층 검사가 통째로 무의미해진다');
 });
 
-test('🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록층 — 가드는 로직보다 여기서 샌다)', () => {
+test('🔑 현행 clasp-guard는 검수 block을 실제 위험 알림으로 전달한다 (09-09 사용자 정책)', () => {
   const fx = 장부([기록({ 지적: [지적('P0', 'k1')] })], []);
+  assert.strictEqual(검수.게이트판정(루트프로젝트, ROOT, fx).level, 'block', '위험 지적 픽스처 자체가 무효다');
   const r = 훅띄우기(path.join(ROOT, '.claude', 'hooks', 'clasp-guard.js'), {
     input: 배포입력(),
     encoding: 'utf8',
@@ -510,10 +511,12 @@ test('🔑 clasp-guard 가 block 판정을 **실제 deny 로** 옮긴다 (등록
     timeout: 180000,
   });
   const out = (r.stdout || '').trim();
-  assert.ok(out, '가드가 아무 말도 하지 않았다');
-  const j = JSON.parse(out);
-  assert.strictEqual(j.hookSpecificOutput?.permissionDecision, 'deny', '차단급 지적이 있는데 배포가 통과했다');
-  assert.match(j.hookSpecificOutput.permissionDecisionReason, /이종 검수/);
+  // 09-09에 절차 게이트가 알림으로 바뀌었다. 옛 deny 기대를 맞추려고 보호 정책을 복구하지 않는다.
+  // 조용한 성공은 여전히 실패다: 실제 검수 위험을 stderr로 전달해야 한다.
+  assert.strictEqual(out, '', '현행 알림 정책을 deny로 되돌리지 않는다');
+  assert.match(r.stderr || '', /\[clasp-guard\]/, '실제 알림 통로가 실행되지 않았다');
+  assert.match(r.stderr || '', /이종 검수/, '위험 지적이 사용자 알림에서 빠졌다');
+  assert.match(r.stderr || '', /P0/, '지적 등급이 사용자 알림에서 빠졌다');
 });
 
 test('🔑 알림(none)은 배포를 **막지 않는다** — 폰 클라우드 세션엔 codex 가 없어 따를 수 없는 처방이 된다', () => {

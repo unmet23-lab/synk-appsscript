@@ -5,6 +5,7 @@
 // Hook: node <canonical checkout>/tools/session-freshness.js --hook --repo <canonical checkout>
 // Antigravity PreInvocation: replace --hook with --antigravity-hook (invocationNum 0 only).
 // Repeat --repo for separately authorized repositories. Manual --files <relative file> is repeatable.
+// Manual checks may opt into --timeout-ms 1..30000; automatic hooks always retain the 1700ms cap.
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -14,6 +15,8 @@ const { performance } = require('node:perf_hooks');
 const POLICY = 'docs/AI_운영원칙.md';
 const EVENTS = new Set(['SessionStart', 'UserPromptSubmit']);
 const BUDGET_MS = 1700;
+const MAX_MANUAL_BUDGET_MS = 30000;
+const MAX_STATUS_BYTES = 16 * 1024 * 1024;
 const MAX_INPUT = 256 * 1024;
 const MAX_REPOS = 8;
 const MAX_FILES = 16;
@@ -101,13 +104,13 @@ function gitEnvironment() {
 
 function reader(deadline, run = execFile) {
   const env = gitEnvironment();
-  return (cwd, args, { emptyExitOne = false } = {}) => new Promise((resolve, reject) => {
+  return (cwd, args, { emptyExitOne = false, maxBuffer = 512 * 1024 } = {}) => new Promise((resolve, reject) => {
     const remaining = Math.floor(deadline - performance.now());
     if (remaining < 1) return reject(new Error('deadline'));
     run('git', ['--no-pager', '--no-optional-locks', '-c', 'core.fsmonitor=false',
       '-c', 'core.untrackedCache=false', ...args], {
       cwd, env, encoding: 'utf8', windowsHide: true, shell: false,
-      timeout: remaining, maxBuffer: 512 * 1024,
+      timeout: remaining, maxBuffer,
     }, (error, stdout, stderr) => {
       // Never propagate stderr, paths, config values, or command text.
       if (error && !(emptyExitOne && error.code === 1 && !stdout)) {
@@ -180,7 +183,10 @@ async function safeStatus(git, cwd) {
     overrides.push('-c', driver + '.clean=', '-c', driver + '.process=', '-c', driver + '.required=false');
   }
   if (overrides.join('').length > 16000) throw new Error('filters-unavailable');
-  return git(cwd, [...overrides, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--ignore-submodules=all']);
+  // Bound status bytes separately from the much smaller configuration/ref responses.
+  // Thousands of entries can still be counted without attempting metadata for all of them.
+  return git(cwd, [...overrides, 'status', '--porcelain=v1', '-z', '--untracked-files=all', '--ignore-submodules=all'],
+    { maxBuffer: MAX_STATUS_BYTES });
 }
 
 async function workingSnapshot(git, root, deadline) {
@@ -289,9 +295,11 @@ async function baseline(git, cwd) {
   throw new Error('baseline-unavailable');
 }
 
-async function collect({ cwd = process.cwd(), repo, files = [], timeoutMs = BUDGET_MS, run } = {}) {
+async function collect({ cwd = process.cwd(), repo, files = [], timeoutMs = BUDGET_MS, manual = false, run } = {}) {
   const started = performance.now();
-  const budget = Math.min(BUDGET_MS, Math.max(1, Number(timeoutMs) || BUDGET_MS));
+  // A larger timeout alone cannot extend an automatic/library invocation.
+  const cap = manual === true ? MAX_MANUAL_BUDGET_MS : BUDGET_MS;
+  const budget = Math.min(cap, Math.max(1, Number(timeoutMs) || BUDGET_MS));
   const git = reader(started + budget, run);
   const observedAt = new Date().toISOString();
   let scopeVerified = repo === undefined;
@@ -406,9 +414,15 @@ function parseArgs(argv) {
     else if (argv[i] === '--files' && argv[i + 1] && !argv[i + 1].startsWith('--')) {
       (options.files ||= []).push(argv[++i]);
     }
+    else if (argv[i] === '--timeout-ms' && options.timeoutMs === undefined) {
+      const value = argv[++i];
+      if (!/^[1-9]\d*$/.test(value || '') || Number(value) > MAX_MANUAL_BUDGET_MS) throw new Error('invalid-arguments');
+      options.timeoutMs = Number(value);
+    }
     else throw new Error('invalid-arguments');
   }
   if (options.hook && options.antigravityHook) throw new Error('invalid-arguments');
+  if (options.timeoutMs !== undefined && (options.hook || options.antigravityHook)) throw new Error('invalid-arguments');
   repositories(options.repo);
   if (options.files && (options.hook || options.antigravityHook || options.files.length > MAX_FILES)) throw new Error('invalid-arguments');
   return options;
@@ -484,7 +498,8 @@ async function main() {
       if (!localPath(input.cwd)) throw new Error('invalid-cwd');
       cwd = input.cwd;
     }
-    if (!report) report = await collect({ cwd, repo: options.repo, files: options.files });
+    if (!report) report = await collect({ cwd, repo: options.repo, files: options.files,
+      timeoutMs: options.timeoutMs, manual: !options.hook && !options.antigravityHook });
   } catch { report = { status: 'unavailable', observedAt: new Date().toISOString(), scopeVerified: false }; }
   const text = output(report, { hookEvent, antigravityHook: options.antigravityHook, json: options.json });
   if (text) process.stdout.write(text + '\n');
