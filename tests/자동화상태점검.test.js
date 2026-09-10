@@ -70,6 +70,11 @@ test('monthly health passes only approved aggregate counts and months', () => {
   monthly.cards.counts.pending = -1;
   const bad = harness({ monthly }).run(); assert.equal(bad.ok, false); assert.deepEqual(bad.monthly, { status: 'unavailable' });
 });
+test('numeric batch revision is retained for owner compare-and-set recovery without raw internal fields', () => {
+  const r = harness({ props: { 배치진행_morningJobs: JSON.stringify({ status: 'uncertain', updatedAt: 1789077000000, startedAt: 1789076000000, next: 1, total: 9 }) } }).run();
+  assert.equal(r.ok, false); assert.equal(r.batches.morningJobs.revision, 1789077000000);
+  assert.equal(r.batches.morningJobs.updatedAt, new Date(1789077000000).toISOString());
+});
 test('spreadsheet metadata failure is not treated as a healthy disabled textbook feature', () => {
   const r = harness({ sheetError: true }).run(); assert.equal(r.ok, false); assert.equal(r.stage, 'metadata'); assert.equal(r.triggers, null); assert.ok(!JSON.stringify(r).includes('private'));
 });

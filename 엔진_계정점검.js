@@ -1,4 +1,4 @@
-// 소유자 연결 점검. 고정 합성 요청만 실행하며 학생 데이터·메일·저장소를 읽거나 쓰지 않는다.
+// [v9.343] 소유자 연결·자동화 점검. API 합성 요청과 읽기 전용 운영 집계를 분리한다.
 // 활성 사용자·실행 계정·기존 ADMIN_EMAIL 세 값이 일치할 때만 허용한다.
 // executionApi MYSELF / webapp USER_DEPLOYING 계약을 유지한다. 인수로 권한·프롬프트·모델을 받지 않는다.
 function automationOwnerAllowed_() {
@@ -49,8 +49,11 @@ function automationHealthCheck() {
         const safe = { status: allowed.indexOf(summary.status) >= 0 ? summary.status : 'invalid_state' };
         ['next', 'total'].forEach(k => { if (Number.isSafeInteger(summary[k]) && summary[k] >= 0) safe[k] = summary[k]; });
         safe.failureCount = Array.isArray(summary.failures) ? summary.failures.length : 0;
+        if (Number.isSafeInteger(summary.updatedAt) && summary.updatedAt >= 0) safe.revision = summary.updatedAt;
         ['date', 'startedAt', 'updatedAt'].forEach(k => {
-          if (typeof summary[k] === 'string' && /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z)?$/.test(summary[k])) safe[k] = summary[k];
+          if (k !== 'date' && Number.isSafeInteger(summary[k]) && summary[k] >= 0 && summary[k] <= 253402300799999)
+            safe[k] = new Date(summary[k]).toISOString();
+          else if (typeof summary[k] === 'string' && /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z)?$/.test(summary[k])) safe[k] = summary[k];
         });
         result.batches[name] = safe;
       } catch (e) { result.batches[name] = { status: 'invalid_state' }; }
@@ -69,7 +72,8 @@ function automationHealthCheck() {
         report: { month: monthly.report.month, status: statuses.concat(['missing']).indexOf(monthly.report.status) >= 0 ? monthly.report.status : 'invalid_state' } };
     } catch (e) { result.monthly = { status: 'unavailable' }; }
     const batchFailure = Object.keys(result.batches).some(name => ['partial', 'uncertain', 'date_changed', 'plan_changed', 'invalid_state'].indexOf(result.batches[name].status) >= 0);
-    result.ok = missing.length === 0 && duplicates.length === 0 && wrongTypeCount === 0 && !result.rehearsalPresent && !batchFailure && result.monthly.status !== 'unavailable';
+    const monthlyFailure = result.monthly.status === 'unavailable' || ['uncertain', 'invalid_state'].indexOf(result.monthly.report.status) >= 0 || result.monthly.cards.counts.uncertain > 0;
+    result.ok = missing.length === 0 && duplicates.length === 0 && wrongTypeCount === 0 && !result.rehearsalPresent && !batchFailure && !monthlyFailure;
     result.observationComplete = Object.keys(result.batches).every(name => result.batches[name].status !== 'not_observed');
     result.stage = 'read_only';
     return result;
