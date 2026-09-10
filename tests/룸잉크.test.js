@@ -55,6 +55,18 @@ test('✅ 밝은 잉크는 «이겨도» 안 문다 — 렌더에서 또렷했�
   }
 });
 
+test('한 줄로 압축된 @media print의 잉크는 화면 충돌로 세지 않는다', () => {
+  const html = 지면('@media print{body{background:#fff}.sheet .번호{color:var(--navy-3)!important}}',
+    '<div class="sheet"><span class="번호">1</span></div>');
+  assert.deepEqual(잉.충돌들(html), [], '인쇄 전용 규칙을 화면의 어두운 부품 위 잉크로 오판했다');
+});
+
+test('print와 screen이 쉼표로 묶인 미디어 규칙은 화면 충돌 검사에서 걷지 않는다', () => {
+  const html = 지면('@media print, screen{.sheet .번호{color:var(--navy-3)!important}}',
+    '<div class="sheet"><span class="번호">1</span></div>');
+  assert.equal(잉.충돌들(html).length, 1, 'screen에도 적용되는 규칙을 print 전용으로 오인해 놓쳤다');
+});
+
 test('✅ 바탕까지 원고가 가져갔으면 안 문다 — 둘이 «한 쌍»이라 스스로 맞다', () => {
   /* 실측: `02_학부모_안내문_A4_mn` 의 `.slot .lim` 이 이 경우다(칩 바탕을 밝게 덮고 navy 잉크). */
   const r = 잉.충돌들(지면('.slot .lim{background:#E7DDC7;color:var(--navy-3)}',

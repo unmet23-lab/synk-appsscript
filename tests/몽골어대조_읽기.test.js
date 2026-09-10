@@ -19,6 +19,11 @@ const path = require('node:path');
 
 const 대조 = require(path.join(path.resolve(__dirname, '..'), 'tools', '몽골어대조.js'));
 
+test('텍스트 지문은 Git checkout의 LF와 CRLF를 같은 내용으로 센다', () => {
+  assert.strictEqual(대조.지문(Buffer.from('нэг\nхоёр\n', 'utf8')),
+    대조.지문(Buffer.from('нэг\r\nхоёр\r\n', 'utf8')));
+});
+
 /* 캐러셀 원고의 실제 꼴 — 머리말 넉 줄 + `---` 로 갈린 슬라이드들. 한글은 한 자도 없다. */
 const 몽골어만든원고 = [
   '# AI-ийн эрин үед хүнд юу үлдэх вэ?',
@@ -93,4 +98,18 @@ test('제안을 못 받았으면 판정하지 않는다 — 「모름」은 통�
 test('붙임표가 없거나 앞자락이 라틴이 아니면 이 길로 안 온다', () => {
   assert.strictEqual(맞춤.라틴앞자락뿐('соёлын', ['соёл']), false);
   assert.strictEqual(맞춤.라틴앞자락뿐('Монгол-соёлын', ['соёлын']), false);
+});
+
+test('🔴 긴 원고는 서비스 글자 한도 전에 공백 경계로 나누고 낱말을 보존한다', () => {
+  const 원문 = Array.from({ length: 260 }, (_, i) => `үг${i}`).join(' ');
+  const 조각 = 맞춤.맞춤법조각(원문);
+  assert.ok(조각.length > 1, '긴 원고가 한 요청으로 남으면 character limit에 막힌다');
+  assert.ok(조각.every((s) => s.length <= 맞춤.한번글자한도), '각 요청이 보수적 글자 한도를 지켜야 한다');
+  assert.strictEqual(조각.join(' '), 원문, '경계에서 낱말이 잘리거나 빠지면 안 된다');
+});
+
+test('공공 문안에서 확인한 앱 표면형만 좁게 허용하고 비슷한 오기는 남긴다', () => {
+  assert.strictEqual(맞춤.우리것인가('аппликейшн'), true);
+  assert.strictEqual(맞춤.우리것인가('аппликейшний'), true);
+  assert.strictEqual(맞춤.우리것인가('аппликэйшний'), false);
 });

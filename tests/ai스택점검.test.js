@@ -141,6 +141,17 @@ test('raw 로 놓인 표식은 그대로 선언이다 — 위 회귀가 진짜 �
 
 // ───────────────────────────── ㉡ 몽골어 검문
 
+test('tests 안의 몽골어 표식은 검사용 픽스처이지 배포 문안 선언이 아니다', () => {
+  const 집 = 픽스처();
+  fs.mkdirSync(path.join(집, 'tests'), { recursive: true });
+  fs.writeFileSync(path.join(집, 'tests', '몽골어.fixture.js'),
+    'const marker = "<!-- 몽골어검문: 대상 -->";\n', 'utf8');
+  장부(집, '몽골어검문.jsonl', []);
+  const j = 돌린다(집);
+  assert.strictEqual(j.축[몽골축].선언, 0);
+  assert.strictEqual(j.축[몽골축].안받음, 0);
+});
+
 test('장부가 없는 것과 0건을 가른다 — 없으면 «안 재봤다»(줄=null)', () => {
   const j = 돌린다(픽스처());
   assert.strictEqual(j.축[몽골축].줄, null, '장부 없음은 0이 아니라 null 이다');
@@ -179,11 +190,12 @@ test('짝이 «없으면» --원문 을 안 붙인다 — 없는 경로를 박�
   assert.doesNotMatch(명령[0], /--원문/, '짝이 없는데 붙였다 — 그 경로를 열면 도구가 죽는다');
 });
 
-test('지문이 그대로면 조용하다', () => {
+test('지문이 그대로면 조용하다 — LF 장부와 CRLF 작업본도 같은 내용이다', () => {
   const 집 = 픽스처();
-  const 본문 = '그대로인 내용\n';
+  const 본문 = '그대로인 내용\r\n둘째 줄\r\n';
   문서(집, '문안.md', 본문);
-  const 지문 = require('node:crypto').createHash('sha256').update(Buffer.from(본문, 'utf8')).digest('hex').slice(0, 12);
+  const 고른본문 = 본문.replace(/\r\n?/g, '\n');
+  const 지문 = require('node:crypto').createHash('sha256').update(Buffer.from(고른본문, 'utf8')).digest('hex').slice(0, 12);
   장부(집, '몽골어검문.jsonl', [{ 시각: 't', 대상: 'docs/문안.md', 대상지문: 지문, 통과: true }]);
   assert.strictEqual(돌린다(집).축[몽골축].바뀜, 0);
 });

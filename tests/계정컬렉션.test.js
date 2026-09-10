@@ -6,6 +6,7 @@ const root=path.resolve(__dirname,'..');
 const base=path.join(root,'docs/홍보물/계정별콘텐츠_20260909');
 const loom=require('../tools/lib/loom.js');
 const {assetNeedsRefresh,ASSET_TRANSFORM}=require('../docs/홍보물/계정별콘텐츠_20260909/만들기.cjs');
+const 문안정규화=value=>String(value).replace(/\r\n?/g,'\n').trim();
 test('계정 컬렉션은 Loom의 명시 호출에만 실리고 기본 스킨을 바꾸지 않는다',()=>{
   const skin=loom.계정컬렉션();
   assert.match(skin,/\.account-collection/);
@@ -31,7 +32,7 @@ test('13개 기록 + 3개 준비, 7개 영상, 원작/파생과 계정 형식이
 test('완성 지면과 문안이 원고 전량에 대응한다',()=>{
   const {items}=JSON.parse(fs.readFileSync(path.join(base,'콘텐츠원고.json'),'utf8'));
   for(const p of items){
-    assert.equal(fs.readFileSync(path.join(base,p.id,'게시문안.txt'),'utf8').trim(),p.caption.trim());
+    assert.equal(문안정규화(fs.readFileSync(path.join(base,p.id,'게시문안.txt'),'utf8')),문안정규화(p.caption));
     const html=fs.readFileSync(path.join(base,p.id,'cards.html'),'utf8');
     assert.equal((html.match(/class="artboard"/g)||[]).length,p.cards.length);
     for(let i=1;i<=p.cards.length;i++)assert.ok(fs.statSync(path.join(base,p.id,`upload-${String(i).padStart(2,'0')}.jpg`)).size>10000);

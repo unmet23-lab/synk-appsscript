@@ -226,12 +226,16 @@ async function fileFingerprint(git, root, relative, deadline) {
   if (performance.now() >= deadline) return { state: 'incomplete' };
   let handle;
   try {
+    // Reject linked/path-escaping components before asking Git about the path. On Linux,
+    // `git check-ignore` itself refuses a directory symlink and used to turn this into
+    // `unavailable` instead of the intentional `refused` safety result.
+    const { filename, stat } = await safeStat(root, relative);
+    if (!stat.isFile()) return { state: 'refused' };
+    if (performance.now() >= deadline) return { state: 'incomplete' };
     // Git-ignored credentials/private artifacts are excluded even when explicitly requested.
     const ignored = await git(root, ['check-ignore', '--no-index', '--', relative], { emptyExitOne: true });
     if (ignored) return { state: 'refused' };
     if (performance.now() >= deadline) return { state: 'incomplete' };
-    const { filename, stat } = await safeStat(root, relative);
-    if (!stat.isFile()) return { state: 'refused' };
     if (stat.size > BigInt(MAX_FILE_BYTES)) return { state: 'incomplete' };
     handle = await fs.open(filename, 'r');
     const opened = await handle.stat({ bigint: true });

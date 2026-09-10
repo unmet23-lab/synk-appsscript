@@ -237,7 +237,11 @@ const ROOT = path.resolve(__dirname, '..');
 const 장부경로 = () => process.env.SYNK_MN_LEDGER || path.join(ROOT, 'docs', '_ops', '몽골어검문.jsonl');
 
 function 지문(buf) {
-  return crypto.createHash('sha256').update(buf).digest('hex').slice(0, 12);
+  /* 이 장부는 텍스트 원고의 내용 드리프트를 잰다. Git checkout의 LF↔CRLF 변환은
+   * 내용 변경이 아니므로 줄끝을 고른 뒤 지문을 낸다. 그렇지 않으면 Windows에서 찍은
+   * 도장이 Linux CI에서 네 벌 모두 무효가 된다(2026-09-10 재현). */
+  const text = Buffer.isBuffer(buf) ? buf.toString('utf8') : String(buf);
+  return crypto.createHash('sha256').update(text.replace(/\r\n?/g, '\n'), 'utf8').digest('hex').slice(0, 12);
 }
 
 /** @returns {string|null} 실패 사유(없으면 null) — 부르는 쪽이 «말할» 재료다. */

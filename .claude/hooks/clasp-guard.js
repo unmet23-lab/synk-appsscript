@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // clasp-guard — clasp push/deploy 배포 게이트 (PreToolUse 훅)
 // CLAUDE.md 신뢰성 조항의 기계 강제: /deploy 파이프라인의 불변식을 절차가 아니라 사실로 검사한다.
-// 통과 시 출력 없이 종료(기존 권한 ask 흐름 유지), 위반 시 deny JSON을 낸다.
+// 통과 시 출력 없이 종료한다. 사용자가 해제한 배포 게이트는 구조화 알림, pull·보안 위험은 deny JSON이다.
 // 의도된 예외 절차(임시 doGet 러너 등)는 명령에 CLASP_GUARD_BYPASS=1 을 명시해 의식적으로 우회한다.
 'use strict';
 const { execFileSync } = require('child_process');
@@ -43,14 +43,17 @@ function deny(reason) {
  */
 const 게이트풀림 = true;
 
-/** 막지 않고 알린다 — 훅 stderr 는 사람과 모델이 같이 본다. */
+/** 막지 않고 알린다 — exit 0의 stderr는 디버그 로그에만 가므로 JSON으로 사람·모델 양쪽에 전한다. */
 function 알린다(reason) {
-  process.stderr.write(
-    '\n🔓 [clasp-guard] 배포 게이트를 «지나간다» — 막지 않는다(유호 지시 09-09).\n' +
+  const 글 =
+    '🔓 [clasp-guard] 배포 게이트를 «지나간다» — 막지 않는다(유호 지시 09-09).\n' +
       '   아래는 «건너뛴 것»의 목록이지 실패가 아니다:\n' +
       String(reason).replace(/^/gm, '   ') +
-      '\n'
-  );
+      '\n';
+  process.stdout.write(JSON.stringify({
+    systemMessage: 글,
+    hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: 글 },
+  }));
   process.exit(0);
 }
 

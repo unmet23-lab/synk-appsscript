@@ -1,7 +1,10 @@
 # 원본·최종 PDF·업로드 이미지·선택 자산은 보존하고 중복 출력만 제외한다.
 *.html
 *.zip
-소개서_4K/
+소개서_4K/*
+!소개서_4K/lab-1.png
+!소개서_4K/shift-1.png
+!소개서_4K/pulse-1.png
 캐러셀_고해상도/
 PDF미리보기/
 자산보기.png
@@ -10,6 +13,8 @@ PDF미리보기/
 !미리보기/소개서-표지.png
 !미리보기/캐러셀-전체.png
 assets/*
+!assets/paper.webp
+!assets/compass.webp
 !assets/woolLogo.webp
 !assets/book.webp
 !assets/curious.webp

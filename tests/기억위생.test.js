@@ -22,6 +22,11 @@ const path = require('path');
 
 const M = require('../tools/memory-graph.js');
 
+/** 합성 폴더의 기준선은 그 폴더 안에 둬 실제 운영 래칫을 더럽히지 않는다. */
+const 훅줄 = () => M.위생훅줄({
+  래칫파일: path.join(process.env.SYNK_MEMORY_DIR || os.tmpdir(), '.기억래칫.test.json'),
+});
+
 /** 임시 기억 폴더를 만들고 그 안에서 돌린다. */
 function 임시폴더(파일들) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-기억위생-'));
@@ -134,7 +139,7 @@ test('위생훅줄 — 어떤 경우에도 던지지 않고, 침묵하지 않는
   try {
     for (const 자리 of [path.join(os.tmpdir(), '없는폴더-' + Date.now()), 임시폴더({}), 임시폴더({ '가.md': 토픽('가') })]) {
       process.env.SYNK_MEMORY_DIR = 자리;
-      const 줄 = M.위생훅줄();
+      const 줄 = 훅줄();
       assert.ok(typeof 줄 === 'string' && 줄.trim().length > 0, '침묵은 답이 아니다: ' + 자리);
       assert.ok(줄.includes('기억'), '무엇을 잰 줄인지 말해야 한다');
     }
@@ -155,10 +160,10 @@ test('훅이 «스스로» 고친다 — 작은 표류는 사람 손을 안 부�
   const 옛 = process.env.SYNK_MEMORY_DIR;
   try {
     process.env.SYNK_MEMORY_DIR = d;
-    const 줄1 = M.위생훅줄();
+    const 줄1 = 훅줄();
     assert.match(줄1, /스스로 고침/, '보고만 하면 미완성이다 — 그 자리에서 고쳐야 한다');
     // 두 번째는 고칠 것이 없으니 조용하다(멱등).
-    assert.ok(!/스스로 고침/.test(M.위생훅줄()));
+    assert.ok(!/스스로 고침/.test(훅줄()));
   } finally {
     if (옛 === undefined) delete process.env.SYNK_MEMORY_DIR; else process.env.SYNK_MEMORY_DIR = 옛;
   }
@@ -170,7 +175,7 @@ test('🔴 잠금을 못 잡으면 «고치지 않고 말한다» — 남의 것
   const 옛 = process.env.SYNK_MEMORY_DIR;
   try {
     process.env.SYNK_MEMORY_DIR = d;
-    const 줄 = M.위생훅줄();
+    const 줄 = 훅줄();
     assert.match(줄, /잠금 못 잡음/, '왜 안 고쳤는지 말해야 한다 — 침묵은 「고쳤다」와 같은 얼굴이 된다');
     assert.ok(!/스스로 고침/.test(줄));
   } finally {
@@ -188,7 +193,7 @@ test('🔴 뭉텅이는 훅이 «안» 건드린다 — 제 커밋으로 설 자
   const 옛 = process.env.SYNK_MEMORY_DIR;
   try {
     process.env.SYNK_MEMORY_DIR = d;
-    const 줄 = M.위생훅줄();
+    const 줄 = 훅줄();
     assert.match(줄, /뭉텅이라 안 건드린다/);
     assert.ok(!/스스로 고침/.test(줄), '뭉텅이를 훅이 삼키면 그날의 진짜 변경이 그 안에 묻힌다');
   } finally {

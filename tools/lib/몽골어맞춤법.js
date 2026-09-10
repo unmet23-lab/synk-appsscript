@@ -27,6 +27,10 @@ const { createHash } = require('crypto');
 const BASE = 'https://spellcheck.mn/cms-client/modules/spellchecker';
 const MOD = 10_000_000_008n;
 const 타임아웃 = 20_000;
+/* 2026-09-10 실측: 정규화 뒤 1,248자는 `Reached character limit`(HTTP 400),
+ * 1,000자보다 짧은 캐러셀은 통과했다. 낱말을 자르면 맞춤법 자 자체를 망치므로,
+ * 여유를 둔 900자에서 **공백 경계로만** 나눠 같은 검사를 이어 붙인다. */
+const 한번글자한도 = 900;
 
 /* 우리가 «지어낸» 이름만 넣는다 — 사전에 없는 게 당연한 것들.
  * 🚫 여기에 «몽골어 낱말인지 아닌지 우리가 모르는 것»을 넣지 않는다. 그 순간 이 자는 모래주머니가 된다.
@@ -38,6 +42,10 @@ const 우리이름 = new Set([
   'SYNK', 'Кру', 'Крю', 'кру', 'крю', 'КРУ', 'КРЮ',
   'ТОПИК', 'TOPIK', 'AI', 'ChatGPT',
 ]);
+
+/* spellcheck.mn 사전에는 없지만 몽골 정부 기관의 실제 공공 문안에서 확인한 표면형만 둔다.
+ * 어근 전체나 임의 접미사를 통과시키지 않아 비슷한 오타까지 숨기지 않는다. */
+const 검증된외래표기 = new Set(['аппликейшн', 'аппликейшний']);
 
 /* 🔴 서수 표기 `4-р` 를 서비스 토크나이저가 «4» 와 «-р» 로 쪼개 `-р` 를 모르는 낱말로 준다
  *   (2026-09-02 실측 · 제안이 `-т`·`-д`·`ёр`… 로 나온다). 몽골어에서 `4-р түвшин`(4급)은
@@ -51,6 +59,7 @@ const 서수부스러기 = /^-[А-Яа-яӨөҮү]{1,2}$/;
  *   두 글자 이름(`AI`)은 접두어 규칙에도 안 걸려 **맞는 표기가 오답으로 잡혔다.**
  *   그래서 붙임표 «앞 토막»으로도 본다 — 지우지 않는다. */
 function 우리것인가(w) {
+  if (검증된외래표기.has(w)) return true;
   const 후보 = new Set([w, w.replace(/-/g, ''), w.split('-')[0]]);
   for (const c of 후보) {
     if (우리이름.has(c)) return true;
@@ -85,6 +94,26 @@ function 요청키(s) {
   let n = 0n;
   for (const ch of s) { n += BigInt(ch.codePointAt(0)) + 1n; n %= MOD; }
   return createHash('sha256').update(String(n), 'utf8').digest('hex');
+}
+
+/** spellcheck.mn 한 번의 글자 제한 안으로, 낱말을 자르지 않고 나눈다. */
+function 맞춤법조각(text, 한도 = 한번글자한도) {
+  const 낱말들 = String(text || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  const 조각 = [];
+  let 지금 = '';
+  for (const 낱말 of 낱말들) {
+    /* 한 낱말 자체가 한도보다 길면 안전하게 자를 방법이 없다. 부르는 쪽이 미측정으로 남긴다. */
+    if (낱말.length > 한도) throw new Error(`한 낱말이 검사 한도 ${한도}자를 넘는다`);
+    const 다음 = 지금 ? `${지금} ${낱말}` : 낱말;
+    if (다음.length > 한도) {
+      조각.push(지금);
+      지금 = 낱말;
+    } else {
+      지금 = 다음;
+    }
+  }
+  if (지금) 조각.push(지금);
+  return 조각;
 }
 
 async function 부르기(엔드포인트, payload) {
@@ -135,11 +164,14 @@ async function 맞춤법검사(mn, { 제안받기 = true } = {}) {
   if (text.length < 2) return { 의심: [], 제안: {}, 허용: [] };
   let 낱말;
   try {
-    const r = await 부르기('check', { text, key: 요청키(text) });
-    if (!Array.isArray(r)) throw new Error('check 가 배열이 아닌 것을 줬다');
+    낱말 = [];
+    for (const 한조각 of 맞춤법조각(text)) {
+      const r = await 부르기('check', { text: 한조각, key: 요청키(한조각) });
+      if (!Array.isArray(r)) throw new Error('check 가 배열이 아닌 것을 줬다');
+      낱말.push(...r.map((w) => String(w)));
+    }
     /* 🔴 붙임표를 지우지 않는다 — 지우면 `AI-ийн`(맞는 표기)이 `AIийн`(없는 낱말)이 된다.
      *   원래 참고한 스킬은 지웠는데, 그게 우리 글에선 바로 거짓 양성을 냈다(실측 09-01). */
-    낱말 = r.map((w) => String(w));
   } catch (e) {
     /* 🔴 0건이 아니다 — 미측정이다.
      * 다만 «왜» 못 쟀는지는 남긴다. 09-07 에 이걸 안 남겨서 네 회차 내내
@@ -161,4 +193,7 @@ async function 맞춤법검사(mn, { 제안받기 = true } = {}) {
   return { 의심, 제안, 허용 };
 }
 
-module.exports = { 맞춤법검사, 요청키, 우리것인가, 우리이름, 라틴앞자락뿐 };
+module.exports = {
+  맞춤법검사, 맞춤법조각, 요청키, 우리것인가, 우리이름, 검증된외래표기,
+  라틴앞자락뿐, 한번글자한도,
+};

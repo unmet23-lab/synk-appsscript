@@ -106,10 +106,13 @@ const 키릴문턱 = 200;
  *   「후보 0 · 걸린 것 없음」이라 **성공 얼굴**이었다(zero-is-a-success-face). 자를 먼저 의심하라는
  *   그 원칙이 자기 자신에게 먼저 걸렸다. ⚠ 같은 꼴의 SKIP 이 `tools/doc-graph.js` 에도 있다 —
  *   거긴 이 세션이 안 만졌으니 그쪽에서 재는 값은 워크트리에서 따로 의심해야 한다. */
-const SKIP = [/\/_archive\//, /\/worktrees\//, /\/_구본\//, /\/_ops\//];
+// tests/의 번역 픽스처와 규약 문자열은 실제로 내보내는 몽골어가 아니다. 생산 대상만 센다.
+const SKIP = [/\/_archive\//, /\/worktrees\//, /\/_구본\//, /\/_ops\//, /\/tests\//];
 
 function 지문(buf) {
-  return crypto.createHash('sha256').update(buf).digest('hex').slice(0, 12);
+  // 몽골어 장부와 같은 텍스트 지문: checkout 줄끝만 달라져도 재검문으로 오인하지 않는다.
+  const text = Buffer.isBuffer(buf) ? buf.toString('utf8') : String(buf);
+  return crypto.createHash('sha256').update(text.replace(/\r\n?/g, '\n'), 'utf8').digest('hex').slice(0, 12);
 }
 
 function jsonl(경로) {
