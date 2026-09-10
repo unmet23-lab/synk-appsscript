@@ -32,9 +32,9 @@ Follow [Remotion React Markup Best Practices](../remotion-markup/SKILL.md) and [
 
 If this is a video with multiple subsequence videos, follow guidance at [Multi-scene videos](../remotion-markup/multi-scene-video.md).
 
-## Interactivity Best Practices
+## Studio-editable structure
 
-By structuring the React Markup following [Remotion Interactivity Best Practices](../remotion-interactivity/SKILL.md), you allow the user to make edits in the Studio which write back to code.
+For edits that should write back to code, follow the current [video timeline structure](../remotion-markup/video-editing.md) and [Studio-editable animation patterns](../remotion-markup/timing.md#studio-editable-animation-patterns).
 
 ## TailwindCSS
 

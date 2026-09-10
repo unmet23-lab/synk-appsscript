@@ -53,4 +53,4 @@ export const TextAnnotations: React.FC = () => {
 };
 ```
 
-Keep `progress` inline, hardcoded and use `interpolate` for maximum [Studio interactivity](../remotion-interactivity/SKILL.md).
+Keep `progress` inline and hardcoded, and use `interpolate()` as shown in the current [Studio-editable animation patterns](./timing.md#studio-editable-animation-patterns).

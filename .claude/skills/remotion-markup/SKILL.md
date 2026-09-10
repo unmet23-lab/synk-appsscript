@@ -28,7 +28,7 @@ Tailwind animation class will not render correctly, they need to be refactored.
 
 Use `Easing.bezier()` and `Easing.spring()` to customize timing.
 
-Structure your markup according to [Remotion Interactivity Best Practices](../remotion-interactivity/SKILL.md)
+For Studio-editable animation, follow the current [inline keyframe and transform patterns](./timing.md#studio-editable-animation-patterns).
 
 ```tsx
 import { useCurrentFrame, Easing, interpolate, Interactive } from "remotion";
@@ -217,12 +217,6 @@ If a component does not support these props, wrap it in`<Sequence>` from `remoti
 - `layout="absolute-fill"` makes the Sequence behave like AbsoluteFill
 - `layout="none"` is "headless" mode, no wrapper element is used.
 
-## Maps
-
-See [Remotion Maps](./remotion-maps/SKILL.md) if wanting to include maps in the video.
-> 🔴 SYNK 는 `remotion-maps/` 를 **일부러 안 받았다**(08-26 · 중복 32파일 578KB). 이 링크는 이 저장소에 없다 —
-> 지도 영상이 실제로 필요해지면 `remotion-dev/remotion` 의 `packages/skills/skills/remotion-markup/remotion-maps/` 에서 그때 받는다.
-
 ## Text highlights and annotations
 
 See [text-highlights.md](text-highlights.md) for text highlights (highlight markers), circles, underlines, strike-throughs, crossed-off text, boxes.
@@ -280,7 +274,7 @@ When needing to visualize audio (spectrum bars, waveforms, bass-reactive effects
 
 ## Maps
 
-For static maps, animated routes and markers, geographic explainers, Mapbox, MapLibre, MapTiler, GeoJSON, or 3D geographic flyovers, load [Remotion Maps](./remotion-maps/SKILL.md) — 위 §Maps 참고, SYNK 는 이 문서를 안 받았다.
+For static maps, animated routes and markers, geographic explainers, Mapbox, MapLibre, MapTiler, GeoJSON, or 3D geographic flyovers, note that the optional `remotion-maps` skill is not installed in this repository. Add its current upstream guidance only when a map video is actually requested; do not leave a link to a missing local file.
 
 ## Captions
 
