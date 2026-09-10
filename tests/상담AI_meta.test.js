@@ -6,17 +6,25 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { ROOT } = require('./_engine-source');
 
-function 엔진로드(속성) {
+function 엔진로드(속성, 응답함수) {
   const 요청 = [];
   const 기록 = [];
+  const 메일 = [];
   const props = Object.assign({
     상담AI_페이지토큰: 'page-token',
     상담AI_IG토큰: 'ig-token',
   }, 속성 || {});
+  const propStore = {
+    getProperty: (k) => props[k] || '',
+    setProperty: (k, v) => { props[k] = String(v); },
+    setProperties: (o) => Object.assign(props, Object.fromEntries(Object.entries(o).map(([k, v]) => [k, String(v)]))),
+    deleteProperty: (k) => { delete props[k]; },
+  };
   const ctx = {
-    PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => props[k] || '' }) },
+    PropertiesService: { getScriptProperties: () => propStore },
     UrlFetchApp: { fetch: (url, options) => {
       요청.push({ url, options });
+      if (응답함수) return 응답함수(url, options);
       return { getResponseCode: () => 200, getContentText: () => '{}' };
     } },
     SpreadsheetApp: {}, Utilities: {}, Logger: { log: () => {} }, ContentService: {},
@@ -26,8 +34,8 @@ function 엔진로드(속성) {
   new vm.Script(fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8'), { filename: '상담AI.js' }).runInContext(ctx);
   ctx.상담_기록_ = (...args) => 기록.push(args);
   ctx.상담_메시지조립_ = (text) => ({ text });
-  ctx.adminMail = () => {};
-  return { ctx, 요청, 기록 };
+  ctx.adminMail = (...args) => 메일.push(args);
+  return { ctx, 요청, 기록, 메일, props };
 }
 
 test('Facebook과 Instagram 웹훅을 플랫폼까지 보존해 정규화한다', () => {
@@ -73,6 +81,53 @@ test('팔로우 조회도 Instagram 전용 호스트와 토큰만 쓴다', () =>
   assert.equal(ctx.상담_팔로우확인_('i1'), true);
   assert.match(요청[0].url, /^https:\/\/graph\.instagram\.com\/v26\.0\/i1\?/);
   assert.match(요청[0].url, /ig-token/);
+});
+
+test('Instagram 장기 토큰은 만료 14일 전 자동 갱신하고 새 만료시각을 저장한다', () => {
+  const 응답 = () => ({
+    getResponseCode: () => 200,
+    getContentText: () => JSON.stringify({ access_token: 'renewed-token', expires_in: 5184000 }),
+  });
+  const { ctx, 요청, props } = 엔진로드({ 상담AI_IG토큰만료시각: '0' }, 응답);
+  const 결과 = ctx.상담AI_IG토큰수명점검_();
+  assert.equal(결과.ok, true);
+  assert.equal(props.상담AI_IG토큰, 'renewed-token');
+  assert.ok(Number(props.상담AI_IG토큰만료시각) > Date.now() + 50 * 24 * 3600 * 1000);
+  assert.match(요청[0].url, /^https:\/\/graph\.instagram\.com\/v26\.0\/refresh_access_token\?/);
+});
+
+test('Instagram 토큰 만료가 멀면 갱신 API를 호출하지 않는다', () => {
+  const 먼만료 = String(Date.now() + 20 * 24 * 3600 * 1000);
+  const { ctx, 요청 } = 엔진로드({ 상담AI_IG토큰만료시각: 먼만료 });
+  const 결과 = ctx.상담AI_IG토큰수명점검_();
+  assert.equal(결과.ok, true);
+  assert.equal(결과.skip, 'not-due');
+  assert.equal(요청.length, 0);
+});
+
+test('Instagram 토큰 갱신 실패는 기존 토큰을 보존하고 값 없이 경고한다', () => {
+  const 실패 = () => ({ getResponseCode: () => 400, getContentText: () => '{"error":"invalid"}' });
+  const { ctx, 메일, props } = 엔진로드({ 상담AI_IG토큰만료시각: '0' }, 실패);
+  assert.equal(ctx.상담AI_IG토큰수명점검_().ok, false);
+  assert.equal(props.상담AI_IG토큰, 'ig-token');
+  assert.equal(메일.length, 1);
+  assert.doesNotMatch(메일[0].join('\n'), /ig-token/);
+});
+
+test('Instagram 토큰 갱신 예외문에 토큰이 섞여도 메일과 반환값으로 내보내지 않는다', () => {
+  const 예외 = () => { throw new Error('request failed: https://graph.instagram.com/?access_token=ig-token'); };
+  const { ctx, 메일, props } = 엔진로드({ 상담AI_IG토큰만료시각: '0' }, 예외);
+  const 결과 = ctx.상담AI_IG토큰수명점검_();
+  assert.equal(결과.ok, false);
+  assert.equal(props.상담AI_IG토큰, 'ig-token');
+  assert.equal(메일.length, 1);
+  assert.doesNotMatch(JSON.stringify({ 결과, 메일 }), /ig-token|access_token/);
+});
+
+test('아침 배치에 Instagram 토큰 수명 점검이 연결돼 있다', () => {
+  const setup = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8');
+  const morning = setup.slice(setup.indexOf('function morningJobs()'), setup.indexOf('function nightJobs()'));
+  assert.match(morning, /safeRun\('상담AI_IG토큰수명',\s*상담AI_IG토큰수명점검_\)/);
 });
 
 test('공개 저장소 문서에 실제 웹훅 비밀값이나 폐기 권한명이 남지 않는다', () => {

@@ -42,6 +42,7 @@ const 상담AI_기본상한 = 300;             // 하루 호출 상한 기본값
  *   6 = 점검 1회가 질문 2건이므로 하루 세 번 눌러볼 수 있는 크기. 늘리려면 스크립트 속성 `상담AI_진단상한`. */
 const 상담AI_진단기본상한 = 6;
 const 상담AI_META_API_VERSION = 'v26.0'; // 2026-09 Meta Graph/Instagram API 실조회 기준
+const 상담AI_IG토큰갱신여유_MS = 14 * 24 * 3600 * 1000; // 만료 14일 전부터 갱신
 /* ⚠ 칸은 **끝에만** 늘린다 — 읽는 쪽이 전부 열 번호로 집는다(`r[8]`·`setValue(draftRow, 9)`).
  *   중간에 끼우면 발송 표식이 엉뚱한 칸에 찍히고, 그 증상은 「조용함」이다. */
 /* [v9.259 · Ⅰ-④] 헤더 정본은 골격 파일로 이관 — `상담로그_HEADERS`(엔진_셋업확장.js). 골격 편입으로
@@ -456,6 +457,60 @@ function 상담_팔로우확인_(igsid) {
     const j = JSON.parse(res.getContentText());
     return typeof j.is_user_follow_business === 'boolean' ? j.is_user_follow_business : null;
   } catch (_) { return null; }
+}
+
+/* Instagram Login 장기 토큰은 유효기간이 있으므로 아침 배치에서 수명을 관리한다.
+ * - 만료시각을 알면 14일 전까지 네트워크 호출 0
+ * - 처음 넣은 토큰처럼 만료시각을 모르면 하루 1회 갱신을 시도해 60일 수명을 받아 적는다
+ * - 실패해도 기존 토큰을 절대 덮지 않고, 토큰 본문 없이 주 1회만 운영자에게 알린다 */
+function 상담AI_IG토큰수명점검_() {
+  const props = PropertiesService.getScriptProperties();
+  const tok = props.getProperty('상담AI_IG토큰');
+  if (!tok) return { ok: false, skip: 'no-token' };
+
+  const now = Date.now();
+  const 만료 = Number(props.getProperty('상담AI_IG토큰만료시각')) || 0;
+  if (만료 && 만료 - now > 상담AI_IG토큰갱신여유_MS) return { ok: true, skip: 'not-due' };
+
+  const 오늘 = new Date(now).toISOString().slice(0, 10);
+  if (props.getProperty('상담AI_IG토큰갱신시도일') === 오늘) return { ok: false, skip: 'already-tried' };
+  props.setProperty('상담AI_IG토큰갱신시도일', 오늘); // 실패해도 같은 날 반복 호출하지 않는다
+
+  try {
+    const res = UrlFetchApp.fetch('https://graph.instagram.com/' + 상담AI_META_API_VERSION +
+      '/refresh_access_token?grant_type=ig_refresh_token&access_token=' + encodeURIComponent(tok), {
+        method: 'get', muteHttpExceptions: true
+      });
+    if (res.getResponseCode() === 200) {
+      const j = JSON.parse(res.getContentText());
+      const 새토큰 = String(j && j.access_token || '');
+      const 수명초 = Number(j && j.expires_in);
+      if (!새토큰 || !Number.isFinite(수명초) || 수명초 <= 0) throw new Error('갱신 응답 형식 오류');
+      props.setProperties({
+        상담AI_IG토큰: 새토큰,
+        상담AI_IG토큰만료시각: String(now + 수명초 * 1000),
+        상담AI_IG토큰갱신성공일: 오늘
+      }, false);
+      props.deleteProperty('상담AI_IG토큰갱신경고시각');
+      return { ok: true, expiresIn: 수명초 };
+    }
+    상담AI_IG토큰갱신경고_(props, now, 'HTTP ' + res.getResponseCode());
+    return { ok: false, err: 'HTTP ' + res.getResponseCode() };
+  } catch (e) {
+    // UrlFetch 예외문에는 요청 URL이 포함될 수 있다. URL 쿼리에 든 토큰이
+    // 메일·로그·반환값으로 번지지 않도록 세부 예외문은 밖으로 내보내지 않는다.
+    상담AI_IG토큰갱신경고_(props, now, '요청 예외');
+    return { ok: false, err: '요청 예외' };
+  }
+}
+
+function 상담AI_IG토큰갱신경고_(props, now, 사유) {
+  const 지난경고 = Number(props.getProperty('상담AI_IG토큰갱신경고시각')) || 0;
+  if (now - 지난경고 < 7 * 24 * 3600 * 1000) return;
+  adminMail('[SYNK] ⚠ Instagram 상담 토큰 갱신 확인 필요',
+    'Instagram 상담 토큰 자동 갱신이 완료되지 않았습니다.\n' +
+    '사유: ' + 사유 + '\n\nMeta 앱의 Instagram 토큰 상태를 확인하고 다시 연결해 주세요. 토큰 값은 이 메일에 포함하지 않았습니다.');
+  props.setProperty('상담AI_IG토큰갱신경고시각', String(now));
 }
 
 /* [v9.185] 인계 회로 — 로드맵 Phase 1 (docs/DM상담_자동화_로드맵.md §1-①).
