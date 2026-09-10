@@ -21,7 +21,10 @@
     "width": 4096,
     "height": 4096,
     "alpha": true,
-    "output": "assets/mong.webp"
+    "output": "assets/mong.webp",
+    "sourceSha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c",
+    "outputSha256": "3a5948469e645251b8485a63f2b6678f420a8660d5de868aafee00327c474841",
+    "recipe": "inside-3840-webp-q94-alpha100-v1"
   },
   {
     "key": "smile",
@@ -29,7 +32,10 @@
     "width": 4096,
     "height": 4096,
     "alpha": true,
-    "output": "assets/smile.webp"
+    "output": "assets/smile.webp",
+    "sourceSha256": "7b1a8b9070d847a69b349c66f95d5c6fe824b4371b304f44ef4f2865b22f4a14",
+    "outputSha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7",
+    "recipe": "inside-3840-webp-q94-alpha100-v1"
   },
   {
     "key": "curious",
@@ -37,7 +43,10 @@
     "width": 4096,
     "height": 4096,
     "alpha": true,
-    "output": "assets/curious.webp"
+    "output": "assets/curious.webp",
+    "sourceSha256": "773896342e92f28a26bba2b940c28ac06dae67cc8a30adbef234ad952254122f",
+    "outputSha256": "308800184593b2aa730521694645d02bd66f5c4569b8570aa7a130b1dc6d5914",
+    "recipe": "inside-3840-webp-q94-alpha100-v1"
   },
   {
     "key": "notebook",
@@ -89,19 +98,27 @@
   },
   {
     "key": "window",
-    "source": "영상/public/공방/공방_창가책상.avif",
-    "width": 4096,
-    "height": 4096,
+    "source": "docs/홍보물/브랜드소개_20260909/assets/window.webp",
+    "width": 3840,
+    "height": 3840,
     "alpha": false,
-    "output": "assets/window.webp"
+    "output": "assets/window.webp",
+    "sourceSha256": "b3580fbe10f799b0f939c649e3b05ade0977a3b0826f8549a8899eaa4b128074",
+    "outputSha256": "b3580fbe10f799b0f939c649e3b05ade0977a3b0826f8549a8899eaa4b128074",
+    "frozen": true,
+    "allowNewWork": false
   },
   {
     "key": "classroom",
-    "source": "영상/public/공방/공방_교실.avif",
-    "width": 4096,
-    "height": 4096,
+    "source": "docs/홍보물/브랜드소개_20260909/assets/classroom.webp",
+    "width": 3840,
+    "height": 3840,
     "alpha": false,
-    "output": "assets/classroom.webp"
+    "output": "assets/classroom.webp",
+    "sourceSha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7",
+    "outputSha256": "3a1a48656c68af0f60120fc752254e3e67204d75b51622dfc1c605edcdb6f0f7",
+    "frozen": true,
+    "allowNewWork": false
   },
   {
     "key": "roof",
@@ -113,43 +130,63 @@
   },
   {
     "key": "cafe",
-    "source": "영상/public/공방/공방_카페안.avif",
-    "width": 4096,
-    "height": 4096,
+    "source": "docs/홍보물/브랜드소개_20260909/assets/cafe.webp",
+    "width": 3840,
+    "height": 3840,
     "alpha": false,
-    "output": "assets/cafe.webp"
+    "output": "assets/cafe.webp",
+    "sourceSha256": "a9d5fed8a4f69ce3e2944d4ec1a443ee1fc20ccd531f1d145bdfd2e4a35ec365",
+    "outputSha256": "a9d5fed8a4f69ce3e2944d4ec1a443ee1fc20ccd531f1d145bdfd2e4a35ec365",
+    "frozen": true,
+    "allowNewWork": false
   },
   {
     "key": "house",
-    "source": "영상/public/공방/라디오무대_집안밤공부.avif",
-    "width": 3999,
-    "height": 4112,
+    "source": "docs/홍보물/브랜드소개_20260909/assets/house.webp",
+    "width": 3734,
+    "height": 3840,
     "alpha": true,
-    "output": "assets/house.webp"
+    "output": "assets/house.webp",
+    "sourceSha256": "b51995188984a5a04ce023412731aa7f098bd0f3336faa8b26ae3e64403a392b",
+    "outputSha256": "b51995188984a5a04ce023412731aa7f098bd0f3336faa8b26ae3e64403a392b",
+    "frozen": true,
+    "allowNewWork": false
   },
   {
     "key": "lake",
-    "source": "영상/public/공방/라디오무대_차분달빛호수.avif",
-    "width": 4112,
-    "height": 3938,
+    "source": "docs/홍보물/브랜드소개_20260909/assets/lake.webp",
+    "width": 3840,
+    "height": 3678,
     "alpha": true,
-    "output": "assets/lake.webp"
+    "output": "assets/lake.webp",
+    "sourceSha256": "c97cc2f5227248f8216d5464e96facf5bef1b2b1d6bc71e4f12c6e9dace5ce1e",
+    "outputSha256": "c97cc2f5227248f8216d5464e96facf5bef1b2b1d6bc71e4f12c6e9dace5ce1e",
+    "frozen": true,
+    "allowNewWork": false
   },
   {
     "key": "meadow",
-    "source": "영상/public/공방/라디오무대_드림들판.avif",
-    "width": 4112,
-    "height": 4096,
+    "source": "docs/홍보물/브랜드소개_20260909/assets/meadow.webp",
+    "width": 3840,
+    "height": 3825,
     "alpha": true,
-    "output": "assets/meadow.webp"
+    "output": "assets/meadow.webp",
+    "sourceSha256": "c47fc60df9ac37abbfaccba2c576ebaf9036f53a15db55b38e6918eaae38b3ab",
+    "outputSha256": "c47fc60df9ac37abbfaccba2c576ebaf9036f53a15db55b38e6918eaae38b3ab",
+    "frozen": true,
+    "allowNewWork": false
   },
   {
     "key": "city",
-    "source": "영상/public/공방/라디오무대_전자밤도시.avif",
-    "width": 4112,
-    "height": 4112,
+    "source": "docs/홍보물/브랜드소개_20260909/assets/city.webp",
+    "width": 3840,
+    "height": 3840,
     "alpha": true,
-    "output": "assets/city.webp"
+    "output": "assets/city.webp",
+    "sourceSha256": "354e63b085e07af672fb69da149c9211b4a3ff69268b30831f32eceafe753d7f",
+    "outputSha256": "354e63b085e07af672fb69da149c9211b4a3ff69268b30831f32eceafe753d7f",
+    "frozen": true,
+    "allowNewWork": false
   },
   {
     "key": "clipboard",
@@ -193,19 +230,27 @@
   },
   {
     "key": "night",
-    "source": "docs/Loom_자산/무대/집안밤공부.webp",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/night.webp",
     "width": 2048,
     "height": 2048,
     "alpha": false,
-    "output": "assets/night.webp"
+    "output": "assets/night.webp",
+    "sourceSha256": "e107255ad0bd8f708006fec668526833aa7e9674fff978a359a597f52e2616b6",
+    "outputSha256": "e107255ad0bd8f708006fec668526833aa7e9674fff978a359a597f52e2616b6",
+    "frozen": true,
+    "allowNewWork": false
   },
   {
     "key": "moon",
-    "source": "docs/Loom_자산/무대/차분달빛호수.webp",
+    "source": "docs/홍보물/브랜드소개_20260909/assets/moon.webp",
     "width": 2048,
     "height": 2048,
     "alpha": false,
-    "output": "assets/moon.webp"
+    "output": "assets/moon.webp",
+    "sourceSha256": "f9bd0af9a9be2c71fd8a2d0c89fddb596abb8cbc73d602d5b875aab042c95c1a",
+    "outputSha256": "f9bd0af9a9be2c71fd8a2d0c89fddb596abb8cbc73d602d5b875aab042c95c1a",
+    "frozen": true,
+    "allowNewWork": false
   },
   {
     "key": "woolLogo",

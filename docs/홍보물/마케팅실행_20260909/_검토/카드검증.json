@@ -342,10 +342,10 @@
       "id": "16-synk-instagram",
       "index": 1,
       "file": "16-synk-instagram/upload-01.jpg",
-      "bytes": 194162,
+      "bytes": 194393,
       "width": 1080,
       "height": 1350,
-      "sha256": "afc004b718f0c2189f56f95184b0394d0849b41d0c384a2f4d02998826df4018",
+      "sha256": "bfee66289db875c3c856f13c83bb1e50d6ed784cf77e91d879acea6f307966e4",
       "check": {
         "copyBottom": 727.40625,
         "height": 1350,

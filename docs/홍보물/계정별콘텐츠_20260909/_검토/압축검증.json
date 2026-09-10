@@ -238,21 +238,21 @@
     {
       "id": "05-yuhobuilds-instagram",
       "file": "05-yuhobuilds-instagram.zip",
-      "bytes": 6878366,
-      "sha256": "202f09eb4d3e8822d6cda4b3aa48267298924f6aed6cd52497591373cd279c42",
+      "bytes": 6884838,
+      "sha256": "8c9e3302fdcb6f067df7cfc9a8c3e0eb083344438cf19baf3345711ca5f3dd62",
       "entries": 8,
       "verified": true,
       "brokenHtmlLinks": [],
       "files": [
         {
           "entry": "master-01.png",
-          "bytes": 1261440,
-          "sha256": "b2a1ad955c495bc9476c74d05c8935b02f5423d9d3e2e43306d4bba65d60872f"
+          "bytes": 1265173,
+          "sha256": "9382db6b1f83185c7eefe1ca72a1a53f5bc9b38f24be82506f989a34b4a372ea"
         },
         {
           "entry": "upload-01.jpg",
-          "bytes": 218321,
-          "sha256": "271fc9ad858701fb0da3933465a89ca342c4dad4edb24f11715d457d957538d6"
+          "bytes": 221186,
+          "sha256": "727cdc17642bdf2a1d5361ecaffa2f5f4ccaf5e5aefd88289d443d49491b946f"
         },
         {
           "entry": "video.mp4",
@@ -794,21 +794,21 @@
     {
       "id": "16-synk-instagram",
       "file": "16-synk-instagram.zip",
-      "bytes": 1795881,
-      "sha256": "4f85c751111d9e6aa239767db906cb69d1c0cccdbcf212738fb966e58ac0ecc8",
+      "bytes": 1797091,
+      "sha256": "45b07298fa093dbfad5581551dbfb28df70f40049342f3e9d92ba108f735c27f",
       "entries": 6,
       "verified": true,
       "brokenHtmlLinks": [],
       "files": [
         {
           "entry": "master-01.png",
-          "bytes": 1604287,
-          "sha256": "bdbbb19d57e78bc930864b4d14b30c593f7a75d521a35d8d79762992609a53d1"
+          "bytes": 1605109,
+          "sha256": "3ff67ed0e9c9f5ad77069744a51ade10f411d80666e62bd9b086fa93174b1f4c"
         },
         {
           "entry": "upload-01.jpg",
-          "bytes": 232068,
-          "sha256": "b40f7da862d5d2d28c9866139173c27a066c618d74377c504c5f0b75cd4ecc67"
+          "bytes": 232363,
+          "sha256": "9a4aa497adfb6798d09176a45bd83b9a1f5b21745a335fd2e392bb06f5cf9925"
         },
         {
           "entry": "게시문안.txt",
@@ -835,8 +835,8 @@
     {
       "id": "whole",
       "file": "계정별콘텐츠_전체.zip",
-      "bytes": 205821833,
-      "sha256": "896cbb38a7e84e399347d9e9ebf4ac519d230d99e85c2acd7679a55105b68fb2",
+      "bytes": 205818490,
+      "sha256": "5ecfab11cc7ae3f1d536d8e6a397f7fa765059bb45caf8c4c50650391424bdd4",
       "entries": 245,
       "verified": true,
       "brokenHtmlLinks": [],
@@ -933,8 +933,8 @@
         },
         {
           "entry": "assets/labpage.webp",
-          "bytes": 1772438,
-          "sha256": "6f792a4bd6fef93d6e6d4fd7453c9c2970076324db4c0cbf24f6dfee00a8dc72"
+          "bytes": 1777504,
+          "sha256": "01c0312c6aea5ef3997c3b4fd92b5f1a3d079d8b23e16f37a4f1aae463ab9b3d"
         },
         {
           "entry": "assets/letter.webp",
@@ -973,8 +973,8 @@
         },
         {
           "entry": "assets/smile.webp",
-          "bytes": 2207746,
-          "sha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80"
+          "bytes": 2174830,
+          "sha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7"
         },
         {
           "entry": "미리보기/01-lab-youtube.png",
@@ -998,8 +998,8 @@
         },
         {
           "entry": "미리보기/05-yuhobuilds-instagram.png",
-          "bytes": 65780,
-          "sha256": "5c09a5a941dc7c3639db890251ea3f663a89270040d15a0b88cd1444bf07f567"
+          "bytes": 66122,
+          "sha256": "ddc3846567503e4e7ae14dee33a00f70af94fdb51f90276e636e176fcf1394cb"
         },
         {
           "entry": "미리보기/06-yuhobuilds-tiktok.png",
@@ -1053,8 +1053,8 @@
         },
         {
           "entry": "미리보기/16-synk-instagram.png",
-          "bytes": 91786,
-          "sha256": "2f302dc27fc0c2c65a8c7891d066fefad67065b805946154f69cb479f289296f"
+          "bytes": 91887,
+          "sha256": "b955f2334097124c4fa6191cc3846a4e88313055a148c334b06ff62f77168492"
         },
         {
           "entry": "미리보기/모바일-모아보기.png",
@@ -1073,8 +1073,8 @@
         },
         {
           "entry": "미리보기/전체카드.png",
-          "bytes": 1003799,
-          "sha256": "598a36934a8baa9976f177f2317d5a3a701d8958d2821e809070fd78b7b7ae41"
+          "bytes": 1004145,
+          "sha256": "cff061439854c0819ac3533936b175d6aee31aca120eef47256f99c456754684"
         },
         {
           "entry": "읽어주세요.md",
@@ -1089,7 +1089,7 @@
         {
           "entry": "사용자산.json",
           "bytes": 9022,
-          "sha256": "5126734c2098cb0748810f81169833935290681106cf85d3b3f8b26edcb2da9a"
+          "sha256": "631c3ba70d2712660d556c5cf3c1f2185dbd2598b63830dc899978ab653c32e3"
         },
         {
           "entry": "콘텐츠원고.json",
@@ -1313,13 +1313,13 @@
         },
         {
           "entry": "05-yuhobuilds-instagram/master-01.png",
-          "bytes": 1261440,
-          "sha256": "b2a1ad955c495bc9476c74d05c8935b02f5423d9d3e2e43306d4bba65d60872f"
+          "bytes": 1265173,
+          "sha256": "9382db6b1f83185c7eefe1ca72a1a53f5bc9b38f24be82506f989a34b4a372ea"
         },
         {
           "entry": "05-yuhobuilds-instagram/upload-01.jpg",
-          "bytes": 218321,
-          "sha256": "271fc9ad858701fb0da3933465a89ca342c4dad4edb24f11715d457d957538d6"
+          "bytes": 221186,
+          "sha256": "727cdc17642bdf2a1d5361ecaffa2f5f4ccaf5e5aefd88289d443d49491b946f"
         },
         {
           "entry": "05-yuhobuilds-instagram/video.mp4",
@@ -1808,13 +1808,13 @@
         },
         {
           "entry": "16-synk-instagram/master-01.png",
-          "bytes": 1604287,
-          "sha256": "bdbbb19d57e78bc930864b4d14b30c593f7a75d521a35d8d79762992609a53d1"
+          "bytes": 1605109,
+          "sha256": "3ff67ed0e9c9f5ad77069744a51ade10f411d80666e62bd9b086fa93174b1f4c"
         },
         {
           "entry": "16-synk-instagram/upload-01.jpg",
-          "bytes": 232068,
-          "sha256": "b40f7da862d5d2d28c9866139173c27a066c618d74377c504c5f0b75cd4ecc67"
+          "bytes": 232363,
+          "sha256": "9a4aa497adfb6798d09176a45bd83b9a1f5b21745a335fd2e392bb06f5cf9925"
         },
         {
           "entry": "16-synk-instagram/게시문안.txt",
@@ -1883,33 +1883,33 @@
         },
         {
           "entry": "_개선/지면스냅샷/lab-1.png",
-          "bytes": 2639997,
-          "sha256": "b8124c697ea49e2028cef83b7e4218c51668a7fe72418cac06db583630cdef10"
+          "bytes": 2644729,
+          "sha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341"
         },
         {
           "entry": "_개선/지면스냅샷/lab-2.png",
-          "bytes": 2282046,
-          "sha256": "e5f503198c5543e6dc3a60cd28f06dead1d73279d7bc6dd86734fde3970efbff"
+          "bytes": 2282036,
+          "sha256": "511c5cf4e7b63b28e459fcb7df343e33d61ecd9a0eb661e042fd8727b24dd705"
         },
         {
           "entry": "_개선/지면스냅샷/pulse-1.png",
-          "bytes": 4440905,
-          "sha256": "204fb3f6351bf5a6966c03d7f9e22659c446e9d4d7d29a7361957f9fbdf4f106"
+          "bytes": 4440900,
+          "sha256": "0afc5da7ef98e220c46ea6dc6d5c7a3043d9d0b5672b8754d3012aed28224dfc"
         },
         {
           "entry": "_개선/지면스냅샷/shift-1.png",
-          "bytes": 2214581,
-          "sha256": "3925b9f2a9639a0ac26ba7708f70d56fea3045d2c540cbd0d62e99765ba51574"
+          "bytes": 2214578,
+          "sha256": "49f49133e87c796e112f8d198c48ef76a4eb2d57307d938a5d28846631a8c9d9"
         },
         {
           "entry": "_개선/지면스냅샷/synk-1.png",
-          "bytes": 1381904,
-          "sha256": "df49d1d98849543cc894e716e3f2e57b53c1005aefee08cc2c91fa5e840e2e69"
+          "bytes": 1381898,
+          "sha256": "14bd671f4efb45d41b1d2d04e312007f20180545265c6a19c2e113c5025db2cf"
         },
         {
           "entry": "_개선/지면스냅샷/검증.json",
           "bytes": 1602,
-          "sha256": "a1fae07655341a8b067df887c7d28d54ed4a4aa5fd0a01d0f7ab1171d40dd159"
+          "sha256": "4c24e3e344a7a51c800bc9fa8b2ac94f13ed94fd629d9101bdd58ad39aac251e"
         },
         {
           "entry": "_개선/자산_생성명세.json",
@@ -2008,8 +2008,8 @@
         },
         {
           "entry": "packages/05-yuhobuilds-instagram.zip",
-          "bytes": 6878366,
-          "sha256": "202f09eb4d3e8822d6cda4b3aa48267298924f6aed6cd52497591373cd279c42"
+          "bytes": 6884838,
+          "sha256": "8c9e3302fdcb6f067df7cfc9a8c3e0eb083344438cf19baf3345711ca5f3dd62"
         },
         {
           "entry": "packages/06-yuhobuilds-tiktok.zip",
@@ -2063,8 +2063,8 @@
         },
         {
           "entry": "packages/16-synk-instagram.zip",
-          "bytes": 1795881,
-          "sha256": "4f85c751111d9e6aa239767db906cb69d1c0cccdbcf212738fb966e58ac0ecc8"
+          "bytes": 1797091,
+          "sha256": "45b07298fa093dbfad5581551dbfb28df70f40049342f3e9d92ba108f735c27f"
         }
       ]
     }
