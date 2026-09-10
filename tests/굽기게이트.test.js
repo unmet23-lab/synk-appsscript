@@ -33,6 +33,7 @@ const 정책경로 = require.resolve(path.join(__dirname, '..', 'tools', '모델
   const 진짜 = require(정책경로);
   require.cache[정책경로].exports = Object.assign(Object.create(Object.getPrototypeOf(진짜)), 진짜, {
     제미나이헤더: async () => ({ authorization: 'Bearer 시험용-네트워크-안-탐', 'content-type': 'application/json' }),
+    제미나이URL: () => 'https://synthetic.invalid/generateContent',
   });
 })();
 

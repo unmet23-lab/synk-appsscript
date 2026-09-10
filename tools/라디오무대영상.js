@@ -29,14 +29,15 @@
  *   다시 구우면 프레임 다섯(0.2·2·4·6·7.8초)을 뽑아 «확대가 없나»를 먼저 재고 쓴다.
  * 쓰는 법:
  *   node tools/라디오무대영상.js --값만            0원. 얼마 드는지만 센다
- *   node tools/라디오무대영상.js --무대 neon_water      한 장만(시험)
- *   node tools/라디오무대영상.js                   보존한 네 무대 전부
+ *   node tools/라디오무대영상.js --무대 neon_water --유료-api  한 장만(시험)
+ *   node tools/라디오무대영상.js --유료-api                   보존한 네 무대 전부
  */
 'use strict';
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const 정책 = require('./모델정책.js');
 
 const ROOT = path.join(__dirname, '..');
 const 무대방 = path.join(ROOT, 'docs', '라디오', '무대');
@@ -148,6 +149,7 @@ async function 한무대(키, tok, 프로) {
   console.log(`   🔴 무대에는 생명을 안 그린다 — 마스코트는 뒤에 정지로 합성한다\n`);
   if (process.argv.includes('--값만')) { console.log('   (값만 셌다 · 0원)\n'); return; }
 
+  정책.유료API요구('Google Veo Vertex AI');
   const { tok, 프로 } = await 토큰();
   const 결과 = [];
   for (const 키 of 할것) {

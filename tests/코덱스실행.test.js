@@ -403,12 +403,20 @@ test('🔴 검수가 끊긴 커밋은 다음 런이 도장을 마저 찍는다 �
    * 자리를 절대 경로로 박는다 — 그러면 어디서 불려도 같은 것을 태운다. */
   fs.writeFileSync(path.join(가짜방, 'codex'), `#!/bin/sh\nexec node ${JSON.stringify(path.join(가짜방, 'fakecodex.js'))} "$@"\n`, { mode: 0o755 });
 
+  // 독립검수는 Claude로 옮겨졌다. preload로 그 호출만 대역 처리해 실제 계정에 닿지 않는다.
+  const 검수대역 = path.join(런방, 'fake-review.js');
+  fs.writeFileSync(검수대역, [
+    "const fs=require('fs');",
+    `const reviewer=require(${JSON.stringify(path.join(ROOT, 'tools/lib/클로드구독검수.js'))});`,
+    `reviewer.구독검수=()=>{fs.appendFileSync(${JSON.stringify(흔적)},'REVIEW\\n');throw new Error('synthetic quota');};`,
+  ].join('\n'));
   const env = {
     ...process.env,
     SYNK_REVIEW_RUNS: 런방,
     SYNK_BUILD_LEDGER: path.join(런방, '장부.jsonl'),
     SYNK_REVIEW_LEDGER: path.join(런방, '검수기록.jsonl'),   // 진짜 검수 장부를 안 건드린다
     APPDATA: 런방,
+    NODE_OPTIONS: `--require=${JSON.stringify(검수대역)}`,
   };
   if (process.platform !== 'win32') env.PATH = 가짜방 + path.delimiter + process.env.PATH;
   const 인자 = ['--발주', path.join(방, '발주.md'), '--저장소', 방, '--발주검토안함', '--라운드', '1', '--timeout', '60'];
@@ -519,9 +527,9 @@ test('🔴 수용 대조를 못 쟀으면 완주가 아니다 — 「미충족 0
   const seedRound = seed.라운드들.at(-1);
   const sha = seedRound.대상커밋;
   assert.ok(sha);
-  seedRound.검수 = { 종료: 0, 차단수: 0 };
+  seedRound.검수 = { 벤더: 'claude', 종료: 0, 차단수: 0 };
   fs.appendFileSync(장부, JSON.stringify(seed) + '\n');
-  fs.writeFileSync(env.SYNK_REVIEW_LEDGER, JSON.stringify({ 시각: new Date().toISOString(), 대상: { 종류: 'commit', 값: sha }, 지적: [], 요약: '대역 독립 검수' }) + '\n');
+  fs.writeFileSync(env.SYNK_REVIEW_LEDGER, JSON.stringify({ 시각: new Date().toISOString(), 대상: { 종류: 'commit', 값: sha }, 지적: [], 요약: '대역 독립 검수', 지은쪽: 'gpt', 벤더들: ['claude'], 통로: 'claude-subscription-oauth', 모델: { 분석: { model: 'claude-opus-5', effort: 'xhigh' } } }) + '\n');
   const calls = path.join(런방, 'calls.jsonl');
   for (const [i, 판정] of ['확인불가', '확인불가', '충족'].entries()) {
     const out = JSON.stringify({ 항목: [{ 기준: 기준문, 판정, 근거: '합성 시험 결과' }], 요약: '대역 수용' });

@@ -144,8 +144,7 @@ test('raw 로 놓인 표식은 그대로 선언이다 — 위 회귀가 진짜 �
 test('tests 안의 몽골어 표식은 검사용 픽스처이지 배포 문안 선언이 아니다', () => {
   const 집 = 픽스처();
   fs.mkdirSync(path.join(집, 'tests'), { recursive: true });
-  fs.writeFileSync(path.join(집, 'tests', '몽골어.fixture.js'),
-    'const marker = "<!-- 몽골어검문: 대상 -->";\n', 'utf8');
+  fs.writeFileSync(path.join(집, 'tests', '몽골어.fixture.js'), 'const marker = "<!-- 몽골어검문: 대상 -->";\n', 'utf8');
   장부(집, '몽골어검문.jsonl', []);
   const j = 돌린다(집);
   assert.strictEqual(j.축[몽골축].선언, 0);
@@ -194,8 +193,7 @@ test('지문이 그대로면 조용하다 — LF 장부와 CRLF 작업본도 같
   const 집 = 픽스처();
   const 본문 = '그대로인 내용\r\n둘째 줄\r\n';
   문서(집, '문안.md', 본문);
-  const 고른본문 = 본문.replace(/\r\n?/g, '\n');
-  const 지문 = require('node:crypto').createHash('sha256').update(Buffer.from(고른본문, 'utf8')).digest('hex').slice(0, 12);
+  const 지문 = require('node:crypto').createHash('sha256').update(Buffer.from(본문.replace(/\r\n?/g, '\n'), 'utf8')).digest('hex').slice(0, 12);
   장부(집, '몽골어검문.jsonl', [{ 시각: 't', 대상: 'docs/문안.md', 대상지문: 지문, 통과: true }]);
   assert.strictEqual(돌린다(집).축[몽골축].바뀜, 0);
 });
@@ -309,36 +307,30 @@ const { 키생존축 } = require(도구);
 const 산것 = (용도) => ({ 때: new Date(Date.now() - 90 * 60000).toISOString(), 캐시: true, 기록: { 살았나: true, 용도, 모델: 'gemini-3.8-flash' } });
 const 죽은것 = (용도, o) => ({ 때: new Date(Date.now() - 60000).toISOString(), 캐시: false, 기록: { 살았나: false, 용도, ...o } });
 
-/* 🔑 «우는 크기»가 용도마다 다르다 — 상시 도는 자리가 죽으면 적색, 예비가 죽으면 알림.
- *   (09-03 「항상 무료먼저」 때는 글이 상시라 글 = 적색 · 돈 = 알림이었다.)
- * 🔄 09-05 밤 유호 확정(「앞으로 제미나이 열쇠는 vertex로해야해」 · 결정.md)으로 상시 자리가 「돈」(Vertex · 크레딧)이 됐다 —
- *   몽골어 검문 · 검수 둘째 눈 · 설계 심문이 전부 거기 매달리고, 「글」(AI Studio 공짜)은 `--글` 을 손으로 준 예비다.
- *   그래서 이제 돈은 «적색», 글은 «알림»이다. 원리는 같다 — 안 쓰는 자리가 매 세션 빨갛게 울면 진짜 적색이 파묻힌다. */
-test('🔴 「돈」 열쇠가 죽으면 **적색**이다(09-05 밤부터 상시 문) — 매달린 것과 충전 처방까지 말한다', () => {
+/* 09-10: 상시 API는 무료 글 문이고, 돈 문은 명시한 미디어 작업만 쓴다. */
+test('🟠 「돈」 열쇠가 죽으면 알림이다 — 명시한 미디어 작업만 멈춘다', () => {
   const a = 키생존축({
     글: 산것('글'),
     돈: 죽은것('돈', { 상태: 429, 종류: '한도·결제', 사유: 'prepayment credits are depleted' }),
   });
-  assert.ok(a.적색.length > 0, '상시 문이 죽었는데 적색이 아니면 09-02 의 그 사고(조용한 죽음)다');
-  const 전문 = a.적색.join('\n');
+  assert.equal(a.적색.length, 0);
+  const 전문 = a.알림.join('\n');
   assert.match(전문, /「돈」 열쇠/);
-  assert.match(전문, /몽골어 검문/, '무엇이 매달렸는지를 그 줄에서 알아야 한다 — 이제 검문이 돈 문에 매달린다');
+  assert.match(전문, /그림 굽기|음악/, '무엇이 매달렸는지를 그 줄에서 알아야 한다');
   assert.match(전문, /prepayment credits/, '구글이 한 말을 그대로 물고 와야 유호님이 어느 화면을 열지 안다');
-  assert.match(전문, /크레딧 충전/, '잔액 소진이면 처방은 충전(유호님 손)이다');
+  assert.match(전문, /기본 차단/, '자동 충전·재시도 대신 닫아 두는 처방이어야 한다');
   assert.doesNotMatch(전문, /새 칸/, '돈 문에 「공짜 열쇠를 새로 만들라」는 처방이 붙으면 틀린 처방이다');
   assert.strictEqual(a.셈.돈열쇠, '**아니오**');
   assert.strictEqual(a.셈.글열쇠, '예');
 });
 
-test('🟠 「글」 열쇠가 죽으면 **알림**이다(09-05 밤부터 예비 문) — 지금 멈추는 것이 없으므로 적색으로 울지 않는다', () => {
+test('🔴 「글」 열쇠가 죽으면 적색이다 — 무료 몽골어 검사·GitHub 검수 경로가 멈춘다', () => {
   const a = 키생존축({ 글: 죽은것('글', { 상태: 429, 종류: '한도·결제', 사유: 'quota' }), 돈: 산것('돈') });
-  assert.strictEqual(a.적색.length, 0, '예비 자리가 적색으로 울면 진짜 적색이 파묻힌다');
-  const 전문 = a.알림.join('\n');
-  assert.ok(a.알림.length > 0, '죽었는데 아무 말도 안 하면 그게 09-02 의 그 사고다');
+  assert.ok(a.적색.length > 0, '상시 무료 문이 죽었는데 적색이 아니면 조용한 죽음이다');
+  const 전문 = a.적색.join('\n');
   assert.match(전문, /「글」 열쇠/);
-  assert.match(전문, /예비/, '왜 급하지 않은지(예비 문)를 그 줄에서 말해야 한다');
-  assert.match(전문, /지금 멈추는 것은 없다/, '급한 일이 아니라는 것까지 말해야 사람이 안 뛴다');
-  assert.doesNotMatch(전문, /몽골어 검문/, '🔑 검문은 이제 돈 문에 매달린다 — 글이 죽어도 검문이 멈춘 것처럼 말하면 안 된다');
+  assert.match(전문, /몽골어 검문/, '무료 글 문에 매달린 자동 검사를 말해야 한다');
+  assert.match(전문, /Google AI Pro 구독/, '로컬 최상 검수는 별도 구독 통로라는 경계를 말해야 한다');
   assert.doesNotMatch(전문, /크레딧 충전/, '공짜 문에 충전을 권하면 틀린 처방이다');
   assert.strictEqual(a.셈.글열쇠, '**아니오**');
   assert.strictEqual(a.셈.돈열쇠, '예');
@@ -355,17 +347,18 @@ test('🟠 서버 쪽 5xx 는 열쇠 죽음이 아니다 — 알림으로 내리
   assert.match(전문, /high demand/, '구글이 한 말을 그대로 물고 와야 한다');
   assert.match(전문, /다시 잰다/, '처방은 «잠시 뒤 다시» 하나다');
   assert.doesNotMatch(전문, /새 칸|키 교체|크레딧 충전/, '열쇠를 만들거나 바꾸라고 하면 그게 틀린 처방이다');
-  assert.match(전문, /몽골어 검문/, '그 사이 안 도는 것은 그대로 적는다 — «살았다»가 아니다');
+  assert.match(전문, /그림 굽기|음악/, '그 사이 안 도는 것은 그대로 적는다 — «살았다»가 아니다');
   assert.strictEqual(a.셈.돈열쇠, '**아니오**', '셈 칸은 «답 못 받았다»를 그대로 둔다');
 });
 
-test('자격(401·403)이면 처방이 또 다르다 — 글(API 키)은 키 교체 · 돈(OAuth 토큰)은 clasp login · 둘 다 충전이 아니다', () => {
+test('자격(401·403)이면 글은 키 교체 · 돈은 Vertex 전용 자격/프로젝트 재확인이고 clasp 계정으로 대체하지 않는다', () => {
   const 글쪽 = 키생존축({ 글: 죽은것('글', { 상태: 403, 종류: '자격', 사유: 'API key not valid' }), 돈: 산것('돈') });
-  assert.match(글쪽.알림.join('\n'), /키 교체/, '글은 예비라 알림이되, 처방은 키 교체다');
-  assert.doesNotMatch(글쪽.알림.join('\n'), /크레딧 충전/);
+  assert.match(글쪽.적색.join('\n'), /키 교체/, '상시 무료 글 문의 처방은 키 교체다');
+  assert.doesNotMatch(글쪽.적색.join('\n'), /크레딧 충전/);
   const 돈쪽 = 키생존축({ 글: 산것('글'), 돈: 죽은것('돈', { 상태: 401, 종류: '자격', 사유: 'invalid authentication credentials' }) });
-  assert.match(돈쪽.적색.join('\n'), /clasp login/, 'Vertex 는 OAuth 토큰이라 처방은 재로그인(유호님 손)이다');
-  assert.doesNotMatch(돈쪽.적색.join('\n'), /크레딧 충전|키 교체/, '토큰 죽음에 충전이나 키 교체를 권하면 틀린 처방이다');
+  assert.match(돈쪽.알림.join('\n'), /구글계정붙이기\.js.*프로젝트 일치/, 'Vertex 전용 자격과 프로젝트를 함께 확인한다');
+  assert.doesNotMatch(돈쪽.알림.join('\n'), /clasp login/, '옛 clasp 유료 계정으로 재연결하면 안 된다');
+  assert.doesNotMatch(돈쪽.알림.join('\n'), /크레딧 충전|키 교체/, '토큰 죽음에 충전이나 키 교체를 권하면 틀린 처방이다');
 });
 
 test('🔴 열쇠 파일이 «아직 없는» 것은 적색이고, 만드는 법까지 준다 — 「없다」만 말하면 다음 수를 모른다', () => {
@@ -388,6 +381,15 @@ test('🔴 못 물어본 것은 «살았다»가 아니다 — 알림으로 갈�
   assert.strictEqual(a.셈.글열쇠, null, 'null 은 «안 재봤다»로 나가야 한다(예/아니오가 아니다)');
 });
 
+test('🟢 돈 문이 유료차단이면 의도된 잠금으로 말하고 적색을 만들지 않는다', () => {
+  const a = 키생존축({
+    글: 산것('글'),
+    돈: { 때: new Date().toISOString(), 기록: { 살았나: null, 용도: '돈', 종류: '유료차단' } },
+  });
+  assert.equal(a.적색.length, 0);
+  assert.match(a.알림.join('\n'), /의도대로 잠겨|자동 프로브/);
+});
+
 test('둘 다 살아 있으면 조용하다 — 다만 «언제 쟀나»는 남고, 세계시를 그대로 찍지 않는다', () => {
   const a = 키생존축({ 글: 산것('글'), 돈: 산것('돈') });
   assert.strictEqual(a.적색.length + a.알림.length, 0);
@@ -401,9 +403,8 @@ test('둘 다 살아 있으면 조용하다 — 다만 «언제 쟀나»는 남�
 
 test('열쇠 하나짜리 «옛» 모양으로 불러도 글로 읽는다 — 옛 캐시가 자를 깨뜨리지 않는다', () => {
   const a = 키생존축({ 때: new Date().toISOString(), 기록: { 살았나: false, 상태: 429, 종류: '한도·결제', 사유: 'x' } });
-  // 09-05 밤부터 글은 예비 문이라 죽음이 «알림»에 실린다 — 옛 모양이 글로 읽히는지만 본다.
-  assert.match(a.알림.join('\n'), /「글」 열쇠/, '옛 모양(열쇠 하나짜리)이 글로 안 읽혔다');
-  assert.strictEqual(a.적색.length, 0, '예비 문(글)의 죽음이 적색으로 올라왔다');
+  assert.match(a.적색.join('\n'), /「글」 열쇠/, '옛 모양(열쇠 하나짜리)이 글로 안 읽혔다');
+  assert.ok(a.적색.length > 0, '기본 무료 문(글)의 죽음이 적색으로 안 올라왔다');
 });
 
 // ───────────────────────────── ③실행자 (GPT) — 「던졌나」와 「탔나」를 갈라 센다 (2026-09-06)

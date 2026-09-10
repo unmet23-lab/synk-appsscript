@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-/* 시험지가 제미나이를 부르는 자리 — **Vertex 문**으로 간다 (2026-09-07 · 유호 「vertex로 가게 해줘」).
+/* 시험지가 제미나이를 부르는 API 자리 — 기본은 무료 문, Vertex는 부모가 명시 승인했을 때만 간다.
  *
  * ■ 왜 이 파일이 생겼나 — 시험이 «막혀 있었다»
  *   09-06 회차는 14칸 전부 못 잼이었다(`RateLimitExhaustedError ... after 4`). 까닭은 시험지가
@@ -39,8 +39,8 @@ const 정책 = require(path.join(루트, 'tools', '모델정책.js'));
 const { 제미나이 } = require(path.join(루트, 'tools', 'lib', '제미나이호출.js'));
 const { 문법스키마정본 } = require(path.join(__dirname, '검문자.js'));
 
-/* 🚪 어느 문으로 갈지는 정책이 정한다(09-05 부터 기본 = 「돈」 · Vertex · 크레딧).
- * 손으로 옛 문(공짜 몫)에 세우고 싶으면 시험지에서 `config: { 용도: 글 }` 로 준다. */
+/* 🚪 어느 문으로 갈지는 정책이 정한다(기본 = 무료 「글」).
+ * Vertex는 `돌리기.js --돈 --유료-api`가 자식 환경까지 명시 승인을 전달한다. */
 const 기본용도 = () => 정책.기본용도();
 
 class 제미나이문 {

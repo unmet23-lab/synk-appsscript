@@ -686,13 +686,15 @@ test('explicit binary deliverables including PNG and PDF above 2 MiB compare by 
   commit(canonical);
   git(canonical, ['worktree', 'add', '--detach', downstream, 'HEAD']);
   const names = ['asset.png', 'asset.pdf', 'asset.docx', 'asset.pptx', 'asset.xlsx', 'asset.wav', 'asset.mp4'];
-  const same = await collect({ cwd: downstream, repo: canonical, files: names });
+  // This checks seven explicit manual deliverables, not the automatic hook's 1700ms deadline.
+  // Parallel CI load may legitimately exhaust that shorter budget partway through the files.
+  const same = await collect({ cwd: downstream, repo: canonical, files: names, manual: true, timeoutMs: 10000 });
   assert.equal(same.status, 'observed');
   assert.deepEqual(same.files.map(file => file.comparison), names.map(() => 'same'));
   assert.equal(same.files[0].canonical.sha256, crypto.createHash('sha256').update(bytes).digest('hex'));
   bytes[100] = 0x5a;
   for (const name of ['asset.png', 'asset.pdf']) file(canonical, name, bytes);
-  const changed = await collect({ cwd: downstream, repo: canonical, files: names.slice(0, 2) });
+  const changed = await collect({ cwd: downstream, repo: canonical, files: names.slice(0, 2), manual: true, timeoutMs: 10000 });
   assert.deepEqual(changed.files.map(file => file.comparison), ['different', 'different']);
   assert.equal(changed.files[1].canonical.sha256, crypto.createHash('sha256').update(bytes).digest('hex'));
   assert.ok(!JSON.stringify(changed).includes('asset.png'));

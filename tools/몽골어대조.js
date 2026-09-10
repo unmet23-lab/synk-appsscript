@@ -62,8 +62,8 @@ const { 뜻대조 } = require('./lib/뜻대조.js');
  * 재시도·타임아웃·스키마 처리를 여기 다시 적지 않는다(두 곳이 알면 갈린다). */
 const { 제미나이, 재시도가능 } = require('./lib/제미나이호출.js');
 
-/* 🔄 09-05 밤 — 검문의 기본 문은 정책 `기본용도()`(= 「돈」 · Vertex · 크레딧)다(유호 확정 「앞으로 제미나이 열쇠는
- *   vertex로해야해」 · 결정.md 09-05). 공짜 문은 `--글` 을 손으로 줄 때만. 아래 09-03·09-04 사연은 그 전 판이다.
+/* 🔄 09-10 — 검문의 API 기본 문은 정책 `기본용도()`(= 무료 「글」)다.
+ * Vertex는 `--돈 --유료-api`를 함께 준 실행만 탄다. 아래 09-03·09-04 사연은 이전 판의 근거다.
  * (09-03 판) 검문은 기본이 **「글」 열쇠**(공짜 몫)다 — 유호 확정 09-03 「글은 공짜, 그림은 유료」.
  * 경로는 여기서 안 정한다(정본 = 모델정책.js `제미나이키경로(용도)` · 09-03 전엔 이 파일이 따로 알고 있었다).
  *
@@ -73,8 +73,7 @@ const { 제미나이, 재시도가능 } = require('./lib/제미나이호출.js')
  *     적지 않는다. 09-04 까지 두 파일이 이 사실을 **반대로** 알고 있었다(저기선 「여유가 크다」).
  *   그래서 검문 ①②가 09-02 저녁부터 멈춰 있었다. 09-04 에 무료 크레딧 $300 이 Vertex 문에
  *   실제로 붙으면서(프로브 초록) **그 벽 없이 대량으로 돌릴 자리**가 생겼다.
- * (09-04 판) 「기본은 안 바꾼다 · 대량일 때만 `--돈`」이었다 — 09-05 밤 유호 확정으로 뒤집혔다. `--돈` 은 이제 기본과 같아
- *   손잡이로만 남는다(옛 명령줄이 안 깨지게). */
+ * 대량 유료 실행도 기본으로 승격하지 않고 손잡이로만 남긴다. */
 const 열쇠용도 = process.argv.includes('--글') ? '글' : (process.argv.includes('--돈') ? '돈' : 정책.기본용도());
 const 제미나이픽 = 정책.제미나이설정(); // 기본 = gemini-3.8-flash / thinking_level=high (유호 지시 09-03)
 const 기본모델 = 제미나이픽.model;
@@ -325,18 +324,22 @@ async function main() {
     console.error('쓰는 법: node tools/몽골어대조.js "<한국어 원문>" "<몽골어 번역문>"');
     console.error('        node tools/몽골어대조.js --파일 <경로>   (한국어 / --- / 몽골어)');
     console.error('        node tools/몽골어대조.js --원문없음 "<몽골어>"   (짝이 없을 때 · 문법·맞춤법 두 겹만 · 반쪽)');
-    console.error('        뒤에 --돈 을 붙이면 유료 문(Vertex)으로 간다 — 무료 크레딧이 내고 하루 20발 벽이 없다.');
+    console.error('        뒤에 --돈 --유료-api 를 붙인 실행만 Vertex 종량제 문으로 간다.');
     process.exit(1);
   }
-  const keyPath = 정책.제미나이키경로(열쇠용도);
-  if (!fs.existsSync(keyPath)) {
-    console.error('실행 오류: ' + 정책.제미나이키안내(열쇠용도));
-    process.exit(1);
-  }
-  const key = 키추출(fs.readFileSync(keyPath, 'utf8'));
-  if (!key) {
-    console.error(`실행 오류: 키 파일에서 키를 못 골랐다(토큰 여러 개·아는 접두어 없음) → ${keyPath}`);
-    process.exit(1);
+  if (열쇠용도 === '돈') 정책.유료API요구('몽골어 검문의 Gemini Vertex AI');
+  let key = null;
+  if (열쇠용도 === '글') {
+    const keyPath = 정책.제미나이키경로('글');
+    if (!fs.existsSync(keyPath)) {
+      console.error('실행 오류: ' + 정책.제미나이키안내('글'));
+      process.exit(1);
+    }
+    key = 키추출(fs.readFileSync(keyPath, 'utf8'));
+    if (!key) {
+      console.error(`실행 오류: 키 파일에서 키를 못 골랐다(토큰 여러 개·아는 접두어 없음) → ${keyPath}`);
+      process.exit(1);
+    }
   }
   const model = process.env.GEMINI_MODEL || 기본모델;
   const thinking = model === 제미나이픽.model ? 제미나이픽.thinking_level : undefined;

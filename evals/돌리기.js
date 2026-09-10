@@ -19,15 +19,15 @@
  *   ② 문 프로브   (1발) — 지금 던져도 되나. 죽었으면 **시작조차 안 한다** + 언제 다시 되는지 말한다
  *   ③ 발 수 셈    (0발) — 이 시험에 몇 발이 드는가 · 공짜 문이면 상한을 넘는지 «돌리기 전에» 말한다
  *
- * ■ 🚪 어느 문으로 가나 (2026-09-07 · 유호 「vertex로 가게 해줘」)
- *   기본은 정책이 정한다(`기본용도()` = 「돈」 · Vertex AI · 무료 크레딧이 낸다 · **하루 몫 벽이 없다**).
- *   옛 문(AI Studio 공짜 몫 · 하루 20발)으로 세우려면 `--글`. 문을 고르는 규약은 `tools/몽골어대조.js`
+ * ■ 🚪 어느 문으로 가나
+ *   기본은 무료 AI Studio 문이다. Vertex는 `--돈 --유료-api`를 함께 준 실행만 탄다.
+ *   문을 고르는 규약은 `tools/몽골어대조.js`
  *   와 같다 — 두 도구가 서로 다른 규약을 쓰면 어느 쪽으로 갔는지 사람이 매번 헷갈린다.
  *   🔴 09-06 회차가 14칸 전부 못 잼이었던 까닭이 이것이다: 문이 옮겨졌는데 시험만 옛 문에 남아 있었다.
  *
  * ■ 쓰기
- *   node evals/돌리기.js                     게이트 셋 뒤 시험 실행 (문 = 정책 기본)
- *   node evals/돌리기.js --글                옛 문(공짜 몫)으로 — 크레딧을 아끼고 싶은 날
+ *   node evals/돌리기.js                     게이트 셋 뒤 무료 문으로 시험 실행
+ *   node evals/돌리기.js --돈 --유료-api     Vertex 종량제 문으로 명시 실행
  *   node evals/돌리기.js --재보기            문 프로브만 (시험은 안 돌린다 · 1발)
  *   node evals/돌리기.js --문항 4            앞에서 N 문항만 (몫이 적은 날 나눠 돌리기)
  *   node evals/돌리기.js --그냥              게이트를 무시하고 강행(몫을 알고도 태울 때만)
@@ -186,6 +186,11 @@ async function main() {
   console.log(`  정본 픽: ${픽.model} / 생각 깊이 ${픽.thinking_level}`);
   console.log(`  때: ${new Date().toLocaleString('ko-KR')}\n`);
 
+  if (!공짜문() && !정책.유료API허용(인자, process.env)) {
+    console.log('🛡 Vertex 종량제 API는 기본 차단됐다. 실제로 돌릴 때 --돈 --유료-api를 함께 붙인다.');
+    return 3;
+  }
+
   /* 🔑 예약이 매일 도는데도 몫을 안 태우는 자리 — 이미 쟀으면 **여기서 끝난다**(호출 0).
    * 둘 중 «어느 쪽»이라도 있으면 잰 것이다: 도장(이 기계가 쟀다) · 판정(남의 기계가 재서 커밋해 왔다).
    * 하루 몫은 기계마다가 아니라 «열쇠마다» 하나라, 두 기계가 같은 시험을 두 번 돌리면 그냥 낭비다. */
@@ -228,7 +233,7 @@ async function main() {
       console.log(`      「돌려 보고 안다」가 아니라 «돌리기 전에» 아는 자리다. 길 셋:`);
       console.log(`        · 나눠 돌린다: node evals/돌리기.js --문항 ${Math.max(1, Math.floor(무료몫상한 / Math.max(1, 규모.모델)))}`);
       console.log(`        · 대조군을 빼고 현행 한 판만 잰다(시험지 providers 를 하나로)`);
-      console.log(`        · 유료 문으로 한 번에 끝낸다: node evals/돌리기.js  (기본이 그 문이다 · 크레딧이 닳는다)`);
+      console.log('        · 유료 문으로 한 번에 끝낸다: node evals/돌리기.js --돈 --유료-api');
       if (!있나('--그냥')) { console.log('\n   던지지 않았다. 위 셋 중 하나를 고르거나 --그냥 으로 강행한다.'); return 3; }
       console.log('   ⚠ --그냥 이라 강행한다.');
     }
@@ -297,7 +302,11 @@ async function main() {
    *   안 넘기면 자식은 정책 기본으로만 가고, `--글` 이 조용히 무시된다. */
   const r = spawnSync('npx', 인자들, {
     cwd: 루트, encoding: 'utf8', shell: true, windowsHide: true,
-    env: { ...process.env, SYNK_EVAL_ROUTE: 용도 },
+    env: {
+      ...process.env,
+      SYNK_EVAL_ROUTE: 용도,
+      ...(용도 === '돈' ? { SYNK_ALLOW_PAID_API: '1' } : {}),
+    },
   });
   const 글 = `${r.stdout || ''}${r.stderr || ''}`;
   process.stdout.write(글);

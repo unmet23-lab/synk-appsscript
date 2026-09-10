@@ -224,13 +224,9 @@ test('제미나이 키는 파일에서만 읽고, 모르는 토큰 여럿이면 
   }
 });
 
-/* 🔑 열쇠가 «둘»이다 — 유호 확정 2026-09-03 「글은 공짜, 그림은 유료」.
- *   까닭은 실물이다: 09-02 저녁 그림 한 번 구운 크레딧 소진(−₩56)이 **글 검문까지** 멈춰 세웠다.
- *   (09-03 판) 여기서 지키던 것은 «기본이 싼 쪽인가»였다.
- * 🔄 09-05 밤 — 기본이 «돈»(Vertex · 크레딧)으로 뒤집혔다(유호 확정 「앞으로 제미나이 열쇠는 vertex로해야해 ·
- *   3.1 pro 기능 · 무료크레딧도 지금 있고」 · 결정.md 09-05). 공짜 문은 하루 몫에 막혀 저녁마다 죽었고 크레딧은 안 쓰면
- *   증발한다. 지키는 것은 이제 «기본이 돈인가»와 «어느 쪽이 없어도 다른 쪽으로 조용히 넘어가지 않는가»다. */
-test('🔴 용도를 안 주면 «돈»(Vertex · 크레딧) 열쇠다(유호 확정 09-05 밤) · 어느 쪽이 없어도 다른 쪽으로 넘어가지 않는다(폴백 금지)', () => {
+/* API 기본은 무료 문이다. 최상 Gemini 개발 검수는 Google AI Pro 구독 통로가 맡고,
+ * Vertex는 명시한 유료 실행에만 열린다. 어느 방향으로도 키 폴백은 없다. */
+test('🔴 용도를 안 주면 무료 «글» 열쇠다 · 어느 쪽이 없어도 다른 쪽으로 넘어가지 않는다', () => {
   const fs = require('node:fs');
   const os = require('node:os');
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-gk2-'));
@@ -243,18 +239,19 @@ test('🔴 용도를 안 주면 «돈»(Vertex · 크레딧) 열쇠다(유호 �
     fs.writeFileSync(돈f, 'AQ.paid\n');
     process.env.GEMINI_KEY_PATH_FREE = 글f;
     process.env.GEMINI_KEY_PATH = 돈f;
-    assert.strictEqual(정책.기본용도(), '돈', '기본 용도가 돈(Vertex)이 아니다 — 유호 확정 09-05 밤');
-    assert.strictEqual(정책.제미나이키(), 'AQ.paid', '기본이 돈(Vertex) 쪽이 아니다 — 유호 확정 09-05 밤 「앞으로 제미나이 열쇠는 vertex로」');
+    assert.strictEqual(정책.기본용도(), '글', 'API 기본이 무료 AI Studio 문이 아니다');
+    assert.strictEqual(정책.제미나이키(), 'AQ.free', '기본이 무료 글 열쇠 쪽이 아니다');
     assert.strictEqual(정책.제미나이키('글'), 'AQ.free');
     assert.strictEqual(정책.제미나이키('돈'), 'AQ.paid');
     // 🚫 폴백 금지 — 공짜가 없다고 유료로 넘어가면 「글은 공짜」가 거짓이 되고 아무도 그걸 모른다.
     process.env.GEMINI_KEY_PATH_FREE = path.join(d, '없다.txt');
     assert.strictEqual(정책.제미나이키('글'), null, '공짜 열쇠가 없을 때 유료로 넘어갔다');
     assert.strictEqual(정책.제미나이키('돈'), 'AQ.paid', '돈 열쇠까지 같이 죽으면 안 된다');
-    // 🚫 반대 방향도 금지(09-05) — 기본(돈) 열쇠가 없다고 공짜 열쇠로 조용히 넘어가면 어느 문으로 갔는지 아무도 모른다.
+    // 🚫 반대 방향도 금지 — 돈 열쇠가 없다고 글 열쇠를 돈 문 자격처럼 쓰지 않는다.
     process.env.GEMINI_KEY_PATH_FREE = 글f;
     process.env.GEMINI_KEY_PATH = path.join(d, '없다2.txt');
-    assert.strictEqual(정책.제미나이키(), null, '돈 열쇠가 없을 때 공짜로 넘어갔다');
+    assert.strictEqual(정책.제미나이키(), 'AQ.free', '기본 글 열쇠까지 돈 열쇠 부재에 물들었다');
+    assert.strictEqual(정책.제미나이키('돈'), null, '돈 열쇠가 없을 때 글 열쇠로 넘어갔다');
     assert.strictEqual(정책.제미나이키('글'), 'AQ.free', '글 열쇠는 따로 살아 있어야 한다(옵트인 예비)');
     assert.match(정책.제미나이키안내('글'), /만드는 법/, '없다고만 말하면 사람이 다음 수를 모른다');
     assert.throws(() => 정책.제미나이키('아무거나'), /용도/, '모르는 용도가 조용히 통과하면 안 된다');
@@ -264,7 +261,26 @@ test('🔴 용도를 안 주면 «돈»(Vertex · 크레딧) 열쇠다(유호 �
   }
 });
 
-test('최상(3.1-pro/high) 픽은 이름만 남아 있다 — 결제를 켜는 날 기본만 바꾸면 되게', () => {
+test('🔒 Vertex 유료 API는 명시 승인 없이는 OAuth 토큰을 만들기 전에 막힌다', async () => {
+  const 옛argv = process.argv;
+  const 옛env = process.env.SYNK_ALLOW_PAID_API;
+  try {
+    process.argv = ['node', 'test'];
+    delete process.env.SYNK_ALLOW_PAID_API;
+    assert.strictEqual(정책.유료API허용(), false);
+    await assert.rejects(() => 정책.제미나이헤더('돈'), (e) => e && e.code === 'PAID_API_DISABLED');
+    const 생존 = await 정책.제미나이생존({ 용도: '돈' });
+    assert.deepStrictEqual([생존.살았나, 생존.종류], [null, '유료차단']);
+    assert.strictEqual(정책.유료API허용(['--유료-api'], {}), true);
+    assert.strictEqual(정책.유료API허용([], { SYNK_ALLOW_PAID_API: '1' }), true);
+  } finally {
+    process.argv = 옛argv;
+    if (옛env === undefined) delete process.env.SYNK_ALLOW_PAID_API;
+    else process.env.SYNK_ALLOW_PAID_API = 옛env;
+  }
+});
+
+test('최상(3.1-pro/high) 픽은 Google AI Pro 구독 검수에서 쓸 수 있게 유지한다', () => {
   const p = 정책.제미나이설정('최상');
   assert.strictEqual(p.model, 'gemini-3.1-pro-preview');
   assert.strictEqual(p.thinking_level, 'high');
@@ -344,17 +360,16 @@ test('심문 편성 = GPT 한 벌 + 제미나이 한 벌 — 코덱스 자리는
   const 제 = 런.filter((p) => p.벤더 === 'gemini');
   assert.strictEqual(제.length, 1, '제미나이 자리가 사라졌다 — 집안이 하나면 같은 눈이 두 번 놓친다');
   /* 값은 여기 안 적고 제미나이 표에서 파생돼야 한다 — 두 곳에 적으면 갈라진다.
-   * 🚪 09-05 유호 확정 「ⓐ로 가자 3.1 Pro로 바꿔줘」 — 심문 자리는 «최상»(돈 문 · 크레딧)이다. */
+   * 심문 자리는 최상이며 실제 호출은 Google AI Pro 구독 통로가 맡는다. */
   const g = 정책.제미나이설정('최상');
   assert.strictEqual(제[0].model, g.model, '제미나이 심문 자리가 최상 픽과 갈렸다');
   assert.strictEqual(제[0].effort, g.thinking_level, '제미나이 심문 자리의 사고 수준이 픽과 갈렸다');
   assert.strictEqual(제[0].model, 'gemini-3.1-pro-preview',
     '심문 제미나이 자리가 3.1 Pro 가 아니다 — 유호 확정 09-05 「ⓐ로 가자 3.1 Pro로 바꿔줘」');
-  /* 🔴 기본 픽은 따라 움직이면 안 된다 — 09-05 밤부터 기본 문이 Vertex(크레딧)라 죽지는 않지만, 3.1 Pro 는 flash 의
-   *   약 3배 값이다(1M 토큰당 입력 $2 vs $0.75 · 출력 $12 vs $3.75 · 구글 가격표 09-05 실측). 자주 도는 검문·검수 둘째 눈을
-   *   거기 태우면 크레딧(₩435,523)이 빨리 마른다. */
+  /* 기본 API 픽은 따라 움직이면 안 된다 — 3.1 Pro는 구독 통로에서만 쓰고,
+   * 무료 API 검문·GitHub 검수는 flash/high를 유지한다. */
   assert.strictEqual(정책.제미나이설정().model, 'gemini-3.8-flash',
-    '심문을 최상으로 올리면서 기본 픽까지 끌려갔다 — 몽골어 검문·검수 둘째 눈이 3배 값으로 돌아 크레딧이 빨리 마른다');
+    '심문 구독 픽을 올리면서 무료 API 기본 픽까지 끌려갔다');
   /* 🔴 코덱스 효력 낱말이 제미나이 자리에 실리면 벤더가 400 을 낸다(사고 수준은 low·medium·high 뿐). */
   assert.ok(['low', 'medium', 'high'].includes(제[0].effort),
     `제미나이 자리에 코덱스 효력이 실렸다 — "${제[0].effort}" 는 사고 수준이 아니다`);
@@ -601,10 +616,17 @@ test('🔴 «돈» 문은 Vertex 다 — 무료 크레딧 $300 이 AI Studio 문
    *   `projects/<프로젝트>` · `locations/<위치>` · `publishers/google`.
    * 🔑 앞의 둘은 09-04 에 «인증이 API 키에서 OAuth 토큰으로 바뀌면서» 필수가 됐다 —
    *   키를 쓸 때는 프로젝트를 열쇠가 알았지만, 토큰은 그걸 모르므로 주소가 말해야 한다. */
-  assert.match(
-    정책.제미나이URL('돈', 'M'),
-    /\/v1\/projects\/[^/]+\/locations\/[^/]+\/publishers\/google\/models\/M:generateContent$/,
-  );
+  const 옛프로젝트 = process.env.SYNK_VERTEX_PROJECT;
+  try {
+    process.env.SYNK_VERTEX_PROJECT = 'synthetic-project';
+    assert.match(
+      정책.제미나이URL('돈', 'M'),
+      /\/v1\/projects\/[^/]+\/locations\/[^/]+\/publishers\/google\/models\/M:generateContent$/,
+    );
+  } finally {
+    if (옛프로젝트 === undefined) delete process.env.SYNK_VERTEX_PROJECT;
+    else process.env.SYNK_VERTEX_PROJECT = 옛프로젝트;
+  }
   assert.strictEqual(돈.인증, 'oauth', 'Vertex 는 API 키를 못 받는다(조직 밖 프로젝트 · 09-04) — 키로 되돌리면 403 이다');
 });
 
@@ -623,7 +645,7 @@ test('🔑 «돈» 문의 프로젝트·위치는 env 로 덮을 수 있다 — 
 
 test('🔑 두 문은 서로 다르다 · 모르는 용도는 거절한다', () => {
   assert.notStrictEqual(정책.제미나이문('글').base, 정책.제미나이문('돈').base, '둘이 같아졌다 — 통째 교체가 들어왔다는 뜻이다');
-  assert.strictEqual(정책.제미나이문().base, 정책.제미나이문('돈').base, '기본은 돈(Vertex)이다 — 유호 확정 09-05 밤');
+  assert.strictEqual(정책.제미나이문().base, 정책.제미나이문('글').base, 'API 기본은 무료 AI Studio 문이다');
   assert.throws(() => 정책.제미나이문('그림'), /용도는/, '모르는 용도를 조용히 글로 접으면 「돈 문으로 돌렸다」고 믿는 상태가 생긴다');
 });
 
