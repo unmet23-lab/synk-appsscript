@@ -194,6 +194,45 @@ test('JSON 통로 — 상담AI 웹훅보다 앞에서 갈라지고, 진단 엔�
   같다(JSON.parse(C.진단API_({ parameter: { p: '진단' }, postData: { contents: '{"op":"nope"}' } }, 'post').t), { ok: false, error: 'bad-op' });
 });
 
+test('GET 진단 링크는 결과만 읽는다 — 여섯 쓰기 동작·미지 동작·빈 동작은 호출 0', () => {
+  const c = 로드();
+  const get = 읽기('상담AI.js').match(/function doGet\(e\) \{[\s\S]*?\n\}/);
+  assert.ok(get, '실제 doGet을 찾지 못했다');
+  new vm.Script(get[0]).runInContext(c);
+  const 호출 = [];
+  const 쓰기들 = { start: '진단시작_', answer: '진단답_', write: '진단쓰기_', decline: '진단안할래_', why: '진단멈춘까닭_', fix: '진단고침_' };
+  Object.entries(쓰기들).forEach(([op, fn]) => { c[fn] = () => { 호출.push(op); return { ok: true }; }; });
+  c.진단결과_ = (입력) => { 호출.push('result'); return { ok: true, code: 입력.진단코드 }; };
+  for (const op of [...Object.keys(쓰기들), 'nope', '']) {
+    const out = c.doGet({ parameter: { p: '진단', op, email: 'synthetic@example.invalid', session: 'synthetic-session', text: '합성 답' } });
+    같다(JSON.parse(out.t), { ok: false, error: 'bad-op' }, `GET ${op}가 거절되지 않았다`);
+  }
+  같다(호출, [], '읽기 요청이 진단 쓰기 함수를 호출했다');
+  같다(Object.keys(c.시트들), [], '읽기 요청이 진단 시트를 만들었다');
+  같다(JSON.parse(c.doGet({ parameter: { p: '진단', op: 'result', code: '123456' } }).t), { ok: true, code: '123456' });
+  같다(호출, ['result']);
+});
+
+test('POST의 기존 진단 동작은 유지하고 다른 HTTP 메서드는 호출 없이 거절한다', () => {
+  const c = 로드();
+  const 호출 = [];
+  const 동작들 = { start: '진단시작_', answer: '진단답_', write: '진단쓰기_', result: '진단결과_', decline: '진단안할래_', why: '진단멈춘까닭_', fix: '진단고침_' };
+  Object.entries(동작들).forEach(([op, fn]) => { c[fn] = () => { 호출.push(op); return { ok: true, op }; }; });
+  for (const op of Object.keys(동작들)) {
+    const out = c.진단API_({ parameter: { p: '진단', op: 'nope' }, postData: { contents: JSON.stringify({ op }) } }, 'post');
+    같다(JSON.parse(out.t), { ok: true, op }, `POST ${op}가 기존 동작으로 연결되지 않았다`);
+  }
+  같다(호출, Object.keys(동작들));
+  호출.length = 0;
+  for (const method of ['head', 'put', 'patch', 'delete', 'options', '', undefined]) {
+    for (const op of Object.keys(동작들)) {
+      const out = c.진단API_({ parameter: { p: '진단', op }, postData: { contents: JSON.stringify({ op }) } }, method);
+      같다(JSON.parse(out.t), { ok: false, error: 'bad-method' });
+    }
+  }
+  같다(호출, [], '지원하지 않는 메서드가 진단 함수를 호출했다');
+});
+
 test('배선 — 골격에 진단세션 · 밤 배치에 쓰기 태깅 · .clasp.json 과 ENGINE_FILES 에 새 파일', () => {
   const 셋업 = 읽기('엔진_셋업확장.js');
   assert.match(셋업, /\[DIAG_SESSION_TAB_, DIAG_SESSION_HEADERS, 수집표식_\]/);

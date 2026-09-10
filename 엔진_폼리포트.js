@@ -4825,9 +4825,13 @@ function buildMonthlyCards_() {
   const lastDayOfLastM = new Date(now.getFullYear(), now.getMonth(), 0);
   const schWeekday = scheduledSoFar_('평일', lastDayOfLastM) || 1;
   const schWeekend = scheduledSoFar_('주말', lastDayOfLastM) || 1;
+  const monMapC = monsterImgMap_(ss); // contents의 현행 가이드 이름→이미지
   const stus = [];
-  pf.getRange(2, 1, pf.getLastRow() - 1, 36).getValues().forEach(r => {
-    if (r[0] && r[3] === 'student') stus.push({ id: r[0], nm: r[1] || r[0], mon: r[18] || '뉴로', type: String(r[35] || '평일') });
+  // S19는 장면 수다. 고른가이드는 BC55이며, 아직 그 열이 없는 시트도 읽는다.
+  pf.getRange(2, 1, pf.getLastRow() - 1, Math.min(pf.getLastColumn(), 55)).getValues().forEach(r => {
+    const pick = String(r[54] || '').trim();
+    const mon = Object.prototype.hasOwnProperty.call(monMapC, pick) ? pick : '몽글';
+    if (r[0] && r[3] === 'student') stus.push({ id: r[0], nm: r[1] || r[0], mon: mon, type: String(r[35] || '평일') });
   });
   const mP = {}, crowns = {}, raids = {}, cardLogs = {};
   const plC = ss.getSheetByName('point_logs');
@@ -4839,7 +4843,6 @@ function buildMonthlyCards_() {
     if (rs === '오늘의 도전' || rs === '오늘의 MVP' || rs === '오늘의 성장' || rs === '오늘의 시냅스') crowns[r[1]] = (crowns[r[1]] || 0) + 1;
     if (rs === '레이드보상' || rs === '월드레이드') raids[r[1]] = (raids[r[1]] || 0) + 1;
   });
-  const monMapC = monsterImgMap_(ss); // [v9.35] 단계명→이미지 — 카드에 몬스터 1장 삽입
   const rows = stus.map(s => {
     const pts = mP[s.id] || 0;
     const sch = s.type === '주말' ? schWeekend : schWeekday;
@@ -4866,16 +4869,16 @@ function buildMonthlyCards_() {
      *   이름**이 있다(태그는 그날 받은 몇 명, 이건 전원이다). 안전 넷 「학생 식별 데이터」 위반이다.
      * ⚠ 과잠 태그(`jacketPrintTags_`)보다 나쁜 점: 여기서 만든 HTML 은 `synk_cards` 시트에
      *   **저장돼 남는다** — 한 번 들어가면 지우기 전까지 매달 그 파일에 다시 실린다.
-     * 🚫 나머지는 **감싸지 않는다** — 감싸면 우리가 일부러 넣은 태그가 글자로 보인다:
+     * 고른가이드 `s.mon`도 BC55의 선택값이다. 현행 contents guide 목록으로 제한하고 출력 때 감싼다.
+     * 🚫 아래 조립값은 **감싸지 않는다** — 감싸면 우리가 일부러 넣은 태그가 글자로 보인다:
      *   `ym`=formatDate · `tier[1]`·`tier[3]`=CARD_TIERS 상수 · `stat`=숫자와 상수만 ·
-     *   `playStyleOf_`=PLAY_STYLES 상수표 · `s.mon`=profiles S19(엔진이 쓰는 «지나온 장면 수» 숫자) ·
-     *   `mi`=contents 시트 guide 행(원장 손·씨앗). 사람이 «익명으로» 넣는 값은 이름 하나뿐이다. */
+     *   `playStyleOf_`=PLAY_STYLES 상수표 · `mi`=contents 시트 guide 행(원장 손·씨앗). */
     return [ym, s.id, CARD_WEBFONT + '<div style="' + CARD_FONT + 'background:' + tier[2] + ';border:2px solid #FBB7A3;border-radius:18px;padding:10px;max-width:230px;box-shadow:0 6px 18px rgba(249,104,89,.14);">' +
       '<div style="background:#FBF7F0;border-radius:12px;padding:10px 12px;text-align:center;">' +
       '<div style="font-size:11px;color:#8D857A;">SYNK ' + ym + ' · ' + tier[3] + ' ' + tier[1] + '</div>' +
       '<div style="font-size:17px;font-weight:800;padding:3px 0;">' + escHtml_(s.nm) + '</div>' +
       (mi.indexOf('http') === 0 ? '<img src="' + mi + '" style="width:72px;image-rendering:pixelated;display:block;margin:2px auto 0;"/>' : '') + // [v9.35] A안 이미지에도 무해
-      '<div style="font-size:12px;color:#2B2320;">' + s.mon + '와 함께한 한 달</div>' +
+      '<div style="font-size:12px;color:#2B2320;">' + escHtml_(s.mon) + josa(s.mon, '과', '와') + ' 함께한 한 달</div>' +
       '<div style="font-size:11px;color:#8D857A;padding-top:2px;">' + (function(){ const ps2 = playStyleOf_(cardLogs[s.id] || []); return ps2[0] + ' ' + ps2[1]; })() + '</div>' +
       '<div style="font-size:13px;padding-top:6px;border-top:1px dashed #FBCAAB;margin-top:6px;">' + stat + '</div>' +
       '</div></div>'];
