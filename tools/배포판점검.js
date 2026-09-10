@@ -30,15 +30,12 @@
  *   판정이 배포집합 미커밋을 함께 받아, 초록이 「라이브=HEAD」까지 말할 수 있을 때만 그렇게
  *   말한다. 미커밋을 **못 쟀으면**(git 실패 = null) 0 으로 접지 않고 초록의 뜻을 낮춰 적는다.
  *
- * ■ @HEAD 만 서빙하는 프로젝트는 이 층이 **원리상 아무것도 못 잰다** (2026-08-07)
- *   지문은 **배포 설명**에 심는데 고정 배포가 없으면 심을 자리가 없다. 그래서 루트(유호님이
- *   매일 쓰는 라이브 학원 시스템)에 대해 이 도구는 「@HEAD 라 push 가 곧 라이브다」를 낸다 —
- *   그건 **기전 진술이지 측정이 아니다.** `clasp push` 를 빼먹으면 영원히 같은 문장이 나온다
- *   (`deploy-freshness` 훅도 level==='ok' 면 침묵하므로 루트에는 원리상 발화하지 않는다).
- *   `/deploy` 가 늘 push 로 끝나서 안 보였을 뿐이고, **스킬은 불러야 적용된다.**
- *   → `라이브대조()` 가 라이브를 **작업본 아닌 임시 디렉터리**로 받아 바이트로 잰다.
- *     지문이 아니라 내용을 직접 보므로 심어 둔 것이 없어도 선다.
- *     (작업본에 `clasp pull` 하는 것은 F040 실사고다 — 처방 출처 = clasp-guard 규칙 0-A 안내문.)
+ * ■ 실제 확인과 간접 증거 (2026-09-11)
+ *   --라이브는 고정 배포 유무와 관계없이 프로젝트 HEAD와 각 상시 고정 버전의 원문을 받는다.
+ *   설명 지문만 읽는 기본 모드는 측정:false다. 모든 내용을 읽은 뒤에만 실측 도장을 남긴다.
+ *   clasp가 줄바꿈을 바꿔 내려준 경우 내용 일치와 원문 바이트 불일치를 따로 표시한다.
+ *   CRLF/LF 차이를 영구 뒤처짐으로 만들지 않으며, 줄끝 공백을 포함한 나머지 차이는 남긴다.
+ *   받는 곳은 작업본 밖의 임시 디렉터리다. 현재 운영 원칙에 따라 작업본에 pull로 덮어쓰지 않는다.
  */
 
 const fs = require('fs');
@@ -134,13 +131,13 @@ function 지문(projRoot, root = ROOT) {
 
 /* 라이브 배포 목록 조회(네트워크). 실패는 「통과」가 아니라 **확인 불가**로 돌려준다 —
  * 통과와 미실행이 같은 모양이면 안 된다. */
-function 배포목록(projRoot) {
+function 배포목록(projRoot, { timeout = 20000 } = {}) {
   const isWin = process.platform === 'win32';
   const bin = isWin ? path.join(process.env.APPDATA || '', 'npm', 'clasp.cmd') : 'clasp';
   const file = isWin ? (process.env.ComSpec || 'cmd.exe') : bin;
   const args = isWin ? ['/c', bin, 'deployments'] : ['deployments'];
   const out = execFileSync(file, args, {
-    cwd: projRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 20000,
+    cwd: projRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout, windowsHide: true,
   });
   return out.split(/\r?\n/).map(parseDeploymentLine).filter(Boolean);
 }
@@ -158,7 +155,7 @@ function 라이브판찾기(rel, 라이브내용, root = ROOT, 창 = 40) {
   let 줄들;
   try {
     줄들 = execFileSync('git', ['log', `-${창}`, '--format=%H %s', '--', rel], {
-      cwd: root, encoding: 'utf8', maxBuffer: 8 << 20,
+      cwd: root, encoding: 'utf8', maxBuffer: 8 << 20, timeout: 15000, windowsHide: true,
     }).trim().split(/\r?\n/).filter(Boolean);
   } catch (_) { return { 종류: '모름', 사유: 'git 이력을 못 읽었다' }; }
 
@@ -166,7 +163,7 @@ function 라이브판찾기(rel, 라이브내용, root = ROOT, 창 = 40) {
     const sha = l.slice(0, 40);
     let 옛;
     try {
-      옛 = execFileSync('git', ['show', `${sha}:${rel}`], { cwd: root, maxBuffer: 64 << 20 }).toString('utf8');
+      옛 = execFileSync('git', ['show', `${sha}:${rel}`], { cwd: root, maxBuffer: 64 << 20, timeout: 15000, windowsHide: true }).toString('utf8');
     } catch (_) { continue; }               // 그 판엔 그 경로가 없었다 — 다음 판으로
     if (n(옛) === 라이브) return { 종류: '뒤처짐', sha: sha.slice(0, 8), 제목: l.slice(41) };
   }
@@ -206,13 +203,18 @@ function 라이브판접기(다름, 방향, root = ROOT) {
   return { 종류: '뒤처짐', sha: 고름 };
 }
 
-/* 라이브를 임시 디렉터리로 받아 배포집합과 **바이트로** 대조한다(네트워크).
- * 지문 대조가 안 서는 @HEAD 프로젝트용 — 심어 둔 표식이 없어도 내용을 직접 보면 답이 나온다.
+/* 프로젝트 HEAD 또는 지정한 고정 버전을 임시 디렉터리로 받아 **원문 바이트로** 대조한다.
+ * versionNumber 생략 = 프로젝트 HEAD. 설명 지문은 실제 버전 내용의 증거로 쓰지 않는다.
  * ⚠ `cwd` 는 반드시 작업본 **밖**이다. 작업본에 pull 하면 옆 세션의 커밋이 라이브 판으로
  *   되돌아간다(F040). 임시 디렉터리는 끝나면 지운다. */
-function 라이브대조(projRoot, root = ROOT, { timeout = 120000 } = {}) {
+function 라이브대조(projRoot, root = ROOT, { timeout = 120000, versionNumber } = {}) {
+  if (versionNumber !== undefined && !/^[1-9]\d*$/.test(String(versionNumber))) throw new Error('고정 버전 번호가 올바르지 않다');
   const cfg = JSON.parse(fs.readFileSync(path.join(projRoot, '.clasp.json'), 'utf8'));
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-live-'));
+  const 임시기준 = fs.realpathSync(os.tmpdir());
+  const tmp = fs.mkdtempSync(path.join(임시기준, 'synk-live-'));
+  const 저장소접두 = path.relative(root, projRoot);
+  const 원격경로 = (rel) => path.relative(projRoot, path.join(root, rel));
+  const 저장소경로 = (rel) => path.join(저장소접두, rel).replace(/\\/g, '/');
   try {
     fs.writeFileSync(path.join(tmp, '.clasp.json'), JSON.stringify({
       scriptId: cfg.scriptId,
@@ -223,31 +225,42 @@ function 라이브대조(projRoot, root = ROOT, { timeout = 120000 } = {}) {
     }));
     const isWin = process.platform === 'win32';
     const bin = isWin ? path.join(process.env.APPDATA || '', 'npm', 'clasp.cmd') : 'clasp';
-    execFileSync(isWin ? (process.env.ComSpec || 'cmd.exe') : bin, isWin ? ['/c', bin, 'pull'] : ['pull'], {
-      cwd: tmp, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout,
+    const 명령 = ['pull', ...(versionNumber === undefined ? [] : ['--versionNumber', String(versionNumber)])];
+    execFileSync(isWin ? (process.env.ComSpec || 'cmd.exe') : bin, isWin ? ['/c', bin, ...명령] : 명령, {
+      cwd: tmp, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout, windowsHide: true,
     });
 
     const 집합 = 배포집합(projRoot, root);
     const 다름 = [], 라이브없음 = [];
     for (const rel of 집합) {
-      const 라이브 = path.join(tmp, rel);
+      const 라이브 = path.join(tmp, 원격경로(rel));
       if (!fs.existsSync(라이브)) { 라이브없음.push(rel); continue; }
       if (!fs.readFileSync(path.join(root, rel)).equals(fs.readFileSync(라이브))) 다름.push(rel);
     }
     /* 반대 방향도 본다 — 저장소에서 지운 파일이 라이브에 남아 있으면 그 코드는 **계속 돈다.**
      * 한 방향만 재면 「지웠다」가 「안 돈다」로 읽힌다. */
     const 저장소없음 = fs.readdirSync(tmp, { recursive: true })
-      .map((p) => String(p).replace(/\\/g, '/'))
-      .filter((p) => p !== '.clasp.json' && !집합.includes(p) && !fs.existsSync(path.join(root, p)));
+      .filter((p) => p !== '.clasp.json' && fs.lstatSync(path.join(tmp, p)).isFile())
+      .map(저장소경로)
+      .filter((p) => !집합.includes(p));
     /* 내용이 다른 것만 방향을 잰다 — 라이브없음·저장소없음 은 존재 자체가 이미 방향이다. */
-    const 방향 = {};
-    for (const rel of 다름) 방향[rel] = 라이브판찾기(rel, fs.readFileSync(path.join(tmp, rel), 'utf8'), root);
+    const 방향 = {}, 표기차이 = [];
+    for (const rel of 다름) {
+      const 원격 = fs.readFileSync(path.join(tmp, 원격경로(rel)), 'utf8');
+      // 줄끝 공백은 템플릿 문자열의 내용일 수 있어 지우지 않는다. 내려받으며 바뀌는 CRLF/LF만 구분한다.
+      if (원격.replace(/\r\n/g, '\n') === fs.readFileSync(path.join(root, rel), 'utf8').replace(/\r\n/g, '\n')) {
+        표기차이.push(rel);
+        방향[rel] = { 종류: '표기차이', 사유: 'CRLF/LF만 바꾸면 같음(원문 바이트는 다름)' };
+      } else 방향[rel] = 라이브판찾기(rel, 원격, root);
+    }
     /* 뒤처졌을 때만 접는다 — 「바이트 전부 동일」이면 라이브 = 작업본이라 넓힐 것이 없고(아래
      * 「더 오래된 쪽」 규칙이 언제나 채번을 고른다), 그 갈래에서 HEAD 를 적으면 미커밋이 있을 때
      * 「라이브 = HEAD」라는 안 잰 주장이 도장에 박힌다(F310 이 정확히 그 자리다). */
     const 라이브판 = 다름.length ? 라이브판접기(다름, 방향, root) : null;
-    return { 다름, 라이브없음, 저장소없음, 방향, 라이브판, 총: 집합.length };
+    return { 다름, 라이브없음, 저장소없음, 방향, 라이브판, 표기차이, 총: 집합.length, versionNumber: versionNumber === undefined ? null : Number(versionNumber) };
   } finally {
+    // 우리가 생성한 임시 디렉터리 하나만 지운다. 작업본·계산된 상위 경로는 삭제 대상이 아니다.
+    if (path.dirname(path.resolve(tmp)) !== 임시기준 || !path.basename(tmp).startsWith('synk-live-')) throw new Error('임시 디렉터리 정리 경로 확인 실패');
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 }
@@ -256,7 +269,7 @@ function 라이브대조(projRoot, root = ROOT, { timeout = 120000 } = {}) {
  * 네트워크·파일시스템을 안 탄다 — **탐지력은 여기서 픽스처로 못박는다.**
  * 실저장소·라이브를 요구하는 검사는 CI 에서 못 돌고, 그걸 탐지력의 근거로 삼으면
  * 「자격증명이 없어서 초록」이 된다. */
-function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋 }) {
+function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋, 대상 = '프로젝트 HEAD' }) {
   const 고정 = (deployments || []).filter((d) => d.ver !== 'HEAD' && !d.temp);
   if (!고정.length) {
     /* 🔴 `대조` 가 없으면 이 갈래는 **아무것도 안 잰 것**이다. 문장을 그렇게 쓴다 —
@@ -271,49 +284,57 @@ function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋 }) {
       if (미커밋 && 미커밋.length) {
         lines.push(`⚠ 배포집합에 **미커밋 ${미커밋.length}건** — push 는 HEAD 가 아니라 작업본을 민다(F310): 직전 push 가 이 내용을 실었을 수 있다`);
         for (const f of 미커밋) lines.push(`   미커밋: ${f}`);
-        lines.push('   → 실렸는지는 바이트로 잰다: node tools/배포판점검.js --라이브 · 주인 가르기: list_sessions(하네스)');
+        lines.push('   → 실렸는지는 원문 바이트로 잰다: node tools/배포판점검.js --라이브 · 진행 중인 담당 작업과 변경 소유를 확인한다');
         return { level: 'warn', 이름, 측정: false, 미커밋, lines };
       }
       return { level: 'ok', 이름, 측정: false, 미커밋: 미커밋 || null, lines };
     }
     const { 다름 = [], 라이브없음 = [], 저장소없음 = [], 총 = 0 } = 대조;
-    if (!다름.length && !라이브없음.length && !저장소없음.length) {
+    const 표기차이 = 대조.표기차이 || [];
+    const 원문바이트일치 = !다름.length && !라이브없음.length && !저장소없음.length;
+    if (!다름.some((f) => !표기차이.includes(f)) && !라이브없음.length && !저장소없음.length) {
+      const 같은범위 = 원문바이트일치 ? `배포집합 ${총}개 원문 바이트 동일`
+        : `배포집합 ${총}개 내용 일치(CRLF/LF 차이만) · 원문 바이트 불일치 ${표기차이.length}개`;
+      const 표기줄 = 표기차이.map((f) => `   줄바꿈 차이: ${f} — CRLF/LF만 바꾸면 같음(원문 바이트는 다름)`);
       /* 🔴 F310 실측 갈래 — 「바이트 동일」인데 그 바이트가 미커밋이다: 라이브 = 작업본 ≠ HEAD.
        *   이 초록의 원래 문장이 정확히 그 유출을 덮던 자리다(F309: push 직후 배포집합 미커밋 0 을
        *   확인해야 「라이브=작업본」이 비로소 「라이브=HEAD」를 뜻한다). */
       if (미커밋 && 미커밋.length) {
         return {
-          level: 'stale', 이름, 측정: true, 미커밋,
+          level: 'stale', 이름, 측정: true, 미커밋, 원문바이트일치, 표기차이,
           lines: [
-            `🔴 ${이름}: 배포집합 ${총}개 바이트 동일 — 그러나 그 중 **미커밋 ${미커밋.length}건**: 라이브 = 작업본 ≠ HEAD (미커밋 유출 · F310)`,
+            `🔴 ${이름}: ${대상} ${같은범위} — 그러나 그 중 **미커밋 ${미커밋.length}건**: Git HEAD와 같다고 할 수 없다`,
+            ...표기줄,
             ...미커밋.map((f) => `   미커밋: ${f}`),
-            '   → 주인부터 가른다: list_sessions(하네스) — 내 것이면 즉시 커밋해 이력에 들인다(그래야 라이브 = HEAD) · 남의 것이면 두고 보고만 한다(F073)',
+            '   → 변경 소유와 완성 상태를 확인한다. 승인된 자기 변경만 검증·커밋하고, 다른 담당의 미커밋은 보존한다.',
           ],
         };
       }
-      const 꼬리 = 미커밋 ? ' · 미커밋 0 — 라이브 = HEAD' : ' · ⚠미커밋 못 잼: 이 초록은 「라이브=작업본」까지만 말한다';
-      return { level: 'ok', 이름, 측정: true, 미커밋: 미커밋 || null, lines: [`${이름}: 라이브 = 저장소 (@HEAD · 배포집합 ${총}개 바이트 동일${꼬리})`] };
+      const 꼬리 = 미커밋 ? ' · 미커밋 0' : ' · ⚠미커밋 못 잼: Git HEAD와의 일치는 미확인';
+      return { level: 'ok', 이름, 측정: true, 미커밋: 미커밋 || null, 원문바이트일치, 표기차이,
+        lines: [`${이름}: ${대상} ${같은범위}${꼬리}`, ...표기줄] };
     }
     /* 🔑 「다르다」는 방향이 아니다 — 저장소가 앞선 것과 라이브에 손편집이 있는 것이 같은 모양이다.
      *   방향을 못 재고 「push 가 빠졌다」로 단정하면, 처방(=밀어라)이 남의 편집을 지우라는 말이 된다.
      *   그래서 셋으로 나눠 적는다: 실측 뒤처짐 · 방향 미측정(옛 호출자) · 못 가름. */
     const 방향 = 대조.방향 || null;
-    const 못가름 = 방향 ? 다름.filter((r) => 방향[r] && 방향[r].종류 !== '뒤처짐') : [];
+    const 못가름 = 방향 ? 다름.filter((r) => !방향[r] || !['뒤처짐', '표기차이'].includes(방향[r].종류)) : [];
     const 꼬리 = !다름.length ? ''
-      : !방향 ? ' — **push 가 빠졌다**(방향 미측정)'
+      : !방향 ? ' — 방향 미측정'
         : 못가름.length ? ' — 🔴 **방향을 못 갈랐다**'
-          : ' — **push 가 빠졌다**(방향 실측 · 라이브에만 있는 편집 0)';
-    const lines = [`🔴 ${이름} 라이브가 저장소와 다르다 (@HEAD · 배포집합 ${총}개)${꼬리}`];
+          : ' — 아래 파일별 차이 참조';
+    const lines = [`🔴 ${이름}: ${대상}가 작업본과 다르다 (배포집합 ${총}개 원문 바이트 대조)${꼬리}`];
     const 보고 = (제목, 목록) => { for (const r of 목록) lines.push(`   ${제목} ${r}`); };
     for (const r of 다름) {
       const d = 방향 && 방향[r];
       lines.push(`   내용 다름: ${r}`
         + (!d ? ''
-          : d.종류 === '뒤처짐' ? `  ← 라이브 = ${d.sha} ${d.제목}`
+          : d.종류 === '표기차이' ? `  ← ${d.사유}`
+            : d.종류 === '뒤처짐' ? `  ← 줄바꿈·줄끝 공백을 접은 원격 내용 = ${d.sha} ${d.제목}`
             : `  ← 🔴 라이브 판을 못 찾았다(${d.사유})`));
     }
-    보고('라이브에 없음(push 된 적 없다):', 라이브없음);
-    보고('라이브에만 있음(지웠는데 계속 돈다):', 저장소없음);
+    보고('원격에 없음:', 라이브없음);
+    보고('원격에만 있음(현재 배포집합 밖):', 저장소없음);
     /* 미커밋 두 갈래(F310) — 배포집합의 미커밋 파일은 라이브와 ①다르거나 ②같거나 둘뿐이다.
      * ①은 「지금 누가 고치는 중」일 수 있어 처방(/deploy)을 그대로 따르면 남의 반쪽 작업을 밀고,
      * ②는 이미 실려 나간 것이다 — 어느 쪽도 조용히 지나가면 안 된다. */
@@ -321,24 +342,24 @@ function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋 }) {
       const 겹침 = 미커밋.filter((f) => 다름.includes(f) || 라이브없음.includes(f));
       const 유출 = 미커밋.filter((f) => !다름.includes(f) && !라이브없음.includes(f) && !저장소없음.includes(f));
       if (유출.length) lines.push(`   🔴 미커밋인데 라이브와 **바이트 동일** ${유출.length}건 — 이미 실려 나갔다(F310): ${유출.join(' · ')}`);
-      if (겹침.length) lines.push(`   ⚠ 위 목록 중 미커밋 ${겹침.length}건(${겹침.join(' · ')}) — 지금 누가 고치는 중일 수 있다: 밀기 전에 list_sessions(하네스) 로 주인을 가른다(남의 미커밋을 밀면 그게 F310 이다)`);
+      if (겹침.length) lines.push(`   ⚠ 위 목록 중 미커밋 ${겹침.length}건(${겹침.join(' · ')}) — 진행 중인 담당 작업과 변경 소유를 확인하고 보존한다`);
     }
     /* 못 가른 파일이 있으면 처방을 **밀기 전 확인**으로 한 칸 앞당긴다 — 그냥 /deploy 를 주면
      * 이 경고는 읽히지 않고 넘어간다(경고가 처방과 어긋나면 사람은 처방만 따른다). */
     if (못가름.length) {
       lines.push('   ⚠ 밀기 전에 확인한다 — 위 🔴 파일의 라이브 내용이 이 저장소 이력 어디에도 없다.');
       lines.push('     ①이력이 얕거나(CI·얕은 클론) ②라이브에 편집기 손편집이 있다 — ②면 미는 순간 그것이 사라진다.');
-      lines.push('     편집기에서 그 파일을 열어 눈으로 본 뒤에 민다(작업본으로 되받는 길은 clasp-guard 가 막는다 · F040).');
+      lines.push('     원격 원문과 담당 작업을 먼저 대조한다. 작업본에 clasp pull로 덮어쓰지 않는다.');
     }
     /* 처방 줄에 금지된 명령을 **글자로도** 안 적는다 — 설명이어도 눈은 명령으로 읽고 복사한다
      * (회귀가 이 줄을 잡았다: 처음엔 "손 clasp push 는 …가 막는다"라고 적어 뒀었다). */
-    lines.push(`   → cd ${경로 || '.'} && /deploy   (손으로 미는 통로는 clasp-guard 가 막는다)`);
+    lines.push(`   → ${경로 || '.'}의 승인된 배포 범위를 기존 deploy 스킬·도구로 반영한 뒤 --라이브로 다시 확인한다`);
     /* 파일 목록을 **구조로도** 낸다 — 호출부가 「push 가 빠졌다」와 「지금 누가 고치는 중이다」를
      * 가르려면 이 목록이 필요한데, 문장에서 되뽑으면 문구가 바뀌는 날 조용히 안 갈린다.
      * `못가름` 도 같은 이유로 구조다 — 문장에서 🔴 를 세는 호출부는 문구가 바뀌는 날 조용해진다. */
     /* `라이브판` 도 구조로 낸다 — 이 값이 아래 층(`안나간변경`)의 **기준선**이 된다. 문장에서
      * 되뽑으면 문구가 바뀌는 날 조용히 기준선이 채번으로 되돌아가고, 그 되돌아감이 곧 F474 다. */
-    return { level: 'stale', 이름, 측정: true, lines, 못가름, 미커밋: 미커밋 || null, 라이브판: 대조.라이브판 || null, 파일들: [...다름, ...라이브없음, ...저장소없음] };
+    return { level: 'stale', 이름, 측정: true, lines, 못가름, 원문바이트일치: false, 표기차이, 미커밋: 미커밋 || null, 라이브판: 대조.라이브판 || null, 파일들: [...다름, ...라이브없음, ...저장소없음] };
   }
 
   const 낡음 = [], 모름 = [], 최신 = [];
@@ -349,60 +370,24 @@ function 판정({ 이름, 경로, fp, deployments, 대조, 미커밋 }) {
     else 낡음.push(d);
   }
 
-  if (!낡음.length && !모름.length) {
-    /* 지문 일치 = 배포 스냅샷 == **지금 작업본**. 그 작업본에 미커밋이 있으면 스냅샷도 그 미커밋을
-     * 싣고 있다(지문이 작업본 바이트에서 나오므로) — 「최신」이 아니라 F310 유출이다. */
-    if (미커밋 && 미커밋.length) {
-      return {
-        level: 'stale', 이름, 미커밋,
-        lines: [
-          `🔴 ${이름}: 배포 지문 일치(${지문표기(fp)}) — 그러나 배포집합에 **미커밋 ${미커밋.length}건**: 그 스냅샷은 작업본이지 HEAD 가 아니다(미커밋 유출 · F310)`,
-          ...미커밋.map((f) => `   미커밋: ${f}`),
-          '   → 주인부터 가른다: list_sessions(하네스) — 내 것이면 즉시 커밋해 이력에 들인다 · 남의 것이면 두고 보고만 한다(F073)',
-        ],
-      };
-    }
-    return { level: 'ok', 이름, 미커밋: 미커밋 || null, lines: [`${이름}: 라이브 최신 (${지문표기(fp)} · 배포 ${최신.length}건)`] };
-  }
-
-  /* 🔴 [09-08] 처방 줄에 «통로 조건»을 붙인다. 이 한 줄만 떼어 남에게 넘기면 그 순간
-   *   «손 clasp» 이 되어 지침(배포 통로는 /deploy 하나)을 어기고 clasp-guard 에 막힌다.
-   *   09-08 에 내가 그것을 그대로 옆 세션에 넘겼고, 그쪽이 「지침이 이렇습니다」로 되짚어 줬다.
-   *   ⇒ 사람을 탓할 자리가 아니다 — 도구가 조건 없이 명령만 주면 떼어 옮겨지는 것이 정상이다. */
-  const 처방 = (d) =>
-    `     ⚠ 아래는 «/deploy 7단계 안»에서만 유효하다 — 이 줄만 떼어 손으로 치면 clasp-guard 가 막는다.\n` +
-    `     cd ${경로 || '.'} && clasp deploy --deploymentId ${d.id} \\\n` +
-    `       --description "${(d.desc || '').replace(/\s*#fp:[0-9a-f]+\b/, '').trim() || '갱신'} ${지문표기(fp)}"`;
-
-  const lines = [];
-  for (const d of 낡음) {
-    lines.push(
-      `🔴 ${이름} @${d.ver} 이 **옛 코드를 서빙한다** — 배포 지문 ${FP_RE.exec(d.desc)[1]} ≠ 현재 ${fp}`,
-      `   "${d.desc}"`,
-      `   → 같은 주소를 유지한 채 갱신하려면(⛔ --deploymentId 를 빼면 **새 배포 = 접수 주소 2개**가 된다):`,
-      처방(d)
-    );
-  }
-  for (const d of 모름) {
-    lines.push(
-      `⚠ ${이름} @${d.ver} 은 **판정 불가** — 설명에 지문이 없다(지문을 심기 전에 만든 배포다)`,
-      `   "${d.desc}"`,
-      `   → 다음 배포부터 대조되게 하려면 설명 끝에 지문을 붙인다:`,
-      처방(d)
-    );
-  }
-  /* 갱신 처방(clasp deploy)은 **지금 작업본**을 스냅샷한다 — 미커밋이 있는 채로 따르면 그
-   * 미커밋까지 실린다. 경고가 처방보다 뒤에 서면 사람은 처방만 따르므로 여기서 같이 적는다. */
-  if (미커밋 && 미커밋.length) {
-    lines.push(`   ⚠ 배포집합에 미커밋 ${미커밋.length}건(${미커밋.join(' · ')}) — 지금 위 명령으로 갱신하면 **그 미커밋까지 실린다**(F310): 먼저 list_sessions(하네스) 로 주인을 가른다`);
-  }
-  return { level: 낡음.length ? 'stale' : 'unknown', 이름, 미커밋: 미커밋 || null, lines };
+  // 설명은 갱신자가 적은 간접 증거다. 실제 버전 내용을 읽지 않은 것을 최신·유출로 단정하지 않는다.
+  const lines = [`${이름}: 배포 설명 지문만 대조(간접 증거) — 프로젝트 HEAD·고정 버전 실제 내용은 미확인`];
+  for (const d of 최신) lines.push(`   @${d.ver}: 설명 지문 일치 ${지문표기(fp)}`);
+  for (const d of 낡음) lines.push(`   🔴 @${d.ver}: 설명 지문 불일치 ${FP_RE.exec(d.desc)[1]} ≠ 현재 ${fp}`);
+  for (const d of 모름) lines.push(`   ⚠ @${d.ver}: 설명 지문 없음`);
+  if (미커밋 && 미커밋.length) lines.push(`   ⚠ 배포집합 미커밋 ${미커밋.length}건(${미커밋.join(' · ')}) — 원격 반영 여부는 미확인, 담당 작업의 변경 소유를 확인한다`);
+  lines.push('   → 실제 내용을 확인한다: node tools/배포판점검.js --라이브');
+  return {
+    level: 낡음.length ? 'stale' : 모름.length ? 'unknown' : 미커밋 && 미커밋.length ? 'warn' : 'ok',
+    이름, 측정: false, 근거: '배포설명지문', 미커밋: 미커밋 || null, lines,
+  };
 }
 
 /* 세 원인(오프라인·미로그인·clasp 없음)을 한 문장으로 접으면 어느 것인지 아무도 못 가른다 —
  * 하나는 30초면 고쳐지고 하나는 그냥 기다리면 된다. 원문 끝 줄을 함께 낸다. */
 const 못읽음 = (이름, 무엇, e) => ({
   level: 'unreachable',
+  측정: false,
   이름,
   lines: [
     `⚠ ${이름}: ${무엇}(오프라인·미로그인·clasp 없음) — **확인 불가**지 통과가 아니다`,
@@ -410,30 +395,59 @@ const 못읽음 = (이름, 무엇, e) => ({
   ],
 });
 
-/* 프로젝트 하나를 실제로 본다(네트워크 포함). 조회 실패는 확인 불가로 드러낸다.
- * `라이브:true` = 고정 배포가 없는 프로젝트를 지문 대신 **바이트로** 잰다(느리다 — 주간·수동용). */
+/* --라이브는 프로젝트 HEAD와 활성 고정 버전 전부를 읽는다. 같은 버전의 여러 배포는 한 번만 받는다.
+ * 기존 level·측정·파일들·라이브판을 유지하고, 프로젝트HEAD·고정버전들에 각각의 결과를 남긴다. */
 function 점검(projRoot, root = ROOT, { 라이브 = false, 시간제한 } = {}) {
   const 이름 = path.relative(root, projRoot).replace(/\\/g, '/') || '(루트)';
   const 경로 = path.relative(root, projRoot).replace(/\\/g, '/') || '.';
-  let deployments;
+  let fp, 미커밋;
   try {
-    deployments = 배포목록(projRoot);
-  } catch (e) {
-    return 못읽음(이름, '배포 목록을 못 읽었다', e);
-  }
-  let 대조;
-  if (라이브 && !deployments.some((d) => d.ver !== 'HEAD' && !d.temp)) {
+    fp = 지문(projRoot, root);
+    미커밋 = 배포집합미커밋(projRoot, root);
+  } catch (e) { return 못읽음(이름, '로컬 배포집합을 못 읽었다', e); }
+  let deployments = [], 목록실패 = null;
+  try { deployments = 배포목록(projRoot, { timeout: 시간제한 }); }
+  catch (e) { 목록실패 = 못읽음(이름, '배포 목록을 못 읽었다', e); }
+  if (!라이브) return 목록실패 || 판정({ 이름, 경로, fp, deployments, 미커밋 });
+
+  const 재기 = (versionNumber, 배포들 = []) => {
+    const 대상 = versionNumber === undefined ? '프로젝트 HEAD' : `고정 버전 @${versionNumber}`;
+    let r;
     try {
-      /* 호출부가 상한을 줄 수 있어야 한다 — 훅에서 부를 때 기본 120초는 훅 예산(60초)보다 길어서,
-       * 네트워크가 멎으면 훅이 통째로 죽고 **아무것도 안 찍힌다**(새는 방향은 언제나 침묵이다). */
-      대조 = 라이브대조(projRoot, root, { timeout: 시간제한 });
-    } catch (e) {
-      return 못읽음(이름, '라이브를 임시 디렉터리로 못 받았다', e);
-    }
+      const 대조 = 라이브대조(projRoot, root, { timeout: 시간제한, versionNumber });
+      r = 판정({ 이름, 경로, fp, deployments: [], 대조, 미커밋, 대상 });
+    } catch (e) { r = 못읽음(이름, `${대상} 내용을 임시 디렉터리로 못 받았다`, e); }
+    return { ...r, 대상, versionNumber: versionNumber === undefined ? null : Number(versionNumber), 배포들 };
+  };
+  // 목록 조회가 실패해도 프로젝트 HEAD는 잰다. 목록 미확인은 전체 초록 도장을 막는다.
+  const 프로젝트HEAD = 재기();
+  const 버전들 = new Map();
+  for (const d of deployments.filter((d) => d.ver !== 'HEAD' && !d.temp)) {
+    const v = String(d.ver);
+    if (!버전들.has(v)) 버전들.set(v, []);
+    버전들.get(v).push(d.id);
   }
-  /* 미커밋은 로컬(git)이라 네트워크 갈래와 무관하게 늘 잰다 — 못 재면 null(모름)로 넘겨
-   * 판정이 초록의 뜻을 낮춰 적게 한다. 0 으로 접는 순간 F310 이 초록의 모습으로 돌아온다. */
-  return 판정({ 이름, 경로, fp: 지문(projRoot, root), deployments, 대조, 미커밋: 배포집합미커밋(projRoot, root) });
+  const 고정버전들 = [...버전들].map(([v, ids]) => 재기(v, ids));
+  const 결과 = [프로젝트HEAD, ...고정버전들];
+  const 작업본유지 = 지문못하면널(projRoot, root) === fp;
+  const 측정 = !목록실패 && 작업본유지 && 결과.every((r) => r.측정 === true);
+  const level = 결과.some((r) => r.level === 'stale') ? 'stale' : !측정 ? 'unreachable' : 'ok';
+  const 달라진것 = 결과.filter((r) => r.파일들 && r.파일들.length);
+  const 방향 = Object.fromEntries(달라진것.map((r, i) => [String(i), r.라이브판]));
+  const 라이브판 = 측정 && 달라진것.length ? 라이브판접기(Object.keys(방향), 방향, root) : null;
+  const 요약 = (r) => r.측정 !== true ? '미확인' : r.level === 'ok' ? '일치' : '차이 있음';
+  return {
+    level, 이름, 측정, 미커밋, 라이브판, localFp: fp, 근거: '원격내용대조', 프로젝트HEAD, 고정버전들, 배포목록확인: !목록실패,
+    원문바이트일치: 측정 ? 결과.every((r) => r.원문바이트일치 === true) : null,
+    파일들: [...new Set(결과.flatMap((r) => r.파일들 || []))],
+    못가름: [...new Set(결과.flatMap((r) => r.못가름 || []))],
+    lines: [
+      `${이름}: 프로젝트 HEAD ${요약(프로젝트HEAD)} · 고정 버전 ${목록실패 ? '목록 미확인' : 고정버전들.length + '종'}`,
+      ...결과.flatMap((r) => r.lines),
+      ...(목록실패 ? 목록실패.lines : []),
+      ...(!작업본유지 ? ['⚠ 대조 중 로컬 배포집합이 바뀌었거나 다시 읽지 못했다 — 전체 일치 여부 미확인'] : []),
+    ],
+  };
 }
 
 /* ── 네트워크 0 재료 ─────────────────────────────────────────────────────────
@@ -562,14 +576,15 @@ function 지문못하면널(projRoot, root) {
  * 🚫 새 상태 파일을 만들지 않는다(위 절의 🚫 그대로) · 🚫 도장 페이로드 «모양»을 여기서 새로
  *   적지 않는다 — `rot-check.배포도장()` 이 정본이고 이 함수는 그것을 부르기만 한다. */
 
-/** 도장에 실을 한 칸. ⚠ `rot-check` 배포Section 이 같은 세 값을 **자기 사본으로** 만든다 —
- *  그 파일을 든 세션이 놓는 날 이 함수로 갈아탄다(#Q97 잔여 · 갈리면 새는 방향은 「초록」이다). */
+/** 도장에 실을 한 칸. 측정 뒤 파일이 바뀌면 새 지문에 옛 초록을 붙이지 않는다. */
 function 실측접기(r, projRoot, root = ROOT) {
+  const 현재지문 = 지문못하면널(projRoot, root);
+  const 검증지문 = typeof r.localFp === 'string' ? r.localFp : null;
+  const 측정 = r.측정 === true && 검증지문 !== null && 현재지문 === 검증지문;
   return {
-    지문: 지문못하면널(projRoot, root),
-    /* 「쟀고 초록이다」 — `측정: false`(고정 배포 없음·안 잼)를 초록으로 접으면 **안 잰 것이
-     * 경보를 재운다**. 그 방향이 거짓음성이라 여기서 두 조건을 함께 건다. */
-    초록: r.level === 'ok' && r.측정 === true,
+    지문: 검증지문 || 현재지문,
+    측정,
+    초록: r.level === 'ok' && 측정,
     라이브판: r.라이브판 || null,
   };
 }

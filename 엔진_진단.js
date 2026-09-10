@@ -486,7 +486,10 @@ function 진단API_(e, method) {
     else 입력 = (e && e.parameter) || {};
     const op = String(입력.op || '');
     let out;
-    if (op === 'start') out = 진단시작_({ 역할: 입력.역할 || 입력.role, 이메일: 입력.이메일 || 입력.email, 전화: 입력.전화 || 입력.phone, 학생번호: 입력.학생번호 || 입력.student });
+    // [v9.337] GET은 결과 조회만 — 링크 사전열람이 진단 기록을 쓰지 못하게 통로에서 막는다.
+    if (method !== 'get' && method !== 'post') out = { ok: false, error: 'bad-method' };
+    else if (method === 'get' && op !== 'result') out = { ok: false, error: 'bad-op' };
+    else if (op === 'start') out = 진단시작_({ 역할: 입력.역할 || 입력.role, 이메일: 입력.이메일 || 입력.email, 전화: 입력.전화 || 입력.phone, 학생번호: 입력.학생번호 || 입력.student });
     else if (op === 'answer') out = 진단답_({ 세션번호: 입력.세션번호 || 입력.session, 급: 입력.급 || 입력.level, n: 입력.n, 답: 입력.답 != null ? 입력.답 : 입력.answer, 멱등열쇠: 입력.멱등열쇠 || 입력.key });
     else if (op === 'write') out = 진단쓰기_({ 세션번호: 입력.세션번호 || 입력.session, 문장: 입력.문장 || 입력.text });
     else if (op === 'result') out = 진단결과_({ 세션번호: 입력.세션번호 || 입력.session, 진단코드: 입력.진단코드 || 입력.code });

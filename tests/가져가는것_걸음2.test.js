@@ -269,17 +269,83 @@ test('Ⓒ 🔴 이달의 카드도 이름을 escHtml_ 로 감싼다 — 태그�
   const 카드 = 코드정제.slice(from, to);
   assert.ok(/escHtml_\(s\.nm\)/.test(카드), '학생 이름이 이스케이프 없이 카드 HTML 에 들어간다');
   assert.equal(/\+\s*s\.nm\s*\+/.test(카드), false, '이름을 날것으로 잇는 자리가 남았다');
-  /* 🚫 기계가 만든 값까지 감싸면 우리가 «일부러» 넣은 태그가 글자로 보인다.
-   *   stat=숫자와 상수만 · tier=CARD_TIERS 상수 · playStyleOf_=PLAY_STYLES 상수표 —
-   *   익명으로 사람이 넣는 값은 이름 하나뿐이다. */
-  assert.equal(/escHtml_\((?!s\.nm)/.test(카드), false,
-    '이름 말고 다른 값까지 감쌌다 — 기계가 만든 태그가 글자로 보인다');
+  assert.ok(/escHtml_\(s\.mon\)/.test(카드), '고른가이드가 이스케이프 없이 카드 HTML 에 들어간다');
+  /* stat·tier·playStyleOf_는 숫자와 상수로 조립한다. 선택한 가이드 이름은 별도로 감싼다. */
+  assert.equal(/escHtml_\((?!s\.(?:nm|mon)\))/.test(카드), false,
+    '이름과 가이드 말고 조립한 값까지 감쌌다 — 기계가 만든 태그가 글자로 보인다');
 
   // 인쇄 쪽은 시트에 든 HTML 을 «그대로» 잇는다 — 그래서 소독은 굽는 자리에서 끝나야 한다
   const 인쇄 = 코드정제.slice(to, 코드정제.indexOf('function menuPrintMonthlyCards', to));
   assert.ok(/getSheetByName\('synk_cards'\)/.test(인쇄), '인쇄물이 synk_cards 를 안 읽는다 — 그리는 자리를 다시 잰다');
   assert.ok(/'<div class="c">' \+ c \+ '<\/div>'/.test(인쇄),
     '인쇄물이 저장된 HTML 을 그대로 안 잇는다 — 소독을 어디서 할지 다시 판정해야 한다');
+});
+
+function 월간카드굽기(선택, 폭 = 55, 가이드이름 = '까몽') {
+  const src = 읽기('엔진_폼리포트.js');
+  const 함수읽기 = (본문, 이름) => {
+    const 시작 = 본문.indexOf('function ' + 이름 + '(');
+    assert.notEqual(시작, -1, 이름 + ' 정본이 없다');
+    return 본문.slice(시작, 본문.indexOf('\n}', 시작) + 2);
+  };
+  const 학생 = Array(폭).fill('');
+  학생[0] = 'synthetic-monthly-card'; 학생[1] = '합성 학생'; 학생[3] = 'student';
+  if (폭 >= 19) 학생[18] = 3;
+  if (폭 >= 55) 학생[54] = 선택;
+  const profiles = {
+    getLastRow: () => 2, getLastColumn: () => 폭,
+    getRange: (_r, _c, _n, 열수) => {
+      assert.ok(열수 <= 폭, '존재하지 않는 profiles 열을 읽었다');
+      return { getValues: () => [학생.slice(0, 열수)] };
+    }
+  };
+  const contents = {
+    getLastRow: () => 3,
+    getRange: () => ({ getValues: () => [
+      ['', 'guide', '몽글', '', 'https://example.invalid/mongle.png', ''],
+      ['', 'guide', 가이드이름, '', 'https://example.invalid/selected.png', '']
+    ] })
+  };
+  let 구운것;
+  const cards = { getLastRow: () => 1, getRange: () => ({ setValues: rows => { 구운것 = rows; } }) };
+  const ss = { getSpreadsheetTimeZone: () => 'Asia/Seoul', getSheetByName: name => ({ profiles, contents }[name] || null) };
+  const em = 읽기('Code.js').match(/function escHtml_\(s\) \{[^\n]*\n?/);
+  assert.ok(em, 'escHtml_ 정본이 없다');
+  new Function('ss', 'cards', `
+    const SpreadsheetApp = { getActiveSpreadsheet: () => ss };
+    const Utilities = { formatDate: () => '2026-08' };
+    const ensureSheet = () => cards, ymTextColFix_ = () => {}, scheduledSoFar_ = () => 1;
+    const playStyleOf_ = () => ['', ''], Logger = { log: () => {} };
+    const CARD_WEBFONT = '', CARD_FONT = '';
+    ${src.match(/^const CARD_TIERS = .+;$/m)[0]}
+    ${em[0]}
+    ${함수읽기(읽기('엔진_운영배치.js'), 'josa')}
+    ${함수읽기(src, 'monsterImgMap_')}
+    ${함수읽기(src, 'buildMonthlyCards_')}
+    buildMonthlyCards_();
+  `)(ss, cards);
+  assert.equal(구운것?.length, 1, '합성 학생 카드가 생성되지 않았다');
+  return 구운것[0][2];
+}
+
+test('Ⓒ 이달의 카드는 S19 장면 수 대신 BC55에서 고른 현행 가이드와 이미지를 쓴다', () => {
+  const html = 월간카드굽기(' 까몽 ');
+  assert.ok(html.includes('까몽과 함께한 한 달'));
+  assert.ok(html.includes('https://example.invalid/selected.png'));
+  assert.equal(html.includes('3와 함께한 한 달'), false);
+  assert.ok(월간카드굽기('모모', 55, '모모').includes('모모와 함께한 한 달'));
+  const escaped = 월간카드굽기('<b>가이드</b>', 55, '<b>가이드</b>');
+  assert.ok(escaped.includes('&lt;b&gt;가이드&lt;/b&gt;'));
+  assert.equal(escaped.includes('<b>가이드</b>'), false);
+});
+
+test('Ⓒ 이달의 카드의 빈 선택·퇴역 이름·목록 밖 값과 BC55 없는 시트는 몽글로 돌아간다', () => {
+  for (const [선택, 폭] of [['', 55], ['뉴로', 55], ['constructor', 55], ['<img src=x>', 55], [undefined, 15], [undefined, 36]]) {
+    const html = 월간카드굽기(선택, 폭);
+    assert.ok(html.includes('몽글과 함께한 한 달'), '선택=' + 선택 + ', 폭=' + 폭);
+    assert.ok(html.includes('https://example.invalid/mongle.png'));
+    assert.equal(html.includes('<img src=x>'), false);
+  }
 });
 
 /* ── D. 학생이 읽는 말 ───────────────────────────────────────────────────────── */
@@ -322,9 +388,11 @@ test('Ⓔ 이달의 카드 인쇄 판 — 용지·여백·배경을 파일이 �
 });
 
 test('Ⓔ 이달의 카드 본체 — 종이로 나가는 유일한 카드라 킷 밖 색이 0이다', () => {
-  const i = 코드정제.indexOf('const monMapC = monsterImgMap_');
+  const i = 코드정제.indexOf('function buildMonthlyCards_');
   assert.notEqual(i, -1, '이달의 카드 만드는 자리를 못 찾았다');
-  const 토막 = 코드정제.slice(i, i + 2500);
+  const 끝 = 코드정제.indexOf('function printMonthlyCards', i);
+  assert.notEqual(끝, -1, '이달의 카드 함수 경계를 못 찾았다');
+  const 토막 = 코드정제.slice(i, 끝);
   [['#fff', '순백 — Paper 로'], ['#E5E7EB', '킷 밖 회색 — Stitch 로'],
    ['#6B7280', '킷 밖 회색 — Ash Wool 로'], ['#1D1D1C', '퇴역 대기 — Ink 로']].forEach(([hex, 왜]) => {
     assert.equal(토막.includes(hex), false, `${hex} 가 남아 있다(${왜})`);
