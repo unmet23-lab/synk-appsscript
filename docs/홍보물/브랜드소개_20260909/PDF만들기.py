@@ -13,7 +13,7 @@ for key,title in [('synk','SYNK'),('lab','SYNK LAB'),('shift','SYNK SHIFT'),('pu
     pdf=canvas.Canvas(str(target),pagesize=(1080,675),pageCompression=1)
     pdf.setTitle(title+' | Business & Collaboration')
     pdf.setAuthor('SYNK')
-    pdf.setSubject('2026-09-09 — Korean introduction, five pages')
+    pdf.setSubject('2026-09-11 - Korean introduction and approved brand vision, five pages')
     for page in range(1,6):
         with Image.open(root/'소개서_4K'/f'{key}-{page}.png') as source:
             image=BytesIO()

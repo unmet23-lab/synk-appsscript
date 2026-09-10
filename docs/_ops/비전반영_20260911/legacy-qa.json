@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-09-10T18:30:00.612Z",
+  "cases": [
+    {
+      "key": "synk",
+      "width": 1440,
+      "headline": true,
+      "subtext": true,
+      "overflow": false
+    },
+    {
+      "key": "lab",
+      "width": 1440,
+      "headline": true,
+      "subtext": true,
+      "overflow": false
+    },
+    {
+      "key": "shift",
+      "width": 1440,
+      "headline": true,
+      "subtext": true,
+      "overflow": false
+    },
+    {
+      "key": "shift-single",
+      "width": 1440,
+      "headline": true,
+      "subtext": true,
+      "overflow": false
+    },
+    {
+      "key": "synk",
+      "width": 390,
+      "headline": true,
+      "subtext": true,
+      "overflow": false
+    },
+    {
+      "key": "lab",
+      "width": 390,
+      "headline": true,
+      "subtext": true,
+      "overflow": false
+    },
+    {
+      "key": "shift",
+      "width": 390,
+      "headline": true,
+      "subtext": true,
+      "overflow": false
+    },
+    {
+      "key": "shift-single",
+      "width": 390,
+      "headline": true,
+      "subtext": true,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

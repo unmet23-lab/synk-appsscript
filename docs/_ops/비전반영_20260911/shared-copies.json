@@ -1,0 +1,30 @@
+{
+  "at": "2026-09-10T18:31:36.343Z",
+  "reports": [
+    {
+      "location": "OneDrive",
+      "status": "local copy verified",
+      "total": 10,
+      "written": 10,
+      "unchanged": 0,
+      "bytes": 23978946,
+      "sources": [
+        "DESIGN.md",
+        "docs/SYNK_철학.md",
+        "docs/비전_정본.md",
+        "docs/제품방향.md",
+        "docs/마케팅_정본.md",
+        "docs/홈페이지_설계_v1.md",
+        "docs/홍보물/브랜드소개_20260909/synk.pdf",
+        "docs/홍보물/브랜드소개_20260909/lab.pdf",
+        "docs/홍보물/브랜드소개_20260909/shift.pdf",
+        "docs/홍보물/브랜드소개_20260909/pulse.pdf"
+      ]
+    },
+    {
+      "location": "Google Drive",
+      "status": "existing sync folder unavailable"
+    }
+  ],
+  "cloudSyncVerified": false
+}

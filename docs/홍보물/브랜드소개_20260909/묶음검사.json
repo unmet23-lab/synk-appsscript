@@ -1,25 +1,23 @@
 [
   {
-    "file": "SYNK-division-logos.zip",
-    "entries": 25,
-    "sha256": "d4165874698ad6f470aa364191b392cf8af65f5750c75a0279647f9dc4d16dbb",
-    "utf8AndSourceSha256": "passed",
-    "errors": []
+    "file": "SYNK-LAB-carousel.zip",
+    "files": 16,
+    "bytes": 2687957,
+    "sha256": "08aec0a8a6391183300dc24a3c40e5f5b9c355d6fc17ec27d484a51383c39d8e",
+    "everyEntrySha256Matched": true
   },
   {
-    "file": "SYNK-LAB-carousel.zip",
-    "entries": 16,
-    "sha256": "6638f9a97ecb44df5854613f1dda695d3b2d45e64eada3e6df7b45b20d1ad608",
-    "utf8AndSourceSha256": "passed",
-    "errors": [],
-    "bytes": 2687963
+    "file": "SYNK-division-logos.zip",
+    "files": 25,
+    "bytes": 55545945,
+    "sha256": "d4165874698ad6f470aa364191b392cf8af65f5750c75a0279647f9dc4d16dbb",
+    "everyEntrySha256Matched": true
   },
   {
     "file": "SYNK-brand-introductions.zip",
-    "entries": 49,
-    "sha256": "d4e2fcd67630fc12571e7f16bc2289836fefe0adb6a50852cd209303252dbf7c",
-    "utf8AndSourceSha256": "passed",
-    "errors": [],
-    "bytes": 124175156
+    "files": 51,
+    "bytes": 121927132,
+    "sha256": "dcb0d5d1c398a6beb58f4814057390f5d2589554fe3facf6e7cb9f6fa8369e63",
+    "everyEntrySha256Matched": true
   }
 ]

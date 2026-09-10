@@ -1,0 +1,71 @@
+{
+  "at": "2026-09-10T18:14:54.521Z",
+  "results": [
+    {
+      "collection": "계정별콘텐츠_20260909",
+      "id": "04-yuhobuilds-youtube",
+      "page": 1,
+      "file": "docs/홍보물/계정별콘텐츠_20260909/04-yuhobuilds-youtube/upload-01.jpg",
+      "sha256": "f483329a43a1f48d718dbebe1638aa5a95939e49bd93091987cc20ace2b25934",
+      "htmlUnchanged": true,
+      "width": 1080,
+      "height": 1350,
+      "overflow": []
+    },
+    {
+      "collection": "계정별콘텐츠_20260909",
+      "id": "06-yuhobuilds-tiktok",
+      "page": 1,
+      "file": "docs/홍보물/계정별콘텐츠_20260909/06-yuhobuilds-tiktok/upload-01.jpg",
+      "sha256": "3dc817ea6d8c06ba614eec3a4253cbf8f5b54749a03f1fa9db344271a44ffb5f",
+      "htmlUnchanged": true,
+      "width": 1080,
+      "height": 1350,
+      "overflow": []
+    },
+    {
+      "collection": "계정별콘텐츠_20260909",
+      "id": "11-yuhobuilds-threads",
+      "page": 1,
+      "file": "docs/홍보물/계정별콘텐츠_20260909/11-yuhobuilds-threads/upload-01.jpg",
+      "sha256": "1b6202ebced1f75e898552fa3755039b34c5843645b2022ceead526e9a4bfed6",
+      "htmlUnchanged": true,
+      "width": 1080,
+      "height": 1350,
+      "overflow": []
+    },
+    {
+      "collection": "계정별콘텐츠_20260909",
+      "id": "15-synklab-substack",
+      "page": 1,
+      "file": "docs/홍보물/계정별콘텐츠_20260909/15-synklab-substack/upload-01.jpg",
+      "sha256": "1e85ba76d8044201b56078c572e0f35a59f6318ace187460b1609047fe5cfab8",
+      "htmlUnchanged": true,
+      "width": 1080,
+      "height": 1350,
+      "overflow": []
+    },
+    {
+      "collection": "계정별콘텐츠_20260909",
+      "id": "16-synk-instagram",
+      "page": 1,
+      "file": "docs/홍보물/계정별콘텐츠_20260909/16-synk-instagram/upload-01.jpg",
+      "sha256": "294bad9aab793e127e73f75beab1af9b23c3b8ec06c9157f6e60a5e63f7b85b5",
+      "htmlUnchanged": true,
+      "width": 1080,
+      "height": 1350,
+      "overflow": []
+    },
+    {
+      "collection": "마케팅실행_20260909",
+      "id": "16-synk-instagram",
+      "page": 1,
+      "file": "docs/홍보물/마케팅실행_20260909/16-synk-instagram/upload-01.jpg",
+      "sha256": "0a05595c92a0cc8c2442a17b00382d0e38e223161023df3ebf83d1cae8016d9a",
+      "htmlUnchanged": true,
+      "width": 1080,
+      "height": 1350,
+      "overflow": []
+    }
+  ]
+}

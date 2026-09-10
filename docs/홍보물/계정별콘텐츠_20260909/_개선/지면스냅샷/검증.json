@@ -1,38 +1,38 @@
 {
-  "createdAt": "2026-09-10T12:31:38.649Z",
+  "createdAt": "2026-09-10T18:05:58.474Z",
   "items": [
     {
       "file": "lab-1.png",
       "source": "브랜드소개_20260909/소개서_4K/lab-1.png",
-      "sha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341",
+      "sha256": "76de8849d9f6c1a824d959456a6d534a326c0984012d22b68b08ca390fc65ad3",
       "sourceFileUnchanged": true,
       "operation": "Exact copy of the current complete-logo introduction page."
     },
     {
       "file": "lab-2.png",
       "source": "브랜드소개_20260909/소개서_4K/lab-2.png",
-      "sha256": "511c5cf4e7b63b28e459fcb7df343e33d61ecd9a0eb661e042fd8727b24dd705",
+      "sha256": "ed01d8b8b95958169abad22778417f2bbf3f44e1a6ed11d02684595d7dade6f0",
       "sourceFileUnchanged": true,
       "operation": "Exact copy of the current complete-logo introduction page."
     },
     {
       "file": "shift-1.png",
       "source": "브랜드소개_20260909/소개서_4K/shift-1.png",
-      "sha256": "49f49133e87c796e112f8d198c48ef76a4eb2d57307d938a5d28846631a8c9d9",
+      "sha256": "434a714e99bcb492791bfda8f514fa283c3153909f1300352505d1fb28ae18be",
       "sourceFileUnchanged": true,
       "operation": "Exact copy of the current complete-logo introduction page."
     },
     {
       "file": "pulse-1.png",
       "source": "브랜드소개_20260909/소개서_4K/pulse-1.png",
-      "sha256": "0afc5da7ef98e220c46ea6dc6d5c7a3043d9d0b5672b8754d3012aed28224dfc",
+      "sha256": "e630acdd3dd6dc02deda2333e7e0cdb2183400e0eced0805385055a13c5d905c",
       "sourceFileUnchanged": true,
       "operation": "Exact copy of the current complete-logo introduction page."
     },
     {
       "file": "synk-1.png",
       "source": "브랜드소개_20260909/소개서_4K/synk-1.png",
-      "sha256": "14bd671f4efb45d41b1d2d04e312007f20180545265c6a19c2e113c5025db2cf",
+      "sha256": "c3d8d595355fd9a8dec53ecb1ff8785b6d2dc56f39cbdf32db3a24884903cebb",
       "sourceFileUnchanged": true,
       "operation": "Exact copy of the current complete-logo introduction page."
     }
