@@ -412,7 +412,8 @@ function 상담_창열림_(마지막수신, 지금) {
  * 24시간 창: 상대가 마지막으로 보낸 지 24시간 안에만 자유 전송 가능하다. 봇은 방금 받은 말에 답하는 것이라 항상 창 안이다.
  * (우리가 먼저 거는 홍보 발송은 이 창 밖이라 별도 승인 태그가 필요 — 이 봇의 범위 아님)
  * [v9.185] opts = { 플랫폼: 'fb'|'ig', 퀵리플라이: [{title,payload}], 카드들: [제네릭 템플릿 element] }.
- *   인스타는 graph.instagram.com + 전용 토큰만 쓴다. 페이지 토큰으로의 묵시적 폴백은 권한 혼선을 숨기므로 금지한다. */
+ *   인스타는 graph.instagram.com/{IG계정ID}/messages + Bearer 전용 토큰만 쓴다.
+ *   Facebook 전용 messaging_type 은 Instagram 본문에 싣지 않는다. 페이지 토큰으로의 묵시적 폴백은 권한 혼선을 숨기므로 금지한다. */
 function 상담_전송_(psid, text, opts) {
   opts = opts || {};
   const props = PropertiesService.getScriptProperties();
@@ -420,19 +421,29 @@ function 상담_전송_(psid, text, opts) {
   const 토큰속성 = 인스타 ? '상담AI_IG토큰' : '상담AI_페이지토큰';
   const tok = props.getProperty(토큰속성);
   if (!tok) { 상담_기록_(psid, 'system', '전송 불가 — ' + 토큰속성 + ' 미설정', true, null, '', opts.플랫폼); return false; }
+  const 인스타계정ID = 인스타 ? props.getProperty('상담AI_IG계정ID') : '';
+  if (인스타 && !인스타계정ID) { 상담_기록_(psid, 'system', '전송 불가 — 상담AI_IG계정ID 미설정', true, null, '', opts.플랫폼); return false; }
   if (!psid || (!text && !(opts.카드들 && opts.카드들.length))) return false;
   try {
-    const host = 인스타 ? 'https://graph.instagram.com/' : 'https://graph.facebook.com/';
-    const res = UrlFetchApp.fetch(host + 상담AI_META_API_VERSION + '/me/messages?access_token=' + encodeURIComponent(tok), {
+    const url = 인스타
+      ? 'https://graph.instagram.com/' + 상담AI_META_API_VERSION + '/' + encodeURIComponent(인스타계정ID) + '/messages'
+      : 'https://graph.facebook.com/' + 상담AI_META_API_VERSION + '/me/messages?access_token=' + encodeURIComponent(tok);
+    const 본문 = {
+      recipient: { id: String(psid) },
+      message: 상담_메시지조립_(text, opts)
+    };
+    if (!인스타) 본문.messaging_type = 'RESPONSE';
+    const 요청옵션 = {
       method: 'post', contentType: 'application/json',
-      payload: JSON.stringify({
-        recipient: { id: String(psid) }, messaging_type: 'RESPONSE',
-        message: 상담_메시지조립_(text, opts)
-      }),
+      payload: JSON.stringify(본문),
       muteHttpExceptions: true
-    });
+    };
+    if (인스타) 요청옵션.headers = { Authorization: 'Bearer ' + tok };
+    const res = UrlFetchApp.fetch(url, 요청옵션);
     if (res.getResponseCode() !== 200) {
-      const 오류 = 'Meta 전송 ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 200);
+      // Meta 오류 본문이나 UrlFetch 예외에는 요청값이 되비칠 수 있다. 운영 기록에는
+      // 상태코드만 남겨 토큰·사용자 원문이 시트와 메일로 번지지 않게 한다.
+      const 오류 = 'Meta 전송 ' + res.getResponseCode();
       상담_기록_(psid, 'system', 오류, true, null, '', opts.플랫폼);
       const 복구안내 = 인스타
         ? 'Instagram 전용 토큰(상담AI_IG토큰)의 만료와 instagram_business_basic · instagram_business_manage_messages 권한을 확인해 주세요.'
@@ -442,7 +453,7 @@ function 상담_전송_(psid, text, opts) {
     }
     return true;
   } catch (e) {
-    상담_기록_(psid, 'system', '전송 예외: ' + String(e && e.message || e).slice(0, 200), true, null, '', opts.플랫폼);
+    상담_기록_(psid, 'system', '전송 예외 — 요청 단계 실패', true, null, '', opts.플랫폼);
     return false;
   }
 }
