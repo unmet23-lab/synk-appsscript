@@ -10,6 +10,8 @@
     "test": "node tools/test-ci.js",
     "check:knowledge": "node tools/doc-graph.js --summary",
     "check:worktree": "node tools/worktree-hygiene.js",
-    "글검사": "node tools/글검사.js"
+    "글검사": "node tools/글검사.js",
+    "sns:연결점검": "node tools/sns-발행.js --연결점검",
+    "sns:도움": "node tools/sns-발행.js --도움"
   }
 }

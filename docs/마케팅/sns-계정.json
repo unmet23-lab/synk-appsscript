@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-10",
+  "policy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "accounts": {
+    "lab-youtube": {
+      "brand": "LAB",
+      "platform": "youtube",
+      "handle": "@synkkorean",
+      "expectedChannelId": "UCmZplYKuNHLPng4iL2AbLLg",
+      "expectedChannelTitle": "SYNK LAB",
+      "publisher": "direct",
+      "categoryId": "27",
+      "madeForKids": false,
+      "connection": "connected-existing"
+    },
+    "lab-instagram": {
+      "brand": "LAB",
+      "platform": "instagram",
+      "handle": "@synk.mn",
+      "publisher": "direct-after-connection",
+      "connection": "needs-meta-app-and-media-host"
+    },
+    "lab-tiktok": {
+      "brand": "LAB",
+      "platform": "tiktok",
+      "handle": "@synk.mn",
+      "publisher": "direct-after-review",
+      "connection": "needs-reviewed-app"
+    },
+    "yuhobuilds-youtube": {
+      "brand": "SHIFT",
+      "platform": "youtube",
+      "handle": "@yuhobuilds",
+      "expectedHandle": "@yuhobuilds",
+      "publisher": "direct",
+      "categoryId": "22",
+      "madeForKids": false,
+      "connection": "needs-oauth"
+    },
+    "yuhobuilds-instagram": {
+      "brand": "SHIFT",
+      "platform": "instagram",
+      "handle": "@yuhobuilds",
+      "publisher": "direct-after-connection",
+      "connection": "needs-meta-app-and-media-host"
+    },
+    "yuhobuilds-tiktok": {
+      "brand": "SHIFT",
+      "platform": "tiktok",
+      "handle": "@yuhobuilds",
+      "publisher": "direct-after-review",
+      "connection": "needs-reviewed-app"
+    },
+    "synkbrief-youtube": {
+      "brand": "SHIFT",
+      "platform": "youtube",
+      "handle": "@synkbrief",
+      "expectedHandle": "@synkbrief",
+      "publisher": "direct",
+      "categoryId": "22",
+      "madeForKids": false,
+      "connection": "needs-oauth"
+    },
+    "synkbrief-instagram": {
+      "brand": "SHIFT",
+      "platform": "instagram",
+      "handle": "@synkbrief",
+      "publisher": "direct-after-connection",
+      "connection": "needs-meta-app-and-media-host"
+    },
+    "synkbrief-tiktok": {
+      "brand": "SHIFT",
+      "platform": "tiktok",
+      "handle": "@synkbrief",
+      "publisher": "direct-after-review",
+      "connection": "needs-reviewed-app"
+    },
+    "lab-facebook": {
+      "brand": "LAB",
+      "platform": "facebook",
+      "handle": "facebook.com/synkworld",
+      "publisher": "direct-after-connection",
+      "connection": "needs-meta-page-token"
+    },
+    "yuhobuilds-threads": {
+      "brand": "SHIFT",
+      "platform": "threads",
+      "handle": "@yuhobuilds",
+      "publisher": "direct-after-connection",
+      "connection": "needs-threads-app"
+    },
+    "synkbrief-threads": {
+      "brand": "SHIFT",
+      "platform": "threads",
+      "handle": "@synkbrief",
+      "publisher": "direct-after-connection",
+      "connection": "needs-threads-app"
+    },
+    "yuhobuilds-linkedin": {
+      "brand": "SHIFT",
+      "platform": "linkedin",
+      "handle": "yuhobuilds",
+      "publisher": "direct-after-connection",
+      "apiVersion": "202608",
+      "connection": "needs-linkedin-app"
+    },
+    "lab-telegram": {
+      "brand": "LAB",
+      "platform": "telegram",
+      "handle": "t.me/synkmn",
+      "chatId": "@synkmn",
+      "publisher": "direct-after-connection",
+      "connection": "needs-bot-admin"
+    },
+    "synklab-substack": {
+      "brand": "SHIFT",
+      "platform": "substack",
+      "handle": "synklab.substack.com",
+      "publisher": "manual-assisted",
+      "editorUrl": "https://synklab.substack.com/publish/post",
+      "connection": "official-editor"
+    },
+    "synk-instagram": {
+      "brand": "SYNK",
+      "platform": "instagram",
+      "handle": "SYNK Instagram · 준비 계정",
+      "publisher": "blocked-account-not-confirmed",
+      "connection": "account-not-confirmed"
+    },
+    "shift-naverblog": {
+      "brand": "SHIFT",
+      "platform": "naver-blog",
+      "handle": "synkshift",
+      "publisher": "manual-assisted",
+      "editorUrl": "https://blog.naver.com/PostWriteForm.naver?blogId=synkshift",
+      "connection": "official-editor"
+    },
+    "shift-kakao": {
+      "brand": "SHIFT",
+      "platform": "kakao-channel",
+      "handle": "synkshift",
+      "publisher": "manual-assisted",
+      "editorUrl": "https://center-pf.kakao.com/",
+      "connection": "official-admin-center"
+    },
+    "shift-pinterest": {
+      "brand": "SHIFT",
+      "platform": "pinterest",
+      "handle": "synkshift",
+      "publisher": "direct-after-approval",
+      "connection": "needs-standard-api-access"
+    }
+  }
+}
