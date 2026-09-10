@@ -1,0 +1,90 @@
+{
+  "copies": [
+    {
+      "source": "영상\\public\\firstposts20260910\\logo-shift.png",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\firstposts20260910\\logo-shift.png",
+      "sha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0"
+    },
+    {
+      "source": "영상\\public\\firstposts20260910\\logo-shift-paper.png",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\firstposts20260910\\logo-shift-paper.png",
+      "sha256": "1d7396f08c69af348e9a9764aca57bce3ef68441b785287c59507350b781eeda"
+    },
+    {
+      "source": "영상\\public\\firstposts20260910\\felt-dark.webp",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\firstposts20260910\\felt-dark.webp",
+      "sha256": "b4b6000d659a2db651ce43a4e1e92b9ad6bd3dfa3fe93f01560a8b597b9be6a5"
+    },
+    {
+      "source": "영상\\public\\firstposts20260910\\synk-intro.png",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\firstposts20260910\\synk-intro.png",
+      "sha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341"
+    },
+    {
+      "source": "영상\\public\\firstposts20260910\\notebook.webp",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\firstposts20260910\\notebook.webp",
+      "sha256": "4db53a4adde889205603e75a6c8088b457c4f79079f7800b4615856b31552ab4"
+    },
+    {
+      "source": "영상\\public\\firstposts20260910\\letter.webp",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\firstposts20260910\\letter.webp",
+      "sha256": "faa4d4443c175de1a9ceaf3c2a4194c4346844d86750d75b36d7d26d4b0be0c0"
+    },
+    {
+      "source": "영상\\public\\폰트\\SUIT-Regular.otf",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\폰트\\SUIT-Regular.otf",
+      "sha256": "75559147fba6cf373d3a9b5e4a2ea3ba2f8dfb22e5debaabb90277365b8831ad"
+    },
+    {
+      "source": "영상\\public\\폰트\\SUIT-Medium.otf",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\폰트\\SUIT-Medium.otf",
+      "sha256": "204c9e9caad3a1f7cfe45bbec9e71cd679f6f009edfaa9fae85363722f5b333e"
+    },
+    {
+      "source": "영상\\public\\폰트\\SUIT-SemiBold.otf",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\폰트\\SUIT-SemiBold.otf",
+      "sha256": "faeab67df52b4400aec8893507b5b1502057b53f1224bfe6c89cdba2bece0ca1"
+    },
+    {
+      "source": "영상\\public\\폰트\\SUIT-ExtraBold.otf",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\폰트\\SUIT-ExtraBold.otf",
+      "sha256": "67e6733beb6192138e4651f4436f0e2be2fe6a519861dd23cb86cf136bac0232"
+    },
+    {
+      "source": "영상\\public\\폰트\\SUIT-Heavy.otf",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\폰트\\SUIT-Heavy.otf",
+      "sha256": "8873533c970d6f1525a38e0dbd80e772377e85c8e8c9a89a26903f5da4d40611"
+    },
+    {
+      "source": "영상\\public\\폰트\\InterTight-Regular.ttf",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\폰트\\InterTight-Regular.ttf",
+      "sha256": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699"
+    },
+    {
+      "source": "영상\\public\\폰트\\InterTight-Medium.ttf",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\폰트\\InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "source": "영상\\public\\폰트\\InterTight-SemiBold.ttf",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\폰트\\InterTight-SemiBold.ttf",
+      "sha256": "643a335cbb3d5c52b32c9974de8b7fbdc22255edefeb389195641744180dd80c"
+    },
+    {
+      "source": "영상\\public\\폰트\\InterTight-Bold.ttf",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\폰트\\InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "source": "docs\\브랜드_목소리\\20260910\\수노_유호보컬\\말하기_시험01\\A_음질보정_v1.wav",
+      "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\voice.wav",
+      "sha256": "367b6013e5595abdf90d869c9bcb6938cf07002e55d507c23357dd0415770e53"
+    }
+  ],
+  "voiceStatus": "temporary male until actual Yuho voice is ready",
+  "female": "DIVE Nana remains selected",
+  "narrationRegenerated": false,
+  "voiceGainDb": 0,
+  "bedGainDb": -29.4,
+  "captionTiming": "Local ASR with reading holds. Independent word ASR: middle split 7.12s; final words 9.72-11.94s. Audio is preserved for full13.6s. Human audio review pending."
+}

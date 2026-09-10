@@ -1,0 +1,37 @@
+[
+  {
+    "startMs": 0,
+    "endMs": 2000,
+    "text": "안녕하세요. 유호입니다.",
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "startMs": 2000,
+    "endMs": 5160,
+    "text": "저는 AI와 함께\n회사를 만들고 있어요.",
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "startMs": 5160,
+    "endMs": 7160,
+    "text": "직접 해보고, 막히면 고치고,",
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "startMs": 7160,
+    "endMs": 9680,
+    "text": "쓸 만한 방법을 함께 나눌게요.",
+    "timestampMs": null,
+    "confidence": null
+  },
+  {
+    "startMs": 9680,
+    "endMs": 12280,
+    "text": "오늘은 우리 목소리부터\n만들어볼까요?",
+    "timestampMs": null,
+    "confidence": null
+  }
+]

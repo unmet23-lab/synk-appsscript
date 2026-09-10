@@ -1,0 +1,17 @@
+{
+  "source": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\bed.wav",
+  "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\bed-ending.wav",
+  "sourceSha256": "c74156cd195be04234087b39fd7cffa9748bcdfae89e1c423689020a6186195b",
+  "outputSha256": "2352490b0d12f9bbbf0480d884c4ce6aca065cdac4ef1d0ac376b3ec43d7650b",
+  "startSeconds": 13.6,
+  "riseSeconds": 0.7,
+  "gainDb": 4.0,
+  "curve": "raised cosine in dB",
+  "existingFadeOut": {
+    "startSeconds": 14.8,
+    "durationSeconds": 1.4
+  },
+  "pcmBeforeEndingIdentical": true,
+  "durationSeconds": 16.2,
+  "humanListening": false
+}

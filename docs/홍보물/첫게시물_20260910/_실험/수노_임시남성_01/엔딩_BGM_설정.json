@@ -1,0 +1,20 @@
+{
+  "source": "영상\\public\\firstposts20260910\\bed-shift.wav",
+  "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\bed-ending.wav",
+  "sourceSha256": "09fba871e084d47f79dd159f4ad4071ff0ac13f3235b6867502b655919985e62",
+  "outputSha256": "821af2cd58b19a31f007654b385ab771390e9f913437807ce2712f23ff7b2a8b",
+  "quietReference": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\bed.wav",
+  "baseGainDb": -29.4,
+  "startSeconds": 13.6,
+  "riseSeconds": 0.6,
+  "holdSeconds": 2.0,
+  "gainDb": 4.0,
+  "curve": "raised cosine in dB; cosine amplitude fade-out",
+  "fadeOut": {
+    "startSeconds": 16.2,
+    "durationSeconds": 1.0
+  },
+  "pcmBeforeEndingIdentical": true,
+  "durationSeconds": 17.2,
+  "humanListening": false
+}

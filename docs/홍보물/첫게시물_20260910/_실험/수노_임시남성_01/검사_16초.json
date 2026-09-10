@@ -1,0 +1,128 @@
+{
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1080,
+        "height": 1920,
+        "r_frame_rate": "30/1",
+        "duration": "16.200000"
+      },
+      {
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2,
+        "r_frame_rate": "0/0",
+        "duration": "16.200000"
+      }
+    ],
+    "format": {
+      "duration": "16.200000",
+      "size": "17972204"
+    }
+  },
+  "loudness": {
+    "input_i": "-22.69",
+    "input_tp": "-8.90",
+    "input_lra": "5.10",
+    "input_thresh": "-34.31",
+    "output_i": "-23.49",
+    "output_tp": "-9.96",
+    "output_lra": "4.40",
+    "output_thresh": "-34.39",
+    "normalization_type": "dynamic",
+    "target_offset": "0.49"
+  },
+  "sha256": "f7d7c23b34d7ff8440528681930a6ea6bd8dd7a16847d3a7480f08de2c32b6bf",
+  "fullDecodePassed": true,
+  "voiceProcessing": "Approved narration WAV at unity gain; bed rises 4 dB over 0.7 s from 13.6 s; AAC once from WAV",
+  "humanListening": false,
+  "visualFramesReviewed": [
+    "엔딩BGM_화면확인.png"
+  ],
+  "videoBitstreamPreserved": true,
+  "videoStreamSha256": "SHA256=c1145c05a58de831aa622269599c7ddcc1f33d5db8ed725b9a47568ec527ee63",
+  "narrationSourceSha256": "367b6013e5595abdf90d869c9bcb6938cf07002e55d507c23357dd0415770e53",
+  "audioBitstreamPreserved": false,
+  "audioStreamSha256": "SHA256=3a13206c0a9cf9ab35fc36571b63bbad9e1cbb242b269dbda79c6c3e9ce27a97",
+  "endingBgm": {
+    "source": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\bed.wav",
+    "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\bed-ending.wav",
+    "sourceSha256": "c74156cd195be04234087b39fd7cffa9748bcdfae89e1c423689020a6186195b",
+    "outputSha256": "2352490b0d12f9bbbf0480d884c4ce6aca065cdac4ef1d0ac376b3ec43d7650b",
+    "startSeconds": 13.6,
+    "riseSeconds": 0.7,
+    "gainDb": 4.0,
+    "curve": "raised cosine in dB",
+    "existingFadeOut": {
+      "startSeconds": 14.8,
+      "durationSeconds": 1.4
+    },
+    "pcmBeforeEndingIdentical": true,
+    "durationSeconds": 16.2,
+    "humanListening": false
+  },
+  "layoutProfile": "balanced-portrait",
+  "captionBackground": {
+    "topRuleRemoved": true,
+    "height": 176,
+    "userReviewPending": true,
+    "shadow": "Ink at 0.025 and 0.04 alpha",
+    "fixedSize": true,
+    "padding": "24px 40px",
+    "radius": 16,
+    "fill": "Paper",
+    "width": 780
+  },
+  "contentLift": {
+    "scope": "Title, body, images, document labels, waveform, waveform label and captions",
+    "internalSpacingUnchanged": true,
+    "pixels": 90,
+    "sceneCount": 5,
+    "userReviewPending": true,
+    "anchorsUnchanged": [
+      "logo",
+      "scene counter",
+      "footer",
+      "ending"
+    ]
+  },
+  "previousVisualReview": {
+    "frames": [
+      "위치조정_첫인사.png",
+      "위치조정_회사소개.png",
+      "위치조정_노트.png",
+      "위치조정_봉투.png",
+      "위치조정_파형.png",
+      "위치조정_엔딩.png",
+      "위치조정_파형_확인.png"
+    ],
+    "source": "검사_엔딩음량수정전.json",
+    "videoBitstreamMatches": true
+  },
+  "audioUserApproval": "Temporary male voice and pacing previously accepted; new ending BGM rise awaiting user listening",
+  "endingComparison": {
+    "videoMatchesPrevious": true,
+    "decodedNarrationSectionIdenticalThroughSeconds": 13.5,
+    "decodedNarrationSectionIdentical": true,
+    "bedBefore13_6SecondsIdentical": true,
+    "bedFullEndingRmsChangeDb": 3.444426503508512,
+    "bedHoldRmsChangeDb": 4.000000202215864,
+    "last20msBedRmsDbfs": -89.1090378243839,
+    "narrationWavSha256": "367b6013e5595abdf90d869c9bcb6938cf07002e55d507c23357dd0415770e53"
+  },
+  "currentSourceSha256": {
+    "DESIGN.md": "56a52b0916bd8a4e7f439a27e468c38896e4c5702686dce947d8da4cbbc2edb5",
+    "영상/수노음성시험.py": "e08ec578d395d330c444daf73b8a1ec9df1d13e864036750b7ef771b37623313",
+    "영상/src/firstposts20260910/FirstScene.tsx": "b21486e7773f5c1d40cd2f4341cbe74c3a47e5e1791fdec57407b29e64d26cf7",
+    "docs/AI_운영원칙.md": "4770ce2685c0a5c76226f0b70bbd68a5f7f7b319b8ecc166209020fb16766102",
+    "docs/브랜드_폰트_정본.md": "889fc34358d6725e0b773504b388d0a9b52535c09170bb1192be00936e216ca6",
+    "영상/src/firstposts20260910/VoiceTrial.tsx": "4ef3892fb82dd19912231346719be6aa3e8bfac3c3830f25ad133d52604f0f19",
+    "영상/src/firstposts20260910/Captions.tsx": "79e25437cdd4fcd1cbe657a885580d7533d63bbdfdf24549eff5f10ce0d78ca4",
+    "docs/홍보물/첫게시물_20260910/_실험/수노_임시남성_01/props.json": "6d3a08441b90232c714ec0715a66082049c99b25874c72b288d67c13f2f30254"
+  },
+  "latestAlias": "video_엔딩BGM수정.mp4",
+  "latestAliasMatches": true
+}

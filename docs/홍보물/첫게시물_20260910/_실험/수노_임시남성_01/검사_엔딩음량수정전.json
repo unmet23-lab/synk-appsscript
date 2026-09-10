@@ -1,0 +1,92 @@
+{
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1080,
+        "height": 1920,
+        "r_frame_rate": "30/1",
+        "duration": "16.200000"
+      },
+      {
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2,
+        "r_frame_rate": "0/0",
+        "duration": "16.200000"
+      }
+    ],
+    "format": {
+      "duration": "16.200000",
+      "size": "17970631"
+    }
+  },
+  "loudness": {
+    "input_i": "-22.69",
+    "input_tp": "-8.90",
+    "input_lra": "5.10",
+    "input_thresh": "-34.31",
+    "output_i": "-23.49",
+    "output_tp": "-9.96",
+    "output_lra": "4.50",
+    "output_thresh": "-34.39",
+    "normalization_type": "dynamic",
+    "target_offset": "0.49"
+  },
+  "sha256": "de5f6f61f979e3bc59d236f78c4396b1b6fa02ec59f901a00b210ec65375ae92",
+  "fullDecodePassed": true,
+  "voiceProcessing": "Approved audio stream copied without re-encoding",
+  "humanListening": false,
+  "visualFramesReviewed": [
+    "위치조정_첫인사.png",
+    "위치조정_회사소개.png",
+    "위치조정_노트.png",
+    "위치조정_봉투.png",
+    "위치조정_파형.png",
+    "위치조정_엔딩.png",
+    "위치조정_파형_확인.png"
+  ],
+  "audioSource": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\video_자막배경수정.mp4",
+  "audioStreamSha256": "SHA256=f4d26bd44c7cb01f7396698298aed930670879baad27b228ddafde03dfc97920",
+  "audioBitstreamPreserved": true,
+  "layoutProfile": "balanced-portrait",
+  "captionBackground": {
+    "topRuleRemoved": true,
+    "height": 176,
+    "userReviewPending": true,
+    "shadow": "Ink at 0.025 and 0.04 alpha",
+    "fixedSize": true,
+    "padding": "24px 40px",
+    "radius": 16,
+    "fill": "Paper",
+    "width": 780
+  },
+  "contentLift": {
+    "scope": "Title, body, images, document labels, waveform, waveform label and captions",
+    "internalSpacingUnchanged": true,
+    "pixels": 90,
+    "sceneCount": 5,
+    "userReviewPending": true,
+    "anchorsUnchanged": [
+      "logo",
+      "scene counter",
+      "footer",
+      "ending"
+    ]
+  },
+  "audioUserApproval": "Temporary male voice and pacing accepted before this position-only revision",
+  "currentSourceSha256": {
+    "docs/홍보물/첫게시물_20260910/_실험/수노_임시남성_01/props.json": "6d3a08441b90232c714ec0715a66082049c99b25874c72b288d67c13f2f30254",
+    "영상/수노음성시험.py": "f6e9a051ad2b0242f1a962cd153cb52ce6829849532164258ee8575591ab9887",
+    "DESIGN.md": "90dfc139c23836f1484d06fbf39aedccf8727eddc05db14ceac539fd5d261eee",
+    "docs/AI_운영원칙.md": "4770ce2685c0a5c76226f0b70bbd68a5f7f7b319b8ecc166209020fb16766102",
+    "영상/src/firstposts20260910/VoiceTrial.tsx": "7c07b21c47df2cfa6be62709457fb6bd363b956e42def056158216a883785ed6",
+    "docs/브랜드_폰트_정본.md": "889fc34358d6725e0b773504b388d0a9b52535c09170bb1192be00936e216ca6",
+    "영상/src/firstposts20260910/Captions.tsx": "79e25437cdd4fcd1cbe657a885580d7533d63bbdfdf24549eff5f10ce0d78ca4",
+    "영상/src/firstposts20260910/FirstScene.tsx": "b21486e7773f5c1d40cd2f4341cbe74c3a47e5e1791fdec57407b29e64d26cf7"
+  },
+  "latestAlias": "video_위치조정.mp4",
+  "latestAliasMatches": true
+}

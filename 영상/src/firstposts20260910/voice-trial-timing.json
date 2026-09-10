@@ -1,0 +1,9 @@
+{
+  "fps": 30,
+  "bodySeconds": 13.6,
+  "endingSeconds": 3.6,
+  "bgmRiseSeconds": 0.6,
+  "bgmHoldSeconds": 2.0,
+  "fadeOutSeconds": 1.0,
+  "bgmGainDb": 4.0
+}

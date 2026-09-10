@@ -1,0 +1,10 @@
+{
+  "bedDurationSeconds": 17.2,
+  "beforeEndingIdentical": true,
+  "holdStartSeconds": 14.2,
+  "holdEndSeconds": 16.2,
+  "holdGainDb": 4.000000110439753,
+  "last20msBedRmsDbfs": -115.99729972928981,
+  "finalDecodedNarrationThrough13_5SecondsIdentical": true,
+  "bodyLayoutAndCaptionSourcesUnchanged": true
+}

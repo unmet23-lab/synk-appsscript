@@ -1,0 +1,10 @@
+{
+  "videoMatchesPrevious": true,
+  "decodedNarrationSectionIdenticalThroughSeconds": 13.5,
+  "decodedNarrationSectionIdentical": true,
+  "bedBefore13_6SecondsIdentical": true,
+  "bedFullEndingRmsChangeDb": 3.444426503508512,
+  "bedHoldRmsChangeDb": 4.000000202215864,
+  "last20msBedRmsDbfs": -89.1090378243839,
+  "narrationWavSha256": "367b6013e5595abdf90d869c9bcb6938cf07002e55d507c23357dd0415770e53"
+}

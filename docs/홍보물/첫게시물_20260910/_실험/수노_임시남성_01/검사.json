@@ -1,0 +1,138 @@
+{
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1080,
+        "height": 1920,
+        "r_frame_rate": "30/1",
+        "duration": "17.200000"
+      },
+      {
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2,
+        "r_frame_rate": "0/0",
+        "duration": "17.200000"
+      }
+    ],
+    "format": {
+      "duration": "17.200000",
+      "size": "20226830"
+    }
+  },
+  "loudness": {
+    "input_i": "-22.69",
+    "input_tp": "-8.90",
+    "input_lra": "21.10",
+    "input_thresh": "-34.52",
+    "output_i": "-23.49",
+    "output_tp": "-9.96",
+    "output_lra": "12.60",
+    "output_thresh": "-34.64",
+    "normalization_type": "dynamic",
+    "target_offset": "0.49"
+  },
+  "sha256": "345283d20b41fa48dfc056b264cf702e236f1e71799d806dfb0482a63069f9ec",
+  "fullDecodePassed": true,
+  "voiceProcessing": "Approved narration WAV at unity gain; ending BGM follows shared timing JSON; AAC once from WAV",
+  "humanListening": false,
+  "visualFramesReviewed": [
+    "엔딩17초_본문.png",
+    "엔딩17초_등장.png",
+    "엔딩17초_유지.png",
+    "엔딩17초_사라짐.png",
+    "엔딩17초_마지막.png"
+  ],
+  "videoBitstreamPreserved": true,
+  "videoStreamSha256": "SHA256=897e9e2f73693310a37e0e972123a518a9fb4397abf46a59dedff38b7443aee0",
+  "narrationSourceSha256": "367b6013e5595abdf90d869c9bcb6938cf07002e55d507c23357dd0415770e53",
+  "audioBitstreamPreserved": false,
+  "audioStreamSha256": "SHA256=58bfa2d78666857457cc4bf05c8ee83310d353d89a61c3488be967b1214001f5",
+  "endingBgm": {
+    "source": "영상\\public\\firstposts20260910\\bed-shift.wav",
+    "output": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\bed-ending.wav",
+    "sourceSha256": "09fba871e084d47f79dd159f4ad4071ff0ac13f3235b6867502b655919985e62",
+    "outputSha256": "821af2cd58b19a31f007654b385ab771390e9f913437807ce2712f23ff7b2a8b",
+    "quietReference": "docs\\홍보물\\첫게시물_20260910\\_실험\\수노_임시남성_01\\public\\bed.wav",
+    "baseGainDb": -29.4,
+    "startSeconds": 13.6,
+    "riseSeconds": 0.6,
+    "holdSeconds": 2.0,
+    "gainDb": 4.0,
+    "curve": "raised cosine in dB; cosine amplitude fade-out",
+    "fadeOut": {
+      "startSeconds": 16.2,
+      "durationSeconds": 1.0
+    },
+    "pcmBeforeEndingIdentical": true,
+    "durationSeconds": 17.2,
+    "humanListening": false
+  },
+  "layoutProfile": "balanced-portrait",
+  "captionBackground": {
+    "topRuleRemoved": true,
+    "height": 176,
+    "userReviewPending": false,
+    "shadow": "Ink at 0.025 and 0.04 alpha",
+    "fixedSize": true,
+    "padding": "24px 40px",
+    "radius": 16,
+    "fill": "Paper",
+    "width": 780
+  },
+  "contentLift": {
+    "scope": "Title, body, images, document labels, waveform, waveform label and captions",
+    "internalSpacingUnchanged": true,
+    "pixels": 90,
+    "sceneCount": 5,
+    "userReviewPending": false,
+    "anchorsUnchanged": [
+      "logo",
+      "scene counter",
+      "footer",
+      "ending"
+    ]
+  },
+  "endingComparison": {
+    "bedDurationSeconds": 17.2,
+    "beforeEndingIdentical": true,
+    "holdStartSeconds": 14.2,
+    "holdEndSeconds": 16.2,
+    "holdGainDb": 4.000000110439753,
+    "last20msBedRmsDbfs": -115.99729972928981,
+    "finalDecodedNarrationThrough13_5SecondsIdentical": true,
+    "bodyLayoutAndCaptionSourcesUnchanged": true
+  },
+  "timing": {
+    "fps": 30,
+    "bodySeconds": 13.6,
+    "endingSeconds": 3.6,
+    "bgmRiseSeconds": 0.6,
+    "bgmHoldSeconds": 2.0,
+    "fadeOutSeconds": 1.0,
+    "bgmGainDb": 4.0
+  },
+  "audioUserApproval": "User praised delivered 17.2-second film; temporary male voice status remains; individual pronunciation not separately verified",
+  "currentSourceSha256": {
+    "영상/src/firstposts20260910/FirstScene.tsx": "b21486e7773f5c1d40cd2f4341cbe74c3a47e5e1791fdec57407b29e64d26cf7",
+    "영상/src/firstposts20260910/VoiceTrial.tsx": "889e81706e5210342d56a4b28a324a2b9d8afc54d5f2518325845875875bca74",
+    "docs/AI_운영원칙.md": "4770ce2685c0a5c76226f0b70bbd68a5f7f7b319b8ecc166209020fb16766102",
+    "영상/수노음성시험.py": "e074abed15270626efedd2213ad5ca86c0cd6094b600a71b422ee4de029a2cec",
+    "영상/src/firstposts20260910/Captions.tsx": "79e25437cdd4fcd1cbe657a885580d7533d63bbdfdf24549eff5f10ce0d78ca4",
+    "docs/홍보물/첫게시물_20260910/_실험/수노_임시남성_01/props.json": "6d3a08441b90232c714ec0715a66082049c99b25874c72b288d67c13f2f30254",
+    "DESIGN.md": "56a52b0916bd8a4e7f439a27e468c38896e4c5702686dce947d8da4cbbc2edb5",
+    "docs/브랜드_폰트_정본.md": "889fc34358d6725e0b773504b388d0a9b52535c09170bb1192be00936e216ca6",
+    "영상/src/firstposts20260910/voice-trial-timing.json": "74af3697cd6e28c63015bebae8f086df2d88ad80464b481439ce9d28e2f2e3d4"
+  },
+  "latestAlias": "video_17.2초.mp4",
+  "latestAliasMatches": true,
+  "userReview": {
+    "date": "2026-09-11",
+    "status": "approved-quality-reference",
+    "quote": "너무 훌륭해. 앞으로도 이렇느낌으로 모든 작업할때 퀄리티 좋게 만들어주면 좋겠어. 꼭 기억해줘 그리고 커밋해줘",
+    "scope": "Delivered 17.2-second film praised; quality expected in future work; exact implementation values are not universal requirements"
+  }
+}
