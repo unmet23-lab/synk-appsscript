@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-09-10T18:53:10.318Z",
+  "level": "ok",
+  "measured": true,
+  "projectHead": {
+    "level": "ok"
+  },
+  "fixed": [
+    {
+      "version": 46,
+      "level": "ok"
+    }
+  ]
+}
