@@ -1,13 +1,83 @@
 // 소유자 연결 점검. 고정 합성 요청만 실행하며 학생 데이터·메일·저장소를 읽거나 쓰지 않는다.
 // 활성 사용자·실행 계정·기존 ADMIN_EMAIL 세 값이 일치할 때만 허용한다.
 // executionApi MYSELF / webapp USER_DEPLOYING 계약을 유지한다. 인수로 권한·프롬프트·모델을 받지 않는다.
-function aiConnectionCheck() {
+function automationOwnerAllowed_() {
   try {
     const active = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();
     const effective = String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase();
     const admin = String(ADMIN_EMAIL || '').trim().toLowerCase();
-    if (!active || !effective || !admin || active !== effective || effective !== admin) return { ok: false, stage: 'access' };
-  } catch (e) { return { ok: false, stage: 'access' }; }
+    return !!active && !!effective && !!admin && active === effective && effective === admin;
+  } catch (e) { return false; }
+}
+
+// 읽기 전용 운영 점검. 트리거·헤더·고정 진행키만 읽으며 학생 행/키/API/메일은 다루지 않는다.
+function automationHealthCheck() {
+  if (!automationOwnerAllowed_()) return { ok: false, stage: 'access' };
+  const result = { ok: false, stage: 'metadata', triggers: null, batches: {}, monthly: null };
+  let props;
+  try {
+    props = PropertiesService.getScriptProperties();
+    result.rehearsalPresent = props.getProperty('배치리허설_만료') !== null;
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) return result;
+    const pf = ss.getSheetByName('profiles');
+    const columns = pf ? pf.getLastColumn() : 0;
+    const textbookOn = columns > 0 && pf.getRange(1, 1, 1, columns).getValues()[0].some(h => String(h) === '목소리폼URL');
+    const expected = triggerManifest_(textbookOn);
+    const installed = ScriptApp.getProjectTriggers();
+    const counts = {};
+    expected.forEach(name => { counts[name] = 0; });
+    let otherCount = 0;
+    let wrongTypeCount = 0;
+    installed.forEach(trigger => {
+      const name = trigger.getHandlerFunction();
+      if (!Object.prototype.hasOwnProperty.call(counts, name)) { otherCount++; return; }
+      counts[name]++;
+      const requiredType = name === 'onConsultEdit' || name === 'onHwFeedbackEdit' ? 'ON_EDIT' : 'CLOCK';
+      if (String(trigger.getEventType()) !== requiredType) wrongTypeCount++;
+    });
+    const missing = expected.filter(name => counts[name] === 0);
+    const duplicates = expected.filter(name => counts[name] > 1);
+    result.triggers = { expectedCount: expected.length, actualCount: installed.length, counts: counts,
+      missing: missing, duplicates: duplicates, wrongTypeCount: wrongTypeCount, otherCount: otherCount, textbookOn: textbookOn };
+    ['morningJobs', 'nightJobs', 'parentSweep'].forEach(name => {
+      const raw = props.getProperty('배치진행_' + name);
+      if (raw === null) { result.batches[name] = { status: 'not_observed' }; return; }
+      try {
+        const summary = 배치상태요약_(JSON.parse(raw));
+        const allowed = ['running', 'waiting', 'complete', 'partial', 'uncertain', 'date_changed', 'plan_changed'];
+        const safe = { status: allowed.indexOf(summary.status) >= 0 ? summary.status : 'invalid_state' };
+        ['next', 'total'].forEach(k => { if (Number.isSafeInteger(summary[k]) && summary[k] >= 0) safe[k] = summary[k]; });
+        safe.failureCount = Array.isArray(summary.failures) ? summary.failures.length : 0;
+        ['date', 'startedAt', 'updatedAt'].forEach(k => {
+          if (typeof summary[k] === 'string' && /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z)?$/.test(summary[k])) safe[k] = summary[k];
+        });
+        result.batches[name] = safe;
+      } catch (e) { result.batches[name] = { status: 'invalid_state' }; }
+    });
+    try {
+      const monthly = monthlyDeliveryHealth_();
+      const statuses = ['pending', 'sending', 'sent', 'uncertain', 'legacy_unknown'];
+      const counts = {};
+      statuses.forEach(k => {
+        const n = monthly.cards.counts[k];
+        if (!Number.isSafeInteger(n) || n < 0) throw new Error('invalid_count');
+        counts[k] = n;
+      });
+      if (!/^\d{4}-\d{2}$/.test(monthly.cards.month) || !/^\d{4}-\d{2}$/.test(monthly.report.month)) throw new Error('invalid_month');
+      result.monthly = { cards: { month: monthly.cards.month, counts: counts },
+        report: { month: monthly.report.month, status: statuses.concat(['missing']).indexOf(monthly.report.status) >= 0 ? monthly.report.status : 'invalid_state' } };
+    } catch (e) { result.monthly = { status: 'unavailable' }; }
+    const batchFailure = Object.keys(result.batches).some(name => ['partial', 'uncertain', 'date_changed', 'plan_changed', 'invalid_state'].indexOf(result.batches[name].status) >= 0);
+    result.ok = missing.length === 0 && duplicates.length === 0 && wrongTypeCount === 0 && !result.rehearsalPresent && !batchFailure && result.monthly.status !== 'unavailable';
+    result.observationComplete = Object.keys(result.batches).every(name => result.batches[name].status !== 'not_observed');
+    result.stage = 'read_only';
+    return result;
+  } catch (e) { return result; }
+}
+
+function aiConnectionCheck() {
+  if (!automationOwnerAllowed_()) return { ok: false, stage: 'access' };
 
   let key;
   try {
