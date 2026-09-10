@@ -46,14 +46,13 @@ ${브랜드폰트.블록()}
   .paper{position:absolute;inset:0;background:#FBF7F0}
   .paper:before{content:"";position:absolute;inset:-10%;opacity:.19;filter:url(#wool)}
   .paper:after{content:"";position:absolute;left:0;right:0;bottom:78px;height:2px;background:#FBCAAB;opacity:.78}
-  .safe{position:relative;width:1180px;height:700px;margin:0 auto;display:grid;grid-template-columns:380px 1fr;gap:80px;align-items:center;padding:0 18px 44px}
-  .logo{width:380px;height:auto;display:block;filter:drop-shadow(0 8px 18px rgba(43,35,32,.09))}
+  .safe{position:relative;width:940px;height:700px;margin:0 auto;display:grid;grid-template-columns:280px 1fr;gap:48px;align-items:center;padding:0 18px 44px}
+  .logo{width:280px;height:auto;display:block;filter:drop-shadow(0 8px 18px rgba(43,35,32,.09))}
   .copy{min-width:0}
   .eyebrow{display:flex;align-items:center;gap:14px;margin:0 0 24px;font-size:20px;font-weight:600;letter-spacing:.08em;color:#575046}
   .signal{width:13px;height:13px;border-radius:4px;background:#F96859;box-shadow:inset 0 0 0 1px rgba(43,35,32,.08)}
-  h1{margin:0;font-size:68px;line-height:1.13;font-weight:800;letter-spacing:-.045em;text-wrap:balance}
-  p{margin:22px 0 0;font-size:27px;line-height:1.55;font-weight:500;letter-spacing:-.025em;color:#575046}
-  .meta{position:absolute;left:18px;bottom:34px;font-size:16px;font-weight:600;letter-spacing:.11em;color:#8D857A}
+  h1{margin:0;font-size:52px;line-height:1.13;font-weight:800;letter-spacing:-.045em;text-wrap:balance}
+  p{margin:22px 0 0;font-size:22px;line-height:1.55;font-weight:500;letter-spacing:-.025em;color:#575046;word-break:keep-all}
 </style></head>
 <body>
 <svg width="0" height="0" aria-hidden="true"><filter id="wool" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
@@ -68,7 +67,6 @@ ${브랜드폰트.블록()}
     <h1>AI와 회사 만들기</h1>
     <p>브랜드와 콘텐츠를 만들고, 반복 업무를 줄이는 방법</p>
   </section>
-  <div class="meta">SYNK SHIFT · SYNKSHIFT</div>
 </main>
 </body></html>`;
 }
