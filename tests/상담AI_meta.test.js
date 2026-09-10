@@ -13,6 +13,7 @@ function 엔진로드(속성, 응답함수) {
   const props = Object.assign({
     상담AI_페이지토큰: 'page-token',
     상담AI_IG토큰: 'ig-token',
+    상담AI_IG계정ID: 'ig-business',
   }, 속성 || {});
   const propStore = {
     getProperty: (k) => props[k] || '',
@@ -54,15 +55,28 @@ test('Facebook 답장은 Graph v26 페이지 호스트와 페이지 토큰만 �
   assert.match(요청[0].url, /^https:\/\/graph\.facebook\.com\/v26\.0\/me\/messages\?/);
   assert.match(요청[0].url, /page-token/);
   assert.doesNotMatch(요청[0].url, /ig-token/);
+  assert.equal(JSON.parse(요청[0].options.payload).messaging_type, 'RESPONSE');
 });
 
-test('Instagram 답장은 Instagram v26 호스트와 전용 토큰만 쓴다', () => {
+test('Instagram 답장은 계정 ID 경로와 Bearer 전용 토큰을 쓰고 Facebook 전용 필드를 빼낸다', () => {
   const { ctx, 요청 } = 엔진로드();
   assert.equal(ctx.상담_전송_('i1', 'hello', { 플랫폼: 'ig' }), true);
   assert.equal(요청.length, 1);
-  assert.match(요청[0].url, /^https:\/\/graph\.instagram\.com\/v26\.0\/me\/messages\?/);
-  assert.match(요청[0].url, /ig-token/);
+  assert.equal(요청[0].url, 'https://graph.instagram.com/v26.0/ig-business/messages');
+  assert.equal(요청[0].options.headers.Authorization, 'Bearer ig-token');
+  assert.doesNotMatch(요청[0].url, /ig-token/);
   assert.doesNotMatch(요청[0].url, /page-token/);
+  const 본문 = JSON.parse(요청[0].options.payload);
+  assert.deepEqual(본문.recipient, { id: 'i1' });
+  assert.equal(본문.message.text, 'hello');
+  assert.equal(Object.hasOwn(본문, 'messaging_type'), false);
+});
+
+test('Instagram 계정 ID가 없으면 토큰이 있어도 전송하지 않는다', () => {
+  const { ctx, 요청, 기록 } = 엔진로드({ 상담AI_IG계정ID: '' });
+  assert.equal(ctx.상담_전송_('i1', 'hello', { 플랫폼: 'ig' }), false);
+  assert.equal(요청.length, 0);
+  assert.match(String(기록[0][2]), /상담AI_IG계정ID 미설정/);
 });
 
 test('채널별 전송 실패 알림이 올바른 토큰과 권한을 안내한다', () => {
@@ -77,6 +91,18 @@ test('채널별 전송 실패 알림이 올바른 토큰과 권한을 안내한�
   assert.equal(fb.ctx.상담_전송_('fb-user', '답장', { 플랫폼: 'fb' }), false);
   assert.match(fb.메일[0][1], /상담AI_페이지토큰/);
   assert.match(fb.메일[0][1], /pages_messaging/);
+});
+
+test('Meta 오류 본문과 예외문에 토큰이 섞여도 기록과 메일에 내보내지 않는다', () => {
+  const 실패 = () => ({ getResponseCode: () => 400, getContentText: () => '{"error":"ig-token"}' });
+  const ig = 엔진로드({}, 실패);
+  assert.equal(ig.ctx.상담_전송_('ig-user', '답장', { 플랫폼: 'ig' }), false);
+  assert.doesNotMatch(JSON.stringify({ 기록: ig.기록, 메일: ig.메일 }), /ig-token/);
+
+  const 예외 = () => { throw new Error('request failed with page-token'); };
+  const fb = 엔진로드({}, 예외);
+  assert.equal(fb.ctx.상담_전송_('fb-user', '답장', { 플랫폼: 'fb' }), false);
+  assert.doesNotMatch(JSON.stringify({ 기록: fb.기록, 메일: fb.메일 }), /page-token/);
 });
 
 test('Instagram 전용 토큰이 없으면 페이지 토큰으로 우회하지 않고 닫는다', () => {
