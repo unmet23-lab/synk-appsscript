@@ -20,6 +20,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+try:
+    from mascot_originals import ensure_files
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_files
+
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / 'docs/Loom_자산/라디오차림'
 PROOFS = ROOT / 'docs/_ops/의상라디오검수_20260909/실물'
@@ -83,6 +88,7 @@ def reusable_file(old, source, source_hash, destination):
 
 def validate_source_set(item, input_dir=None, anchor_size=None):
     files = source_files(item, input_dir)
+    ensure_files(files.values())
     absent = [relative(path) for path in files.values() if not path.is_file()]
     if absent:
         raise ValueError('표정 원본이 없다: '+', '.join(absent))
@@ -95,8 +101,10 @@ def validate_source_set(item, input_dir=None, anchor_size=None):
 
 
 def find_anchor(key):
-    for folder in ['GPT_누끼', 'GPT정액시험_누끼']:
-        path = ROOT / 'docs/Loom_자산/옷' / folder / f'까몽_{key}.png'
+    candidates = [ROOT / 'docs/Loom_자산/옷' / folder / f'까몽_{key}.png'
+                  for folder in ['GPT_누끼', 'GPT정액시험_누끼']]
+    ensure_files(candidates)
+    for path in candidates:
         if path.is_file():
             return path
     raise ValueError(f'{key}: 표정 전 기준 그림이 없다')
@@ -412,6 +420,7 @@ def main(argv=None):
             base = record.get('파일', {}).get('본체')
             if not base:
                 continue
+            ensure_files([ROOT / base['원본']])
             with Image.open(ROOT / base['원본']) as im:
                 edges = source_edges(im.convert('RGBA'))
             record['입력본체_경계접촉'] = {'알파128초과': edges,

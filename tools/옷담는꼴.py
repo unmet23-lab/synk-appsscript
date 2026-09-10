@@ -28,6 +28,11 @@ import sys
 import numpy as np
 from PIL import Image
 
+try:
+    from mascot_originals import ensure_folder
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_folder
+
 저장소 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 옷방뿌리 = os.path.join(저장소, 'docs', 'Loom_자산', '옷')
 
@@ -61,9 +66,14 @@ if __name__ == '__main__':
     방 = os.path.join(옷방뿌리, 들)
     꼬리 = f'_avif{크기}' if 크기 else '_avif'
     낼방 = os.path.join(옷방뿌리, 들 + 꼬리)
-    파일 = [f for f in sorted(os.listdir(방)) if f.endswith('.png') and not f.startswith('_')]
     if '--옷' in sys.argv:
         고른옷 = {s.strip() for s in sys.argv[sys.argv.index('--옷') + 1].split(',') if s.strip()}
+        ensure_folder(방, lambda name: len(name[:-4].split('_')) >= 3
+                      and name[:-4].split('_')[1] in 고른옷)
+    else:
+        ensure_folder(방)
+    파일 = [f for f in sorted(os.listdir(방)) if f.endswith('.png') and not f.startswith('_')]
+    if '--옷' in sys.argv:
         파일 = [f for f in 파일 if len(f[:-4].split('_')) >= 3 and f[:-4].split('_')[1] in 고른옷]
     if not 파일:
         raise SystemExit(f'담을 것이 없다 — {방}')

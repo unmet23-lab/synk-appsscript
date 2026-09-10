@@ -38,6 +38,11 @@ import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
+try:
+    from mascot_originals import ensure_files, ensure_folder
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_files, ensure_folder
+
 저장소 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 🔴 옷 그림이 나는 방이 «둘»이다 (09-08) — 열쇠(종량제)로 구운 것과 정액제 ChatGPT 창으로 구운 것.
 #    한 방만 보면 정액제로 구운 조합에 표정이 안 얹힌다. 앞의 방부터 찾고, 없으면 다음 방을 본다.
@@ -50,6 +55,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 def 옷그림찾기(누구, 옷이름):
     """두 방을 앞에서부터 뒤져 그 옷 그림의 경로를 낸다. 없으면 None."""
+    ensure_files(os.path.join(방, f'{누구}_{옷이름}.png') for 방 in 옷방들)
     for 방 in 옷방들:
         p = os.path.join(방, f'{누구}_{옷이름}.png')
         if os.path.exists(p):
@@ -346,6 +352,8 @@ if __name__ == '__main__':
 
     if '--전부' in sys.argv:
         # 두 방을 다 훑는다. 같은 옷이 양쪽에 있으면 한 번만 센다.
+        for 방 in 옷방들:
+            ensure_folder(방, lambda name: name.startswith(누구 + '_'))
         옷들 = sorted({f[len(누구) + 1:-4]
                      for 방 in 옷방들 if os.path.isdir(방)
                      for f in os.listdir(방)

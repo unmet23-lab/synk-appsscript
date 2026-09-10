@@ -36,6 +36,7 @@ from scipy import ndimage
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from 옷자리맞추기 import 눈들, 눈에서_옮김, 몸으로_맞춘다  # noqa: E402
 from 옷초록떼기 import 털결얹기  # noqa: E402
+from mascot_originals import ensure_files  # noqa: E402
 
 루트 = Path(__file__).resolve().parent.parent
 정본방 = 루트 / 'docs/캐릭터/정본_4K'
@@ -362,15 +363,20 @@ def main():
             조각들.append((부[0], 부[1], 부[2] if len(부) > 2 else None, 부[3] if len(부) > 3 else None))
         if not 조각들:
             raise SystemExit('🔴 --조각 이 비었다')
+        ensure_files([p for row in 조각들 for p in row[1:] if p])
         판만들기(조각들, a.판낼곳, 칸높=a.칸높)
         return
     if not a.판 or not a.낼곳:
         raise SystemExit('🔴 <두그림판.png> <낼곳_층.png> 이 있어야 한다')
+    ensure_files([a.판])
     참조들 = a.참조
+    if 참조들:
+        ensure_files(참조들)
     if not 참조들:
         참조들 = []
         for 이름 in 판이름에서_옷들(a.판):
             p = 루트 / 'docs/Loom_자산/옷/층' / f'옷_{a.마스코트}_{이름}.png'
+            ensure_files([p])
             if not p.exists():
                 raise SystemExit(f'🔴 참조 옷 그림이 없다 — {p} (--참조 로 직접 준다)')
             참조들.append(str(p))

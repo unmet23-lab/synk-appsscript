@@ -12,6 +12,11 @@ from pathlib import Path
 
 from PIL import Image
 
+try:
+    from mascot_originals import ensure_files
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_files
+
 
 루트 = Path(__file__).resolve().parent.parent
 이름 = '까몽_여름델+전설의팻말'
@@ -21,6 +26,7 @@ from PIL import Image
 
 
 def main():
+    ensure_files(든곳 / f'{이름}_{표정}.png' for 표정 in 표정들)
     낼곳.mkdir(parents=True, exist_ok=True)
     판 = {}
     for 표정 in 표정들:

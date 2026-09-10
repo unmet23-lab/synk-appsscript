@@ -35,8 +35,10 @@ const 루트 = path.resolve(__dirname, '..');
 const 굽기 = require('./lib/이미지굽기.js');
 const { 규격표 } = require('./lib/공방규격.js');
 const { 마스코트들, 목록 } = require('./lib/옷목록.js');
+const 원본보관 = require('./lib/마스코트원본.js');
 
 const 낼방 = path.join(루트, 'docs/Loom_자산/옷');
+const 있다 = p => fs.existsSync(p) || 원본보관.isArchived(p);
 const 장당 = 336;
 
 /* ── 인자 ─────────────────────────────────────────────────────────────── */
@@ -265,6 +267,7 @@ function 파이썬비동기(인자들) {
 }
 
 async function 떼기만돈다(할것) {
+  원본보관.ensureFiles(할것.map(x => x.초록));
   const 있는것 = 할것.filter((x) => fs.existsSync(x.초록));
   말(`■ 떼어 앉히기만 다시 — ${있는것.length}벌 · 한 번에 ${한번에}개 · 0원`);
   let 됨 = 0, 실패 = 0;
@@ -304,7 +307,7 @@ function 떼어앉힌다(x) {
     let 앞 = null;
     for (const x of 굽을것) {
       if (x.마스코트.이름 !== 앞) { 앞 = x.마스코트.이름; console.log(`  [${앞}] ${목록(앞).length}벌`); }
-      const 표 = fs.existsSync(x.얹음) ? '✅' : (fs.existsSync(x.씌운) ? '◐' : '·');
+      const 표 = 있다(x.얹음) ? '✅' : (있다(x.씌운) ? '◐' : '·');
       console.log(`     ${표} ${x.갈래}  ${x.이름}${x.고유 ? '  (그 아이만의 것)' : ''}${x.성과 ? '  (성과)' : ''}`);
     }
     console.log('\n  ✅ = 다 됐다 · ◐ = 씌운 것만 있다 · · = 아직\n');
@@ -316,10 +319,10 @@ function 떼어앉힌다(x) {
   /* 🔴 돈 상한은 «아직 안 구운 것»에만 먹인다 (09-06 실측).
      전에는 목록 앞에서부터 잘랐는데, 앞쪽이 이미 다 구워진 벌이면 상한이 그 자리에서 소진되고
      정작 구울 것에는 안 닿았다 — 여덟 벌을 시켰더니 이미 난 두 벌을 세고 끝났다. */
-  const 아직 = 굽을것.filter((x) => !fs.existsSync(x.씌운) || !fs.existsSync(x.초록));
+  const 아직 = 굽을것.filter((x) => !있다(x.씌운) || !있다(x.초록));
   /* 🔑 장 수는 «정말 구울 장»으로 센다 (09-06 밤). 씌움이 이미 있고 초록만 없는 벌은 한 장이다 —
      한 벌 = 두 장으로 세면 상한이 절반에서 끊기고(16벌에 11,000원을 줘야 했다) 게이트 예상값도 곱절이 된다. */
-  const 장수 = (x) => (걸음 !== 2 && !fs.existsSync(x.씌운) ? 1 : 0) + (fs.existsSync(x.초록) ? 0 : 1);
+  const 장수 = (x) => (걸음 !== 2 && !있다(x.씌운) ? 1 : 0) + (있다(x.초록) ? 0 : 1);
   const 할것 = [];
   let 셀장 = 0;
   for (const x of 아직) {
@@ -336,10 +339,11 @@ function 떼어앉힌다(x) {
   let 됨 = 0, 실패 = 0, 연속막힘 = 0;
   for (let i = 0; i < 할것.length; i++) {
     const x = 할것[i];
+    if (있다(x.초록)) 원본보관.ensureFiles([x.초록]);
     const 머리 = `${i + 1}/${할것.length} [${x.마스코트.이름}] ${x.이름}`;
 
     // ① 씌워 굽는다
-    if (걸음 !== 2 && !fs.existsSync(x.씌운)) {
+    if (걸음 !== 2 && !있다(x.씌운)) {
       말(`■ ${머리} — ① 씌워 굽기`);
       const r = await 한장({
         이름: `${x.마스코트.이름} ${x.이름}`,
@@ -353,7 +357,7 @@ function 떼어앉힌다(x) {
     }
 
     // ② 초록 몸에 같은 옷을 입혀 굽는다 — 조각을 뜨는 그림
-    if (!fs.existsSync(x.초록)) {
+    if (!있다(x.초록)) {
       말(`■ ${머리} — ② 초록 몸`);
       const r = await 한장(초록굽기옵션(x), `${x.이름} 초록`);
       if (r === '돈벽') break;

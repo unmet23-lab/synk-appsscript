@@ -23,6 +23,11 @@ import sys
 import numpy as np
 from PIL import Image
 
+try:
+    from mascot_originals import ensure_files, ensure_folder
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_files, ensure_folder
+
 저장소 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 눈 찾는 자는 «한 곳»에서만 빌린다 — 두 곳이 각자 찾으면 판정이 갈린다
@@ -36,6 +41,7 @@ _spec.loader.exec_module(_얹기)
 
 def 옷그림찾기(누구, 옷이름):
     """두 원본 방을 앞에서부터 뒤져 같은 이름은 한 번만 검사한다."""
+    ensure_files(os.path.join(방, f'{누구}_{옷이름}.png') for 방 in 옷방들)
     for 방 in 옷방들:
         경로 = os.path.join(방, f'{누구}_{옷이름}.png')
         if os.path.exists(경로):
@@ -126,7 +132,12 @@ if __name__ == '__main__':
         누구 = sys.argv[sys.argv.index('--누구') + 1]
     if '--옷' in sys.argv:
         옷들 = [s.strip() for s in sys.argv[sys.argv.index('--옷') + 1].split(',')]
+        for 옷 in 옷들:
+            ensure_folder(결과방, lambda name, prefix=f'{누구}_{옷}_': name.startswith(prefix))
     else:
+        for 방 in 옷방들:
+            ensure_folder(방, lambda name: name.startswith(누구 + '_'))
+        ensure_folder(결과방, lambda name: name.startswith(누구 + '_'))
         옷들 = sorted({f[len(누구) + 1:-4]
                      for 방 in 옷방들 if os.path.isdir(방)
                      for f in os.listdir(방)

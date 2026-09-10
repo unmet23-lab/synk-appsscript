@@ -33,6 +33,7 @@ from scipy import ndimage
 루트 = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(루트 / 'tools'))
 from 옷자리맞추기 import 눈들  # noqa: E402
+from mascot_originals import ensure_files, ensure_folder  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location('옷차이떼기', 루트 / 'tools/옷차이떼기.py')
 C = importlib.util.module_from_spec(_spec)
@@ -109,6 +110,7 @@ class 옷판:
         self.옷 = 이름(옷)
         self.옮긴경로 = 층방 / f'옮긴_{마스코트}_{self.옷}.png'
         self.조각경로 = 층방 / f'옷_{마스코트}_{self.옷}.png'
+        ensure_files([self.옮긴경로, self.조각경로])
         for p in (self.옮긴경로, self.조각경로):
             if not p.exists():
                 raise SystemExit(f'🔴 없다: {p} — 먼저 python tools/옷판합치기.py --떼기')
@@ -128,6 +130,15 @@ class 옷판:
 
 def 떼기(마스코트='까몽', 강제=False):
     층방.mkdir(parents=True, exist_ok=True)
+    ensure_folder(
+        판방,
+        lambda name: name.startswith(f'{마스코트}_') and name.endswith('.png'),
+    )
+    ensure_folder(
+        층방,
+        lambda name: (name.startswith(f'옮긴_{마스코트}_')
+                      or name.startswith(f'옷_{마스코트}_')) and name.endswith('.png'),
+    )
     판들 = sorted(판방.glob(f'{마스코트}_*.png'))
     if not 판들:
         raise SystemExit(f'🔴 판이 없다 — {판방}')
@@ -139,6 +150,7 @@ def 떼기(마스코트='까몽', 강제=False):
             print(f'⏭ {옷} — 이미 뗐다')
             continue
         참조 = 루트 / 'docs/Loom_자산/옷/층' / f'옷_{마스코트}_{옷}.png'
+        ensure_files([참조])
         참조들 = [str(참조)] if 참조.exists() else None
         층, 옮긴판, _, 잰것 = C.떼어낸다(str(p), str(정본방 / f'{마스코트}_본체.png'), 참조경로들=참조들)
         층.save(조각)
@@ -216,6 +228,11 @@ def 판만들기(정, 마스코트, 낼곳, 표정들, 칸높=300):
     spec = importlib.util.spec_from_file_location('옷입혀보기', 루트 / 'tools/옷입혀보기.py')
     M = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(M)
+    ensure_folder(
+        층방,
+        lambda name: (name.startswith(f'옮긴_{마스코트}_')
+                      or name.startswith(f'옷_{마스코트}_')) and name.endswith('.png'),
+    )
     있는 = {p.stem.split('_', 2)[2] for p in 층방.glob(f'옮긴_{마스코트}_*.png')}   # 옮긴_까몽_겨울델 → 겨울델
     의상 = [o for o in 의상들 if o in 있는]
     악세 = [a for a in 악세들 if a in 있는]

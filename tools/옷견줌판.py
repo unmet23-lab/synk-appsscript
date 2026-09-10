@@ -16,6 +16,11 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+try:
+    from mascot_originals import ensure_files, ensure_folder
+except ModuleNotFoundError:
+    from tools.mascot_originals import ensure_files, ensure_folder
+
 루트 = Path(__file__).resolve().parent.parent
 옷방 = 루트 / 'docs/Loom_자산/옷'
 
@@ -45,12 +50,20 @@ def main():
     ap.add_argument('--높이', type=int, default=520)
     a = ap.parse_args()
 
+    고른 = [s.replace(' ', '') for s in a.것.split(',')] if a.것 else []
+    ensure_folder(
+        옷방 / '씌움',
+        lambda name: name.startswith(f'옷_{a.마스코트}_')
+        and name.endswith('.png')
+        and (not 고른 or any(g in Path(name).stem for g in 고른)),
+    )
     씌움들 = sorted((옷방 / '씌움').glob(f'옷_{a.마스코트}_*.png'))
-    if a.것:
-        고른 = [s.replace(' ', '') for s in a.것.split(',')]
+    if 고른:
         씌움들 = [p for p in 씌움들 if any(g in p.stem for g in 고른)]
     if not 씌움들:
         sys.exit(f'🔴 {a.마스코트} 의 씌움 그림이 없다 — docs/Loom_자산/옷/씌움/')
+
+    ensure_files([옷방 / '얹음' / p.name for p in 씌움들])
 
     꼴 = ImageFont.truetype('C:/Windows/Fonts/malgun.ttf', 22)
     줄들 = []
