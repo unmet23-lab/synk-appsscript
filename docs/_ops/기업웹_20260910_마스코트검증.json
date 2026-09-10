@@ -1,0 +1,424 @@
+{
+  "createdAt": "2026-09-10T12:54:37.013Z",
+  "method": "Preserve per-pixel fibre variation while removing estimated white matte only within 24px of canvas-connected exterior. Alpha/interior holes/inside RGBA unchanged.",
+  "sourceProvenance": {
+    "generator": "tools/마스코트4K굽기.js",
+    "providerPath": "Gemini 4K, white background and cutout workflow confirmed in source",
+    "exactPerImageModel": "unconfirmed: generation response logs unavailable",
+    "canonicalSize": [
+      4096,
+      4096
+    ],
+    "homepageDerivative": [
+      1000,
+      1000
+    ],
+    "beforeHomeRecipe": "sharp.resize({width:1000}).webp({quality:90})",
+    "beforeAllThreeHomeBytesMatchCanonicalRecipe": true
+  },
+  "imagegenAttempt": {
+    "selected": false,
+    "requestedModelName": "GPT 2.5 image",
+    "actualTool": "built-in ImageGen; exact GPT 2.5 selector unavailable",
+    "reason": "1254x1254 RGB with baked checkerboard, no alpha; rejected",
+    "file": "C:/Users/q1212/.codex/generated_images/01a08a5b-7899-73f3-9c5c-f904823afa36/exec-3f417c37-9d66-4243-9a8e-521307b38fe9.png"
+  },
+  "canonical": {
+    "method": "Preserve per-pixel fibre variation while removing estimated white matte only within 24px of canvas-connected exterior. Alpha/interior holes/inside RGBA unchanged.",
+    "items": [
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_감동.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_감동.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "6fa1b8a24e8640cf48e9b1c7af276e26b4a0e266a2a1ce57b37ad70c5f164322",
+        "outputSha256": "d33c5d84a0b3056e9cc811cb14fd447cd5ccbbf01a7264d609b276831bbff034"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_궁금함.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_궁금함.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "62e3eeef4ccd8bedd491284c425586e40bf267b409e632eddb84e425e7cc8b95",
+        "outputSha256": "773896342e92f28a26bba2b940c28ac06dae67cc8a30adbef234ad952254122f"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_놀람.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_놀람.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "65c71dae7b12bb5a532a60a00fa60d530ef5a8b020acb77e25a8da61e5475341",
+        "outputSha256": "28f91ec18ff6be65f0ab41c8b7e3090c99f0b44fa563ad49c2ccf7101dcd8dfd"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_눈감음.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_눈감음.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "5c51b195478054c5133564394490c52ad949120684d01b4a87191a7204a48f79",
+        "outputSha256": "5b1c4840462dc87781241f0983a7aa5dba3b8a0498357427e99218fee7ab2c14"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_눈웃음.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_눈웃음.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "bd958681f5db426d6b6fac9ae8122e02fa1a825a83adeb3502c5c37843175d7e",
+        "outputSha256": "7b1a8b9070d847a69b349c66f95d5c6fe824b4371b304f44ef4f2865b22f4a14"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_민망.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_민망.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "a7e5e2e7bc21e50dd0cd1152a72be9b6b9d7631e5c2d0adc9299d25e65ac147d",
+        "outputSha256": "6424c648a53be607a40f228931d4918c7ed8df3694bdf04ae94eaed06d33038f"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_별눈.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_별눈.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "0985548a9b460ede64fb9c17aadc441a7b5b4cb6d605a5f633486a77d07b5c4f",
+        "outputSha256": "374579e40740e5b0631750189d2baf8dd5103e6bf477d5c5cf453b1e8c6ce0f0"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_본체.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_본체.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "85c5a4359030c7f07bdc335173b4052c47d4d81c9db3f28eabde661b7d026836",
+        "outputSha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_뾰로통.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_뾰로통.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "f79d877006c6af396fa452378894792e256ea82624685daf626a88207897a244",
+        "outputSha256": "e30d88c2155a2268c0c8d3e33b6ad27b4751e50a12ef614bdb2cb3277bb8d2db"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_안도.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_안도.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "16b668597bdea89d8d773adc3149e52352e9b1bd1ae12d7bfbbb6e28938836bf",
+        "outputSha256": "999e42180a2c3504dc97eece016898e4ac885f589f5cfbba0d3d372aeaed24a9"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_우34.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_우34.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 205069,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "4e093f16d05e3fd8988fce2e2130e8a40d498fe2223bb929432c5dd940c7e4dc",
+        "outputSha256": "cc635453b46cb36a195da6fe0a6677e41ba0faf401192cd9367c4f787da9c396"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_윙크.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_윙크.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "1156174b9be0511d66aaadca3884f4222aabead60396f245ed10454bc024ea41",
+        "outputSha256": "72b5e65a980496c6ac645dd23d18d9e6a3172d057bb1f6e25526ebe409231cc5"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_으쓱.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_으쓱.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "e52cff72961efb0bdf79ae3f978fc18817d21b2ff550c8b9a274b01511760cf0",
+        "outputSha256": "7be56c6300132f274cc70a3fd27a3f9fe250f72d9168e9dd19f27867b60b22bb"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_응원.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_응원.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "667a3b3c449fa0c1eb09981f159554cf2a76da0c1cc20a177b1806ea35a3ad3f",
+        "outputSha256": "a5aabdb8b4a84299f9c68ce13ff249960685f21bf77e75a7d6e246031d4fd691"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_졸림.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_졸림.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "354aec340cf16237569fe501276329d5b57f1ac2554b529e4c63c3e99ada3722",
+        "outputSha256": "5ae8e8f52a20c447126cba626e9703ab46b9864dcc569ab0228966bca2eb0cbb"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_좌34.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_좌34.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 232940,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "e0907e21ee11424eef688da4ead0bd82af2a637ead622fbf4a19ba0170adaf58",
+        "outputSha256": "db674200e685088410629de70b02a70ece03ccfcadb96924d391877a420f6c65"
+      },
+      {
+        "input": "docs\\캐릭터\\정본_4K\\몽글_집중.png",
+        "output": "docs\\_ops\\기업웹_20260910_자산\\mongle-corrected\\몽글_집중.png",
+        "width": 4096,
+        "height": 4096,
+        "band": 24,
+        "changedPixels": 199139,
+        "alphaChanges": 0,
+        "interiorChanges": 0,
+        "sourceSha256": "b1cf05d7109922ef40e82cf9fb8f53cb2e9a540e7297b4b7e3a9d9c5522b51ce",
+        "outputSha256": "9b2a22f1898ca659746b40c299893cce1bc0744a6cf1fa6409c1433806ca166e"
+      }
+    ]
+  },
+  "sourceRules": [
+    {
+      "file": "DESIGN.md",
+      "sha256": "90dfc139c23836f1484d06fbf39aedccf8727eddc05db14ceac539fd5d261eee"
+    },
+    {
+      "file": "docs/AI_운영원칙.md",
+      "sha256": "4770ce2685c0a5c76226f0b70bbd68a5f7f7b319b8ecc166209020fb16766102"
+    },
+    {
+      "file": "docs/명품_기준_v1.md",
+      "sha256": "42c15d35e44d0f9a1f36a41a0ea05bb0783f1b73ee8e315bc5724d62baee6ef6"
+    }
+  ],
+  "evidence": [
+    {
+      "file": "기업웹_20260910_자산/mongle-canonical-verification.json",
+      "sha256": "8c05c830a2561feeae5a0de9c4cc307c467d938a9f77dec4ee3b0cfd71ef8dd0"
+    },
+    {
+      "file": "기업웹_20260910_자산/mongle-1024-verification.json",
+      "sha256": "5637c8804a8f82b422c4d12517ff8dee6a15f29d4bfd68d100c6616ab68d4c63"
+    },
+    {
+      "file": "기업웹_20260910_자산/mongle-zip-verification.json",
+      "sha256": "5dd7c4c589a7342e822b3ed871746bd274b138804881ad5b61eb5b8cb585c983"
+    },
+    {
+      "file": "기업웹_20260910_자산/mongle-live-policy-verification.json",
+      "sha256": "c12b97a15b6fe5e87949ddca9778f06bd3adcdbd53ebde66383ef486225e0ffa"
+    },
+    {
+      "file": "기업웹_20260910_자산/mongle-live-field-notes-verification.json",
+      "sha256": "11704ee528255d4bf40e864be1a48cde1fb06dbb6fd892b57a19ce16cc68dbdc"
+    },
+    {
+      "file": "기업웹_20260910_자산/mongle-talk-verification.json",
+      "sha256": "922eba1f4ee65632ac035df8dcae03a76f10ed0d42cedb421d0fc1f068ceaa7f"
+    },
+    {
+      "file": "기업웹_20260910_자산/mongle-homepage-review.json",
+      "sha256": "063fbf86427bc3c0600702b498fb81d7e86ea9db7fdc007b16d8167e6c658b72"
+    },
+    {
+      "file": "기업웹_20260910_자산/mongle-homepage-1440.png",
+      "sha256": "cc9a9f11631d68e851b0ccd2433dbaa3cb63a36ae532d46dde354f212c402d29"
+    },
+    {
+      "file": "기업웹_20260910_자산/mongle-homepage-390.png",
+      "sha256": "380eff83fb3fb6601f2b378ce93378fbb7739ef1d3b7142000aafeab48573913"
+    }
+  ],
+  "marketing": {
+    "file": "기업웹_20260910_자산/marketing-sync-files.json",
+    "sha256": "1dd2f6039ab8948cb68c4a2c20a30f1fa621af6a8fb9137d29b067476a8f2a3c",
+    "qa": {
+      "htmlCssChanged": [],
+      "frozenBackgrounds": [
+        {
+          "key": "window",
+          "unchanged": true
+        },
+        {
+          "key": "classroom",
+          "unchanged": true
+        },
+        {
+          "key": "cafe",
+          "unchanged": true
+        },
+        {
+          "key": "house",
+          "unchanged": true
+        },
+        {
+          "key": "lake",
+          "unchanged": true
+        },
+        {
+          "key": "meadow",
+          "unchanged": true
+        },
+        {
+          "key": "city",
+          "unchanged": true
+        },
+        {
+          "key": "night",
+          "unchanged": true
+        },
+        {
+          "key": "moon",
+          "unchanged": true
+        }
+      ],
+      "mascotCacheCheck": {
+        "checked": 28,
+        "frozen": 9,
+        "filesWritten": 0
+      },
+      "mascotStale": [
+        {
+          "key": "mong",
+          "sourceSha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c",
+          "outputSha256": "3a5948469e645251b8485a63f2b6678f420a8660d5de868aafee00327c474841",
+          "stale": false
+        },
+        {
+          "key": "smile",
+          "sourceSha256": "7b1a8b9070d847a69b349c66f95d5c6fe824b4371b304f44ef4f2865b22f4a14",
+          "outputSha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7",
+          "stale": false
+        },
+        {
+          "key": "curious",
+          "sourceSha256": "773896342e92f28a26bba2b940c28ac06dae67cc8a30adbef234ad952254122f",
+          "outputSha256": "308800184593b2aa730521694645d02bd66f5c4569b8570aa7a130b1dc6d5914",
+          "stale": false
+        }
+      ],
+      "staticRenders": {
+        "introductionPages": 20,
+        "introductionPdfs": 4,
+        "carouselOutputs": 14,
+        "accountCards": 2,
+        "marketingCards": 1,
+        "firstPostAccounts": [
+          "01",
+          "02",
+          "03",
+          "05",
+          "08",
+          "16"
+        ]
+      },
+      "firstPostChecks": {
+        "accounts": 19,
+        "images": 48,
+        "screens": 62,
+        "links": 418,
+        "status": "incomplete",
+        "failures": [
+          "03-lab-tiktok: final movie duration differs from current voiced scenes",
+          "04-yuhobuilds-youtube: final movie duration differs from current voiced scenes",
+          "05-yuhobuilds-instagram: final movie duration differs from current voiced scenes",
+          "06-yuhobuilds-tiktok: final movie duration differs from current voiced scenes",
+          "07-synkbrief-youtube: final movie duration differs from current voiced scenes",
+          "09-synkbrief-tiktok: final movie duration differs from current voiced scenes"
+        ]
+      },
+      "visualReview": [
+        "Introduction LAB cover and PULSE3 PDF rendered with Poppler",
+        "Current introduction/7-card carousel preview",
+        "Marketing16 actual output",
+        "First post16 body and LAB2 curious actual outputs"
+      ],
+      "archives": {
+        "marketingFullExport": 20,
+        "streamPatched": 6,
+        "streamingEvidence": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\zip-results.json",
+        "originalMovieAudioEntriesPreserved": 16
+      }
+    }
+  },
+  "deployments": [
+    {
+      "url": "https://synk.im/",
+      "source": "0a92e7f7c0a1c263eedbad6d8b9b389ac1aa24b2",
+      "status": "built"
+    },
+    {
+      "url": "https://synk-conversations.unmet23.chatgpt.site/",
+      "source": "1af37b9719ed02ebe46d3b9ccd7a23700a89e06b",
+      "version": 9,
+      "id": "appgdep_6aa2a45d76c08191ab596477931a1116",
+      "status": "succeeded"
+    },
+    {
+      "url": "https://synk-field-notes.unmet23.chatgpt.site/",
+      "source": "6d134ad0e7507d8f54f35aa5504fa204366e41d4",
+      "version": 10,
+      "id": "appgdep_6aa2a6233dd48191b52f222e3eaf53e8",
+      "status": "succeeded"
+    }
+  ],
+  "remaining": [
+    "Existing first-post movies 03/04/05/06/07/09 differ in duration from current voiced scenes; static files updated, voice/video rebuilding deferred to current brand voice work.",
+    "No app production deployment/device testing, SNS reposting, or recall/redelivery of previously delivered print/files performed."
+  ]
+}

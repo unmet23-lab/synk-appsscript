@@ -15,9 +15,11 @@
   액자 보정(마스코트.html `액자재기`)이 «몫»으로 재기 때문에 줄여도 자리가 안 흔들린다.
   표정 컷은 «본체와 같은 자리»에 서야 한다 — 옷 조각이 본체 자리에 얹히기 때문이다(아래 ①②③).
 
-쓰는 법: python tools/마스코트층작게.py [--크기 1024]
+쓰는 법: python tools/마스코트층작게.py [--크기 1024] [--누구 몽글]
+  --누구를 지정하면 해당 캐릭터만 갱신하고 판.json의 다른 캐릭터 기록은 유지한다.
 """
 import argparse
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -159,15 +161,22 @@ def 눈만얹기(컷, 본체):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--크기', type=int, default=1024)
+    ap.add_argument('--누구', help='해당 캐릭터만 갱신 (예: 몽글)')
     a = ap.parse_args()
     낼곳.mkdir(parents=True, exist_ok=True)
     했다 = 0
     든바이트 = 0
     난바이트 = 0
-    판 = {}
+    판경로 = 낼곳 / '판.json'
+    이전판 = json.loads(판경로.read_text(encoding='utf-8')) if a.누구 and 판경로.exists() else {}
+    판 = dict(이전판.get('컷', {}))
     # 🆕 09-08 — «본체» 컷을 먼저 줄여 그 머리를 기준으로 삼고, 나머지를 거기에 맞춘다.
     #   그래서 마스코트별로 본체가 앞에 오도록 정렬한다(파일 이름의 `_본체` 를 앞으로).
     것들 = sorted(든곳.glob('*.png'), key=lambda q: (q.stem.split('_')[0], 0 if q.stem.endswith('_본체') else 1, q.stem))
+    if a.누구:
+        것들 = [p for p in 것들 if p.stem.split('_')[0] == a.누구]
+        if not 것들:
+            ap.error(f'정본 컷이 없는 캐릭터: {a.누구}')
     기준들 = {}
     본체들 = {}
     맞춘수 = 0
@@ -216,12 +225,15 @@ def main():
         작은.save(낼것, 'WEBP', quality=92, method=6)
         든바이트 += p.stat().st_size
         난바이트 += 낼것.stat().st_size
-        판[p.stem] = {'원본': p.name, '크기': a.크기, '머리맞춤': 고침, '몸겹침되밈': 되밈, '눈만얹음_칸': 눈만}
+        판[p.stem] = {'원본': p.name, '크기': a.크기, '머리맞춤': 고침, '몸겹침되밈': 되밈, '눈만얹음_칸': 눈만,
+                       '원본SHA256': hashlib.sha256(p.read_bytes()).hexdigest(),
+                       '파생SHA256': hashlib.sha256(낼것.read_bytes()).hexdigest()}
         했다 += 1
-    (낼곳 / '판.json').write_text(json.dumps({
+    판경로.write_text(json.dumps({
+        **이전판,
         '언제': datetime.now(timezone.utc).isoformat(),
         '크기': a.크기,
-        '몇벌': 했다,
+        '몇벌': len(판),
         '컷': 판,
     }, ensure_ascii=False, indent=2), encoding='utf-8')
     print(f'   머리를 맞춘 컷 {맞춘수}벌 (기준 = 마스코트별 «본체» 컷의 머리 가장 넓은 줄)')

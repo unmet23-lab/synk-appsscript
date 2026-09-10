@@ -1,0 +1,76 @@
+{
+  "createdAt": "2026-09-10T12:48:15.159Z",
+  "base": "https://synk-field-notes.unmet23.chatgpt.site",
+  "localRoot": "C:/Users/q1212/Documents/SYNK-marketing-share-20260909/source",
+  "files": [
+    {
+      "path": "assets/labpage-neutral.webp",
+      "url": "https://synk-field-notes.unmet23.chatgpt.site/assets/labpage-neutral.webp?verify=1789044495164",
+      "status": 200,
+      "localBytes": 1777504,
+      "responseBytes": 1777504,
+      "localSha256": "01c0312c6aea5ef3997c3b4fd92b5f1a3d079d8b23e16f37a4f1aae463ab9b3d",
+      "responseSha256": "01c0312c6aea5ef3997c3b4fd92b5f1a3d079d8b23e16f37a4f1aae463ab9b3d",
+      "shaMatches": true
+    },
+    {
+      "path": "16-synk-instagram/upload-01.jpg",
+      "url": "https://synk-field-notes.unmet23.chatgpt.site/16-synk-instagram/upload-01.jpg?verify=1789044500484",
+      "status": 200,
+      "localBytes": 194393,
+      "responseBytes": 194393,
+      "localSha256": "bfee66289db875c3c856f13c83bb1e50d6ed784cf77e91d879acea6f307966e4",
+      "responseSha256": "bfee66289db875c3c856f13c83bb1e50d6ed784cf77e91d879acea6f307966e4",
+      "shaMatches": true
+    }
+  ],
+  "page": {
+    "url": "https://synk-field-notes.unmet23.chatgpt.site/16-synk-instagram/cards.html",
+    "consoleErrors": [
+      {
+        "text": "Failed to load resource: the server responded with a status of 404 ()",
+        "location": {
+          "url": "https://synk-field-notes.unmet23.chatgpt.site/favicon.ico",
+          "line": 0,
+          "column": 0,
+          "lineNumber": 0,
+          "columnNumber": 0
+        }
+      }
+    ],
+    "pageErrors": [],
+    "httpFailures": [],
+    "status": 200,
+    "title": "같은 결, 다른 시간",
+    "images": [
+      {
+        "src": "https://synk-field-notes.unmet23.chatgpt.site/assets/brand-full-synk-ink.webp",
+        "decoded": true,
+        "width": 2200,
+        "height": 1064
+      },
+      {
+        "src": "https://synk-field-notes.unmet23.chatgpt.site/assets/labpage-neutral.webp?v=20260910-edge",
+        "decoded": true,
+        "width": 3840,
+        "height": 2400
+      },
+      {
+        "src": "https://synk-field-notes.unmet23.chatgpt.site/assets/night.webp",
+        "decoded": true,
+        "width": 2048,
+        "height": 2048
+      }
+    ],
+    "screenshot": "C:/Users/q1212/Documents/SYNK-appsscript/tmp/mongle-live-field-notes-card.png",
+    "artboardCount": 1
+  },
+  "checks": {
+    "assets2": true,
+    "allHttp200": true,
+    "allHashesMatch": true,
+    "cardLoaded": true,
+    "allImagesDecoded": true,
+    "noScriptErrors": true
+  }
+}

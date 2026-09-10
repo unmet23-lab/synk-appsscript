@@ -41,7 +41,7 @@ async function prepare(){
  write(path.join(__dirname,'execution.css'),font.면()+inter+loom.css({지면:'밝은부품',범위:'.loom',천:null})+loom.계정컬렉션()+loom.마케팅실행());
  const allAssets=new Set(data.items.flatMap(p=>[...p.slides,...p.scenes].flatMap(x=>[x.asset,...(x.assets||[])])).filter(Boolean).map(key));
  const assetLog=[];
- for(const a of allAssets){const dest=path.join(__dirname,'assets',asset(a));if(!fs.existsSync(dest)){const src=a==='labpage'?path.join(__dirname,'assets/labpage.webp'):path.join(root,'docs/홍보물/브랜드소개_20260909/assets',asset(a));if(!fs.existsSync(src))throw new Error('Missing asset '+a);fs.copyFileSync(src,dest)}const m=await sharp(fs.readFileSync(dest)).metadata();assetLog.push({key:a,path:'assets/'+asset(a),width:m.width,height:m.height,sha256:hash(dest)})}
+ for(const a of allAssets){const dest=path.join(__dirname,'assets',asset(a));const liveMascot=['mong','smile','curious'].includes(a);if(liveMascot||!fs.existsSync(dest)){const src=a==='labpage'?path.join(__dirname,'assets/labpage.webp'):path.join(root,'docs/홍보물/브랜드소개_20260909/assets',asset(a));if(!fs.existsSync(src))throw new Error('Missing asset '+a);if(!fs.existsSync(dest)||hash(src)!==hash(dest))fs.copyFileSync(src,dest)}const m=await sharp(fs.readFileSync(dest)).metadata();assetLog.push({key:a,path:'assets/'+asset(a),width:m.width,height:m.height,sha256:hash(dest)})}
  for(const p of data.items){
   const dir=path.join(__dirname,p.id),rendered=p.slides.map((x,i)=>card(p,x,i)).join('');
   write(path.join(dir,'cards.html'),h(p.title,`<nav class="toolbar"><a href="../index.html">컬렉션으로</a><a href="index.html">이 계정 게시 준비</a></nav>${rendered}${scaleScript}`,'../'));

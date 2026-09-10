@@ -1,0 +1,2406 @@
+{
+  "owner": "bold_structure",
+  "scope": "Current static marketing mascot derivatives and delivery copies; no HTML/CSS content or MP4/audio edits, no commit/push/deploy.",
+  "paths": [
+    "C:/Users/q1212/Documents/SYNK-appsscript/DESIGN.md",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/AI_운영원칙.md",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/명품_기준_v1.md",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/05-yuhobuilds-instagram/master-01.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/05-yuhobuilds-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/16-synk-instagram/master-01.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/16-synk-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/lab-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/lab-2.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/pulse-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/shift-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/synk-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/검증.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_검토/압축검증.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/assets/labpage.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/assets/smile.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/packages/05-yuhobuilds-instagram.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/packages/16-synk-instagram.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/계정별콘텐츠_전체.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/미리보기/05-yuhobuilds-instagram.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/미리보기/16-synk-instagram.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/미리보기/전체카드.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/사용자산.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/16-synk-instagram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/16-synk-instagram/master-01.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/16-synk-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/_검토/미리보기/전체카드.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/_검토/카드검증.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/assets/labpage-neutral.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/assets/labpage.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/assets/smile.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/01-lab-youtube.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/02-lab-instagram.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/03-lab-tiktok.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/04-yuhobuilds-youtube.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/05-yuhobuilds-instagram.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/06-yuhobuilds-tiktok.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/07-synkbrief-youtube.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/08-synkbrief-instagram.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/09-synkbrief-tiktok.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/10-lab-facebook.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/11-yuhobuilds-threads.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/12-synkbrief-threads.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/13-yuhobuilds-linkedin.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/14-lab-telegram.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/15-synklab-substack.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/16-synk-instagram.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/17-shift-naverblog.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/18-shift-kakao.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/19-shift-pinterest.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/만들기.cjs",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/브랜드킷/LAB-소개서-중립로고.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/브랜드킷/소개서대조.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/출고검증.md",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909_업로드꾸러미.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/PDF검사.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/SYNK-LAB-carousel.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/SYNK-brand-introductions.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/assets/curious.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/assets/mong.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/assets/smile.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/lab.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/pulse.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/shift.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/synk.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/묶음검사.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-2.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-3.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-4.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-5.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-전체.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/pulse-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/pulse-3.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/pulse-5.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/pulse-전체.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-2.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-3.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-4.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-5.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-전체.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-2.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-3.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-4.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-5.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-전체.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/소개서-표지.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/캐러셀-전체.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-2.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-3.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-4.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-5.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-3.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-5.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-2.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-3.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-4.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-5.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-1.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-2.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-3.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-4.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-5.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/자산명세.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/자산보기.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/자산준비.cjs",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/01.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/02.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/03.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/04.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/05.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/06.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/07.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_업로드/01.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_업로드/07.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/01-lab-youtube/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/01-lab-youtube/thumbnail.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/01-lab-youtube/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-03.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-06.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-07.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/03-lab-tiktok/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/03-lab-tiktok/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/05-yuhobuilds-instagram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/05-yuhobuilds-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/08-synkbrief-instagram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/08-synkbrief-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/08-synkbrief-instagram/upload-07.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-02.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-03.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-04.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-06.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/납품실물검증.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/압축검증.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/이미지검증.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/자산과원본.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/자산실물.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/전체이미지.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/assets/curious.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/assets/mong.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/assets/smile.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/assets/synk-intro.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/검증결과.md",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드.zip",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/01-lab-youtube/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/01-lab-youtube/thumbnail.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/01-lab-youtube/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-02.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-03.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-04.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-05.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-06.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-07.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/03-lab-tiktok/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/03-lab-tiktok/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/04-yuhobuilds-youtube/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/04-yuhobuilds-youtube/thumbnail.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/04-yuhobuilds-youtube/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/05-yuhobuilds-instagram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/05-yuhobuilds-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/06-yuhobuilds-tiktok/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/06-yuhobuilds-tiktok/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/07-synkbrief-youtube/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/07-synkbrief-youtube/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-02.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-03.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-04.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-05.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-06.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-07.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/09-synkbrief-tiktok/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/09-synkbrief-tiktok/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-02.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-03.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-04.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-05.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-06.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-07.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/11-yuhobuilds-threads/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/11-yuhobuilds-threads/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/12-synkbrief-threads/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/12-synkbrief-threads/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-02.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-03.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-04.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-05.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/게시할자료.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/14-lab-telegram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/14-lab-telegram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/15-synklab-substack/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/15-synklab-substack/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-02.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-03.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-04.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-05.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-06.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/upload-02.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/upload-03.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/18-shift-kakao/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/18-shift-kakao/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/19-shift-pinterest/cover.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/19-shift-pinterest/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/_검토/납품실물검증.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/curious.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-lab.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-pulse.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-shift.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-synk.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/mong.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/proof-ready.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/proof-start.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/pulse-frame.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/smile.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/synk-intro.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-ai-workflow.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-content-map.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-inquiry.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-intro.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-lesson.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-offer.pdf",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/검증결과.md",
+    "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/파일목록.json",
+    "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/curious.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/mong-closed.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/mong.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/smile.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/synk-intro.png",
+    "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/계정별20260909/curious.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/계정별20260909/mong.webp",
+    "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/계정별20260909/smile.webp",
+    "C:/Users/q1212/Documents/SYNK-marketing-share-20260909/source/16-synk-instagram/upload-01.jpg",
+    "C:/Users/q1212/Documents/SYNK-marketing-share-20260909/source/assets/labpage-neutral.webp"
+  ],
+  "files": [
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/DESIGN.md",
+      "repoRelative": "DESIGN.md",
+      "beforeSha256": "8b01068c3b28fc8690605b8394c9ca365c98152c5da0b3893b504de2767822bc",
+      "afterSha256": "90dfc139c23836f1484d06fbf39aedccf8727eddc05db14ceac539fd5d261eee",
+      "bytes": 12641,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/AI_운영원칙.md",
+      "repoRelative": "docs/AI_운영원칙.md",
+      "beforeSha256": "f16234c9e1dcc5818e7023acf3a9c4b70cdb9e6934ea49abee8cb5ec72d85c7f",
+      "afterSha256": "4770ce2685c0a5c76226f0b70bbd68a5f7f7b319b8ecc166209020fb16766102",
+      "bytes": 11438,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/명품_기준_v1.md",
+      "repoRelative": "docs/명품_기준_v1.md",
+      "beforeSha256": "e7fa46f1ccd6c7429a60bf3a8f8792a1608c0dabb5fbae690f60bd25aed17fba",
+      "afterSha256": "42c15d35e44d0f9a1f36a41a0ea05bb0783f1b73ee8e315bc5724d62baee6ef6",
+      "bytes": 11875,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/05-yuhobuilds-instagram/master-01.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/05-yuhobuilds-instagram/master-01.png",
+      "beforeSha256": "b2a1ad955c495bc9476c74d05c8935b02f5423d9d3e2e43306d4bba65d60872f",
+      "afterSha256": "9382db6b1f83185c7eefe1ca72a1a53f5bc9b38f24be82506f989a34b4a372ea",
+      "bytes": 1265173,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/05-yuhobuilds-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/05-yuhobuilds-instagram/upload-01.jpg",
+      "beforeSha256": "271fc9ad858701fb0da3933465a89ca342c4dad4edb24f11715d457d957538d6",
+      "afterSha256": "727cdc17642bdf2a1d5361ecaffa2f5f4ccaf5e5aefd88289d443d49491b946f",
+      "bytes": 221186,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/16-synk-instagram/master-01.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/16-synk-instagram/master-01.png",
+      "beforeSha256": "bdbbb19d57e78bc930864b4d14b30c593f7a75d521a35d8d79762992609a53d1",
+      "afterSha256": "3ff67ed0e9c9f5ad77069744a51ade10f411d80666e62bd9b086fa93174b1f4c",
+      "bytes": 1605109,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/16-synk-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/16-synk-instagram/upload-01.jpg",
+      "beforeSha256": "b40f7da862d5d2d28c9866139173c27a066c618d74377c504c5f0b75cd4ecc67",
+      "afterSha256": "9a4aa497adfb6798d09176a45bd83b9a1f5b21745a335fd2e392bb06f5cf9925",
+      "bytes": 232363,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/lab-1.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/lab-1.png",
+      "beforeSha256": "b8124c697ea49e2028cef83b7e4218c51668a7fe72418cac06db583630cdef10",
+      "afterSha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341",
+      "bytes": 2644729,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/lab-2.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/lab-2.png",
+      "beforeSha256": "e5f503198c5543e6dc3a60cd28f06dead1d73279d7bc6dd86734fde3970efbff",
+      "afterSha256": "511c5cf4e7b63b28e459fcb7df343e33d61ecd9a0eb661e042fd8727b24dd705",
+      "bytes": 2282036,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/pulse-1.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/pulse-1.png",
+      "beforeSha256": "204fb3f6351bf5a6966c03d7f9e22659c446e9d4d7d29a7361957f9fbdf4f106",
+      "afterSha256": "0afc5da7ef98e220c46ea6dc6d5c7a3043d9d0b5672b8754d3012aed28224dfc",
+      "bytes": 4440900,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/shift-1.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/shift-1.png",
+      "beforeSha256": "3925b9f2a9639a0ac26ba7708f70d56fea3045d2c540cbd0d62e99765ba51574",
+      "afterSha256": "49f49133e87c796e112f8d198c48ef76a4eb2d57307d938a5d28846631a8c9d9",
+      "bytes": 2214578,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/synk-1.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/synk-1.png",
+      "beforeSha256": "df49d1d98849543cc894e716e3f2e57b53c1005aefee08cc2c91fa5e840e2e69",
+      "afterSha256": "14bd671f4efb45d41b1d2d04e312007f20180545265c6a19c2e113c5025db2cf",
+      "bytes": 1381898,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/검증.json",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/_개선/지면스냅샷/검증.json",
+      "beforeSha256": "a1fae07655341a8b067df887c7d28d54ed4a4aa5fd0a01d0f7ab1171d40dd159",
+      "afterSha256": "4c24e3e344a7a51c800bc9fa8b2ac94f13ed94fd629d9101bdd58ad39aac251e",
+      "bytes": 1602,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/_검토/압축검증.json",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/_검토/압축검증.json",
+      "beforeSha256": "84ce81148343b0b003be8f1daa28212592dc080c9b3ef7cc1908b42eefb6ac7f",
+      "afterSha256": "1e5da00afc672a39ca318460317d12a688dd7495d05b0d491b4eaf325302e170",
+      "bytes": 73466,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/assets/labpage.webp",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/assets/labpage.webp",
+      "beforeSha256": "6f792a4bd6fef93d6e6d4fd7453c9c2970076324db4c0cbf24f6dfee00a8dc72",
+      "afterSha256": "01c0312c6aea5ef3997c3b4fd92b5f1a3d079d8b23e16f37a4f1aae463ab9b3d",
+      "bytes": 1777504,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/assets/smile.webp",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/assets/smile.webp",
+      "beforeSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
+      "afterSha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7",
+      "bytes": 2174830,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/packages/05-yuhobuilds-instagram.zip",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/packages/05-yuhobuilds-instagram.zip",
+      "beforeSha256": "202f09eb4d3e8822d6cda4b3aa48267298924f6aed6cd52497591373cd279c42",
+      "afterSha256": "8c9e3302fdcb6f067df7cfc9a8c3e0eb083344438cf19baf3345711ca5f3dd62",
+      "bytes": 6884838,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/packages/16-synk-instagram.zip",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/packages/16-synk-instagram.zip",
+      "beforeSha256": "4f85c751111d9e6aa239767db906cb69d1c0cccdbcf212738fb966e58ac0ecc8",
+      "afterSha256": "45b07298fa093dbfad5581551dbfb28df70f40049342f3e9d92ba108f735c27f",
+      "bytes": 1797091,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/계정별콘텐츠_전체.zip",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/계정별콘텐츠_전체.zip",
+      "beforeSha256": "896cbb38a7e84e399347d9e9ebf4ac519d230d99e85c2acd7679a55105b68fb2",
+      "afterSha256": "5ecfab11cc7ae3f1d536d8e6a397f7fa765059bb45caf8c4c50650391424bdd4",
+      "bytes": 205818490,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/미리보기/05-yuhobuilds-instagram.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/미리보기/05-yuhobuilds-instagram.png",
+      "beforeSha256": "5c09a5a941dc7c3639db890251ea3f663a89270040d15a0b88cd1444bf07f567",
+      "afterSha256": "ddc3846567503e4e7ae14dee33a00f70af94fdb51f90276e636e176fcf1394cb",
+      "bytes": 66122,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/미리보기/16-synk-instagram.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/미리보기/16-synk-instagram.png",
+      "beforeSha256": "2f302dc27fc0c2c65a8c7891d066fefad67065b805946154f69cb479f289296f",
+      "afterSha256": "b955f2334097124c4fa6191cc3846a4e88313055a148c334b06ff62f77168492",
+      "bytes": 91887,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/미리보기/전체카드.png",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/미리보기/전체카드.png",
+      "beforeSha256": "598a36934a8baa9976f177f2317d5a3a701d8958d2821e809070fd78b7b7ae41",
+      "afterSha256": "cff061439854c0819ac3533936b175d6aee31aca120eef47256f99c456754684",
+      "bytes": 1004145,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/계정별콘텐츠_20260909/사용자산.json",
+      "repoRelative": "docs/홍보물/계정별콘텐츠_20260909/사용자산.json",
+      "beforeSha256": "5126734c2098cb0748810f81169833935290681106cf85d3b3f8b26edcb2da9a",
+      "afterSha256": "631c3ba70d2712660d556c5cf3c1f2185dbd2598b63830dc899978ab653c32e3",
+      "bytes": 9022,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/16-synk-instagram/cover.jpg",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/16-synk-instagram/cover.jpg",
+      "beforeSha256": "afc004b718f0c2189f56f95184b0394d0849b41d0c384a2f4d02998826df4018",
+      "afterSha256": "bfee66289db875c3c856f13c83bb1e50d6ed784cf77e91d879acea6f307966e4",
+      "bytes": 194393,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/16-synk-instagram/master-01.png",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/16-synk-instagram/master-01.png",
+      "beforeSha256": "bebb8d425c205ec022bd6d75c55be3eca1af409e9c7a1f84cb29c4d9c104e3e2",
+      "afterSha256": "2f48052649a2505d739f829e9dfe63ac8b58413afd7e052543e2c9bebcbde5ef",
+      "bytes": 1461348,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/16-synk-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/16-synk-instagram/upload-01.jpg",
+      "beforeSha256": "afc004b718f0c2189f56f95184b0394d0849b41d0c384a2f4d02998826df4018",
+      "afterSha256": "bfee66289db875c3c856f13c83bb1e50d6ed784cf77e91d879acea6f307966e4",
+      "bytes": 194393,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/_검토/미리보기/전체카드.png",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/_검토/미리보기/전체카드.png",
+      "beforeSha256": "a636d908fd258d6a525bea095aed25ed11282c99ba86865f69b8f79c5e2c773a",
+      "afterSha256": "f07d796e2122ff769efb2a4399ea7db3fe975396c5b271db188bd498a7e21184",
+      "bytes": 830133,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/_검토/카드검증.json",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/_검토/카드검증.json",
+      "beforeSha256": "691a67ff5aab1366268ef9ee40290b0c6c789ae07237da25dfc9dc3dd99e47ea",
+      "afterSha256": "5310683c2f36b32bda0526df858c78976f3b103da32159c31121d7d3c26dce66",
+      "bytes": 10592,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/assets/labpage-neutral.webp",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/assets/labpage-neutral.webp",
+      "beforeSha256": "6f792a4bd6fef93d6e6d4fd7453c9c2970076324db4c0cbf24f6dfee00a8dc72",
+      "afterSha256": "01c0312c6aea5ef3997c3b4fd92b5f1a3d079d8b23e16f37a4f1aae463ab9b3d",
+      "bytes": 1777504,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/assets/labpage.webp",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/assets/labpage.webp",
+      "beforeSha256": "6f792a4bd6fef93d6e6d4fd7453c9c2970076324db4c0cbf24f6dfee00a8dc72",
+      "afterSha256": "01c0312c6aea5ef3997c3b4fd92b5f1a3d079d8b23e16f37a4f1aae463ab9b3d",
+      "bytes": 1777504,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/assets/smile.webp",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/assets/smile.webp",
+      "beforeSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
+      "afterSha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7",
+      "bytes": 2174830,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/01-lab-youtube.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/01-lab-youtube.zip",
+      "beforeSha256": null,
+      "afterSha256": "b605300359276425c03f080852214af3a3b1dcb01e32602c4a0309c95b7d2ea8",
+      "bytes": 46899484,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/02-lab-instagram.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/02-lab-instagram.zip",
+      "beforeSha256": null,
+      "afterSha256": "3ceb9ee052e52accb9638601f303e496da17fd5659fbe9102f1d4bc303c3e175",
+      "bytes": 701974,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/03-lab-tiktok.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/03-lab-tiktok.zip",
+      "beforeSha256": null,
+      "afterSha256": "b546b5bf06b00be10248e7ce9fe6a648d7c95bd988888c59b86812084363b040",
+      "bytes": 2492495,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/04-yuhobuilds-youtube.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/04-yuhobuilds-youtube.zip",
+      "beforeSha256": null,
+      "afterSha256": "441dc75a87e35d5c0cfc8d77e94aa37092fa239509dc364da10090584066b06f",
+      "bytes": 5330388,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/05-yuhobuilds-instagram.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/05-yuhobuilds-instagram.zip",
+      "beforeSha256": null,
+      "afterSha256": "272665502e252561a4050a5c3143bbb02491695b88558e54d51e2baefd271aa0",
+      "bytes": 4121793,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/06-yuhobuilds-tiktok.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/06-yuhobuilds-tiktok.zip",
+      "beforeSha256": null,
+      "afterSha256": "1b5c09a645b98c38e2ea85125fdf4cbc0c1193cfd44081b27da2fa356c88778a",
+      "bytes": 4567722,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/07-synkbrief-youtube.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/07-synkbrief-youtube.zip",
+      "beforeSha256": null,
+      "afterSha256": "de5a95a973be51d5f45df8bc9c212e3db5ffc8c203484f90204aa152948dd75f",
+      "bytes": 4300345,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/08-synkbrief-instagram.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/08-synkbrief-instagram.zip",
+      "beforeSha256": null,
+      "afterSha256": "9f1c3c15aead07f7e31978d3455a170c58fba6a6951478c7aba10c0abb889c62",
+      "bytes": 2253354,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/09-synkbrief-tiktok.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/09-synkbrief-tiktok.zip",
+      "beforeSha256": null,
+      "afterSha256": "4d654bea91bccae0f86e64d07bf1814b405524cebe68ee4660bab0a7fc625611",
+      "bytes": 4758375,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/10-lab-facebook.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/10-lab-facebook.zip",
+      "beforeSha256": null,
+      "afterSha256": "e9036055ca428c84282021822daba62a3bcd444cf1d30a79f0ce82abf8960e9d",
+      "bytes": 365195,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/11-yuhobuilds-threads.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/11-yuhobuilds-threads.zip",
+      "beforeSha256": null,
+      "afterSha256": "90ee0c6d0f4b607b7f51a8205ad43cabf95ca63dabe133f6d30c96b695f73c69",
+      "bytes": 1702708,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/12-synkbrief-threads.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/12-synkbrief-threads.zip",
+      "beforeSha256": null,
+      "afterSha256": "b72b4e1b5b954c0220f99056b49df6b242819ebbd32e6fffb8af16fcf8af561a",
+      "bytes": 1777150,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/13-yuhobuilds-linkedin.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/13-yuhobuilds-linkedin.zip",
+      "beforeSha256": null,
+      "afterSha256": "ed3f1f5d26fe64af1b530c82fe9425ce57f0b7f4769174af49ee2dc94bf0d41c",
+      "bytes": 1996818,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/14-lab-telegram.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/14-lab-telegram.zip",
+      "beforeSha256": null,
+      "afterSha256": "27e33947d3fd3ea446c5fd29e09bf7ea345cad9705ca6fde1f4506f3f01cbd22",
+      "bytes": 359717,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/15-synklab-substack.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/15-synklab-substack.zip",
+      "beforeSha256": null,
+      "afterSha256": "afc8d46a61f642f90df30410513cd678a54369286e5531a085e529e688343158",
+      "bytes": 3206457,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/16-synk-instagram.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/16-synk-instagram.zip",
+      "beforeSha256": null,
+      "afterSha256": "8ff91a2aebe2c5d3a45a3a197e2e69b6648fb02fe760464c12b3d46d0e28107e",
+      "bytes": 363905,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/17-shift-naverblog.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/17-shift-naverblog.zip",
+      "beforeSha256": null,
+      "afterSha256": "08715cde84e1384bb9d48ff9deddcd27833f871115b5b93ad03aabe2334941cf",
+      "bytes": 4625936,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/18-shift-kakao.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/18-shift-kakao.zip",
+      "beforeSha256": null,
+      "afterSha256": "abbafeef807067575eb2a1223c191e3701bae4b661a9f66e8575a96d6102d798",
+      "bytes": 1773249,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/packages/19-shift-pinterest.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/packages/19-shift-pinterest.zip",
+      "beforeSha256": null,
+      "afterSha256": "c4ebd2eb74e35470916e87e8e4b41b993ece4af43f47638fd2cfb62fd34615d8",
+      "bytes": 1731665,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/만들기.cjs",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/만들기.cjs",
+      "beforeSha256": "eb7787dda93f47b8f253ab4d77485ef5127b6466fa1e93e42dcbc69dda3a2baa",
+      "afterSha256": "af54702ad07cff24283e69c3e1be6cf14f0bb1fc03ea4b2571aea7f5857a8059",
+      "bytes": 41251,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/브랜드킷/LAB-소개서-중립로고.png",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/브랜드킷/LAB-소개서-중립로고.png",
+      "beforeSha256": "c9f37b946227e4ba7f677c6da97fc321e318ee93f2a301a33c6aecdca631e031",
+      "afterSha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341",
+      "bytes": 2644729,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/브랜드킷/소개서대조.json",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/브랜드킷/소개서대조.json",
+      "beforeSha256": "1d754704e92db63b97f436ebd99ff3343e7b63f8066ce3104b111f1ff80bd986",
+      "afterSha256": "daba2108a7afbafb8178f6b15c3c42ba2262cc34a73ec9d246170e51e57dc676",
+      "bytes": 426,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909/출고검증.md",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909/출고검증.md",
+      "beforeSha256": "19ddd20ab9c9322b0a42e87b6950aaff4739e423643f1dfe6758e5b93bc8ecaa",
+      "afterSha256": "5ab626c27de4b69b95aa8215c715c3ebc7ae3faaee3f08d3eba4ccbb3e5e945a",
+      "bytes": 12115,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/마케팅실행_20260909_업로드꾸러미.zip",
+      "repoRelative": "docs/홍보물/마케팅실행_20260909_업로드꾸러미.zip",
+      "beforeSha256": null,
+      "afterSha256": "692cc5bc76c188b93d359634b4743ad0e889025ed5beff06d48c380e66e5b9fe",
+      "bytes": 197986100,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/PDF검사.json",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/PDF검사.json",
+      "beforeSha256": "e915d266bd18fe6bcdf444f4f4a7465b49e736e79ee811c20a3fe56c019dbdcb",
+      "afterSha256": "431f5752c7dda1f550810f6872f797e4b7994c0c4210e3689c53c3faa1956710",
+      "bytes": 736,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/SYNK-LAB-carousel.zip",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/SYNK-LAB-carousel.zip",
+      "beforeSha256": "6638f9a97ecb44df5854613f1dda695d3b2d45e64eada3e6df7b45b20d1ad608",
+      "afterSha256": "7851682d6dd37f327fca2e6d4586049e04330cee6d10ba912aabb3709ccb8d7e",
+      "bytes": 2687963,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/SYNK-brand-introductions.zip",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/SYNK-brand-introductions.zip",
+      "beforeSha256": "d4e2fcd67630fc12571e7f16bc2289836fefe0adb6a50852cd209303252dbf7c",
+      "afterSha256": "5a00f1ca8222456eb40186bda05b521c7404d13ccc0bf8f5833c3748cbe58c14",
+      "bytes": 124175156,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/assets/curious.webp",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/assets/curious.webp",
+      "beforeSha256": "c292cee982469fd9a0742f953f161cfc205b0ca1ba60e569b98168c20cac96f2",
+      "afterSha256": "308800184593b2aa730521694645d02bd66f5c4569b8570aa7a130b1dc6d5914",
+      "bytes": 2205904,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/assets/mong.webp",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/assets/mong.webp",
+      "beforeSha256": "ea805eb1c832fd19e0be9ce1f333d6361c3e1532c00dc1e323ac24011540d34e",
+      "afterSha256": "3a5948469e645251b8485a63f2b6678f420a8660d5de868aafee00327c474841",
+      "bytes": 2191882,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/assets/smile.webp",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/assets/smile.webp",
+      "beforeSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
+      "afterSha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7",
+      "bytes": 2174830,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/lab.pdf",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/lab.pdf",
+      "beforeSha256": "698e892a0306c80557a08800312a6b01644d23f6f4762df77d29721940974ecb",
+      "afterSha256": "8822be01b7a3cac3bba65dc6c5245a9b6d909c386f3a6e796a55f4d31b881380",
+      "bytes": 5428430,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/pulse.pdf",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/pulse.pdf",
+      "beforeSha256": "1de8fb7b2dae2c7a53436f58abd95697a348f98bf1c9a7482918ae16c0a94cf4",
+      "afterSha256": "0c00c175fb3b7f4ce23d2d16a866a43ab417d33b6316b56ca7e62fba98ea8040",
+      "bytes": 8602097,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/shift.pdf",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/shift.pdf",
+      "beforeSha256": "a71bf7d892c55cd0b9e88d3368b50ba5a0abc53a46ea89ab0852ee575280b5ef",
+      "afterSha256": "73efd953422dba23a4718d229b2f529b2aadbad52c5876a5d2a09f7573c03d76",
+      "bytes": 5488479,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/synk.pdf",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/synk.pdf",
+      "beforeSha256": "0342c1f068a14e962cb32364ee5fb89e91d64d57da37997c5174c9b02be1253b",
+      "afterSha256": "4989afd5b19cdcd970af28f264a90ebdd049b34149e44325d8adb48012ece8df",
+      "bytes": 5898185,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/묶음검사.json",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/묶음검사.json",
+      "beforeSha256": "a68cfef1d6856b5c9000152f453c83949323d64fed9a0fd443d98527d29e6280",
+      "afterSha256": "e4c5c282a151da2f90a218df539ed3781649030f7608efb0e6e7b2615969827b",
+      "bytes": 660,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-1.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/lab-1.png",
+      "beforeSha256": "a2f9dbeeb8d2e2e597f2db78e33b00def991667674c33a1646bfc07d11d28b52",
+      "afterSha256": "9fd25b0129a88213cde85a27fb3e3ea8ebc8454d73a5bd002fc3f51c44b25db9",
+      "bytes": 593155,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-2.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/lab-2.png",
+      "beforeSha256": "d26befae2334df322ebbef0744925e8156fc8633a2ff7cce03254fc30d458c3e",
+      "afterSha256": "e4261d145ad84dc2d6d42fea5b5578608195829936bd5f50c201f10c3650184a",
+      "bytes": 661402,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-3.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/lab-3.png",
+      "beforeSha256": "70d2dad018bbf4e4cd6bfa0c750b8a6c1dd85bafdaf952d25f9affd1b6234006",
+      "afterSha256": "a9502837ef6e85259c6b29c0e2deb8e81dda0c0bca2d216e9ae149d8418c8018",
+      "bytes": 251515,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-4.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/lab-4.png",
+      "beforeSha256": "0221b91fed24e8782fa1af6e444aa3548e97a6fb0e6f0908cdc4aa901899e7ca",
+      "afterSha256": "2da8e81f046888bfda44c1db413360b96e994c2abe2c5089e3dde116d0227963",
+      "bytes": 313806,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-5.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/lab-5.png",
+      "beforeSha256": "fe6a8cccd71205f2d3073d609d5a211c246cd28c78c03d3d9e916aa9095a7d4a",
+      "afterSha256": "556cd3e2e605cf4c11d00a8253e6dc69fb1c4f602f9abf66fcbf450758c3d817",
+      "bytes": 414062,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/lab-전체.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/lab-전체.png",
+      "beforeSha256": "7b41ab3a97d583a6793ddd22536a6074e1a38528a60ca3a69896c8fa5a999d5a",
+      "afterSha256": "a261b303ec8e4dafb2f6eb4b2cfef7e42e5e7c84bda3514051803edc993eaf72",
+      "bytes": 773236,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/pulse-1.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/pulse-1.png",
+      "beforeSha256": "c7035c889c6141c9ea1acc928e53aba737b9e22924a0c9a03a92e1c24526aecd",
+      "afterSha256": "2359d0b025f8f1fa16a2e9032cc00c0bc7ba155eb95fbc0b9bd43f082d4c6589",
+      "bytes": 1084033,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/pulse-3.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/pulse-3.png",
+      "beforeSha256": "9fe0136dc7e7487c9138d9b5d87cabbfdbbb2001f71f53fd27d4acee5f851ae0",
+      "afterSha256": "1091db10a329d966bb0b614bb0cae26abf9fcd9b33fe002efdf09689b2ca775f",
+      "bytes": 394857,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/pulse-5.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/pulse-5.png",
+      "beforeSha256": "1a75eb9d482db2facb3533fb7d85296f2f10edd47a367810b4212ac6cbff4b19",
+      "afterSha256": "f059e7ad8991d22d382138a460ed631c8073957a9e22e5c732ce93b75883e0b4",
+      "bytes": 355457,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/pulse-전체.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/pulse-전체.png",
+      "beforeSha256": "668f0a7370edc442db6cf13937c1c49c1f5c7f6f9a37af1c068a465dedab76e9",
+      "afterSha256": "3c5d0c45815480accefb9410acc9b834d02809c27d32b861e650c0bbddd4f086",
+      "bytes": 1151356,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-1.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/shift-1.png",
+      "beforeSha256": "7ebec22861c6a556c234d5548daf5dfd9d995f8344a466d4f0d4b2e975ef0432",
+      "afterSha256": "0871f4dcf13d579540298a92a1ee288a9c20cb805cc88b5d204ab31a77c761ad",
+      "bytes": 597434,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-2.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/shift-2.png",
+      "beforeSha256": "78319914e14b836ca52df9830aa9c45ae3684770020518f1c3fc8683aab0a164",
+      "afterSha256": "30c4877e46b000d93484545b9f8ba09dd3b6aadf015b6a7086e024d178bfdd1e",
+      "bytes": 218770,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-3.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/shift-3.png",
+      "beforeSha256": "705493bb56be915c459761227a0cf10f29383e8f8eb4125e95d6d637639611ae",
+      "afterSha256": "7f4803847e3c3f5b7a5f5ce4adf43362725974290bdf28ce525cb752157c2f75",
+      "bytes": 504172,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-4.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/shift-4.png",
+      "beforeSha256": "40c25178dd0de44ac6621549a015d131f9ef1be8b1bfd7607623c34cd882c3d6",
+      "afterSha256": "784f911559062dd3d94f07e189896c10e64e48e34215bb3b8a28c985a8900410",
+      "bytes": 292675,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-5.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/shift-5.png",
+      "beforeSha256": "8283cec09930a9057c5170d6571592911b13cc45edcfecbdfa746462ca980c30",
+      "afterSha256": "ed36fff993f6d9f4c9c1e5996f73cd451a27de0686c0ebe95633205b351f39b0",
+      "bytes": 429325,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/shift-전체.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/shift-전체.png",
+      "beforeSha256": "4daf1344e4607d6c098b45f651ae9439035146d89adc9d0bbd02181228e9b3bc",
+      "afterSha256": "623a179b3540fd8827a0d9284e3c21b74419b583613d5da5b919e1670ae20513",
+      "bytes": 718020,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-1.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/synk-1.png",
+      "beforeSha256": "b12e45d924256e415ec5a95de72bca84125ab830c5cb8e394fd68aeeff5491d7",
+      "afterSha256": "dc8ab00d87e4d0b504ea2f4f986b6d3b05da80ad0d4db3cdf50c71e8329001f0",
+      "bytes": 338314,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-2.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/synk-2.png",
+      "beforeSha256": "c45fae21d60ab5c797a5c47884890bc81212e3ddc2bdeb9e5288846145eaaf24",
+      "afterSha256": "78922b18445d7ce9bccec19f1378f690b4a25831623384bb504a60af3d164fc2",
+      "bytes": 425164,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-3.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/synk-3.png",
+      "beforeSha256": "dd8413ac55ed9721c72524de9ad6f9d36023da5ffb1a746daa9f9d6fc7e2e22b",
+      "afterSha256": "28d5e45909e415fe037562f00a8c4e2327ab89bdf21114cd64da620a4aeeae43",
+      "bytes": 240644,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-4.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/synk-4.png",
+      "beforeSha256": "e72e3fecb35cf54d72c8b0b8af58dc9892b9bdb8b1c8fd8ad9357d217ac86209",
+      "afterSha256": "38634f71bdc55d1a405241568d5c0e4d938ac6fd95d11c5254bea1b9d6ee8ebc",
+      "bytes": 791340,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-5.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/synk-5.png",
+      "beforeSha256": "9d4710e623b1f1535362231c4e3b2935ebc02662bbf53a1bcf928246e11a4fb9",
+      "afterSha256": "949f8838ce42f9e618220966dece607c85223971058d2e77834e4d3880d4ee50",
+      "bytes": 420358,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/synk-전체.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/synk-전체.png",
+      "beforeSha256": "0d376af15ead676440c70ec800c02bc5ff6d991b17354b35460f514d0b311fb3",
+      "afterSha256": "b89a4dd5b08cbc7ab128d8d94bd4c94e2e483581570fca6ed1fc60af906dfb18",
+      "bytes": 751333,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/소개서-표지.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/소개서-표지.png",
+      "beforeSha256": "42306e232f6884ca16922fe07a365914d4859d63ec64da73098acacde7ef4fee",
+      "afterSha256": "5bc634ab33c7410f3d68061434b1db36984e93e02e743757c1f1ed988797277c",
+      "bytes": 821693,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/미리보기/캐러셀-전체.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/미리보기/캐러셀-전체.png",
+      "beforeSha256": "22aafd3bffb7a9085854903a46f5224b3fcebb7a3149373e076bde504740cb06",
+      "afterSha256": "82b8632bc722b3463be954fe004977217cfa90fe2dc74f6a3ad1ed447a07bbce",
+      "bytes": 227552,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
+      "beforeSha256": "b8124c697ea49e2028cef83b7e4218c51668a7fe72418cac06db583630cdef10",
+      "afterSha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341",
+      "bytes": 2644729,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-2.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-2.png",
+      "beforeSha256": "e5f503198c5543e6dc3a60cd28f06dead1d73279d7bc6dd86734fde3970efbff",
+      "afterSha256": "511c5cf4e7b63b28e459fcb7df343e33d61ecd9a0eb661e042fd8727b24dd705",
+      "bytes": 2282036,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-3.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-3.png",
+      "beforeSha256": "de32c4ab87a882965e8ef4a3cf6faea292391ee4b4ad84fc027688afb4cf47b9",
+      "afterSha256": "9d0b48ba0653a1ad5f72b9e7d3347e13d23a4b689965eebafc1c6c84f3087ca3",
+      "bytes": 707708,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-4.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-4.png",
+      "beforeSha256": "3bf441e4d1b15b870961dc07ab04adf68b6880203b599c80e5f8b885eee6706a",
+      "afterSha256": "c69eaab439a25c87cdf2bbb361275c9f985f093a6aef971dbd45e796258e5e88",
+      "bytes": 1006545,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/lab-5.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-5.png",
+      "beforeSha256": "3f809654cde2489360bfb95ff91560784652db7a0f22c337f4f49b6debdb6bb7",
+      "afterSha256": "71744f10bba7b0c7fadfd56a52bae1db05be6b88ed12bcae16d74e7f0c3395f5",
+      "bytes": 1302597,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-1.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-1.png",
+      "beforeSha256": "204fb3f6351bf5a6966c03d7f9e22659c446e9d4d7d29a7361957f9fbdf4f106",
+      "afterSha256": "0afc5da7ef98e220c46ea6dc6d5c7a3043d9d0b5672b8754d3012aed28224dfc",
+      "bytes": 4440900,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-3.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-3.png",
+      "beforeSha256": "07ea81962c553135bb67f0d127df9bd7825a934819687faca55ad1633e2be99a",
+      "afterSha256": "98dd75c0f5a4e5bb7d3ecfe33aecc035745f5c1c96409a354527a27c8bfdb6cf",
+      "bytes": 1779124,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-5.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/pulse-5.png",
+      "beforeSha256": "493a28264b45f632295b2da0cb5f4041c7806480834d73466a342cfe0b9f557e",
+      "afterSha256": "5f607d7bb9dbd6cbdf6e80266a072da85c522c71b7d4cca3fa5ca3db0f57574d",
+      "bytes": 1212264,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-1.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-1.png",
+      "beforeSha256": "3925b9f2a9639a0ac26ba7708f70d56fea3045d2c540cbd0d62e99765ba51574",
+      "afterSha256": "49f49133e87c796e112f8d198c48ef76a4eb2d57307d938a5d28846631a8c9d9",
+      "bytes": 2214578,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-2.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-2.png",
+      "beforeSha256": "6b8f5e02eac8a888d6cff96f99b68cef55ae051035812d35e7c26740dd5664ca",
+      "afterSha256": "f5f6820ef345032fabfe94abd34358bd5a4983ea0aee4300b66398838d7a6ffd",
+      "bytes": 503919,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-3.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-3.png",
+      "beforeSha256": "0f784e38a1030a0d6ce31e1b0d7c056743f70e7e751c23a646b00916a128bfdf",
+      "afterSha256": "50d1b5de3fd50a20dc1ae2b36741a61077fc385f55a7cfb23a0acaa336d169c3",
+      "bytes": 1990956,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-4.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-4.png",
+      "beforeSha256": "e904a3e15386a51493c6b49ebd725a398393776688f5a8d4c76b549f53026539",
+      "afterSha256": "8bf9fe6fe8d97fab2b8d55b8800fb9094bdcc303c1b3a0fc28fc3b759d45473d",
+      "bytes": 901099,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/shift-5.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/shift-5.png",
+      "beforeSha256": "05fec8e30bb808cf117525be578d77994924d9cba32b08b7a686630318d7a4b7",
+      "afterSha256": "4f1b661bf8d68feb613edc60a229c3933a0524cb3353e82db5b97f5783045a07",
+      "bytes": 1613117,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-1.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/synk-1.png",
+      "beforeSha256": "df49d1d98849543cc894e716e3f2e57b53c1005aefee08cc2c91fa5e840e2e69",
+      "afterSha256": "14bd671f4efb45d41b1d2d04e312007f20180545265c6a19c2e113c5025db2cf",
+      "bytes": 1381898,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-2.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/synk-2.png",
+      "beforeSha256": "96dc1ea7d54b5d186fa6a12223e344f75a39b589ae9f55f0ee8d17624d1bd147",
+      "afterSha256": "cf967a76f6ce8e3834ff64351437a4afbea751bcd2657086036b157e50399754",
+      "bytes": 1590613,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-3.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/synk-3.png",
+      "beforeSha256": "84c2fe39149726ddd415db43ce9c1aa839a0fe24a8ec6841216a38615cd45a01",
+      "afterSha256": "a068bcfabe8ec5330acd19e7bfb23084cba96880f4c4c576aa09b7701554696b",
+      "bytes": 687367,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-4.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/synk-4.png",
+      "beforeSha256": "6106457a57cf6dfe68db3befbbaef128bde085e6604ba5b3f8390fc520d2ff7a",
+      "afterSha256": "1a2e63f6ab2dc8ff95696ab2ad01a2d4dce5c99ce84396f738eb43ae8a60deca",
+      "bytes": 3176639,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/소개서_4K/synk-5.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/소개서_4K/synk-5.png",
+      "beforeSha256": "ae18b463d06d22f129aebffbc718bf72fd962c35c139a06811e9f411c66b50d7",
+      "afterSha256": "0980fbea4873bd9d96073123092e46cdcf8cd6b220e893e28cafac5cecbd73e4",
+      "bytes": 1590098,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/자산명세.json",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/자산명세.json",
+      "beforeSha256": "88da97fd4bdd427cecb554245c299686f1767df4cc0a55be821b8854e43750d8",
+      "afterSha256": "674067d95434cf40c690101318e47d566b80b356b9289efef422090bbd2dbc00",
+      "bytes": 8096,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/자산보기.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/자산보기.png",
+      "beforeSha256": "9620961f6918ef9abcc93eedfba6cc0776c773122ff66042f2caa40b010bcc54",
+      "afterSha256": "496264047d9b384a159b567a78e9eeac44fc0a2393b74d46cb41e3b82591047a",
+      "bytes": 1867520,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/자산준비.cjs",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/자산준비.cjs",
+      "beforeSha256": "49bad931327100d90b4de92ca2dd2938d57f35f58d1503d8243b8cf1859fcca8",
+      "afterSha256": "7a1f822bb543f2a812f4002e6a8c7382f2f1ef5f3d09290f7caa9a0503104ba8",
+      "bytes": 5663,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/01.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/01.png",
+      "beforeSha256": "4577259e90dbaa44bd52683a344c318ff94b0756465b5acd307a2b1dd009c6f4",
+      "afterSha256": "fa41f73d1f3153ae30f84a2eb425f036e5bb25129d41c2f4dc2c653ab99449a7",
+      "bytes": 631259,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/02.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/02.png",
+      "beforeSha256": "7c3c7293d9fc67d7a98e9d079ed36ca08359d97895daec87b48e03243fac88ed",
+      "afterSha256": "184b9303d5bdcc024074ff02cdb3d973bbe9b10d8c1a2d440dd17a0783cf5388",
+      "bytes": 176911,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/03.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/03.png",
+      "beforeSha256": "97a5b929a5959bec900bec96d99da0ff5912daecc2e0b8123b9d517c6be94b40",
+      "afterSha256": "f8834309c44651cb063230c1723627e9f5db2b6b7b46fee7a5fb82d338ad6b55",
+      "bytes": 160026,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/04.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/04.png",
+      "beforeSha256": "47b16d8cb73b6eeeb24495a0635c1487ef36edd67974ccf4648421f6c3cf19fc",
+      "afterSha256": "cc11323a0b5eb64cb5d11fa5ef255a597c78925fb2ab0063bb4e8f9bfebaa106",
+      "bytes": 162202,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/05.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/05.png",
+      "beforeSha256": "2b12ae6c10c0291a26506bc40cbd58faa61902404252d612ae59a90f12408cc1",
+      "afterSha256": "c1fa86231063de80e771d640185c2cf6b5f3497e01a10e3ac55ab317d3b5c456",
+      "bytes": 182944,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/06.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/06.png",
+      "beforeSha256": "110adcfb78d9196f8d6a64cbff273d5acec85f605b89bf05950dfd19ba8a6e6a",
+      "afterSha256": "75eec22315205ec430f4ee8c216d3da4674a0515ac1adbe594a35ea363b69295",
+      "bytes": 176857,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/07.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/캐러셀_고해상도/07.png",
+      "beforeSha256": "cad77e2b5754f8eb35d14d6870e87a50e5a3c278bc546f7c938d02575ae55370",
+      "afterSha256": "f07d1b703ad93b97a4b1a3792bffe66bf620cdcb9a30e22464bbeac68adce7c4",
+      "bytes": 532131,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_업로드/01.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/캐러셀_업로드/01.png",
+      "beforeSha256": "53ac4b8970701983e598a44fd2fdd524a818c3622c1e1312810af061db80249b",
+      "afterSha256": "94bb7558ba0aec963a30110d2ff1a79ab00f7724e1c83ce3f5fb2b55761a0c46",
+      "bytes": 184100,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/브랜드소개_20260909/캐러셀_업로드/07.png",
+      "repoRelative": "docs/홍보물/브랜드소개_20260909/캐러셀_업로드/07.png",
+      "beforeSha256": "2d4727a4ab41b7dbce69790e4fd7ff11dc7b1e9689921def6c78b4cd036d08a4",
+      "afterSha256": "11fefd15f95729616970ff7a829167d3e884803da1316be9ac13b159888026a4",
+      "bytes": 161126,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/01-lab-youtube/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/01-lab-youtube/cover.jpg",
+      "beforeSha256": "dc346041af6fa80a31fc921a101cfcc14bdbec2ebdd3bfe11179efbd7157567d",
+      "afterSha256": "ec8e935942fd7b40e1afa3c73ad46e6575cbd6062a2f04c902c3534d70e26a04",
+      "bytes": 245657,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/01-lab-youtube/thumbnail.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/01-lab-youtube/thumbnail.jpg",
+      "beforeSha256": "c74d5f61633aa4e8210346ebaf69e6ec749fe94a6537ae769820af5863b3c736",
+      "afterSha256": "2a501bdb7c21d1c0a53d48d58af01113a6698bd2583ac3cf54dc12b3b218799c",
+      "bytes": 294536,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/01-lab-youtube/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/01-lab-youtube/upload-01.jpg",
+      "beforeSha256": "dc346041af6fa80a31fc921a101cfcc14bdbec2ebdd3bfe11179efbd7157567d",
+      "afterSha256": "ec8e935942fd7b40e1afa3c73ad46e6575cbd6062a2f04c902c3534d70e26a04",
+      "bytes": 245657,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/02-lab-instagram/cover.jpg",
+      "beforeSha256": "cd7933c9f3a3051c4502d362be35c69f46de0d4125ef721f21f8952ac0669e5a",
+      "afterSha256": "07158d062f33d9fbdf511f32883759c6a29637d1f5b34ba77299fb86bad04bcb",
+      "bytes": 219759,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-01.jpg",
+      "beforeSha256": "cd7933c9f3a3051c4502d362be35c69f46de0d4125ef721f21f8952ac0669e5a",
+      "afterSha256": "07158d062f33d9fbdf511f32883759c6a29637d1f5b34ba77299fb86bad04bcb",
+      "bytes": 219759,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-03.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-03.jpg",
+      "beforeSha256": "82fdf11c4a9e90c35d4cd7e4b1027bbee9ca8aaee694f3115e64083cb2527d6a",
+      "afterSha256": "ede4d0d222ff226dd631aab00277e5a26f794ac69f59f8b817415ed1ae876a20",
+      "bytes": 158335,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-06.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-06.jpg",
+      "beforeSha256": "0fba0a62a8fd85d6630a34144202e1b142a53c8b5b5d7791a0831df0cb56212f",
+      "afterSha256": "e3c8b073ceebefe6e5a98c9f836a68df080a292b7fa08538a432d50a29a80cbb",
+      "bytes": 176349,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-07.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/02-lab-instagram/upload-07.jpg",
+      "beforeSha256": "b2d4dbabdfde1757ddc49f5af86e6bb510d8fe44e238b2bca13bd5c548074b38",
+      "afterSha256": "5dec46b24220c8a8ad16470807342a26fec796a574fcc3157ba8d7d73424f655",
+      "bytes": 198768,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/03-lab-tiktok/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/03-lab-tiktok/cover.jpg",
+      "beforeSha256": "e1b9f3a1f00f6e341a75ca89db45e4543c8bcac6fda2999501478f0df8310f01",
+      "afterSha256": "b4efbae99b198b885748d013af16e5e27525539825939345bb3eaffce7c30387",
+      "bytes": 392704,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/03-lab-tiktok/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/03-lab-tiktok/upload-01.jpg",
+      "beforeSha256": "e1b9f3a1f00f6e341a75ca89db45e4543c8bcac6fda2999501478f0df8310f01",
+      "afterSha256": "b4efbae99b198b885748d013af16e5e27525539825939345bb3eaffce7c30387",
+      "bytes": 392704,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/05-yuhobuilds-instagram/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/05-yuhobuilds-instagram/cover.jpg",
+      "beforeSha256": "f5d4218390cc883cbce1a3963ff6814439aa7a6201767acd374f418c27ead20f",
+      "afterSha256": "88ac4655e30c88881f3926043ad1a4b9a99d05bf846baa56211d337f07d858c7",
+      "bytes": 185480,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/05-yuhobuilds-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/05-yuhobuilds-instagram/upload-01.jpg",
+      "beforeSha256": "f5d4218390cc883cbce1a3963ff6814439aa7a6201767acd374f418c27ead20f",
+      "afterSha256": "88ac4655e30c88881f3926043ad1a4b9a99d05bf846baa56211d337f07d858c7",
+      "bytes": 185480,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/08-synkbrief-instagram/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/08-synkbrief-instagram/cover.jpg",
+      "beforeSha256": "774f9b5ae082e87d518ace3cba3a6fd5472432f20fb76a12f01a2677e4ec9b9b",
+      "afterSha256": "0a95ad4970d27319e4cad22ff49b726a35517bce4e2ed2829af6eb1b401d029c",
+      "bytes": 203375,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/08-synkbrief-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/08-synkbrief-instagram/upload-01.jpg",
+      "beforeSha256": "774f9b5ae082e87d518ace3cba3a6fd5472432f20fb76a12f01a2677e4ec9b9b",
+      "afterSha256": "0a95ad4970d27319e4cad22ff49b726a35517bce4e2ed2829af6eb1b401d029c",
+      "bytes": 203375,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/08-synkbrief-instagram/upload-07.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/08-synkbrief-instagram/upload-07.jpg",
+      "beforeSha256": "b1195fa9c616c24374cd9e654925d5bbb0d3d285e4e3d6efc1264402782965b5",
+      "afterSha256": "2f5c26974cc6943330a6531f3caf8ce1748e8f3bdea04a104473ae246fd472d7",
+      "bytes": 157652,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/16-synk-instagram/cover.jpg",
+      "beforeSha256": "f72897a995a408b60cf713c933e7628aa698adabf944ee5daba8098ac25c137c",
+      "afterSha256": "510fe85542a49affeabb0f85af7ad567a69b32be7a873209de7d2b3c0a13e79d",
+      "bytes": 192292,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-01.jpg",
+      "beforeSha256": "f72897a995a408b60cf713c933e7628aa698adabf944ee5daba8098ac25c137c",
+      "afterSha256": "510fe85542a49affeabb0f85af7ad567a69b32be7a873209de7d2b3c0a13e79d",
+      "bytes": 192292,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-02.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-02.jpg",
+      "beforeSha256": "8ef0887138f22bddf95c4debdc2b80325cd6b45cc483ae630c8d11db8564039b",
+      "afterSha256": "814977419613b391215f83719deb5d78e8f412a50f4e22df32d73cb9bfaa9604",
+      "bytes": 145510,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-03.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-03.jpg",
+      "beforeSha256": "160925cab200078fd764dc3e89dcc309ea48cc48894cf6f0fcd6f09866808923",
+      "afterSha256": "917f624fa40cef4bd085eaffb09d3426921903eef058b4c10269a4545e51d87c",
+      "bytes": 149762,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-04.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-04.jpg",
+      "beforeSha256": "2dd953c28ea23ccfed6212432fff1248e1bb7632d9512e6691d494fe58b6267a",
+      "afterSha256": "c957f77d3391508da2689b97519412b215ae45adcf4ae13353aafb8914b42472",
+      "bytes": 167717,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-06.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/16-synk-instagram/upload-06.jpg",
+      "beforeSha256": "2b80c40843993b27d487c28604643e73e15a1b9d8e2c2fd468f25f94bc47eaaa",
+      "afterSha256": "44ba25bc2c379136c217cc523dcbd6c4f2165c4dcac65eaa53890e989ed8106d",
+      "bytes": 142791,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/납품실물검증.json",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/_검토/납품실물검증.json",
+      "beforeSha256": null,
+      "afterSha256": "89e7ea32e3bb651d3340d5d4a9d34538141af6815dd8481054f621eeb1e1b12b",
+      "bytes": 27397,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/압축검증.json",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/_검토/압축검증.json",
+      "beforeSha256": "5faaa1eac92c5ee2cae2765a012ac1dba71592f3b8eabd0af09ed23cd3509ba6",
+      "afterSha256": "ca83c73092ad1c4b70659302129caad3f9dd1416c8efb487881e7742e8d56fdd",
+      "bytes": 262,
+      "tracked": true
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/이미지검증.json",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/_검토/이미지검증.json",
+      "beforeSha256": null,
+      "afterSha256": "001ccda93d0a455e671449969dbbec0fecc43f9ba07954d2d7ee365c69db9d7a",
+      "bytes": 11966,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/자산과원본.json",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/_검토/자산과원본.json",
+      "beforeSha256": "b39f24e6c429909ddfb611aebcf6831472c358c095b2bcedf3f4a69f422eeb3f",
+      "afterSha256": "7b0ea73c3ad87f02692307ca21043b536a6e95a6479f466f8e2dc96d8fbdb1a8",
+      "bytes": 10599,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/자산실물.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/_검토/자산실물.png",
+      "beforeSha256": null,
+      "afterSha256": "5b656478b6a4ccbd618b5a477527fa04c5ddabec7d246ff7336052d5ad927edf",
+      "bytes": 1517634,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/_검토/전체이미지.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/_검토/전체이미지.png",
+      "beforeSha256": null,
+      "afterSha256": "d33a275f26e5809206dcab0f616a20c6d92e111ebada398e313cfb0ec6d2db61",
+      "bytes": 1316889,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/assets/curious.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/assets/curious.png",
+      "beforeSha256": "62e3eeef4ccd8bedd491284c425586e40bf267b409e632eddb84e425e7cc8b95",
+      "afterSha256": "773896342e92f28a26bba2b940c28ac06dae67cc8a30adbef234ad952254122f",
+      "bytes": 22800700,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/assets/mong.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/assets/mong.png",
+      "beforeSha256": "85c5a4359030c7f07bdc335173b4052c47d4d81c9db3f28eabde661b7d026836",
+      "afterSha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c",
+      "bytes": 22736214,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/assets/smile.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/assets/smile.png",
+      "beforeSha256": "bd958681f5db426d6b6fac9ae8122e02fa1a825a83adeb3502c5c37843175d7e",
+      "afterSha256": "7b1a8b9070d847a69b349c66f95d5c6fe824b4371b304f44ef4f2865b22f4a14",
+      "bytes": 22811787,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/assets/synk-intro.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/assets/synk-intro.png",
+      "beforeSha256": "c9f37b946227e4ba7f677c6da97fc321e318ee93f2a301a33c6aecdca631e031",
+      "afterSha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341",
+      "bytes": 2644729,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/검증결과.md",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/검증결과.md",
+      "beforeSha256": null,
+      "afterSha256": "8c54a8572916037b458ac22acc202da4a1fcaa0cefac90a9274cc287630ce070",
+      "bytes": 11359,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드.zip",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드.zip",
+      "beforeSha256": "cc605172d4c72f3cd4681064ca61632c7ee3a22e75db4b408f94a4963ce1bbbe",
+      "afterSha256": "6110d27efb81a5fcaad5f5f59960916f6b1562a15a620ee2f8b2fe80450e56e7",
+      "bytes": 431483854,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/01-lab-youtube/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/01-lab-youtube/cover.jpg",
+      "beforeSha256": "a9fa154d0abfcea0c44ebef6b9ed621d35c52b10813c224465f66d5dda57b3fd",
+      "afterSha256": "ec8e935942fd7b40e1afa3c73ad46e6575cbd6062a2f04c902c3534d70e26a04",
+      "bytes": 245657,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/01-lab-youtube/thumbnail.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/01-lab-youtube/thumbnail.jpg",
+      "beforeSha256": "1db7c1c9bd07003cb1b31b0b86da0aeb9c9c17695a8748de35f70355f4b7183c",
+      "afterSha256": "2a501bdb7c21d1c0a53d48d58af01113a6698bd2583ac3cf54dc12b3b218799c",
+      "bytes": 294536,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/01-lab-youtube/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/01-lab-youtube/upload-01.jpg",
+      "beforeSha256": "a9fa154d0abfcea0c44ebef6b9ed621d35c52b10813c224465f66d5dda57b3fd",
+      "afterSha256": "ec8e935942fd7b40e1afa3c73ad46e6575cbd6062a2f04c902c3534d70e26a04",
+      "bytes": 245657,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/cover.jpg",
+      "beforeSha256": "fc67b5850a4df93cb7abebe8ad40c13b75a362851e4c836cbe9e9ae95bfd72a3",
+      "afterSha256": "07158d062f33d9fbdf511f32883759c6a29637d1f5b34ba77299fb86bad04bcb",
+      "bytes": 219759,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-01.jpg",
+      "beforeSha256": "fc67b5850a4df93cb7abebe8ad40c13b75a362851e4c836cbe9e9ae95bfd72a3",
+      "afterSha256": "07158d062f33d9fbdf511f32883759c6a29637d1f5b34ba77299fb86bad04bcb",
+      "bytes": 219759,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-02.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-02.jpg",
+      "beforeSha256": "d6ba33896a27dfca30b47b3ff9cd9c1b92c739c5fce116591d9073a326343b7b",
+      "afterSha256": "007387c4444566b033caa89bcb695e1b565e86c051347f154cc9b4c81e835a1c",
+      "bytes": 125196,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-03.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-03.jpg",
+      "beforeSha256": "d3b9f16b2808aefab5dd41607adf9df6520cb7402f1f3d2c99bf163235064810",
+      "afterSha256": "ede4d0d222ff226dd631aab00277e5a26f794ac69f59f8b817415ed1ae876a20",
+      "bytes": 158335,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-04.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-04.jpg",
+      "beforeSha256": "933cb0e95e060e86e26051ac11c35a920f1881c223ded86d432db0ad00a92d09",
+      "afterSha256": "99466ffafed6d4e768646213b43d77d0f81739e07955889da4e28b7b0395630d",
+      "bytes": 155842,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-05.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-05.jpg",
+      "beforeSha256": "6d13a47795d1bf61ab3a74532995aa34857c60729e9e6c4ef479746f5392bee7",
+      "afterSha256": "24cf92ef8fd42380d200d73cddf18d066ab6e9d3be40389d6fbf05399a0e93cf",
+      "bytes": 125292,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-06.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-06.jpg",
+      "beforeSha256": "b74b570154222640cc111ef4016eb6841508eab25cc9f800eb885c7cfa9a5737",
+      "afterSha256": "e3c8b073ceebefe6e5a98c9f836a68df080a292b7fa08538a432d50a29a80cbb",
+      "bytes": 176349,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-07.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/02-lab-instagram/upload-07.jpg",
+      "beforeSha256": "bdfb03fd89b19a17bc56ac0b238536b0f84bbe4c6a66e9c7511e921b0498239e",
+      "afterSha256": "5dec46b24220c8a8ad16470807342a26fec796a574fcc3157ba8d7d73424f655",
+      "bytes": 198768,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/03-lab-tiktok/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/03-lab-tiktok/cover.jpg",
+      "beforeSha256": "8c74cb349a221fb03800f1bf38fe75f6f52da4eed25bcd01c7134d4a04ee62dc",
+      "afterSha256": "b4efbae99b198b885748d013af16e5e27525539825939345bb3eaffce7c30387",
+      "bytes": 392704,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/03-lab-tiktok/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/03-lab-tiktok/upload-01.jpg",
+      "beforeSha256": "8c74cb349a221fb03800f1bf38fe75f6f52da4eed25bcd01c7134d4a04ee62dc",
+      "afterSha256": "b4efbae99b198b885748d013af16e5e27525539825939345bb3eaffce7c30387",
+      "bytes": 392704,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/04-yuhobuilds-youtube/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/04-yuhobuilds-youtube/cover.jpg",
+      "beforeSha256": "aec2008dbb3b024a26f57f01893ac749009e8ae6fc6b4ec414832aae58ea11c7",
+      "afterSha256": "e27bb220b8a87f46c2e219c016922e4a3872f0a5cd6e209e72d0a9bd6d9c834a",
+      "bytes": 167403,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/04-yuhobuilds-youtube/thumbnail.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/04-yuhobuilds-youtube/thumbnail.jpg",
+      "beforeSha256": "c5614df14df6053a54842fd09a16cb7202efee54f7dc96fcda1d9eb3f1e446c1",
+      "afterSha256": "81fec7db8f446662d30c651bbf2a22cbf7d3d2af5cdfead95174f4d1e6c8c99c",
+      "bytes": 175463,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/04-yuhobuilds-youtube/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/04-yuhobuilds-youtube/upload-01.jpg",
+      "beforeSha256": "aec2008dbb3b024a26f57f01893ac749009e8ae6fc6b4ec414832aae58ea11c7",
+      "afterSha256": "e27bb220b8a87f46c2e219c016922e4a3872f0a5cd6e209e72d0a9bd6d9c834a",
+      "bytes": 167403,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/05-yuhobuilds-instagram/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/05-yuhobuilds-instagram/cover.jpg",
+      "beforeSha256": "7f1a0da12acb8282114546e8ec57095c563d45d8d86c47ab0257e92045aab307",
+      "afterSha256": "88ac4655e30c88881f3926043ad1a4b9a99d05bf846baa56211d337f07d858c7",
+      "bytes": 185480,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/05-yuhobuilds-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/05-yuhobuilds-instagram/upload-01.jpg",
+      "beforeSha256": "7f1a0da12acb8282114546e8ec57095c563d45d8d86c47ab0257e92045aab307",
+      "afterSha256": "88ac4655e30c88881f3926043ad1a4b9a99d05bf846baa56211d337f07d858c7",
+      "bytes": 185480,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/06-yuhobuilds-tiktok/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/06-yuhobuilds-tiktok/cover.jpg",
+      "beforeSha256": "ae2615b75e34204e8836dec8f0764c836e4931890e91e0a303372166897d8e33",
+      "afterSha256": "8e176c4e806eaea415d5888aca1d99c7a544f422b5341fcce0211f9e6fda9f18",
+      "bytes": 295409,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/06-yuhobuilds-tiktok/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/06-yuhobuilds-tiktok/upload-01.jpg",
+      "beforeSha256": "ae2615b75e34204e8836dec8f0764c836e4931890e91e0a303372166897d8e33",
+      "afterSha256": "8e176c4e806eaea415d5888aca1d99c7a544f422b5341fcce0211f9e6fda9f18",
+      "bytes": 295409,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/07-synkbrief-youtube/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/07-synkbrief-youtube/cover.jpg",
+      "beforeSha256": "4c49b010a8987a7cc039eae79388ede3cc6b3005eaf0122b63b195f91b834589",
+      "afterSha256": "77dcdec567d400a9a0be57fc5c06cde25987a88c905f9ec01cf3bb14a008d9f8",
+      "bytes": 182152,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/07-synkbrief-youtube/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/07-synkbrief-youtube/upload-01.jpg",
+      "beforeSha256": "4c49b010a8987a7cc039eae79388ede3cc6b3005eaf0122b63b195f91b834589",
+      "afterSha256": "77dcdec567d400a9a0be57fc5c06cde25987a88c905f9ec01cf3bb14a008d9f8",
+      "bytes": 182152,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/cover.jpg",
+      "beforeSha256": "0dc36d3306f302e70b601c5a3a220af38558bc25d2962bf5e6beae2799dc3734",
+      "afterSha256": "0a95ad4970d27319e4cad22ff49b726a35517bce4e2ed2829af6eb1b401d029c",
+      "bytes": 203375,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-01.jpg",
+      "beforeSha256": "0dc36d3306f302e70b601c5a3a220af38558bc25d2962bf5e6beae2799dc3734",
+      "afterSha256": "0a95ad4970d27319e4cad22ff49b726a35517bce4e2ed2829af6eb1b401d029c",
+      "bytes": 203375,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-02.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-02.jpg",
+      "beforeSha256": "1707ffca475d5ecb1b7f5440fa37ef49ba09aaa3c83dca74e06967cf02d8fefe",
+      "afterSha256": "18ff25e8c5485700639027e2a42d3e00aef02ccd32bc506b842031230551bab0",
+      "bytes": 120111,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-03.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-03.jpg",
+      "beforeSha256": "7665abb8adbac3dec231268d517277cd88d63cdc92a99e332e6b87bc8a5c68b3",
+      "afterSha256": "9a92f4ccfb3fe3fa6fdbdd28fb02d079acf7fef79288668b3d4f9d6f87ee89bd",
+      "bytes": 114857,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-04.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-04.jpg",
+      "beforeSha256": "eb8260dab2fc621da681aba66db1c653c376811e7028c4411ea4fe005a146cc9",
+      "afterSha256": "21a14e9ec37bbb38286408e2914bfedde9142e433f03e4559004f34d80c45850",
+      "bytes": 121512,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-05.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-05.jpg",
+      "beforeSha256": "f00f8bfcfdaf9f0376011c53d493840a7867e98fbce34f4358aa37eff0003c91",
+      "afterSha256": "07c68fe65816fc649bb7a25ae77d65877cab1e77ca0287a5502104c424eb1820",
+      "bytes": 101605,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-06.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-06.jpg",
+      "beforeSha256": "5a9414a20556329d34a2324829e2d5e1c7859b71e7ad489aebeb4b51f563d203",
+      "afterSha256": "6382b07bb656ddf3ecc4ee27beb3d343ad59c257990c222e4f1a681aed053329",
+      "bytes": 105257,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-07.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/08-synkbrief-instagram/upload-07.jpg",
+      "beforeSha256": "af870c09af91dbea2016e28a55023fd6f83cd027d17f33e7e78a79db3884ffac",
+      "afterSha256": "2f5c26974cc6943330a6531f3caf8ce1748e8f3bdea04a104473ae246fd472d7",
+      "bytes": 157652,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/09-synkbrief-tiktok/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/09-synkbrief-tiktok/cover.jpg",
+      "beforeSha256": "f1b266074de14c28f96257ec393179ca6a16c8b8a78efcb1bea43d6426989846",
+      "afterSha256": "8d3044e387c9184b392fe163e51a36a856641286e2d9e50603cb4c986e77a570",
+      "bytes": 285191,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/09-synkbrief-tiktok/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/09-synkbrief-tiktok/upload-01.jpg",
+      "beforeSha256": "f1b266074de14c28f96257ec393179ca6a16c8b8a78efcb1bea43d6426989846",
+      "afterSha256": "8d3044e387c9184b392fe163e51a36a856641286e2d9e50603cb4c986e77a570",
+      "bytes": 285191,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/cover.jpg",
+      "beforeSha256": "f70cfb73e417d5929d7dcd1f80231534df52460788dec729795ac2b2a591c5a3",
+      "afterSha256": "0f04903b2d7b1137f8e02248e6d55a7112b2950a7d82ddcf071f54da21d95931",
+      "bytes": 233371,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-01.jpg",
+      "beforeSha256": "f70cfb73e417d5929d7dcd1f80231534df52460788dec729795ac2b2a591c5a3",
+      "afterSha256": "0f04903b2d7b1137f8e02248e6d55a7112b2950a7d82ddcf071f54da21d95931",
+      "bytes": 233371,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-02.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-02.jpg",
+      "beforeSha256": "566f65fc2a7f33146d7722fe5ef09531ff6a9ae4189c64f801ec85e6a0f72ce4",
+      "afterSha256": "2037786e1ce2f289e9fe98287972319b553a50d505a04a88e1afe8fa62142e54",
+      "bytes": 127203,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-03.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-03.jpg",
+      "beforeSha256": "ea42206db0b875e409130bcb5b56bc567a97e1d70408dbaeb724a130a3b3dffc",
+      "afterSha256": "75f2a8798a0a66a432432ae2252a992d627715f3ffecffa4a16c51d98b01ee2e",
+      "bytes": 189981,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-04.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-04.jpg",
+      "beforeSha256": "03fd63cd945071c126c5338d800152996f62b08ae06eeddcbaaf9a3c07ce698a",
+      "afterSha256": "5762f8c34a06d81f503dee29f6042cc3e04d4cb341b8d31f0bac2995ac3767cd",
+      "bytes": 116596,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-05.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-05.jpg",
+      "beforeSha256": "4122cfbb2b8e53e951692735086e02fe2ba9038c133fc0cc00247be9ebccfb15",
+      "afterSha256": "5c923848ab0427698f8c3adcad1f23bbc6bcf575ae7304597e3b662630e93d9c",
+      "bytes": 198764,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-06.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-06.jpg",
+      "beforeSha256": "b76371c4d72001b80c359a82c119affb65bf53a125a7caf6ae06a7c02d2420cb",
+      "afterSha256": "1c677043646270749af06a7bf257ec5a0f34179046f03273a546fcfe090f87c3",
+      "bytes": 179376,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-07.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/10-lab-facebook/upload-07.jpg",
+      "beforeSha256": "207c49f0c4c723d40ad4bf79f63e424e6cc0829da4589f12c27b6af2680c4163",
+      "afterSha256": "c83b8a8ad525964df7f3d514646adf35a755ea77ba0eaef490371754650a53be",
+      "bytes": 160790,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/11-yuhobuilds-threads/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/11-yuhobuilds-threads/cover.jpg",
+      "beforeSha256": "d2ed8a6c7a42e3f35163948970288f98236b408373540a47cd6573301d18ef8a",
+      "afterSha256": "a961e4a4e29fb858ca94d70a1cdf94d70042947a885e2511e86ad35cc1a25981",
+      "bytes": 149796,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/11-yuhobuilds-threads/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/11-yuhobuilds-threads/upload-01.jpg",
+      "beforeSha256": "d2ed8a6c7a42e3f35163948970288f98236b408373540a47cd6573301d18ef8a",
+      "afterSha256": "a961e4a4e29fb858ca94d70a1cdf94d70042947a885e2511e86ad35cc1a25981",
+      "bytes": 149796,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/12-synkbrief-threads/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/12-synkbrief-threads/cover.jpg",
+      "beforeSha256": "c97476407ed9c7b5e8970aedae4ed4d8c0008d4ca2ad3565249eb6991ef6f012",
+      "afterSha256": "7c4191aaa8b4d14ed050608eb5d1a505d99a34429f720059c1c447dd613e46ba",
+      "bytes": 133195,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/12-synkbrief-threads/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/12-synkbrief-threads/upload-01.jpg",
+      "beforeSha256": "c97476407ed9c7b5e8970aedae4ed4d8c0008d4ca2ad3565249eb6991ef6f012",
+      "afterSha256": "7c4191aaa8b4d14ed050608eb5d1a505d99a34429f720059c1c447dd613e46ba",
+      "bytes": 133195,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/cover.jpg",
+      "beforeSha256": "eeb739e714cc6a757f1b4bb12f463d67481cde16668aba8ea93b12bd220d8946",
+      "afterSha256": "02ca4d737932f6239f5fc67fba3a26ef38fcfd60892f0a3d0745dc120d19265e",
+      "bytes": 267333,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-01.jpg",
+      "beforeSha256": "eeb739e714cc6a757f1b4bb12f463d67481cde16668aba8ea93b12bd220d8946",
+      "afterSha256": "02ca4d737932f6239f5fc67fba3a26ef38fcfd60892f0a3d0745dc120d19265e",
+      "bytes": 267333,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-02.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-02.jpg",
+      "beforeSha256": "e2a4bfd5d568db251a003c0bdfba4ff9c15f51545bb9b49ed72b61ef2915845b",
+      "afterSha256": "2eeb92f500e26cd75bf0ea3dd7e5935346e5a9565ed576c3427028cf0c7edae5",
+      "bytes": 141295,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-03.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-03.jpg",
+      "beforeSha256": "054479d2117536d000f059ac37e0e3c75ae5fe127fee66493482504eea577bb8",
+      "afterSha256": "2ca3937de7fe949a6ff00fd70b6a9d97e35569cc7c484b25c2956a87d95dc4e6",
+      "bytes": 159513,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-04.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-04.jpg",
+      "beforeSha256": "3baaa3815ac0030cd1f25361b37a0a2d6eb7561df925dbd510aaa2d437ed2c93",
+      "afterSha256": "fa948bb7e62c9e88ff8096fc30f6e0df1d348eb304111d14b582cd6a949b4ff1",
+      "bytes": 150848,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-05.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/upload-05.jpg",
+      "beforeSha256": "31671b21361e2e1828c67dfb58b659c30f958f72edeca12e861964ae71e0b4fd",
+      "afterSha256": "d4e92f37a3ffad2e80b8a2e7dea3705999718f346cf112eff29f1ed10003dc75",
+      "bytes": 157252,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/게시할자료.pdf",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/13-yuhobuilds-linkedin/게시할자료.pdf",
+      "beforeSha256": "949d39b1b5f53c17c6777ea88480323fe5b4d85d4b6074b89d63f85737954d7b",
+      "afterSha256": "6dcc3b34ee25faa6822f6094de8f443f1dc9a7fbe48b399133b40f9f42852453",
+      "bytes": 4832590,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/14-lab-telegram/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/14-lab-telegram/cover.jpg",
+      "beforeSha256": "26060de11f197ee66edccca62bfa1b6eb9075e26febc0f648dea528761f29704",
+      "afterSha256": "04a19eed84811547117f17ab0cea238cfe148d1bf847b23de9084e13be00b304",
+      "bytes": 239073,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/14-lab-telegram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/14-lab-telegram/upload-01.jpg",
+      "beforeSha256": "26060de11f197ee66edccca62bfa1b6eb9075e26febc0f648dea528761f29704",
+      "afterSha256": "04a19eed84811547117f17ab0cea238cfe148d1bf847b23de9084e13be00b304",
+      "bytes": 239073,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/15-synklab-substack/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/15-synklab-substack/cover.jpg",
+      "beforeSha256": "dbb3679c8aa377cb9d5892c5cf136d887840e85fd366a53c4028a0000af68e30",
+      "afterSha256": "913347991351d714078f4d5eba69dea38d8fa7607e2e267e71f93eb2f2211d8f",
+      "bytes": 97447,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/15-synklab-substack/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/15-synklab-substack/upload-01.jpg",
+      "beforeSha256": "dbb3679c8aa377cb9d5892c5cf136d887840e85fd366a53c4028a0000af68e30",
+      "afterSha256": "913347991351d714078f4d5eba69dea38d8fa7607e2e267e71f93eb2f2211d8f",
+      "bytes": 97447,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/cover.jpg",
+      "beforeSha256": "c9bdae307952a7f86cfcfa8d1c4c3a54ce59463f1d8eff12f5ca4dbc76142c66",
+      "afterSha256": "510fe85542a49affeabb0f85af7ad567a69b32be7a873209de7d2b3c0a13e79d",
+      "bytes": 192292,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-01.jpg",
+      "beforeSha256": "c9bdae307952a7f86cfcfa8d1c4c3a54ce59463f1d8eff12f5ca4dbc76142c66",
+      "afterSha256": "510fe85542a49affeabb0f85af7ad567a69b32be7a873209de7d2b3c0a13e79d",
+      "bytes": 192292,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-02.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-02.jpg",
+      "beforeSha256": "fe63e6815e4bce79c721fa7e281c913a6279e0e4e6400535c198ca9c835b6e40",
+      "afterSha256": "814977419613b391215f83719deb5d78e8f412a50f4e22df32d73cb9bfaa9604",
+      "bytes": 145510,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-03.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-03.jpg",
+      "beforeSha256": "78a11d93a4bd5b7f6797e24092861ab6971ea0b22c29e9a8dd512b8bc1f83e3d",
+      "afterSha256": "917f624fa40cef4bd085eaffb09d3426921903eef058b4c10269a4545e51d87c",
+      "bytes": 149762,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-04.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-04.jpg",
+      "beforeSha256": "b52257e65e612d922ab9bc22eef6f5504c5440499346096154b48bb484195a4a",
+      "afterSha256": "c957f77d3391508da2689b97519412b215ae45adcf4ae13353aafb8914b42472",
+      "bytes": 167717,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-05.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-05.jpg",
+      "beforeSha256": "d977b8ab323853db5caa58b240ef915c6031085417117a5b3e49376aa831a3e0",
+      "afterSha256": "098e7ac366de1a157847269d02c2252708476161bfa2bfc98c4b55d7423b1f77",
+      "bytes": 97408,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-06.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/16-synk-instagram/upload-06.jpg",
+      "beforeSha256": "d68064c40872de488f812e9cef111a3c26f1460f1b6afe3412472bc9dc747b17",
+      "afterSha256": "44ba25bc2c379136c217cc523dcbd6c4f2165c4dcac65eaa53890e989ed8106d",
+      "bytes": 142791,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/cover.jpg",
+      "beforeSha256": "8138315c8552498ab4f01f3802f240274af950d1dd54486110b3926240c48d7f",
+      "afterSha256": "c25d611b1eb44797267ae4e9e9e30d1d0fbf6ce9be9a9dc80f52644db9bc98a8",
+      "bytes": 218816,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/upload-01.jpg",
+      "beforeSha256": "8138315c8552498ab4f01f3802f240274af950d1dd54486110b3926240c48d7f",
+      "afterSha256": "c25d611b1eb44797267ae4e9e9e30d1d0fbf6ce9be9a9dc80f52644db9bc98a8",
+      "bytes": 218816,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/upload-02.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/upload-02.jpg",
+      "beforeSha256": "5874e9fadd5be05fe74140a69a65845579d2204cc6d25aab0070203fa995ac2f",
+      "afterSha256": "ec6a9595d36fae0f44215c74d7ac7d200acb456714cef08d33f4fb8b497d2c04",
+      "bytes": 115314,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/upload-03.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/17-shift-naverblog/upload-03.jpg",
+      "beforeSha256": "f1ac740838f286595b47e531a935a57006455cdb568d58e74fd47729f8d768d2",
+      "afterSha256": "8dc3a478c0082d5f69b88d82c8346cca125684f347913ecf6d8e4bfeb3e29226",
+      "bytes": 181641,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/18-shift-kakao/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/18-shift-kakao/cover.jpg",
+      "beforeSha256": "5d4da5fcd964c453789d1f1518e2604f15898038a973293b224a23edaa2bc65c",
+      "afterSha256": "7c7c28ed1a7faf6eff8e6bc412d87de829374a2ffd559fa382e00b9f13324e45",
+      "bytes": 143283,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/18-shift-kakao/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/18-shift-kakao/upload-01.jpg",
+      "beforeSha256": "5d4da5fcd964c453789d1f1518e2604f15898038a973293b224a23edaa2bc65c",
+      "afterSha256": "7c7c28ed1a7faf6eff8e6bc412d87de829374a2ffd559fa382e00b9f13324e45",
+      "bytes": 143283,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/19-shift-pinterest/cover.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/19-shift-pinterest/cover.jpg",
+      "beforeSha256": "84fec513f9adcd088a5d94606b1c14f196d9d63686f174f59e47000acb677f2f",
+      "afterSha256": "04bf9ae46d6815b9c0a96a9da456ea2d20f04a57620d5186f51746af411b80f7",
+      "bytes": 152234,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/19-shift-pinterest/upload-01.jpg",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/19-shift-pinterest/upload-01.jpg",
+      "beforeSha256": "84fec513f9adcd088a5d94606b1c14f196d9d63686f174f59e47000acb677f2f",
+      "afterSha256": "04bf9ae46d6815b9c0a96a9da456ea2d20f04a57620d5186f51746af411b80f7",
+      "bytes": 152234,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/_검토/납품실물검증.json",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/_검토/납품실물검증.json",
+      "beforeSha256": "26f77a18021b97778a24faddfaa198b8f1fb63df2e592127ebfc5914f24062c9",
+      "afterSha256": "89e7ea32e3bb651d3340d5d4a9d34538141af6815dd8481054f621eeb1e1b12b",
+      "bytes": 27397,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/curious.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/curious.png",
+      "beforeSha256": "62e3eeef4ccd8bedd491284c425586e40bf267b409e632eddb84e425e7cc8b95",
+      "afterSha256": "773896342e92f28a26bba2b940c28ac06dae67cc8a30adbef234ad952254122f",
+      "bytes": 22800700,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-lab.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-lab.png",
+      "beforeSha256": "3d893a76599932d75309bf48727ffab9916982065a6deb395a92061a1e5a63d8",
+      "afterSha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201",
+      "bytes": 3364367,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-pulse.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-pulse.png",
+      "beforeSha256": "505a65e008b09d4504645d6b10ef194fb7cdad327d2cffaaf926a97fb41e4f54",
+      "afterSha256": "f5dc1c08a81976e5cdea4b9d9a6755d71efec681deb4d0ea9861fa7c3e3aad9d",
+      "bytes": 3982910,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-shift.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-shift.png",
+      "beforeSha256": "d23aac0ee23c0775044aa9746a3302b669beaacc4f26e162b6ed15f3ffff0d75",
+      "afterSha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0",
+      "bytes": 3750416,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-synk.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/logo-synk.png",
+      "beforeSha256": "92e376fca8412bcd66b32375dc4ebc9678def2ea084b2b10590a983b9f7b6aef",
+      "afterSha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc",
+      "bytes": 2155745,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/mong.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/mong.png",
+      "beforeSha256": "85c5a4359030c7f07bdc335173b4052c47d4d81c9db3f28eabde661b7d026836",
+      "afterSha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c",
+      "bytes": 22736214,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/proof-ready.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/proof-ready.png",
+      "beforeSha256": "94cda032c14c93128564d60960a1a2148fdd5c0e9f0173598d57cba4570607d7",
+      "afterSha256": "e57e33920cf1ec408dc8672009ba59cebe0530da9a7cd4c54113706554c1b62d",
+      "bytes": 117744,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/proof-start.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/proof-start.png",
+      "beforeSha256": "75ef9fa64c0f1b9524fa8664e07055c2736ae9a8dd323112ed2ee4f905048ee6",
+      "afterSha256": "94ff860ab5598541a667702629513120eeae4a06052d7a357f4b9b947ba199e8",
+      "bytes": 118378,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/pulse-frame.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/pulse-frame.png",
+      "beforeSha256": "9d8f27cac17796adca006cd30328bf24c3e37bf9664c81b1caad91b31c7f5469",
+      "afterSha256": "866fc351619871ebcf46ee347a3004b3cf1d2ee272431f90d9b8c745d851c81b",
+      "bytes": 2251644,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/smile.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/smile.png",
+      "beforeSha256": "bd958681f5db426d6b6fac9ae8122e02fa1a825a83adeb3502c5c37843175d7e",
+      "afterSha256": "7b1a8b9070d847a69b349c66f95d5c6fe824b4371b304f44ef4f2865b22f4a14",
+      "bytes": 22811787,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/assets/synk-intro.png",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/assets/synk-intro.png",
+      "beforeSha256": "9beb7d2bdec1a10c0c3602f055f098f3cbbe5163c3b40c92358be83a235d4f3a",
+      "afterSha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341",
+      "bytes": 2644729,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-ai-workflow.pdf",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-ai-workflow.pdf",
+      "beforeSha256": "b19db4baff7c8990bb31c07b93601215a3d5116827111f099c0e1baf2e970beb",
+      "afterSha256": "0656229fb0d690089357050cfd9c8a605cd3c91fdf7b46b02312a1fcf9aefb3d",
+      "bytes": 1630068,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-content-map.pdf",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-content-map.pdf",
+      "beforeSha256": "0d2e8efe1afb2dc48097942828b3121ba54d06a5422b5e079fbf949c5096f4bd",
+      "afterSha256": "d37e8dd4fc12567be9969a17711e7ad64f7d89d5ccc235967fd66d0ba3154e24",
+      "bytes": 1634244,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-inquiry.pdf",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-inquiry.pdf",
+      "beforeSha256": "79a2eb820a610dcc2b3ac0a7d4b5e76e28d52d6fa10cbddc2c9f609054a6eba5",
+      "afterSha256": "52eddd9521da542e687cfc84944bcaa35a405e5c5556772670ad1460611e6e1d",
+      "bytes": 1573287,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-intro.pdf",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-intro.pdf",
+      "beforeSha256": "238dbbfb89f4326d94c2a09c18f00a37286b15fdfb82976e32492a65368510c0",
+      "afterSha256": "29d3ea2a114a1ab69a4b75520137c78e76e656c4ff755fffa21ae801dcbad8da",
+      "bytes": 1547483,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-lesson.pdf",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-lesson.pdf",
+      "beforeSha256": "1c2896356aa46dcf7577f865f64ca59f82934e7d1c7d84abfc4cf2daae0a8eea",
+      "afterSha256": "4d8caffbef3e25d93d2f80a54208d83fb4bd3fcb4f848c72970ef7bee1e98995",
+      "bytes": 1607625,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-offer.pdf",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/resources/shift-offer.pdf",
+      "beforeSha256": "988f44d2ad3a221db356cd04a5cd1e5ebb9dbe883a09cce4fc26d2c18891154f",
+      "afterSha256": "4e0dc84668b21edbc702c406d8e7e9b1e636300ec05b9765cbf3af6d40fd8d0d",
+      "bytes": 1558505,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/검증결과.md",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/검증결과.md",
+      "beforeSha256": "24ea5c4439dd9b1a1c598718b478676de78027a3511ce2876ac5c35f7aa699ad",
+      "afterSha256": "8c54a8572916037b458ac22acc202da4a1fcaa0cefac90a9274cc287630ce070",
+      "bytes": 11359,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/docs/홍보물/첫게시물_20260910/전체_업로드/파일목록.json",
+      "repoRelative": "docs/홍보물/첫게시물_20260910/전체_업로드/파일목록.json",
+      "beforeSha256": "d5f1c49c94a5bae478042f02c2362f27ee74f72a3f68cd4bbba9f6a4a8b0c63b",
+      "afterSha256": "26587324664eee0f5711a20dc51925c13378b13d477a931d2038166032f249f2",
+      "bytes": 58294,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/curious.png",
+      "repoRelative": "영상/public/firstposts20260910/curious.png",
+      "beforeSha256": "62e3eeef4ccd8bedd491284c425586e40bf267b409e632eddb84e425e7cc8b95",
+      "afterSha256": "773896342e92f28a26bba2b940c28ac06dae67cc8a30adbef234ad952254122f",
+      "bytes": 22800700,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/mong-closed.png",
+      "repoRelative": "영상/public/firstposts20260910/mong-closed.png",
+      "beforeSha256": "5c51b195478054c5133564394490c52ad949120684d01b4a87191a7204a48f79",
+      "afterSha256": "5b1c4840462dc87781241f0983a7aa5dba3b8a0498357427e99218fee7ab2c14",
+      "bytes": 22745560,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/mong.png",
+      "repoRelative": "영상/public/firstposts20260910/mong.png",
+      "beforeSha256": "85c5a4359030c7f07bdc335173b4052c47d4d81c9db3f28eabde661b7d026836",
+      "afterSha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c",
+      "bytes": 22736214,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/smile.png",
+      "repoRelative": "영상/public/firstposts20260910/smile.png",
+      "beforeSha256": "bd958681f5db426d6b6fac9ae8122e02fa1a825a83adeb3502c5c37843175d7e",
+      "afterSha256": "7b1a8b9070d847a69b349c66f95d5c6fe824b4371b304f44ef4f2865b22f4a14",
+      "bytes": 22811787,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/firstposts20260910/synk-intro.png",
+      "repoRelative": "영상/public/firstposts20260910/synk-intro.png",
+      "beforeSha256": "c9f37b946227e4ba7f677c6da97fc321e318ee93f2a301a33c6aecdca631e031",
+      "afterSha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341",
+      "bytes": 2644729,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/계정별20260909/curious.webp",
+      "repoRelative": "영상/public/계정별20260909/curious.webp",
+      "beforeSha256": "c292cee982469fd9a0742f953f161cfc205b0ca1ba60e569b98168c20cac96f2",
+      "afterSha256": "308800184593b2aa730521694645d02bd66f5c4569b8570aa7a130b1dc6d5914",
+      "bytes": 2205904,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/계정별20260909/mong.webp",
+      "repoRelative": "영상/public/계정별20260909/mong.webp",
+      "beforeSha256": "ea805eb1c832fd19e0be9ce1f333d6361c3e1532c00dc1e323ac24011540d34e",
+      "afterSha256": "3a5948469e645251b8485a63f2b6678f420a8660d5de868aafee00327c474841",
+      "bytes": 2191882,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-appsscript/영상/public/계정별20260909/smile.webp",
+      "repoRelative": "영상/public/계정별20260909/smile.webp",
+      "beforeSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
+      "afterSha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7",
+      "bytes": 2174830,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-marketing-share-20260909/source/16-synk-instagram/upload-01.jpg",
+      "repoRelative": null,
+      "beforeSha256": "afc004b718f0c2189f56f95184b0394d0849b41d0c384a2f4d02998826df4018",
+      "afterSha256": "bfee66289db875c3c856f13c83bb1e50d6ed784cf77e91d879acea6f307966e4",
+      "bytes": 194393,
+      "tracked": false
+    },
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-marketing-share-20260909/source/assets/labpage-neutral.webp",
+      "repoRelative": null,
+      "beforeSha256": "6f792a4bd6fef93d6e6d4fd7453c9c2970076324db4c0cbf24f6dfee00a8dc72",
+      "afterSha256": "01c0312c6aea5ef3997c3b4fd92b5f1a3d079d8b23e16f37a4f1aae463ab9b3d",
+      "bytes": 1777504,
+      "tracked": false
+    }
+  ],
+  "qa": {
+    "htmlCssChanged": [],
+    "frozenBackgrounds": [
+      {
+        "key": "window",
+        "unchanged": true
+      },
+      {
+        "key": "classroom",
+        "unchanged": true
+      },
+      {
+        "key": "cafe",
+        "unchanged": true
+      },
+      {
+        "key": "house",
+        "unchanged": true
+      },
+      {
+        "key": "lake",
+        "unchanged": true
+      },
+      {
+        "key": "meadow",
+        "unchanged": true
+      },
+      {
+        "key": "city",
+        "unchanged": true
+      },
+      {
+        "key": "night",
+        "unchanged": true
+      },
+      {
+        "key": "moon",
+        "unchanged": true
+      }
+    ],
+    "mascotCacheCheck": {
+      "checked": 28,
+      "frozen": 9,
+      "filesWritten": 0
+    },
+    "mascotStale": [
+      {
+        "key": "mong",
+        "sourceSha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c",
+        "outputSha256": "3a5948469e645251b8485a63f2b6678f420a8660d5de868aafee00327c474841",
+        "stale": false
+      },
+      {
+        "key": "smile",
+        "sourceSha256": "7b1a8b9070d847a69b349c66f95d5c6fe824b4371b304f44ef4f2865b22f4a14",
+        "outputSha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7",
+        "stale": false
+      },
+      {
+        "key": "curious",
+        "sourceSha256": "773896342e92f28a26bba2b940c28ac06dae67cc8a30adbef234ad952254122f",
+        "outputSha256": "308800184593b2aa730521694645d02bd66f5c4569b8570aa7a130b1dc6d5914",
+        "stale": false
+      }
+    ],
+    "staticRenders": {
+      "introductionPages": 20,
+      "introductionPdfs": 4,
+      "carouselOutputs": 14,
+      "accountCards": 2,
+      "marketingCards": 1,
+      "firstPostAccounts": [
+        "01",
+        "02",
+        "03",
+        "05",
+        "08",
+        "16"
+      ]
+    },
+    "firstPostChecks": {
+      "accounts": 19,
+      "images": 48,
+      "screens": 62,
+      "links": 418,
+      "status": "incomplete",
+      "failures": [
+        "03-lab-tiktok: final movie duration differs from current voiced scenes",
+        "04-yuhobuilds-youtube: final movie duration differs from current voiced scenes",
+        "05-yuhobuilds-instagram: final movie duration differs from current voiced scenes",
+        "06-yuhobuilds-tiktok: final movie duration differs from current voiced scenes",
+        "07-synkbrief-youtube: final movie duration differs from current voiced scenes",
+        "09-synkbrief-tiktok: final movie duration differs from current voiced scenes"
+      ]
+    },
+    "visualReview": [
+      "Introduction LAB cover and PULSE3 PDF rendered with Poppler",
+      "Current introduction/7-card carousel preview",
+      "Marketing16 actual output",
+      "First post16 body and LAB2 curious actual outputs"
+    ],
+    "archives": {
+      "marketingFullExport": 20,
+      "streamPatched": 6,
+      "streamingEvidence": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\zip-results.json",
+      "originalMovieAudioEntriesPreserved": 16
+    }
+  },
+  "remaining": [
+    "Existing first-post movies 03/04/05/06/07/09 differ in duration from current voiced scene sources; video/voice regeneration remains deferred. Static correction is not video verification.",
+    "Field Notes source two images updated; build/deploy/live QA belongs to root."
+  ],
+  "temporaryToolsNotForCommit": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\sync.cjs",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\cards.cjs",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\previews.cjs",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\zip-patch.py",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\records.py",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-marketing-rollout\\final-manifest.py"
+  ],
+  "manifestSelfExcludedFromHashes": true
+}
