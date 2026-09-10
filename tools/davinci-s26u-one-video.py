@@ -3,7 +3,9 @@
 
 Run inside DaVinci Resolve from Workspace > Scripts > Utility. The script asks
 for one source video, creates a dedicated project, applies the verified project
-settings, imports the clip, creates a timeline, and saves project/render presets.
+settings, imports the clip, and saves project/render presets. An untouched source
+timeline and an editorial copy are prepared with separate sound/overlay tracks.
+The editorial guide is stored with the project; footage is not automatically cut.
 
 When the free edition cannot safely consume APV or 10-bit HEVC, the source is
 transcoded without a color transform to 10-bit DNxHR HQX next to the source.
@@ -13,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -24,6 +27,7 @@ from typing import Any
 
 PROJECT_PRESET = "SYNK_S26U_APV_HQ_4K24"
 MASTER_PRESET = "SYNK_MASTER_DNxHR_HQX"
+EDITORIAL_GUIDE = "컷편집_리듬정본_20260910.md"
 SUPPORTED_SUFFIXES = {".mp4", ".mov", ".mkv", ".mxf"}
 
 
@@ -296,14 +300,104 @@ def _save_master_render_preset(project: Any, work_root: Path, width: int, height
     return {"saved": bool(saved), "format": mov_format, "codec": codec_name}
 
 
+def editorial_guide_source() -> Path:
+    script = Path(__file__).resolve()
+    candidates = (
+        script.with_name(EDITORIAL_GUIDE),
+        script.parent.parent / "docs" / "홍보물" / "기업소개20초_20260909" / EDITORIAL_GUIDE,
+    )
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise SetupError(f"컷 편집 기준 파일이 없습니다. 스크립트와 {EDITORIAL_GUIDE}를 함께 설치하세요.")
+
+
+def preserve_editorial_guide(work_root: Path, source: Path) -> dict[str, str]:
+    content = source.read_bytes()
+    digest = hashlib.sha256(content).hexdigest()
+    folder = work_root / "editorial"
+    folder.mkdir(parents=True, exist_ok=True)
+    destination = folder / f"{source.stem}_{digest[:12]}.md"
+    if destination.exists():
+        if destination.read_bytes() != content:
+            raise SetupError(f"기존 편집 기준 사본이 수정되어 있습니다. 보존하고 중단합니다: {destination}")
+    else:
+        destination.write_bytes(content)
+    return {"path": str(destination), "sha256": digest}
+
+
+def prepare_editorial_timeline(project: Any, source: Any, guide: dict[str, str]) -> tuple[Any, dict[str, Any]]:
+    """Only duplicate and label. Story, trim points and clip content stay untouched."""
+    result: dict[str, Any] = {
+        "source_timeline": source.GetName(),
+        "guide": guide,
+        "automatic_cuts": False,
+        "ready": False,
+        "failures": [],
+    }
+    failures = result["failures"]
+    timeline = source.DuplicateTimeline("01_EDIT_RHYTHM")
+    if not timeline:
+        failures.append("편집용 타임라인 복제 실패")
+        return source, result
+    result["working_timeline"] = timeline.GetName()
+    if not project.SetCurrentTimeline(timeline):
+        failures.append("편집 타임라인 선택 실패")
+
+    def rename(track_type: str, index: int, name: str) -> None:
+        accepted = timeline.SetTrackName(track_type, index, name)
+        if not accepted or timeline.GetTrackName(track_type, index) != name:
+            failures.append(f"트랙 이름 확인 실패: {track_type} {index} {name}")
+
+    def append(track_type: str, name: str, subtype: str = "stereo") -> None:
+        before = timeline.GetTrackCount(track_type)
+        ok = timeline.AddTrack(track_type, subtype) if track_type == "audio" else timeline.AddTrack(track_type)
+        after = timeline.GetTrackCount(track_type)
+        if not ok or after != before + 1:
+            failures.append(f"트랙 추가 실패: {name}")
+            return
+        rename(track_type, after, name)
+
+    if timeline.GetTrackCount("video"):
+        rename("video", 1, "V_MAIN")
+    for name in ("V_PROOF_BROLL", "V_GRAPHICS"):
+        append("video", name)
+    audio_count = timeline.GetTrackCount("audio")
+    result["source_audio_tracks"] = audio_count
+    for index in range(1, audio_count + 1):
+        rename("audio", index, f"A_DIALOGUE_SOURCE_{index:02d}")
+    if not audio_count:
+        append("audio", "A_DIALOGUE_EMPTY", "mono")
+    for name in ("A_AMBIENCE", "A_SFX", "A_MUSIC"):
+        append("audio", name)
+    # Frame zero already contains the color-management notice copied from source.
+    marker_frame = 1 if timeline.GetEndFrame() - timeline.GetStartFrame() > 1 else None
+    if marker_frame is not None:
+        marker_ok = timeline.AddMarker(
+            marker_frame, "Yellow", "편집 기준 · 자동 컷 아님",
+            f"말의 의미 → 동작/시선 → 소리 연결 → 리듬 대비. 기준: {guide['path']}",
+            1, "synk-editorial-guide-20260910",
+        )
+        if not marker_ok:
+            failures.append("편집 안내 마커 추가 실패")
+    result["tracks"] = {
+        kind: [timeline.GetTrackName(kind, i) for i in range(1, timeline.GetTrackCount(kind) + 1)]
+        for kind in ("video", "audio")
+    }
+    result["ready"] = not failures
+    return timeline, result
+
+
 def setup_resolve(resolve_obj: Any, source: Path, fusion: Any | None = None) -> Path:
     if not source.is_file() or source.suffix.lower() not in SUPPORTED_SUFFIXES:
         raise SetupError("지원하는 영상 파일(mp4, mov, mkv, mxf) 하나를 선택하세요.")
+    guide_source = editorial_guide_source()
     probe = probe_video(source)
     stream = probe["primary_video"]
     work_root = _choose_work_root(source, fusion)
     for child in ("cache", "proxy", "exports", "project_backups"):
         (work_root / child).mkdir(parents=True, exist_ok=True)
+    guide = preserve_editorial_guide(work_root, guide_source)
 
     is_studio = bool(resolve_obj.IsStudio())
     edit_source = source
@@ -334,11 +428,11 @@ def setup_resolve(resolve_obj: Any, source: Path, fusion: Any | None = None) -> 
         }
     )
     timeline = media_pool.CreateTimelineFromClips(
-        "MASTER_STUDIO",
+        "00_SOURCE_FULL",
         [{"mediaPoolItem": clip}],
     )
     if not timeline:
-        raise SetupError("마스터 타임라인을 만들지 못했습니다.")
+        raise SetupError("원본 보관 타임라인을 만들지 못했습니다.")
     project.SetCurrentTimeline(timeline)
     timeline.SetStartTimecode("01:00:00:00")
     if timeline.GetTrackCount("video"):
@@ -352,6 +446,7 @@ def setup_resolve(resolve_obj: Any, source: Path, fusion: Any | None = None) -> 
         "RCM Samsung Log -> DaVinci Wide Gamut/Intermediate -> Rec.709 Gamma 2.4. LUT 중복 적용 금지.",
         1,
     )
+    timeline, editorial = prepare_editorial_timeline(project, timeline, guide)
 
     width, height = timeline_dimensions(stream)
     rate_value = float(canonical_rate(stream))
@@ -371,6 +466,7 @@ def setup_resolve(resolve_obj: Any, source: Path, fusion: Any | None = None) -> 
         "transcode_used": transcode_used,
         "source_video": stream,
         "project_settings": setting_result,
+        "editorial": editorial,
         "timeline": {
             "name": timeline.GetName(),
             "width": width,
@@ -381,7 +477,9 @@ def setup_resolve(resolve_obj: Any, source: Path, fusion: Any | None = None) -> 
     }
     report_path = work_root / "resolve-setup-report.json"
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    _print(f"완료: {project_name}")
+    ready = editorial["ready"] and preset_saved and render_result.get("saved", False)
+    status = "설정 준비 완료" if ready else "프로젝트 생성됨 · 보고서의 미완료 항목 확인 필요"
+    _print(f"{status}: {project_name}")
     _print(f"검증 보고서: {report_path}")
     return report_path
 
