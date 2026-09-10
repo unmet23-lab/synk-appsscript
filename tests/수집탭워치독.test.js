@@ -210,11 +210,13 @@ test('🔴 실저장소 — 첫 실행 명부가 **옛 필수 35종으로 깔린
 test('🔑 실저장소 — 수집 탭에서 **행을 지우는 자리** 둘 다 기준선을 내린다(데모 퇴장 · 음성 철회)', () => {
   /* ①배포 검수 P2(723c1d0137a4): `voiceWithdraw` 가 voice_log 행을 지우는데 기준선을 안 내려
    * 다음 주부터 「줄었다」를 매주 외쳤다 — 우리가 시킨 삭제라 따를 처방이 없는 경보다(F103). */
-  const 교재 = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8');
-  const i = 교재.indexOf('mine.map(m => m.row).sort((a, b) => b - a).forEach(r => vl.deleteRow(r));');
-  assert.notEqual(i, -1, 'voice_log 행 삭제 자리를 못 찾았다 — 이 검사가 조용히 0건이 되는 자리다');
-  assert.ok(/if\s*\(\s*mine\.length\s*\)\s*\{?\s*탭수축기준선지움_\('voice_log'\)/.test(교재.slice(i, i + 700)),
-    '음성 동의 철회가 기준선을 안 내린다(또는 죽은 조건 아래 있다) — 매주 거짓 경보가 뜬다');
+  const 교재 = fs.readFileSync(path.join(ROOT, '교재연동.js'), 'utf8').replace(/\r\n/g, '\n');
+  const i = 교재.indexOf('function voiceWithdraw(');
+  const 철회 = 교재.slice(i, 교재.indexOf('\n}\n', i) + 2);
+  assert.notEqual(i, -1, '음성 동의 철회 함수를 못 찾았다');
+  assert.ok(/if\s*\(\s*deletedRows\s*\)\s*\{\s*try\s*\{\s*탭수축기준선지움_\('voice_log'\)/.test(철회),
+    '실제로 지운 행이 있을 때 수집량 기준선을 내려야 한다 — 실패·미처리 행까지 삭제한 것으로 세면 안 된다');
+  // 삭제 0건/혼합 성공/실패 재시도의 실제 행·기준선 동작은 음성철회재시도.test.js에서 실행한다.
 });
 
 test('🔴 실저장소 — 옛 키에 **쓰는 자리가 0**이다(읽는 쪽만 갈아타면 승계가 밤마다 되살아난다)', () => {
