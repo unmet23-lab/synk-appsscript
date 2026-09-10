@@ -69,7 +69,9 @@
         0,
         0
       ],
-      "centerAlpha": 255
+      "centerAlpha": 255,
+      "previewPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview\\assets\\assets\\마스코트\\몽글_본체.4ed7611bdc4b78b647b34883982a2f41.webp",
+      "previewEqualsCurrentOutput": true
     },
     {
       "name": "몽글_놀람",
@@ -108,7 +110,9 @@
         0,
         0
       ],
-      "centerAlpha": 255
+      "centerAlpha": 255,
+      "previewPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview\\assets\\assets\\마스코트\\몽글_놀람.cbb3b81031eb0dfa894949378d45dd19.webp",
+      "previewEqualsCurrentOutput": true
     },
     {
       "name": "몽글_눈웃음",
@@ -147,7 +151,9 @@
         0,
         0
       ],
-      "centerAlpha": 255
+      "centerAlpha": 255,
+      "previewPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview\\assets\\assets\\마스코트\\몽글_눈웃음.4a44229934aa75adfe6018a21fac365f.webp",
+      "previewEqualsCurrentOutput": true
     },
     {
       "name": "몽글_눈감음",
@@ -186,7 +192,9 @@
         0,
         0
       ],
-      "centerAlpha": 255
+      "centerAlpha": 255,
+      "previewPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview\\assets\\assets\\마스코트\\몽글_눈감음.14145b79325ef6af11d528c5d170ae4e.webp",
+      "previewEqualsCurrentOutput": true
     },
     {
       "name": "몽글_윙크",
@@ -225,7 +233,9 @@
         0,
         0
       ],
-      "centerAlpha": 255
+      "centerAlpha": 255,
+      "previewPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview\\assets\\assets\\마스코트\\몽글_윙크.ed9e4c8d475b4e319895101128b134d5.webp",
+      "previewEqualsCurrentOutput": true
     },
     {
       "name": "몽글_으쓱",
@@ -264,7 +274,9 @@
         0,
         0
       ],
-      "centerAlpha": 255
+      "centerAlpha": 255,
+      "previewPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview\\assets\\assets\\마스코트\\몽글_으쓱.e125341393472a9c038839db7deaf464.webp",
+      "previewEqualsCurrentOutput": true
     },
     {
       "name": "몽글_졸림",
@@ -303,7 +315,9 @@
         0,
         0
       ],
-      "centerAlpha": 255
+      "centerAlpha": 255,
+      "previewPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview\\assets\\assets\\마스코트\\몽글_졸림.4c45d8403c92fb7b6158a3ad35e45484.webp",
+      "previewEqualsCurrentOutput": true
     },
     {
       "name": "몽글_민망",
@@ -342,7 +356,9 @@
         0,
         0
       ],
-      "centerAlpha": 255
+      "centerAlpha": 255,
+      "previewPath": "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview\\assets\\assets\\마스코트\\몽글_민망.3357ec6acb5d5bf7626a74aa2c323bf7.webp",
+      "previewEqualsCurrentOutput": true
     }
   ],
   "generatorExitCode": 0,
@@ -364,7 +380,7 @@
     "limitation": "Static generated sheet inspection; no phone or production app deployment."
   },
   "appDeployment": "not_requested_not_performed",
-  "buildOutputs": "Existing dist/first-flow-preview and other worktree build copies were not rebuilt; explicit app deployment exclusion.",
+  "buildOutputs": "Current dist/first-flow-preview regenerated from isolated committed source and verified. Other task worktrees and native app deployment were not changed.",
   "commit": "42eddf4460b98e62016f2aab0d75f758a68579bc",
   "push": {
     "remote": "origin",
@@ -401,5 +417,150 @@
   "afterCommitStagedPaths": [
     "docs/_ops/배포장부.jsonl"
   ],
-  "ownedWorkingTreeClean": true
+  "ownedWorkingTreeClean": true,
+  "previewSync": {
+    "completedAt": "2026-09-10T13:13:06.068790+00:00",
+    "refreshToolCommit": "659434f",
+    "webImageFallbackCommit": "f4ef3841b69ca5fd75733c629b959e98b858868d",
+    "remoteHead": "f4ef3841b69ca5fd75733c629b959e98b858868d",
+    "sourceCommit": "f4ef3841b69ca5fd75733c629b959e98b858868d",
+    "sourceWasIsolatedCleanWorktree": true,
+    "exportCommand": "node tools/첫흐름미리보기.js --빌드",
+    "buildStatus": "passed",
+    "prerequisite": "Existing deterministic BGM generated in isolated worktree; SHA256 equals original app BGM: 7d8a1ffdd2cd4d2dcb796d4c3cfa4d2b7088021cffebd7b34819d929041e713d",
+    "destination": "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview",
+    "wholeExportCopied": true,
+    "wholeExportCopyByteEquality": true,
+    "fileCount": 82,
+    "entryScript": "/_expo/static/js/web/index-a6b47137e32c199cd3db493934ff8514.js",
+    "files": {
+      "favicon.ico": "870a674513d0dc088e809be19e2bf9557ff854c1a6a3dde5f732537001581ef5",
+      "index.html": "d35e6b2292ea089286448acf24a8080d84786911622436fbfae032ff1f1faeec",
+      "metadata.json": "aa5f19cc84d41c0f8c70ececb2bc82e863227ea1e121632aca879eb616056991",
+      "_expo/static/js/web/index-a6b47137e32c199cd3db493934ff8514.js": "d821262fb09ee941e88f9297f3f62d3b2d1a90620f1eaa01ebcf02cca422e64f",
+      "assets/assets/bgm/synk-bgm-measure.c9e6409cfffea18d9eaa17b379a489a4.wav": "7d8a1ffdd2cd4d2dcb796d4c3cfa4d2b7088021cffebd7b34819d929041e713d",
+      "assets/assets/fonts/DMMono-Medium.81c99e3b388a6ff9b9598913a8e81708.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
+      "assets/assets/fonts/InterTight-Medium.c243d70d80e0c0f3eb06e42d40e17eeb.ttf": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "assets/assets/fonts/InterTight-Regular.1dfbe3753933114613ab64989d1f814e.ttf": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
+      "assets/assets/fonts/InterTight-SemiBold.a98dc35975c0e5ef508f94fe0f89c762.ttf": "643a335cbb3d5c52b32c9974de8b7fbdc22255edefeb389195641744180dd80c",
+      "assets/assets/fonts/SUIT-ExtraBold.128eca73bbbd272aa834a6a48c7f6e08.ttf": "4603d335820213dd248c545c2f5d54041d047022039932e6133a9032027e3862",
+      "assets/assets/fonts/SUIT-Medium.96b657e72ecbabe0180908fa3e127c0a.ttf": "06be0060927642883b9027b275744fc8234826e6563015ebe3324f3802ae005f",
+      "assets/assets/fonts/SUIT-Regular.8bae3ed6724cbc8b2803c1d6868c6f9c.ttf": "88c94c990b9996c558666ef07c11664ab177c3be191e2846950b48f245d02274",
+      "assets/assets/fonts/SUIT-SemiBold.38149f1e21b2885dc2a8f3255a0447da.ttf": "8d202e0341b9426b653c1b3d36b2c0d1f4b482a7dfa83baaccf84d355d688fbd",
+      "assets/assets/npc/boss-back.2394f6be253b1398258e737df0690843.webp": "7d34b990dfdf86380b9bf3c78380a8241106f3017478c39fa4d591c6f42f3f20",
+      "assets/assets/npc/boss-calm.9cc14b98a4c2d4f4e3c6279a5f255a08.webp": "c0de321c93c2776db0cf5bfa267caeea2d037d3f0dfd54d031ca3a206c9b3092",
+      "assets/assets/npc/boss-lean.e8d4ee9edf16d812fd6d0b6849396a34.webp": "6c2ed6abf8bc5c774f40dec01b6244c0f31f441bf36fa721ee5fb38399d0d226",
+      "assets/assets/npc/boss-win.ba7d1a57ddcb8ff531e45439e1f34e05.webp": "c0333676106758eaf86b6d9a9deb1ee18eecff443f6f86250e0f52e86a41de02",
+      "assets/assets/npc/insp-back.3dd9240e795933c479be59cc9f73d16e.webp": "12a5b8512ed88d284c89ac0fd6424f909ac323e8870cf5ef241885dcd1c2ba4d",
+      "assets/assets/npc/insp-calm.5672b8ea6cb8352932e101c662f92c13.webp": "4847d9808ecf5025d375118d34915ecfe61a8ad2c27a1c4b3e489b253196d91d",
+      "assets/assets/npc/insp-lean.a31ebcf9d59e4ebf1d6f813fd536dea5.webp": "dc07c96738d77f715ddfca150d11a7a5865ba9e6b103b5a130fa3de42096e86e",
+      "assets/assets/npc/insp-win.4698dada11e1745f459527ef9d3df37a.webp": "6db72cd93baa1f12029b65b65eae553c7d9878e1ab301110cb34b77e09753095",
+      "assets/assets/npc/lead-back.c752e473a91f94882c11113927163aca.webp": "8019d0ff23591afce92579b5c25107769f5dbae18d4c73ac5065770656dcbdeb",
+      "assets/assets/npc/lead-calm.d258ded513aec1fae49bb37701eb0f96.webp": "21e9feb088a301cb279ab8ea295ce01df49ad655ef8d5fe1a121b499c8a288b3",
+      "assets/assets/npc/lead-lean.f26af4280addbde267788eb825258648.webp": "6c07b05b82bde054f393fe091436031f5a573b825b82384267976bebe48f1a04",
+      "assets/assets/npc/lead-win.5d78829c90bc1a83bca919be0dba44d0.webp": "f877da63f899512e5f0d687e0299644073527337b3b82e92d53a7c4fcce85c51",
+      "assets/assets/npc/prof-back.00caecf2f80038ac36b0568932405a37.webp": "5b0b02b5e9d8023835a953ccf29444a9481c49ae485e66091b0ed9c9897c3153",
+      "assets/assets/npc/prof-calm.4460042aa9bfec7e947963af0fb581a9.webp": "074f37ab3c2feecc90093acae409433c4d945e66212e1b76d2ffb01f894f049c",
+      "assets/assets/npc/prof-lean.12838b06400d57943d3073827ae7dc59.webp": "261ccc73d02334ab19c6be9538bad59ebfc27f886353b03ed927b6dd874eaec0",
+      "assets/assets/npc/prof-win.d2862c8498e1747f4176a4e780e79af6.webp": "83604c990fa11af59a899ff393818a107ac953bc3bcba1745147027c6934c8a1",
+      "assets/assets/sfx/synk-sound-achieve.b130b01d0494740cc5fac22d85481c7d.wav": "8ed08659fbaca6cf923b8409d6ca338f187d3f5526df3d0f29927f83258aa30a",
+      "assets/assets/sfx/synk-sound-earn.3f96e522e3acf5919ba0125f8659fedd.wav": "5baf5337b980ace0b75f31160fd4f09cc154429c78d2d40196c9a9644c25a7e7",
+      "assets/assets/sfx/synk-sound-notify.c0a13bbe364a21e7a8758ae2f18e19b4.wav": "edee940640f1263b913ffc954bb353ac77424c507b25320193a65fdeec9ba3c8",
+      "assets/assets/sfx/synk-voice-kkamong-ansim.58c8a426fd44efe8d5b6e2791700ef59.wav": "f755e6a057adcdb51faeabac5ffcb9e5a538de5a468a507d2e30a800df92fb70",
+      "assets/assets/sfx/synk-voice-kkamong-bee.02a0b70826cf34b2ca791df25e7a2fa7.wav": "9a2113ae4d7a4db61f3ed4cbab4b75c4ebe56a8bc0f0221110355e61a5996a89",
+      "assets/assets/sfx/synk-voice-kkamong-chukha.86e255e06b58882c32bd778be2d5c75d.wav": "87e9b993e32f3946856e91ff51ba26e82c1c39def3ecbbb79caeb1494392d2b6",
+      "assets/assets/sfx/synk-voice-kkamong-hiik.dbd5e0d08dfbd06fd7b018f67b7e1163.wav": "0116bb8444dfd222f77a513f0f7c650d5ffd9ffabf4acf56de5dd35907fd6a88",
+      "assets/assets/sfx/synk-voice-kkamong-nyamnyam.463b23bf80f0c9e89dfb55241b8680e8.wav": "70653af350f6d6fcac0700e473beb5252f8aca214fb2dea0d6896fd7c6eaa27a",
+      "assets/assets/sfx/synk-voice-marine-ansim.a14d111d3e8f46462fe3bb4c49e70b1f.wav": "3bb0d21b5d91e906def423a56b66772fb566626e24e0685eaf6751168e12afff",
+      "assets/assets/sfx/synk-voice-marine-gidong.2869509ebed320b759c52d586681088d.wav": "1fa8c28fb4e50cefbaccbc84cffe0d958867affad43f3eb280e151d0e4c6d5f3",
+      "assets/assets/sfx/synk-voice-marine-mollae.e56fefb04f8fc0aba430fce1921d5509.wav": "9439612d332b38263b41bfbcec7dbaed7a387513a43006d04911fa62ca574fad",
+      "assets/assets/sfx/synk-voice-marine-wansu.c099e722a6d5b844b15e391bb8409f49.wav": "254e32834d027c0ae467d08c4a1ed3d21ad48943c3bc55c32be7e93765c7fff3",
+      "assets/assets/sfx/synk-voice-mii.249dfb7d040d5cb8e711d8a2a3ae4224.wav": "0de5136ab4b97e0f1931f0a718b62cf629e0059c28d09930bc76dfd1b656dd64",
+      "assets/assets/sfx/synk-voice-miyu.48ad6238708b3d0441e5b20d046d2f95.wav": "b938c764425c44146d88a85eee4c8066e49a7b780a837254c00008a7c32a5652",
+      "assets/assets/sfx/synk-voice-miyuu.dbe8c8ed758d2a4d31b8b1faa43f5e86.wav": "57304714351c58ef9e94adb8f9db21263a8154c5e074f38877d069272c15a30a",
+      "assets/assets/sfx/synk-voice-moong.64c9ff94ed8657e341df234f2ec564b5.wav": "472dffdba0dd82bb8be0f090be27b9afceea1e41a3cb201b93b29794db358b1c",
+      "assets/assets/sfx/synk-voice-mu.e69c73fcea55182d8026563af34f1230.wav": "6f41871330fa446639f3b488cc4bbb2ac4a79e0094bb246701d238b7b015f8b1",
+      "assets/assets/sfx/synk-voice-muu.0d29f43a4c1a968af0ab7668ec98e82a.wav": "04de88f6fd63848b5db3c5b5444fe932193fd144091cf22b1d52314cf803d8f1",
+      "assets/assets/sfx/synk-voice-muum.5b7e580f5ff8a311a1670161f7383e36.wav": "413d3ebdc076c7d5002dfb6a8952f9b34b544cd9e83eef5f5277a70d208fe13a",
+      "assets/assets/sfx/synk-voice-myang.d0b82a07f234d66588546efe2fed3b56.wav": "02dcf0695cf0e0f063ed43d4cd2f1539f3109449671dbc036846892ee3b1eee4",
+      "assets/assets/sfx/synk-voice-ppong.5445616799681dd84b76c62176251c14.wav": "5baf0263bd2d5c40566575438af4d415fce35b194790033440de29f22d2cb5de",
+      "assets/assets/sfx/synk-voice-ppoo.76585c1b6f1281961ebf62581159e543.wav": "77264a9004cd9963ae24d124b826bd4c054039890b128890cd410eae9d901b4d",
+      "assets/assets/sfx/synk-voice-ppuu.436aa0ac4705161d55fde560f20da301.wav": "eb7ace56f11b1198d3020e02b80d85d0c7916a8b7f91c02a5e26140c7af4bb02",
+      "assets/assets/sfx/synk-voice-uung.aefd19a29a3b22972c1ce4c69f133241.wav": "974739eba78244e335b366d74bd4c150c2067b84e3e28d9c12d0dda4285d8c8f",
+      "assets/assets/마스코트/까몽_놀람.683f7b3e7beb52bdde11fe3d49753f8a.webp": "d55409b0d5481d8f634cd30aeaf2e6782902f4ad13b3f74b49f23f223a0acbe2",
+      "assets/assets/마스코트/까몽_눈감음.d50d7dea17887925ffaaf3ec18c0e5b8.webp": "91dfaebbc17f0afa7c4da2b5f04afdab3f37cd95aa8a04486fc64ada5b91256f",
+      "assets/assets/마스코트/까몽_눈웃음.60dabf3c3abd2cdd4eeabf0a9afb0ba4.webp": "b1150126e5467caaa33c0fbc16ecfd8a422a6fae680176eae6826d419292a22c",
+      "assets/assets/마스코트/까몽_민망.ec7c06a58c4c885de4846c32243d39d9.webp": "4382736d40b48f6cf0e75641ee0eee795ae4e64c898c17549580503e2603f192",
+      "assets/assets/마스코트/까몽_본체.8207d6135245c7c93c08569aaf22a07d.webp": "8048cf7c9af9bb0e29f0d7747a2c47a76fc807c5d85a18104435f8a7ca6efa11",
+      "assets/assets/마스코트/까몽_윙크.7029ffda346f46af729bc7d839df2031.webp": "9b55b7a8cca0c61cb2ecf65e17b8e173bf98de0841eaf4d084408224002fc7c4",
+      "assets/assets/마스코트/까몽_으쓱.03b6fb6ce237997d8190d6a8bba28958.webp": "5c00140f3b18444ade85574193a66b5ae144b2ef9dd0aa41c7450fe82ae83dd3",
+      "assets/assets/마스코트/까몽_졸림.2586d50dffa25a4628842a160ff6c862.webp": "aa11935cc75284c5c564f4b367594254c0b02e602e45ba7cb2a096b55413ad0f",
+      "assets/assets/마스코트/마린_놀람.7681d22f07b6cd5fcb35c0a10a552665.webp": "a91e2b9bda9b4d55c2ec5f4aef0e14175cd71ecab2915c62d6e51e5f7c1273c4",
+      "assets/assets/마스코트/마린_눈감음.5a0fabde52a82a65c24cf40021f4d285.webp": "51d6911ea0ac3e711dae7d1ba276e34180afd0d038ef7690e9f85e165a9ebc55",
+      "assets/assets/마스코트/마린_눈웃음.ead06dd16e68ca36b63d93a6916e729b.webp": "ea982a5485563a98a7e5e48537d04b7e9ef3fe616779177a5b1703f8537f380f",
+      "assets/assets/마스코트/마린_몰래기쁨.e1e27f72006cb4e0beac052ba0007d16.webp": "3f5a1e259ab1f6e65a2bba2d4fdf0f91291e722b1a5a79bf5cd638979d89db09",
+      "assets/assets/마스코트/마린_민망.40803cc4dadfaeae99e0dde760d1a2c2.webp": "1dd8513f4cde2279e43ebaab954ba253654725366e0c7188da6fe63232d54e0e",
+      "assets/assets/마스코트/마린_본체.35e2c5dff569cc98cb2df581f08b701a.webp": "62e7a18bee49d2cfabfd944c1a72680fd399982102d0d1d546308b43e5ca7803",
+      "assets/assets/마스코트/마린_졸림.63cd5973e6800278eb3bf025e9c0b9f1.webp": "6a4b7f4393a87d5e8c4c9797719798afc10ee79e45892c0ce6c1b54378551c79",
+      "assets/assets/마스코트/마린_집중.77fc6796aceec4774e38a8710b9a9c3f.webp": "591c2a52689fc1140bec4aca1ae3346fc5511084bc5fd822a07a51fd0352c2df",
+      "assets/assets/마스코트/몽글_놀람.cbb3b81031eb0dfa894949378d45dd19.webp": "360ac21677a5e45f1f55dedf6677d7098278ac9e8d005a228b936c1934381776",
+      "assets/assets/마스코트/몽글_눈감음.14145b79325ef6af11d528c5d170ae4e.webp": "2e32869d127194dc88d49770bb40c301cce46433d3ecca8b7abe6985809c6c40",
+      "assets/assets/마스코트/몽글_눈웃음.4a44229934aa75adfe6018a21fac365f.webp": "b21709a86d1eb9cf0fe3dc14c4521b3db4fad8ce0134de19c02c2a4af51c51a2",
+      "assets/assets/마스코트/몽글_민망.3357ec6acb5d5bf7626a74aa2c323bf7.webp": "3508f43350a22bff4bd9e0f19d74099df70bf64bba257c3cd6f8191637f0a64d",
+      "assets/assets/마스코트/몽글_본체.4ed7611bdc4b78b647b34883982a2f41.webp": "092b31d3d90dbd4757ee717825fe31151b20d17a97048e268d3de83b8d8e1e2a",
+      "assets/assets/마스코트/몽글_윙크.ed9e4c8d475b4e319895101128b134d5.webp": "4c67a63bf696a19d7831bf2c73b62ebcca363f22664262e7d8d4362af58bc48d",
+      "assets/assets/마스코트/몽글_으쓱.e125341393472a9c038839db7deaf464.webp": "c538cb45708938bac51382352a0249175a99cc95d46af9a0cccdaae797b1b599",
+      "assets/assets/마스코트/몽글_졸림.4c45d8403c92fb7b6158a3ad35e45484.webp": "278461037fdd5a4c93f09683ab71b22dfaba7627dd4f08bbbc0718ae578c12d0",
+      "assets/assets/부품/구분선/구분선.da773a672c266a65435c5eb01258dc11.webp": "e99781e3dbab5dbb27348b847ba7664b9f753541fc5a5c00375145cfcca7aa19",
+      "assets/assets/부품/구조2/내려놓은바늘.af7c6db9cee3741ae5f2908f767be99d.webp": "22a798d4839d72f06845373785b46ed59c657e46868ce9a9c827e3ec73805ece",
+      "assets/assets/부품/구조2/녹음_대기.b62e4969c35eaf42d0ab22c111db362a.webp": "70ebf18cb5072d72b11b46d10a461d76b53ee2929db9bfb7ff8876c24c9c7976",
+      "assets/assets/부품/구조2/녹음_말하는중.c89a1ac0fbd0ba118f9c62cc4624a035.webp": "ed176bc8c9d9104d66073ea41672dac0c708cf78c1b2607d55783e8f53f9bf3a",
+      "assets/assets/부품/구조2/녹음_맺음.6bbe4a606122c13b2bc7c486bfaa6839.webp": "29513f0589c48dabd9490c266ddd28565d38e6c6c9e75164ba79132e60b644fb"
+    },
+    "all24MascotReferencesMatchCurrentAssets": true,
+    "newPreviewTests": {
+      "passed": 6,
+      "failed": 0
+    },
+    "webFallbackAndExistingWiringTests": {
+      "passed": 10,
+      "failed": 0,
+      "newFallbackTests": 2
+    },
+    "independentReview": "False positive from incidental current path strings was fixed; actual URI references all require matching content. Final read-only review found no further defect.",
+    "browser": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pageErrors": [],
+      "images": [
+        {
+          "src": "/assets/assets/마스코트/몽글_본체.4ed7611bdc4b78b647b34883982a2f41.webp",
+          "loaded": true,
+          "sourceSize": [
+            336,
+            336
+          ]
+        }
+      ],
+      "bodyText": "답장\nAI 가 고쳐 줬어요\n저는 어제 커피를 마셨어요.\n♪ 이 문장 들어보기\n조사 오류\n내일 따라 말하기는 이 문장이에요.\n알겠어요\n다시 말해 볼래요\n← 말하기로 돌아가기\n합성 자료 · 첫 흐름 확인\n\nSYNK-042 / preview-only\n실제 계정이나 비밀번호를 입력하지 마세요.\n\n답장 도착 후 앱 복귀 재현\n\n앱을 다시 시작하지 않고 답장 링크가 나타나는지 확인하세요.",
+      "screenshot": "C:/Users/q1212/Documents/SYNK-appsscript/tmp/mongle-talk-preview-current.png"
+    },
+    "browserScreenshotAfterSettling": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tmp\\mongle-talk-preview-current.png",
+    "browserResult": "Synthetic login and reply page show current 336px Mongle image; browser page errors 0. The reviewed isolated export and current preview destination are byte-identical.",
+    "runtimeIssueFixed": "On web, Skia module availability was incorrectly treated as initialized CanvasKit. Existing Animated.Image fallback now applies before Skia import; native availability path remains.",
+    "previewServerStopped": true,
+    "isolatedWorktree": "C:\\Users\\q1212\\Documents\\.synk-talk-mongle-preview-20260910",
+    "isolatedWorktreeRemoved": false,
+    "cleanupBlocked": "Automatic approval review rejected combined cleanup and also a narrower non-recursive removal of the temporary node_modules junction with blocked by policy; no more removal attempted. Server stop succeeded.",
+    "remainingTemporaryPaths": [
+      "C:\\Users\\q1212\\Documents\\.synk-talk-mongle-preview-20260910",
+      "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview-before-mongle-20260910",
+      "C:\\Users\\q1212\\Documents\\SYNK-talk\\dist\\first-flow-preview-before-webfallback-20260910"
+    ]
+  },
+  "afterPreviewCommitsStagedDiffSha256": "1d6cc617143018268a9a18391273247dd1969ae953060684c5851bd057312f0a",
+  "unrelatedStagingPreservedAfterPreviewCommits": true,
+  "finalRemoteHead": "f4ef3841b69ca5fd75733c629b959e98b858868d"
 }
