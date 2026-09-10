@@ -102,12 +102,26 @@ test('Instagram 장기 토큰은 만료 14일 전 자동 갱신하고 새 만료
     getResponseCode: () => 200,
     getContentText: () => JSON.stringify({ access_token: 'renewed-token', expires_in: 5184000 }),
   });
-  const { ctx, 요청, props } = 엔진로드({ 상담AI_IG토큰만료시각: '0' }, 응답);
+  const { ctx, 요청, props } = 엔진로드({
+    상담AI_IG토큰만료시각: '0',
+    상담AI_IG토큰최초확인시각: String(Date.now() - 25 * 3600 * 1000),
+  }, 응답);
   const 결과 = ctx.상담AI_IG토큰수명점검_();
   assert.equal(결과.ok, true);
   assert.equal(props.상담AI_IG토큰, 'renewed-token');
   assert.ok(Number(props.상담AI_IG토큰만료시각) > Date.now() + 50 * 24 * 3600 * 1000);
   assert.match(요청[0].url, /^https:\/\/graph\.instagram\.com\/refresh_access_token\?/);
+});
+
+test('새 Instagram 토큰은 최초 24시간 동안 갱신하지 않는다', () => {
+  const { ctx, 요청, props } = 엔진로드({ 상담AI_IG토큰만료시각: '0' });
+  const 처음 = ctx.상담AI_IG토큰수명점검_();
+  assert.equal(처음.ok, true);
+  assert.equal(처음.skip, 'fresh-token');
+  assert.ok(Number(props.상담AI_IG토큰최초확인시각) > 0);
+  assert.equal(요청.length, 0);
+  assert.equal(ctx.상담AI_IG토큰수명점검_().skip, 'fresh-token');
+  assert.equal(요청.length, 0);
 });
 
 test('Instagram 토큰 만료가 멀면 갱신 API를 호출하지 않는다', () => {
@@ -121,7 +135,10 @@ test('Instagram 토큰 만료가 멀면 갱신 API를 호출하지 않는다', (
 
 test('Instagram 토큰 갱신 실패는 기존 토큰을 보존하고 값 없이 경고한다', () => {
   const 실패 = () => ({ getResponseCode: () => 400, getContentText: () => '{"error":"invalid"}' });
-  const { ctx, 메일, props } = 엔진로드({ 상담AI_IG토큰만료시각: '0' }, 실패);
+  const { ctx, 메일, props } = 엔진로드({
+    상담AI_IG토큰만료시각: '0',
+    상담AI_IG토큰최초확인시각: String(Date.now() - 25 * 3600 * 1000),
+  }, 실패);
   assert.equal(ctx.상담AI_IG토큰수명점검_().ok, false);
   assert.equal(props.상담AI_IG토큰, 'ig-token');
   assert.equal(메일.length, 1);
@@ -130,12 +147,21 @@ test('Instagram 토큰 갱신 실패는 기존 토큰을 보존하고 값 없이
 
 test('Instagram 토큰 갱신 예외문에 토큰이 섞여도 메일과 반환값으로 내보내지 않는다', () => {
   const 예외 = () => { throw new Error('request failed: https://graph.instagram.com/?access_token=ig-token'); };
-  const { ctx, 메일, props } = 엔진로드({ 상담AI_IG토큰만료시각: '0' }, 예외);
+  const { ctx, 메일, props } = 엔진로드({
+    상담AI_IG토큰만료시각: '0',
+    상담AI_IG토큰최초확인시각: String(Date.now() - 25 * 3600 * 1000),
+  }, 예외);
   const 결과 = ctx.상담AI_IG토큰수명점검_();
   assert.equal(결과.ok, false);
   assert.equal(props.상담AI_IG토큰, 'ig-token');
   assert.equal(메일.length, 1);
   assert.doesNotMatch(JSON.stringify({ 결과, 메일 }), /ig-token|access_token/);
+});
+
+test('Instagram 계정 잠금 뒤 전용 토큰이 없으면 점검 경고를 반환한다', () => {
+  const { ctx } = 엔진로드({ 상담AI_IG계정ID: 'ig-business', 상담AI_IG토큰: '' });
+  const props = ctx.PropertiesService.getScriptProperties();
+  assert.match(ctx.상담AI_연결경고_(props).join('\n'), /상담AI_IG토큰 없음/);
 });
 
 test('아침 배치에 Instagram 토큰 수명 점검이 연결돼 있다', () => {
