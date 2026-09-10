@@ -1,0 +1,116 @@
+{
+  "url": "https://synk.im/?v=20260910-edge",
+  "errors": [],
+  "rows": [
+    {
+      "viewport": 1440,
+      "overflow": false,
+      "images": [
+        {
+          "source": "/assets/kkamong.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/marin.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/mongle.webp?v=20260910-edge",
+          "natural": 1000,
+          "loaded": true
+        }
+      ],
+      "mongleTop": "33.75px"
+    },
+    {
+      "viewport": 1280,
+      "overflow": false,
+      "images": [
+        {
+          "source": "/assets/kkamong.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/marin.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/mongle.webp?v=20260910-edge",
+          "natural": 1000,
+          "loaded": true
+        }
+      ],
+      "mongleTop": "30.8438px"
+    },
+    {
+      "viewport": 700,
+      "overflow": false,
+      "images": [
+        {
+          "source": "/assets/kkamong.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/marin.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/mongle.webp?v=20260910-edge",
+          "natural": 1000,
+          "loaded": true
+        }
+      ],
+      "mongleTop": "17.4531px"
+    },
+    {
+      "viewport": 390,
+      "overflow": false,
+      "images": [
+        {
+          "source": "/assets/kkamong.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/marin.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/mongle.webp?v=20260910-edge",
+          "natural": 1000,
+          "loaded": true
+        }
+      ],
+      "mongleTop": "15px"
+    },
+    {
+      "viewport": 320,
+      "overflow": false,
+      "images": [
+        {
+          "source": "/assets/kkamong.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/marin.webp",
+          "natural": 1000,
+          "loaded": true
+        },
+        {
+          "source": "/assets/mongle.webp?v=20260910-edge",
+          "natural": 1000,
+          "loaded": true
+        }
+      ],
+      "mongleTop": "13.5px"
+    }
+  ]
+}

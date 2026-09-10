@@ -26,9 +26,9 @@
     "source": "docs/홍보물/브랜드소개_20260909/소개서_4K/lab-1.png",
     "sourceWidth": 3840,
     "sourceHeight": 2400,
-    "sourceSha256": "b8124c697ea49e2028cef83b7e4218c51668a7fe72418cac06db583630cdef10",
+    "sourceSha256": "0576efca0b7fb39e58ec057bd7046612bd2d0193b0f213d36a921dfbe92b7341",
     "output": "assets/labpage.webp",
-    "outputSha256": "6f792a4bd6fef93d6e6d4fd7453c9c2970076324db4c0cbf24f6dfee00a8dc72",
+    "outputSha256": "01c0312c6aea5ef3997c3b4fd92b5f1a3d079d8b23e16f37a4f1aae463ab9b3d",
     "transform": "Approved complete logo or current introduction snapshot; existing display dimensions retained.",
     "note": "기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면"
   },
@@ -180,9 +180,9 @@
     "source": "docs/홍보물/브랜드소개_20260909/assets/smile.webp",
     "sourceWidth": 3840,
     "sourceHeight": 3840,
-    "sourceSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
+    "sourceSha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7",
     "output": "assets/smile.webp",
-    "outputSha256": "70e292d2badfc8f84358d3ae96d7fac26b58512134714b2e207ee8a5af15bf80",
+    "outputSha256": "5e3ca88ddcbfd44bad56b3fd4131c4e06b22231f7067cd88dd4836af7d7690a7",
     "transform": "inside3840-webp-lossless-v2",
     "note": "기존 승인 브랜드 자산. 실사 시설/학생 사진 아님"
   }

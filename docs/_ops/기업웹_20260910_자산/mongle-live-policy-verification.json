@@ -1,0 +1,285 @@
+{
+  "createdAt": "2026-09-10T12:46:37.858Z",
+  "scope": "Read-only HTTP decoded response body SHA comparison and initial public-page browser QA; no form submission, source edits or asset edits.",
+  "localRoot": "C:/Users/q1212/Documents/synk-policy",
+  "files": [
+    {
+      "path": "index.html",
+      "url": "https://synk.im/index.html?mongle_verify=1789044397858",
+      "responseUrl": "https://synk.im/index.html?mongle_verify=1789044397858",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "contentEncoding": "gzip",
+      "localBytes": 24214,
+      "responseBytes": 24176,
+      "localSha256": "a7b80a923b2f6765e030e781bdfc376af8735454a6ae05fa4d85cc1c7e6d5ea2",
+      "responseSha256": "a10570bf7505c35ef03ae8eb6d165cf4d69a36cfd89f11f5a08356ac1f7e64e0",
+      "shaMatches": false,
+      "lineEndingNormalizedLocalSha256": "a10570bf7505c35ef03ae8eb6d165cf4d69a36cfd89f11f5a08356ac1f7e64e0",
+      "lineEndingNormalizedResponseSha256": "a10570bf7505c35ef03ae8eb6d165cf4d69a36cfd89f11f5a08356ac1f7e64e0",
+      "lineEndingNormalizedMatches": true,
+      "rawShaMismatchReason": "Only CRLF versus LF line endings"
+    },
+    {
+      "path": "style.css",
+      "url": "https://synk.im/style.css?mongle_verify=1789044397858",
+      "responseUrl": "https://synk.im/style.css?mongle_verify=1789044397858",
+      "status": 200,
+      "contentType": "text/css; charset=utf-8",
+      "contentEncoding": "gzip",
+      "localBytes": 34476,
+      "responseBytes": 34434,
+      "localSha256": "3f325c259c4c0214e36911cd5c455d4c33cdc38a6e7945a6c966bcf8f2c22f61",
+      "responseSha256": "bdf19d28283eb341025e46fcc17ea0870668a3f44527cad0120c3df74eb65668",
+      "shaMatches": false,
+      "lineEndingNormalizedLocalSha256": "bdf19d28283eb341025e46fcc17ea0870668a3f44527cad0120c3df74eb65668",
+      "lineEndingNormalizedResponseSha256": "bdf19d28283eb341025e46fcc17ea0870668a3f44527cad0120c3df74eb65668",
+      "lineEndingNormalizedMatches": true,
+      "rawShaMismatchReason": "Only CRLF versus LF line endings"
+    },
+    {
+      "path": "assets/mongle.webp",
+      "url": "https://synk.im/assets/mongle.webp?mongle_verify=1789044397858",
+      "responseUrl": "https://synk.im/assets/mongle.webp?mongle_verify=1789044397858",
+      "status": 200,
+      "contentType": "image/webp",
+      "contentEncoding": null,
+      "localBytes": 206668,
+      "responseBytes": 206668,
+      "localSha256": "d46baa7b7154ad9fdf119e607a93c35896f5b87344793b1ad2e96aa196961ba1",
+      "responseSha256": "d46baa7b7154ad9fdf119e607a93c35896f5b87344793b1ad2e96aa196961ba1",
+      "shaMatches": true
+    },
+    {
+      "path": "name/index.html",
+      "url": "https://synk.im/name/index.html?mongle_verify=1789044397858",
+      "responseUrl": "https://synk.im/name/index.html?mongle_verify=1789044397858",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "contentEncoding": "gzip",
+      "localBytes": 39623,
+      "responseBytes": 38892,
+      "localSha256": "ee9096cac6d39806d5ccf5cbbeba82a29e4dae9e94e46b84cc7c00e1715d3698",
+      "responseSha256": "d661dd22af90ad1039e45e340aedfe6a8988be16e91c2827084279469508e9e5",
+      "shaMatches": false,
+      "lineEndingNormalizedLocalSha256": "d661dd22af90ad1039e45e340aedfe6a8988be16e91c2827084279469508e9e5",
+      "lineEndingNormalizedResponseSha256": "d661dd22af90ad1039e45e340aedfe6a8988be16e91c2827084279469508e9e5",
+      "lineEndingNormalizedMatches": true,
+      "rawShaMismatchReason": "Only CRLF versus LF line endings"
+    },
+    {
+      "path": "name/assets/monggeul.webp",
+      "url": "https://synk.im/name/assets/monggeul.webp?mongle_verify=1789044397858",
+      "responseUrl": "https://synk.im/name/assets/monggeul.webp?mongle_verify=1789044397858",
+      "status": 200,
+      "contentType": "image/webp",
+      "contentEncoding": null,
+      "localBytes": 369726,
+      "responseBytes": 369726,
+      "localSha256": "420d44905226cb50a1065c092b22cffa96fe490f878b4b4efa140d4cd65e758c",
+      "responseSha256": "420d44905226cb50a1065c092b22cffa96fe490f878b4b4efa140d4cd65e758c",
+      "shaMatches": true
+    },
+    {
+      "path": "diag/index.html",
+      "url": "https://synk.im/diag/index.html?mongle_verify=1789044397858",
+      "responseUrl": "https://synk.im/diag/index.html?mongle_verify=1789044397858",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "contentEncoding": "gzip",
+      "localBytes": 29736,
+      "responseBytes": 29282,
+      "localSha256": "159bd38ebb4020f18905fad4761b620fc4faefa1c64b9b144e4a2797bdfe58cd",
+      "responseSha256": "01754af545d0cded569acd9d938edcd000ad3abac331d9fcaa62562210d8822b",
+      "shaMatches": false,
+      "lineEndingNormalizedLocalSha256": "01754af545d0cded569acd9d938edcd000ad3abac331d9fcaa62562210d8822b",
+      "lineEndingNormalizedResponseSha256": "01754af545d0cded569acd9d938edcd000ad3abac331d9fcaa62562210d8822b",
+      "lineEndingNormalizedMatches": true,
+      "rawShaMismatchReason": "Only CRLF versus LF line endings"
+    },
+    {
+      "path": "diag/assets/monggeul_base.webp",
+      "url": "https://synk.im/diag/assets/monggeul_base.webp?mongle_verify=1789044397858",
+      "responseUrl": "https://synk.im/diag/assets/monggeul_base.webp?mongle_verify=1789044397858",
+      "status": 200,
+      "contentType": "image/webp",
+      "contentEncoding": null,
+      "localBytes": 98850,
+      "responseBytes": 98850,
+      "localSha256": "b90cc9cc262554b3269ab24f49691df0197a90454fbb35a023cdf3b44c627def",
+      "responseSha256": "b90cc9cc262554b3269ab24f49691df0197a90454fbb35a023cdf3b44c627def",
+      "shaMatches": true
+    },
+    {
+      "path": "diag/assets/monggeul_blink.webp",
+      "url": "https://synk.im/diag/assets/monggeul_blink.webp?mongle_verify=1789044397858",
+      "responseUrl": "https://synk.im/diag/assets/monggeul_blink.webp?mongle_verify=1789044397858",
+      "status": 200,
+      "contentType": "image/webp",
+      "contentEncoding": null,
+      "localBytes": 98718,
+      "responseBytes": 98718,
+      "localSha256": "6fda6f635b23903f02045075edb1d49127e42113649dc4f6832c5a4141688472",
+      "responseSha256": "6fda6f635b23903f02045075edb1d49127e42113649dc4f6832c5a4141688472",
+      "shaMatches": true
+    },
+    {
+      "path": "diag/assets/monggeul_smile.webp",
+      "url": "https://synk.im/diag/assets/monggeul_smile.webp?mongle_verify=1789044397858",
+      "responseUrl": "https://synk.im/diag/assets/monggeul_smile.webp?mongle_verify=1789044397858",
+      "status": 200,
+      "contentType": "image/webp",
+      "contentEncoding": null,
+      "localBytes": 99210,
+      "responseBytes": 99210,
+      "localSha256": "4e5a12c0ca572e54f0f712a084716d880a47b0aea6813f6190cd2b3dabdf5fd1",
+      "responseSha256": "4e5a12c0ca572e54f0f712a084716d880a47b0aea6813f6190cd2b3dabdf5fd1",
+      "shaMatches": true
+    }
+  ],
+  "pages": [
+    {
+      "route": "/name/",
+      "url": "https://synk.im/name/",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "status": 200,
+      "finalUrl": "https://synk.im/name/",
+      "domImages": [
+        {
+          "id": "",
+          "src": "https://synk.im/assets/brand-lab.webp?v=20260910-felt",
+          "applicable": true,
+          "decoded": true,
+          "width": 1173,
+          "height": 360
+        },
+        {
+          "id": "cardimg",
+          "src": null,
+          "applicable": false,
+          "reason": "Image placeholder has no src in initial screen"
+        }
+      ],
+      "targetAssetDecode": [
+        {
+          "src": "https://synk.im/name/assets/monggeul.webp?v=20260910-edge",
+          "decoded": true,
+          "width": 1000,
+          "height": 978
+        }
+      ],
+      "title": "Миний нэр солонгосоор — SYNK LAB",
+      "initialBodyExcerpt": "МН\n한국어\nEN\nМиний нэр солонгосоор\n\nМонгол нэрээ бичихэд солонгос үсгээр шууд харуулна. Хаана нь хоёр янзаар бичдэгийг бас хэлнэ.\n\nНэрээ кирилл үсгээр бичнэ үү\nБатбаяр\nОюунчимэг\nМөнх\nТүвшин\nНаран\nЭрдэнэ\nЦэцэг\nГанзориг\nЯагаад заримдаа хоёр янзаар бичдэг вэ\n\nМонгол хэлний солонгос бичлэгт албан ёсны дүрэм алга. Солонгосын үндэсний хэлний хүрээлэнгийн «Гадаад үгийн бичлэгийн дүрэм»-д монгол хэлний тусгай заалт байдаггүй.\n\nТиймээс энэ хэрэгсэл гурван зүйл дээр тулгуурлав — ① монгол кирилл үсгийн дуудлага ② Солонгост аль хэдийн тогтсон бичлэг (Улаанбаатар, Чингис) ③ эрдэм шинжилгээний нэгтгэл (До Сон-Гён, 2023, «Монгол судлал» 73).\n\nДөрвөн эгшиг хоёр болж нийлдэг\n\nЭнэ бол солонгос хэл сурч байгаа монгол хүнд хамгийн их хэрэгтэй мэдлэг. Солонгос үсэгт о ба у хоёулаа ㅗ, ө ба ү хоёулаа ㅜ болдог — өөрөөр хэлбэл монголоор өөр дуудагддаг хоёр эгшиг солонгосоор ижил харагдана.\n\nКирилл\tСолонгос\tЖишээ\nо\tㅗ\tБолд → 볼드\nу\tㅗ\tУранчимэг → 오란치멕\nө\tㅜ\tМөнх → 뭉흐\nү\tㅜ\tТүвшин → 투브신\nа\tㅏ\tГанбат → 간바트\nэ\tㅔ\tЭрдэнэ → 에르데네\nи · ы\tㅣ\tЧимэд → 치메드\nҮгийн эцсийн «н»\n\nМонголоор үгийн эцсийн н нь [ŋ] дуудагддаг тул солонгосоор ㄴ ба",
+      "screenshot": "C:/Users/q1212/Documents/SYNK-appsscript/tmp/mongle-live-name.png",
+      "loadedWithoutErrors": true
+    },
+    {
+      "route": "/diag/",
+      "url": "https://synk.im/diag/",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 ()"
+      ],
+      "pageErrors": [],
+      "requestFailures": [],
+      "httpFailures": [],
+      "status": 200,
+      "finalUrl": "https://synk.im/diag/",
+      "domImages": [
+        {
+          "id": "",
+          "src": "https://synk.im/assets/brand-lab.webp?v=20260910-felt",
+          "applicable": true,
+          "decoded": true,
+          "width": 1173,
+          "height": 360
+        },
+        {
+          "id": "",
+          "src": "https://synk.im/diag/assets/monggeul_base.webp?v=20260910-edge",
+          "applicable": true,
+          "decoded": true,
+          "width": 640,
+          "height": 640
+        },
+        {
+          "id": "",
+          "src": "https://synk.im/diag/assets/monggeul_smile.webp?v=20260910-edge",
+          "applicable": true,
+          "decoded": true,
+          "width": 640,
+          "height": 640
+        },
+        {
+          "id": "",
+          "src": "https://synk.im/diag/assets/monggeul_blink.webp?v=20260910-edge",
+          "applicable": true,
+          "decoded": true,
+          "width": 640,
+          "height": 640
+        }
+      ],
+      "targetAssetDecode": [
+        {
+          "src": "https://synk.im/diag/assets/monggeul_base.webp?v=20260910-edge",
+          "decoded": true,
+          "width": 640,
+          "height": 640
+        },
+        {
+          "src": "https://synk.im/diag/assets/monggeul_blink.webp?v=20260910-edge",
+          "decoded": true,
+          "width": 640,
+          "height": 640
+        },
+        {
+          "src": "https://synk.im/diag/assets/monggeul_smile.webp?v=20260910-edge",
+          "decoded": true,
+          "width": 640,
+          "height": 640
+        }
+      ],
+      "title": "내 TOPIK, 지금 몇 급? — SYNK LAB",
+      "initialBodyExcerpt": "15 min\n내 TOPIK, 지금 몇 급?\n\n우리 학원 기준으로 재는 진단입니다. 공식 TOPIK 시험 급수와는 다릅니다.\n\nҮнэгүй түвшин тогтоох тест · SYNK LAB\n\n15분쯤 걸려요. 3급 문제 여섯부터 시작해요. 여섯 중 다섯을 맞히면 4급 문제로 올라가요. 마지막에 한 문장을 써요. 결과는 바로 화면에 나와요.\n\n결과를 받을 곳 — 이메일이나 전화, 하나면 돼요\n\n이 연락처는 결과를 보내고, 등록할 때 오늘 결과를 잇는 데만 써요. 개인정보 방침\n\n시작하기\n\nSYNK LAB · 우리 학원 기준의 진단이에요. 공식 TOPIK 시험 급수와는 달라요. 문의 hello@synk.im",
+      "screenshot": "C:/Users/q1212/Documents/SYNK-appsscript/tmp/mongle-live-diag.png",
+      "loadedWithoutErrors": false
+    }
+  ],
+  "checks": {
+    "httpFiles9": true,
+    "allHttp200": true,
+    "allRawHttpHashesMatch": false,
+    "allHttpContentMatches": true,
+    "bothInitialPagesWithoutErrors": false
+  },
+  "diagErrorRecheck": {
+    "consoleErrors": [
+      {
+        "text": "Failed to load resource: the server responded with a status of 404 ()",
+        "location": {
+          "url": "https://synk.im/favicon.ico",
+          "line": 0,
+          "column": 0,
+          "lineNumber": 0,
+          "columnNumber": 0
+        }
+      }
+    ],
+    "pageErrors": [],
+    "httpFailures": [],
+    "browserLog": [
+      {
+        "source": "network",
+        "level": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 ()",
+        "timestamp": 1789044502079.254,
+        "url": "https://synk.im/favicon.ico",
+        "networkRequestId": "38200.22"
+      }
+    ],
+    "status": 200,
+    "title": "내 TOPIK, 지금 몇 급? — SYNK LAB"
+  }
+}
