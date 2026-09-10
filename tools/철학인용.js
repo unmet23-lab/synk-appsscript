@@ -49,7 +49,7 @@ function 인용찾기(본문) {
     for (const m of 줄.matchAll(조항꼴)) 번호들.push(m[0]);
     for (const m of 줄.matchAll(부록꼴)) 번호들.push(m[1]);
     if (!번호들.length) return;
-    결과.push({ 줄번호: i + 1, 원문: 줄.trim().slice(0, 160), 번호들, 표시됨: 표시낱말.test(줄) });
+    결과.push({ 줄번호: i + 1, 원문: 줄.trim().slice(0, 160).trimEnd(), 번호들, 표시됨: 표시낱말.test(줄) });
   });
   return 결과;
 }
@@ -148,7 +148,7 @@ function 보고서({ root, 파일들, 대조, 대조경로, 면제적용 }) {
     if (미.length > 12) 줄들.push(`- … ${미.length - 12}줄 더`);
     줄들.push('');
   }
-  return { 글: 줄들.join('\n'), 셈: { 과녁: 파일들.length, 면제된, 파일: 파일별.length, 전체, 미표시: 미표시전체, 번호별: Object.fromEntries(번호정렬) } };
+  return { 글: 줄들.join('\n').trimEnd(), 셈: { 과녁: 파일들.length, 면제된, 파일: 파일별.length, 전체, 미표시: 미표시전체, 번호별: Object.fromEntries(번호정렬) } };
 }
 
 function main() {
