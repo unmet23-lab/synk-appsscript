@@ -21,13 +21,15 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const { 표기접기 } = require('./lib/소스검사.js');
-const 형제저장소 = require(path.join(ROOT, '.claude', 'hooks', 'lib', '형제저장소.js'));
+const { 형제대상 } = require('../tools/계약동기화.js');
 
 const 계약폴더 = path.join(ROOT, '계약');
-const 형제 = 형제저장소.형제경로(ROOT);
-const 형제계약 = path.join(형제, '계약');
 
 test('계약 파일이 형제(SYNK-talk)와 같은 바이트다 — 갈라지면 「Lv3 에 1급 문항」이 무증상 재현된다', (t) => {
+  const 대상 = 형제대상(ROOT);
+  const 형제 = 대상.뿌리;
+  const 형제계약 = path.join(형제, '계약');
+  t.diagnostic(`정본=${ROOT} → 대상=${형제} (${대상.명시 ? '명시' : '기본'})`);
   if (!fs.existsSync(path.join(형제, '.git'))) {
     t.skip(`형제 저장소가 이 기계에 없다(${형제}) — CI 자리. 교차 대조는 이 기계의 커밋·배포 게이트가 진다`);
     return;

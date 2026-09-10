@@ -12,6 +12,8 @@
  * 쓰는 법:
  *   node tools/계약동기화.js           형제에 덮어쓴다
  *   node tools/계약동기화.js --check   같은지만 보고 다르면 종료코드 1 (고치지 않는다)
+ *   SYNK_TALK_ROOT 환경변수          다른 Talk 작업 사본의 절대경로(미설정이면 기존 형제 위치)
+ *   명시한 경로가 없거나 Talk 저장소가 아니면 실패한다. 원천과 대상을 매번 출력한다.
  *
  * ⚠ 형제가 이 기계에 없으면 **조용히 통과시키지 않고** 그 사실을 말하고 끝낸다(종료코드 0).
  *   CI엔 형제가 없다 — 통과와 미실행이 같은 모양이면 안 된다.
@@ -36,7 +38,19 @@ const 계약폴더 = '계약';
  * `worktrees/` 를 가리켜** 「형제가 이 기계에 없다」로 조용히 건너뛴다(아래 60행). 코드 트랙은
  * 규약상 워크트리에서 짓는다(CLAUDE.md) — 즉 계약 동기화가 정작 필요한 판에서 안 돌았다. */
 const 형제저장소 = require(path.join(REPO, '.claude', 'hooks', 'lib', '형제저장소.js'));
-const 형제뿌리 = 형제저장소.형제경로(REPO);
+/** 계약 대조·동기화가 같은 작업 사본을 고른다. 명시 경로 오류는 CI 부재로 건너뛰지 않는다. */
+function 형제대상(root = REPO, env = process.env) {
+  if (env.SYNK_TALK_ROOT === undefined) return { 뿌리: 형제저장소.형제경로(root), 명시: false };
+  const 지정 = String(env.SYNK_TALK_ROOT).trim();
+  if (!지정 || !path.isAbsolute(지정)) throw new Error('SYNK_TALK_ROOT는 Talk 작업 사본의 절대경로여야 한다');
+  const 뿌리 = path.resolve(지정);
+  let 이름;
+  try { 이름 = JSON.parse(fs.readFileSync(path.join(뿌리, 'package.json'), 'utf8')).name; } catch (_) { /* 아래에서 명시 실패 */ }
+  if (!fs.existsSync(path.join(뿌리, '.git')) || 이름 !== 'synk-talk') {
+    throw new Error(`SYNK_TALK_ROOT가 Talk 저장소를 가리키지 않는다: ${뿌리}`);
+  }
+  return { 뿌리, 명시: true };
+}
 
 /** 동기화 대상 상대경로들 — 이름순(출력 순서를 기계로 고정). */
 function 대상들() {
@@ -55,6 +69,10 @@ const 정규화 = 표기접기;
 
 function main(argv) {
   const check = argv.includes('--check');
+  let 대상;
+  try { 대상 = 형제대상(); } catch (e) { console.error(e.message); return 2; }
+  const 형제뿌리 = 대상.뿌리;
+  console.log(`[계약동기화] 정본=${path.resolve(REPO)} → 대상=${형제뿌리} (${대상.명시 ? '명시' : '기본'})`);
   const 목록 = 대상들();
 
   if (목록.length === 0) {
@@ -102,4 +120,4 @@ function main(argv) {
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
-module.exports = { main, 대상들 };
+module.exports = { main, 대상들, 형제대상 };
