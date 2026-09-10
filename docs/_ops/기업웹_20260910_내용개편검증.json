@@ -1,0 +1,148 @@
+{
+  "checkedAt": "2026-09-10T11:59:50.591270+00:00",
+  "sources": [
+    {
+      "path": "docs/AI_운영원칙.md",
+      "sha256": "f16234c9e1dcc5818e7023acf3a9c4b70cdb9e6934ea49abee8cb5ec72d85c7f"
+    },
+    {
+      "path": "DESIGN.md",
+      "sha256": "8b01068c3b28fc8690605b8394c9ca365c98152c5da0b3893b504de2767822bc"
+    },
+    {
+      "path": "docs/SYNK_철학.md",
+      "sha256": "56239c5376bd87f6d6750cbf2526ba33cbbfb4352e010fbd1171f46d2839517e"
+    },
+    {
+      "path": "docs/마케팅_정본.md",
+      "sha256": "e6850db9dd6c89a3799fecf3c92c8f2b88e9169626e06b7e5e34f42d5fde6401"
+    },
+    {
+      "path": "docs/마케팅/SHIFT.md",
+      "sha256": "3fd05b409790c55ec2807c1800b5032cfbdf9f5977d33d1c16dc6b179850e177"
+    },
+    {
+      "path": "docs/마케팅/SHIFT_공개수업.md",
+      "sha256": "756d495f3a61a58c5e0d1dff15f7e36537e89a7ae34c66be87628db2293eaafd"
+    },
+    {
+      "path": "docs/마케팅/LAB.md",
+      "sha256": "7682396a4b36bec0b24e0fcc5b3554a6467ff0069effb33aaedeed905dac95fc"
+    },
+    {
+      "path": "docs/마케팅/PULSE.md",
+      "sha256": "6e8ec289a977a30ce1a0d91913cb78a07dcf140997a772b1c8d5c24f89bed52d"
+    },
+    {
+      "path": "docs/마케팅/SYNK.md",
+      "sha256": "cae97392836fdd6fa7d0bccd7913384afb267fc4227d142ee0e68ddc830ea630"
+    },
+    {
+      "path": "docs/조직계보_정본_v1.md",
+      "sha256": "6d092442d3555bc3dbc6c034ae2ba93182a3919f0fa3e70db971da6b8e44f53e"
+    },
+    {
+      "path": "docs/_ops/SHIFT방향_20260910.md",
+      "sha256": "2b4b61bdbe4f4e415b932a34d540f5d0cb81e8629293e892f054f71309822e10"
+    }
+  ],
+  "publicDocuments": 6,
+  "publicRecords": 29,
+  "review": {
+    "approaches": "A: tangible offerings first; B: founder decisions first; merged into real case then offerings and philosophy",
+    "independentClaimsGate": "No actionable issue in main HTML, public notes, Field Notes and class introduction",
+    "responsive": [
+      1280,
+      390
+    ],
+    "checks": "29 existing answer contracts; 37 anchors and 20 local resources; Field Notes 244 files / 561 references; public destination links HTTP 200",
+    "voice": "No audio/video bytes modified. Legacy class collapsed and speech replacement pending.",
+    "webmcp": "Existing ask_synk registration observed; direct tool execution not reverified."
+  },
+  "deployments": {
+    "company": {
+      "commit": "ec6609c37fed29c0390bc55257fa3368e2a7ff73",
+      "status": "built",
+      "url": "https://synk.im/"
+    },
+    "preview": {
+      "commit": "3e8f2358b235253c1c18b3e47840b5880b08664e",
+      "version": 8,
+      "status": "succeeded",
+      "url": "https://synk-conversations.unmet23.chatgpt.site/",
+      "deploymentId": "appgdep_6aa29af93e34819197557d0a9600c75f"
+    },
+    "fieldNotes": {
+      "commit": "edbbb91f2e8b71d6f848939e3b25fd31a721325c",
+      "version": 9,
+      "status": "succeeded",
+      "url": "https://synk-field-notes.unmet23.chatgpt.site/",
+      "deploymentId": "appgdep_6aa29b454dfc81919459d84645be4845"
+    }
+  },
+  "liveFiles": [
+    {
+      "site": "synk.im",
+      "file": "index.html",
+      "status": 200,
+      "match": true
+    },
+    {
+      "site": "synk.im",
+      "file": "app.js",
+      "status": 200,
+      "match": true
+    },
+    {
+      "site": "synk.im",
+      "file": "knowledge.json",
+      "status": 200,
+      "match": true
+    },
+    {
+      "site": "synk.im",
+      "file": "style.css",
+      "status": 200,
+      "match": true
+    },
+    {
+      "site": "Field Notes",
+      "file": "index.html",
+      "status": 200,
+      "match": false,
+      "providerDifference": "Original document prefix unchanged; Cloudflare challenge script inserted before closing body."
+    },
+    {
+      "site": "Field Notes",
+      "file": "execution.css",
+      "status": 200,
+      "match": true
+    },
+    {
+      "site": "Field Notes",
+      "file": "공개수업/index.html",
+      "status": 200,
+      "match": false,
+      "providerDifference": "Original document prefix unchanged; Cloudflare challenge script inserted before closing body."
+    }
+  ],
+  "finalSourcesUnchanged": true,
+  "mediaChanges": [],
+  "scope": {
+    "relatedShiftIntros": 13,
+    "fieldFiles": 244,
+    "fieldReferences": 561
+  },
+  "logoPanel": {
+    "request": "Keep the cream SYNK once above LAB/SHIFT/PULSE; remove black prefixes, center each division, enlarge by 25 percent and remove the Field Notes caption.",
+    "implementation": "Unchanged approved bitmaps displayed through SVG viewBox; division height 40px desktop and 35px small screens, centered independently.",
+    "checks": "Pixel boundary audit: all division pixels retained, no black prefix pixels. Local 700px browser: centered within 0.01px, no horizontal overflow; Field Notes caption absent and panel height 432px.",
+    "scope": [
+      "synk.im brand case panel",
+      "SYNK Conversations same panel",
+      "Field Notes hero panel"
+    ],
+    "assetsModified": false,
+    "liveCheck": "synk.im and Field Notes actual browser: three names centered within 0.01px at 40px height, black prefixes absent, Field Notes caption absent, no horizontal overflow. synk.im HTML/CSS HTTP200 and exact match after newline normalization."
+  }
+}
