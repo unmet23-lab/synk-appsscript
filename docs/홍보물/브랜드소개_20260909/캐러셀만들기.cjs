@@ -20,3 +20,5 @@ function card(p,i){return `<div class="wrap"><section class="card ${p.type||''}"
 fs.writeFileSync(path.join(__dirname,'carousel.html'),`<!doctype html><html lang="mn"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SYNK LAB · 괜찮아요</title><style>${css}${division.css}</style><body><nav class="toolbar"><a href="index.html">모아보기</a><a href="SYNK-LAB-carousel.zip" download>이미지 내려받기</a></nav>${cards.map(card).join('').replaceAll('<span>LAB</span>',division.이름('SYNK LAB'))}<script>if(new URLSearchParams(location.search).has('export'))document.body.classList.add('export');function fit(){document.querySelectorAll('.wrap').forEach(x=>x.style.setProperty('--scale',x.clientWidth/1080))}fit();addEventListener('resize',fit)</script></body></html>`);
 fs.writeFileSync(path.join(__dirname,'캐러셀_문안.json'),JSON.stringify(cards,null,2));
 console.log('캐러셀 7장 생성');
+
+require('../로고갱신_20260910.cjs').refreshFolder(__dirname).catch(e=>{console.error(e);process.exitCode=1});

@@ -1,0 +1,827 @@
+{
+  "at": "2026-09-10T10:23:54.901Z",
+  "results": [
+    {
+      "id": "03-lab-tiktok",
+      "at": "2026-09-10T10:20:51.470Z",
+      "fullRenderForEmbeddedPageLogos": false,
+      "sourceVideoSha256": "c39999a661a3ec578661fe01705259c1fe3bd50e043c98c67c1ba21837231abe",
+      "sha256": "8c45d96e9810be2b29b6d60fccaef310565d981614976b143d1e448d456cd98d",
+      "activeBeforeHash": "c39999a661a3ec578661fe01705259c1fe3bd50e043c98c67c1ba21837231abe",
+      "originalFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/03-lab-tiktok/before-logo.mp4",
+      "candidateFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/03-lab-tiktok/video.mp4",
+      "output": "docs/홍보물/계정별콘텐츠_20260909/03-lab-tiktok/video.mp4",
+      "width": 1080,
+      "height": 1920,
+      "frames": 900,
+      "durationSeconds": 30.058667,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=77cc4dde4f50b3a8f640b765f9749a31c8f4a9820f1ed2263f454aef768f2a60",
+      "fullDecode": true,
+      "scenesSha256": "d71949dbfb6cdcd6a6a088ce7a474ca62ce35d2c265d2a6e680043a9e0d281a9",
+      "captures": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "classroom",
+          "key": "scene-01-1"
+        },
+        {
+          "scene": 1,
+          "second": 3.25,
+          "asset": "classroom",
+          "key": "scene-01-2"
+        },
+        {
+          "scene": 2,
+          "second": 6,
+          "asset": "book",
+          "key": "scene-02-1"
+        },
+        {
+          "scene": 2,
+          "second": 9.55,
+          "asset": "book",
+          "key": "scene-02-2"
+        },
+        {
+          "scene": 3,
+          "second": 13,
+          "asset": "notebook",
+          "key": "scene-03-1"
+        },
+        {
+          "scene": 3,
+          "second": 16.55,
+          "asset": "notebook",
+          "key": "scene-03-2"
+        },
+        {
+          "scene": 4,
+          "second": 20,
+          "asset": "classroom",
+          "key": "scene-04-1"
+        },
+        {
+          "scene": 4,
+          "second": 23.55,
+          "asset": "classroom",
+          "key": "scene-04-2"
+        },
+        {
+          "scene": 5,
+          "second": 27,
+          "asset": "notebook",
+          "key": "scene-05-1"
+        },
+        {
+          "scene": 5,
+          "second": 28.6,
+          "asset": "notebook",
+          "key": "scene-05-2"
+        }
+      ],
+      "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
+      "externalPosting": false,
+      "pixelDifferences": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "classroom",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.16313326584862026,
+          "outsideAuthorizedRegionsP999": 8
+        },
+        {
+          "scene": 1,
+          "second": 3.25,
+          "asset": "classroom",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.15346698598457728,
+          "outsideAuthorizedRegionsP999": 8
+        },
+        {
+          "scene": 2,
+          "second": 6,
+          "asset": "book",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.3313645902772634,
+          "outsideAuthorizedRegionsP999": 8
+        },
+        {
+          "scene": 2,
+          "second": 9.55,
+          "asset": "book",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.3021203367651779,
+          "outsideAuthorizedRegionsP999": 8
+        },
+        {
+          "scene": 3,
+          "second": 13,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.16931535935609707,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 3,
+          "second": 16.55,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.09421409113728202,
+          "outsideAuthorizedRegionsP999": 4
+        },
+        {
+          "scene": 4,
+          "second": 20,
+          "asset": "classroom",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.16025331456929115,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 4,
+          "second": 23.55,
+          "asset": "classroom",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.09320050366639508,
+          "outsideAuthorizedRegionsP999": 4
+        },
+        {
+          "scene": 5,
+          "second": 27,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.18735254178702812,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 5,
+          "second": 28.6,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.18131990222946448,
+          "outsideAuthorizedRegionsP999": 7
+        }
+      ],
+      "appliedAt": "2026-09-10T10:23:54.587Z",
+      "contactSheet": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/03-lab-tiktok-contact.png",
+      "scope": "Only common SYNK rectangle95,245,264x152 replaced; original scenes and business-name lettering retained; original AAC unchanged."
+    },
+    {
+      "id": "04-yuhobuilds-youtube",
+      "at": "2026-09-10T10:21:00.286Z",
+      "fullRenderForEmbeddedPageLogos": true,
+      "sourceVideoSha256": "08388d3fd08a2f29185ab4502449c98b7e6e6f19fbf23eaaa6551b8ab14d2268",
+      "sha256": "65043031d3aa758ff48dddff1d0c43994001e5a1f44d096074f40fd3ffbe2830",
+      "activeBeforeHash": "65043031d3aa758ff48dddff1d0c43994001e5a1f44d096074f40fd3ffbe2830",
+      "originalFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/04-yuhobuilds-youtube/before-full-rerender.mp4",
+      "candidateFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/04-yuhobuilds-youtube/video.mp4",
+      "output": "docs/홍보물/계정별콘텐츠_20260909/04-yuhobuilds-youtube/video.mp4",
+      "width": 1080,
+      "height": 1920,
+      "frames": 1800,
+      "durationSeconds": 60.053333,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=93446eb39f7a136c04bf54afc2fc4fdf7a9f9b462439ce9d33fd2084207dc89d",
+      "fullDecode": true,
+      "scenesSha256": "cd3890c8c363048ec0723dd1e4170715c7f11baa0cfcdcf3058d60bccf2f2b22",
+      "captures": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "shiftpage",
+          "key": "scene-01-1"
+        },
+        {
+          "scene": 1,
+          "second": 6.5,
+          "asset": "shiftpage",
+          "key": "scene-01-2"
+        },
+        {
+          "scene": 2,
+          "second": 11,
+          "asset": "labpage",
+          "key": "scene-02-1"
+        },
+        {
+          "scene": 2,
+          "second": 16.5,
+          "asset": "labpage",
+          "key": "scene-02-2"
+        },
+        {
+          "scene": 3,
+          "second": 21,
+          "asset": "shiftpage",
+          "key": "scene-03-1"
+        },
+        {
+          "scene": 3,
+          "second": 26.5,
+          "asset": "shiftpage",
+          "key": "scene-03-2"
+        },
+        {
+          "scene": 4,
+          "second": 31,
+          "asset": "pulsepage",
+          "key": "scene-04-1"
+        },
+        {
+          "scene": 4,
+          "second": 36.5,
+          "asset": "pulsepage",
+          "key": "scene-04-2"
+        },
+        {
+          "scene": 5,
+          "second": 41,
+          "asset": "notebook",
+          "key": "scene-05-1"
+        },
+        {
+          "scene": 5,
+          "second": 46.5,
+          "asset": "notebook",
+          "key": "scene-05-2"
+        },
+        {
+          "scene": 6,
+          "second": 51,
+          "asset": "shiftpage",
+          "key": "scene-06-1"
+        },
+        {
+          "scene": 6,
+          "second": 56.5,
+          "asset": "shiftpage",
+          "key": "scene-06-2"
+        }
+      ],
+      "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
+      "externalPosting": false,
+      "pixelDifferences": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.025198528910985493,
+          "outsideAuthorizedRegionsP999": 3
+        },
+        {
+          "scene": 1,
+          "second": 6.5,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.008559785693205294,
+          "outsideAuthorizedRegionsP999": 2
+        },
+        {
+          "scene": 2,
+          "second": 11,
+          "asset": "labpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.002190288088265341,
+          "outsideAuthorizedRegionsP999": 1
+        },
+        {
+          "scene": 2,
+          "second": 16.5,
+          "asset": "labpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.002187336829439942,
+          "outsideAuthorizedRegionsP999": 1
+        },
+        {
+          "scene": 3,
+          "second": 21,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.001963495198528911,
+          "outsideAuthorizedRegionsP999": 1
+        },
+        {
+          "scene": 3,
+          "second": 26.5,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.0005003518808599514,
+          "outsideAuthorizedRegionsP999": 0
+        },
+        {
+          "scene": 4,
+          "second": 31,
+          "asset": "pulsepage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.003941973711094463,
+          "outsideAuthorizedRegionsP999": 2
+        },
+        {
+          "scene": 4,
+          "second": 36.5,
+          "asset": "pulsepage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.002142386887330019,
+          "outsideAuthorizedRegionsP999": 1
+        },
+        {
+          "scene": 5,
+          "second": 41,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.0038212807281765137,
+          "outsideAuthorizedRegionsP999": 1
+        },
+        {
+          "scene": 5,
+          "second": 46.5,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.0005657194117308183,
+          "outsideAuthorizedRegionsP999": 0
+        },
+        {
+          "scene": 6,
+          "second": 51,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.0039067856250993216,
+          "outsideAuthorizedRegionsP999": 2
+        },
+        {
+          "scene": 6,
+          "second": 56.5,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.003905423505641445,
+          "outsideAuthorizedRegionsP999": 2
+        }
+      ],
+      "appliedAt": "2026-09-10T10:23:54.664Z",
+      "contactSheet": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/04-yuhobuilds-youtube-contact.png",
+      "scope": "Existing scene input fully rendered by original renderer to refresh SYNK and embedded current labpage/shiftpage/pulsepage logos; original AAC packet stream copied unchanged."
+    },
+    {
+      "id": "05-yuhobuilds-instagram",
+      "at": "2026-09-10T10:21:04.236Z",
+      "fullRenderForEmbeddedPageLogos": true,
+      "sourceVideoSha256": "36d1097d8b809a3b911a3bf84e41038c48033b66e25fe6f9d3263a4d60b0ac99",
+      "sha256": "6f881feceda3709ca0d93db1881d5696450f2818bc4acbca68f86716d46bd642",
+      "activeBeforeHash": "6b81882e94ee93c906d7c549010f682fe02cda093ff5e2528795ceec30d1b67e",
+      "originalFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/05-yuhobuilds-instagram/before-full-rerender.mp4",
+      "candidateFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/05-yuhobuilds-instagram/video.mp4",
+      "output": "docs/홍보물/계정별콘텐츠_20260909/05-yuhobuilds-instagram/video.mp4",
+      "width": 1080,
+      "height": 1920,
+      "frames": 900,
+      "durationSeconds": 30.058667,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=77cc4dde4f50b3a8f640b765f9749a31c8f4a9820f1ed2263f454aef768f2a60",
+      "fullDecode": true,
+      "scenesSha256": "b588e56285a39ae4d70c2ba0cd88a821a40dc1dc0eb48b0bde105f91b5c1d16a",
+      "captures": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "labpage",
+          "key": "scene-01-1"
+        },
+        {
+          "scene": 1,
+          "second": 5.2,
+          "asset": "labpage",
+          "key": "scene-01-2"
+        },
+        {
+          "scene": 2,
+          "second": 9,
+          "asset": "notebook",
+          "key": "scene-02-1"
+        },
+        {
+          "scene": 2,
+          "second": 15.15,
+          "asset": "notebook",
+          "key": "scene-02-2"
+        },
+        {
+          "scene": 3,
+          "second": 20,
+          "asset": "shiftpage",
+          "key": "scene-03-1"
+        },
+        {
+          "scene": 3,
+          "second": 26.15,
+          "asset": "shiftpage",
+          "key": "scene-03-2"
+        }
+      ],
+      "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
+      "externalPosting": false,
+      "pixelDifferences": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "labpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.030743717224000544,
+          "outsideAuthorizedRegionsP999": 3
+        },
+        {
+          "scene": 1,
+          "second": 5.2,
+          "asset": "labpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.010113282934913393,
+          "outsideAuthorizedRegionsP999": 2
+        },
+        {
+          "scene": 2,
+          "second": 9,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.009013159519047971,
+          "outsideAuthorizedRegionsP999": 2
+        },
+        {
+          "scene": 2,
+          "second": 15.15,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.0044943172933692155,
+          "outsideAuthorizedRegionsP999": 2
+        },
+        {
+          "scene": 3,
+          "second": 20,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.0031415015096823993,
+          "outsideAuthorizedRegionsP999": 1
+        },
+        {
+          "scene": 3,
+          "second": 26.15,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.0009661967354536992,
+          "outsideAuthorizedRegionsP999": 0
+        }
+      ],
+      "appliedAt": "2026-09-10T10:23:54.725Z",
+      "contactSheet": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/05-yuhobuilds-instagram-contact.png",
+      "scope": "Existing scene input fully rendered by original renderer to refresh SYNK and embedded current labpage/shiftpage/pulsepage logos; original AAC packet stream copied unchanged."
+    },
+    {
+      "id": "06-yuhobuilds-tiktok",
+      "at": "2026-09-10T10:21:07.830Z",
+      "fullRenderForEmbeddedPageLogos": true,
+      "sourceVideoSha256": "48bf778108f5dd63f25b99b5feefa582a85b30f8a76477d216dc3a4766efcfab",
+      "sha256": "af961cf52013a496047893cd2944280fdedae2c5890e24e00e714ba4f2c05849",
+      "activeBeforeHash": "34fca4a15c3a936b238c3139656f4605d5a37ed31e08e1ab99d8c8cf70e05206",
+      "originalFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/06-yuhobuilds-tiktok/before-full-rerender.mp4",
+      "candidateFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/06-yuhobuilds-tiktok/video.mp4",
+      "output": "docs/홍보물/계정별콘텐츠_20260909/06-yuhobuilds-tiktok/video.mp4",
+      "width": 1080,
+      "height": 1920,
+      "frames": 750,
+      "durationSeconds": 25.045333,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=b5813bc9d133f8441f316e80e1cfff211e6ea4d6b5065f3d5b9cd3204efe7132",
+      "fullDecode": true,
+      "scenesSha256": "b1472b6f3d1d68312c5efc3b2a1b890136a006881d60273af18dd225de0ec350",
+      "captures": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "shiftpage",
+          "key": "scene-01-1"
+        },
+        {
+          "scene": 1,
+          "second": 4.55,
+          "asset": "shiftpage",
+          "key": "scene-01-2"
+        },
+        {
+          "scene": 2,
+          "second": 8,
+          "asset": "labpage",
+          "key": "scene-02-1"
+        },
+        {
+          "scene": 2,
+          "second": 12.85,
+          "asset": "labpage",
+          "key": "scene-02-2"
+        },
+        {
+          "scene": 3,
+          "second": 17,
+          "asset": "notebook",
+          "key": "scene-03-1"
+        },
+        {
+          "scene": 3,
+          "second": 21.85,
+          "asset": "notebook",
+          "key": "scene-03-2"
+        }
+      ],
+      "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
+      "externalPosting": false,
+      "pixelDifferences": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.025716361324888193,
+          "outsideAuthorizedRegionsP999": 3
+        },
+        {
+          "scene": 1,
+          "second": 4.55,
+          "asset": "shiftpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.008013121750777542,
+          "outsideAuthorizedRegionsP999": 2
+        },
+        {
+          "scene": 2,
+          "second": 8,
+          "asset": "labpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.0039131421825694115,
+          "outsideAuthorizedRegionsP999": 2
+        },
+        {
+          "scene": 2,
+          "second": 12.85,
+          "asset": "labpage",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.001255193080433154,
+          "outsideAuthorizedRegionsP999": 0
+        },
+        {
+          "scene": 3,
+          "second": 17,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.01206478532454386,
+          "outsideAuthorizedRegionsP999": 2
+        },
+        {
+          "scene": 3,
+          "second": 21.85,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.003970240887506275,
+          "outsideAuthorizedRegionsP999": 1
+        }
+      ],
+      "appliedAt": "2026-09-10T10:23:54.765Z",
+      "contactSheet": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/06-yuhobuilds-tiktok-contact.png",
+      "scope": "Existing scene input fully rendered by original renderer to refresh SYNK and embedded current labpage/shiftpage/pulsepage logos; original AAC packet stream copied unchanged."
+    },
+    {
+      "id": "07-synkbrief-youtube",
+      "at": "2026-09-10T10:21:13.265Z",
+      "fullRenderForEmbeddedPageLogos": false,
+      "sourceVideoSha256": "5d7fe633c98cd0ab0ccc4aaf352ba05747755050f22fbe6aceb57533abf4e489",
+      "sha256": "0a013e7668a1930bc045ed459a7629d680d269e032964dc1b49c2c9adc0e32ec",
+      "activeBeforeHash": "5d7fe633c98cd0ab0ccc4aaf352ba05747755050f22fbe6aceb57533abf4e489",
+      "originalFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/07-synkbrief-youtube/before-logo.mp4",
+      "candidateFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/07-synkbrief-youtube/video.mp4",
+      "output": "docs/홍보물/계정별콘텐츠_20260909/07-synkbrief-youtube/video.mp4",
+      "width": 1080,
+      "height": 1920,
+      "frames": 1200,
+      "durationSeconds": 40.042667,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=743a71cf546aa467454ef0d9bb2ecd0f5d020471e53030e81d1123a71bc0b5ba",
+      "fullDecode": true,
+      "scenesSha256": "1e632031b52998fbad56137bfd059734292a7fe8ea6359902225ccea0b1d2121",
+      "captures": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "letter",
+          "key": "scene-01-1"
+        },
+        {
+          "scene": 1,
+          "second": 5.2,
+          "asset": "letter",
+          "key": "scene-01-2"
+        },
+        {
+          "scene": 2,
+          "second": 9,
+          "asset": "book",
+          "key": "scene-02-1"
+        },
+        {
+          "scene": 2,
+          "second": 13.85,
+          "asset": "book",
+          "key": "scene-02-2"
+        },
+        {
+          "scene": 3,
+          "second": 18,
+          "asset": "scissors",
+          "key": "scene-03-1"
+        },
+        {
+          "scene": 3,
+          "second": 22.85,
+          "asset": "scissors",
+          "key": "scene-03-2"
+        },
+        {
+          "scene": 4,
+          "second": 27,
+          "asset": "notebook",
+          "key": "scene-04-1"
+        },
+        {
+          "scene": 4,
+          "second": 31.85,
+          "asset": "notebook",
+          "key": "scene-04-2"
+        },
+        {
+          "scene": 5,
+          "second": 36,
+          "asset": "letter",
+          "key": "scene-05-1"
+        },
+        {
+          "scene": 5,
+          "second": 38.25,
+          "asset": "letter",
+          "key": "scene-05-2"
+        }
+      ],
+      "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
+      "externalPosting": false,
+      "pixelDifferences": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "letter",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.23826070496835625,
+          "outsideAuthorizedRegionsP999": 8
+        },
+        {
+          "scene": 1,
+          "second": 5.2,
+          "asset": "letter",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.23542305508233957,
+          "outsideAuthorizedRegionsP999": 8
+        },
+        {
+          "scene": 2,
+          "second": 9,
+          "asset": "book",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.31965335901044367,
+          "outsideAuthorizedRegionsP999": 8
+        },
+        {
+          "scene": 2,
+          "second": 13.85,
+          "asset": "book",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.3025364376301344,
+          "outsideAuthorizedRegionsP999": 8
+        },
+        {
+          "scene": 3,
+          "second": 18,
+          "asset": "scissors",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.11318338559283675,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 3,
+          "second": 22.85,
+          "asset": "scissors",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.11120740027487676,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 4,
+          "second": 27,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.197087952332749,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 4,
+          "second": 31.85,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.1676420676657696,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 5,
+          "second": 36,
+          "asset": "letter",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.21284332847772594,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 5,
+          "second": 38.25,
+          "asset": "letter",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.20769737221111192,
+          "outsideAuthorizedRegionsP999": 7
+        }
+      ],
+      "appliedAt": "2026-09-10T10:23:54.804Z",
+      "contactSheet": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/07-synkbrief-youtube-contact.png",
+      "scope": "Only common SYNK rectangle95,245,264x152 replaced; original scenes and business-name lettering retained; original AAC unchanged."
+    },
+    {
+      "id": "09-synkbrief-tiktok",
+      "at": "2026-09-10T10:21:16.847Z",
+      "fullRenderForEmbeddedPageLogos": false,
+      "sourceVideoSha256": "c416aeed3a9c7809a1c408be254cee84f356dd2046ac23405a7b9901ddf931fd",
+      "sha256": "fa26a2acf5faaeb7a63510b5897e5a779c1698da4b0c2d9ba1397316156ebabf",
+      "activeBeforeHash": "c416aeed3a9c7809a1c408be254cee84f356dd2046ac23405a7b9901ddf931fd",
+      "originalFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/09-synkbrief-tiktok/before-logo.mp4",
+      "candidateFile": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/09-synkbrief-tiktok/video.mp4",
+      "output": "docs/홍보물/계정별콘텐츠_20260909/09-synkbrief-tiktok/video.mp4",
+      "width": 1080,
+      "height": 1920,
+      "frames": 750,
+      "durationSeconds": 25.045333,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=b5813bc9d133f8441f316e80e1cfff211e6ea4d6b5065f3d5b9cd3204efe7132",
+      "fullDecode": true,
+      "scenesSha256": "315afc324ed19d548a6578d63b0c68a330fb2534d5a2929938543dc21bd3f671",
+      "captures": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "letter",
+          "key": "scene-01-1"
+        },
+        {
+          "scene": 1,
+          "second": 3.9,
+          "asset": "letter",
+          "key": "scene-01-2"
+        },
+        {
+          "scene": 2,
+          "second": 7,
+          "asset": "notebook",
+          "key": "scene-02-1"
+        },
+        {
+          "scene": 2,
+          "second": 12.5,
+          "asset": "notebook",
+          "key": "scene-02-2"
+        },
+        {
+          "scene": 3,
+          "second": 17,
+          "asset": "book",
+          "key": "scene-03-1"
+        },
+        {
+          "scene": 3,
+          "second": 21.85,
+          "asset": "book",
+          "key": "scene-03-2"
+        }
+      ],
+      "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
+      "externalPosting": false,
+      "pixelDifferences": [
+        {
+          "scene": 1,
+          "second": 1,
+          "asset": "letter",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.21475347505123077,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 1,
+          "second": 3.9,
+          "asset": "letter",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.20925659827667087,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 2,
+          "second": 7,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.21938226798014962,
+          "outsideAuthorizedRegionsP999": 8
+        },
+        {
+          "scene": 2,
+          "second": 12.5,
+          "asset": "notebook",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.11217572360895078,
+          "outsideAuthorizedRegionsP999": 5
+        },
+        {
+          "scene": 3,
+          "second": 17,
+          "asset": "book",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.3210782740373141,
+          "outsideAuthorizedRegionsP999": 7
+        },
+        {
+          "scene": 3,
+          "second": 21.85,
+          "asset": "book",
+          "outsideAuthorizedRegionsMeanAbsRGB": 0.3031151601938951,
+          "outsideAuthorizedRegionsP999": 7
+        }
+      ],
+      "appliedAt": "2026-09-10T10:23:54.863Z",
+      "contactSheet": "docs/홍보물/계정별콘텐츠_20260909/_검토/로고반영/최종검수_20260910/09-synkbrief-tiktok-contact.png",
+      "scope": "Only common SYNK rectangle95,245,264x152 replaced; original scenes and business-name lettering retained; original AAC unchanged."
+    }
+  ],
+  "phase": "final applied outputs",
+  "sceneCount": 25,
+  "inspectedEncodedTimes": 50,
+  "externalPosting": false
+}

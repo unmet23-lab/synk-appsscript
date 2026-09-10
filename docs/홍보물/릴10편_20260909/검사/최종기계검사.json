@@ -1,5 +1,5 @@
 {
-  "at": "2026-09-09T00:11:36.312Z",
+  "at": "2026-09-10T10:25:50.967Z",
   "reels": 10,
   "beats": 50,
   "giftItems": 46,
@@ -11,7 +11,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 4665856,
+      "bytes": 2111139,
       "decode": "pass"
     },
     {
@@ -19,7 +19,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 3304784,
+      "bytes": 1879050,
       "decode": "pass"
     },
     {
@@ -27,7 +27,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 2684877,
+      "bytes": 1751202,
       "decode": "pass"
     },
     {
@@ -35,7 +35,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 2708050,
+      "bytes": 1773435,
       "decode": "pass"
     },
     {
@@ -43,7 +43,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 4332470,
+      "bytes": 2180326,
       "decode": "pass"
     },
     {
@@ -51,7 +51,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 3270665,
+      "bytes": 1928395,
       "decode": "pass"
     },
     {
@@ -59,7 +59,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 3218753,
+      "bytes": 1906736,
       "decode": "pass"
     },
     {
@@ -67,7 +67,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 3305880,
+      "bytes": 1922428,
       "decode": "pass"
     },
     {
@@ -75,7 +75,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 7596089,
+      "bytes": 3045832,
       "decode": "pass"
     },
     {
@@ -83,7 +83,7 @@
       "loudness": -14,
       "peak": -4.1,
       "duration": 30.058,
-      "bytes": 4453319,
+      "bytes": 2202088,
       "decode": "pass"
     }
   ],
@@ -115,7 +115,7 @@
       "playback": [
         {
           "duration": 30.058,
-          "started": 0.264436,
+          "started": 0.268615,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -123,7 +123,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.266167,
+          "started": 0.268281,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -131,7 +131,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.267191,
+          "started": 0.267804,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -139,7 +139,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.267696,
+          "started": 0.260034,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -147,7 +147,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.262909,
+          "started": 0.269394,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -155,7 +155,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.267106,
+          "started": 0.260055,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -163,7 +163,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.262361,
+          "started": 0.268113,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -171,7 +171,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.263669,
+          "started": 0.27538,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -179,7 +179,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.267424,
+          "started": 0.26838,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -187,7 +187,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.262361,
+          "started": 0.260213,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -223,7 +223,7 @@
       "playback": [
         {
           "duration": 30.058,
-          "started": 0.262456,
+          "started": 0.260065,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -231,7 +231,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.226207,
+          "started": 0.260051,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -239,7 +239,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.264589,
+          "started": 0.260078,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -247,7 +247,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.263409,
+          "started": 0.264997,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -255,7 +255,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.262205,
+          "started": 0.268233,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -263,7 +263,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.261474,
+          "started": 0.268822,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -271,7 +271,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.261268,
+          "started": 0.268359,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -279,7 +279,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.265762,
+          "started": 0.268209,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -287,7 +287,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.262404,
+          "started": 0.268504,
           "current": 24,
           "error": null,
           "width": 1080,
@@ -295,7 +295,7 @@
         },
         {
           "duration": 30.058,
-          "started": 0.262148,
+          "started": 0.260046,
           "current": 24,
           "error": null,
           "width": 1080,

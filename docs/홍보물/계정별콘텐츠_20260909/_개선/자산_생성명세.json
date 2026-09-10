@@ -95,11 +95,11 @@
     },
     {
       "name": "SYNK",
-      "source": "docs/Loom_자산/구움/양모워드마크_누끼.png",
-      "sourceSha256": "917a66a7127cb03dcc491a079aa21d75ae07ab4d744b99d0669c05bbed50c665",
+      "source": "docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink.png",
+      "sourceSha256": "ab8561ef0dec1e12d4274c4ed6dfda7fb07abf5c0a2f13a937a00ddcc9af5e4f",
       "export": "docs/홍보물/계정별콘텐츠_20260909/_개선/배치용/brand-synk.webp",
-      "sha256": "9be5c8dccac9c3da088cd3517ad87fcf21d85e9aeb6bf29fe52a234d65cb2ae9",
-      "operation": "Existing official raster; unchanged dimensions and visible pixels; lossless WebP only. Not newly generated."
+      "sha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "operation": "2026-09-10 approved no-stitch SYNK Ink master. Aspect-preserving 2820px lossless WebP; division entries retained."
     },
     {
       "name": "envelope",

@@ -1,4 +1,5 @@
 'use strict';
+const approvedLogos=require('../로고갱신_20260910.cjs');
 // 원고 → Loom 정적 지면, 계정별 게시 문안, 휴대 가능한 모아보기.
 // --render 는 자신의 출력 디렉터리만 다시 만든다. 기존 소개서/영상은 읽기 전용.
 const fs = require('node:fs');
@@ -13,7 +14,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const write = (p, s) => {
   // Preserve identical authored/exported files, including harmless line endings.
   if(fs.existsSync(p)&&fs.readFileSync(p,'utf8').replace(/\r\n/g,'\n')===s.replace(/\r\n/g,'\n'))return;
-  fs.mkdirSync(path.dirname(p), {recursive:true});fs.writeFileSync(p, s, 'utf8');
+  fs.mkdirSync(path.dirname(p), {recursive:true});approvedLogos.replaceFile(p,s);
 };
 const read = p => JSON.parse(fs.readFileSync(p, 'utf8'));
 const hash = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
@@ -144,8 +145,8 @@ async function render() {
     }));
     for(let i=0;i<p.cards.length;i++){
       const n=String(i+1).padStart(2,'0');const master=path.join(folder,`master-${n}.png`);
-      await page.locator('.artboard').nth(i).screenshot({path:master,animations:'disabled'});
-      await sharp(master).resize(1080,1350).jpeg({quality:96,chromaSubsampling:'4:4:4'}).toFile(path.join(folder,`upload-${n}.jpg`));
+      approvedLogos.replaceFile(master,await page.locator('.artboard').nth(i).screenshot({animations:'disabled'}));
+      approvedLogos.replaceFile(path.join(folder,`upload-${n}.jpg`),await sharp(master).resize(1080,1350).jpeg({quality:96,chromaSubsampling:'4:4:4'}).toBuffer());
       results.push({id:p.id,index:i+1,master:`${p.id}/master-${n}.png`,upload:`${p.id}/upload-${n}.jpg`,...checks[i]});
     }
     console.log(`${p.id}: ${p.cards.length}장`);
@@ -154,8 +155,8 @@ async function render() {
   write(path.join(__dirname,'_검토/정적_경계검사.json'),JSON.stringify(report,null,2));
   const thumbs=await Promise.all(results.map(async(r,i)=>({input:await sharp(path.join(__dirname,r.upload)).resize(270,338).png().toBuffer(),left:(i%6)*286,top:Math.floor(i/6)*366})));
   fs.mkdirSync(path.join(__dirname,'미리보기'),{recursive:true});
-  await sharp({create:{width:6*286,height:Math.ceil(results.length/6)*366,channels:3,background:C.Oat}}).composite(thumbs).png().toFile(path.join(__dirname,'미리보기/전체카드.png'));
-  for(const p of data.items){const rs=results.filter(x=>x.id===p.id);const composites=await Promise.all(rs.map(async(r,i)=>({input:await sharp(path.join(__dirname,r.upload)).resize(324,405).png().toBuffer(),left:i*340,top:0})));await sharp({create:{width:rs.length*340-16,height:405,channels:3,background:C.Oat}}).composite(composites).png().toFile(path.join(__dirname,'미리보기',p.id+'.png'));}
+  approvedLogos.replaceFile(path.join(__dirname,'미리보기/전체카드.png'),await sharp({create:{width:6*286,height:Math.ceil(results.length/6)*366,channels:3,background:C.Oat}}).composite(thumbs).png().toBuffer());
+  for(const p of data.items){const rs=results.filter(x=>x.id===p.id);const composites=await Promise.all(rs.map(async(r,i)=>({input:await sharp(path.join(__dirname,r.upload)).resize(324,405).png().toBuffer(),left:i*340,top:0})));approvedLogos.replaceFile(path.join(__dirname,'미리보기',p.id+'.png'),await sharp({create:{width:rs.length*340-16,height:405,channels:3,background:C.Oat}}).composite(composites).png().toBuffer());}
   console.log(JSON.stringify({cards:results.length,overflow:results.filter(x=>x.textOverflow).map(x=>[x.id,x.index]),collision:results.filter(x=>x.collision).map(x=>[x.id,x.index]),errors}));
   // Persist the completed artwork before graceful browser teardown, which can
   // be slow on Windows. Close the owned page/context before the browser.
@@ -164,4 +165,4 @@ async function render() {
   await browser.close();
 }
 module.exports={assetNeedsRefresh,ASSET_TRANSFORM};
-if(require.main===module)(async()=>{await prepare();buildPages();if(process.argv.includes('--render'))await render();console.log('계정별 지면/원고 생성 완료');})().catch(e=>{console.error(e.stack);process.exitCode=1;});
+if(require.main===module)(async()=>{if(!process.argv.includes('--logo-only')){await prepare();buildPages();}await approvedLogos.refreshFolder(__dirname);if(process.argv.includes('--render'))await render();console.log('계정별 지면/원고 생성 완료');})().catch(e=>{console.error(e.stack);process.exitCode=1;});

@@ -1,0 +1,66 @@
+{
+  "pdf": 10,
+  "pages": 42,
+  "items": [
+    {
+      "file": "docs\\홍보물\\마케팅실행_20260909\\제공자료\\01_소개문.pdf",
+      "pages": 3,
+      "sha256": "29d3ea2a114a1ab69a4b75520137c78e76e656c4ff755fffa21ae801dcbad8da",
+      "renderedAllPages": true
+    },
+    {
+      "file": "docs\\홍보물\\마케팅실행_20260909\\제공자료\\02_상품한장.pdf",
+      "pages": 3,
+      "sha256": "4e0dc84668b21edbc702c406d8e7e9b1e636300ec05b9765cbf3af6d40fd8d0d",
+      "renderedAllPages": true
+    },
+    {
+      "file": "docs\\홍보물\\마케팅실행_20260909\\제공자료\\03_콘텐츠지도.pdf",
+      "pages": 4,
+      "sha256": "d37e8dd4fc12567be9969a17711e7ad64f7d89d5ccc235967fd66d0ba3154e24",
+      "renderedAllPages": true
+    },
+    {
+      "file": "docs\\홍보물\\마케팅실행_20260909\\제공자료\\04_문의답변.pdf",
+      "pages": 4,
+      "sha256": "52eddd9521da542e687cfc84944bcaa35a405e5c5556772670ad1460611e6e1d",
+      "renderedAllPages": true
+    },
+    {
+      "file": "docs\\홍보물\\마케팅실행_20260909\\제공자료\\05_AI업무지도.pdf",
+      "pages": 4,
+      "sha256": "0656229fb0d690089357050cfd9c8a605cd3c91fdf7b46b02312a1fcf9aefb3d",
+      "renderedAllPages": true
+    },
+    {
+      "file": "docs\\홍보물\\마케팅실행_20260909\\제공자료\\06_강의실습설계.pdf",
+      "pages": 4,
+      "sha256": "4d8caffbef3e25d93d2f80a54208d83fb4bd3fcb4f848c72970ef7bee1e98995",
+      "renderedAllPages": true
+    },
+    {
+      "file": "docs\\홍보물\\브랜드소개_20260909\\synk.pdf",
+      "pages": 5,
+      "sha256": "0342c1f068a14e962cb32364ee5fb89e91d64d57da37997c5174c9b02be1253b",
+      "renderedAllPages": true
+    },
+    {
+      "file": "docs\\홍보물\\브랜드소개_20260909\\lab.pdf",
+      "pages": 5,
+      "sha256": "698e892a0306c80557a08800312a6b01644d23f6f4762df77d29721940974ecb",
+      "renderedAllPages": true
+    },
+    {
+      "file": "docs\\홍보물\\브랜드소개_20260909\\shift.pdf",
+      "pages": 5,
+      "sha256": "a71bf7d892c55cd0b9e88d3368b50ba5a0abc53a46ea89ab0852ee575280b5ef",
+      "renderedAllPages": true
+    },
+    {
+      "file": "docs\\홍보물\\브랜드소개_20260909\\pulse.pdf",
+      "pages": 5,
+      "sha256": "1de8fb7b2dae2c7a53436f58abd95697a348f98bf1c9a7482918ae16c0a94cf4",
+      "renderedAllPages": true
+    }
+  ]
+}

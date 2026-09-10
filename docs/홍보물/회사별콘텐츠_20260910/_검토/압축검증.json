@@ -1,7 +1,21 @@
 {
-  "entries": 80,
-  "bytes": 34273000,
-  "sha256": "bacf647595eb2790ce0dbc0e65a55115c92cbed4b9c26a9b565e7175287c0e83",
+  "entries": 88,
+  "bytes": 55926333,
+  "sha256": "1437fa865fc3507b15427bc633696ce64dbb481c58998ef435cc1bc02db49da2",
   "utf8FilenameRoundtrip": true,
+  "disabledLocalReferencesInArchiveOnly": [
+    {
+      "file": "회사별_마케팅보고.html",
+      "localReference": "../../%EB%A7%88%EC%BC%80%ED%8C%85/SHIFT.md"
+    },
+    {
+      "file": "회사별_마케팅보고.html",
+      "localReference": "../../_ops/SHIFT%EB%B0%A9%ED%96%A5_20260910.md"
+    },
+    {
+      "file": "회사별_마케팅보고.html",
+      "localReference": "../../%EB%A7%88%EC%BC%80%ED%8C%85/%EC%B1%84%EB%84%90%EA%B3%BC_%EB%B0%9C%ED%96%89.md#discovery-with-purpose"
+    }
+  ],
   "errors": []
 }

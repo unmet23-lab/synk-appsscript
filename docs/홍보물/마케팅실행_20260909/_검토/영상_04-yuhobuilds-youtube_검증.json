@@ -1,30 +1,23 @@
 {
   "id": "04-yuhobuilds-youtube",
-  "renderedAt": "2026-09-09T10:11:47.206Z",
+  "renderedAt": "2026-09-10T10:11:16.693Z",
   "width": 1080,
   "height": 1920,
   "durationSeconds": 60.053333,
   "videoCodec": "h264",
   "audioCodec": "aac",
-  "bytes": 11274627,
+  "bytes": 4800185,
   "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
-  "renderSourceSha256": "e1e0991714dfb26c852dce4dd8f48fd26961222680997c3272ca13420360a953",
-  "videoSha256": "506cb4b3fa5cda40e7dee271fe296a89e80d15b21d9f11a50cf01c871eeded71",
+  "videoSha256": "af69c7cf969db1183e7b789870f8a61a11a6683674623770e59d50e8062aa0ac",
   "capturedSeconds": [
-    1,
-    5.2,
-    9,
-    14.5,
-    19,
-    26.450000000000003,
-    32,
-    36.85,
-    41,
-    47.8,
-    53,
-    57.2
+    0,
+    0.1,
+    1.8,
+    7.9,
+    8.1,
+    59.93333333333333
   ],
-  "visualInspection": "passed: final encoded representative frames directly inspected; see 영상_최종시각검수.md and matching videoSha256 in 영상_종합기계검증.json",
+  "visualInspection": "passed: current encoded whole frames and transition crops; see 영상_로고반영_20260910.json",
   "audioMeasurement": "technical measurement; no claim of human listening",
   "captionTiming": [
     "screen text",
@@ -34,5 +27,24 @@
     "screen text",
     "screen text"
   ],
-  "externalPosting": false
+  "externalPosting": false,
+  "sourceRenderedAt": "2026-09-09T10:11:47.206Z",
+  "sourceVideoSha256": "506cb4b3fa5cda40e7dee271fe296a89e80d15b21d9f11a50cf01c871eeded71",
+  "sourceRenderSourceSha256": "e1e0991714dfb26c852dce4dd8f48fd26961222680997c3272ca13420360a953",
+  "renderPipeline": "2026-09-10 logo-only composite; original scenes/audio/captions retained",
+  "logoMigration": {
+    "report": "영상_로고반영_20260910.json",
+    "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+    "sourcePlanSha256": "a4959774a41336153d195b596ddb036a7c097ed21b8b12ef021ede9bbf1e2c61",
+    "audioStreamIdentical": true,
+    "audioStreamHash": "SHA256=8e855af262a69643febb46d7cc3065a7ce3f801cf79ea15cc59f2cc2f6f6220b",
+    "logoRect": {
+      "x": 92,
+      "y": 246,
+      "w": 268,
+      "h": 146
+    },
+    "fullDecode": true,
+    "frames": 1800
+  }
 }

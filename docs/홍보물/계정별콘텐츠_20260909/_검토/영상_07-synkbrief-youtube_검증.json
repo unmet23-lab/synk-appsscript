@@ -1,21 +1,21 @@
 {
   "id": "07-synkbrief-youtube",
-  "renderedAt": "2026-09-09T07:53:12.397Z",
+  "renderedAt": "2026-09-10T10:21:13.265Z",
   "durationSeconds": 40.042667,
   "width": 1080,
   "height": 1920,
   "videoCodec": "h264",
   "audioCodec": "aac",
-  "bytes": 8960758,
+  "bytes": 3443805,
   "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
   "scenesSha256": "1e632031b52998fbad56137bfd059734292a7fe8ea6359902225ccea0b1d2121",
-  "renderSourceSha256": "0b0e4d34363d0412e9e548587fa9b877bf507339f3b2c1a4290ead89f041bd2e",
-  "videoSha256": "5d7fe633c98cd0ab0ccc4aaf352ba05747755050f22fbe6aceb57533abf4e489",
+  "renderSourceSha256": "e05ea1165a1c2bd37d85be87559795b3a2df6cc20fb1baa0b54baf509b88abd0",
+  "videoSha256": "0a013e7668a1930bc045ed459a7629d680d269e032964dc1b49c2c9adc0e32ec",
   "capturedSeconds": [
     1,
     5.2,
     9,
-    13.850000000000001,
+    13.85,
     18,
     22.85,
     27,
@@ -23,7 +23,19 @@
     36,
     38.25
   ],
-  "visualInspection": "strategy_b directly inspected every captured encoded frame at 1080x1920 on 2026-09-09; no material clipping, damaged object contours, or unreadable main copy found. See 영상_시각검토.md and 영상_상세검증.json for scope and limits.",
+  "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
   "audioMeasurement": "measured; not a claim of human listening",
-  "externalPosting": false
+  "externalPosting": false,
+  "sourceRenderedAt": "2026-09-09T07:53:12.397Z",
+  "sourceVideoSha256": "5d7fe633c98cd0ab0ccc4aaf352ba05747755050f22fbe6aceb57533abf4e489",
+  "sourceRenderSourceSha256": "0b0e4d34363d0412e9e548587fa9b877bf507339f3b2c1a4290ead89f041bd2e",
+  "logoMigration": {
+    "report": "로고반영/verification.json",
+    "fullRenderForEmbeddedPageLogos": false,
+    "frames": 1200,
+    "fullDecode": true,
+    "audioStreamIdentical": true,
+    "audioStreamHash": "SHA256=743a71cf546aa467454ef0d9bb2ecd0f5d020471e53030e81d1123a71bc0b5ba",
+    "scope": "Only common SYNK rectangle95,245,264x152 replaced; original scenes and business-name lettering retained; original AAC unchanged."
+  }
 }

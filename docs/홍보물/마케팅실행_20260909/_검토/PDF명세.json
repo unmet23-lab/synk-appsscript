@@ -1,32 +1,32 @@
 [
   {
     "file": "01_소개문.pdf",
-    "bytes": 6742871,
-    "sha256": "238dbbfb89f4326d94c2a09c18f00a37286b15fdfb82976e32492a65368510c0"
+    "bytes": 1547483,
+    "sha256": "29d3ea2a114a1ab69a4b75520137c78e76e656c4ff755fffa21ae801dcbad8da"
   },
   {
     "file": "02_상품한장.pdf",
-    "bytes": 6753893,
-    "sha256": "988f44d2ad3a221db356cd04a5cd1e5ebb9dbe883a09cce4fc26d2c18891154f"
+    "bytes": 1558505,
+    "sha256": "4e0dc84668b21edbc702c406d8e7e9b1e636300ec05b9765cbf3af6d40fd8d0d"
   },
   {
     "file": "03_콘텐츠지도.pdf",
-    "bytes": 6829629,
-    "sha256": "0d2e8efe1afb2dc48097942828b3121ba54d06a5422b5e079fbf949c5096f4bd"
+    "bytes": 1634244,
+    "sha256": "d37e8dd4fc12567be9969a17711e7ad64f7d89d5ccc235967fd66d0ba3154e24"
   },
   {
     "file": "04_문의답변.pdf",
-    "bytes": 6768681,
-    "sha256": "79a2eb820a610dcc2b3ac0a7d4b5e76e28d52d6fa10cbddc2c9f609054a6eba5"
+    "bytes": 1573287,
+    "sha256": "52eddd9521da542e687cfc84944bcaa35a405e5c5556772670ad1460611e6e1d"
   },
   {
     "file": "05_AI업무지도.pdf",
-    "bytes": 6825450,
-    "sha256": "b19db4baff7c8990bb31c07b93601215a3d5116827111f099c0e1baf2e970beb"
+    "bytes": 1630068,
+    "sha256": "0656229fb0d690089357050cfd9c8a605cd3c91fdf7b46b02312a1fcf9aefb3d"
   },
   {
     "file": "06_강의실습설계.pdf",
-    "bytes": 6803015,
-    "sha256": "1c2896356aa46dcf7577f865f64ca59f82934e7d1c7d84abfc4cf2daae0a8eea"
+    "bytes": 1607625,
+    "sha256": "4d8caffbef3e25d93d2f80a54208d83fb4bd3fcb4f848c72970ef7bee1e98995"
   }
 ]

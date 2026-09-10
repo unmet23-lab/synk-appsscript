@@ -1,29 +1,44 @@
 [
   {
-    "brand": "SYNK LAB",
-    "smallFont": "24px",
-    "coverFont": "32px",
-    "stitchHeight": "9px",
-    "stitchImageHeight": "9px",
-    "color": "rgb(174, 50, 42)",
-    "synkOriginalUnchanged": true
+    "file": "SYNK-LAB-기본형-4K.png",
+    "source": "배치용/SYNK-LAB-Ink.png",
+    "sourceSha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201",
+    "sha256": "f3fb26858d8f053cbc7a6f9ae5eb0a05164aa9866001d8a49e6b268b26e2a066",
+    "transform": "Proportional resize of complete approved lockup; no reassembly"
   },
   {
-    "brand": "SYNK SHIFT",
-    "smallFont": "24px",
-    "coverFont": "32px",
-    "stitchHeight": "9px",
-    "stitchImageHeight": "9px",
-    "color": "rgb(36, 68, 140)",
-    "synkOriginalUnchanged": true
+    "file": "SYNK-LAB-표지형-4K.png",
+    "source": "배치용/SYNK-LAB-Ink.png",
+    "sourceSha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201",
+    "sha256": "f3fb26858d8f053cbc7a6f9ae5eb0a05164aa9866001d8a49e6b268b26e2a066",
+    "transform": "Proportional resize of complete approved lockup; no reassembly"
   },
   {
-    "brand": "SYNK PULSE",
-    "smallFont": "24px",
-    "coverFont": "32px",
-    "stitchHeight": "9px",
-    "stitchImageHeight": "9px",
-    "color": "rgb(153, 41, 93)",
-    "synkOriginalUnchanged": true
+    "file": "SYNK-SHIFT-기본형-4K.png",
+    "source": "배치용/SYNK-SHIFT-Ink.png",
+    "sourceSha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0",
+    "sha256": "be85ce022e8a8d0ddfb7830df207a78c0977a7c555a34a997017b2c2f1232dea",
+    "transform": "Proportional resize of complete approved lockup; no reassembly"
+  },
+  {
+    "file": "SYNK-SHIFT-표지형-4K.png",
+    "source": "배치용/SYNK-SHIFT-Ink.png",
+    "sourceSha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0",
+    "sha256": "be85ce022e8a8d0ddfb7830df207a78c0977a7c555a34a997017b2c2f1232dea",
+    "transform": "Proportional resize of complete approved lockup; no reassembly"
+  },
+  {
+    "file": "SYNK-PULSE-기본형-4K.png",
+    "source": "배치용/SYNK-PULSE-Ink.png",
+    "sourceSha256": "f5dc1c08a81976e5cdea4b9d9a6755d71efec681deb4d0ea9861fa7c3e3aad9d",
+    "sha256": "9596faf90a009237e160606f3ef82577f153db40b60222e369c27c2472e5a766",
+    "transform": "Proportional resize of complete approved lockup; no reassembly"
+  },
+  {
+    "file": "SYNK-PULSE-표지형-4K.png",
+    "source": "배치용/SYNK-PULSE-Ink.png",
+    "sourceSha256": "f5dc1c08a81976e5cdea4b9d9a6755d71efec681deb4d0ea9861fa7c3e3aad9d",
+    "sha256": "9596faf90a009237e160606f3ef82577f153db40b60222e369c27c2472e5a766",
+    "transform": "Proportional resize of complete approved lockup; no reassembly"
   }
 ]

@@ -1,0 +1,117 @@
+{
+  "at": "2026-09-10T10:09:42.182Z",
+  "logoSha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201",
+  "crop": {
+    "left": 72,
+    "top": 110,
+    "width": 242,
+    "height": 90
+  },
+  "records": [
+    {
+      "id": "gift-01",
+      "beforeSha256": "9001e1ef5a572161959bd54cdc2d91f417232b0b3a330b242862bff8886eabd7",
+      "sha256": "920c1cfa6ced356da4c162da6d5497d476a92707171bb05a171feb1967d281c2",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    },
+    {
+      "id": "gift-02",
+      "beforeSha256": "d84f7b4a9cd3b3bd25a1cdab97d26b253ef0e8f551fd40e70e85abd8de07fdcc",
+      "sha256": "c5457331bdc4ea60befb83de56d5208cf08265f34afce5bee1ef3a5f3f2ec749",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    },
+    {
+      "id": "gift-03",
+      "beforeSha256": "b45918ac960d6069999d0cce3c98c70dd32d76a906dfa2a6f2719002b7502aa2",
+      "sha256": "68371cf9985292a4260e352c6aa611eb69891d7a9780e7acccf0df989b4c42ae",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    },
+    {
+      "id": "gift-04",
+      "beforeSha256": "e1ed91aa2c1cdd5644c5c1554494733a614cb0bf79a69f56e7bd0a886c908e6c",
+      "sha256": "8ded36f558c64f6f5c05e60320b3fccc5f10028787eb42ae1d10f01e47e67069",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    },
+    {
+      "id": "gift-05",
+      "beforeSha256": "14c5f4aedbc6da3f6078a5c0a7008695131f4dc0bf02749b48843869f8144431",
+      "sha256": "b029e1c0c85aeaf27b5423271a866aad5a4ebf9d1d5b6f900b19a2b618d39421",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    },
+    {
+      "id": "gift-06",
+      "beforeSha256": "571698270308bf79165a970501388a6fa965c6a2101f05c4b1790c502968b840",
+      "sha256": "a5a635dac7a46de752d1e350f065281ee48af3cff33d82dbb35a9cb61d512696",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    },
+    {
+      "id": "gift-07",
+      "beforeSha256": "6a71bc8b5e1e1e179089c78f2869ea1f1a49843d34de9834af99d4f18a6cffff",
+      "sha256": "c5cbc0763d512f97f54aa01df9e611673e63bbf70408460ce65a78a42d5bb868",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    },
+    {
+      "id": "gift-08",
+      "beforeSha256": "7f02d91be6adc7388894b4c20f8d71f9e108b39a6a0dd2090e979228b1d07ef2",
+      "sha256": "be00ec47f1c7e4105ab013d87cf5f364efec010c819e60cae0e0ce7f326dc41d",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    },
+    {
+      "id": "gift-09",
+      "beforeSha256": "696958c4769f43851631e58da7421548d4d8b04c10ed6766b1b010c73eb93efa",
+      "sha256": "26e1333d65e1d8374eb0264204ae0950fa1294f1061df6aeb45632eb77be3dce",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    },
+    {
+      "id": "gift-10",
+      "beforeSha256": "1d23bf300342749648651832381e364333b1090694bf5a81b75e69cc8353e896",
+      "sha256": "9ff069aca7ab6feda6d146f7f263a49e16bfc04be9c1290e515c048cf85f396b",
+      "frames": 900,
+      "duration": 30,
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=2601da29fc73ba4556f05d20f5ee745caf33bc9bc7da0fcb7effafdc590e7ef0",
+      "fullDecode": true
+    }
+  ],
+  "stills": 20,
+  "scope": "Existing ten movies, audio and scene timing; fixed logo header only. Covers and gift pages re-rendered from unchanged source.",
+  "visualInspection": "All ten encoded first scenes, fresh cover and resource templates inspected; no crop seam or clipped lettering",
+  "externalPosting": false,
+  "appliedAt": "2026-09-10T10:12:08.339Z"
+}

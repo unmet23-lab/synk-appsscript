@@ -73,11 +73,11 @@ const 안들 = {
     이름: '④ 밤 바탕 · 워드마크',
     설명: '이름이 읽힌다. 다만 원 안에 넣느라 작아진다',
     바탕: 색['Ink Deep'],
-    속: (px) => 워드마크({ 판: '다크', 표현: '펠트', 색갈래: '코랄' }),
+    속: () => `<img src="data:image/png;base64,${fs.readFileSync(path.join(ROOT, 'docs/홍보물/마케팅실행_20260909/브랜드킷/배치용/SYNK-Paper.png')).toString('base64')}" alt="SYNK">`,
     /* 🔑 폭 0.62 → 0.80 (확정되던 날 · 09-01). 후보일 때는 «비교용»이라 작아도 됐지만,
      *   프로필이 되는 순간 판정 자리가 32px 로 바뀐다 — 거기서 「synk」가 읽혀야 한다.
-     *   원 안에 들어가는 한계는 폭이 아니라 «대각선»이다: 워드마크 종횡비 ≈3.3:1 이므로
-     *   √(w² + (w/3.3)²) ≤ D → w ≤ 0.95·D. 0.80 은 그 안에서 가장자리 숨통을 남긴 값이다.
+     *   원 안에 들어가는 한계는 폭이 아니라 «대각선»이다: 현재 사진형 캔버스 종횡비 ≈2.03:1 이므로
+     *   √(w² + (w/2.03)²) ≤ D → w ≤ 0.896·D. 0.80 은 그 안에서 가장자리 숨통을 남긴 값이다.
      *   ⚠ 원형 크롭이라 «폭»만 보고 키우면 모서리가 잘린다 — 대각선으로 셈해야 맞는다. */
     폭: 0.80,
     확정: 'yuhobuilds_프로필',
@@ -155,7 +155,7 @@ function 지면(안, px) {
   html,body{margin:0;padding:0;background:${a.바탕};}
   .판{width:${px}px;height:${px}px;display:grid;place-items:center;position:relative;overflow:hidden;background:${a.바탕};}
   .속{position:relative;z-index:2;${폭}${밀기}}
-  .속 svg{width:100%;height:auto;display:block;}
+  .속 svg,.속 img{width:100%;height:auto;display:block;}
   .땀{position:absolute;inset:0;width:100%;height:100%;z-index:1;}
 </style>
 <div class="판">${땀}<div class="속">${a.속(px)}</div></div>`;

@@ -53,6 +53,8 @@ assetSources.letter = {source: path.join(improved, '봉투-2.5.png'), file: 'let
 assetSources.book = {source: path.join(improved, '책-2.5.png'), file: 'book.png'};
 assetSources.scissors = {source: path.join(improved, '가위-2.5.png'), file: 'scissors.png'};
 for (const brand of ['synk', 'lab', 'shift', 'pulse']) assetSources[`brand-${brand}`] = {source: path.join(improved, '배치용', `brand-${brand}.webp`), file: `brand-${brand}.webp`};
+// Current standalone SYNK texture comes from the no-stitch approved master.
+assetSources['brand-synk'] = {source: path.join(repo, 'docs/홍보물/마케팅실행_20260909/assets/brand-synk.webp'), file: 'brand-synk.webp'};
 assetSources.compass = {source: path.join(videoRoot, 'public', '공방', '공방_나침반.avif'), file: 'compass.avif'};
 for (const brand of ['lab', 'shift', 'pulse']) assetSources[`${brand}page`] = {source: path.join(improved, '지면스냅샷', `${brand}-1.png`), file: `${brand}page.png`};
 
@@ -189,7 +191,8 @@ async function render(item) {
   console.log(`Finished ${item.id}: ${duration}s; ${(stat.size / 1048576).toFixed(1)} MiB; ${capturedSeconds.length} encoded frames extracted.`);
 }
 
-(async () => { try {
+module.exports = {captureFinished, renderFingerprint};
+if (require.main === module) (async () => { try {
   if (args.includes('--prepare')) { prepare(); process.exit(0); }
   const items = scripts();
   if (args.includes('--check')) {

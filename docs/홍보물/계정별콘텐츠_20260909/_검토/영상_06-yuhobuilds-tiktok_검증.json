@@ -1,25 +1,37 @@
 {
   "id": "06-yuhobuilds-tiktok",
-  "renderedAt": "2026-09-09T07:58:28.329Z",
+  "renderedAt": "2026-09-10T10:21:07.830Z",
   "durationSeconds": 25.045333,
   "width": 1080,
   "height": 1920,
   "videoCodec": "h264",
   "audioCodec": "aac",
-  "bytes": 5319482,
+  "bytes": 5268993,
   "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
   "scenesSha256": "b1472b6f3d1d68312c5efc3b2a1b890136a006881d60273af18dd225de0ec350",
-  "renderSourceSha256": "33055d08010fe6a41502846c235ae1ef24ccb3a333ddbba6bf6a7259b4771505",
-  "videoSha256": "48bf778108f5dd63f25b99b5feefa582a85b30f8a76477d216dc3a4766efcfab",
+  "renderSourceSha256": "70e47501dbb259179227c57ff1325ba398a7e4eb1455b3169e91bfc9e2759d37",
+  "videoSha256": "af961cf52013a496047893cd2944280fdedae2c5890e24e00e714ba4f2c05849",
   "capturedSeconds": [
     1,
     4.55,
     8,
-    12.850000000000001,
+    12.85,
     17,
     21.85
   ],
-  "visualInspection": "strategy_b directly inspected every captured encoded frame at 1080x1920 on 2026-09-09; no material clipping, damaged object contours, or unreadable main copy found. See 영상_시각검토.md and 영상_상세검증.json for scope and limits.",
+  "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
   "audioMeasurement": "measured; not a claim of human listening",
-  "externalPosting": false
+  "externalPosting": false,
+  "sourceRenderedAt": "2026-09-09T07:58:28.329Z",
+  "sourceVideoSha256": "48bf778108f5dd63f25b99b5feefa582a85b30f8a76477d216dc3a4766efcfab",
+  "sourceRenderSourceSha256": "33055d08010fe6a41502846c235ae1ef24ccb3a333ddbba6bf6a7259b4771505",
+  "logoMigration": {
+    "report": "로고반영/verification.json",
+    "fullRenderForEmbeddedPageLogos": true,
+    "frames": 750,
+    "fullDecode": true,
+    "audioStreamIdentical": true,
+    "audioStreamHash": "SHA256=b5813bc9d133f8441f316e80e1cfff211e6ea4d6b5065f3d5b9cd3204efe7132",
+    "scope": "Existing scene input fully rendered by original renderer to refresh SYNK and embedded current labpage/shiftpage/pulsepage logos; original AAC packet stream copied unchanged."
+  }
 }

@@ -1,25 +1,37 @@
 {
   "id": "09-synkbrief-tiktok",
-  "renderedAt": "2026-09-09T07:53:56.384Z",
+  "renderedAt": "2026-09-10T10:21:16.847Z",
   "durationSeconds": 25.045333,
   "width": 1080,
   "height": 1920,
   "videoCodec": "h264",
   "audioCodec": "aac",
-  "bytes": 5474243,
+  "bytes": 2202440,
   "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
   "scenesSha256": "315afc324ed19d548a6578d63b0c68a330fb2534d5a2929938543dc21bd3f671",
-  "renderSourceSha256": "2d327a1946d213a63ed5ff3553a4885579187873403e19f32a4202e6b2ee93dd",
-  "videoSha256": "c416aeed3a9c7809a1c408be254cee84f356dd2046ac23405a7b9901ddf931fd",
+  "renderSourceSha256": "999e0b8144b2254284580658af55b1790811d2e2ca3e548c20f6e6793e0fb931",
+  "videoSha256": "fa26a2acf5faaeb7a63510b5897e5a779c1698da4b0c2d9ba1397316156ebabf",
   "capturedSeconds": [
     1,
-    3.9000000000000004,
+    3.9,
     7,
     12.5,
     17,
     21.85
   ],
-  "visualInspection": "strategy_b directly inspected every captured encoded frame at 1080x1920 on 2026-09-09; no material clipping, damaged object contours, or unreadable main copy found. See 영상_시각검토.md and 영상_상세검증.json for scope and limits.",
+  "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
   "audioMeasurement": "measured; not a claim of human listening",
-  "externalPosting": false
+  "externalPosting": false,
+  "sourceRenderedAt": "2026-09-09T07:53:56.384Z",
+  "sourceVideoSha256": "c416aeed3a9c7809a1c408be254cee84f356dd2046ac23405a7b9901ddf931fd",
+  "sourceRenderSourceSha256": "2d327a1946d213a63ed5ff3553a4885579187873403e19f32a4202e6b2ee93dd",
+  "logoMigration": {
+    "report": "로고반영/verification.json",
+    "fullRenderForEmbeddedPageLogos": false,
+    "frames": 750,
+    "fullDecode": true,
+    "audioStreamIdentical": true,
+    "audioStreamHash": "SHA256=b5813bc9d133f8441f316e80e1cfff211e6ea4d6b5065f3d5b9cd3204efe7132",
+    "scope": "Only common SYNK rectangle95,245,264x152 replaced; original scenes and business-name lettering retained; original AAC unchanged."
+  }
 }

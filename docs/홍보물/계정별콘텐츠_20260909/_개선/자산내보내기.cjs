@@ -23,9 +23,9 @@ async function bounds(file){
   const meta=await sharp(target).metadata();
   entries.push({name:n,source:path.relative(root,file).replaceAll('\\','/'),sourceSha256:sha(file),jobId:job.id,model:job.job_type,variant:job.params.model,quality:job.params.quality,sourceWidth:job.params.width,sourceHeight:job.params.height,alphaBounds:b,crop,export:path.relative(root,target).replaceAll('\\','/'),width:meta.width,height:meta.height,sha256:sha(target),operation:'Lossless WebP; optical bounds alpha>=8 plus 24px padding cropped from original. Alpha values inside crop unchanged; no recoloring or color-key removal. Original PNG retained. Generated material interpretation, not a geometrically exact new corporate master.'});
  }
- const official=path.join(root,'docs/Loom_자산/구움/양모워드마크_누끼.png'),synkOut=path.join(out,'brand-synk.webp');
- await sharp(official).webp({lossless:true,effort:6}).toFile(synkOut);
- entries.push({name:'SYNK',source:path.relative(root,official).replaceAll('\\','/'),sourceSha256:sha(official),export:path.relative(root,synkOut).replaceAll('\\','/'),sha256:sha(synkOut),operation:'Existing official raster; unchanged dimensions and visible pixels; lossless WebP only. Not newly generated.'});
+ const official=path.join(root,'docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink.png'),synkOut=path.join(out,'brand-synk.webp');
+ await sharp(official).trim({threshold:12}).resize({width:2820}).webp({lossless:true,effort:6}).toFile(synkOut);
+ entries.push({name:'SYNK',source:path.relative(root,official).replaceAll('\\','/'),sourceSha256:sha(official),export:path.relative(root,synkOut).replaceAll('\\','/'),sha256:sha(synkOut),operation:'Approved no-stitch SYNK Ink felt master; trim and aspect-preserving resize to existing 2820px use. Division sources unchanged.'});
  for(const [name,n]of [['envelope','봉투'],['book','책'],['scissors','가위']]){
   const file=path.join(__dirname,n+'-2.5.png'),job=JSON.parse(fs.readFileSync(path.join(__dirname,n+'-응답.json'),'utf8'))[0];
   entries.push({name,source:path.relative(root,file).replaceAll('\\','/'),sourceSha256:sha(file),jobId:job.id,model:job.job_type,variant:job.params.model,quality:job.params.quality,width:job.params.width,height:job.params.height,operation:'Original generated RGBA preserved; no additional background removal.'});

@@ -1,0 +1,619 @@
+{
+  "at": "2026-09-10T10:16:53.202563+00:00",
+  "policy": "Approved SYNK without stitches; LAB/SHIFT/PULSE colors and stitches preserved",
+  "scope": "Existing six marketing shorts except01 plus public class and clinic. Only SYNK rectangle; no scripts, plans, captions or audio changed. H264 recompression has quantization differences outside the rectangle.",
+  "originalRecordsPreservedAt": "tmp/marketing-logo-rollout-20260910/<id>/original-verification.json",
+  "sceneAssetsInspected": [
+    "classroom",
+    "book",
+    "notebook",
+    "cafe",
+    "scissors",
+    "letter",
+    "compass"
+  ],
+  "embeddedOldWordmarksFound": false,
+  "sceneHeadersChecked": 51,
+  "externalPosting": false,
+  "results": [
+    {
+      "at": "2026-09-10T10:10:22.440Z",
+      "id": "03-lab-tiktok",
+      "sourceSha256": "f49bb3a561a2c444c1757b37f9ce00e2fcd6ecaf425c775d43a3da357c595c18",
+      "sha256": "4a29a99532f6e90aa1afc2f8aa58452886c9583be54ff6ba0c3153e910784a23",
+      "sourcePlanSha256": "a5202ebe362e6f729ebf61b2807cb412956ed9ba9026ce4e161acf3ce4a0305c",
+      "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=3cff30355e7930db8f82d82d5b21944763045d7646cafb4999065f557148cf5f",
+      "logoRect": {
+        "x": 92,
+        "y": 246,
+        "w": 268,
+        "h": 146
+      },
+      "frames": 900,
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": 30.058667,
+      "fullDecode": true,
+      "capturedSeconds": [
+        0,
+        0.1,
+        1.8,
+        4.9,
+        5.1,
+        29.933333333333334
+      ],
+      "visualInspection": "passed: full-size encoded frames, all eight entry/exit crop strips, wide and short contact sheets; no clipping, background seam or business-name displacement",
+      "scope": "Only original SYNK area replaced; original business-name stitches, voices, captions, content and timing preserved. H264 re-encoding causes ordinary quantization differences outside logo crop.",
+      "externalPosting": false,
+      "visualDifference": {
+        "id": "03-lab-tiktok",
+        "outsideCropMeanAbsRGB": 0.19295620681926318,
+        "outsideCropP999": 8.0,
+        "cropBoundaryMeanAbsRGB": 0.45088566827697263,
+        "cropBoundaryMaxRGB": 2,
+        "sceneLogoChecks": [
+          {
+            "scene": 1,
+            "second": 1,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.0
+          },
+          {
+            "scene": 2,
+            "second": 6,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0531333060723778
+          },
+          {
+            "scene": 3,
+            "second": 13,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.084074490560894
+          },
+          {
+            "scene": 4,
+            "second": 20,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.060374497376133
+          },
+          {
+            "scene": 5,
+            "second": 27,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0465054862672936
+          }
+        ]
+      },
+      "appliedAt": "2026-09-10T10:16:53.202563+00:00",
+      "output": "docs/홍보물/마케팅실행_20260909/03-lab-tiktok/video.mp4"
+    },
+    {
+      "at": "2026-09-10T10:11:16.693Z",
+      "id": "04-yuhobuilds-youtube",
+      "sourceSha256": "506cb4b3fa5cda40e7dee271fe296a89e80d15b21d9f11a50cf01c871eeded71",
+      "sha256": "af69c7cf969db1183e7b789870f8a61a11a6683674623770e59d50e8062aa0ac",
+      "sourcePlanSha256": "a4959774a41336153d195b596ddb036a7c097ed21b8b12ef021ede9bbf1e2c61",
+      "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=8e855af262a69643febb46d7cc3065a7ce3f801cf79ea15cc59f2cc2f6f6220b",
+      "logoRect": {
+        "x": 92,
+        "y": 246,
+        "w": 268,
+        "h": 146
+      },
+      "frames": 1800,
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": 60.053333,
+      "fullDecode": true,
+      "capturedSeconds": [
+        0,
+        0.1,
+        1.8,
+        7.9,
+        8.1,
+        59.93333333333333
+      ],
+      "visualInspection": "passed: full-size encoded frames, all eight entry/exit crop strips, wide and short contact sheets; no clipping, background seam or business-name displacement",
+      "scope": "Only original SYNK area replaced; original business-name stitches, voices, captions, content and timing preserved. H264 re-encoding causes ordinary quantization differences outside logo crop.",
+      "externalPosting": false,
+      "visualDifference": {
+        "id": "04-yuhobuilds-youtube",
+        "outsideCropMeanAbsRGB": 0.2872196487999507,
+        "outsideCropP999": 8.0,
+        "cropBoundaryMeanAbsRGB": 0.5281803542673108,
+        "cropBoundaryMaxRGB": 2,
+        "sceneLogoChecks": [
+          {
+            "scene": 1,
+            "second": 1,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.0
+          },
+          {
+            "scene": 2,
+            "second": 9,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0175833162952361
+          },
+          {
+            "scene": 3,
+            "second": 19,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0403036188918422
+          },
+          {
+            "scene": 4,
+            "second": 32,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0435323383084578
+          },
+          {
+            "scene": 5,
+            "second": 41,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.040184352211545
+          },
+          {
+            "scene": 6,
+            "second": 53,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0384209091528658
+          }
+        ]
+      },
+      "appliedAt": "2026-09-10T10:16:53.202563+00:00",
+      "output": "docs/홍보물/마케팅실행_20260909/04-yuhobuilds-youtube/video.mp4"
+    },
+    {
+      "at": "2026-09-10T10:11:27.282Z",
+      "id": "05-yuhobuilds-instagram",
+      "sourceSha256": "7e6b07505e95e1a32de753bb2f14ccc26a481471de0c98a30959995aabdf729a",
+      "sha256": "ebaf6a4424db8e895f808268a681d86b7106b31b1fa78401012031d201f37112",
+      "sourcePlanSha256": "b1bbe825ecea9539b219a3e5faba3b96dfa957090d8f5276608a0dc4ff4866f7",
+      "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=3cff30355e7930db8f82d82d5b21944763045d7646cafb4999065f557148cf5f",
+      "logoRect": {
+        "x": 92,
+        "y": 246,
+        "w": 268,
+        "h": 146
+      },
+      "frames": 900,
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": 30.058667,
+      "fullDecode": true,
+      "capturedSeconds": [
+        0,
+        0.1,
+        1.8,
+        5.9,
+        6.1,
+        29.933333333333334
+      ],
+      "visualInspection": "passed: full-size encoded frames, all eight entry/exit crop strips, wide and short contact sheets; no clipping, background seam or business-name displacement",
+      "scope": "Only original SYNK area replaced; original business-name stitches, voices, captions, content and timing preserved. H264 re-encoding causes ordinary quantization differences outside logo crop.",
+      "externalPosting": false,
+      "visualDifference": {
+        "id": "05-yuhobuilds-instagram",
+        "outsideCropMeanAbsRGB": 0.29614579769755167,
+        "outsideCropP999": 8.0,
+        "cropBoundaryMeanAbsRGB": 0.5281803542673108,
+        "cropBoundaryMaxRGB": 2,
+        "sceneLogoChecks": [
+          {
+            "scene": 1,
+            "second": 1,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.0
+          },
+          {
+            "scene": 2,
+            "second": 7,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0120629728071968
+          },
+          {
+            "scene": 3,
+            "second": 13,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0224050977986778
+          },
+          {
+            "scene": 4,
+            "second": 23,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0314438083554829
+          }
+        ]
+      },
+      "appliedAt": "2026-09-10T10:16:53.202563+00:00",
+      "output": "docs/홍보물/마케팅실행_20260909/05-yuhobuilds-instagram/video.mp4"
+    },
+    {
+      "at": "2026-09-10T10:11:36.201Z",
+      "id": "06-yuhobuilds-tiktok",
+      "sourceSha256": "cb801603b2647ff92824bb186fd6ab1c91d3df0ce1fdff2f45afa407c5757865",
+      "sha256": "02036163266f8ca1a7fc2a06c7160d511bd93aace531b7b69e27d6d386b59a8e",
+      "sourcePlanSha256": "84ace32eb7b88ade4d4b9faa4686402d657e7d40ab018e66343a7146df8f5a93",
+      "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=b0871718e0d5e2e39376f4bc7b35d812a40d1bfd57ead8f4c5941361b5b00692",
+      "logoRect": {
+        "x": 92,
+        "y": 246,
+        "w": 268,
+        "h": 146
+      },
+      "frames": 750,
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": 25.045333,
+      "fullDecode": true,
+      "capturedSeconds": [
+        0,
+        0.1,
+        1.8,
+        4.9,
+        5.1,
+        24.933333333333334
+      ],
+      "visualInspection": "passed: full-size encoded frames, all eight entry/exit crop strips, wide and short contact sheets; no clipping, background seam or business-name displacement",
+      "scope": "Only original SYNK area replaced; original business-name stitches, voices, captions, content and timing preserved. H264 re-encoding causes ordinary quantization differences outside logo crop.",
+      "externalPosting": false,
+      "visualDifference": {
+        "id": "06-yuhobuilds-tiktok",
+        "outsideCropMeanAbsRGB": 0.1852488835760171,
+        "outsideCropP999": 7.0,
+        "cropBoundaryMeanAbsRGB": 0.4758454106280193,
+        "cropBoundaryMaxRGB": 2,
+        "sceneLogoChecks": [
+          {
+            "scene": 1,
+            "second": 1,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.0
+          },
+          {
+            "scene": 2,
+            "second": 6,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0020190145164587
+          },
+          {
+            "scene": 3,
+            "second": 14,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.016015811354188
+          },
+          {
+            "scene": 4,
+            "second": 22,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0223795406529
+          }
+        ]
+      },
+      "appliedAt": "2026-09-10T10:16:53.202563+00:00",
+      "output": "docs/홍보물/마케팅실행_20260909/06-yuhobuilds-tiktok/video.mp4"
+    },
+    {
+      "at": "2026-09-10T10:11:49.337Z",
+      "id": "07-synkbrief-youtube",
+      "sourceSha256": "14afddfe35dfb43984f6797a34dc37bbe8d5e876a937735bf645148f54f68846",
+      "sha256": "6799d7dbfd353624d8d3f2a2c3c84b86bf8d6070efef14e2fa5383395f957417",
+      "sourcePlanSha256": "0e5456852e7be5b040fd363830172e1c18c83e0a81b2cf12e447ac9fc5413ff9",
+      "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=4622a603bf06348efb942db5550225f8a64c1b70fa647de69b48f07a9c2896c9",
+      "logoRect": {
+        "x": 92,
+        "y": 246,
+        "w": 268,
+        "h": 146
+      },
+      "frames": 1200,
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": 40.042667,
+      "fullDecode": true,
+      "capturedSeconds": [
+        0,
+        0.1,
+        1.8,
+        5.9,
+        6.1,
+        39.93333333333333
+      ],
+      "visualInspection": "passed: full-size encoded frames, all eight entry/exit crop strips, wide and short contact sheets; no clipping, background seam or business-name displacement",
+      "scope": "Only original SYNK area replaced; original business-name stitches, voices, captions, content and timing preserved. H264 re-encoding causes ordinary quantization differences outside logo crop.",
+      "externalPosting": false,
+      "visualDifference": {
+        "id": "07-synkbrief-youtube",
+        "outsideCropMeanAbsRGB": 0.29169075153979346,
+        "outsideCropP999": 8.0,
+        "cropBoundaryMeanAbsRGB": 0.49597423510466987,
+        "cropBoundaryMaxRGB": 2,
+        "sceneLogoChecks": [
+          {
+            "scene": 1,
+            "second": 1,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.0
+          },
+          {
+            "scene": 2,
+            "second": 7,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0247733933074354
+          },
+          {
+            "scene": 3,
+            "second": 14,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0237425884277245
+          },
+          {
+            "scene": 4,
+            "second": 22,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0389661282627956
+          },
+          {
+            "scene": 5,
+            "second": 31,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0360014993525524
+          }
+        ]
+      },
+      "appliedAt": "2026-09-10T10:16:53.202563+00:00",
+      "output": "docs/홍보물/마케팅실행_20260909/07-synkbrief-youtube/video.mp4"
+    },
+    {
+      "at": "2026-09-10T10:11:59.244Z",
+      "id": "09-synkbrief-tiktok",
+      "sourceSha256": "5163b4db634c607ca42ee81c26e1d645034ae1ea506b25da6730a933c7641e4d",
+      "sha256": "51ab64c94dae5d8c09f197c9597b9711f1358da6f5c1b743a7e4e05539110418",
+      "sourcePlanSha256": "df73e01c1af4d804ea06253c815e1839af9c3cb04dbf6743edbca363f324dedd",
+      "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=b0871718e0d5e2e39376f4bc7b35d812a40d1bfd57ead8f4c5941361b5b00692",
+      "logoRect": {
+        "x": 92,
+        "y": 246,
+        "w": 268,
+        "h": 146
+      },
+      "frames": 750,
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": 25.045333,
+      "fullDecode": true,
+      "capturedSeconds": [
+        0,
+        0.1,
+        1.8,
+        4.9,
+        5.1,
+        24.933333333333334
+      ],
+      "visualInspection": "passed: full-size encoded frames, all eight entry/exit crop strips, wide and short contact sheets; no clipping, background seam or business-name displacement",
+      "scope": "Only original SYNK area replaced; original business-name stitches, voices, captions, content and timing preserved. H264 re-encoding causes ordinary quantization differences outside logo crop.",
+      "externalPosting": false,
+      "visualDifference": {
+        "id": "09-synkbrief-tiktok",
+        "outsideCropMeanAbsRGB": 0.15212448242099177,
+        "outsideCropP999": 8.0,
+        "cropBoundaryMeanAbsRGB": 0.4758454106280193,
+        "cropBoundaryMaxRGB": 2,
+        "sceneLogoChecks": [
+          {
+            "scene": 1,
+            "second": 1,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.0
+          },
+          {
+            "scene": 2,
+            "second": 6,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0035013289715804
+          },
+          {
+            "scene": 3,
+            "second": 12,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0043191576364752
+          },
+          {
+            "scene": 4,
+            "second": 20,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.006925986505827
+          }
+        ]
+      },
+      "appliedAt": "2026-09-10T10:16:53.202563+00:00",
+      "output": "docs/홍보물/마케팅실행_20260909/09-synkbrief-tiktok/video.mp4"
+    },
+    {
+      "at": "2026-09-10T10:14:38.884Z",
+      "id": "shift-public-class-01",
+      "sourceSha256": "efad5673b7dc4e632163e3c3b9fd7b5ae589803354a9356a1df1df46d1b5d0e9",
+      "sha256": "cc32854aed2d9cf95e7456fc9774f8d259b659991f50ef364aa4fa07ff5b7ff1",
+      "sourcePlanSha256": "6c350fa89e908bc4ff5972c243c0a082a8c89bdc0634336515266701f492883b",
+      "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=ecdedf06bc81070dc2fdba61f53c2e370ca4b361bd057df0dfa54abe04985562",
+      "logoRect": {
+        "x": 100,
+        "y": 64,
+        "w": 232,
+        "h": 136
+      },
+      "frames": 18874,
+      "width": 1920,
+      "height": 1080,
+      "durationSeconds": 629.184,
+      "fullDecode": true,
+      "capturedSeconds": [
+        0,
+        0.1,
+        1.8,
+        26.966666666666665,
+        27.166666666666668,
+        629.0666666666667
+      ],
+      "visualInspection": "passed: full-size encoded frames, all eight entry/exit crop strips, wide and short contact sheets; no clipping, background seam or business-name displacement",
+      "scope": "Only original SYNK area replaced; original business-name stitches, voices, captions, content and timing preserved. H264 re-encoding causes ordinary quantization differences outside logo crop.",
+      "externalPosting": false,
+      "visualDifference": {
+        "id": "shift-public-class-01",
+        "outsideCropMeanAbsRGB": 0.2176359223681324,
+        "outsideCropP999": 7.0,
+        "cropBoundaryMeanAbsRGB": 0.6268115942028986,
+        "cropBoundaryMaxRGB": 2,
+        "sceneLogoChecks": [
+          {
+            "scene": 1,
+            "second": 1,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.0
+          },
+          {
+            "scene": 2,
+            "second": 28.066666666666666,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9734301048005409
+          },
+          {
+            "scene": 3,
+            "second": 56.0,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9940627112914131
+          },
+          {
+            "scene": 4,
+            "second": 86.33333333333333,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.006349306964165
+          },
+          {
+            "scene": 5,
+            "second": 119.46666666666667,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9784588404327248
+          },
+          {
+            "scene": 6,
+            "second": 161.16666666666669,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.977814401622718
+          },
+          {
+            "scene": 7,
+            "second": 199.03333333333336,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9996091108857336
+          },
+          {
+            "scene": 8,
+            "second": 234.40000000000003,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9605307640297498
+          },
+          {
+            "scene": 9,
+            "second": 266.6666666666667,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9673766058147397
+          },
+          {
+            "scene": 10,
+            "second": 306.8,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9814380493576741
+          },
+          {
+            "scene": 11,
+            "second": 337.6,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9869844489519946
+          },
+          {
+            "scene": 12,
+            "second": 374.9666666666667,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9739477687626775
+          },
+          {
+            "scene": 13,
+            "second": 409.4666666666667,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0024298512508452
+          },
+          {
+            "scene": 14,
+            "second": 460.1333333333334,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9839101588911426
+          },
+          {
+            "scene": 15,
+            "second": 497.20000000000005,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0251225490196079
+          },
+          {
+            "scene": 16,
+            "second": 528.3333333333334,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9734301048005409
+          },
+          {
+            "scene": 17,
+            "second": 569.3000000000001,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9792934415145369
+          },
+          {
+            "scene": 18,
+            "second": 600.7666666666668,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0063915652467883
+          }
+        ]
+      },
+      "appliedAt": "2026-09-10T10:16:53.202563+00:00",
+      "output": "docs/홍보물/마케팅실행_20260909/공개수업/수업.mp4"
+    },
+    {
+      "at": "2026-09-10T10:15:05.308Z",
+      "id": "shift-public-clinic-demo-01",
+      "sourceSha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15",
+      "sha256": "6fe99fe96a1a9d3357bd73c5f642a41bc75835f9f084d7d615f7cb83c538c513",
+      "sourcePlanSha256": "cf5bf1c6b1a398b587555c9ff08062d0d1a8e923ba92dcc2b1b127a010de3106",
+      "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+      "audioStreamIdentical": true,
+      "audioStreamHash": "SHA256=1e55ea5dec3a55eb339915b32bab6cb7dcea5b99f6b7a975efb1cde4cd24a469",
+      "logoRect": {
+        "x": 100,
+        "y": 64,
+        "w": 232,
+        "h": 136
+      },
+      "frames": 2543,
+      "width": 1920,
+      "height": 1080,
+      "durationSeconds": 84.821333,
+      "fullDecode": true,
+      "capturedSeconds": [
+        0,
+        0.1,
+        1.8,
+        11.266666666666667,
+        11.466666666666667,
+        84.7
+      ],
+      "visualInspection": "passed: full-size encoded frames, all eight entry/exit crop strips, wide and short contact sheets; no clipping, background seam or business-name displacement",
+      "scope": "Only original SYNK area replaced; original business-name stitches, voices, captions, content and timing preserved. H264 re-encoding causes ordinary quantization differences outside logo crop.",
+      "externalPosting": false,
+      "visualDifference": {
+        "id": "shift-public-clinic-demo-01",
+        "outsideCropMeanAbsRGB": 0.24064550229312273,
+        "outsideCropP999": 8.0,
+        "cropBoundaryMeanAbsRGB": 0.644927536231884,
+        "cropBoundaryMaxRGB": 2,
+        "sceneLogoChecks": [
+          {
+            "scene": 1,
+            "second": 1,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.0
+          },
+          {
+            "scene": 2,
+            "second": 12.366666666666667,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0000105645706558
+          },
+          {
+            "scene": 3,
+            "second": 29.266666666666666,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9667638607167005
+          },
+          {
+            "scene": 4,
+            "second": 46.86666666666667,
+            "steadyLogoMeanRGBDifferenceFromScene1": 1.0178963826910075
+          },
+          {
+            "scene": 5,
+            "second": 70.4,
+            "steadyLogoMeanRGBDifferenceFromScene1": 0.9682745943204868
+          }
+        ]
+      },
+      "appliedAt": "2026-09-10T10:16:53.202563+00:00",
+      "output": "docs/홍보물/마케팅실행_20260909/공개수업/클리닉.mp4"
+    }
+  ]
+}

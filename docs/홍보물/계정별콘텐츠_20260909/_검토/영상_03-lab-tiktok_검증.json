@@ -1,16 +1,16 @@
 {
   "id": "03-lab-tiktok",
-  "renderedAt": "2026-09-09T07:52:02.847Z",
+  "renderedAt": "2026-09-10T10:20:51.470Z",
   "durationSeconds": 30.058667,
   "width": 1080,
   "height": 1920,
   "videoCodec": "h264",
   "audioCodec": "aac",
-  "bytes": 8067015,
+  "bytes": 2587484,
   "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
   "scenesSha256": "d71949dbfb6cdcd6a6a088ce7a474ca62ce35d2c265d2a6e680043a9e0d281a9",
-  "renderSourceSha256": "8a6ef6528ab84315a9039fbc063667f4667489c6fd2ec766392db1cdb87a780f",
-  "videoSha256": "c39999a661a3ec578661fe01705259c1fe3bd50e043c98c67c1ba21837231abe",
+  "renderSourceSha256": "f76a87f7949e54e8b30e6885542b1059ef5bebf1874352a90032524f9fd31d33",
+  "videoSha256": "8c45d96e9810be2b29b6d60fccaef310565d981614976b143d1e448d456cd98d",
   "capturedSeconds": [
     1,
     3.25,
@@ -23,7 +23,19 @@
     27,
     28.6
   ],
-  "visualInspection": "strategy_b directly inspected every captured encoded frame at 1080x1920 on 2026-09-09; no material clipping, damaged object contours, or unreadable main copy found. See 영상_시각검토.md and 영상_상세검증.json for scope and limits.",
+  "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
   "audioMeasurement": "measured; not a claim of human listening",
-  "externalPosting": false
+  "externalPosting": false,
+  "sourceRenderedAt": "2026-09-09T07:52:02.847Z",
+  "sourceVideoSha256": "c39999a661a3ec578661fe01705259c1fe3bd50e043c98c67c1ba21837231abe",
+  "sourceRenderSourceSha256": "8a6ef6528ab84315a9039fbc063667f4667489c6fd2ec766392db1cdb87a780f",
+  "logoMigration": {
+    "report": "로고반영/verification.json",
+    "fullRenderForEmbeddedPageLogos": false,
+    "frames": 900,
+    "fullDecode": true,
+    "audioStreamIdentical": true,
+    "audioStreamHash": "SHA256=77cc4dde4f50b3a8f640b765f9749a31c8f4a9820f1ed2263f454aef768f2a60",
+    "scope": "Only common SYNK rectangle95,245,264x152 replaced; original scenes and business-name lettering retained; original AAC unchanged."
+  }
 }

@@ -1,28 +1,23 @@
 {
   "id": "shift-public-clinic-demo-01",
-  "renderedAt": "2026-09-09T10:07:33.678Z",
+  "renderedAt": "2026-09-10T10:15:05.308Z",
   "width": 1920,
   "height": 1080,
   "durationSeconds": 84.821333,
   "videoCodec": "h264",
   "audioCodec": "aac",
-  "bytes": 12148740,
+  "bytes": 5830707,
   "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
-  "renderSourceSha256": "945af1b77f3303d5bf63b6766ac41e15e7b75ddceb4758f5c9d3198ef3a826cf",
-  "videoSha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15",
+  "videoSha256": "6fe99fe96a1a9d3357bd73c5f642a41bc75835f9f084d7d615f7cb83c538c513",
   "capturedSeconds": [
-    1,
-    7.388333333333334,
-    12.366666666666667,
-    22.351666666666667,
-    29.266666666666666,
-    39.70666666666666,
-    46.86666666666667,
-    61.163333333333334,
-    70.4,
-    79.38833333333334
+    0,
+    0.1,
+    1.8,
+    11.266666666666667,
+    11.466666666666667,
+    84.7
   ],
-  "visualInspection": "passed: final encoded representative frames directly inspected; see 영상_최종시각검수.md and matching videoSha256 in 영상_종합기계검증.json",
+  "visualInspection": "passed: current encoded whole frames and transition crops; see 영상_로고반영_20260910.json",
   "audioMeasurement": "technical measurement; no claim of human listening",
   "captionTiming": [
     "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
@@ -31,5 +26,24 @@
     "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned",
     "local ASR word timestamps aligned to canonical narration text; automatic estimate, not human-aligned"
   ],
-  "externalPosting": false
+  "externalPosting": false,
+  "sourceRenderedAt": "2026-09-09T10:07:33.678Z",
+  "sourceVideoSha256": "4aa7f3eaff14905294f060111687f59569776dfd15f44d6ad416e5c36e15cf15",
+  "sourceRenderSourceSha256": "945af1b77f3303d5bf63b6766ac41e15e7b75ddceb4758f5c9d3198ef3a826cf",
+  "renderPipeline": "2026-09-10 logo-only composite; original scenes/audio/captions retained",
+  "logoMigration": {
+    "report": "영상_로고반영_20260910.json",
+    "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+    "sourcePlanSha256": "cf5bf1c6b1a398b587555c9ff08062d0d1a8e923ba92dcc2b1b127a010de3106",
+    "audioStreamIdentical": true,
+    "audioStreamHash": "SHA256=1e55ea5dec3a55eb339915b32bab6cb7dcea5b99f6b7a975efb1cde4cd24a469",
+    "logoRect": {
+      "x": 100,
+      "y": 64,
+      "w": 232,
+      "h": 136
+    },
+    "fullDecode": true,
+    "frames": 2543
+  }
 }

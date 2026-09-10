@@ -7,10 +7,20 @@
         "overflow": [],
         "assets": [
           {
+            "natural": [
+              2200,
+              1064
+            ],
+            "display": [
+              132,
+              64
+            ]
+          },
+          {
             "key": "woolLogo",
             "natural": [
               2820,
-              1301
+              1218
             ],
             "display": [
               650,
@@ -23,6 +33,16 @@
         "page": "2",
         "overflow": [],
         "assets": [
+          {
+            "natural": [
+              2200,
+              1064
+            ],
+            "display": [
+              132,
+              64
+            ]
+          },
           {
             "key": "book",
             "natural": [
@@ -41,6 +61,16 @@
         "overflow": [],
         "assets": [
           {
+            "natural": [
+              2200,
+              1064
+            ],
+            "display": [
+              132,
+              64
+            ]
+          },
+          {
             "key": "curious",
             "natural": [
               3840,
@@ -57,6 +87,16 @@
         "page": "4",
         "overflow": [],
         "assets": [
+          {
+            "natural": [
+              2200,
+              1064
+            ],
+            "display": [
+              132,
+              64
+            ]
+          },
           {
             "key": "notebook",
             "natural": [
@@ -97,6 +137,16 @@
         "overflow": [],
         "assets": [
           {
+            "natural": [
+              2200,
+              1064
+            ],
+            "display": [
+              132,
+              64
+            ]
+          },
+          {
             "key": "letter",
             "natural": [
               3176,
@@ -119,25 +169,13 @@
         "overflow": [],
         "assets": [
           {
-            "key": "stitch",
             "natural": [
-              2048,
-              285
+              2200,
+              675
             ],
             "display": [
-              65,
-              9
-            ]
-          },
-          {
-            "key": "stitch",
-            "natural": [
-              2048,
-              285
-            ],
-            "display": [
-              65,
-              9
+              313,
+              96
             ]
           },
           {
@@ -158,6 +196,16 @@
         "overflow": [],
         "assets": [
           {
+            "natural": [
+              2200,
+              675
+            ],
+            "display": [
+              209,
+              64
+            ]
+          },
+          {
             "key": "cafe",
             "natural": [
               3840,
@@ -174,6 +222,16 @@
         "page": "3",
         "overflow": [],
         "assets": [
+          {
+            "natural": [
+              2200,
+              675
+            ],
+            "display": [
+              209,
+              64
+            ]
+          },
           {
             "key": "curious",
             "natural": [
@@ -192,6 +250,16 @@
         "overflow": [],
         "assets": [
           {
+            "natural": [
+              2200,
+              675
+            ],
+            "display": [
+              209,
+              64
+            ]
+          },
+          {
             "key": "book",
             "natural": [
               3100,
@@ -208,6 +276,16 @@
         "page": "5",
         "overflow": [],
         "assets": [
+          {
+            "natural": [
+              2200,
+              675
+            ],
+            "display": [
+              209,
+              64
+            ]
+          },
           {
             "key": "classroom",
             "natural": [
@@ -231,25 +309,13 @@
         "overflow": [],
         "assets": [
           {
-            "key": "stitch",
             "natural": [
-              2048,
-              285
+              2200,
+              599
             ],
             "display": [
-              65,
-              9
-            ]
-          },
-          {
-            "key": "stitch",
-            "natural": [
-              2048,
-              285
-            ],
-            "display": [
-              65,
-              9
+              353,
+              96
             ]
           },
           {
@@ -270,6 +336,16 @@
         "overflow": [],
         "assets": [
           {
+            "natural": [
+              2200,
+              599
+            ],
+            "display": [
+              235,
+              64
+            ]
+          },
+          {
             "key": "scissors",
             "natural": [
               2181,
@@ -286,6 +362,16 @@
         "page": "3",
         "overflow": [],
         "assets": [
+          {
+            "natural": [
+              2200,
+              599
+            ],
+            "display": [
+              235,
+              64
+            ]
+          },
           {
             "key": "book",
             "natural": [
@@ -304,6 +390,16 @@
         "overflow": [],
         "assets": [
           {
+            "natural": [
+              2200,
+              599
+            ],
+            "display": [
+              235,
+              64
+            ]
+          },
+          {
             "key": "korean",
             "natural": [
               3840,
@@ -320,6 +416,16 @@
         "page": "5",
         "overflow": [],
         "assets": [
+          {
+            "natural": [
+              2200,
+              599
+            ],
+            "display": [
+              235,
+              64
+            ]
+          },
           {
             "key": "letter",
             "natural": [
@@ -343,25 +449,13 @@
         "overflow": [],
         "assets": [
           {
-            "key": "stitch",
             "natural": [
-              2048,
-              285
+              2200,
+              583
             ],
             "display": [
-              65,
-              9
-            ]
-          },
-          {
-            "key": "stitch",
-            "natural": [
-              2048,
-              285
-            ],
-            "display": [
-              65,
-              9
+              362,
+              96
             ]
           },
           {
@@ -381,6 +475,16 @@
         "page": "2",
         "overflow": [],
         "assets": [
+          {
+            "natural": [
+              2200,
+              583
+            ],
+            "display": [
+              242,
+              64
+            ]
+          },
           {
             "key": "night",
             "natural": [
@@ -410,6 +514,16 @@
         "overflow": [],
         "assets": [
           {
+            "natural": [
+              2200,
+              583
+            ],
+            "display": [
+              242,
+              64
+            ]
+          },
+          {
             "key": "mong",
             "natural": [
               3840,
@@ -438,6 +552,16 @@
         "overflow": [],
         "assets": [
           {
+            "natural": [
+              2200,
+              583
+            ],
+            "display": [
+              242,
+              64
+            ]
+          },
+          {
             "key": "headphones",
             "natural": [
               2615,
@@ -465,6 +589,16 @@
         "page": "5",
         "overflow": [],
         "assets": [
+          {
+            "natural": [
+              2200,
+              583
+            ],
+            "display": [
+              242,
+              64
+            ]
+          },
           {
             "key": "headphones",
             "natural": [

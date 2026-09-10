@@ -1,16 +1,16 @@
 {
   "id": "05-yuhobuilds-instagram",
-  "renderedAt": "2026-09-09T07:57:40.622Z",
+  "renderedAt": "2026-09-10T10:21:04.236Z",
   "durationSeconds": 30.058667,
   "width": 1080,
   "height": 1920,
   "videoCodec": "h264",
   "audioCodec": "aac",
-  "bytes": 6205884,
+  "bytes": 6140906,
   "scriptSha256": "416403fba084500d2d0fa806a343f80ad223dd021318c4c910f40043afcbfcd3",
   "scenesSha256": "b588e56285a39ae4d70c2ba0cd88a821a40dc1dc0eb48b0bde105f91b5c1d16a",
-  "renderSourceSha256": "807e9b97ab3342288950900944fcd5175e4ea15cc97656108e182d9053e93160",
-  "videoSha256": "36d1097d8b809a3b911a3bf84e41038c48033b66e25fe6f9d3263a4d60b0ac99",
+  "renderSourceSha256": "5bc2e80d346bd739472ec4929435f42d161b2d8e7105ebfe8d0b1459ec99bacc",
+  "videoSha256": "6f881feceda3709ca0d93db1881d5696450f2818bc4acbca68f86716d46bd642",
   "capturedSeconds": [
     1,
     5.2,
@@ -19,7 +19,19 @@
     20,
     26.15
   ],
-  "visualInspection": "strategy_b directly inspected every captured encoded frame at 1080x1920 on 2026-09-09; no material clipping, damaged object contours, or unreadable main copy found. See 영상_시각검토.md and 영상_상세검증.json for scope and limits.",
+  "visualInspection": "passed: all 25 scenes inspected before/after at 50 encoded times; neutral no-stitch SYNK and updated embedded page logos, business names and other content preserved",
   "audioMeasurement": "measured; not a claim of human listening",
-  "externalPosting": false
+  "externalPosting": false,
+  "sourceRenderedAt": "2026-09-09T07:57:40.622Z",
+  "sourceVideoSha256": "36d1097d8b809a3b911a3bf84e41038c48033b66e25fe6f9d3263a4d60b0ac99",
+  "sourceRenderSourceSha256": "807e9b97ab3342288950900944fcd5175e4ea15cc97656108e182d9053e93160",
+  "logoMigration": {
+    "report": "로고반영/verification.json",
+    "fullRenderForEmbeddedPageLogos": true,
+    "frames": 900,
+    "fullDecode": true,
+    "audioStreamIdentical": true,
+    "audioStreamHash": "SHA256=77cc4dde4f50b3a8f640b765f9749a31c8f4a9820f1ed2263f454aef768f2a60",
+    "scope": "Existing scene input fully rendered by original renderer to refresh SYNK and embedded current labpage/shiftpage/pulsepage logos; original AAC packet stream copied unchanged."
+  }
 }

@@ -1,26 +1,23 @@
 {
   "id": "09-synkbrief-tiktok",
-  "renderedAt": "2026-09-09T09:51:36.238Z",
+  "renderedAt": "2026-09-10T10:11:59.244Z",
   "width": 1080,
   "height": 1920,
   "durationSeconds": 25.045333,
   "videoCodec": "h264",
   "audioCodec": "aac",
-  "bytes": 6220221,
+  "bytes": 2252228,
   "scriptSha256": "f38f538e97eead184e30e6a7f0441e4daea16f6b4d639096f1676195d0736b70",
-  "renderSourceSha256": "6c70234b10083ff7c2b252236dc07cea6f5950fca48df87fd13d43395121fc06",
-  "videoSha256": "5163b4db634c607ca42ee81c26e1d645034ae1ea506b25da6730a933c7641e4d",
+  "videoSha256": "51ab64c94dae5d8c09f197c9597b9711f1358da6f5c1b743a7e4e05539110418",
   "capturedSeconds": [
-    1,
-    3.25,
-    6,
-    8.9,
-    12,
-    16.2,
-    20,
-    22.9
+    0,
+    0.1,
+    1.8,
+    4.9,
+    5.1,
+    24.933333333333334
   ],
-  "visualInspection": "passed: final encoded representative frames directly inspected; see 영상_최종시각검수.md and matching videoSha256 in 영상_종합기계검증.json",
+  "visualInspection": "passed: current encoded whole frames and transition crops; see 영상_로고반영_20260910.json",
   "audioMeasurement": "technical measurement; no claim of human listening",
   "captionTiming": [
     "screen text",
@@ -28,5 +25,24 @@
     "screen text",
     "screen text"
   ],
-  "externalPosting": false
+  "externalPosting": false,
+  "sourceRenderedAt": "2026-09-09T09:51:36.238Z",
+  "sourceVideoSha256": "5163b4db634c607ca42ee81c26e1d645034ae1ea506b25da6730a933c7641e4d",
+  "sourceRenderSourceSha256": "6c70234b10083ff7c2b252236dc07cea6f5950fca48df87fd13d43395121fc06",
+  "renderPipeline": "2026-09-10 logo-only composite; original scenes/audio/captions retained",
+  "logoMigration": {
+    "report": "영상_로고반영_20260910.json",
+    "synkAssetSha256": "817065dba0e7a4f3ffb8692d2183bef0b8b9cbef76de6b5de3e2097015111e40",
+    "sourcePlanSha256": "df73e01c1af4d804ea06253c815e1839af9c3cb04dbf6743edbca363f324dedd",
+    "audioStreamIdentical": true,
+    "audioStreamHash": "SHA256=b0871718e0d5e2e39376f4bc7b35d812a40d1bfd57ead8f4c5941361b5b00692",
+    "logoRect": {
+      "x": 92,
+      "y": 246,
+      "w": 268,
+      "h": 146
+    },
+    "fullDecode": true,
+    "frames": 750
+  }
 }

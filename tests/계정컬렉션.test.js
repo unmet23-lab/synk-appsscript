@@ -52,37 +52,49 @@ test('원천·출력·변환 규칙이 달라지면 기존 자산을 다시 만�
   assert.equal(assetNeedsRefresh({...previous,transform:'old'},'source-a','output-a'),true);
   assert.equal(assetNeedsRefresh(undefined,'source-a','output-a'),true);
 });
-test('26장과 모아보기의 로고는 모두 실물 스티치 이미지다',()=>{
+test('26장과 모아보기는 승인 완성 조합 하나로 SYNK와 사업명을 함께 표시한다',()=>{
   const {items}=JSON.parse(fs.readFileSync(path.join(base,'콘텐츠원고.json'),'utf8'));
   for(const p of items){
     const html=fs.readFileSync(path.join(base,p.id,'cards.html'),'utf8');
-    assert.equal((html.match(/class="brand-synk"/g)||[]).length,p.cards.length,p.id);
-    assert.equal((html.match(/class="division-stitch-logo"/g)||[]).length,p.brand==='SYNK'?0:p.cards.length,p.id);
-    assert.doesNotMatch(html,/division-label|<svg|assets\/stitch\.webp/,p.id);
-    if(p.brand!=='SYNK')assert.ok(html.includes(`data-division="${p.brand}"`),p.id);
+    assert.equal((html.match(/data-approved-logo=/g)||[]).length,p.cards.length,p.id);
+    assert.equal((html.match(new RegExp(`assets/brand-full-${p.brand.toLowerCase()}-ink\\.webp`,'g'))||[]).length,p.cards.length,p.id);
+    assert.ok(html.includes(`data-approved-logo="${p.brand}"`),p.id);
+    assert.doesNotMatch(html,/class="brand-synk"|division-stitch-logo|division-label|<svg|assets\/stitch\.webp/,p.id);
   }
-  assert.match(fs.readFileSync(path.join(base,'index.html'),'utf8'),/<header class="collection-intro"><div class="brand-lock"[^>]*><img class="brand-synk" src="assets\/brand-synk.webp"/);
+  assert.match(fs.readFileSync(path.join(base,'index.html'),'utf8'),/<header class="collection-intro"><div class="brand-lock"[^>]*data-approved-logo="SYNK"[^>]*><img src="assets\/brand-full-synk-ink.webp"/);
   const report=JSON.parse(fs.readFileSync(path.join(base,'_검토/정적_경계검사.json'),'utf8'));
   for(const r of report.results){
+    assert.equal(r.brand.images.length,1,r.id);
     assert.equal(r.brand.flatSvg,0,r.id);assert.equal(r.brand.flatDivision,0,r.id);
     assert.equal(r.brand.overlapCopy,false,r.id);assert.equal(r.brand.outside,false,r.id);
     assert.ok(r.brand.images.every(x=>x.loaded&&x.width>0&&x.height>0),r.id);
   }
 });
-test('신규 배치 로고는 원본 바이트를 보존하고 봉투·지면은 개선 원천을 가리킨다',()=>{
+test('완성 조합은 현행 승인 명세와 일치하며 사업명 원본과 기존 소품을 보존한다',()=>{
   const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  const kit=path.join(root,'docs/홍보물/마케팅실행_20260909/브랜드킷');
+  const approved=JSON.parse(fs.readFileSync(path.join(kit,'배치명세.json'),'utf8'));
+  const applied=JSON.parse(fs.readFileSync(path.join(base,'_검토/로고갱신_20260910.json'),'utf8'));
+  assert.equal(approved.version,2);assert.equal(approved.items.length,8);
+  for(const item of approved.items){
+    assert.equal(hash(path.join(kit,item.file)),item.sha256,item.file+' approved source');
+    const output=applied.assets.find(x=>x.source===item.file);assert.ok(output,item.file);
+    assert.equal(output.sourceSha256,item.sha256,item.file+' source provenance');
+    assert.equal(hash(path.join(base,output.file)),output.sha256,item.file+' exported pixels');
+  }
   const manifest=JSON.parse(fs.readFileSync(path.join(base,'사용자산.json'),'utf8'));
   for(const a of manifest){
     assert.equal(a.sourceSha256,hash(path.join(root,a.source)),a.key+' source');
     assert.equal(a.outputSha256,hash(path.join(base,a.output)),a.key+' output');
-    assert.equal(a.transform,ASSET_TRANSFORM,a.key);
+    if(a.key==='brand-synk'||a.key.endsWith('page'))assert.match(a.transform,/^Approved complete logo or current introduction snapshot;/,a.key);
+    else assert.equal(a.transform,ASSET_TRANSFORM,a.key);
   }
-  for(const brand of ['synk','lab','shift','pulse']){
+  const main=manifest.find(x=>x.key==='brand-synk');
+  assert.equal(main.source,'docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink.png');
+  for(const brand of ['lab','shift','pulse']){
     const a=manifest.find(x=>x.key==='brand-'+brand);assert.ok(a,brand);
-    assert.ok(a.source.includes('/_개선/배치용/'),brand);assert.equal(a.sourceSha256,a.outputSha256,brand+' original pixels');
+    assert.ok(a.source.includes('/_개선/배치용/'),brand);assert.equal(a.sourceSha256,a.outputSha256,brand+' original stitches');
   }
-  assert.ok(manifest.find(x=>x.key==='letter').source.endsWith('/_개선/봉투-2.5.png'));
-  assert.ok(manifest.find(x=>x.key==='book').source.endsWith('/_개선/책-2.5.png'));
-  assert.ok(manifest.find(x=>x.key==='scissors').source.endsWith('/_개선/가위-2.5.png'));
-  for(const a of manifest.filter(x=>x.key.endsWith('page')||x.key==='labinside'))assert.ok(a.source.includes('/_개선/지면스냅샷/'),a.key);
+  for(const [key,file] of [['letter','봉투'],['book','책'],['scissors','가위']])assert.ok(manifest.find(x=>x.key===key).source.endsWith('/_개선/'+file+'-2.5.png'));
+  for(const a of manifest.filter(x=>x.key.endsWith('page')))assert.ok(a.source.includes('/브랜드소개_20260909/소개서_4K/'),a.key);
 });

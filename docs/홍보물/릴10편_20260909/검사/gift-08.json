@@ -1,7 +1,7 @@
 {
   "id": "gift-08",
   "seed": "2fdb78f49d3e674b4b79c5986c9eef5b3515c9148429e355a6ae0e76a49f117c",
-  "videoHash": "7f02d91be6adc7388894b4c20f8d71f9e108b39a6a0dd2090e979228b1d07ef2",
+  "videoHash": "be00ec47f1c7e4105ab013d87cf5f364efec010c819e60cae0e0ce7f326dc41d",
   "renderedAt": "2026-09-08T23:51:08.080Z",
   "info": {
     "programs": [],
@@ -26,5 +26,11 @@
       "duration": "30.058000",
       "size": "3305880"
     }
+  },
+  "logoReplacement": {
+    "beforeSha256": "7f02d91be6adc7388894b4c20f8d71f9e108b39a6a0dd2090e979228b1d07ef2",
+    "at": "2026-09-10T10:12:08.274Z",
+    "audioStreamIdentical": true,
+    "proof": "검사/로고반영/verification.json"
   }
 }

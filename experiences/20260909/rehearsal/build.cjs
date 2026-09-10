@@ -9,6 +9,7 @@ const at = process.argv.indexOf('--source-root');
 const sourceRoot = path.resolve(at >= 0 ? process.argv[at + 1] : path.join(__dirname, '../../..'));
 const target = path.join(__dirname, 'assets');
 fs.mkdirSync(target, { recursive: true });
+fs.copyFileSync(path.join(sourceRoot, 'docs/홍보물/마케팅실행_20260909/브랜드킷/배치용/SYNK-SHIFT-Ink.png'), path.join(target, 'synk-shift.png'));
 const cleanText = text => text.replace(/\r\n/g, '\n').replace(/[\t ]+$/gm, '').trimEnd() + '\n';
 const loom = require(path.join(sourceRoot, 'tools/lib/loom.js'));
 const font = require(path.join(sourceRoot, 'tools/lib/브랜드폰트.js'));
@@ -32,11 +33,11 @@ const svg = logo.워드마크({ 판: '라이트', 표현: '민', 신호: 'k', �
 fs.writeFileSync(path.join(target, 'synk.svg'), cleanText(svg));
 const sources = ['AGENTS.md','docs/AI_운영원칙.md','DESIGN.md','docs/명품_기준_v1.md','docs/디자인_토큰.json',
   'docs/로고_중립색_정본_v1.md','docs/마케팅_정본.md','docs/SYNK_철학.md','tools/lib/loom.js','tools/lib/브랜드폰트.js',
-  'tools/lib/로고정본.js','docs/브랜드_폰트/SUIT/SUIT-Variable.woff2', interSource, interBoldSource,
+  'tools/lib/로고정본.js','docs/홍보물/마케팅실행_20260909/브랜드킷/배치용/SYNK-SHIFT-Ink.png','docs/브랜드_폰트/SUIT/SUIT-Variable.woff2', interSource, interBoldSource,
   'docs/브랜드_폰트/SUIT/LICENSE_OFL.txt','docs/브랜드_폰트/InterTight/OFL.txt'];
 const sha = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const manifest = { sourceRoot, sourceHead: execFileSync('git',['rev-parse','HEAD'],{cwd:sourceRoot,encoding:'utf8'}).trim(),
   sources: sources.map(file=>({file,sha256:sha(path.join(sourceRoot,file))})),
-  outputs: ['loom.css','synk.svg','InterTight-Medium.ttf','InterTight-Bold.ttf','SUIT-LICENSE.txt','InterTight-LICENSE.txt'].map(file=>({file,sha256:sha(path.join(target,file))})) };
+  outputs: ['loom.css','synk.svg','synk-shift.png','InterTight-Medium.ttf','InterTight-Bold.ttf','SUIT-LICENSE.txt','InterTight-LICENSE.txt'].map(file=>({file,sha256:sha(path.join(target,file))})) };
 fs.writeFileSync(path.join(__dirname,'source-manifest.json'), JSON.stringify(manifest,null,2)+'\n');
 console.log('Generated Loom CSS, local fonts and the neutral SYNK mark. Source manifest saved.');

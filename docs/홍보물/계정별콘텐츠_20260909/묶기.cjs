@@ -11,8 +11,8 @@ for(const p of data.items){
   const names=fs.readdirSync(folder).filter(n=>/^(upload-\d+\.jpg|master-\d+\.png|video\.mp4|자막\.srt|게시문안\.txt|제목\.txt|대체텍스트\.txt|사용안내\.md|본문\.md)$/.test(n));
   archives.push({id:p.id,destination:path.join(packages,p.id+'.zip'),files:names.map(name=>({source:path.join(folder,name),entry:name}))});
 }
-const include=['index.html','collection.css','assets','packages','미리보기','읽어주세요.md','납품명세.json','사용자산.json','콘텐츠원고.json','_검토',...data.items.map(p=>p.id)];
-// Curated reusable generation sources, not private brandkit state or raw service payloads.
+const include=['index.html','collection.css','assets','packages','미리보기','읽어주세요.md','납품명세.json','사용자산.json','콘텐츠원고.json',...data.items.map(p=>p.id)];
+// Current deliverables and reusable sources only. Local QA contains old masters, candidates and comparison frames.
 include.push('_개선/배치용','_개선/조합로고','_개선/지면스냅샷','_개선/자산_생성명세.json','_개선/브랜드_고정조건.md','_개선/스티치_적용기록.md');
 for(const name of ['봉투','책','가위','LAB','SHIFT','PULSE'])include.push(`_개선/${name}-2.5.png`,`_개선/${name}-제작지시.txt`);
 const files=[];
@@ -21,7 +21,7 @@ function collect(relative){
  if(fs.statSync(absolute).isDirectory()){for(const name of fs.readdirSync(absolute))collect(path.join(relative,name));}
  else {
   const entry=relative.replaceAll('\\','/');
-  if(entry.startsWith('assets/')&&!currentAssets.has(entry))return;
+  if(entry.startsWith('assets/')&&!currentAssets.has(entry)&&!/^assets\/brand-full-/.test(entry))return;
   if(!['_검토/압축계획.json','_검토/압축검증.json'].includes(entry))files.push({source:absolute,entry});
  }
 }

@@ -79,3 +79,5 @@ Object.keys(all).forEach(renderDoc);
 fs.writeFileSync(path.join(__dirname,'소개서_문안.json'),JSON.stringify(all,null,2));
 fs.writeFileSync(path.join(__dirname,'사용자산.json'),JSON.stringify([...imageUsed],null,2));
 console.log('소개서 4종 · 총 20쪽 생성');
+
+require('../로고갱신_20260910.cjs').refreshFolder(__dirname).catch(e=>{console.error(e);process.exitCode=1});
