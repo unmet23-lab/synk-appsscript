@@ -24,6 +24,7 @@
  *      talk 회귀(`tests/깊이.test.js` 의 종횡비 줄)가 먼저 운다.
  *
  * 쓰기: node tools/깊이반입.js
+ * 다른 Talk 작업 사본: SYNK_TALK_ROOT 환경변수에 절대경로를 지정한다.
  */
 'use strict';
 
@@ -45,7 +46,9 @@ const 대상 = [
   { 가이드: '마린', 절대: () => path.join(저장소, 마스코트.마린경로('본체')) },
 ];
 
-const talk = path.join(저장소, '..', 'SYNK-talk');
+const { 형제대상 } = require('./계약동기화.js');
+const talk = process.env.SYNK_TALK_ROOT === undefined ? path.join(저장소, '..', 'SYNK-talk') : 형제대상(저장소).뿌리;
+console.log(`[깊이반입] 정본=${path.resolve(저장소)} → 대상=${talk} (${process.env.SYNK_TALK_ROOT === undefined ? '기본' : '명시'})`);
 if (!fs.existsSync(talk)) {
   console.error(`🔴 형제 저장소가 없다: ${talk} — 반입할 곳이 없다.`);
   process.exit(1);

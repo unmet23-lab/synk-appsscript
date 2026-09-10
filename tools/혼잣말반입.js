@@ -20,6 +20,7 @@
  *   같이 가야 한다**(그리고 활성 조합 수를 못 박은 회귀도).
  *
  * 쓰기: node tools/혼잣말반입.js
+ * 다른 Talk 작업 사본: SYNK_TALK_ROOT 환경변수에 절대경로를 지정한다.
  */
 'use strict';
 
@@ -28,7 +29,9 @@ const path = require('path');
 
 const 저장소 = path.join(__dirname, '..');
 const 정본경로 = path.join(저장소, 'docs', '캐릭터', '혼잣말_정본.json');
-const talk = path.join(저장소, '..', 'SYNK-talk');
+const { 형제대상 } = require('./계약동기화.js');
+const talk = process.env.SYNK_TALK_ROOT === undefined ? path.join(저장소, '..', 'SYNK-talk') : 형제대상(저장소).뿌리;
+console.log(`[혼잣말반입] 정본=${path.resolve(저장소)} → 대상=${talk} (${process.env.SYNK_TALK_ROOT === undefined ? '기본' : '명시'})`);
 const 나갈곳 = path.join(talk, 'contents', '혼잣말.json');
 
 if (!fs.existsSync(talk)) {
