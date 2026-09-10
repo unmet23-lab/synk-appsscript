@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-10",
+  "tool": "built-in image_gen.imagegen",
+  "mode": "edit",
+  "selectedPass": "first stitch-removal pass",
+  "prompts": [
+    {
+      "variant": "Ink",
+      "editTarget": "배치용/SYNK-Ink.png (Git baseline 6b3dffab)",
+      "prompt": "Precise object edit of the attached approved SYNK logo asset. Return exactly one production-ready transparent PNG logo, the same wide horizontal composition and proportions as the source. Exact text: lowercase \"synk\". CHANGE ONLY: remove ALL the visible embroidery/sewing stitches and thread loops that trace the inner perimeter of s, y, n, and k. Fill just those former stitch locations with matching irregular natural felt fibers, matching adjacent warm ink black #2B2320 felt. The finished letters are thick soft needle-felt wool with NO sewn outline, NO dashed line, NO stitching anywhere. Preserve the original exact recognizable letter shapes, spacing, letter sizes, descending y and unusually tall ascending k, holes/counters, original dark/cream color, rounded edge thickness, fuzzy wool fibers, subtle depth and lighting. Do not flatten the felt, change font, redesign the letters, smooth into plastic, add extra text, or alter the crop/relative positions. Keep the entire word and margins visible, on a genuinely transparent alpha background. The reference's black display behind the logo is transparency, not a requested black background. The only desired visual difference is absence of the stitch threads, with all the existing tactile felt character remaining. Use the supplied image as the edit target, not as a loose inspiration."
+    },
+    {
+      "variant": "Paper",
+      "editTarget": "배치용/SYNK-Paper.png (Git baseline 6b3dffab)",
+      "prompt": "Precise object edit of the attached approved SYNK logo asset. Return exactly one production-ready transparent PNG logo, the same wide horizontal composition and proportions as the source. Exact text: lowercase \"synk\". CHANGE ONLY: remove ALL the visible embroidery/sewing stitches and thread loops that trace the inner perimeter of s, y, n, and k. Fill just those former stitch locations with matching irregular natural felt fibers, matching adjacent warm cream paper #FBF7F0 felt. The finished letters are thick soft needle-felt wool with NO sewn outline, NO dashed line, NO stitching anywhere. Preserve the original exact recognizable letter shapes, spacing, letter sizes, descending y and unusually tall ascending k, holes/counters, original dark/cream color, rounded edge thickness, fuzzy wool fibers, subtle depth and lighting. Do not flatten the felt, change font, redesign the letters, smooth into plastic, add extra text, or alter the crop/relative positions. Keep the entire word and margins visible, on a genuinely transparent alpha background. The reference's black display behind the logo is transparency, not a requested black background. The only desired visual difference is absence of the stitch threads, with all the existing tactile felt character remaining. Use the supplied image as the edit target, not as a loose inspiration."
+    }
+  ],
+  "note": "The returned RGB images did not have true alpha. The selected felt RGB was registered to the original source alpha by 실땀역할수정.cjs. A later background-only generation was inspected and not selected."
+}

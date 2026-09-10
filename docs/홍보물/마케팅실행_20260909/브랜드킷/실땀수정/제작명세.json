@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-10",
+  "method": "Built-in ImageGen removed the stitches. Its RGB previews were registered to the approved source alpha without changing silhouette, canvas, or counters. Checkerboard edge samples were replaced with adjacent generated felt RGB before alpha export. This preserves the original alpha, not the original surface pixels; the generated texture is a material interpretation.",
+  "items": [
+    {
+      "variant": "Ink",
+      "baseline": "6b3dffab88dc0a868e1b4794b76d50da0ceb8beb",
+      "originalSha256": "18176aad636e1c2572bb4b917dd99c1cd6109e1430916abbd0f144490ed47e3b",
+      "generatedFile": "실땀수정/SYNK-Ink-imagegen.png",
+      "generatedSha256": "0f02dd85a3978baf37e228d17fadec747b3fb032724ceb7d322cc153dae36f87",
+      "generatedWidth": 1804,
+      "generatedHeight": 872,
+      "generatedHadAlpha": false,
+      "output": "SYNK-Ink.png",
+      "width": 3840,
+      "height": 1648,
+      "sha256": "ab8561ef0dec1e12d4274c4ed6dfda7fb07abf5c0a2f13a937a00ddcc9af5e4f",
+      "alphaChangedPixels": 0,
+      "preservedFuzzPixels": 128155,
+      "registeredEdgePixels": 5106,
+      "registeredEdgeFraction": 0.001782826831508898
+    },
+    {
+      "variant": "Paper",
+      "baseline": "6b3dffab88dc0a868e1b4794b76d50da0ceb8beb",
+      "originalSha256": "4ae4e041594194a2cd381b390e8001316432a4c794adc1351d1f700552630ec8",
+      "generatedFile": "실땀수정/SYNK-Paper-imagegen.png",
+      "generatedSha256": "0f7240d1033f61694b00057075c49721183c96d06d87c38794882cd4e7f4712b",
+      "generatedWidth": 1788,
+      "generatedHeight": 880,
+      "generatedHadAlpha": false,
+      "output": "SYNK-Paper.png",
+      "width": 3840,
+      "height": 1648,
+      "sha256": "6ed9f0c80a55a07d93ff6e4f7a1e6beee899ff909db660814684f958c40a7610",
+      "alphaChangedPixels": 0,
+      "preservedFuzzPixels": 156250,
+      "registeredEdgePixels": 30645,
+      "registeredEdgeFraction": 0.0117379838399237
+    }
+  ]
+}

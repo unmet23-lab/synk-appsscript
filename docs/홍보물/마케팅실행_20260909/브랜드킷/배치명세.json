@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "policy": "Neutral SYNK, unchanged colored divisions. Source geometry remains authoritative SVG; photographic generated material variants preserve recognizable shape, not pixel identity.",
+  "version": 2,
+  "policy": "Neutral Ink/Paper SYNK has no stitches; existing wool body, shading and recognizable letter geometry remain. LAB/SHIFT/PULSE retain their approved colors, stitches and placement. Source geometry remains authoritative SVG; photographic generated material variants are not pixel-identical to vectors.",
   "items": [
     {
       "brand": "SYNK",
@@ -8,8 +8,8 @@
       "file": "배치용/SYNK-Ink.png",
       "width": 2200,
       "height": 1064,
-      "sha256": "92e376fca8412bcd66b32375dc4ebc9678def2ea084b2b10590a983b9f7b6aef",
-      "sourceSha256": "18176aad636e1c2572bb4b917dd99c1cd6109e1430916abbd0f144490ed47e3b"
+      "sha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc",
+      "sourceSha256": "ab8561ef0dec1e12d4274c4ed6dfda7fb07abf5c0a2f13a937a00ddcc9af5e4f"
     },
     {
       "brand": "LAB",
@@ -17,8 +17,8 @@
       "file": "배치용/SYNK-LAB-Ink.png",
       "width": 3468,
       "height": 1064,
-      "sha256": "3d893a76599932d75309bf48727ffab9916982065a6deb395a92061a1e5a63d8",
-      "sourceSha256": "18176aad636e1c2572bb4b917dd99c1cd6109e1430916abbd0f144490ed47e3b"
+      "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201",
+      "sourceSha256": "ab8561ef0dec1e12d4274c4ed6dfda7fb07abf5c0a2f13a937a00ddcc9af5e4f"
     },
     {
       "brand": "SHIFT",
@@ -26,8 +26,8 @@
       "file": "배치용/SYNK-SHIFT-Ink.png",
       "width": 3907,
       "height": 1064,
-      "sha256": "d23aac0ee23c0775044aa9746a3302b669beaacc4f26e162b6ed15f3ffff0d75",
-      "sourceSha256": "18176aad636e1c2572bb4b917dd99c1cd6109e1430916abbd0f144490ed47e3b"
+      "sha256": "245a5fa9cc836b48acde05e545ef4dbeea86868c69d8bac6a6986e55bb2e56c0",
+      "sourceSha256": "ab8561ef0dec1e12d4274c4ed6dfda7fb07abf5c0a2f13a937a00ddcc9af5e4f"
     },
     {
       "brand": "PULSE",
@@ -35,8 +35,8 @@
       "file": "배치용/SYNK-PULSE-Ink.png",
       "width": 4018,
       "height": 1064,
-      "sha256": "505a65e008b09d4504645d6b10ef194fb7cdad327d2cffaaf926a97fb41e4f54",
-      "sourceSha256": "18176aad636e1c2572bb4b917dd99c1cd6109e1430916abbd0f144490ed47e3b"
+      "sha256": "f5dc1c08a81976e5cdea4b9d9a6755d71efec681deb4d0ea9861fa7c3e3aad9d",
+      "sourceSha256": "ab8561ef0dec1e12d4274c4ed6dfda7fb07abf5c0a2f13a937a00ddcc9af5e4f"
     },
     {
       "brand": "SYNK",
@@ -44,8 +44,8 @@
       "file": "배치용/SYNK-Paper.png",
       "width": 2200,
       "height": 1082,
-      "sha256": "1de06e5f23dd91ce09b5c7a34cd2921167cf71db75619bfa446f8774468c6896",
-      "sourceSha256": "4ae4e041594194a2cd381b390e8001316432a4c794adc1351d1f700552630ec8"
+      "sha256": "78de96ceb567f245281df78d01b82e5c3aba9fc0cc959dc3763967367fc3b7fe",
+      "sourceSha256": "6ed9f0c80a55a07d93ff6e4f7a1e6beee899ff909db660814684f958c40a7610"
     },
     {
       "brand": "LAB",
@@ -53,8 +53,8 @@
       "file": "배치용/SYNK-LAB-Paper.png",
       "width": 3468,
       "height": 1082,
-      "sha256": "12b1ee5f1abab319a1aea14ba168012a408f1b3fcb6faa426ccd3a80a4366653",
-      "sourceSha256": "4ae4e041594194a2cd381b390e8001316432a4c794adc1351d1f700552630ec8"
+      "sha256": "d6a033898e123c30c7109483e6508bfc13668352588b9d431c713ec7c5759e2a",
+      "sourceSha256": "6ed9f0c80a55a07d93ff6e4f7a1e6beee899ff909db660814684f958c40a7610"
     },
     {
       "brand": "SHIFT",
@@ -62,8 +62,8 @@
       "file": "배치용/SYNK-SHIFT-Paper.png",
       "width": 3907,
       "height": 1082,
-      "sha256": "8df94b3b981ddddad5d2cbe45ac3a9f90c901f22d18d5f6e0c444ec72079233c",
-      "sourceSha256": "4ae4e041594194a2cd381b390e8001316432a4c794adc1351d1f700552630ec8"
+      "sha256": "1d7396f08c69af348e9a9764aca57bce3ef68441b785287c59507350b781eeda",
+      "sourceSha256": "6ed9f0c80a55a07d93ff6e4f7a1e6beee899ff909db660814684f958c40a7610"
     },
     {
       "brand": "PULSE",
@@ -71,8 +71,8 @@
       "file": "배치용/SYNK-PULSE-Paper.png",
       "width": 4018,
       "height": 1082,
-      "sha256": "991a4e5e0509693c7760eb2114904050ceeb795bf1652fc93ed3f9a476638508",
-      "sourceSha256": "4ae4e041594194a2cd381b390e8001316432a4c794adc1351d1f700552630ec8"
+      "sha256": "dea85c94b1872e932b6be9234cddc468dc879f46bed74822d0f353fb1dca6521",
+      "sourceSha256": "6ed9f0c80a55a07d93ff6e4f7a1e6beee899ff909db660814684f958c40a7610"
     }
   ]
 }

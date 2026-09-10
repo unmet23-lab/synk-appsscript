@@ -3,9 +3,12 @@ const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypt
 const root=path.resolve(__dirname,'../../../..'),old=path.join(root,'docs/홍보물/계정별콘텐츠_20260909'),out=path.dirname(__dirname);
 const logo=require(path.join(root,'tools/lib/로고정본.js')),c=logo.색;
 const hash=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+// --synk-only: 기존 공유 assets 복사는 건너뛰고 SYNK 원본 두 벌의 파생물만 다시 조립한다.
+const synkOnly=process.argv.includes('--synk-only');
 (async()=>{
+ const previous=synkOnly?JSON.parse(fs.readFileSync(path.join(__dirname,'배치명세.json'),'utf8')).items:null;
  fs.mkdirSync(path.join(out,'assets'),{recursive:true});fs.mkdirSync(path.join(__dirname,'배치용'),{recursive:true});
- for(const file of fs.readdirSync(path.join(old,'assets')).filter(x=>/\.(webp|png)$/.test(x)))fs.copyFileSync(path.join(old,'assets',file),path.join(out,'assets',file));
+ if(!synkOnly)for(const file of fs.readdirSync(path.join(old,'assets')).filter(x=>/\.(webp|png)$/.test(x)))fs.copyFileSync(path.join(old,'assets',file),path.join(out,'assets',file));
  const manifest=[];
  for(const variant of ['Ink','Paper']){
   const src=path.join(__dirname,`SYNK-${variant}.png`),meta=await sharp(src).metadata();
@@ -19,11 +22,15 @@ const hash=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex
    const layers=[{input:await sharp(word).resize(mainWidth).png().toBuffer(),left:pad,top:pad}];let width=mainWidth+pad*2;
    if(cap){const f=path.join(old,'_개선/배치용',`brand-${brand.toLowerCase()}.webp`),m=await sharp(f).metadata(),ratio=(mainWidth*.222)/cap,w=Math.round(m.width*ratio),h=Math.round(m.height*ratio);layers.push({input:await sharp(f).resize(w,h).png().toBuffer(),left:pad+mainWidth+gap,top:pad+Math.round((mainHeight-h)/2)-20});width+=gap+w;}
    const file=`${brand==='SYNK'?'SYNK':'SYNK-'+brand}-${variant}.png`,p=path.join(__dirname,'배치용',file);
+   if(synkOnly){
+    const baseline=previous.find(item=>item.brand===brand&&item.variant===variant);
+    if(!baseline||baseline.width!==width||baseline.height!==mainHeight+pad*2)throw new Error(`SYNK-only geometry changed: ${brand} ${variant}; expected ${baseline?.width}x${baseline?.height}, got ${width}x${mainHeight+pad*2}`);
+   }
    await sharp({create:{width,height:mainHeight+pad*2,channels:4,background:{r:0,g:0,b:0,alpha:0}}}).composite(layers).png().toFile(p);
    await sharp(p).flatten({background:variant==='Ink'?c.Paper:c.Ink}).resize(1600).png().toFile(path.join(__dirname,'배치용',file.replace('.png','-배경확인.png')));
    manifest.push({brand,variant,file:'배치용/'+file,width,height:mainHeight+pad*2,sha256:hash(p),sourceSha256:hash(src)});
   }
  }
- fs.writeFileSync(path.join(__dirname,'배치명세.json'),JSON.stringify({version:1,policy:'Neutral SYNK, unchanged colored divisions. Source geometry remains authoritative SVG; photographic generated material variants preserve recognizable shape, not pixel identity.',items:manifest},null,2));
- console.log(JSON.stringify({logos:manifest.length,assets:fs.readdirSync(path.join(out,'assets')).length}));
+ fs.writeFileSync(path.join(__dirname,'배치명세.json'),JSON.stringify({version:2,policy:'Neutral Ink/Paper SYNK has no stitches; existing wool body, shading and recognizable letter geometry remain. LAB/SHIFT/PULSE retain their approved colors, stitches and placement. Source geometry remains authoritative SVG; photographic generated material variants are not pixel-identical to vectors.',items:manifest},null,2));
+ console.log(JSON.stringify({mode:synkOnly?'synk-only':'full',logos:manifest.length,assets:fs.readdirSync(path.join(out,'assets')).length}));
 })();
