@@ -318,9 +318,11 @@ test('[v9.50] AI 스튜디오는 키 없으면 스킵하고 야간 완주 마커
   assertOrder(night, [
     "safeRun('aiFeedbackBatch', aiFeedbackBatch_)",
     "safeRun('aiStudioBatch', aiStudioBatch_)",
-    "safeRun('sweepLevelTest', sweepLevelTest_)",
-    "PropertiesService.getScriptProperties().setProperty('야간배치완료일'"
+    "safeRun('sweepLevelTest', sweepLevelTest_)"
   ]);
+  const runner = section('function 배치실행_(', 'function morningJobsContinue()');
+  assertOrder(runner, ["c.state.next < plan.length", "c.state.status = c.state.failures.length ? 'partial' : 'complete'", "if (name === 'nightJobs' && c.state.status === 'complete')", "props.setProperty('야간배치완료일'"]);
+  assert.ok(!night.includes("setProperty('야간배치완료일'"), '부분 조각이 직접 완주 도장을 찍으면 안 된다');
   const studio = section('function aiStudioBatch_()', 'function welcomeStoryBatch_()');
   assert.ok(studio.includes("getProperty('CLAUDE_API_KEY')"));
   assert.ok(studio.includes('if (!apiKey) return'));
@@ -592,7 +594,8 @@ test('[v9.49] AI 첨삭 배치는 API 키가 없으면 전체 스킵하고, 성�
   assertOrder(body, [
     "props.getProperty('CLAUDE_API_KEY')",
     'if (!apiKey) return',
-    'AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS', // 상한+자체 2분 예산(리뷰 H1)
+    'made + (조각 ? 조각.made : 0) >= AI_FEEDBACK_MAX_PER_RUN', // 이어하기 전체도 원래 상한 안
+    'Date.now() - t0 > AI_BUDGET_MS || (배치 && !배치예산남음_())', // 자체/상위 예산 모두 지킴
     '성공분 즉시 포인터 전진',                                      // 하드킬(throw 없는 강제종료)에도 중복 생성 0
     '포이즌 필 차단',                                              // 영구 오류 행은 기록 후 건너뜀(리뷰 M1)
     'break; // 실패 행부터 포인터 유지'                              // 일시 오류만 중단→재시도
@@ -1637,7 +1640,7 @@ test('[v9.77] profiles 무결성 감시 — 유령 행·중복 ID·무효 role�
   assert.equal(dupRes.dupId.length, 1, 'user_id 중복을 못 잡는다');
   assert.equal(dupRes.badRole.length, 1, '무효 role(오타)을 못 잡는다');
   // 소비처 3면: 야간 배치(매일)·주간 워치독·preflight 보강이 전부 배선돼 있어야 한다
-  const night = section('function nightJobs()', '// [v9.28] 완주 마커');
+  const night = section('function nightJobs()', 'function dailyBackupJob()');
   assert.ok(night.includes("safeRun('profilesIntegrityNightly', profilesIntegrityNightly_)"), 'nightJobs에 야간 무결성 감시가 없다');
   const wd = section('function systemWatchdog(', "const report = '🛡️ SYNK 시스템 워치독");
   assert.ok(wd.includes('profilesIntegrityScan_(ss)'), '주간 워치독에 무결성 항목이 없다');
@@ -3325,7 +3328,7 @@ test('[v9.120] 배치 리허설 — 밖으로 나가는 것만 막고, 켜둔 �
   assert.ok(infra.includes('catch (e) { return false; }'), '판정 실패 시 리허설로 떨어지면 알림을 조용히 삼킨다');
   ['function nightJobs()', 'function morningJobs()'].forEach((fn) => {
     const body = code.slice(code.indexOf(fn), code.indexOf(fn) + 400);
-    assert.ok(body.includes('rehearsalForceOff_()'), `${fn} 진입 시 강제 해제가 없다 — 그날 알림이 통째로 죽는다`);
+    assert.ok(body.includes("safeRun('rehearsalForceOff', rehearsalForceOff_)"), `${fn} 첫 실행 단계에 강제 해제가 없다 — 그날 알림이 통째로 죽는다`);
   });
 
   // ④ 배치 실행 항목은 리허설 밖에서 스스로 거부해야 메뉴에 올릴 수 있다

@@ -302,6 +302,7 @@ function 시트칸정본맞추기_(ss, 옵션) {
   결과.밀기 = 밀기허용;
   sheetSkeleton_().forEach(function (k) {
     const 이름 = k[0], 정본칸 = k[1];
+    if (옵션 && 옵션.대상표 && 이름 !== 옵션.대상표) return;
     if (!정본칸 || !정본칸.length) return;
     const sh = ss.getSheetByName(이름);
     if (!sh) return;                                   // 없는 탭은 ensureSheet 몫이다
@@ -348,6 +349,8 @@ function 시트칸정본맞추기_(ss, 옵션) {
 
     let 민것 = 0, 막힘 = '';
     for (let i = 볼폭 - 1; i >= 0; i--) {              // 뒤에서부터 — 앞쪽 인덱스가 안 밀린다
+      // 이동·빈자리 복구 한 쌍의 «사이»에는 양보하지 않는다. 재개는 표를 다시 읽는다.
+      if (옵션 && 옵션.예산확인 && !옵션.예산확인()) { 결과.예산보류 = true; return; }
       const nm = 지금[i];
       if (!nm) {
         // 🔴 이름은 없는데 그 «아래»에 값이 있으면 «이름 없는 데이터 열»이다.
@@ -426,29 +429,61 @@ function 시트칸정본맞추기_(ss, 옵션) {
  * 🔑 예외는 **다시 던진다** — `safeRun` 이 로그·실패 메일을 남기는 층이라 여기서 삼키면 조용히 사라진다.
  *   `finally` 가 `throw` 보다 «먼저» 돌므로 기록은 언제나 남는다. */
 function 시트칸맞추기한판_(ss, 옵션) {
-  const 그릇 = { 맞춘표: [], 민열: [], 건너뛴표: [], 보류표: [], 더한칸: 0, 밀기: false };
+  const 배치 = typeof 배치실행_ === 'function' && 배치실행_.현재;
+  const 나눔 = 배치 && 배치.state.name === 'morningJobs' && 배치.state.running && 배치.state.running.name === '시트칸맞추기';
+  const 빈그릇 = () => ({ 맞춘표: [], 민열: [], 건너뛴표: [], 보류표: [], 더한칸: 0, 밀기: false });
+  if (나눔 && !배치.state.slice) 배치.state.slice = { kind: 'sheet-columns', next: 0, tables: sheetSkeleton_().map(k => k[0]) };
+  const 조각 = 나눔 ? 배치.state.slice : null;
+  if (조각 && (조각.kind !== 'sheet-columns' || JSON.stringify(조각.tables) !== JSON.stringify(sheetSkeleton_().map(k => k[0])))) throw new Error('시트 칸 점검 목록 변경');
+  const 그릇 = 빈그릇();
+  if (조각) {
+    // 자세한 기존 점검 결과는 app_state 한 줄에 유지한다. 9KB Script Property에는 포인터만 둔다.
+    const st = ensureSheet(ss, 'app_state', ['key', 'value']);
+    const raw = getState(st, '시트칸맞추기_마지막').val;
+    let 이전 = null;
+    try { 이전 = raw ? JSON.parse(raw) : null; } catch (e) { throw new Error('시트 칸 점검 기록 손상'); }
+    if (이전 && 이전.배치시작 === 배치.state.startedAt) {
+      그릇.맞춘누적 = 이전.맞춘표; 그릇.민열누적 = 이전.민열;
+      그릇.더한칸 = 이전.더한칸; 그릇.보류표 = 이전.보류표; 그릇.건너뛴표 = 이전.건너뛴표;
+    } else if (조각.next > 0) throw new Error('시트 칸 점검 누적 기록 없음');
+    그릇.배치시작 = 배치.state.startedAt;
+  }
+  let 보류 = false;
   try {
-    시트칸정본맞추기_(ss, Object.assign({}, 옵션 || {}, { 그릇: 그릇 }));
+    if (조각) {
+      // 최대 다섯 표만 처리한다. 표 하나를 끝내고 기록한 위치에서만 양보한다.
+      let 처리 = 0;
+      while (조각.next < 조각.tables.length && 처리 < 5 && 배치예산남음_()) {
+        그릇.예산보류 = false;
+        시트칸정본맞추기_(ss, Object.assign({}, 옵션 || {}, { 그릇: 그릇, 대상표: 조각.tables[조각.next], 예산확인: 배치예산남음_ }));
+        시트칸맞추기기록_(ss, 그릇, true);
+        if (그릇.예산보류) break;
+        조각.next++; 처리++;
+        배치저장_(배치);
+      }
+      보류 = 조각.next < 조각.tables.length;
+    } else 시트칸정본맞추기_(ss, Object.assign({}, 옵션 || {}, { 그릇: 그릇 }));
   } catch (e) {
     그릇.건너뛴표.push('(나머지) — 칸 맞추기가 예외로 끝났다: ' + e);
     throw e;
   } finally {
     시트칸맞추기기록_(ss, 그릇);
   }
-  return 그릇;
+  return 보류 ? { batchYield: true } : 그릇;
 }
 
-function 시트칸맞추기기록_(ss, r) {
+function 시트칸맞추기기록_(ss, r, 필수) {
   try {
     const st = ensureSheet(ss, 'app_state', ['key', 'value']);
     setState(st, '시트칸맞추기_마지막', JSON.stringify({
       때: new Date().toISOString(),
       밀기: !!r.밀기,                                   // 스위치가 켜져 있었나(꺼짐이 기본)
-      맞춘표: r.맞춘표.length, 더한칸: r.더한칸, 민열: r.민열.length,
+      맞춘표: (r.맞춘누적 || 0) + r.맞춘표.length, 더한칸: r.더한칸, 민열: (r.민열누적 || 0) + r.민열.length,
       보류표: r.보류표 || [],                            // 🔴 사람이 볼 자리 — 소급 불가라 손 안 댄 표
       건너뛴표: r.건너뛴표,                              // 🔴 사람이 볼 자리 — 순서 섞임·이름 없는 데이터 열
+      배치시작: r.배치시작,
     }));
-  } catch (e) { Logger.log('시트칸맞추기 기록 실패: ' + e); }
+  } catch (e) { Logger.log('시트칸맞추기 기록 실패: ' + e); if (필수) throw new Error('시트 칸 점검 기록 실패'); }
 }
 
 /** [v9.241] 수집 장부 탭 이름 — 골격의 세 번째 칸에서 **도출**한다(손 목록 금지 · 회귀가 대조한다). */
@@ -1711,8 +1746,10 @@ function preflightGlide() {
  * ⚠️ 매월 1일 오전(리포트카드 생성 중)에는 실행하지 마세요 — 이어하기 트리거가 끊깁니다. */
 
 function safeRun(name, fn) {
-  try { fn(); }
+  if (typeof 배치실행_ === 'function' && 배치실행_.수집) { 배치실행_.수집.push({ name: name, run: fn }); return; }
+  try { fn(); return true; }
   catch (e) {
+    if (typeof 배치실행_ === 'function' && 배치실행_.현재) 배치실행_.현재.단계실패 = true;
     Logger.log('❗ ' + name + ' 실패: ' + e);
     // [v9.32] 실패 메일 dedup — parentSweep(10분)이 부르는 작업이 지속 실패하면 같은 실패 메일이
     //   하루 수십~수백 통 발송돼 메일 쿼터를 태우고 학부모·미납·브리핑 알림까지 죽는다(quotaOk 경고와
@@ -1725,25 +1762,249 @@ function safeRun(name, fn) {
       if (props.getProperty(key) === today + '|' + sig) return; // 오늘 같은 에러는 이미 알림
       if (quotaOk(1)) {
         MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ❗ 자동 작업 실패: ' + name,
-          String(e && e.stack ? e.stack : e) + '\n\n다른 작업들은 정상 진행되었습니다.\n\n(같은 오류는 오늘 다시 알리지 않습니다 — dedup)');
+          String(e && e.stack ? e.stack : e) + '\n\n후속 작업의 완료 여부는 각 배치 진행 기록에서 확인합니다.\n\n(같은 오류는 오늘 다시 알리지 않습니다 — dedup)');
         props.setProperty(key, today + '|' + sig); // 발송 성공분만 마킹 → 쿼터 부족이면 다음 스위프 재시도
       }
     } catch (e2) { Logger.log('safeRun dedup 처리 실패: ' + e2); }
+    return false;
   }
 }
 
+/* [2026-09-11] 기존 세 배치의 진행 위치. 학생 값·메일 본문은 담지 않는다.
+ * 긴 ScriptLock은 하위 함수의 잠금과 교착하므로 실행권 인수 때만 잡는다.
+ * 7분 실행권은 Apps Script 6분 한도보다 길다. 하드킬 흔적은 자동 재발송하지 않는다.
+ * 단계 반환은 업무 결과 보증이 아니다. 잡힌 실패가 있으면 완주 도장도 찍지 않는다. */
+function 배치설정_(name) {
+  const config = {
+    morningJobs: { continueName: 'morningJobsContinue', daily: true },
+    nightJobs: { continueName: 'nightJobsContinue', daily: true },
+    parentSweep: { continueName: 'parentSweepContinue', daily: false }
+  };
+  if (!Object.prototype.hasOwnProperty.call(config, name)) throw new Error('알 수 없는 배치');
+  return config[name];
+}
+function 배치상태요약_(s) {
+  return { name: s.name, status: s.status, date: s.date, next: s.next,
+    total: s.plan ? s.plan.length : 0, stage: s.running ? s.running.name : '',
+    failures: (s.failures || []).slice(), startedAt: s.startedAt, updatedAt: s.updatedAt };
+}
+function 배치예산남음_() {
+  const c = 배치실행_.현재;
+  return !c || Date.now() < c.deadline;
+}
+function 배치기준시각_() {
+  const c = 배치실행_.현재 || 배치실행_.계획;
+  return new Date(c ? c.state.startedAt : Date.now());
+}
+function 배치분할중_(name) { return !!(배치실행_.현재 && 배치실행_.현재.state.name === name); }
+function 배치선행확인_() {
+  const c = 배치실행_.현재;
+  if (c && Array.prototype.some.call(arguments, n => c.state.failures.indexOf(n) !== -1))
+    throw new Error('선행 단계 실패 — 오래된 값으로 후속 전송하지 않음');
+}
+function 배치저장_(c) {
+  const latest = JSON.parse(c.props.getProperty(c.key) || 'null');
+  if (!latest || !latest.lease || latest.lease.token !== c.token) throw new Error('배치 실행권 상실');
+  c.state.updatedAt = Date.now();
+  c.props.setProperty(c.key, JSON.stringify(c.state));
+}
+function 배치이어예약_(handler, delayMs) {
+  // 먼저 새 예약을 확보한다. 한도·권한 오류 때 기존 예약을 먼저 지우지 않는다.
+  const old = ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === handler);
+  const made = ScriptApp.newTrigger(handler).timeBased().after(delayMs).create();
+  old.forEach(t => ScriptApp.deleteTrigger(t));
+  return made.getUniqueId();
+}
+function 배치이어지우기_(handler) {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === handler)
+    .forEach(t => ScriptApp.deleteTrigger(t));
+}
+function 배치불확실알림_(c) {
+  if (c.state.notified) return;
+  adminMail('[SYNK] 자동 배치 확인 필요: ' + c.state.name,
+    '배치 상태: ' + c.state.status + '\n단계: ' + (c.state.running ? c.state.running.name : '') +
+    '\n시작한 단계의 완료를 확인할 수 없어 자동 재발송하지 않았습니다. 후속 단계를 완료로 표시하지 않습니다.');
+  c.state.notified = true;
+  배치저장_(c);
+}
+function 배치실행_(name, resumeOnly, body) {
+  const config = 배치설정_(name), props = PropertiesService.getScriptProperties();
+  const key = '배치진행_' + name, now = Date.now();
+  const tz = Session.getScriptTimeZone();
+  const today = Utilities.formatDate(new Date(now), tz, 'yyyy-MM-dd');
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(1000)) return { name: name, status: 'busy' };
+  let c;
+  try {
+    const raw = props.getProperty(key);
+    let state;
+    try { state = raw ? JSON.parse(raw) : null; } catch (e) { return { name: name, status: 'invalid_state' }; }
+    if (state && (state.version !== 1 || state.name !== name || !Number.isInteger(state.next) || state.next < 0 ||
+      ['running', 'waiting', 'complete', 'partial', 'uncertain', 'date_changed', 'plan_changed'].indexOf(state.status) === -1 ||
+      typeof state.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(state.date) ||
+      !Number.isFinite(state.startedAt) || !Number.isFinite(state.updatedAt) ||
+      !Array.isArray(state.failures) || state.failures.some(x => typeof x !== 'string') ||
+      (state.plan !== null && (!Array.isArray(state.plan) || state.plan.some(x => typeof x !== 'string') || state.next > state.plan.length)) ||
+      (state.plan === null && state.next !== 0) ||
+      (state.lease && (typeof state.lease.token !== 'string' || !Number.isFinite(state.lease.until)))))
+      return { name: name, status: 'invalid_state' };
+    if (state && state.lease && state.lease.until > now) return { name: name, status: 'busy' };
+    if (state && state.status === 'running') state.status = 'uncertain';
+    if (state && state.status === 'waiting' && state.date !== today) state.status = 'date_changed';
+    if (state && ['uncertain', 'date_changed', 'plan_changed'].indexOf(state.status) !== -1) {
+      // 새 실행권으로 경보만 남긴다. 결과 불확실한 단계는 반복하지 않는다.
+    } else if (state && state.status === 'waiting') {
+      // 정규 예약과 이어하기가 함께 와도 한쪽만 이 진행 위치를 인수한다.
+    } else {
+      if (resumeOnly) return { name: name, status: 'no_pending' };
+      if (state && config.daily && state.date === today) return 배치상태요약_(state);
+      state = { version: 1, name: name, date: today, startedAt: now, updatedAt: now,
+        status: 'running', next: 0, plan: null, running: null, failures: [], slice: null };
+    }
+    const token = Utilities.getUuid();
+    state.lease = { token: token, until: now + 420000 };
+    c = { key: key, props: props, state: state, token: token, deadline: now + 150000, 단계실패: false };
+    props.setProperty(key, JSON.stringify(state));
+  } finally { lock.releaseLock(); }
+  try {
+    if (['uncertain', 'date_changed', 'plan_changed'].indexOf(c.state.status) !== -1) {
+      배치이어지우기_(config.continueName);
+      배치불확실알림_(c);
+      return 배치상태요약_(c.state);
+    }
+    // 강제 종료돼도 진행 기록을 발견할 예약을 먼저 보장한다. 고정 세 함수 이외는 만들지 않는다.
+    c.state.wakeId = 배치이어예약_(config.continueName, 420000);
+    배치저장_(c);
+    const plan = [];
+    배치실행_.계획 = c; 배치실행_.수집 = plan;
+    try { body(); } finally { 배치실행_.수집 = null; 배치실행_.계획 = null; }
+    const names = plan.map(s => s.name);
+    if (c.state.plan && JSON.stringify(c.state.plan) !== JSON.stringify(names)) {
+      c.state.status = 'plan_changed'; 배치저장_(c); 배치불확실알림_(c);
+      배치이어지우기_(config.continueName);
+      return 배치상태요약_(c.state);
+    }
+    c.state.plan = names;
+    배치실행_.현재 = c;
+    let steps = 0, usageReported = false;
+    while (c.state.next < plan.length) {
+      if (steps >= 6 || !배치예산남음_()) break;
+      const step = plan[c.state.next];
+      c.state.status = 'running';
+      c.state.running = { name: step.name, at: Date.now() };
+      c.단계실패 = false;
+      배치저장_(c);
+      Logger.log('배치 단계 시작: ' + name + '/' + step.name);
+      let value;
+      safeRun(step.name, function () { value = step.run(); });
+      if (step.name === 'aiUsageLedger') usageReported = true;
+      if (c.단계실패 && c.state.failures.indexOf(step.name) === -1) c.state.failures.push(step.name);
+      if (!c.단계실패 && value && value.batchYield === true) {
+        c.state.running = null;
+        break; // 하위 안전 포인터/슬라이스만 전진했고 이 단계 자체는 아직 끝나지 않았다.
+      }
+      c.state.next++;
+      c.state.slice = null;
+      c.state.running = null;
+      배치저장_(c);
+      Logger.log('배치 단계 반환: ' + name + '/' + step.name + (c.단계실패 ? ' / 실패' : ''));
+      steps++;
+    }
+    // 토큰 장부는 실행 메모리다. 이어하기 전에 이번 조각의 실제 사용량을 버리지 않는다.
+    if (!usageReported && name !== 'parentSweep' && typeof AI사용_보고_ === 'function') {
+      c.단계실패 = false;
+      safeRun('aiUsageSlice', AI사용_보고_);
+      if (c.단계실패 && c.state.failures.indexOf('aiUsageSlice') === -1) c.state.failures.push('aiUsageSlice');
+    }
+    if (c.state.next < plan.length) {
+      c.state.status = 'waiting';
+      배치저장_(c);
+      c.state.wakeId = 배치이어예약_(config.continueName, 60000);
+    } else {
+      c.state.status = c.state.failures.length ? 'partial' : 'complete';
+      배치저장_(c);
+      if (name === 'nightJobs' && c.state.status === 'complete')
+        props.setProperty('야간배치완료일', Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd HH:mm'));
+      배치이어지우기_(config.continueName);
+    }
+    return 배치상태요약_(c.state);
+  } catch (e) {
+    c.state.status = c.state.running ? 'uncertain' : 'waiting';
+    Logger.log('배치 진행 중단: ' + name + ' / ' + c.state.status);
+    throw new Error('배치 진행 중단: ' + name + ' / ' + c.state.status);
+  } finally {
+    배치실행_.현재 = null;
+    c.state.lease = null;
+    // 저장 실패면 앞서 적은 실행권과 running이 남아 다음 실행이 중복 처리하지 않는다.
+    배치저장_(c);
+  }
+}
+function morningJobsContinue() { return morningJobs(true); }
+function nightJobsContinue() { return nightJobs(true); }
+function parentSweepContinue() { return parentSweep(true); }
+/** 소유자가 실제 결과를 확인한 뒤만 쓴다. 재발송/새 주기 강제 시작은 제공하지 않는다. */
+function resolveAutomationBatch(name, expectedUpdatedAt, action) {
+  if (typeof automationOwnerAllowed_ !== 'function' || !automationOwnerAllowed_()) return { ok: false, stage: 'access' };
+  if (['morningJobs', 'nightJobs', 'parentSweep'].indexOf(name) === -1 ||
+    !Number.isFinite(expectedUpdatedAt) || ['skip_confirmed_step', 'close_confirmed_run'].indexOf(action) === -1)
+    return { ok: false, stage: 'input' };
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(1000)) return { ok: false, stage: 'busy' };
+  try {
+    const props = PropertiesService.getScriptProperties(), key = '배치진행_' + name;
+    let s;
+    try { s = JSON.parse(props.getProperty(key) || 'null'); } catch (e) { return { ok: false, stage: 'invalid_state' }; }
+    if (!s || s.name !== name || s.version !== 1 || s.updatedAt !== expectedUpdatedAt) return { ok: false, stage: 'stale' };
+    if (s.lease && s.lease.until > Date.now()) return { ok: false, stage: 'busy' };
+    if (['uncertain', 'date_changed', 'plan_changed'].indexOf(s.status) === -1 || !Array.isArray(s.plan) || !Array.isArray(s.failures))
+      return { ok: false, stage: 'state' };
+    if (action === 'skip_confirmed_step') {
+      if (s.status !== 'uncertain' || !s.running || s.plan[s.next] !== s.running.name ||
+        s.date !== Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')) return { ok: false, stage: 'state' };
+      if (s.failures.indexOf(s.running.name) === -1) s.failures.push(s.running.name);
+      // 확인한 한 단계만 반복 금지. 후속은 기존 계획·기존 날짜를 재확인한 다음 이어한다.
+      s.next++; s.running = null; s.slice = null; s.status = 'waiting';
+      s.wakeId = 배치이어예약_(배치설정_(name).continueName, 60000);
+    } else {
+      s.status = 'partial'; s.running = null; s.slice = null;
+      if (s.failures.indexOf('operator_closed') === -1) s.failures.push('operator_closed');
+      배치이어지우기_(배치설정_(name).continueName);
+    }
+    s.lease = null; s.updatedAt = Date.now(); s.resolvedAt = s.updatedAt;
+    props.setProperty(key, JSON.stringify(s));
+    return { ok: true, stage: action, name: name, status: s.status, updatedAt: s.updatedAt };
+  } finally { lock.releaseLock(); }
+}
+function ensureMomentSweepTrigger() {
+  if (typeof automationOwnerAllowed_ !== 'function' || !automationOwnerAllowed_()) return { ok: false, stage: 'access' };
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(1000)) return { ok: false, stage: 'busy' };
+  try {
+    const before = ScriptApp.getProjectTriggers();
+    const matched = before.filter(t => t.getHandlerFunction() === 'momentSweepJob');
+    if (matched.length) return { ok: matched.length === 1, stage: matched.length === 1 ? 'present' : 'duplicate', created: false, matched: matched.length, beforeCount: before.length, afterCount: before.length };
+    ScriptApp.newTrigger('momentSweepJob').timeBased().atHour(21).everyDays(1).create();
+    const after = ScriptApp.getProjectTriggers();
+    const count = after.filter(t => t.getHandlerFunction() === 'momentSweepJob').length;
+    return { ok: count === 1 && after.length === before.length + 1, stage: 'registered', created: true, matched: count, beforeCount: before.length, afterCount: after.length };
+  } finally { lock.releaseLock(); }
+}
+
 function morningJobs() {   // 매일 07시
-  rehearsalForceOff_(); // [v9.120] 리허설이 켜진 채 배치가 오면 그날 알림이 통째로 죽는다 — TTL과 별개의 두 번째 안전장치
+  return 배치실행_('morningJobs', arguments[0] === true, function () {
+  safeRun('rehearsalForceOff', rehearsalForceOff_); // 실제 실행권을 얻은 단계에서만 리허설 해제
   // 🔴 값을 쓰는 배치들보다 «먼저» 칸을 세운다 — 칸이 없으면 그날 값이 안 적히고, 그 줄은 영영 빈 채다.
   //    ensureSheet 는 «없는 탭»만 만들므로 골격에 칸을 더해도 라이브가 안 따라온다(09-03 실측 5표).
   // 🔴 결과를 «남긴다» — 안 남기면 「돌았나」를 물어볼 자리가 없다(09-07 실측: 나흘간 아무도 몰랐다).
   // 🔑 한 판의 몸은 `시트칸맞추기한판_` 이 쥔다 — 예외로 끝나도 그때까지의 실적을 그대로 기록한다.
   //    여기 인라인으로 두면 시험이 예외 경로를 못 부른다(09-08 검수 P1 33079b2b2699).
-  safeRun('시트칸맞추기', function () { 시트칸맞추기한판_(SpreadsheetApp.getActiveSpreadsheet()); });
+  safeRun('시트칸맞추기', function () { return 시트칸맞추기한판_(SpreadsheetApp.getActiveSpreadsheet()); });
   safeRun('상담AI_IG토큰수명', 상담AI_IG토큰수명점검_); // Instagram Login 토큰 만료 14일 전 자동 갱신·실패 주 1회 경보
   safeRun('첨삭서명트리거', 첨삭서명트리거보장_); // [㉡-1 부품 · 09-07] hw_feedback onEdit 이 없으면 만든다(멱등) — 손으로 켜는 설정을 안 둔다
   safeRun('학생ID발급', function () { 학생ID_발급_(); }); // [v9.164] 반배정·앱편입인데 ID가 빈 행을 채운다. **syncProfiles보다 앞** — 뒤에 두면 그날 아침 앱에 못 들어가고 하루 밀린다. onEdit 트리거가 죽어도 여기서 잡히는 두 번째 발동층
   safeRun('syncProfiles', syncProfiles);       // [v7.0] 동기화 먼저 — 신규 학생 생일을 당일부터 인식
+  safeRun('syncProfilesCalc', function () { 배치선행확인_('syncProfiles'); calcAll(); });
+  safeRun('syncProfilesRoster', function () { 배치선행확인_('syncProfiles', 'syncProfilesCalc'); 명부스윕_(); });
   safeRun('birthdayCheck', birthdayCheck);
   safeRun('checkConsultDelay', checkConsultDelay);
   safeRun('parentWeeklyDigestRetry', parentWeeklyDigestRetry_); // [v9.34] 일요일 다이제스트 쿼터 유실분 평일 아침 재발송(보류 키 없으면 즉시 return)
@@ -1759,10 +2020,12 @@ function morningJobs() {   // 매일 07시
   safeRun('jacketWatch', jacketWatch_); // [v9.83] 🧥 과잠 자격(재원 12개월+누계) 신규 도달자 감지 — 도달 0명이면 시트·메일 모두 무동작
   safeRun('lessonCloseGap', function () { const ssG = SpreadsheetApp.getActiveSpreadsheet(); lessonCloseGapAlert_(ssG, ssG.getSpreadsheetTimeZone()); }); // [v9.92] 어제 마감 미제출 반 → 담당 강사(하루 1통). 어제 출석 0건이면 휴강으로 보고 무동작
   safeRun('aiUsageLedger', AI사용_보고_); // [T4] 이 실행이 쓴 AI 토큰·캐시를 남긴다 — 호출 0이면 로그도 메일도 0(정본 = 엔진_콘텐츠AI.js)
+  });
 }
 
 function nightJobs() {     // 매일 22시 — 수업 종료 후
-  rehearsalForceOff_(); // [v9.120] 리허설이 켜진 채 배치가 오면 그날 알림이 통째로 죽는다 — TTL과 별개의 두 번째 안전장치
+  return 배치실행_('nightJobs', arguments[0] === true, function () {
+  safeRun('rehearsalForceOff', rehearsalForceOff_); // 실제 실행권을 얻은 단계에서만 리허설 해제
   safeRun('expandLessonLog', expandLessonLog_);   // [v9.36] 수업 마감 로그 승격분 → 숙제 +10·연료 전개 (calcAll 앞 = 그날 밤 게이지·랭킹 즉시 반영)
   safeRun('expandMasteryLog', expandMasteryLog_); // [v9.36] 당일 문법 태그 → mastery_log upsert (calcAll 앞 = 그날 밤 진화 게이트 즉시 반영)
   safeRun('calcAll', calcAll); // 오늘의 숙제 게시(21시 조건) + Glide가 만든 point_logs A·F 빈칸 보정 — 구 Glide(08-05 폐기 · 이관 = docs/글라이드_이관대장.md)
@@ -1770,7 +2033,7 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   safeRun('expandHwBatch', expandHwBatch);       // [v8.0] 숙제 일괄 1탭 → 학생별 +10 전개 (가드·정산·스토리 전에)
   safeRun('dailyGuard', dailyGuard);             // [v7.5] 일일 한도 — MVP 반당 1명 + 숙제·칭찬·생일 1회/일 자동 정정
   safeRun('notifyDailyAwards', notifyDailyAwards); // [v7.6] 유효 MVP·시냅스 학부모 알림(한·몽 통합 1통)
-  const dyN = new Date().getDay(); // [v7.3] 금=평일반 정산 · 일=주말반 정산(주말 수업 데미지 미집계 결함 수정)
+  const dyN = 배치기준시각_().getDay(); // 같은 실행의 재개는 시작일의 분기를 유지한다
   if (dyN === 5 || dyN === 0) safeRun('raidSettle', raidFriday);
   else safeRun('raidStoryDaily', raidStoryDaily); // 월~목·토 일일 전투 리포트
   // [08-27 유호 지시 A] 리그 배선 둘(leagueStoryDaily·leagueSettle)을 걷었다 — 함수를 지웠으니
@@ -1810,12 +2073,8 @@ function nightJobs() {     // 매일 22시 — 수업 종료 후
   //   AI 배치 셋(첨삭·대화·스튜디오) «뒤»여야 한다 — 앞에 두면 그 셋의 호출이 장부에 안 잡힌다.
   //   호출 0이면 아무 일도 안 한다(학생 0명인 지금이 그 상태다 — 그 0은 「안 불렀다」이지 「안 샜다」가 아니다).
   safeRun('aiUsageLedger', AI사용_보고_);
-  // [v9.28] 완주 마커 — 반드시 맨 마지막 줄. 6분 타임아웃이면 이 줄 자체가 실행 안 되어 워치독이 증발을 감지
-  try {
-    const ssNJ = SpreadsheetApp.getActiveSpreadsheet();
-    PropertiesService.getScriptProperties().setProperty('야간배치완료일',
-      Utilities.formatDate(new Date(), ssNJ.getSpreadsheetTimeZone(), 'yyyy-MM-dd HH:mm'));
-  } catch (e) {}
+  // 야간배치완료일은 배치실행_이 모든 단계 반환·실패 0을 확인한 뒤 기록한다.
+  });
 }
 
 // [v9.25] 직접 등록 트리거 safeRun 보호 래퍼 — morningJobs/nightJobs처럼 실패 시 admin 알림 보장.
@@ -2059,7 +2318,7 @@ function resetAllTriggers(force) {
   const triggers = ScriptApp.getProjectTriggers();
   // [v9.47·리뷰 P2] 이어하기 트리거 보호 확장 — 리포트카드뿐 아니라 preflight·데모 시드/청소의 1분 재개 트리거도
   //   무조건 삭제 루프에 쓸려 "자동 이어하기"가 조용히 죽는 것을 방지(그 1분 사이에 재설치하는 경합 케이스).
-  const PROTECTED_CONT = ['reportCardsContinue', 'preflightGlide', 'seedDemoData', 'clearDemoData'];
+  const PROTECTED_CONT = ['reportCardsContinue', 'preflightGlide', 'seedDemoData', 'clearDemoData', 'morningJobsContinue', 'nightJobsContinue', 'parentSweepContinue'];
   const pendingCont = triggers.map(t => t.getHandlerFunction()).filter(h => PROTECTED_CONT.indexOf(h) > -1);
   if (!force && pendingCont.length) {
     const msg = '이어하기 트리거(' + pendingCont.join(', ') + ')가 대기 중이라 resetAllTriggers를 중단했습니다. ' +
@@ -3957,10 +4216,12 @@ function circleSheetsAuto_(ss) {
   // 두 벌 생기고, 강사는 어느 것이 오늘 것인지 못 고른다. 못 잡으면 다음 틱에 다시 온다.
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) return;
-  let 도장, 막힌반 = [];
+  let 도장, 막힌반 = [], 배치보류 = false, 이번구움 = 0;
+  const 분할 = typeof 배치분할중_ === 'function' && 배치분할중_('parentSweep');
   try {
     도장 = circleStampOf_(props, day);
     반.filter(c => !도장.구움[c]).forEach(c => {
+      if (분할 && (!배치예산남음_() || 이번구움 >= 2)) { 배치보류 = true; return; }
       if (!circleBatchDone_(ss, c, day, tz)) return;         // 반 전체가 확정되기 전엔 안 굽는다
       const sheet = circleSheetOf_(ss, c, now, tz);
       // `보고.출석확정` 을 **함께** 본다 — 배치가 「전개완료」여도 목록의 ID 가 전부 무효면 attendance 행이
@@ -3984,6 +4245,7 @@ function circleSheetsAuto_(ss) {
       // 도장은 **반마다** 찍는다 — 마지막에 한 번 찍으면 뒤의 반에서 예외가 났을 때
       // 앞서 구운 반이 도장 없이 남아 다음 틱에 같은 종이를 또 굽는다.
       props.setProperty('서클인쇄_도장', JSON.stringify(도장));
+      이번구움++;
     });
   } finally {
     lock.releaseLock();
@@ -4002,7 +4264,7 @@ function circleSheetsAuto_(ss) {
     받는이별[c] = [ADMIN_EMAIL].concat((강사.byClass[c] || []).map(t => t.email))
       .filter((e, i, a) => e && a.indexOf(e) === i);
   });
-  if (!알릴반.length && !막힌반.length) return;
+  if (!알릴반.length && !막힌반.length) return 배치보류 ? { batchYield: true } : undefined;
   if (막힌반.length && quotaOk(1)) {                         // 종이가 «조용히» 안 나오는 상태를 이름으로 알린다
     try {
       MailApp.sendEmail(ADMIN_EMAIL, '[SYNK] ⚠ 숙제 서클 — 출석은 확정됐는데 종이가 안 나온 반 ' + 막힌반.length + '개',
@@ -4017,6 +4279,7 @@ function circleSheetsAuto_(ss) {
   }
   const 보낸것 = [];
   알릴반.forEach(c => {
+    if (분할 && (!배치예산남음_() || 보낸것.length >= 5)) { 배치보류 = true; return; }
     // 쿼터는 «수신자» 수로 센다 — 반 수로 세면 반마다 강사가 붙는 만큼 모자라, 마지막 반이 조용히 못
     // 받는다(검수 P2 32ae5420). 발송 바로 앞에서 세는 편이 정확하고, 관문 밖 발송도 원리상 안 생긴다.
     if (!quotaOk(받는이별[c].length)) return;                // 못 보낸 반은 도장이 안 옮겨져 다음 틱에 다시 온다
@@ -4027,7 +4290,7 @@ function circleSheetsAuto_(ss) {
     } catch (e) { /* 한 반이 실패해도 나머지는 나간다 — 실패분은 도장이 안 옮겨져 다음 틱에 다시 시도한다 */ }
   });
   // 보낸 «뒤»에만 알림 도장을 옮긴다 — 먼저 옮기면 발송 실패가 곧 영구 미전달이다(검수 P2 b74e8ee4).
-  if (!보낸것.length || !lock.tryLock(5000)) return;          // 못 잡으면 다음 틱에 한 번 더 보낸다(종이는 안 는다)
+  if (!보낸것.length || !lock.tryLock(5000)) return 배치보류 ? { batchYield: true } : undefined;
   try {
     const 최신 = circleStampOf_(props, day);
     보낸것.forEach(c => { if (최신.알림.indexOf(c) < 0) 최신.알림.push(c); });
@@ -4035,6 +4298,7 @@ function circleSheetsAuto_(ss) {
   } finally {
     lock.releaseLock();
   }
+  return 배치보류 ? { batchYield: true } : undefined;
 }
 
 /* 반 단위 출석 «확정» 신호 — attendance_batch 의 오늘 그 반 행이 `전개완료` 인가.

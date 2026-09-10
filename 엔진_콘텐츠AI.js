@@ -2492,6 +2492,11 @@ function aiFeedbackBatch_() {
   let hwQ = null; // 숙제ID → 문항 본문 — 숙제ID 있는 행을 처음 만날 때 1회 로드(없는 밤엔 읽기 0)
   const t0 = Date.now();
   const AI_BUDGET_MS = 120000; // [리뷰 H1] nightJobs 뒤쪽에서 돌므로 자체 예산 2분 — 완주 마커·후속 잡을 굶기지 않는다
+  const 배치 = typeof 배치분할중_ === 'function' && 배치분할중_('nightJobs') ? 배치실행_.현재 : null;
+  if (배치 && !배치.state.slice) 배치.state.slice = { kind: 'ai-feedback', made: 0 };
+  const 조각 = 배치 ? 배치.state.slice : null;
+  if (조각 && 조각.kind !== 'ai-feedback') throw new Error('첨삭 재개 기록 불일치');
+  let 시간보류 = false;
   let made = 0, held = 0, permFails = 0, lastErr = ''; // [v9.63] held=품질 게이트 격리 수
   let rwPrep = null, rwPaid = 0; // [v9.147] 재작성 보상 — 재작성 제출이 하나도 없는 밤에는 준비조차 하지 않는다(읽기 0)
   const badSid = [], badLec = []; // [v9.67] profiles에 없는 sid 수집 — 무통보 드롭 결함 수리(하루 1회 dedup 통보) · [v9.198] 소스별로 나눈다(메일이 「어느 응답 탭을 보라」를 말한다)
@@ -2499,7 +2504,8 @@ function aiFeedbackBatch_() {
    *   그 사이 도착한 숙제 제출이 통째로 건너뛰어진다 — 복구 불가능한 조용한 유실이다. */
   const 전진_ = function (it) { if (it.ptr) props.setProperty('숙제폼_포인터', String(it.ptr)); };
   for (let i = 0; i < q.length; i++) {
-    if (made >= AI_FEEDBACK_MAX_PER_RUN || Date.now() - t0 > AI_BUDGET_MS) break;
+    if (made + (조각 ? 조각.made : 0) >= AI_FEEDBACK_MAX_PER_RUN) break; // 이어하기 전체도 원래 야간 상한 안이다
+    if (Date.now() - t0 > AI_BUDGET_MS || (배치 && !배치예산남음_())) { 시간보류 = true; break; }
     const it = q[i];
     const sid = it.sid, text = it.text, hwId = it.hwId, reDo = it.reDo, ts = it.ts;
     const stu = info[sid];
@@ -2571,6 +2577,11 @@ function aiFeedbackBatch_() {
     ((held || (made && !AI_FEEDBACK_AUTOPUBLISH)) ? '📎 시트 바로가기: ' + ss.getUrl() + '#gid=' + (ss.getSheetByName('hw_feedback') ? ss.getSheetByName('hw_feedback').getSheetId() : 0) + '\n' : '') + // [v9.56] 메일 1클릭으로 I열 처리 · [v9.63] 격리 복구 공용
     (permFails ? "\n'오류:' 상태 행 " + permFails + '건은 같은 입력 재시도가 무의미해 건너뛰었습니다(hw_feedback에서 확인).' : '') +
     (lastErr ? '\n마지막 오류: ' + lastErr + '\n실패 지점부터 내일 밤 자동 재시도합니다.' : ''));
+  if (조각) {
+    조각.made += made; 배치저장_(배치);
+    if (lastErr || permFails) throw new Error('AI 첨삭 일부 실패 — 원본/포인터 보존');
+    if (시간보류) return { batchYield: true };
+  }
 }
 
 // [v9.49] Claude API 호출 — 구조화 출력(output_config.format json_schema)으로 4칸 스키마를 보장받는다.
@@ -3240,8 +3251,19 @@ function aiStudioBatch_() {
   const tz = ss.getSpreadsheetTimeZone();
   const today = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
   const t0 = Date.now(), BUDGET_MS = 100000;
+  const 배치 = typeof 배치분할중_ === 'function' && 배치분할중_('nightJobs') ? 배치실행_.현재 : null;
+  if (배치 && !배치.state.slice) 배치.state.slice = { kind: 'ai-studio', calls: 0, done: [], failed: false };
+  const 조각 = 배치 ? 배치.state.slice : null;
+  if (조각 && 조각.kind !== 'ai-studio') throw new Error('AI 스튜디오 재개 기록 불일치');
+  let 시간보류 = false;
   let calls = 0, made = 0, errs = [];
-  const can = () => calls < AI_STUDIO_MAX_CALLS && (Date.now() - t0) < BUDGET_MS;
+  const can = () => {
+    if (calls + (조각 ? 조각.calls : 0) >= AI_STUDIO_MAX_CALLS) return false;
+    if ((Date.now() - t0) >= BUDGET_MS || (배치 && !배치예산남음_())) { 시간보류 = true; return false; }
+    return true;
+  };
+  const 할차례 = n => !시간보류 && (!조각 || 조각.done.indexOf(n) === -1);
+  const 마친차례 = n => { if (조각 && !시간보류 && 조각.done.indexOf(n) === -1) { 조각.done.push(n); 배치저장_(배치); } };
 
   const ad = ensureSheet(ss, 'ai_daily', ['student_id', '날짜', '한문장', '퀴즈문제', '퀴즈정답해설']);
   /* 프룬 — 어제 이전 행을 ai_daily에서 내린다(시트 비대·다음날 오독 방지). 남길 것 = 오늘·어제
@@ -3279,6 +3301,7 @@ function aiStudioBatch_() {
   const weakAll_ = () => (_weakAll || (_weakAll = aiWeakMap_(ss, 복귀All_())));
 
   // ① H1/A1/A2/A4 — 학생별 오늘의 한 문장 + 약점 퀴즈(관심사 반영), 배치 호출
+  if (할차례(1)) {
   try {
     const stus = stusAll_().filter(s => !doneToday[s.id]);
     const weak = weakAll_();
@@ -3389,13 +3412,15 @@ function aiStudioBatch_() {
       } catch (e1) { errs.push('한문장 배치: ' + String(e1.message || e1).slice(0, 80)); if (!(e1 && e1.permanent)) break; } // [v9.224] 영구(옛글자)는 이 청크만 버리고 다음 청크 진행 — break 는 일시 장애 백오프 몫(리뷰 P1-1)
     }
   } catch (e) { errs.push('한문장 준비: ' + String(e.message || e).slice(0, 80)); }
+  마친차례(1);
+  }
 
   // ② G 오류사전 — 첨삭 신규분에서 몽골어 화자 오류 패턴 축적(학생 식별 정보 저장 안 함 — 비식별 원칙)
   /* [발전안 20260911 갈래 ③] 09-11 코드 검토에서 error_bank 의 생성 소비자를 찾지 못했다(Prism 집계층 설계 · 엔진 v3 §8 U1).
    *   AI 호출은 새 유효 첨삭 행과 잔여 예산이 있을 때만 한다. 이 조건만으로 실제 학생 수·호출 횟수·지출액을 단정하지 않는다.
    *   철학 §2 「미래에 쓸 수 있다는 설명이 현재 소비자의 부재를 대신하지 않는다」. 기본은 «켜짐»(동작 변화 0) —
    *   Script Properties `오류사전_OFF=1` 이면 끈다. 실제 운영 설정 변경은 이번 구현과 별개다. 판정은 `오류사전꺼짐_` 하나. */
-  try {
+  if (할차례(2)) { try {
     const fb = ss.getSheetByName('hw_feedback');
     if (fb && fb.getLastRow() >= 2 && can() && !오류사전꺼짐_(props.getProperty('오류사전_OFF'))) {
       const from = Number(props.getProperty('오류뱅크_포인터')) || 1;
@@ -3446,9 +3471,11 @@ function aiStudioBatch_() {
       }
     }
   } catch (e) { errs.push('오류사전: ' + String(e.message || e).slice(0, 80)); }
+  마친차례(2);
+  }
 
   // ③ H5 반 브리핑 한 줄 — 반별 약점·주간 흐름을 강사용 1문장으로(있으면 calcAll이 브리핑⑨ 최상단에 병합)
-  try {
+  if (할차례(3)) { try {
     const cs = ss.getSheetByName('class_stats');
     if (cs && cs.getLastRow() >= 2 && can()) {
       const weak = weakAll_(); // [v9.54] ①에서 로드했으면 재사용
@@ -3470,9 +3497,11 @@ function aiStudioBatch_() {
       }
     }
   } catch (e) { errs.push('반브리핑: ' + String(e.message || e).slice(0, 80)); }
+  마친차례(3);
+  }
 
   // ④ E5 리텐션 개입 멘트 — 감지(규칙·calcAll)가 남긴 목록에 문구만 생성
-  try {
+  if (할차례(4)) { try {
     const st = ensureSheet(ss, 'app_state', ['key', 'value']);
     let list = [];
     try { list = JSON.parse(String(getState(st, '리텐션목록').val || '[]')) || []; } catch (eL) { list = []; }
@@ -3490,9 +3519,16 @@ function aiStudioBatch_() {
       setState(st, '리텐션멘트', JSON.stringify(map));
     }
   } catch (e) { errs.push('리텐션멘트: ' + String(e.message || e).slice(0, 80)); }
+  마친차례(4);
+  }
 
   if (made || errs.length) adminMail('[SYNK] 🎛️ AI 스튜디오 야간 — 한문장·퀴즈 ' + made + '건' + (errs.length ? ' · 오류 ' + errs.length : ''),
     '호출 ' + calls + '회 (상한 ' + AI_STUDIO_MAX_CALLS + ')\n' + (errs.length ? '오류:\n' + errs.join('\n') + '\n(실패 항목은 내일 밤 자동 재시도)' : '정상'));
+  if (조각) {
+    조각.calls += calls; 조각.failed = 조각.failed || errs.length > 0; 배치저장_(배치);
+    if (시간보류) return { batchYield: true };
+    if (조각.failed) throw new Error('AI 스튜디오 일부 실패 — 기존 재시도 계약 유지');
+  }
 }
 
 // ── F4 웰컴 스토리(아침) — 신규 등록 감지분 중 학부모 이메일이 채워진 학생에게 세계관 입장 편지 ──
@@ -3894,6 +3930,7 @@ function sweepLevelTest_() {
 }
 
 function parentSweep() {
+  return 배치실행_('parentSweep', arguments[0] === true, function () {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   // [v9.32] 상단 호출도 safeRun 보호 — 여기서 throw하면 아래 폼 편입·수업 브리핑·출결 보드가
   //   함께 중단되고 구글 기본 실패 요약(최대 하루 지연)에만 의존하게 된다.
@@ -3903,10 +3940,10 @@ function parentSweep() {
   // [v9.230] 숙제 서클 종이 — 위 두 전개가 끝난 «바로 다음» 자리다. 설계 §3 이 「종이는 QR 출석
   //   확정 뒤 인쇄된다」로 못박아 시각 트리거를 못 쓴다(확정 전에 구우면 결석자 칸이 실려 나가고
   //   그 종이는 다시 못 걷는다). 반·날짜당 1회 · 확정 없는 반은 조용히 넘어가 다음 틱에 다시 본다.
-  safeRun('circleSheetsAuto', function () { circleSheetsAuto_(ss); });
+  safeRun('circleSheetsAuto', function () { return circleSheetsAuto_(ss); });
   if (PARENT_MAIL_ARRIVAL) safeRun('attendanceNotify', function () { attendanceNotify_(ss); }); // [v7.9] 등원 즉시 알림은 기본 OFF
-  safeRun('translateNotices', function () { translateNotices_(ss); });
-  safeRun('translateTopics', function () { translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
+  safeRun('translateNotices', function () { return translateNotices_(ss); });
+  safeRun('translateTopics', function () { return translateTopics_(ss); }); // [v5.7] 이번 주 우리 반 배운 것 → 몽골어
   safeRun('importFormResponses', importFormResponses); // [v6.3] 상담 폼 접수 편입
   safeRun('crewIntakeWatch', function () { crewIntakeWatch_(ss); }); // [v9.171] 크루카드 접수·재제출·이관유실·상한 감시 — 접수를 「알리는」 층(폼을 닫으면서 알림이 0이 됐다)
   safeRun('sweepLeadForm', function () { sweepLeadForm_(ss); }); // [v9.43] 광고 리드폼 → leads 자동 편입(수기 이관 폐지)
@@ -3924,6 +3961,7 @@ function parentSweep() {
   safeRun('todayBoard', function () { todayBoard_(ss); }); // [v8.1] 오늘의 출결 보드 (10분 갱신)
   safeRun('queueInquiries', function () { queueNewInquiries_(ss); }); // [v9.32] 신규 학부모 문의 → 아침 브리핑 큐
   safeRun('checkNoShow', checkNoShow); // [v9.34] 부활 — 판정 창(수업 시작+30~90분)은 10분 스위프에서만 실제로 걸린다. 반별 1일 1회 app_state 가드 + 당일 출석 0건 반 스킵으로 오경보 없음
+  });
 }
 
 function translateTopics_(ss) {
@@ -3935,9 +3973,11 @@ function translateTopics_(ss) {
   for (let i = 0; i < data.length && done < 10; i++) {
     const ko = String(data[i][1] || '');
     if (!ko || String(data[i][4] || '')) continue;
+    if (typeof 배치예산남음_ === 'function' && !배치예산남음_()) return { batchYield: true };
     try { sh.getRange(i + 2, 5).setValue(LanguageApp.translate(ko, 'ko', 'mn')); done++; }
-    catch (e) { break; }
+    catch (e) { throw new Error('배운 내용 번역 실패'); }
   }
+  if (done >= 10) return { batchYield: true }; // 성공 셀은 이미 저장됐고 다음 조각은 빈칸만 읽는다.
 }
 
 function attendanceNotify_(ss) {
@@ -4008,14 +4048,21 @@ function translateNotices_(ss) {
     const row = data[i];
     const hasKo = String((iT > -1 ? row[iT] : '') || '') || String((iB > -1 ? row[iB] : '') || '');
     if (!hasKo) continue;
-    if (String(row[iTm] || '') || String(row[iBm] || '')) continue; // 이미 번역됨
+    const needTitle = iT > -1 && row[iT] && !String(row[iTm] || '');
+    const needBody = iB > -1 && row[iB] && !String(row[iBm] || '');
+    if (!needTitle && !needBody) continue;
+    if (typeof 배치예산남음_ === 'function' && !배치예산남음_()) return { batchYield: true };
     try {
-      if (iT > -1 && row[iT]) sh.getRange(i + 2, iTm + 1).setValue(LanguageApp.translate(String(row[iT]), 'ko', 'mn'));
-      if (iB > -1 && row[iB]) sh.getRange(i + 2, iBm + 1).setValue(LanguageApp.translate(String(row[iB]), 'ko', 'mn'));
+      if (needTitle) sh.getRange(i + 2, iTm + 1).setValue(LanguageApp.translate(String(row[iT]), 'ko', 'mn'));
+      if (needBody) {
+        if (typeof 배치예산남음_ === 'function' && !배치예산남음_()) return { batchYield: true };
+        sh.getRange(i + 2, iBm + 1).setValue(LanguageApp.translate(String(row[iB]), 'ko', 'mn'));
+      }
       done++;
-    } catch (e) { Logger.log('공지 번역 쿼터 대기: ' + e); break; }
+    } catch (e) { throw new Error('공지 번역 실패'); }
   }
   if (done) Logger.log('공지 몽골어 번역: ' + done + '건');
+  if (done >= 20) return { batchYield: true };
 }
 
 /* ===================== [v5.2] contents 다국어 초벌 번역 =====================
