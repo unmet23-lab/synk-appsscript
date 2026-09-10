@@ -19,7 +19,7 @@
 | Facebook 페이지 토큰 | ⏳ | 앱 생성 뒤 발급하여 `상담AI_페이지토큰`에 저장 |
 | Instagram 전용 토큰 | ⏳ | 앱 생성 뒤 발급하여 `상담AI_IG토큰`에 저장 |
 | 웹훅 구독 | ⏳ | 앱 생성 뒤 Facebook·Instagram의 `messages`를 같은 웹앱에 연결 |
-| 일반 사용자 고급 액세스 | ⏳ | `pages_messaging` + `instagram_business_manage_messages` |
+| 일반 사용자 고급 액세스 | ⏳ | `pages_messaging` + `instagram_business_basic` + `instagram_business_manage_messages` |
 | 사업자 인증 | ⛔ 보류 | 신규 사업자등록증 발급 전에는 신청하지 않음. 폐업한 예전 등록번호를 재사용하지 않음 |
 
 ## 스크립트 속성
@@ -47,7 +47,7 @@
 | 데이터 삭제 안내 | `https://synk.im/privacy/` |
 | 카테고리 | 교육 |
 | Facebook 권한 | `pages_messaging` |
-| Instagram 권한 | `instagram_business_manage_messages` |
+| Instagram 권한 | `instagram_business_basic` + `instagram_business_manage_messages` |
 | 웹훅 객체 | `page`, `instagram` |
 | 기본 구독 필드 | `messages`, `messaging_postbacks` |
 
@@ -83,5 +83,5 @@
 |---|---|
 | 웹훅 확인 실패 | 콜백의 URL 키, Meta 확인 토큰, 고정 배포 URL |
 | Facebook 답장 없음 | `상담AI_페이지토큰`, 페이지 연결, `messages` 구독 |
-| Instagram 답장 없음 | `상담AI_IG토큰`, `@synk.mn` 연결, `instagram_business_manage_messages`, `messages` 구독 |
+| Instagram 답장 없음 | `상담AI_IG토큰`, `@synk.mn` 연결, `instagram_business_basic` + `instagram_business_manage_messages`, `messages` 구독 |
 | 즉시 중단 필요 | 스크립트 속성 `상담AI_OFF=1` |

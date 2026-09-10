@@ -93,7 +93,7 @@ test('Instagram 장기 토큰은 만료 14일 전 자동 갱신하고 새 만료
   assert.equal(결과.ok, true);
   assert.equal(props.상담AI_IG토큰, 'renewed-token');
   assert.ok(Number(props.상담AI_IG토큰만료시각) > Date.now() + 50 * 24 * 3600 * 1000);
-  assert.match(요청[0].url, /^https:\/\/graph\.instagram\.com\/v26\.0\/refresh_access_token\?/);
+  assert.match(요청[0].url, /^https:\/\/graph\.instagram\.com\/refresh_access_token\?/);
 });
 
 test('Instagram 토큰 만료가 멀면 갱신 API를 호출하지 않는다', () => {
@@ -135,6 +135,8 @@ test('공개 저장소 문서에 실제 웹훅 비밀값이나 폐기 권한명�
   const docs = files.map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
   assert.doesNotMatch(docs, /synk-sabtbx-|synk-verify-aeuid9fu/);
   assert.doesNotMatch(docs, /\binstagram_manage_messages\b/);
+  assert.match(docs, /instagram_business_basic/);
+  assert.match(docs, /instagram_business_manage_messages/);
 });
 
 test('상담 답장과 만족도 다이제스트가 같은 Graph API 버전을 쓴다', () => {
