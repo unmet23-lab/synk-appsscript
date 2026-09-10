@@ -434,7 +434,10 @@ function 상담_전송_(psid, text, opts) {
     if (res.getResponseCode() !== 200) {
       const 오류 = 'Meta 전송 ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 200);
       상담_기록_(psid, 'system', 오류, true, null, '', opts.플랫폼);
-      adminMail('[SYNK] ⚠ 상담AI 전송 실패', 오류 + '\n\n학부모에게 답장이 안 갔습니다. 메신저에서 직접 답변해 주세요.\n페이지 액세스 토큰 만료가 가장 흔한 원인입니다.');
+      const 복구안내 = 인스타
+        ? 'Instagram 전용 토큰(상담AI_IG토큰)의 만료와 instagram_business_basic · instagram_business_manage_messages 권한을 확인해 주세요.'
+        : 'Facebook 페이지 액세스 토큰(상담AI_페이지토큰)의 만료와 pages_messaging 권한을 확인해 주세요.';
+      adminMail('[SYNK] ⚠ 상담AI 전송 실패', 오류 + '\n\n학부모에게 답장이 안 갔습니다. 해당 채널에서 직접 답변해 주세요.\n' + 복구안내);
       return false;
     }
     return true;
