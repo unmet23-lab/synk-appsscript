@@ -225,12 +225,12 @@
 
 ## STEP 6 — 인스타그램 DM 배선 (15분) <!-- [v9.185] 코드는 이미 인스타를 받는다 — 유호님 몫은 Meta 쪽 연결뿐 -->
 
-> 코드 쪽은 끝나 있습니다(인스타 웹훅 `object:"instagram"` 분기 · 계정ID 잠금 · 토큰 분리). 여기서는 **Meta 쪽 연결**만 하면 됩니다. 일반 학생에게 답장이 나가려면 현재 Instagram API 권한인 **`instagram_business_manage_messages` 고급 액세스**가 필요합니다(개발 모드에선 관리자·테스터만).
+> 코드 쪽은 끝나 있습니다(인스타 웹훅 `object:"instagram"` 분기 · 계정ID 잠금 · 토큰 분리). 여기서는 **Meta 쪽 연결**만 하면 됩니다. 일반 학생에게 답장이 나가려면 현재 Instagram API 권한인 **`instagram_business_basic` + `instagram_business_manage_messages` 고급 액세스**가 필요합니다(개발 모드에선 관리자·테스터만).
 
 1. **전제**: SYNK LAB 인스타 계정이 **프로페셔널(비즈니스) 계정**이고, 페북 페이지와 **연결**돼 있어야 합니다.
    인스타 앱 → 프로필 → 메뉴 → **설정** → **비즈니스 도구** 근처에서 확인(앱 버전에 따라 문구가 다릅니다. 화면이 다르면 캡처해 보여주세요 — 지어내지 않고 그 화면 기준으로 다시 안내합니다).
 2. **웹훅 구독 추가**: [developers.facebook.com](https://developers.facebook.com) → 우리 앱 → **Webhooks** → 구독 대상에서 **Instagram** 선택 → **messages** 필드 구독. 콜백 URL·검증 토큰은 **STEP 3에서 쓴 것과 동일**합니다(웹앱 하나가 둘 다 받습니다).
-3. **권한 추가**: 앱 대시보드 → 권한 및 기능에서 **`instagram_business_manage_messages`** 요청(검수는 STEP 5와 같은 절차).
+3. **권한 추가**: 앱 대시보드 → 권한 및 기능에서 **`instagram_business_basic`과 `instagram_business_manage_messages`를 함께** 요청(검수는 STEP 5와 같은 절차). 메시지 권한은 기본 권한에 의존하므로 둘 중 하나만 넣지 않습니다.
 4. **스크립트 속성 2개**:
    - `상담AI_IG계정ID` — 우리 인스타 비즈니스 계정 ID(잠금용 · 페이지ID와 **다른 값**입니다)
    - `상담AI_IG토큰` — Instagram API에서 발급한 인스타 전용 토큰. **없으면 인스타 발송을 닫습니다**. 페이스북 페이지 토큰으로 대신 보내지 않습니다.

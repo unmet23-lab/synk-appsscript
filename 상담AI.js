@@ -21,7 +21,8 @@
  * 선택
  *   상담AI_토큰        … 매니챗·자체 폼에서 호출할 때만 필요(Meta 직결에는 불필요)
  *   상담AI_IG토큰      … 인스타 DM 전용 토큰. 없으면 인스타 발송을 닫는다(fail-closed).
- *                        실사용자 답장에는 instagram_business_manage_messages 권한이 필요하다.
+ *                        실사용자 답장에는 instagram_business_basic +
+ *                        instagram_business_manage_messages 권한이 필요하다.
  *   상담AI_IG계정ID    … [v9.185] (선택) 우리 인스타 비즈니스 계정 웹훅만 받도록 거르는 잠금(페이지ID와 별개 값)
  *   상담AI_OFF=1       … 즉시 정지(킬 스위치). 봇은 인계문만 돌려준다
  *   상담AI_일일상한    … 하루 최대 호출 수(기본 300)
@@ -477,8 +478,9 @@ function 상담AI_IG토큰수명점검_() {
   props.setProperty('상담AI_IG토큰갱신시도일', 오늘); // 실패해도 같은 날 반복 호출하지 않는다
 
   try {
-    const res = UrlFetchApp.fetch('https://graph.instagram.com/' + 상담AI_META_API_VERSION +
-      '/refresh_access_token?grant_type=ig_refresh_token&access_token=' + encodeURIComponent(tok), {
+    // 토큰 수명 엔드포인트는 버전 경로가 없는 Instagram Login 전용 주소다.
+    const res = UrlFetchApp.fetch('https://graph.instagram.com/refresh_access_token' +
+      '?grant_type=ig_refresh_token&access_token=' + encodeURIComponent(tok), {
         method: 'get', muteHttpExceptions: true
       });
     if (res.getResponseCode() === 200) {
@@ -919,7 +921,7 @@ function 상담AI_점검() {
   Logger.log('■ 모델: ' + 상담AI_모델_() + ' · 사고: ' + (상담AI_사고 ? 'ON' : 'OFF') + ' · 일일상한: ' + (props.getProperty('상담AI_일일상한') || 상담AI_기본상한));
   Logger.log('■ 인스타: 발송 토큰 ' + (props.getProperty('상담AI_IG토큰') ? 'IG 전용' : '없음(fail-closed)') +
     ' · 계정ID 잠금 ' + (props.getProperty('상담AI_IG계정ID') ? 'ON' : '없음') +
-    ' — 실사용자 답장은 instagram_business_manage_messages 고급 액세스 승인 뒤부터');
+    ' — 실사용자 답장은 instagram_business_basic + instagram_business_manage_messages 고급 액세스 승인 뒤부터');
   if (props.getProperty('상담AI_페이지ID') && !props.getProperty('상담AI_IG계정ID')) {
     Logger.log('   ⚠ 페이지ID는 잠갔는데 IG계정ID가 없습니다 — 인스타 웹훅은 **차단**됩니다(무잠금 통과 대신 fail-closed).\n' +
       '     인스타를 쓰시려면 상담AI_IG계정ID 를 채우세요. 인스타를 안 쓰시면 그대로 두셔도 됩니다.');
