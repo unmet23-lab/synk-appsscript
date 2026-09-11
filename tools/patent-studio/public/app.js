@@ -10,7 +10,11 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 const time = value => value && Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
-const titleFor = s => s.sourceKind === 'synthetic-speech' ? '합성 음성 받아쓰기' : s.mode === 'example' ? state.bootstrap?.examples.find(x => x.id === s.exampleId)?.title || '통제 예제' : '직접 녹음 시연';
+const correctionBaseline = s => s?.mode === 'example' && s.events?.find(e => e.id.startsWith('demo-correction-baseline-'));
+const correctionEvent = s => s?.mode === 'example' && s.events?.find(e => e.id.startsWith('demo-correction-help-'));
+const canApplyCorrection = s => Boolean(correctionBaseline(s) && s.events.length === 1 && s.original.syntheticEvidence && s.original.performanceInterval?.startedAt);
+const eventLabel = e => state.session?.mode === 'example' && e.id?.startsWith('demo-correction-') ? e.type === 'help-presented' ? '시연용 과거 도움 기록 추가' : '시연용 청취 조건 확정' : eventNames[e.type] || e.type;
+const titleFor = s => correctionBaseline(s) ? '늦은 도움 정정 예제' : s.sourceKind === 'synthetic-speech' ? '합성 음성 받아쓰기' : s.mode === 'example' ? state.bootstrap?.examples.find(x => x.id === s.exampleId)?.title || '통제 예제' : '직접 녹음 시연';
 const hasOriginal = () => Boolean(state.session?.original?.audio || state.session?.original?.syntheticEvidence);
 const changed = (a, b) => a?.status !== b?.status || JSON.stringify(a?.value) !== JSON.stringify(b?.value);
 
@@ -90,7 +94,8 @@ function syncControls() {
   document.querySelectorAll('button,input,textarea,select').forEach(el => {
     if (!['notice-close', 'stop-recording', 'cancel-recording'].includes(el.id) && !el.closest('dialog')) el.disabled = locked;
   });
-  ['mode-example', 'mode-recording', 'create-example', 'create-recording', 'create-sample', 'session-select'].forEach(id => { $(id).disabled = locked || pending || retrying || !state.token; });
+  ['mode-example', 'mode-recording', 'create-example', 'create-correction-example', 'create-recording', 'create-sample', 'session-select'].forEach(id => { $(id).disabled = locked || pending || retrying || !state.token; });
+  $('apply-correction-example').disabled = locked || pending || !canApplyCorrection(s);
   $('create-sample').disabled ||= !state.bootstrap?.samples?.length;
   $('refresh-button').disabled = locked || pending;
   $('transcription-provider').disabled = locked || pending || !state.token;
@@ -191,12 +196,21 @@ function renderSession(s, { fresh = false, preserveForms = false } = {}) {
   $('storage-state').textContent = `서버 저장 판본 v${s.revision} · ${time(s.updatedAt)}. 원음·사건·현재 판정을 같은 기록에서 다시 읽을 수 있습니다.`;
   $('export-link').href = `/api/sessions/${s.id}/export`; $('export-link').download = `SYNK-evidence-${s.id}.json`;
   $('last-help').hidden = !s.helpEvents.length;
-  if (s.helpEvents.length) $('last-help').innerHTML = `<strong>최근 실제 제시 · ${esc(time(s.helpEvents.at(-1).at))}</strong>${esc(s.helpEvents.at(-1).text)}`;
+  if (s.helpEvents.length) $('last-help').innerHTML = `<strong>${correctionEvent(s)?.id === s.helpEvents.at(-1).id ? '시연용 과거 도움' : '최근 실제 제시'} · ${esc(time(s.helpEvents.at(-1).at))}</strong>${esc(s.helpEvents.at(-1).text)}`;
   $('response-context').textContent = s.helpEvents.length ? '도움 뒤 다시 말한 답을 기록합니다. 파일은 도움 이후의 발화인지 따로 확인하며, 처음의 독립 수행을 소급해 확정하지 않습니다.' : '다시 말한 답을 별도로 기록합니다. 파일의 발화 시점은 따로 확인하며, 처음 말한 원음을 덮어쓰지 않습니다.';
   renderResponses(s, preserveForms);
   if (fresh) { fillForms(s); state.allEvents = false; }
   else if (!preserveForms && previous?.original.revisions.transcript !== s.original.revisions.transcript) $('machine-transcript').value = s.original.alternatives.map(a => a.text).join('\n');
-  refreshSessionList(); syncControls();
+  renderCorrectionExample(s); refreshSessionList(); syncControls();
+}
+function renderCorrectionExample(s) {
+  const baseline = correctionBaseline(s), event = correctionEvent(s);
+  $('correction-example').hidden = !baseline;
+  if (!baseline) return;
+  const entry = event && s.effectLedger.entries.find(e => e.cause.eventId === event.id);
+  $('correction-example-result').innerHTML = entry ? `<p class="correction-outcome">이 사건에서 반영 철회 ${Number(entry.summary.withdrawn) || 0}개 · 유지 ${Number(entry.summary.retained) || 0}개</p><ul>${entry.transitions.map(t => `<li><strong>${esc(s.analysis.cells.find(c => c.id === t.cellId)?.label || t.cellId)}</strong><span>${esc(statusNames[t.before?.status] || '없음')} → ${esc(statusNames[t.after?.status] || '없음')}</span></li>`).join('')}</ul>` : `<p class="correction-outcome">정정 전 · ${s.analysis.metrics.accepted}개 반영 · ${s.analysis.metrics.held}개 보류</p>`;
+  $('correction-example-note').textContent = entry ? `v${entry.fromRevision} → v${entry.toRevision}의 실제 저장 결과입니다. 오른쪽 ‘근거가 바뀐 기록’에서 원인과 재현 검사를 확인하세요.` : canApplyCorrection(s) ? '버튼을 누르면 서버에 예제 사건을 저장한 뒤 새 판정을 읽습니다.' : '이 예제의 조건을 추가로 바꿨습니다. 비교를 다시 하려면 새 정정 예제로 시작하세요.';
+  $('apply-correction-example').textContent = entry ? '시연용 도움 기록 저장됨' : '발화 전 도움 기록을 뒤늦게 추가';
 }
 function renderCells(cells) {
   const epochs = [...new Set(cells.map(c => c.evidenceEpoch || c.epoch))];
@@ -221,7 +235,7 @@ function renderTimeline(s) {
   const events = [...s.events].reverse(), visible = state.allEvents ? events : events.slice(0, 7);
   $('timeline-empty').hidden = events.length > 0; $('timeline-more').hidden = events.length <= 7;
   $('timeline-more').textContent = state.allEvents ? '최근 사건만 보기' : `전체 ${events.length}개 사건 보기`;
-  $('timeline').innerHTML = visible.map(e => `<li><div class="timeline-heading"><h3>${esc(eventNames[e.type] || e.type)}</h3><time datetime="${esc(e.at || e.recordedAt)}">${esc(time(e.at || e.recordedAt))}</time></div><p>${esc(eventDescription(e))}</p><span class="event-revision">v${esc(e.revision)}</span></li>`).join('');
+  $('timeline').innerHTML = visible.map(e => `<li><div class="timeline-heading"><h3>${esc(eventLabel(e))}</h3><time datetime="${esc(e.at || e.recordedAt)}">${esc(time(e.at || e.recordedAt))}</time></div><p>${esc(eventDescription(e))}</p><span class="event-revision">v${esc(e.revision)}</span></li>`).join('');
 }
 function renderEffectLedger(s) {
   const ledger = s.effectLedger, entries = ledger?.entries || [];
@@ -230,7 +244,7 @@ function renderEffectLedger(s) {
   const labelFor = t => s.analysis.cells.find(c => c.id === t.cellId)?.label || `${t.after?.skill || t.before?.skill || '근거'} · ${t.cellId}`;
   $('effect-ledger-content').innerHTML = entries.length ? `<p class="field-help">최근 ${Math.min(entries.length, 3)}개 판정 기록 · 전체 ${entries.length}개${ledger.legacyBaseline ? `<br>v${esc(ledger.startsAtRevision)}의 기존 기록부터 재현합니다.` : ''}</p>${entries.slice(-3).reverse().map(entry => {
     const summary = entry.summary || {}, changed = (entry.transitions || []).filter(t => t.changed).sort((a, b) => Number(b.action === 'withdrawn') - Number(a.action === 'withdrawn'));
-    return `<article class="ledger-entry"><h4>${entry.fromRevision == null ? '처음 기준' : `v${esc(entry.fromRevision)}`} → v${esc(entry.toRevision)}</h4><p class="ledger-cause">${esc(entry.cause?.type === 'baseline' ? '저장된 출발 기준' : eventNames[entry.cause?.type] || entry.cause?.type)}${entry.cause?.at ? ` · ${esc(time(entry.cause.at))}` : ''}</p><p class="ledger-counts">철회 ${Number(summary.withdrawn) || 0} · 유지 ${Number(summary.retained) || 0} · 보류 ${Number(summary.held) || 0}${summary.added ? ` · 새 반영 ${Number(summary.added)}` : ''}${summary.replaced ? ` · 정정 ${Number(summary.replaced)}` : ''}</p>${changed.length ? `<ul>${changed.slice(0, 3).map(t => `<li><strong>${esc(labelFor(t))}</strong><span>${esc(names[t.action] || t.action)}${t.before ? ` · ${esc(statusNames[t.before.status] || t.before.status)} → ${esc(statusNames[t.after?.status] || t.after?.status || '없음')}` : ''}</span><p>${esc(t.after?.reason || t.before?.reason || '')}</p></li>`).join('')}</ul>${changed.length > 3 ? `<p class="micro">그 밖의 ${changed.length - 3}개 변경은 내려받은 기록에 포함됩니다.</p>` : ''}` : '<p class="micro">효과와 자격을 바꾸는 근거 변경이 없습니다.</p>'}</article>`;
+    return `<article class="ledger-entry"><h4>${entry.fromRevision == null ? '처음 기준' : `v${esc(entry.fromRevision)}`} → v${esc(entry.toRevision)}</h4><p class="ledger-cause">${esc(entry.cause?.type === 'baseline' ? '저장된 출발 기준' : eventLabel({ id: entry.cause?.eventId, type: entry.cause?.type }))}${entry.cause?.at ? ` · ${esc(time(entry.cause.at))}` : ''}</p><p class="ledger-counts">철회 ${Number(summary.withdrawn) || 0} · 유지 ${Number(summary.retained) || 0} · 보류 ${Number(summary.held) || 0}${summary.added ? ` · 새 반영 ${Number(summary.added)}` : ''}${summary.replaced ? ` · 정정 ${Number(summary.replaced)}` : ''}</p>${changed.length ? `<ul>${changed.slice(0, 3).map(t => `<li><strong>${esc(labelFor(t))}</strong><span>${esc(names[t.action] || t.action)}${t.before ? ` · ${esc(statusNames[t.before.status] || t.before.status)} → ${esc(statusNames[t.after?.status] || t.after?.status || '없음')}` : ''}</span><p>${esc(t.after?.reason || t.before?.reason || '')}</p></li>`).join('')}</ul>${changed.length > 3 ? `<p class="micro">그 밖의 ${changed.length - 3}개 변경은 내려받은 기록에 포함됩니다.</p>` : ''}` : '<p class="micro">효과와 자격을 바꾸는 근거 변경이 없습니다.</p>'}</article>`;
   }).join('')}` : '';
   if (state.recordVerification?.sessionId === s.id && state.recordVerification.revision === s.revision) renderRecordVerification(state.recordVerification.result);
   else { state.recordVerification = null; $('ledger-verification').textContent = '아직 이 판본의 재현 검사를 하지 않았습니다.'; }
@@ -303,6 +317,20 @@ function saveEvent(event, { after, message, onSuccess } = {}) {
 async function newSession(mode, extra = {}) {
   return perform(() => api('/api/sessions', { method: 'POST', body: JSON.stringify({ mode, ...(mode === 'example' ? { exampleId: $('example-select').value } : {}), ...extra }) }), s => { renderSession(s, { fresh: true }); }, { retry: false, message: mode === 'example' ? '통제 예제를 서버에 만들었습니다. 가정과 실제 녹음을 구분해 표시합니다.' : '새 녹음 시연을 만들었습니다. 원음을 녹음하거나 파일로 가져오세요.' });
 }
+async function newCorrectionExample() {
+  if (state.busy || state.recording || state.recorderStarting || state.pendingHelp || state.retry) return;
+  setMode('example');
+  if (!await newSession('example', { exampleId: 'particle-ambiguity' })) return;
+  await saveEvent({ id: `demo-correction-baseline-${uid()}`, type: 'review-original', text: '친구를 만나서 카페에 갔어요', confirmed: true },
+    { message: '정정 전의 통제 예제를 저장했습니다. 청취·문항·시점은 예제에서 정한 조건입니다.' });
+}
+async function applyCorrectionExample() {
+  if (state.busy || state.recording || state.recorderStarting || state.pendingHelp || state.retry || !canApplyCorrection(state.session)) return;
+  const at = new Date(Date.parse(state.session.original.performanceInterval.startedAt) - 60000).toISOString();
+  await saveEvent({ id: `demo-correction-help-${uid()}`, type: 'help-presented', text: '친구를', skills: ['object'], at },
+    { message: '가상의 과거 도움 사건을 예제에 저장했습니다. 이 사건으로 바뀐 판단을 확인하세요.',
+      onSuccess: () => { $('effect-ledger-details').open = true; } });
+}
 function inferredMime(file) {
   if (file.type) return file.type;
   return ({ wav: 'audio/wav', mp3: 'audio/mpeg', m4a: 'audio/mp4', mp4: 'audio/mp4', webm: 'audio/webm', ogg: 'audio/ogg', flac: 'audio/flac' })[file.name?.split('.').at(-1).toLowerCase()] || 'application/octet-stream';
@@ -365,6 +393,8 @@ $('example-select').addEventListener('change', updateExampleDescription);
 $('transcription-provider').addEventListener('change', () => { state.transcriptionProvider = $('transcription-provider').value; renderTranscriptionChoice(); });
 $('preflight-button').addEventListener('click', checkPreflight);
 $('preflight-retry').addEventListener('click', checkPreflight);
+$('create-correction-example').addEventListener('click', newCorrectionExample);
+$('apply-correction-example').addEventListener('click', applyCorrectionExample);
 $('verify-record').addEventListener('click', verifySavedRecord);
 $('create-example').addEventListener('click', () => newSession('example'));
 $('create-recording').addEventListener('click', () => newSession('recording'));
