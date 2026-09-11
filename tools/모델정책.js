@@ -1047,9 +1047,12 @@ const 제미나이사고 = {
   'gemini-3.7-flash': ['high'],
   /* 실측 2026-09-03(프로브 8발 · 공짜 「글」 열쇠): `high` 200 · thoughtsTokenCount 115(사고 실사용) ·
    * 서빙 modelVersion 이 `gemini-3.8-flash` 로 픽과 «같다» · `low` 도 200. `medium` 은 그 순간 503
-   * (과부하)이라 **안 재봤다** — 그래서 안 적는다(통과와 미실행을 같은 모양으로 두지 않는다).
+   * (과부하)이었다. 일시적 호출 실패는 지원하지 않는다는 뜻이 아니다.
+   * 공식 지원표(2026-09-02 갱신 · 09-11 확인): low·medium·high, minimal 미지원.
+   * https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash
+   * 이 표는 공식 지원을 반영한다. 09-11 medium 라이브 재호출은 하지 않았고 기본은 high 그대로다.
    * 위쪽 수준은 아예 **없다**: max·ultra·deep·dynamic 전부 400 Invalid value. */
-  'gemini-3.8-flash': ['low', 'high'],
+  'gemini-3.8-flash': ['low', 'medium', 'high'],
 };
 
 const 제미나이 = {

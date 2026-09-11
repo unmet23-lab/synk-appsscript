@@ -113,7 +113,7 @@ const 나가는자리_ = [
   { file: '엔진_폼리포트.js', vendor: '변수URL',      n: 1, 뭐: 'exportSlidePng — url 변수에 docs.google.com 이 담긴다(학생 데이터 0)' },
   { file: '엔진_폼리포트.js', vendor: 'GoogleDrive',  n: 1, 뭐: 'momentCopyOne_ — 순간 사진 축소본(drive.google.com/thumbnail · 우리 Drive 안 왕복 · 나가는 것 = 우리 file id + 우리 OAuth 토큰 · 학생 식별 데이터 0 · 사진은 «들어오는» 방향)' },
   { file: '상담AI.js',        vendor: '변수URL',      n: 1, 뭐: '플랫폼 고정 분기 메신저 발송 — fb=graph.facebook.com · ig=graph.instagram.com, 전용 토큰 분리' },
-  { file: '상담AI.js',        vendor: 'InstagramGraph', n: 2, 뭐: '인스타 사용자 팔로우 조회 · 장기 토큰 자동 갱신(IG 전용 토큰)' },
+  { file: '상담AI.js',        vendor: 'InstagramGraph', n: 2, 뭐: '인스타 사용자 팔로우 조회(사용자 ID·IG 전용 토큰) · Instagram Login 장기 토큰 갱신(토큰만, 학생 원문 0)' },
   { file: '만족도팩.js',      vendor: 'MetaGraph',    n: 1, 뭐: '메신저 발송' },
   { file: '엔진_수집.js',     vendor: 'GitHub',       n: 1, 뭐: '골든 픽스처 push — 저장소 공개 여부 조회(리터럴 api.github.com)' },
   /* 🔴 아래 둘은 `const api = 'https://api.github.com/…'` 를 거쳐 나가 리터럴 검사에 안 잡힌다.

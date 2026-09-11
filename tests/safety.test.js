@@ -1311,7 +1311,9 @@ test('[v9.67] CLAUDE_API_KEY 휴면·첨삭 적체가 워치독·preflight·매�
   const pre = section('function preflightGlide()', 'function safeRun(name, fn)');
   assert.ok(pre.includes('aiFeedbackHealth_(ss)'), 'preflight 계기 누락');
   const mf = section('function buildSystemManifest()', 'function checkConsultSync()');
-  assert.ok(mf.includes("push('CLAUDE_API_KEY'"), '매니페스트 외부 의존성 줄 누락(NOTION_TOKEN만 점검하던 결함)');
+  assert.ok(mf.includes('integrationConfiguration_().forEach'), '매니페스트 외부 연결 진단 누락');
+  assert.ok(mf.includes('push(item.name, item.detail, item.attention ? WARN : OK)'), '설정 누락/폐기 잔재 경고가 매니페스트에서 사라지면 안 된다');
+  // 존재/실패/부분 설정/폐기/비밀 비노출은 integration-configuration.test.js에서 실제 실행한다.
 });
 
 test('[v9.67] 출석·숙제·목소리폼의 무효 sid 드롭은 무통보가 아니다(하루 1회 dedup 통보·자동 복구 없음)', () => {
