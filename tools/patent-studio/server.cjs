@@ -46,13 +46,15 @@ function audioMime(bytes, declared) {
   return actual;
 }
 async function createServer(options = {}) {
-  const directory = options.directory ?? process.env.SYNK_STUDIO_DATA ?? path.join(process.env.LOCALAPPDATA ?? path.join(os.homedir(), '.local/share'), 'SYNK', 'patent-studio');
+  let savedRuntime = {};
+  try { savedRuntime = JSON.parse(fs.readFileSync(path.join(__dirname, '.runtime/studio.json'), 'utf8')); } catch {}
+  const directory = options.directory ?? process.env.SYNK_STUDIO_DATA ?? savedRuntime.directory ?? path.join(process.env.LOCALAPPDATA ?? path.join(os.homedir(), '.local/share'), 'SYNK', 'patent-studio');
   const store = options.store ?? new StudioStore(directory);
   const token = crypto.randomBytes(32).toString('hex');
   let transcriber = options.transcriber;
   if (!transcriber) {
     try {
-      transcriber = require('./transcriber.cjs');
+      transcriber = require('./resilient-transcriber.cjs').createResilientTranscriber();
     } catch {
       transcriber = {
         status: async () => ({
@@ -66,6 +68,7 @@ async function createServer(options = {}) {
     }
   }
   const jobs = new Map();
+  let preflightJob = null;
   const publicDir = path.join(__dirname, 'public');
   const send = (res, status, data, extra = {}) => {
     const bytes = Buffer.isBuffer(data) ? data : Buffer.from(JSON.stringify(data));
@@ -79,7 +82,7 @@ async function createServer(options = {}) {
     res.end(bytes);
   };
   async function transcribeAudio(id, audioRow, {
-    force = false
+    force = false, provider
   } = {}) {
     const key = id + ':' + audioRow.event_id;
     if (jobs.has(key)) return jobs.get(key);
@@ -89,18 +92,20 @@ async function createServer(options = {}) {
       let status;
       try {
         status = await transcriber.status();
-        if (!status.available) {
+        const requestedProvider = provider || status.provider;
+        const routeAvailable = requestedProvider === 'auto' ? status.routes?.local?.available || status.routes?.gemini?.available : status.routes?.[requestedProvider]?.available ?? status.available;
+        if (requestedProvider === 'manual' || !routeAvailable) {
           store.setTranscription(id, audioRow.event_id, {
             status: 'unavailable',
             attemptId,
-            reason: status.reason ?? '자동 전사 연결이 없습니다. 원음을 듣고 전사를 입력할 수 있습니다.'
+            reason: requestedProvider === 'manual' ? '직접 청취 모드입니다. 저장된 원음을 듣고 전사를 입력해 주세요.' : '선택한 자동 전사 경로가 준비되지 않았습니다. 원음은 저장되었습니다.'
           });
           return store.get(id);
         }
         const audio = store.audio(audioRow.sha256);
         const result = await transcriber.transcribe({
           bytes: audio.bytes,
-          mimeType: audio.mimeType
+          mimeType: audio.mimeType, ...(provider ? { provider } : {})
         });
         const alternatives = Array.isArray(result.alternatives) && result.alternatives.length ? result.alternatives.map(a => typeof a === 'string' ? {
           text: a
@@ -135,6 +140,7 @@ async function createServer(options = {}) {
         store.setTranscription(id, audioRow.event_id, {
           status: 'failed',
           code: e.code ?? 'TRANSCRIPTION_FAILED',
+          ...(e.routeAttempts ? { routeAttempts: e.routeAttempts } : {}),
           reason: '자동 전사를 완료하지 못했습니다. 원음은 저장되어 있으며 직접 듣고 전사를 입력할 수 있습니다.'
         });
         return store.get(id);
@@ -144,6 +150,53 @@ async function createServer(options = {}) {
     })();
     jobs.set(key, job);
     return job;
+  }
+  async function preflight() {
+    if (preflightJob) return preflightJob;
+    preflightJob = (async () => {
+      const checks = [];
+      async function check(id, label, action) {
+        const started = performance.now();
+        try { const detail = await action(); checks.push({ id, label, status: 'pass', detail, durationMs: Number((performance.now() - started).toFixed(2)) }); }
+        catch { checks.push({ id, label, status: 'fail', detail: '이 항목을 준비하지 못했습니다. 준비 안내와 저장 경로를 확인해 주세요.' }); }
+      }
+      await check('storage', '기록 저장·복원 준비', () => {
+        store.db.exec('BEGIN IMMEDIATE; ROLLBACK;');
+        const probe = path.join(directory, '.preflight-' + crypto.randomUUID());
+        try { fs.writeFileSync(probe, 'SYNK'); if (fs.readFileSync(probe, 'utf8') !== 'SYNK') throw new Error(); }
+        finally { if (fs.existsSync(probe)) fs.unlinkSync(probe); }
+        return '로컬 DB 연결과 파일 쓰기·읽기를 확인했습니다.';
+      });
+      await check('assets', '발표 화면·서체·마스코트', () => {
+        const assets = JSON.parse(fs.readFileSync(path.join(publicDir, 'assets/manifest.json'), 'utf8'));
+        for (const a of assets.manifest) if (digest(fs.readFileSync(path.join(publicDir, 'assets', a.name))) !== a.sha256) throw new Error();
+        return `${assets.manifest.length}개 자산의 파일 지문을 확인했습니다.`;
+      });
+      let sample;
+      await check('sample', '준비한 합성 원음', () => {
+        const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'samples/manifest.json'), 'utf8').replace(/^\uFEFF/, ''));
+        const entry = manifest.files.find(f => f.file === 'original.wav');
+        const bytes = fs.readFileSync(path.join(directory, 'samples/original.wav'));
+        if (!entry || digest(bytes) !== entry.sha256) throw new Error();
+        sample = bytes;
+        return '합성 샘플의 바이트와 지문이 일치합니다.';
+      });
+      await check('local-stt', '인터넷 없이 실제 받아쓰기', async () => {
+        if (!sample || !transcriber.preflight) throw new Error();
+        const result = await transcriber.preflight(sample);
+        if (!result.text || result.raw?.networkAttempts !== 0) throw new Error();
+        return `기기 안에서 “${result.text}”를 전사했습니다. 외부 통신 시도 0회. 사람 청취 확인은 별도입니다.`;
+      });
+      await check('engine', '근거 판단 예제', () => {
+        const result = core.evaluate(core.createSession({ id: 'preflight-example', mode: 'example', exampleId: 'particle-ambiguity' }));
+        if (result.metrics.accepted !== 1 || result.metrics.held !== 2) throw new Error();
+        return '통제 예제에서 1개 반영·2개 보류를 계산했습니다.';
+      });
+      const result = { ok: checks.every(c => c.status === 'pass'), checkedAt: new Date().toISOString(), checks, transcription: await transcriber.status() };
+      fs.writeFileSync(path.join(directory, 'last-preflight.json'), JSON.stringify(result, null, 2));
+      return result;
+    })().finally(() => { preflightJob = null; });
+    return preflightJob;
   }
   const server = http.createServer(async (req, res) => {
     try {
@@ -156,6 +209,7 @@ async function createServer(options = {}) {
       }
       if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, {
         ok: true,
+        service: 'synk-evidence-studio',
         engineVersion: core.VERSION ?? '1.0.0',
         storage: 'sqlite',
         pendingTranscriptions: jobs.size
@@ -195,6 +249,10 @@ async function createServer(options = {}) {
           sessions: store.list()
         });
       }
+      if (req.method === 'POST' && url.pathname === '/api/preflight') {
+        await jsonBody(req);
+        return send(res, 200, await preflight());
+      }
       if (req.method === 'GET' && /^\/api\/samples\/(original|assisted|unexpected)\.wav$/.test(url.pathname)) {
         const name = path.basename(url.pathname);
         const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'samples/manifest.json'), 'utf8').replace(/^\uFEFF/, ''));
@@ -209,10 +267,11 @@ async function createServer(options = {}) {
         return res.end(bytes);
       }
       if (req.method === 'POST' && url.pathname === '/api/sessions') return send(res, 201, store.create(await jsonBody(req)));
-      const match = url.pathname.match(/^\/api\/sessions\/([a-zA-Z0-9-]+)(?:\/(events|audio|transcribe|comparison|export))?$/);
+      const match = url.pathname.match(/^\/api\/sessions\/([a-zA-Z0-9-]+)(?:\/(events|audio|transcribe|comparison|export|verification))?$/);
       if (match) {
         const [, id, action] = match;
         if (req.method === 'GET' && !action) return send(res, 200, store.get(id));
+        if (req.method === 'GET' && action === 'verification') return send(res, 200, store.verify(id));
         if (req.method === 'POST' && action === 'events') {
           const body = await jsonBody(req);
           const event = body.event;
@@ -226,6 +285,8 @@ async function createServer(options = {}) {
           return send(res, 200, store.apply(id, body.expectedRevision, event));
         }
         if (req.method === 'POST' && action === 'audio') {
+          const provider = req.headers['x-transcription-provider'];
+          if (provider && !['local', 'gemini', 'vertex', 'auto', 'manual'].includes(provider)) throw problem('TRANSCRIPTION_ROUTE', '받아쓰기 방식을 확인해 주세요.');
           const bytes = await readBody(req, MAX_AUDIO);
           const mimeType = audioMime(bytes, req.headers['content-type']);
           const expectedRevision = Number(req.headers['x-expected-revision']);
@@ -241,14 +302,15 @@ async function createServer(options = {}) {
             captureEndedAt: req.headers['x-capture-ended-at']
           });
           const row = store.db.prepare('SELECT * FROM session_audio WHERE session_id=? AND event_id=?').get(id, eventId);
-          return send(res, 200, await transcribeAudio(state.id, row));
+          return send(res, 200, await transcribeAudio(state.id, row, { provider }));
         }
         if (req.method === 'POST' && action === 'transcribe') {
           const body = await jsonBody(req);
+          if (body.provider && !['local', 'gemini', 'vertex', 'auto', 'manual'].includes(body.provider)) throw problem('TRANSCRIPTION_ROUTE', '받아쓰기 방식을 확인해 주세요.');
           if (store.get(id).revision !== body.expectedRevision) throw problem('STALE_REVISION', '최신 기록을 확인해 주세요.', 409);
           const row = store.audioForSession(id, body.audioRef, body.audioEventId);
           return send(res, 200, await transcribeAudio(id, row, {
-            force: true
+            force: true, provider: body.provider
           }));
         }
         if (req.method === 'GET' && action === 'comparison') {
@@ -333,7 +395,9 @@ async function createServer(options = {}) {
     token,
     directory,
     close: async () => {
+      if (preflightJob) await preflightJob.catch(() => {});
       await Promise.allSettled([...jobs.values()]);
+      await transcriber.close?.();
       await new Promise(resolve => server.close(resolve));
       store.close();
     }

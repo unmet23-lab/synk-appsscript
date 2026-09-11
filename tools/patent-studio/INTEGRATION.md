@@ -65,22 +65,34 @@ const result = await transcribe({ bytes: Buffer.from(audioBytes), mimeType: reco
 - 새 전사가 반환돼도 자동으로 ‘해석 범위 완결’로 선언하지 않는다. 사람 검수 및 규칙이 지원하는 구간·의미·능력의 범위를 별도로 판정한다.
 - 전사 결과는 들린 말의 기계 해석이다. 의미 제약·교정 적합성·독립 수행·능력 효과를 이 어댑터가 판정하지 않는다.
 
-## 검증 상태
+## 현재 연결 검증 상태 — 0.4.0
 
-`node --test tests/patent-studio-transcriber.test.cjs` 10개 통과. 실제 바이트 전달, 입력 버퍼 고정, 예상정답 미전송, 후보 중복·무확신도, 무발화, 형식·크기, 모델·완료 검증, 자격·주소, 오류 원문 비노출, 명시 재시도를 검사했다. 외부 API 호출은 모의 응답으로 대체한 단위 시험이다.
+2026-09-11 19:50 KST, 승인된 자체 합성 original.wav를 기존 Gemini 경로로 전송해 실제 전사 성공을 확인했다. 응답 모델 gemini-3.8-flash, 실제 전사 “친구를 만나서 카페에 갔어요.”, 약20.7초. 원음131,196bytes·SHA-256 d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b. 요청 본문에는 예상 답을 넣지 않았다. 실제 입출력은 qa-output/live-stt-upgrade.json에 남겼다.
 
-실제 연결 확인에는 `make-samples.ps1`이 Windows SAPI / Microsoft Heami Desktop으로 만든 자체 합성 `original.wav`를 사용했다. 생성 스크립트와 manifest, 실제 WAV의 크기·지문을 대조했다.
+앞서 실패한 EACCES는 현재 동일 Node의 DNS·Google HTTPS 및 실제 전사에서 재현되지 않았다. 방화벽·보안 설정을 해제하거나 통로를 우회하지 않았다. 이전 제한이 사라진 내부 원인은 확정하지 못했으므로 영구적인 OS 수리를 했다고 설명하지 않는다.
 
-- 131,196 bytes
-- SHA-256 `d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b`
-- 마이크 녹음·학생 자료가 아니라 리터럴 시연 문장에서 생성한 음성이다.
-- 원고는 출처 확인에만 읽었으며 전사 요청에는 실제 WAV 바이트만 넣었다.
-- 현재 일반 실행의 외부 연결은 Node 네트워크 EACCES로 막혔다. 실제 Gemini 응답과 전사 성공은 확인하지 못했다.
-- 별도의 자동 승인 검토도 외부 전송의 승인·합성 출처가 확인되지 않았다는 이유로 거절했다. 이후 생성 기록·지문을 확보해 일반 실행을 재확인했지만 네트워크 차단은 같았다. 다른 도구나 계정으로 우회하지 않았다.
-- **19:22 KST 사용자 승인 후 재시험:** 사용자가 ‘합성 음성의 전송·연결 시험 허용’이라고 명시 승인했다. 그 범위의 `original.wav` 한 파일만 manifest·실제 바이트 지문을 다시 대조해 기존 Gemini 경로로 1회 호출했다. 이전의 사용자 승인 조건은 해결됐지만, 실행 환경은 여전히 `EACCES`로 외부 연결을 차단했다. Google HTTP 응답·전사·원응답 지문은 얻지 못했다. 증거는 `C:/Users/q1212/.codex/visualizations/2026/09/11/01a08f0d-d3c5-7c41-9c85-d69384fa2412/IP_디딤돌_준비/미팅완성본/_작업/patent_focus/stt-approved-attempt.json`에 보존했다. 증거에는 자격정보·인증 헤더를 넣지 않았고, 모델 입력에는 예상 원고를 넣지 않았다.
+20:17 KST 실제 작업실 HTTP 업로드에서는 Gemini가 503을 반환했다. 원음은 보존하고 전사는 failed로 기록했다. 20:22 KST 저장된 같은 원음을 auto로 명시 재시도한 결과 Gemini가 약25초에 실제 전사를 반환했다. 실제 서버·SQLite를 통한 전사 성공과 실패 이력 저장까지 확인했으며 사람 확인은 false로 남았다. qa-output/live-gemini-http.json 및 live-auto-http.json을 참조한다. 외부 서비스의 변동성을 확인했으므로 발표 기본값은 아래 local 경로를 유지한다.
 
-따라서 현재 확인 완료는 **어댑터와 실패 처리의 단위 규칙, 합성 음성의 출처·바이트 연결**이다. 실제 외부 전사 성공, 제품 DB 연결, 학생 녹음의 정확도는 완료 범위에 넣지 않는다. 수동 경로에서는 `text`를 지어내지 않고 저장한 원음을 실제로 들은 사람이 별도 청취 전사로 입력한다.
+### 인터넷 없이 실행하는 기본 경로
 
-로컬 인식도 확인했다. Windows SAPI 인식 토큰 조회는 실패했고 인식기 등록 토큰이 확인되지 않았다. 기존 `Systran/faster-whisper-small` 스냅샷 `536b0662742c02347bc0e980a01041f333bce120`과 faster-whisper 1.2.1·CTranslate2 4.8.2·PyAV 18.1.0 설치는 존재한다. 그러나 기존 Python 3.14 기본 실행 파일은 이 실행 환경에서 접근 거부, 가상환경 런처는 실행 실패였다. 실행 가능한 번들 Python 3.12와 설치된 cp314 바이너리는 호환되지 않는다.
+발표용 server는 resilient-transcriber.cjs로 local을 기본 선택한다. local-transcriber.cjs가 별도Python작업자 local-stt-worker.py를 띄운다. 기존 Whisper small 모델을 CPU int8로 실행하며 모델 파일 지문과 실제 오디오 지문을 검증한다. 자체 패키지 venv에 faster-whisper1.2.1·CTranslate2 4.8.2·PyAV18.1.0을 공식PyPI에서 설치했다. 기존 모델은 새로 내려받지 않았다. 모델 위치·실행파일·자료폴더는 Git밖 .runtime에 연결된다.
 
-이후 음성을 보내지 않는 로컬 대안을 위해, 저장소 밖 `C:/Users/q1212/.codex/visualizations/2026/09/11/01a08f0d-d3c5-7c41-9c85-d69384fa2412/IP_디딤돌_준비/_runtime/patent-stt`에 번들 Python 3.12의 별도 venv를 만들었다. [공식 faster-whisper 설치 안내](https://github.com/SYSTRAN/faster-whisper)에 따라 공식 PyPI에서 호환 wheel만 받는 설치를 시도했으나, 인덱스 통신이 WinError 10013(소켓 접근 권한 거부)으로 차단됐다. 기존 pip HTTP 캐시 조회도 WinError 5(접근 거부)였다. 설치 패키지·새 모델은 내려받지 않았으며 기존 런타임은 바꾸지 않았다. 따라서 로컬 인식 성공도 확인하지 못했고 `provider=local`을 구현 완료나 사용 가능으로 표시하지 않는다. 다른 통로로 다운로드하거나 보호 조치를 우회하지 않았다.
+작업자는 local_files_only와 offline 설정을 사용하고 외부 소켓 연결을 비활성화한다. 실제 원음 바이트로 추론하며 정답 원고·문항·교정문을 받지 않는다. 기계 단일 전사는 사람 확인이나 후보 범위 완결로 승격되지 않는다. 두 자체 합성 음성의 전사가 성공했고 외부 통신 시도는0회였다. 실제 Chrome의 MediaRecorder WebM도 로컬 인식에 성공했다.
+
+### 명시적인 경로 선택
+
+- local: 로컬만 사용. 실패해도 외부로 보내지 않는다.
+- gemini: 기존 Gemini 경로를 명시 선택. 실제 응답과 시간 제한을 기록한다.
+- auto: Gemini를 먼저 사용하고 실패하면 같은 바이트를 로컬에서 처리. 실패와 성공을 routeAttempts에 모두 기록한다. 새 계정·과금 경로로 이동하지 않는다.
+- manual: 원음 저장 후 사람 청취 확인.
+- vertex: 기존 명시허용 조건에서만 선택가능. Gemini 선택을 Vertex로 바꾸지 않는다.
+
+자동 전환의 cloud 실패는 시험에서 주입했고 뒤따른 로컬 인식은 실제로 실행했다. 실제 온라인 장애를 임의로 만들거나 방화벽을 바꾸지는 않았다. 브라우저 전체 시험과 판정 재현은 VERIFICATION.md를 따른다.
+
+### 재실행과 남은 범위
+
+start.ps1은 숨김서버를 시작하고 실제 로컬 전사까지 사전검사한 뒤 브라우저를 연다. 현재 Windows의 앱 경로 재지정 차이 때문에 서버·Python은 확인된 물리적 파일 경로를 .runtime에 저장했다. 같은 PC에서 실행하는 경로를 검증하며, 다른 PC로 안내만 복사해도 실행된다고 주장하지 않는다. prepare-local.cjs로 설치된 런타임·모델·자료 위치를 다시 연결할 수 있다.
+
+현재 운영 제품 DB 연결과 학생음성 정확도·다양한 문항의 의미처리는 위 제품 연결표의 별도범위다. 실제 마이크·스피커의 현장 상태는 준비화면의 서버검사와 구분하고 본인 기기에서 짧게 녹음·재생한다.
+
+기술 참고: [공식 faster-whisper](https://github.com/SYSTRAN/faster-whisper), [Google 오디오 입력](https://ai.google.dev/gemini-api/docs/audio). 2026-09-11 확인.

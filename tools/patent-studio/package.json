@@ -8,8 +8,10 @@
   "devDependencies": {"playwright": "1.62.1"},
   "scripts": {
     "start": "node server.cjs",
-    "test": "node --test core.test.cjs store.test.cjs integration-review.test.cjs ../../tests/patent-studio-transcriber.test.cjs",
+    "test": "node --test core.test.cjs store.test.cjs integration-review.test.cjs projection.test.cjs resilient-transcriber.test.cjs reliability-review.test.cjs ../../tests/patent-studio-transcriber.test.cjs",
     "test:browser": "node browser-qa.cjs",
+    "test:live": "node browser-live-qa.cjs",
+    "benchmark": "node projection-benchmark.cjs",
     "assets": "node assets.cjs"
   }
 }

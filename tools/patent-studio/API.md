@@ -1,6 +1,6 @@
 # 펠트 엔진 근거 작업실 — 로컬 실행 계약
 
-2026-09-11. 이 API는 현재 기계의 시연·개발 자료를 저장한다. 제품의 학생 DB와 자동 연결하지 않는다. 판단 코어와 기록 형식은 제품 연결을 위해 별도 모듈로 둔다.
+2026-09-11 · 코어 0.4.0. 이 API는 현재 기계의 시연·개발 자료를 저장한다. 제품의 학생 DB와 자동 연결하지 않는다. 판단 코어와 기록 형식은 제품 연결을 위해 별도 모듈로 둔다.
 
 ## 실행
 
@@ -19,7 +19,13 @@ Node.js 24 이상. `node tools/patent-studio/server.cjs` → `http://127.0.0.1:4
 - GET `/api/samples/original.wav` 등 bootstrap이 제공한 샘플 경로 → manifest 지문과 일치하는 자체 합성 WAV.
 - GET `/api/sessions/:id/comparison` → 동일 입력에서 코어 연결 제거 비교.
 - GET `/api/sessions/:id/export` → 원음(base64)·지문·사건·판정·비교를 포함한 내려받기 JSON.
-- GET `/api/health` → 실행 상태. 실제 전사 연결 성공은 별도 capabilities에서 확인한다.
+- GET `/api/sessions/:id/verification` → 저장 사건·효과 원장·최종 판정의 재현 결과 `{valid,failures,checkedRevisions,...}`. 실제 코드 지문까지 맞아야 통과한다.
+- POST `/api/preflight` JSON `{}` → `{ok,checkedAt,checks,transcription}`. DB·파일 쓰기/읽기, 승인 자산 지문, 샘플 지문, 실제 로컬 전사, 코어 예제를 검사한다. 동시에 요청해도 진행 중인 검사를 공유한다. 실제 오디오 장치 검사는 별도다.
+- GET `/api/health` → `{ok,service,engineVersion,storage,pendingTranscriptions}` 실행 상태. capabilities도 설정 준비 여부이며 실제 전사 성공은 해당 오디오의 결과와 preflight에서 확인한다.
+
+업로드에서 `X-Transcription-Provider: local|gemini|auto|manual`로 다음 처리 경로를 명시할 수 있다. 재전사는 JSON의 `provider` 필드로 지정한다. 생략하면 서버 기본값이며 발표 기본은 local이다. auto는 명시한 외부 경로가 실패하면 같은 바이트를 로컬에서 처리하고 두 결과를 `raw.routeAttempts`에 남긴다. local 실패는 외부 전송을 유발하지 않는다. 기존 Vertex는 명시 허용 설정에서만 가능하며 Gemini 선택을 Vertex로 치환하지 않는다.
+
+transcription의 `status:'ready'`는 실제 모델의 비어 있지 않은 전사 응답이 있는 경우다. `provider`, `model`, `text`, 실제 요청·응답 근거를 포함한다. local에는 오디오·모델 지문, 추론 설정, 구간 결과, `networkAttempts`를 남긴다. 외부 실패에는 `code`와 `routeAttempts`를 남기고 자격증명이나 벤더의 민감한 오류 원문을 내보내지 않는다. HTTP 업로드 200과 자동 전사 성공은 다르다.
 
 세션 응답은 코어 세션을 그대로 포함하고 `{revision,analysis,events,audios,updatedAt}`를 더한다. `audios`는 원음 해시와 `audioEventId`, `responseId`, MIME·크기·role·url·전사 상태를 포함한다. 전사 상태는 ready/failed/unavailable/pending이며 실패 설명은 비밀 없는 문장이다. 최초 자동 전사는 사람 확인으로 승격되지 않는다. 늦게 도착한 기계 전사도 이미 확인한 사람의 청취 전사를 덮지 않는다.
 
@@ -46,6 +52,10 @@ Node.js 24 이상. `node tools/patent-studio/server.cjs` → `http://127.0.0.1:4
 
 400 잘못된 입력, 403 출처/요청 토큰 불일치, 404 없음, 409 판본 충돌/사건 충돌, 413 파일 초과, 415 지원하지 않는 오디오. JSON 오류 `{error,code}`. 409 뒤 최신 세션을 다시 읽고 사용자가 변경을 확인한다.
 
-SQLite 트랜잭션 안에서 사건 추가·세션 판본 갱신·새 판정을 함께 저장한다. 실제 원음은 SHA-256으로 참조하고 그대로 보존한다. 기존 원음 교체는 금지하며 새 시도를 새 세션/응답으로 기록한다. 전사와 청취 확인은 다른 사건이다. 프로그램 재실행 뒤 동일 자료와 판정을 다시 읽을 수 있다.
+SQLite 트랜잭션 안에서 사건 추가·세션 판본 갱신·새 판정·효과 원장을 함께 저장한다. 실제 원음은 SHA-256으로 참조하고 그대로 보존한다. 기존 원음 교체는 금지하며 새 시도를 새 세션/응답으로 기록한다. 전사와 청취 확인은 다른 사건이다. 프로그램 재실행 뒤 동일 자료와 판정을 다시 읽을 수 있다.
 
-현재 판정은 세션 전체 재계산이다. 네 비교는 같은 입력의 규칙 차이이며 외부 정답표에 대한 성능 측정이 아니다. 내려받기에는 실제 저장한 원음·사건·전사 시도·판정·지문을 포함하며, 전사 성공 응답이 없으면 성공 결과를 만들어 넣지 않는다. 실행 범위와 시험 증거는 VERIFICATION.md를 따른다.
+`session.effectLedger`는 `{schemaVersion,entries,headSha256,startsAtRevision,throughRevision,legacyBaseline}`이다. 각 entry는 `{fromRevision,toRevision,cause,summary,transitions,previousSha256,sha256,engineKey,...}`이며 원인 사건·전후 판본·셀별 유지/철회/정정과 전후 효과를 보존한다. 이전 판의 DB는 저장된 현재 상태에서 출발 기준을 만들며 과거 전이를 발명하지 않는다.
+
+`analysis.computation`은 실제 효과의 다시 계산·이전 결과 재사용 수와 무효화 이유를 제공한다. 코드 지문·의존 입력·결과 지문이 일치할 때만 재사용한다. 모든 입력 지문과 계획·저장 처리를 생략하는 것은 아니다. 네 비교는 같은 입력의 규칙 차이이며 외부 정답표에 대한 성능 측정이 아니다.
+
+export에는 실제 원음·사건·전사 시도·효과 원장·판정·지문과 `replay` 입력이 포함된다. `node tools/patent-studio/projection-replay.cjs <export.json>`으로 서버 없이 재현한다. 내용 지문 사슬은 외부 서명이나 기록되지 않은 사건의 부재를 증명하지 않는다. 전사 성공 응답이 없으면 성공 결과를 만들어 넣지 않는다. 실행 범위와 시험 증거는 VERIFICATION.md를 따른다.
