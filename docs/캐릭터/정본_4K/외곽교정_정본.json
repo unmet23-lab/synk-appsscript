@@ -1,0 +1,447 @@
+{
+  "date": "2026-09-11",
+  "scope": "몽글·까몽 본체와 관련 표정의 현재 투명 외곽 교정",
+  "status": "사용자 교체 요청에 따른 반영; 개별 결과 만족은 미확인",
+  "generator": "tools/몽글외곽정리.cjs --세트 INPUT_DIR OUTPUT_DIR 몽글|까몽",
+  "method": "흰 매트가 남은 외곽 연결띠만 복원. 4096 기준 몽글32px·까몽56px. 색에서 추정한 흰 매트 비율을 RGB와 alpha에 함께 적용해 가위처럼 잘린 불투명 선을 걷음. 눈·몸 내부 픽셀·프레임 보존. 정면표정은 같은 본체 수정 화소를 공유하고 각도판은 각자 외곽을 같은 원리로 교정. 까몽은 실제 산호색 꼬리 장식 연결영역만 보호하고, 외곽의 내부색 추정장을 부드럽게 이어 어두운 갈색을 장식으로 오인한 흰 가로띠 및 가까운 색 경계의 밝은 직사각형을 없앴다. 원래 털 화소 자체를 흐리지는 않는다.",
+  "resolutionNote": "기존 4096x4096 RGBA 원본에서 외곽만 후처리했다. 새 native 4K 생성으로 주장하지 않는다.",
+  "rejectedImageGenCandidates": [
+    {
+      "character": "까몽",
+      "path": "C:/Users/q1212/.codex/generated_images/01a08d56-b2fe-7501-97e5-0484ff2af77a/exec-2290a8bd-b450-455f-b4b2-a90f0b28665e.png",
+      "width": 1254,
+      "height": 1254,
+      "hasAlpha": false
+    },
+    {
+      "character": "몽글",
+      "path": "C:/Users/q1212/.codex/generated_images/01a08d56-b2fe-7501-97e5-0484ff2af77a/exec-50749e1a-64de-45b7-a55e-1b1c72c9f9e0.png",
+      "width": 1254,
+      "height": 1254,
+      "hasAlpha": false
+    }
+  ],
+  "rejectionReason": "built-in ImageGen 외곽 교정 두 후보가 체크무늬를 RGB로 그렸고 프레임도 바뀌어 채택하지 않았다. 신규 결제·유료 CLI 호출 없음.",
+  "visualCheck": "실제 512px dark Ink #2b2320 및 light Paper #fbf7f0 전후 합성과 각도판 검수. 흰 연속 선 제거, 본체 내부 실색·눈·실땀 유지. 까몽 재교정: 본체·좌34·우34를 1600px 어두운 합성 및 문제 영역 1:1 확대에서 확인. 본체 밝은 배경도 대조. 합성 입력으로 어두운 갈색 가장자리 복원·몸 내부·크림 실땀 보존을 확인했다.",
+  "files": [
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_본체.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "band": 32,
+      "changedPixels": 75777,
+      "alphaChanges": 78579,
+      "interiorChanges": 0,
+      "sourceSha256": "6fd4e6b3946006d54d7059e60cc135b27874128bd8e7dfa6e6a62f1a1532f56c",
+      "outputSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6"
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_감동.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "d33c5d84a0b3056e9cc811cb14fd447cd5ccbbf01a7264d609b276831bbff034",
+      "outputSha256": "5a159a4c884bf0ee6097115a19de5bede2dccab36f8425ed30614e3e62cd1c7d",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_궁금함.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "773896342e92f28a26bba2b940c28ac06dae67cc8a30adbef234ad952254122f",
+      "outputSha256": "2243c91277df2ba7173ec7b09bf9c1ba1c86c2dca561e4b5e18b0306a56217c3",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_놀람.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "28f91ec18ff6be65f0ab41c8b7e3090c99f0b44fa563ad49c2ccf7101dcd8dfd",
+      "outputSha256": "067b8ea022027472ae722ba312db652e6bd14c8bdeae2990605c90bef6254cc0",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_눈감음.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "5b1c4840462dc87781241f0983a7aa5dba3b8a0498357427e99218fee7ab2c14",
+      "outputSha256": "0749de8eaeaaca9ea224547fd19ca22cc642a9b9bddaf20d3d218213d869ac86",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "7b1a8b9070d847a69b349c66f95d5c6fe824b4371b304f44ef4f2865b22f4a14",
+      "outputSha256": "04d75b8053667dc94fb708d04f73c36aa7a20ecb407c5364ed47d988488955f3",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_민망.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "6424c648a53be607a40f228931d4918c7ed8df3694bdf04ae94eaed06d33038f",
+      "outputSha256": "ff2ec1fe5e25eb4fd28b09e8295f7a3eb7f07a826894811bde68b422b5650084",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_별눈.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "374579e40740e5b0631750189d2baf8dd5103e6bf477d5c5cf453b1e8c6ce0f0",
+      "outputSha256": "6daffe0be59bc4af5b8d0751d14f56fa6c0c984feef264383eccc3fff947474f",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_뾰로통.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "e30d88c2155a2268c0c8d3e33b6ad27b4751e50a12ef614bdb2cb3277bb8d2db",
+      "outputSha256": "8cc40135dc9dfe9c63d0f2cdc6bb7abe04cf2be7c8263d40e5b21a356b136233",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_안도.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "999e42180a2c3504dc97eece016898e4ac885f589f5cfbba0d3d372aeaed24a9",
+      "outputSha256": "622832bc0a55f3086e657b8f1dbaa7af7d4c3b4140431ba793db64d57a2f8dc0",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_우34.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "band": 32,
+      "changedPixels": 159993,
+      "alphaChanges": 163071,
+      "interiorChanges": 0,
+      "sourceSha256": "cc635453b46cb36a195da6fe0a6677e41ba0faf401192cd9367c4f787da9c396",
+      "outputSha256": "605fd92dfc02fdaeea760ee8fa5b92a6822be7a8354917962d30ff6596a0c8fc"
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_윙크.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "72b5e65a980496c6ac645dd23d18d9e6a3172d057bb1f6e25526ebe409231cc5",
+      "outputSha256": "e86ab0bbdf9182f0c8803dc76ae64b1999fc54fa69d01b52dee03780eb9eb87a",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_으쓱.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "7be56c6300132f274cc70a3fd27a3f9fe250f72d9168e9dd19f27867b60b22bb",
+      "outputSha256": "bd2e815a84d5ed72280ed9d88130213d68c9df02d2fdef49cba2452e694c5c92",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_응원.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "a5aabdb8b4a84299f9c68ce13ff249960685f21bf77e75a7d6e246031d4fd691",
+      "outputSha256": "9eeb086595dce5797b26f7b4a41381f2bb0f6d19dd22edba626b962387a57fef",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_졸림.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "5ae8e8f52a20c447126cba626e9703ab46b9864dcc569ab0228966bca2eb0cbb",
+      "outputSha256": "af5b715e67282e7a96209a868c54153287164b1ae7f967f79ed7017fd8253ba4",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_좌34.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "band": 32,
+      "changedPixels": 126263,
+      "alphaChanges": 129859,
+      "interiorChanges": 0,
+      "sourceSha256": "db674200e685088410629de70b02a70ece03ccfcadb96924d391877a420f6c65",
+      "outputSha256": "8d2332db2ae0ecf4abf7baf45a5e6bba876e09332b113348d33c9114626d859d"
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/몽글_집중.png",
+      "character": "몽글",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "몽글_본체.png",
+      "changedPixels": 80022,
+      "sourceSha256": "9b2a22f1898ca659746b40c299893cce1bc0744a6cf1fa6409c1433806ca166e",
+      "outputSha256": "a7439ccde103259ab104137c158f1bba6c68be83a635b693202840ea5ffc18b2",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_본체.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "band": 56,
+      "changedPixels": 681605,
+      "alphaChanges": 687325,
+      "interiorChanges": 0,
+      "protectedPart": {
+        "method": "largest lower-body coral component; filled convex hull; feathered local protection",
+        "seedPixels": 197403,
+        "bounds": [
+          3207,
+          2445,
+          3661,
+          3098
+        ],
+        "feather": 8
+      },
+      "sourceSha256": "fea5f2b66db16a1089f4475492c59fb8273bfcf80b18fbcde4909a950e3796ab",
+      "outputSha256": "2115c644b50d981ac693edb75cf0a78fda307e95b41c01afb41968472ab8f845"
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_감동.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "eed9980a6039b8152d4ff4b52f42b9fb2d3ae8651bf7731e39acab6e043456e2",
+      "outputSha256": "4e79cb4909b6df0a720578c4e888d580ee19c31ec76f1085f6fca0e49f313bf1",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_궁금함.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "8dbc0e0b83fd9236314572a567bf591502d9ede7c3353f6e0c0973ce4215ce7b",
+      "outputSha256": "55b83b0bc21b36e77fa28bf12340005d34cd5eab2361700522f28b26537b434c",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_놀람.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "79910b9197334d1a4a1dff8ffbaa524f7ec4a1aa304288d1a726b1b7b1a3345f",
+      "outputSha256": "f18daf5807b677060880e0bad716edadebb9418cfe88378fa12d81694fad4600",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_눈감음.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "231de9068093ea3d3f2d897253f8bfaaa363c3e74f40ccf8e15312ac886a0582",
+      "outputSha256": "3ce903be3f5d7120bda66aa9bc5c5a2195cebb03128469730e7019d6dae36dea",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_눈웃음.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "499866ddd4bb1cb1f4db71589f0f515185dab04c989dca42c59e02d34fe08b56",
+      "outputSha256": "a2d13f2f4c57af6444a02118256b7cb4a7ac5f5434506a43a3b115761003555f",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_민망.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "ff12fa0bb14345bba0d5f791fd737a4e211322eba97a94340e43fb0fc74d9104",
+      "outputSha256": "8d308f600024e92fde717ae74e79c9e8893ca7945a14f562ee50d97811a3abd4",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_뾰로통.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "71abfe60a570a52b51e2283133d4cfbe3dd3312d8e6be4365cda0c954cfbaf8f",
+      "outputSha256": "42a269701357026b8db502b2b1d5a6dda1e836bcd036ca88047684a76668f8a6",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_안도.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "4f558bbb0359b1372827c46dd9d687c6db81ce493782809b5c428b5c43c84086",
+      "outputSha256": "e6e2de95ad9c152c3580a51d2916bf2a67a798fedca07128d8acb25fb85cdd15",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_우34.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "band": 56,
+      "changedPixels": 754495,
+      "alphaChanges": 761175,
+      "interiorChanges": 0,
+      "protectedPart": {
+        "method": "largest lower-body coral component; filled convex hull; feathered local protection",
+        "seedPixels": 131094,
+        "bounds": [
+          3414,
+          2412,
+          3747,
+          3047
+        ],
+        "feather": 8
+      },
+      "sourceSha256": "aec191b648a2330183cc7e770212c96dabadec5b66cfc8f52ab7d9269dd111d0",
+      "outputSha256": "245c3d5f95c4758d1855492de2e4a07b0f633ce480ee3437bf98e2195ccc8896"
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_윙크.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "8592f0d2a7507db79907aba20a5f45627abd471029b2834069a1a34e615aaa6a",
+      "outputSha256": "392559d3ef86603f41e72661d6aaade1dfb56cf6f2c91bfadaebff48cfb0a7dc",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_으쓱.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "d580b32d6147c6a7fddc5015e4ed7050cc0143147b8cc306b27fbc465600a0b9",
+      "outputSha256": "f5776fda05c56b996232610fd8d5c00e33d81a92b43e68e89b5323382eb9fca5",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_응원.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "dfd8de63e6e45ae4788facddf16dfa825f45abf99c8ce9dca12f41144109cd3e",
+      "outputSha256": "f8db0d48855915bd97c2e20415bb8934760e5e6f4922d18e1dad0392d9fec540",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_졸림.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "468631aa43bb1614343c3ed1f2cc44a8cb9c4d28663ff895186515cdfe960eb6",
+      "outputSha256": "f03587b941e4414c0ff4fbeb933733d96d988e7d8d917b602536b8eef08f1a07",
+      "outsideSharedEdgeChanges": 0
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_좌34.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "band": 56,
+      "changedPixels": 677481,
+      "alphaChanges": 690102,
+      "interiorChanges": 0,
+      "protectedPart": {
+        "method": "largest lower-body coral component; filled convex hull; feathered local protection",
+        "seedPixels": 215650,
+        "bounds": [
+          2635,
+          2448,
+          3079,
+          3177
+        ],
+        "feather": 8
+      },
+      "sourceSha256": "213f2dcc7c554f011d3537580e0d001bc77f7ddf14cf43cff43a69ba60b6b94f",
+      "outputSha256": "a91f7009302e3a856393cd4fb335028d040f785ccef92ba3585232987720abb2"
+    },
+    {
+      "path": "docs/캐릭터/정본_4K/까몽_집중.png",
+      "character": "까몽",
+      "width": 4096,
+      "height": 4096,
+      "commonBodyEdge": "까몽_본체.png",
+      "changedPixels": 687552,
+      "sourceSha256": "5387fe25d20904924a63e2214f9d44d1a44b4f37edaaacf7f8b4877b317ed550",
+      "outputSha256": "f3ae295dc1fddf20fc23b21a4c40da0ba181e064d4df8adf8e94f34a0717cea8",
+      "outsideSharedEdgeChanges": 0
+    }
+  ],
+  "kkamongStripeRepair": {
+    "cause": "어두운 갈색 donor의 sr<35 또는 G/R<0.62 조건이 산호 장식과 혼동되어 가로띠를 건너뜀; Manhattan 최근접 내부색 경계가 각도판에 밝은 직사각형을 만듦",
+    "fix": "실제 하단 산호 연결영역의 국소 보호; 내부색 추정장만 band*0.35로 연속화",
+    "bodyProblemRegion": [
+      2700,
+      1380,
+      720,
+      720
+    ],
+    "angleProblemRegion": [
+      900,
+      1450,
+      720,
+      720
+    ],
+    "validation": "16개 4096 RGBA; 본체·각도 3개 내부 변경 0; 정면 표정 13개 공통 외곽 밖 변경 0; 합성 회귀 확인 4개 통과"
+  }
+}

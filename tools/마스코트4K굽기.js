@@ -60,7 +60,10 @@ seams, no texture, no scenery, and NO CAST SHADOW anywhere in the frame. The cha
 in mid air, weightless, with nothing under it — no table, no floor, no wall, no surface.`;
 
 const 금지 = `No text, no letters, no numbers, no logo, no watermark, no props, no hands,
-no second object, no border, no frame. Nothing scary.`;
+no second object, no border, no frame. Nothing scary. No white matte or continuous bright
+outline around the character; the last fur fibres have the character's own material color.`;
+// 09-11 현재 외곽 후처리: AI누끼 뒤 흰 매트가 남으면 몽글외곽정리.cjs의 --세트 후보 경로로
+// RGB와 alpha를 함께 복원하고 dark/light 합성으로 확인한다. 현행 기록은 정본_4K/외곽교정_정본.json.
 
 /* 🔴 09-05 유호 교정 「전체적으로 옆모습 보면 눈이 너무 튀어나왔어 몽글이든 까몽이든」.
  *   첫 판 실측: 돌아간 판에서 «먼 쪽» 눈이 머리 윤곽 «밖»으로 삐져나왔다 — 머리에 구슬을
