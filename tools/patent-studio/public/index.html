@@ -38,11 +38,12 @@
       <section class="input-pane pane" aria-labelledby="input-title">
         <div class="pane-title"><span class="step 번호" data-n="01" aria-label="1단계"></span><h2 id="input-title">한 번의 말</h2></div><p class="pane-intro">예제로 흐름을 보거나, 직접 녹음해 시작하세요.</p>
         <div class="mode-switch" role="group" aria-label="입력 방식"><button id="mode-example" class="selected" aria-pressed="true">예제로 보기</button><button id="mode-recording" aria-pressed="false">직접 녹음</button></div>
-        <div id="example-controls"><label for="example-select">살펴볼 상황</label><select id="example-select"><option>예제 불러오는 중</option></select><p id="example-description" class="field-help"></p><button id="create-example" class="button primary full" disabled>이 예제로 시작 <span aria-hidden="true">↗</span></button><p class="micro">예제의 말·해석은 시연을 위해 만든 입력입니다.</p></div>
+        <div id="example-controls"><label for="example-select">살펴볼 상황</label><select id="example-select"><option>예제 불러오는 중</option></select><p id="example-description" class="field-help"></p><button id="create-example" class="button primary full" disabled>이 예제로 시작 <span aria-hidden="true">↗</span></button><p class="micro">예제의 말·해석은 시연을 위해 만든 입력입니다.</p><button id="create-correction-example" class="button quiet full sample-button" disabled>늦은 도움 정정 예제 <span aria-hidden="true">↗</span></button><p class="micro">새 통제 기록에서 정정 전후를 비교합니다.</p></div>
         <div id="recording-controls" hidden><p class="field-help">새 녹음은 별도의 시연으로 저장합니다. 마이크 권한은 녹음을 누를 때 요청합니다.</p><button id="create-recording" class="button primary full" disabled>새 녹음 시연 만들기 <span aria-hidden="true">＋</span></button><button id="create-sample" class="button quiet full sample-button" hidden disabled>합성 음성으로 시작 <span aria-hidden="true">↗</span></button><p id="sample-description" class="micro" hidden>합성 음성 파일을 실제 받아쓰기 경로로 처리합니다. 사람의 실제 발화와 구분합니다.</p></div>
 
         <div id="evidence-input" class="evidence-input" hidden>
           <div class="section-divider"></div>
+          <section id="correction-example" class="correction-example" aria-labelledby="correction-example-title" hidden><p class="eyebrow">시연용 사건 · 실제 학생 기록 없음</p><h3 id="correction-example-title">나중에 알게 된 도움, 무엇이 바뀔까요?</h3><p class="field-help">발화 1분 전에 조사 표현 ‘친구를’를 보여 줬다는 가상의 기록을 뒤늦게 추가합니다. 지금 실제로 도움을 준 사건과 구분합니다.</p><div id="correction-example-result" role="status" aria-live="polite"></div><button id="apply-correction-example" class="button quiet full" disabled>발화 전 도움 기록을 뒤늦게 추가</button><p id="correction-example-note" class="micro"></p></section>
           <div class="section-label"><h3>처음 말한 원음</h3><span id="original-kind" class="small-tag"></span></div>
           <p id="task-prompt" class="task-prompt"></p>
           <div id="original-player" class="audio-area"></div>
