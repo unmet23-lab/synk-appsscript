@@ -1151,14 +1151,14 @@ function systemWatchdog(asText) {
         const missE = CONSULT_EXT_HEADERS.filter(h => chdr.indexOf(h) === -1);
         add(missE.length === 0, '상담시트 v18.4 증분 헤더: ' + (missE.length ? missE.join(', ') + ' 유실 — migrateConsultV184 재실행' : CONSULT_EXT_HEADERS.length + '종 정상'));
       } else if (hasCForm) {
-        add(false, '상담 v18.4 마이그레이션 미실행 — 증분 문항 응답이 시트 열 없이 노션이관으로만 쌓입니다. migrateConsultV184 ▶ 1회');
+        add(false, '상담 v18.4 마이그레이션 미실행 — 증분 문항 응답이 개별 열 없이 상담시트 자유서술 칸에만 쌓입니다. migrateConsultV184 ▶ 1회');
       }
       // [v9.84·리뷰 H3] 상담 배선 소스 헤더 6종(v18.1 기본 열) — 이름 완전 일치로 읽으므로 개명되면 DT124~DX128이
       //   "조용히 전부 빈칸"이 된다. 증분 3종(선호그룹 등)은 위 v18.4 검사가 담당, 여기는 기본 열 몫.
       const srcNeed = ['TOPIK목표', 'TOPIK목표기한', 'TOPIK급수', 'TOPIK점수', '학습가능시간', '📝자유서술→노션'];
       const srcMiss = srcNeed.filter(h => chdr.indexOf(h) === -1);
       add(srcMiss.length === 0, '상담 배선 소스 헤더: ' + (srcMiss.length ? srcMiss.join(', ') + ' 미발견 — 상담시트 2행 헤더 개명 여부 확인(취향·목표·페이스라인이 빈칸으로 착지 중)' : srcNeed.length + '종 정상'));
-      // [v9.84→v9.90] 동의 문항 적용 여부 — AI 인용·노션 이관 확대의 선행 조건(소급 불가 계열)이라 적용 전까지 주간 안내.
+      // 동의 문항 적용 여부를 점검한다. 폼 문구 적용은 새 접수 기준이며 기존 학생의 동의를 소급 변경하지 않는다.
       //   v9.90부터 음성·AI 학습 동의(선택)가 붙었다 — 이게 없으면 나중에 모은 녹음을 한 건도 못 쓴다.
       //   [v9.138] 판 번호를 CONSENT_VERSION 단일 소스로 — 하드코딩이면 개정 때 이 줄이 남아 구 문구를 "적용됨"으로 오인한다.
       if (hasCForm) {
@@ -1233,7 +1233,7 @@ function systemWatchdog(asText) {
   //   키 값은 절대 노출하지 않는다(존재 여부만). 적체 = 숙제폼_응답 신규 누적 vs hw_feedback 최근 생성 대조.
   try {
     const ai = aiFeedbackHealth_(ss);
-    add(ai.hasKey, 'CLAUDE_API_KEY: ' + (ai.hasKey ? '설정됨 — AI 첨삭·문법판정·스튜디오 활성'
+    add(ai.hasKey, 'CLAUDE_API_KEY: ' + (ai.hasKey ? '설정됨 — 실제 호출 성공은 aiConnectionCheck와 작업 실행 기록에서 확인'
       : '미설정 — AI 기능 전부 휴면(첨삭·문법판정·스튜디오·레벨진단 0초 스킵). 개원 전 의도적 휴면이면 무시'));
     const stale = ai.backlog > 0 && (!ai.hasKey || ai.oldestAge > 1); // 밤 배치를 확실히 1회+ 지나친 큐 머리만 경보(허위 경보 차단)
     add(!stale, '숙제 첨삭 적체: ' + (ai.backlog === 0 ? '없음(신규 제출 전부 소진)'
@@ -1275,6 +1275,48 @@ function systemWatchdog(asText) {
  * 라이브 스프레드시트를 대조해 누락·잉여·스키마 드리프트를 한 장에서 드러낸다.
  * 실행: 수동 buildSystemManifest() · 주간 weeklyJobs 자동 · 재건 직후 bootstrapSynk.
  * 쓰기: writeIfChanged만(변경 시에만) — Glide 미바인딩 시트라 update 쿼터 소비 0. 각 접근은 null 가드. */
+// 설정 점검은 연결 시험이 아니다. 외부 요청/학생 조회/속성 변경 없이 고정 상태만 반환한다.
+function integrationConfiguration_(store) {
+  const props = store || PropertiesService.getScriptProperties();
+  const result = [];
+  function read(name, keys, describe) {
+    try {
+      const present = keys.map(function (key) { return !!String(props.getProperty(key) || '').trim(); });
+      const row = describe(present);
+      result.push({ name: name, state: row.state, attention: row.attention, detail: row.detail });
+    } catch (e) {
+      result.push({ name: name, state: 'unavailable', attention: true, detail: '설정 조회 실패 — 연결 성공 여부는 확인 불가' });
+    }
+  }
+  read('Notion (사용 종료)', ['NOTION_TOKEN'], function (p) {
+    return { state: p[0] ? 'retired_residue' : 'retired', attention: p[0],
+      detail: p[0] ? '사용 종료 — 불필요한 토큰 잔존. 연결을 복구하지 말고 정리 필요'
+        : '사용 종료 — 명부는 Supabase·앱, 문서는 저장소로 관리' };
+  });
+  read('CLAUDE_API_KEY', ['CLAUDE_API_KEY'], function (p) {
+    return { state: p[0] ? 'configured' : 'missing', attention: !p[0],
+      detail: p[0] ? '설정됨 — 실제 호출 성공은 aiConnectionCheck와 작업 실행 기록에서 확인'
+        : '미설정 — API를 사용하는 AI 기능 휴면' };
+  });
+  read('Supabase 명부 연결', ['ROSTER_INGEST_URL', 'ROSTER_INGEST_KEY', 'ROSTER_INGEST_ANON'], function (p) {
+    const all = p.every(Boolean), any = p.some(Boolean);
+    return { state: all ? 'configured' : any ? 'partial' : 'missing', attention: !all,
+      detail: all ? '주소·인증 설정됨 — 실제 명부 반영은 명부스윕 실행 결과에서 확인'
+        : any ? '일부 설정 누락 — 주소·수신 키·anon 인증 세 항목 대조 필요' : '미설정 — 앱 명부 동기화 미연결' };
+  });
+  read('Instagram 상담 연결', ['상담AI_IG토큰', '상담AI_URL키', '상담AI_검증토큰'], function (p) {
+    const all = p.every(Boolean), any = p.some(Boolean);
+    return { state: all ? 'configured' : any ? 'partial' : 'missing', attention: !all,
+      detail: all ? '토큰·웹훅 설정됨 — Meta 구독·권한·실제 DM 응답은 별도 확인'
+        : any ? '일부 설정 누락 — Instagram 토큰과 웹훅 설정 대조 필요' : '미설정 — Instagram 상담 미연결' };
+  });
+  read('GitHub 학습 픽스처', ['GITHUB_TOKEN_SYNKTALK'], function (p) {
+    return { state: 'restricted', attention: false,
+      detail: (p[0] ? '연결 키 있음' : '연결 키 없음') + ' — 목적별 동의 확인 전 학생 자료 반출 중지. 키 설정으로 해제되지 않음' };
+  });
+  return result;
+}
+
 function buildSystemManifest() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const tz = ss.getSpreadsheetTimeZone();
@@ -1343,11 +1385,10 @@ function buildSystemManifest() {
   const 실종T = 기대핸들러.filter(function (h) { return uniqH.indexOf(h) < 0; });
   if (실종T.length) push('트리거 실종(매니페스트 대조)', 실종T.join(', ') + ' → resetAllTriggers() 1회', WARN);
 
-  // 6) 외부 의존성
-  const props = PropertiesService.getScriptProperties();
-  push('NOTION_TOKEN', props.getProperty('NOTION_TOKEN') ? '있음 — 노션 동기화 활성' : '없음 — 노션 동기화 스킵(무해)', OK);
-  push('CLAUDE_API_KEY', props.getProperty('CLAUDE_API_KEY') ? '있음 — AI 첨삭·문법판정·스튜디오 활성'
-    : '없음 — AI 기능 휴면(첨삭·문법판정·스튜디오·레벨진단 스킵)', props.getProperty('CLAUDE_API_KEY') ? OK : WARN); // [v9.67] 값은 절대 미출력(존재 여부만) — 휴면 무감시 결함 해소
+  // 6) 외부 의존성: 설정 존재와 실제 작동을 구별한다. 학생/키/API 호출은 이 점검에 포함하지 않는다.
+  integrationConfiguration_().forEach(function (item) {
+    push(item.name, item.detail, item.attention ? WARN : OK);
+  });
 
   let consultVal, consultStat = WARN;
   try {
@@ -1358,7 +1399,7 @@ function buildSystemManifest() {
   push('상담시트(CONSULT_SHEET_ID)', consultVal, consultStat);
 
   push('리포트 템플릿(REPORT_TEMPLATE_ID)',
-    (REPORT_TEMPLATE_ID && String(REPORT_TEMPLATE_ID).trim()) ? '설정됨 — 리포트카드 활성' : '비어있음 — 리포트카드 스킵', OK);
+    (REPORT_TEMPLATE_ID && String(REPORT_TEMPLATE_ID).trim()) ? '템플릿 ID 설정됨 — 접근·발행 성공은 별도 확인' : '비어있음 — 리포트카드 스킵', OK);
 
   // 백업 최신성 — SYNK_백업 폴더의 앱데이터 백업 최신 나이(dailyBackup 로직 참고)
   let bkVal = '폴더 없음 — dailyBackup 1회 실행', bkStat = WARN;
@@ -1512,7 +1553,7 @@ function checkFormMapping(optId) {
     seen[t] = true;
     const c = colOf[t];
     if (c && (c <= 59 || c >= 63)) matched.push('  · ' + t + ' → ' + c + '열' + (c >= 63 ? ' (v18.4 증분)' : '')); // importFormResponses와 동일 규칙(60~62열 보호 구간만 제외)
-    else narrative.push('  · ' + t + (c ? ' (보호 구간 ' + c + '열(60~62) → 노션이관)' : ' → 노션이관(대응 헤더 없음)'));
+    else narrative.push('  · ' + t + (c ? ' (보호 구간 ' + c + '열(60~62) → 상담시트 자유서술)' : ' → 상담시트 자유서술(대응 헤더 없음)'));
   });
 
   // [v9.19] v18.3 기준 — 폼이 안 채워도 정상인 칸(자동 채번·타임스탬프·서술형 모음·강사 배정·자동 계산)
@@ -1527,7 +1568,7 @@ function checkFormMapping(optId) {
     '',
     '✅ 시트 칸에 정상 매핑 (' + matched.length + '):', matched.join('\n') || '  (없음)',
     '',
-    '📝 노션이관으로 들어가는 질문 (' + narrative.length + ') — 서술형이면 정상 / 아니면 제목 오타 의심:',
+    '📝 상담시트 자유서술 칸에 보관하는 질문 (' + narrative.length + ') — 서술형이면 정상 / 아니면 제목 오타 의심:',
     narrative.join('\n') || '  (없음)',
     '',
     '⚠️ 폼에 대응 질문이 없는 시트 칸 (' + uncovered.length + ', 자동·계산열 제외): ' + (uncovered.length ? uncovered.join(', ') : '없음'),
