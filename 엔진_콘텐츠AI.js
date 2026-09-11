@@ -1,4 +1,4 @@
-// SYNK 엔진 분할부 — 콘텐츠·AI — 콘텐츠 셋업·문법 커리큘럼·워치독·매니페스트·진단·원장 브리핑·강사 알림·학부모 스위프·폼 출석 전개·AI 첨삭·AI 스튜디오·번역·콘텐츠 뱅크·온보딩·노션 동기화.
+// SYNK 엔진 분할부 — 콘텐츠·AI — 콘텐츠 셋업·문법 커리큘럼·워치독·매니페스트·진단·원장 브리핑·강사 알림·학부모 스위프·폼 출석 전개·AI 첨삭·AI 스튜디오·번역·콘텐츠 뱅크·온보딩.
 // 원본은 Code.js 단일 파일이었다. 로드 순서 정본 = .clasp.json filePushOrder(상수 정본 Code.js가 선두). 표식 기반 테스트는 tests/_engine-source.js가 전 파일을 합본해 본다.
 /* ===================== [v5] 콘텐츠 셋업 (contents 6열 v4 스키마) =====================
  * 스키마: [id, type, name(C), text(D), extra(E), value(F)]
@@ -1519,10 +1519,10 @@ function dumpConsultHeaders() {
 
 /* ===================== [v9.19] 상담폼 ↔ 시트 매핑 진단 (수동 · 읽기 전용) =====================
  * 폼 질문지가 바뀌었을 때 "제대로 적용됐는지" 검증. importFormResponses와 동일 규칙(제목=헤더명 매칭,
- * 매칭 안 되면 노션이관)으로, 각 질문이 어느 칸에 들어가는지·노션이관으로 빠지는지·빈 칸은 뭔지 보고.
+ * 매칭 안 되면 상담시트 자유서술에 보존)으로, 각 질문이 어느 칸에 들어가는지·자유서술로 모이는지·빈 칸은 뭔지 보고.
  * 인자로 새 폼 ID를 주면 상담폼ID를 바꾸기 전에 미리 검증 가능: checkFormMapping('새폼ID')
  * 무인자 호출은 app_state '상담폼ID'(현재 연결된 폼)를 검사. 데이터는 절대 수정하지 않음.
- * [v9.66] v18.4 — 증분 열(63~)도 매핑 대상(60~62열 보호 구간만 노션이관 처리), 헤더 폭 동적화. */
+ * [v9.66] v18.4 — 증분 열(63~)도 매핑 대상(60~62열 보호 구간은 자유서술로 보존), 헤더 폭 동적화. */
 function checkFormMapping(optId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const st = ensureSheet(ss, 'app_state', ['key', 'value']);
@@ -2478,7 +2478,7 @@ function aiFeedbackBatch_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const props = PropertiesService.getScriptProperties();
   const apiKey = props.getProperty('CLAUDE_API_KEY');
-  if (!apiKey) return; // 키 미설정 = 기능 OFF (NOTION_TOKEN 패턴)
+  if (!apiKey) return; // 키 미설정 = AI 첨삭 실행 안 함
   const tz = ss.getSpreadsheetTimeZone();
   /* 대기줄 한 줄의 모양 = { ts, sid, text, hwId, reDo, 문항, ptr }.
    *   ptr = 처리 성공 시 전진시킬 **숙제폼 포인터 값**이고, 강의요약은 0(포인터를 안 쓴다 — 위 주석).
@@ -2589,7 +2589,7 @@ function aiFeedbackBatch_() {
       }
       // [리뷰 H1] 성공분 즉시 포인터 전진 — 6분 하드킬(throw 없는 강제 종료)에도 중복 생성·중복 과금 0
       전진_(it);
-      Utilities.sleep(300); // rate-limit 여유(syncToNotion_ 패턴)
+      Utilities.sleep(300); // AI 호출 간격 확보
     } catch (e) {
       if (e && e.permanent) {
         // [리뷰 M1] 영구 오류(refusal·잘림·파싱·4xx 요청결함) — 재시도해도 같은 결과라 '오류' 행으로 기록하고 건너뛴다(포이즌 필 차단)
