@@ -1,4 +1,4 @@
-param([switch]$NoBrowser)
+﻿param([switch]$NoBrowser)
 $ErrorActionPreference = 'Stop'
 $studioEntry = Join-Path $PSScriptRoot 'server.cjs'
 $studioNode = (Get-Command node -ErrorAction Stop).Source

@@ -26,6 +26,15 @@ async function run() {
     args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--use-file-for-fake-audio-capture=' + sample] });
   const context = await browser.newContext({ viewport: { width: 1512, height: 1080 }, permissions: ['microphone'] });
   const page = await context.newPage(), errors = [], checks = { scope: 'Real local recognizer and browser capture of a synthetic fixture; human review fields are test inputs. External failure is injected, local inference is real.' };
+  // The fake capture device is fed our authored WAV, so persist that provenance
+  // on the session as well as in this test report. This does not alter recording
+  // timestamps or turn the fixture into actual learner performance.
+  await page.route('**/api/sessions', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    const body = route.request().postDataJSON();
+    if (body?.mode !== 'recording') return route.continue();
+    return route.continue({ postData: JSON.stringify({ ...body, sourceKind: 'synthetic-speech', sampleName: 'original.wav' }) });
+  });
   page.on('pageerror', error => errors.push(error.message));
   const out = path.join(__dirname, 'qa-output');
   fs.mkdirSync(out, { recursive: true });
@@ -44,6 +53,8 @@ async function run() {
     const id = new URL(page.url()).searchParams.get('session');
     let session = await (await fetch(base + '/api/sessions/' + id)).json();
     const audio = session.audios[0];
+    assert.equal(session.sourceKind, 'synthetic-speech');
+    checks.sourceKind = session.sourceKind;
     assert.equal(audio.transcription.provider, 'local'); assert.equal(audio.transcription.raw.networkAttempts, 0);
     assert.equal(session.original.source, 'machine'); assert.equal(session.original.humanConfirmed, false);
     checks.recording = { text: audio.transcription.text, source: session.original.source, provider: audio.transcription.provider,
