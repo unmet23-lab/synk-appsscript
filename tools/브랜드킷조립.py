@@ -7,6 +7,7 @@
 
 사용법:  python tools/브랜드킷조립.py          → docs/브랜드킷.html
          python tools/브랜드킷조립.py --logos-only  → 기존 문서의 로고·로고 안내만 갱신
+         python tools/브랜드킷조립.py --mascots-only  → 기존 문서의 몽글 그림 3장·출처만 갱신
 """
 import base64
 import datetime
@@ -181,10 +182,16 @@ def main():
     if not os.path.exists(정본사진):
         raise SystemExit(f'토큰이 가리키는 평상복 정본이 없다: {정본사진}')
     마컷 = png_uri(정본사진, 최대변=460)
+    마원천 = 펠트['정본사진']['평상복']
+    마지문 = hashlib.sha256(open(정본사진, 'rb').read()).hexdigest()
+    with Image.open(정본사진) as im:
+        마치수 = '×'.join(str(n) for n in im.size)
     # 꼬리말이 가리키는 폴더도 토큰에서 «파생»한다 — 손으로 적으면 정본이 갈리는 날 거짓말이 된다.
     마스코트정본폴더 = os.path.dirname(펠트['정본사진']['평상복'])
     표정컷 = ''.join(
         f'<img src="{png_uri(정본컷경로(컷), 최대변=150)}" alt="" '
+        f'data-synk-mascot="{esc(os.path.relpath(정본컷경로(컷), 뿌리).replace(os.sep, "/"))}" '
+        f'data-source-sha256="{hashlib.sha256(open(정본컷경로(컷), "rb").read()).hexdigest()}" '
         f'style="width:104px;border-radius:12px">'
         for 컷 in 펠트표정어휘)
 
@@ -364,9 +371,9 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
   평상복 램프와 킷 <b>Coral Soft~Rim 이 같은 값</b>이다: 마스코트 색이 곧 UI 색이다. 다크가 주 무대다.</p>
   <div class="mascotrow">
     <div>
-      {f'<img src="{마컷}" alt="몽글 — 펠트 정본(평상복)" style="width:250px;border-radius:16px;display:block">' if 마컷 else ''}
+      {f'<img src="{마컷}" alt="몽글 — 펠트 정본(평상복)" data-synk-mascot="{esc(마원천)}" data-source-sha256="{마지문}" style="width:250px;border-radius:16px;display:block">' if 마컷 else ''}
       <div style="display:flex;gap:8px;margin-top:8px">{표정컷}</div>
-      <div class="cap" style="color:var(--darkmute)">정본 = 펠트 코랄(평상복) · 유호 픽 08-15 ㉠재염색</div>
+      <div class="cap" style="color:var(--darkmute)">정본 = {esc(마원천)} · {마치수} 투명 원본에서 비례 축소 · 표정도 같은 현행 정본에서 반입</div>
     </div>
     <div>
       <h3>평상복 램프 (코랄 — 유일한 의상 · 킷 코랄 축과 같은 값)</h3><div class="swrow">{평상복램프}</div>
@@ -421,6 +428,25 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
 
     로고css = '<style id="synk-logo-role-20260910">.band img[data-synk-logo]{width:220px;max-width:100%;height:auto;display:block}.logocard img[data-synk-logo]{width:300px;max-width:100%;height:auto;display:block}.logocard{max-width:100%;min-width:min(100%,230px)}</style>'
     html = html.replace('</head>', 로고css + '</head>', 1)
+    if '--mascots-only' in sys.argv:
+        if '--logos-only' in sys.argv:
+            raise SystemExit('부분 갱신은 --mascots-only 또는 --logos-only 하나만 지정한다')
+        with open(출력, encoding='utf-8', newline='') as f:
+            기존 = f.read()
+        절 = r'<section class="dark">\s*<h2[^>]*><span class="번호">4</span> 마스코트[\s\S]*?</section>'
+        앞절, 새절 = re.findall(절, 기존), re.findall(절, html)
+        if len(앞절) != 1 or len(새절) != 1:
+            raise SystemExit('마스코트 절을 하나로 확인하지 못해 문서를 덮지 않았다')
+        그림식 = r'<img\b[^>]*>'
+        새그림 = re.findall(그림식, 새절[0])
+        설명식 = r'<div class="cap" style="color:var\(--darkmute\)">[^<]*</div>'
+        새설명 = re.findall(설명식, 새절[0])
+        if len(re.findall(그림식, 앞절[0])) != 3 or len(새그림) != 3 or len(re.findall(설명식, 앞절[0])) != 1 or len(새설명) != 1:
+            raise SystemExit('몽글 그림 3장·출처 한 곳을 확인하지 못해 문서를 덮지 않았다')
+        순서 = iter(새그림)
+        바꾼절 = re.sub(그림식, lambda _: next(순서), 앞절[0])
+        바꾼절 = re.sub(설명식, lambda _: 새설명[0], 바꾼절, count=1)
+        html = 기존.replace(앞절[0], 바꾼절, 1)
     if '--logos-only' in sys.argv:
         with open(출력, encoding='utf-8') as f:
             기존 = f.read()
@@ -435,13 +461,15 @@ footer {{ padding:26px 8% 40px; font-size:12px; color:var(--slate2) }}
             raise SystemExit('기존 머리 로고를 확인하지 못해 문서를 덮지 않았다')
         기존 = re.sub(r'<style id="synk-logo-role-20260910">[\s\S]*?</style>', '', 기존)
         html = 기존.replace('</head>', 로고css + '</head>', 1)
-    with open(출력, 'w', encoding='utf-8') as f:
+    with open(출력, 'w', encoding='utf-8', newline='' if '--mascots-only' in sys.argv else None) as f:
         f.write(html)
-    if '--logos-only' in sys.argv:
+    if '--mascots-only' in sys.argv:
+        print(f'■ 마스코트 갱신  {os.path.relpath(출력, 뿌리)}  (현행 몽글 3장 · 출처 · 나머지 바이트 보존)')
+    elif '--logos-only' in sys.argv:
         print(f'■ 로고 갱신  {os.path.relpath(출력, 뿌리)}  (승인 8조합 · 기존 다른 절 보존)')
     else:
         print(f'■ 조립  {os.path.relpath(출력, 뿌리)}  ({len(html)//1024} KB · 현행 {len(현행)}색(퇴역 {len(킷)-len(현행)} 제외) · 패치 {len(장부)}장)')
-    if '--logos-only' not in sys.argv:
+    if '--logos-only' not in sys.argv and '--mascots-only' not in sys.argv:
         _룸입히기(출력)
 
 

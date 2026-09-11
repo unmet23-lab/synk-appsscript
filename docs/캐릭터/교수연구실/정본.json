@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "id": "교수연구실",
+  "status": "current",
+  "date": "2026-09-11",
+  "usage": "G1 교수 생각 장면과 교수 얼굴의 현재 원천. 콧수염을 추가한 연구실과 같은 얼굴의 눈감음.",
+  "generation": {
+    "tool": "Codex built-in ImageGen",
+    "operation": "기존 교수 얼굴에 펠트 콧수염만 추가",
+    "prompt": "Use case: precise-object-edit. Edit target: the supplied exact 1672 by 941 felt professor research studio. Add ONLY a small elegant ivory/oatmeal wool-felt moustache to the lavender professor's face, directly underneath the two round black eyeglasses. It consists of two soft modest curved tufts connected at center, gently swept outwards, following the face perspective. Center approximately x1045 y542, total width about 150 pixels and height about 44 pixels on this canvas, with visible wool fibers and natural contact shadow. Friendly distinguished professor, charming and premium. This is only a moustache, NO chin beard, NO added nose, NO added mouth, NO eyebrows. Preserve professor head silhouette, all existing felt fibers, bead eyes and glasses EXACTLY, original room/books/desk/lamp/lighting/colors/camera/frame/canvas with zero other changes. Keep existing open-eyed expression. Do not make moustache huge or touch eyeglass lenses. Full original wide scene, same 1672 by 941 composition, maximum native detail.",
+    "original_path": "C:/Users/q1212/.codex/generated_images/01a08d56-b2fe-7501-97e5-0484ff2af77a/exec-ee1be296-9e5f-4221-904c-3abdc7fb5e87.png",
+    "resolution_note": "실제 생성 1672×941. 4K 생성이나 확대가 아니다. 생성 전체 장면은 편집 재료이며 아래 국소 합성 결과가 현재 원천이다."
+  },
+  "inputs": {
+    "base": {
+      "path": "docs/캐릭터/교수연구실/입력/기존연구실.png",
+      "origin": "C:/Users/q1212/.codex/generated_images/01a08bec-1f1d-7903-b772-c36f94a712f1/exec-e89f0125-1492-4e53-ae95-b8e4206428f2.png",
+      "sha256": "d584cc1d7cabb48e06e22ba1fbfd8f93b3dffa857bab96b8a2803408eef0c55d",
+      "usage": "재현 입력 전용. 현재 화면 원천으로 직접 사용하지 않는다."
+    },
+    "blink": {
+      "path": "docs/캐릭터/교수연구실/입력/기존눈감음.png",
+      "origin": "C:/Users/q1212/.codex/generated_images/01a08bec-1f1d-7903-b772-c36f94a712f1/exec-2448cc7d-01b7-45c1-9142-b0791b90fbcb.png",
+      "sha256": "fcb0426f8224d4088b3dbb7114c48f54c0503d8636f98ad14a64269c6516878e",
+      "usage": "안경 안쪽 두 눈의 재현 입력 전용."
+    },
+    "moustache": {
+      "path": "docs/캐릭터/교수연구실/입력/콧수염생성.png",
+      "origin": "C:/Users/q1212/.codex/generated_images/01a08d56-b2fe-7501-97e5-0484ff2af77a/exec-ee1be296-9e5f-4221-904c-3abdc7fb5e87.png",
+      "sha256": "20012e86be79b6532ae536a40a9ee0f1791e17f3ef9ff4aa8e4e8f0b8b3df736",
+      "usage": "콧수염과 접촉 그림자 영역만 사용하는 ImageGen 편집 재료."
+    }
+  },
+  "composite": {
+    "generator": "SYNK-talk/tools/교수콧수염반영.js",
+    "mask": {
+      "rect": [
+        895,
+        491,
+        268,
+        109
+      ],
+      "feather": 8,
+      "excludedGlasses": [
+        [
+          977,
+          433,
+          65,
+          66
+        ],
+        [
+          1112,
+          471,
+          67,
+          67
+        ]
+      ]
+    },
+    "blinkEyes": [
+      [
+        945,
+        400,
+        70,
+        74
+      ],
+      [
+        1075,
+        434,
+        70,
+        74
+      ]
+    ],
+    "method": "생성된 콧수염 영역만 동일 좌표로 8px 경계 혼합. 안경은 제외하며 나머지 원본 픽셀·프레임을 보존한다. 눈감음은 새 연구실 위에 기존 두 눈 타원만 반영한다. 교수 몸·방을 다시 생성한 전체 후보로 교체하지 않는다.",
+    "validation": {
+      "changed_pixels": 23866,
+      "changed_outside_mask": 0,
+      "blink_outside_eye_regions": 0,
+      "original_frame_preserved": true
+    }
+  },
+  "assets": {
+    "research": {
+      "path": "docs/캐릭터/교수연구실/research.png",
+      "sha256": "d874a8fd3e84ea442676fac1784865980f32a0ae4be4bed94e312e2b758d71f1",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3703763,
+      "has_alpha": false
+    },
+    "research-blink": {
+      "path": "docs/캐릭터/교수연구실/research-blink.png",
+      "sha256": "f923094b3abdbd4d6b14b938e6de342dedf0f5ff63af819203412002020ca484",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3705263,
+      "has_alpha": false
+    }
+  },
+  "consumers": [
+    "SYNK-talk/tools/교수장면자산반입.js",
+    "SYNK-talk/assets/교수작업실/research.webp",
+    "SYNK-talk/assets/교수작업실/research-blink.webp",
+    "SYNK-talk/src/살아있는교수연구실.js"
+  ]
+}

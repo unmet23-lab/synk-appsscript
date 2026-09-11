@@ -1,6 +1,6 @@
 {
   "date": "2026-09-11",
-  "scope": "PC 편지 게임에서 마린이 각 선택을 연기하는 장면. 전역 본체나 감정 표정 정본을 대체하지 않는다.",
+  "scope": "PC 편지 게임의 세 친구별 행동 전략 9장과 몽글·까몽의 아픈 상황 2장. 각 문항 사실과 선택에 맞춰 표시하며 전역 본체 정본과 구별한다.",
   "status": "사용자 요청에 따라 제작하고 앱에 적용한 현재 장면; 개별 결과 사용자 만족은 미확인",
   "references": [
     {
@@ -31,7 +31,9 @@
         "model": "tool did not report exact model",
         "original": "C:/Users/q1212/.codex/generated_images/01a08bec-1f1d-7903-b772-c36f94a712f1/exec-af1e6c07-95bc-44a3-8eaf-398193e8aa9d.png",
         "prompt": "Use case: identity-preserve. Asset: one premium felt story illustration for a Korean learning game's strategy choice, landscape 3:2, highest practical resolution with crisp tactile detail. Reference 1 fixes Marin's exact identity: large indigo wool felt helmet, two simple glowing yellow oval lens eyes without pupils, small oatmeal wool body, two short arms and two short feet, cream pouch with white daisy. No mouth, no nose, no eyebrows. Reference 2 is ONLY warmth/material/lighting of miniature felt studio; use ONLY Marin, no coral octopus or brown dragon. Compose a medium close scene: character large, action and two hands perfectly clear at 360px displayed width. Indigo felt studio wall softly blurred, oatmeal tabletop, restrained coral accents, warm left window lighting. Handcrafted miniature photography style, soft realistic shadow, coherent physical objects, pristine whole edges. No text, no letters, no numbers, no logos, no speech bubble, no UI. Exactly ONE Marin with EXACTLY TWO arms/hands; use a new purposeful pose specified below, body shape/color/helmet/pouch/daisy match identity.\nAction: Marin leans thoughtfully over a small standing felt calendar and three simple blank planning cards arranged in a branching choice on the desk. One hand points to a blank square on the calendar, the other places a little coral felt check marker on the best plan card. Head gently inclined toward the plan, eyes engaged and hopeful, actively finding an alternative the student can do. Calendar has blank grid only, no numbers. Clean simple composition: Marin centered-left and calendar to right, not cluttered. This must read as exploring alternatives and making a practical plan."
-      }
+      },
+      "character": "마린",
+      "kind": "strategy"
     },
     {
       "name": "marin-notes",
@@ -73,7 +75,9 @@
           ],
           "outside_mask_changed_channels": 0
         }
-      }
+      },
+      "character": "마린",
+      "kind": "strategy"
     },
     {
       "name": "marin-letter",
@@ -115,7 +119,415 @@
           ],
           "outside_mask_changed_channels": 0
         }
-      }
+      },
+      "character": "마린",
+      "kind": "strategy"
+    },
+    {
+      "name": "mongle-plan",
+      "character": "몽글",
+      "kind": "strategy",
+      "option_id": "g1-사과-대안",
+      "meaning": "몽글: 달력과 계획을 살펴보며 할 수 있는 일을 찾는다.",
+      "source": {
+        "path": "docs/캐릭터/편지전략장면/mongle-plan.png",
+        "sha256": "735878b75b0aae1b14429526378ce154accbabfbd12feff07e036605c396ed6c",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2366775
+      },
+      "generation": {
+        "tool": "Codex built-in ImageGen",
+        "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-56c910c3-c738-46a1-916a-539269ac9f7a.png",
+        "prompt": "Precise gentle illustration edit. Return to the cute, ROUND, soft, slightly mysterious felt friend of the first image. Reference1 is the exact scene to keep. Reference2 is its original simple silhouette and the deliberately ambiguous little projections; preserve that visual ambiguity. This friend must remain difficult to identify as any known species. Keep the ENTIRE scene, body roundness, EXACT current lovely EYE EXPRESSION, face, warm lighting, color, fluffy texture, props, 1536x1024 framing. Do not remake the creature into an identifiable animal.\nOnly refine the two tiny parts touching props. Use the existing small SCALLOPED HEM at the BOTTOM of the coral body. Two very SHORT rounded hem corners gently fold upward to touch objects, showing the cream stitch line flowing from the bottom hem. Keep them close to the body and short, only the size of the current small rounded nubs in reference1. NOT long tubes or tentacles, no curled spaghetti shape, no wrists, fingers, suction cups or hands. The lower shape stays like a soft wavy bell hem.\nAction stays one small soft part touching the calendar, the other touching the check token. The softness and cuteness are more important than anatomically literal handling. It is okay if holding is whimsical or slightly implausible. The silhouette must remain visually simple and ambiguous, much closer to reference1's early cute image. HARD AVOID: large bat wings, wing webs, finger bones, long tentacles, suckers, claws, reptilian features, added animal ears or additional limbs. NO text. Preserve the expression loved by the user. One image only.",
+        "editTarget": {
+          "path": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-9a58b4d3-705b-421e-812f-b7c013ee5006.png",
+          "sha256": "893ba3014f2c040a526aca07e6e5fca321b2f6d7a1b18cae16f9c41d6ecc945a",
+          "role": "사용자가 처음의 느낌을 더 좋아한다고 지목한 둥글고 부드러운 장면. 표정과 구도를 보존하는 편집 기준."
+        },
+        "references": [
+          "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-9a58b4d3-705b-421e-812f-b7c013ee5006.png",
+          "C:/Users/q1212/Documents/SYNK-appsscript/docs/캐릭터/정본_4K/몽글_본체.png"
+        ],
+        "anatomyCanonical": "docs/캐릭터/가이드_정본.md#anatomy-actions",
+        "rejected": [
+          {
+            "source": {
+              "path": "docs/캐릭터/편지전략장면/mongle-plan.png",
+              "sha256": "e81915ee77251ca98f3db9636fe2b21c65e69748e0c893f48ed9fe48895deb19",
+              "width": 1536,
+              "height": 1024,
+              "bytes": 2310016
+            },
+            "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-2428a12e-cef3-4dd6-a3da-4f34793f07db.png",
+            "reason": "사용자가 큰 날개막·긴 촉수가 귀엽지 않고 징그럽다고 거부. 활성 자산으로 사용하지 않는다."
+          }
+        ]
+      },
+      "qa": {
+        "text_baked": false,
+        "upscale": false,
+        "anatomy": "짧고 둥근 밑단 접힘과 실땀을 확인. 길게 뻗은 촉수·빨판 없이 처음의 부드러운 덩어리와 소품 동작을 유지.",
+        "expression": "처음 장면의 감정과 눈 모양을 시각 비교했다. 전 픽셀 동일을 뜻하지 않는다.",
+        "status": "원본 실물 검수 완료. 실제 앱 검수는 Talk 결과 문서에 기록한다."
+      },
+      "manipulator": "살짝 들린 짧고 둥근 밑단"
+    },
+    {
+      "name": "mongle-notes",
+      "character": "몽글",
+      "kind": "strategy",
+      "option_id": "g1-사과-솔직",
+      "meaning": "몽글: 공책을 내려다보며 사정을 차분히 기록한다.",
+      "source": {
+        "path": "docs/캐릭터/편지전략장면/mongle-notes.png",
+        "sha256": "2506512a8307ca1ec44aa416e9406bc27d77e74ad8589b91c18b74c8fc68625f",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2323798
+      },
+      "generation": {
+        "tool": "Codex built-in ImageGen",
+        "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-f2535532-dd82-4595-b541-fd01ffef538a.png",
+        "prompt": "Precise gentle illustration edit. Return to the cute, ROUND, soft, slightly mysterious felt friend of the first image. Reference1 is the exact scene to keep. Reference2 is its original simple silhouette and the deliberately ambiguous little projections; preserve that visual ambiguity. This friend must remain difficult to identify as any known species. Keep the ENTIRE scene, body roundness, EXACT current lovely EYE EXPRESSION, face, warm lighting, color, fluffy texture, props, 1536x1024 framing. Do not remake the creature into an identifiable animal.\nOnly refine the two tiny parts touching props. Use the existing small SCALLOPED HEM at the BOTTOM of the coral body. Two very SHORT rounded hem corners gently fold upward to touch objects, showing the cream stitch line flowing from the bottom hem. Keep them close to the body and short, only the size of the current small rounded nubs in reference1. NOT long tubes or tentacles, no curled spaghetti shape, no wrists, fingers, suction cups or hands. The lower shape stays like a soft wavy bell hem.\nAction stays one small soft part curled slightly against the pencil to steady it, the other soft part resting on the notebook. The softness and cuteness are more important than anatomically literal handling. It is okay if holding is whimsical or slightly implausible. The silhouette must remain visually simple and ambiguous, much closer to reference1's early cute image. HARD AVOID: large bat wings, wing webs, finger bones, long tentacles, suckers, claws, reptilian features, added animal ears or additional limbs. NO text. Preserve the expression loved by the user. One image only.",
+        "editTarget": {
+          "path": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-4e4b19da-38ea-4dc3-85d9-5f3ee548b788.png",
+          "sha256": "05dced588a0a8369292b9d76a625e7f1a07af90d503e3e2553f54d9b26e8b9f3",
+          "role": "사용자가 처음의 느낌을 더 좋아한다고 지목한 둥글고 부드러운 장면. 표정과 구도를 보존하는 편집 기준."
+        },
+        "references": [
+          "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-4e4b19da-38ea-4dc3-85d9-5f3ee548b788.png",
+          "C:/Users/q1212/Documents/SYNK-appsscript/docs/캐릭터/정본_4K/몽글_본체.png"
+        ],
+        "anatomyCanonical": "docs/캐릭터/가이드_정본.md#anatomy-actions",
+        "rejected": [
+          {
+            "source": {
+              "path": "docs/캐릭터/편지전략장면/mongle-notes.png",
+              "sha256": "05bb5558bed85319a88999e9a6d52e61e2723c2d183d3df597bf9a9f85723f45",
+              "width": 1536,
+              "height": 1024,
+              "bytes": 2331525
+            },
+            "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-b9b649c2-3a13-4650-8c2f-c42d214491bd.png",
+            "reason": "사용자가 큰 날개막·긴 촉수가 귀엽지 않고 징그럽다고 거부. 활성 자산으로 사용하지 않는다."
+          }
+        ]
+      },
+      "qa": {
+        "text_baked": false,
+        "upscale": false,
+        "anatomy": "짧고 둥근 밑단 접힘과 실땀을 확인. 길게 뻗은 촉수·빨판 없이 처음의 부드러운 덩어리와 소품 동작을 유지.",
+        "expression": "처음 장면의 감정과 눈 모양을 시각 비교했다. 전 픽셀 동일을 뜻하지 않는다.",
+        "status": "원본 실물 검수 완료. 실제 앱 검수는 Talk 결과 문서에 기록한다."
+      },
+      "manipulator": "살짝 들린 짧고 둥근 밑단"
+    },
+    {
+      "name": "mongle-letter",
+      "character": "몽글",
+      "kind": "strategy",
+      "option_id": "g1-사과-간결",
+      "meaning": "몽글: 봉투를 조심스럽게 받쳐 부탁할 마음을 준비한다.",
+      "source": {
+        "path": "docs/캐릭터/편지전략장면/mongle-letter.png",
+        "sha256": "bf7e7df994d8c37908bd75ac36fc4207373f3e28272be83115c4ae6fd6a74486",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2274812
+      },
+      "generation": {
+        "tool": "Codex built-in ImageGen",
+        "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-8e69387f-3c81-4e7c-b838-d2c2814e7054.png",
+        "prompt": "Precise gentle illustration edit. Return to the cute, ROUND, soft, slightly mysterious felt friend of the first image. Reference1 is the exact scene to keep. Reference2 is its original simple silhouette and the deliberately ambiguous little projections; preserve that visual ambiguity. This friend must remain difficult to identify as any known species. Keep the ENTIRE scene, body roundness, EXACT current lovely EYE EXPRESSION, face, warm lighting, color, fluffy texture, props, 1536x1024 framing. Do not remake the creature into an identifiable animal.\nOnly refine the two tiny parts touching props. Use the existing small SCALLOPED HEM at the BOTTOM of the coral body. Two very SHORT rounded hem corners gently fold upward to touch objects, showing the cream stitch line flowing from the bottom hem. Keep them close to the body and short, only the size of the current small rounded nubs in reference1. NOT long tubes or tentacles, no curled spaghetti shape, no wrists, fingers, suction cups or hands. The lower shape stays like a soft wavy bell hem.\nAction stays two small soft parts gently supporting the two sides of the envelope. The softness and cuteness are more important than anatomically literal handling. It is okay if holding is whimsical or slightly implausible. The silhouette must remain visually simple and ambiguous, much closer to reference1's early cute image. HARD AVOID: large bat wings, wing webs, finger bones, long tentacles, suckers, claws, reptilian features, added animal ears or additional limbs. NO text. Preserve the expression loved by the user. One image only.",
+        "editTarget": {
+          "path": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-4c36a3f0-a46f-4af1-9752-83b7262d4236.png",
+          "sha256": "cf51c9cbc8a885663d3910295c07211d7a13260d6d73f51913bc6cf87db82fef",
+          "role": "사용자가 처음의 느낌을 더 좋아한다고 지목한 둥글고 부드러운 장면. 표정과 구도를 보존하는 편집 기준."
+        },
+        "references": [
+          "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-4c36a3f0-a46f-4af1-9752-83b7262d4236.png",
+          "C:/Users/q1212/Documents/SYNK-appsscript/docs/캐릭터/정본_4K/몽글_본체.png"
+        ],
+        "anatomyCanonical": "docs/캐릭터/가이드_정본.md#anatomy-actions",
+        "rejected": [
+          {
+            "source": {
+              "path": "docs/캐릭터/편지전략장면/mongle-letter.png",
+              "sha256": "5a050324822a4000b43f82a047d7d9144afa488aa2af17a8512ed230855b2288",
+              "width": 1536,
+              "height": 1024,
+              "bytes": 2178743
+            },
+            "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-d7bc0d19-b175-4924-b0ba-477374ff0a3f.png",
+            "reason": "사용자가 큰 날개막·긴 촉수가 귀엽지 않고 징그럽다고 거부. 활성 자산으로 사용하지 않는다."
+          }
+        ]
+      },
+      "qa": {
+        "text_baked": false,
+        "upscale": false,
+        "anatomy": "짧고 둥근 밑단 접힘과 실땀을 확인. 길게 뻗은 촉수·빨판 없이 처음의 부드러운 덩어리와 소품 동작을 유지.",
+        "expression": "처음 장면의 감정과 눈 모양을 시각 비교했다. 전 픽셀 동일을 뜻하지 않는다.",
+        "status": "원본 실물 검수 완료. 실제 앱 검수는 Talk 결과 문서에 기록한다."
+      },
+      "manipulator": "살짝 들린 짧고 둥근 밑단"
+    },
+    {
+      "name": "mongle-sick",
+      "character": "몽글",
+      "kind": "situation",
+      "scenario": {
+        "task": "g1t01",
+        "reason": "갑자기 몸이 아파서"
+      },
+      "meaning": "몽글: 담요를 덮고 쉬면서 아직 내지 못한 과제를 걱정한다.",
+      "source": {
+        "path": "docs/캐릭터/편지전략장면/mongle-sick.png",
+        "sha256": "5bac70dc616c1a66d8477f878411131a96cf9d9d27ca54ef11cc368d96874e72",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2342060
+      },
+      "generation": {
+        "tool": "Codex built-in ImageGen",
+        "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-8d3ace71-de2f-47dd-877f-4df24ad48b7d.png",
+        "prompt": "Precise gentle illustration edit. Return to the cute, ROUND, soft, slightly mysterious felt friend of the first image. Reference1 is the exact scene to keep. Reference2 is its original simple silhouette and the deliberately ambiguous little projections; preserve that visual ambiguity. This friend must remain difficult to identify as any known species. Keep the ENTIRE scene, body roundness, EXACT current lovely EYE EXPRESSION, face, warm lighting, color, fluffy texture, props, 1536x1024 framing. Do not remake the creature into an identifiable animal.\nOnly refine the two tiny parts touching props. Use the existing small SCALLOPED HEM at the BOTTOM of the coral body. Two very SHORT rounded hem corners gently fold upward to touch objects, showing the cream stitch line flowing from the bottom hem. Keep them close to the body and short, only the size of the current small rounded nubs in reference1. NOT long tubes or tentacles, no curled spaghetti shape, no wrists, fingers, suction cups or hands. The lower shape stays like a soft wavy bell hem.\nAction stays one small soft part holding the tissue, another resting on the closed notebook. The softness and cuteness are more important than anatomically literal handling. It is okay if holding is whimsical or slightly implausible. The silhouette must remain visually simple and ambiguous, much closer to reference1's early cute image. HARD AVOID: large bat wings, wing webs, finger bones, long tentacles, suckers, claws, reptilian features, added animal ears or additional limbs. NO text. Preserve the expression loved by the user. One image only.",
+        "editTarget": {
+          "path": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-e7359411-ddca-4d5f-91d7-c9bedf0d723b.png",
+          "sha256": "c4aee3c3ffb245c96d1120ada828c205f3e9a933a79282142e05132367c3d633",
+          "role": "사용자가 처음의 느낌을 더 좋아한다고 지목한 둥글고 부드러운 장면. 표정과 구도를 보존하는 편집 기준."
+        },
+        "references": [
+          "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-e7359411-ddca-4d5f-91d7-c9bedf0d723b.png",
+          "C:/Users/q1212/Documents/SYNK-appsscript/docs/캐릭터/정본_4K/몽글_본체.png"
+        ],
+        "anatomyCanonical": "docs/캐릭터/가이드_정본.md#anatomy-actions",
+        "rejected": [
+          {
+            "source": {
+              "path": "docs/캐릭터/편지전략장면/mongle-sick.png",
+              "sha256": "acb66a02e262d8f66cf13772e73a56cc781442c68804b75a9f3fbd12aa7a1f78",
+              "width": 1536,
+              "height": 1024,
+              "bytes": 2384341
+            },
+            "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-4b44e201-c83f-4869-b1ff-c80bdc15128d.png",
+            "reason": "사용자가 큰 날개막·긴 촉수가 귀엽지 않고 징그럽다고 거부. 활성 자산으로 사용하지 않는다."
+          }
+        ]
+      },
+      "qa": {
+        "text_baked": false,
+        "upscale": false,
+        "anatomy": "짧고 둥근 밑단 접힘과 실땀을 확인. 길게 뻗은 촉수·빨판 없이 처음의 부드러운 덩어리와 소품 동작을 유지.",
+        "expression": "처음 장면의 감정과 눈 모양을 시각 비교했다. 전 픽셀 동일을 뜻하지 않는다.",
+        "status": "원본 실물 검수 완료. 실제 앱 검수는 Talk 결과 문서에 기록한다."
+      },
+      "manipulator": "살짝 들린 짧고 둥근 밑단"
+    },
+    {
+      "name": "kkamong-plan",
+      "character": "까몽",
+      "kind": "strategy",
+      "option_id": "g1-사과-대안",
+      "meaning": "까몽: 달력과 계획을 살펴보며 할 수 있는 일을 찾는다.",
+      "source": {
+        "path": "docs/캐릭터/편지전략장면/kkamong-plan.png",
+        "sha256": "3841c0b12da1de069134a9eebd759bee53625ea87cdfa2a189f01be5370daf42",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2251332
+      },
+      "generation": {
+        "tool": "Codex built-in ImageGen",
+        "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-5d2d7c67-d7e6-41d6-8129-b6511211c0d9.png",
+        "prompt": "Precise gentle illustration edit. Return to the cute, ROUND, soft, slightly mysterious felt friend of the first image. Reference1 is the exact scene to keep. Reference2 is its original simple silhouette and the deliberately ambiguous little projections; preserve that visual ambiguity. This friend must remain difficult to identify as any known species. Keep the ENTIRE scene, body roundness, EXACT current lovely EYE EXPRESSION, face, warm lighting, color, fluffy texture, props, 1536x1024 framing. Do not remake the creature into an identifiable animal.\nOnly refine the two tiny parts touching props. Keep the original tiny rounded fuzzy folds around the sides/back, covered in the exact same soft chestnut fuzz. These LITTLE SOFT FOLDS can fold a short distance forward to touch objects. They have indistinct soft rounded triangular/oval outlines, no membranes, no bones, no joints, no claws, no fingers or hands. At most the same length and size as the existing small paws in reference1; the tips are slightly flattened folded fur, NOT round mittens. No separate extra arms.\nAction stays one small soft part touching the calendar, the other touching the check token. The softness and cuteness are more important than anatomically literal handling. It is okay if holding is whimsical or slightly implausible. The silhouette must remain visually simple and ambiguous, much closer to reference1's early cute image. HARD AVOID: large bat wings, wing webs, finger bones, long tentacles, suckers, claws, reptilian features, added animal ears or additional limbs. NO text. Preserve the expression loved by the user. One image only.",
+        "editTarget": {
+          "path": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-bc8779b5-fcef-4d1a-9dfb-dd3375d989a1.png",
+          "sha256": "0465ec7b14000ba0047a6e817e82eaa7cddd1aad928be91b670e686a2b5a85f4",
+          "role": "사용자가 처음의 느낌을 더 좋아한다고 지목한 둥글고 부드러운 장면. 표정과 구도를 보존하는 편집 기준."
+        },
+        "references": [
+          "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-bc8779b5-fcef-4d1a-9dfb-dd3375d989a1.png",
+          "C:/Users/q1212/Documents/SYNK-appsscript/docs/캐릭터/정본_4K/까몽_본체.png"
+        ],
+        "anatomyCanonical": "docs/캐릭터/가이드_정본.md#anatomy-actions",
+        "rejected": [
+          {
+            "source": {
+              "path": "docs/캐릭터/편지전략장면/kkamong-plan.png",
+              "sha256": "97bacdc2a5c4eea056460651105898fb8bdbdf054f43be5ff1f57f536774c4b4",
+              "width": 1536,
+              "height": 1024,
+              "bytes": 2290545
+            },
+            "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-f5beaf1c-c79d-4dfa-8e00-a63463715b74.png",
+            "reason": "사용자가 큰 날개막·긴 촉수가 귀엽지 않고 징그럽다고 거부. 활성 자산으로 사용하지 않는다."
+          }
+        ]
+      },
+      "qa": {
+        "text_baked": false,
+        "upscale": false,
+        "anatomy": "작고 부드러운 털 접힘과 소품 접촉을 확인. 뚜렷한 날개막·뼈·발톱이나 추가 부속 없이 처음의 둥근 인상을 유지.",
+        "expression": "처음 장면의 감정과 눈 모양을 시각 비교했다. 전 픽셀 동일을 뜻하지 않는다.",
+        "status": "원본 실물 검수 완료. 실제 앱 검수는 Talk 결과 문서에 기록한다."
+      },
+      "manipulator": "몸 가까이 살짝 접힌 작은 털 부속"
+    },
+    {
+      "name": "kkamong-notes",
+      "character": "까몽",
+      "kind": "strategy",
+      "option_id": "g1-사과-솔직",
+      "meaning": "까몽: 공책을 내려다보며 사정을 차분히 기록한다.",
+      "source": {
+        "path": "docs/캐릭터/편지전략장면/kkamong-notes.png",
+        "sha256": "ddb3f76bcdc1d331d6198bc46f69a2b48f5a250631d03e1e893207d5ff23e179",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2218588
+      },
+      "generation": {
+        "tool": "Codex built-in ImageGen",
+        "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-fbbc6a64-b7a6-4059-8d70-afea80e8a8da.png",
+        "prompt": "Precise gentle illustration edit. Return to the cute, ROUND, soft, slightly mysterious felt friend of the first image. Reference1 is the exact scene to keep. Reference2 is its original simple silhouette and the deliberately ambiguous little projections; preserve that visual ambiguity. This friend must remain difficult to identify as any known species. Keep the ENTIRE scene, body roundness, EXACT current lovely EYE EXPRESSION, face, warm lighting, color, fluffy texture, props, 1536x1024 framing. Do not remake the creature into an identifiable animal.\nOnly refine the two tiny parts touching props. Keep the original tiny rounded fuzzy folds around the sides/back, covered in the exact same soft chestnut fuzz. These LITTLE SOFT FOLDS can fold a short distance forward to touch objects. They have indistinct soft rounded triangular/oval outlines, no membranes, no bones, no joints, no claws, no fingers or hands. At most the same length and size as the existing small paws in reference1; the tips are slightly flattened folded fur, NOT round mittens. No separate extra arms.\nAction stays one small soft part curled slightly against the pencil to steady it, the other soft part resting on the notebook. The softness and cuteness are more important than anatomically literal handling. It is okay if holding is whimsical or slightly implausible. The silhouette must remain visually simple and ambiguous, much closer to reference1's early cute image. HARD AVOID: large bat wings, wing webs, finger bones, long tentacles, suckers, claws, reptilian features, added animal ears or additional limbs. NO text. Preserve the expression loved by the user. One image only.",
+        "editTarget": {
+          "path": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-ea74dcca-1a6c-4001-a906-dffb9499433e.png",
+          "sha256": "03f9da68a7e90309fbf6ee4a82fac2fa531500d6ce3cc28c19d179e9d2795c7c",
+          "role": "사용자가 처음의 느낌을 더 좋아한다고 지목한 둥글고 부드러운 장면. 표정과 구도를 보존하는 편집 기준."
+        },
+        "references": [
+          "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-ea74dcca-1a6c-4001-a906-dffb9499433e.png",
+          "C:/Users/q1212/Documents/SYNK-appsscript/docs/캐릭터/정본_4K/까몽_본체.png"
+        ],
+        "anatomyCanonical": "docs/캐릭터/가이드_정본.md#anatomy-actions",
+        "rejected": [
+          {
+            "source": {
+              "path": "docs/캐릭터/편지전략장면/kkamong-notes.png",
+              "sha256": "3cd9cbb1e2d52b3a8b8e464ea439a468627e70bc73d007ef077a82917ece52fb",
+              "width": 1536,
+              "height": 1024,
+              "bytes": 2199305
+            },
+            "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-044ff973-6c41-48ca-91bf-93cda63171bd.png",
+            "reason": "사용자가 큰 날개막·긴 촉수가 귀엽지 않고 징그럽다고 거부. 활성 자산으로 사용하지 않는다."
+          }
+        ]
+      },
+      "qa": {
+        "text_baked": false,
+        "upscale": false,
+        "anatomy": "작고 부드러운 털 접힘과 소품 접촉을 확인. 뚜렷한 날개막·뼈·발톱이나 추가 부속 없이 처음의 둥근 인상을 유지.",
+        "expression": "처음 장면의 감정과 눈 모양을 시각 비교했다. 전 픽셀 동일을 뜻하지 않는다.",
+        "status": "원본 실물 검수 완료. 실제 앱 검수는 Talk 결과 문서에 기록한다."
+      },
+      "manipulator": "몸 가까이 살짝 접힌 작은 털 부속"
+    },
+    {
+      "name": "kkamong-letter",
+      "character": "까몽",
+      "kind": "strategy",
+      "option_id": "g1-사과-간결",
+      "meaning": "까몽: 봉투를 조심스럽게 받쳐 부탁할 마음을 준비한다.",
+      "source": {
+        "path": "docs/캐릭터/편지전략장면/kkamong-letter.png",
+        "sha256": "3fa65339fd32491f3d42abc27ea5f90f3a5f59aba2b8f5dd9e7ad4d85915ae3d",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2237153
+      },
+      "generation": {
+        "tool": "Codex built-in ImageGen",
+        "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-c4f04c9a-18e1-4147-805d-091b7d35cc1b.png",
+        "prompt": "Precise gentle illustration edit. Return to the cute, ROUND, soft, slightly mysterious felt friend of the first image. Reference1 is the exact scene to keep. Reference2 is its original simple silhouette and the deliberately ambiguous little projections; preserve that visual ambiguity. This friend must remain difficult to identify as any known species. Keep the ENTIRE scene, body roundness, EXACT current lovely EYE EXPRESSION, face, warm lighting, color, fluffy texture, props, 1536x1024 framing. Do not remake the creature into an identifiable animal.\nOnly refine the two tiny parts touching props. Keep the original tiny rounded fuzzy folds around the sides/back, covered in the exact same soft chestnut fuzz. These LITTLE SOFT FOLDS can fold a short distance forward to touch objects. They have indistinct soft rounded triangular/oval outlines, no membranes, no bones, no joints, no claws, no fingers or hands. At most the same length and size as the existing small paws in reference1; the tips are slightly flattened folded fur, NOT round mittens. No separate extra arms.\nAction stays two small soft parts gently supporting the two sides of the envelope. The softness and cuteness are more important than anatomically literal handling. It is okay if holding is whimsical or slightly implausible. The silhouette must remain visually simple and ambiguous, much closer to reference1's early cute image. HARD AVOID: large bat wings, wing webs, finger bones, long tentacles, suckers, claws, reptilian features, added animal ears or additional limbs. NO text. Preserve the expression loved by the user. One image only.",
+        "editTarget": {
+          "path": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-ff6756e5-bc06-4184-9a8c-523228d3b930.png",
+          "sha256": "edceb120e1c075853196a30fff0d411993d546f970a51ce2584a3654a810a469",
+          "role": "사용자가 처음의 느낌을 더 좋아한다고 지목한 둥글고 부드러운 장면. 표정과 구도를 보존하는 편집 기준."
+        },
+        "references": [
+          "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-ff6756e5-bc06-4184-9a8c-523228d3b930.png",
+          "C:/Users/q1212/Documents/SYNK-appsscript/docs/캐릭터/정본_4K/까몽_본체.png"
+        ],
+        "anatomyCanonical": "docs/캐릭터/가이드_정본.md#anatomy-actions",
+        "rejected": [
+          {
+            "source": {
+              "path": "docs/캐릭터/편지전략장면/kkamong-letter.png",
+              "sha256": "a8a98d1d73ca9ceaf974575387e5a620ea1aa5c9b4088aefdf0731f93db88bf5",
+              "width": 1536,
+              "height": 1024,
+              "bytes": 2295577
+            },
+            "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-353abb7b-157a-4ee2-b663-8538698cf3ce.png",
+            "reason": "사용자가 큰 날개막·긴 촉수가 귀엽지 않고 징그럽다고 거부. 활성 자산으로 사용하지 않는다."
+          }
+        ]
+      },
+      "qa": {
+        "text_baked": false,
+        "upscale": false,
+        "anatomy": "작고 부드러운 털 접힘과 소품 접촉을 확인. 뚜렷한 날개막·뼈·발톱이나 추가 부속 없이 처음의 둥근 인상을 유지.",
+        "expression": "처음 장면의 감정과 눈 모양을 시각 비교했다. 전 픽셀 동일을 뜻하지 않는다.",
+        "status": "원본 실물 검수 완료. 실제 앱 검수는 Talk 결과 문서에 기록한다."
+      },
+      "manipulator": "몸 가까이 살짝 접힌 작은 털 부속"
+    },
+    {
+      "name": "kkamong-sick",
+      "character": "까몽",
+      "kind": "situation",
+      "scenario": {
+        "task": "g1t01",
+        "reason": "갑자기 몸이 아파서"
+      },
+      "meaning": "까몽: 담요를 덮고 쉬면서 아직 내지 못한 과제를 걱정한다.",
+      "source": {
+        "path": "docs/캐릭터/편지전략장면/kkamong-sick.png",
+        "sha256": "154458c0b04c55e9500702578bde188e689fee277c0d07930a12cf38ea89497d",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2348406
+      },
+      "generation": {
+        "tool": "Codex built-in ImageGen",
+        "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-8101f140-c8ba-4b32-add8-59b01e6969f9.png",
+        "prompt": "Precise gentle illustration edit. Return to the cute, ROUND, soft, slightly mysterious felt friend of the first image. Reference1 is the exact scene to keep. Reference2 is its original simple silhouette and the deliberately ambiguous little projections; preserve that visual ambiguity. This friend must remain difficult to identify as any known species. Keep the ENTIRE scene, body roundness, EXACT current lovely EYE EXPRESSION, face, warm lighting, color, fluffy texture, props, 1536x1024 framing. Do not remake the creature into an identifiable animal.\nOnly refine the two tiny parts touching props. Keep the original tiny rounded fuzzy folds around the sides/back, covered in the exact same soft chestnut fuzz. These LITTLE SOFT FOLDS can fold a short distance forward to touch objects. They have indistinct soft rounded triangular/oval outlines, no membranes, no bones, no joints, no claws, no fingers or hands. At most the same length and size as the existing small paws in reference1; the tips are slightly flattened folded fur, NOT round mittens. No separate extra arms.\nAction stays one small soft part holding the tissue, another resting on the closed notebook. The softness and cuteness are more important than anatomically literal handling. It is okay if holding is whimsical or slightly implausible. The silhouette must remain visually simple and ambiguous, much closer to reference1's early cute image. HARD AVOID: large bat wings, wing webs, finger bones, long tentacles, suckers, claws, reptilian features, added animal ears or additional limbs. NO text. Preserve the expression loved by the user. One image only.",
+        "editTarget": {
+          "path": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-aedfb0f4-502f-436e-8cfa-1309dc5daee7.png",
+          "sha256": "42606e766147ad318d8d7e3de55cff90bcce673e597893a03c27d2516f82ce80",
+          "role": "사용자가 처음의 느낌을 더 좋아한다고 지목한 둥글고 부드러운 장면. 표정과 구도를 보존하는 편집 기준."
+        },
+        "references": [
+          "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-aedfb0f4-502f-436e-8cfa-1309dc5daee7.png",
+          "C:/Users/q1212/Documents/SYNK-appsscript/docs/캐릭터/정본_4K/까몽_본체.png"
+        ],
+        "anatomyCanonical": "docs/캐릭터/가이드_정본.md#anatomy-actions",
+        "rejected": [
+          {
+            "source": {
+              "path": "docs/캐릭터/편지전략장면/kkamong-sick.png",
+              "sha256": "3c3299bd937ada93070099af9b085e8cfb5c84486168c00788d607a8cf7bea47",
+              "width": 1536,
+              "height": 1024,
+              "bytes": 2272530
+            },
+            "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-b89e3a8f-d481-453c-a570-c12f730d471b.png",
+            "reason": "사용자가 큰 날개막·긴 촉수가 귀엽지 않고 징그럽다고 거부. 활성 자산으로 사용하지 않는다."
+          }
+        ]
+      },
+      "qa": {
+        "text_baked": false,
+        "upscale": false,
+        "anatomy": "작고 부드러운 털 접힘과 소품 접촉을 확인. 뚜렷한 날개막·뼈·발톱이나 추가 부속 없이 처음의 둥근 인상을 유지.",
+        "expression": "처음 장면의 감정과 눈 모양을 시각 비교했다. 전 픽셀 동일을 뜻하지 않는다.",
+        "status": "원본 실물 검수 완료. 실제 앱 검수는 Talk 결과 문서에 기록한다."
+      },
+      "manipulator": "몸 가까이 살짝 접힌 작은 털 부속"
     }
   ],
   "expressions": {
@@ -138,5 +550,11 @@
       },
       "usage": "원본은1254x1254 RGB로 배경에 체크무늬가 있다. 앱은 각 눈과 눈물 영역만 별도 등록해 투명 표정층으로 쓰며 이 원본 전체를 표시하지 않는다."
     }
+  },
+  "anatomy": {
+    "canonical": "docs/캐릭터/가이드_정본.md#anatomy-actions",
+    "canonicalSha256": "991a786bbb824c434278aab3cdd19ba7d4c7a65b32fb7d5f90ea435539595907",
+    "userDirection": "처음의 둥글고 말랑한 귀여움을 우선한다. 특정 동물로 단정되지 않는 친구다. 날개·문어발은 내부 신체 설명이며 그림에서 큰 날개막이나 긴 촉수로 드러내지 않는다. 원래 작은 접힘·밑단을 살짝 움직여 소품을 다룬다. 약간 어색한 동작도 괜찮으며 기존 표정·말투를 유지한다.",
+    "feedbackScope": "사용자는 앞선 귀여운 느낌과 표정을 선호하고, 후속의 분명한 날개막·긴 촉수 그림은 징그럽다고 거부했다. 새 교정본의 개별 만족 확인과 구별한다."
   }
 }
