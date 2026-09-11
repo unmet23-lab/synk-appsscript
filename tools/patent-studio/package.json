@@ -1,0 +1,15 @@
+{
+  "name": "synk-evidence-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "펠트 엔진의 용도별 근거 판단과 실제 관측을 실행하는 로컬 작업실",
+  "engines": {"node": ">=24"},
+  "dependencies": {"sharp": "0.35.4"},
+  "devDependencies": {"playwright": "1.62.1"},
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test core.test.cjs store.test.cjs integration-review.test.cjs ../../tests/patent-studio-transcriber.test.cjs",
+    "test:browser": "node browser-qa.cjs",
+    "assets": "node assets.cjs"
+  }
+}

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#FBF7F0">
+  <title>근거 작업실 · SYNK LAB</title>
+  <link rel="stylesheet" href="/assets/tokens.css">
+  <link rel="stylesheet" href="/assets/loom.css">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#workbench">작업실로 바로 가기</a>
+  <div class="shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="SYNK LAB 근거 작업실"><img src="/assets/logo.webp" alt="synk LAB"></a>
+      <span class="workspace-name">근거 작업실</span>
+      <div class="header-end"><span id="connection" class="connection"><i></i><span>서버 연결 확인 중</span></span><button id="refresh-button" class="icon-button" title="서버 기록 새로 읽기" aria-label="서버 기록 새로 읽기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M19 11a7 7 0 0 0-12-5L4 9M5 13a7 7 0 0 0 12 5l3-3"/></svg></button></div>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy"><p class="eyebrow">말의 원본부터, 다음 판단까지</p><h1 id="hero-title">한 번의 말,<br><span>근거가 되는 순간.</span></h1><p class="hero-description">들은 말과 고친 말, 도움 전과 후를 나누어 봅니다.<br>무엇을 남기고 무엇을 더 확인할지 직접 따라가 보세요.</p></div>
+      <div class="hero-companion"><p>같은 말에서도,<br>쓸 수 있는 근거는 달라져요.</p><img src="/assets/mascot.webp" alt="함께 확인하는 SYNK 마스코트"></div>
+    </section>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden><p></p><button id="notice-close" class="icon-button" aria-label="안내 닫기">×</button></div>
+    <div id="retry-bar" class="retry-bar" hidden><p>입력은 이 화면에 남겨 두었습니다. 최신 기록을 확인한 뒤 다시 저장할 수 있습니다.</p><button id="retry-button" class="button compact">변경 확인 후 다시 저장</button></div>
+
+    <div class="workbench-toolbar"><div class="session-context"><span id="session-mode" class="mode-tag">시작 전</span><span id="session-name">기록할 말을 선택해 주세요</span><span id="revision" class="revision"></span></div><div class="toolbar-actions"><label class="sr-only" for="session-select">이전 시연 불러오기</label><select id="session-select" aria-label="이전 시연 불러오기"><option value="">이전 시연</option></select><a id="export-link" class="button quiet compact" aria-disabled="true" tabindex="-1">기록 내려받기</a></div></div>
+
+    <main id="workbench" class="workbench">
+      <section class="input-pane pane" aria-labelledby="input-title">
+        <div class="pane-title"><span class="step 번호" data-n="01" aria-label="1단계"></span><h2 id="input-title">한 번의 말</h2></div><p class="pane-intro">예제로 흐름을 보거나, 직접 녹음해 시작하세요.</p>
+        <div class="mode-switch" role="group" aria-label="입력 방식"><button id="mode-example" class="selected" aria-pressed="true">예제로 보기</button><button id="mode-recording" aria-pressed="false">직접 녹음</button></div>
+        <div id="example-controls"><label for="example-select">살펴볼 상황</label><select id="example-select"><option>예제 불러오는 중</option></select><p id="example-description" class="field-help"></p><button id="create-example" class="button primary full" disabled>이 예제로 시작 <span aria-hidden="true">↗</span></button><p class="micro">예제의 말·해석은 시연을 위해 만든 입력입니다.</p></div>
+        <div id="recording-controls" hidden><p class="field-help">새 녹음은 별도의 시연으로 저장합니다. 마이크 권한은 녹음을 누를 때 요청합니다.</p><button id="create-recording" class="button primary full" disabled>새 녹음 시연 만들기 <span aria-hidden="true">＋</span></button><button id="create-sample" class="button quiet full sample-button" hidden disabled>합성 음성으로 시작 <span aria-hidden="true">↗</span></button><p id="sample-description" class="micro" hidden>합성 음성 파일을 실제 받아쓰기 경로로 처리합니다. 사람의 실제 발화와 구분합니다.</p></div>
+
+        <div id="evidence-input" class="evidence-input" hidden>
+          <div class="section-divider"></div>
+          <div class="section-label"><h3>처음 말한 원음</h3><span id="original-kind" class="small-tag"></span></div>
+          <p id="task-prompt" class="task-prompt"></p>
+          <div id="original-player" class="audio-area"></div>
+          <div id="original-capture" class="capture-area"><button id="record-original" class="button record-button"><span class="record-dot"></span>녹음하기</button><label class="button quiet upload-label" for="file-original">파일 선택<input id="file-original" type="file" accept="audio/*,.wav,.mp3,.m4a,.webm,.ogg,.flac"></label></div>
+          <p id="original-audio-status" class="field-help"></p><button id="transcribe-original" class="text-button" hidden>받아쓰기 다시 시도</button>
+          <details id="transcript-details" class="editor-details"><summary>받아쓴 말 확인·직접 입력</summary><label for="machine-transcript">기계 전사 또는 직접 적은 후보</label><textarea id="machine-transcript" rows="3" maxlength="6000" placeholder="가능한 문장이 여러 개면 한 줄에 하나씩 적어 주세요."></textarea><p class="field-help">직접 입력은 청취 확인과 구분해 저장합니다.</p><button id="save-transcript" class="button quiet full" disabled>입력한 후보 저장</button></details>
+          <details class="editor-details task-options"><summary>이 시연의 관측 조건</summary><label class="check-row"><input id="role-confirmed" type="checkbox"><span>문항에서 누가 누구를 만났는지 확인했습니다.</span></label><label class="check-row"><input id="past-independent" type="checkbox"><span>과거형 관측은 이 조사 해석과 독립입니다.</span></label><label class="check-row"><input id="exposure-confirmed" type="checkbox"><span>처음 말할 때의 앱 내 도움 기록 범위를 확인했습니다.</span></label><button id="save-task" class="button quiet full" disabled>관측 조건 저장</button></details>
+          <details class="editor-details"><summary>다루지 못한 원인 표시</summary><label class="check-row"><input id="unknown-enabled" type="checkbox"><span>현재 해석으로 다루지 못한 원인이 있습니다.</span></label><label for="unknown-kind">영향을 받는 근거</label><select id="unknown-kind"><option value="all">아직 범위를 특정하지 못함</option><option value="transcription">들은 말·전사가 불확실함</option><option value="semantic">문장의 의미·역할이 불확실함</option><option value="exposure">도움 제시 범위가 불확실함</option></select><label for="unknown-reason">남겨 둘 이유</label><input id="unknown-reason" maxlength="300" placeholder="예: 잡음 때문에 해당 구간을 들을 수 없음"><button id="save-unknown" class="button quiet full" disabled>미해결 범위 저장</button></details>
+        </div>
+      </section>
+
+      <section class="analysis-pane pane" aria-labelledby="analysis-title">
+        <div class="pane-title"><span class="step 번호" data-n="02" aria-label="2단계"></span><h2 id="analysis-title">용도마다 다른 판단</h2><span id="analysis-live" class="saved-label"></span></div><p class="pane-intro">같은 말도 어디에 쓸지, 어느 시점인지에 따라 나눕니다.</p>
+        <div id="analysis-empty" class="empty-state"><div class="empty-symbol" aria-hidden="true">↗</div><h3>먼저 한 번의 말을 가져오세요.</h3><p>서버가 반환한 근거와 판정이<br>이곳에 용도별로 나타납니다.</p></div>
+        <div id="analysis-content" hidden><div id="analysis-summary" class="analysis-summary"></div><div class="state-legend"><span><i class="state-dot accepted"></i>반영</span><span><i class="state-dot held"></i>보류</span><span><i class="state-dot excluded"></i>사용 제외</span></div><div id="cells" class="cells"></div><p class="interpretation-note">반영은 해당 관측을 쓸 수 있다는 뜻입니다.<br>한 번의 답으로 장기 숙련이나 학습 효과를 확정하지 않습니다.</p><button id="comparison-button" class="button quiet full">연결을 뺐을 때와 비교하기 <span aria-hidden="true">↗</span></button><details class="editor-details engine-details"><summary>계산 범위와 실제 실행 정보</summary><div id="execution-details"></div></details></div>
+      </section>
+
+      <aside class="timeline-pane pane" aria-labelledby="timeline-title"><div class="pane-title"><span class="step 번호" data-n="03" aria-label="3단계"></span><h2 id="timeline-title">판단이 바뀐 이유</h2></div><p class="pane-intro">실제로 저장된 사건을 순서대로 봅니다.</p><div id="change-summary" class="change-summary" hidden></div><div id="timeline-empty" class="timeline-empty"><span class="timeline-seed"></span><p>아직 기록된 사건이 없습니다.</p></div><ol id="timeline" class="timeline"></ol><button id="timeline-more" class="text-button" hidden>전체 사건 보기</button><div class="storage-note"><span class="storage-icon" aria-hidden="true">↳</span><p id="storage-state">저장된 판정을 불러오면<br>판본과 실제 사건을 함께 보여 줍니다.</p></div></aside>
+    </main>
+
+    <section id="observation-section" class="observations" aria-labelledby="observation-title" hidden><div class="observation-heading"><div><p class="eyebrow">다음 확인</p><h2 id="observation-title">어떻게 확인하느냐도,<br>다음 근거를 바꿉니다.</h2></div><p>원음을 다시 듣는 일과 답을 보여 주는 일은 다릅니다.<br>실제 행동과 새 응답이 저장되면 판정을 다시 읽습니다.</p></div><div class="purpose-picker"><label for="purpose-select">먼저 확인할 사용처</label><select id="purpose-select"><option value="original-performance">처음 수행의 근거</option><option value="asr-data">음성·전사 자료</option></select><button id="save-purpose" class="button quiet compact">확인 목표 적용</button></div><div id="suggested-actions" class="suggested-actions"></div>
+      <div class="observation-grid">
+        <article class="observation-card review-card"><span class="action-kicker">원래 말의 해석 확인</span><h3>원음을 다시 듣고 확정하기</h3><p>새로운 답을 만들지 않고, 처음에 어떤 말을 했는지 확인합니다.</p><div id="review-player" class="audio-area"></div><label for="review-text">들은 그대로의 문장</label><textarea id="review-text" rows="3" maxlength="6000" placeholder="자연스럽게 고친 문장이 아니라, 들린 말을 적어 주세요."></textarea><label class="check-row"><input id="review-confirmed" type="checkbox"><span id="review-confirmed-label">원음 전체를 듣고 들린 말을 확인했습니다.</span></label><div id="original-time-check"><label class="check-row"><input id="original-time-confirmed" type="checkbox"><span>이 파일이 이번 과제의 최초 시도이며, 현재 기록한 도움보다 앞선 발화임을 확인했습니다.</span></label><p class="field-help">발화 시점 확인과 들은 말 확인은 별개입니다. 시점을 확인하지 않으면 수행 근거는 보류합니다.</p></div><button id="review-original" class="button primary full" disabled>청취 전사 확정</button></article>
+
+        <article class="observation-card help-card"><span class="action-kicker">도움을 주고 새 수행 보기</span><h3>모범 표현을 보여 주기</h3><p>답을 알려준 사실을 남기고, 그 뒤의 응답은 새로운 시점으로 기록합니다.</p><label for="help-text">진행자가 준비할 도움 문장</label><textarea id="help-text" rows="3" maxlength="6000" placeholder="이번에 보여 줄 모범 표현이나 도움을 적어 주세요."></textarea><p class="field-help">이 작성칸은 진행자 영역입니다. 아래 버튼을 누르면 수행자에게 도움 문장을 보여 주고 사건으로 남깁니다.</p><button id="present-help" class="button primary full" disabled>도움 문장 보여 주고 기록</button><div id="last-help" class="last-help" hidden></div></article>
+
+        <article class="observation-card response-card"><span class="action-kicker">새 시점의 응답</span><h3>다시 말한 답 기록하기</h3><p id="response-context">다시 말한 답은 처음 말한 원음을 덮어쓰지 않습니다.</p><div class="capture-area"><button id="record-response" class="button record-button" disabled><span class="record-dot"></span>새 응답 녹음</button><label class="button quiet upload-label" for="file-response">파일 선택<input id="file-response" type="file" accept="audio/*,.wav,.mp3,.m4a,.webm,.ogg,.flac" disabled></label></div><label for="response-text">또는 새 응답을 직접 입력</label><textarea id="response-text" rows="3" maxlength="6000" placeholder="지금 새로 말한 답을 적어 주세요."></textarea><button id="add-response" class="button quiet full" disabled>새 응답 기록</button><div id="responses" class="responses"></div><details id="response-review-details" class="editor-details" hidden><summary>저장된 응답의 청취 확인</summary><label for="response-select">확인할 새 응답</label><select id="response-select"></select><div id="response-review-player" class="audio-area"></div><label for="response-review-text">이 응답에서 들은 말</label><textarea id="response-review-text" rows="2" maxlength="6000"></textarea><label class="check-row"><input id="response-review-confirmed" type="checkbox"><span id="response-review-confirmed-label">이 응답의 원음을 듣고 확인했습니다.</span></label><label class="check-row"><input id="response-exposure-confirmed" type="checkbox"><span>이 응답 시점의 앱 내 도움 기록 범위를 확인했습니다.</span></label><div id="response-time-check"><label class="check-row"><input id="response-time-confirmed" type="checkbox"><span id="response-time-label">이 파일이 현재 기록한 도움 뒤에 새로 말한 응답임을 확인했습니다.</span></label><p class="field-help">파일을 올린 시간을 실제 발화 시각으로 쓰지 않습니다.</p></div><button id="review-response" class="button quiet full" disabled>이 응답의 청취 확인 저장</button></details></article>
+      </div>
+    </section>
+
+    <footer class="site-footer"><p>원본을 지키고, 쓸 수 있는 근거를 연결합니다.</p><span>로컬 시연 · 제품의 학생 DB와 자동 연결하지 않습니다.</span></footer>
+  </div>
+  <div id="recording-bar" class="recording-bar" role="status" hidden><span class="record-dot"></span><strong id="recording-label">원음 녹음 중</strong><span id="recording-time" class="mono">00:00</span><button id="stop-recording" class="button primary compact">녹음 마치고 저장</button><button id="cancel-recording" class="button quiet compact">취소</button></div>
+  <dialog id="help-dialog" class="help-dialog"><form method="dialog"><button class="dialog-close icon-button" aria-label="도움 문장 닫기">×</button></form><p class="eyebrow">지금 보여 주는 도움</p><p id="help-display" class="help-display"></p><p id="help-save-state" class="dialog-note">화면에 도움을 보여 준 뒤 사건을 저장합니다.</p><button id="help-retry" class="button quiet" hidden>같은 제시 사건 다시 저장</button><button id="help-continue" class="button primary" disabled>이제 다시 말해 보기 <span aria-hidden="true">→</span></button></dialog>
+  <dialog id="comparison-dialog" class="comparison-dialog"><form method="dialog"><button class="dialog-close icon-button" aria-label="비교 닫기">×</button></form><p class="eyebrow">같은 입력, 다른 처리</p><h2>연결을 뺐을 때<br>무엇이 달라질까요?</h2><div id="comparison-content"></div><p class="dialog-note">현재 저장된 입력을 서버에서 다시 계산한 비교입니다.<br>실제 음성 인식 정확도나 학생의 학습 효과를 뜻하지 않습니다.</p></dialog>
+  <noscript><p class="noscript">이 작업실은 녹음과 판정 조회를 위해 JavaScript가 필요합니다.</p></noscript>
+</body>
+</html>
