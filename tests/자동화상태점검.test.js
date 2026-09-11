@@ -4,10 +4,24 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '..', '엔진_계정점검.js'), 'utf8');
+const formSource = fs.readFileSync(path.join(__dirname, '..', '엔진_폼리포트.js'), 'utf8');
+const monthlyStart = formSource.indexOf('function monthlyDeliveryHealth_(');
+const monthlyEnd = formSource.indexOf('\nfunction resolveMonthlyDelivery(', monthlyStart);
+assert.ok(monthlyStart >= 0 && monthlyEnd > monthlyStart);
+const monthlySource = formSource.slice(monthlyStart, monthlyEnd);
+const engineId = 'SYNTHETIC_engine-spreadsheet_20260911';
 function harness(options = {}) {
   const reads = [];
-  const no = () => { throw new Error('unexpected_write_or_external_call'); };
+  const forbidden = [];
+  const no = () => { forbidden.push('unexpected_write_or_external_call'); throw new Error('unexpected_write_or_external_call'); };
   const expected = ['morningJobs', 'onHwFeedbackEdit'];
+  const sheet = { getSheetByName(name) { assert.equal(name, 'profiles'); return {
+    getLastColumn: () => 2,
+    getRange(row, col, height, width) {
+      assert.deepEqual([row, col, height, width], [1, 1, 1, 2]);
+      return { getValues: () => [['user_id', options.textbook ? '목소리폼URL' : 'status']], setValues: no };
+    }
+  }; }, insertSheet: no };
   const ctx = {
     ADMIN_EMAIL: 'owner@example.test',
     Session: { getActiveUser: () => ({ getEmail: () => options.denied ? '' : 'owner@example.test' }), getEffectiveUser: () => ({ getEmail: () => 'owner@example.test' }) },
@@ -18,25 +32,25 @@ function harness(options = {}) {
     SpreadsheetApp: { getActiveSpreadsheet() {
       reads.push('sheet_metadata');
       if (options.sheetError) throw new Error('private_sheet_error');
-      return { getSheetByName(name) { assert.equal(name, 'profiles'); return {
-        getLastColumn: () => 2,
-        getRange(row, col, height, width) {
-          assert.deepEqual([row, col, height, width], [1, 1, 1, 2]);
-          return { getValues: () => [['user_id', options.textbook ? '목소리폼URL' : 'status']] };
-        }
-      }; } };
+      return options.noActiveSheet ? null : sheet;
+    }, openById(id) {
+      reads.push('open_engine_sheet');
+      assert.equal(id, engineId);
+      if (options.openError) throw new Error('private_open_error_' + id);
+      return options.noOpenedSheet ? null : sheet;
     } },
     ScriptApp: { getProjectTriggers() { reads.push('triggers'); return (options.triggers || [['morningJobs', 'CLOCK'], ['onHwFeedbackEdit', 'ON_EDIT']]).map(([name, type]) => ({ getHandlerFunction: () => name, getEventType: () => type })); }, newTrigger: no, deleteTrigger: no },
     triggerManifest_: textbook => textbook ? [...expected, '교재연동Nightly'] : expected,
     배치상태요약_: state => state,
-    monthlyDeliveryHealth_: () => options.monthly || ({ cards: { month: '2026-09', counts: { pending: 0, sending: 0, sent: 0, uncertain: 0, legacy_unknown: 0 } }, report: { month: '2026-08', status: 'missing' } }),
-    UrlFetchApp: { fetch: no }, MailApp: { sendEmail: no }
+    monthlyDeliveryHealth_: ss => { assert.equal(ss, sheet); reads.push('monthly_metadata'); return options.monthly || ({ cards: { month: '2026-09', counts: { pending: 0, sending: 0, sent: 0, uncertain: 0, legacy_unknown: 0 } }, report: { month: '2026-08', status: 'missing' } }); },
+    UrlFetchApp: { fetch: no }, MailApp: { sendEmail: no }, Logger: { log: no }
   };
   vm.createContext(ctx); vm.runInContext(source, ctx);
-  return { reads, run: () => JSON.parse(JSON.stringify(ctx.automationHealthCheck())) };
+  return { reads, forbidden, run: () => JSON.parse(JSON.stringify(ctx.automationHealthCheck())) };
 }
 test('denied before any metadata or progress read', () => {
-  const h = harness({ denied: true }); assert.deepEqual(h.run(), { ok: false, stage: 'access' }); assert.deepEqual(h.reads, []);
+  const h = harness({ denied: true, noActiveSheet: true, props: { ENGINE_SS_ID: engineId } });
+  assert.deepEqual(h.run(), { ok: false, stage: 'access' }); assert.deepEqual(h.reads, []); assert.deepEqual(h.forbidden, []);
 });
 test('read-only trigger health does not claim business execution success', () => {
   const h = harness(); const r = h.run(); assert.equal(r.ok, true); assert.equal(r.stage, 'read_only');
@@ -77,4 +91,66 @@ test('numeric batch revision is retained for owner compare-and-set recovery with
 });
 test('spreadsheet metadata failure is not treated as a healthy disabled textbook feature', () => {
   const r = harness({ sheetError: true }).run(); assert.equal(r.ok, false); assert.equal(r.stage, 'metadata'); assert.equal(r.triggers, null); assert.ok(!JSON.stringify(r).includes('private'));
+});
+
+test('active container is preferred without reading or overwriting the stored engine ID', () => {
+  const h = harness({ props: { ENGINE_SS_ID: engineId } });
+  assert.equal(h.run().ok, true);
+  assert.equal(h.reads.includes('ENGINE_SS_ID'), false);
+  assert.equal(h.reads.includes('open_engine_sheet'), false);
+  assert.equal(h.reads.filter(x => x === 'sheet_metadata').length, 1);
+  assert.deepEqual(h.forbidden, []);
+});
+
+test('null or throwing active container uses only the stored engine ID and hands the opened sheet to monthly health', () => {
+  for (const context of [{ noActiveSheet: true }, { sheetError: true }]) {
+    const h = harness({ ...context, props: { ENGINE_SS_ID: engineId } });
+    const r = h.run();
+    assert.equal(r.ok, true); assert.equal(r.stage, 'read_only');
+    assert.equal(h.reads.filter(x => x === 'open_engine_sheet').length, 1);
+    assert.equal(h.reads.filter(x => x === 'monthly_metadata').length, 1);
+    assert.deepEqual(h.forbidden, []);
+    assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC|private/);
+  }
+});
+
+test('missing or malformed engine IDs stop at metadata without attempting a file open', () => {
+  for (const id of [undefined, null, '', ' ', ' engine', 'engine ', 'engine\n', 'engine\r\n', 'engine\t', 'https://example.invalid/sheet', 'engine/id', 'engine.id', '엔진', 42, false]) {
+    const h = harness({ noActiveSheet: true, props: id === undefined ? {} : { ENGINE_SS_ID: id } });
+    const r = h.run();
+    assert.equal(r.ok, false); assert.equal(r.stage, 'metadata'); assert.equal(r.triggers, null);
+    assert.equal(h.reads.includes('open_engine_sheet'), false);
+    assert.equal(h.reads.includes('monthly_metadata'), false);
+    assert.deepEqual(h.forbidden, []);
+  }
+});
+
+test('engine open errors or null remain metadata failures without ID, error text, logging or writes', () => {
+  for (const unavailable of [{ openError: true }, { noOpenedSheet: true }]) {
+    const h = harness({ noActiveSheet: true, props: { ENGINE_SS_ID: engineId }, ...unavailable });
+    const r = h.run();
+    assert.equal(r.ok, false); assert.equal(r.stage, 'metadata'); assert.equal(r.triggers, null);
+    assert.deepEqual(h.forbidden, []); assert.doesNotMatch(JSON.stringify(r), /SYNTHETIC|private/);
+  }
+});
+
+test('actual monthly health accepts the opened sheet without an active-container read and retains no-argument compatibility', () => {
+  for (const supplied of [true, false]) {
+    const reads = [], writes = [];
+    const ss = {
+      getSpreadsheetTimeZone: () => 'Asia/Ulaanbaatar',
+      getSheetByName(name) { reads.push(name); assert.ok(['report_cards', 'app_state'].includes(name)); return null; },
+      insertSheet() { writes.push('insert'); throw new Error('unexpected_write'); }
+    };
+    const ctx = {
+      SpreadsheetApp: { getActiveSpreadsheet() { reads.push('active'); if (supplied) throw new Error('active_context_unavailable'); return ss; } },
+      Utilities: { formatDate: () => '2026-09' },
+      ymShift_: (month, delta) => { assert.equal(month, '2026-09'); assert.equal(delta, -1); return '2026-08'; }
+    };
+    vm.createContext(ctx); vm.runInContext(monthlySource, ctx);
+    const out = JSON.parse(JSON.stringify(supplied ? ctx.monthlyDeliveryHealth_(ss) : ctx.monthlyDeliveryHealth_()));
+    assert.deepEqual(out, { cards: { month: '2026-09', counts: { pending: 0, sending: 0, sent: 0, uncertain: 0, legacy_unknown: 0 } }, report: { month: '2026-08', status: 'missing' } });
+    assert.deepEqual(reads, supplied ? ['report_cards', 'app_state'] : ['active', 'report_cards', 'app_state']);
+    assert.deepEqual(writes, []);
+  }
 });

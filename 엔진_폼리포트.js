@@ -3595,8 +3595,8 @@ function reportCardFileMatches_(name, cardId, sid, month) {
 }
 
 // 운영 점검용 읽기 전용 집계. 명단/이메일/본문/파일ID/Script Properties를 읽거나 반환하지 않는다.
-function monthlyDeliveryHealth_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet(), tz = ss.getSpreadsheetTimeZone(), now = new Date();
+function monthlyDeliveryHealth_(spreadsheet) {
+  const ss = spreadsheet || SpreadsheetApp.getActiveSpreadsheet(), tz = ss.getSpreadsheetTimeZone(), now = new Date();
   const month = Utilities.formatDate(now, tz, 'yyyy-MM');
   const previous = ymShift_(month, -1);
   const counts = { pending: 0, sending: 0, sent: 0, uncertain: 0, legacy_unknown: 0 };
