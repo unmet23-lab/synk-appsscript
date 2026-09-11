@@ -188,6 +188,21 @@ test('🔑 제미나이 기본 = flash/high — 유호 확정(2026-08-05 "flash 
   assert.strictEqual(p.thinking_level, 'high');
 });
 
+test('Gemini 3.8 medium은 일시적 503과 무관하게 선택 가능하고 기본 high는 유지한다', () => {
+  const 픽 = 정책.제미나이.무료최상;
+  const 기존사고 = 픽.thinking_level;
+  assert.strictEqual(정책.제미나이설정().thinking_level, 'high');
+  try {
+    픽.thinking_level = 'medium';
+    assert.strictEqual(정책.제미나이설정('무료최상').thinking_level, 'medium');
+    픽.thinking_level = 'minimal';
+    assert.throws(() => 정책.제미나이설정('무료최상'), /지원하지 않는다/);
+  } finally {
+    픽.thinking_level = 기존사고;
+  }
+  assert.strictEqual(정책.제미나이설정().thinking_level, 'high');
+});
+
 test('🔑 몽골어대조(첫 라이브 호출자)가 정책 픽을 실제로 소비한다 — 정책이 죽은 장치면 P1 재발 (지적 944e2a1c)', () => {
   const 대조 = require(path.join(ROOT, 'tools', '몽골어대조.js'));
   assert.ok(대조, '몽골어대조 require 실패');
