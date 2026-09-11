@@ -1,6 +1,6 @@
 {
   "date": "2026-09-11",
-  "scope": "PC 편지 게임의 세 친구별 행동 전략 9장과 몽글·까몽의 아픈 상황 2장. 각 문항 사실과 선택에 맞춰 표시하며 전역 본체 정본과 구별한다.",
+  "scope": "PC 편지 게임의 세 친구별 행동 전략 9장과 아픈 상황 3장. 각 문항 사실과 선택에 맞춰 표시하며 전역 본체 정본과 구별한다.",
   "status": "사용자 요청에 따라 제작하고 앱에 적용한 현재 장면; 개별 결과 사용자 만족은 미확인",
   "references": [
     {
@@ -528,12 +528,53 @@
         "status": "원본 실물 검수 완료. 실제 앱 검수는 Talk 결과 문서에 기록한다."
       },
       "manipulator": "몸 가까이 살짝 접힌 작은 털 부속"
+    },
+    {
+      "name": "marin-sick",
+      "character": "마린",
+      "kind": "situation",
+      "scenario": {
+        "task": "g1t01",
+        "reason": "갑자기 몸이 아파서"
+      },
+      "meaning": "마린: 담요를 덮고 쉬면서 과제를 내지 못한 상황을 걱정한다. 처진 노란 렌즈·눈물·기울인 자세로 속상함과 아픔을 드러낸다.",
+      "source": {
+        "path": "docs/캐릭터/편지전략장면/marin-sick.png",
+        "sha256": "1fdf6fee3c498d79eeec22ec480462ee04dfc574114eb4b44834960ffeb60735",
+        "width": 1536,
+        "height": 1024,
+        "bytes": 2351862
+      },
+      "generation": {
+        "tool": "Codex built-in ImageGen",
+        "original": "C:\\Users\\q1212\\.codex\\generated_images\\01a08bec-1f1d-7903-b772-c36f94a712f1\\exec-6238003e-ab80-4f99-be88-179544454089.png",
+        "prompt": "Create one premium cute felt story illustration, landscape 1536x1024. Reference1 is the EXACT identity of Marin: rounded large indigo wool-felt helmet with two softly glowing yellow lens eyes, tiny oatmeal wool body, exactly TWO short arms and TWO short feet, crossbody cream pouch with a daisy. NO pupils, no mouth, no eyebrows, no nose, no human face. Reference2 sets the exact cozy felt sofa environment and the situation, NOT character identity. Replace its coral friend with ONLY Marin. No coral friend or other character anywhere.\nStory: Marin unexpectedly became ill and missed yesterday's assignment deadline. Marin is now tucked into a plush oatmeal armchair under a soft deep indigo knitted blanket, a small cream cooling cloth resting on the helmet. Exactly one short oatmeal hand holds a little white tissue close below the helmet, and the other short hand rests on a CLOSED cream assignment notebook with a daisy beside Marin. NO extra arms or hands. Keep pouch and daisy recognizable where naturally visible above the blanket; do not add legs or hands to make accessories visible.\nEmotion is unmistakably under the weather, quietly sad and worried about the unfinished assignment, yet CUTE and gentle: head slightly bowed, shoulders slumped, yellow LENS apertures have inner upper corners gently higher and outer corners lower, forming a tender worried slant, softly narrowed/lowered yellow light, one tiny clear tear beneath each lens. Sadness is expressed ONLY through the lens shape and posture, never added eyebrows/pupils/mouth. The two feet may be naturally hidden by the blanket. Warm felt mug and tissue box on the table, a small blank calendar softly out of focus in background. Everything in hand crafted soft wool/felt. Cozy amber window light, crisp tactile detail on Marin, soft miniature photography depth of field, warm compassionate atmosphere. Character and expressive face large and clearly readable at 320px wide. Entire landscape composition, no cutout sticker, no white halo, no text/letters/numbers/logos/speech balloons/UI. Preserve the round adorable silhouette from reference1 and match reference2's scene quality. Do not create a scary, realistic sick human, extra joints, tentacles, or wings.",
+        "references": [
+          {
+            "path": "docs/캐릭터/정본_4K/마린_본체.png",
+            "sha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+            "role": "마린 현재 외형·두 팔·의상"
+          },
+          {
+            "path": "docs/캐릭터/편지전략장면/mongle-sick.png",
+            "sha256": "5bac70dc616c1a66d8477f878411131a96cf9d9d27ca54ef11cc368d96874e72",
+            "role": "아픈 상황과 펠트 방의 재질·조명·배치"
+          }
+        ]
+      },
+      "qa": {
+        "text_baked": false,
+        "upscale": false,
+        "anatomy": "두 팔만 보이며 한 손은 휴지, 다른 손은 닫힌 과제 공책에 놓인다. 발은 담요 아래에 자연스럽게 가린다.",
+        "expression": "눈동자·입·별도 눈썹 없이 처진 렌즈 모양과 눈물·고개로 감정을 전달한다.",
+        "status": "생성 원본 실물 검수 완료. 실제 앱 검수는 Talk UI 결과에 기록한다."
+      }
     }
   ],
   "expressions": {
     "marinSad": {
       "name": "마린_속상함",
-      "meaning": "가상의 아픈 학생 역할에서 마감을 놓쳐 속상하고 걱정스러운 표정",
+      "meaning": "마감을 놓쳐 속상하고 걱정스러운 마린의 렌즈 표정 재료",
       "source": {
         "path": "docs/캐릭터/편지전략장면/marin-sad.png",
         "sha256": "4b1b54f83fb6532443b62a0a1c40221a2559fefd157cf0aa881109b437eab6f7",
@@ -548,7 +589,7 @@
         "edit": "현재 마린 본체를 참조해 렌즈 안쪽 위·바깥 아래의 슬픈 모양과 눈물을 생성. 앱은 눈 주변만 취하며 본체는 유지한다.",
         "prompt": "Use case: precise-object-edit. Edit this exact reference Marin mascot to look visibly SAD AND WORRIED because he was ill and missed a homework deadline. Preserve the same front pose, indigo helmet, oatmeal body, flower pouch, exactly two arms and two feet, fiber texture, outline, scale and transparent background. Change ONLY the glowing yellow lens eye apertures. Do NOT leave two ordinary oval neutral eyes. The UPPER EDGE of each yellow eye becomes an expressive gently diagonal curve: inner corner (toward center of face) HIGHER and outer corner LOWER, like pleading worried sad eyes, strongly readable at small sizes. Each luminous eye is a soft rounded golden felt wedge/teardrop, smaller and dimmer than original, pointing up toward center. Left yellow upper edge slopes UP to the right, right yellow upper edge slopes DOWN to the right. This inverted V emotion is sorrowful, NOT the angry V eyebrows. Keep lower eye edge rounded. Tiny soft translucent tears just below each lens add sorrow. NO eyebrows, pupils, mouth, nose, blush or human eyelids; emotions are made with lens SHAPE and LIGHT ONLY. Same square framing. Actual transparent background. Highest detail. Return one image."
       },
-      "usage": "원본은1254x1254 RGB로 배경에 체크무늬가 있다. 앱은 각 눈과 눈물 영역만 별도 등록해 투명 표정층으로 쓰며 이 원본 전체를 표시하지 않는다."
+      "usage": "원본은1254x1254 RGB로 배경에 체크무늬가 있다. 앱은 각 눈과 눈물 영역만 별도 등록해 투명 표정층으로 쓰며 이 원본 전체를 표시하지 않는다. 아픈 과제 상황의 현재 화면은 marin-sick 전체 장면을 쓴다. 이 눈 재료는 기존 속상함 표정의 다른 사용처를 위해 보존한다."
     }
   },
   "anatomy": {
