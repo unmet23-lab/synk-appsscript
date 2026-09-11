@@ -7,13 +7,17 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const core = require('./core.cjs');
+const projection = require('./projection.cjs');
 const coreSha256 = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, 'core.cjs'))).digest('hex');
-function calculate(state) {
+const engineKey = projection.digest(['core.cjs', 'projection.cjs'].map(name => ({ name,
+  sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, name))).digest('hex') })));
+function calculate(state, previousAnalysis) {
   const start = performance.now();
-  const result = core.evaluate(state);
+  const result = core.evaluate(state, { previousProjection: previousAnalysis?.projectionCache, engineKey });
   result.execution = {
     durationMs: Number((performance.now() - start).toFixed(3)),
     engineSha256: coreSha256,
+    engineBundleSha256: engineKey,
     hypothesisCount: [state.original, ...state.responses].reduce((n, u) => n + u.alternatives.length, 0),
     cellCount: result.cells.length,
     comparisonCount: result.comparisons?.length ?? 0,
@@ -42,7 +46,22 @@ class StudioStore {
  CREATE TABLE IF NOT EXISTS audio(sha256 TEXT PRIMARY KEY,mime_type TEXT NOT NULL,bytes BLOB NOT NULL,created_at TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS session_audio(session_id TEXT NOT NULL,event_id TEXT NOT NULL,sha256 TEXT NOT NULL,role TEXT NOT NULL,response_id TEXT,transcription TEXT,created_at TEXT NOT NULL,PRIMARY KEY(session_id,event_id),FOREIGN KEY(session_id) REFERENCES sessions(id),FOREIGN KEY(sha256) REFERENCES audio(sha256));
  CREATE TABLE IF NOT EXISTS transcription_attempts(id INTEGER PRIMARY KEY AUTOINCREMENT,session_id TEXT NOT NULL,audio_event_id TEXT NOT NULL,payload TEXT NOT NULL,fingerprint TEXT NOT NULL,created_at TEXT NOT NULL,FOREIGN KEY(session_id) REFERENCES sessions(id));
+ CREATE TABLE IF NOT EXISTS effect_ledger(session_id TEXT NOT NULL,revision INTEGER NOT NULL,event_id TEXT,payload TEXT NOT NULL,fingerprint TEXT NOT NULL,PRIMARY KEY(session_id,revision),FOREIGN KEY(session_id) REFERENCES sessions(id));
  `);
+    // Old sessions start a declared baseline at their current revision. No
+    // historical effects are invented for versions that were never recorded.
+    for (const row of this.db.prepare('SELECT s.* FROM sessions s WHERE NOT EXISTS (SELECT 1 FROM effect_ledger e WHERE e.session_id=s.id)').all()) {
+      this.transaction(() => {
+        const state = JSON.parse(row.state), analysis = calculate(state);
+        this.insertLedger(row.id, projection.buildLedgerEntry({ afterCells: analysis.cells, baselineState: state,
+          fromRevision: null, toRevision: row.revision, engineKey }));
+        this.db.prepare('UPDATE sessions SET analysis=? WHERE id=?').run(JSON.stringify(analysis), row.id);
+      });
+    }
+  }
+  insertLedger(id, entry) {
+    this.db.prepare('INSERT INTO effect_ledger VALUES(?,?,?,?,?)').run(id, entry.toRevision,
+      entry.cause.eventId, JSON.stringify(entry), entry.sha256);
   }
   transaction(fn) {
     this.db.exec('BEGIN IMMEDIATE');
@@ -68,7 +87,11 @@ class StudioStore {
     state.sourceKind = input.mode === 'example' ? 'authored-example' : input.sourceKind === 'synthetic-speech' ? 'synthetic-speech' : 'user-audio';
     if (input.sourceKind === 'synthetic-speech') state.sampleName = input.sampleName;
     const analysis = calculate(state);
-    this.db.prepare('INSERT INTO sessions VALUES(?,?,?,?,?,?)').run(id, 0, JSON.stringify(state), JSON.stringify(analysis), now, now);
+    this.transaction(() => {
+      this.db.prepare('INSERT INTO sessions VALUES(?,?,?,?,?,?)').run(id, 0, JSON.stringify(state), JSON.stringify(analysis), now, now);
+      this.insertLedger(id, projection.buildLedgerEntry({ afterCells: analysis.cells, baselineState: state,
+        fromRevision: null, toRevision: 0, engineKey }));
+    });
     return this.get(id);
   }
   row(id) {
@@ -96,6 +119,7 @@ class StudioStore {
       createdAt: a.created_at,
       transcription: a.transcription ? JSON.parse(a.transcription) : null
     }));
+    const ledger = this.db.prepare('SELECT payload FROM effect_ledger WHERE session_id=? ORDER BY revision').all(id).map(x => JSON.parse(x.payload));
     return {
       ...state,
       id,
@@ -103,6 +127,9 @@ class StudioStore {
       analysis: JSON.parse(row.analysis),
       events,
       audios,
+      effectLedger: { schemaVersion: 1, entries: ledger, headSha256: ledger.at(-1)?.sha256 || null,
+        startsAtRevision: ledger[0]?.toRevision ?? null, throughRevision: ledger.at(-1)?.toRevision ?? null,
+        legacyBaseline: (ledger[0]?.toRevision ?? 0) > 0 },
       createdAt: row.created_at,
       updatedAt: row.updated_at
     };
@@ -137,11 +164,16 @@ class StudioStore {
         ...event,
         at
       };
+      const previousAnalysis = JSON.parse(row.analysis);
       const next = core.applyEvent(JSON.parse(row.state), stamped);
-      const analysis = calculate(next);
+      const analysis = calculate(next, previousAnalysis);
       const revision = row.revision + 1;
       const now = new Date().toISOString();
       if (inside) inside(this.db, stamped);
+      const head = this.db.prepare('SELECT fingerprint FROM effect_ledger WHERE session_id=? ORDER BY revision DESC LIMIT 1').get(id);
+      const transition = projection.buildLedgerEntry({ beforeCells: previousAnalysis.cells, afterCells: analysis.cells,
+        event: stamped, fromRevision: row.revision, toRevision: revision, previousSha256: head.fingerprint, engineKey });
+      this.insertLedger(id, transition);
       this.db.prepare('INSERT INTO events VALUES(?,?,?,?,?,?)').run(id, event.id, revision, fingerprint, JSON.stringify(stamped), now);
       this.db.prepare('UPDATE sessions SET revision=?,state=?,analysis=?,updated_at=? WHERE id=?').run(revision, JSON.stringify(next), JSON.stringify(analysis), now, id);
     });
@@ -228,6 +260,11 @@ class StudioStore {
       engineVersion: core.VERSION ?? '1.0.0',
       session,
       transcriptionAttempts: attempts,
+      replay: {
+        events: this.db.prepare('SELECT revision,payload FROM events WHERE session_id=? ORDER BY revision').all(id).map(r => ({ revision: r.revision, event: JSON.parse(r.payload) })),
+        finalState: JSON.parse(this.row(id).state),
+        engineBundleSha256: engineKey
+      },
       files: session.audios.map(a => ({
         ...a,
         encoding: 'base64',
@@ -236,10 +273,17 @@ class StudioStore {
       integrity: {
         sessionSha256: digest(session),
         attemptsSha256: digest(attempts),
+        effectLedgerSha256: projection.digest(session.effectLedger),
         algorithm: 'SHA-256'
       },
       scope: 'Local executable evidence record. Example assumptions and human-confirmed scope are explicit in session.'
     };
+  }
+  verify(id) {
+    const session = this.get(id), state = JSON.parse(this.row(id).state);
+    const events = this.db.prepare('SELECT revision,payload FROM events WHERE session_id=? ORDER BY revision').all(id).map(r => ({ revision: r.revision, event: JSON.parse(r.payload) }));
+    return projection.verifyLedger({ entries: session.effectLedger.entries, events,
+      finalState: state, finalCells: session.analysis.cells, engineKey }, core);
   }
   close() {
     this.db.close();

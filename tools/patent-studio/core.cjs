@@ -3,7 +3,8 @@
 // A local, controlled-language demonstration. This does not infer complete
 // hypothesis coverage, transcribe audio, or certify a learner's competence.
 const clone = value => structuredClone(value);
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
+const { createResolver } = require('./projection.cjs');
 const TARGET = '친구를 만나서 카페에 갔어요';
 const ALTERNATIVE = '친구가 만나서 카페에 갔어요';
 const TASK_PROMPT = '내가 친구를 만난 뒤 카페에 간 일을 말해 주세요. 화자는 행위자이고 친구는 만난 대상입니다.';
@@ -256,16 +257,17 @@ function timingFor(session, utterance, skill) {
 function helpFor(session, utterance, skill) {
   return timingFor(session, utterance, skill).before;
 }
-function makeCell(session, u, skill, { claim = u, respectEpoch = true, requireActual = true } = {}) {
+function makeCell(session, u, skill, { claim = u, respectEpoch = true, requireActual = true, preparedTiming } = {}) {
   const isOriginal = claim.id === 'original';
   const purpose = skill === 'asr' ? 'asr-data' : (isOriginal ? 'original-performance' : 'response-performance');
   const label = skill === 'asr' ? '정확한 원음–전사 쌍' : skill === 'object' ? '문항의 역할 요구 사용' : '별도 구간의 과거형 사용';
   const dependencies = [`${u.id}:audio`, `${u.id}:${skill === 'asr' ? 'transcript' : skill}`, `${u.id}:scope`, `unknown:${skill}`];
   if (skill !== 'asr') dependencies.push(`${u.id}:help`, `${u.id}:performance-time`, `${u.id}:exposure-scope`, `task:${skill === 'object' ? 'role' : 'past-independence'}`);
-  const timing = timingFor(session, u, skill);
+  const timing = preparedTiming || timingFor(session, u, skill);
   const cell = { id: `${claim.epoch}:${skill}`, label, purpose, epoch: claim.epoch, utteranceId: claim.id, skill,
     status: 'held', value: null, reason: '', reasonCode: '', dependencies, effectSet: [],
     evidenceSource: u.predicted ? 'prediction-not-observation' : u.source, evidenceEpoch: u.epoch,
+    sourceAudioRef: u.audio?.audioRef || null,
     observedAt: u.performanceInterval?.startedAt || null, receivedAt: u.at, performanceTimeSource: u.performanceTimeSource || 'unknown',
     assistance: !timing.confirmed || timing.unknown.length || timing.overlapping.length ? 'unknown' : timing.before.length ? 'after-help' : 'no-recorded-help',
     supportScope: session.task.supportScope, synthetic: session.mode === 'example' && u.syntheticEvidence === true };
@@ -290,7 +292,7 @@ function makeCell(session, u, skill, { claim = u, respectEpoch = true, requireAc
     if (!u.exposureScopeConfirmed) return hold('exposure-scope-unconfirmed', '이 시점의 앱 내 도움 관측 범위를 먼저 확인해야 합니다. 기록 없음은 도움 없음이 아닙니다.');
     if (respectEpoch && isOriginal && u.epoch !== claim.epoch) return Object.assign(cell,
       { status: 'excluded', reasonCode: 'later-response-not-original-evidence', reason: '다른 시점의 응답을 처음 수행으로 소급할 수 없습니다.' });
-    if (respectEpoch && isOriginal && helpFor(session, u, skill).length) return Object.assign(cell,
+    if (respectEpoch && isOriginal && timing.before.length) return Object.assign(cell,
       { status: 'excluded', reasonCode: 'original-was-assisted', reason: '원음 시도 전에 답이 노출됐습니다. 도움 전 독립 수행의 근거로 사용할 수 없습니다.' });
     if (skill === 'object' && !session.task.roleConfirmed) return hold('role-unconfirmed', '화자가 행위자이고 친구가 대상이라는 문항 조건이 확인되지 않았습니다. 친구가 주어인 자연스러운 해석을 배제하지 않습니다.');
     if (skill === 'past' && !session.task.pastIndependent) return hold('independence-unconfirmed', '과거형 관측이 조사·역할 해석에 의존하지 않는다는 이 사례의 조건을 확인해야 합니다.');
@@ -312,8 +314,7 @@ function makeCell(session, u, skill, { claim = u, respectEpoch = true, requireAc
   else if (!respectEpoch && u.epoch !== claim.epoch) cell.reason = '비교 모드: 시점별 귀속을 끄고 새 응답을 처음 수행의 근거로 사용한 결과입니다.';
   return cell;
 }
-function earlierBoundary(session, u, flags) {
-  const projected = makeCell(session, u, 'object', { claim: session.original, ...flags });
+function earlierBoundary(session, u, flags, projected = makeCell(session, u, 'object', { claim: session.original, ...flags })) {
   const temporalFailure = flags.respectEpoch;
   return { ...projected, id: `${u.epoch}:earlier-proof`, label: '이 응답으로 처음의 독립 수행 확정', purpose: 'original-performance',
     epoch: 'e0', evidenceEpoch: u.epoch, utteranceId: u.id, skill: 'earlier-proof',
@@ -330,11 +331,12 @@ function summarize(cells) {
     metricScope: '이 세션의 기록 처리 개수이며 정확도·실력·등록 가능성이 아닙니다.' };
 }
 function observationCandidates(session, cells) {
+  const responsesById = new Map(session.responses.map(r => [r.id, r]));
   const desired = cells.filter(c => c.status === 'held' && (session.purpose === 'asr-data' ? c.purpose === 'asr-data' : c.purpose !== 'asr-data'));
   const listenCanAddress = new Set(['no-transcript', 'scope-unconfirmed', 'transcript-not-reviewed', 'effect-disagreement']);
   const originalTargets = desired.filter(c => c.utteranceId === 'original' && listenCanAddress.has(c.reasonCode)).map(c => c.id);
   const responseTargets = desired.filter(c => c.utteranceId !== 'original' && listenCanAddress.has(c.reasonCode) &&
-    hasAudio(session, session.responses.find(r => r.id === c.utteranceId))).map(c => c.id);
+    hasAudio(session, responsesById.get(c.utteranceId))).map(c => c.id);
   const taskTargets = desired.filter(c => ['role-unconfirmed', 'independence-unconfirmed', 'exposure-scope-unconfirmed', 'performance-time-unconfirmed'].includes(c.reasonCode)).map(c => c.id);
   const cost = seconds => ({ seconds, basis: 'controlled-assumption-not-measured' });
   const resolution = targets => ({ min: 0, max: targets.length, basis: '조건부 계획. 불명·무응답이면 실제 해소는 0일 수 있음' });
@@ -382,23 +384,44 @@ function sourceFor(session, claim, skill, flags, conditionalBranch) {
     humanConfirmed: true, predicted: true };
   return claim;
 }
-function projectWithPolicy(session, flags, conditionalBranch) {
+function projectedCell(session, source, skill, claim, flags, resolver) {
+  const timing = timingFor(session, source, skill);
+  // These are the complete inputs read by makeCell, grouped by the condition
+  // they can invalidate. Raw recognizer alternatives that did not replace a
+  // human review and unrelated task/UNKNOWN fields cannot dirty this cell.
+  const inputs = {
+    claim: { id: claim.id, epoch: claim.epoch },
+    audio: { id: source.id, epoch: source.epoch, at: source.at, audio: source.audio, syntheticEvidence: source.syntheticEvidence, mode: session.mode },
+    transcript: { alternatives: source.alternatives, source: source.source, predicted: source.predicted },
+    reviewScope: { scopeConfirmed: source.scopeConfirmed, humanConfirmed: source.humanConfirmed },
+    timing: { ...timing, performanceInterval: source.performanceInterval, performanceTimeSource: source.performanceTimeSource },
+    unknown: { affects: unknownAffects(session, skill), reason: unknownAffects(session, skill) ? session.unknown.reason : null },
+    task: { supportScope: session.task.supportScope, ...(skill === 'asr' ? {} : { supported: session.task.supported,
+      condition: skill === 'object' ? session.task.roleConfirmed : session.task.pastIndependent }) },
+    exposureScope: skill === 'asr' ? null : source.exposureScopeConfirmed,
+    policy: { respectEpoch: flags.respectEpoch, requireActual: flags.requireActual }
+  };
+  const key = `${flags.respectEpoch ? 'epoch' : 'no-epoch'}:${flags.requireActual ? 'actual' : 'predicted'}:${claim.id}:${source.id}:${skill}`;
+  return resolver.resolve(key, inputs, () => makeCell(session, source, skill, { claim, ...flags, preparedTiming: timing }));
+}
+function projectWithPolicy(session, flags, conditionalBranch, resolver) {
   const utterances = [session.original, ...session.responses];
   return utterances.flatMap(claim => {
-    const drafts = ['asr', 'object', 'past'].map(skill => makeCell(session, sourceFor(session, claim, skill, flags, conditionalBranch), skill, { claim, ...flags }));
+    const drafts = ['asr', 'object', 'past'].map(skill => projectedCell(session, sourceFor(session, claim, skill, flags, conditionalBranch), skill, claim, flags, resolver));
     // The comparison applies one global admission gate to the same projection
     // drafts. Main keeps each consumer's eligibility separate.
     const globalGate = flags.separatePurposes || drafts.every(d => d.status === 'accepted');
     const admitted = drafts.map(d => globalGate || d.status !== 'accepted' ? d : { ...d, status: 'held', value: null,
       reasonCode: 'global-admission-gate', reason: '목적별 자격 분리를 끈 비교입니다. 같은 발화의 모든 용도가 통과해야 하나의 전체 승인으로 처리합니다.' });
-    return [...admitted, ...(claim.id === 'original' ? [] : [earlierBoundary(session, claim, flags)])];
+    return [...admitted, ...(claim.id === 'original' ? [] : [earlierBoundary(session, claim, flags,
+      projectedCell(session, claim, 'object', session.original, flags, resolver))])];
   });
 }
-function evaluatePolicy(session, ablation, commonCandidates) {
+function evaluatePolicy(session, ablation, commonCandidates, resolver, preparedCells) {
   const flags = policyFor(ablation);
   const firstBranch = commonCandidates.find(a => a.id === 'review-original')?.branches?.find(b => b.kind === 'heard-text');
   const conditionalBranch = session.responses.length === 0 ? firstBranch : null;
-  const cells = projectWithPolicy(session, flags, conditionalBranch);
+  const cells = preparedCells || projectWithPolicy(session, flags, conditionalBranch, resolver);
   const candidateSet = ablation === 'no-target' || ablation === 'none' ? commonCandidates : observationCandidates(session, cells);
   const planned = planObservations(session, cells, candidateSet, flags);
   return { version: VERSION, ablation, diagnosticOnly: ablation !== 'none', flags, cells, candidateSet: clone(candidateSet), ...planned,
@@ -413,30 +436,32 @@ function evaluatePolicy(session, ablation, commonCandidates) {
       '관측 비용 1·5·8초와 응답 분기는 설명용 가정입니다. 실제 시간·해소율을 측정한 값이 아닙니다.'] };
 }
 function compared(result, base) {
+  const byId = new Map(base.cells.map(c => [c.id, c]));
   const changed = result.cells.filter(c => {
-    const before = base.cells.find(b => b.id === c.id);
-    return before.status !== c.status || JSON.stringify(before.value) !== JSON.stringify(c.value);
+    const before = byId.get(c.id);
+    return !before || before.status !== c.status || JSON.stringify(before.value) !== JSON.stringify(c.value);
   });
   result.comparedWithMain = { changedCells: changed.map(c => c.id),
-    promotedWithoutMainSupport: changed.filter(c => c.status === 'accepted' && base.cells.find(b => b.id === c.id).status !== 'accepted').length,
-    retainedRecordsLost: changed.filter(c => c.status !== 'accepted' && base.cells.find(b => b.id === c.id).status === 'accepted').length,
+    promotedWithoutMainSupport: changed.filter(c => c.status === 'accepted' && byId.get(c.id)?.status !== 'accepted').length,
+    retainedRecordsLost: changed.filter(c => c.status !== 'accepted' && byId.get(c.id)?.status === 'accepted').length,
     selectedActionChanged: result.selectedAction !== base.selectedAction,
     basis: '동일 세션의 본 규칙과 비교; 외부 정답표나 실제 정확도 측정이 아님' };
   return result;
 }
-function evaluate(session, { ablation = 'none' } = {}) {
+function evaluate(session, { ablation = 'none', previousProjection = null, engineKey = VERSION, forceFull = false } = {}) {
   if (!ABLATIONS.includes(ablation)) throw new TypeError('지원하지 않는 비교 방식입니다.');
-  const initial = projectWithPolicy(session, policyFor('none'), null);
+  const resolver = createResolver(previousProjection, engineKey, { forceFull });
+  const initial = projectWithPolicy(session, policyFor('none'), null, resolver);
   const commonCandidates = observationCandidates(session, initial);
-  const base = evaluatePolicy(session, 'none', commonCandidates);
-  if (ablation !== 'none') return compared(evaluatePolicy(session, ablation, commonCandidates), base);
+  const base = evaluatePolicy(session, 'none', commonCandidates, resolver, initial);
+  if (ablation !== 'none') return { ...compared(evaluatePolicy(session, ablation, commonCandidates, resolver), base), ...resolver.finish() };
   base.comparisons = ABLATIONS.slice(1).map(id => {
-    const r = compared(evaluatePolicy(session, id, commonCandidates), base);
+    const r = compared(evaluatePolicy(session, id, commonCandidates, resolver), base);
     return { id, ablation: id, diagnosticOnly: true, cells: r.cells, actions: r.actions, selectedAction: r.selectedAction,
       candidateSet: r.candidateSet, flags: r.flags, metrics: r.metrics, comparedWithMain: r.comparedWithMain,
       comparisonScope: r.comparisonScope, conditionalEvidence: r.conditionalEvidence };
   });
-  return base;
+  return { ...base, ...resolver.finish() };
 }
 
 module.exports = { VERSION, createSession, applyEvent, evaluate, examples, TARGET, ABLATIONS };
