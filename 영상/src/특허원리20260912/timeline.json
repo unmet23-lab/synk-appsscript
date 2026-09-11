@@ -1,0 +1,337 @@
+{
+  "fps": 30,
+  "durationInFrames": 6492,
+  "durationSeconds": 216.4,
+  "scenes": [
+    {
+      "id": "01",
+      "start": 0,
+      "duration": 413,
+      "cues": [
+        {
+          "text": "학생이 한 문장을 말했어요. 펠트 엔진은 이 말을 어떻게 기록할까요?",
+          "file": "audio/01a.mp3",
+          "start": 15,
+          "duration": 208,
+          "sample": false
+        },
+        {
+          "text": "처음부터 끝까지, 이 문장 하나만 따라가 볼게요.",
+          "file": "audio/01b.mp3",
+          "start": 231,
+          "duration": 141,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "start": 413,
+      "duration": 528,
+      "cues": [
+        {
+          "text": "친구를 만나서 카페에 갔어요.",
+          "file": "audio/sample.mp3",
+          "start": 15,
+          "duration": 107,
+          "sample": true
+        },
+        {
+          "text": "내가 친구를 만나고, 카페에 간 일을 말하는 문제예요.",
+          "file": "audio/02a.mp3",
+          "start": 130,
+          "duration": 149,
+          "sample": false
+        },
+        {
+          "text": "엔진은 이 소리를 그대로 보관합니다. 받아쓴 글은 옆에 따로 둬요.",
+          "file": "audio/02b.mp3",
+          "start": 287,
+          "duration": 200,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "start": 941,
+      "duration": 522,
+      "cues": [
+        {
+          "text": "확인할 건 세 가지예요.",
+          "file": "audio/03a.mp3",
+          "start": 15,
+          "duration": 81,
+          "sample": false
+        },
+        {
+          "text": "무슨 말을 했나? 친구를, 이 표현을 혼자 썼나? 과거형을 썼나?",
+          "file": "audio/03b.mp3",
+          "start": 104,
+          "duration": 237,
+          "sample": false
+        },
+        {
+          "text": "한 문장이어도, 질문마다 따로 살펴봅니다.",
+          "file": "audio/03c.mp3",
+          "start": 349,
+          "duration": 132,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "start": 1463,
+      "duration": 402,
+      "cues": [
+        {
+          "text": "친구를, 또는 친구가. 두 가지로 들렸다고 가정해 볼게요.",
+          "file": "audio/04a.mp3",
+          "start": 15,
+          "duration": 195,
+          "sample": false
+        },
+        {
+          "text": "이 두 문장에서 달라지는 건, 바로 이 한 글자예요.",
+          "file": "audio/04b.mp3",
+          "start": 218,
+          "duration": 143,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "start": 1865,
+      "duration": 324,
+      "cues": [
+        {
+          "text": "정확히 무슨 말을 했는지는 아직 못 정하죠.",
+          "file": "audio/05a.mp3",
+          "start": 15,
+          "duration": 121,
+          "sample": false
+        },
+        {
+          "text": "친구를, 이 표현을 혼자 썼는지도 기다립니다.",
+          "file": "audio/05b.mp3",
+          "start": 144,
+          "duration": 139,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "start": 2189,
+      "duration": 491,
+      "cues": [
+        {
+          "text": "두 문장 모두, ‘갔어요’라는 말은 같네요.",
+          "file": "audio/06a.mp3",
+          "start": 15,
+          "duration": 121,
+          "sample": false
+        },
+        {
+          "text": "과거형 부분을 따로 판단할 수 있고, 관련된 불확실성이나 과거형 도움도 없다고 확인한 이 예제에서는, 이 기록을 남겨요.",
+          "file": "audio/06b.mp3",
+          "start": 144,
+          "duration": 306,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "start": 2680,
+      "duration": 402,
+      "cues": [
+        {
+          "text": "그래서 한 칸은 기록하고, 두 칸은 확인 중이에요.",
+          "file": "audio/07a.mp3",
+          "start": 15,
+          "duration": 134,
+          "sample": false
+        },
+        {
+          "text": "여기서 기록은 점수가 아닙니다. 근거 있는 내용을 남겼다는 뜻이에요.",
+          "file": "audio/07b.mp3",
+          "start": 157,
+          "duration": 204,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "start": 3082,
+      "duration": 533,
+      "cues": [
+        {
+          "text": "처음 말이 궁금하면, 같은 녹음을 다시 들어요.",
+          "file": "audio/08a.mp3",
+          "start": 15,
+          "duration": 134,
+          "sample": false
+        },
+        {
+          "text": "친구를, 이렇게 들린다고 확인해 준 경우에는 기다리던 두 칸도 기록할 수 있어요.",
+          "file": "audio/08b.mp3",
+          "start": 157,
+          "duration": 206,
+          "sample": false
+        },
+        {
+          "text": "그래도 안 들리면, 확인 중으로 남깁니다.",
+          "file": "audio/08c.mp3",
+          "start": 371,
+          "duration": 121,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "start": 3615,
+      "duration": 353,
+      "cues": [
+        {
+          "text": "이번에는 모범 문장을 보여주고, 다시 말하게 해볼까요?",
+          "file": "audio/09a.mp3",
+          "start": 15,
+          "duration": 150,
+          "sample": false
+        },
+        {
+          "text": "이때는 도움을 받은 뒤에, 새로운 말이 생깁니다.",
+          "file": "audio/09b.mp3",
+          "start": 173,
+          "duration": 139,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "start": 3968,
+      "duration": 375,
+      "cues": [
+        {
+          "text": "새로운 말은 도움을 받은 뒤의 기록이에요.",
+          "file": "audio/10a.mp3",
+          "start": 15,
+          "duration": 116,
+          "sample": false
+        },
+        {
+          "text": "나중에 잘 말했다고, 처음부터 혼자 했다는 증거로 옮겨 놓을 수는 없어요.",
+          "file": "audio/10b.mp3",
+          "start": 139,
+          "duration": 195,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "start": 4343,
+      "duration": 383,
+      "cues": [
+        {
+          "text": "마지막으로, 조건을 바꾼 별도 예제를 볼게요.",
+          "file": "audio/11a.mp3",
+          "start": 15,
+          "duration": 142,
+          "sample": false
+        },
+        {
+          "text": "처음 말을 ‘친구를’로 확인하고, 세 칸을 기록한 상태에서 시작합니다.",
+          "file": "audio/11b.mp3",
+          "start": 165,
+          "duration": 177,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "start": 4726,
+      "duration": 487,
+      "cues": [
+        {
+          "text": "그런데 나중에 알게 됐어요.",
+          "file": "audio/12a.mp3",
+          "start": 15,
+          "duration": 91,
+          "sample": false
+        },
+        {
+          "text": "처음 말하기 일 분 전에, 친구를. 이 표현을 보여줬대요.",
+          "file": "audio/12b.mp3",
+          "start": 114,
+          "duration": 188,
+          "sample": false
+        },
+        {
+          "text": "도움은 먼저 있었고, 이 사실을 이제 안 거예요.",
+          "file": "audio/12c.mp3",
+          "start": 310,
+          "duration": 136,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "start": 5213,
+      "duration": 414,
+      "cues": [
+        {
+          "text": "그러면 이 표현을 혼자 썼다는 기록은 거둬야겠죠.",
+          "file": "audio/13a.mp3",
+          "start": 15,
+          "duration": 138,
+          "sample": false
+        },
+        {
+          "text": "정확히 들은 말과, 이 예제에서 도움과 별개로 확인한 과거형 기록은 유지합니다.",
+          "file": "audio/13b.mp3",
+          "start": 161,
+          "duration": 212,
+          "sample": false
+        }
+      ]
+    },
+    {
+      "id": "14",
+      "start": 5627,
+      "duration": 865,
+      "cues": [
+        {
+          "text": "처음 소리는 남기고, 각각 나누어 확인하고, 새 사실에 맞춰 필요한 칸을 고칩니다.",
+          "file": "audio/14a.mp3",
+          "start": 15,
+          "duration": 228,
+          "sample": false
+        },
+        {
+          "text": "실제 작업실에서도, 이 조건으로 한 개를 거두고 두 개를 유지한 이유를 볼 수 있어요.",
+          "file": "audio/14b.mp3",
+          "start": 275,
+          "duration": 216,
+          "sample": false
+        },
+        {
+          "text": "펠트 엔진이 하는 일입니다.",
+          "file": "audio/14c.mp3",
+          "start": 736,
+          "duration": 88,
+          "sample": false
+        }
+      ],
+      "runtimeStart": 251
+    }
+  ]
+}
