@@ -2,7 +2,7 @@
  * SYNK 자동 상담 AI — 엔진 (지식·문구는 contents_상담AI.js)
  *
  * 무엇: 페이스북 메신저로 들어온 학부모 문의에 Claude가 몽골어로 답하고,
- *       이름·연락처가 잡히면 leads 시트에 자동 적재, 못 답할 질문은 유호님께 인계한다.
+ *       사용자가 자발적으로 남긴 상담 정보만 제한적으로 적재하고, 못 답할 질문은 담당자에게 인계한다.
  *
  * 설계 원칙 4가지
  *   ① 지식베이스 밖은 말하지 않는다 — 확정:true 블록만 프롬프트에 들어가고 나머지는 자동 인계
@@ -101,15 +101,31 @@ function doPost(e) {
       if (pid && 입력.페이지 && String(입력.페이지) !== String(pid)) return 상담_응답_({ ok: false, error: 'wrong-page' });
     }
 
-    // Meta는 20초 안에 200을 못 받으면 같은 웹훅을 재전송한다 → 메시지ID로 중복 차단(6시간 캐시)
+    // Meta는 20초 안에 200을 못 받으면 같은 웹훅을 재전송한다 → 메시지ID로 중복 차단(6시간 캐시).
+    // 토큰 장애 경로도 이 관문을 지나야 같은 원문·수동 인계 메일이 반복되지 않는다. 사용자가 토큰 복구 뒤
+    // 새로 보내는 문의는 새 mid라 정상 처리된다.
     if (입력.경로 === 'meta' && 입력.mid) {
       const cache = CacheService.getScriptCache();
       if (cache.get('mid:' + 입력.mid)) return 상담_응답_({ ok: true, skip: 'duplicate' });
       cache.put('mid:' + 입력.mid, '1', 21600);
     }
 
+    // 가려진 표시값이 토큰 자리에 들어간 상태에서는 Claude 답을 만든 뒤에야 전송이 실패한다.
+    // 수신 직후 형식을 확인해 유료 호출 전에 닫고, 문의 원문과 수동 인계는 위 mid 관문 뒤 한 번만 남긴다.
+    if (입력.경로 === 'meta' && 입력.플랫폼 === 'ig' &&
+        !상담_IG토큰형식정상_(props.getProperty('상담AI_IG토큰'))) {
+      상담_IG토큰장애인계_(입력.세션, 입력.내용);
+      return 상담_응답_({ ok: false, error: 'ig-token-invalid' });
+    }
+
     const r = 상담응답_(입력.세션, 입력.내용, 입력.플랫폼);
-    if (입력.경로 === 'meta') 상담_전송_(입력.세션, r.reply, { 플랫폼: 입력.플랫폼 });   // Meta는 응답 본문을 답장으로 쓰지 않는다 — 우리가 직접 쏜다
+    if (입력.경로 === 'meta') {
+      const 전송됨 = 상담_전송_(입력.세션, r.reply, { 플랫폼: 입력.플랫폼 });   // Meta는 응답 본문을 답장으로 쓰지 않는다 — 우리가 직접 쏜다
+      if (전송됨 && r.공개고지) 상담_봇고지완료표시_(입력.세션, 입력.플랫폼);
+    } else if (입력.경로 === 'custom' && r.공개고지) {
+      // 자체/매니챗 경로는 이 HTTP 응답 본문이 곧 호출자에게 전달되는 답이다.
+      상담_봇고지완료표시_(입력.세션, 입력.플랫폼);
+    }
     return 상담_응답_({ ok: true, reply: r.reply, handoff: r.handoff });
   } catch (err) {
     상담_기록_('-', 'system', 'doPost 오류: ' + String(err && err.message || err).slice(0, 300), false, null);
@@ -169,6 +185,49 @@ function 상담_응답_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
+// Instagram Login 토큰은 ASCII 문자열이다. Meta·브라우저가 보여 주는 `IGAA3●●●…` 같은
+// 마스킹 표시값을 실제 토큰으로 저장하면 웹훅 수신과 Claude 호출은 되는데 마지막 전송만 HTML 400으로
+// 끝난다. 그런 상태에서는 답을 만들기 전에 닫아 비용과 침묵을 함께 막는다.
+function 상담_IG토큰형식정상_(tok) {
+  const s = String(tok || '');
+  return /^IGAA[\x21-\x7E]{20,}$/.test(s) && s === s.trim() && !/[●•…]/.test(s);
+}
+
+// 토큰 장애는 Claude 호출 전에 닫되, 이미 받은 문의까지 버리지는 않는다. Meta에는 HTTP 200 본문이
+// 반환돼 같은 이벤트가 다시 오지 않을 수 있으므로 사용자 원문을 남기고 운영자에게 즉시 수동 인계한다.
+// 이 경로는 토큰 복구 전이므로 번역·답변 초안을 만들기 위한 추가 AI 호출도 하지 않는다.
+function 상담_IG토큰장애인계_(세션, 사용자말) {
+  const 사유 = 'Instagram 답장 토큰 형식 오류 — 실제 토큰으로 교체 필요';
+  상담_기록_(세션, 'user', 사용자말, true, null, '', 'ig');
+  상담_기록_(세션, 'system', '처리 보류 — ' + 사유, true, null, '', 'ig');
+  상담_인계메일_('[SYNK] 🙋 Instagram 상담 수동 인계 필요',
+    '사유: ' + 사유 + '\n채널: 인스타그램\n세션: ' + String(세션).slice(0, 120) +
+    '\n\n받은 질문(원문):\n' + String(사용자말).slice(0, 500) +
+    '\n\n토큰을 복구한 뒤 Instagram 앱에서 직접 답변해 주세요. 비밀값은 이 알림에 포함하지 않았습니다.');
+}
+
+const 상담AI_봇고지완료표식 = '자동 상담 봇 고지 전송 완료';
+
+// 이력에 bot 행이 있다는 사실은 실제 전송 성공을 뜻하지 않는다. 답안을 만든 뒤 Meta 전송이 실패할 수도
+// 있으므로, 첫 고지는 `상담_전송_`이 성공한 뒤 남긴 별도 표식으로만 완료 판정한다.
+function 상담_봇고지전송됨_(세션) {
+  try {
+    const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('상담로그');
+    if (!sh || sh.getLastRow() < 2) return false;
+    const from = Math.max(2, sh.getLastRow() - 300);
+    const rows = sh.getRange(from, 1, sh.getLastRow() - from + 1, 4).getValues();
+    return rows.some(r => String(r[1]) === String(세션) && r[2] === 'system' && r[3] === 상담AI_봇고지완료표식);
+  } catch (_) {
+    return false; // 확인하지 못했으면 고지를 다시 붙이는 쪽으로 닫는다
+  }
+}
+
+function 상담_봇고지완료표시_(세션, 플랫폼) {
+  try {
+    상담_기록_(세션, 'system', 상담AI_봇고지완료표식, false, null, '', 플랫폼);
+  } catch (_) { /* 표식 실패가 이미 성공한 사용자 답장을 되돌리지는 않는다 */ }
+}
+
 /* ── 본체 ─────────────────────────────────────────────────
  * 한 번의 사용자 발화 → 한 번의 답변. 실패·정지·상한 초과는 전부 인계문으로 우아하게 착지한다. */
 function 상담응답_(세션, 사용자말, 플랫폼) {
@@ -177,19 +236,20 @@ function 상담응답_(세션, 사용자말, 플랫폼) {
   /* [v9.154] 봇 공개 — 이 세션의 **첫 응답**에만 자동화 고지를 앞에 붙인다(근거·문구 = contents_상담AI.js `상담_봇공개`).
    * 정지·상한·API오류 경로까지 **전부** 통과시키는 이유: 그 경로의 인계문도 봇이 보내는 첫 메시지일 수 있고,
    * 「어떤 경로로 답하든 첫 마디에 밝힌다」가 정책 요건이다(일부 경로만 붙이면 그 턴이 곧 위반이다). */
-  const 공개 = (상담_이력_(세션).length === 0) ? (상담_봇공개 + '\n\n') : '';
+  const 공개고지 = !상담_봇고지전송됨_(세션);
+  const 공개 = 공개고지 ? (상담_봇공개 + '\n\n') : '';
   if (props.getProperty('상담AI_OFF') === '1' || !key) {
     상담_기록_(세션, 'user', 사용자말, true, null, '', 플랫폼);
     상담_기록_(세션, 'bot', 상담_인계문, true, null, key ? '정지(상담AI_OFF)' : 'API키 없음', 플랫폼);
     상담_인계알림_(세션, 사용자말, key ? '봇 정지 상태' : 'API 키 미설정', 플랫폼);
-    return { reply: 공개 + 상담_인계문, handoff: true };
+    return { reply: 공개 + 상담_인계문, handoff: true, 공개고지: 공개고지 };
   }
   const 막힘9 = 상담_상한막힘_(props);
   if (막힘9) {
     상담_기록_(세션, 'user', 사용자말, true, null, '', 플랫폼);
     상담_기록_(세션, 'bot', 상담_인계문, true, null, 막힘9, 플랫폼);
     상담_인계알림_(세션, 사용자말, 막힘9 + ' — 지금은 사람이 받아야 합니다', 플랫폼);
-    return { reply: 공개 + 상담_인계문, handoff: true };
+    return { reply: 공개 + 상담_인계문, handoff: true, 공개고지: 공개고지 };
   }
 
   // ⚠ 사용자 발화는 호출 '뒤'에 기록한다 — 먼저 쓰면 상담_이력_가 그 줄을 읽어 같은 말이 두 번 들어간다
@@ -201,7 +261,7 @@ function 상담응답_(세션, 사용자말, 플랫폼) {
     // 실패해도 과금된 호출이면 토큰이 예외에 실려 온다(상담_호출_ 의 과금실패9) — 그대로 장부에 넣는다
     상담_기록_(세션, 'bot', 상담_인계문, true, (err && err.usage) || null, 'API 오류: ' + String(err && err.message || err).slice(0, 160), 플랫폼);
     상담_인계알림_(세션, 사용자말, 'API 오류 — ' + String(err && err.message || err).slice(0, 160), 플랫폼);
-    return { reply: 공개 + 상담_인계문, handoff: true };
+    return { reply: 공개 + 상담_인계문, handoff: true, 공개고지: 공개고지 };
   }
 
   const 답 = String(out.data.reply || '').trim() || 상담_인계문;
@@ -210,7 +270,7 @@ function 상담응답_(세션, 사용자말, 플랫폼) {
   상담_기록_(세션, 'bot', 답, 인계, out.usage, 인계 ? ('인계: ' + (out.data.handoff_reason || '')) : '', 플랫폼);
   if (out.data.lead_name || out.data.lead_contact) 상담_리드적재_(세션, out.data);
   if (인계) 상담_인계알림_(세션, 사용자말, out.data.handoff_reason || '봇이 답할 수 없는 질문', 플랫폼);
-  return { reply: 공개 + (인계 ? (답 === 상담_인계문 ? 답 : 답 + '\n\n' + 상담_인계문) : 답), handoff: 인계 };
+  return { reply: 공개 + (인계 ? (답 === 상담_인계문 ? 답 : 답 + '\n\n' + 상담_인계문) : 답), handoff: 인계, 공개고지: 공개고지 };
 }
 
 // Claude 호출 — 시스템(지식)은 프롬프트 캐싱으로 고정, 대화 이력만 매번 바뀐다
@@ -242,7 +302,7 @@ function 상담_호출_(apiKey, 세션, 사용자말) {
     headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
     payload: JSON.stringify(body), muteHttpExceptions: true
   });
-  if (res.getResponseCode() !== 200) throw new Error('Claude ' + res.getResponseCode() + ': ' + res.getContentText().slice(0, 160));
+  if (res.getResponseCode() !== 200) throw new Error('Claude HTTP ' + res.getResponseCode());
   const j = JSON.parse(res.getContentText());
   /* [08-28] 200 을 받은 «뒤»의 실패는 **이미 과금된 호출**이다 — 토큰을 예외에 실어 보낸다(codex P2 d4ad639e).
    *   그전엔 여기서 죽으면 usage 가 그 자리에서 사라져 상담로그에 `null` 이 적혔고, 그만큼 비용 집계가
@@ -296,7 +356,7 @@ function 상담_시스템_() {
     // [철학 v1.8 대조] §0 시제 규약 — 금칙(contents_상담AI.js)에도 같은 규칙이 산다. 양쪽에 두는 이유는
     //   미성년 차단(S9)과 같다: 한쪽만 있으면 모델이 다른 쪽을 따른다(tests/상담지식.test.js ③ 선례).
     //   여기 【말투】에 두는 몫은 「지식에 없는 문장을 조합할 때의 기본 시제」이고, 금칙 쪽은 「위반의 금지」다.
-    '· 우리는 아직 문을 열지 않았다(개원 2027-02-25 · 오늘 학생 0명). 수업·교실·행사처럼 학생이 있어야 시작되는 것은 "개원하는 날부터 ~합니다"로 말한다 — 이미 지어 둔 시스템만 현재형으로 말한다.',
+    '· 우리는 아직 문을 열지 않았고 개원을 준비하고 있다. 수업·교실·행사처럼 학생이 있어야 시작되는 것은 "개원한 뒤 ~합니다" 또는 "준비하고 있습니다"로 말한다 — 이미 지어 둔 시스템만 현재형으로 말한다.',
     '',
     '【아는 것 — 오직 이것만 말할 수 있다】',
     확정.map(k => '· [' + k.주제 + '] ' + k.내용).join('\n'),
@@ -306,9 +366,8 @@ function 상담_시스템_() {
     '',
     '【반드시 사람에게 넘기는 경우 handoff=true】',
     '· 위 "모르는 것"에 해당하는 질문',
-    // [v9.152] 미성년 분기 — FAQ 정본 S9: 구 규칙은 「예약을 원하면 이름·연락처 요청」뿐이라 미성년에게서 연락처를 받는 경로가 열려 있었다
-    '· 상담·체험·방문 예약을 원할 때 — 성인·보호자면 이름과 연락처를 정중히 여쭤 lead 항목에 채운다.',
-    '  단 상대가 학생(미성년으로 보이면 전부 포함)이면 연락처를 받지 말고, 보호자분께서 이 계정으로 연락 주시도록 정중히 안내만 한다.',
+    '· 상담·체험·방문을 원할 때 — handoff=true로 두고 담당자가 같은 대화창에서 이어서 답한다고 안내한다. 이름·전화번호·주소·학교를 먼저 묻지 않는다.',
+    '  상대가 학생이거나 미성년으로 보이면 추가 연락처를 받지 말고, 보호자분께서 이 계정으로 직접 연락 주시도록 안내한다.',
     '· 불만·항의·환불 이야기',
     '· 지식에 없는 숫자를 말해야만 답이 되는 질문',
     '· 조금이라도 확신이 없을 때 — 애매하면 넘긴다. 지어내는 것보다 넘기는 것이 항상 낫다.',
@@ -316,7 +375,7 @@ function 상담_시스템_() {
     '【절대 금지】',
     상담_금칙.map((r, i) => (i + 1) + '. ' + r).join('\n'),
     '',
-    '【리드 정보】 대화에서 이름·연락처·자녀 나이가 실제로 나왔을 때만 lead 항목을 채운다. 추측해서 채우지 않는다. 상대가 학생(미성년)으로 보이면 연락처는 채우지 않는다.' // [v9.152]
+    '【리드 정보】 사용자가 스스로 적은 이름·연락처·자녀 나이만 lead 항목에 채운다. 먼저 요구하거나 추측하지 않고, 답변에 그대로 되풀이하지 않는다. 상대가 학생 또는 미성년으로 보이면 연락처는 채우지 않는다.'
   ].join('\n');
 }
 
@@ -421,6 +480,10 @@ function 상담_전송_(psid, text, opts) {
   const 토큰속성 = 인스타 ? '상담AI_IG토큰' : '상담AI_페이지토큰';
   const tok = props.getProperty(토큰속성);
   if (!tok) { 상담_기록_(psid, 'system', '전송 불가 — ' + 토큰속성 + ' 미설정', true, null, '', opts.플랫폼); return false; }
+  if (인스타 && !상담_IG토큰형식정상_(tok)) {
+    상담_기록_(psid, 'system', '전송 불가 — 상담AI_IG토큰이 실제 토큰 형식이 아닙니다(마스킹 표시값 저장 여부 확인)', true, null, '', opts.플랫폼);
+    return false;
+  }
   const 인스타계정ID = 인스타 ? props.getProperty('상담AI_IG계정ID') : '';
   if (인스타 && !인스타계정ID) { 상담_기록_(psid, 'system', '전송 불가 — 상담AI_IG계정ID 미설정', true, null, '', opts.플랫폼); return false; }
   if (!psid || (!text && !(opts.카드들 && opts.카드들.length))) return false;
@@ -442,8 +505,38 @@ function 상담_전송_(psid, text, opts) {
     const res = UrlFetchApp.fetch(url, 요청옵션);
     if (res.getResponseCode() !== 200) {
       // Meta 오류 본문이나 UrlFetch 예외에는 요청값이 되비칠 수 있다. 운영 기록에는
-      // 상태코드만 남겨 토큰·사용자 원문이 시트와 메일로 번지지 않게 한다.
-      const 오류 = 'Meta 전송 ' + res.getResponseCode();
+      // 자유문장(message)·추적ID는 버리고 숫자 오류코드와 형식만 남긴다. HTTP 400 하나만
+      // 기록하면 토큰·권한·recipient 중 무엇이 틀렸는지 가를 수 없어 실계정 장애가 반복된다.
+      // Meta가 되비칠 수 있는 요청값은 여전히 시트와 메일로 번지지 않는다.
+      let 오류 = 'Meta 전송 ' + res.getResponseCode();
+      try {
+        const 응답본문 = String(res.getContentText() || '');
+        let parsed;
+        try { parsed = JSON.parse(응답본문 || '{}'); }
+        catch (_) { 오류 += ' · non-json(' + Math.min(응답본문.length, 9999) + ')'; }
+        const meta오류 = parsed && parsed.error;
+        const parts = [];
+        if (meta오류 && typeof meta오류 === 'object') {
+          if (meta오류.code !== undefined && Number.isFinite(Number(meta오류.code))) parts.push('code ' + Number(meta오류.code));
+          if (meta오류.error_subcode !== undefined && Number.isFinite(Number(meta오류.error_subcode))) parts.push('subcode ' + Number(meta오류.error_subcode));
+          const type = String(meta오류.type || '');
+          if (/^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(type)) parts.push(type);
+          const message = String(meta오류.message || '');
+          if (/unsupported post request/i.test(message)) parts.push('unsupported-post');
+          if (/permission/i.test(message)) parts.push('permission');
+          if (/access[ _-]?token/i.test(message)) parts.push('access-token');
+          if (/recipient/i.test(message)) parts.push('recipient');
+          if (/24\s*hour|messaging window/i.test(message)) parts.push('window');
+          if (/does not exist|not found/i.test(message)) parts.push('not-found');
+          if (/invalid|not valid/i.test(message)) parts.push('invalid');
+          if (!parts.length) parts.push('error-object');
+        } else if (parsed && Object.prototype.hasOwnProperty.call(parsed, 'error')) {
+          parts.push('error-' + typeof meta오류);
+        } else if (parsed) {
+          parts.push('json-no-error');
+        }
+        if (parts.length) 오류 += ' · ' + parts.join(' · ');
+      } catch (_) { /* 본문이 JSON이 아니면 HTTP 상태만 남긴다 */ }
       상담_기록_(psid, 'system', 오류, true, null, '', opts.플랫폼);
       const 복구안내 = 인스타
         ? 'Instagram 전용 토큰(상담AI_IG토큰)의 만료와 instagram_business_basic · instagram_business_manage_messages 권한을 확인해 주세요.'
@@ -942,6 +1035,8 @@ function 상담AI_연결경고_(props) {
   if (!props.getProperty('상담AI_검증토큰')) 경고.push('상담AI_검증토큰 없음 — Meta 웹훅 등록이 안 됨');
   if (props.getProperty('상담AI_IG계정ID') && !props.getProperty('상담AI_IG토큰')) {
     경고.push('상담AI_IG토큰 없음 — Instagram 계정은 잠갔지만 답장을 보낼 수 없음');
+  } else if (props.getProperty('상담AI_IG계정ID') && !상담_IG토큰형식정상_(props.getProperty('상담AI_IG토큰'))) {
+    경고.push('상담AI_IG토큰 형식 오류 — Meta 화면의 마스킹 표시값이 아닌 실제 전용 토큰을 저장해야 함');
   }
   if (props.getProperty('상담AI_OFF') === '1') 경고.push('상담AI_OFF=1 — 봇이 정지 상태');
   return 경고;
@@ -959,9 +1054,9 @@ function 상담AI_점검() {
   Logger.log('■ 준비 상태: ' + (준비.length ? '❌ ' + 준비.join(' / ') : '✅ 정상'));
   if (경고.length) Logger.log('■ 경고: ⚠ ' + 경고.join('\n         ⚠ '));
   Logger.log('■ 모델: ' + 상담AI_모델_() + ' · 사고: ' + (상담AI_사고 ? 'ON' : 'OFF') + ' · 일일상한: ' + (props.getProperty('상담AI_일일상한') || 상담AI_기본상한));
-  Logger.log('■ 인스타: 발송 토큰 ' + (props.getProperty('상담AI_IG토큰') ? 'IG 전용' : '없음(fail-closed)') +
+  Logger.log('■ 인스타: 발송 토큰 ' + (상담_IG토큰형식정상_(props.getProperty('상담AI_IG토큰')) ? 'IG 전용 형식 확인' : '없음·형식 오류(fail-closed)') +
     ' · 계정ID 잠금 ' + (props.getProperty('상담AI_IG계정ID') ? 'ON' : '없음') +
-    ' — 실사용자 답장은 instagram_business_basic + instagram_business_manage_messages 고급 액세스 승인 뒤부터');
+    ' — 자체 관리 계정은 instagram_business_basic + instagram_business_manage_messages Standard Access와 실제 전용 토큰으로 답장');
   if (props.getProperty('상담AI_페이지ID') && !props.getProperty('상담AI_IG계정ID')) {
     Logger.log('   ⚠ 페이지ID는 잠갔는데 IG계정ID가 없습니다 — 인스타 웹훅은 **차단**됩니다(무잠금 통과 대신 fail-closed).\n' +
       '     인스타를 쓰시려면 상담AI_IG계정ID 를 채우세요. 인스타를 안 쓰시면 그대로 두셔도 됩니다.');
