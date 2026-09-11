@@ -18,7 +18,14 @@ function automationHealthCheck() {
   try {
     props = PropertiesService.getScriptProperties();
     result.rehearsalPresent = props.getProperty('배치리허설_만료') !== null;
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let ss = null;
+    try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (e) { /* 실행 API에는 활성 컨테이너가 없다. */ }
+    if (!ss) {
+      // 기존 엔진 ID만 읽는다. 점검 중 속성을 저장하거나 ID/원문 오류를 출력하지 않는다.
+      const id = props.getProperty('ENGINE_SS_ID');
+      if (typeof id !== 'string' || !id || /[^A-Za-z0-9_-]/.test(id)) return result;
+      ss = SpreadsheetApp.openById(id);
+    }
     if (!ss) return result;
     const pf = ss.getSheetByName('profiles');
     const columns = pf ? pf.getLastColumn() : 0;
@@ -59,7 +66,7 @@ function automationHealthCheck() {
       } catch (e) { result.batches[name] = { status: 'invalid_state' }; }
     });
     try {
-      const monthly = monthlyDeliveryHealth_();
+      const monthly = monthlyDeliveryHealth_(ss);
       const statuses = ['pending', 'sending', 'sent', 'uncertain', 'legacy_unknown'];
       const counts = {};
       statuses.forEach(k => {
