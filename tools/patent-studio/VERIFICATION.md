@@ -2,7 +2,7 @@
 
 2026-09-11 KST · 판단 코어 **0.4.0** · 현재 Windows PC의 로컬 실행 검증.
 
-펠트 엔진의 근거 판단을 실제 원음·받아쓰기·도움 제시·새 응답·정정·저장·재현까지 연결했습니다. 실행은 [README](README.md), 기존 제품 연결은 [INTEGRATION](INTEGRATION.md), 특허 후보의 구체 단계와 선행기술 대조는 [PATENT-EVIDENCE](PATENT-EVIDENCE.md)에 있습니다.
+SYNK Core의 근거 자격·관측·재판정 모듈을 실제 원음·받아쓰기·도움 제시·새 응답·정정·저장·재현까지 연결했습니다. 실행은 [README](README.md), 기존 제품 연결은 [INTEGRATION](INTEGRATION.md), 특허 후보의 구체 단계와 선행기술 대조는 [PATENT-EVIDENCE](PATENT-EVIDENCE.md)에 있습니다.
 
 ## 이번에 발전시킨 부분
 

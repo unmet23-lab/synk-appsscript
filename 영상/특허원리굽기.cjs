@@ -73,7 +73,7 @@ async function main(){
     }
     if(args.includes('--stills')){if(errors.length)throw Error(errors.join('\n'));return;}
     let last=-1;
-    const out=path.join(output,'펠트 엔진_한 문장이 기록되는 과정.mp4');
+    const out=path.join(output,'SYNK Core_한 문장이 기록되는 과정.mp4');
     await renderMedia({serveUrl:served,composition,outputLocation:out,codec:'h264',pixelFormat:'yuv420p',imageFormat:'jpeg',jpegQuality:95,videoBitrate:'9M',encodingMaxRate:'13M',encodingBufferSize:'20M',audioBitrate:'256k',colorSpace:'bt709',concurrency:2,puppeteerInstance:browser,onBrowserLog:log,overwrite:true,enforceAudioTrack:true,logLevel:'error',onProgress:p=>{const pc=Math.floor(p.progress*20)*5;if(pc!==last){last=pc;console.log(`영상 ${pc}%`);}}});
     if(errors.length)throw Error(errors.join('\n'));
     const probe=JSON.parse(run('ffprobe',['-v','error','-show_streams','-show_format','-of','json',out]));
