@@ -1,0 +1,132 @@
+{
+  "generatedAt": "2026-09-12T13:18:25.443Z",
+  "externalRequests": [],
+  "results": [
+    {
+      "figure": 1,
+      "bounds": [],
+      "overlaps": [],
+      "count": 18,
+      "fontLoaded": true,
+      "renderedFonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 5
+        },
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUIT-Variable-Thin-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 7
+        }
+      ]
+    },
+    {
+      "figure": 2,
+      "bounds": [],
+      "overlaps": [],
+      "count": 22,
+      "fontLoaded": true,
+      "renderedFonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 6
+        },
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUIT-Variable-Thin-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 11
+        }
+      ]
+    },
+    {
+      "figure": 3,
+      "bounds": [],
+      "overlaps": [],
+      "count": 14,
+      "fontLoaded": true,
+      "renderedFonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 7
+        },
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUIT-Variable-Thin-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 12
+        }
+      ]
+    },
+    {
+      "figure": 4,
+      "bounds": [],
+      "overlaps": [],
+      "count": 18,
+      "fontLoaded": true,
+      "renderedFonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUIT-Variable-Thin-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 14
+        }
+      ]
+    },
+    {
+      "figure": 5,
+      "bounds": [],
+      "overlaps": [],
+      "count": 27,
+      "fontLoaded": true,
+      "renderedFonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 6
+        },
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUIT-Variable-Thin-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "figure": 6,
+      "bounds": [],
+      "overlaps": [],
+      "count": 11,
+      "fontLoaded": true,
+      "renderedFonts": [
+        {
+          "familyName": "Inter Tight",
+          "postScriptName": "InterTight-Bold",
+          "isCustomFont": true,
+          "glyphCount": 8
+        },
+        {
+          "familyName": "SUIT Variable Thin",
+          "postScriptName": "SUIT-Variable-Thin-ExtraBold",
+          "isCustomFont": true,
+          "glyphCount": 14
+        }
+      ]
+    }
+  ]
+}
