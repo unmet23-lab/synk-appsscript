@@ -1,0 +1,80 @@
+{
+  "passed": true,
+  "at": "2026-09-12T12:27:20.705Z",
+  "engine": "0.5.0",
+  "scenarios": [
+    {
+      "name": "after",
+      "before": {
+        "asr": "accepted",
+        "object": "held",
+        "past": "accepted"
+      },
+      "after": {
+        "asr": "accepted",
+        "object": "accepted",
+        "past": "accepted"
+      },
+      "replay": {
+        "valid": true,
+        "failures": [],
+        "checkedRevisions": 4,
+        "startsAtRevision": 0,
+        "throughRevision": 3,
+        "scope": "저장된 사건으로 판정을 재현하고 내용 지문 연쇄를 확인합니다. 외부 신뢰 시각·서명 또는 기록되지 않은 사건의 존재까지 증명하지 않습니다.",
+        "checkedAudioOccurrences": 0,
+        "engineVersion": "0.5.0"
+      }
+    },
+    {
+      "name": "before",
+      "before": {
+        "asr": "accepted",
+        "object": "held",
+        "past": "accepted"
+      },
+      "after": {
+        "asr": "accepted",
+        "object": "excluded",
+        "past": "accepted"
+      },
+      "replay": {
+        "valid": true,
+        "failures": [],
+        "checkedRevisions": 4,
+        "startsAtRevision": 0,
+        "throughRevision": 3,
+        "scope": "저장된 사건으로 판정을 재현하고 내용 지문 연쇄를 확인합니다. 외부 신뢰 시각·서명 또는 기록되지 않은 사건의 존재까지 증명하지 않습니다.",
+        "checkedAudioOccurrences": 0,
+        "engineVersion": "0.5.0"
+      }
+    },
+    {
+      "name": "multiple",
+      "after": {
+        "asr": "accepted",
+        "object": "accepted",
+        "past": "accepted"
+      },
+      "replay": {
+        "valid": true,
+        "failures": [],
+        "checkedRevisions": 8,
+        "startsAtRevision": 0,
+        "throughRevision": 7,
+        "scope": "저장된 사건으로 판정을 재현하고 내용 지문 연쇄를 확인합니다. 외부 신뢰 시각·서명 또는 기록되지 않은 사건의 존재까지 증명하지 않습니다.",
+        "checkedAudioOccurrences": 0,
+        "engineVersion": "0.5.0"
+      }
+    }
+  ],
+  "dimensions": {
+    "width": 390,
+    "scrollWidth": 390,
+    "fonts": true,
+    "images": true
+  },
+  "errors": [],
+  "externalRequests": 0,
+  "scope": "실제 로컬 HTTP/SQLite/Core 작동. 모든 사건은 합성 예제. 학생·마이크·전사 API 없음."
+}

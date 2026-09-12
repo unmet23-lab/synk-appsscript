@@ -1,6 +1,16 @@
 # SYNK Core 근거 작업실 — 로컬 실행 계약
 
-2026-09-12 · 근거 자격·관측·재판정 모듈 0.4.0. 이 API는 현재 기계의 시연·개발 자료를 저장한다. 제품의 학생 DB와 자동 연결하지 않는다. 판단 모듈과 기록 형식은 SYNK Core 제품 연결을 위해 분리해 둔다.
+2026-09-12 · 근거 자격·관측·재판정 모듈 0.5.0. 이 API는 현재 기계의 시연·개발 자료를 저장한다. 제품의 학생 DB와 자동 연결하지 않는다. 판단 모듈과 기록 형식은 SYNK Core 제품 연결을 위해 분리해 둔다.
+
+## 0.5 추가 계약
+
+`help-presented.timeBounds`는 선택 필드다. 지정하면 `{earliestAt,latestAt,basis,sourceRef}`를 검증한다. basis는 declared-bound/clock-calibration/transport-bound/human-review 중 하나이며 실제 자동 측정·출처 인증을 뜻하지 않는다. 날짜는 명시적인 ISO 시간대와 밀리초 이하 정밀도를 갖고 earliest≤latest이어야 한다. 생략하면 기존 at 점시각 경로다. 미등록·혼합·빈 능력 코드 입력은 `scope.status=unknown`과 원입력을 보존하고 관련 수행을 보류한다.
+
+새 이벤트 `help-refined`는 `{id,type,helpId,sourceRef,timeBounds?,skills?}`이다. 기존 도움의 시간 범위 안에서 정밀화하거나 같음을 재확인한다. 알려진 능력 범위를 넓히는 수정은 거절한다. 각 정밀화는 before/after·출처·사건 식별자를 보존한다. 원음과 최초 사건 payload는 바꾸지 않는다. 모순 기록을 임의로 합치는 기능은 제공하지 않는다.
+
+`analysis.cells[].blockers`는 모든 보류·제외 조건 `{id,code,reason,status}`다. `temporalEvidence`에 시간 비교 출처를 남긴다. `analysis.evidencePlan`은 원래 발화의 현재 목적에 대한 조건부 계획으로 targets/actions/selectedActionIds/steps/projectedQualification/score/exploredStates/truncationReason을 반환한다. 실제 근거 변경은 false이고, 계획만으로 사건을 생성하지 않는다. 비용은 선언 모델 단위다. 새 음성은 원래 음성의 전사 장애를 해소하지 못한다.
+
+엔진 묶음 지문은 core/projection/temporal-evidence/observation-planner 소스를 포함한다. 0.4 원장은 당시 보존 소스로 재현한다. `engineReadOnly:true`인 이전 기록의 새 사건은 `ENGINE_VERSION` 409로 거절하며 새 시연을 만들면0.5를 사용한다. 내보내기는 해당 기록의 엔진 판본·지문을 적는다.
 
 ## 실행
 

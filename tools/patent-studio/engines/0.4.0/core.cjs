@@ -3,10 +3,8 @@
 // A local, controlled-language demonstration. This does not infer complete
 // hypothesis coverage, transcribe audio, or certify a learner's competence.
 const clone = value => structuredClone(value);
-const VERSION = '0.5.0';
+const VERSION = '0.4.0';
 const { createResolver } = require('./projection.cjs');
-const { normalizeHelpScope, normalizeTimeBounds, refineTimeBounds, classifyHelpTime } = require('./temporal-evidence.cjs');
-const { planEvidencePreserving } = require('./observation-planner.cjs');
 const TARGET = '친구를 만나서 카페에 갔어요';
 const ALTERNATIVE = '친구가 만나서 카페에 갔어요';
 const TASK_PROMPT = '내가 친구를 만난 뒤 카페에 간 일을 말해 주세요. 화자는 행위자이고 친구는 만난 대상입니다.';
@@ -166,34 +164,10 @@ function applyEvent(input, incoming) {
       confirmPerformanceTime(session, target, p, event);
       break;
     case 'help-presented':
-      const scope = normalizeHelpScope(p.skills);
       session.helpEvents.push({ id: event.id, text: text(p.text, 'help.text', false), exposesAnswer: p.exposesAnswer !== false,
         at: event.at, sequence: session.eventLog.length + 1,
-        skills: scope.skills, scope, actual: true,
-        ...(own(p, 'timeBounds') ? { timeBounds: normalizeTimeBounds(p.timeBounds) } : {}), refinements: [] });
+        skills: Array.isArray(p.skills) ? [...p.skills] : ['object', 'past'], actual: true });
       break;
-    case 'help-refined': {
-      const help = session.helpEvents.find(h => h.id === p.helpId);
-      if (!help) throw new TypeError('확인할 도움 사건을 찾을 수 없습니다.');
-      const sourceRef = text(p.sourceRef, 'sourceRef', false);
-      if (!own(p, 'timeBounds') && !own(p, 'skills')) throw new TypeError('확인한 시간 범위 또는 능력 범위가 필요합니다.');
-      const before = { timeBounds: help.timeBounds || null, scope: clone(help.scope || normalizeHelpScope(help.skills)) };
-      if (own(p, 'timeBounds')) {
-        if (!help.timeBounds) throw new TypeError('기존 시간 범위가 있는 도움만 범위를 좁힐 수 있습니다. 새 사건의 정정과 구분해 주세요.');
-        help.timeBounds = refineTimeBounds(help.timeBounds, p.timeBounds);
-      }
-      if (own(p, 'skills')) {
-        const nextScope = normalizeHelpScope(p.skills);
-        if (nextScope.status !== 'known') throw new TypeError('범위 확인에는 지원하는 능력 코드를 지정해 주세요.');
-        const priorScope = help.scope || normalizeHelpScope(help.skills);
-        if (priorScope.status === 'known' && !priorScope.skills.includes('all') && nextScope.skills.some(s => !priorScope.skills.includes(s)))
-          throw new TypeError('범위를 넓히는 정정은 범위 정밀화로 처리할 수 없습니다.');
-        help.scope = { ...nextScope, sourceRef }; help.skills = nextScope.skills;
-      }
-      help.refinements = [...(help.refinements || []), { eventId: event.id, at: event.at, sourceRef, before,
-        after: { timeBounds: help.timeBounds || null, scope: clone(help.scope || normalizeHelpScope(help.skills)) } }];
-      break;
-    }
     case 'response-added':
       target = locate(session, { ...p, role: 'response', responseId: p.responseId || `response-${session.responses.length + 1}` }, true, event);
       if (p.alternatives) target.alternatives = alternativesFrom(p.alternatives, p.source || 'human');
@@ -250,24 +224,20 @@ function unknownAffects(session, skill) {
   return false;
 }
 function timingFor(session, utterance, skill) {
-  const relevant = session.helpEvents.filter(h => {
-    const scope = h.scope || normalizeHelpScope(h.skills);
-    return h.exposesAnswer && (skill === 'asr' || scope.status === 'unknown' || scope.skills.includes(skill) || scope.skills.includes('all'));
-  });
+  const relevant = session.helpEvents.filter(h => h.exposesAnswer &&
+    (skill === 'asr' || !h.skills?.length || h.skills.includes(skill) || h.skills.includes('all')));
   const legacyFixture = session.mode === 'example' && utterance.syntheticEvidence && utterance.performanceTimeConfirmed === undefined;
-  const result = { confirmed: utterance.performanceTimeConfirmed === true || Boolean(legacyFixture), before: [], overlapping: [], unknown: [], scopeUnknown: [], relations: [] };
+  const result = { confirmed: utterance.performanceTimeConfirmed === true || Boolean(legacyFixture), before: [], overlapping: [], unknown: [] };
   if (!result.confirmed) return result;
   const interval = utterance.performanceInterval || (legacyFixture ? { startedAt: utterance.at, endedAt: utterance.at } : null);
   if (interval) {
     const start = Date.parse(interval.startedAt), end = Date.parse(interval.endedAt);
     if (![start, end].every(Number.isFinite) || end < start) return { ...result, confirmed: false };
     for (const h of relevant) {
-      const comparison = classifyHelpTime(h, { ...utterance, performanceInterval: interval });
-      result.relations.push({ helpId: h.id, ...comparison });
-      if (comparison.relation !== 'after' && (h.scope || normalizeHelpScope(h.skills)).status === 'unknown') result.scopeUnknown.push(h);
-      if (comparison.relation === 'unknown') result.unknown.push(h);
-      else if (comparison.relation === 'before') result.before.push(h);
-      else if (comparison.relation === 'overlap') result.overlapping.push(h);
+      const at = Date.parse(h.at);
+      if (!Number.isFinite(at)) result.unknown.push(h);
+      else if (at < start) result.before.push(h);
+      else if (at <= end) result.overlapping.push(h);
     }
     return result;
   }
@@ -276,65 +246,16 @@ function timingFor(session, utterance, skill) {
   for (const h of relevant) {
     if (known.has(h.id)) {
       if (utterance.performanceRelation === 'after-recorded-help') result.before.push(h);
-    } else {
-      let earliest = Date.parse(h.at);
-      if (own(h, 'timeBounds')) {
-        try { earliest = Date.parse(normalizeTimeBounds(h.timeBounds).earliestAt); } catch { earliest = NaN; }
-      }
-      const reviewed = Date.parse(utterance.performanceTimeConfirmedAt);
-      const afterReview = Number.isFinite(earliest) && Number.isFinite(reviewed) && earliest > reviewed;
+    } else if (!Number.isFinite(Date.parse(h.at)) || Date.parse(h.at) < Date.parse(utterance.performanceTimeConfirmedAt)) {
       // A new late-arriving help event was not covered by the human's earlier
       // relative-order confirmation. There is no timestamp to safely order it.
-      if (!afterReview) result.unknown.push(h);
-      result.relations.push({ helpId: h.id, relation: afterReview ? 'after' : 'unknown',
-        reasonCode: afterReview ? 'help-after-human-review' : 'new-help-outside-relative-review',
-        helpBounds: h.timeBounds || null, performanceBounds: null });
+      result.unknown.push(h);
     }
-    if ((result.before.includes(h) || result.unknown.includes(h)) && (h.scope || normalizeHelpScope(h.skills)).status === 'unknown') result.scopeUnknown.push(h);
   }
   return result;
 }
 function helpFor(session, utterance, skill) {
   return timingFor(session, utterance, skill).before;
-}
-function collectBlockers(session, u, skill, claim, timing, flags) {
-  const rows = [], isPerformance = skill !== 'asr', original = claim.id === 'original';
-  const add = (condition, code, reason, group = `${u.id}:${skill}`, status = 'held') => {
-    if (condition) rows.push({ id: `${group}:${code}`, code, reason, status });
-  };
-  const parsed = u.alternatives.map(a => parseControlled(a.text));
-  add(flags.requireActual && u.predicted, 'actual-observation-required', '조건부 예상은 실제 관측을 대신하지 않습니다.');
-  add(!hasAudio(session, u), 'missing-audio', '이 발화의 원음이 아직 연결되지 않았습니다.', u.id);
-  add(!u.alternatives.length, 'no-transcript', '실제 전사 또는 청취 확인이 필요합니다.', u.id);
-  add(u.alternatives.some(a => a.unknown === true || a.status === 'unintelligible' || /^(?:\[(?:불명|청취\s*불명|inaudible|unknown)\]|불명|청취\s*불명|unknown|<unk>|\?+)$/iu.test(a.text.trim())),
-    'unknown-transcript', '청취 불명은 확인된 단어열이 아닙니다.', u.id);
-  add(unknownAffects(session, skill), 'relevant-unknown', `관련 미확인 범위가 남아 있습니다: ${session.unknown.reason}`);
-  add(isPerformance && parsed.some(p => !p), 'unsupported-expression', '현재 통제 문장 규칙 밖의 표현입니다. 자연스러운 대안일 수 있으므로 오류로 확정하지 않습니다.');
-  add(!u.scopeConfirmed, 'scope-unconfirmed', '전사 후보가 관련 해석 범위를 다루는지 확인해야 합니다.', u.id);
-  add(u.source !== 'fixture' && !u.humanConfirmed, 'transcript-not-reviewed', '원음을 들은 사람의 전사 확인이 필요합니다.', u.id);
-  if (isPerformance) {
-    add(session.task.supported === false, 'unsupported-task', '이 문항은 현재 역할 규칙의 지원 범위 밖입니다.', 'task');
-    add(!timing.confirmed, 'performance-time-unconfirmed', '파일 업로드 시각과 실제 수행 시각을 구분해야 합니다.', u.id);
-    add(timing.scopeUnknown.length, 'help-scope-unknown', '도움이 영향을 준 능력 범위를 확인하지 못했습니다.');
-    add(timing.overlapping.length, 'help-overlaps-capture', '도움과 녹음 구간이 겹쳐 전체를 도움 전 또는 후 수행으로 단정할 수 없습니다.');
-    add(timing.unknown.length, 'help-time-order-unknown', '도움과 발화의 선후 관계를 확정할 수 없습니다.');
-    add(!u.exposureScopeConfirmed, 'exposure-scope-unconfirmed', '이 시점의 앱 내 도움 관측 범위를 확인해야 합니다.', u.id);
-    add(flags.respectEpoch && original && u.epoch !== claim.epoch, 'later-response-not-original-evidence', '새 응답은 처음 수행으로 소급할 수 없습니다.', u.id, 'excluded');
-    add(flags.respectEpoch && original && timing.before.some(h => (h.scope || normalizeHelpScope(h.skills)).status === 'known'),
-      'original-was-assisted', '원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.', `${u.id}:${skill}`, 'excluded');
-    add(skill === 'object' && !session.task.roleConfirmed, 'role-unconfirmed', '문항의 행위자와 대상을 확인해야 합니다.', 'task');
-    add(skill === 'past' && !session.task.pastIndependent, 'independence-unconfirmed', '과거형 관측과 조사 해석의 독립 조건을 확인해야 합니다.', 'task');
-  }
-  if (u.alternatives.length && (!isPerformance || parsed.every(Boolean))) {
-    const effects = effectsFor(u, skill, parsed);
-    add(new Set(effects).size !== 1, 'effect-disagreement', '지원 해석에 따라 해당 기록이 달라집니다.');
-  }
-  return rows;
-}
-function effectsFor(u, skill, parsed) {
-  return u.alternatives.map((a, i) => skill === 'asr' ? a.text.normalize('NFC').trim().replace(/\s+/gu, ' ') : skill === 'object' ?
-    (parsed[i].particle === '를' ? '명시된 역할 요구에 부합하는 사용 관측' : '명시된 역할 요구와의 관계 재확인') :
-    (parsed[i].past ? '과거형 사용 관측' : '과거 시제 요구 재확인'));
 }
 function makeCell(session, u, skill, { claim = u, respectEpoch = true, requireActual = true, preparedTiming } = {}) {
   const isOriginal = claim.id === 'original';
@@ -348,23 +269,44 @@ function makeCell(session, u, skill, { claim = u, respectEpoch = true, requireAc
     evidenceSource: u.predicted ? 'prediction-not-observation' : u.source, evidenceEpoch: u.epoch,
     sourceAudioRef: u.audio?.audioRef || null,
     observedAt: u.performanceInterval?.startedAt || null, receivedAt: u.at, performanceTimeSource: u.performanceTimeSource || 'unknown',
-    assistance: !timing.confirmed || timing.unknown.length || timing.overlapping.length || timing.scopeUnknown.length ? 'unknown' : timing.before.length ? 'after-help' : 'no-recorded-help',
-    temporalEvidence: skill === 'asr' ? null : timing.relations,
+    assistance: !timing.confirmed || timing.unknown.length || timing.overlapping.length ? 'unknown' : timing.before.length ? 'after-help' : 'no-recorded-help',
     supportScope: session.task.supportScope, synthetic: session.mode === 'example' && u.syntheticEvidence === true };
-  cell.blockers = collectBlockers(session, u, skill, claim, timing, { respectEpoch, requireActual });
+  const hold = (code, reason) => Object.assign(cell, { reasonCode: code, reason });
+  if (requireActual && u.predicted) return hold('actual-observation-required', '조건부 예상 응답은 실제 청취·응답을 대신하지 않습니다.');
+  if (!hasAudio(session, u)) return hold('missing-audio', '이 발화의 원음이 아직 연결되지 않았습니다. 글 입력만으로 실제 음성의 근거를 만들지 않습니다.');
+  if (!u.alternatives.length) return hold('no-transcript', '실제 전사 또는 청취 확인이 필요합니다. 빈 후보는 일치로 처리하지 않습니다.');
+  if (u.alternatives.some(a => a.unknown === true || a.status === 'unintelligible' ||
+    /^(?:\[(?:불명|청취\s*불명|inaudible|unknown)\]|불명|청취\s*불명|unknown|<unk>|\?+)$/iu.test(a.text.trim()))) {
+    return hold('unknown-transcript', '청취 불명 표시는 실제로 확인된 단어열이 아닙니다. 음성 자료에도 확정 전사로 반영하지 않습니다.');
+  }
+  if (unknownAffects(session, skill)) return hold('relevant-unknown', `관련 미확인 범위가 남아 있습니다: ${session.unknown.reason}`);
   const parsed = u.alternatives.map(a => parseControlled(a.text));
-  if (u.alternatives.length && (skill === 'asr' || parsed.every(Boolean))) {
-    const effects = effectsFor(u, skill, parsed);
-    if (cell.blockers.every(b => b.code === 'effect-disagreement')) cell.effectSet = [...new Set(effects)];
-    if (new Set(effects).size > 1) {
-      const j = effects.findIndex(e => e !== effects[0]);
-      cell.witness = [{ text: u.alternatives[0].text, effect: effects[0] }, { text: u.alternatives[j].text, effect: effects[j] }];
-    }
+  if (skill !== 'asr' && parsed.some(p => !p)) return hold('unsupported-expression', '이 표현은 현재 통제 문장 규칙 밖입니다. 자연스러운 대안일 수 있으므로 오류로 확정하지 않습니다.');
+  if (!u.scopeConfirmed) return hold('scope-unconfirmed', '현재 전사 후보만으로 관련 해석 범위가 확인되지 않았습니다. 자동전사 한 개도 완결한 근거가 아닙니다.');
+  if (u.source !== 'fixture' && !u.humanConfirmed) return hold('transcript-not-reviewed', '이 원음에 대한 사람의 청취 확인이 필요합니다. 입력된 문장만으로 실제 발화를 확정하지 않습니다.');
+  if (skill !== 'asr') {
+    if (session.task.supported === false) return hold('unsupported-task', '다른 문항의 의미 조건은 아직 지원하지 않습니다. 이 통제 문항의 역할 규칙을 다른 문항에 그대로 적용하지 않습니다.');
+    if (!timing.confirmed) return hold('performance-time-unconfirmed', '파일을 올린 시각은 실제 발화 시각이 아닙니다. 이 파일이 해당 최초 시도 또는 도움 뒤 새 응답인지 확인해야 합니다. 음성 자료의 자격은 별도로 판단합니다.');
+    if (timing.overlapping.length) return hold('help-overlaps-capture', '녹음 구간과 도움 노출이 겹칩니다. 전체 응답을 도움 전 독립 수행 또는 도움 후 수행으로 단정하지 않습니다.');
+    if (timing.unknown.length) return hold('help-time-order-unknown', '새 도움 기록과 발화의 순서를 확인할 수 없습니다. 관련 수행만 보류합니다.');
+    if (!u.exposureScopeConfirmed) return hold('exposure-scope-unconfirmed', '이 시점의 앱 내 도움 관측 범위를 먼저 확인해야 합니다. 기록 없음은 도움 없음이 아닙니다.');
+    if (respectEpoch && isOriginal && u.epoch !== claim.epoch) return Object.assign(cell,
+      { status: 'excluded', reasonCode: 'later-response-not-original-evidence', reason: '다른 시점의 응답을 처음 수행으로 소급할 수 없습니다.' });
+    if (respectEpoch && isOriginal && timing.before.length) return Object.assign(cell,
+      { status: 'excluded', reasonCode: 'original-was-assisted', reason: '원음 시도 전에 답이 노출됐습니다. 도움 전 독립 수행의 근거로 사용할 수 없습니다.' });
+    if (skill === 'object' && !session.task.roleConfirmed) return hold('role-unconfirmed', '화자가 행위자이고 친구가 대상이라는 문항 조건이 확인되지 않았습니다. 친구가 주어인 자연스러운 해석을 배제하지 않습니다.');
+    if (skill === 'past' && !session.task.pastIndependent) return hold('independence-unconfirmed', '과거형 관측이 조사·역할 해석에 의존하지 않는다는 이 사례의 조건을 확인해야 합니다.');
   }
-  if (cell.blockers.length) {
-    const first = cell.blockers[0];
-    return Object.assign(cell, { status: first.status, reasonCode: first.code, reason: first.reason });
+  const effects = u.alternatives.map((a, i) => { const p = parsed[i]; return skill === 'asr' ? a.text.normalize('NFC').trim().replace(/\s+/gu, ' ') : skill === 'object' ?
+    (p.particle === '를' ? '명시된 역할 요구에 부합하는 사용 관측' : '명시된 역할 요구와의 관계 재확인') :
+    (p.past ? '과거형 사용 관측' : '과거 시제 요구 재확인'); });
+  cell.effectSet = [...new Set(effects)];
+  if (cell.effectSet.length !== 1) {
+    const j = effects.findIndex(e => e !== effects[0]);
+    cell.witness = [{ text: u.alternatives[0].text, effect: effects[0] }, { text: u.alternatives[j].text, effect: effects[j] }];
+    return hold('effect-disagreement', '지원 해석을 적용했을 때 이 기록이 달라집니다. 다른 항목과 나누어 보류합니다.');
   }
+  if (skill === 'asr' && u.source !== 'fixture' && !u.humanConfirmed) return hold('transcript-not-reviewed', '음성 자료에 쓸 정확한 전사는 원음을 들은 사람의 확인이 필요합니다.');
   cell.status = 'accepted'; cell.value = cell.effectSet[0]; cell.reasonCode = 'invariant-and-eligible';
   cell.reason = skill === 'asr' ? '이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.' :
     `${isOriginal ? '처음 시점' : '이 새 응답 시점'}의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다.${cell.assistance === 'after-help' ? ' 도움 후 관측으로만 남깁니다.' : ' 확인된 앱 내 관측 범위에 한정합니다.'}`;
@@ -430,29 +372,6 @@ function planObservations(session, cells, candidateSet, flags) {
   // connection to a held effect is disabled by the no-target configuration.
   const selectable = actions.filter(a => a.selectable).sort((a, b) => a.cost.seconds - b.cost.seconds || a.id.localeCompare(b.id));
   return { actions, selectedAction: selectable[0]?.id || null };
-}
-function evidencePlan(session, cells) {
-  const wanted = cells.filter(c => c.status === 'held' && c.utteranceId === 'original' && c.purpose === session.purpose);
-  const targets = wanted.map(c => ({ id: c.id, epoch: c.epoch, purpose: c.purpose, blockers: c.blockers }));
-  const blockers = [...new Map(targets.flatMap(t => t.blockers).map(b => [b.id, b])).values()];
-  const specs = [
-    ['listen-original', '처음 원음의 전사·해석 확인', 8, ['no-transcript', 'unknown-transcript', 'scope-unconfirmed', 'transcript-not-reviewed', 'effect-disagreement'], hasAudio(session, session.original)],
-    ['inspect-task', '실제 문항의 역할·독립 조건 확인', 5, ['role-unconfirmed', 'independence-unconfirmed'], true],
-    ['inspect-capture', '녹음의 실제 시점·관측 범위 확인', 5, ['performance-time-unconfirmed', 'exposure-scope-unconfirmed'], true],
-    ['inspect-help-time', '도움 기록의 발생 가능 시간을 좁히기', 3, ['help-time-order-unknown'], session.helpEvents.some(h => h.timeBounds)],
-    ['inspect-help-scope', '도움이 영향을 준 능력 범위 확인', 3, ['help-scope-unknown'], session.helpEvents.some(h => h.scope?.status === 'unknown')],
-  ];
-  const actions = specs.map(([id, title, costUnits, codes, available]) => ({ id, title, costUnits, available,
-    resolves: blockers.filter(b => codes.includes(b.code)).map(b => b.id), exposesAnswer: false, createsEpoch: false }));
-  // A whole-session audit is a meaningful common alternative to several narrow
-  // inspections; the cost is a declared comparison assumption, not a stopwatch.
-  actions.push({ id: 'audit-existing-record', title: '원음과 문항·도움 기록을 함께 확인', costUnits: 15, available: hasAudio(session, session.original),
-    resolves: [...new Set(actions.flatMap(a => a.resolves))], exposesAnswer: false, createsEpoch: false });
-  actions.push({ id: 'show-answer-new-response', title: '답을 보여주고 새 응답 받기', costUnits: 1, available: true,
-    resolves: session.purpose === 'asr-data' ? [] : blockers.map(b => b.id), exposesAnswer: true, createsEpoch: true, eligibleForOriginal: false });
-  const result = planEvidencePreserving({ targets, actions, budget: 32, maxDepth: 8, maxStates: 5000 });
-  return { ...result, targets, actions, contract: 'synk.evidence-plan.v1',
-    scope: '지원하는 확인 수단과 가정 비용 아래의 조건부 계획입니다. 확인 실패·불명·반대 근거가 나오면 실제 판정은 그대로 보류되거나 제외되며 새로 계획합니다.' };
 }
 function policyFor(ablation) {
   return { separatePurposes: ablation !== 'no-purpose', respectEpoch: ablation !== 'no-epoch',
@@ -535,7 +454,6 @@ function evaluate(session, { ablation = 'none', previousProjection = null, engin
   const initial = projectWithPolicy(session, policyFor('none'), null, resolver);
   const commonCandidates = observationCandidates(session, initial);
   const base = evaluatePolicy(session, 'none', commonCandidates, resolver, initial);
-  base.evidencePlan = evidencePlan(session, initial);
   if (ablation !== 'none') return { ...compared(evaluatePolicy(session, ablation, commonCandidates, resolver), base), ...resolver.finish() };
   base.comparisons = ABLATIONS.slice(1).map(id => {
     const r = compared(evaluatePolicy(session, id, commonCandidates, resolver), base);

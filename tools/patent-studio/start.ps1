@@ -6,7 +6,7 @@ $studioRuntime = Join-Path $PSScriptRoot '.runtime'
 New-Item -ItemType Directory -Path $studioRuntime -Force | Out-Null
 $studioUrl = 'http://127.0.0.1:4318'
 $studioRunning = $false
-try { $studioHealth = Invoke-RestMethod -Uri "$studioUrl/api/health" -TimeoutSec 2; $studioRunning = $studioHealth.ok -and $studioHealth.service -eq 'synk-evidence-studio' -and $studioHealth.engineVersion -eq '0.4.0' } catch {}
+try { $studioHealth = Invoke-RestMethod -Uri "$studioUrl/api/health" -TimeoutSec 2; $studioRunning = $studioHealth.ok -and $studioHealth.service -eq 'synk-evidence-studio' -and $studioHealth.engineVersion -eq '0.5.0' } catch {}
 if ($studioHealth -and -not $studioRunning) { throw '4318 포트에 다른 실행판이 있습니다. 기존 작업실을 종료한 뒤 다시 실행해 주세요.' }
 if (-not $studioRunning) {
   $env:SYNK_PATENT_STT_PROVIDER = 'local'

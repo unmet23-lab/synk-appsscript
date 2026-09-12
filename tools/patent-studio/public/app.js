@@ -1,4 +1,6 @@
+import { createAdvance } from './advance.js';
 const $ = id => document.getElementById(id);
+let advance;
 const state = { token: null, bootstrap: null, session: null, mode: 'example', busy: false, recording: null, recorderStarting: false, retry: null, pendingHelp: null, allEvents: false, transcriptionProvider: null, preflightRunning: false, preflight: null, recordVerification: null };
 const statusNames = { accepted: '반영', held: '보류', excluded: '사용 제외' };
 const purposeNames = { 'asr-data': '음성 자료에 사용', 'original-performance': '처음 수행에 사용', 'response-performance': '새 응답의 수행에 사용' };
@@ -13,8 +15,8 @@ const time = value => value && Number.isFinite(Date.parse(value)) ? new Date(val
 const correctionBaseline = s => s?.mode === 'example' && s.events?.find(e => e.id.startsWith('demo-correction-baseline-'));
 const correctionEvent = s => s?.mode === 'example' && s.events?.find(e => e.id.startsWith('demo-correction-help-'));
 const canApplyCorrection = s => Boolean(correctionBaseline(s) && s.events.length === 1 && s.original.syntheticEvidence && s.original.performanceInterval?.startedAt);
-const eventLabel = e => state.session?.mode === 'example' && e.id?.startsWith('demo-correction-') ? e.type === 'help-presented' ? '시연용 과거 도움 기록 추가' : '시연용 청취 조건 확정' : eventNames[e.type] || e.type;
-const titleFor = s => correctionBaseline(s) ? '늦은 도움 정정 예제' : s.sourceKind === 'synthetic-speech' ? '합성 음성 받아쓰기' : s.mode === 'example' ? state.bootstrap?.examples.find(x => x.id === s.exampleId)?.title || '통제 예제' : '직접 녹음 시연';
+const eventLabel = e => state.session?.mode === 'example' && e.id === 'demo-advance-help' ? '시연용 불확실 시간의 도움 기록' : e.type === 'help-refined' ? (state.session?.mode === 'example' ? '시연용 도움 근거 정밀화' : '도움 시간·능력 범위 확인') : state.session?.mode === 'example' && e.id?.startsWith('demo-correction-') ? e.type === 'help-presented' ? '시연용 과거 도움 기록 추가' : '시연용 청취 조건 확정' : eventNames[e.type] || e.type;
+const titleFor = s => s.events?.some(e=>e.id==='demo-advance-help') ? '시간·복수 보류 예제' : correctionBaseline(s) ? '늦은 도움 정정 예제' : s.sourceKind === 'synthetic-speech' ? '합성 음성 받아쓰기' : s.mode === 'example' ? state.bootstrap?.examples.find(x => x.id === s.exampleId)?.title || '통제 예제' : '직접 녹음 시연';
 const hasOriginal = () => Boolean(state.session?.original?.audio || state.session?.original?.syntheticEvidence);
 const changed = (a, b) => a?.status !== b?.status || JSON.stringify(a?.value) !== JSON.stringify(b?.value);
 
@@ -119,6 +121,8 @@ function syncControls() {
   $('help-continue').disabled = state.busy || pending;
   $('export-link').setAttribute('aria-disabled', String(!s || locked || pending)); $('export-link').tabIndex = s && !locked && !pending ? 0 : -1;
   $('stop-recording').disabled = !state.recording; $('cancel-recording').disabled = !state.recording;
+  if(s?.engineReadOnly) document.querySelectorAll('#evidence-input button,#evidence-input input,#evidence-input textarea,#evidence-input select,#observation-section button,#observation-section input,#observation-section textarea,#observation-section select').forEach(el=>el.disabled=true);
+  advance?.sync();
 }
 function refreshSessionList() {
   const sessions = [...(state.bootstrap?.sessions || [])];
@@ -196,12 +200,13 @@ function renderSession(s, { fresh = false, preserveForms = false } = {}) {
   $('storage-state').textContent = `서버 저장 판본 v${s.revision} · ${time(s.updatedAt)}. 원음·사건·현재 판정을 같은 기록에서 다시 읽을 수 있습니다.`;
   $('export-link').href = `/api/sessions/${s.id}/export`; $('export-link').download = `SYNK-evidence-${s.id}.json`;
   $('last-help').hidden = !s.helpEvents.length;
-  if (s.helpEvents.length) $('last-help').innerHTML = `<strong>${correctionEvent(s)?.id === s.helpEvents.at(-1).id ? '시연용 과거 도움' : '최근 실제 제시'} · ${esc(time(s.helpEvents.at(-1).at))}</strong>${esc(s.helpEvents.at(-1).text)}`;
+  if (s.helpEvents.length) $('last-help').innerHTML = `<strong>${correctionEvent(s)?.id === s.helpEvents.at(-1).id ? '시연용 과거 도움' : s.mode === 'example' ? '예제의 도움 사건' : '최근 실제 제시'} · ${esc(time(s.helpEvents.at(-1).at))}</strong>${esc(s.helpEvents.at(-1).text)}`;
   $('response-context').textContent = s.helpEvents.length ? '도움 뒤 다시 말한 답을 기록합니다. 파일은 도움 이후의 발화인지 따로 확인하며, 처음의 독립 수행을 소급해 확정하지 않습니다.' : '다시 말한 답을 별도로 기록합니다. 파일의 발화 시점은 따로 확인하며, 처음 말한 원음을 덮어쓰지 않습니다.';
   renderResponses(s, preserveForms);
   if (fresh) { fillForms(s); state.allEvents = false; }
   else if (!preserveForms && previous?.original.revisions.transcript !== s.original.revisions.transcript) $('machine-transcript').value = s.original.alternatives.map(a => a.text).join('\n');
   renderCorrectionExample(s); refreshSessionList(); syncControls();
+  advance?.render(s);
 }
 function renderCorrectionExample(s) {
   const baseline = correctionBaseline(s), event = correctionEvent(s);
@@ -433,4 +438,5 @@ $('transcribe-original').addEventListener('click', () => { const id = state.sess
 $('timeline-more').addEventListener('click', () => { state.allEvents = !state.allEvents; renderTimeline(state.session); });
 $('comparison-button').addEventListener('click', compare);
 window.addEventListener('beforeunload', e => { if (state.recording || state.busy || state.pendingHelp || state.retry) { e.preventDefault(); e.returnValue = ''; } });
+advance = createAdvance({ $, state, esc, statusNames, setMode, newSession, saveEvent });
 boot();

@@ -3,15 +3,15 @@
 const fs = require('node:fs');
 const crypto = require('node:crypto');
 const path = require('node:path');
-const core = require('./core.cjs');
 const { verifyLedger, digest } = require('./projection.cjs');
-const engineKey = digest(['core.cjs', 'projection.cjs'].map(name => ({ name,
-  sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, name))).digest('hex') })));
+const engines = require('./engine-registry.cjs');
 
 function verifyExport(bundle) {
   if (!bundle?.replay || !bundle.session?.effectLedger) return { valid: false, failures: ['replay-contract-missing'] };
-  const result = verifyLedger({ entries: bundle.session.effectLedger.entries, events: bundle.replay.events,
-    finalState: bundle.replay.finalState, finalCells: bundle.session.analysis.cells, engineKey }, core);
+  const engineKey = bundle.replay.engineBundleSha256, engine = engines.resolve(engineKey);
+  if (!engine) return { valid: false, failures: ['engine-source-unavailable'] };
+  const result = engine.projection.verifyLedger({ entries: bundle.session.effectLedger.entries, events: bundle.replay.events,
+    finalState: bundle.replay.finalState, finalCells: bundle.session.analysis.cells, engineKey }, engine.core);
   const failures = [...result.failures];
   if (digest(bundle.session.effectLedger) !== bundle.integrity.effectLedgerSha256) failures.push('ledger-export-digest');
   if (digest(bundle.session) !== bundle.integrity.sessionSha256) failures.push('session-export-digest');
@@ -24,7 +24,7 @@ function verifyExport(bundle) {
     if (sha !== audio.sha256 || file.sha256 !== sha || bytes.length !== audio.bytes) failures.push(`audio-content:${audio.audioEventId}`);
   }
   return { ...result, valid: failures.length === 0, failures, checkedAudioOccurrences: bundle.session.audios.length,
-    engineVersion: core.VERSION };
+    engineVersion: engine.core.VERSION };
 }
 if (require.main === module) {
   try {

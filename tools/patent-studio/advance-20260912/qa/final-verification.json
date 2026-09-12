@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "at": "2026-09-12T12:31:45.799Z",
+  "manifests": [
+    {
+      "directory": "현재_미팅본_20260912",
+      "files": 22
+    },
+    {
+      "directory": "발전구현_0.5_20260912",
+      "files": 31
+    }
+  ],
+  "entryLinks": 9,
+  "oldReplay": [
+    {
+      "valid": true,
+      "revisions": 5,
+      "version": "0.4.0"
+    },
+    {
+      "valid": true,
+      "revisions": 5,
+      "version": "0.4.0"
+    },
+    {
+      "valid": true,
+      "revisions": 5,
+      "version": "0.4.0"
+    },
+    {
+      "valid": true,
+      "revisions": 7,
+      "version": "0.4.0"
+    }
+  ],
+  "newReplay": [
+    {
+      "valid": true,
+      "revisions": 8
+    },
+    {
+      "valid": true,
+      "revisions": 4
+    },
+    {
+      "valid": true,
+      "revisions": 4
+    }
+  ],
+  "liveEngine": "0.5.0",
+  "sessionURL": "http://127.0.0.1:4318/?session=cc08546b-f3b1-4ee6-8713-27d1cc345752",
+  "errors": []
+}

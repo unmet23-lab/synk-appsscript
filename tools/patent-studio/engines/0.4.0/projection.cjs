@@ -61,8 +61,7 @@ function effectSnapshot(cell) {
     evidenceSource: cell.evidenceSource, assistance: cell.assistance, observedAt: cell.observedAt,
     sourceAudioRef: cell.sourceAudioRef, receivedAt: cell.receivedAt,
     supportScope: cell.supportScope, synthetic: cell.synthetic,
-    performanceTimeSource: cell.performanceTimeSource, witness: cell.witness || null,
-    blockers: cell.blockers || [], temporalEvidence: cell.temporalEvidence || null };
+    performanceTimeSource: cell.performanceTimeSource, witness: cell.witness || null };
 }
 function actionFor(before, after) {
   if (!before) return after.status === 'accepted' ? 'added' : after.status === 'held' ? 'held' : 'excluded';
