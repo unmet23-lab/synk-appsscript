@@ -9,8 +9,8 @@ const crypto = require('node:crypto');
 const core = require('./core.cjs');
 const projection = require('./projection.cjs');
 const coreSha256 = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, 'core.cjs'))).digest('hex');
-const engineKey = projection.digest(['core.cjs', 'projection.cjs'].map(name => ({ name,
-  sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, name))).digest('hex') })));
+const engines = require('./engine-registry.cjs');
+const engineKey = engines.current.key;
 function calculate(state, previousAnalysis) {
   const start = performance.now();
   const result = core.evaluate(state, { previousProjection: previousAnalysis?.projectionCache, engineKey });
@@ -125,6 +125,7 @@ class StudioStore {
       id,
       revision: row.revision,
       analysis: JSON.parse(row.analysis),
+      engineReadOnly: JSON.parse(row.analysis).projectionCache?.engineKey !== engineKey,
       events,
       audios,
       effectLedger: { schemaVersion: 1, entries: ledger, headSha256: ledger.at(-1)?.sha256 || null,
@@ -159,6 +160,8 @@ class StudioStore {
         return;
       }
       if (row.revision !== expectedRevision) throw problem('STALE_REVISION', '다른 창에서 기록이 바뀌었습니다. 최신 기록을 확인해 주세요.', 409);
+      if (JSON.parse(row.analysis).projectionCache?.engineKey !== engineKey)
+        throw problem('ENGINE_VERSION', '이 기록은 이전 엔진으로 보존합니다. 새 예제를 만들면 현재 엔진으로 시작합니다. 기존 기록은 열람·내려받기·재현할 수 있습니다.', 409);
       const at = event.at ?? new Date().toISOString();
       const stamped = {
         ...event,
@@ -257,13 +260,13 @@ class StudioStore {
     return {
       schemaVersion: 'synk.evidence-studio.v1',
       exportedAt: new Date().toISOString(),
-      engineVersion: core.VERSION ?? '1.0.0',
+      engineVersion: session.analysis.version,
       session,
       transcriptionAttempts: attempts,
       replay: {
         events: this.db.prepare('SELECT revision,payload FROM events WHERE session_id=? ORDER BY revision').all(id).map(r => ({ revision: r.revision, event: JSON.parse(r.payload) })),
         finalState: JSON.parse(this.row(id).state),
-        engineBundleSha256: engineKey
+        engineBundleSha256: session.analysis.projectionCache?.engineKey
       },
       files: session.audios.map(a => ({
         ...a,
@@ -281,9 +284,11 @@ class StudioStore {
   }
   verify(id) {
     const session = this.get(id), state = JSON.parse(this.row(id).state);
+    const savedKey = session.analysis.projectionCache?.engineKey, engine = engines.resolve(savedKey);
+    if (!engine) return { valid: false, failures: ['engine-source-unavailable'], checkedRevisions: 0 };
     const events = this.db.prepare('SELECT revision,payload FROM events WHERE session_id=? ORDER BY revision').all(id).map(r => ({ revision: r.revision, event: JSON.parse(r.payload) }));
-    return projection.verifyLedger({ entries: session.effectLedger.entries, events,
-      finalState: state, finalCells: session.analysis.cells, engineKey }, core);
+    return engine.projection.verifyLedger({ entries: session.effectLedger.entries, events,
+      finalState: state, finalCells: session.analysis.cells, engineKey: savedKey }, engine.core);
   }
   close() {
     this.db.close();

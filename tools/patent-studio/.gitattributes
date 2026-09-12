@@ -1,0 +1,6 @@
+# Source fingerprints in saved evidence must survive checkout newline settings.
+core.cjs text eol=lf
+projection.cjs text eol=lf
+temporal-evidence.cjs text eol=lf
+observation-planner.cjs text eol=lf
+engines/** -text
