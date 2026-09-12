@@ -77,7 +77,7 @@ function Background({dark=false}:{dark?:boolean}){
 }
 function Intro(){return <>
   <A at={.1} style={{position:'absolute',top:77,left:110}}><Img src={staticFile('logo.webp')} style={{width:315,height:105,objectFit:'contain'}}/></A>
-  <A at={.35} style={{position:'absolute',top:270,left:120}}><Pill>펠트 엔진의 작동 원리</Pill><div style={{marginTop:35,fontSize:104,lineHeight:1.2,fontWeight:800,letterSpacing:'-.05em'}}>말 한 번,<br/>확인은 세 가지.</div></A>
+  <A at={.35} style={{position:'absolute',top:270,left:120}}><Pill>SYNK CORE · 근거 판단 원리</Pill><div style={{marginTop:35,fontSize:104,lineHeight:1.2,fontWeight:800,letterSpacing:'-.05em'}}>말 한 번,<br/>확인은 세 가지.</div></A>
   <A at={1.1} style={{position:'absolute',left:126,top:660}}><div style={{fontSize:39,color:T.muted,lineHeight:1.5}}>한 문장을 따라가면<br/>왜 이렇게 기록하는지 보여요.</div></A>
   <A at={.6}><Mongle/></A>
   <Note>원리 설명용 예제 · 안내와 예시 발화는 기계 음성입니다.</Note>
@@ -150,7 +150,7 @@ function PrincipleScene({s}:{s:Scene}){
   }
   const rt=(s.runtimeStart??99999)/fps;const end=rt+16;
   if(sec>=rt&&sec<end)return <><Header id={s.id} title="실제 작업실에서 바뀌는 순간"/><div style={{position:'absolute',left:128,top:280,width:1664,height:636,overflow:'hidden',border:`2px solid ${T.stone}`,borderRadius:28,boxShadow:T.shadow}}><Sequence from={s.runtimeStart??0} durationInFrames={16*fps} layout="none"><OffthreadVideo src={staticFile('runtime-clip.mp4')} muted style={{width:'100%',height:'100%',objectFit:'cover',objectPosition:'center'}}/></Sequence></div><div style={{position:'absolute',top:235,right:134,fontSize:26,color:T.muted}}>실제 로컬 작업실 · 통제 예제</div></>;
-  if(sec>=end)return <><A at={end} style={{position:'absolute',top:155,left:120}}><Img src={staticFile('logo.webp')} style={{width:320,height:100,objectFit:'contain'}}/><div style={{fontSize:92,lineHeight:1.2,letterSpacing:'-.04em',fontWeight:800,marginTop:54}}>말은 그대로.<br/>판단은 이유와 함께.</div><div style={{fontSize:37,marginTop:35,color:T.muted}}>펠트 엔진</div></A><Mongle mood="relief" x={1270} y={260} w={540}/><Note>로컬 통제 예제로 원리 설명 · 실제 학생의 학습 성과를 시연한 영상이 아닙니다.</Note></>;
+  if(sec>=end)return <><A at={end} style={{position:'absolute',top:155,left:120}}><Img src={staticFile('logo.webp')} style={{width:320,height:100,objectFit:'contain'}}/><div style={{fontSize:92,lineHeight:1.2,letterSpacing:'-.04em',fontWeight:800,marginTop:54}}>말은 그대로.<br/>판단은 이유와 함께.</div><div style={{fontSize:37,marginTop:35,color:T.muted}}>SYNK Core · 근거 자격·관측·재판정</div></A><Mongle mood="relief" x={1270} y={260} w={540}/><Note>로컬 통제 예제로 원리 설명 · 실제 학생의 학습 성과를 시연한 영상이 아닙니다.</Note></>;
   return <><Header id={s.id} title={title}/><A at={.4} style={{position:'absolute',left:120,top:348}}><AudioCard small/></A><A at={.8} style={{position:'absolute',left:566,top:448}}><Arrow/></A><div style={{position:'absolute',left:741,top:330}}><RecordRows states={['record','excluded','record']} compact at={1}/></div><Note><b style={{color:T.ink}}>처음 소리 보관 → 나누어 확인 → 이유를 남기며 수정</b></Note></>;
 }
 function Caption({s}:{s:Scene}){

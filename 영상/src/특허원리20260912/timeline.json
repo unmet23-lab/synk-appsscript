@@ -1,24 +1,24 @@
 {
   "fps": 30,
-  "durationInFrames": 6492,
-  "durationSeconds": 216.4,
+  "durationInFrames": 6559,
+  "durationSeconds": 218.63333333333333,
   "scenes": [
     {
       "id": "01",
       "start": 0,
-      "duration": 413,
+      "duration": 428,
       "cues": [
         {
-          "text": "학생이 한 문장을 말했어요. 펠트 엔진은 이 말을 어떻게 기록할까요?",
+          "text": "학생이 한 문장을 말했어요. SYNK Core는 이 말을 어떻게 기록할까요?",
           "file": "audio/01a.mp3",
           "start": 15,
-          "duration": 208,
+          "duration": 223,
           "sample": false
         },
         {
           "text": "처음부터 끝까지, 이 문장 하나만 따라가 볼게요.",
           "file": "audio/01b.mp3",
-          "start": 231,
+          "start": 246,
           "duration": 141,
           "sample": false
         }
@@ -26,7 +26,7 @@
     },
     {
       "id": "02",
-      "start": 413,
+      "start": 428,
       "duration": 528,
       "cues": [
         {
@@ -54,7 +54,7 @@
     },
     {
       "id": "03",
-      "start": 941,
+      "start": 956,
       "duration": 522,
       "cues": [
         {
@@ -82,7 +82,7 @@
     },
     {
       "id": "04",
-      "start": 1463,
+      "start": 1478,
       "duration": 402,
       "cues": [
         {
@@ -103,7 +103,7 @@
     },
     {
       "id": "05",
-      "start": 1865,
+      "start": 1880,
       "duration": 324,
       "cues": [
         {
@@ -124,7 +124,7 @@
     },
     {
       "id": "06",
-      "start": 2189,
+      "start": 2204,
       "duration": 491,
       "cues": [
         {
@@ -145,7 +145,7 @@
     },
     {
       "id": "07",
-      "start": 2680,
+      "start": 2695,
       "duration": 402,
       "cues": [
         {
@@ -166,7 +166,7 @@
     },
     {
       "id": "08",
-      "start": 3082,
+      "start": 3097,
       "duration": 533,
       "cues": [
         {
@@ -194,7 +194,7 @@
     },
     {
       "id": "09",
-      "start": 3615,
+      "start": 3630,
       "duration": 353,
       "cues": [
         {
@@ -215,7 +215,7 @@
     },
     {
       "id": "10",
-      "start": 3968,
+      "start": 3983,
       "duration": 375,
       "cues": [
         {
@@ -236,7 +236,7 @@
     },
     {
       "id": "11",
-      "start": 4343,
+      "start": 4358,
       "duration": 383,
       "cues": [
         {
@@ -257,7 +257,7 @@
     },
     {
       "id": "12",
-      "start": 4726,
+      "start": 4741,
       "duration": 487,
       "cues": [
         {
@@ -285,7 +285,7 @@
     },
     {
       "id": "13",
-      "start": 5213,
+      "start": 5228,
       "duration": 414,
       "cues": [
         {
@@ -306,8 +306,8 @@
     },
     {
       "id": "14",
-      "start": 5627,
-      "duration": 865,
+      "start": 5642,
+      "duration": 917,
       "cues": [
         {
           "text": "처음 소리는 남기고, 각각 나누어 확인하고, 새 사실에 맞춰 필요한 칸을 고칩니다.",
@@ -324,10 +324,10 @@
           "sample": false
         },
         {
-          "text": "펠트 엔진이 하는 일입니다.",
+          "text": "이것이 SYNK Core의 근거 판단이 하는 일입니다.",
           "file": "audio/14c.mp3",
           "start": 736,
-          "duration": 88,
+          "duration": 140,
           "sample": false
         }
       ],

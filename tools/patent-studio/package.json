@@ -2,7 +2,7 @@
   "name": "synk-evidence-studio",
   "version": "1.0.0",
   "private": true,
-  "description": "펠트 엔진의 용도별 근거 판단과 실제 관측을 실행하는 로컬 작업실",
+  "description": "SYNK Core의 용도별 근거 자격·관측·재판정을 실행하는 로컬 작업실",
   "engines": {
     "node": ">=24"
   },
