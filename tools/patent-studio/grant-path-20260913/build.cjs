@@ -5,6 +5,8 @@ const ROOT = path.resolve(__dirname, '../../..'), ASSETS = path.join(__dirname, 
 const VROOT = 'C:/Users/q1212/.codex/visualizations/2026/09/11/01a08f0d-d3c5-7c41-9c85-d69384fa2412/IP_디딤돌_준비/미팅완성본';
 const OUT = path.join(VROOT, '등록성_보강_20260913'), QA = path.join(OUT, '검수');
 const NAME = 'SYNK_결합반론_대응구성';
+const evidenceFiles = ['REPORT.md', 'targeted/PRIOR_ART.md', 'targeted/CLAIM_DECISIONS.md', 'targeted/ACTION_INTEGRATION.md', 'targeted/AUDIO_PROBE.json', 'A_CORE.md', 'B_ALTERNATIVE.md', 'REQUIREMENTS.md', 'FACT_GATE.md', 'lab/DESIGN.md', 'lab/ADVERSARIAL_REVIEW.md', 'lab/RESULTS.json', 'lab/VERIFICATION.json', 'lab/observation-contract.cjs'];
+const supplements = ['targeted/PRIOR_ART.md', 'targeted/CLAIM_DECISIONS.md', 'targeted/ACTION_INTEGRATION.md'];
 const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const dataUri = (file, mime) => `data:${mime};base64,${fs.readFileSync(file).toString('base64')}`;
@@ -33,7 +35,7 @@ async function main() {
   const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>결합 반론에 대응할 다음 구성 · SYNK</title><style>${tokens}${fonts}${css}</style></head><body>
   <header class="mast"><img src="${logo}" alt="SYNK LAB"><span class="mono">RESEARCH / 2026.09.13</span><a href="${NAME}.pdf">인쇄본 PDF ↗</a></header>
   <div class="page-layout"><aside><span class="mono">CONTENTS</span><nav aria-label="보고서 목차"><a href="#experiment">직접 비교해 보기</a>${headings.map(h => `<a href="#${h.id}">${h.title}</a>`).join('')}</nav></aside>
-  <main><div class="hero"><p class="eyebrow">SYNK CORE · 다음 출원 구성 검토</p><h1>무엇을 확인할지와<br>어디에 쓸지를<br><em>함께 정합니다.</em></h1><p class="lead">판정 차이에서 원음 확인과 결과 사용 조건을 연결하는 구성.<br>결합 반론의 쟁점, 실제 실험, 아직 필요한 증거까지.</p><p class="boundary">검토용 추가 설계 · 등록 우위 미확정 · 로컬 합성 시험</p></div>
+  <main><div class="hero"><p class="eyebrow">SYNK CORE · 가까운 선행 반영</p><h1>확인 방법과<br>결과의 사용 조건을<br><em>함께 검토합니다.</em></h1><p class="lead">원음·의도 구분과 부분 재생에는 가까운 선행이 있습니다.<br>남는 처리 관계와 두 청구 방향을 다시 대조했습니다.</p><p class="boundary">새 안의 우선 확정 보류 · 전체 행동 영향 연결 미구현</p><p><a href="자료/targeted/CLAIM_DECISIONS.html">두 청구 방향·결정표 ↗</a> · <a href="자료/targeted/PRIOR_ART.html">가까운 선행 대조 ↗</a></p></div>
   <section id="experiment" class="experiment" aria-labelledby="experiment-heading"><p class="eyebrow">기록이 바뀌는 과정을 직접 비교해 보세요</p><h2 id="experiment-heading">같은 답이어도,<br>같은 근거는 아닙니다.</h2><p>실제 실험 모듈이 계산한 여섯 결과를 재생합니다. 아래 선택은 운영 엔진 호출이나 실제 학생 기록 변경이 아닙니다.</p>
   <label for="scenario">상황 선택</label><select id="scenario">${results.scenarios.map((s, i) => `<option value="${i}">${i + 1}. ${esc(s.title)}</option>`).join('')}</select>
   <div class="case-actions"><button id="previous" type="button">이전 상황</button><span id="case-count" class="mono"></span><button id="next" type="button">다음 상황 →</button></div>
@@ -41,12 +43,26 @@ async function main() {
   <div class="contract"><div><small>계약이 요구한 원음</small><strong id="contract-source"></strong></div><div><small>요구한 확인 범위</small><strong id="contract-range"></strong></div><div><small>실제로 제출된 결과</small><strong id="receipt-source"></strong></div></div>
   <p class="note">후보·단어 시각·도움 조건은 수동 시험 입력입니다. 짧은 구간 수치는 실제 단어 정렬이나 청취 정확성을 증명하지 않습니다. 아래 음성은 기존에 만든 합성 원음 전체입니다.</p><audio controls preload="none" aria-label="기존 합성 원음 전체" src="${dataUri(results.audio.filename, 'audio/wav')}"></audio>
   <details><summary>계약과 실제 결과 데이터 보기</summary><pre id="contract-json"></pre></details></section>
-  <article class="report">${report}</article><section class="files"><h2>상담·구현 근거</h2><a href="${NAME}.pdf">인쇄본 PDF</a>${['REPORT.md', 'A_CORE.md', 'B_ALTERNATIVE.md', 'REQUIREMENTS.md', 'FACT_GATE.md', 'lab/DESIGN.md', 'lab/ADVERSARIAL_REVIEW.md', 'lab/RESULTS.json', 'lab/VERIFICATION.json'].map(file => `<a href="자료/${file}">${esc(file)}</a>`).join('')}</section></main></div>
+  <article class="report">${report}</article><section class="files"><h2>상담·구현 근거</h2><a href="${NAME}.pdf">인쇄본 PDF</a>${supplements.map(file => `<a href="자료/${file.replace(/\.md$/, '.html')}">${esc(file.replace('targeted/', '').replace('.md', ''))} · 읽기 화면</a>`).join('')}${evidenceFiles.map(file => `<a href="자료/${file}">${esc(file)}</a>`).join('')}</section></main></div>
   <footer class="foot"><strong>SYNK · 출원 상담용</strong><span>실행 근거와 등록 판단을 구분합니다.</span></footer>
   <script id="experiment-data" type="application/json">${JSON.stringify(results).replace(/</g, '\\u003c')}</script><script>${fs.readFileSync(path.join(__dirname, 'viewer.js'), 'utf8')}</script></body></html>`;
   const htmlFile = path.join(OUT, NAME + '.html'); fs.writeFileSync(htmlFile, html);
-  for (const file of ['REPORT.md', 'A_CORE.md', 'B_ALTERNATIVE.md', 'REQUIREMENTS.md', 'FACT_GATE.md', 'lab/DESIGN.md', 'lab/ADVERSARIAL_REVIEW.md', 'lab/RESULTS.json', 'lab/VERIFICATION.json']) {
+  for (const file of evidenceFiles) {
     const to = path.join(OUT, '자료', file); fs.mkdirSync(path.dirname(to), { recursive: true }); fs.copyFileSync(path.join(__dirname, file), to);
+  }
+  const oldDraft = path.join(__dirname, '../registration-target-20260912/PATENT_DRAFT.md');
+  fs.mkdirSync(path.join(OUT, '자료/reference'), { recursive: true });
+  fs.copyFileSync(oldDraft, path.join(OUT, '자료/reference/PATENT_DRAFT.md'));
+  for (const file of supplements) {
+    const supplement = marked.parse(fs.readFileSync(path.join(__dirname, file), 'utf8')).replace(/href="([A-Za-z]:\/[^\"]+)"/g, (_, original) => {
+      const relative = path.relative(__dirname, original).replace(/\\/g, '/');
+      const exported = evidenceFiles.includes(relative) ? path.join(OUT, '자료', relative) : path.resolve(original) === path.resolve(oldDraft) ? path.join(OUT, '자료/reference/PATENT_DRAFT.md') : null;
+      if (!exported || !fs.existsSync(exported)) throw Error('Missing supplemental local source: ' + original);
+      return `href="${esc(path.relative(path.dirname(path.join(OUT, '자료', file)), exported).replace(/\\/g, '/'))}"`;
+    });
+    const title = fs.readFileSync(path.join(__dirname, file), 'utf8').split(/\r?\n/)[0].replace(/^# /, '');
+    const page = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} · SYNK</title><style>${tokens}${fonts}${css}.supplement{max-width:1040px;margin:auto;padding:40px 28px 100px}.supplement table{display:block;overflow-x:auto}.supplement h1{font-size:clamp(30px,4vw,50px);line-height:1.2}.supplement pre{overflow:auto}.supplement a{overflow-wrap:anywhere}</style></head><body><header class="mast"><img src="${logo}" alt="SYNK LAB"><span class="mono">REVIEW / 2026.09.13</span><a href="../../${NAME}.html">현재 보고서 ↗</a></header><main class="report supplement">${supplement}</main></body></html>`;
+    fs.writeFileSync(path.join(OUT, '자료', file.replace(/\.md$/, '.html')), page);
   }
   const browser = await chromium.launch({ headless: true, executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe' });
   try {
@@ -72,6 +88,19 @@ async function main() {
     const noOverflow = await page.evaluate(() => document.documentElement.scrollWidth === innerWidth);
     await page.locator('#experiment').screenshot({ path: path.join(QA, 'mobile-experiment.png') });
     if (!fontsLoaded || !noOverflow || errors.length || external.length) throw Error(JSON.stringify({ fontsLoaded, noOverflow, errors, external }));
+    const supplementChecks = [];
+    for (const file of supplements) {
+      await page.goto(pathToFileURL(path.join(OUT, '자료', file.replace(/\.md$/, '.html'))).href);
+      await page.evaluate(() => document.fonts.ready);
+      const fits = await page.evaluate(() => document.documentElement.scrollWidth === innerWidth);
+      if (!fits || await page.locator('h1').count() !== 1) throw Error('Supplement layout failure: ' + file);
+      supplementChecks.push({ file, mobileNoOverflow: fits });
+      if (file.includes('CLAIM_DECISIONS')) {
+        await page.screenshot({ path: path.join(QA, 'claims-mobile.png') });
+        await page.setViewportSize({ width: 1440, height: 1100 }); await page.screenshot({ path: path.join(QA, 'claims-desktop.png') });
+        await page.setViewportSize({ width: 390, height: 844 });
+      }
+    }
     // Paginate actual report blocks; preserve tables and avoid orphan headings.
     const printFile = path.join(OUT, NAME + '_인쇄원본.html');
     const printHtml = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>결합 반론 대응 구성</title><style>${tokens}${fonts}${css}</style></head><body class="printing"><div id="print-source">${report}</div></body></html>`;
@@ -92,7 +121,7 @@ async function main() {
     if (gaps.some(g => g < 26)) throw Error('PDF footer collision');
     fs.writeFileSync(printFile, '<!doctype html>\n' + await page.evaluate(() => document.documentElement.outerHTML));
     await page.pdf({ path: path.join(OUT, NAME + '.pdf'), preferCSSPageSize: true, printBackground: true });
-    fs.writeFileSync(path.join(QA, 'verification.json'), JSON.stringify({ generatedAt: new Date().toISOString(), fontsLoaded, noOverflow, scenariosSeen, externalRequests: external.length, pageCount, gaps, errors, sourceHashes: { report: hash(path.join(__dirname, 'REPORT.md')), results: hash(path.join(__dirname, 'lab/RESULTS.json')) } }, null, 2));
+    fs.writeFileSync(path.join(QA, 'verification.json'), JSON.stringify({ generatedAt: new Date().toISOString(), fontsLoaded, noOverflow, scenariosSeen, supplementChecks, externalRequests: external.length, pageCount, gaps, errors, sourceHashes: { report: hash(path.join(__dirname, 'REPORT.md')), results: hash(path.join(__dirname, 'lab/RESULTS.json')), ...Object.fromEntries(evidenceFiles.map(file => [file, hash(path.join(__dirname, file))])) } }, null, 2));
     console.log(JSON.stringify({ html: htmlFile, pdf: path.join(OUT, NAME + '.pdf'), pageCount, scenariosSeen: scenariosSeen.length, fontsLoaded, noOverflow }));
   } finally { await browser.close(); }
 }

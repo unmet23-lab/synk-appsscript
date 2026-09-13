@@ -1,0 +1,40 @@
+{
+  "scope": "one existing synthetic audio; estimated word timestamps, not verified ground truth",
+  "audioSha256": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+  "bytes": 131196,
+  "modelId": "Systran/faster-whisper-small@536b0662742c02347bc0e980a01041f333bce120",
+  "fasterWhisper": "1.2.1",
+  "durationMs": 2973.9375,
+  "text": "친구를 만나서 카페에 갔어요.",
+  "words": [
+    {
+      "text": "친구를",
+      "startMs": 0.0,
+      "endMs": 560.0,
+      "probability": 0.9759396314620972
+    },
+    {
+      "text": "만나서",
+      "startMs": 560.0,
+      "endMs": 1100.0,
+      "probability": 0.9985787272453308
+    },
+    {
+      "text": "카페에",
+      "startMs": 1100.0,
+      "endMs": 1680.0,
+      "probability": 0.9929463466008505
+    },
+    {
+      "text": "갔어요.",
+      "startMs": 1680.0,
+      "endMs": 2080.0,
+      "probability": 0.9879138469696045
+    }
+  ],
+  "elapsedMs": 2719.0,
+  "networkAttempts": 0,
+  "candidateCount": 1,
+  "suppliesAlternativeHypothesisAlignment": false,
+  "conclusion": "단일 실제 전사의 시각 추정만 얻음. 다른 가상 후보의 정렬이나 실제 후보 불일치를 생성한 것이 아님."
+}
