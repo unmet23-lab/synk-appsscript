@@ -8,6 +8,8 @@ const NAME = 'SYNK_결합반론_대응구성';
 const evidenceFiles = ['REPORT.md', 'targeted/PRIOR_ART.md', 'targeted/CLAIM_DECISIONS.md', 'targeted/ACTION_INTEGRATION.md', 'targeted/AUDIO_PROBE.json', 'decision/P3_PRIOR_ART.md', 'decision/P3_DECISIVE_CASES.md', 'decision/LOOM_COMPARISON.md', 'decision/PURPOSE_SENSITIVITY.json', 'decision/purpose-sensitivity.cjs', 'decision/loom-comparison-20260913/RESULTS.json', 'A_CORE.md', 'B_ALTERNATIVE.md', 'REQUIREMENTS.md', 'FACT_GATE.md', 'lab/DESIGN.md', 'lab/ADVERSARIAL_REVIEW.md', 'lab/RESULTS.json', 'lab/VERIFICATION.json', 'lab/observation-contract.cjs'];
 const supplements = ['targeted/PRIOR_ART.md', 'targeted/CLAIM_DECISIONS.md', 'targeted/ACTION_INTEGRATION.md', 'decision/P3_PRIOR_ART.md', 'decision/P3_DECISIVE_CASES.md', 'decision/LOOM_COMPARISON.md'];
 evidenceFiles.push('decision/loom-compare.py');
+evidenceFiles.push('decision/P1_SUPPORT_REPAIR.md', 'decision/INVENTOR_REQUIREMENTS.md', 'decision/P1_SUPPORT_CASES.json', 'decision/p1-support-cases.cjs');
+supplements.push('decision/P1_SUPPORT_REPAIR.md', 'decision/INVENTOR_REQUIREMENTS.md');
 const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const dataUri = (file, mime) => `data:${mime};base64,${fs.readFileSync(file).toString('base64')}`;
@@ -29,6 +31,11 @@ async function main() {
   for (const [relative, expected] of Object.entries(sensitivity.sources)) {
     if (hash(path.resolve(__dirname, 'decision', relative)) !== expected) throw Error('Purpose comparison source changed: ' + relative);
   }
+  const supportCases = JSON.parse(fs.readFileSync(path.join(__dirname, 'decision/P1_SUPPORT_CASES.json'), 'utf8'));
+  if (!supportCases.validation.matchedExpectedStatesAndTransitions) throw Error('P1 support examples failed');
+  for (const [relative, expected] of Object.entries(supportCases.sources)) {
+    if (hash(path.resolve(__dirname, 'decision', relative)) !== expected) throw Error('P1 support source changed: ' + relative);
+  }
   const font = (family, file, weight, extra = '') => `@font-face{font-family:'${family}';src:url('${dataUri(path.join(ASSETS, file), file.endsWith('woff2') ? 'font/woff2' : 'font/ttf')}');font-weight:${weight};font-display:block;${extra}}`;
   const fonts = font('SUIT Variable', 'suit.woff2', '100 900') + font('Inter Tight', 'inter-tight.ttf', '500') + font('Inter Tight', 'inter-tight-bold.ttf', '700 900') + font('DM Mono', 'dm-mono.ttf', '500') + font('SYNK Bracket', 'bracket.ttf', '100 900', 'unicode-range:U+300C-300D;');
   const tokens = fs.readFileSync(path.join(ASSETS, 'tokens.css'), 'utf8');
@@ -40,7 +47,7 @@ async function main() {
   const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>결합 반론에 대응할 다음 구성 · SYNK</title><style>${tokens}${fonts}${css}</style></head><body>
   <header class="mast"><img src="${logo}" alt="SYNK LAB"><span class="mono">RESEARCH / 2026.09.13</span><a href="${NAME}.pdf">인쇄본 PDF ↗</a></header>
   <div class="page-layout"><aside><span class="mono">CONTENTS</span><nav aria-label="보고서 목차"><a href="#experiment">직접 비교해 보기</a>${headings.map(h => `<a href="#${h.id}">${h.title}</a>`).join('')}</nav></aside>
-  <main><div class="hero"><p class="eyebrow">SYNK CORE · 가까운 선행 반영</p><h1>확인 방법과<br>결과의 사용 조건을<br><em>함께 검토합니다.</em></h1><p class="lead">원음·의도 구분과 부분 재생에는 가까운 선행이 있습니다.<br>남는 처리 관계와 두 청구 방향을 다시 대조했습니다.</p><p class="boundary">새 안의 우선 확정 보류 · 전체 행동 영향 연결 미구현</p><p><a href="자료/targeted/CLAIM_DECISIONS.html">두 청구 방향·결정표 ↗</a> · <a href="자료/targeted/PRIOR_ART.html">가까운 선행 대조 ↗</a></p></div>
+  <main><div class="hero"><p class="eyebrow">SYNK CORE · 등록을 위한 주안 보완</p><h1>늦게 온 도움 기록이<br>어떤 근거를 바꾸는지<br><em>정확히 한정합니다.</em></h1><p class="lead">기존 정정안을 조사·과거형 사례로 좁혔습니다.<br>실제 실행과 가까운 선행을 함께 검토합니다.</p><p class="boundary">P1 우선 상담안 · 등록 우위 미확정</p><p><a href="자료/decision/P1_SUPPORT_REPAIR.html">주안의 세 가지 실제 실행 ↗</a> · <a href="자료/targeted/CLAIM_DECISIONS.html">청구 문안·결정표 ↗</a> · <a href="자료/targeted/PRIOR_ART.html">가까운 선행 대조 ↗</a></p></div>
   <section id="experiment" class="experiment" aria-labelledby="experiment-heading"><p class="eyebrow">기록이 바뀌는 과정을 직접 비교해 보세요</p><h2 id="experiment-heading">같은 답이어도,<br>같은 근거는 아닙니다.</h2><p>실제 실험 모듈이 계산한 여섯 결과를 재생합니다. 아래 선택은 운영 엔진 호출이나 실제 학생 기록 변경이 아닙니다.</p>
   <label for="scenario">상황 선택</label><select id="scenario">${results.scenarios.map((s, i) => `<option value="${i}">${i + 1}. ${esc(s.title)}</option>`).join('')}</select>
   <div class="case-actions"><button id="previous" type="button">이전 상황</button><span id="case-count" class="mono"></span><button id="next" type="button">다음 상황 →</button></div>
@@ -59,11 +66,14 @@ async function main() {
     { original: path.join(__dirname, '../registration-target-20260912/PATENT_DRAFT.md'), name: 'PATENT_DRAFT.md' },
     { original: path.join(__dirname, '../core.cjs'), name: 'core.cjs' },
     { original: path.join(__dirname, '../observation-planner.cjs'), name: 'observation-planner.cjs' },
+    { original: path.join(__dirname, '../projection.cjs'), name: 'projection.cjs' },
+    { original: path.join(__dirname, '../temporal-evidence.cjs'), name: 'temporal-evidence.cjs' },
   ];
   fs.mkdirSync(path.join(OUT, '자료/reference'), { recursive: true });
   for (const ref of references) fs.copyFileSync(ref.original, path.join(OUT, '자료/reference', ref.name));
   for (const file of supplements) {
-    const supplement = marked.parse(fs.readFileSync(path.join(__dirname, file), 'utf8')).replace(/href="([A-Za-z]:\/[^\"]+)"/g, (_, original) => {
+    const supplement = marked.parse(fs.readFileSync(path.join(__dirname, file), 'utf8')).replace(/href="([A-Za-z]:\/[^\"]+)"/g, (_, sourceLocation) => {
+      const original = sourceLocation.replace(/:\d+$/, '');
       const relative = path.relative(__dirname, original).replace(/\\/g, '/');
       const reference = references.find(r => path.resolve(original) === path.resolve(r.original));
       const exported = evidenceFiles.includes(relative) ? path.join(OUT, '자료', relative) : reference ? path.join(OUT, '자료/reference', reference.name) : null;
@@ -119,7 +129,7 @@ async function main() {
       const source = document.querySelector('#print-source'), blocks = [...source.children]; let number = 0, body, page;
       const make = () => { page = document.createElement('article'); page.className = 'pdf-page'; page.innerHTML = '<div class="print-mast"><b>SYNK / CORE</b><span>결합 반론에 대응할 다음 구성 · 2026.09.13</span></div><div class="page-body"></div><div class="print-foot"><span>출원 상담용 · 등록 우위 미확정 · 합성 실험</span><span class="page-number"></span></div>'; document.body.append(page); body = page.querySelector('.page-body'); number++; };
       const gap = () => page.querySelector('.print-foot').getBoundingClientRect().top - body.getBoundingClientRect().bottom;
-      make(); const title = document.createElement('h1'); title.textContent = '결합 반론에 대응할 다음 구성'; body.append(title);
+      make(); const title = document.createElement('h1'); title.textContent = '등록을 위한 주안과 결합 반론 대응'; body.append(title);
       for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i], group = [block]; if (/^H[23]$/.test(block.tagName) && blocks[i + 1]) group.push(blocks[++i]);
         group.forEach(n => body.append(n));
