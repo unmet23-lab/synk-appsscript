@@ -1,0 +1,1264 @@
+{
+  "generatedAt": "2026-09-13T13:08:50.011Z",
+  "coreVersion": "0.5.0",
+  "scope": "local synthetic contract experiment",
+  "audio": {
+    "filename": "C:\\Users\\q1212\\AppData\\Local\\SYNK\\patent-studio\\samples\\original.wav",
+    "bytes": 131196,
+    "sha256": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+    "durationMs": 2973.922902494331,
+    "kind": "previously-generated-Windows-SAPI-synthetic-speech",
+    "alignmentScope": "hand-authored test timings; not measured speech alignment or listening validation"
+  },
+  "conditions": [
+    "후보·단어 시각·독립 조건은 수동 시험 입력",
+    "기존 합성 WAV의 크기·해시·길이만 실제 파일에서 확인",
+    "학생 자료·외부 API·실제 청취·운영 DB 변경 없음"
+  ],
+  "scenarios": [
+    {
+      "id": "original-review",
+      "title": "처음 원음을 확인했다",
+      "explain": "처음 녹음에서 확인했다고 가정한 결과를 적용하면 전사와 조사 기록을 반영합니다. 이미 반영하던 과거형은 그대로입니다.",
+      "before": [
+        {
+          "id": "e0:asr",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:object",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "after": [
+        {
+          "id": "e0:asr",
+          "status": "accepted",
+          "value": "친구를 만나서 카페에 갔어요",
+          "reason": "invariant-and-eligible"
+        },
+        {
+          "id": "e0:object",
+          "status": "accepted",
+          "value": "명시된 역할 요구에 부합하는 사용 관측",
+          "reason": "invariant-and-eligible"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "outcome": "applied-source-review",
+      "applied": true,
+      "contract": {
+        "schemaVersion": 1,
+        "baseRevision": 2,
+        "evidenceFingerprint": "96b3197c3cc8d1806edc050016fe5aef92c65fcdf59817eb0c4ec01bc5b34f98",
+        "engineIdentity": {
+          "coreVersion": "0.5.0",
+          "modules": [
+            {
+              "path": "core.cjs",
+              "sha256": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003"
+            },
+            {
+              "path": "observation-planner.cjs",
+              "sha256": "b4b5f622c72046af82cbec7c934077eb9ee20ae30583c4e09faa01a9e6009ab1"
+            },
+            {
+              "path": "projection.cjs",
+              "sha256": "6591855952a749f8337264936b3b5341d5cbe20ac6dc5c0375a5592589a48627"
+            },
+            {
+              "path": "temporal-evidence.cjs",
+              "sha256": "20e0d1fa48bf00f333ba07eb0139ee5c70a836fe4b926235b2a481326d80decf"
+            }
+          ],
+          "scope": "core-and-direct-dependencies-at-process-initialization",
+          "fingerprint": "53ed0263621e7477b4420055801a21e8543692a17f942f7b28119b9fab624788"
+        },
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "durationMs": 2973.922902494331,
+        "range": {
+          "startMs": 0,
+          "endMs": 550,
+          "basis": "supplied-candidate-difference-enclosing-range"
+        },
+        "targetIds": [
+          "e0:asr",
+          "e0:object"
+        ],
+        "witnesses": [
+          {
+            "targetId": "e0:asr",
+            "purpose": "asr-data",
+            "skill": "asr",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "친구를 만나서 카페에 갔어요"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "친구가 만나서 카페에 갔어요"
+              }
+            ]
+          },
+          {
+            "targetId": "e0:object",
+            "purpose": "original-performance",
+            "skill": "object",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구에 부합하는 사용 관측"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구와의 관계 재확인"
+              }
+            ]
+          }
+        ],
+        "candidateTexts": [
+          "친구가 만나서 카페에 갔어요",
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "allowedResultKind": "source-audio-review",
+        "rangeEvidence": {
+          "fallbackReason": null,
+          "comparisonPairs": [
+            {
+              "texts": [
+                "친구가 만나서 카페에 갔어요",
+                "친구를 만나서 카페에 갔어요"
+              ],
+              "tokenRange": {
+                "first": 0,
+                "last": 0
+              },
+              "range": {
+                "startMs": 0,
+                "endMs": 550
+              },
+              "alignmentSourceRefs": [
+                "synthetic-manual-alignment:1",
+                "synthetic-manual-alignment:0"
+              ]
+            }
+          ],
+          "alignmentSourceRefs": [
+            "synthetic-manual-alignment:0",
+            "synthetic-manual-alignment:1"
+          ],
+          "suppliedAlignmentIsNotCertified": true,
+          "fullPossibleInterpretationCoverage": false
+        },
+        "scope": "supplied-current-candidates-only",
+        "verifies": "serialized-source-attempt-purpose-contract-not-human-truth",
+        "id": "observation:206a7c5ec8b0d1f38602f580b51f6c51",
+        "integrity": {
+          "algorithm": "sha256",
+          "digest": "3bae01824b757b9cc403db75c4c00cf3a3d0c8d6dbfdcfb4171fa0959f6328ac"
+        }
+      },
+      "receipt": {
+        "contractId": "observation:206a7c5ec8b0d1f38602f580b51f6c51",
+        "kind": "source-audio-review",
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "range": {
+          "startMs": 0,
+          "endMs": 550
+        },
+        "remainingCandidateTexts": [
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "confirmed": true,
+        "eventId": "actual-review-1",
+        "at": "2026-09-13T09:01:00.000Z"
+      },
+      "changedTargetIds": [
+        "e0:asr",
+        "e0:object"
+      ],
+      "elapsedMs": 10.3322,
+      "interpretation": "Controlled metadata processing. Not actual listening, ASR accuracy, learning benefit or patent odds."
+    },
+    {
+      "id": "new-attempt",
+      "title": "같은 문장을 새로 말했다",
+      "explain": "녹음 내용의 해시가 같아도 시도가 다르면 처음 녹음의 확인 계약에 넣을 수 없습니다. 새 응답은 기존 별도 응답 경로의 대상입니다.",
+      "before": [
+        {
+          "id": "e0:asr",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:object",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "after": [
+        {
+          "id": "e0:asr",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:object",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "outcome": "source-or-attempt-mismatch",
+      "applied": false,
+      "contract": {
+        "schemaVersion": 1,
+        "baseRevision": 2,
+        "evidenceFingerprint": "96b3197c3cc8d1806edc050016fe5aef92c65fcdf59817eb0c4ec01bc5b34f98",
+        "engineIdentity": {
+          "coreVersion": "0.5.0",
+          "modules": [
+            {
+              "path": "core.cjs",
+              "sha256": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003"
+            },
+            {
+              "path": "observation-planner.cjs",
+              "sha256": "b4b5f622c72046af82cbec7c934077eb9ee20ae30583c4e09faa01a9e6009ab1"
+            },
+            {
+              "path": "projection.cjs",
+              "sha256": "6591855952a749f8337264936b3b5341d5cbe20ac6dc5c0375a5592589a48627"
+            },
+            {
+              "path": "temporal-evidence.cjs",
+              "sha256": "20e0d1fa48bf00f333ba07eb0139ee5c70a836fe4b926235b2a481326d80decf"
+            }
+          ],
+          "scope": "core-and-direct-dependencies-at-process-initialization",
+          "fingerprint": "53ed0263621e7477b4420055801a21e8543692a17f942f7b28119b9fab624788"
+        },
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "durationMs": 2973.922902494331,
+        "range": {
+          "startMs": 0,
+          "endMs": 550,
+          "basis": "supplied-candidate-difference-enclosing-range"
+        },
+        "targetIds": [
+          "e0:asr",
+          "e0:object"
+        ],
+        "witnesses": [
+          {
+            "targetId": "e0:asr",
+            "purpose": "asr-data",
+            "skill": "asr",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "친구를 만나서 카페에 갔어요"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "친구가 만나서 카페에 갔어요"
+              }
+            ]
+          },
+          {
+            "targetId": "e0:object",
+            "purpose": "original-performance",
+            "skill": "object",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구에 부합하는 사용 관측"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구와의 관계 재확인"
+              }
+            ]
+          }
+        ],
+        "candidateTexts": [
+          "친구가 만나서 카페에 갔어요",
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "allowedResultKind": "source-audio-review",
+        "rangeEvidence": {
+          "fallbackReason": null,
+          "comparisonPairs": [
+            {
+              "texts": [
+                "친구가 만나서 카페에 갔어요",
+                "친구를 만나서 카페에 갔어요"
+              ],
+              "tokenRange": {
+                "first": 0,
+                "last": 0
+              },
+              "range": {
+                "startMs": 0,
+                "endMs": 550
+              },
+              "alignmentSourceRefs": [
+                "synthetic-manual-alignment:1",
+                "synthetic-manual-alignment:0"
+              ]
+            }
+          ],
+          "alignmentSourceRefs": [
+            "synthetic-manual-alignment:0",
+            "synthetic-manual-alignment:1"
+          ],
+          "suppliedAlignmentIsNotCertified": true,
+          "fullPossibleInterpretationCoverage": false
+        },
+        "scope": "supplied-current-candidates-only",
+        "verifies": "serialized-source-attempt-purpose-contract-not-human-truth",
+        "id": "observation:206a7c5ec8b0d1f38602f580b51f6c51",
+        "integrity": {
+          "algorithm": "sha256",
+          "digest": "3bae01824b757b9cc403db75c4c00cf3a3d0c8d6dbfdcfb4171fa0959f6328ac"
+        }
+      },
+      "receipt": {
+        "contractId": "observation:206a7c5ec8b0d1f38602f580b51f6c51",
+        "kind": "source-audio-review",
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "response-1",
+          "epoch": "e1"
+        },
+        "range": {
+          "startMs": 0,
+          "endMs": 550
+        },
+        "remainingCandidateTexts": [
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "confirmed": true,
+        "eventId": "actual-review-1",
+        "at": "2026-09-13T09:01:00.000Z"
+      },
+      "changedTargetIds": [],
+      "elapsedMs": 2.2781999999999982,
+      "interpretation": "Controlled metadata processing. Not actual listening, ASR accuracy, learning benefit or patent odds."
+    },
+    {
+      "id": "stale-plan",
+      "title": "확인하는 사이 새 사건이 생겼다",
+      "explain": "계약을 만든 뒤 도움 사건이 추가됐습니다. 예전 계약은 적용하지 않고 바뀐 상태에서 다시 계획해야 합니다.",
+      "before": [
+        {
+          "id": "e0:asr",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:object",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "after": [
+        {
+          "id": "e0:asr",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:object",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "outcome": "stale-revision",
+      "applied": false,
+      "contract": {
+        "schemaVersion": 1,
+        "baseRevision": 2,
+        "evidenceFingerprint": "96b3197c3cc8d1806edc050016fe5aef92c65fcdf59817eb0c4ec01bc5b34f98",
+        "engineIdentity": {
+          "coreVersion": "0.5.0",
+          "modules": [
+            {
+              "path": "core.cjs",
+              "sha256": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003"
+            },
+            {
+              "path": "observation-planner.cjs",
+              "sha256": "b4b5f622c72046af82cbec7c934077eb9ee20ae30583c4e09faa01a9e6009ab1"
+            },
+            {
+              "path": "projection.cjs",
+              "sha256": "6591855952a749f8337264936b3b5341d5cbe20ac6dc5c0375a5592589a48627"
+            },
+            {
+              "path": "temporal-evidence.cjs",
+              "sha256": "20e0d1fa48bf00f333ba07eb0139ee5c70a836fe4b926235b2a481326d80decf"
+            }
+          ],
+          "scope": "core-and-direct-dependencies-at-process-initialization",
+          "fingerprint": "53ed0263621e7477b4420055801a21e8543692a17f942f7b28119b9fab624788"
+        },
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "durationMs": 2973.922902494331,
+        "range": {
+          "startMs": 0,
+          "endMs": 550,
+          "basis": "supplied-candidate-difference-enclosing-range"
+        },
+        "targetIds": [
+          "e0:asr",
+          "e0:object"
+        ],
+        "witnesses": [
+          {
+            "targetId": "e0:asr",
+            "purpose": "asr-data",
+            "skill": "asr",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "친구를 만나서 카페에 갔어요"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "친구가 만나서 카페에 갔어요"
+              }
+            ]
+          },
+          {
+            "targetId": "e0:object",
+            "purpose": "original-performance",
+            "skill": "object",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구에 부합하는 사용 관측"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구와의 관계 재확인"
+              }
+            ]
+          }
+        ],
+        "candidateTexts": [
+          "친구가 만나서 카페에 갔어요",
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "allowedResultKind": "source-audio-review",
+        "rangeEvidence": {
+          "fallbackReason": null,
+          "comparisonPairs": [
+            {
+              "texts": [
+                "친구가 만나서 카페에 갔어요",
+                "친구를 만나서 카페에 갔어요"
+              ],
+              "tokenRange": {
+                "first": 0,
+                "last": 0
+              },
+              "range": {
+                "startMs": 0,
+                "endMs": 550
+              },
+              "alignmentSourceRefs": [
+                "synthetic-manual-alignment:1",
+                "synthetic-manual-alignment:0"
+              ]
+            }
+          ],
+          "alignmentSourceRefs": [
+            "synthetic-manual-alignment:0",
+            "synthetic-manual-alignment:1"
+          ],
+          "suppliedAlignmentIsNotCertified": true,
+          "fullPossibleInterpretationCoverage": false
+        },
+        "scope": "supplied-current-candidates-only",
+        "verifies": "serialized-source-attempt-purpose-contract-not-human-truth",
+        "id": "observation:206a7c5ec8b0d1f38602f580b51f6c51",
+        "integrity": {
+          "algorithm": "sha256",
+          "digest": "3bae01824b757b9cc403db75c4c00cf3a3d0c8d6dbfdcfb4171fa0959f6328ac"
+        }
+      },
+      "receipt": {
+        "contractId": "observation:206a7c5ec8b0d1f38602f580b51f6c51",
+        "kind": "source-audio-review",
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "range": {
+          "startMs": 0,
+          "endMs": 550
+        },
+        "remainingCandidateTexts": [
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "confirmed": true,
+        "eventId": "actual-review-1",
+        "at": "2026-09-13T09:01:00.000Z"
+      },
+      "changedTargetIds": [],
+      "elapsedMs": 4.049799999999998,
+      "interpretation": "Controlled metadata processing. Not actual listening, ASR accuracy, learning benefit or patent odds."
+    },
+    {
+      "id": "existing-hint",
+      "title": "처음부터 조사 힌트를 받았다",
+      "explain": "원음을 확인하면 전사 자료로 사용할 수 있지만, 먼저 받은 조사 도움은 없어지지 않습니다. 처음의 독립적인 조사 사용으로는 반영하지 않습니다.",
+      "before": [
+        {
+          "id": "e0:asr",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:object",
+          "status": "excluded",
+          "value": null,
+          "reason": "original-was-assisted"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "after": [
+        {
+          "id": "e0:asr",
+          "status": "accepted",
+          "value": "친구를 만나서 카페에 갔어요",
+          "reason": "invariant-and-eligible"
+        },
+        {
+          "id": "e0:object",
+          "status": "excluded",
+          "value": null,
+          "reason": "original-was-assisted"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "outcome": "applied-source-review",
+      "applied": true,
+      "contract": {
+        "schemaVersion": 1,
+        "baseRevision": 3,
+        "evidenceFingerprint": "fc6ccd51ffa40d230293c6cf950871207299cadb9aa0242aab08bd0948362ac0",
+        "engineIdentity": {
+          "coreVersion": "0.5.0",
+          "modules": [
+            {
+              "path": "core.cjs",
+              "sha256": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003"
+            },
+            {
+              "path": "observation-planner.cjs",
+              "sha256": "b4b5f622c72046af82cbec7c934077eb9ee20ae30583c4e09faa01a9e6009ab1"
+            },
+            {
+              "path": "projection.cjs",
+              "sha256": "6591855952a749f8337264936b3b5341d5cbe20ac6dc5c0375a5592589a48627"
+            },
+            {
+              "path": "temporal-evidence.cjs",
+              "sha256": "20e0d1fa48bf00f333ba07eb0139ee5c70a836fe4b926235b2a481326d80decf"
+            }
+          ],
+          "scope": "core-and-direct-dependencies-at-process-initialization",
+          "fingerprint": "53ed0263621e7477b4420055801a21e8543692a17f942f7b28119b9fab624788"
+        },
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "durationMs": 2973.922902494331,
+        "range": {
+          "startMs": 0,
+          "endMs": 550,
+          "basis": "supplied-candidate-difference-enclosing-range"
+        },
+        "targetIds": [
+          "e0:asr"
+        ],
+        "witnesses": [
+          {
+            "targetId": "e0:asr",
+            "purpose": "asr-data",
+            "skill": "asr",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "친구를 만나서 카페에 갔어요"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "친구가 만나서 카페에 갔어요"
+              }
+            ]
+          }
+        ],
+        "candidateTexts": [
+          "친구가 만나서 카페에 갔어요",
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "allowedResultKind": "source-audio-review",
+        "rangeEvidence": {
+          "fallbackReason": null,
+          "comparisonPairs": [
+            {
+              "texts": [
+                "친구가 만나서 카페에 갔어요",
+                "친구를 만나서 카페에 갔어요"
+              ],
+              "tokenRange": {
+                "first": 0,
+                "last": 0
+              },
+              "range": {
+                "startMs": 0,
+                "endMs": 550
+              },
+              "alignmentSourceRefs": [
+                "synthetic-manual-alignment:1",
+                "synthetic-manual-alignment:0"
+              ]
+            }
+          ],
+          "alignmentSourceRefs": [
+            "synthetic-manual-alignment:0",
+            "synthetic-manual-alignment:1"
+          ],
+          "suppliedAlignmentIsNotCertified": true,
+          "fullPossibleInterpretationCoverage": false
+        },
+        "scope": "supplied-current-candidates-only",
+        "verifies": "serialized-source-attempt-purpose-contract-not-human-truth",
+        "id": "observation:51e81155869e40c375b6c1727458c766",
+        "integrity": {
+          "algorithm": "sha256",
+          "digest": "fad076c462c25e0ff45cb913fdaa004d65ae771844be3733193eeca9aa5556ff"
+        }
+      },
+      "receipt": {
+        "contractId": "observation:51e81155869e40c375b6c1727458c766",
+        "kind": "source-audio-review",
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "range": {
+          "startMs": 0,
+          "endMs": 550
+        },
+        "remainingCandidateTexts": [
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "confirmed": true,
+        "eventId": "actual-review-1",
+        "at": "2026-09-13T09:01:00.000Z"
+      },
+      "changedTargetIds": [
+        "e0:asr"
+      ],
+      "elapsedMs": 4.3369,
+      "interpretation": "Controlled metadata processing. Not actual listening, ASR accuracy, learning benefit or patent odds."
+    },
+    {
+      "id": "third-candidate",
+      "title": "세 번째 후보는 끝부분도 다르다",
+      "explain": "두 후보의 조사 차이만 듣고 세 번째 후보까지 제거하지 않습니다. 제공된 모든 후보 차이를 감싸는 구간을 계약에 넣습니다.",
+      "before": [
+        {
+          "id": "e0:asr",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:object",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:past",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        }
+      ],
+      "after": [
+        {
+          "id": "e0:asr",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:object",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:past",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        }
+      ],
+      "outcome": "review-range-insufficient",
+      "applied": false,
+      "contract": {
+        "schemaVersion": 1,
+        "baseRevision": 2,
+        "evidenceFingerprint": "19d4aa90b3f35031867280fd2da61416a78d7fd72a9c05492e8014f4ce1e2c2f",
+        "engineIdentity": {
+          "coreVersion": "0.5.0",
+          "modules": [
+            {
+              "path": "core.cjs",
+              "sha256": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003"
+            },
+            {
+              "path": "observation-planner.cjs",
+              "sha256": "b4b5f622c72046af82cbec7c934077eb9ee20ae30583c4e09faa01a9e6009ab1"
+            },
+            {
+              "path": "projection.cjs",
+              "sha256": "6591855952a749f8337264936b3b5341d5cbe20ac6dc5c0375a5592589a48627"
+            },
+            {
+              "path": "temporal-evidence.cjs",
+              "sha256": "20e0d1fa48bf00f333ba07eb0139ee5c70a836fe4b926235b2a481326d80decf"
+            }
+          ],
+          "scope": "core-and-direct-dependencies-at-process-initialization",
+          "fingerprint": "53ed0263621e7477b4420055801a21e8543692a17f942f7b28119b9fab624788"
+        },
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "durationMs": 2973.922902494331,
+        "range": {
+          "startMs": 0,
+          "endMs": 2350,
+          "basis": "supplied-candidate-difference-enclosing-range"
+        },
+        "targetIds": [
+          "e0:asr",
+          "e0:object",
+          "e0:past"
+        ],
+        "witnesses": [
+          {
+            "targetId": "e0:asr",
+            "purpose": "asr-data",
+            "skill": "asr",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "친구를 만나서 카페에 갔어요"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "친구가 만나서 카페에 갔어요"
+              }
+            ]
+          },
+          {
+            "targetId": "e0:object",
+            "purpose": "original-performance",
+            "skill": "object",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구에 부합하는 사용 관측"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구와의 관계 재확인"
+              }
+            ]
+          },
+          {
+            "targetId": "e0:past",
+            "purpose": "original-performance",
+            "skill": "past",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "과거형 사용 관측"
+              },
+              {
+                "text": "친구를 만나서 카페에 가요",
+                "effect": "과거 시제 요구 재확인"
+              }
+            ]
+          }
+        ],
+        "candidateTexts": [
+          "친구가 만나서 카페에 갔어요",
+          "친구를 만나서 카페에 가요",
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "allowedResultKind": "source-audio-review",
+        "rangeEvidence": {
+          "fallbackReason": null,
+          "comparisonPairs": [
+            {
+              "texts": [
+                "친구가 만나서 카페에 갔어요",
+                "친구를 만나서 카페에 가요"
+              ],
+              "tokenRange": {
+                "first": 0,
+                "last": 3
+              },
+              "range": {
+                "startMs": 0,
+                "endMs": 2350
+              },
+              "alignmentSourceRefs": [
+                "synthetic-manual-alignment:1",
+                "synthetic-manual-alignment:2"
+              ]
+            },
+            {
+              "texts": [
+                "친구가 만나서 카페에 갔어요",
+                "친구를 만나서 카페에 갔어요"
+              ],
+              "tokenRange": {
+                "first": 0,
+                "last": 0
+              },
+              "range": {
+                "startMs": 0,
+                "endMs": 550
+              },
+              "alignmentSourceRefs": [
+                "synthetic-manual-alignment:1",
+                "synthetic-manual-alignment:0"
+              ]
+            },
+            {
+              "texts": [
+                "친구를 만나서 카페에 가요",
+                "친구를 만나서 카페에 갔어요"
+              ],
+              "tokenRange": {
+                "first": 3,
+                "last": 3
+              },
+              "range": {
+                "startMs": 1800,
+                "endMs": 2350
+              },
+              "alignmentSourceRefs": [
+                "synthetic-manual-alignment:2",
+                "synthetic-manual-alignment:0"
+              ]
+            }
+          ],
+          "alignmentSourceRefs": [
+            "synthetic-manual-alignment:0",
+            "synthetic-manual-alignment:1",
+            "synthetic-manual-alignment:2"
+          ],
+          "suppliedAlignmentIsNotCertified": true,
+          "fullPossibleInterpretationCoverage": false
+        },
+        "scope": "supplied-current-candidates-only",
+        "verifies": "serialized-source-attempt-purpose-contract-not-human-truth",
+        "id": "observation:a620a145c4bcf8aa4d841bf48eb1286c",
+        "integrity": {
+          "algorithm": "sha256",
+          "digest": "288cc9572d6f79d38444d6462ba0504c7e2dbb624aec1957933d4f1d7f6e1f73"
+        }
+      },
+      "receipt": {
+        "contractId": "observation:a620a145c4bcf8aa4d841bf48eb1286c",
+        "kind": "source-audio-review",
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "range": {
+          "startMs": 0,
+          "endMs": 550
+        },
+        "remainingCandidateTexts": [
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "confirmed": true,
+        "eventId": "actual-review-1",
+        "at": "2026-09-13T09:01:00.000Z"
+      },
+      "changedTargetIds": [],
+      "elapsedMs": 1.4832999999999998,
+      "interpretation": "Controlled metadata processing. Not actual listening, ASR accuracy, learning benefit or patent odds."
+    },
+    {
+      "id": "missing-alignment",
+      "title": "단어의 녹음 위치를 모른다",
+      "explain": "위치 자료가 없으면 좁은 구간을 추측하지 않고 원음 전체로 돌아갑니다. 화면의 짧은 구간 수치는 수동으로 만든 시험 정렬일 때만 나옵니다.",
+      "before": [
+        {
+          "id": "e0:asr",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:object",
+          "status": "held",
+          "value": null,
+          "reason": "effect-disagreement"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "after": [
+        {
+          "id": "e0:asr",
+          "status": "accepted",
+          "value": "친구를 만나서 카페에 갔어요",
+          "reason": "invariant-and-eligible"
+        },
+        {
+          "id": "e0:object",
+          "status": "accepted",
+          "value": "명시된 역할 요구에 부합하는 사용 관측",
+          "reason": "invariant-and-eligible"
+        },
+        {
+          "id": "e0:past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reason": "invariant-and-eligible"
+        }
+      ],
+      "outcome": "applied-source-review",
+      "applied": true,
+      "contract": {
+        "schemaVersion": 1,
+        "baseRevision": 2,
+        "evidenceFingerprint": "96b3197c3cc8d1806edc050016fe5aef92c65fcdf59817eb0c4ec01bc5b34f98",
+        "engineIdentity": {
+          "coreVersion": "0.5.0",
+          "modules": [
+            {
+              "path": "core.cjs",
+              "sha256": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003"
+            },
+            {
+              "path": "observation-planner.cjs",
+              "sha256": "b4b5f622c72046af82cbec7c934077eb9ee20ae30583c4e09faa01a9e6009ab1"
+            },
+            {
+              "path": "projection.cjs",
+              "sha256": "6591855952a749f8337264936b3b5341d5cbe20ac6dc5c0375a5592589a48627"
+            },
+            {
+              "path": "temporal-evidence.cjs",
+              "sha256": "20e0d1fa48bf00f333ba07eb0139ee5c70a836fe4b926235b2a481326d80decf"
+            }
+          ],
+          "scope": "core-and-direct-dependencies-at-process-initialization",
+          "fingerprint": "53ed0263621e7477b4420055801a21e8543692a17f942f7b28119b9fab624788"
+        },
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "durationMs": 2973.922902494331,
+        "range": {
+          "startMs": 0,
+          "endMs": 2973.922902494331,
+          "basis": "whole-source-audio-fallback"
+        },
+        "targetIds": [
+          "e0:asr",
+          "e0:object"
+        ],
+        "witnesses": [
+          {
+            "targetId": "e0:asr",
+            "purpose": "asr-data",
+            "skill": "asr",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "친구를 만나서 카페에 갔어요"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "친구가 만나서 카페에 갔어요"
+              }
+            ]
+          },
+          {
+            "targetId": "e0:object",
+            "purpose": "original-performance",
+            "skill": "object",
+            "alternatives": [
+              {
+                "text": "친구를 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구에 부합하는 사용 관측"
+              },
+              {
+                "text": "친구가 만나서 카페에 갔어요",
+                "effect": "명시된 역할 요구와의 관계 재확인"
+              }
+            ]
+          }
+        ],
+        "candidateTexts": [
+          "친구가 만나서 카페에 갔어요",
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "allowedResultKind": "source-audio-review",
+        "rangeEvidence": {
+          "fallbackReason": "missing-alignment",
+          "comparisonPairs": [],
+          "alignmentSourceRefs": [],
+          "suppliedAlignmentIsNotCertified": true
+        },
+        "scope": "supplied-current-candidates-only",
+        "verifies": "serialized-source-attempt-purpose-contract-not-human-truth",
+        "id": "observation:0884f40ab66503e0d996d7bda33b2e32",
+        "integrity": {
+          "algorithm": "sha256",
+          "digest": "50d3b5c913b1713eb7edaa0cab6370dcccfd8cc2c3f883f66968c9cac88290ee"
+        }
+      },
+      "receipt": {
+        "contractId": "observation:0884f40ab66503e0d996d7bda33b2e32",
+        "kind": "source-audio-review",
+        "source": {
+          "audioRef": "d9e45d3fb33a6060c3d9cde162a2ac1c395ee84c6cca0c14bc2d8e235328955b",
+          "utteranceId": "original",
+          "epoch": "e0"
+        },
+        "range": {
+          "startMs": 0,
+          "endMs": 2973.922902494331
+        },
+        "remainingCandidateTexts": [
+          "친구를 만나서 카페에 갔어요"
+        ],
+        "confirmed": true,
+        "eventId": "actual-review-1",
+        "at": "2026-09-13T09:01:00.000Z"
+      },
+      "changedTargetIds": [
+        "e0:asr",
+        "e0:object"
+      ],
+      "elapsedMs": 3.6034000000000077,
+      "interpretation": "Controlled metadata processing. Not actual listening, ASR accuracy, learning benefit or patent odds."
+    }
+  ],
+  "routingComparison": {
+    "pairs": [
+      {
+        "outcome": "A-review",
+        "target": {
+          "audio": "A",
+          "attempt": "e0",
+          "purpose": "transcript",
+          "skill": "all"
+        },
+        "baseline": true,
+        "labelledRouting": true
+      },
+      {
+        "outcome": "A-review",
+        "target": {
+          "audio": "A",
+          "attempt": "e0",
+          "purpose": "independent",
+          "skill": "object"
+        },
+        "baseline": true,
+        "labelledRouting": true
+      },
+      {
+        "outcome": "A-review",
+        "target": {
+          "audio": "B",
+          "attempt": "e1",
+          "purpose": "transcript",
+          "skill": "all"
+        },
+        "baseline": false,
+        "labelledRouting": false
+      },
+      {
+        "outcome": "B-after-hint",
+        "target": {
+          "audio": "A",
+          "attempt": "e0",
+          "purpose": "transcript",
+          "skill": "all"
+        },
+        "baseline": false,
+        "labelledRouting": false
+      },
+      {
+        "outcome": "B-after-hint",
+        "target": {
+          "audio": "A",
+          "attempt": "e0",
+          "purpose": "independent",
+          "skill": "object"
+        },
+        "baseline": false,
+        "labelledRouting": false
+      },
+      {
+        "outcome": "B-after-hint",
+        "target": {
+          "audio": "B",
+          "attempt": "e1",
+          "purpose": "transcript",
+          "skill": "all"
+        },
+        "baseline": true,
+        "labelledRouting": true
+      },
+      {
+        "outcome": "B-review",
+        "target": {
+          "audio": "A",
+          "attempt": "e0",
+          "purpose": "transcript",
+          "skill": "all"
+        },
+        "baseline": false,
+        "labelledRouting": false
+      },
+      {
+        "outcome": "B-review",
+        "target": {
+          "audio": "A",
+          "attempt": "e0",
+          "purpose": "independent",
+          "skill": "object"
+        },
+        "baseline": false,
+        "labelledRouting": false
+      },
+      {
+        "outcome": "B-review",
+        "target": {
+          "audio": "B",
+          "attempt": "e1",
+          "purpose": "transcript",
+          "skill": "all"
+        },
+        "baseline": true,
+        "labelledRouting": true
+      }
+    ],
+    "equalPairs": 9,
+    "conclusion": "동일한 정책을 준 9쌍 귀속 결과는 동일. 출력 우월성 미입증이며 결합 관계의 도출 용이성과는 다른 판단."
+  },
+  "sources": {
+    "../../core.cjs": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003",
+    "observation-contract.cjs": "2a7ac4f4643907da19e4af9054b22f79c63c01c95deb6216ab2f8d079b8544d0",
+    "fixtures.cjs": "f3a8d0ff8d5a4507050000c1539f304369e3a83c0255124a206b02da3631a75a",
+    "run-experiment.cjs": "3b5cdcea57e9732ec53f3d502ad67039046638cc6c4462510d4f3b1c74689db0"
+  }
+}
