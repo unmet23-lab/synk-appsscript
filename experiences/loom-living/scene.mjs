@@ -17,7 +17,7 @@ function greet(event){
   clearTimeout(gestureTimer);gestureTimer=setTimeout(()=>{input.pointer.pressed=false;},240);
   speak('왔구나! 여기 같이 있을까?',{immediate:event?.detail===0});
 }
-function gust(event){input.gust=true;speak('저기, 바람이 지나가!',{immediate:event?.detail===0});$('weather').textContent='바람이 지나가는 중';setTimeout(()=>{$('weather').textContent=input.paused?'잠깐 쉬는 중':'잔잔한 바람';},4000);}
+function gust(event){input.gust=true;speak('저기, 바람이 지나가!',{immediate:event?.detail===0});}
 
 let audio;
 async function toggleSound(){
@@ -66,6 +66,8 @@ function frame(now){
   const rawDt=last?(now-last)/1000:0;const dt=Math.min(rawDt,.1);last=now;
   if(pointerExpiry&&now>pointerExpiry){input.pointer.active=false;input.pointer.pressed=false;pointerExpiry=0;}
   const pose=stepScene(state,dt,input);input.gust=false;
+  const weather=input.paused?'잠깐 쉬는 중':input.reducedMotion?'움직임 줄이기 적용 중':pose.gustActive?'바람이 지나가는 중':'잔잔한 바람';
+  if($('weather').textContent!==weather)$('weather').textContent=weather;
   // Frozen scenes incur no repeated draws after one final frame.
   const signature=[pose.time,pose.mode,pose.blink,renderer.width,renderer.height].join(':');
   if(signature!==renderer.signature){renderer.render(pose);renderer.signature=signature;}
