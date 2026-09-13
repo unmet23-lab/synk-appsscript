@@ -5,7 +5,7 @@
 - 라이선스: MIT. 원문 `vendor/THREE-LICENSE.txt`.
 - upstream: https://github.com/mrdoob/three.js/tree/r180
 - 고정 버전 배포: https://unpkg.com/three@0.180.0/
-- 포함 파일: `three.module.js`, `three.core.js`, `RoundedBoxGeometry.js`, `addons/utils/BufferGeometryUtils.js`, `addons/objects/Reflector.js`, `addons/postprocessing/{EffectComposer,RenderPass,UnrealBloomPass,ShaderPass,MaskPass,Pass,OutputPass}.js`, `addons/shaders/{CopyShader,LuminosityHighPassShader,OutputShader}.js`.
+- 포함 파일: `three.module.js`, `three.core.js`, `RoundedBoxGeometry.js`, `addons/utils/BufferGeometryUtils.js`, `addons/objects/Reflector.js`, `addons/postprocessing/{EffectComposer,RenderPass,ShaderPass,MaskPass,Pass,OutputPass}.js`, `addons/shaders/{CopyShader,OutputShader}.js`.
 - 원본 라이선스 헤더를 유지했다. 브라우저 런타임은 외부 CDN을 요청하지 않는다.
 
 ## 글꼴

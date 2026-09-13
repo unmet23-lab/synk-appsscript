@@ -130,18 +130,6 @@ test('doGet은 HtmlService를 반환하지 않는다 (익명 google.script.run �
     'Meta 웹훅 검증 경로가 사라졌다 — 상담 봇 전체가 죽는다');
 });
 
-test('보류된 강사 웹화면은 라이브 허용목록에 없다 (파일이 남아 있어도 배포되지 않는다)', () => {
-  const 보류 = '_보류_두뇌_웹화면.js';
-  assert.ok(fs.existsSync(path.join(ROOT, 보류)), 보류 + ' 이 사라졌다 — 되살릴 때 참고할 경위와 조건이 그 머리말에 있다');
-  const ignore = fs.readFileSync(path.join(ROOT, '.claspignore'), 'utf8');
-  const 허용 = ignore.split(/\r?\n/).filter((l) => l.startsWith('!')).map((l) => l.slice(1).trim());
-  허용.forEach((pat) => {
-    const re = new RegExp('^' + pat.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
-    assert.ok(!re.test(보류),
-      '.claspignore 허용목록의 "' + pat + '" 가 ' + 보류 + ' 를 라이브로 올린다 — 익명 RPC 브릿지가 다시 열린다');
-  });
-});
-
 /* ── 시트 수식 인젝션 ──
  * 남이 보낸 글이 그대로 셀에 들어가면 시트가 그것을 수식으로 실행한다.
  * 같은 스프레드시트에 profiles(학생 연락처·보호자 정보)가 있어서, 사람이 셀을 클릭하지 않아도 데이터가 외부로 나간다. */

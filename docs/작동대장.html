@@ -560,7 +560,7 @@
 
 <h1>작동 대장</h1>
 <p class="sub">이번 주에 <b>무엇을 뜯을 것인가</b>를 고르는 한 장 — 「무엇이 있나」가 아니라 <b>「무엇이 실제로 도나」</b>를 잰다.</p>
-<div class="stamp">🕐 측정 2026-09-09 09:44 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
+<div class="stamp">🕐 측정 2026-09-13 14:41 UTC · 수렴검사 ✅ 두 번 돌려 같았다</div>
 
 <h2><span class="no">Ⅰ</span>이해 사슬 — 학생의 무엇이 엔진까지 닿나</h2>
 <p class="lead">이 사슬 표는 <code>docs/철학_실물현황.md</code> A-1의 <b>관찰 시점 기록</b>을 인용한다. 오늘의 구현·배포·효과는 현재 증거로 따로 확인한다.</p>
@@ -591,7 +591,7 @@
 
 
 <h2><span class="no">Ⅲ</span>네 통 — 지금 상태</h2>
-<p class="lead">장치 <b>271개</b>(도구·라이브러리·훅)를 회귀 125벌 · 마찰 장부 30건 · 저장소 글 623벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
+<p class="lead">장치 <b>268개</b>(도구·라이브러리·훅)를 회귀 155벌 · 마찰 장부 30건 · 저장소 글 649벌 · git 이력에 대조했다. <b>왼쪽이 급한 순서다.</b></p>
 <div class="tongs">
 <div class="tong" style="--c:#C79200">
     <div class="tong-h"><span class="tong-i">🟠</span><span class="tong-n">자꾸 깨진다</span></div>
@@ -600,17 +600,17 @@
   </div>
 <div class="tong" style="--c:#AE322A">
     <div class="tong-h"><span class="tong-i">🔴</span><span class="tong-n">맨몸이다</span></div>
-    <div class="tong-v">133</div>
+    <div class="tong-v">102</div>
     <div class="tong-d">남들은 부르는데 회귀가 없다 · 뜯으면 위험</div>
   </div>
 <div class="tong" style="--c:#262626">
     <div class="tong-h"><span class="tong-i">⚫</span><span class="tong-n">아무도 안 부른다</span></div>
-    <div class="tong-v">38</div>
+    <div class="tong-v">46</div>
     <div class="tong-d">저장소 어디에도 이름이 없다 · 삭제 후보</div>
   </div>
 <div class="tong" style="--c:#13724A">
     <div class="tong-h"><span class="tong-i">🟢</span><span class="tong-n">괜찮다</span></div>
-    <div class="tong-v">100</div>
+    <div class="tong-v">120</div>
     <div class="tong-d">안 건드린다</div>
   </div>
 </div>
@@ -619,157 +619,157 @@
 <p class="lead">수리가 아니라 <b>재설계</b>를 볼 자리다 — 같은 파일이 마찰 장부에 5번 넘게 올랐다는 것은 <b>고쳐도 또 아팠다</b>는 뜻이다. 「2번째 = 실수가 아니라 시스템 결함 · 3번째 = 원인을 쓸 수 없게 만든다」(CLAUDE.md).</p>
 <p class="none">해당 없음 — 이 통은 비었다.</p>
 <div class="hist"><div class="hb"><div class="hb-bar" style="height:84px;background:#D1D2D4"></div>
-      <div class="hb-v">258</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:4.232558139534883px;background:#D1D2D4"></div>
-      <div class="hb-v">13</div><div class="hb-k">1</div></div></div>
+      <div class="hb-v">257</div><div class="hb-k">0건</div></div><div class="hb"><div class="hb-bar" style="height:3.595330739299611px;background:#D1D2D4"></div>
+      <div class="hb-v">11</div><div class="hb-k">1</div></div></div>
   <p class="more">가로 = 그 도구가 마찰 장부에 인용된 건수 · 세로 = 도구 개수 · <b style="color:#AE322A">빨강 = 5건 이상</b>(「자꾸 깨진다」로 세는 구간).</p>
 
-<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>133건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
-<p class="lead">저장소 여기저기서 부르는데 회귀 125벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
+<h2><span class="no">Ⅴ</span>🔴 맨몸이다 — <b>102건</b> <span class="dim">· 뜯기 전에 회귀부터</span></h2>
+<p class="lead">저장소 여기저기서 부르는데 회귀 155벌 어디에도 이름이 안 나온다. <b>뜯어도 아무 테스트가 안 빨개진다</b> — 지금 이게 도는지 기계가 모른다.</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고 · UTC)</span></th></tr></thead>
     <tbody><tr>
-      <td class="mono">tools/운영자료.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">16곳</td>
-      <td class="c">2026-09-08<span class="dim"> · 1일</span></td>
-    </tr>
-<tr>
       <td class="mono">tools/bump-version.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c">13곳</td>
-      <td class="c">2026-08-22<span class="dim"> · 18일</span></td>
+      <td class="c">2026-08-22<span class="dim"> · 22일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/운영자료.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">11곳</td>
+      <td class="c">2026-09-08<span class="dim"> · 5일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/세트굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">12곳</td>
-      <td class="c">2026-09-01<span class="dim"> · 8일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/lib/램문지기.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">12곳</td>
-      <td class="c">2026-09-01<span class="dim"> · 8일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/lib/계약동봉.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">9곳</td>
-      <td class="c">2026-08-22<span class="dim"> · 18일</span></td>
+      <td class="c">10곳</td>
+      <td class="c">2026-09-01<span class="dim"> · 12일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/공방굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">8곳</td>
-      <td class="c">2026-09-06<span class="dim"> · 3일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/자율기록.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">8곳</td>
-      <td class="c">2026-09-02<span class="dim"> · 7일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/lib/공방규격.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">8곳</td>
-      <td class="c">2026-09-08<span class="dim"> · 1일</span></td>
+      <td class="c">7곳</td>
+      <td class="c">2026-09-06<span class="dim"> · 7일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/룸굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c">7곳</td>
-      <td class="c">2026-09-06<span class="dim"> · 3일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/명품재굽기.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">7곳</td>
-      <td class="c">2026-09-03<span class="dim"> · 6일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/부품대조.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">7곳</td>
-      <td class="c">2026-08-23<span class="dim"> · 17일</span></td>
+      <td class="c">2026-09-13<span class="dim"> · 0일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/오브굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c">7곳</td>
-      <td class="c">2026-08-24<span class="dim"> · 16일</span></td>
+      <td class="c">2026-08-24<span class="dim"> · 20일</span></td>
     </tr>
 <tr>
-      <td class="mono">tools/인용검사.js</td>
+      <td class="mono">tools/lib/계약동봉.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c">7곳</td>
-      <td class="c">2026-09-08<span class="dim"> · 1일</span></td>
+      <td class="c">2026-08-22<span class="dim"> · 22일</span></td>
     </tr>
 <tr>
-      <td class="mono">tools/중성축.js</td>
+      <td class="mono">tools/lib/공방규격.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c">7곳</td>
-      <td class="c">2026-08-22<span class="dim"> · 18일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/감각층소리합성.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">6곳</td>
-      <td class="c">2026-08-28<span class="dim"> · 12일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/공방지면.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">6곳</td>
-      <td class="c">2026-09-05<span class="dim"> · 4일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/교재읽기본.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">6곳</td>
-      <td class="c">2026-09-03<span class="dim"> · 6일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/마린굽기.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">6곳</td>
-      <td class="c">2026-09-05<span class="dim"> · 4일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/밤샘_0831.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c">6곳</td>
-      <td class="c">2026-09-05<span class="dim"> · 4일</span></td>
+      <td class="c">2026-09-08<span class="dim"> · 5일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/배너굽기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c">6곳</td>
-      <td class="c">2026-09-08<span class="dim"> · 1일</span></td>
+      <td class="c">2026-09-10<span class="dim"> · 3일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/부품대조.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">6곳</td>
+      <td class="c">2026-08-23<span class="dim"> · 21일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/인용검사.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">6곳</td>
+      <td class="c">2026-09-08<span class="dim"> · 5일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/공방지면.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">5곳</td>
+      <td class="c">2026-09-05<span class="dim"> · 8일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/라디오방송건강.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">5곳</td>
+      <td class="c">2026-09-08<span class="dim"> · 5일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/라디오방송열쇠.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">5곳</td>
+      <td class="c">2026-09-08<span class="dim"> · 5일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/마린굽기.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">5곳</td>
+      <td class="c">2026-09-05<span class="dim"> · 8일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/서클조판.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">5곳</td>
+      <td class="c">2026-08-13<span class="dim"> · 31일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/자율기록.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">5곳</td>
+      <td class="c">2026-09-02<span class="dim"> · 11일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/lib/깊이격자.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">5곳</td>
+      <td class="c">2026-09-02<span class="dim"> · 11일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/명품재굽기.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">4곳</td>
+      <td class="c">2026-09-03<span class="dim"> · 10일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/보안검토과녁.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c">4곳</td>
+      <td class="c">2026-08-18<span class="dim"> · 26일</span></td>
     </tr></tbody></table>
-    <p class="more">…외 113건 — 전량은 <code>node tools/작동대장.js --요약</code></p>
+    <p class="more">…외 82건 — 전량은 <code>node tools/작동대장.js --요약</code></p>
 
-<h2><span class="no">Ⅵ</span>⚫ 아무도 안 부른다 — <b>38건</b> <span class="dim">· 삭제 후보</span></h2>
+<h2><span class="no">Ⅵ</span>⚫ 아무도 안 부른다 — <b>46건</b> <span class="dim">· 삭제 후보</span></h2>
 <p class="lead">회귀·다른 도구·훅·문서·<code>settings.json</code> 어디에도 이름이 없다. 경량 원칙의 과녁이다 — 다만 <b>삭제는 실사용 실측 후 건별</b>이고, 「대장에 떴다」는 삭제 근거가 아니라 <b>열어볼 이유</b>다(유호 08-13).</p>
 <table class="t">
     <thead><tr><th>파일</th><th>깨진 이력</th><th>회귀</th><th>부르는 곳</th><th>마지막 손댐 <span class="dim">(참고 · UTC)</span></th></tr></thead>
@@ -778,142 +778,142 @@
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-08<span class="dim"> · 1일</span></td>
-    </tr>
-<tr>
-      <td class="mono">.claude/hooks/model-ledger.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-03<span class="dim"> · 6일</span></td>
-    </tr>
-<tr>
-      <td class="mono">.claude/hooks/peer-edit-watch.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-08<span class="dim"> · 1일</span></td>
-    </tr>
-<tr>
-      <td class="mono">.claude/hooks/turn-end-ledger.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-01<span class="dim"> · 8일</span></td>
+      <td class="c">2026-09-08<span class="dim"> · 5일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/검수표검문.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-07<span class="dim"> · 2일</span></td>
+      <td class="c">2026-09-07<span class="dim"> · 6일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/곡고음달래기.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c">2026-09-08<span class="dim"> · 5일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/공방드라이브.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c">2026-09-08<span class="dim"> · 5일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/구글예산.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-06<span class="dim"> · 3일</span></td>
+      <td class="c">2026-09-06<span class="dim"> · 7일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/깊이반입.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-05<span class="dim"> · 4일</span></td>
+      <td class="c">2026-09-10<span class="dim"> · 3일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/까몽코지우기.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-05<span class="dim"> · 4일</span></td>
+      <td class="c">2026-09-05<span class="dim"> · 8일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/낫표교정_깔기.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c">2026-08-31<span class="dim"> · 13일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/네이버스킨굽기.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c">2026-09-10<span class="dim"> · 3일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/뇌그물.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-04<span class="dim"> · 5일</span></td>
+      <td class="c">2026-09-04<span class="dim"> · 9일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/다크팔레트굽기.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c">2026-08-20<span class="dim"> · 24일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/돈점검.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-06<span class="dim"> · 3일</span></td>
+      <td class="c">2026-09-06<span class="dim"> · 7일</span></td>
     </tr>
 <tr>
-      <td class="mono">tools/라디오무대영상.js</td>
+      <td class="mono">tools/라디오로고동기화.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-07<span class="dim"> · 2일</span></td>
+      <td class="c">2026-09-10<span class="dim"> · 3일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/라디오서버열쇠.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-06<span class="dim"> · 3일</span></td>
+      <td class="c">2026-09-06<span class="dim"> · 7일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/라디오설치.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-06<span class="dim"> · 3일</span></td>
+      <td class="c">2026-09-06<span class="dim"> · 7일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/라디오자격넣기.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c">2026-09-06<span class="dim"> · 7일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/라디오장면차례.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-07<span class="dim"> · 2일</span></td>
+      <td class="c">2026-09-07<span class="dim"> · 6일</span></td>
+    </tr>
+<tr>
+      <td class="mono">tools/라디오한벌굽기.js</td>
+      <td class="c">—</td>
+      <td class="c"><span class="pill bad">없다</span></td>
+      <td class="c"><span class="pill bad">0곳</span></td>
+      <td class="c">2026-09-08<span class="dim"> · 5일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/라디오화면미리.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-07<span class="dim"> · 2일</span></td>
+      <td class="c">2026-09-07<span class="dim"> · 6일</span></td>
     </tr>
 <tr>
       <td class="mono">tools/마스코트업그레이드시연.js</td>
       <td class="c">—</td>
       <td class="c"><span class="pill bad">없다</span></td>
       <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-02<span class="dim"> · 7일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/문법급수계약.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-08-31<span class="dim"> · 9일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/문서상태.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-08-26<span class="dim"> · 14일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/부품색시안.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-03<span class="dim"> · 6일</span></td>
-    </tr>
-<tr>
-      <td class="mono">tools/세로선점검.js</td>
-      <td class="c">—</td>
-      <td class="c"><span class="pill bad">없다</span></td>
-      <td class="c"><span class="pill bad">0곳</span></td>
-      <td class="c">2026-09-05<span class="dim"> · 4일</span></td>
+      <td class="c">2026-09-02<span class="dim"> · 11일</span></td>
     </tr></tbody></table>
-    <p class="more">…외 18건 — 전량은 <code>node tools/작동대장.js --요약</code></p>
+    <p class="more">…외 26건 — 전량은 <code>node tools/작동대장.js --요약</code></p>
 
 <h2><span class="no">Ⅶ</span>부품 — 대외 구역별 상태</h2>
 <p class="lead">정본 = <code>docs/시스템_대장.md</code> (52줄). 막대 = 🟢 라이브 · 🟡 반영 대기 · ⚪ 설계만.</p>
@@ -991,11 +991,11 @@
       <td>개발 파이프라인 <span class="dim">(내부)</span></td>
       <td class="c">4</td>
       <td class="bar">
-        <span style="width:100%;background:#13724A"></span
-        ><span style="width:0%;background:#FFD447"></span
+        <span style="width:50%;background:#13724A"></span
+        ><span style="width:50%;background:#FFD447"></span
         ><span style="width:0%;background:#D1D2D4"></span>
       </td>
-      <td class="c mono">4 · 0 · 0</td>
+      <td class="c mono">2 · 2 · 0</td>
     </tr></tbody></table>
 
 <h2><span class="no">Ⅷ</span>안 잰 축 — <b>이 화면이 «모르는» 것</b></h2>
