@@ -1,6 +1,6 @@
 {
-  "date": "2026-09-13T10:18:46.801Z",
-  "revision": "local-lights-and-grass",
+  "date": "2026-09-13",
+  "revision": "soft-ground-shadow-and-warm-light-bloom",
   "browser": "Windows Codex in-app browser",
   "unitTests": {
     "passed": 6,
@@ -8,32 +8,32 @@
   },
   "checks": [
     {
-      "name": "environment changes are confined to marked regions",
+      "name": "desktop fixed background outside local bloom, grass and actor bounds",
       "passed": true,
       "details": {
         "pixelsCompared": 2310840,
-        "changedPixels": 211534,
-        "characterPixels": 140313,
+        "changedPixels": 312797,
+        "characterPixels": 141089,
         "outsideEffectsChanged": 0,
         "lightChangedPixels": [
-          290,
-          2932,
-          3309,
-          2665,
-          3042,
-          2887,
-          1444,
+          3432,
+          15772,
+          20223,
+          17747,
+          17018,
+          18114,
+          5028,
           0,
-          2525,
-          2815,
-          2689,
+          11306,
+          5763,
+          15990,
+          1575,
           0,
-          0,
-          0
+          1360
         ],
         "grassChangedPixels": [
-          15069,
-          13717,
+          15080,
+          14412,
           17837,
           0,
           0
@@ -53,178 +53,12 @@
       }
     },
     {
-      "name": "pause freezes 14 lights, 5 grass clumps, time and draw count",
-      "passed": true,
-      "before": {
-        "pose": {
-          "time": 45.34999999999807,
-          "wind": -0.056789064974085035,
-          "breathe": -0.001089090503606202,
-          "lookX": 0.6999969585106431,
-          "lookY": 0.002240815989216346,
-          "turn": 0.03783069327367336,
-          "lean": 0.005188691686080204,
-          "compression": 0,
-          "blink": 0,
-          "light": 1,
-          "leaf": {
-            "x": 1.0623809523808263,
-            "y": 0.0020459909714297085,
-            "rotation": 2.29721361557648,
-            "visible": true
-          },
-          "mode": "paused"
-        },
-        "eyeAudit": {
-          "outsideChanges": 0,
-          "alphaChanges": 0,
-          "coordinateSpace": 1536,
-          "boundaryAllowance": "2 source pixels for elliptical antialiasing"
-        },
-        "environment": {
-          "lightLevels": [
-            0.05446471861798139,
-            -0.003873829187697875,
-            0.06461207842253752,
-            -0.06102594314359309,
-            0.0338814694365736,
-            -0.07833561370908289,
-            -0.015559372150906104,
-            -0.028263926911253952,
-            -0.050977159045210545,
-            -0.03244024643697657,
-            -0.08487656148857653,
-            -0.03260201024089887,
-            0.07421374296660295,
-            0.07386186858627085
-          ],
-          "grassDisplacements": [
-            -0.22597864862772407,
-            -0.19102586796754994,
-            -0.13139844047157417,
-            -0.06707984232509416,
-            -0.03444890732942554
-          ]
-        },
-        "renderer": {
-          "frames": 2726,
-          "drawCalls": 31,
-          "textureUploads": 3,
-          "webgl": "WebGL 2",
-          "renderMode": "2.5D surface deformation",
-          "camera": "fixed",
-          "background": "local light and grass masks only",
-          "contactPoints": 3,
-          "lights": 14,
-          "grassClumps": 5,
-          "maxGrassDisplacementCssPx": 1.3
-        },
-        "errors": [],
-        "performance": {
-          "samples": 600,
-          "medianMs": 16.69999999999709,
-          "p95Ms": 16.900000000001455,
-          "maxMs": 17.099999999998545
-        },
-        "size": {
-          "width": 391,
-          "height": 633.7578125
-        }
-      },
-      "after": {
-        "pose": {
-          "time": 45.34999999999807,
-          "wind": -0.056789064974085035,
-          "breathe": -0.001089090503606202,
-          "lookX": 0.6999969585106431,
-          "lookY": 0.002240815989216346,
-          "turn": 0.03783069327367336,
-          "lean": 0.005188691686080204,
-          "compression": 0,
-          "blink": 0,
-          "light": 1,
-          "leaf": {
-            "x": 1.0623809523808263,
-            "y": 0.0020459909714297085,
-            "rotation": 2.29721361557648,
-            "visible": true
-          },
-          "mode": "paused"
-        },
-        "eyeAudit": {
-          "outsideChanges": 0,
-          "alphaChanges": 0,
-          "coordinateSpace": 1536,
-          "boundaryAllowance": "2 source pixels for elliptical antialiasing"
-        },
-        "environment": {
-          "lightLevels": [
-            0.05446471861798139,
-            -0.003873829187697875,
-            0.06461207842253752,
-            -0.06102594314359309,
-            0.0338814694365736,
-            -0.07833561370908289,
-            -0.015559372150906104,
-            -0.028263926911253952,
-            -0.050977159045210545,
-            -0.03244024643697657,
-            -0.08487656148857653,
-            -0.03260201024089887,
-            0.07421374296660295,
-            0.07386186858627085
-          ],
-          "grassDisplacements": [
-            -0.22597864862772407,
-            -0.19102586796754994,
-            -0.13139844047157417,
-            -0.06707984232509416,
-            -0.03444890732942554
-          ]
-        },
-        "renderer": {
-          "frames": 2726,
-          "drawCalls": 31,
-          "textureUploads": 3,
-          "webgl": "WebGL 2",
-          "renderMode": "2.5D surface deformation",
-          "camera": "fixed",
-          "background": "local light and grass masks only",
-          "contactPoints": 3,
-          "lights": 14,
-          "grassClumps": 5,
-          "maxGrassDisplacementCssPx": 1.3
-        },
-        "errors": [],
-        "performance": {
-          "samples": 600,
-          "medianMs": 16.69999999999709,
-          "p95Ms": 16.900000000001455,
-          "maxMs": 17.099999999998545
-        },
-        "size": {
-          "width": 391,
-          "height": 633.7578125
-        }
-      }
-    },
-    {
-      "name": "new environment live capture",
-      "passed": true,
-      "details": {
-        "bytes": 17849427,
-        "mime": "video/webm;codecs=vp9",
-        "seconds": 16
-      },
-      "evidence": "preview.mp4"
-    },
-    {
-      "name": "mobile central grass visible and no unmarked background changes",
+      "name": "mobile fixed background outside local bloom, grass and actor bounds",
       "passed": true,
       "details": {
         "pixelsCompared": 991576,
-        "changedPixels": 180583,
-        "characterPixels": 179354,
+        "changedPixels": 198730,
+        "characterPixels": 189867,
         "outsideEffectsChanged": 0,
         "lightChangedPixels": [
           0,
@@ -233,13 +67,13 @@
           0,
           0,
           0,
+          735,
+          804,
           0,
-          347,
           0,
           0,
-          0,
-          380,
-          0,
+          4852,
+          1970,
           0
         ],
         "grassChangedPixels": [
@@ -264,40 +98,286 @@
       }
     },
     {
+      "name": "ground shadow darkens contact areas without painting bright floor over them",
+      "passed": true,
+      "details": {
+        "darkerPixels": 60675,
+        "brighterPixels": 0,
+        "contacts": [
+          {
+            "unshaded": [
+              174,
+              173,
+              151
+            ],
+            "shaded": [
+              139,
+              137,
+              117
+            ]
+          },
+          {
+            "unshaded": [
+              183,
+              181,
+              157
+            ],
+            "shaded": [
+              127,
+              123,
+              103
+            ]
+          },
+          {
+            "unshaded": [
+              187,
+              163,
+              147
+            ],
+            "shaded": [
+              159,
+              137,
+              123
+            ]
+          }
+        ],
+        "glError": 0,
+        "description": "Same pose with shadow receiver enabled vs disabled; sampled just below each contact lobe."
+      }
+    },
+    {
+      "name": "pause freezes all light and grass animation and render count",
+      "passed": true,
+      "before": {
+        "pose": {
+          "time": 0.11666666666666665,
+          "wind": 0.0450299208017641,
+          "breathe": 0.00015125965346434722,
+          "lookX": 0,
+          "lookY": 0,
+          "turn": 0,
+          "lean": 0.000007162553188923449,
+          "compression": 0,
+          "blink": 0,
+          "light": 1,
+          "leaf": {
+            "x": -1.15,
+            "y": 0.3,
+            "rotation": 0,
+            "visible": false
+          },
+          "mode": "paused"
+        },
+        "eyeAudit": {
+          "outsideChanges": 0,
+          "alphaChanges": 0,
+          "coordinateSpace": 1536,
+          "boundaryAllowance": "2 source pixels for elliptical antialiasing"
+        },
+        "environment": {
+          "lightLevels": [
+            0.7146385529420305,
+            0.6950800648820818,
+            0.27261762536934353,
+            0.9534110844803689,
+            0.28789469814967467,
+            0.2666225034522492,
+            0.42654756948971906,
+            0.9241410504166956,
+            0.2693394194218213,
+            0.3380595100616608,
+            0.28852192810989086,
+            0.8254108426601396,
+            0.2671016149154354,
+            0.527335834537557
+          ],
+          "grassDisplacements": [
+            0.11256769192805255,
+            0.1695375111356763,
+            0.19813334616262004,
+            0.17458594708288613,
+            0.12213360847856922
+          ]
+        },
+        "renderer": {
+          "frames": 1566,
+          "drawCalls": 22,
+          "textureUploads": 3,
+          "webgl": "WebGL 2",
+          "renderMode": "2.5D surface deformation",
+          "camera": "fixed",
+          "background": "local light and grass masks only",
+          "contactPoints": 3,
+          "lights": 14,
+          "grassClumps": 5,
+          "maxGrassDisplacementCssPx": 1.3,
+          "shadow": "alpha-projected soft shadow and contact, one multiply pass",
+          "lightBloom": {
+            "radiusMultiplier": 2.65,
+            "minGain": 0.18,
+            "maxGain": 1,
+            "blend": "screen"
+          }
+        },
+        "errors": [],
+        "performance": {
+          "samples": 600,
+          "medianMs": 16.69999999999709,
+          "p95Ms": 16.799999999999272,
+          "maxMs": 33.400000000001455
+        },
+        "size": {
+          "width": 391,
+          "height": 633.7578125
+        }
+      },
+      "after": {
+        "pose": {
+          "time": 0.11666666666666665,
+          "wind": 0.0450299208017641,
+          "breathe": 0.00015125965346434722,
+          "lookX": 0,
+          "lookY": 0,
+          "turn": 0,
+          "lean": 0.000007162553188923449,
+          "compression": 0,
+          "blink": 0,
+          "light": 1,
+          "leaf": {
+            "x": -1.15,
+            "y": 0.3,
+            "rotation": 0,
+            "visible": false
+          },
+          "mode": "paused"
+        },
+        "eyeAudit": {
+          "outsideChanges": 0,
+          "alphaChanges": 0,
+          "coordinateSpace": 1536,
+          "boundaryAllowance": "2 source pixels for elliptical antialiasing"
+        },
+        "environment": {
+          "lightLevels": [
+            0.7146385529420305,
+            0.6950800648820818,
+            0.27261762536934353,
+            0.9534110844803689,
+            0.28789469814967467,
+            0.2666225034522492,
+            0.42654756948971906,
+            0.9241410504166956,
+            0.2693394194218213,
+            0.3380595100616608,
+            0.28852192810989086,
+            0.8254108426601396,
+            0.2671016149154354,
+            0.527335834537557
+          ],
+          "grassDisplacements": [
+            0.11256769192805255,
+            0.1695375111356763,
+            0.19813334616262004,
+            0.17458594708288613,
+            0.12213360847856922
+          ]
+        },
+        "renderer": {
+          "frames": 1566,
+          "drawCalls": 22,
+          "textureUploads": 3,
+          "webgl": "WebGL 2",
+          "renderMode": "2.5D surface deformation",
+          "camera": "fixed",
+          "background": "local light and grass masks only",
+          "contactPoints": 3,
+          "lights": 14,
+          "grassClumps": 5,
+          "maxGrassDisplacementCssPx": 1.3,
+          "shadow": "alpha-projected soft shadow and contact, one multiply pass",
+          "lightBloom": {
+            "radiusMultiplier": 2.65,
+            "minGain": 0.18,
+            "maxGain": 1,
+            "blend": "screen"
+          }
+        },
+        "errors": [],
+        "performance": {
+          "samples": 600,
+          "medianMs": 16.69999999999709,
+          "p95Ms": 16.799999999999272,
+          "maxMs": 33.400000000001455
+        },
+        "size": {
+          "width": 391,
+          "height": 633.7578125
+        }
+      }
+    },
+    {
+      "name": "new scene live recording",
+      "passed": true,
+      "details": {
+        "bytes": 17859767,
+        "mime": "video/webm;codecs=vp9",
+        "seconds": 16
+      }
+    },
+    {
       "name": "final MP4 playback",
       "passed": true,
       "details": {
-        "currentTime": 12.704189,
+        "currentTime": 15.916667,
         "duration": 15.916667,
         "height": 980,
-        "paused": false,
+        "paused": true,
         "readyState": 4,
         "width": 2358
       }
     }
   ],
-  "limitations": [
-    "사용자의 편안함과 만족은 아직 확인되지 않음",
-    "실제 휴대전화 성능·학생 앱 배포는 이번 검증 범위 밖",
-    "풀은 분리된 3D 모델이 아니라 기존 그림의 좁은 영역 변형"
-  ],
+  "visualReview": {
+    "inspected": [
+      "desktop.png",
+      "mobile.png",
+      "filmstrip.jpg",
+      "preview.mp4"
+    ],
+    "observations": [
+      "Removed the bright rectangular floor overlay at the hem.",
+      "Projected shadow retains the soil texture and softens away from the three contacts.",
+      "Warm core and halo are more visible, while their centers and radii stay fixed."
+    ],
+    "status": "AI visual review; user acceptance pending"
+  },
   "artifacts": {
-    "desktop": "desktop.png",
+    "desktop": {
+      "file": "desktop.png",
+      "viewport": [
+        1280,
+        720
+      ]
+    },
     "mobile": {
       "file": "mobile.png",
       "viewport": [
         430,
         932
-      ],
-      "devicePixelRatio": 1
+      ]
     },
     "video": {
       "file": "preview.mp4",
       "width": 2358,
       "height": 980,
       "durationSeconds": 15.916667,
-      "bytes": 5803070
+      "bytes": 5673229
     }
   },
-  "pixelComparisonTolerance": "Light ellipse radius squared <= 1.03; grass capsule + 1 CSS pixel; character rectangle + 2 CSS pixels."
+  "pixelComparisonTolerance": "Light ellipse radius squared <= 7.1 (bloom radius 2.65); grass capsule + 1 CSS pixel; entire character rectangle + 2 CSS pixels excluded.",
+  "limitations": [
+    "Shadow is a 2D alpha projection and contact approximation, not a recovered 3D light simulation.",
+    "No actual phone performance, student-app deployment, or comfort guarantee verified.",
+    "Prior cecc424f3 report applies to the previous no-bloom lighting and separate shadow layers."
+  ]
 }
