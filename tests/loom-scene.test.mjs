@@ -47,7 +47,7 @@ test('one shared gust reaches spatially separated props; holding does not restar
     stepScene(gust, 1 / 60, { gust: true });
   }
   assert.equal(still.wind, 0);
-  assert.ok(gust.wind > 0.65);
+  assert.ok(Math.abs(gust.wind - gust.config.gustStrength) < 1e-8);
   const left = sampleWind(gust, -1, -1), right = sampleWind(gust, 1, 1);
   assert.ok(left > 0 && right > 0 && Math.abs(left - right) < 0.06);
   assert.equal(gust.gustStart, 0);
