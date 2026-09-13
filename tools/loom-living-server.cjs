@@ -11,7 +11,7 @@ const mime={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=
 const server=http.createServer((req,res)=>{
   // Opt-in local artifact capture. Exact filenames, same origin, no arbitrary paths or credentials.
   if(process.env.LOOM_CAPTURE==='1'&&req.method==='PUT'&&req.url.startsWith('/__qa/')){
-    const name=req.url.slice(6),allowed=new Set(['preview.webm','desktop.png','mobile.png','blink.png','turn.png','report.json','dialogue-desktop.png','dialogue-mobile.png','dialogue.json']);
+    const name=req.url.slice(6),allowed=new Set(['preview.webm','desktop.png','mobile.png','blink.png','turn.png','report.json','dialogue-desktop.png','dialogue-mobile.png','dialogue.json','wind.json']);
     if(!allowed.has(name)||req.headers.origin!==`http://127.0.0.1:${port}`||req.headers['x-loom-capture']!=='1'){res.writeHead(403);res.end();return;}
     const chunks=[];let size=0;
     req.on('data',chunk=>{size+=chunk.length;if(size>25*1024*1024){res.writeHead(413);res.end();req.destroy();return;}chunks.push(chunk);});

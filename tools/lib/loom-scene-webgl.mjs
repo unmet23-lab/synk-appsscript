@@ -144,7 +144,7 @@ export class LoomSceneRenderer {
     this.meshes={background:mesh(gl,64,40),character:mesh(gl,manifest.character.depth.N,manifest.character.depth.N,manifest.character.depth.z),quad:mesh(gl,1,1)};
     for(const m of Object.values(this.meshes)){gl.bindVertexArray(m.vao);gl.bindBuffer(gl.ARRAY_BUFFER,m.vb);for(const [name,size,offset]of[['aUV',2,0],['aDepth',1,8]]){const loc=gl.getAttribLocation(this.program,name);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,12,offset);}}
     gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
-    this.dpr=Math.min(devicePixelRatio||1,2);this.stats={frames:0,drawCalls:0,textureUploads:0,webgl:'WebGL 2',renderMode:'2.5D surface deformation',camera:'fixed',background:'local light and grass masks only',contactPoints:3,lights:this.environment.lights.length,grassClumps:this.environment.grasses.length,maxGrassDisplacementCssPx:1.3};
+    this.dpr=Math.min(devicePixelRatio||1,2);this.stats={frames:0,drawCalls:0,textureUploads:0,webgl:'WebGL 2',renderMode:'2.5D surface deformation',camera:'fixed',background:'local light and grass masks only',contactPoints:3,lights:this.environment.lights.length,grassClumps:this.environment.grasses.length,maxGrassDisplacementCssPx:9};
     this.disposed=false;this.resize();
     this.stats.shadow='alpha-projected soft shadow and contact, one multiply pass';
     this.stats.lightBloom={radiusMultiplier:2.65,minGain:.18,maxGain:1,blend:'screen'};
@@ -216,22 +216,27 @@ export class LoomSceneRenderer {
   renderEnvironment(pose,bg){
     const gl=this.gl,u=this.uniforms,t=pose.time;
     const box=(x,y,w,h)=>[bg[0]+x*bg[2],bg[1]+y*bg[3],w*bg[2],h*bg[3]];
-    this.environmentState={lightLevels:[],grassDisplacements:[]};
+    this.environmentState={lightLevels:[],grassDisplacements:[],gustEnvelope:pose.gustEnvelope||0,gustAge:pose.gustAge};
     for(const [index,grass] of this.environment.grasses.entries()){
+      const stemHeight=Math.hypot((grass.tip[0]-grass.root[0])*bg[2],(grass.tip[1]-grass.root[1])*bg[3]);
+      const stiffness=Math.max(0,Math.min(1,grass.stiffness??.5));
+      const reach=Math.min(9,Math.max(3.2,stemHeight*.16))*(1-stiffness*.12);
+      const envelope=pose.gustEnvelope||0;
+      const sway=envelope===0?0:reach*envelope*Math.cos((pose.gustAge-pose.gustPeak)*(Math.PI+index*.12));
+      this.environmentState.grassDisplacements.push(sway);
+      // No grass pass at all between gusts: the original ground is pixel-still.
+      if(sway===0)continue;
       const segments=(grass.segments||[grass]).slice(0,5),points=new Float32Array(20),radii=new Float32Array(5);
       let left=1,right=0,top=1,bottom=0;
       for(const [i,s] of segments.entries()){
-        points.set([...s.root,...s.tip],i*4);radii[i]=s.radius*bg[2];
-        const rx=s.radius+2/bg[2],ry=rx*bg[2]/bg[3];
+        points.set([...s.root,...s.tip],i*4);radii[i]=s.radius*bg[2]+reach;
+        const rx=s.radius+(reach+2)/bg[2],ry=rx*bg[2]/bg[3];
         left=Math.min(left,s.root[0]-rx,s.tip[0]-rx);right=Math.max(right,s.root[0]+rx,s.tip[0]+rx);
         top=Math.min(top,s.root[1]-ry,s.tip[1]-ry);bottom=Math.max(bottom,s.root[1]+ry,s.tip[1]+ry);
       }
-      const stiffness=Math.max(0,Math.min(1,grass.stiffness??.5));
-      const sway=Math.max(-1.3,Math.min(1.3,(pose.wind*3.1+.13*Math.sin(t*.8+index*.7))*(1-stiffness*.3)));
       gl.uniform4fv(u.Effect,[...grass.root,...grass.tip]);gl.uniform1f(u.Pulse,sway);
       gl.uniform1i(u.StemCount,segments.length);gl.uniform4fv(u.Stems,points);gl.uniform1fv(u.StemRadius,radii);
       this.draw(6,box(left,top,right-left,bottom-top),this.meshes.quad,this.textures.background);
-      this.environmentState.grassDisplacements.push(sway);
     }
     for(const light of this.environment.lights){
       const phase=light.phase||0,period=Math.max(6,light.period||8);

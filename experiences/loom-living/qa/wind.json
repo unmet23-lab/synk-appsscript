@@ -1,0 +1,463 @@
+{
+  "date": "2026-09-13",
+  "revision": "15-second-cycle-with-3-second-grass-gust",
+  "baseCommit": "ca2acd583d39",
+  "scope": "Local Loom WebGL scene only. Browser size emulation, not a physical phone or student comfort study.",
+  "unitTests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "timing": {
+    "cycleSeconds": 15,
+    "quietSeconds": 12,
+    "gustSeconds": 3,
+    "peakSecondsAfterStart": 2,
+    "manual": "Immediate 3-second burst when idle; active repeated clicks ignored; next start 15 seconds after accepted manual start"
+  },
+  "desktop": {
+    "viewport": {
+      "width": 1280,
+      "height": 720,
+      "canvasWidth": 1178.984375,
+      "canvasHeight": 490,
+      "dpr": 2
+    },
+    "isolation": "Background and grass draw passes only; lights, mascot and shadow excluded solely for this pixel comparison",
+    "quietFirst": {
+      "changedPixels": 0,
+      "maxChannelDelta": 0
+    },
+    "returnToStill": {
+      "changedPixels": 0,
+      "maxChannelDelta": 0
+    },
+    "quietNext": {
+      "changedPixels": 0,
+      "maxChannelDelta": 0
+    },
+    "peak": {
+      "changedPixels": 99030,
+      "maxChannelDelta": 81
+    },
+    "peakChangesPerClump": [
+      32476,
+      29166,
+      37388,
+      0,
+      0
+    ],
+    "outsideGrassCapsulesChanged": 0,
+    "rootBendCssPx": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "rootCheck": "Shader bend is zero at root height <= 0.02; algebraic property, not a separate physical measurement",
+    "samples": [
+      {
+        "time": 11.99999999999996,
+        "age": 0,
+        "envelope": 0,
+        "wind": 0,
+        "displacements": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "grassDrawPasses": 0
+      },
+      {
+        "time": 12.49999999999993,
+        "age": 0.4999999999999307,
+        "envelope": 0.15624999999996103,
+        "wind": 0.049999999999987534,
+        "displacements": [
+          2.741938174341039e-13,
+          0.22457022116624115,
+          0.4430729169019101,
+          0.22745376270737244,
+          0.33569748260233045
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 12.999999999999902,
+        "age": 0.9999999999999023,
+        "envelope": 0.4999999999999267,
+        "wind": 0.15999999999997655,
+        "displacements": [
+          -4.035599999999409,
+          -3.9851338643166825,
+          -3.9094410811835596,
+          -1.3249304153440142,
+          -1.445041598641598
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 13.499999999999874,
+        "age": 1.4999999999998739,
+        "envelope": 0.8437499999999291,
+        "wind": 0.2699999999999773,
+        "displacements": [
+          -2.6972414997587795e-12,
+          -0.4061736933920757,
+          -0.8130673550780552,
+          -0.42769448973235874,
+          -0.6534870374374897
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 13.999999999999845,
+        "age": 1.9999999999998455,
+        "envelope": 1,
+        "wind": 0.32,
+        "displacements": [
+          8.071200000000001,
+          8.028,
+          8.0496,
+          2.83136,
+          3.258286065751593
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 14.499999999999817,
+        "age": 2.499999999999817,
+        "envelope": 0.5000000000002744,
+        "wind": 0.16000000000008782,
+        "displacements": [
+          2.3202065338006022e-12,
+          -0.24069552200623126,
+          -0.48181769189423534,
+          -0.2534485865067175,
+          -0.38725157773920843
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 14.999999999999789,
+        "age": 2.9999999999997886,
+        "envelope": 0,
+        "wind": 0,
+        "displacements": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "grassDrawPasses": 0
+      },
+      {
+        "time": 26.99999999999911,
+        "age": 0,
+        "envelope": 0,
+        "wind": 0,
+        "displacements": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "grassDrawPasses": 0
+      },
+      {
+        "time": 27.99999999999905,
+        "age": 0.9999999999990514,
+        "envelope": 0.49999999999928857,
+        "wind": 0.15999999999977235,
+        "displacements": [
+          -4.0355999999942584,
+          -3.9851338643102627,
+          -3.9094410811758173,
+          -1.3249304153408374,
+          -1.4450415986374354
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 28.999999999998995,
+        "age": 1.9999999999989946,
+        "envelope": 1,
+        "wind": 0.32,
+        "displacements": [
+          8.071200000000001,
+          8.028,
+          8.0496,
+          2.83136,
+          3.258286065751593
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 29.999999999998938,
+        "age": 2.9999999999989377,
+        "envelope": 0,
+        "wind": 0,
+        "displacements": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "grassDrawPasses": 0
+      }
+    ]
+  },
+  "mobile": {
+    "viewport": {
+      "width": 430,
+      "height": 932,
+      "canvasWidth": 391,
+      "canvasHeight": 633.7578125,
+      "dpr": 2
+    },
+    "isolation": "Background and grass draw passes only; lights, mascot and shadow excluded solely for this pixel comparison",
+    "quietFirst": {
+      "changedPixels": 0,
+      "maxChannelDelta": 0
+    },
+    "returnToStill": {
+      "changedPixels": 0,
+      "maxChannelDelta": 0
+    },
+    "quietNext": {
+      "changedPixels": 0,
+      "maxChannelDelta": 0
+    },
+    "peak": {
+      "changedPixels": 1473,
+      "maxChannelDelta": 52
+    },
+    "peakChangesPerClump": [
+      0,
+      0,
+      0,
+      606,
+      867
+    ],
+    "outsideGrassCapsulesChanged": 0,
+    "rootBendCssPx": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "rootCheck": "Shader bend is zero at root height <= 0.02; algebraic property, not a separate physical measurement",
+    "samples": [
+      {
+        "time": 11.99999999999996,
+        "age": 0,
+        "envelope": 0,
+        "wind": 0,
+        "displacements": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "grassDrawPasses": 0
+      },
+      {
+        "time": 12.49999999999993,
+        "age": 0.4999999999999307,
+        "envelope": 0.15624999999996103,
+        "wind": 0.049999999999987534,
+        "displacements": [
+          2.741938174341039e-13,
+          0.22457022116624115,
+          0.4430729169019101,
+          0.22745376270737244,
+          0.3232742386630051
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 12.999999999999902,
+        "age": 0.9999999999999023,
+        "envelope": 0.4999999999999267,
+        "wind": 0.15999999999997655,
+        "displacements": [
+          -4.035599999999409,
+          -3.9851338643166825,
+          -3.9094410811835596,
+          -1.3249304153440142,
+          -1.3915645688371674
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 13.499999999999874,
+        "age": 1.4999999999998739,
+        "envelope": 0.8437499999999291,
+        "wind": 0.2699999999999773,
+        "displacements": [
+          -2.6972414997587795e-12,
+          -0.4061736933920757,
+          -0.8130673550780552,
+          -0.42769448973235874,
+          -0.6293032728934758
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 13.999999999999845,
+        "age": 1.9999999999998455,
+        "envelope": 1,
+        "wind": 0.32,
+        "displacements": [
+          8.071200000000001,
+          8.028,
+          8.0496,
+          2.83136,
+          3.137705826945073
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 14.499999999999817,
+        "age": 2.499999999999817,
+        "envelope": 0.5000000000002744,
+        "wind": 0.16000000000008782,
+        "displacements": [
+          2.3202065338006022e-12,
+          -0.24069552200623126,
+          -0.48181769189423534,
+          -0.2534485865067175,
+          -0.3729204580094789
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 14.999999999999789,
+        "age": 2.9999999999997886,
+        "envelope": 0,
+        "wind": 0,
+        "displacements": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "grassDrawPasses": 0
+      },
+      {
+        "time": 26.99999999999911,
+        "age": 0,
+        "envelope": 0,
+        "wind": 0,
+        "displacements": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "grassDrawPasses": 0
+      },
+      {
+        "time": 27.99999999999905,
+        "age": 0.9999999999990514,
+        "envelope": 0.49999999999928857,
+        "wind": 0.15999999999977235,
+        "displacements": [
+          -4.0355999999942584,
+          -3.9851338643102627,
+          -3.9094410811758173,
+          -1.3249304153408374,
+          -1.3915645688331588
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 28.999999999998995,
+        "age": 1.9999999999989946,
+        "envelope": 1,
+        "wind": 0.32,
+        "displacements": [
+          8.071200000000001,
+          8.028,
+          8.0496,
+          2.83136,
+          3.137705826945073
+        ],
+        "grassDrawPasses": 5
+      },
+      {
+        "time": 29.999999999998938,
+        "age": 2.9999999999989377,
+        "envelope": 0,
+        "wind": 0,
+        "displacements": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "grassDrawPasses": 0
+      }
+    ]
+  },
+  "uiPause": {
+    "passed": true,
+    "time": 13.033333333333234,
+    "mode": "paused",
+    "drawsWhilePaused": 0
+  },
+  "preview": {
+    "file": "preview.mp4",
+    "codec": "H.264",
+    "bytes": 2714927,
+    "durationSeconds": 15.916667,
+    "width": 2358,
+    "height": 980,
+    "source": "16-second actual canvas capture from scene time zero, no manual gust inputs",
+    "containsHtmlDialogue": false,
+    "filmstrip": {
+      "file": "filmstrip.jpg",
+      "sampleSeconds": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    "browserPlayback": {
+      "currentTime": 15.916667,
+      "duration": 15.916667,
+      "width": 2358,
+      "height": 980,
+      "ended": true,
+      "decodedFrames": 478,
+      "error": null
+    }
+  },
+  "visualReview": "Desktop and 430x932 mobile peak inspected; six recorded frames inspected. Grass stays in local masks; camera and ground do not pan. Subjective motion-sickness comfort not verified.",
+  "limits": [
+    "Pixel comparisons isolate background and grass; other effects were temporarily omitted only for the comparison, then restored.",
+    "Root zero is the shader bend formula at the root, not a physical measurement.",
+    "Earlier lighting, shadow, dialogue and static screenshot evidence remains in report.json and dialogue.json for their stated versions."
+  ],
+  "sourceFiles": {
+    "tools/lib/loom-scene.mjs": "f4b0ed340a01b9ee6d635c7bd7ec913a3fe6b8012dba819963c03a532ff7e14c",
+    "tools/lib/loom-scene-webgl.mjs": "3a0bf85f812984401823c959367a263d71525dc73d5e3e98f6c31dcdab1f92e2",
+    "experiences/loom-living/scene.mjs": "8bf8a64e8973805b044ce229af2ed33179f6ed1405956fea9d7593a125384a29",
+    "experiences/loom-living/scene.json": "758a117cad7fb685a73b796db26667cc8a04d2da644e9050e0def78726e05ccc",
+    "experiences/loom-living/environment.json": "01f143a237fae238f58474d3284c4c7e6094d18fe498747dd4a9efb8d769edb2"
+  },
+  "checksPassed": true
+}
