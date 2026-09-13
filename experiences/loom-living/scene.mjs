@@ -82,7 +82,7 @@ try{
   raf=requestAnimationFrame(frame);
   window.loomScene={
     ready:true,renderer,state,input,greet,gust,
-    snapshot:()=>({pose:getScenePose(state),eyeAudit:renderer.eyeAudit,renderer:renderer.stats,errors:[...errors],performance:{samples:intervals.length,medianMs:percentile(.5),p95Ms:percentile(.95),maxMs:Math.max(0,...intervals)},size:{width:renderer.width,height:renderer.height}}),
+    snapshot:()=>({pose:getScenePose(state),eyeAudit:renderer.eyeAudit,environment:renderer.environmentState,renderer:renderer.stats,errors:[...errors],performance:{samples:intervals.length,medianMs:percentile(.5),p95Ms:percentile(.95),maxMs:Math.max(0,...intervals)},size:{width:renderer.width,height:renderer.height}}),
     // Deterministic capture interface; hidden from the experience UI.
     capture(time=0,overrides={}){manual=true;cancelAnimationFrame(raf);state=createScene({seed:manifest.seed});this.state=state;
       const controls={pointer:{x:0,y:0,active:false,pressed:false},...overrides};

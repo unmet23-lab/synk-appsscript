@@ -1,202 +1,303 @@
 {
-  "date": "2026-09-13T10:02:18.044Z",
-  "revision": "fixed-camera-grounded-contacts",
+  "date": "2026-09-13T10:18:46.801Z",
+  "revision": "local-lights-and-grass",
   "browser": "Windows Codex in-app browser",
+  "unitTests": {
+    "passed": 6,
+    "failed": 0
+  },
   "checks": [
     {
-      "name": "background remains stationary during attention and gust",
+      "name": "environment changes are confined to marked regions",
       "passed": true,
       "details": {
-        "pixelsCompared": 820132,
-        "changedChannels": 0,
-        "regions": 3,
-        "glError": 0
+        "pixelsCompared": 2310840,
+        "changedPixels": 211534,
+        "characterPixels": 140313,
+        "outsideEffectsChanged": 0,
+        "lightChangedPixels": [
+          290,
+          2932,
+          3309,
+          2665,
+          3042,
+          2887,
+          1444,
+          0,
+          2525,
+          2815,
+          2689,
+          0,
+          0,
+          0
+        ],
+        "grassChangedPixels": [
+          15069,
+          13717,
+          17837,
+          0,
+          0
+        ],
+        "displacements": [
+          1.031239178395964,
+          0.9544060048649192,
+          0.8997294369946006,
+          0.8365438123089186,
+          0.8452514370665425
+        ],
+        "glError": 0,
+        "viewport": [
+          1280,
+          720
+        ]
       }
     },
     {
-      "name": "revised real-time canvas recording",
+      "name": "pause freezes 14 lights, 5 grass clumps, time and draw count",
+      "passed": true,
+      "before": {
+        "pose": {
+          "time": 45.34999999999807,
+          "wind": -0.056789064974085035,
+          "breathe": -0.001089090503606202,
+          "lookX": 0.6999969585106431,
+          "lookY": 0.002240815989216346,
+          "turn": 0.03783069327367336,
+          "lean": 0.005188691686080204,
+          "compression": 0,
+          "blink": 0,
+          "light": 1,
+          "leaf": {
+            "x": 1.0623809523808263,
+            "y": 0.0020459909714297085,
+            "rotation": 2.29721361557648,
+            "visible": true
+          },
+          "mode": "paused"
+        },
+        "eyeAudit": {
+          "outsideChanges": 0,
+          "alphaChanges": 0,
+          "coordinateSpace": 1536,
+          "boundaryAllowance": "2 source pixels for elliptical antialiasing"
+        },
+        "environment": {
+          "lightLevels": [
+            0.05446471861798139,
+            -0.003873829187697875,
+            0.06461207842253752,
+            -0.06102594314359309,
+            0.0338814694365736,
+            -0.07833561370908289,
+            -0.015559372150906104,
+            -0.028263926911253952,
+            -0.050977159045210545,
+            -0.03244024643697657,
+            -0.08487656148857653,
+            -0.03260201024089887,
+            0.07421374296660295,
+            0.07386186858627085
+          ],
+          "grassDisplacements": [
+            -0.22597864862772407,
+            -0.19102586796754994,
+            -0.13139844047157417,
+            -0.06707984232509416,
+            -0.03444890732942554
+          ]
+        },
+        "renderer": {
+          "frames": 2726,
+          "drawCalls": 31,
+          "textureUploads": 3,
+          "webgl": "WebGL 2",
+          "renderMode": "2.5D surface deformation",
+          "camera": "fixed",
+          "background": "local light and grass masks only",
+          "contactPoints": 3,
+          "lights": 14,
+          "grassClumps": 5,
+          "maxGrassDisplacementCssPx": 1.3
+        },
+        "errors": [],
+        "performance": {
+          "samples": 600,
+          "medianMs": 16.69999999999709,
+          "p95Ms": 16.900000000001455,
+          "maxMs": 17.099999999998545
+        },
+        "size": {
+          "width": 391,
+          "height": 633.7578125
+        }
+      },
+      "after": {
+        "pose": {
+          "time": 45.34999999999807,
+          "wind": -0.056789064974085035,
+          "breathe": -0.001089090503606202,
+          "lookX": 0.6999969585106431,
+          "lookY": 0.002240815989216346,
+          "turn": 0.03783069327367336,
+          "lean": 0.005188691686080204,
+          "compression": 0,
+          "blink": 0,
+          "light": 1,
+          "leaf": {
+            "x": 1.0623809523808263,
+            "y": 0.0020459909714297085,
+            "rotation": 2.29721361557648,
+            "visible": true
+          },
+          "mode": "paused"
+        },
+        "eyeAudit": {
+          "outsideChanges": 0,
+          "alphaChanges": 0,
+          "coordinateSpace": 1536,
+          "boundaryAllowance": "2 source pixels for elliptical antialiasing"
+        },
+        "environment": {
+          "lightLevels": [
+            0.05446471861798139,
+            -0.003873829187697875,
+            0.06461207842253752,
+            -0.06102594314359309,
+            0.0338814694365736,
+            -0.07833561370908289,
+            -0.015559372150906104,
+            -0.028263926911253952,
+            -0.050977159045210545,
+            -0.03244024643697657,
+            -0.08487656148857653,
+            -0.03260201024089887,
+            0.07421374296660295,
+            0.07386186858627085
+          ],
+          "grassDisplacements": [
+            -0.22597864862772407,
+            -0.19102586796754994,
+            -0.13139844047157417,
+            -0.06707984232509416,
+            -0.03444890732942554
+          ]
+        },
+        "renderer": {
+          "frames": 2726,
+          "drawCalls": 31,
+          "textureUploads": 3,
+          "webgl": "WebGL 2",
+          "renderMode": "2.5D surface deformation",
+          "camera": "fixed",
+          "background": "local light and grass masks only",
+          "contactPoints": 3,
+          "lights": 14,
+          "grassClumps": 5,
+          "maxGrassDisplacementCssPx": 1.3
+        },
+        "errors": [],
+        "performance": {
+          "samples": 600,
+          "medianMs": 16.69999999999709,
+          "p95Ms": 16.900000000001455,
+          "maxMs": 17.099999999998545
+        },
+        "size": {
+          "width": 391,
+          "height": 633.7578125
+        }
+      }
+    },
+    {
+      "name": "new environment live capture",
       "passed": true,
       "details": {
-        "bytes": 17989524,
+        "bytes": 17849427,
         "mime": "video/webm;codecs=vp9",
         "seconds": 16
       },
       "evidence": "preview.mp4"
     },
     {
-      "name": "WebGL rendering and eye composition",
+      "name": "mobile central grass visible and no unmarked background changes",
       "passed": true,
       "details": {
-        "pose": {
-          "time": 50.69166666666443,
-          "wind": -0.008691156694386906,
-          "breathe": -0.0011976047874475433,
-          "lookX": 7.599746303941791e-22,
-          "lookY": 2.9669818316581025e-24,
-          "turn": 2.923655305781679e-9,
-          "lean": -0.000046130555888544086,
-          "compression": 6.7621555295111e-220,
-          "blink": 0,
-          "light": 0.9997827210826403,
-          "leaf": {
-            "x": 1.1499999999998693,
-            "y": 0.0032350701080618577,
-            "rotation": 2.3887278399701706,
-            "visible": false
-          },
-          "mode": "rest"
-        },
-        "eyeAudit": {
-          "outsideChanges": 0,
-          "alphaChanges": 0,
-          "coordinateSpace": 1536,
-          "boundaryAllowance": "2 source pixels for elliptical antialiasing"
-        },
-        "renderer": {
-          "frames": 7745,
-          "drawCalls": 10,
-          "textureUploads": 3,
-          "webgl": "WebGL 2",
-          "renderMode": "2.5D surface deformation",
-          "camera": "fixed",
-          "background": "fixed",
-          "contactPoints": 3
-        },
-        "errors": [],
-        "performance": {
-          "samples": 600,
-          "medianMs": 16.69999999999709,
-          "p95Ms": 16.80000000000291,
-          "maxMs": 17
-        },
-        "size": {
-          "width": 1178.984375,
-          "height": 490
-        }
-      }
-    },
-    {
-      "name": "pause freezes time during resize",
-      "passed": true,
-      "timeBefore": 50.758333333331095,
-      "timeAfter": 50.758333333331095
-    },
-    {
-      "name": "mobile layout 430x932",
-      "passed": true,
-      "details": {
-        "buttons": [
-          {
-            "height": 46,
-            "inViewport": true
-          },
-          {
-            "height": 46,
-            "inViewport": true
-          },
-          {
-            "height": 46,
-            "inViewport": true
-          },
-          {
-            "height": 46,
-            "inViewport": true
-          }
+        "pixelsCompared": 991576,
+        "changedPixels": 180583,
+        "characterPixels": 179354,
+        "outsideEffectsChanged": 0,
+        "lightChangedPixels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          347,
+          0,
+          0,
+          0,
+          380,
+          0,
+          0
         ],
-        "noHorizontalOverflow": true,
+        "grassChangedPixels": [
+          0,
+          0,
+          0,
+          209,
+          293
+        ],
+        "displacements": [
+          1.031239178395964,
+          0.9544060048649192,
+          0.8997294369946006,
+          0.8365438123089186,
+          0.8452514370665425
+        ],
+        "glError": 0,
         "viewport": [
           430,
           932
         ]
-      },
-      "evidence": "mobile.png"
+      }
     },
     {
-      "name": "revised MP4 playback and frames",
+      "name": "final MP4 playback",
       "passed": true,
       "details": {
-        "duration": 15.933333,
+        "currentTime": 12.704189,
+        "duration": 15.916667,
         "height": 980,
-        "ready": 4,
-        "time": 15.933333,
+        "paused": false,
+        "readyState": 4,
         "width": 2358
-      },
-      "evidence": [
-        "preview.mp4",
-        "filmstrip.jpg"
-      ]
-    },
-    {
-      "name": "final rendering and constant exposure",
-      "passed": true,
-      "details": {
-        "pose": {
-          "time": 48.749999999997875,
-          "wind": -0.043658195475035536,
-          "breathe": 0.0006734244784371518,
-          "lookX": 5.851873281939967e-13,
-          "lookY": 2.2846028030796995e-15,
-          "turn": 0.000005827519889737537,
-          "lean": -0.00011980490132173743,
-          "compression": 0,
-          "blink": 0,
-          "light": 1,
-          "leaf": {
-            "x": 1.1499999999998693,
-            "y": 0.0032350701080618577,
-            "rotation": 2.388164526048866,
-            "visible": false
-          },
-          "mode": "rest"
-        },
-        "eyeAudit": {
-          "outsideChanges": 0,
-          "alphaChanges": 0,
-          "coordinateSpace": 1536,
-          "boundaryAllowance": "2 source pixels for elliptical antialiasing"
-        },
-        "renderer": {
-          "frames": 2924,
-          "drawCalls": 10,
-          "textureUploads": 3,
-          "webgl": "WebGL 2",
-          "renderMode": "2.5D surface deformation",
-          "camera": "fixed",
-          "background": "fixed",
-          "contactPoints": 3
-        },
-        "errors": [],
-        "performance": {
-          "samples": 600,
-          "medianMs": 16.69999999999709,
-          "p95Ms": 16.80000000000291,
-          "maxMs": 25.10000000000582
-        },
-        "size": {
-          "width": 1178.984375,
-          "height": 490
-        }
       }
     }
   ],
-  "unitTests": {
-    "command": "node --test tests/loom-scene.test.mjs",
-    "passed": 6,
-    "failed": 0
-  },
   "limitations": [
-    "사용자의 멀미 느낌 개선 및 만족도는 미확인",
-    "실제 휴대폰 성능·발열·학생 앱 배포는 미확인",
-    "원본 2D 그림의 조명과 시점을 완전히 재구성한 3D 장면은 아님"
+    "사용자의 편안함과 만족은 아직 확인되지 않음",
+    "실제 휴대전화 성능·학생 앱 배포는 이번 검증 범위 밖",
+    "풀은 분리된 3D 모델이 아니라 기존 그림의 좁은 영역 변형"
   ],
-  "video": {
-    "path": "preview.mp4",
-    "codec": "H.264",
-    "width": 2358,
-    "height": 980,
-    "durationSeconds": 15.933333,
-    "bytes": 6003305,
-    "audio": false
+  "artifacts": {
+    "desktop": "desktop.png",
+    "mobile": {
+      "file": "mobile.png",
+      "viewport": [
+        430,
+        932
+      ],
+      "devicePixelRatio": 1
+    },
+    "video": {
+      "file": "preview.mp4",
+      "width": 2358,
+      "height": 980,
+      "durationSeconds": 15.916667,
+      "bytes": 5803070
+    }
   },
-  "completedAt": "2026-09-13T10:06:05.411Z"
+  "pixelComparisonTolerance": "Light ellipse radius squared <= 1.03; grass capsule + 1 CSS pixel; character rectangle + 2 CSS pixels."
 }

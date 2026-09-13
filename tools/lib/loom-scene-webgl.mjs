@@ -35,6 +35,8 @@ in vec2 vUV; in float vDepth; in vec2 vScreen;
 uniform sampler2D uTexture; uniform int uType;
 uniform vec4 uColor; uniform float uLight; uniform float uTime; uniform float uRotation;
 uniform vec4 uBackgroundRect;
+uniform vec4 uEffect; uniform float uPulse;
+uniform vec4 uStems[5]; uniform float uStemRadius[5]; uniform int uStemCount;
 out vec4 outColor;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 void main(){
@@ -54,6 +56,32 @@ void main(){
     vec2 p=(vUV-.5)*2.;
     float a=exp(-dot(p,p)*3.8)*(1.-smoothstep(.70,1.,length(p)))*uColor.a;
     outColor=vec4(uColor.rgb,a);
+  }else if(uType==5){
+    // Only the photographed light changes, without a new moving particle or halo.
+    vec2 uv=(vScreen-uBackgroundRect.xy)/uBackgroundRect.zw;
+    vec2 d=(uv-uEffect.xy)/uEffect.zw;
+    float mask=exp(-dot(d,d)*1.6)*(1.-smoothstep(.7,1.,length(d)));
+    vec4 c=texture(uTexture,uv);
+    c.rgb*=1.+uPulse;
+    outColor=vec4(c.rgb,mask);
+  }else if(uType==6){
+    // Narrow stem/seed-head masks only. The camera and the surrounding ground
+    // have zero displacement; all clumps share the scene clock and breeze.
+    vec2 uv=(vScreen-uBackgroundRect.xy)/uBackgroundRect.zw;
+    vec2 position=uv*uBackgroundRect.zw;
+    float mask=0.;
+    for(int i=0;i<5;i++){
+      if(i>=uStemCount)break;
+      vec2 a=uStems[i].xy*uBackgroundRect.zw,b=uStems[i].zw*uBackgroundRect.zw;
+      vec2 axis=b-a;float along=clamp(dot(position-a,axis)/max(dot(axis,axis),.001),0.,1.);
+      float d=length(position-mix(a,b,along))/max(uStemRadius[i],.001);
+      mask=max(mask,1.-smoothstep(.48,1.,d));
+    }
+    vec2 root=uEffect.xy*uBackgroundRect.zw,top=uEffect.zw*uBackgroundRect.zw;
+    vec2 axis=top-root;float height=clamp(dot(position-root,axis)/max(dot(axis,axis),.001),0.,1.);
+    float bend=height*height*smoothstep(.02,.16,height)*uPulse;
+    vec4 c=texture(uTexture,uv-vec2(bend*mask/uBackgroundRect.z,0.));
+    outColor=vec4(c.rgb,mask);
   }else if(uType==4){
     // The original ground's fibers overlap a few pixels at the real contacts.
     // UVs are in screen space, so this pass and the unmoving background agree.
@@ -100,12 +128,14 @@ export class LoomSceneRenderer {
     for(const [type,src] of [[gl.VERTEX_SHADER,VERTEX],[gl.FRAGMENT_SHADER,FRAGMENT]]){const s=shader(gl,type,src);gl.attachShader(this.program,s);gl.deleteShader(s);}
     gl.linkProgram(this.program);if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(this.program));
     gl.useProgram(this.program);
-    this.uniforms=Object.fromEntries(['Viewport','Rect','Type','Pose','Look','Wind','Time','Texture','Color','Light','Rotation','EyeA','EyeB','BackgroundRect'].map(k=>[k,gl.getUniformLocation(this.program,'u'+k)]));
+    this.uniforms=Object.fromEntries(['Viewport','Rect','Type','Pose','Look','Wind','Time','Texture','Color','Light','Rotation','EyeA','EyeB','BackgroundRect','Effect','Pulse','StemCount'].map(k=>[k,gl.getUniformLocation(this.program,'u'+k)]));
+    this.uniforms.Stems=gl.getUniformLocation(this.program,'uStems[0]');this.uniforms.StemRadius=gl.getUniformLocation(this.program,'uStemRadius[0]');
+    this.environment=manifest.environment||{lights:[],grasses:[]};
     for(const [i,key]of['EyeA','EyeB'].entries()){const[x,y,w,h]=manifest.character.masks[i].target;gl.uniform4f(this.uniforms[key],(x+w/2)/1024,(y+h/2)/1024,w/2048,h/2048);}
     this.meshes={background:mesh(gl,64,40),character:mesh(gl,manifest.character.depth.N,manifest.character.depth.N,manifest.character.depth.z),quad:mesh(gl,1,1)};
     for(const m of Object.values(this.meshes)){gl.bindVertexArray(m.vao);gl.bindBuffer(gl.ARRAY_BUFFER,m.vb);for(const [name,size,offset]of[['aUV',2,0],['aDepth',1,8]]){const loc=gl.getAttribLocation(this.program,name);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,12,offset);}}
     gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
-    this.dpr=Math.min(devicePixelRatio||1,2);this.stats={frames:0,drawCalls:0,textureUploads:0,webgl:'WebGL 2',renderMode:'2.5D surface deformation',camera:'fixed',background:'fixed',contactPoints:3};
+    this.dpr=Math.min(devicePixelRatio||1,2);this.stats={frames:0,drawCalls:0,textureUploads:0,webgl:'WebGL 2',renderMode:'2.5D surface deformation',camera:'fixed',background:'local light and grass masks only',contactPoints:3,lights:this.environment.lights.length,grassClumps:this.environment.grasses.length,maxGrassDisplacementCssPx:1.3};
     this.disposed=false;this.resize();
   }
   texture(source){const gl=this.gl,t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.generateMipmap(gl.TEXTURE_2D);this.stats.textureUploads++;return t;}
@@ -156,6 +186,7 @@ export class LoomSceneRenderer {
     const backgroundRect=[(w-bw)/2,(h-bh)/2,bw,bh];
     gl.uniform4fv(u.BackgroundRect,backgroundRect);
     this.draw(0,backgroundRect,this.meshes.background,this.textures.background);
+    this.renderEnvironment(pose,backgroundRect);
     const {x:cx,foot,size}=this.characterCenter;
     // Sun behind-left: broad cast shadow falls forward-right, contact shadow remains at the seam.
     this.draw(2,[cx-size*.24,foot-size*.045,size*.72,size*.20],this.meshes.quad,null,[.17,.14,.10,.26]);
@@ -178,6 +209,35 @@ export class LoomSceneRenderer {
       this.draw(3,[px-sz,py-sz,sz*2,sz*2],this.meshes.quad,null,[1,.82,.42,.12],pose.leaf.rotation);
     }
     this.stats.frames++;this.lastPose={...pose};
+  }
+  renderEnvironment(pose,bg){
+    const gl=this.gl,u=this.uniforms,t=pose.time;
+    const box=(x,y,w,h)=>[bg[0]+x*bg[2],bg[1]+y*bg[3],w*bg[2],h*bg[3]];
+    this.environmentState={lightLevels:[],grassDisplacements:[]};
+    for(const [index,grass] of this.environment.grasses.entries()){
+      const segments=(grass.segments||[grass]).slice(0,5),points=new Float32Array(20),radii=new Float32Array(5);
+      let left=1,right=0,top=1,bottom=0;
+      for(const [i,s] of segments.entries()){
+        points.set([...s.root,...s.tip],i*4);radii[i]=s.radius*bg[2];
+        const rx=s.radius+2/bg[2],ry=rx*bg[2]/bg[3];
+        left=Math.min(left,s.root[0]-rx,s.tip[0]-rx);right=Math.max(right,s.root[0]+rx,s.tip[0]+rx);
+        top=Math.min(top,s.root[1]-ry,s.tip[1]-ry);bottom=Math.max(bottom,s.root[1]+ry,s.tip[1]+ry);
+      }
+      const stiffness=Math.max(0,Math.min(1,grass.stiffness??.5));
+      const sway=Math.max(-1.3,Math.min(1.3,(pose.wind*3.1+.13*Math.sin(t*.8+index*.7))*(1-stiffness*.3)));
+      gl.uniform4fv(u.Effect,[...grass.root,...grass.tip]);gl.uniform1f(u.Pulse,sway);
+      gl.uniform1i(u.StemCount,segments.length);gl.uniform4fv(u.Stems,points);gl.uniform1fv(u.StemRadius,radii);
+      this.draw(6,box(left,top,right-left,bottom-top),this.meshes.quad,this.textures.background);
+      this.environmentState.grassDisplacements.push(sway);
+    }
+    for(const light of this.environment.lights){
+      const phase=light.phase||0,period=Math.max(6,light.period||8);
+      const pulse=.10*(.75*Math.sin(t*Math.PI*2/period+phase)+.25*Math.sin(t*Math.PI*2/(period*1.37)+phase*1.7));
+      const [x,y]=light.center,[rx,ry]=light.radius;
+      gl.uniform4fv(u.Effect,[x,y,rx,ry]);gl.uniform1f(u.Pulse,pulse);
+      this.draw(5,box(x-rx,y-ry,rx*2,ry*2),this.meshes.quad,this.textures.background);
+      this.environmentState.lightLevels.push(pulse);
+    }
   }
   dispose(){if(this.disposed)return;const gl=this.gl;for(const t of Object.values(this.textures||{}))gl.deleteTexture(t);for(const m of Object.values(this.meshes)){gl.deleteBuffer(m.vb);gl.deleteBuffer(m.ib);gl.deleteVertexArray(m.vao);}gl.deleteProgram(this.program);this.disposed=true;}
 }
