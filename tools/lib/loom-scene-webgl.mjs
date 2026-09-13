@@ -34,11 +34,11 @@ precision highp float; precision highp int;
 in vec2 vUV; in float vDepth; in vec2 vScreen;
 uniform sampler2D uTexture; uniform int uType;
 uniform vec4 uColor; uniform float uLight; uniform float uTime; uniform float uRotation;
-uniform vec4 uBackgroundRect;
+uniform vec4 uBackgroundRect; uniform vec4 uCharacterRect;
 uniform vec4 uEffect; uniform float uPulse;
 uniform vec4 uStems[5]; uniform float uStemRadius[5]; uniform int uStemCount;
 out vec4 outColor;
-float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
+float contact(vec2 p,vec2 at){vec2 d=(p-at)/vec2(.078,.012);return exp(-dot(d,d)*1.5);}
 void main(){
   if(uType<2){
     vec4 c=texture(uTexture,vUV);
@@ -53,17 +53,35 @@ void main(){
     }
     outColor=c;
   }else if(uType==2){
-    vec2 p=(vUV-.5)*2.;
-    float a=exp(-dot(p,p)*3.8)*(1.-smoothstep(.70,1.,length(p)))*uColor.a;
-    outColor=vec4(uColor.rgb,a);
+    // One continuous receiver: alpha silhouette projected away from the sun,
+    // with sharper contact at the three low lobes. Multiplication keeps soil detail.
+    vec2 p=(vScreen-uCharacterRect.xy)/uCharacterRect.zw;
+    float height=(p.y-.85)/.27;
+    vec2 uv=vec2(p.x-height*.40,.85-height);
+    float distance=max(height,0.);
+    vec2 blur=vec2(.009+distance*.032,.025+distance*.070);
+    float silhouette=0.;
+    for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+      float weight=(x==0?2.:1.)*(y==0?2.:1.)/16.;
+      silhouette+=texture(uTexture,uv+vec2(float(x),float(y))*blur).a*weight;
+    }
+    float projected=silhouette*.22*(1.-clamp(distance,0.,1.)*.5)*smoothstep(-.025,.018,p.y-.85);
+    float seam=max(contact(p,vec2(.237,.8444)),max(contact(p,vec2(.488,.8515625)),contact(p,vec2(.737,.84049))))*.38;
+    vec2 base=(p-vec2(.488,.847))/vec2(.30,.044);
+    float ambient=exp(-dot(base,base)*2.)*.12;
+    float shadow=1.-(1.-projected)*(1.-seam)*(1.-ambient);
+    outColor=vec4(vec3(1.)-shadow*vec3(.80,.84,.90),1.);
   }else if(uType==5){
-    // Only the photographed light changes, without a new moving particle or halo.
+    // Fixed warm core and broad faint bloom. Screen blending lights the existing
+    // fibers without repainting them or changing the exposure of the whole scene.
     vec2 uv=(vScreen-uBackgroundRect.xy)/uBackgroundRect.zw;
     vec2 d=(uv-uEffect.xy)/uEffect.zw;
-    float mask=exp(-dot(d,d)*1.6)*(1.-smoothstep(.7,1.,length(d)));
-    vec4 c=texture(uTexture,uv);
-    c.rgb*=1.+uPulse;
-    outColor=vec4(c.rgb,mask);
+    float r2=dot(d,d),edge=1.-smoothstep(2.2,2.65,length(d));
+    vec3 source=texture(uTexture,uEffect.xy).rgb;
+    vec3 warmth=source*vec3(1.,.85,.58);
+    vec3 core=mix(source,vec3(1.,.97,.84),.45);
+    vec3 glow=(warmth*exp(-r2*.82)*.25+core*exp(-r2*5.5)*.48)*uPulse*edge;
+    outColor=vec4(glow,1.);
   }else if(uType==6){
     // Narrow stem/seed-head masks only. The camera and the surrounding ground
     // have zero displacement; all clumps share the scene clock and breeze.
@@ -82,15 +100,6 @@ void main(){
     float bend=height*height*smoothstep(.02,.16,height)*uPulse;
     vec4 c=texture(uTexture,uv-vec2(bend*mask/uBackgroundRect.z,0.));
     outColor=vec4(c.rgb,mask);
-  }else if(uType==4){
-    // The original ground's fibers overlap a few pixels at the real contacts.
-    // UVs are in screen space, so this pass and the unmoving background agree.
-    vec2 uv=(vScreen-uBackgroundRect.xy)/uBackgroundRect.zw;
-    vec4 c=texture(uTexture,uv);
-    float tip=.14+hash(floor(vScreen*1.3))*.15;
-    float cover=smoothstep(tip,.76,vUV.y);
-    cover*=smoothstep(0.,.18,vUV.x)*(1.-smoothstep(.82,1.,vUV.x));
-    outColor=vec4(c.rgb,cover);
   }else{
     vec2 p=(vUV-.5)*2.;float r=length(p);
     float angle=atan(p.y,p.x)+uRotation;
@@ -128,7 +137,7 @@ export class LoomSceneRenderer {
     for(const [type,src] of [[gl.VERTEX_SHADER,VERTEX],[gl.FRAGMENT_SHADER,FRAGMENT]]){const s=shader(gl,type,src);gl.attachShader(this.program,s);gl.deleteShader(s);}
     gl.linkProgram(this.program);if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(this.program));
     gl.useProgram(this.program);
-    this.uniforms=Object.fromEntries(['Viewport','Rect','Type','Pose','Look','Wind','Time','Texture','Color','Light','Rotation','EyeA','EyeB','BackgroundRect','Effect','Pulse','StemCount'].map(k=>[k,gl.getUniformLocation(this.program,'u'+k)]));
+    this.uniforms=Object.fromEntries(['Viewport','Rect','Type','Pose','Look','Wind','Time','Texture','Color','Light','Rotation','EyeA','EyeB','BackgroundRect','CharacterRect','Effect','Pulse','StemCount'].map(k=>[k,gl.getUniformLocation(this.program,'u'+k)]));
     this.uniforms.Stems=gl.getUniformLocation(this.program,'uStems[0]');this.uniforms.StemRadius=gl.getUniformLocation(this.program,'uStemRadius[0]');
     this.environment=manifest.environment||{lights:[],grasses:[]};
     for(const [i,key]of['EyeA','EyeB'].entries()){const[x,y,w,h]=manifest.character.masks[i].target;gl.uniform4f(this.uniforms[key],(x+w/2)/1024,(y+h/2)/1024,w/2048,h/2048);}
@@ -137,6 +146,8 @@ export class LoomSceneRenderer {
     gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
     this.dpr=Math.min(devicePixelRatio||1,2);this.stats={frames:0,drawCalls:0,textureUploads:0,webgl:'WebGL 2',renderMode:'2.5D surface deformation',camera:'fixed',background:'local light and grass masks only',contactPoints:3,lights:this.environment.lights.length,grassClumps:this.environment.grasses.length,maxGrassDisplacementCssPx:1.3};
     this.disposed=false;this.resize();
+    this.stats.shadow='alpha-projected soft shadow and contact, one multiply pass';
+    this.stats.lightBloom={radiusMultiplier:2.65,minGain:.18,maxGain:1,blend:'screen'};
   }
   texture(source){const gl=this.gl,t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.generateMipmap(gl.TEXTURE_2D);this.stats.textureUploads++;return t;}
   async load(){
@@ -188,20 +199,12 @@ export class LoomSceneRenderer {
     this.draw(0,backgroundRect,this.meshes.background,this.textures.background);
     this.renderEnvironment(pose,backgroundRect);
     const {x:cx,foot,size}=this.characterCenter;
-    // Sun behind-left: broad cast shadow falls forward-right, contact shadow remains at the seam.
-    this.draw(2,[cx-size*.24,foot-size*.045,size*.72,size*.20],this.meshes.quad,null,[.17,.14,.10,.26]);
-    this.draw(2,[cx-size*.35,foot-size*.044,size*.70,size*.082],this.meshes.quad,null,[.17,.14,.10,.22]);
-    // Alpha-measured contact lobes, rather than one shadow concentrated centrally.
-    const contacts=[[.237,.8444],[.488,.8515625],[.737,.84049]];
-    for(const [x,y] of contacts){
-      const px=this.characterRect[0]+x*size,py=this.characterRect[1]+y*size;
-      this.draw(2,[px-size*.105,py-size*.015,size*.21,size*.031],this.meshes.quad,null,[.14,.12,.085,.42+pose.compression]);
-    }
+    // The fixed lower body contacts the same ground even when the upper body turns.
+    gl.uniform4fv(u.CharacterRect,this.characterRect);
+    gl.blendFunc(gl.ZERO,gl.SRC_COLOR);
+    this.draw(2,[cx-size*.55,foot-size*.10,size*1.42,size*.40],this.meshes.quad,this.textures.body);
+    gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
     this.draw(1,this.characterRect,this.meshes.character,pose.blink>.47?this.textures.closed:this.textures.body);
-    for(const [x,y] of contacts){
-      const px=this.characterRect[0]+x*size,py=this.characterRect[1]+y*size;
-      this.draw(4,[px-size*.09,py-size*.006,size*.18,size*.020],this.meshes.quad,this.textures.background);
-    }
     // One wandering seed is also the character's shared attention target.
     if(pose.leaf.visible){
       const px=w*(.5+pose.leaf.x*.32),py=h*(.46+pose.leaf.y*.25),sz=Math.max(12,Math.min(w,h)*.025);
@@ -232,10 +235,13 @@ export class LoomSceneRenderer {
     }
     for(const light of this.environment.lights){
       const phase=light.phase||0,period=Math.max(6,light.period||8);
-      const pulse=.10*(.75*Math.sin(t*Math.PI*2/period+phase)+.25*Math.sin(t*Math.PI*2/(period*1.37)+phase*1.7));
+      const wave=.75*Math.sin(t*Math.PI*2/period+phase)+.25*Math.sin(t*Math.PI*2/(period*1.37)+phase*1.7);
+      const pulse=.18+.82*Math.pow((wave+1)*.5,1.6);
       const [x,y]=light.center,[rx,ry]=light.radius;
       gl.uniform4fv(u.Effect,[x,y,rx,ry]);gl.uniform1f(u.Pulse,pulse);
-      this.draw(5,box(x-rx,y-ry,rx*2,ry*2),this.meshes.quad,this.textures.background);
+      gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_COLOR);
+      this.draw(5,box(x-rx*2.65,y-ry*2.65,rx*5.3,ry*5.3),this.meshes.quad,this.textures.background);
+      gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
       this.environmentState.lightLevels.push(pulse);
     }
   }
