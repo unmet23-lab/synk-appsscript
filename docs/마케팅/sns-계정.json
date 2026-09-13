@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-12",
+  "updatedAt": "2026-09-13",
   "policy": {
     "defaultReview": "final-review",
     "allowUnreviewedPublicPublishing": false,
@@ -54,10 +54,13 @@
       "brand": "SHIFT",
       "platform": "tiktok",
       "handle": "@yuhobuilds",
+      "loginAlias": "unmet23",
+      "loginVerifiedAt": "2026-09-13",
       "publisher": "direct-after-review",
       "connection": "needs-reviewed-app",
-      "profileStatus": "public-profile-missing-profile-photo-confirmed-2026-09-12",
-      "displayNameStatus": "current-name-change-eligible-from-2026-09-15",
+      "profileStatus": "approved-portrait-and-bio-confirmed-in-fresh-profile-2026-09-13",
+      "displayNameStatus": "current-name-change-eligible-from-2026-09-15; rechecked-in-editor-2026-09-13",
+      "remainingAction": "change-display-name-to-유호 · AI와 회사 만들기-after-platform-date-limit; no-new-video-in-this-request",
       "targetProfileImage": "approved private studio portrait SHA256 b8f7ecefae17"
     },
     "synkbrief-youtube": {
@@ -107,7 +110,9 @@
       "publisher": "direct-after-connection",
       "connection": "needs-threads-app",
       "profileStatus": "not-created-confirmed-2026-09-12",
-      "remainingAction": "log-in-with-instagram-synkbrief-then-confirm-final-account-creation"
+      "operationDecision": "defer-creation-2026-09-13",
+      "decisionBasis": "delegated current operating decision: no distinct recurring conversation or method series yet",
+      "remainingAction": "reconsider when independent method-application questions and a recurring series exist; preserve existing personal accounts"
     },
     "yuhobuilds-linkedin": {
       "brand": "SHIFT",
@@ -120,9 +125,10 @@
       "publisher": "blocked-duplicate-account-consolidation",
       "apiVersion": "202608",
       "connection": "duplicate-account-do-not-expand",
-      "profileStatus": "public-profile-confirmed-before-2026-09-12; live-current-state-not-rechecked",
+      "profileStatus": "owner-login-and-public-profile-confirmed-2026-09-13; connections-2",
       "targetStatus": "export-data-then-merge-into-yuho-linkedin-primary",
-      "remainingAction": "verify-connections-and-data; download-archive; merge-or-close only after action-time confirmation"
+      "archiveStatus": "full-data-export-request-accepted-2026-09-13; pending; UI-estimate-about-24-hours",
+      "remainingAction": "download-and-inspect-archive; preserve-profile-content-on-primary; contact-LinkedIn-support-for-merge; close-only-after-data-review-and-action-time-confirmation"
     },
     "yuho-linkedin-primary": {
       "brand": "SHIFT",
@@ -133,8 +139,8 @@
       "publicUrl": "https://www.linkedin.com/in/유호-양-5800b8433/",
       "contentRole": "Yuho personal perspective, attempts, failures, lessons, and building process under the yuhobuild identity",
       "publisher": "manual-assisted-after-consolidation",
-      "connection": "verified-user-account-and-company-page-owner-observed-before-browser-control-loss",
-      "profileStatus": "identity-verified-and-user-supplied-profile-url-2026-09-12",
+      "connection": "owner-login-and-company-page-admin-ui-confirmed-2026-09-13",
+      "profileStatus": "identity-verified-profile-confirmed-2026-09-13; connections-3",
       "targetStatus": "sole-personal-profile-and-SYNK-page-admin",
       "remainingAction": "preserve yuhobuild profile content and connections here after duplicate data review"
     },
@@ -148,10 +154,12 @@
       "publicUrl": "https://www.linkedin.com/company/synk-im/",
       "contentRole": "official company news, products, completed work, and external collaboration",
       "publisher": "manual-assisted",
-      "connection": "official-page-admin-ui-observed-browser-control-currently-unavailable",
-      "profileStatus": "public-page-confirmed-2026-09-12; cover-present; profile-logo-and-new-copy-pending",
+      "connection": "official-page-admin-ui-confirmed-2026-09-13",
+      "profileStatus": "public-tagline-about-official-logo-and-cover-confirmed-2026-09-13",
+      "publicTagline": "저마다의 삶을 온전히 누리는 미래를 만듭니다.",
+      "publicAbout": "저마다의 삶을 온전히 누리는 미래를 만듭니다.\n\nAI가 넓힌 가능성을 배움과 일, 문화로 연결합니다.",
       "targetStatus": "official-external-channel",
-      "remainingAction": "upload-official-logo; replace-tagline-and-about-copy; recheck-public-page"
+      "remainingAction": "none-for-requested-company-profile-update; personal-account-consolidation-is-separate"
     },
     "lab-telegram": {
       "brand": "LAB",
@@ -186,7 +194,10 @@
       "platform": "instagram",
       "handle": "SYNK Instagram · 준비 계정",
       "publisher": "blocked-account-not-confirmed",
-      "connection": "account-not-confirmed"
+      "connection": "account-not-confirmed",
+      "operationDecision": "proceed-with-company-presence-2026-09-13",
+      "decisionBasis": "existing approved monthly completed-work showcase; distinct from personal building-process channels",
+      "remainingAction": "verify-existing-owner-account-and-handle-before-creation; actual-creation-not-performed; preserve-personal-accounts"
     },
     "shift-naverblog": {
       "brand": "SHIFT",
@@ -288,9 +299,11 @@
       "desiredHandle": "yuhobuilds",
       "decision": "approved-2026-09-11",
       "publisher": "manual-assisted",
-      "connection": "account-id-confirmed-profile-details-pending-mobile",
-      "profileStatus": "id-public-profile-details-blank-confirmed-2026-09-12",
-      "targetDisplayName": "유호 · AI와 회사 만들기",
+      "connection": "owner-web-profile-editor-confirmed-2026-09-13",
+      "profileStatus": "public-name-bio-approved-portrait-complete-confirmed-2026-09-13",
+      "targetDisplayName": "유호 AI와 회사 만들기",
+      "currentDisplayName": "유호 AI와 회사 만들기",
+      "displayNameStatus": "saved-2026-09-13; UI-change-limit-30-days; middle-dot-not-allowed",
       "targetBio": "AI와 함께 회사를 만들고 있어요. 직접 해보고, 막히면 고치고, 쓸 만한 방법을 나눕니다. SYNK SHIFT",
       "targetProfileImage": "approved private studio portrait SHA256 b8f7ecefae17",
       "contentStatus": "ready-for-mobile-app-upload",
@@ -298,7 +311,7 @@
       "uploadCaption": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/네이버클립_업로드문안.txt",
       "uploadPackage": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/네이버클립_모바일업로드.zip",
       "rightsAudit": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/audio-pixabay-safe/audit.json",
-      "remainingAction": "complete-profile-and-publish-in-naver-mobile-app; optional-blog-link-is-irreversible-and-not-applied"
+      "remainingAction": "profile-complete; video-publication-not-in-this-request; optional-blog-link-is-irreversible-and-not-applied"
     }
   }
 }
