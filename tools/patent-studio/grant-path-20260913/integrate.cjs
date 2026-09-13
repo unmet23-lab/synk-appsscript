@@ -5,7 +5,7 @@ const base = 'C:/Users/q1212/.codex/visualizations/2026/09/11/01a08f0d-d3c5-7c41
 const folder = path.join(base, '등록성_보강_20260913');
 const qa = JSON.parse(fs.readFileSync(path.join(folder, '검수/verification.json'), 'utf8'));
 const pdfqa = JSON.parse(fs.readFileSync(path.join(folder, '검수/pdf-verification.json'), 'utf8'));
-if (qa.pageCount < 1 || qa.scenariosSeen.length !== 6 || !qa.noOverflow || pdfqa.renderedPages !== qa.pageCount || qa.supplementChecks.length !== 8) throw Error('Artifact QA is not ready');
+if (qa.pageCount < 1 || qa.scenariosSeen.length !== 6 || !qa.noOverflow || pdfqa.renderedPages !== qa.pageCount || qa.supplementChecks.length !== 10) throw Error('Artifact QA is not ready');
 const digest = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 if (digest(path.join(__dirname, 'REPORT.md')) !== qa.sourceHashes.report) throw Error('Report changed after QA');
 const guide = path.join(base, '현재_미팅본_20260912/00_여기서시작.html');

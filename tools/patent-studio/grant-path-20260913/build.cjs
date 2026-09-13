@@ -10,6 +10,8 @@ const supplements = ['targeted/PRIOR_ART.md', 'targeted/CLAIM_DECISIONS.md', 'ta
 evidenceFiles.push('decision/loom-compare.py');
 evidenceFiles.push('decision/P1_SUPPORT_REPAIR.md', 'decision/INVENTOR_REQUIREMENTS.md', 'decision/P1_SUPPORT_CASES.json', 'decision/p1-support-cases.cjs');
 supplements.push('decision/P1_SUPPORT_REPAIR.md', 'decision/INVENTOR_REQUIREMENTS.md');
+evidenceFiles.push('decision/OBSERVATION_SCOPE_PRIOR_ART.md', 'decision/OBSERVATION_SCOPE_INTEGRATION.md');
+supplements.push('decision/OBSERVATION_SCOPE_PRIOR_ART.md', 'decision/OBSERVATION_SCOPE_INTEGRATION.md');
 const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const dataUri = (file, mime) => `data:${mime};base64,${fs.readFileSync(file).toString('base64')}`;

@@ -17,6 +17,7 @@
 7. [FACT_GATE.md](FACT_GATE.md): 첫 A/B 연구의 사실·법적 주장 검수. 이후 가까운 선행 판단까지 승인한 문서가 아님.
 8. [lab/DESIGN.md](lab/DESIGN.md), [독립 반례 검수](lab/ADVERSARIAL_REVIEW.md): 계약과 실제 실행 경계.
 9. [P1 문언 보충](decision/P1_SUPPORT_REPAIR.md), [한국 AI 활용 발명자 요건](decision/INVENTOR_REQUIREMENTS.md): 상태 선택 순서·독립 확인값의 의미와 실제 인간 기여의 확인 범위. 현재 결정서 P1-05·06에 보충안을 반영했으며 기존 09.12 초안은 보존했습니다.
+10. [도움 수집 범위 선행 대조](decision/OBSERVATION_SCOPE_PRIOR_ART.md), [최소 생산자 연결안](decision/OBSERVATION_SCOPE_INTEGRATION.md): 수동 확인값을 자동 수집 근거로 바꿀 경우의 조건과 한계. 순번·완결 대기 자체를 등록성 보강 수단으로 주안에 추가하지 않았습니다.
 
 ## 실험과 증거
 
@@ -36,7 +37,7 @@ node tools/patent-studio/grant-path-20260913/lab/verify.cjs
 node tools/patent-studio/grant-path-20260913/build.cjs
 ```
 
-`build.cjs`는 현재 승인 폰트·토큰·로고 원본 지문과 목적 변경 실행의 코드 지문을 대조하고, 실제 브라우저에서 6개 결과 선택·이전/다음·모바일 폭·외부 요청 없음·글꼴 로드를 검사합니다. 선행·청구 방향·행동 연결·추가 결정 자료 8개도 별도 HTML로 만듭니다. PDF의 실제 쪽수·모든 페이지 렌더·텍스트·글리프 임베드 근거는 출력/검수 폴더 JSON·PNG에 있습니다. 본문 수정 뒤에는 PDF 재렌더 및 `pdf-qa.py`를 수행합니다.
+`build.cjs`는 현재 승인 폰트·토큰·로고 원본 지문과 목적 변경 실행의 코드 지문을 대조하고, 실제 브라우저에서 6개 결과 선택·이전/다음·모바일 폭·외부 요청 없음·글꼴 로드를 검사합니다. 선행·청구 방향·행동 연결·추가 결정 자료 10개도 별도 HTML로 만듭니다. PDF의 실제 쪽수·모든 페이지 렌더·텍스트·글리프 임베드 근거는 출력/검수 폴더 JSON·PNG에 있습니다. 본문 수정 뒤에는 PDF 재렌더 및 `pdf-qa.py`를 수행합니다.
 
 ## 남은 범위
 
