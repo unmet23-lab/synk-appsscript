@@ -121,7 +121,7 @@ function doPost(e) {
  *   이 웹앱은 ANYONE_ANONYMOUS + USER_DEPLOYING이라, doGet이 HtmlService 페이지를 한 번이라도 돌려주면
  *   받은 사람이 google.script.run으로 이 프로젝트의 밑줄 없는 전역 함수 전부(실측 171개)를 원장 권한으로 부를 수 있다
  *   — previewOneReportCard(학생 리포트카드 공개 URL)·notifyParents(학부모 메일 발송)까지 전부 그 위에 있다.
- *   회사 두뇌 강사 화면이 정확히 이 이유로 배포 직전 철회됐다(경위·되살리는 조건 = `_보류_두뇌_웹화면.js` 머리말).
+ *   회사 두뇌 강사 화면도 이 이유로 배포 직전 철회됐다. 새 관리 화면의 권한 분리는 docs/코어엔진_설계.md §4를 따른다.
  *   ContentService 텍스트 응답은 이 브릿지를 만들지 않으므로 안전하다 — 아래 두 경로가 그것이다. */
 function doGet(e) {
   const p = (e && e.parameter) || {};

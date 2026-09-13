@@ -28,7 +28,7 @@
  *      그것을 권했고, 같은 날 배치 «둘»이 그대로 끊겼다 — 40장이 4장에서(12:15), 36장이 21장에서(13:18).
  *      둘 다 예외 한 줄 없이 사라졌다. 아래 uncaughtException 그물에 안 걸린 것이 그 증거다.
  *      떼어졌는지 재는 자 = **부모가 `WmiPrvSE.exe` 인가**(`Get-CimInstance Win32_Process`).
- *   PowerShell 에서 (WMI `CreateFlags=520` = 콘솔에서 완전히 뗌 · 밤샘_0902 와 같은 규약):
+ *   PowerShell 에서 (이 도구의 기존 WMI `CreateFlags=520` 실행 예):
  *     $로그 = "$env:TEMP\synk-밤굽기\밤굽기-$(Get-Date -Format 'yyyyMMdd-HHmm').log"
  *     $si = ([WMIClass]'Win32_ProcessStartup').CreateInstance()
  *     $si.CreateFlags = 520; $si.ShowWindow = 0
