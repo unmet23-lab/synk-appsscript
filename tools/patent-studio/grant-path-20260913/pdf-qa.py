@@ -2,12 +2,16 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 from pypdf import PdfReader
 import json
+import math
 
 folder = Path(r'C:/Users/q1212/.codex/visualizations/2026/09/11/01a08f0d-d3c5-7c41-9c85-d69384fa2412/IP_디딤돌_준비/미팅완성본/등록성_보강_20260913')
 reader = PdfReader(folder / 'SYNK_결합반론_대응구성.pdf')
 texts = [p.extract_text() for p in reader.pages]
-assert len(texts) == 8 and all(len(text) > 300 for text in texts)
+qa = json.loads((folder / '검수/verification.json').read_text(encoding='utf8'))
+assert qa['pageCount'] > 0 and len(texts) == qa['pageCount'] and all(len(text) > 300 for text in texts)
 assert '결합반론' in ''.join(texts[0].split()) and '9쌍' in ''.join(''.join(texts).split())
+normalized = ''.join(''.join(texts).split())
+assert all(value in normalized for value in ['US20030004724A1', 'KR102256705B1', '미구현', '2.719', 'P1', 'P2'])
 font_names = set()
 for page in reader.pages:
     for font_ref in page['/Resources']['/Font'].values():
@@ -22,9 +26,10 @@ for page in reader.pages:
         for descendant in fonts:
             descriptor = descendant.get_object().get('/FontDescriptor')
             assert descriptor and any(k in descriptor.get_object() for k in ['/FontFile', '/FontFile2', '/FontFile3'])
-images = sorted((folder / '검수').glob('page-*.png'))
+render_folder = folder / '검수' / ('pdf-' + qa['sourceHashes']['report'][:8])
+images = sorted(render_folder.glob('page-*.png'), key=lambda file: int(file.stem.split('-')[-1]))
 assert len(images) == len(texts)
-sheet = Image.new('RGB', (1440, 1050), '#FBF7F0')
+sheet = Image.new('RGB', (1440, 525 * math.ceil(len(images) / 4)), '#FBF7F0')
 draw = ImageDraw.Draw(sheet)
 for i, file in enumerate(images):
     page = Image.open(file).convert('RGB')
