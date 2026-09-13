@@ -82,24 +82,34 @@ void main(){
     vec3 core=mix(source,vec3(1.,.97,.84),.45);
     vec3 glow=(warmth*exp(-r2*.82)*.25+core*exp(-r2*5.5)*.48)*uPulse*edge;
     outColor=vec4(glow,1.);
-  }else if(uType==6){
+  }else if(uType==6||uType==7){
     // Narrow stem/seed-head masks only. The camera and the surrounding ground
     // have zero displacement; all clumps share the scene clock and breeze.
     vec2 uv=(vScreen-uBackgroundRect.xy)/uBackgroundRect.zw;
+    vec2 uvDx=dFdx(uv),uvDy=dFdy(uv);
     vec2 position=uv*uBackgroundRect.zw;
+    bool preserveContour=uType==7;
     float mask=0.;
     for(int i=0;i<5;i++){
       if(i>=uStemCount)break;
       vec2 a=uStems[i].xy*uBackgroundRect.zw,b=uStems[i].zw*uBackgroundRect.zw;
       vec2 axis=b-a;float along=clamp(dot(position-a,axis)/max(dot(axis,axis),.001),0.,1.);
-      float d=length(position-mix(a,b,along))/max(uStemRadius[i],.001);
-      mask=max(mask,1.-smoothstep(.48,1.,d));
+      float distance=length(position-mix(a,b,along));
+      // Keep the entire soft silhouette and its travel inside a rigid core.
+      // Only the surrounding background feathers back to its fixed position.
+      float m=preserveContour?1.-smoothstep(uStemRadius[i],uStemRadius[i]+16.,distance)
+        :1.-smoothstep(.48,1.,distance/max(uStemRadius[i],.001));
+      mask=max(mask,m);
     }
     vec2 root=uEffect.xy*uBackgroundRect.zw,top=uEffect.zw*uBackgroundRect.zw;
     vec2 axis=top-root;float height=clamp(dot(position-root,axis)/max(dot(axis,axis),.001),0.,1.);
     float bend=height*height*smoothstep(.02,.16,height)*uPulse;
-    vec4 c=texture(uTexture,uv-vec2(bend*mask/uBackgroundRect.z,0.));
-    outColor=vec4(c.rgb,mask);
+    if(preserveContour&&(mask==0.||bend==0.))discard;
+    vec2 sampleUV=uv-vec2(bend*mask/uBackgroundRect.z,0.);
+    // Stable texture gradients prevent extra mip blur during a bend. A single
+    // opaque resample avoids blending the moving silhouette with its old copy.
+    vec4 c=preserveContour?textureGrad(uTexture,sampleUV,uvDx,uvDy):texture(uTexture,sampleUV);
+    outColor=vec4(c.rgb,preserveContour?1.:mask);
   }else{
     vec2 p=(vUV-.5)*2.;float r=length(p);
     float angle=atan(p.y,p.x)+uRotation;
@@ -226,17 +236,19 @@ export class LoomSceneRenderer {
       this.environmentState.grassDisplacements.push(sway);
       // No grass pass at all between gusts: the original ground is pixel-still.
       if(sway===0)continue;
+      // Wider than 1.5 * maximum travel, so the easing cannot fold the texture.
+      const feather=grass.preserveContour?16:0;
       const segments=(grass.segments||[grass]).slice(0,5),points=new Float32Array(20),radii=new Float32Array(5);
       let left=1,right=0,top=1,bottom=0;
       for(const [i,s] of segments.entries()){
         points.set([...s.root,...s.tip],i*4);radii[i]=s.radius*bg[2]+reach;
-        const rx=s.radius+(reach+2)/bg[2],ry=rx*bg[2]/bg[3];
+        const rx=s.radius+(reach+feather+2)/bg[2],ry=rx*bg[2]/bg[3];
         left=Math.min(left,s.root[0]-rx,s.tip[0]-rx);right=Math.max(right,s.root[0]+rx,s.tip[0]+rx);
         top=Math.min(top,s.root[1]-ry,s.tip[1]-ry);bottom=Math.max(bottom,s.root[1]+ry,s.tip[1]+ry);
       }
       gl.uniform4fv(u.Effect,[...grass.root,...grass.tip]);gl.uniform1f(u.Pulse,sway);
       gl.uniform1i(u.StemCount,segments.length);gl.uniform4fv(u.Stems,points);gl.uniform1fv(u.StemRadius,radii);
-      this.draw(6,box(left,top,right-left,bottom-top),this.meshes.quad,this.textures.background);
+      this.draw(grass.preserveContour?7:6,box(left,top,right-left,bottom-top),this.meshes.quad,this.textures.background);
     }
     for(const light of this.environment.lights){
       const phase=light.phase||0,period=Math.max(6,light.period||8);

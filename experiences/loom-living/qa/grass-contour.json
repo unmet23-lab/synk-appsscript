@@ -1,0 +1,175 @@
+{
+  "date": "2026-09-13",
+  "revision": "right-foreground-grass-contour",
+  "baseCommit": "152d5170be8f",
+  "scope": "Only foreground-right-inner opts into preserveContour; all other grasses retain type 6. No motion-core, camera, character, shadow, light or source image changes.",
+  "fix": [
+    "Full displacement core covers silhouette and travel; a 16 CSSpx feather outside it returns to the fixed background.",
+    "Opaque single texture resample removes overlap with the old silhouette.",
+    "Unwarped texture derivatives keep sampling detail stable; derivatives calculated before discard.",
+    "Zero mask or zero bend discards the pass to preserve untouched pixels."
+  ],
+  "unitTests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "browser": {
+    "viewport": {
+      "width": 1280,
+      "height": 720,
+      "canvas": [
+        1178.984375,
+        490
+      ],
+      "dpr": 2
+    },
+    "target": "foreground-right-inner",
+    "samples": [
+      {
+        "time": 0,
+        "changedPixels": 0,
+        "outsideTargetChanged": 0,
+        "maxOutsideDelta": 0,
+        "identicalMotion": true,
+        "peakDisplacement": 0
+      },
+      {
+        "time": 12,
+        "changedPixels": 0,
+        "outsideTargetChanged": 0,
+        "maxOutsideDelta": 0,
+        "identicalMotion": true,
+        "peakDisplacement": 0
+      },
+      {
+        "time": 13,
+        "changedPixels": 53084,
+        "outsideTargetChanged": 0,
+        "maxOutsideDelta": 0,
+        "identicalMotion": true,
+        "peakDisplacement": -3.9094410811835596
+      },
+      {
+        "time": 13.5,
+        "changedPixels": 42198,
+        "outsideTargetChanged": 0,
+        "maxOutsideDelta": 0,
+        "identicalMotion": true,
+        "peakDisplacement": -0.8130673550780552
+      },
+      {
+        "time": 14,
+        "changedPixels": 56136,
+        "outsideTargetChanged": 0,
+        "maxOutsideDelta": 0,
+        "identicalMotion": true,
+        "peakDisplacement": 8.0496
+      },
+      {
+        "time": 14.5,
+        "changedPixels": 36461,
+        "outsideTargetChanged": 0,
+        "maxOutsideDelta": 0,
+        "identicalMotion": true,
+        "peakDisplacement": -0.48181769189423534
+      },
+      {
+        "time": 15,
+        "changedPixels": 0,
+        "outsideTargetChanged": 0,
+        "maxOutsideDelta": 0,
+        "identicalMotion": true,
+        "peakDisplacement": 0
+      }
+    ],
+    "errors": []
+  },
+  "numericalMapping": {
+    "minimumSourceXDerivative": 0.245350924,
+    "backgroundWidthsCssPx": [
+      640,
+      1280,
+      1920,
+      2560
+    ],
+    "spatialStepCssPx": 0.5,
+    "timeStepSeconds": 0.008333333333333333,
+    "timeRangeSeconds": [
+      0,
+      3
+    ],
+    "derivativeStepCssPx": 0.01,
+    "scope": "Independent numerical sample over the right grass local quad; not a proof over all continuous coordinates."
+  },
+  "comparison": {
+    "file": "grass-contour.png",
+    "labels": [
+      "Rest shape",
+      "Before / peak wind",
+      "After / same wind"
+    ],
+    "sameLightAndPose": true,
+    "sceneTime": 14,
+    "restShape": "Only gustEnvelope overridden to zero for the rest-shape panel; no persistent scene modification."
+  },
+  "preview": {
+    "file": "preview.mp4",
+    "bytes": 2743456,
+    "durationSeconds": 15.916667,
+    "width": 2358,
+    "height": 980,
+    "source": "Actual 16-second canvas capture from zero without manual inputs",
+    "containsHtmlDialogue": false,
+    "filmstrip": "filmstrip.jpg; six samples at video seconds 10 through 15",
+    "playback": {
+      "currentTime": 15.916667,
+      "duration": 15.916667,
+      "width": 2358,
+      "height": 980,
+      "ended": true,
+      "decodedFrames": 478,
+      "error": null
+    },
+    "derivativeEvaluationOrderingCheck": {
+      "identicalFrames": true,
+      "frames": [
+        {
+          "time": 0,
+          "hash": "90060b41fce288f1e9d789d1609c3eec093689d62ab5700fb5a53797aefdf2fa"
+        },
+        {
+          "time": 13,
+          "hash": "7428d936409e77b08d71f805129338132380ecda0a363cef82dc96311462179e"
+        },
+        {
+          "time": 13.5,
+          "hash": "7e1abef88a5b5749600c40956948d9f1ecf2763c771b0f4495acd745686e9f52"
+        },
+        {
+          "time": 14,
+          "hash": "5845db7ebb100d9d47abbdab6769c5bb6750b27be330a59a4aaee5cde41197b6"
+        },
+        {
+          "time": 14.5,
+          "hash": "c624b419b8fdce62144f25512ca7e7b0bc712a1ef8e2787fcf376972e05a12c0"
+        },
+        {
+          "time": 15,
+          "hash": "fae52daedb223ff335c6981d13daa8c9d3e67a52dde24b00059671acba17e143"
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Original depth-of-field blur remains. This fixes added deformation blur and ghosting.",
+    "Local browser verification; no physical-phone or student comfort claim.",
+    "wind.json and dialogue.json retain their historical version scopes."
+  ],
+  "checksPassed": true,
+  "sourceFiles": {
+    "tools/lib/loom-scene-webgl.mjs": "0279469c407fbdf3482c136c3f648d86d5fb37c90a19e32853dbeaa462ed9616",
+    "tools/lib/loom-scene.mjs": "f4b0ed340a01b9ee6d635c7bd7ec913a3fe6b8012dba819963c03a532ff7e14c",
+    "experiences/loom-living/environment.json": "c14e311bb6e413dfdc6f469c6005d79fd5afee053aa366bfa107c54055d76d59",
+    "experiences/loom-living/scene.json": "fa048d994c8a239f56dce2e8cf03bac0616f6737058c29ace59f7df67097b1de"
+  }
+}
