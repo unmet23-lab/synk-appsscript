@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-09-13T10:20:02.354Z",
+  "createdAt": "2026-09-13T13:18:07.012Z",
   "mode": "existing-artwork-no-new-generation",
   "purpose": "One interactive Mongle and garden scene; source textures retained, controlled runtime deformation.",
   "sources": {
@@ -29,7 +29,7 @@
     },
     "environment": {
       "path": "experiences/loom-living/environment.json",
-      "sha256": "01f143a237fae238f58474d3284c4c7e6094d18fe498747dd4a9efb8d769edb2"
+      "sha256": "c14e311bb6e413dfdc6f469c6005d79fd5afee053aa366bfa107c54055d76d59"
     }
   },
   "authority": [
@@ -67,12 +67,12 @@
       "sha256": "f737e788e89dfbb2ce790f9b5774018ac0dd3e2cd06eff3a11d8adb36952ca89"
     },
     "environment.json": {
-      "bytes": 8626,
-      "sha256": "01f143a237fae238f58474d3284c4c7e6094d18fe498747dd4a9efb8d769edb2"
+      "bytes": 8657,
+      "sha256": "c14e311bb6e413dfdc6f469c6005d79fd5afee053aa366bfa107c54055d76d59"
     },
     "scene.json": {
-      "bytes": 13499,
-      "sha256": "758a117cad7fb685a73b796db26667cc8a04d2da644e9050e0def78726e05ccc"
+      "bytes": 13522,
+      "sha256": "fa048d994c8a239f56dce2e8cf03bac0616f6737058c29ace59f7df67097b1de"
     },
     "theme.css": {
       "bytes": 185,

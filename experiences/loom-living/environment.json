@@ -335,6 +335,7 @@
     },
     {
       "id": "foreground-right-inner",
+      "preserveContour": true,
       "root": [
         0.95625,
         0.9993002
