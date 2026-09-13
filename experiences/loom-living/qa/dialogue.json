@@ -1,0 +1,136 @@
+{
+  "date": "2026-09-13",
+  "revision": "stitched-felt-cloud-dialogue",
+  "scope": "Local garden dialogue only. Existing scene render report remains in report.json.",
+  "checks": [
+    {
+      "name": "desktop",
+      "passed": true,
+      "details": {
+        "viewport": [
+          848,
+          731
+        ],
+        "text": "왔구나! 여기 같이 있을까?",
+        "speaker": "몽글",
+        "bubble": {
+          "x": 338.1328125,
+          "y": 131.9140625,
+          "width": 300,
+          "height": 94.796875
+        },
+        "withinGarden": true,
+        "aboveEyes": true,
+        "titleOpacity": "1",
+        "fontSize": "16px",
+        "overflow": false,
+        "ariaLive": "polite",
+        "ariaAtomic": "true",
+        "announcement": "몽글: 왔구나! 여기 같이 있을까?",
+        "visible": "visible",
+        "errors": []
+      }
+    },
+    {
+      "name": "mobile",
+      "passed": true,
+      "details": {
+        "viewport": [
+          430,
+          932
+        ],
+        "text": "앗, 간지러워! 너도 바람 느꼈어?",
+        "speaker": "몽글",
+        "bubble": {
+          "x": 76.5,
+          "y": 238.59375,
+          "width": 282,
+          "height": 91.25
+        },
+        "withinGarden": true,
+        "aboveEyes": true,
+        "titleOpacity": "1",
+        "fontSize": "15px",
+        "overflow": false,
+        "ariaLive": "polite",
+        "ariaAtomic": "true",
+        "announcement": "몽글: 앗, 간지러워! 너도 바람 느꼈어?",
+        "visible": "visible",
+        "errors": []
+      }
+    },
+    {
+      "name": "short phone",
+      "passed": true,
+      "details": {
+        "viewport": [
+          360,
+          640
+        ],
+        "text": "왔구나! 여기 같이 있을까?",
+        "speaker": "몽글",
+        "bubble": {
+          "x": 37,
+          "y": 153.421875,
+          "width": 282,
+          "height": 91.25
+        },
+        "withinGarden": true,
+        "aboveEyes": true,
+        "titleOpacity": "0",
+        "fontSize": "15px",
+        "overflow": false,
+        "ariaLive": "polite",
+        "ariaAtomic": "true",
+        "announcement": "몽글: 왔구나! 여기 같이 있을까?",
+        "visible": "visible",
+        "errors": []
+      }
+    },
+    {
+      "name": "keyboard activation without motion",
+      "passed": true,
+      "details": {
+        "immediate": "true",
+        "transition": "0s",
+        "transform": "none"
+      }
+    },
+    {
+      "name": "reduced motion and replacement message",
+      "passed": true,
+      "details": {
+        "reduced": true,
+        "transition": "0s",
+        "transform": "none",
+        "text": "저기, 바람이 지나가!"
+      }
+    },
+    {
+      "name": "automatic hide restores heading and retains accessible announcement",
+      "passed": true,
+      "details": {
+        "visible": "hidden",
+        "shown": false,
+        "titleOpacity": "1",
+        "announcement": "몽글: 왔구나! 여기 같이 있을까?",
+        "errors": []
+      }
+    }
+  ],
+  "artifacts": [
+    "dialogue-desktop.png",
+    "dialogue-mobile.png"
+  ],
+  "visualReview": "Inspected actual desktop, mobile and short-phone render; seam shadows, raised threads, knot, cloth edge and text remain visible. No eye overlap.",
+  "limitations": [
+    "Actual screen-reader speech not listened to; DOM accessibility region and browser accessibility tree verified.",
+    "No native student-app deployment or user acceptance claimed."
+  ],
+  "mobileCapture": {
+    "height": 899,
+    "status": 201,
+    "width": 415,
+    "method": "In-app screenshot; PNG encoding of returned screenshot at native capture dimensions; CSS viewport 430x932."
+  }
+}

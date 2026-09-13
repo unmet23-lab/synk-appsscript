@@ -1,24 +1,23 @@
 import {createScene,stepScene,getScenePose} from '/engine/loom-scene.mjs';
 import {LoomSceneRenderer} from '/engine/loom-scene-webgl.mjs';
+import {createFeltDialogue} from './felt-dialogue.mjs';
 
 const $=id=>document.getElementById(id),canvas=$('world'),garden=$('garden');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const input={pointer:{x:0,y:0,active:false,pressed:false},gust:false,paused:false,reducedMotion:reduced.matches,hidden:document.hidden,reading:false};
-let state,renderer,last=0,raf=0,dialogueTimer,gestureTimer,pointerExpiry=0,manual=false;
+let state,renderer,last=0,raf=0,gestureTimer,pointerExpiry=0,manual=false;
 const intervals=[];const errors=[];
 window.addEventListener('error',e=>errors.push(e.message));
 window.addEventListener('unhandledrejection',e=>errors.push(String(e.reason)));
 
-function speak(text){
-  clearTimeout(dialogueTimer);$('dialogue').textContent=text;$('dialogue').classList.add('show');
-  dialogueTimer=setTimeout(()=>$('dialogue').classList.remove('show'),3600);
-}
-function greet(){
+const dialogue=createFeltDialogue($('dialogue'),garden,()=>renderer?.characterRect,$('dialogue-announcement'));
+function speak(text,options){dialogue.show(text,options);}
+function greet(event){
   if(!state)return;input.pointer={x:-.22,y:-.2,active:true,pressed:true};pointerExpiry=performance.now()+2300;
   clearTimeout(gestureTimer);gestureTimer=setTimeout(()=>{input.pointer.pressed=false;},240);
-  speak('왔구나! 여기 같이 있을까?');
+  speak('왔구나! 여기 같이 있을까?',{immediate:event?.detail===0});
 }
-function gust(){input.gust=true;speak('저기, 바람이 지나가!');$('weather').textContent='바람이 지나가는 중';setTimeout(()=>{$('weather').textContent=input.paused?'잠깐 쉬는 중':'잔잔한 바람';},4000);}
+function gust(event){input.gust=true;speak('저기, 바람이 지나가!',{immediate:event?.detail===0});$('weather').textContent='바람이 지나가는 중';setTimeout(()=>{$('weather').textContent=input.paused?'잠깐 쉬는 중':'잔잔한 바람';},4000);}
 
 let audio;
 async function toggleSound(){
@@ -32,7 +31,7 @@ async function toggleSound(){
     }
     await audio.context.resume();audio.enabled=!audio.enabled;
     $('sound').setAttribute('aria-pressed',String(audio.enabled));$('sound').querySelector('span').textContent=audio.enabled?'소리 끄기':'소리 켜기';updateAudio();
-  }catch(e){speak('소리를 켜지 못했어요. 장면은 계속 볼 수 있어요.');}
+  }catch(e){speak('소리를 켜지 못했어요. 장면은 계속 볼 수 있어요.',{name:'안내'});}
 }
 function updateAudio(pose){if(!audio)return;const silent=!audio.enabled||input.paused||input.hidden;const volume=silent?0:.018+Math.abs(pose?.wind||0)*.014;audio.gain.gain.setTargetAtTime(volume,audio.context.currentTime,.16);}
 
@@ -54,11 +53,11 @@ $('rest').addEventListener('click',()=>{
   input.paused=!input.paused;$('rest').setAttribute('aria-pressed',String(input.paused));$('rest').querySelector('span').textContent=input.paused?'다시 움직이기':'잠깐 멈추기';$('weather').textContent=input.paused?'잠깐 쉬는 중':'잔잔한 바람';
   input.pointer.pressed=false;updateAudio();
 });
-$('fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('experience').requestFullscreen();}catch{speak('이 브라우저에서는 전체 화면을 열 수 없어요.');}});
+$('fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('experience').requestFullscreen();}catch{speak('이 브라우저에서는 전체 화면을 열 수 없어요.',{name:'안내'});}});
 document.addEventListener('fullscreenchange',()=>{renderer?.resize();$('fullscreen').setAttribute('aria-label',document.fullscreenElement?'전체 화면 닫기':'전체 화면으로 보기');});
 document.addEventListener('visibilitychange',()=>{input.hidden=document.hidden;last=0;input.pointer.pressed=false;updateAudio();});
 reduced.addEventListener('change',e=>{input.reducedMotion=e.matches;last=0;$('weather').textContent=e.matches?'움직임 줄이기 적용 중':'잔잔한 바람';});
-const observer=new ResizeObserver(()=>{renderer?.resize();if(renderer&&state)renderer.render(getScenePose(state));});observer.observe(garden);
+const observer=new ResizeObserver(()=>{renderer?.resize();dialogue.layout();if(renderer&&state)renderer.render(getScenePose(state));});observer.observe(garden);
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();cancelAnimationFrame(raf);canvas.hidden=true;$('error').hidden=false;if(window.loomScene)window.loomScene.ready=false;input.hidden=true;updateAudio();});
 canvas.addEventListener('webglcontextrestored',()=>location.reload());
 
@@ -100,5 +99,5 @@ try{
   };
 }catch(e){errors.push(e.message);$('loading').hidden=true;$('error').hidden=false;canvas.hidden=true;for(const id of ['wind','greet','rest'])$(id).disabled=true;console.error(e);}
 function percentile(p){if(!intervals.length)return null;const a=[...intervals].sort((x,y)=>x-y);return a[Math.min(a.length-1,Math.floor(a.length*p))];}
-window.addEventListener('pagehide',e=>{cancelAnimationFrame(raf);clearTimeout(dialogueTimer);clearTimeout(gestureTimer);input.hidden=true;input.pointer.pressed=false;updateAudio();if(!e.persisted){observer.disconnect();renderer?.dispose();audio?.context.close();}});
+window.addEventListener('pagehide',e=>{cancelAnimationFrame(raf);clearTimeout(gestureTimer);input.hidden=true;input.pointer.pressed=false;updateAudio();if(!e.persisted){dialogue.dispose();observer.disconnect();renderer?.dispose();audio?.context.close();}});
 window.addEventListener('pageshow',e=>{if(e.persisted){input.hidden=document.hidden;last=0;if(!manual)raf=requestAnimationFrame(frame);updateAudio();}});
