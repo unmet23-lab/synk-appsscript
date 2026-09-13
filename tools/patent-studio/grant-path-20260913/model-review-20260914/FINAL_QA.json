@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-09-13T20:36:33.1283532+00:00",
+  "files": {
+    "SYNK_특허_교차검수_종합자료.md": {
+      "bytes": 75070,
+      "sha256": "62e81e0bbf260fde5f55220caa96415596c88b115e35adccf9fdcbfbc71937ca"
+    },
+    "SYNK_특허_교차검수_종합자료.html": {
+      "bytes": 1832763,
+      "sha256": "6409a8331292d38dc2253fe5d82052c78c50a95f740612a3a900814ac6b77d66"
+    },
+    "SYNK_특허_교차검수_종합자료.pdf": {
+      "bytes": 1461195,
+      "sha256": "4772f8ee9516aa24f4465207a6e42c9ef31c523d311e2b6754fbd88336a02a99"
+    }
+  },
+  "pageCount": 27,
+  "sourceTextPreserved": true,
+  "claimParagraphs": 13,
+  "questions": 18,
+  "fontsEmbedded": true,
+  "externalLinks": 28,
+  "internalLinks": 0,
+  "browserRequests": [],
+  "visualReview": {
+    "render": "pdf-4772f8ee95",
+    "pages": "1-27",
+    "contactSheets": "1-7",
+    "completed": true,
+    "result": "No clipping, overlap, orphan code/source labels, unexpected strikethrough or missing glyphs observed"
+  },
+  "externalModelMessagesSent": false
+}

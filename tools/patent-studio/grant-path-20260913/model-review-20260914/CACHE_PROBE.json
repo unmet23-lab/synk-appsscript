@@ -1,0 +1,107 @@
+{
+  "generatedAt": "2026-09-13T20:25:08.790Z",
+  "runtime": "v24.18.0",
+  "sources": {
+    "../core.cjs": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003",
+    "../projection.cjs": "6591855952a749f8337264936b3b5341d5cbe20ac6dc5c0375a5592589a48627",
+    "../temporal-evidence.cjs": "20e0d1fa48bf00f333ba07eb0139ee5c70a836fe4b926235b2a481326d80decf",
+    "../observation-planner.cjs": "b4b5f622c72046af82cbec7c934077eb9ee20ae30583c4e09faa01a9e6009ab1",
+    "decision/P1_SUPPORT_CASES.json": "df105d8fad3a133eefa786a0623f850b5b66346fa24c052b2e81bfdfc29ec248"
+  },
+  "scope": "One authored synthetic late-help case; no microphone/audio file/DB/network; not a benchmark",
+  "cellResultsMatchFull": true,
+  "transitions": [
+    {
+      "cell": "e0:asr",
+      "action": "retained"
+    },
+    {
+      "cell": "e0:object",
+      "action": "withdrawn"
+    },
+    {
+      "cell": "e0:past",
+      "action": "retained"
+    }
+  ],
+  "asrInvalidations": [
+    {
+      "key": "epoch:actual:original:original:asr",
+      "changedInputs": [
+        "timing"
+      ]
+    },
+    {
+      "key": "no-epoch:actual:original:original:asr",
+      "changedInputs": [
+        "timing"
+      ]
+    },
+    {
+      "key": "epoch:predicted:original:original:asr",
+      "changedInputs": [
+        "timing"
+      ]
+    }
+  ],
+  "computation": {
+    "requestedCells": 15,
+    "evaluatedCells": 6,
+    "reusedPreviousCells": 3,
+    "reusedWithinRunCells": 6,
+    "inputFingerprintComparisons": 9,
+    "dependencyFieldsCompared": 54,
+    "dependencyFieldsHashed": 54,
+    "invalidated": [
+      {
+        "key": "epoch:actual:original:original:asr",
+        "changedInputs": [
+          "timing"
+        ],
+        "reason": "changed-input"
+      },
+      {
+        "key": "epoch:actual:original:original:object",
+        "changedInputs": [
+          "timing"
+        ],
+        "reason": "changed-input"
+      },
+      {
+        "key": "no-epoch:actual:original:original:asr",
+        "changedInputs": [
+          "timing"
+        ],
+        "reason": "changed-input"
+      },
+      {
+        "key": "no-epoch:actual:original:original:object",
+        "changedInputs": [
+          "timing"
+        ],
+        "reason": "changed-input"
+      },
+      {
+        "key": "epoch:predicted:original:original:asr",
+        "changedInputs": [
+          "timing"
+        ],
+        "reason": "changed-input"
+      },
+      {
+        "key": "epoch:predicted:original:original:object",
+        "changedInputs": [
+          "timing"
+        ],
+        "reason": "changed-input"
+      }
+    ],
+    "reusedCellKeys": [
+      "epoch:actual:original:original:past",
+      "no-epoch:actual:original:original:past",
+      "epoch:predicted:original:original:past"
+    ],
+    "strategy": "dependency-fingerprint-reuse",
+    "scope": "효과 판정 함수의 실제 실행 수. 입력 지문·관측 계획·저장 처리는 전체 셀을 순회하므로 전체 실행 시간이 O(영향 셀 수)라는 뜻은 아닙니다."
+  }
+}

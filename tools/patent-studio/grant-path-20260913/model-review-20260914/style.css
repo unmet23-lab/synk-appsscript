@@ -1,0 +1,32 @@
+*{box-sizing:border-box}
+body{margin:0;background:var(--synk-paper);color:var(--synk-ink);font:500 13.5px/1.72 var(--synk-font);letter-spacing:-.017em;-webkit-font-smoothing:antialiased}
+.page{width:210mm;height:297mm;padding:16mm 18mm 21mm;position:relative;break-after:page;overflow:hidden}
+.page:last-child{break-after:auto}
+header,footer{display:flex;justify-content:space-between;gap:20px;font-size:9px;border-bottom:1px solid var(--synk-stone);padding-bottom:9px;margin-bottom:24px;color:var(--synk-deep-wool)}
+header b{font-family:var(--synk-font-mono);letter-spacing:.08em;color:var(--synk-ink)}
+footer{position:absolute;bottom:11mm;left:18mm;right:18mm;border:0;border-top:1px solid var(--synk-stone);padding-top:7px;padding-bottom:0;margin:0}
+.number{font-family:var(--synk-font-mono);font-variant-numeric:tabular-nums}
+main{display:flow-root}
+h1,h2,h3{font-weight:800;line-height:1.32;letter-spacing:-.045em;word-break:keep-all;text-wrap:balance}
+h1{font-size:37px;margin:8px 0 24px;max-width:520px}
+h2{font-size:22px;margin:26px 0 17px;padding-top:15px;border-top:2px solid var(--synk-stitch)}
+h3{font-size:16px;margin:22px 0 12px}
+main>h2:first-child{margin-top:0}
+p{margin:0 0 15px;overflow-wrap:anywhere;text-wrap:pretty}
+strong{font-weight:800}
+a{color:var(--synk-lapis-deep);text-decoration-thickness:.7px;text-underline-offset:2px}
+table{border-collapse:collapse;table-layout:fixed;width:100%;font-size:11.4px;line-height:1.6;margin:16px 0}
+th,td{border-bottom:1px solid var(--synk-stone);padding:8px 8px;vertical-align:top;overflow-wrap:anywhere}
+th{text-align:left;background:var(--synk-oat);font-weight:800}
+th:first-child,td:first-child{width:24%}
+ul,ol{padding-left:19px;margin:12px 0 16px}
+li{margin-bottom:9px}
+blockquote{margin:16px 0;padding:15px 18px;border-left:3px solid var(--synk-coral);background:var(--synk-coral-wash);font-size:12.6px;line-height:1.8}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:'DM Mono','SUIT Variable',monospace;font-size:.87em;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;word-break:break-all;background:var(--synk-oat);padding:12px 14px;margin:10px 0 17px;font-size:10px;line-height:1.65;border-left:2px solid var(--synk-stone)}
+pre code{font-size:inherit}
+#source{display:none}
+@page{size:A4;margin:0}
+@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+@media screen{.page{margin:20px auto;box-shadow:0 0 0 1px var(--synk-stone)}body{background:var(--synk-oat)}}
