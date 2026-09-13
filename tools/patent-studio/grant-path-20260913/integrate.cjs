@@ -5,14 +5,14 @@ const base = 'C:/Users/q1212/.codex/visualizations/2026/09/11/01a08f0d-d3c5-7c41
 const folder = path.join(base, '등록성_보강_20260913');
 const qa = JSON.parse(fs.readFileSync(path.join(folder, '검수/verification.json'), 'utf8'));
 const pdfqa = JSON.parse(fs.readFileSync(path.join(folder, '검수/pdf-verification.json'), 'utf8'));
-if (qa.pageCount < 1 || qa.scenariosSeen.length !== 6 || !qa.noOverflow || pdfqa.renderedPages !== qa.pageCount || qa.supplementChecks.length !== 3) throw Error('Artifact QA is not ready');
+if (qa.pageCount < 1 || qa.scenariosSeen.length !== 6 || !qa.noOverflow || pdfqa.renderedPages !== qa.pageCount || qa.supplementChecks.length !== 6) throw Error('Artifact QA is not ready');
 const digest = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 if (digest(path.join(__dirname, 'REPORT.md')) !== qa.sourceHashes.report) throw Error('Report changed after QA');
 const guide = path.join(base, '현재_미팅본_20260912/00_여기서시작.html');
 const before = fs.readFileSync(guide, 'utf8');
 const htmlHref = '../등록성_보강_20260913/SYNK_결합반론_대응구성.html';
 const pdfHref = '../등록성_보강_20260913/SYNK_결합반론_대응구성.pdf';
-const section = `<section class="action" data-grant-path-20260913><div><h2>현재 검토 · 가까운 선행과 두 청구 방향</h2><p>US20030004724A1·KR102256705B1을 반영해 원음/의도 구분만의 차별점 주장을 철회했습니다. 새 안의 우선 확정은 보류하고 P1·P2 청구 문안·한정안·결정표를 준비했습니다. ${qa.pageCount}쪽 보고서, 6개 실험 재생, 실제 단일 후보 음성 측정의 한계를 함께 봅니다.</p></div><div class="buttons"><a class="button primary" href="${htmlHref}" target="_blank">현재 검토·결정표 열기</a><a class="button" href="${pdfHref}" target="_blank">${qa.pageCount}쪽 인쇄본</a></div></section>`;
+const section = `<section class="action" data-grant-path-20260913><div><h2>현재 검토 · 선행·실제 대조·청구 방향</h2><p>가까운 음성 특허와 행동 영향 계획 연구를 반영했습니다. 현재 P2는 목적을 바꿔도 확인 구간이 같은 두 후보집합을 확인했고, P3 확장은 등록 우위 근거가 생길 때까지 보류합니다. ${qa.pageCount}쪽 보고서, P1·P2 결정표, 6개 실험 재생과 세 가지 추가 대조 설계를 함께 봅니다.</p></div><div class="buttons"><a class="button primary" href="${htmlHref}" target="_blank">현재 검토·결정표 열기</a><a class="button" href="${pdfHref}" target="_blank">${qa.pageCount}쪽 인쇄본</a></div></section>`;
 const marker = '<section class="action" data-registration-target>';
 let after;
 if (before.includes('data-grant-path-20260913')) after = before.replace(/<section class="action" data-grant-path-20260913>[\s\S]*?<\/section>/, section);
