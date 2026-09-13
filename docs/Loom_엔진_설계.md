@@ -15,6 +15,8 @@
 > **L1 재질 시스템**은 Felt·Resin·Glass 프로필을 함께 관리한다. `docs/펠트엔진_설계.md`는 SYNK Loom L1 전체가 아니라
 > 그 안의 **Felt 프로필**을 상세화한 호환 경로다. 펠트는 독립 엔진도, Loom 전체의 이름도 아니다.
 
+> **실시간 장면 첫 구현 · 2026-09-13**: 유호님이 Loom 업그레이드를 적용한 「몽글 1 + 배경 1」 살아 있는 장면 제작을 요청했다. 공통 움직임은 `tools/lib/loom-scene.mjs`, 웹 표시기는 `tools/lib/loom-scene-webgl.mjs`에 분리했고, 실제 소비자는 [몽글과 바람의 정원](../experiences/loom-living/README.md)이다. 기존 정본 그림에 깊이 격자를 붙인 **2.5D**이며, 공유 바람·시선 뒤 몸 반응·미세 조명·눈 영역 합성·휴식·정지를 구현했다. 새 이미지 생성/API 호출은 없고 진짜 3D·모든 자산 자동 변환·SYNK-talk 배포는 포함하지 않는다. 원본과 출력 지문은 장면의 `provenance.json`, 코어 시험은 `tests/loom-scene.test.mjs`(6/6), 브라우저·모바일 크기·영상 검증 상태는 `experiences/loom-living/qa/report.json`에서 확인한다(보고서에 없는 범위는 미확인).
+
 ## 0. 한 문장
 
 **던져놓으면 분위기를 판단해 배치하는 그래픽 봇.** 어느 지면(문서·캐러셀·인쇄물·PPT·홈페이지·앱)이든

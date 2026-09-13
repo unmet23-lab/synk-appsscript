@@ -1,0 +1,190 @@
+{
+  "date": "2026-09-13T09:21:36.755Z",
+  "browser": "Codex in-app browser on Windows",
+  "checks": [
+    {
+      "name": "greeting",
+      "method": "UI click on greeting button",
+      "passed": true
+    },
+    {
+      "name": "pause freezes time and GPU draws",
+      "passed": true,
+      "before": 11.358333333333329,
+      "after": 11.358333333333329,
+      "framesBefore": 683,
+      "framesAfter": 683
+    },
+    {
+      "name": "UI gust reaches shared engine",
+      "passed": true,
+      "details": {
+        "time": 119.81666666670809,
+        "gustStart": 119.55000000004121,
+        "text": "저기, 바람이 지나가!"
+      }
+    },
+    {
+      "name": "sound opt-in button",
+      "passed": true,
+      "scope": "Button and AudioContext startup without exception; no listening quality claim"
+    },
+    {
+      "name": "430x932 responsive layout",
+      "passed": true,
+      "evidence": "mobile.png",
+      "details": {
+        "buttons": [
+          {
+            "height": 46,
+            "inViewport": true
+          },
+          {
+            "height": 46,
+            "inViewport": true
+          },
+          {
+            "height": 46,
+            "inViewport": true
+          },
+          {
+            "height": 46,
+            "inViewport": true
+          }
+        ],
+        "noHorizontalOverflow": true,
+        "viewport": [
+          430,
+          932
+        ]
+      }
+    },
+    {
+      "name": "mobile fullscreen retains controls",
+      "passed": true,
+      "details": {
+        "fullscreen": "experience",
+        "controlsVisible": true
+      }
+    },
+    {
+      "name": "prefers-reduced-motion freezes scene",
+      "passed": true,
+      "before": 49.041666666664526,
+      "after": 49.041666666664526
+    },
+    {
+      "name": "WebGL context loss fallback",
+      "passed": true,
+      "evidence": "Simulated WEBGL_lose_context; ready false, canvas hidden, retry overlay visible"
+    },
+    {
+      "name": "WebGL context restore",
+      "passed": true,
+      "evidence": "Context restore reloaded page; renderer running with no reported errors"
+    },
+    {
+      "name": "closed-eye appearance and alpha preservation",
+      "passed": true,
+      "evidence": "blink.png",
+      "audit": {
+        "outsideChanges": 0,
+        "alphaChanges": 0,
+        "coordinateSpace": 1536,
+        "boundaryAllowance": "2 source pixels for elliptical antialiasing"
+      }
+    },
+    {
+      "name": "bounded depth turn",
+      "passed": true,
+      "evidence": "turn.png",
+      "pose": {
+        "time": 1.9999999999999953,
+        "wind": 0.15574577371941153,
+        "breathe": 0.0011269302273657442,
+        "lookX": 0.8999999774783443,
+        "lookY": -0.5499999862367658,
+        "turn": 0.10727602904480067,
+        "lean": 0.021149341540803734,
+        "compression": 0,
+        "blink": 0,
+        "light": 1.0038936443429853,
+        "leaf": {
+          "x": -1.15,
+          "y": 0.3,
+          "rotation": 0,
+          "visible": false
+        },
+        "mode": "attention"
+      }
+    },
+    {
+      "name": "live canvas video capture",
+      "passed": true,
+      "evidence": "preview.mp4",
+      "details": {
+        "bytes": 17114655,
+        "mime": "video/webm;codecs=vp9",
+        "seconds": 16
+      }
+    },
+    {
+      "name": "runtime errors",
+      "passed": true,
+      "errors": []
+    },
+    {
+      "name": "exported MP4 playback",
+      "passed": true,
+      "evidence": "preview.mp4",
+      "details": {
+        "time": 11.819069,
+        "duration": 15.933333,
+        "ready": 4,
+        "paused": false,
+        "width": 2358,
+        "height": 980,
+        "error": null
+      }
+    }
+  ],
+  "limitations": [
+    "실제 학생 휴대폰의 발열·배터리·프레임률은 미확인",
+    "학생 사용 및 네이티브 앱 반영은 미실시",
+    "2.5D 원본 변형 장면이며 완전한 3D 모델이 아님"
+  ],
+  "performance": {
+    "scope": "Windows Codex in-app browser, 600 recent requestAnimationFrame intervals; not real mobile hardware or battery evidence",
+    "samples": 600,
+    "medianMs": 16.69999999999709,
+    "p95Ms": 16.89999999999418,
+    "maxMs": 17.099999999998545,
+    "size": {
+      "width": 1178.984375,
+      "height": 490
+    },
+    "renderer": {
+      "frames": 3049,
+      "drawCalls": 21,
+      "textureUploads": 3,
+      "webgl": "WebGL 2",
+      "renderMode": "2.5D surface deformation"
+    }
+  },
+  "unitTests": {
+    "command": "node --test tests/loom-scene.test.mjs",
+    "passed": 6,
+    "failed": 0
+  },
+  "video": {
+    "path": "preview.mp4",
+    "codec": "H.264",
+    "width": 2358,
+    "height": 980,
+    "durationSeconds": 15.933333,
+    "bytes": 8407959,
+    "audio": false,
+    "visualEvidence": "filmstrip.jpg"
+  },
+  "completedAt": "2026-09-13T09:31:39.046Z"
+}
