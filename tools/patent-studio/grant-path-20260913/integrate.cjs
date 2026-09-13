@@ -1,0 +1,23 @@
+'use strict';
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
+const { pathToFileURL } = require('node:url');
+const base = 'C:/Users/q1212/.codex/visualizations/2026/09/11/01a08f0d-d3c5-7c41-9c85-d69384fa2412/IP_디딤돌_준비/미팅완성본';
+const folder = path.join(base, '등록성_보강_20260913');
+const qa = JSON.parse(fs.readFileSync(path.join(folder, '검수/verification.json'), 'utf8'));
+const pdfqa = JSON.parse(fs.readFileSync(path.join(folder, '검수/pdf-verification.json'), 'utf8'));
+if (qa.pageCount !== 8 || qa.scenariosSeen.length !== 6 || !qa.noOverflow || pdfqa.renderedPages !== 8) throw Error('Artifact QA is not ready');
+const digest = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+if (digest(path.join(__dirname, 'REPORT.md')) !== qa.sourceHashes.report) throw Error('Report changed after QA');
+const guide = path.join(base, '현재_미팅본_20260912/00_여기서시작.html');
+const before = fs.readFileSync(guide, 'utf8');
+const htmlHref = '../등록성_보강_20260913/SYNK_결합반론_대응구성.html';
+const pdfHref = '../등록성_보강_20260913/SYNK_결합반론_대응구성.pdf';
+const section = `<section class="action" data-grant-path-20260913><div><h2>추가 검토 · 결합 반론에 대응할 구성</h2><p>판정 차이에서 원음 확인 범위와 결과 사용 조건을 연결하는 후보입니다. 6개 실험 결과 재생, 강한 결합 반론, 구성·미구현·미팅 대본을 8쪽에 정리했습니다. 등록 우위는 아직 확인되지 않았으며 기존 공보형 초안을 대체하는 확정 문안이 아닙니다.</p></div><div class="buttons"><a class="button primary" href="${htmlHref}" target="_blank">새 구성·실험 열기</a><a class="button" href="${pdfHref}" target="_blank">8쪽 인쇄본</a></div></section>`;
+const marker = '<section class="action" data-registration-target>';
+let after;
+if (before.includes('data-grant-path-20260913')) after = before.replace(/<section class="action" data-grant-path-20260913>[\s\S]*?<\/section>/, section);
+else { if (!before.includes(marker)) throw Error('Expected current guide marker missing'); after = before.replace(marker, section + marker); }
+if (before !== after) fs.writeFileSync(guide, after);
+const record = { integratedAt: new Date().toISOString(), guide, changed: before !== after, beforeHash: crypto.createHash('sha256').update(before).digest('hex'), afterHash: digest(guide), html: pathToFileURL(path.join(folder, 'SYNK_결합반론_대응구성.html')).href, pdf: path.join(folder, 'SYNK_결합반론_대응구성.pdf') };
+fs.writeFileSync(path.join(folder, '검수/integration.json'), JSON.stringify(record, null, 2));
+console.log(JSON.stringify(record));

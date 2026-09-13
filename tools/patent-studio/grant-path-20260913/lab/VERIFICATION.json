@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-09-13T13:08:50.019Z",
+  "node": "v24.18.0",
+  "command": "node --test --test-reporter=tap observation-contract.test.cjs",
+  "tests": 22,
+  "passed": 22,
+  "failed": 0,
+  "scenarios": 6,
+  "routingPairs": 9,
+  "equalRoutingPairs": 9,
+  "scope": "local synthetic metadata processing; no patentability or human listening claim",
+  "files": {
+    "observation-contract.cjs": "2a7ac4f4643907da19e4af9054b22f79c63c01c95deb6216ab2f8d079b8544d0",
+    "observation-contract.test.cjs": "d2e316689b650dccbfb32df3ac60fdd813f470d2b063a5b46f7d270dd2e65459",
+    "fixtures.cjs": "f3a8d0ff8d5a4507050000c1539f304369e3a83c0255124a206b02da3631a75a",
+    "run-experiment.cjs": "3b5cdcea57e9732ec53f3d502ad67039046638cc6c4462510d4f3b1c74689db0",
+    "RESULTS.json": "06faa880a5302fb37f92fa51e1bea8b4c043064eae1fee2778d72e248e64e9e6",
+    "ADVERSARIAL_REVIEW.md": "574b0d3e87a1ba56ab16ebd30040ae865b1da6560a10b9a3cb1fecd0aa137147",
+    "TESTS.tap": "cdc77affeb3be9daa85310ff10bb6196f13cdb17dc305d387f1a1635e12ba0c2"
+  }
+}

@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: planning is pure; uncertainty targets exclude already valid past tense
+ok 1 - planning is pure; uncertainty targets exclude already valid past tense
+  ---
+  duration_ms: 10.2144
+  type: 'test'
+  ...
+# Subtest: valid source review refines ASR and object while preserving audio and past record
+ok 2 - valid source review refines ASR and object while preserving audio and past record
+  ---
+  duration_ms: 12.2669
+  type: 'test'
+  ...
+# Subtest: same waveform bytes assigned to a new attempt cannot refine the old attempt
+ok 3 - same waveform bytes assigned to a new attempt cannot refine the old attempt
+  ---
+  duration_ms: 3.9367
+  type: 'test'
+  ...
+# Subtest: different waveform cannot refine original even with the same utterance and attempt
+ok 4 - different waveform cannot refine original even with the same utterance and attempt
+  ---
+  duration_ms: 3.7234
+  type: 'test'
+  ...
+# Subtest: a new answer or current-intent confirmation is not a source-audio review
+ok 5 - a new answer or current-intent confirmation is not a source-audio review
+  ---
+  duration_ms: 7.3225
+  type: 'test'
+  ...
+# Subtest: partial listening metadata cannot cover a larger required span
+ok 6 - partial listening metadata cannot cover a larger required span
+  ---
+  duration_ms: 2.5124
+  type: 'test'
+  ...
+# Subtest: valid full-audio coverage can satisfy a narrower requested range
+ok 7 - valid full-audio coverage can satisfy a narrower requested range
+  ---
+  duration_ms: 3.7819
+  type: 'test'
+  ...
+# Subtest: unconfirmed, empty, duplicate and out-of-set results do not promote data
+ok 8 - unconfirmed, empty, duplicate and out-of-set results do not promote data
+  ---
+  duration_ms: 11.6184
+  type: 'test'
+  ...
+# Subtest: contract field mutation is rejected
+ok 9 - contract field mutation is rejected
+  ---
+  duration_ms: 2.4343
+  type: 'test'
+  ...
+# Subtest: new event after planning invalidates the original plan
+ok 10 - new event after planning invalidates the original plan
+  ---
+  duration_ms: 3.3
+  type: 'test'
+  ...
+# Subtest: same revision with changed evidence is also rejected
+ok 11 - same revision with changed evidence is also rejected
+  ---
+  duration_ms: 3.4222
+  type: 'test'
+  ...
+# Subtest: all supplied candidate differences are covered, including a third candidate at the end
+ok 12 - all supplied candidate differences are covered, including a third candidate at the end
+  ---
+  duration_ms: 5.3636
+  type: 'test'
+  ...
+# Subtest: missing alignment uses full audio, rather than claiming a narrow span
+ok 13 - missing alignment uses full audio, rather than claiming a narrow span
+  ---
+  duration_ms: 1.4165
+  type: 'test'
+  ...
+# Subtest: malformed, duplicate, out-of-source and missing provenance alignments fall back
+ok 14 - malformed, duplicate, out-of-source and missing provenance alignments fall back
+  ---
+  duration_ms: 6.0424
+  type: 'test'
+  ...
+# Subtest: insertions or ambiguous edit alignment require whole-source review
+ok 15 - insertions or ambiguous edit alignment require whole-source review
+  ---
+  duration_ms: 1.1858
+  type: 'test'
+  ...
+# Subtest: no audio or no duration produces unresolved reason and no executable contract
+ok 16 - no audio or no duration produces unresolved reason and no executable contract
+  ---
+  duration_ms: 3.7358
+  type: 'test'
+  ...
+# Subtest: review receipt may retain ambiguity rather than forcing a single answer
+ok 17 - review receipt may retain ambiguity rather than forcing a single answer
+  ---
+  duration_ms: 7.4575
+  type: 'test'
+  ...
+# Subtest: audio review cannot clear independent task, coverage, or unknown blockers
+ok 18 - audio review cannot clear independent task, coverage, or unknown blockers
+  ---
+  duration_ms: 14.7708
+  type: 'test'
+  ...
+# Subtest: known preceding object hint stays disqualifying while source transcript becomes usable
+ok 19 - known preceding object hint stays disqualifying while source transcript becomes usable
+  ---
+  duration_ms: 11.0468
+  type: 'test'
+  ...
+# Subtest: identical receipt replay is idempotent; event-id reuse with changed data fails
+ok 20 - identical receipt replay is idempotent; event-id reuse with changed data fails
+  ---
+  duration_ms: 6.341
+  type: 'test'
+  ...
+# Subtest: the stored result event replays through Core to the same evaluated records
+ok 21 - the stored result event replays through Core to the same evaluated records
+  ---
+  duration_ms: 5.0372
+  type: 'test'
+  ...
+# Subtest: same VERSION with different code content is rejected even with a valid data seal
+ok 22 - same VERSION with different code content is rejected even with a valid data seal
+  ---
+  duration_ms: 2.5852
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 210.4912
