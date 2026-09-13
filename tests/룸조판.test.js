@@ -176,11 +176,17 @@ test('🔴 모르는 힌트 낱말은 적색 — 조용히 무시하면 어휘�
   assert.ok(r.흠.some((h) => h.includes('모르는 조판 힌트')), '흠: ' + JSON.stringify(r.흠));
 });
 
-test('힌트 어휘는 «세는 분모»다 — 열을 넘으면 설계가 틀린 것이다', () => {
-  const n = Object.keys(룸조판.힌트어휘).length;
-  assert.ok(n <= 10, `힌트 어휘 ${n}개 — 열을 넘었다. 원고가 마크업이 되고 있다(설계 §6). 설계 문서부터 다시 본다`);
-  assert.deepEqual(Object.keys(룸조판.힌트어휘).sort(), ['장끊기', '히어로'],
-    '어휘를 늘렸으면 `docs/Loom_배치판단층_설계_v1.md` 를 함께 고치고 이 줄도 갱신해라');
+test('힌트 어휘는 뜻과 실제 지원 지면을 명시한다', () => {
+  const 지원지면 = new Set(Object.keys(룸조판.규격들));
+  for (const [이름, 정의] of Object.entries(룸조판.힌트어휘)) {
+    assert.ok(이름.trim(), '빈 힌트 이름은 원고에서 구별할 수 없다');
+    assert.ok(typeof 정의.뜻 === 'string' && 정의.뜻.trim(), `${이름}: CLI에서 읽을 뜻이 필요하다`);
+    assert.ok(Array.isArray(정의.지면), `${이름}: 지원 지면 배열이 필요하다`);
+    assert.equal(new Set(정의.지면).size, 정의.지면.length, `${이름}: 지원 지면이 중복됐다`);
+    for (const 지면 of 정의.지면) {
+      assert.ok(지원지면.has(지면), `${이름}: 구현되지 않은 지면 ${지면}을 지원한다고 적었다`);
+    }
+  }
 });
 
 test('🔴 규격을 못 정하면 «추정하지 않고» 멈춘다', () => {
@@ -191,9 +197,12 @@ test('🔴 규격을 못 정하면 «추정하지 않고» 멈춘다', () => {
 });
 
 test('🔴 아직 없는 규격은 «이름 대고» 거절한다', () => {
-  const r = 조판(성한원고, { 지면: '덱16x9' });
-  assert.equal(r.html, null);
-  assert.ok(r.흠.some((h) => h.includes('2보')), '흠: ' + JSON.stringify(r.흠));
+  for (const 규격 of Object.keys(룸조판.아직없는규격)) {
+    assert.equal(룸조판.규격들[규격], undefined, `${규격}: 지원·미지원 목록이 겹쳤다`);
+    const r = 조판(성한원고, { 지면: 규격 });
+    assert.equal(r.html, null, `${규격}: 미지원 형식을 다른 지면으로 출력하면 안 된다`);
+    assert.ok(r.흠.some((h) => h.includes(규격)), `${규격}: 요청 형식을 알리는 오류가 필요하다`);
+  }
 });
 
 test('🔴 중첩 목록은 조용히 삼키지 않고 행번호를 대고 멈춘다', () => {
