@@ -1,0 +1,56 @@
+[
+  {
+    "file": "docs/소개서_지면.html",
+    "tab": "lab",
+    "width": 1280,
+    "overflow": 0,
+    "screenshot": "lab-1280.png"
+  },
+  {
+    "file": "docs/소개서_지면.html",
+    "tab": "corp",
+    "width": 1280,
+    "overflow": 0,
+    "screenshot": "corp-1280.png"
+  },
+  {
+    "file": "docs/소개서_지면.html",
+    "tab": "shift",
+    "width": 1280,
+    "overflow": 0,
+    "screenshot": "shift-1280.png"
+  },
+  {
+    "file": "docs/SHIFT/SYNK_SHIFT_소개서.html",
+    "width": 1280,
+    "overflow": 0,
+    "screenshot": "shift-single-1280.png"
+  },
+  {
+    "file": "docs/소개서_지면.html",
+    "tab": "lab",
+    "width": 390,
+    "overflow": 0,
+    "screenshot": "lab-390.png"
+  },
+  {
+    "file": "docs/소개서_지면.html",
+    "tab": "corp",
+    "width": 390,
+    "overflow": 0,
+    "screenshot": "corp-390.png"
+  },
+  {
+    "file": "docs/소개서_지면.html",
+    "tab": "shift",
+    "width": 390,
+    "overflow": 0,
+    "screenshot": "shift-390.png"
+  },
+  {
+    "file": "docs/SHIFT/SYNK_SHIFT_소개서.html",
+    "width": 390,
+    "overflow": 0,
+    "screenshot": "shift-single-390.png"
+  }
+]

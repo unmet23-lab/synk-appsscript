@@ -6,7 +6,7 @@ const path = require('node:path');
 const os = require('node:os');
 const vm = require('node:vm');
 const { syncVisionSources } = require('../tools/비전동기화.js');
-const { loadVisions } = require('../tools/lib/비전정본.js');
+const { loadVisions, withVisionBlock, sourcePath } = require('../tools/lib/비전정본.js');
 const ROOT = path.resolve(__dirname, '..');
 
 function fixture(t, faqEnd = '<!-- synk-vision:faq:end -->') {
@@ -26,13 +26,38 @@ function fixture(t, faqEnd = '<!-- synk-vision:faq:end -->') {
   return root;
 }
 
-test('GAS 상담 프롬프트까지 확정 LAB 전면 문장과 서브텍스트가 그대로 도달한다', () => {
+test('GAS 상담 프롬프트까지 확정 LAB 비전이 임의 부연 없이 도달한다', () => {
   const vision = loadVisions().lab;
   const contents = fs.readFileSync(path.join(ROOT, 'contents_상담AI.js'), 'utf8');
   const engine = fs.readFileSync(path.join(ROOT, '상담AI.js'), 'utf8');
   const prompt = vm.runInNewContext(contents + '\n' + engine + '\n상담_시스템_()', {}, { timeout: 1000 });
-  assert.ok(prompt.includes(vision.headline + '\n\n' + vision.subtext));
+  assert.ok(prompt.includes([vision.headline, vision.subtext].filter(Boolean).join('\n\n')));
   assert.equal(syncVisionSources({ check: true }).changed.length, 0);
+});
+
+test('09-13 네 브랜드 비전은 최신 사용자 문구와 선택한 부연만 유지한다', () => {
+  const visions = loadVisions();
+  assert.equal(visions.synk.headline, '저마다의 삶을 온전히 누리는 미래를 만듭니다.');
+  assert.equal(visions.synk.subtext, 'AI가 넓힌 가능성을 배움과 일, 문화로 연결합니다.');
+  assert.equal(visions.lab.headline, '가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.');
+  assert.equal(visions.lab.subtext, '');
+  assert.equal(visions.shift.headline, '개인과 조직의 성장이 서로의 기회가 되는 미래를 만듭니다.');
+  assert.match(visions.shift.subtext, /준비된 인재와 함께 성장/);
+  assert.equal(visions.pulse.headline, '함께한 시간이, 각자의 이야기로 이어지는 문화를 만듭니다.');
+  assert.equal(visions.pulse.subtext, '');
+  const block = withVisionBlock('# LAB\n\n기존 본문', 'lab');
+  assert.ok(block.includes('**' + visions.lab.headline + '**\n<!-- synk-vision:end -->'));
+  assert.ok(block.endsWith('기존 본문'));
+  assert.equal(withVisionBlock(block, 'lab'), block);
+});
+
+test('선택적 부연은 전면 문장이나 SYNK·SHIFT 부연 누락을 숨기지 않는다', () => {
+  const source = fs.readFileSync(sourcePath, 'utf8').replace(/\r\n/g, '\n');
+  const visions = loadVisions();
+  assert.deepEqual(loadVisions(source.replace(/\n/g, '\r\n')), visions);
+  assert.throws(() => loadVisions(source.replace(visions.synk.subtext, '')), /필요한 서브텍스트/);
+  assert.throws(() => loadVisions(source.replace(visions.shift.subtext, '')), /필요한 서브텍스트/);
+  assert.throws(() => loadVisions(source.replace('### 전면 비전\n\n' + visions.lab.headline, '')), /전면 문장/);
 });
 
 test('읽기 전용 대조는 쓰지 않고 재생성은 주변 조건과 줄바꿈을 보존한다', t => {

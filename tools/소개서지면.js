@@ -25,7 +25,7 @@ const 뿌리 = require('path').resolve(__dirname, '..') + '/';
 const 소개서 = [
   { 키:'lab',   이름:'SYNK LAB',   쪽:'학부모·학생이 읽는 초대장',           길:'docs/정본/SYNK LAB/SYNK LAB 소개서.txt' },
   { 키:'corp',  이름:'SYNK 기업',  쪽:'파트너·투자자·함께 일할 사람',        길:'docs/정본/SYNK/SYNK 기업소개서.txt' },
-  { 키:'shift', 이름:'SYNK SHIFT', 쪽:'기업·파트너 · 한국 법인 (새로 씀)',   길:'docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt' },
+  { 키:'shift', 이름:'SYNK SHIFT', 쪽:'기관·기업·개인 · 교육과 기회 연결',   길:'docs/정본/SYNK SHIFT/SYNK SHIFT 소개서.txt' },
 ];
 
 const 판 = [];
@@ -154,7 +154,7 @@ const 탭줄 = 판.map((p, i) =>
 const 머리 = [
 '<header class="머리">',
 '  <div class="머리안">',
-'    <div class="표찰"><b>SYNK</b><span>소개서 세 벌 · 2026-09-11 비전 반영</span></div>',
+'    <div class="표찰"><b>SYNK</b><span>소개서 세 벌 · 2026-09-13 철학·비전 반영</span></div>',
 '    <div class="탭들" role="tablist">',
 탭줄,
 '    </div>',
