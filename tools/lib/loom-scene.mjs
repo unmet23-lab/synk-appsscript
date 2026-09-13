@@ -5,12 +5,12 @@
  */
 export const LIMITS = Object.freeze({
   step: 1 / 120, maxDt: 1 / 15, compression: 0.04,
-  turn: 0.12, lean: 0.035, breathe: 0.004, wind: 1,
+  turn: 0.055, lean: 0.012, breathe: 0.0012, wind: 1,
 });
 export const CONFIG = Object.freeze({
-  seed: 23, windStrength: 0.18, gustStrength: 0.72,
-  breathPeriod: 4.4, blinkMin: 5, blinkMax: 10,
-  leafMin: 13, leafMax: 21, leafDuration: 5.2,
+  seed: 23, windStrength: 0.10, gustStrength: 0.32,
+  breathPeriod: 5.8, blinkMin: 5, blinkMax: 10,
+  leafMin: 20, leafMax: 32, leafDuration: 7,
 });
 export const defaultConfig = CONFIG;
 export const limits = LIMITS;
@@ -53,7 +53,7 @@ export function createScene(config = {}) {
   };
   state.phase = random(state) * Math.PI * 2;
   state.nextBlink = c.blinkMin + random(state) * (c.blinkMax - c.blinkMin);
-  state.nextLeaf = 4 + random(state) * 3;
+  state.nextLeaf = 8 + random(state) * 4;
   return state;
 }
 
@@ -127,6 +127,9 @@ export function stepScene(state, dt, input = {}) {
   if (input.gust && !state.gustHeld) {
     state.gustStart = state.time;
     state.gustDirection = 1;
+    state.leafStart = state.time;
+    state.nextLeaf = state.time + state.config.leafMin
+      + random(state) * (state.config.leafMax - state.config.leafMin);
   }
   state.gustHeld = !!input.gust;
   const p = input.pointer || {};
@@ -161,7 +164,8 @@ export function getScenePose(state) {
     breathe: Math.sin(state.time * Math.PI * 2 / state.config.breathPeriod)
       * LIMITS.breathe * reading,
     lookX: state.attention.x, lookY: state.attention.y,
-    ...state.body, blink, light: 1 + state.wind * 0.025,
+    // Wind moves small objects; it must not modulate the whole scene's exposure.
+    ...state.body, blink, light: 1,
     leaf: { ...state.leaf }, mode: state.mode,
   };
 }
