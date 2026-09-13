@@ -5,8 +5,9 @@ const ROOT = path.resolve(__dirname, '../../..'), ASSETS = path.join(__dirname, 
 const VROOT = 'C:/Users/q1212/.codex/visualizations/2026/09/11/01a08f0d-d3c5-7c41-9c85-d69384fa2412/IP_디딤돌_준비/미팅완성본';
 const OUT = path.join(VROOT, '등록성_보강_20260913'), QA = path.join(OUT, '검수');
 const NAME = 'SYNK_결합반론_대응구성';
-const evidenceFiles = ['REPORT.md', 'targeted/PRIOR_ART.md', 'targeted/CLAIM_DECISIONS.md', 'targeted/ACTION_INTEGRATION.md', 'targeted/AUDIO_PROBE.json', 'A_CORE.md', 'B_ALTERNATIVE.md', 'REQUIREMENTS.md', 'FACT_GATE.md', 'lab/DESIGN.md', 'lab/ADVERSARIAL_REVIEW.md', 'lab/RESULTS.json', 'lab/VERIFICATION.json', 'lab/observation-contract.cjs'];
-const supplements = ['targeted/PRIOR_ART.md', 'targeted/CLAIM_DECISIONS.md', 'targeted/ACTION_INTEGRATION.md'];
+const evidenceFiles = ['REPORT.md', 'targeted/PRIOR_ART.md', 'targeted/CLAIM_DECISIONS.md', 'targeted/ACTION_INTEGRATION.md', 'targeted/AUDIO_PROBE.json', 'decision/P3_PRIOR_ART.md', 'decision/P3_DECISIVE_CASES.md', 'decision/LOOM_COMPARISON.md', 'decision/PURPOSE_SENSITIVITY.json', 'decision/purpose-sensitivity.cjs', 'decision/loom-comparison-20260913/RESULTS.json', 'A_CORE.md', 'B_ALTERNATIVE.md', 'REQUIREMENTS.md', 'FACT_GATE.md', 'lab/DESIGN.md', 'lab/ADVERSARIAL_REVIEW.md', 'lab/RESULTS.json', 'lab/VERIFICATION.json', 'lab/observation-contract.cjs'];
+const supplements = ['targeted/PRIOR_ART.md', 'targeted/CLAIM_DECISIONS.md', 'targeted/ACTION_INTEGRATION.md', 'decision/P3_PRIOR_ART.md', 'decision/P3_DECISIVE_CASES.md', 'decision/LOOM_COMPARISON.md'];
+evidenceFiles.push('decision/loom-compare.py');
 const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const dataUri = (file, mime) => `data:${mime};base64,${fs.readFileSync(file).toString('base64')}`;
@@ -23,6 +24,10 @@ async function main() {
   const results = JSON.parse(fs.readFileSync(path.join(__dirname, 'lab/RESULTS.json'), 'utf8'));
   for (const [relative, expected] of Object.entries(results.sources)) {
     if (hash(path.resolve(__dirname, 'lab', relative)) !== expected) throw Error('Re-run experiment after source change: ' + relative);
+  }
+  const sensitivity = JSON.parse(fs.readFileSync(path.join(__dirname, 'decision/PURPOSE_SENSITIVITY.json'), 'utf8'));
+  for (const [relative, expected] of Object.entries(sensitivity.sources)) {
+    if (hash(path.resolve(__dirname, 'decision', relative)) !== expected) throw Error('Purpose comparison source changed: ' + relative);
   }
   const font = (family, file, weight, extra = '') => `@font-face{font-family:'${family}';src:url('${dataUri(path.join(ASSETS, file), file.endsWith('woff2') ? 'font/woff2' : 'font/ttf')}');font-weight:${weight};font-display:block;${extra}}`;
   const fonts = font('SUIT Variable', 'suit.woff2', '100 900') + font('Inter Tight', 'inter-tight.ttf', '500') + font('Inter Tight', 'inter-tight-bold.ttf', '700 900') + font('DM Mono', 'dm-mono.ttf', '500') + font('SYNK Bracket', 'bracket.ttf', '100 900', 'unicode-range:U+300C-300D;');
@@ -50,13 +55,18 @@ async function main() {
   for (const file of evidenceFiles) {
     const to = path.join(OUT, '자료', file); fs.mkdirSync(path.dirname(to), { recursive: true }); fs.copyFileSync(path.join(__dirname, file), to);
   }
-  const oldDraft = path.join(__dirname, '../registration-target-20260912/PATENT_DRAFT.md');
+  const references = [
+    { original: path.join(__dirname, '../registration-target-20260912/PATENT_DRAFT.md'), name: 'PATENT_DRAFT.md' },
+    { original: path.join(__dirname, '../core.cjs'), name: 'core.cjs' },
+    { original: path.join(__dirname, '../observation-planner.cjs'), name: 'observation-planner.cjs' },
+  ];
   fs.mkdirSync(path.join(OUT, '자료/reference'), { recursive: true });
-  fs.copyFileSync(oldDraft, path.join(OUT, '자료/reference/PATENT_DRAFT.md'));
+  for (const ref of references) fs.copyFileSync(ref.original, path.join(OUT, '자료/reference', ref.name));
   for (const file of supplements) {
     const supplement = marked.parse(fs.readFileSync(path.join(__dirname, file), 'utf8')).replace(/href="([A-Za-z]:\/[^\"]+)"/g, (_, original) => {
       const relative = path.relative(__dirname, original).replace(/\\/g, '/');
-      const exported = evidenceFiles.includes(relative) ? path.join(OUT, '자료', relative) : path.resolve(original) === path.resolve(oldDraft) ? path.join(OUT, '자료/reference/PATENT_DRAFT.md') : null;
+      const reference = references.find(r => path.resolve(original) === path.resolve(r.original));
+      const exported = evidenceFiles.includes(relative) ? path.join(OUT, '자료', relative) : reference ? path.join(OUT, '자료/reference', reference.name) : null;
       if (!exported || !fs.existsSync(exported)) throw Error('Missing supplemental local source: ' + original);
       return `href="${esc(path.relative(path.dirname(path.join(OUT, '자료', file)), exported).replace(/\\/g, '/'))}"`;
     });

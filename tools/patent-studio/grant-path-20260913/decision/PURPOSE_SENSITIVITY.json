@@ -1,0 +1,211 @@
+{
+  "generatedAt": "2026-09-13T13:44:43.292Z",
+  "coreVersion": "0.5.0",
+  "scope": "Two authored candidate sets and two session purposes; no audio inference or operational writes",
+  "sources": {
+    "../../core.cjs": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003",
+    "../lab/fixtures.cjs": "f3a8d0ff8d5a4507050000c1539f304369e3a83c0255124a206b02da3631a75a",
+    "../lab/observation-contract.cjs": "2a7ac4f4643907da19e4af9054b22f79c63c01c95deb6216ab2f8d079b8544d0",
+    "purpose-sensitivity.cjs": "55f0746341b0c2892a83415a2654b9ce8d8bc75ba3bfcbd24875ca7851affdc4"
+  },
+  "rows": [
+    {
+      "texts": [
+        "친구를 만나서 카페에 갔어요",
+        "친구가 만나서 카페에 갔어요"
+      ],
+      "sessionPurpose": "original-performance",
+      "selectedAction": "review-original",
+      "plannerTargets": [
+        "e0:object"
+      ],
+      "contracts": [
+        {
+          "targetIds": [
+            "e0:asr",
+            "e0:object"
+          ],
+          "range": {
+            "startMs": 0,
+            "endMs": 550,
+            "basis": "supplied-candidate-difference-enclosing-range"
+          },
+          "candidateTexts": [
+            "친구가 만나서 카페에 갔어요",
+            "친구를 만나서 카페에 갔어요"
+          ],
+          "allowedResultKind": "source-audio-review",
+          "witnesses": [
+            {
+              "targetId": "e0:asr",
+              "purpose": "asr-data",
+              "skill": "asr"
+            },
+            {
+              "targetId": "e0:object",
+              "purpose": "original-performance",
+              "skill": "object"
+            }
+          ]
+        }
+      ],
+      "unresolved": []
+    },
+    {
+      "texts": [
+        "친구를 만나서 카페에 갔어요",
+        "친구가 만나서 카페에 갔어요"
+      ],
+      "sessionPurpose": "asr-data",
+      "selectedAction": "review-original",
+      "plannerTargets": [
+        "e0:asr"
+      ],
+      "contracts": [
+        {
+          "targetIds": [
+            "e0:asr",
+            "e0:object"
+          ],
+          "range": {
+            "startMs": 0,
+            "endMs": 550,
+            "basis": "supplied-candidate-difference-enclosing-range"
+          },
+          "candidateTexts": [
+            "친구가 만나서 카페에 갔어요",
+            "친구를 만나서 카페에 갔어요"
+          ],
+          "allowedResultKind": "source-audio-review",
+          "witnesses": [
+            {
+              "targetId": "e0:asr",
+              "purpose": "asr-data",
+              "skill": "asr"
+            },
+            {
+              "targetId": "e0:object",
+              "purpose": "original-performance",
+              "skill": "object"
+            }
+          ]
+        }
+      ],
+      "unresolved": []
+    },
+    {
+      "texts": [
+        "친구를 만나서 카페에 갔어요",
+        "친구가 만나서 카페에 갔어요",
+        "친구를 만나서 카페에 가요"
+      ],
+      "sessionPurpose": "original-performance",
+      "selectedAction": "review-original",
+      "plannerTargets": [
+        "e0:object",
+        "e0:past"
+      ],
+      "contracts": [
+        {
+          "targetIds": [
+            "e0:asr",
+            "e0:object",
+            "e0:past"
+          ],
+          "range": {
+            "startMs": 0,
+            "endMs": 2350,
+            "basis": "supplied-candidate-difference-enclosing-range"
+          },
+          "candidateTexts": [
+            "친구가 만나서 카페에 갔어요",
+            "친구를 만나서 카페에 가요",
+            "친구를 만나서 카페에 갔어요"
+          ],
+          "allowedResultKind": "source-audio-review",
+          "witnesses": [
+            {
+              "targetId": "e0:asr",
+              "purpose": "asr-data",
+              "skill": "asr"
+            },
+            {
+              "targetId": "e0:object",
+              "purpose": "original-performance",
+              "skill": "object"
+            },
+            {
+              "targetId": "e0:past",
+              "purpose": "original-performance",
+              "skill": "past"
+            }
+          ]
+        }
+      ],
+      "unresolved": []
+    },
+    {
+      "texts": [
+        "친구를 만나서 카페에 갔어요",
+        "친구가 만나서 카페에 갔어요",
+        "친구를 만나서 카페에 가요"
+      ],
+      "sessionPurpose": "asr-data",
+      "selectedAction": "review-original",
+      "plannerTargets": [
+        "e0:asr"
+      ],
+      "contracts": [
+        {
+          "targetIds": [
+            "e0:asr",
+            "e0:object",
+            "e0:past"
+          ],
+          "range": {
+            "startMs": 0,
+            "endMs": 2350,
+            "basis": "supplied-candidate-difference-enclosing-range"
+          },
+          "candidateTexts": [
+            "친구가 만나서 카페에 갔어요",
+            "친구를 만나서 카페에 가요",
+            "친구를 만나서 카페에 갔어요"
+          ],
+          "allowedResultKind": "source-audio-review",
+          "witnesses": [
+            {
+              "targetId": "e0:asr",
+              "purpose": "asr-data",
+              "skill": "asr"
+            },
+            {
+              "targetId": "e0:object",
+              "purpose": "original-performance",
+              "skill": "object"
+            },
+            {
+              "targetId": "e0:past",
+              "purpose": "original-performance",
+              "skill": "past"
+            }
+          ]
+        }
+      ],
+      "unresolved": []
+    }
+  ],
+  "comparisons": [
+    {
+      "candidateCount": 2,
+      "identicalContractMeaning": true,
+      "plannerTargetsDiffer": true
+    },
+    {
+      "candidateCount": 3,
+      "identicalContractMeaning": true,
+      "plannerTargetsDiffer": true
+    }
+  ],
+  "interpretation": "Purpose changes the Core planner target list, but not the existing adapter contract meaning in these examples. No purpose-dependent range reduction demonstrated. Contract identity hashes are not treated as behavior differences. This is not proof that a future design or whole claim lacks inventive step."
+}
