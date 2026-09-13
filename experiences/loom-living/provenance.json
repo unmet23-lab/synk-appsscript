@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-09-13T09:25:30.034Z",
+  "createdAt": "2026-09-13T10:20:02.354Z",
   "mode": "existing-artwork-no-new-generation",
   "purpose": "One interactive Mongle and garden scene; source textures retained, controlled runtime deformation.",
   "sources": {
@@ -26,6 +26,10 @@
     "logo": {
       "path": "docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Paper-정밀.svg",
       "sha256": "f737e788e89dfbb2ce790f9b5774018ac0dd3e2cd06eff3a11d8adb36952ca89"
+    },
+    "environment": {
+      "path": "experiences/loom-living/environment.json",
+      "sha256": "01f143a237fae238f58474d3284c4c7e6094d18fe498747dd4a9efb8d769edb2"
     }
   },
   "authority": [
@@ -62,9 +66,13 @@
       "bytes": 10439,
       "sha256": "f737e788e89dfbb2ce790f9b5774018ac0dd3e2cd06eff3a11d8adb36952ca89"
     },
+    "environment.json": {
+      "bytes": 8626,
+      "sha256": "01f143a237fae238f58474d3284c4c7e6094d18fe498747dd4a9efb8d769edb2"
+    },
     "scene.json": {
-      "bytes": 9328,
-      "sha256": "550b3ea767594f27ccdf5769785927233199ea7a0c540f8ba2eb81450b6b883c"
+      "bytes": 13499,
+      "sha256": "758a117cad7fb685a73b796db26667cc8a04d2da644e9050e0def78726e05ccc"
     },
     "theme.css": {
       "bytes": 185,
