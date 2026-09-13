@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-10",
+  "updatedAt": "2026-09-12",
   "policy": {
     "defaultReview": "final-review",
     "allowUnreviewedPublicPublishing": false,
@@ -55,7 +55,10 @@
       "platform": "tiktok",
       "handle": "@yuhobuilds",
       "publisher": "direct-after-review",
-      "connection": "needs-reviewed-app"
+      "connection": "needs-reviewed-app",
+      "profileStatus": "public-profile-missing-profile-photo-confirmed-2026-09-12",
+      "displayNameStatus": "current-name-change-eligible-from-2026-09-15",
+      "targetProfileImage": "approved private studio portrait SHA256 b8f7ecefae17"
     },
     "synkbrief-youtube": {
       "brand": "SHIFT",
@@ -79,7 +82,9 @@
       "platform": "tiktok",
       "handle": "@synkbrief",
       "publisher": "direct-after-review",
-      "connection": "needs-reviewed-app"
+      "connection": "needs-reviewed-app",
+      "profileStatus": "public-profile-confirmed-2026-09-11",
+      "contentStatus": "no-content-confirmed"
     },
     "lab-facebook": {
       "brand": "LAB",
@@ -100,15 +105,53 @@
       "platform": "threads",
       "handle": "@synkbrief",
       "publisher": "direct-after-connection",
-      "connection": "needs-threads-app"
+      "connection": "needs-threads-app",
+      "profileStatus": "not-created-confirmed-2026-09-12",
+      "remainingAction": "log-in-with-instagram-synkbrief-then-confirm-final-account-creation"
     },
     "yuhobuilds-linkedin": {
       "brand": "SHIFT",
       "platform": "linkedin",
+      "accountType": "personal-profile-duplicate",
+      "loginAlias": "unmet23",
       "handle": "yuhobuilds",
-      "publisher": "direct-after-connection",
+      "publicUrl": "https://www.linkedin.com/in/yuhobuilds/",
+      "contentRole": "personal-builder-story-to-be-preserved-on-the-surviving-profile",
+      "publisher": "blocked-duplicate-account-consolidation",
       "apiVersion": "202608",
-      "connection": "needs-linkedin-app"
+      "connection": "duplicate-account-do-not-expand",
+      "profileStatus": "public-profile-confirmed-before-2026-09-12; live-current-state-not-rechecked",
+      "targetStatus": "export-data-then-merge-into-yuho-linkedin-primary",
+      "remainingAction": "verify-connections-and-data; download-archive; merge-or-close only after action-time confirmation"
+    },
+    "yuho-linkedin-primary": {
+      "brand": "SHIFT",
+      "platform": "linkedin",
+      "accountType": "personal-profile-primary",
+      "loginAlias": "unmet25",
+      "handle": "양유호",
+      "publicUrl": "https://www.linkedin.com/in/유호-양-5800b8433/",
+      "contentRole": "Yuho personal perspective, attempts, failures, lessons, and building process under the yuhobuild identity",
+      "publisher": "manual-assisted-after-consolidation",
+      "connection": "verified-user-account-and-company-page-owner-observed-before-browser-control-loss",
+      "profileStatus": "identity-verified-and-user-supplied-profile-url-2026-09-12",
+      "targetStatus": "sole-personal-profile-and-SYNK-page-admin",
+      "remainingAction": "preserve yuhobuild profile content and connections here after duplicate data review"
+    },
+    "synk-linkedin-company": {
+      "brand": "SYNK",
+      "platform": "linkedin",
+      "accountType": "company-page",
+      "loginAlias": "managed-from-yuho-linkedin-primary",
+      "handle": "SYNK",
+      "companyId": "143833958",
+      "publicUrl": "https://www.linkedin.com/company/synk-im/",
+      "contentRole": "official company news, products, completed work, and external collaboration",
+      "publisher": "manual-assisted",
+      "connection": "official-page-admin-ui-observed-browser-control-currently-unavailable",
+      "profileStatus": "public-page-confirmed-2026-09-12; cover-present; profile-logo-and-new-copy-pending",
+      "targetStatus": "official-external-channel",
+      "remainingAction": "upload-official-logo; replace-tagline-and-about-copy; recheck-public-page"
     },
     "lab-telegram": {
       "brand": "LAB",
@@ -117,6 +160,18 @@
       "chatId": "@synkmn",
       "publisher": "direct-after-connection",
       "connection": "needs-bot-admin"
+    },
+    "yuhobuilds-telegram": {
+      "brand": "SHIFT",
+      "platform": "telegram",
+      "accountType": "public-contact-profile",
+      "handle": "t.me/yuhobuilds",
+      "chatId": "@yuhobuilds",
+      "publicUrl": "https://t.me/yuhobuilds",
+      "contentRole": "Yuho and SHIFT public contact route",
+      "publisher": "manual-contact",
+      "connection": "public-profile-confirmed-no-message-sent",
+      "profileStatus": "public-profile-and-message-entry-confirmed-2026-09-11"
     },
     "synklab-substack": {
       "brand": "SHIFT",
@@ -139,7 +194,45 @@
       "handle": "synkshift",
       "publisher": "manual-assisted",
       "editorUrl": "https://blog.naver.com/PostWriteForm.naver?blogId=synkshift",
-      "connection": "official-editor"
+      "connection": "official-editor",
+      "profileStatus": "public-profile-complete-verified-2026-09-12",
+      "contentStatus": "first-post-published",
+      "lastPublicCheck": "2026-09-12",
+      "publicUrl": "https://blog.naver.com/synkshift",
+      "publicTitle": "유호 · AI와 회사 만들기",
+      "publicIntro": "AI와 함께 회사를 만들고 있어요. 직접 해보고, 막히면 고치고, 쓸 만한 방법을 나눕니다. SYNK SHIFT",
+      "currentNickname": "유호",
+      "targetNickname": "유호",
+      "currentProfileImage": "approved private studio portrait SHA256 b8f7ecefae17",
+      "targetProfileImage": "approved private studio portrait SHA256 b8f7ecefae17",
+      "publicPostState": "one-public-post-visible",
+      "currentPublicExternalLinks": [],
+      "targetPublicLinks": [
+        "https://synk.im/",
+        "https://x.com/yuhobuilds",
+        "https://www.youtube.com/@yuhobuilds",
+        "https://www.behance.net/yuhobuilds"
+      ],
+      "topicStatus": "confirmed-in-admin-business-economy",
+      "categoriesStatus": "five-top-level-categories-saved-and-publicly-verified",
+      "categories": [
+        "작업 기록",
+        "소개서 만들기",
+        "홍보글·영상",
+        "AI 도구",
+        "SYNK 이야기"
+      ],
+      "transitionSpec": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/네이버블로그_전환설정.md",
+      "firstPostDraft": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/네이버블로그_첫글.md",
+      "firstPostPasteText": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/네이버블로그_업로드본문.txt",
+      "firstPostImage": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/cover.png",
+      "firstPostUrl": "https://blog.naver.com/synkshift/224408843338",
+      "firstPostExternalLinks": [
+        "https://synk.im/",
+        "https://x.com/yuhobuilds",
+        "https://www.behance.net/gallery/255583141/-AI-SYNK-"
+      ],
+      "remainingAction": "mobile-view-not-verified; no separate profile-link fields were exposed in the basic-info screen"
     },
     "shift-kakao": {
       "brand": "SHIFT",
@@ -163,6 +256,49 @@
       "handle": "synkshift",
       "publisher": "direct-after-approval",
       "connection": "needs-standard-api-access"
+    },
+    "yuhobuilds-x": {
+      "brand": "SHIFT",
+      "platform": "x",
+      "handle": "@yuhobuilds",
+      "desiredHandle": "@yuhobuilds",
+      "decision": "approved-2026-09-11",
+      "publisher": "blocked-no-x-adapter",
+      "connection": "account-confirmed-no-api",
+      "profileStatus": "public-profile-complete",
+      "contentStatus": "first-text-post-published",
+      "firstPostUrl": "https://x.com/yuhobuilds/status/2098402542854275312"
+    },
+    "yuhobuilds-behance": {
+      "brand": "SHIFT",
+      "platform": "behance",
+      "handle": "https://www.behance.net/yuhobuilds",
+      "desiredHandle": "yuhobuilds",
+      "decision": "approved-2026-09-11",
+      "publisher": "manual-assisted",
+      "connection": "account-confirmed-no-api",
+      "profileStatus": "public-profile-complete",
+      "contentStatus": "first-project-published",
+      "firstProjectUrl": "https://www.behance.net/gallery/255583141/-AI-SYNK-"
+    },
+    "yuhobuilds-naver-clip": {
+      "brand": "SHIFT",
+      "platform": "naver-clip",
+      "handle": "https://clip.naver.com/@yuhobuilds",
+      "desiredHandle": "yuhobuilds",
+      "decision": "approved-2026-09-11",
+      "publisher": "manual-assisted",
+      "connection": "account-id-confirmed-profile-details-pending-mobile",
+      "profileStatus": "id-public-profile-details-blank-confirmed-2026-09-12",
+      "targetDisplayName": "유호 · AI와 회사 만들기",
+      "targetBio": "AI와 함께 회사를 만들고 있어요. 직접 해보고, 막히면 고치고, 쓸 만한 방법을 나눕니다. SYNK SHIFT",
+      "targetProfileImage": "approved private studio portrait SHA256 b8f7ecefae17",
+      "contentStatus": "ready-for-mobile-app-upload",
+      "uploadAsset": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/video_네이버클립_권리확인본.mp4",
+      "uploadCaption": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/네이버클립_업로드문안.txt",
+      "uploadPackage": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/네이버클립_모바일업로드.zip",
+      "rightsAudit": "docs/홍보물/첫게시물_20260911/01-yuhobuilds/audio-pixabay-safe/audit.json",
+      "remainingAction": "complete-profile-and-publish-in-naver-mobile-app; optional-blog-link-is-irreversible-and-not-applied"
     }
   }
 }
