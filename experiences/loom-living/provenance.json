@@ -1,0 +1,74 @@
+{
+  "createdAt": "2026-09-13T09:25:30.034Z",
+  "mode": "existing-artwork-no-new-generation",
+  "purpose": "One interactive Mongle and garden scene; source textures retained, controlled runtime deformation.",
+  "sources": {
+    "background": {
+      "path": "docs/라디오/무대/dream_field.png",
+      "sha256": "c3d6fb508a9244ca34e83de4631f5c1757b1f21b6045b06112dc469b71b10b1a"
+    },
+    "mongle": {
+      "path": "docs/캐릭터/정본_4K/몽글_본체.png",
+      "sha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6"
+    },
+    "closed": {
+      "path": "../SYNK-talk/assets/마스코트/몽글_눈감음.webp",
+      "sha256": "93362640b0aadba4c565a7c2989509234f8d9b848d190bb81dab319509bc8313"
+    },
+    "masks": {
+      "path": "../SYNK-talk/assets/브랜드/가이드눈마스크.json",
+      "sha256": "78cb3f4e6c9d3693caf3874c4e148884645b0e71cb62359573de4dda5eb894cf"
+    },
+    "font": {
+      "path": "experiences/20260909/shared/fonts/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    "logo": {
+      "path": "docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Paper-정밀.svg",
+      "sha256": "f737e788e89dfbb2ce790f9b5774018ac0dd3e2cd06eff3a11d8adb36952ca89"
+    }
+  },
+  "authority": [
+    "DESIGN.md",
+    "docs/Loom_엔진_설계.md",
+    "docs/캐릭터/캐릭터_생명감_설계.md",
+    "docs/캐릭터/가이드_정본.md"
+  ],
+  "depth": "Existing tools/lib/깊이격자.js rotational-shape estimate, not recovered full 3D geometry.",
+  "transformations": [
+    "Background downscale/WebP compression",
+    "Body downscale/lossless WebP",
+    "Existing closed-eye source copied; only canonical elliptical eye areas composed in memory",
+    "Source body alpha and UV texture remain common throughout motion"
+  ],
+  "outputs": {
+    "assets/garden.webp": {
+      "bytes": 669606,
+      "sha256": "bf58bbcf6c65222cb5f327260847b203816fc77e082ce40062e0c4cbc571b9a0"
+    },
+    "assets/mongle.webp": {
+      "bytes": 1678546,
+      "sha256": "77bdf66b87dad931817e6815259b47fc3c40b69c264bf029b8cc35c77ad44d03"
+    },
+    "assets/mongle-closed.webp": {
+      "bytes": 31840,
+      "sha256": "93362640b0aadba4c565a7c2989509234f8d9b848d190bb81dab319509bc8313"
+    },
+    "assets/SUIT-Variable.woff2": {
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    "assets/synk-paper.svg": {
+      "bytes": 10439,
+      "sha256": "f737e788e89dfbb2ce790f9b5774018ac0dd3e2cd06eff3a11d8adb36952ca89"
+    },
+    "scene.json": {
+      "bytes": 9328,
+      "sha256": "550b3ea767594f27ccdf5769785927233199ea7a0c540f8ba2eb81450b6b883c"
+    },
+    "theme.css": {
+      "bytes": 185,
+      "sha256": "3e01e12fb52762377623e50b8aa193f33fbdd2e4bcf749be3e3a53d75a627d8e"
+    }
+  }
+}
