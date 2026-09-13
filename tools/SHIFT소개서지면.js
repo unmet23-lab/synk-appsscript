@@ -92,7 +92,7 @@ ${loom.css({ 지면: '밝은부품' })}
 <body>
 <div class="판">
   <header class="표지">
-    <p class="눈썹">SYNK SHIFT · 한국 법인</p>
+    <p class="눈썹">SYNK SHIFT · 개인과 조직의 연결</p>
     <h1>${제목.replace(/\s*소개서$/, '')}</h1>
   </header>
   <!-- 본문을 main 으로 감싼다 — 화면 읽어 주는 장치가 「여기부터 본문」으로 건너뛴다.

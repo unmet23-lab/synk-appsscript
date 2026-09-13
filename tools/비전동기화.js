@@ -15,7 +15,7 @@ const targets = [
     start: '    // synk-vision:lab:start',
     end: '    // synk-vision:lab:end',
     body: visions => '    내용: ' + JSON.stringify(
-      'SYNK LAB의 비전은 다음과 같습니다.\n\n' + visions.lab.headline + '\n\n' + visions.lab.subtext
+      ['SYNK LAB의 비전은 다음과 같습니다.', visions.lab.headline, visions.lab.subtext].filter(Boolean).join('\n\n')
     ),
   },
   {
@@ -23,7 +23,7 @@ const targets = [
     start: '<!-- synk-vision:faq:start -->',
     end: '<!-- synk-vision:faq:end -->',
     body: visions => ['synk', 'lab'].map(key =>
-      '**' + visions[key].name + '의 비전**\n\n**' + visions[key].headline + '**\n\n' + visions[key].subtext
+      ['**' + visions[key].name + '의 비전**', '**' + visions[key].headline + '**', visions[key].subtext].filter(Boolean).join('\n\n')
     ).join('\n\n'),
   },
 ];
