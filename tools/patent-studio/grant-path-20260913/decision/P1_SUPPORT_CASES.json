@@ -1,0 +1,2636 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-13T14:19:27.954Z",
+  "runtime": "v24.18.0",
+  "coreVersion": "0.5.0",
+  "command": "node tools/patent-studio/grant-path-20260913/decision/p1-support-cases.cjs",
+  "scope": "Three bounded synthetic P1 wording examples through existing Core API and actual projection ledger function; no software feature changes.",
+  "inputProvenance": {
+    "kind": "isolated-authored-logical-inputs",
+    "actualAudioRead": false,
+    "actualMicrophoneCapture": false,
+    "actualHumanReview": false,
+    "actualHelpDisplay": false,
+    "operationalDatabaseUsed": false,
+    "externalServiceUsed": false,
+    "captureNote": "acquisition=microphone and source=human are simulated API fields for this controlled example. They are not observations of real recording or review.",
+    "receivedAtNote": "receivedAt in the input envelopes is the authored receipt timeline. Core receives event.at as occurrence time; this run does not exercise store receipt timestamps.",
+    "fixtureDecision": "Read existing lab/fixtures.cjs. It supplies a zero-length assumed capture interval and directly restores timing fields; used isolated public Core API events instead to expose a nonzero capture interval and all condition changes."
+  },
+  "sources": {
+    "../../core.cjs": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003",
+    "../../temporal-evidence.cjs": "20e0d1fa48bf00f333ba07eb0139ee5c70a836fe4b926235b2a481326d80decf",
+    "../../projection.cjs": "6591855952a749f8337264936b3b5341d5cbe20ac6dc5c0375a5592589a48627",
+    "../../observation-planner.cjs": "b4b5f622c72046af82cbec7c934077eb9ee20ae30583c4e09faa01a9e6009ab1",
+    "p1-support-cases.cjs": "db48ab1bc8405c6b05207986022256d33a74b88e6a79fa47f29338b5c9efebe5"
+  },
+  "baselineInput": {
+    "initialOptions": {
+      "id": "isolated-synthetic-p1-support",
+      "mode": "recording",
+      "createdAt": "2026-09-13T09:58:00.000+09:00"
+    },
+    "preparation": [
+      {
+        "receivedAt": "2026-09-13T10:00:11.000+09:00",
+        "event": {
+          "id": "synthetic-audio",
+          "type": "audio-attached",
+          "at": "2026-09-13T10:00:11.000+09:00",
+          "payload": {
+            "audioRef": "synthetic-logical-audio-A-no-file-read",
+            "role": "original",
+            "acquisition": "microphone",
+            "captureStartedAt": "2026-09-13T10:00:00.000+09:00",
+            "captureEndedAt": "2026-09-13T10:00:10.000+09:00",
+            "durationMs": 10000,
+            "mimeType": "audio/wav"
+          }
+        }
+      },
+      {
+        "receivedAt": "2026-09-13T10:00:20.000+09:00",
+        "event": {
+          "id": "synthetic-transcript",
+          "type": "transcripts-set",
+          "at": "2026-09-13T10:00:20.000+09:00",
+          "payload": {
+            "alternatives": [
+              "친구를 만나서 카페에 갔어요"
+            ],
+            "source": "human",
+            "confirmed": true,
+            "scopeConfirmed": true,
+            "exposureScopeConfirmed": true
+          }
+        }
+      },
+      {
+        "receivedAt": "2026-09-13T10:00:21.000+09:00",
+        "event": {
+          "id": "synthetic-conditions",
+          "type": "task-confirmed",
+          "at": "2026-09-13T10:00:21.000+09:00",
+          "payload": {
+            "roleConfirmed": true,
+            "pastIndependent": true,
+            "exposureScopeConfirmed": true
+          }
+        }
+      }
+    ]
+  },
+  "initiallyAccepted": {
+    "state": {
+      "schemaVersion": 1,
+      "id": "isolated-synthetic-p1-support",
+      "mode": "recording",
+      "exampleId": null,
+      "createdAt": "2026-09-13T09:58:00.000+09:00",
+      "revision": 3,
+      "task": {
+        "id": "controlled-friend-trip",
+        "prompt": "내가 친구를 만난 뒤 카페에 간 일을 말해 주세요. 화자는 행위자이고 친구는 만난 대상입니다.",
+        "supported": true,
+        "roleConfirmed": true,
+        "pastIndependent": true,
+        "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리"
+      },
+      "original": {
+        "id": "original",
+        "epoch": "e0",
+        "at": "2026-09-13T10:00:11.000+09:00",
+        "sequence": 1,
+        "audio": {
+          "audioRef": "synthetic-logical-audio-A-no-file-read",
+          "mimeType": "audio/wav",
+          "durationMs": 10000,
+          "fileName": null,
+          "acquisition": "microphone",
+          "attachedAt": "2026-09-13T10:00:11.000+09:00",
+          "captureStartedAt": "2026-09-13T10:00:00.000+09:00",
+          "captureEndedAt": "2026-09-13T10:00:10.000+09:00",
+          "recordedAt": "2026-09-13T01:00:00.000Z"
+        },
+        "alternatives": [
+          {
+            "text": "친구를 만나서 카페에 갔어요",
+            "source": "human"
+          }
+        ],
+        "source": "human",
+        "scopeConfirmed": true,
+        "humanConfirmed": true,
+        "machineAlternatives": [],
+        "exposureScopeConfirmed": true,
+        "helpIds": [],
+        "performanceTimeConfirmed": true,
+        "performanceTimeSource": "browser-recorder",
+        "performanceInterval": {
+          "startedAt": "2026-09-13T01:00:00.000Z",
+          "endedAt": "2026-09-13T01:00:10.000Z"
+        },
+        "performanceTimeConfirmedAt": "2026-09-13T10:00:11.000+09:00",
+        "performanceHelpIds": [],
+        "revisions": {
+          "audio": 1,
+          "transcript": 1,
+          "review": 0
+        },
+        "performanceRelation": null,
+        "syntheticEvidence": false
+      },
+      "responses": [],
+      "helpEvents": [],
+      "purpose": "original-performance",
+      "unknown": {
+        "enabled": false,
+        "kind": "all",
+        "reason": "해석에 영향을 주는 미확인 원인",
+        "scope": [
+          "all"
+        ]
+      },
+      "eventLog": [
+        {
+          "id": "synthetic-audio",
+          "type": "audio-attached",
+          "at": "2026-09-13T10:00:11.000+09:00",
+          "target": "original"
+        },
+        {
+          "id": "synthetic-transcript",
+          "type": "transcripts-set",
+          "at": "2026-09-13T10:00:20.000+09:00",
+          "target": "original"
+        },
+        {
+          "id": "synthetic-conditions",
+          "type": "task-confirmed",
+          "at": "2026-09-13T10:00:21.000+09:00",
+          "target": null
+        }
+      ],
+      "lastChange": {
+        "eventId": "synthetic-conditions",
+        "type": "task-confirmed",
+        "target": null
+      }
+    },
+    "cells": [
+      {
+        "id": "e0:asr",
+        "purpose": "asr-data",
+        "skill": "asr",
+        "status": "accepted",
+        "value": "친구를 만나서 카페에 갔어요",
+        "reasonCode": "invariant-and-eligible",
+        "assistance": "no-recorded-help",
+        "evidenceSource": "human",
+        "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+        "blockers": [],
+        "temporalEvidence": null
+      },
+      {
+        "id": "e0:object",
+        "purpose": "original-performance",
+        "skill": "object",
+        "status": "accepted",
+        "value": "명시된 역할 요구에 부합하는 사용 관측",
+        "reasonCode": "invariant-and-eligible",
+        "assistance": "no-recorded-help",
+        "evidenceSource": "human",
+        "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+        "blockers": [],
+        "temporalEvidence": []
+      },
+      {
+        "id": "e0:past",
+        "purpose": "original-performance",
+        "skill": "past",
+        "status": "accepted",
+        "value": "과거형 사용 관측",
+        "reasonCode": "invariant-and-eligible",
+        "assistance": "no-recorded-help",
+        "evidenceSource": "human",
+        "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+        "blockers": [],
+        "temporalEvidence": []
+      }
+    ],
+    "ledgerEntry": {
+      "schemaVersion": 1,
+      "engineKey": "cb63a2ad6a3de06cc831f18f6006755256cf950fd8139b5dfd73de795eeb0045",
+      "fromRevision": null,
+      "toRevision": 3,
+      "cause": {
+        "eventId": null,
+        "type": "baseline",
+        "at": "2026-09-13T09:58:00.000+09:00",
+        "eventSha256": null
+      },
+      "previousSha256": null,
+      "transitions": [
+        {
+          "cellId": "e0:asr",
+          "action": "added",
+          "changed": true,
+          "before": null,
+          "after": {
+            "cellId": "e0:asr",
+            "purpose": "asr-data",
+            "skill": "asr",
+            "epoch": "e0",
+            "evidenceEpoch": "e0",
+            "utteranceId": "original",
+            "status": "accepted",
+            "value": "친구를 만나서 카페에 갔어요",
+            "effectSet": [
+              "친구를 만나서 카페에 갔어요"
+            ],
+            "reasonCode": "invariant-and-eligible",
+            "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+            "dependencies": [
+              "original:audio",
+              "original:transcript",
+              "original:scope",
+              "unknown:asr"
+            ],
+            "evidenceSource": "human",
+            "assistance": "no-recorded-help",
+            "observedAt": "2026-09-13T01:00:00.000Z",
+            "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+            "receivedAt": "2026-09-13T10:00:11.000+09:00",
+            "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+            "synthetic": false,
+            "performanceTimeSource": "browser-recorder",
+            "witness": null,
+            "blockers": [],
+            "temporalEvidence": null
+          },
+          "withdrawnEffect": null,
+          "admittedEffect": "친구를 만나서 카페에 갔어요"
+        },
+        {
+          "cellId": "e0:object",
+          "action": "added",
+          "changed": true,
+          "before": null,
+          "after": {
+            "cellId": "e0:object",
+            "purpose": "original-performance",
+            "skill": "object",
+            "epoch": "e0",
+            "evidenceEpoch": "e0",
+            "utteranceId": "original",
+            "status": "accepted",
+            "value": "명시된 역할 요구에 부합하는 사용 관측",
+            "effectSet": [
+              "명시된 역할 요구에 부합하는 사용 관측"
+            ],
+            "reasonCode": "invariant-and-eligible",
+            "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+            "dependencies": [
+              "original:audio",
+              "original:object",
+              "original:scope",
+              "unknown:object",
+              "original:help",
+              "original:performance-time",
+              "original:exposure-scope",
+              "task:role"
+            ],
+            "evidenceSource": "human",
+            "assistance": "no-recorded-help",
+            "observedAt": "2026-09-13T01:00:00.000Z",
+            "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+            "receivedAt": "2026-09-13T10:00:11.000+09:00",
+            "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+            "synthetic": false,
+            "performanceTimeSource": "browser-recorder",
+            "witness": null,
+            "blockers": [],
+            "temporalEvidence": []
+          },
+          "withdrawnEffect": null,
+          "admittedEffect": "명시된 역할 요구에 부합하는 사용 관측"
+        },
+        {
+          "cellId": "e0:past",
+          "action": "added",
+          "changed": true,
+          "before": null,
+          "after": {
+            "cellId": "e0:past",
+            "purpose": "original-performance",
+            "skill": "past",
+            "epoch": "e0",
+            "evidenceEpoch": "e0",
+            "utteranceId": "original",
+            "status": "accepted",
+            "value": "과거형 사용 관측",
+            "effectSet": [
+              "과거형 사용 관측"
+            ],
+            "reasonCode": "invariant-and-eligible",
+            "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+            "dependencies": [
+              "original:audio",
+              "original:past",
+              "original:scope",
+              "unknown:past",
+              "original:help",
+              "original:performance-time",
+              "original:exposure-scope",
+              "task:past-independence"
+            ],
+            "evidenceSource": "human",
+            "assistance": "no-recorded-help",
+            "observedAt": "2026-09-13T01:00:00.000Z",
+            "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+            "receivedAt": "2026-09-13T10:00:11.000+09:00",
+            "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+            "synthetic": false,
+            "performanceTimeSource": "browser-recorder",
+            "witness": null,
+            "blockers": [],
+            "temporalEvidence": []
+          },
+          "withdrawnEffect": null,
+          "admittedEffect": "과거형 사용 관측"
+        }
+      ],
+      "summary": {
+        "added": 3,
+        "retained": 0,
+        "withdrawn": 0,
+        "replaced": 0,
+        "held": 0,
+        "excluded": 0,
+        "removed": 0
+      },
+      "cellsSha256": "91a7d1783b45643c21968d6f5282668792f30a42a05d53db1b324c37163f6d39",
+      "baselineState": {
+        "schemaVersion": 1,
+        "id": "isolated-synthetic-p1-support",
+        "mode": "recording",
+        "exampleId": null,
+        "createdAt": "2026-09-13T09:58:00.000+09:00",
+        "revision": 3,
+        "task": {
+          "id": "controlled-friend-trip",
+          "prompt": "내가 친구를 만난 뒤 카페에 간 일을 말해 주세요. 화자는 행위자이고 친구는 만난 대상입니다.",
+          "supported": true,
+          "roleConfirmed": true,
+          "pastIndependent": true,
+          "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리"
+        },
+        "original": {
+          "id": "original",
+          "epoch": "e0",
+          "at": "2026-09-13T10:00:11.000+09:00",
+          "sequence": 1,
+          "audio": {
+            "audioRef": "synthetic-logical-audio-A-no-file-read",
+            "mimeType": "audio/wav",
+            "durationMs": 10000,
+            "fileName": null,
+            "acquisition": "microphone",
+            "attachedAt": "2026-09-13T10:00:11.000+09:00",
+            "captureStartedAt": "2026-09-13T10:00:00.000+09:00",
+            "captureEndedAt": "2026-09-13T10:00:10.000+09:00",
+            "recordedAt": "2026-09-13T01:00:00.000Z"
+          },
+          "alternatives": [
+            {
+              "text": "친구를 만나서 카페에 갔어요",
+              "source": "human"
+            }
+          ],
+          "source": "human",
+          "scopeConfirmed": true,
+          "humanConfirmed": true,
+          "machineAlternatives": [],
+          "exposureScopeConfirmed": true,
+          "helpIds": [],
+          "performanceTimeConfirmed": true,
+          "performanceTimeSource": "browser-recorder",
+          "performanceInterval": {
+            "startedAt": "2026-09-13T01:00:00.000Z",
+            "endedAt": "2026-09-13T01:00:10.000Z"
+          },
+          "performanceTimeConfirmedAt": "2026-09-13T10:00:11.000+09:00",
+          "performanceHelpIds": [],
+          "revisions": {
+            "audio": 1,
+            "transcript": 1,
+            "review": 0
+          },
+          "performanceRelation": null,
+          "syntheticEvidence": false
+        },
+        "responses": [],
+        "helpEvents": [],
+        "purpose": "original-performance",
+        "unknown": {
+          "enabled": false,
+          "kind": "all",
+          "reason": "해석에 영향을 주는 미확인 원인",
+          "scope": [
+            "all"
+          ]
+        },
+        "eventLog": [
+          {
+            "id": "synthetic-audio",
+            "type": "audio-attached",
+            "at": "2026-09-13T10:00:11.000+09:00",
+            "target": "original"
+          },
+          {
+            "id": "synthetic-transcript",
+            "type": "transcripts-set",
+            "at": "2026-09-13T10:00:20.000+09:00",
+            "target": "original"
+          },
+          {
+            "id": "synthetic-conditions",
+            "type": "task-confirmed",
+            "at": "2026-09-13T10:00:21.000+09:00",
+            "target": null
+          }
+        ],
+        "lastChange": {
+          "eventId": "synthetic-conditions",
+          "type": "task-confirmed",
+          "target": null
+        }
+      },
+      "sha256": "75285322387e999d3b49983bcfc8a8b1dadf3c3c02640cf363b48c1b418b79c3"
+    }
+  },
+  "cases": [
+    {
+      "id": "A",
+      "description": "발화 전 조사 도움 + 과거형 독립 확인 참",
+      "inputEventsAfterBaseline": [
+        {
+          "receivedAt": "2026-09-13T10:05:00.000+09:00",
+          "event": {
+            "id": "late-pre-capture-object-help",
+            "type": "help-presented",
+            "at": "2026-09-13T09:59:30.000+09:00",
+            "payload": {
+              "text": "친구를",
+              "skills": [
+                "object"
+              ],
+              "exposesAnswer": true
+            }
+          }
+        }
+      ],
+      "finalRevision": 4,
+      "finalConditions": {
+        "exposureScopeConfirmed": true,
+        "pastIndependent": true,
+        "roleConfirmed": true
+      },
+      "cells": [
+        {
+          "id": "e0:asr",
+          "purpose": "asr-data",
+          "skill": "asr",
+          "status": "accepted",
+          "value": "친구를 만나서 카페에 갔어요",
+          "reasonCode": "invariant-and-eligible",
+          "assistance": "after-help",
+          "evidenceSource": "human",
+          "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+          "blockers": [],
+          "temporalEvidence": null
+        },
+        {
+          "id": "e0:object",
+          "purpose": "original-performance",
+          "skill": "object",
+          "status": "excluded",
+          "value": null,
+          "reasonCode": "original-was-assisted",
+          "assistance": "after-help",
+          "evidenceSource": "human",
+          "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+          "blockers": [
+            {
+              "id": "original:object:original-was-assisted",
+              "code": "original-was-assisted",
+              "status": "excluded"
+            }
+          ],
+          "temporalEvidence": [
+            {
+              "helpId": "late-pre-capture-object-help",
+              "relation": "before",
+              "reasonCode": "help-certainly-before",
+              "helpBounds": {
+                "earliestAt": "2026-09-13T00:59:30.000Z",
+                "latestAt": "2026-09-13T00:59:30.000Z",
+                "basis": "event-timestamp",
+                "sourceRef": "late-pre-capture-object-help"
+              },
+              "performanceBounds": {
+                "startedAt": "2026-09-13T01:00:00.000Z",
+                "endedAt": "2026-09-13T01:00:10.000Z",
+                "basis": "browser-recorder",
+                "sourceRef": "original"
+              },
+              "comparisons": {
+                "latestHelpBeforeStart": true,
+                "earliestHelpAfterEnd": false,
+                "allHelpInsideCapture": false,
+                "latestHelpMinusStartMs": -30000,
+                "earliestHelpMinusEndMs": -40000
+              }
+            }
+          ]
+        },
+        {
+          "id": "e0:past",
+          "purpose": "original-performance",
+          "skill": "past",
+          "status": "accepted",
+          "value": "과거형 사용 관측",
+          "reasonCode": "invariant-and-eligible",
+          "assistance": "no-recorded-help",
+          "evidenceSource": "human",
+          "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+          "blockers": [],
+          "temporalEvidence": []
+        }
+      ],
+      "actualImmediateTransition": {
+        "fromRevision": 3,
+        "toRevision": 4,
+        "causeEventId": "late-pre-capture-object-help",
+        "transitions": [
+          {
+            "cellId": "e0:asr",
+            "action": "retained",
+            "changed": true,
+            "before": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "after": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "withdrawnEffect": null,
+            "admittedEffect": null
+          },
+          {
+            "cellId": "e0:object",
+            "action": "withdrawn",
+            "changed": true,
+            "before": {
+              "status": "accepted",
+              "value": "명시된 역할 요구에 부합하는 사용 관측",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "after": {
+              "status": "excluded",
+              "value": null,
+              "reasonCode": "original-was-assisted"
+            },
+            "withdrawnEffect": "명시된 역할 요구에 부합하는 사용 관측",
+            "admittedEffect": null
+          },
+          {
+            "cellId": "e0:past",
+            "action": "retained",
+            "changed": false,
+            "before": {
+              "status": "accepted",
+              "value": "과거형 사용 관측",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "after": {
+              "status": "accepted",
+              "value": "과거형 사용 관측",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "withdrawnEffect": null,
+            "admittedEffect": null
+          }
+        ]
+      },
+      "netComparisonWithInitiallyAccepted": {
+        "scope": "Comparison only; not a single-event ledger or attribution of every withdrawal to the last event.",
+        "cells": [
+          {
+            "cellId": "e0:asr",
+            "initially": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요"
+            },
+            "finally": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요"
+            },
+            "initialContributionStillPresent": true,
+            "initialContributionNoLongerPresent": false
+          },
+          {
+            "cellId": "e0:object",
+            "initially": {
+              "status": "accepted",
+              "value": "명시된 역할 요구에 부합하는 사용 관측"
+            },
+            "finally": {
+              "status": "excluded",
+              "value": null
+            },
+            "initialContributionStillPresent": false,
+            "initialContributionNoLongerPresent": true
+          },
+          {
+            "cellId": "e0:past",
+            "initially": {
+              "status": "accepted",
+              "value": "과거형 사용 관측"
+            },
+            "finally": {
+              "status": "accepted",
+              "value": "과거형 사용 관측"
+            },
+            "initialContributionStillPresent": true,
+            "initialContributionNoLongerPresent": false
+          }
+        ]
+      },
+      "ledgerEntriesAfterBaseline": [
+        {
+          "schemaVersion": 1,
+          "engineKey": "cb63a2ad6a3de06cc831f18f6006755256cf950fd8139b5dfd73de795eeb0045",
+          "fromRevision": 3,
+          "toRevision": 4,
+          "cause": {
+            "eventId": "late-pre-capture-object-help",
+            "type": "help-presented",
+            "at": "2026-09-13T09:59:30.000+09:00",
+            "eventSha256": "80a869ca8655e667450258221d71f5ed75d9cd8f4920aebe38a504ec0ebc23d6"
+          },
+          "previousSha256": "75285322387e999d3b49983bcfc8a8b1dadf3c3c02640cf363b48c1b418b79c3",
+          "transitions": [
+            {
+              "cellId": "e0:asr",
+              "action": "retained",
+              "changed": true,
+              "before": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "after": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:object",
+              "action": "withdrawn",
+              "changed": true,
+              "before": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "명시된 역할 요구에 부합하는 사용 관측",
+                "effectSet": [
+                  "명시된 역할 요구에 부합하는 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "after": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "excluded",
+                "value": null,
+                "effectSet": [],
+                "reasonCode": "original-was-assisted",
+                "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [
+                  {
+                    "id": "original:object:original-was-assisted",
+                    "code": "original-was-assisted",
+                    "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                    "status": "excluded"
+                  }
+                ],
+                "temporalEvidence": [
+                  {
+                    "helpId": "late-pre-capture-object-help",
+                    "relation": "before",
+                    "reasonCode": "help-certainly-before",
+                    "helpBounds": {
+                      "earliestAt": "2026-09-13T00:59:30.000Z",
+                      "latestAt": "2026-09-13T00:59:30.000Z",
+                      "basis": "event-timestamp",
+                      "sourceRef": "late-pre-capture-object-help"
+                    },
+                    "performanceBounds": {
+                      "startedAt": "2026-09-13T01:00:00.000Z",
+                      "endedAt": "2026-09-13T01:00:10.000Z",
+                      "basis": "browser-recorder",
+                      "sourceRef": "original"
+                    },
+                    "comparisons": {
+                      "latestHelpBeforeStart": true,
+                      "earliestHelpAfterEnd": false,
+                      "allHelpInsideCapture": false,
+                      "latestHelpMinusStartMs": -30000,
+                      "earliestHelpMinusEndMs": -40000
+                    }
+                  }
+                ]
+              },
+              "withdrawnEffect": "명시된 역할 요구에 부합하는 사용 관측",
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:past",
+              "action": "retained",
+              "changed": false,
+              "before": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "과거형 사용 관측",
+                "effectSet": [
+                  "과거형 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "after": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "과거형 사용 관측",
+                "effectSet": [
+                  "과거형 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            }
+          ],
+          "summary": {
+            "added": 0,
+            "retained": 2,
+            "withdrawn": 1,
+            "replaced": 0,
+            "held": 0,
+            "excluded": 0,
+            "removed": 0
+          },
+          "cellsSha256": "0fca4498a3297e078affa461abdd1e168812bfa27031ec3354c9c479739c3c9d",
+          "sha256": "7bc6528bb9b527d585cc2bbc69a98eca786e050ff7125893263a6ea762419c3b"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "description": "A에서 도움 관측 범위 확인값만 거짓으로 변경",
+      "inputEventsAfterBaseline": [
+        {
+          "receivedAt": "2026-09-13T10:05:00.000+09:00",
+          "event": {
+            "id": "late-pre-capture-object-help",
+            "type": "help-presented",
+            "at": "2026-09-13T09:59:30.000+09:00",
+            "payload": {
+              "text": "친구를",
+              "skills": [
+                "object"
+              ],
+              "exposesAnswer": true
+            }
+          }
+        },
+        {
+          "receivedAt": "2026-09-13T10:06:00.000+09:00",
+          "event": {
+            "id": "mark-exposure-scope-unconfirmed",
+            "type": "task-confirmed",
+            "at": "2026-09-13T10:06:00.000+09:00",
+            "payload": {
+              "exposureScopeConfirmed": false
+            }
+          }
+        }
+      ],
+      "finalRevision": 5,
+      "finalConditions": {
+        "exposureScopeConfirmed": false,
+        "pastIndependent": true,
+        "roleConfirmed": true
+      },
+      "cells": [
+        {
+          "id": "e0:asr",
+          "purpose": "asr-data",
+          "skill": "asr",
+          "status": "accepted",
+          "value": "친구를 만나서 카페에 갔어요",
+          "reasonCode": "invariant-and-eligible",
+          "assistance": "after-help",
+          "evidenceSource": "human",
+          "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+          "blockers": [],
+          "temporalEvidence": null
+        },
+        {
+          "id": "e0:object",
+          "purpose": "original-performance",
+          "skill": "object",
+          "status": "held",
+          "value": null,
+          "reasonCode": "exposure-scope-unconfirmed",
+          "assistance": "after-help",
+          "evidenceSource": "human",
+          "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+          "blockers": [
+            {
+              "id": "original:exposure-scope-unconfirmed",
+              "code": "exposure-scope-unconfirmed",
+              "status": "held"
+            },
+            {
+              "id": "original:object:original-was-assisted",
+              "code": "original-was-assisted",
+              "status": "excluded"
+            }
+          ],
+          "temporalEvidence": [
+            {
+              "helpId": "late-pre-capture-object-help",
+              "relation": "before",
+              "reasonCode": "help-certainly-before",
+              "helpBounds": {
+                "earliestAt": "2026-09-13T00:59:30.000Z",
+                "latestAt": "2026-09-13T00:59:30.000Z",
+                "basis": "event-timestamp",
+                "sourceRef": "late-pre-capture-object-help"
+              },
+              "performanceBounds": {
+                "startedAt": "2026-09-13T01:00:00.000Z",
+                "endedAt": "2026-09-13T01:00:10.000Z",
+                "basis": "browser-recorder",
+                "sourceRef": "original"
+              },
+              "comparisons": {
+                "latestHelpBeforeStart": true,
+                "earliestHelpAfterEnd": false,
+                "allHelpInsideCapture": false,
+                "latestHelpMinusStartMs": -30000,
+                "earliestHelpMinusEndMs": -40000
+              }
+            }
+          ]
+        },
+        {
+          "id": "e0:past",
+          "purpose": "original-performance",
+          "skill": "past",
+          "status": "held",
+          "value": null,
+          "reasonCode": "exposure-scope-unconfirmed",
+          "assistance": "no-recorded-help",
+          "evidenceSource": "human",
+          "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+          "blockers": [
+            {
+              "id": "original:exposure-scope-unconfirmed",
+              "code": "exposure-scope-unconfirmed",
+              "status": "held"
+            }
+          ],
+          "temporalEvidence": []
+        }
+      ],
+      "actualImmediateTransition": {
+        "fromRevision": 4,
+        "toRevision": 5,
+        "causeEventId": "mark-exposure-scope-unconfirmed",
+        "transitions": [
+          {
+            "cellId": "e0:asr",
+            "action": "retained",
+            "changed": false,
+            "before": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "after": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "withdrawnEffect": null,
+            "admittedEffect": null
+          },
+          {
+            "cellId": "e0:object",
+            "action": "held",
+            "changed": true,
+            "before": {
+              "status": "excluded",
+              "value": null,
+              "reasonCode": "original-was-assisted"
+            },
+            "after": {
+              "status": "held",
+              "value": null,
+              "reasonCode": "exposure-scope-unconfirmed"
+            },
+            "withdrawnEffect": null,
+            "admittedEffect": null
+          },
+          {
+            "cellId": "e0:past",
+            "action": "withdrawn",
+            "changed": true,
+            "before": {
+              "status": "accepted",
+              "value": "과거형 사용 관측",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "after": {
+              "status": "held",
+              "value": null,
+              "reasonCode": "exposure-scope-unconfirmed"
+            },
+            "withdrawnEffect": "과거형 사용 관측",
+            "admittedEffect": null
+          }
+        ]
+      },
+      "netComparisonWithInitiallyAccepted": {
+        "scope": "Comparison only; not a single-event ledger or attribution of every withdrawal to the last event.",
+        "cells": [
+          {
+            "cellId": "e0:asr",
+            "initially": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요"
+            },
+            "finally": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요"
+            },
+            "initialContributionStillPresent": true,
+            "initialContributionNoLongerPresent": false
+          },
+          {
+            "cellId": "e0:object",
+            "initially": {
+              "status": "accepted",
+              "value": "명시된 역할 요구에 부합하는 사용 관측"
+            },
+            "finally": {
+              "status": "held",
+              "value": null
+            },
+            "initialContributionStillPresent": false,
+            "initialContributionNoLongerPresent": true
+          },
+          {
+            "cellId": "e0:past",
+            "initially": {
+              "status": "accepted",
+              "value": "과거형 사용 관측"
+            },
+            "finally": {
+              "status": "held",
+              "value": null
+            },
+            "initialContributionStillPresent": false,
+            "initialContributionNoLongerPresent": true
+          }
+        ]
+      },
+      "ledgerEntriesAfterBaseline": [
+        {
+          "schemaVersion": 1,
+          "engineKey": "cb63a2ad6a3de06cc831f18f6006755256cf950fd8139b5dfd73de795eeb0045",
+          "fromRevision": 3,
+          "toRevision": 4,
+          "cause": {
+            "eventId": "late-pre-capture-object-help",
+            "type": "help-presented",
+            "at": "2026-09-13T09:59:30.000+09:00",
+            "eventSha256": "80a869ca8655e667450258221d71f5ed75d9cd8f4920aebe38a504ec0ebc23d6"
+          },
+          "previousSha256": "75285322387e999d3b49983bcfc8a8b1dadf3c3c02640cf363b48c1b418b79c3",
+          "transitions": [
+            {
+              "cellId": "e0:asr",
+              "action": "retained",
+              "changed": true,
+              "before": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "after": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:object",
+              "action": "withdrawn",
+              "changed": true,
+              "before": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "명시된 역할 요구에 부합하는 사용 관측",
+                "effectSet": [
+                  "명시된 역할 요구에 부합하는 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "after": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "excluded",
+                "value": null,
+                "effectSet": [],
+                "reasonCode": "original-was-assisted",
+                "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [
+                  {
+                    "id": "original:object:original-was-assisted",
+                    "code": "original-was-assisted",
+                    "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                    "status": "excluded"
+                  }
+                ],
+                "temporalEvidence": [
+                  {
+                    "helpId": "late-pre-capture-object-help",
+                    "relation": "before",
+                    "reasonCode": "help-certainly-before",
+                    "helpBounds": {
+                      "earliestAt": "2026-09-13T00:59:30.000Z",
+                      "latestAt": "2026-09-13T00:59:30.000Z",
+                      "basis": "event-timestamp",
+                      "sourceRef": "late-pre-capture-object-help"
+                    },
+                    "performanceBounds": {
+                      "startedAt": "2026-09-13T01:00:00.000Z",
+                      "endedAt": "2026-09-13T01:00:10.000Z",
+                      "basis": "browser-recorder",
+                      "sourceRef": "original"
+                    },
+                    "comparisons": {
+                      "latestHelpBeforeStart": true,
+                      "earliestHelpAfterEnd": false,
+                      "allHelpInsideCapture": false,
+                      "latestHelpMinusStartMs": -30000,
+                      "earliestHelpMinusEndMs": -40000
+                    }
+                  }
+                ]
+              },
+              "withdrawnEffect": "명시된 역할 요구에 부합하는 사용 관측",
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:past",
+              "action": "retained",
+              "changed": false,
+              "before": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "과거형 사용 관측",
+                "effectSet": [
+                  "과거형 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "after": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "과거형 사용 관측",
+                "effectSet": [
+                  "과거형 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            }
+          ],
+          "summary": {
+            "added": 0,
+            "retained": 2,
+            "withdrawn": 1,
+            "replaced": 0,
+            "held": 0,
+            "excluded": 0,
+            "removed": 0
+          },
+          "cellsSha256": "0fca4498a3297e078affa461abdd1e168812bfa27031ec3354c9c479739c3c9d",
+          "sha256": "7bc6528bb9b527d585cc2bbc69a98eca786e050ff7125893263a6ea762419c3b"
+        },
+        {
+          "schemaVersion": 1,
+          "engineKey": "cb63a2ad6a3de06cc831f18f6006755256cf950fd8139b5dfd73de795eeb0045",
+          "fromRevision": 4,
+          "toRevision": 5,
+          "cause": {
+            "eventId": "mark-exposure-scope-unconfirmed",
+            "type": "task-confirmed",
+            "at": "2026-09-13T10:06:00.000+09:00",
+            "eventSha256": "f15786dd6cb4cf5c4619d7daa2a848262e8e40a1b565a273d4db15eeeea166b6"
+          },
+          "previousSha256": "7bc6528bb9b527d585cc2bbc69a98eca786e050ff7125893263a6ea762419c3b",
+          "transitions": [
+            {
+              "cellId": "e0:asr",
+              "action": "retained",
+              "changed": false,
+              "before": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "after": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:object",
+              "action": "held",
+              "changed": true,
+              "before": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "excluded",
+                "value": null,
+                "effectSet": [],
+                "reasonCode": "original-was-assisted",
+                "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [
+                  {
+                    "id": "original:object:original-was-assisted",
+                    "code": "original-was-assisted",
+                    "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                    "status": "excluded"
+                  }
+                ],
+                "temporalEvidence": [
+                  {
+                    "helpId": "late-pre-capture-object-help",
+                    "relation": "before",
+                    "reasonCode": "help-certainly-before",
+                    "helpBounds": {
+                      "earliestAt": "2026-09-13T00:59:30.000Z",
+                      "latestAt": "2026-09-13T00:59:30.000Z",
+                      "basis": "event-timestamp",
+                      "sourceRef": "late-pre-capture-object-help"
+                    },
+                    "performanceBounds": {
+                      "startedAt": "2026-09-13T01:00:00.000Z",
+                      "endedAt": "2026-09-13T01:00:10.000Z",
+                      "basis": "browser-recorder",
+                      "sourceRef": "original"
+                    },
+                    "comparisons": {
+                      "latestHelpBeforeStart": true,
+                      "earliestHelpAfterEnd": false,
+                      "allHelpInsideCapture": false,
+                      "latestHelpMinusStartMs": -30000,
+                      "earliestHelpMinusEndMs": -40000
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "held",
+                "value": null,
+                "effectSet": [],
+                "reasonCode": "exposure-scope-unconfirmed",
+                "reason": "이 시점의 앱 내 도움 관측 범위를 확인해야 합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [
+                  {
+                    "id": "original:exposure-scope-unconfirmed",
+                    "code": "exposure-scope-unconfirmed",
+                    "reason": "이 시점의 앱 내 도움 관측 범위를 확인해야 합니다.",
+                    "status": "held"
+                  },
+                  {
+                    "id": "original:object:original-was-assisted",
+                    "code": "original-was-assisted",
+                    "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                    "status": "excluded"
+                  }
+                ],
+                "temporalEvidence": [
+                  {
+                    "helpId": "late-pre-capture-object-help",
+                    "relation": "before",
+                    "reasonCode": "help-certainly-before",
+                    "helpBounds": {
+                      "earliestAt": "2026-09-13T00:59:30.000Z",
+                      "latestAt": "2026-09-13T00:59:30.000Z",
+                      "basis": "event-timestamp",
+                      "sourceRef": "late-pre-capture-object-help"
+                    },
+                    "performanceBounds": {
+                      "startedAt": "2026-09-13T01:00:00.000Z",
+                      "endedAt": "2026-09-13T01:00:10.000Z",
+                      "basis": "browser-recorder",
+                      "sourceRef": "original"
+                    },
+                    "comparisons": {
+                      "latestHelpBeforeStart": true,
+                      "earliestHelpAfterEnd": false,
+                      "allHelpInsideCapture": false,
+                      "latestHelpMinusStartMs": -30000,
+                      "earliestHelpMinusEndMs": -40000
+                    }
+                  }
+                ]
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:past",
+              "action": "withdrawn",
+              "changed": true,
+              "before": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "과거형 사용 관측",
+                "effectSet": [
+                  "과거형 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "after": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "held",
+                "value": null,
+                "effectSet": [],
+                "reasonCode": "exposure-scope-unconfirmed",
+                "reason": "이 시점의 앱 내 도움 관측 범위를 확인해야 합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [
+                  {
+                    "id": "original:exposure-scope-unconfirmed",
+                    "code": "exposure-scope-unconfirmed",
+                    "reason": "이 시점의 앱 내 도움 관측 범위를 확인해야 합니다.",
+                    "status": "held"
+                  }
+                ],
+                "temporalEvidence": []
+              },
+              "withdrawnEffect": "과거형 사용 관측",
+              "admittedEffect": null
+            }
+          ],
+          "summary": {
+            "added": 0,
+            "retained": 1,
+            "withdrawn": 1,
+            "replaced": 0,
+            "held": 1,
+            "excluded": 0,
+            "removed": 0
+          },
+          "cellsSha256": "3278353313d4fb6a18efc995bfb7aca6dd7fe64f9329749d357b6b31c1c4fd4c",
+          "sha256": "ef4d9488f3f0622654f7b418aea97134afb0234b5850eb7ad3ecf01e2fc8f5a2"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "description": "A에서 과거형 독립 확인값만 거짓으로 변경",
+      "inputEventsAfterBaseline": [
+        {
+          "receivedAt": "2026-09-13T10:05:00.000+09:00",
+          "event": {
+            "id": "late-pre-capture-object-help",
+            "type": "help-presented",
+            "at": "2026-09-13T09:59:30.000+09:00",
+            "payload": {
+              "text": "친구를",
+              "skills": [
+                "object"
+              ],
+              "exposesAnswer": true
+            }
+          }
+        },
+        {
+          "receivedAt": "2026-09-13T10:06:00.000+09:00",
+          "event": {
+            "id": "mark-past-independence-unconfirmed",
+            "type": "task-confirmed",
+            "at": "2026-09-13T10:06:00.000+09:00",
+            "payload": {
+              "pastIndependent": false
+            }
+          }
+        }
+      ],
+      "finalRevision": 5,
+      "finalConditions": {
+        "exposureScopeConfirmed": true,
+        "pastIndependent": false,
+        "roleConfirmed": true
+      },
+      "cells": [
+        {
+          "id": "e0:asr",
+          "purpose": "asr-data",
+          "skill": "asr",
+          "status": "accepted",
+          "value": "친구를 만나서 카페에 갔어요",
+          "reasonCode": "invariant-and-eligible",
+          "assistance": "after-help",
+          "evidenceSource": "human",
+          "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+          "blockers": [],
+          "temporalEvidence": null
+        },
+        {
+          "id": "e0:object",
+          "purpose": "original-performance",
+          "skill": "object",
+          "status": "excluded",
+          "value": null,
+          "reasonCode": "original-was-assisted",
+          "assistance": "after-help",
+          "evidenceSource": "human",
+          "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+          "blockers": [
+            {
+              "id": "original:object:original-was-assisted",
+              "code": "original-was-assisted",
+              "status": "excluded"
+            }
+          ],
+          "temporalEvidence": [
+            {
+              "helpId": "late-pre-capture-object-help",
+              "relation": "before",
+              "reasonCode": "help-certainly-before",
+              "helpBounds": {
+                "earliestAt": "2026-09-13T00:59:30.000Z",
+                "latestAt": "2026-09-13T00:59:30.000Z",
+                "basis": "event-timestamp",
+                "sourceRef": "late-pre-capture-object-help"
+              },
+              "performanceBounds": {
+                "startedAt": "2026-09-13T01:00:00.000Z",
+                "endedAt": "2026-09-13T01:00:10.000Z",
+                "basis": "browser-recorder",
+                "sourceRef": "original"
+              },
+              "comparisons": {
+                "latestHelpBeforeStart": true,
+                "earliestHelpAfterEnd": false,
+                "allHelpInsideCapture": false,
+                "latestHelpMinusStartMs": -30000,
+                "earliestHelpMinusEndMs": -40000
+              }
+            }
+          ]
+        },
+        {
+          "id": "e0:past",
+          "purpose": "original-performance",
+          "skill": "past",
+          "status": "held",
+          "value": null,
+          "reasonCode": "independence-unconfirmed",
+          "assistance": "no-recorded-help",
+          "evidenceSource": "human",
+          "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+          "blockers": [
+            {
+              "id": "task:independence-unconfirmed",
+              "code": "independence-unconfirmed",
+              "status": "held"
+            }
+          ],
+          "temporalEvidence": []
+        }
+      ],
+      "actualImmediateTransition": {
+        "fromRevision": 4,
+        "toRevision": 5,
+        "causeEventId": "mark-past-independence-unconfirmed",
+        "transitions": [
+          {
+            "cellId": "e0:asr",
+            "action": "retained",
+            "changed": false,
+            "before": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "after": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "withdrawnEffect": null,
+            "admittedEffect": null
+          },
+          {
+            "cellId": "e0:object",
+            "action": "excluded",
+            "changed": false,
+            "before": {
+              "status": "excluded",
+              "value": null,
+              "reasonCode": "original-was-assisted"
+            },
+            "after": {
+              "status": "excluded",
+              "value": null,
+              "reasonCode": "original-was-assisted"
+            },
+            "withdrawnEffect": null,
+            "admittedEffect": null
+          },
+          {
+            "cellId": "e0:past",
+            "action": "withdrawn",
+            "changed": true,
+            "before": {
+              "status": "accepted",
+              "value": "과거형 사용 관측",
+              "reasonCode": "invariant-and-eligible"
+            },
+            "after": {
+              "status": "held",
+              "value": null,
+              "reasonCode": "independence-unconfirmed"
+            },
+            "withdrawnEffect": "과거형 사용 관측",
+            "admittedEffect": null
+          }
+        ]
+      },
+      "netComparisonWithInitiallyAccepted": {
+        "scope": "Comparison only; not a single-event ledger or attribution of every withdrawal to the last event.",
+        "cells": [
+          {
+            "cellId": "e0:asr",
+            "initially": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요"
+            },
+            "finally": {
+              "status": "accepted",
+              "value": "친구를 만나서 카페에 갔어요"
+            },
+            "initialContributionStillPresent": true,
+            "initialContributionNoLongerPresent": false
+          },
+          {
+            "cellId": "e0:object",
+            "initially": {
+              "status": "accepted",
+              "value": "명시된 역할 요구에 부합하는 사용 관측"
+            },
+            "finally": {
+              "status": "excluded",
+              "value": null
+            },
+            "initialContributionStillPresent": false,
+            "initialContributionNoLongerPresent": true
+          },
+          {
+            "cellId": "e0:past",
+            "initially": {
+              "status": "accepted",
+              "value": "과거형 사용 관측"
+            },
+            "finally": {
+              "status": "held",
+              "value": null
+            },
+            "initialContributionStillPresent": false,
+            "initialContributionNoLongerPresent": true
+          }
+        ]
+      },
+      "ledgerEntriesAfterBaseline": [
+        {
+          "schemaVersion": 1,
+          "engineKey": "cb63a2ad6a3de06cc831f18f6006755256cf950fd8139b5dfd73de795eeb0045",
+          "fromRevision": 3,
+          "toRevision": 4,
+          "cause": {
+            "eventId": "late-pre-capture-object-help",
+            "type": "help-presented",
+            "at": "2026-09-13T09:59:30.000+09:00",
+            "eventSha256": "80a869ca8655e667450258221d71f5ed75d9cd8f4920aebe38a504ec0ebc23d6"
+          },
+          "previousSha256": "75285322387e999d3b49983bcfc8a8b1dadf3c3c02640cf363b48c1b418b79c3",
+          "transitions": [
+            {
+              "cellId": "e0:asr",
+              "action": "retained",
+              "changed": true,
+              "before": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "after": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:object",
+              "action": "withdrawn",
+              "changed": true,
+              "before": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "명시된 역할 요구에 부합하는 사용 관측",
+                "effectSet": [
+                  "명시된 역할 요구에 부합하는 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "after": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "excluded",
+                "value": null,
+                "effectSet": [],
+                "reasonCode": "original-was-assisted",
+                "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [
+                  {
+                    "id": "original:object:original-was-assisted",
+                    "code": "original-was-assisted",
+                    "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                    "status": "excluded"
+                  }
+                ],
+                "temporalEvidence": [
+                  {
+                    "helpId": "late-pre-capture-object-help",
+                    "relation": "before",
+                    "reasonCode": "help-certainly-before",
+                    "helpBounds": {
+                      "earliestAt": "2026-09-13T00:59:30.000Z",
+                      "latestAt": "2026-09-13T00:59:30.000Z",
+                      "basis": "event-timestamp",
+                      "sourceRef": "late-pre-capture-object-help"
+                    },
+                    "performanceBounds": {
+                      "startedAt": "2026-09-13T01:00:00.000Z",
+                      "endedAt": "2026-09-13T01:00:10.000Z",
+                      "basis": "browser-recorder",
+                      "sourceRef": "original"
+                    },
+                    "comparisons": {
+                      "latestHelpBeforeStart": true,
+                      "earliestHelpAfterEnd": false,
+                      "allHelpInsideCapture": false,
+                      "latestHelpMinusStartMs": -30000,
+                      "earliestHelpMinusEndMs": -40000
+                    }
+                  }
+                ]
+              },
+              "withdrawnEffect": "명시된 역할 요구에 부합하는 사용 관측",
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:past",
+              "action": "retained",
+              "changed": false,
+              "before": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "과거형 사용 관측",
+                "effectSet": [
+                  "과거형 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "after": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "과거형 사용 관측",
+                "effectSet": [
+                  "과거형 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            }
+          ],
+          "summary": {
+            "added": 0,
+            "retained": 2,
+            "withdrawn": 1,
+            "replaced": 0,
+            "held": 0,
+            "excluded": 0,
+            "removed": 0
+          },
+          "cellsSha256": "0fca4498a3297e078affa461abdd1e168812bfa27031ec3354c9c479739c3c9d",
+          "sha256": "7bc6528bb9b527d585cc2bbc69a98eca786e050ff7125893263a6ea762419c3b"
+        },
+        {
+          "schemaVersion": 1,
+          "engineKey": "cb63a2ad6a3de06cc831f18f6006755256cf950fd8139b5dfd73de795eeb0045",
+          "fromRevision": 4,
+          "toRevision": 5,
+          "cause": {
+            "eventId": "mark-past-independence-unconfirmed",
+            "type": "task-confirmed",
+            "at": "2026-09-13T10:06:00.000+09:00",
+            "eventSha256": "77f85efaf23c34e479b066817d68e8f76be4e24891678c67918a524e075e09f6"
+          },
+          "previousSha256": "7bc6528bb9b527d585cc2bbc69a98eca786e050ff7125893263a6ea762419c3b",
+          "transitions": [
+            {
+              "cellId": "e0:asr",
+              "action": "retained",
+              "changed": false,
+              "before": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "after": {
+                "cellId": "e0:asr",
+                "purpose": "asr-data",
+                "skill": "asr",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "친구를 만나서 카페에 갔어요",
+                "effectSet": [
+                  "친구를 만나서 카페에 갔어요"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "이 원음의 전사와 관련 범위를 확인했습니다. 도움 여부와 별개로 음성 자료의 자격을 판단합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:transcript",
+                  "original:scope",
+                  "unknown:asr"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": null
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:object",
+              "action": "excluded",
+              "changed": false,
+              "before": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "excluded",
+                "value": null,
+                "effectSet": [],
+                "reasonCode": "original-was-assisted",
+                "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [
+                  {
+                    "id": "original:object:original-was-assisted",
+                    "code": "original-was-assisted",
+                    "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                    "status": "excluded"
+                  }
+                ],
+                "temporalEvidence": [
+                  {
+                    "helpId": "late-pre-capture-object-help",
+                    "relation": "before",
+                    "reasonCode": "help-certainly-before",
+                    "helpBounds": {
+                      "earliestAt": "2026-09-13T00:59:30.000Z",
+                      "latestAt": "2026-09-13T00:59:30.000Z",
+                      "basis": "event-timestamp",
+                      "sourceRef": "late-pre-capture-object-help"
+                    },
+                    "performanceBounds": {
+                      "startedAt": "2026-09-13T01:00:00.000Z",
+                      "endedAt": "2026-09-13T01:00:10.000Z",
+                      "basis": "browser-recorder",
+                      "sourceRef": "original"
+                    },
+                    "comparisons": {
+                      "latestHelpBeforeStart": true,
+                      "earliestHelpAfterEnd": false,
+                      "allHelpInsideCapture": false,
+                      "latestHelpMinusStartMs": -30000,
+                      "earliestHelpMinusEndMs": -40000
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "cellId": "e0:object",
+                "purpose": "original-performance",
+                "skill": "object",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "excluded",
+                "value": null,
+                "effectSet": [],
+                "reasonCode": "original-was-assisted",
+                "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:object",
+                  "original:scope",
+                  "unknown:object",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:role"
+                ],
+                "evidenceSource": "human",
+                "assistance": "after-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [
+                  {
+                    "id": "original:object:original-was-assisted",
+                    "code": "original-was-assisted",
+                    "reason": "원래 시도 전에 관련 답이 노출됐습니다. 독립 수행으로 사용할 수 없습니다.",
+                    "status": "excluded"
+                  }
+                ],
+                "temporalEvidence": [
+                  {
+                    "helpId": "late-pre-capture-object-help",
+                    "relation": "before",
+                    "reasonCode": "help-certainly-before",
+                    "helpBounds": {
+                      "earliestAt": "2026-09-13T00:59:30.000Z",
+                      "latestAt": "2026-09-13T00:59:30.000Z",
+                      "basis": "event-timestamp",
+                      "sourceRef": "late-pre-capture-object-help"
+                    },
+                    "performanceBounds": {
+                      "startedAt": "2026-09-13T01:00:00.000Z",
+                      "endedAt": "2026-09-13T01:00:10.000Z",
+                      "basis": "browser-recorder",
+                      "sourceRef": "original"
+                    },
+                    "comparisons": {
+                      "latestHelpBeforeStart": true,
+                      "earliestHelpAfterEnd": false,
+                      "allHelpInsideCapture": false,
+                      "latestHelpMinusStartMs": -30000,
+                      "earliestHelpMinusEndMs": -40000
+                    }
+                  }
+                ]
+              },
+              "withdrawnEffect": null,
+              "admittedEffect": null
+            },
+            {
+              "cellId": "e0:past",
+              "action": "withdrawn",
+              "changed": true,
+              "before": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "accepted",
+                "value": "과거형 사용 관측",
+                "effectSet": [
+                  "과거형 사용 관측"
+                ],
+                "reasonCode": "invariant-and-eligible",
+                "reason": "처음 시점의 관련 해석이 같은 기록을 내고, 문항·의존·도움 관측 조건을 충족합니다. 확인된 앱 내 관측 범위에 한정합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [],
+                "temporalEvidence": []
+              },
+              "after": {
+                "cellId": "e0:past",
+                "purpose": "original-performance",
+                "skill": "past",
+                "epoch": "e0",
+                "evidenceEpoch": "e0",
+                "utteranceId": "original",
+                "status": "held",
+                "value": null,
+                "effectSet": [],
+                "reasonCode": "independence-unconfirmed",
+                "reason": "과거형 관측과 조사 해석의 독립 조건을 확인해야 합니다.",
+                "dependencies": [
+                  "original:audio",
+                  "original:past",
+                  "original:scope",
+                  "unknown:past",
+                  "original:help",
+                  "original:performance-time",
+                  "original:exposure-scope",
+                  "task:past-independence"
+                ],
+                "evidenceSource": "human",
+                "assistance": "no-recorded-help",
+                "observedAt": "2026-09-13T01:00:00.000Z",
+                "sourceAudioRef": "synthetic-logical-audio-A-no-file-read",
+                "receivedAt": "2026-09-13T10:00:11.000+09:00",
+                "supportScope": "이 통제 한국어 문장의 조사·역할·과거형만 처리",
+                "synthetic": false,
+                "performanceTimeSource": "browser-recorder",
+                "witness": null,
+                "blockers": [
+                  {
+                    "id": "task:independence-unconfirmed",
+                    "code": "independence-unconfirmed",
+                    "reason": "과거형 관측과 조사 해석의 독립 조건을 확인해야 합니다.",
+                    "status": "held"
+                  }
+                ],
+                "temporalEvidence": []
+              },
+              "withdrawnEffect": "과거형 사용 관측",
+              "admittedEffect": null
+            }
+          ],
+          "summary": {
+            "added": 0,
+            "retained": 1,
+            "withdrawn": 1,
+            "replaced": 0,
+            "held": 0,
+            "excluded": 1,
+            "removed": 0
+          },
+          "cellsSha256": "b1035659dc5e4ecde991205759ce46e129ea042bdc38e29b51b646aed607769c",
+          "sha256": "1ec36c751912194f8618acbdc4d193849638170872c8c6fae47bb6caafb148cf"
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "matchedExpectedStatesAndTransitions": true,
+    "failures": [],
+    "supportRepairInferenceMismatch": false,
+    "scopeOfConclusion": "The final states predicted by P1_SUPPORT_REPAIR.md match if validation succeeds. No patentability, general language ability, actual independence or complete assistance detection is established."
+  },
+  "interpretation": [
+    "A preserves the past contribution and ASR contribution while withdrawing only the original object-performance contribution.",
+    "B has both original performance records held; ASR remains accepted. The object blocker list retains original-was-assisted after the primary exposure-scope-unconfirmed blocker.",
+    "B does not withdraw the object contribution twice: the help event already withdrew it in baseline-to-A; A-to-B changes excluded to held and newly withdraws only the past contribution.",
+    "C newly withdraws only the past contribution after A; object remains excluded and ASR remains accepted.",
+    "Independent confirmation and assistance observation scope are separate stored conditions; neither boolean authenticates an external fact."
+  ]
+}
