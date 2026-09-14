@@ -1,0 +1,140 @@
+{
+  "checkedAt": "2026-09-14T18:00:46.466Z",
+  "baseUrl": "http://127.0.0.1:4320",
+  "baselineUrl": "http://127.0.0.1:4320/?session=d833b21a-90c4-4ab9-ae69-48689064c74d",
+  "passed": true,
+  "checks": {
+    "correction": {
+      "before": {
+        "e0:asr": "accepted",
+        "e0:object": "accepted",
+        "e0:past": "accepted"
+      },
+      "after": {
+        "e0:asr": "accepted",
+        "e0:object": "excluded",
+        "e0:past": "accepted"
+      },
+      "transition": {
+        "added": 0,
+        "retained": 2,
+        "withdrawn": 1,
+        "replaced": 0,
+        "held": 0,
+        "excluded": 0,
+        "removed": 0
+      },
+      "replay": {
+        "valid": true,
+        "failures": [],
+        "checkedRevisions": 3,
+        "startsAtRevision": 0,
+        "throughRevision": 2,
+        "scope": "저장된 사건으로 판정을 재현하고 내용 지문 연쇄를 확인합니다. 외부 신뢰 시각·서명 또는 기록되지 않은 사건의 존재까지 증명하지 않습니다.",
+        "checkedAudioOccurrences": 0,
+        "engineVersion": "0.5.0"
+      },
+      "downloadButton": true,
+      "refreshPreserved": true,
+      "verificationAfterRefresh": true,
+      "audioOccurrences": 0
+    },
+    "ambiguous": [
+      {
+        "direction": "after",
+        "initialStatus": "held",
+        "initialTransition": "withdrawn",
+        "afterStatus": "accepted",
+        "transition": "added",
+        "originalUnchanged": true,
+        "verified": true,
+        "input": "synthetic bounds, not measured clock error"
+      },
+      {
+        "direction": "before",
+        "initialStatus": "held",
+        "initialTransition": "withdrawn",
+        "afterStatus": "excluded",
+        "transition": "excluded",
+        "originalUnchanged": true,
+        "verified": true,
+        "input": "synthetic bounds, not measured clock error"
+      }
+    ],
+    "legacy": {
+      "passed": true,
+      "sourceSha256": "1a3cf8083ad5c90644769f3e8802ff98ed7ce2ef8714b75c4bd53f680058b09f",
+      "outputDirectoryRedirectOnly": true
+    },
+    "meetingBaseline": {
+      "revision": 1,
+      "accepted": 3,
+      "held": 0,
+      "excluded": 0,
+      "eventCount": 1,
+      "audioOccurrences": 0,
+      "correctionButtonEnabled": true,
+      "reopened": true
+    },
+    "externalRequests": 0,
+    "audioRequests": 0,
+    "pageErrors": [],
+    "sourceSha256": {
+      "core.cjs": "e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003",
+      "store.cjs": "161239b16435d1d5c820a92b8e08c259f09baa4f6de3b3f04b66b1172e08b7f1",
+      "temporal-evidence.cjs": "20e0d1fa48bf00f333ba07eb0139ee5c70a836fe4b926235b2a481326d80decf",
+      "projection.cjs": "6591855952a749f8337264936b3b5341d5cbe20ac6dc5c0375a5592589a48627",
+      "public/app.js": "87058fb4be183d72328ce4583ab1afd0031228a1b3dff5d1a23435e3b386732b",
+      "public/advance.js": "92703cd0d8b9d79e66d7ab8fcbcbb62545d632d1ee4ef570742914c86f32e29c"
+    },
+    "remaining": [
+      "at and timeBounds both omitted still fall back to server time; not changed here",
+      "no student production integration or learning-effect measurement",
+      "microphone, speaker and automatic transcription not tested in this run"
+    ],
+    "original4318Preserved": true
+  },
+  "objectScreenshots": {
+    "capturedAt": "2026-09-14T18:17:33.639Z",
+    "selector": "#cells [data-cell=\"e0:object\"]",
+    "deviceScaleFactor": 2,
+    "source": "new isolated synthetic session; actual existing UI button",
+    "sameSession": true,
+    "sessionId": "952d599f-277e-4717-b6ef-f510f8abe145",
+    "before": {
+      "revision": 1,
+      "accepted": 3,
+      "held": 0,
+      "excluded": 0,
+      "object": "accepted"
+    },
+    "after": {
+      "revision": 2,
+      "accepted": 2,
+      "held": 0,
+      "excluded": 1,
+      "object": "excluded",
+      "withdrawn": 1,
+      "retained": 2
+    },
+    "audioOccurrences": 0,
+    "audioRequests": 0,
+    "externalRequests": 0,
+    "pageErrors": [],
+    "meetingBaselineUntouched": true
+  },
+  "pdf": {
+    "sha256": "64544bc6170d8e7529327a193a1d191b69df8958d42ceb8fa099a9b67052942a",
+    "pages": 13,
+    "allExpectedTextPreserved": true,
+    "exactP1Paragraphs": 7,
+    "fontsEmbedded": true,
+    "mobile": {
+      "width": 390,
+      "documentWidth": 390,
+      "outside": []
+    },
+    "visualReview": "all 13 rendered pages inspected; p7 object-card captures inspected at full size; no clipping or overlap observed"
+  },
+  "productCoreChanged": false
+}
