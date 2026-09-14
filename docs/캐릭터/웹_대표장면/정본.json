@@ -1,43 +1,23 @@
 {
-  "version": "20260915-felt-smiles",
+  "version": "20260915-calm-marin",
   "scope": "Corporate homepage group scene only; individual 4K and expression assets remain separate.",
-  "file": "docs/캐릭터/웹_대표장면/세친구_20260915_표정과펠트.png",
-  "sha256": "1b83cb95fad8226941abf4fbb643adf73a1cd92fd0d58cae84480970a72e92bc",
+  "file": "docs/캐릭터/웹_대표장면/세친구_20260915_마린반눈.png",
+  "sha256": "5d7fa931d12f095c787a1f448f9d8193bb17ee65cb570571d468ef44d2b54da4",
   "width": 1586,
   "height": 992,
   "mode": "RGB",
   "generator": "Built-in ImageGen; exact model version not exposed",
-  "prompt": "docs/캐릭터/웹_대표장면/생성프롬프트_20260915_표정과펠트.txt",
+  "prompt": "docs/캐릭터/웹_대표장면/생성프롬프트_20260915_마린반눈.txt",
   "references": [
     {
       "role": "edit-target",
-      "file": "docs/캐릭터/웹_대표장면/이력/세친구_20260915_균형.png",
-      "sha256": "c97e9cc6d518465a9a2855d7bd55e1b23ea6a34860a884f5b374bf2e9d8d10a0"
+      "file": "docs/캐릭터/웹_대표장면/세친구_20260915_표정과펠트.png",
+      "sha256": "1b83cb95fad8226941abf4fbb643adf73a1cd92fd0d58cae84480970a72e92bc"
     },
     {
-      "role": "expression-reference",
-      "file": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
-      "sha256": "04d75b8053667dc94fb708d04f73c36aa7a20ecb407c5364ed47d988488955f3"
-    },
-    {
-      "role": "expression-reference",
-      "file": "docs/캐릭터/정본_4K/마린_눈웃음.png",
-      "sha256": "8eb7e8f57160da5e76fd266821b46307b9024f757b1a1e28b86c2006c0dfa2cb"
-    },
-    {
-      "role": "identity-review",
-      "file": "docs/캐릭터/정본_4K/몽글_본체.png",
-      "sha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6"
-    },
-    {
-      "role": "identity-review",
-      "file": "docs/캐릭터/정본_4K/까몽_본체.png",
-      "sha256": "2115c644b50d981ac693edb75cf0a78fda307e95b41c01afb41968472ab8f845"
-    },
-    {
-      "role": "identity-review",
-      "file": "docs/캐릭터/정본_4K/마린_본체.png",
-      "sha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13"
+      "role": "user-expression-reference",
+      "file": "docs/캐릭터/웹_대표장면/마린반눈_사용자참조_20260915.png",
+      "sha256": "0f75facc7b6359d66419e634a5119c1822a9ded345d4d315e86f10c707224188"
     }
   ],
   "render": {
@@ -49,5 +29,6 @@
     "SYNK-website/dist/index.html",
     "synk-policy/index.html"
   ],
-  "decision": "User requested Mongle smiling, Marin flower eyes and a restrained felt background. Built-in ImageGen edited the current balanced scene using the actual approved expression PNGs. The close group, relative sizes, short limbs and ground contact were visually reviewed. This is the homepage composition only. Fine fibers and surface details were regenerated; pixel identity and user approval of this exact output are not claimed."
+  "decision": "User requested Marin’s calm half-closed yellow eyes using an attached notebook-scene reference. Built-in ImageGen edited the homepage group scene. Mongle’s smile, Kkamong, relative proportions, chest flower and felt setting were visually preserved. Static facial-expression change only; fine fibers were regenerated and pixel identity outside the eyes is not claimed. This homepage composition does not replace individual 4K expressions or letter-game situation art.",
+  "alt": "포근한 펠트 바닥에 모인 세 친구. 눈웃음 짓는 몽글, 초록 눈의 까몽, 차분한 반눈의 마린."
 }
