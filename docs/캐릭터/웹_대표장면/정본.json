@@ -1,18 +1,28 @@
 {
-  "version": "20260915-balance",
+  "version": "20260915-felt-smiles",
   "scope": "Corporate homepage group scene only; individual 4K and expression assets remain separate.",
-  "file": "docs/캐릭터/웹_대표장면/세친구_20260915_균형.png",
-  "sha256": "c97e9cc6d518465a9a2855d7bd55e1b23ea6a34860a884f5b374bf2e9d8d10a0",
+  "file": "docs/캐릭터/웹_대표장면/세친구_20260915_표정과펠트.png",
+  "sha256": "1b83cb95fad8226941abf4fbb643adf73a1cd92fd0d58cae84480970a72e92bc",
   "width": 1586,
   "height": 992,
   "mode": "RGB",
   "generator": "Built-in ImageGen; exact model version not exposed",
-  "prompt": "docs/캐릭터/웹_대표장면/생성프롬프트_20260915.txt",
+  "prompt": "docs/캐릭터/웹_대표장면/생성프롬프트_20260915_표정과펠트.txt",
   "references": [
     {
       "role": "edit-target",
-      "file": "docs/캐릭터/웹_대표장면/이력/세친구_20260914_함께.png",
-      "sha256": "2de0cc8038c3af0e68daebd1bdfd6da6230ed0241f2ae5209f893ecfd26c492c"
+      "file": "docs/캐릭터/웹_대표장면/이력/세친구_20260915_균형.png",
+      "sha256": "c97e9cc6d518465a9a2855d7bd55e1b23ea6a34860a884f5b374bf2e9d8d10a0"
+    },
+    {
+      "role": "expression-reference",
+      "file": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
+      "sha256": "04d75b8053667dc94fb708d04f73c36aa7a20ecb407c5364ed47d988488955f3"
+    },
+    {
+      "role": "expression-reference",
+      "file": "docs/캐릭터/정본_4K/마린_눈웃음.png",
+      "sha256": "8eb7e8f57160da5e76fd266821b46307b9024f757b1a1e28b86c2006c0dfa2cb"
     },
     {
       "role": "identity-review",
@@ -31,13 +41,13 @@
     }
   ],
   "render": {
-    "background": "SYNK Paper token",
-    "blend": "multiply",
+    "background": "Warm ivory felt studio floor and backdrop, surrounded by approved SYNK Oat and Paper wool tiles",
+    "blend": "normal",
     "maximumCssWidth": 600
   },
   "consumers": [
     "SYNK-website/dist/index.html",
     "synk-policy/index.html"
   ],
-  "decision": "User requested a smaller Mongle and larger Kkamong and Marin. Built-in ImageGen resized their relative visual presence while retaining the close group and ground contact. This is the homepage composition only, not a global change to individual mascot proportions. Fine fibers and surface details were regenerated; pixel identity and user approval of this exact output are not claimed."
+  "decision": "User requested Mongle smiling, Marin flower eyes and a restrained felt background. Built-in ImageGen edited the current balanced scene using the actual approved expression PNGs. The close group, relative sizes, short limbs and ground contact were visually reviewed. This is the homepage composition only. Fine fibers and surface details were regenerated; pixel identity and user approval of this exact output are not claimed."
 }
