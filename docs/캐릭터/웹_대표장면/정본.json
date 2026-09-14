@@ -1,18 +1,18 @@
 {
-  "version": "20260914-together",
+  "version": "20260915-balance",
   "scope": "Corporate homepage group scene only; individual 4K and expression assets remain separate.",
-  "file": "docs/캐릭터/웹_대표장면/세친구_20260914_함께.png",
-  "sha256": "2de0cc8038c3af0e68daebd1bdfd6da6230ed0241f2ae5209f893ecfd26c492c",
+  "file": "docs/캐릭터/웹_대표장면/세친구_20260915_균형.png",
+  "sha256": "c97e9cc6d518465a9a2855d7bd55e1b23ea6a34860a884f5b374bf2e9d8d10a0",
   "width": 1586,
   "height": 992,
   "mode": "RGB",
   "generator": "Built-in ImageGen; exact model version not exposed",
-  "prompt": "docs/캐릭터/웹_대표장면/생성프롬프트_20260914.txt",
+  "prompt": "docs/캐릭터/웹_대표장면/생성프롬프트_20260915.txt",
   "references": [
     {
       "role": "edit-target",
-      "file": "docs/캐릭터/웹_대표장면/이력/세친구_20260910.png",
-      "sha256": "2f34cecd7f4016a9042e55ee276ad60fd54ca0471c7b1e6ad1ce0b111ea8ff37"
+      "file": "docs/캐릭터/웹_대표장면/이력/세친구_20260914_함께.png",
+      "sha256": "2de0cc8038c3af0e68daebd1bdfd6da6230ed0241f2ae5209f893ecfd26c492c"
     },
     {
       "role": "identity-review",
@@ -39,5 +39,5 @@
     "SYNK-website/dist/index.html",
     "synk-policy/index.html"
   ],
-  "decision": "User requested correction because Kkamong appeared isolated behind the group. Built-in ImageGen edit brings Kkamong forward beside Mongle; root and independent visual review found no blocking artifact. Not user approval of exact final pixels, and not replacement of individual canonical bodies. Fine surface detail across the scene was regenerated."
+  "decision": "User requested a smaller Mongle and larger Kkamong and Marin. Built-in ImageGen resized their relative visual presence while retaining the close group and ground contact. This is the homepage composition only, not a global change to individual mascot proportions. Fine fibers and surface details were regenerated; pixel identity and user approval of this exact output are not claimed."
 }
