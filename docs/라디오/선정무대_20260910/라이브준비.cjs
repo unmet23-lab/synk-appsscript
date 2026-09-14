@@ -39,8 +39,8 @@ replace('function 갈아입기(결) {','function 갈아입기(결) {\n  document
 const token=JSON.parse(fs.readFileSync(path.join(root,'docs/디자인_토큰.json'),'utf8'));
 const graphite=token.색.킷.find(c=>c.이름==='Graphite').hex;
 const rgb=[1,3,5].map(i=>parseInt(graphite.slice(i,i+2),16)).join(',');
-replace('</style>',`/* Selected 13 composition: preserve the approved 1920x1080 layout; no mascot auto-resize. */
-body[data-radio-scene="13"] #마스코트틀 {left:23.6979166667vw!important;top:28.2407407407vh!important;width:30.2083333333vw!important;right:auto!important;bottom:auto!important;margin-left:0!important;transform-origin:43% 86.5234375%;}
+replace('</style>',`/* Selected 13 composition: center the visible mascot silhouette; no mascot auto-resize. */
+body[data-radio-scene="13"] #마스코트틀 {left:34.0108235677vw!important;top:28.2407407407vh!important;width:30.2083333333vw!important;right:auto!important;bottom:auto!important;margin-left:0!important;transform-origin:43% 86.5234375%;}
 body[data-radio-scene="13"] #마스코트틀 img:not(.옷) {transform:none!important;}
 body[data-radio-scene="13"] #접지 {left:22.3103448276%;top:83.4199892241%;width:41.3793103448%;height:7.7586206897%;bottom:auto;transform:none;background:radial-gradient(ellipse at center,rgba(${rgb},.60) 0%,rgba(${rgb},.26) 34%,transparent 74%);}
 </style>`);
@@ -49,5 +49,5 @@ fs.writeFileSync(path.join(out,'after-마스코트.html'),html);
 const stage=path.join(out,'field-radio-720p.mp4');
 cp.execFileSync('ffmpeg',['-v','error','-y','-i',path.join(root,'영상/public/radioDreams20260910/field-loop.mp4'),'-an','-vf','scale=1280:720:flags=lanczos','-c:v','libx264','-threads','2','-crf','18','-preset','medium','-pix_fmt','yuv420p','-g','30','-movflags','+faststart',stage],{windowsHide:true});
 cp.execFileSync('ffmpeg',['-v','error','-i',stage,'-f','null','-'],{windowsHide:true});
-const manifest={at:new Date().toISOString(),sourceHtmlSha:sha(source),pixelKernelSha:sha(pixelPath),helperName,helperSha:sha(path.join(out,helperName)),leafName,leafSha:sha(leaf),htmlSha:sha(path.join(out,'after-마스코트.html')),stageSha:sha(stage),stageName:'field-radio13-20260910-'+sha(stage).slice(0,12)+'.mp4',expressions:['기본','깜빡','눈웃음'],otherEventExpressions:'Base/smile aliases; no unreviewed leaf sprites',layout:{left:455,top:305,size:580,canvas:[1920,1080]}};
+const manifest={at:new Date().toISOString(),sourceHtmlSha:sha(source),pixelKernelSha:sha(pixelPath),helperName,helperSha:sha(path.join(out,helperName)),leafName,leafSha:sha(leaf),htmlSha:sha(path.join(out,'after-마스코트.html')),stageSha:sha(stage),stageName:'field-radio13-20260910-'+sha(stage).slice(0,12)+'.mp4',expressions:['기본','깜빡','눈웃음'],otherEventExpressions:'Base/smile aliases; no unreviewed leaf sprites',layout:{left:653.0078125,top:305,size:580,canvas:[1920,1080],visibleAlphaBounds:[97,118,987,996],visibleCenterX:960}};
 fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2));console.log(JSON.stringify(manifest));

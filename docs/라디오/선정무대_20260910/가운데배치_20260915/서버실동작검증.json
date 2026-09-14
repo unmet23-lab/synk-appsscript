@@ -1,0 +1,43 @@
+{
+  "passed": true,
+  "at": "2026-09-14T22:06:39.434Z",
+  "sampleCount": 100,
+  "expressions": [
+    "기본",
+    "깜빡",
+    "눈웃음",
+    "응원"
+  ],
+  "first": {
+    "ready": true,
+    "DJ": "까몽",
+    "scene": "13",
+    "outfit": "반딧불노을들판",
+    "expression": "기본",
+    "checks": {
+      "maskPixels": 11609,
+      "waterEdgePixels": 29213,
+      "leafEdgePixels": 35434,
+      "expressionAlphaEqual": true,
+      "outsideEyeDifference": 0
+    },
+    "geometry": {
+      "x": 653,
+      "y": 305,
+      "width": 580,
+      "height": 580
+    },
+    "alphaBounds": [
+      97,
+      118,
+      987,
+      996
+    ],
+    "visibleCenterX": 959.9921875,
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  "scope": "Read-only actual radio-live Chromium runtime; public playback is checked separately."
+}

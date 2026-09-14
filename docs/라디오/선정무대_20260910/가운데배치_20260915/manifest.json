@@ -1,0 +1,39 @@
+{
+  "at": "2026-09-14T22:01:22.488Z",
+  "sourceHtml": "../정수리수정/after-마스코트.html",
+  "sourceHtmlSha": "e305734b3a479d6402c7c7c2ad216362586ecb71749cc8740ee8c85455a3146d",
+  "htmlSha": "d3d21c4200e3db0ad5bb4fd8d51ad49eea9ad9adf7840883f4d410b930112428",
+  "helperName": "radio13-06fdc6100afc.js",
+  "helperSha": "06fdc6100afca914845cc53d3eb8dd6fca068460e367d7196f1cd0f629f74852",
+  "leafName": "leaf-base-514d7886949b.png",
+  "leafSha": "514d7886949ba0c139464be7b76215bce72edb7e575977912724963fda73324d",
+  "stageSha": "986177a55b4bb21ae4d82c483f1c66a92e14d2e48d7a441a7ab76bd0f7e98a65",
+  "audioSha": "c9295db33abc8609bda2cdbc885dfce563b52cb6cc6a9db49f7ec276bf931f45",
+  "layout": {
+    "canvas": [
+      1920,
+      1080
+    ],
+    "box": {
+      "left": 653.0078125,
+      "top": 305,
+      "size": 580
+    },
+    "visibleAlphaBounds": [
+      97,
+      118,
+      987,
+      996
+    ],
+    "visibleCenterX": 960,
+    "shiftX": 198.0078125
+  },
+  "preserved": [
+    "세로 위치",
+    "마스코트 크기",
+    "표정 원본과 리듬",
+    "13번 배경",
+    "11곡 FLAC과 재생목록"
+  ],
+  "scope": "Only the selected scene 13 horizontal mascot position changes. The visible alpha silhouette, including the tail, is centered."
+}

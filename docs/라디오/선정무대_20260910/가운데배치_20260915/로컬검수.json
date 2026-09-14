@@ -1,0 +1,32 @@
+{
+  "at": "2026-09-14T22:01:42.901Z",
+  "passed": true,
+  "state": {
+    "ready": true,
+    "dj": "까몽",
+    "scene": "반딧불노을들판",
+    "box": {
+      "x": 653,
+      "y": 305,
+      "width": 580,
+      "height": 580
+    },
+    "alphaBounds": [
+      97,
+      118,
+      987,
+      996
+    ],
+    "visibleCenterX": 959.9921875,
+    "pixels": {
+      "maskPixels": 11609,
+      "waterEdgePixels": 29213,
+      "leafEdgePixels": 35434,
+      "expressionAlphaEqual": true,
+      "outsideEyeDifference": 0
+    },
+    "expression": "기본"
+  },
+  "errors": [],
+  "scope": "Local isolated 1920x1080 render with the current background; not the public stream."
+}
