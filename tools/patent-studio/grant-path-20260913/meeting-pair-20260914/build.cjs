@@ -1,0 +1,67 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process');
+const {pathToFileURL}=require('node:url');
+const ROOT=path.resolve(__dirname,'../../../..'),BASE=path.resolve(__dirname,'..');
+const OUT='C:/Users/q1212/.codex/visualizations/2026/09/11/01a08f0d-d3c5-7c41-9c85-d69384fa2412/IP_디딤돌_준비/미팅완성본/변리사전달_이해설명_20260914';
+const ASSETS=path.join(ROOT,'tools/patent-studio/public/assets');
+const R=f=>fs.readFileSync(f,'utf8'), H=f=>crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+const data=(f,m)=>`data:${m};base64,${fs.readFileSync(f).toString('base64')}`;
+const defs=[['ATTORNEY.md','SYNK_특허_변리사전달용_목적과사실관계','attorney','변리사 검토용'],['GUIDE.md','SYNK_특허_쉬운이해와미팅설명서','guide','유호님 설명·시연용']];
+const sourceFiles=['targeted/CLAIM_DECISIONS.md','model-review-20260914/SECOND_REVIEW.md','decision/P1_SUPPORT_CASES.json','model-review-20260914/CACHE_PROBE.json','decision/PURPOSE_SENSITIVITY.json','lab/VERIFICATION.json','../core.cjs','../projection.cjs','../temporal-evidence.cjs','../store.cjs','../public/index.html','../public/app.js','../README.md','../late-correction-qa.cjs'];
+async function main(){
+ const manifest=JSON.parse(R(path.join(ASSETS,'manifest.json'))).manifest;
+ const fontNames=['suit.woff2','inter-tight.ttf','inter-tight-bold.ttf','dm-mono.ttf','bracket.ttf','tokens.css','mascot.webp'];
+ for(const name of fontNames){const x=manifest.find(a=>a.name===name);if(!x||H(path.join(ASSETS,name))!==x.sha256||H(path.join(ROOT,x.source))!==(x.sourceSha256||x.sha256))throw Error('Changed asset '+name);}
+ const logo=path.join(ROOT,'docs/홍보물/마케팅실행_20260909/브랜드킷/배치용/SYNK-Ink.png');
+ const fontDefs=[['SUIT Variable','suit.woff2','100 900',''],['Inter Tight','inter-tight.ttf','500',''],['Inter Tight','inter-tight-bold.ttf','700 900',''],['DM Mono','dm-mono.ttf','500',''],['SYNK Bracket','bracket.ttf','100 900','unicode-range:U+300C-300D;']].map(([f,n,w,x])=>`@font-face{font-family:'${f}';src:url('${data(path.join(ASSETS,n),n.endsWith('woff2')?'font/woff2':'font/ttf')}');font-weight:${w};font-display:block;${x}}`).join('');
+ const loom=cp.execFileSync(process.execPath,[path.join(ROOT,'tools/lib/loom.js'),'--css','문서'],{encoding:'utf8',maxBuffer:8e6});
+ const rhythm=loom.match(/:root\s*\{[^}]+\}/)?.[0];if(!rhythm)throw Error('Loom rhythm missing');
+ const css=R(path.join(ASSETS,'tokens.css'))+rhythm+fontDefs+R(path.join(__dirname,'style.css'));
+ const {marked}=await import(pathToFileURL('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/marked/lib/marked.esm.js').href);
+ const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+ fs.mkdirSync(path.join(OUT,'검수'),{recursive:true});
+ const sourceHashes=Object.fromEntries(sourceFiles.map(f=>[f,H(path.resolve(BASE,f))]));
+ const demoQA=path.join(ROOT,'tools/patent-studio/qa-output/late-correction-checks.json');
+ const demo=JSON.parse(R(demoQA));if(!demo.passed||!demo.replay.valid||demo.after.accepted!==2||demo.transition.withdrawn!==1)throw Error('Demo QA failed');
+ sourceHashes['../qa-output/late-correction-checks.json']=H(demoQA);
+ fs.mkdirSync(path.join(OUT,'자산'),{recursive:true});
+ fs.copyFileSync(logo,path.join(OUT,'자산/logo.png'));
+ fs.copyFileSync(path.join(ASSETS,'mascot.webp'),path.join(OUT,'자산/mascot.webp'));
+ fs.copyFileSync(path.join(ROOT,'tools/patent-studio/qa-output/late-correction-desktop.png'),path.join(OUT,'자산/demo.png'));
+ const claims=[...R(path.join(BASE,'targeted/CLAIM_DECISIONS.md')).matchAll(/^\*\*\[P1-0[1-7]\]\*\*[^\r\n]+/gm)].map(m=>m[0]);if(claims.length!==7)throw Error('P1 claim count');
+ const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+ const report={generatedAt:new Date().toISOString(),sourceHashes,assetHashes:Object.fromEntries(fontNames.map(n=>[n,H(path.join(ASSETS,n))])),logoHash:H(logo),loomSourceHash:H(path.join(ROOT,'tools/lib/loom.js')),documents:[]};
+ try{for(const [src,name,kind,label] of defs){
+  let md=R(path.join(__dirname,src)).replace('{{P1_A}}',claims.slice(0,4).join('\n\n')).replace('{{P1_B}}',claims.slice(4).join('\n\n'));
+  if(/\{\{[A-Z_]+\}\}|공개\s*이력|공개\s*시점|C:[\\/]Users|unmet23|tw23/.test(md))throw Error('Invalid outbound source '+src);
+  fs.writeFileSync(path.join(OUT,name+'.md'),md.replaceAll('asset:logo','자산/logo.png').replaceAll('asset:mascot','자산/mascot.webp').replaceAll('asset:demo','자산/demo.png'));
+  const pages=md.split(/\n<!-- page -->\n/).map(s=>s.trim());
+  let html=pages.map((p,i)=>`<article class="page ${kind}${i===0?' cover':''}" id="p${i+1}"><header><span class="brand">SYNK / CORE</span><span>${label} · 2026.09.14</span></header><main>${marked.parse(p)}</main><footer><span>${kind==='attorney'?'대한민국 출원 검토 · 등록 여부 미확정':'SYNK Core 근거 자격·관측·재판정 모듈'}</span><span class="page-num">${String(i+1).padStart(2,'0')} / ${pages.length}</span></footer></article>`).join('');
+  html=html.replaceAll('asset:logo',data(logo,'image/png')).replaceAll('asset:mascot',data(path.join(ASSETS,'mascot.webp'),'image/webp'));
+  const screenshot=path.join(ROOT,'tools/patent-studio/qa-output/late-correction-desktop.png');
+  if(html.includes('asset:demo'))html=html.replaceAll('asset:demo',data(screenshot,'image/png'));
+  if(/<del[ >]/.test(html))throw Error('Unintended strikethrough');
+  const filepath=path.join(OUT,name+'.html');
+  fs.writeFileSync(filepath,`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${name.replaceAll('_',' ')}</title><style>${css}</style></head><body><nav aria-label="문서 도구"><b>${label}</b><button onclick="window.print()">인쇄 또는 PDF로 저장</button><a href="#p1">처음으로</a></nav>${html}</body></html>`);
+  const page=await browser.newPage({viewport:{width:1000,height:1300}}),requests=[],errors=[];
+  await page.route('**/*',route=>{if(/^https?:/.test(route.request().url())){requests.push(route.request().url());return route.abort();}return route.continue();});
+  page.on('pageerror',e=>errors.push(e.message));await page.goto(pathToFileURL(filepath).href);
+  await page.evaluate(async()=>{await Promise.all(['500 16px "SUIT Variable"','800 32px "SUIT Variable"','500 16px "Inter Tight"','800 32px "Inter Tight"','500 12px "DM Mono"','500 12px "SYNK Bracket"'].map(f=>document.fonts.load(f,'한글 SYNK 0123 「」')));await document.fonts.ready;});
+  await page.emulateMedia({media:'print'});
+  const layout=await page.evaluate(()=>[...document.querySelectorAll('.page')].map(p=>{const main=p.querySelector('main').getBoundingClientRect(),foot=p.querySelector('footer').getBoundingClientRect();const outside=[...p.querySelectorAll('main *')].filter(x=>{const r=x.getBoundingClientRect();return r.width&&((r.left<main.left-2)||(r.right>main.right+2));}).map(x=>x.tagName+':'+x.textContent.slice(0,25));return {page:p.id,characters:p.querySelector('main').innerText.length,gap:Math.round(foot.top-main.bottom),outside};}));
+  const bad=layout.filter(x=>x.gap<18||x.outside.length);if(bad.length)throw Error(JSON.stringify({name,bad}));
+  const expectedText=await page.evaluate(()=>[...document.querySelectorAll('.page')].map(p=>[...p.querySelectorAll('main h1,main h2,main h3,main p,main th,main td,main li,main .flow>div,main .phrase,main .card b')].map(x=>x.innerText).filter(Boolean)));
+  if(expectedText.flat().some(t=>t.includes('**')))throw Error('Unrendered markdown emphasis');
+  if(requests.length||errors.length)throw Error('External request or browser error');
+  await page.pdf({path:path.join(OUT,name+'.pdf'),format:'A4',printBackground:true,preferCSSPageSize:true,tagged:true,outline:true});
+  await page.setViewportSize({width:390,height:844});
+  await page.emulateMedia({media:'screen'});
+  const mobile=await page.evaluate(()=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,outside:[...document.querySelectorAll('main *')].filter(x=>{const r=x.getBoundingClientRect();return r.width&&(r.left<0||r.right>innerWidth+2);}).map(x=>x.tagName+':'+x.textContent.slice(0,25))}));
+  if(mobile.documentWidth>392||mobile.outside.length)throw Error(JSON.stringify({name,mobile}));
+  report.documents.push({name,kind,pages:pages.length,layout,expectedText,mobile,externalRequests:requests.length,errors,pdfHash:H(path.join(OUT,name+'.pdf')),htmlHash:H(filepath)});
+  await page.close();
+ }}finally{await browser.close();}
+ fs.writeFileSync(path.join(OUT,'검수/verification.json'),JSON.stringify(report,null,2));
+ console.log(JSON.stringify({output:OUT,documents:report.documents.map(d=>({name:d.name,pages:d.pages,sha256:d.pdfHash}))},null,2));
+}
+main().catch(e=>{console.error(e);process.exitCode=1;});
