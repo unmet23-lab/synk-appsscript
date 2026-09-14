@@ -1,0 +1,17 @@
+{
+  "at": "2026-09-14T22:09:46.673Z",
+  "action": "stop radio-live",
+  "before": {
+    "MainPID": "324762",
+    "ActiveState": "active",
+    "SubState": "running",
+    "UnitFileState": "enabled"
+  },
+  "after": {
+    "MainPID": "0",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "UnitFileState": "enabled"
+  },
+  "recoverableWith": "sudo systemctl start radio-live"
+}
