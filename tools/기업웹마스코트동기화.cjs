@@ -30,7 +30,10 @@ const jobs=[
   rows.push({file,source:assets.경로(expression),sourceSha256:sha(input),sha256:sha(data),width:info.width,height:info.height,crop,stale:check?stale:false});
  }
  const manifest={recipe:'Current canonical mascot to existing 640px diagnostic and 1000px cropped name assets; WebP92/alpha100.',items:rows};
- if(!check)fs.writeFileSync(path.resolve(root,'../synk-policy/mascot-assets-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+ // The public metadata describes served assets only. Source paths and source
+ // fingerprints remain in the local verification output, outside the site.
+ const publicManifest={...manifest,items:rows.map(({source,sourceSha256,...item})=>item)};
+ if(!check)fs.writeFileSync(path.resolve(root,'../synk-policy/mascot-assets-manifest.json'),JSON.stringify(publicManifest,null,2)+'\n');
  console.log(JSON.stringify({checked:rows.length,stale:rows.filter(r=>r.stale).length,filesWritten,items:rows}));
  if(check&&rows.some(r=>r.stale))process.exitCode=1;
 })().catch(e=>{console.error(e.message);process.exitCode=1;});
