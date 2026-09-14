@@ -1,34 +1,29 @@
 {
-  "version": "20260915-calm-marin",
+  "version": "20260915-felt-seoul",
   "scope": "Corporate homepage group scene only; individual 4K and expression assets remain separate.",
-  "file": "docs/캐릭터/웹_대표장면/세친구_20260915_마린반눈.png",
-  "sha256": "5d7fa931d12f095c787a1f448f9d8193bb17ee65cb570571d468ef44d2b54da4",
+  "file": "docs/캐릭터/웹_대표장면/세친구_20260915_한강과남산.png",
+  "sha256": "12a85f426d729c5b926d20924a8a47402617b77fb577ee845416a1081910cbe7",
   "width": 1586,
   "height": 992,
   "mode": "RGB",
   "generator": "Built-in ImageGen; exact model version not exposed",
-  "prompt": "docs/캐릭터/웹_대표장면/생성프롬프트_20260915_마린반눈.txt",
+  "prompt": "docs/캐릭터/웹_대표장면/생성프롬프트_20260915_한강과남산.txt",
   "references": [
     {
-      "role": "edit-target",
-      "file": "docs/캐릭터/웹_대표장면/세친구_20260915_표정과펠트.png",
-      "sha256": "1b83cb95fad8226941abf4fbb643adf73a1cd92fd0d58cae84480970a72e92bc"
-    },
-    {
-      "role": "user-expression-reference",
-      "file": "docs/캐릭터/웹_대표장면/마린반눈_사용자참조_20260915.png",
-      "sha256": "0f75facc7b6359d66419e634a5119c1822a9ded345d4d315e86f10c707224188"
+      "role": "trio-identity-and-expression-reference",
+      "file": "docs/캐릭터/웹_대표장면/세친구_20260915_마린반눈.png",
+      "sha256": "5d7fa931d12f095c787a1f448f9d8193bb17ee65cb570571d468ef44d2b54da4"
     }
   ],
   "render": {
-    "background": "Warm ivory felt studio floor and backdrop, surrounded by approved SYNK Oat and Paper wool tiles",
+    "background": "Imaginative felt Han River and distant Namsan / N Seoul Tower at sunset-blue hour, embroidered bridge lights, wool hills and warm riverbank.",
     "blend": "normal",
-    "maximumCssWidth": 600
+    "layout": "Full uncropped image; 60 percent desktop hero column, full shell width below 1100px."
   },
   "consumers": [
     "SYNK-website/dist/index.html",
     "synk-policy/index.html"
   ],
-  "decision": "User requested Marin’s calm half-closed yellow eyes using an attached notebook-scene reference. Built-in ImageGen edited the homepage group scene. Mongle’s smile, Kkamong, relative proportions, chest flower and felt setting were visually preserved. Static facial-expression change only; fine fibers were regenerated and pixel identity outside the eyes is not claimed. This homepage composition does not replace individual 4K expressions or letter-game situation art.",
-  "alt": "포근한 펠트 바닥에 모인 세 친구. 눈웃음 짓는 몽글, 초록 눈의 까몽, 차분한 반눈의 마린."
+  "decision": "User requested a beautiful non-cliche fantasy felt Han River or Namsan background, with larger scenery allowed. Built-in ImageGen expanded the current calm-Marin trio into one imagined Seoul miniature landscape. This is a fictional composition, not an accurate geographic view. Preserve recognizable trio silhouettes, current smiles/half-eyes, relative sizes, chest flower and grounded contact; fine fibers/background regenerated. Homepage composition only; independent 4K assets and letter-game scenes remain separate.",
+  "alt": "노을과 푸른 저녁빛이 만나는 펠트 서울. 금빛 다리가 놓인 한강과 멀리 남산타워를 배경으로, 눈웃음 짓는 몽글과 초록 눈의 까몽, 차분한 반눈의 마린이 함께 서 있습니다."
 }
