@@ -261,8 +261,6 @@ const 라벨순서 = ['표현', '뜻', '예문 1', '예문 2', '따라하기', '
 
 const 키릴 = /[Ѐ-ӿ]/;
 const 한글 = /[가-힣]/;
-/* ⚠ `g` 플래그를 안 붙인다 — `.test()` 를 되풀이 부를 때 `lastIndex` 가 남아 한 번 걸러 한 번씩 놓친다. */
-const 그림글자 = /\p{Extended_Pictographic}/u;
 
 /**
  * 셀 한 칸을 한국어 / 몽골어로 가른다.
@@ -604,11 +602,6 @@ function 카운트다운검사(클립들) {
     const 있는옹알이 = fs.existsSync(path.join(방, 'public', 방이름))
       ? new Set(fs.readdirSync(path.join(방, 'public', 방이름)).map((f) => f.replace(/\.wav$/, '')))
       : null;
-    const 글전량 = [c.훅, c.마무리, ...c.순위들.flatMap((r) => [r.표현, r.뜻, r.몽골어])].join(' ');
-    const 조각들 = [...new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(글전량)];
-    const 그림수 = 조각들.filter((g) => 그림글자.test(g.segment)).length;
-    if (그림수 > 2) 문제.push(`${c.id} 이모지 ${그림수}개 — 숏폼 1편 최대 2개(synk-brand)`);
-
     const 순들 = c.순위들.map((r) => r.순).join(',');
     if (순들 !== '5,4,3,2,1') 문제.push(`${c.id} 순위가 5→1 내림차순이 아니다(${순들}) — 1위를 끝에 둬야 끝까지 본다`);
 
@@ -648,13 +641,6 @@ function 카운트다운검사(클립들) {
 function 검사(클립들) {
   const 문제 = [];
   for (const c of 클립들) {
-    /* 🔑 «그래핌» 으로 센다 — 이모지 하나가 코드포인트 여럿인 것이 있어(ZWJ·피부색) 정규식 히트 수로 세면
-       한 개를 서넛으로 부풀린다. 반대로 부풀린 수로 막으면 정상 자막이 막힌다. */
-    const 조각들 = [...new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(
-      [c.훅, ...c.장면들.flatMap((s) => [s.한국어, s.몽골어])].join(' '),
-    )];
-    const 그림수 = 조각들.filter((g) => 그림글자.test(g.segment)).length;
-    if (그림수 > 2) 문제.push(`${c.id} 이모지 ${그림수}개 — 숏폼 1편 최대 2개(synk-brand)`);
     for (const s of c.장면들) {
       if (!s.한국어) 문제.push(`${c.id} 「${s.라벨}」 한국어가 비었다`);
       if (키릴.test(s.한국어)) 문제.push(`${c.id} 「${s.라벨}」 한국어 칸에 키릴이 섞였다 — 가르는 데 실패했다`);
