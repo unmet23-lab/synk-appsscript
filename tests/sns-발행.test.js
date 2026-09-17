@@ -73,7 +73,10 @@ test('현재 첫 게시물 19계정을 계정 지도와 한 번에 묶는다', (
   const accounts = loadAccounts(DEFAULT_ACCOUNTS);
   assert.equal(items.length, 19);
   assert.equal(new Set(items.map((item) => item.accountKey)).size, 19);
-  assert.deepEqual(accounts.accounts['shift-tistory'], {
+  const { profileStatus, ...tistoryPublishingAccount } = accounts.accounts['shift-tistory'];
+  assert.equal(typeof profileStatus, 'string');
+  assert.ok(profileStatus.trim().length > 0);
+  assert.deepEqual(tistoryPublishingAccount, {
     brand: 'SHIFT',
     platform: 'tistory',
     handle: 'yuhobuilds.tistory.com',
@@ -86,6 +89,42 @@ test('현재 첫 게시물 19계정을 계정 지도와 한 번에 묶는다', (
   ]);
   assert.equal(items.find((item) => item.id === '01-lab-youtube').video.endsWith('video.mp4'), true);
   assert.equal(items.find((item) => item.id === '17-shift-naverblog').dependencies.some((dep) => dep.role === 'article'), true);
+});
+
+test('미확인 X 항목은 자격 조회와 네트워크 없이 계정 확인 대기로 남는다', async () => {
+  const account = {
+    ...loadAccounts(DEFAULT_ACCOUNTS).accounts['yuhobuilds-x'],
+    publisher: 'blocked-account-not-confirmed', connection: 'account-not-confirmed',
+  };
+  assert.equal(account.platform, 'x');
+  assert.equal(account.publisher, 'blocked-account-not-confirmed');
+  const checked = await checkConnection('yuhobuilds-x', account, {
+    fetchImpl: async () => { throw new Error('X 준비 항목은 네트워크를 호출하면 안 됩니다.'); },
+    readCredentialImpl: () => { throw new Error('X 준비 항목은 자격을 읽으면 안 됩니다.'); },
+  });
+  assert.deepEqual(checked, { state: 'blocked', detail: 'account-not-confirmed' });
+});
+
+test('X와 Twitter 표기는 같은 준비 계정으로 읽되 발행 가능으로 바꾸지 않는다', () => {
+  for (const platform of ['X', 'Twitter']) {
+    const dir = tempDir();
+    const packageDir = path.join(dir, '21-yuhobuilds-x');
+    fs.mkdirSync(packageDir);
+    const account = loadAccounts(DEFAULT_ACCOUNTS).accounts['yuhobuilds-x'];
+    const accountsFile = path.join(dir, 'accounts.json');
+    fs.writeFileSync(accountsFile, JSON.stringify({ accounts: {
+      'yuhobuilds-x': { ...account, publisher: 'blocked-account-not-confirmed' },
+    } }));
+    fs.writeFileSync(path.join(packageDir, '원고.json'), JSON.stringify({
+      id: '21-yuhobuilds-x', brand: 'SHIFT', platform,
+      title: '격리 시험', caption: '실제 작업과 수정 이유',
+    }));
+    const [item] = scanPackages(dir, accountsFile);
+    assert.equal(item.platform, 'x');
+    assert.equal(item.platformName, 'X');
+    assert.equal(item.publisher, 'blocked-account-not-confirmed');
+    assert.deepEqual(validateItem(item), []);
+  }
 });
 
 test('티스토리 원문 묶음은 본문 파일을 요구하고 수동 편집기로 넘긴다', () => {

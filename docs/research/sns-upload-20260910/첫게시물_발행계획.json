@@ -1,5 +1,9 @@
 {
   "schema": "synk-sns-publish-plan/v1",
+  "status": "retired-2026-09-14",
+  "retirementReason": "User requested entirely new first-post candidates. Historical items are preserved outside the active item list.",
+  "currentPreparation": "docs/마케팅/전사새출발_20260914/진행과검증.md",
+  "items": [],
   "createdAt": "2026-09-10T11:42:24.060Z",
   "sourceRoot": "docs/홍보물/첫게시물_20260910/전체_업로드",
   "accountsFile": "docs/마케팅/sns-계정.json",
@@ -10,7 +14,7 @@
     "credentialStore": "windows-credential-manager",
     "results": "next-to-plan"
   },
-  "items": [
+  "retiredItems": [
     {
       "id": "01-lab-youtube",
       "accountKey": "lab-youtube",

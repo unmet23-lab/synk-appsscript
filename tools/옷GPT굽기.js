@@ -21,10 +21,10 @@
  * 쓰기:
  *   node tools/옷GPT굽기.js --설정                        # 모델·대체 여부만 조회, 생성 없음
  *   node tools/옷GPT굽기.js --목록                        # 무엇을 고를 수 있나
- *   node tools/옷GPT굽기.js --것 "목도리"                  # 한 벌
+ *   node tools/옷GPT굽기.js --것 "목도리" --유료-api       # 한 벌(종량제 실행을 명시)
  *   node tools/옷GPT굽기.js --전부                         # 여러 벌은 --간다 없이 생성하지 않는다
- *   node tools/옷GPT굽기.js --전부 --간다                  # 묻지 않고 바로
- *   node tools/옷GPT굽기.js --것 "목도리" --크기 1024      # 작은 크기로 시험
+ *   node tools/옷GPT굽기.js --전부 --간다 --유료-api       # 묻지 않고 바로
+ *   node tools/옷GPT굽기.js --것 "목도리" --크기 1024 --유료-api  # 작은 크기로 시험
  */
 'use strict';
 
@@ -179,7 +179,7 @@ async function 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 }) {
     throw new Error(`의상은 ${모델} 고정이다. ${인자.모델} 또는 다른 모델로 대체하지 않는다.`);
   }
   if (인자.설정) {
-    console.log(JSON.stringify({ 모델, 대체모델: null, 기본크기: 2560, 생성: false }));
+    console.log(JSON.stringify({ 모델, 대체모델: null, 기본크기: 2560, 생성: false, 유료API필요: true }));
     return;
   }
   const 마스코트이름 = 인자.마스코트 || '까몽';
@@ -222,6 +222,10 @@ async function 한벌({ 열쇠값, 마스코트, 옷들, 몸참조, 크기 }) {
   if (!인자.간다 && 할것.length > 3) {
     console.log('   → 진짜 굽는다면 --간다 를 붙인다.');
     return;
+  }
+
+  if (!인자['유료-api'] && process.env.SYNK_ALLOW_PAID_API !== '1') {
+    throw new Error('OpenAI 이미지 생성은 종량제 API라 기본 차단됐다. 실제 생성에 동의한 실행만 --유료-api를 붙인다.');
   }
 
   const 열쇠값 = 열쇠();

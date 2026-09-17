@@ -38,11 +38,11 @@ Object.assign(assetSources, {
   letter:path.join(IMPROVED,'봉투-2.5.png'),
   book:path.join(IMPROVED,'책-2.5.png'),
   scissors:path.join(IMPROVED,'가위-2.5.png'),
-  labpage:path.join(IMPROVED,'지면스냅샷/lab-1.png'),
-  labinside:path.join(IMPROVED,'지면스냅샷/lab-2.png'),
-  shiftpage:path.join(IMPROVED,'지면스냅샷/shift-1.png'),
-  pulsepage:path.join(IMPROVED,'지면스냅샷/pulse-1.png'),
-  synkpage:path.join(IMPROVED,'지면스냅샷/synk-1.png'),
+  labpage:path.join(SOURCE,'소개서_4K/lab-1.png'),
+  labinside:path.join(SOURCE,'소개서_4K/lab-2.png'),
+  shiftpage:path.join(SOURCE,'소개서_4K/shift-1.png'),
+  pulsepage:path.join(SOURCE,'소개서_4K/pulse-1.png'),
+  synkpage:path.join(SOURCE,'소개서_4K/synk-1.png'),
   ...Object.fromEntries(['synk','lab','shift','pulse'].map(b=>['brand-'+b,path.join(IMPROVED,'배치용','brand-'+b+'.webp')])),
 });
 const selected = new Set(['paper','night','labpage','book','scissors','brand-synk','brand-lab','brand-shift','brand-pulse']);
@@ -117,7 +117,7 @@ async function prepare() {
       fs.writeFileSync(pending,completed);
       fs.renameSync(pending,target);
     }
-    const note=key.endsWith('page')||key==='labinside'?'기존 소개서 본문은 유지하고 로고만 스티치로 교체한 파생 지면':['letter','book','scissors'].includes(key)?'윤곽과 밝은 재질을 복구한 신규 연출 자산. 실제 수작업 기록 아님':key==='brand-synk'?'기존 SYNK 원본 픽셀을 유지한 배치용 자산':key.startsWith('brand-')?'동일 사업명 형태와 색에 스티치를 적용한 배치용 자산':'기존 승인 브랜드 자산. 실사 시설/학생 사진 아님';
+    const note=key.endsWith('page')||key==='labinside'?'확정 비전과 승인 로고를 담은 현재 소개서의 완성 지면':['letter','book','scissors'].includes(key)?'윤곽과 밝은 재질을 복구한 신규 연출 자산. 실제 수작업 기록 아님':key==='brand-synk'?'기존 SYNK 원본 픽셀을 유지한 배치용 자산':key.startsWith('brand-')?'동일 사업명 형태와 색에 스티치를 적용한 배치용 자산':'기존 승인 브랜드 자산. 실사 시설/학생 사진 아님';
     manifest.push({key,source:path.relative(ROOT,source).split(path.sep).join('/'),sourceWidth:meta.width,sourceHeight:meta.height,sourceSha256,output:'assets/'+assetFile(key),outputSha256:hash(target),transform:ASSET_TRANSFORM,note});
   }
   write(path.join(__dirname,'사용자산.json'),JSON.stringify(manifest,null,2));

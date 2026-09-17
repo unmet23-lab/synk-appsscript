@@ -512,11 +512,18 @@ test('🔑 현행 clasp-guard는 검수 block을 실제 위험 알림으로 전�
   });
   const out = (r.stdout || '').trim();
   // 09-09에 절차 게이트가 알림으로 바뀌었다. 옛 deny 기대를 맞추려고 보호 정책을 복구하지 않는다.
-  // 조용한 성공은 여전히 실패다: 실제 검수 위험을 stderr로 전달해야 한다.
-  assert.strictEqual(out, '', '현행 알림 정책을 deny로 되돌리지 않는다');
-  assert.match(r.stderr || '', /\[clasp-guard\]/, '실제 알림 통로가 실행되지 않았다');
-  assert.match(r.stderr || '', /이종 검수/, '위험 지적이 사용자 알림에서 빠졌다');
-  assert.match(r.stderr || '', /P0/, '지적 등급이 사용자 알림에서 빠졌다');
+  // Claude Code는 exit 0의 stderr를 사용자에게 보여 주지 않으므로, 공식 hook JSON의
+  // systemMessage(사용자 알림)와 additionalContext(Claude 문맥)를 한 번에 내보낸다.
+  assert.notStrictEqual(out, '', '위험 알림이 조용히 사라졌다');
+  const j = JSON.parse(out);
+  assert.strictEqual(j.hookSpecificOutput?.hookEventName, 'PreToolUse');
+  assert.strictEqual(j.hookSpecificOutput?.permissionDecision, undefined,
+    '사용자가 해제한 검수 게이트를 deny로 되돌리지 않는다');
+  assert.strictEqual(j.systemMessage, j.hookSpecificOutput?.additionalContext,
+    '사용자와 Claude가 서로 다른 위험 설명을 받으면 안 된다');
+  assert.match(j.systemMessage || '', /이종 검수/, '위험 지적이 사용자 알림에서 빠졌다');
+  assert.match(j.systemMessage || '', /P0/, '지적 등급이 사용자 알림에서 빠졌다');
+  assert.strictEqual((r.stderr || '').trim(), '', 'exit 0 stderr는 보이지 않는 통로이므로 쓰지 않는다');
 });
 
 test('🔑 알림(none)은 배포를 **막지 않는다** — 폰 클라우드 세션엔 codex 가 없어 따를 수 없는 처방이 된다', () => {

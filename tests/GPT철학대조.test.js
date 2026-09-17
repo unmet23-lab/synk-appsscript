@@ -20,6 +20,7 @@ const 복사목록 = [
   도구, 빌드, 검수, 철학, 템플릿,
   'tools/배포판점검.js', 'tools/deploy-security-check.js', 'tools/모델정책.js',
   'tools/lib/검수런.js', 'tools/lib/인자게이트.js', 'tools/lib/수용증거.js', 'tests/lib/소스검사.js',
+  'tools/lib/클로드구독검수.js',
   '.claude/hooks/lib/clasp-project.js', '.claude/hooks/lib/board-id.js',
   '.claude/hooks/philosophy-card.js',
 ];

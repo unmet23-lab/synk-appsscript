@@ -7,7 +7,11 @@
  *   쓰게 됐다. 같은 함수가 두 파일에 있으면 재시도·타임아웃·스키마 처리가 갈리고, 갈린 쪽은 조용하다
  *   (constant-known-in-two-places). 그래서 여기 하나로 모으고 둘 다 여기서 가져간다.
  *
- * ■ 왜 CLI(HTTP 직결)인가 — Gemini CLI(`gemini -p`) 가 아니라
+ * ■ 이 파일은 API 직결 전용이다. 로컬 검수의 기본 구독 경로는 `제미나이구독호출.js`다.
+ *   API가 필요한 자리에서만 이 파일을 쓰며, 기본은 AI Studio 무료 문이다.
+ *   유료 Vertex는 `--용도 돈 --유료-api`를 함께 줘야 한다.
+ *
+ * ■ 왜 API 직결 통로를 남기나
  *   09-02 실측: `gemini -m gemini-3.7-flash` 를 시켜도 `stats.models` 가 `gemini-3.5-flash` 였다
  *   (공개 이슈 #28859 · 수정 미병합). 서빙 모델이 조용히 바뀌는 통로에 검수 픽을 걸 수 없다.
  *   HTTP 직결은 응답 `modelVersion` 이 «무엇이 답했나»를 그대로 말한다 — 그 값을 장부에 적는다.
@@ -25,8 +29,8 @@ const path = require('path');
 
 /* 🚪 주소는 `tools/모델정책.js` 의 `제미나이URL(용도, 모델)` 하나가 쥔다(09-04) — 「글」은 AI Studio,
  * 「돈」은 Vertex AI 다. 여기 상수로 두면 문이 두 곳에 살아 한쪽만 옮겨진다(constant-known-in-two-places).
- * 🔄 09-05 밤 — 용도를 안 준 호출은 정책의 `기본용도()`(= '돈' · Vertex · 크레딧)로 간다(유호 확정). 여기서 '글' 을
- *   다시 적지 않는다 — 기본이 두 곳에 살면 한쪽만 바뀐다. BASE 는 옛 이름 그대로 «기본 문»의 값을 내보낸다. */
+ * 용도를 안 준 호출은 정책의 `기본용도()`(= '글' · AI Studio 무료 문)로 간다. 여기서 값을
+ * 다시 적지 않는다 — 기본이 두 곳에 살면 한쪽만 바뀐다. BASE 는 옛 이름 그대로 «기본 문»의 값을 내보낸다. */
 const 정책 = require(require('path').join(__dirname, '..', '모델정책.js'));
 const BASE = 정책.제미나이문(정책.기본용도()).base;
 const 호출타임아웃 = 60_000;
@@ -52,17 +56,49 @@ function 제미나이스키마(schema) {
   return out;
 }
 
+/* generateContent의 비스트리밍 텍스트 응답 계약(공식 REST v1, 2026-09-11).
+ * STOP만 완결 답이며 thought=true는 최종 답이 아니다. 모델의 숫자/날짜 판번호는
+ * 허용하되 flash-lite처럼 다른 제품 계열은 같은 접두라는 이유로 통과시키지 않는다. */
+function 서빙모델일치(요청, 실제) {
+  if (typeof 실제 !== 'string' || !실제) return false;
+  if (실제 === 요청) return true;
+  if (!실제.startsWith(`${요청}-`)) return false;
+  return /^(?:\d{3}|\d{2}-\d{2}|\d{4}-\d{2}-\d{2})$/.test(실제.slice(요청.length + 1));
+}
+
+function 응답읽기(본문, model) {
+  const c = 본문 && Array.isArray(본문.candidates) && 본문.candidates[0];
+  if (!c) {
+    const why = 본문 && 본문.promptFeedback && 본문.promptFeedback.blockReason;
+    throw new Error(`완료 후보가 없다${why ? ` (${why})` : ''}`);
+  }
+  if (c.finishReason !== 'STOP') {
+    throw new Error(`답이 정상 완료되지 않았다: ${c.finishReason || 'finishReason 없음'}`);
+  }
+  const parts = c.content && c.content.parts;
+  const text = (Array.isArray(parts) ? parts : [])
+    .filter((p) => p && p.thought !== true && typeof p.text === 'string')
+    .map((p) => p.text).join('').trim();
+  if (!text) throw new Error('최종 텍스트가 비었다(사고 요약은 답으로 세지 않는다)');
+  if (!서빙모델일치(model, 본문.modelVersion)) {
+    throw new Error(`서빙 모델 확인 불가: 요청 ${model} · 실제 ${본문.modelVersion || '(없음)'}`);
+  }
+  return { text, modelVersion: 본문.modelVersion, finishReason: c.finishReason };
+}
+
 /** 답 텍스트(기본) 또는 `opts.상세` 면 { text, modelVersion, finishReason, usage }.
- *  @param opts.용도 '돈'(기본 · Vertex AI 문 · 09-05) | '글'(AI Studio 공짜 문 · 옵트인) — 주소를 이 값이 고른다(09-04) */
+ *  @param opts.용도 '글'(기본 · AI Studio 무료 문) | '돈'(명시 승인 전용 · Vertex) */
 async function 제미나이(key, model, prompt, opts = {}) {
   const 타임아웃 = Number(opts.timeoutMs) || 호출타임아웃;
+  // 비용 차단·자격 실패는 재시도로 풀리지 않는다. 전송 루프 밖에서 한 번 확인한다.
+  const headers = await 정책.제미나이헤더(opts.용도 || 정책.기본용도());
   for (let 회 = 0; ; 회++) {
     let res, 본문;
     try {
       res = await fetch(정책.제미나이URL(opts.용도 || 정책.기본용도(), model), {
         method: 'POST',
         // 🔑 인증 머리는 정책이 낸다 — 글=API 키 · 돈=OAuth 토큰(Vertex 는 키를 못 받는다 · 09-04).
-        headers: await 정책.제미나이헤더(opts.용도 || 정책.기본용도()),
+        headers,
         body: JSON.stringify({
           // 🔑 `role` 은 Vertex 문이 요구한다(없으면 400 · 09-04) — AI Studio 도 받는 형태다.
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -79,27 +115,32 @@ async function 제미나이(key, model, prompt, opts = {}) {
         }),
         signal: AbortSignal.timeout(타임아웃),
       });
-      본문 = await res.json();
     } catch (e) {
       if (회 < 재시도지연.length) { await 잠깐(재시도지연[회]); continue; }
       throw new Error(`네트워크/타임아웃: ${e.message}`);
+    }
+    // 성공 HTTP 뒤의 깨진 JSON은 같은 생성 요청을 다시 보내지 않는다.
+    try { 본문 = await res.json(); }
+    catch {
+      if (!res.ok && 재시도가능(res.status) && 회 < 재시도지연.length) {
+        await 잠깐(재시도지연[회]); continue;
+      }
+      throw new Error(`HTTP ${res.status}: 응답 JSON을 읽을 수 없다`);
     }
     if (!res.ok) {
       if (재시도가능(res.status) && 회 < 재시도지연.length) { await 잠깐(재시도지연[회]); continue; }
       throw new Error(`${res.status} ${(본문.error && 본문.error.message) || ''}`.trim());
     }
-    const c = 본문.candidates && 본문.candidates[0];
-    const t = c && c.content && c.content.parts && c.content.parts.map((p) => p.text).join('');
-    const text = (t || '').trim();
+    const 답 = 응답읽기(본문, model);
     if (opts.상세) {
       return {
-        text,
-        modelVersion: 본문.modelVersion || null,   // «무엇이 답했나» — 픽과 다르면 장부가 그 사실을 들고 나간다
-        finishReason: (c && c.finishReason) || null,
+        ...답,
         usage: 본문.usageMetadata || null,
+        route: (opts.용도 || 정책.기본용도()) === '돈' ? 'vertex-paid-api' : 'google-ai-studio-free-api',
+        requestedModel: model,
       };
     }
-    return text;
+    return 답.text;
   }
 }
 
@@ -116,7 +157,7 @@ async function main() {
   const argv = process.argv.slice(2);
   const model = 인자(argv, '--model');
   const out = 인자(argv, '-o');
-  if (!model || !out) { console.error('사용: node tools/lib/제미나이호출.js --model <id> [--thinking high] [--schema <json>] -o <출력> [--timeout <ms>]  (프롬프트 = stdin)'); process.exit(1); }
+  if (!model || !out) { console.error('사용: node tools/lib/제미나이호출.js --model <id> [--thinking high] [--schema <json>] -o <출력> [--timeout <ms>] [--용도 글|돈] [--유료-api]  (프롬프트 = stdin)'); process.exit(1); }
   const thinking = 인자(argv, '--thinking');
   const 스키마경로 = 인자(argv, '--schema');
   const timeoutMs = Number(인자(argv, '--timeout')) || undefined;
@@ -125,38 +166,27 @@ async function main() {
     try { schema = JSON.parse(fs.readFileSync(path.resolve(스키마경로), 'utf8')); }
     catch (e) { console.error(`실행 오류: 스키마를 못 읽었다 — ${e.message}`); process.exit(1); }
   }
-  /* 🚪 **창구를 부르는 쪽이 고른다** (2026-09-04 · 그날 실측이 이 문을 열게 했다).
-   *   🔄 09-05 밤 — 기본은 「돈」(Vertex · 크레딧)이다(유호 확정 「앞으로 제미나이 열쇠는 vertex로」 · 정책 `기본용도()`).
-   *     「글」(AI Studio · 공짜 몫)은 `--용도 글` 을 손으로 줄 때만 — 아래 09-04 사연은 그 문이 왜 예비로 내려갔는지다.
-   *   (09-04 판) 기본은 「글」이었다 — 몽골어 검문과 검수 둘째 눈처럼 **자주·가볍게** 도는 일.
-   *   🔴 그런데 공짜 몫은 **하루 20발**이고, 09-04 «첫» 설계 심문이 정확히 거기서 죽었다:
-   *     `Quota exceeded ... generate_content_free_tier_requests, limit: 20, model: gemini-3.8-flash`.
-   *     심문은 문서 전문을 통째로 보내는 «무겁고 드문» 호출이라, 이 몫에 얹으면 그날 다른 일이 다 막힌다.
-   *   ⇒ 무거운 자리는 `--용도 돈`(Vertex AI · 크레딧 ₩435,523 · ⏰시한 2026-11-13)으로 부른다.
-   *   ⚠ 「돈」은 잔액이 닳는다 — **자주 도는 자리를 여기로 옮기지 않는다**(마르면 카드로 넘어간다).
-   *   🚫 그림·음악·목소리는 여기를 안 지나간다(각자 제 통로에서 「돈」을 쓴다 · 유호 확정 09-03). */
+  /* 🚪 API 기본은 무료 「글」 문이다. 유료 Vertex는 용도와 비용 승인을 둘 다 적어야 한다.
+   * 개발 검수의 무거운 Pro 호출은 이 API가 아니라 Google AI Pro 구독 통로가 맡는다. */
   const 용도 = 인자(argv, '--용도') || 정책.기본용도();
   if (용도 !== '글' && 용도 !== '돈') {
     console.error(`실행 오류: --용도 는 글|돈 중 하나다 — 받은 값 "${용도}"`); process.exit(1);
   }
-  const key = 정책.제미나이키(용도);
-  if (!key) { console.error('확인 불가: ' + 정책.제미나이키안내(용도)); process.exit(2); }
+  const key = 용도 === '글' ? 정책.제미나이키('글') : null;
+  if (용도 === '글' && !key) { console.error('확인 불가: ' + 정책.제미나이키안내('글')); process.exit(2); }
   const prompt = fs.readFileSync(0, 'utf8');
   if (!prompt.trim()) { console.error('실행 오류: stdin 프롬프트가 비었다'); process.exit(1); }
   try {
     const r = await 제미나이(key, model, prompt, { schema, thinking, timeoutMs, 용도, 상세: true });
     fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
     fs.writeFileSync(out, JSON.stringify(r), 'utf8');
-    if (r.modelVersion && !String(r.modelVersion).startsWith(model)) {
-      console.error(`⚠ 서빙 모델이 픽과 다르다 — 픽 ${model} · 답한 것 ${r.modelVersion}`);
-    }
   } catch (e) {
     console.error(`확인 불가: 제미나이 호출 실패 — ${e.message}`);
     process.exit(2);
   }
 }
 
-module.exports = { 제미나이, 제미나이스키마, 재시도가능, BASE, 호출타임아웃, 재시도지연 };
+module.exports = { 제미나이, 제미나이스키마, 서빙모델일치, 응답읽기, 재시도가능, BASE, 호출타임아웃, 재시도지연 };
 
 if (require.main === module) {
   main().catch((e) => { console.error('실행 오류:', e.message); process.exit(1); });

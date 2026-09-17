@@ -1775,7 +1775,8 @@ function 마케팅실행() {
   @media print{@page{size:A4;margin:18mm 17mm 18mm}.execution{background:${c.Paper};print-color-adjust:exact;-webkit-print-color-adjust:exact}.execution .no-print{display:none!important}.execution .editorial{max-width:none;padding:0;font-size:10.5pt;line-height:1.72}.execution .editorial .brand-lock{height:52px;margin-bottom:20px}.execution .editorial .brand-synk{width:130px}.execution .editorial .division-stitch-logo[data-division]{height:30px;max-height:30px}.execution .editorial h1{font-size:25pt;margin:20px 0}.execution .editorial h2{font-size:16pt;margin-top:26px;padding-top:16px;break-after:avoid}.execution .editorial h3{font-size:12pt;break-after:avoid}.execution .editorial p,.execution .editorial li{orphans:3;widows:3}.execution .editorial pre{font-size:9pt;padding:14px;break-inside:avoid}.execution .editorial table{font-size:9pt}.execution .editorial tr{break-inside:avoid}.execution .editorial thead{display:table-header-group}.execution .editorial blockquote{break-inside:avoid}.execution .editorial a{color:inherit;text-decoration:none}}
   `;
 }
-module.exports = { css, 율, 분모, 시연, 지면들, 림레시피, 정본, 마커, 범위씌우기, 기본범위, 기본천, 엔진전시, 계정컬렉션, 마케팅실행 };
+function 첫게시물() { return require('./loom-첫게시물.js')(정본()); }
+module.exports = { css, 율, 분모, 시연, 지면들, 림레시피, 정본, 마커, 범위씌우기, 기본범위, 기본천, 엔진전시, 계정컬렉션, 마케팅실행, 첫게시물 };
 
 /* ── CLI ──────────────────────────────────────────────────────────────────── */
 if (require.main === module) {
