@@ -1,7 +1,8 @@
 ---
 name: remotion-create
 description: Create a new Remotion video
-version: 4.0.520
+metadata:
+  version: "4.0.520"
 ---
 
 These are instructions for making a new Remotion project and composition.  
@@ -55,7 +56,7 @@ You can visit a specific composition by navigating to `/[composition-id]`, for e
 
 ## Render the video
 
-Only render if the user explicitly asks for it.
+Render the finished video when the request is to create a deliverable video. For a preview-only request, provide the preview.
 
 ```
 npx remotion render
@@ -66,4 +67,4 @@ For more options, see [Rendering](../remotion-render/SKILL.md).
 ## Follow-up
 
 The video creation process has finished.
-For follow-up prompts, use `remotion-markup` (연출 판단은 `remotion-motion-graphics`)
+For follow-up prompts, use `remotion-markup`
