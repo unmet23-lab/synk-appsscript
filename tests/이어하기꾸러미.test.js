@@ -82,3 +82,26 @@ test('글과 자산을 가르는 자 — 원드라이브에 무엇이 가는지�
   assert.equal(문서인가('Code.js'), false);
   assert.equal(문서인가('package.json'), false);              // 저장소 뿌리 json 은 글이 아니다
 });
+
+// A help/typo request must never reach the synchronizer or either cloud copy.
+test('도움말과 잘못된 옵션은 공유 사본을 쓰지 않는다', t => {
+  const fs = require('node:fs'), os = require('node:os');
+  const {spawnSync} = require('node:child_process');
+  const tempBase = fs.realpathSync(os.tmpdir());
+  const dir = fs.mkdtempSync(path.join(tempBase, 'synk-copy-cli-'));
+  t.after(() => {
+    assert.equal(path.dirname(fs.realpathSync(dir)), tempBase);
+    assert.ok(path.basename(dir).startsWith('synk-copy-cli-'));
+    fs.rmSync(dir, {recursive:true, force:true});
+  });
+  const tool = path.join(dir, 'tool.js');
+  fs.copyFileSync(path.join(__dirname, '../tools/이어하기꾸러미.js'), tool);
+  const marker = path.join(dir, 'side-effect.txt');
+  fs.writeFileSync(path.join(dir, '비전동기화.js'),
+    'exports.syncVisionSources=()=>require("node:fs").writeFileSync('+JSON.stringify(marker)+',"unexpected");');
+  for (const flag of ['--help', '-h', '--unknown']) {
+    const result = spawnSync(process.execPath, [tool, flag], {encoding:'utf8'});
+    assert.equal(result.status, flag==='--unknown' ? 1 : 0, result.stderr);
+    assert.equal(fs.existsSync(marker), false);
+  }
+});

@@ -14,17 +14,11 @@ const 금지인가 = p => forbidden.some(re => re.test(p));
 const 문서인가 = p => p.endsWith('.md') || p.startsWith('docs/_ops/') ||
   (p.startsWith('docs/') && p.endsWith('.json'));
 const docs = {
-  SYNK: ['DESIGN.md', 'docs/AI_운영원칙.md', 'docs/SYNK_철학.md', 'docs/비전_정본.md', 'docs/제품방향.md',
-    'docs/엔진7종_상향설계_v3.md', 'docs/명품_기준_v1.md',
-    'docs/명품브랜딩_v2.md', 'docs/명품브랜딩_조사_2026-09-09.md',
-    'docs/마케팅_정본.md', 'docs/명품눈금_v1.md',
-    'docs/대용량자산_운영.md',
-    'docs/로고_중립색_정본_v1.md', 'docs/홈페이지_설계_v1.md',
-    'docs/디자인_컨셉_정본_v1.md', 'docs/디자인_토큰.json',
-    'docs/브랜드_폰트_정본.md', 'docs/양모공방_요소사전.md', 'docs/캐릭터/의상제작_정본.md'],
-  'SYNK LAB': ['docs/커리큘럼_정본_v1.md', 'docs/반편성_정본_v2.md',
-    'docs/강사_교수법_매뉴얼_v1.md', 'docs/자주묻는질문_정본.md'],
-  'SYNK SHIFT': ['docs/SHIFT/콘텐츠_배분_v1.md', 'docs/SHIFT/영상_공개선.md'],
+  SYNK: ['DESIGN.md', 'docs/AI_운영원칙.md', 'docs/SYNK_철학.md', 'docs/비전_정본.md',
+    'docs/마케팅_정본.md', 'docs/제품방향.md', 'docs/엔진7종_상향설계_v3.md',
+    'docs/로고_중립색_정본_v1.md', 'docs/브랜드_폰트_정본.md', 'docs/디자인_토큰.json'],
+  'SYNK LAB': ['docs/커리큘럼_정본_v1.md', 'docs/반편성_정본_v2.md', 'docs/1기_제안문안_v1.md'],
+  'SYNK SHIFT': ['docs/마케팅_정본.md'],
   'SYNK PULSE': ['docs/음악자산_장부.md'],
 };
 function within(root, rel) {
@@ -55,7 +49,7 @@ function 목록(root = ROOT) {
     walk(within(root, source));
   }
   for (const brand of brands) {
-    add(brand, 'docs/자료안내/' + brand + '.md', '먼저 읽기.md');
+    add(brand, 'docs/문서_지도.md', '먼저 읽기.md');
     for (const source of docs[brand]) add(brand, source, '정본/' + path.basename(source));
     const slug = { SYNK: 'synk', 'SYNK LAB': 'lab', 'SYNK SHIFT': 'shift', 'SYNK PULSE': 'pulse' }[brand];
     add(brand, 'docs/홍보물/브랜드소개_20260909/' + slug + '.pdf', '소개서.pdf');
@@ -126,6 +120,12 @@ function copy(root, destination, rows) {
 }
 function main() {
   const args = process.argv.slice(2);
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log('사용: node tools/이어하기꾸러미.js [--재기] [--원드라이브|--구글]\n--재기: 복사 없이 목록만 확인');
+    return;
+  }
+  const unknown = args.filter(arg => !['--재기', '--원드라이브', '--구글', '--저장소'].includes(arg));
+  if (unknown.length) throw new Error('알 수 없는 옵션: ' + unknown.join(', '));
   if (args.includes('--저장소')) throw new Error('전체 이력 복제는 종료했습니다. 일반 핵심 자료 갱신을 사용하세요.');
   if (!args.includes('--재기')) require('./비전동기화.js').syncVisionSources();
   const rows = 목록();

@@ -27,7 +27,6 @@ const REFERENCES = [
   'docs/명품_기준_v1.md',
   'DESIGN.md',
   'docs/디자인_토큰.json',
-  'docs/디자인_컨셉_정본_v1.md',
   'docs/브랜드_폰트_정본.md',
 ];
 
@@ -37,57 +36,24 @@ const REFERENCES = [
 const claudeMd = fs.readFileSync(path.join(REPO, 'CLAUDE.md'), 'utf8');
 const mVer = claudeMd.match(/^>\s*\**(\d{4}-\d{2}-\d{2})/m);
 const VER_DATE = mVer ? mVer[1] : '';
-const VER = VER_DATE || '(정본일 미검출)';
+const VER = VER_DATE || '현재 원문';
 const 커밋 = (() => {
   try {
     const r = require('child_process').spawnSync('git', ['-C', REPO, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' });
     return r.status === 0 ? r.stdout.trim() : '';
   } catch { return ''; }
 })();
-const STAMP = `정본일 ${VER_DATE}${커밋 ? ` · ${커밋}` : ''}`;
+const STAMP = `${VER}${커밋 ? ` · ${커밋}` : ''}`;
 
-function 버전확인() {
-  if (mVer) return;
-  console.error('CLAUDE.md 머리말에서 정본일을 못 읽었다 — 이식 폴더를 만들지 않는다.');
-  console.error('머리줄이 「> 2026-09-17 · …」 꼴인지 확인한다.');
-  process.exit(2);
-}
 
 function readme(files) {
-  return `# SYNK 하네스 이식 꾸러미
+  return `# SYNK 지침 사본
 
-> 생성물의 정본 = SYNK-appsscript 저장소 · 지침 **${STAMP}**
-> 갱신: 저장소에서 \`node tools/harness-export.js --out <이 폴더>\`
+${STAMP}
 
-## 담긴 문서
+원문 경로를 유지한 자료입니다. 사용할 때 현재 저장소와 대조하고 이번 요청에 필요한 문서만 읽습니다.
 
-\`00_정본/\`은 원래 상대 경로를 유지한 문서 묶음입니다. 세 모델의 지침은 각자의 원문이며 다른 모델의 지침을 복제해 대신 넣지 않습니다.
-
-| 파일 | 용도 |
-|---|---|
-| \`AGENTS.md\` | Codex에서 시작하는 작업의 진입 지침 |
-| \`CLAUDE.md\` | Claude에서 시작하는 작업의 진입 지침 |
-| \`GEMINI.md\` | Gemini/Antigravity에서 시작하는 작업의 진입 지침 |
-| \`docs/AI_운영원칙.md\` | 세 모델이 함께 따르는 공통 원칙 |
-
-그 밖에 실제 포함한 정본·참고 문서:
-${files.filter((f) => !REQUIRED.includes(f)).map((f) => `- \`${f}\``).join('\n') || '- 없음'}
-
-## 적용 방식
-
-직접 요청받은 모델이 조사·제작·검증·통합까지 맡습니다. 이 묶음은 생성 시점의 사본입니다. 원래 저장소의 해당 모델 지침·공통 원칙·업무 원문의 현재 내용과 대조한 뒤 필요한 부분만 사용합니다. 다른 환경에는 목표·작업 사본·관련 원문을 전달하고 실제로 읽고 실행할 수 있는지 확인합니다.
-
-진행 중인 작업·병렬 작업·워크트리·후속 일정은 현재 메인 하네스의 기본 기능이 맡습니다. 별도 강제 훅을 설치하는 꾸러미가 아닙니다. Gemini 실행 통로는 현행 공통 원칙과 작업 흐름 안내가 정하며, 구독용 Gemini CLI가 계속 제공된다고 가정하지 않습니다.
-
-철학, 엔진 설계, 마스코트 원본, 스킬과 실행 도구는 이 묶음에 통째로 복제하지 않습니다. 관련 문서가 가리키는 저장소의 정본을 필요한 범위에서 읽고 사용합니다. 브랜드 색·서체 값을 이 안내에 다시 적어 별도 정본을 만들지 않습니다.
-
-## 갱신과 보존
-
-이 도구는 위에 명시한 생성 파일과 README만 갱신합니다. 출력 폴더 전체를 지우지 않으며 관계없는 파일은 그대로 둡니다. 내보낸 지침을 바꾸려면 저장소 원문을 고친 뒤 다시 실행합니다.
-
-이전 판이 남긴 파일도 자동 삭제하지 않습니다. 예전의 훅·개인 기억·전체 도구 폴더가 같은 출력 위치에 이미 있다면 이번 판의 생성물 목록 밖에 있는 과거 자료입니다. 새로 공유할 때는 빈 출력 폴더에 생성한 이번 문서 묶음을 사용합니다.
-
-개인 기억 전체, 로그인·권한 설정, 자격증명, 학생 식별 데이터, 훅, tools/ 전체는 기본 내보내기 대상이 아닙니다. 문서를 전달했다고 앱 연결·로그인·실행 환경까지 옮겨진 것으로 보고하지 않습니다.
+${files.map(f => '- `'+f+'`').join('\n')}
 `;
 }
 
@@ -108,7 +74,6 @@ function checkDestination(rel) {
 }
 
 function main() {
-  버전확인();
   if (outIdx >= 0 && (!args[outIdx + 1] || args[outIdx + 1].startsWith('--'))) {
     throw new Error('--out 뒤에 출력 폴더 경로가 필요하다.');
   }

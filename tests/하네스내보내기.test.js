@@ -20,28 +20,14 @@ const { spawnSync } = require('node:child_process');
 
 const H = require('../tools/harness-export.js');   // require 는 생성기를 실행하지 않는다
 
-/* 09-17: 재는 대상이 «v판 번호»에서 «정본일»로 바뀌었다. 손으로 올리던 숫자가
- * 지침 손질을 막는 문턱이었다(그날 지침 압축에서 실측 — 날짜만 고쳤더니 이 시험이 깨졌다).
- * 지키는 것은 그대로다: 「미검출」이 이식 폴더 머리말에 조용히 박히지 않는가. */
-test('🔴 지금 CLAUDE.md 에서 정본일이 «실제로» 읽힌다 — 「미검출」은 rot-check 의 눈을 멀게 한다', () => {
-  assert.match(H.VER, /^\d{4}-\d{2}-\d{2}$/, `정본일을 못 읽었다(${H.VER}) — CLAUDE.md 머리 꼴이 바뀌었으면 추출기를 같이 고친다`);
-  assert.doesNotMatch(H.STAMP, /미검출/, 'STAMP 에 「미검출」이 들어가면 이식 폴더 머리말에 그대로 박힌다');
-  assert.match(H.STAMP, /정본일 \d{4}-\d{2}-\d{2}/, '정본일이 비어 있다 — 낡음을 날짜로도 못 잰다');
-});
-
-test('🔴 읽은 판이 CLAUDE.md 가 «말하는» 판과 같다 — 딴 줄에서 주워 오면 조용히 틀린다', () => {
-  const md = fs.readFileSync(path.join(__dirname, '..', 'CLAUDE.md'), 'utf8');
-  // 머리말 첫 인용줄이 정본 판을 말한다. 그 줄에 추출값이 그대로 들어 있어야 한다.
-  const 머리 = md.split(/\r?\n/).slice(0, 6).join('\n');
-  assert.ok(머리.includes(H.VER), `머리말에 없는 판을 읽었다(${H.VER}) — 본문 어딘가의 옛 판을 주웠을 수 있다`);
-});
-
-test('🔴 버전을 못 읽으면 «만들지 않는다» — 거절하는 자리가 소스에 서 있다', () => {
-  const src = fs.readFileSync(path.join(__dirname, '..', 'tools', 'harness-export.js'), 'utf8');
-  assert.ok(/function 버전확인\(\)/.test(src), '버전확인() 이 없다');
-  assert.ok(/process\.exit\(2\)/.test(src), '못 읽었을 때 종료코드로 거절하지 않는다');
-  const main = src.slice(src.indexOf('function main()'), src.indexOf('function main()') + 400);
-  assert.ok(/버전확인\(\)/.test(main), 'main 이 버전확인() 을 안 부른다 — 거절이 실제로 안 걸린다');
+test('날짜 없는 짧은 지침도 내보낼 수 있으며 원문을 임의로 보강하지 않는다', (t) => {
+  const {repo, out, run} = 내보내기자리(t);
+  const content = '# SYNK\n@docs/AI_운영원칙.md\n';
+  fs.writeFileSync(path.join(repo, 'CLAUDE.md'), content);
+  const result = run();
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(fs.readFileSync(path.join(out, '00_정본/CLAUDE.md'), 'utf8'), content);
+  assert.doesNotMatch(fs.readFileSync(path.join(out, 'README.md'), 'utf8'), /미검출/);
 });
 
 function 내보내기자리(t) {

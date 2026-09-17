@@ -271,6 +271,6 @@ A computer-implemented method updates purpose- and skill-specific contributions 
 ## 검토 근거
 
 - 현재 코드: `core.cjs` 0.5.0, SHA-256 `e535fe4bcd6d1bd5626082e69501350f6e4c94551a1c4824a5ae7f1803f52003`. 2026-09-12 현재 작업본 직접 독해.
-- [회사 내 후보와 종합 검수](../audit-20260912/REPORT.md), [청구 관계·선행 감사](../audit-20260912/CORE_PRIOR_ART.md), [구현·대조 증거 감사](../audit-20260912/EVIDENCE_AUDIT.md).
-- 기존 [선택 정정 주안](../registration-20260912/A_core.md)의 0.4 설명을 참고하되, 도움 범위 검증과 시간 정밀화는 현재 0.5 코드에 맞춰 작성했다.
+- 회사 내 후보와 종합 검수, 청구 관계·선행 감사, 구현·대조 증거 감사.
+- 기존 선택 정정 주안의 0.4 설명을 참고하되, 도움 범위 검증과 시간 정밀화는 현재 0.5 코드에 맞춰 작성했다.
 - 배경 대조의 주요 원문: [동일 음성의 평가·재사용](https://patents.google.com/patent/EP0986802B1/en), [지연 학습 사건 처리](https://patents.google.com/patent/US20180315330A1/en), [도움 사용을 반영한 학습 모델](https://patents.google.com/patent/US10943497B2/en), [목적별 접근 철회](https://patents.google.com/patent/US11144665B2/en). 각 문헌의 구체 대응 및 미해결 사항은 위 선행 감사에 있다.
