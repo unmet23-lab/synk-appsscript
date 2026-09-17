@@ -31,17 +31,25 @@ const REFERENCES = [
   'docs/브랜드_폰트_정본.md',
 ];
 
+/* 판 번호(v13.0 같은)를 손으로 올리던 것은 2026-09-17에 걷었다 — 지침을 고칠 때마다
+ * 숫자를 안 올리면 시험이 깨졌고, 그게 지침 손질을 막는 문턱이었다. 이제 머리말의
+ * 날짜만 읽고, 실제 판별은 커밋이 한다. 사람이 따로 올릴 것이 없다. */
 const claudeMd = fs.readFileSync(path.join(REPO, 'CLAUDE.md'), 'utf8');
-const mVer = claudeMd.match(/\*\*(v[\d.]+)\s*·\s*([\d-]+)\*\*/)
-  || claudeMd.match(/^>\s*\**(v[\d.]+)\s*·\s*([\d-]+)/m);
-const VER = mVer ? mVer[1] : '(버전 미검출)';
-const VER_DATE = mVer ? mVer[2] : '';
-const STAMP = `${VER} · 정본일 ${VER_DATE}`;
+const mVer = claudeMd.match(/^>\s*\**(\d{4}-\d{2}-\d{2})/m);
+const VER_DATE = mVer ? mVer[1] : '';
+const VER = VER_DATE || '(정본일 미검출)';
+const 커밋 = (() => {
+  try {
+    const r = require('child_process').spawnSync('git', ['-C', REPO, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' });
+    return r.status === 0 ? r.stdout.trim() : '';
+  } catch { return ''; }
+})();
+const STAMP = `정본일 ${VER_DATE}${커밋 ? ` · ${커밋}` : ''}`;
 
 function 버전확인() {
   if (mVer) return;
-  console.error('CLAUDE.md 에서 지침 판을 못 읽었다 — 이식 폴더를 만들지 않는다.');
-  console.error('머리줄의 v12.0 · 2026-09-09 같은 버전과 날짜를 확인한다.');
+  console.error('CLAUDE.md 머리말에서 정본일을 못 읽었다 — 이식 폴더를 만들지 않는다.');
+  console.error('머리줄이 「> 2026-09-17 · …」 꼴인지 확인한다.');
   process.exit(2);
 }
 

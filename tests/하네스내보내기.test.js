@@ -20,8 +20,11 @@ const { spawnSync } = require('node:child_process');
 
 const H = require('../tools/harness-export.js');   // require 는 생성기를 실행하지 않는다
 
-test('🔴 지금 CLAUDE.md 에서 지침 판이 «실제로» 읽힌다 — 「미검출」은 rot-check 의 눈을 멀게 한다', () => {
-  assert.match(H.VER, /^v\d+(\.\d+)*$/, `판을 못 읽었다(${H.VER}) — CLAUDE.md 머리 꼴이 바뀌었으면 추출기를 같이 고친다`);
+/* 09-17: 재는 대상이 «v판 번호»에서 «정본일»로 바뀌었다. 손으로 올리던 숫자가
+ * 지침 손질을 막는 문턱이었다(그날 지침 압축에서 실측 — 날짜만 고쳤더니 이 시험이 깨졌다).
+ * 지키는 것은 그대로다: 「미검출」이 이식 폴더 머리말에 조용히 박히지 않는가. */
+test('🔴 지금 CLAUDE.md 에서 정본일이 «실제로» 읽힌다 — 「미검출」은 rot-check 의 눈을 멀게 한다', () => {
+  assert.match(H.VER, /^\d{4}-\d{2}-\d{2}$/, `정본일을 못 읽었다(${H.VER}) — CLAUDE.md 머리 꼴이 바뀌었으면 추출기를 같이 고친다`);
   assert.doesNotMatch(H.STAMP, /미검출/, 'STAMP 에 「미검출」이 들어가면 이식 폴더 머리말에 그대로 박힌다');
   assert.match(H.STAMP, /정본일 \d{4}-\d{2}-\d{2}/, '정본일이 비어 있다 — 낡음을 날짜로도 못 잰다');
 });
@@ -53,7 +56,7 @@ function 내보내기자리(t) {
   const out = path.join(dir, 'output');
   const originals = {
     'AGENTS.md': '# GPT 총괄 작업자\r\nCodex 원문.\r\n',
-    'CLAUDE.md': '# Claude 설계자\n\n> v12.0 · 2026-09-09 — 원문\n',
+    'CLAUDE.md': '# Claude 설계자\n\n> 2026-09-09 — 원문\n',
     'GEMINI.md': '# Gemini 자료 검토자\nAntigravity 원문.\n',
     'docs/AI_운영원칙.md': '# 공통 원칙\n네이티브 하네스 활용.\n',
   };
