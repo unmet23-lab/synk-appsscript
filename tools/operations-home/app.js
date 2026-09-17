@@ -1,7 +1,8 @@
 import {marked} from '/vendor/marked.mjs';
 const $=s=>document.querySelector(s),escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let data=null,documentCache=new Map(),requestNumber=0,searchNumber=0,initial=true;
-const fmt=t=>t?new Intl.DateTimeFormat('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(t)):'확인 기록 없음';
+const validTime=t=>Boolean(t)&&Number.isFinite(Date.parse(t));
+const fmt=t=>validTime(t)?new Intl.DateTimeFormat('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(t)):'확인 기록 없음';
 const route=()=>{try{return decodeURIComponent(location.hash.slice(1)||'home');}catch{return 'home';}};
 const anchorKey=text=>String(text||'').normalize('NFC').toLowerCase().trim().replace(/[^\p{L}\p{N}\s_-]/gu,'').replace(/\s/g,'-');
 const documentRoute=r=>{const [id,...anchor]=r.slice(4).split('/');return {id,anchor:anchor.join('/')};};
@@ -41,20 +42,43 @@ async function getDoc(id,full=false){const key=id+(full?':full':'');if(!document
 function nav(){
   const r=route();$('#nav').innerHTML=`<a class="nav-home ${r==='home'?'selected':''}" href="#home" ${r==='home'?'aria-current="page"':''}><span class="nav-index">⌂</span>한눈에 보기</a>`+['기준과 자산','세 회사','사업과 실행'].map(group=>`<div class="nav-group">${group}</div>${data.panels.filter(p=>p.group===group).map(p=>`<a href="#${p.id}" class="${r===p.id?'selected':''}" ${r===p.id?'aria-current="page"':''}><span class="nav-index">${String(data.panels.indexOf(p)+1).padStart(2,'0')}</span>${p.title}</a>`).join('')}`).join('');
 }
-function taskList(){
-  const feeds=[data.runtime,...(data.otherRuntimes||[])];let cards='';
-  for(const feed of feeds){const tasks=(feed.tasks||[]).filter(t=>['active','running','needs_attention','busy'].includes(t.status));
-    if(feed.connected&&!feed.stale&&tasks.length)cards+=tasks.slice(0,6).map(t=>`<a class="task-row" href="${t.source==='Codex'?'codex://threads/'+encodeURIComponent(t.id):'#workflow'}"><span class="status-dot"></span><div><b>${escape(t.title)}</b><small>${escape(t.source)} · ${t.status==='needs_attention'?'확인 요청':'작업 중'} · ${fmt(feed.checkedAt)} 확인</small></div><span aria-hidden="true">↗</span></a>`).join('');
-  }
-  const states=feeds.map(f=>`<span>${escape(f.source||'Codex')} · ${!f.connected?'연결 대기':f.stale?'갱신 지연':fmt(f.checkedAt)+' 확인'}</span>`).join('');
-  return `${cards||'<p class="empty">현재 확인된 진행 작업이 없습니다.<br>조회가 연결되지 않은 작업은 포함하지 않습니다.</p>'}<div class="feed-state">${states}<span>Gemini · 실시간 상태 연결 안 됨</span></div>`;
+function feedState(feed){
+  const checked=validTime(feed.checkedAt),parts=[escape(feed.source||'AI 실행 환경')];
+  if(feed.configured===false)parts.push('연결 설정 안 됨');
+  else if(feed.configured===true&&!feed.connected&&!checked)parts.push('연결 설정됨','아직 상태 수신 없음');
+  else if(feed.source==='Antigravity'&&feed.tasks?.length&&feed.tasks.every(t=>['exited','pid_reused'].includes(t.processState)))parts.push('열린 작업 창 없음',checked?'마지막 수신 '+fmt(feed.checkedAt):'수신 시각 미확인');
+  else if(feed.stale)parts.push('갱신 지연',checked?'마지막 확인 '+fmt(feed.checkedAt):'아직 상태 수신 없음');
+  else if(feed.connected)parts.push(checked?'마지막 확인 '+fmt(feed.checkedAt):'상태 수신 시각 미확인');
+  else parts.push(feed.configured===true?'연결 설정됨 · 상태 수신 중단':'연결 대기',checked?'마지막 확인 '+fmt(feed.checkedAt):'아직 상태 수신 없음');
+  return `<span>${parts.join(' · ')}</span>`;
+}
+function taskList(mode='active'){
+  const all=mode==='all',feeds=[data.runtime,...(data.otherRuntimes||[])].filter(Boolean);
+  const labels={active:'작업 중',running:'작업 중',busy:'작업 중',needs_attention:'확인 요청',idle:'대기',response_complete:'응답 종료',error:'오류 확인 필요',interrupted:'중단',unknown:'상태 미확인'};
+  const entries=feeds.flatMap(feed=>(feed.tasks||[]).map(task=>{
+    const checkedAt=task.checkedAt||feed.checkedAt,fresh=Boolean(feed.connected&&!feed.stale&&!task.stale&&validTime(checkedAt));
+    return {task,feed,checkedAt,fresh};
+  })).filter(entry=>all||(entry.fresh&&['active','running','needs_attention','busy'].includes(entry.task.status)));
+  const priority=entry=>entry.fresh&&entry.task.status==='needs_attention'?0:entry.fresh&&['active','running','busy'].includes(entry.task.status)?1:2;
+  entries.sort((a,b)=>priority(a)-priority(b)||(Date.parse(b.checkedAt)||0)-(Date.parse(a.checkedAt)||0));
+  const limit=all?20:6,cards=entries.slice(0,limit).map(({task,feed,checkedAt,fresh})=>{
+    const source=task.source||feed.source||'AI 실행 환경',label=labels[task.status]||labels.unknown;
+    const ended=['exited','pid_reused'].includes(task.processState);
+    const status=ended?'작업 창 종료 · 완료 여부 미확인':fresh?label:validTime(checkedAt)?'마지막 기록: '+label+' · 갱신 지연':'상태 미확인';
+    const link=source==='Codex'&&task.id?'codex://threads/'+encodeURIComponent(task.id):all?null:'#workflow';
+    const tag=link?'a':'article',dot=!fresh?' is-stale':task.status==='needs_attention'||task.status==='error'?' is-attention':['active','running','busy'].includes(task.status)?'':' is-idle';
+    const model=task.model?`<small class="task-model">모델 ${escape(task.model)}</small>`:source==='Antigravity'?'<small class="task-model">모델 미확인</small>':'';
+    return `<${tag} class="task-row"${link?` href="${link}"`:''}><span class="status-dot${dot}"></span><div><b>${escape(task.title||'제목 없는 작업')}</b><small>${escape(source)} · ${escape(status)} · ${validTime(checkedAt)?'마지막 확인 '+fmt(checkedAt):'확인 기록 없음'}</small>${model}</div>${link?'<span aria-hidden="true">↗</span>':''}</${tag}>`;
+  }).join('');
+  const empty=all?'아직 받은 작업 상태가 없습니다.':'최근 확인된 실행 중·확인 요청 작업이 없습니다.<br>대기·응답 종료·갱신 지연 기록은 워크플로우에서 볼 수 있습니다.';
+  return `${cards||`<p class="empty">${empty}</p>`}${entries.length>limit?`<p class="caption">${entries.length}개 중 ${limit}개를 표시합니다.${all?'':' 전체 상태는 워크플로우에서 확인합니다.'}</p>`:''}<div class="feed-state">${feeds.map(feedState).join('')}</div>`;
 }
 function pendingRows(items,limit){return items.slice(0,limit||items.length).map(item=>`<article class="pending-row"><span class="owner">${escape(item.owner)}</span><div><b>${escape(item.heading.replace(/^\S+\.\s*/,''))}</b><div class="pending-text">${markup(item.text,{file:'docs/_ops/트랙.md'})}</div></div></article>`).join('')||'<p class="empty">이 분야로 연결된 남은 일 기록이 없습니다.</p>';}
 function home(){
   const decisions=data.pending.filter(i=>i.owner.includes('유호'));
   const recent=[...new Map(data.documents.filter(d=>d.available&&d.id!=='track').map(d=>[d.file,d])).values()].sort((a,b)=>b.modifiedAt.localeCompare(a.modifiedAt)).slice(0,4);
   return `<section class="hero"><div><div class="eyebrow">SYNK / COMPANY HOME</div><h1>회사의 기준과<br>지금 하는 일.</h1><p>열 개의 분야를 한곳에서 봅니다.<br>기준은 원문에서, 진행은 확인된 기록에서 가져옵니다.</p></div><div class="hero-art"><img src="/asset/mongle" data-synk-mascot="몽글" alt="SYNK의 몽글" fetchpriority="high"></div></section>
-  <div class="overview"><section class="surface"><div class="section-title"><h2>검토할 결정</h2><a href="#pending">기록 전체 ${decisions.length}건 ↗</a></div><p class="caption">남은 일 원문에 적힌 요청 · 현재도 필요한지 검토</p>${pendingRows(decisions,3)}</section><section class="surface"><div class="section-title"><h2>진행 중인 AI 작업</h2><a href="#workflow">연결 상태 ↗</a></div><div data-task-feed>${taskList()}</div></section></div>
+  <div class="overview"><section class="surface"><div class="section-title"><h2>검토할 결정</h2><a href="#pending">기록 전체 ${decisions.length}건 ↗</a></div><p class="caption">남은 일 원문에 적힌 요청 · 현재도 필요한지 검토</p>${pendingRows(decisions,3)}</section><section class="surface"><div class="section-title"><h2>진행 중인 AI 작업</h2><a href="#workflow">연결 상태 ↗</a></div><div data-task-feed="active">${taskList()}</div></section></div>
   <section class="directory"><div class="section-title"><h2>분야별로 보기</h2><span>정본과 현황을 함께</span></div><div class="panel-grid">${data.panels.map((p,i)=>`<a href="#${p.id}" class="panel-card"><span class="card-number">${String(i+1).padStart(2,'0')}</span><h3>${p.title}</h3><p>${p.subtitle}</p><div class="card-foot"><span>${p.sources.length}개 원문${p.sources.some(d=>!d.available)?' · 연결 확인 필요':''}</span><span aria-hidden="true">↗</span></div></a>`).join('')}</div></section>
   <section class="recent"><div class="section-title"><h2>최근 원문 변경</h2><span>파일 수정은 게시·배포 완료와 다릅니다</span></div>${recent.map(d=>`<a href="#doc/${d.id}"><span>${d.title}</span><time>${fmt(d.modifiedAt)}</time><span aria-hidden="true">↗</span></a>`).join('')}</section>`;
 }
@@ -71,7 +95,7 @@ async function panelPage(panel){
   const vision=visionSource?await getDoc(visionSource.id):null;
   const notes={business:'상품·가격의 설계와 실제 판매를 구분합니다. 매출·결제 내역은 연결되지 않았습니다.',engines:'설계·구현 기록을 보여줍니다. 배포·실사용·학습 효과는 각각의 확인 근거가 필요합니다.',marketing:'계정·제작·게시 기록을 보여줍니다. 공개 상태와 채널 성과를 지금 실시간 조회한 화면은 아닙니다.',workflow:'공식 하네스에서 작업하고, 이 화면은 기준과 상태만 읽습니다. 새 모델 호출이나 결제를 실행하지 않습니다.'};
   return `<section class="page-heading"><div class="eyebrow">${panel.group}</div><h1>${panel.title}</h1><p>${panel.subtitle}</p></section>${notes[panel.id]?`<p class="context-note">${notes[panel.id]}</p>`:''}${vision?`<section class="vision markdown">${markup(vision.content,vision)}</section>`:''}${gallery(panel)}
-  <div class="panel-layout"><section class="surface canon"><div class="section-title"><h2>${first.title}</h2>${sourceLink(first)}</div><div class="markdown excerpt">${markup(doc.content,doc)}</div><a class="read-more" href="#doc/${doc.id}">원문을 넓게 읽기 ↗</a></section><aside class="panel-resources"><section class="surface"><h2>연결된 원문</h2>${panel.sources.map(d=>`<div class="resource">${sourceLink(d)}<small>${d.available?'원문 수정 '+fmt(d.modifiedAt):escape(d.error)}</small></div>`).join('')}</section>${panel.id==='workflow'?`<section class="surface"><h2>공식 작업 조회</h2><div data-task-feed>${taskList()}</div><p class="caption">Codex는 앱의 예약 조회 시각 기준입니다. Claude는 공식 명령으로 직접 조회합니다. 응답 종료는 사업 완료를 뜻하지 않습니다.</p></section>`:''}</aside></div>
+  <div class="panel-layout"><section class="surface canon"><div class="section-title"><h2>${first.title}</h2>${sourceLink(first)}</div><div class="markdown excerpt">${markup(doc.content,doc)}</div><a class="read-more" href="#doc/${doc.id}">원문을 넓게 읽기 ↗</a></section><aside class="panel-resources"><section class="surface"><h2>연결된 원문</h2>${panel.sources.map(d=>`<div class="resource">${sourceLink(d)}<small>${d.available?'원문 수정 '+fmt(d.modifiedAt):escape(d.error)}</small></div>`).join('')}</section>${panel.id==='workflow'?`<section class="surface"><h2>현재 작업 상태</h2><div data-task-feed="all">${taskList('all')}</div><p class="caption">Codex는 앱의 예약 조회 시각 기준입니다. Claude는 공식 명령으로 직접 조회합니다. Antigravity CLI 상태를 받습니다. Gemini 웹대화는 포함하지 않습니다. 대기·응답 종료는 사업 완료를 뜻하지 않습니다.</p></section>`:''}</aside></div>
   <section class="surface pending-section"><div class="section-title"><h2>이 분야에 남은 일</h2><a href="#doc/track">원문 ↗</a></div><p class="caption">기록된 미완료 항목입니다. 실행 중이라는 뜻은 아닙니다.</p>${pendingRows(panel.pending)}</section>`;
 }
 async function documentPage(id){const d=await getDoc(id,true);return `<section class="page-heading"><a class="back" href="#${data.panels.find(p=>p.sources.some(s=>s.id===id))?.id||'home'}">← 분야로 돌아가기</a><h1>${d.title}</h1><p>원문 수정 ${fmt(d.modifiedAt)}</p><div class="source-path">${escape(d.file)}</div></section><article class="surface markdown full-document">${markup(d.content,d)}</article>`;}
@@ -92,7 +116,7 @@ async function render({preserve=false}={}){if(!data)return;const number=++reques
   if(number===requestNumber){$('#main').innerHTML=content;document.title=(r==='home'?'SYNK 운영 홈':$('#breadcrumb').textContent+' · SYNK');if(saved&&saved.route===r)restoreReading(saved);else if(r.startsWith('doc/'))scrollToDocumentAnchor(documentRoute(r).anchor);}
 }
 async function refresh(force=false){
-  try{const next=await json('/api/state');const sourceChanged=!data||data.revision!==next.revision,runtimeChanged=!data||JSON.stringify(data.runtime)!==JSON.stringify(next.runtime)||JSON.stringify(data.otherRuntimes)!==JSON.stringify(next.otherRuntimes);data=next;$('#connection').textContent='원문 연결됨';$('.connection-dot').classList.remove('offline');$('#notice').textContent='';$('#footer').textContent='원문 읽음 '+fmt(next.readAt)+' · 화면을 여는 동안 30초마다 확인 · 외부 상태는 각 근거의 확인 시각 기준';if(sourceChanged){documentCache.clear();if(!$('#search').value.trim()){await render({preserve:!initial});initial=false;}}else if(runtimeChanged||force){for(const feed of document.querySelectorAll('[data-task-feed]'))feed.innerHTML=taskList();}}
+  try{const next=await json('/api/state');const sourceChanged=!data||data.revision!==next.revision,runtimeChanged=!data||JSON.stringify(data.runtime)!==JSON.stringify(next.runtime)||JSON.stringify(data.otherRuntimes)!==JSON.stringify(next.otherRuntimes);data=next;$('#connection').textContent='원문 연결됨';$('.connection-dot').classList.remove('offline');$('#notice').textContent='';$('#footer').textContent='원문 읽음 '+fmt(next.readAt)+' · 화면을 여는 동안 30초마다 확인 · 외부 상태는 각 근거의 확인 시각 기준';if(sourceChanged){documentCache.clear();if(!$('#search').value.trim()){await render({preserve:!initial});initial=false;}}else if(runtimeChanged||force){for(const feed of document.querySelectorAll('[data-task-feed]'))feed.innerHTML=taskList(feed.dataset.taskFeed);}}
   catch{$('#connection').textContent='연결 끊김';$('.connection-dot').classList.add('offline');$('#notice').textContent='갱신하지 못했습니다. 마지막으로 읽은 내용입니다. 바탕화면의 SYNK 운영 홈을 다시 열어주세요.';}
 }
 let searchTimer;

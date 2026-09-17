@@ -8,6 +8,7 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const {panels,documents} = require('./operations-home/sources');
 const {readClaude,companyRoots} = require('./operations-home/native-status');
+const {readAntigravity} = require('./operations-home/antigravity-status');
 const UI = path.join(__dirname,'operations-home');
 const DEFAULT_ROOT = path.resolve(__dirname,'..');
 const clean = text => text.replace(/<!--[^]*?-->/g,'').replace(/^---\r?\n[^]*?\r?\n---\r?\n/,'');
@@ -90,7 +91,7 @@ function createServer({root=DEFAULT_ROOT,port=8790}={}){
     try{
       const url=new URL(req.url,'http://127.0.0.1');
       if(url.pathname==='/api/health')return send(200,{name:'SYNK 운영 홈',root,version:1});
-      if(url.pathname==='/api/state'){const output=state(root);output.otherRuntimes=[await readClaude(root)];return send(200,output);}
+      if(url.pathname==='/api/state'){const output=state(root);output.otherRuntimes=await Promise.all([readClaude(root),readAntigravity(root,{receiverPath:path.join(root,'tools/operations-home/antigravity-status.js')})]);return send(200,output);}
       if(url.pathname==='/api/search'){
         const q=(url.searchParams.get('q')||'').slice(0,150).trim().toLowerCase();if(q.length<1)return send(200,[]);
         const seen=new Set(),result=[];for(const def of documents){if(seen.has(def.file))continue;seen.add(def.file);const d=readDocument(root,{...def,section:undefined});const at=d.content.toLowerCase().indexOf(q);if(at>=0)result.push({id:d.id,title:d.title,file:d.file,snippet:d.content.slice(Math.max(0,at-70),at+180).replace(/[#*>`]/g,'').replace(/\s+/g,' ')});}return send(200,result);
