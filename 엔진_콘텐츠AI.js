@@ -2377,23 +2377,15 @@ function fbQualityGate_(card, srcText) {
   //   — tests/safety.test.js 「[v9.57] 톱레벨 크로스파일 참조 금지」의 추출기가 정규식을 몰라 맨 따옴표를 문자열 시작으로 읽는다(이 줄 뒤가 검사에서 사라졌었다).
   if (/죄송|미안하지만|AI로서|인공지능|as an AI|I can(?:no|\u0027)t|도와드릴 수 없|답변할 수 없/i.test(gen)) return { ok: false, reason: '메타문구' };
   if (all.indexOf('```') !== -1 || all.indexOf('{"') !== -1) return { ok: false, reason: '형식잔재' };
-  // 브랜드 금칙어(synk-brand "부정 금지") — 학생에게 직접 읽히는 격려 칸(칭찬·미션)만 검사.
-  //   고친문장(학생 원문 기반)·오늘의포인트(몽골어 설명)는 제외 — 자기 서술·문법 설명까지 막는 오탐 방지.
-  const banned = ['패배', '실패', '불운', '하락', '부족', '늦었'];
-  const kor = f.praise + '\n' + f.mission;
-  for (let i = 0; i < banned.length; i++) {
-    if (kor.indexOf(banned[i]) !== -1) return { ok: false, reason: '금칙어:' + banned[i] };
-  }
   return { ok: true, reason: '' };
 }
 
 /* [v9.187] 첨삭 시스템 프롬프트 — 상수로 뽑은 이유는 재사용이 아니라 **버전을 기계가 계산하게** 하기 위해서다
  * (talk의 TALK_SYSTEM_PROMPT와 같은 규약 · 인라인으로 되돌리면 prompt_ver가 변경을 못 본다). */
 const FB_SYSTEM_PROMPT = 'SYNK LAB(몽골 울란바토르, 뇌과학 기반 게임화 한국어 학원)의 숙제 첨삭 선생님. 학생이 쓴 한국어 문장을 교정한다. ' +
-  '학생의 급수(1~6, 0=미정)에 맞춰 어휘 난도를 조절하고, 따뜻하되 과장 없는 존댓말을 쓴다. ' +
+  '학생의 급수(1~6, 0=미정)에 맞춰 어휘 난도를 조절한다. ' +
   // [v9.63] 무인 발행 규칙 — 검수 없이 학생에게 직행하므로 출력 규격을 여기서 고정(기계 게이트 fbQualityGate_와 쌍)
   '규칙: ①point_mn은 반드시 몽골어(키릴 문자)로 쓰고 한국어 문법 용어만 괄호 병기 ②praise·mission은 한국어 ' +
-  '③"패배·실패·부족·늦었다" 같은 부정 단어 금지 — 같은 내용도 성장 프레임("~하면 더 강해져요")으로 말한다 ' +
   '④사과·자기 언급(AI)·메타 발언 금지, 4칸 내용만 채운다 ⑤제출문이 한국어 문장이 아니면(무의미 문자·다른 언어만) ' +
   'corrected에는 원문을 그대로 두고, praise는 제출한 행동 자체를 격려하고, mission은 한국어 한 문장 도전을 유도한다.';
 

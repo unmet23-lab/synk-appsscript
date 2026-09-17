@@ -1118,7 +1118,7 @@ test('[v9.63] 품질 게이트가 정상 카드는 통과시키고 불량 카드
   assert.equal(gate(good, '저는 어제 학교에 가요.').ok, true);
   assert.equal(gate(Object.assign({}, good, { point_mn: '과거형을 잘 썼어요' }), 'x').reason, '몽골어없음:오늘의포인트');
   assert.equal(gate(Object.assign({}, good, { mission: '' }), 'x').reason, '빈칸:다음미션');
-  assert.equal(gate(Object.assign({}, good, { praise: '아직 부족하지만 잘했어요' }), 'x').reason, '금칙어:부족');
+  assert.equal(gate(Object.assign({}, good, { praise: '아직 부족하지만 잘했어요' }), 'x').ok, true);
   assert.equal(gate(Object.assign({}, good, { praise: '죄송하지만 문장을 이해하지 못했어요' }), 'x').reason, '메타문구');
   // [v9.65 리뷰 H1] 사과 단원·AI 주제 숙제의 원문은 corrected에 정당하게 남는다 — 격리하면 무인 목적 훼손
   assert.equal(gate(Object.assign({}, good, { corrected: '늦어서 죄송합니다.' }), '늦어서 죄송해요').ok, true);

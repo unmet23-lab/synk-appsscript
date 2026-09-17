@@ -1,16 +1,14 @@
 {
   "name": "synk-appsscript",
   "private": true,
-  "description": "SYNK LAB 엔진 저장소. 라이브 코드는 딸린 프로그램 0개로 돈다 — 여기 적힌 것은 «글을 재는 도구»뿐이고 배포집합(.claspignore)에 안 들어간다.",
+  "description": "SYNK LAB 엔진 저장소. 개발 도구는 배포집합에 포함하지 않는다.",
   "devDependencies": {
-    "hanlint": "^0.0.9",
     "odiff-bin": "^4.5.0"
   },
   "scripts": {
     "test": "node tools/test-ci.js",
     "check:knowledge": "node tools/doc-graph.js --summary",
     "check:worktree": "node tools/worktree-hygiene.js",
-    "글검사": "node tools/글검사.js",
     "sns:연결점검": "node tools/sns-발행.js --연결점검",
     "sns:도움": "node tools/sns-발행.js --도움"
   }
