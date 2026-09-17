@@ -110,7 +110,6 @@ const 등록 = [
 const 손조립지면들 = [
   'docs/SYNK_로드맵.html',
   'docs/SYNK_이야기.html',
-  'docs/SYNK_철학_요약.html',
   'docs/SHIFT/온라인마케팅_최종표.html',
   'docs/SHIFT/마케팅_정찰_2026-09-02.html',
 ];

@@ -69,7 +69,7 @@ const 산출경로 = process.env.SYNK_대장_산출 || path.join(ROOT, 'docs', '
  * ⚠ 실재를 검사한다(설계 ③): 파일이 없으면 조용히 빼지 않고 **빨갛게 드러낸다.** 링크만 지우면
  *   유호님은 그 화면이 «원래 없다»고 읽지, 목록이 낡았다고 읽지 않는다. */
 const 함께볼것 = [
-  { 파일: 'SYNK_철학_요약.html', 제목: '철학 정본의 핵심', 한줄: '모든 작업의 판단 기준' },
+  { 파일: 'SYNK_철학.md', 주소: 'http://127.0.0.1:8790/#philosophy', 제목: 'SYNK 철학 · 운영 홈', 한줄: '현행 원문을 읽는 통합 화면 · 운영 홈 실행 중에 열립니다' },
   { 파일: '엔진/SYNK_엔진_지도.html', 제목: '엔진 7종', 한줄: '일곱 엔진의 역할과 현재 설계' },
   { 파일: '브랜드킷.html', 제목: '브랜드 킷', 한줄: '확정 색·서체·시각 요소' },
   { 파일: '홍보물/브랜드소개_20260909/synk.html', 제목: '현재 회사 소개서', 한줄: 'SYNK와 세 사업의 역할' },
@@ -95,7 +95,7 @@ function 함께볼것구역() {
       return `  <div style="padding:11px 14px;border:2px dashed ${킷.coral3};border-radius:10px;color:${킷.coral3};font-size:12.5px;line-height:1.6">`
         + `🔴 <b>${d.제목}</b> — 파일이 없다(<code>${d.파일}</code>). 이 목록이 낡았다는 뜻이다 — <code>tools/이해대장.js</code> 의 <code>함께볼것</code> 을 고친다.</div>`;
     }
-    return `  <a href="${encodeURI(d.파일)}" style="display:block;padding:11px 14px;border:1px solid ${킷.cream3};border-radius:10px;text-decoration:none;background:${킷.paper}">`
+    return `  <a href="${encodeURI(d.주소 || d.파일)}" style="display:block;padding:11px 14px;border:1px solid ${킷.cream3};border-radius:10px;text-decoration:none;background:${킷.paper}">`
       + `<div style="font-weight:800;font-size:13.5px;color:${킷.ink};letter-spacing:-.02em">${d.제목}</div>`
       + `<div style="margin-top:3px;font-size:12px;color:${킷.slate2};line-height:1.55">${d.한줄}</div></a>`;
   }).join('\n');

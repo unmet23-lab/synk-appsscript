@@ -111,7 +111,6 @@ const 서체를심은지면 = [
   'docs/SHIFT/한차원_2026-09-02.html',
   'docs/SYNK_로드맵.html',
   'docs/SYNK_이야기.html',
-  'docs/SYNK_철학_요약.html',
   'docs/tools/_bracket_probe/before_after.html',
   'docs/tools/_bracket_probe/index.html',
   'docs/게임_시안/게임_4종_화면.html',
