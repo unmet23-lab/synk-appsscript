@@ -1,0 +1,40 @@
+{
+  "version": "20260919-hanok-lantern-craft",
+  "scope": "PULSE co-creation tab only. The character-and-worldbuilding tab uses the Jeju scene; the homepage uses the Seoul scene.",
+  "file": "docs/캐릭터/PULSE_공동제작장면/세친구_20260919_한지등.png",
+  "sha256": "bb868c83d222da407638034f6f1a66927519419f24190340fdeac8b49d48b11a",
+  "width": 1536,
+  "height": 1024,
+  "generator": "Built-in ImageGen; exact model version not exposed",
+  "prompt": "docs/캐릭터/PULSE_공동제작장면/생성프롬프트_20260919_한지등.txt",
+  "references": [
+    {
+      "role": "몽글-identity",
+      "file": "docs/캐릭터/정본_4K/몽글_본체.png",
+      "sha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6"
+    },
+    {
+      "role": "까몽-identity",
+      "file": "docs/캐릭터/정본_4K/까몽_본체.png",
+      "sha256": "2115c644b50d981ac693edb75cf0a78fda307e95b41c01afb41968472ab8f845"
+    },
+    {
+      "role": "마린-identity",
+      "file": "docs/캐릭터/정본_4K/마린_본체.png",
+      "sha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13"
+    }
+  ],
+  "render": {
+    "background": "Autumn Korean hanok veranda, maple garden, stream and mountain ridges.",
+    "action": "Three friends make one hanji lantern at a low craft table: Kkamong steadies the frame, Marin fits the paper, Mongle keeps a loose sheet in place with its hem.",
+    "blend": "normal",
+    "layout": "Full uncropped 3:2 landscape."
+  },
+  "consumers": [
+    "SYNK-website/visual-explainers.mjs: pulse-ip / coCreation",
+    "SYNK-website/dist/assets/pulse-hanok-craft-20260919.webp",
+    "synk-policy/pulse/index.html"
+  ],
+  "review": "Visually inspected: recognizable silhouettes, Mongle without extra limbs, green Kkamong eyes without added nose, Marin matte yellow eyes and chest flower, natural short-arm contact with one shared lantern. A fictional Korean garden composition.",
+  "alt": "가을 한옥 정원에서 한지 등을 함께 만드는 몽글, 까몽, 마린. 까몽이 대나무 틀을 잡고 마린이 한지를 붙이며, 몽글은 곁에서 종이를 받치고 있습니다."
+}

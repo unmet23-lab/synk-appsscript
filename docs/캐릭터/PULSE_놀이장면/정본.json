@@ -1,6 +1,6 @@
 {
   "version": "20260919-jeju-kite-play",
-  "scope": "PULSE character and IP section only. Homepage scene and individual mascot originals remain separate.",
+  "scope": "PULSE character-and-worldbuilding tab only. Co-creation uses its separate hanok craft scene; the homepage and individual mascot originals remain separate.",
   "file": "docs/캐릭터/PULSE_놀이장면/세친구_20260919_제주연놀이.png",
   "sha256": "bf08ae27977ba8ecb59558f52ac3839574920deaa97e25b467a2aca0fff2145c",
   "width": 1536,
@@ -31,7 +31,7 @@
     "layout": "Full uncropped landscape image at its native 3:2 aspect ratio."
   },
   "consumers": [
-    "SYNK-website/visual-explainers.mjs: pulse-ip",
+    "SYNK-website/visual-explainers.mjs: pulse-ip / characterWorld",
     "SYNK-website/dist/assets/pulse-jeju-play-20260919.webp",
     "synk-policy/pulse/index.html"
   ],
