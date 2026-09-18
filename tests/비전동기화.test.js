@@ -35,15 +35,15 @@ test('GAS 상담 프롬프트까지 확정 LAB 비전이 임의 부연 없이 �
   assert.equal(syncVisionSources({ check: true }).changed.length, 0);
 });
 
-test('09-13 네 브랜드 비전은 최신 사용자 문구와 선택한 부연만 유지한다', () => {
+test('09-18 비전 개정과 사업 역할을 파생 소개에 전달한다', () => {
   const visions = loadVisions();
-  assert.equal(visions.synk.headline, '저마다의 삶을 온전히 누리는 미래를 만듭니다.');
-  assert.equal(visions.synk.subtext, 'AI가 넓힌 가능성을 배움과 일, 문화로 연결합니다.');
-  assert.equal(visions.lab.headline, '가고 싶은 방향에 집중할 수 있는 환경을 만듭니다.');
+  assert.equal(visions.synk.headline, '각자의 목표와 상황에 맞는 도움을 제공하는 개인화 시스템을 만듭니다.');
+  assert.equal(visions.synk.subtext, '교육, 기업의 AI 활용, 콘텐츠, 유학·취업 준비에 개인화 기술을 적용합니다.');
+  assert.equal(visions.lab.headline, '한국어를 배우고, 한국에서의 공부와 생활을 준비하는 교육을 만듭니다.');
   assert.equal(visions.lab.subtext, '');
-  assert.equal(visions.shift.headline, '개인과 조직의 성장이 서로의 기회가 되는 미래를 만듭니다.');
-  assert.match(visions.shift.subtext, /준비된 인재와 함께 성장/);
-  assert.equal(visions.pulse.headline, '함께한 시간이, 각자의 이야기로 이어지는 문화를 만듭니다.');
+  assert.equal(visions.shift.headline, '기업과 기관이 AI를 자기 일에 활용하고, 가진 가치를 고객에게 전달하도록 돕습니다.');
+  assert.match(visions.shift.subtext, /실제 업무에 맞춘 AI 교육과 컨설팅, 기업 브랜딩/);
+  assert.equal(visions.pulse.headline, '음악과 영상, 캐릭터의 이야기로 다시 찾고 싶은 작품을 만듭니다.');
   assert.equal(visions.pulse.subtext, '');
   const block = withVisionBlock('# LAB\n\n기존 본문', 'lab');
   assert.ok(block.includes('**' + visions.lab.headline + '**\n<!-- synk-vision:end -->'));
