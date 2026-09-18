@@ -42,7 +42,9 @@
       "difficulty": { "authored": null, "measured": null, "n": 0 },
       "material": { "target_forms": ["-(으)시-"], "frames": [] } },
     { "id": "G211", "kind": "grammar_point", "label_ko": "…", "level": { "intro": 2, "basis": "grammar_bank" } },
-    { "id": "sit-professor-email", "kind": "situation", "label_ko": "교수님께 메일 쓰기" }
+    { "id": "sit-professor-email", "kind": "situation", "label_ko": "교수님께 메일 쓰기", "for_events": ["deadline"] },
+    { "id": "sit-job-interview", "kind": "situation", "label_ko": "면접에서 자기소개하기", "for_events": ["interview"] },
+    { "id": "sit-new-year-greeting", "kind": "situation", "label_ko": "새해 인사 나누기", "for_days": ["seollal", "tsagaan_sar"] }
   ],
   "edges": [
     { "from": "G211", "to": "skill-ko-grammar-honorific", "type": "part_of", "confidence": "authored" },
@@ -57,6 +59,7 @@
 
 - **id는 새로 짓지 않는다.** 기술은 `skill_id`, 문법은 `G###`을 그대로 쓴다. 상황만 `sit-…`로 새로 붙인다.
 - 마디 종류: `skill` · `grammar_point` · `expression` · `situation`. 관계 종류: `part_of`(문법 코드 → 기술, DB `parent_id`와 같은 뜻) · `prerequisite`(먼저 알아야 함) · `contrasts_with`(헷갈리기 쉬운 짝).
+- 상황 마디는 `for_events`(일의 종류 값목록 — 시험·면접·발표·여행·행사·마감)와 `for_days`(달력 표의 날)를 가질 수 있다. 아틀라스의 「미리 준비」와 「두 나라의 달력」이 이것을 읽는다(구현 명세 §4-7·§4-13). 연결이 없으면 그 장면은 조용히 일어나지 않는다 — 억지로 잇지 않는다.
 - 급수가 없는 마디는 `level: null`이다. 없는 급수를 지어내지 않고, 「없음」을 「범위 밖」과 합치지 않는다 **[확인: `lib/문법급수.js`의 원칙]**.
 - 모든 관계와 연결에는 **믿음 등급**이 있다: `authored`(기존 정본에서 옴) · `measured`(자료로 잼) · `ai_draft`(AI 초안) — 그리고 사람이 봤으면 `reviewed: true`.
 - `engine.skills` 표는 이 지도에서 **씨를 뿌린다**(지도가 원천, 표가 파생). 지금처럼 문항 팩에서 뿌리는 것과 결과가 같아야 첫 판이 통과한다(§8).
@@ -72,6 +75,7 @@
 | `태그로(tag)` | 그 오류 유형이 가리키는 마디 또는 「대응없음」 | 23개가 빠짐없이 둘 중 하나로 나뉜다 |
 | `급수로(level)` | 그 급에 도입되는 마디 · 급이 없는 마디 · 범위 밖 — **세 칸** | 세 칸을 합치지 않는다. 고르는 것은 소비자 몫이다 |
 | `목표로(goal, level)` | 그 목표로 가는 길 위의 마디 | 목표를 평가하지 않는다 |
+| `일로(kind)` · `날로(day)` | 그 일·그날에 맞는 상황 마디 | 없으면 빈 목록 — 비슷한 것으로 메우지 않는다 |
 | `길(지금 마디들, 목표)` | 남은 마디를 선행 순서로 편 목록 | 순환이 있으면 오류 — 조용히 끊지 않는다 |
 | `다음후보(줄들, 목표, {개수})` | 겨냥 후보와 각 후보의 `targets`(이해 줄 열쇠) | 같은 `map_ver`와 같은 줄이면 같은 결과 |
 
