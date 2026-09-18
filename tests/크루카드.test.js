@@ -830,8 +830,9 @@ test('인지채널은 학습 성향이 아니라 유입경로 8버킷이다 — 
     '시각/청각 성향이 어디에도 안 남았다 — 인지채널을 되찾으면서 정보를 잃었다');
 });
 
-test('유입경로 값은 leads·리드폼과 같은 8버킷이다 — 새 분류를 만들면 지표가 갈린다', () => {
-  const 버킷 = ['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타'];
+test('유입경로 값은 leads·리드폼과 같은 10버킷이다 — 새 분류를 만들면 지표가 갈린다', () => {
+  // [2026-09-18] 유튜브·텔레그램 추가(사용자 결정) — 8버킷 → 10버킷
+  const 버킷 = ['페이스북', '인스타', '틱톡', '유튜브', '텔레그램', '추천', '오픈데이', '학교제휴', '워크인', '기타'];
   const html = fs.readFileSync(path.join(ROOT, 'crewcard', '카드_kr.html'), 'utf8');
   const mn = fs.readFileSync(path.join(ROOT, 'crewcard', '카드_mn.html'), 'utf8');
   for (const b of 버킷) {
@@ -839,6 +840,20 @@ test('유입경로 값은 leads·리드폼과 같은 8버킷이다 — 새 분�
     // 🔴 몽골어판도 data-value는 한국어다 — 번역하면 시트에 두 언어 값이 섞여 집계가 반쪽이 된다
     assert.ok(mn.includes(`data-column="source" data-value="${b}"`), `MN 카드의 버킷 「${b}」가 한국어 값이 아니다`);
   }
+  // 같은 목록이 폼 둘(상담폼·리드폼) · leads 입력 규칙 · 카드 스키마에도 있다 — 한 곳만 늘면 조용히 갈린다
+  const 목록 = src => JSON.parse(src.replace(/'/g, '"'));
+  const 폼 = fs.readFileSync(path.join(ROOT, '엔진_폼리포트.js'), 'utf8');
+  const 폼목록 = [...폼.matchAll(/mc\('인지채널', (\[[^\]]*\])/g)].map(m => 목록(m[1]));
+  assert.equal(폼목록.length, 2, '인지채널 문항이 상담폼·리드폼 두 곳에 있어야 한다');
+  for (const l of 폼목록) assert.deepEqual(l, 버킷, '폼의 인지채널 선택지가 카드와 다르다');
+  const 셋업 = fs.readFileSync(path.join(ROOT, '엔진_셋업확장.js'), 'utf8');
+  const 규칙 = /getRange\(2, 4, 999, 1\)\.setDataValidation\(dv\((\[[^\]]*\])\)\)/.exec(셋업);
+  assert.ok(규칙, 'leads 유입경로 입력 규칙을 찾지 못했다');
+  assert.deepEqual(목록(규칙[1]), 버킷, 'leads 유입경로 입력 규칙이 카드와 다르다');
+  const 스키마 = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs', '크루카드', '크루카드_스키마.json'), 'utf8'));
+  const 칸 = JSON.stringify(스키마).match(/"field_id":"source".*?"options":(\[[^\]]*\])/);
+  assert.ok(칸, '스키마에서 source 칸을 찾지 못했다');
+  assert.deepEqual(JSON.parse(칸[1]), 버킷, '카드 스키마의 source 선택지가 카드와 다르다');
 });
 
 test('재제출 — 인지채널은 못 덮고, 추천인은 덮는다', () => {

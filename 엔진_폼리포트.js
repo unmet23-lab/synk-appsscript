@@ -111,7 +111,7 @@ function createConsultForm() { // [v9.19] 상담지 시트 v18.3 정합 — 문�
   para('영어 학습 목표 (선택)');
 
   form.addSectionHeaderItem().setTitle('PART 6 — 기대와 건의');
-  mc('인지채널', ['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타'], true); // [v9.33] leads 유입경로 8버킷과 통일 — 어트리뷰션 분류 정합('광고' 단일 버킷→플랫폼 분리)
+  mc('인지채널', ['페이스북', '인스타', '틱톡', '유튜브', '텔레그램', '추천', '오픈데이', '학교제휴', '워크인', '기타'], true); // [v9.33] leads 유입경로 버킷과 통일 — 어트리뷰션 분류 정합('광고' 단일 버킷→플랫폼 분리) · [2026-09-18] 유튜브·텔레그램 추가(10버킷)
   para('SYNK선택이유').setHelpText('SYNK를 선택한 결정적 이유 (예: 비자 관리 · 확실한 성적 향상 · K컬처 클래스)'); // [v9.66] v18.4 서술형 → 상담시트 자유서술 — 전환 결정타 수집
   para('SYNK 기대사항');
   para('이전 학원 경험');
@@ -664,7 +664,7 @@ function createLeadForm() {
 
   txt('이름', true);
   txt('연락처', true).setHelpText('페이스북 메신저 · 전화번호 등 편하신 방법');
-  mc('인지채널', ['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타'], true).setHelpText('SYNK를 어디서 알게 되셨나요? (leads 유입경로와 동일 분류)');
+  mc('인지채널', ['페이스북', '인스타', '틱톡', '유튜브', '텔레그램', '추천', '오픈데이', '학교제휴', '워크인', '기타'], true).setHelpText('SYNK를 어디서 알게 되셨나요? (leads 유입경로와 동일 분류)'); // [2026-09-18] 유튜브·텔레그램 추가(10버킷)
   mc('관심 과정', ['정규TOPIK', '회화', '영어', '미정'], true);
 
   // 응답을 이 스프레드시트에 연결하고 시트명을 '리드폼_응답'으로 명시(leads로 수기 이관 편의). 이미 있으면 날짜 접미사로 충돌 회피(재실행 안전).
@@ -682,6 +682,42 @@ function createLeadForm() {
   Logger.log('광고 랜딩용(공개 URL — 광고 CTA/프로필 링크에 이 주소): ' + form.getPublishedUrl());
   Logger.log('편집용: ' + form.getEditUrl());
   Logger.log('응답 시트: "리드폼_응답" — 이름·연락처·인지채널(→leads 유입경로)·관심 과정(→leads 메모)을 leads 시트로 옮기세요.');
+}
+
+/* [2026-09-18] 인지채널에 유튜브·텔레그램 추가 ▶ 1회 (재실행 무해)
+ * 폼을 새로 만들지 않고 라이브 상담폼·리드폼의 '인지채널' 선택지에 두 칸을 제자리에 더한다
+ * (기존 선택지·응답·URL 보존 — migrateConsultV184 의 '예능' 증분과 같은 방식).
+ * leads 유입경로 입력 규칙도 같은 열 칸으로 다시 건다(setupBizDashboard 와 같은 규칙 · 목록 밖 값은 경고만).
+ * 목록은 createConsultForm·createLeadForm·setupBizDashboard 와 같아야 한다 — tests/크루카드.test.js 가 대조한다. */
+function migrateInflowChannels0918() {
+  const 채널 = ['페이스북', '인스타', '틱톡', '유튜브', '텔레그램', '추천', '오픈데이', '학교제휴', '워크인', '기타'];
+  const 새칸 = ['유튜브', '텔레그램'];
+  const out = [];
+  const st = ensureSheet(SpreadsheetApp.getActiveSpreadsheet(), 'app_state', ['key', 'value']);
+  [['상담폼ID', '상담폼'], ['리드폼ID', '리드폼']].forEach(([key, name]) => {
+    const fid = String(getState(st, key).val || '');
+    if (!fid) { out.push(name + ': ' + key + ' 미연결 — 건너뜀'); return; }
+    try {
+      const items = FormApp.openById(fid).getItems().filter(x => String(x.getTitle()).trim() === '인지채널' && x.getType() === FormApp.ItemType.MULTIPLE_CHOICE);
+      if (!items.length) { out.push(name + ": '인지채널' 객관식 문항을 못 찾음 — 제목 변경 여부 확인"); return; }
+      const it = items[0].asMultipleChoiceItem();
+      const cur = it.getChoices().map(c => c.getValue());
+      // 정해진 순서로 두 칸을 끼우고, 목록 밖에 따로 넣어 둔 선택지는 뒤에 그대로 남긴다
+      const want = 채널.filter(v => cur.indexOf(v) !== -1 || 새칸.indexOf(v) !== -1)
+        .concat(cur.filter(v => 채널.indexOf(v) === -1));
+      if (want.join('|') === cur.join('|')) { out.push(name + ': 이미 있음'); return; }
+      it.setChoiceValues(want);
+      out.push(name + ': ' + cur.length + '칸 → ' + want.length + '칸');
+    } catch (e) { out.push('⚠️ ' + name + ' 증분 실패 — ' + key + '/권한 확인: ' + e); }
+  });
+  try {
+    const dv = SpreadsheetApp.newDataValidation().requireValueInList(채널, true).setAllowInvalid(true).build();
+    bizSheets_().ld.getRange(2, 4, 999, 1).setDataValidation(dv);
+    out.push('leads 유입경로 입력 규칙: ' + 채널.length + '칸');
+  } catch (e) { out.push('⚠️ leads 입력 규칙 실패 — ' + e); }
+  const report = '📥 인지채널 유튜브·텔레그램 추가 결과\n' + out.join('\n');
+  Logger.log(report);
+  return report;
 }
 
 /* ===================== [v9.49] 출석 폼 · 숙제 제출 폼 (1회 실행) ===================== */

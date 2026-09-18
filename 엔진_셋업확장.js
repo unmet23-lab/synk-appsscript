@@ -2392,7 +2392,7 @@ function setupBizDashboard() { // 1회 설치 — leads 드롭다운 + 계기판
   const ldHdr = sh.ld.getRange(1, 1, 1, sh.ld.getLastColumn()).getValues()[0].map(String);
   if (ldHdr.indexOf('캠페인') === -1) sh.ld.getRange(1, sh.ld.getLastColumn() + 1).setValue('캠페인');
   const dv = list => SpreadsheetApp.newDataValidation().requireValueInList(list, true).setAllowInvalid(true).build();
-  sh.ld.getRange(2, 4, 999, 1).setDataValidation(dv(['페이스북', '인스타', '틱톡', '추천', '오픈데이', '학교제휴', '워크인', '기타']));
+  sh.ld.getRange(2, 4, 999, 1).setDataValidation(dv(['페이스북', '인스타', '틱톡', '유튜브', '텔레그램', '추천', '오픈데이', '학교제휴', '워크인', '기타'])); // [2026-09-18] 유튜브·텔레그램 추가(10버킷)
   sh.ld.getRange(2, 6, 999, 2).setDataValidation(dv(['Y', 'N'])); // 체험참석·등록
   sh.ld.getRange(2, 8, 999, 1).setDataValidation(dv(['1개월', '3개월', '6개월', '번들3개월', '번들6개월']));
   sh.ld.getRange(2, 10, 999, 1).setDataValidation(dv(['가격', '시간대', '거리', '타학원', '보류', '연락두절', '기타']));
