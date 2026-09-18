@@ -24,13 +24,15 @@
     explore: '먼저 내 방식으로 써 보고, 필요한 도움을 골라 보세요.',
   }[goal] || '먼저 내 방식으로 써 보고, 필요한 도움을 골라 보세요.');
   function guidance(plan) {
-    if (!plan || plan.status !== 'ready') return { title: '지금 가능한 방식으로', description: '조건에 맞는 경험을 고르거나 설정을 바꿀 수 있어요.' };
+    if (!plan || plan.status !== 'ready') return { title: '연습 설정을 확인해 주세요', description: '현재 조건에 맞는 연습이 없습니다. 분량이나 도움 방식을 바꿔 주세요.' };
     const pace = plan.selected.pace;
+    const independent = plan.support === 'independent';
+    const single = pace === 'short' || plan.support === 'step';
     return {
-      title: pace === 'short' ? '핵심부터 한 번' : pace === 'deep' ? '다른 표현까지 살펴보기' : '쓰고, 살펴보고, 다듬기',
-      description: plan.support === 'independent' ? '먼저 혼자 써 보고, 확인할 부분은 원할 때 열어 보세요.' : pace === 'short' ? '전달할 내용을 먼저 쓰고, 가장 중요한 부분부터 확인해요.' : pace === 'deep' ? '한 번 다듬은 뒤 다른 표현도 생각해 보세요.' : '내 생각대로 써 본 뒤, 필요한 부분을 골라 다듬어요.',
+      title: independent ? '먼저 쓰고, 필요할 때 점검하기' : single ? '한 항목부터 글 점검하기' : pace === 'deep' ? '다른 표현까지 비교하기' : '내용·높임말·요청 기간 점검하기',
+      description: independent ? '먼저 메일을 써 보세요. 글을 다듬는 단계에서 점검 항목을 직접 열 수 있습니다.' : single ? '메일을 쓴 뒤 점검 항목을 한 개부터 보여드립니다. 나머지 항목도 원할 때 열 수 있습니다.' : pace === 'deep' ? '메일을 점검한 뒤, 한 문장을 다른 표현으로 바꿔 뜻과 말투를 비교해 보세요.' : '메일을 쓴 뒤, 부탁할 내용과 정중한 표현, 요청한 기간이 잘 드러나는지 확인합니다.',
       focus: letterFocus(plan.focus),
-      reason: plan.reasons.includes('time.short') ? '이번에 고른 짧은 시간에 맞췄어요.' : plan.reasons.includes('feedback.too_much') ? '지난번에 양이 많다고 알려줘서 핵심부터 보도록 바꿨어요.' : plan.reasons.includes('feedback.want_more') ? '지난번에 더 해 보고 싶다고 알려줘서 한 번 더 살펴볼 자리를 준비했어요.' : '원하는 방향과 도움 방식을 언제든 바꿀 수 있어요.',
+      reason: plan.reasons.includes('time.short') ? '‘짧게 연습하기’를 선택한 설정입니다.' : plan.reasons.includes('feedback.too_much') ? '지난 연습에서 확인할 내용이 많았다는 답변을 반영했습니다.' : plan.reasons.includes('feedback.want_more') ? '지난 연습에서 더 연습하고 싶다는 답변을 반영했습니다.' : '아래에서 연습 분량과 도움 방식을 바꿀 수 있습니다.',
     };
   }
   return { modesFor, letterFocus, guidance };
