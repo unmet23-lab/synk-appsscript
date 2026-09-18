@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const {
-  CONSULT_BUCKETS, loadAccounts, readLedger, appendLedger, parseTelegramPage, toCount, handEntry, consultEntry,
+  CONSULT_BUCKETS, CONSULT_COLUMNS, loadAccounts, readLedger, appendLedger, parseTelegramPage, toCount, handEntry, consultEntry,
   measureYoutube, measureTelegram, summarize, followerChange,
 } = require('../tools/채널성과.js');
 
@@ -50,7 +50,7 @@ test('손으로 적는 값은 아는 계정·아는 지표·0 이상의 정수�
 test('상담 수는 상담 폼의 인지채널 칸만 받는다', () => {
   const entry = consultEntry('2026-09-08~2026-09-14', ['페이스북=3', '유튜브=2', '기타=1']);
   assert.deepEqual(entry.counts, { 페이스북: 3, 유튜브: 2, 기타: 1 });
-  assert.throws(() => consultEntry('2026-09-08~2026-09-14', ['광고=2']), /인지채널에 없습니다/);
+  assert.throws(() => consultEntry('2026-09-08~2026-09-14', ['광고=2']), /인지채널 집계에 없습니다/);
   assert.throws(() => consultEntry('9월 둘째 주', ['페이스북=1']), /기간은/);
 });
 
@@ -95,8 +95,41 @@ test('요약은 안 잰 계정을 0이 아니라 «아직 안 잼»으로, 상�
   const text = summarize({ accounts: ACCOUNTS, ledger, today: '2026-09-18' });
   assert.match(text, /\| LAB \| YouTube @labtube \| 1 \| — \| 0 \| 16 \| 2026-09-18 \|/);
   assert.match(text, /\| LAB \| Instagram @lab\.ig \| 아직 안 잼 \|/);
-  assert.match(text, /\| 2026-09-08~2026-09-14 \| 2 \| 0 \| 0 \| 0 \| 0 \| 1 \| 0 \| 0 \| 0 \| 0 \| 3 \|/);
+  // 적지 않은 칸은 0이 아니라 «—», 그런 칸이 있으면 합은 «이상»
+  assert.match(text, /\| 2026-09-08~2026-09-14 \| 2 \| — \| — \| — \| — \| 1 \| — \| — \| — \| — \| — \| 3 이상 \|/);
   assert.match(text, /자동\(공개 채널만\)/);
+});
+
+test('지난 날짜의 값을 나중에 적어도 최신값을 덮지 않는다 — 측정 날짜가 먼저다', () => {
+  const ledger = [
+    { at: '2026-09-18T01:00:00Z', date: '2026-09-18', kind: 'account', account: 'lab-instagram', followers: 20 },
+    { at: '2026-09-19T01:00:00Z', date: '2026-09-10', kind: 'account', account: 'lab-instagram', followers: 10 },
+  ];
+  const text = summarize({ accounts: ACCOUNTS, ledger, today: '2026-09-19' });
+  assert.match(text, /\| LAB \| Instagram @lab\.ig \| 20 \| \+10 \(09-10 대비\) \|/);
+});
+
+test('KPI의 «미기입» 칸을 받고, 모든 칸을 셌다고 하면(--전부) 나머지를 0으로 채워 합을 확정한다', () => {
+  const partial = consultEntry('2026-09-01~2026-09-30', ['미기입=2', '유튜브=1']);
+  assert.deepEqual(partial.counts, { 미기입: 2, 유튜브: 1 });
+  const whole = consultEntry('2026-09-01~2026-09-30', ['미기입=2', '유튜브=1'], { complete: true });
+  assert.equal(Object.keys(whole.counts).length, CONSULT_COLUMNS.length);
+  assert.equal(whole.counts.페이스북, 0);
+  const text = summarize({ accounts: ACCOUNTS, ledger: [{ ...whole, at: '2026-10-01T00:00:00Z' }], today: '2026-10-01' });
+  assert.match(text, /\| 2026-09-01~2026-09-30 \| 0 \| 0 \| 0 \| 1 \| 0 \| 0 \| 0 \| 0 \| 0 \| 0 \| 2 \| 3 \|/);
+});
+
+test('같은 기간을 다시 적으면 나중 값이 고친 값이고, 표는 기간 순서다', () => {
+  const ledger = [
+    { at: '2026-09-20T00:00:00Z', kind: 'consult', period: '2026-09-08~2026-09-14', counts: { 페이스북: 1 } },
+    { at: '2026-09-21T00:00:00Z', kind: 'consult', period: '2026-09-01~2026-09-07', counts: { 페이스북: 5 } },
+    { at: '2026-09-22T00:00:00Z', kind: 'consult', period: '2026-09-08~2026-09-14', counts: { 페이스북: 4 } },
+  ];
+  const text = summarize({ accounts: ACCOUNTS, ledger, today: '2026-09-22' });
+  const rows = text.split('\n').filter(line => /^\| 2026-09-/.test(line));
+  assert.equal(rows.length, 2);
+  assert.match(rows[0], /^\| 2026-09-01~2026-09-07 \| 5 \|/);
+  assert.match(rows[1], /^\| 2026-09-08~2026-09-14 \| 4 \|/);
 });
 
 test('YouTube는 기존 인증으로 공개 통계를 읽고, 등록된 채널 ID와 다르면 기록하지 않는다', async () => {
