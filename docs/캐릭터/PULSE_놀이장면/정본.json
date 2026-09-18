@@ -1,0 +1,40 @@
+{
+  "version": "20260919-jeju-kite-play",
+  "scope": "PULSE character and IP section only. Homepage scene and individual mascot originals remain separate.",
+  "file": "docs/캐릭터/PULSE_놀이장면/세친구_20260919_제주연놀이.png",
+  "sha256": "bf08ae27977ba8ecb59558f52ac3839574920deaa97e25b467a2aca0fff2145c",
+  "width": 1536,
+  "height": 1024,
+  "generator": "Built-in ImageGen; exact model version not exposed",
+  "prompt": "docs/캐릭터/PULSE_놀이장면/생성프롬프트_20260919_제주연놀이.txt",
+  "references": [
+    {
+      "role": "몽글-identity",
+      "file": "docs/캐릭터/정본_4K/몽글_본체.png",
+      "sha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6"
+    },
+    {
+      "role": "까몽-identity",
+      "file": "docs/캐릭터/정본_4K/까몽_본체.png",
+      "sha256": "2115c644b50d981ac693edb75cf0a78fda307e95b41c01afb41968472ab8f845"
+    },
+    {
+      "role": "마린-identity",
+      "file": "docs/캐릭터/정본_4K/마린_본체.png",
+      "sha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13"
+    }
+  ],
+  "render": {
+    "background": "Imagined spring Jeju coast with canola flowers, volcanic stone walls and a distant tuff cone, rendered as a needle-felt miniature.",
+    "action": "Marin holds the spool, Kkamong reaches for the kite tail, Mongle hops beside them.",
+    "blend": "normal",
+    "layout": "Full uncropped landscape image at its native 3:2 aspect ratio."
+  },
+  "consumers": [
+    "SYNK-website/visual-explainers.mjs: pulse-ip",
+    "SYNK-website/dist/assets/pulse-jeju-play-20260919.webp",
+    "synk-policy/pulse/index.html"
+  ],
+  "review": "Local identity correction removed an invented nose from Kkamong and black symbols from Marin eyes. Original individual mascot files were used as references and remain unchanged. This is a fictional Korean landscape composition.",
+  "alt": "제주의 푸른 바다와 유채꽃밭에서 함께 연을 날리는 몽글, 까몽, 마린. 마린은 얼레를 잡고, 까몽은 연꼬리를 향해 손을 뻗고, 몽글은 곁에서 즐겁게 뛰고 있습니다."
+}
