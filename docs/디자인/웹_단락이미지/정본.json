@@ -333,6 +333,21 @@
         "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
         "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
       }
+    },
+    {
+      "key": "pathPlan",
+      "file": "docs/디자인/웹_단락이미지/20260919/path-study-plan.png",
+      "sha256": "6ea72a37d99719a920ad70c1229d03c79aab285f2160ea61fafbada1ccb1260d",
+      "width": 1254,
+      "height": 1254,
+      "alt": "유학 계획 노트에서 대학 건물로 이어지는 초록색 길을 펠트로 만든 모형",
+      "usage": {
+        "story": "path-personal",
+        "placement": "introduction"
+      },
+      "webFile": "path-study-plan-20260919.webp",
+      "prompt": "Use case: stylized-concept.\nCreate ONE completely new square premium handmade felt editorial illustration for the SYNK PATH study-abroad planning section of a refined Korean website. This will sit to the right of the heading \"전공과 진로에 맞춰 유학 계획을 세웁니다\", so the picture must communicate thoughtfully planning a route toward university, without writing that heading inside the picture.\n\nScene: a beautiful tiny architectural diorama emerging from a gently unfolded ivory felt route map, isolated on a pure white seamless studio background (#ffffff), no frame, no coloured rectangular backdrop. One elegant miniature Korean university academic building at the rear right: cream felt stone-like masonry, a restrained sage-green tiled gable roof with subtle Korean roof detail, three graceful tall windows, a central doorway and two welcoming steps. A single curved sage felt walkway sewn onto the ivory map leads from the lower left toward the entrance; two small round embroidered waypoint stitches on that route. A modest open ivory study planner at the front left, bound with sage felt and bearing only a few short charcoal embroidered lines and three tiny empty stitched squares. One slim sage pencil lies naturally alongside it on the map. One small sculpted green tree near the university, properly rooted on the map. The building, planner and connecting path are the only major elements, all clearly separated with believable contacts.\n\nMaterials: tightly matted short wool fibres, precise ivory hand stitching, thick rounded felt edges, tactile textile layers, exceptionally clean luxurious craft details. Palette muted forest green, sage, warm ivory, with very subtle charcoal only. Consistent with realistic felt objects in a premium brand system, not flat vector art and not glossy plastic.\nComposition: elevated three-quarter studio view, delicate asymmetry, complete objects with breathing space, scene occupies about 80% of a 1:1 canvas. Main building tall enough to balance the planner. Grounded soft contact shadows. Bright natural sunlight from upper left and subtle rim lighting reveal physical depth without harsh darkness. The image should feel calm, inviting, considered and highly finished.\nConstraints: NO letters, no words, no numbers, no school logos, no official seals, no mascots or people, no VR headset, no compass, no stack of books, no flags, no floating objects, no busy city, no infographic arrows or UI cards. A conceptual handcrafted campus and study plan, not a photo of a real operating school.",
+      "generationOriginal": "C:/Users/q1212/.codex/generated_images/01a0b07f-efb9-7001-9c7e-4c56fac442f5/exec-94e2c032-55d0-4fdd-83ed-aa638ee76fed.png"
     }
   ]
 }
