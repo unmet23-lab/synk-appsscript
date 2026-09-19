@@ -1,0 +1,338 @@
+{
+  "version": 1,
+  "date": "2026-09-19",
+  "purpose": "브랜드 페이지 내 큰 설명 이미지의 반복 제거",
+  "generator": "Built-in image_gen.imagegen",
+  "requestedModel": "GPT 2.5 이미지",
+  "modelSelection": "The built-in tool exposes no model selector; exact model is not asserted.",
+  "optimization": {
+    "width": 1120,
+    "webpQuality": 90,
+    "effort": 6
+  },
+  "assets": [
+    {
+      "key": "labKorean",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-korean-workbook.png",
+      "sha256": "f371a4b1bb127cbadbb47cdef5c50ae2f9bbd1a55474f232c308361664c1c3c7",
+      "width": 1254,
+      "height": 1254,
+      "alt": "가나다를 수놓은 펼친 한국어 교재와 코럴색 연필",
+      "usage": {
+        "story": "lab-year",
+        "sceneIndex": 0
+      },
+      "webFile": "lab-korean-workbook-20260919.webp",
+      "prompt": "Create one NEW square premium studio photograph for SYNK LAB Korean language coursework. Reference attached image ONLY for dense wool felt craftsmanship, ivory stitching, soft daylight and pure white background. Entirely different composition from closed stacked books: a single OPEN coral-bound workbook lying diagonally, thick ivory felt pages with three large precisely embroidered Korean characters '가 나 다' on the left page and three short simple charcoal writing lines on the right. One coral felt pencil rests across the lower right page; a small ivory eraser lies on the white ground. Elegant still life, authentic page gutter, ribbon bookmark emerging naturally, believable contacts. No additional books, no people, no logos, no clutter. Luxurious physical fiber detail, distinct material thickness, soft sunlight from upper left, subtle clean contact shadows, white seamless background #ffffff with no border or colored panel. Elevated three-quarter view. 1:1 composition, whole arrangement occupies 76% of canvas with safe margins, thoughtfully art-directed as real handcrafted objects, not a flat illustration. It must visibly communicate active reading and writing rather than another book stack.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-4f5bdd0f-cf3c-4122-b7f6-01465ca03841.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labThink",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-personal-notes.png",
+      "sha256": "8ce628818cbdcea9cb74eb5a16176cba93bb5e0e8add8fb4467e3f978250497e",
+      "width": 1254,
+      "height": 1254,
+      "alt": "생각을 적는 코럴색 메모 패드와 연필, 작은 카드 세 장",
+      "usage": {
+        "story": "lab-class",
+        "sceneIndex": 0
+      },
+      "webFile": "lab-personal-notes-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A small personal writing station: one coral felt clipboard holds an ivory sheet with three short charcoal stitched lines, an elegant thick coral pencil lies at its right edge, three small ivory idea cards fan neatly underneath the lower corner. No book stack, no table or chairs. Quiet asymmetrical composition. Palette ivory, muted terracotta coral, charcoal. Show a person preparing their own thoughts before discussing, with no literal person and no readable text.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-84f1ff98-6ada-4e8c-8aad-b732aace2d73.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labDiscuss",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-discussion.png",
+      "sha256": "f42abca988812b0245564147f44d6d3c499d0167563266e0956c61d8650d1e8a",
+      "width": 1254,
+      "height": 1254,
+      "alt": "코럴색 쿠션 세 개 사이에 놓인 마이크와 공동 메모판",
+      "usage": {
+        "story": "lab-class",
+        "sceneIndex": 1
+      },
+      "webFile": "lab-discussion-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A miniature conversational circle: three low coral felt floor cushions around a single ivory oval shared writing pad, a small ivory and coral tabletop microphone at center, three different coral pencils oriented toward the center. No chairs, no table, no books. Cushions clearly separate with different warm coral shades, microphone firmly on its small circular base. Shared pad has three small stitched marks, no words. A beautiful tangible arrangement about listening and speaking in a small group.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-edcbaf5a-b0e6-4787-b92d-6065262bd6b4.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labExplain",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-presentation.png",
+      "sha256": "747e85e5bb1e2bbb0fd86567c6bbe4b925c43e26a4ae4d8e847ef454a5f78c4f",
+      "width": 1254,
+      "height": 1254,
+      "alt": "발표 내용을 세 장의 카드로 정리한 펠트 보드와 작은 연단",
+      "usage": {
+        "story": "lab-class",
+        "sceneIndex": 2
+      },
+      "webFile": "lab-presentation-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A miniature presentation set: slim ivory felt easel with a framed board, three coral rectangular note cards neatly arranged vertically with short charcoal stitched lines, a small coral lectern slightly forward at the left with one ivory cue card resting on its sloped top. No books, no chairs. Board supported by physically plausible stable legs. Focus on the standing board and podium as one coherent crafted still life. No readable words.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-7b3500cd-c663-4248-bace-49e5761ce6d7.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labNative",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-korean-conversation.png",
+      "sha256": "747dfa6dc045beb63220fb756d099fb119cbdb12b263450daba252790fdcf9b3",
+      "width": 1254,
+      "height": 1254,
+      "alt": "마주 보는 두 의자와 한국어 인사말 카드가 놓인 회화 수업 모형",
+      "usage": {
+        "story": "lab-languages",
+        "sceneIndex": 0
+      },
+      "webFile": "lab-korean-conversation-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A miniature one-to-one Korean conversation setting: TWO small elegant upholstered felt chairs face one another at a welcoming angle, one muted coral and the other warm ivory. Between them a tiny round side table holds TWO upright ivory thick felt conversation cards in discrete coral holders. One card has the single Korean word '안녕' embroidered neatly in charcoal, the other has one small coral stitched speech bubble. No other words. No book stacks. Eye-catching spacious sculptural composition, soft daylight on the chair curves and stitching.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-b1d9f702-ec52-42ab-aeb5-e09941da659d.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labEnglish",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-english-presentation.png",
+      "sha256": "64073697665415977e0332b333b0d5324c2c3aad2da1955e0e44d394b9550ac8",
+      "width": 1254,
+      "height": 1254,
+      "alt": "영어 발표를 연습하는 탁상 마이크와 Aa 카드, 작은 지구본",
+      "usage": {
+        "story": "lab-languages",
+        "sceneIndex": 1
+      },
+      "webFile": "lab-english-presentation-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. An English presentation practice still life: a premium ivory felt desktop microphone with coral grille, softly round small globe made from ivory felt with muted coral continent pieces on a coral stand, and TWO thick ivory cue cards leaning on a small coral card holder. Front card embroidered precisely with only 'Aa' in charcoal; second card shows three short stitched lines. No headphones, no books, no laptop. Globe and microphone well separated, tactile and credible. Calm international learning mood.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-f6252ccf-0173-47eb-9fa9-3de84c57dc38.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labMovement",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-movement-language.png",
+      "sha256": "58db21f063051544a4c966e2e569fcd69242971aba1fd0344ad81f72d5f4c5fa",
+      "width": 1254,
+      "height": 1254,
+      "alt": "걷다, 뛰다, 돌다 단어와 발자국을 연결한 한국어 활동 카드",
+      "usage": {
+        "story": "lab-culture",
+        "sceneIndex": 1
+      },
+      "webFile": "lab-movement-language-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. Three substantial ivory wool felt activity cards spread in a loose horizontal arc on white ground, each with one very legible short Korean word embroidered in charcoal: '걷다', '뛰다', '돌다'. Under each word a simple pair of tiny coral footprints, the last with one curved coral arrow around the feet. A single coral soft pencil rests below the cards. Cards angled only slightly to maintain legibility, edges neatly stitched. No books, no alphabet workbook. Clean, elegant physical teaching materials connecting movement to Korean verbs.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-190fe292-8fc9-47f9-b3a6-2b5e0648db08.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labRehearsal",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-dance-rehearsal.png",
+      "sha256": "505bf797eb9e5ad009518c6eb5ce4e09bea7daf923ebc90280807c906616c68f",
+      "width": 1254,
+      "height": 1254,
+      "alt": "K-POP 연습용 운동화와 스피커, 촬영용 클래퍼보드를 펠트로 만든 모형",
+      "usage": {
+        "story": "lab-culture",
+        "sceneIndex": 2
+      },
+      "webFile": "lab-dance-rehearsal-20260919.webp",
+      "prompt": "Create one NEW square luxury studio photograph of a miniature K-POP dance rehearsal and filming kit, made from dense short wool felt. Pure white seamless background, subtle grounded shadows, excellent dimensional craftsmanship, tiny ivory stitching, ivory and muted terracotta coral palette. Objects: one PAIR of chunky coral-and-ivory LACE-UP STREET DANCE SNEAKERS, neatly side-by-side with believable laces, a compact coral boombox with two charcoal speakers behind them, and a small ivory-and-coral blank film clapperboard at front left. Only these THREE object groups, precise balanced composition, whole objects fully contained with a 10% safe margin. No ballet slippers, NO BALLET BARRE, no dance room, no people, no headphones, no text, no logo. This is a contemporary K-pop practice session, not ballet. Use the attached workbook image ONLY as a wool felt material, stitch, and light reference. High-end macro material detail, photographed from elevated three-quarter angle, quiet premium composition matching SYNK's handcrafted object images.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-2a6e28b5-5a1b-44a0-8513-1d7516e09529.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labGoal",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-learning-goal.png",
+      "sha256": "3e8f5daa7e56c160e042f1c28cfabac648f2c4858eee309668738b1f2edf6ed0",
+      "width": 1254,
+      "height": 1254,
+      "alt": "여덟 주의 계획을 표시한 펠트 달력과 선택한 목표 카드",
+      "usage": {
+        "story": "lab-ai-practice",
+        "sceneIndex": 0
+      },
+      "webFile": "lab-learning-goal-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A carefully crafted tabletop planning calendar made of ivory felt with coral binding: an upright broad board with exactly eight small rounded rectangular blank weekly cards in two rows of four, one card selected by a precise coral embroidered outline. In front, one smaller thick ivory goal card in a coral holder and a coral pencil lying alongside. The goal card has one simple coral star embroidered at center. No numbers, no text, no books or chairs. Tactile restrained educational planning still life, ivory dominates, coral details.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-765ffe3d-315d-4570-925d-4c5719c0125a.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labMake",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-team-filming.png",
+      "sha256": "9a2eecad6e45ad903b1030400a4db36d113874cff7f211ae9ba09bea31ed61a4",
+      "width": 1254,
+      "height": 1254,
+      "alt": "팀 문화 프로젝트를 촬영하는 펠트 카메라와 스토리보드",
+      "usage": {
+        "story": "lab-ai-practice",
+        "sceneIndex": 1
+      },
+      "webFile": "lab-team-filming-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A handcrafted miniature coral felt video camera on a small sturdy ivory tabletop tripod, with a three-panel ivory storyboard propped low beside it. Storyboard panels show small sewn motifs: a musical note, a bowl with chopsticks, a theater curtain, one each. Camera lens is charcoal concentric soft felt with ivory rim. Camera points diagonally toward left and is seen in three-quarter side view. No logos, no words, no people. A clear scene of a team making a Korean-culture film. Fine precision seams, minimal objects.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-24d95996-b7c9-4d1a-b4b6-2afaef93c827.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labRevise",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-feedback-revision.png",
+      "sha256": "ce86c2c15fa153ec4f392143b6be3f62732a0f9b67968da19d2a9411f320206a",
+      "width": 1254,
+      "height": 1254,
+      "alt": "수정한 부분을 실로 표시한 초안과 교정용 연필",
+      "usage": {
+        "story": "lab-ai-practice",
+        "sceneIndex": 2
+      },
+      "webFile": "lab-feedback-revision-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. Two overlapping ivory felt draft sheets inside an OPEN shallow coral felt folder, one sheet behind with four short charcoal stitched lines, the front sheet with three neat charcoal stitched lines and ONE subtle coral correction stroke over a short line, plus one small coral check mark at the bottom. A short coral proofreading pencil lies across the bottom edge, with an ivory eraser on the ground. No readable words. Refined editorial composition about reviewing and improving a draft. This is loose paper in a folder, not a bound workbook or stack of books.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-47e16577-0f91-4e40-b2ad-272d99129aa0.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "labArchive",
+      "file": "docs/디자인/웹_단락이미지/20260919/lab-process-portfolio.png",
+      "sha256": "5ec1669d81499419c337b85827ceb2f720a4c84e56ce9b68b8d028008bbb24de",
+      "width": 1254,
+      "height": 1254,
+      "alt": "초안과 완성 작품을 모은 코럴색 펠트 아코디언 포트폴리오",
+      "usage": {
+        "story": "lab-ai-practice",
+        "sceneIndex": 3
+      },
+      "webFile": "lab-process-portfolio-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A beautiful upright CORAL felt accordion portfolio opened halfway to reveal THREE neatly separated ivory divisions, each containing an ivory artwork sheet. A simple coral stitched musical note on the front sheet and small muted sage and charcoal graphic shapes on two rear sheets. Visible pleated side gussets, soft rounded corners, precise ivory stitching, small closure tab folded outward. One coherent single object, no pens or books. Thoughtful three-quarter angle showing the accordion construction and organized work samples. No words, no logos.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-714b042a-4e7b-4b07-8a6c-ba701f8a105d.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "shiftLearn",
+      "file": "docs/디자인/웹_단락이미지/20260919/shift-ai-workshop.png",
+      "sha256": "acaabc6e3f992484ff4038d1d11bc026259513a262fe4b8694651e29b0e92fc0",
+      "width": 1254,
+      "height": 1254,
+      "alt": "AI 실습 화면을 비추는 파란 펠트 프로젝터와 교육용 스크린",
+      "usage": {
+        "story": "shift-services",
+        "sceneIndex": 0
+      },
+      "webFile": "shift-ai-workshop-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A miniature professional training presentation setup entirely made of wool felt. One ivory freestanding projection screen with dark charcoal surface and three crisp blue/ivory soft rectangular application panels. A substantial muted royal-blue felt projector sits in front to the left, lens facing the screen, with a small ivory remote on the ground. Screen feet are physically stable, no glowing light beam. No laptop, no notebooks, no text, no logos. Palette royal blue #3d6bc9, charcoal, warm ivory. Visibly different from a computer still life; clearly an AI workshop or training setup.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-c3d3e4df-f059-494a-8bee-f122c256a4f5.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/shift-work-20260918.webp",
+        "sha256": "395e1668039a27c23f18c4e4b7857d8277484687afb8cc92e62a24e2b2f46fd8"
+      }
+    },
+    {
+      "key": "shiftConsult",
+      "file": "docs/디자인/웹_단락이미지/20260919/shift-workflow-planning.png",
+      "sha256": "4871baf33d1b5ff6dc7be9abf2df5fc45917d5bdd3db77861c82c75a92f644c4",
+      "width": 1254,
+      "height": 1254,
+      "alt": "업무의 순서와 연결을 정리한 파란 펠트 작업 보드",
+      "usage": {
+        "story": "shift-services",
+        "sceneIndex": 1
+      },
+      "webFile": "shift-workflow-planning-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A premium physical workflow planning board: ivory thick felt panel stands slightly angled on a short sturdy muted royal-blue support. Three vertical lanes, each with two neatly aligned blue or ivory felt task cards, connected across the top by a SINGLE thin charcoal embroidered path with small arrowheads. One blue pencil rests in front, one small ivory timer at right. Sparse and calm, no numbers, no words, no laptop, no screens. Physical raised card layers create real depth. Colors royal blue #3d6bc9, ivory, charcoal.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-b0f5a60a-28e0-4174-a3fd-51928305f490.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/shift-work-20260918.webp",
+        "sha256": "395e1668039a27c23f18c4e4b7857d8277484687afb8cc92e62a24e2b2f46fd8"
+      }
+    },
+    {
+      "key": "shiftBrand",
+      "file": "docs/디자인/웹_단락이미지/20260919/shift-branding-studio.png",
+      "sha256": "f31243edd5215220a0971dd8411ed16057eaebe8d2203782da30be7720130806",
+      "width": 1254,
+      "height": 1254,
+      "alt": "색상 견본과 명함, 패키지를 함께 구성한 파란 펠트 브랜딩 시안",
+      "usage": {
+        "story": "shift-services",
+        "sceneIndex": 2
+      },
+      "webFile": "shift-branding-studio-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A refined brand-design material study built entirely in felt: an open fan of five thick color swatches in ivory, light blue, royal blue, deep blue, charcoal; two pristine ivory rectangular business cards on a small royal-blue rectangular presentation block; a small simple ivory packaging box at back with a narrow royal-blue fabric ribbon. No letters, no invented logo, no company name. Every object is felt with precise handmade seams. Cohesive elevated three-quarter composition, beautiful spacing and shadows. No laptop, no monitor, no books.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-37e98842-2687-4ff0-ab1a-f1e461a3427d.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/shift-work-20260918.webp",
+        "sha256": "395e1668039a27c23f18c4e4b7857d8277484687afb8cc92e62a24e2b2f46fd8"
+      }
+    },
+    {
+      "key": "pulseLicense",
+      "file": "docs/디자인/웹_단락이미지/20260919/pulse-music-rights.png",
+      "sha256": "75cbfc589fd9c97232eea14673f3965eba0d511886bc3afef8520c0e8264557e",
+      "width": 1254,
+      "height": 1254,
+      "alt": "작품을 담은 자주색 레코드와 사용 범위를 정리하는 펠트 서류",
+      "usage": {
+        "story": "pulse-ip",
+        "sceneIndex": 1
+      },
+      "webFile": "pulse-music-rights-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A magnificent raspberry felt vinyl record partially emerging from a thick ivory square record sleeve leaning gently upright, the record's concentric grooves crafted as precise dark raspberry stitching. One ivory sheet lies flat in front with three subtle charcoal stitched lines and a small raspberry seal shape at its corner; a short raspberry pencil alongside. Palette deep raspberry #99295d, ivory, charcoal. No headphones, no character mascots, no book or laptop. This represents music works and agreeing how to use them. No words, no actual legal document, no logos.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-aa194c73-e598-4bd0-a970-85d0e2c05a1a.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    },
+    {
+      "key": "pathInterview",
+      "file": "docs/디자인/웹_단락이미지/20260919/path-interview-practice.png",
+      "sha256": "10141dd45bd340f3d21a4609592594e943426072f5b51ab50d430668a6378733",
+      "width": 1254,
+      "height": 1254,
+      "alt": "학업 계획과 자기소개를 준비하는 초록색 펠트 서류와 여권 모형",
+      "usage": {
+        "story": "path-journey",
+        "sceneIndex": 0
+      },
+      "webFile": "path-interview-practice-20260919.webp",
+      "prompt": "Create ONE new square luxury product photograph for the SYNK website. Use the attached photograph ONLY as a reference for physically crafted dense wool felt, precise seams, tiny ivory stitching and beautiful soft daylight. Change the objects and composition completely. Seamless PURE WHITE background and ground, no room backdrop, no border, no tinted background. Elevated three-quarter perspective, believable scale and gravity, clean grounded contact shadows, light from upper left, rich tactile depth, subtle edge light. Dense short fibers, no grunge or visual noise. Fully contained silhouette, generous margins, composition occupies about 76% of the square. This is a hand-built conceptual model, NOT a flat vector icon, not shiny plastic. No people, no brand logos, no watermark. Very few considered objects, exquisite construction, clarity at small web sizes. A restrained study-abroad interview preparation set crafted in felt: a muted forest-sage passport-sized booklet with NO emblem or country name, open ivory document wallet containing three neatly arranged papers, and one small upright sage-and-ivory cue-card holder. On a visible document only three short charcoal stitched lines and a small geometric portrait placeholder, no actual photo. Small sage felt pen rests on the white ground. Palette forest sage, warm ivory, charcoal. No VR headset, no laptop, no graduation cap, no official seals, no logos, no readable text. Physically plausible welcoming editorial composition.",
+      "generationOriginal": "C:\\Users\\q1212\\.codex\\generated_images\\01a0b07f-efb9-7001-9c7e-4c56fac442f5\\exec-270bb48b-0503-4070-9815-d85e9ee3d3ca.png",
+      "reference": {
+        "file": "docs/디자인/웹_단락이미지/references/lab-study-books-20260918.webp",
+        "sha256": "efd2539142314c8b6a38058fc78863dc9fbc0d92c77a9097bbc9f66298c277b4"
+      }
+    }
+  ]
+}
