@@ -1,0 +1,42 @@
+{
+  "at": "2026-09-19T10:09:28.952Z",
+  "broadcast": {
+    "videoId": "eH0owfx9gCw",
+    "title": "SYNK Radio | 음악은 켜 두고 · lofi & c",
+    "privacyStatus": "public"
+  },
+  "stream": {
+    "status": "active",
+    "health": "good"
+  },
+  "service": {
+    "MainPID": "478435",
+    "NRestarts": "0",
+    "ActiveState": "active",
+    "SubState": "running",
+    "UnitFileState": "enabled"
+  },
+  "radioStream": {
+    "MainPID": "0",
+    "NRestarts": "0",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "UnitFileState": "disabled"
+  },
+  "ffmpeg": "478607 SLl        03:31 22.9  3.5 ffmpeg",
+  "opened": [
+    {
+      "pid": "478607",
+      "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+    },
+    {
+      "pid": "478607",
+      "file": "/opt/synk-radio/무대차례/still-dusk-kite-20260919-3d54fb291a54.mp4"
+    }
+  ],
+  "recentProgress": [
+    "[겹쳐송출 10:06:55] 층 239장 떴다(초당 4.0) · 내보낸 것 237(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.989x · 버린장 0 · 겹친장 0 · 방송시각 00:00:53.244000",
+    "[겹쳐송출 10:07:55] 층 479장 떴다(초당 4.0) · 내보낸 것 477(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.995x · 버린장 0 · 겹친장 0 · 방송시각 00:01:53.314000",
+    "[겹쳐송출 10:08:55] 층 719장 떴다(초당 4.0) · 내보낸 것 717(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.996x · 버린장 0 · 겹친장 0 · 방송시각 00:02:52.872000"
+  ]
+}

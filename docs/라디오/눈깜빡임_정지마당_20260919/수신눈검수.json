@@ -1,0 +1,14 @@
+{
+  "decodedFrames": 240,
+  "fps": 12,
+  "peakEyeChangeTime": 15.333333333333334,
+  "peakMeanAbsoluteDifference": 13.376396437198068,
+  "eyeSampleFrames": [
+    181,
+    183,
+    184,
+    185,
+    187
+  ],
+  "silenceDetections": 0
+}

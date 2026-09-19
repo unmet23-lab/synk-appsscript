@@ -1,0 +1,39 @@
+[
+  {
+    "created_at": "2026-09-19T07:34:07.147607Z",
+    "display_name": "Nano Banana Pro",
+    "id": "d51a1a90-e60c-4725-955c-2b3caf11e9f7",
+    "job_type": "nano_banana_pro",
+    "min_result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260919_073407_d51a1a90-e60c-4725-955c-2b3caf11e9f7_min.webp",
+    "params": {
+      "application": null,
+      "aspect_ratio": "16:9",
+      "batch_size": 1,
+      "height": 1536,
+      "input_image": null,
+      "input_images": [
+        {
+          "id": "ee5acfda-5490-4295-bd5b-38373eea59bd",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/ee5acfda-5490-4295-bd5b-38373eea59bd_resize.jpg"
+        },
+        {
+          "id": "b86023fd-8072-44d3-8e98-fc04a34442a5",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/b86023fd-8072-44d3-8e98-fc04a34442a5_resize.jpg"
+        },
+        {
+          "id": "7113838a-a617-424c-b5f6-d1e314c359d7",
+          "type": "media_input",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/7113838a-a617-424c-b5f6-d1e314c359d7_resize.jpg"
+        }
+      ],
+      "prompt": "Create a single exceptional 16:9 landscape master frame for a calm music-radio film, a photographic handcrafted needle-felt miniature, depicting the EXACT THREE mascot characters in the supplied identity references playing together in a Korean hanok courtyard at moonrise.\n\nReference 1 is Mongle: coral wool bell-shaped ghost, two widely spaced glossy black bead eyes, scalloped hem with pale embroidered thread, NO arms, NO legs, NO mouth, NO nose. Reference 2 is Kkamong: dark brown fluffy cat-like creature with two triangular ears, two green-ringed glossy eyes, tiny rounded side arms, distinctive trailing tail with a coral oval ornament and pale stitch details. NO nose or mouth; do not turn it into a conventional cat. Reference 3 is Marin: oversized indigo needle-felt head, two large matte yellow felt oval eyes with NO pupils or highlights, small warm stone-colored body, two short arms and feet, diagonal cloth satchel with a little flower. Keep their designs, silhouettes, materials and relative proportions faithful; adapt their poses gently to the scene, not their identities. Exactly one of each.\n\nScene: an intimate but spacious handmade Korean courtyard, low hanok buildings framing left and right, beautifully curved tiled roofs, warm amber window light, a low stone wall across the back, a persimmon branch at the upper right, a large soft warm moon high in the sky. The deep blue-brown twilight and amber light are quiet and cozy. All architecture and scenery share the same sophisticated miniature wool-felt construction, fine dense fibers, delicate seams and honest dimensional texture. Restrained star points, no sparkles or magical effects.\n\nComposition: a fixed wide view slightly above character eye level, natural miniature perspective, full courtyard and full characters visible. A generous open playing area in the lower middle. The three friends form a shallow loose triangle in the lower middle, at least half a body width between their silhouettes. Each is only about 27 percent of picture height. Kkamong is a little ahead on the right, looking back toward Mongle at center-left; Marin at left is looking toward both, ready to follow. A candid friendly moment just before another short playful chase, slightly leaning bodies and believable weight, not three portraits facing the camera. Keep faces readable in three-quarter view, no extreme profile. Preserve clear empty lower left space for the separate radio logo and clear lower right space for song information. No giant foreground props. Refined image with real fine wool fibers, stable clean silhouettes, spatial depth, soft grounded contact shadows, consistent warm lighting, excellent craft photography. Modest shallow depth of field but all three mascots sharp.\n\nNo text, no logo, no watermark, no extra characters, no anthropomorphic faces, no mouths or noses, no pupils added to Marin, no hands or feet added to Mongle, no cartoon outlines, no plastic, no 2D illustration, no stretched anatomy, no floating cutout look, no garish colors, no costume changes, no heavy fog, no enormous moon that overwhelms the characters.\n",
+      "resolution": "2k",
+      "surface": null,
+      "width": 2752
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260919_073407_d51a1a90-e60c-4725-955c-2b3caf11e9f7.png",
+    "status": "completed"
+  }
+]

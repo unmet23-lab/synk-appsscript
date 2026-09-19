@@ -1,0 +1,44 @@
+{
+  "at": "2026-09-19T10:04:48.148Z",
+  "mode": "--stage",
+  "before": {
+    "MainPID": "0",
+    "NRestarts": "0",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "UnitFileState": "enabled"
+  },
+  "after": {
+    "MainPID": "0",
+    "NRestarts": "0",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "UnitFileState": "enabled"
+  },
+  "media": [],
+  "remoteAsset": "/opt/synk-radio/무대차례/still-dusk-kite-20260919-3d54fb291a54.mp4",
+  "assetSha256": "3d54fb291a544fb38611b004955d2c67e9c7737f56f12c929c4deb94544e6c65",
+  "changes": [
+    {
+      "target": "/opt/synk-radio/무대차례/목록.txt",
+      "sha256": "ab38464198936cfd5111ff6373c71865dbfad9ef96e563cf9f06da5b1f47ad3c",
+      "backup": "/opt/synk-radio/무대차례/목록.txt.before-still-kite-20260919-0d153e27adbc"
+    },
+    {
+      "target": "/opt/synk-radio/지면/bots/오버레이/라디오간판.js",
+      "sha256": "6bf6d2af108ae81ad60d79b8b5d2ee6f867d8d929590c7b957e165b607d5b196",
+      "backup": "/opt/synk-radio/지면/bots/오버레이/라디오간판.js.before-still-kite-20260919-6bf6d2af108a"
+    }
+  ],
+  "protectedUnchanged": [
+    "/opt/synk-radio/지면/bots/오버레이/방송층.html",
+    "/opt/synk-radio/지면/bots/오버레이/전광판판정.js",
+    "/opt/synk-radio/지면/bots/오버레이/방송지킴이.js",
+    "/opt/synk-radio/지면/bots/오버레이/마스코트.html",
+    "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js",
+    "/opt/synk-radio/지면/bots/오버레이/전광판.html",
+    "/opt/synk-radio/소리/playlist.txt",
+    "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+    "/opt/synk-radio/송출/조율.json"
+  ]
+}

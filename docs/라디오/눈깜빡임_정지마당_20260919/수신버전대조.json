@@ -1,0 +1,12 @@
+[
+  {
+    "version": "new",
+    "minMSE": 28.062349033816425,
+    "matchingTime": 18.083333333333332
+  },
+  {
+    "version": "old",
+    "minMSE": 26.3876056763285,
+    "matchingTime": 18.083333333333332
+  }
+]

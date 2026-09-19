@@ -1,0 +1,44 @@
+{
+  "coordinateSpace": [
+    1668,
+    943
+  ],
+  "eyes": [
+    {
+      "name": "kkamong-left",
+      "target": [
+        1226,
+        515,
+        15,
+        19
+      ],
+      "source": [
+        1228,
+        518,
+        23,
+        25
+      ]
+    },
+    {
+      "name": "kkamong-right",
+      "target": [
+        1290,
+        521,
+        20,
+        20
+      ],
+      "source": [
+        1292,
+        523,
+        27,
+        25
+      ]
+    }
+  ],
+  "outsideMaskChangedPixels": 0,
+  "nativeAllowedPixels": 2278,
+  "4KAllowedPixels": 13514,
+  "4KResampleFootprintPixels": 2,
+  "noWholeFacePatch": true,
+  "native4K": false
+}

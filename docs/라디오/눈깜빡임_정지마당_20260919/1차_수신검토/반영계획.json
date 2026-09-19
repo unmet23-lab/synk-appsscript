@@ -1,0 +1,31 @@
+{
+  "localAsset": "해질녘_연_눈깜빡임_720p.mp4",
+  "assetSha256": "7275437ec3c497db3e419eb7fde64a6ff2e8ec94040a0d5ae0a6101af4e4f267",
+  "remoteAsset": "/opt/synk-radio/무대차례/still-dusk-kite-20260919-7275437ec3c4.mp4",
+  "audio": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+  "protected": {
+    "/opt/synk-radio/지면/bots/오버레이/방송층.html": "7692ffc73c1f1bc25625a9e58d8aef8744f267012be6f46ad0bb60f8e8e73c83",
+    "/opt/synk-radio/지면/bots/오버레이/전광판판정.js": "cd1fa1aa1910b993b5264b0aaca6d37b994848e3e677d8641f8024e954cbf9af",
+    "/opt/synk-radio/지면/bots/오버레이/방송지킴이.js": "8d89f50d2708ed8ac4d8cf75425d6ed1327be51799ad49153602ed191cbfdc46",
+    "/opt/synk-radio/지면/bots/오버레이/마스코트.html": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751",
+    "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261",
+    "/opt/synk-radio/지면/bots/오버레이/전광판.html": "373bf0a52ee15e4e327f6bbbba0ad87a9a71ad078968461350d021deb3be6d89",
+    "/opt/synk-radio/소리/playlist.txt": "374e9ce2cc0d6f81928c5639cf69ed0abb9252f2d9f8c2025a24ad330a0bee5c",
+    "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac": "c9295db33abc8609bda2cdbc885dfce563b52cb6cc6a9db49f7ec276bf931f45",
+    "/opt/synk-radio/송출/조율.json": "7ce20813cb5d42e556dea066e5ac8fbb8f8087b209acdcdd39e1cbe9a5178950"
+  },
+  "changes": [
+    {
+      "target": "/opt/synk-radio/무대차례/목록.txt",
+      "local": "after-목록.txt",
+      "beforeSha256": "5a8831113adef6c032cf0567ba65d0d95cdadeb921d12dcf707a4cb260ba7571",
+      "afterSha256": "0d153e27adbc340680f1842303d1614dbd093f28ba082050b01df3ee96d7bbbc"
+    },
+    {
+      "target": "/opt/synk-radio/지면/bots/오버레이/라디오간판.js",
+      "local": "after-라디오간판.js",
+      "beforeSha256": "8ee2443382f8dd7bef10c0a5fed83514c571c36e9ce24ea43f6ee15c4bb93bb6",
+      "afterSha256": "6bf6d2af108ae81ad60d79b8b5d2ee6f867d8d929590c7b957e165b607d5b196"
+    }
+  ]
+}

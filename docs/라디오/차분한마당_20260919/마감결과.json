@@ -1,0 +1,13 @@
+{
+  "frames": 192,
+  "fps": 24,
+  "loopSeconds": 8,
+  "sourceFPS": 48,
+  "native4K": false,
+  "upscale": "Real-ESRGAN general-x4v3",
+  "fixedBackgroundPixels": 904833,
+  "totalPixels": 1056768,
+  "sourceFrames": "32..223; final 32 frames bridge to 0..31",
+  "backgroundPixelEquality": true,
+  "sourceSha256": "ebaaed57422a655cf386342cc29aa82f812208c7e45150f601ceeabc80cbd8d9"
+}

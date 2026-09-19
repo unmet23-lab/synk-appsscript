@@ -1,0 +1,170 @@
+{
+  "state": "live-verified",
+  "at": "2026-09-19T10:09:29.106Z",
+  "revision": 2,
+  "broadcast": {
+    "videoId": "eH0owfx9gCw",
+    "title": "SYNK Radio | 음악은 켜 두고 · lofi & chill",
+    "url": "https://www.youtube.com/watch?v=eH0owfx9gCw",
+    "privacyStatus": "public"
+  },
+  "scene": {
+    "lighting": "sunset",
+    "kiteCount": 1,
+    "fixedCamera": true,
+    "fixedBodies": true,
+    "mongle": "fixed embroidered eye smile",
+    "kkamong": "opaque eyelid occlusion with short fully closed hold",
+    "marin": "subtle response within existing yellow felt lenses",
+    "loopSeconds": 60,
+    "source": "해질녘_원본.png",
+    "native4K": false,
+    "archive": "해질녘_연_눈깜빡임_4K.mp4",
+    "archiveSha256": "d17e302f372562d23fe830c526a3e57f5430c59070bd1fd4fcde46f8be8073bd",
+    "archiveDimensions": [
+      3840,
+      2160
+    ],
+    "archiveFPS": 24,
+    "broadcastAsset": "해질녘_연_눈깜빡임_720p.mp4",
+    "broadcastAssetSha256": "3d54fb291a544fb38611b004955d2c67e9c7737f56f12c929c4deb94544e6c65",
+    "remoteAsset": "/opt/synk-radio/무대차례/still-dusk-kite-20260919-3d54fb291a54.mp4",
+    "broadcastDimensions": [
+      1280,
+      720
+    ],
+    "broadcastFPS": 12
+  },
+  "checks": {
+    "composition": {
+      "outsideAllowedChangedPixels": 0,
+      "t0EqualsT60": true,
+      "duration": 60,
+      "blinkTimes": [
+        6.3,
+        18.1,
+        32.8,
+        46.7,
+        57
+      ],
+      "lensResponseTimes": [
+        12.9,
+        38.2,
+        52.1
+      ],
+      "cameraMotion": false,
+      "bodyMotion": false,
+      "marinSkinEyelids": false,
+      "kiteCount": 1,
+      "native4K": false
+    },
+    "finishReview": "마감검수.json",
+    "health": {
+      "status": "active",
+      "health": "good"
+    },
+    "service": {
+      "MainPID": "478435",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "publicCapture": {
+      "started": "2026-09-19T10:07:19.576Z",
+      "finished": "2026-09-19T10:07:37.175Z",
+      "videoId": "eH0owfx9gCw",
+      "formatId": "232+234",
+      "secondsRequested": 20,
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1280,
+            "height": 720
+          },
+          {
+            "codec_name": "aac",
+            "sample_rate": "44100"
+          }
+        ],
+        "format": {
+          "duration": "20.015601",
+          "size": "1967063"
+        }
+      },
+      "silence": [],
+      "captureWarnings": "",
+      "source": "YouTube public playback, not local preview",
+      "allNewScene": true,
+      "exactlyThreeMascots": true,
+      "blinkVisuallyVerified": true,
+      "newRadioMark": true
+    },
+    "publicBlink": {
+      "decodedFrames": 240,
+      "fps": 12,
+      "peakEyeChangeTime": 15.333333333333334,
+      "peakMeanAbsoluteDifference": 13.376396437198068,
+      "eyeSampleFrames": [
+        181,
+        183,
+        184,
+        185,
+        187
+      ],
+      "silenceDetections": 0
+    },
+    "protectedServerFilesUnchanged": [
+      "/opt/synk-radio/지면/bots/오버레이/방송층.html",
+      "/opt/synk-radio/지면/bots/오버레이/전광판판정.js",
+      "/opt/synk-radio/지면/bots/오버레이/방송지킴이.js",
+      "/opt/synk-radio/지면/bots/오버레이/마스코트.html",
+      "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js",
+      "/opt/synk-radio/지면/bots/오버레이/전광판.html",
+      "/opt/synk-radio/소리/playlist.txt",
+      "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+      "/opt/synk-radio/송출/조율.json"
+    ]
+  },
+  "copy": {
+    "description": "일할 때도, 쉴 때도 가볍게 틀어두는 음악.\n몽글·까몽·마린과 해 질 녘 마당에서 잠시 쉬어가요.\n\nLo-fi and mellow grooves for work, rest, and quiet moments.\n\nSYNK PULSE\nhttps://synk.im/",
+    "thumbnailPublicVerified": true,
+    "source": "bots/오버레이/라디오간판.js",
+    "thumbnailGenerator": "tools/라디오썸네일지면.cjs"
+  },
+  "website": {
+    "commit": "465101e4a9363096569bff850c1b676c65022268",
+    "pagesRun": 35436111626,
+    "files": [
+      {
+        "path": "listen/index.html",
+        "matches": true,
+        "localSha256": "3e95c5e28c0c6cef0bde13d5067c5d99f41badabd6d87c76c59a063214449d8d",
+        "liveSha256": "3e95c5e28c0c6cef0bde13d5067c5d99f41badabd6d87c76c59a063214449d8d"
+      },
+      {
+        "path": "pulse/index.html",
+        "matches": true,
+        "localSha256": "b3e9b4df038f9ad85e335eedfd06d37279ab09f537cbeb1eb8006ea6a6a85f83",
+        "liveSha256": "b3e9b4df038f9ad85e335eedfd06d37279ab09f537cbeb1eb8006ea6a6a85f83"
+      }
+    ]
+  },
+  "comfortUserConfirmed": false,
+  "evidence": [
+    "송출중지.json",
+    "눈마감_재중지.json",
+    "서버적용.json",
+    "마감검수.json",
+    "송출재개.json",
+    "최종상태.json",
+    "공개수신.json",
+    "공개수신_눈연속.jpg",
+    "수신눈검수.json",
+    "유튜브반영.json",
+    "홈페이지확인.json"
+  ]
+}

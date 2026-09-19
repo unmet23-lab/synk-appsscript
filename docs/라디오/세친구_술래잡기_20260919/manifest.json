@@ -1,0 +1,374 @@
+{
+  "version": "20260919-moonlit-tag-image",
+  "status": "live-public-reception-verified",
+  "scope": "라디오용 세 친구 술래잡기 장면. 개별 마스코트 정본을 교체하지 않는다.",
+  "selectedImage": {
+    "file": "docs/라디오/세친구_술래잡기_20260919/세친구_보름달마당_교정.png",
+    "width": 2688,
+    "height": 1520,
+    "sha256": "91ccd57fa678ebe44fc580bce63c6a4463ccc7545a4f8f4ee314d0e9a0be6251",
+    "generator": "Higgsfield CLI / GPT Image 2.5",
+    "quality": "high",
+    "jobId": "26d7b1e7-c7ae-434d-8527-d23ddd586b04",
+    "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_3J2R7zgGHLBsZcivuVk79KtdBOZ/hf_20260919_073637_26d7b1e7-c7ae-434d-8527-d23ddd586b04.png",
+    "prompt": "교정프롬프트.txt"
+  },
+  "rejectedImage": {
+    "file": "세친구_보름달마당.png",
+    "generator": "Higgsfield CLI / Nano Banana Pro",
+    "jobId": "d51a1a90-e60c-4725-955c-2b3caf11e9f7",
+    "reason": "몽글 팔과 입 추가, 마린 동공과 몸색 변경, 까몽이 네 발 고양이로 변형됨. 사용하지 않는다."
+  },
+  "references": [
+    "docs/캐릭터/정본_4K/몽글_본체.png",
+    "docs/캐릭터/정본_4K/까몽_본체.png",
+    "docs/캐릭터/정본_4K/마린_본체.png"
+  ],
+  "review": {
+    "method": "각 정본 이미지와 첫 생성물, 교정본을 view_image로 직접 대조",
+    "passed": [
+      "정확히 세 캐릭터",
+      "몽글 팔과 입 없음",
+      "마린 무광 노란 눈과 베이지 몸",
+      "까몽 초록 눈과 코랄 꼬리 장식",
+      "캐릭터 사이 거리",
+      "접지 그림자와 한옥 조명",
+      "추가 글자나 로고 없음"
+    ],
+    "remaining": [],
+    "finishedLoopPassed": [
+      "3.833초 이후 동작 멈춤 구간 제외",
+      "순방향 3.5초 루프",
+      "몽글 눈웃음 유지",
+      "연결부 연속 프레임 직접 검수",
+      "4K 전체 디코딩",
+      "브라우저 반복 재생",
+      "기존 단독 마린 중복 제거",
+      "기존 음악 해시 유지",
+      "공개 수신 20초 영상과 무음 검출 검사"
+    ]
+  },
+  "billing": {
+    "beforeCredits": 6.92,
+    "spentCredits": 5,
+    "afterCredits": 1.92,
+    "newPurchase": false,
+    "autoRefillEnabled": false
+  },
+  "videoPlan": {
+    "model": "seedance_2_0",
+    "durationSeconds": 12,
+    "resolution": "1080p",
+    "aspectRatio": "16:9",
+    "startAndEndImageJobId": "26d7b1e7-c7ae-434d-8527-d23ddd586b04",
+    "prompt": "영상프롬프트.txt",
+    "estimatedCredits": 108,
+    "submitted": false
+  },
+  "liveApplied": true,
+  "h3Video": {
+    "workflowUrl": "http://pi.co-nai.com:2999/#/public/workflows/h3",
+    "interface": "Chrome UI via computer-use",
+    "modelLabel": "MiniMax H3 Director",
+    "mode": "FL2VA",
+    "requestedDurationSeconds": 5,
+    "previewEndSeconds": 5.17,
+    "aspectRatio": "16:9",
+    "resolutionPreset": "1024p",
+    "displayedOutputSize": "1184x896 (summary label did not update; actual output must be checked)",
+    "startAndEndImage": "세친구_보름달마당_교정.png",
+    "prompt": "H3_영상프롬프트.txt",
+    "queueJobId": 2819,
+    "historyId": 2821,
+    "submitted": true,
+    "generationCount": 1,
+    "status": "completed",
+    "costShown": false,
+    "newPurchase": false,
+    "result": {
+      "sourceFileName": "2026_09_19_074952_d7h19g.mp4",
+      "originalFile": "H3_세친구_보름달마당_원본.mp4",
+      "originalSha256": "8528c3c764647ed43b2e11a2c6a98fdc8b1f1b72419f1d3e281571e4d972829c",
+      "width": 1376,
+      "height": 768,
+      "framesPerSecond": 48,
+      "videoFrames": 247,
+      "videoDurationSeconds": 5.145833,
+      "containerDurationSeconds": 5.182,
+      "hasAudio": true,
+      "previewFile": "H3_세친구_보름달마당_16대9_무음.mp4",
+      "previewSha256": "b1fe8cd95553755f12f8a1aa1a051dd2aa4911b0eef2a0958a0ca2e39e09e19e",
+      "previewWidth": 1280,
+      "previewHeight": 720,
+      "previewHasAudio": false
+    },
+    "review": {
+      "method": "Browser playback screenshot, half-second contact sheet, first/last frame pair, ffprobe",
+      "passed": [
+        "정확히 세 캐릭터",
+        "몽글에 팔·다리·입 추가 없음",
+        "마린의 무광 노란 눈 유지",
+        "까몽의 초록 눈과 코랄 꼬리 유지",
+        "시작·끝 구도와 인물 배치 유사",
+        "1280x720 무음 파일 확인"
+      ],
+      "limitations": [
+        "마린과 까몽의 중간 회전이 급함",
+        "길게 뛰어노는 장면보다는 짧게 이동하고 통통 뛰는 시안",
+        "라이브 적용 전 동작 개선 필요"
+      ],
+      "contactSheet": "H3_영상검수_연속프레임.jpg",
+      "endpointPair": "H3_영상검수_첫끝.jpg",
+      "liveApproved": false
+    }
+  },
+  "h3HappyVideo": {
+    "workflowUrl": "http://pi.co-nai.com:2999/#/public/workflows/h3",
+    "modelLabel": "MiniMax H3 Director",
+    "mode": "FL2VA",
+    "requestedDurationSeconds": 5,
+    "aspectRatio": "16:9",
+    "resolutionPreset": "1024p",
+    "queueJobId": 2820,
+    "historyId": 2822,
+    "sourceFileName": "2026_09_19_075815_jdg7l5.mp4",
+    "originalFile": "H3_몽글눈웃음_원본.mp4",
+    "originalSha256": "c56c331a2800c1ee0ccdab2a8cab3da6c92c100c80c172e9da81aece93c14f26",
+    "width": 1376,
+    "height": 768,
+    "fps": 48,
+    "frames": 247,
+    "videoDurationSeconds": 5.145833,
+    "prompt": "H3_눈웃음_영상프롬프트.txt",
+    "expressionReference": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
+    "generationCompleted": true,
+    "contactSheet": "H3_몽글눈웃음_검수.jpg",
+    "endpointPair": "H3_몽글눈웃음_첫끝.jpg",
+    "review": [
+      "몽글의 눈웃음 두 구간과 눈 뜸 확인",
+      "몽글 몸 기울임과 낮은 점프 확인",
+      "셋의 주요 색·몸 형태 유지",
+      "급한 전신 회전 감소; 까몽의 짧은 뒤돌기는 남음",
+      "시작·끝 배치 유사"
+    ],
+    "native4K": false,
+    "fourKStatus": "completed-and-reviewed",
+    "newPurchase": false,
+    "fourKResult": {
+      "file": "H3_몽글눈웃음_4K_무음.mp4",
+      "sha256": "5d6d35c6586f7589446db62c71c81f8398d9e0855442a36451a840b33e222fab",
+      "bytes": 12802321,
+      "width": 3840,
+      "height": 2160,
+      "fps": 48,
+      "frames": 247,
+      "durationSeconds": 5.145833,
+      "hasAudio": false,
+      "native4K": false,
+      "upscaler": "Real-ESRGAN general-x4v3",
+      "spatialUpscaleFactor": 4,
+      "finalResize": "Lanczos + centered 16:9 crop",
+      "codec": "H.264",
+      "crf": 16,
+      "pixelFormat": "yuv420p",
+      "frameInterpolation": false,
+      "qualityEvidence": "4K_작업/제작기록.md",
+      "browserPlaybackVerified": true,
+      "fullDecodePassed": true,
+      "poster": "H3_몽글눈웃음_4K_대표.jpg"
+    }
+  },
+  "selectedVideo": "세친구_자연루프_4K.mp4",
+  "broadcast": {
+    "videoId": "eH0owfx9gCw",
+    "public": true,
+    "healthBefore": "active/good"
+  },
+  "finishedLoop": {
+    "source": "H3_몽글눈웃음_4K_무음.mp4",
+    "sourceSha256": "5d6d35c6586f7589446db62c71c81f8398d9e0855442a36451a840b33e222fab",
+    "file": "세친구_자연루프_4K.mp4",
+    "sha256": "10e8885f66410a4a773ee5d9c4a97ef7d6ff69d8b708027129f6c876cf64f660",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 3840,
+          "height": 2160,
+          "r_frame_rate": "48/1",
+          "nb_frames": "168"
+        }
+      ],
+      "format": {
+        "duration": "3.500000",
+        "size": "11050240"
+      }
+    },
+    "sourceStartFrame": 6,
+    "sourceEndFrame": 183,
+    "sourceExcludedFromSeconds": 3.8333333333333335,
+    "overlapFrames": 10,
+    "frames": 168,
+    "fps": 48,
+    "cycleSeconds": 3.5,
+    "method": "forward playback; 10-frame bidirectional optical-flow alignment with smoothstep blend; no reverse playback",
+    "flowStats": [
+      {
+        "alpha": 0.034293552812071325,
+        "forwardP99": 12.518020629882812
+      },
+      {
+        "alpha": 0.1262002743484225,
+        "forwardP99": 10.307422637939453
+      },
+      {
+        "alpha": 0.25925925925925924,
+        "forwardP99": 10.248518943786621
+      },
+      {
+        "alpha": 0.4170096021947874,
+        "forwardP99": 9.842144012451172
+      },
+      {
+        "alpha": 0.5829903978052127,
+        "forwardP99": 8.076258659362793
+      },
+      {
+        "alpha": 0.7407407407407407,
+        "forwardP99": 8.125387191772461
+      },
+      {
+        "alpha": 0.8737997256515775,
+        "forwardP99": 8.300996780395508
+      },
+      {
+        "alpha": 0.9657064471879286,
+        "forwardP99": 8.861520767211914
+      }
+    ],
+    "native4K": false,
+    "audio": false
+  },
+  "broadcastPackage": {
+    "file": "세친구_자연루프_송출70초.mp4",
+    "sha256": "ad217cb20f67ecf9be43681449cb406e26b298f362f312b5d65ef696e26a7516",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "12/1",
+          "nb_frames": "840"
+        }
+      ],
+      "format": {
+        "duration": "70.000000",
+        "size": "33312651"
+      }
+    },
+    "cycleSeconds": 3.5,
+    "cycles": 20,
+    "decodePassed": true,
+    "seamMAE": 4.9697113037109375,
+    "maxAdjacentMAE": 10.533768653869629,
+    "adjacentP95": 9.83164119720459
+  },
+  "liveDeployment": {
+    "at": "2026-09-19T08:43:00.314Z",
+    "remoteAsset": "/opt/synk-radio/무대차례/three-friends-20260919-ad217cb20f67.mp4",
+    "assetSha256": "ad217cb20f67ecf9be43681449cb406e26b298f362f312b5d65ef696e26a7516",
+    "parentSha256": "0942ee0ff453c1a118eedee467f12d0cafa95f90fa7a341dc214f165aaf622bc",
+    "stageListSha256": "eb95b7cb3f3e2b4a78283f3de95e84db81d47f2daa16790627c3c4faeb96a3fe",
+    "evidence": "라이브반영.json",
+    "backups": [
+      "/opt/synk-radio/지면/bots/오버레이/방송층.html.before-three-friends-20260919-b4a4a0f9e223",
+      "/opt/synk-radio/무대차례/목록.txt.before-three-friends-20260919-5ea9dc8cff17"
+    ],
+    "protectedUnchanged": [
+      "/opt/synk-radio/지면/bots/오버레이/마스코트.html",
+      "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js",
+      "/opt/synk-radio/소리/playlist.txt",
+      "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+      "/opt/synk-radio/송출/조율.json",
+      "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+    ],
+    "canonicalParentSynchronized": true,
+    "localParent": "bots/오버레이/방송층.html",
+    "logo": {
+      "source": "docs/홍보물/마케팅실행_20260909/브랜드킷/배치용/SYNK-Paper.png",
+      "sourceSha256": "78de96ceb567f245281df78d01b82e5c3aba9fc0cc959dc3763967367fc3b7fe",
+      "displayWidthAt1080": 156
+    }
+  },
+  "publicReception": {
+    "evidence": "공개수신.json",
+    "contactSheet": "공개수신_검수.jpg",
+    "poster": "공개수신_대표.jpg",
+    "visualReviewPassed": true,
+    "exactlyThreeCharacters": true,
+    "source": "YouTube public playback",
+    "silentIntervals": 0,
+    "browserPlaybackEnded": true,
+    "browserDisplayedTime": "0:20 / 0:20"
+  },
+  "finalState": {
+    "at": "2026-09-19T08:49:11.709Z",
+    "broadcast": {
+      "videoId": "eH0owfx9gCw",
+      "title": "K-LOFI 24 · lofi beats to chill",
+      "privacyStatus": "public"
+    },
+    "stream": {
+      "status": "active",
+      "health": "good"
+    },
+    "service": {
+      "MainPID": "474511",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "ffmpeg": "474788 RLl        06:14 30.3  3.5 ffmpeg",
+    "opened": [
+      {
+        "pid": "474788",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "474788",
+        "file": "/opt/synk-radio/무대차례/three-friends-20260919-ad217cb20f67.mp4"
+      }
+    ],
+    "recentProgress": [
+      "[겹쳐송출 08:45:56] 층 719장 떴다(초당 4.0) · 내보낸 것 717(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.997x · 버린장 0 · 겹친장 0 · 방송시각 00:02:52.988000",
+      "[겹쳐송출 08:46:56] 층 958장 떴다(초당 4.0) · 내보낸 것 956(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.998x · 버린장 0 · 겹친장 0 · 방송시각 00:03:53.058000",
+      "[겹쳐송출 08:47:56] 층 1198장 떴다(초당 4.0) · 내보낸 것 1197(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.998x · 버린장 0 · 겹친장 0 · 방송시각 00:04:53.152000",
+      "[겹쳐송출 08:48:56] 층 1438장 떴다(초당 4.0) · 내보낸 것 1437(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.998x · 버린장 0 · 겹친장 0 · 방송시각 00:05:52.711000"
+    ]
+  },
+  "clarification": {
+    "at": "2026-09-19T08:49:11.709Z",
+    "userMeaning": "붕 뜬다는 말은 동작이 멈춰 있는 시간과 흐름의 공백을 뜻한다.",
+    "initialMisinterpretation": "공중 부유 자세",
+    "finding": "원본 4초대부터 일부 캐릭터가 멈추며 4.6초 이후 세 캐릭터가 거의 정지한다. 현재 3.5초 루프는 원본 3.833초 이후를 이미 제외한다.",
+    "evidence": "동작간격_분석.json",
+    "currentLoopRetained": true,
+    "regenerated": false,
+    "redeployed": false
+  },
+  "supersededBy": "../차분한마당_20260919/manifest.json",
+  "supersededReason": "User reported motion discomfort; replaced by seated calm courtyard."
+}

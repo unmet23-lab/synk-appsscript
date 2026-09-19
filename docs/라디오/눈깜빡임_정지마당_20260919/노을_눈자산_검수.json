@@ -1,0 +1,40 @@
+{
+  "nativeSize": [
+    1667,
+    944
+  ],
+  "eyes": [
+    {
+      "target": [
+        1223,
+        514,
+        15,
+        19
+      ],
+      "source": [
+        1228,
+        518,
+        23,
+        25
+      ]
+    },
+    {
+      "target": [
+        1287,
+        519,
+        19,
+        19
+      ],
+      "source": [
+        1292,
+        523,
+        27,
+        25
+      ]
+    }
+  ],
+  "outsideMaskChangedPixels": 0,
+  "allowedPixels4K": 12592,
+  "resamplingFootprint": 2,
+  "native4K": false
+}

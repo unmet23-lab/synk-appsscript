@@ -1,0 +1,79 @@
+{
+  "at": "2026-09-19T08:43:00.314Z",
+  "mode": "--apply",
+  "applied": true,
+  "before": {
+    "service": {
+      "MainPID": "451793",
+      "NRestarts": "3",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "opened": [
+      {
+        "pid": "451930",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "451930",
+        "file": "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+      }
+    ]
+  },
+  "after": {
+    "service": {
+      "MainPID": "474511",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "opened": [
+      {
+        "pid": "474788",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "474788",
+        "file": "/opt/synk-radio/무대차례/three-friends-20260919-ad217cb20f67.mp4"
+      }
+    ]
+  },
+  "asset": "/opt/synk-radio/무대차례/three-friends-20260919-ad217cb20f67.mp4",
+  "assetSha256": "ad217cb20f67ecf9be43681449cb406e26b298f362f312b5d65ef696e26a7516",
+  "changes": [
+    {
+      "target": "/opt/synk-radio/지면/bots/오버레이/방송층.html",
+      "sha256": "0942ee0ff453c1a118eedee467f12d0cafa95f90fa7a341dc214f165aaf622bc",
+      "backup": "/opt/synk-radio/지면/bots/오버레이/방송층.html.before-three-friends-20260919-b4a4a0f9e223"
+    },
+    {
+      "target": "/opt/synk-radio/무대차례/목록.txt",
+      "sha256": "eb95b7cb3f3e2b4a78283f3de95e84db81d47f2daa16790627c3c4faeb96a3fe",
+      "backup": "/opt/synk-radio/무대차례/목록.txt.before-three-friends-20260919-5ea9dc8cff17"
+    }
+  ],
+  "protectedUnchanged": [
+    "/opt/synk-radio/지면/bots/오버레이/마스코트.html",
+    "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js",
+    "/opt/synk-radio/소리/playlist.txt",
+    "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+    "/opt/synk-radio/송출/조율.json",
+    "/opt/synk-radio/무대차례/chuseok-natural-20260909-v2.mp4"
+  ]
+}

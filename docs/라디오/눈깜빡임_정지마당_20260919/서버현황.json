@@ -1,0 +1,22 @@
+{
+  "at": "2026-09-19T09:39:44.663Z",
+  "hashes": {
+    "/opt/synk-radio/지면/bots/오버레이/방송층.html": "7692ffc73c1f1bc25625a9e58d8aef8744f267012be6f46ad0bb60f8e8e73c83",
+    "/opt/synk-radio/지면/bots/오버레이/전광판판정.js": "cd1fa1aa1910b993b5264b0aaca6d37b994848e3e677d8641f8024e954cbf9af",
+    "/opt/synk-radio/지면/bots/오버레이/라디오간판.js": "8ee2443382f8dd7bef10c0a5fed83514c571c36e9ce24ea43f6ee15c4bb93bb6",
+    "/opt/synk-radio/지면/bots/오버레이/방송지킴이.js": "8d89f50d2708ed8ac4d8cf75425d6ed1327be51799ad49153602ed191cbfdc46",
+    "/opt/synk-radio/무대차례/목록.txt": "5a8831113adef6c032cf0567ba65d0d95cdadeb921d12dcf707a4cb260ba7571",
+    "/opt/synk-radio/지면/bots/오버레이/마스코트.html": "6df998dc9b026109f6538050dd6b054e5de8f1018c6476cc746a4249d348a751",
+    "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js": "a1598529a10daac4fb25b7b0dfac3c139b2823198503f6e7723a86d12228f261",
+    "/opt/synk-radio/지면/bots/오버레이/전광판.html": "373bf0a52ee15e4e327f6bbbba0ad87a9a71ad078968461350d021deb3be6d89",
+    "/opt/synk-radio/소리/playlist.txt": "374e9ce2cc0d6f81928c5639cf69ed0abb9252f2d9f8c2025a24ad330a0bee5c",
+    "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac": "c9295db33abc8609bda2cdbc885dfce563b52cb6cc6a9db49f7ec276bf931f45",
+    "/opt/synk-radio/송출/조율.json": "7ce20813cb5d42e556dea066e5ac8fbb8f8087b209acdcdd39e1cbe9a5178950"
+  },
+  "services": [
+    "radio-bot.service                    loaded    active   running SYNK radio24 chat bot (collect + post quiz, 60s polling)",
+    "radio-live.service                   loaded    inactive dead    SYNK radio24 live overlay stream (chromium overlay + ffmpeg)",
+    "radio-stream.service                 loaded    failed   failed  SYNK radio24 stream (ffmpeg -c copy loop)"
+  ],
+  "timers": []
+}

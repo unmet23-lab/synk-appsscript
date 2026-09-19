@@ -1,0 +1,108 @@
+{
+  "state": "superseded",
+  "broadcast": {
+    "videoId": "eH0owfx9gCw",
+    "title": "SYNK Radio | 음악은 켜 두고 · lofi & chill",
+    "privacyStatus": "public",
+    "url": "https://www.youtube.com/watch?v=eH0owfx9gCw"
+  },
+  "source": {
+    "historyId": 2823,
+    "file": "H3_쉬는마당_원본.mp4"
+  },
+  "scene": {
+    "loopSeconds": 8,
+    "archive": "세친구_차분한루프_4K.mp4",
+    "native4K": false,
+    "broadcastAsset": "세친구_차분한마당_송출72초.mp4",
+    "assetSha256": "94a62941c16d495fc98a84113049c5e32a5c50d7acf66ddca4814d4aee505593",
+    "remoteAsset": "/opt/synk-radio/무대차례/calm-courtyard-20260919-94a62941c16d.mp4",
+    "archiveSha256": "f80662c2ab920af3b2fe0aa4755ed16fbaf02174605cb90ae7fdbd85bb8fcaae",
+    "broadcastDimensions": [
+      1280,
+      720
+    ],
+    "broadcastFPS": 12,
+    "archiveDimensions": [
+      3840,
+      2160
+    ],
+    "archiveFPS": 24
+  },
+  "copy": {
+    "source": "bots/오버레이/라디오간판.js",
+    "thumbnailGenerator": "tools/라디오썸네일지면.cjs",
+    "thumbnailPublicVerified": true,
+    "metadataVerifiedAt": "2026-09-19T09:17:51.492Z"
+  },
+  "checks": {
+    "overlayTests": 5,
+    "displayCopyKeysPreserved": 12,
+    "fixedBackgroundPixels": 904833,
+    "health": {
+      "status": "active",
+      "health": "good"
+    },
+    "service": {
+      "MainPID": "476116",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "publicCapture": {
+      "seconds": 20.015601,
+      "allNewScene": true,
+      "exactlyThreeMascots": true,
+      "newRadioMark": true,
+      "silenceDetections": 0,
+      "file": "공개수신.mp4",
+      "at": "2026-09-19T09:20:06.118Z"
+    },
+    "eventNormalizationAndPrivacyGuardsUnchanged": true
+  },
+  "evidence": [
+    "라이브반영.json",
+    "유튜브반영.json",
+    "최종상태.json",
+    "마감결과.json",
+    "움직임검수.json",
+    "공개수신.json",
+    "공개수신_시간검수.jpg",
+    "홈페이지반영.json"
+  ],
+  "verifiedAt": "2026-09-19T09:21:31.346617+00:00",
+  "website": {
+    "at": "2026-09-19T09:28:03.722117+00:00",
+    "sourceCommit": "c5c2852",
+    "publicCommit": "7bfc378",
+    "pagesRun": 35434695693,
+    "tests": 79,
+    "files": [
+      {
+        "url": "https://synk.im/pulse/",
+        "sha256": "dd45275e18ddb276b8bb3aa6c5cf40d3b712a119b3d4b093a3829af76d977a07",
+        "matchesPublishedCommit": true
+      },
+      {
+        "url": "https://synk.im/listen/",
+        "sha256": "68b04c29c77deb5522b8708fde0cad365a96dea968540cf97183037aba2e7541",
+        "matchesPublishedCommit": true
+      }
+    ],
+    "scope": "Radio copy only. Existing unrelated site changes preserved.",
+    "browserReview": {
+      "desktop": true,
+      "mobileViewport": [
+        390,
+        844
+      ],
+      "mobileClientWidth": 375,
+      "mobileScrollWidth": 375,
+      "horizontalOverflow": false,
+      "youtubeLink": "https://www.youtube.com/@synkkorean/live"
+    }
+  },
+  "supersededBy": "../눈깜빡임_정지마당_20260919/manifest.json",
+  "supersededAt": "2026-09-19T10:09:29.106Z"
+}

@@ -1,0 +1,67 @@
+{
+  "source": "H3_몽글눈웃음_4K_무음.mp4",
+  "sourceSha256": "5d6d35c6586f7589446db62c71c81f8398d9e0855442a36451a840b33e222fab",
+  "file": "세친구_자연루프_4K.mp4",
+  "sha256": "10e8885f66410a4a773ee5d9c4a97ef7d6ff69d8b708027129f6c876cf64f660",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "48/1",
+        "nb_frames": "168"
+      }
+    ],
+    "format": {
+      "duration": "3.500000",
+      "size": "11050240"
+    }
+  },
+  "sourceStartFrame": 6,
+  "sourceEndFrame": 183,
+  "sourceExcludedFromSeconds": 3.8333333333333335,
+  "overlapFrames": 10,
+  "frames": 168,
+  "fps": 48,
+  "cycleSeconds": 3.5,
+  "method": "forward playback; 10-frame bidirectional optical-flow alignment with smoothstep blend; no reverse playback",
+  "flowStats": [
+    {
+      "alpha": 0.034293552812071325,
+      "forwardP99": 12.518020629882812
+    },
+    {
+      "alpha": 0.1262002743484225,
+      "forwardP99": 10.307422637939453
+    },
+    {
+      "alpha": 0.25925925925925924,
+      "forwardP99": 10.248518943786621
+    },
+    {
+      "alpha": 0.4170096021947874,
+      "forwardP99": 9.842144012451172
+    },
+    {
+      "alpha": 0.5829903978052127,
+      "forwardP99": 8.076258659362793
+    },
+    {
+      "alpha": 0.7407407407407407,
+      "forwardP99": 8.125387191772461
+    },
+    {
+      "alpha": 0.8737997256515775,
+      "forwardP99": 8.300996780395508
+    },
+    {
+      "alpha": 0.9657064471879286,
+      "forwardP99": 8.861520767211914
+    }
+  ],
+  "native4K": false,
+  "audio": false
+}

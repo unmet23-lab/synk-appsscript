@@ -1,0 +1,19 @@
+{
+  "at": "2026-09-19T09:37:06.196Z",
+  "before": {
+    "MainPID": "476116",
+    "NRestarts": "0",
+    "ActiveState": "active",
+    "SubState": "running",
+    "UnitFileState": "enabled"
+  },
+  "after": {
+    "MainPID": "0",
+    "NRestarts": "0",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "UnitFileState": "enabled"
+  },
+  "stageList": "ffconcat version 1.0\nfile 'calm-courtyard-20260919-94a62941c16d.mp4'\n",
+  "stageListSha256": "5a8831113adef6c032cf0567ba65d0d95cdadeb921d12dcf707a4cb260ba7571"
+}

@@ -43,11 +43,10 @@ const 무대방 = path.join(ROOT, 'docs/라디오/무대');
 const W = 1280, H = 720;                       // 720p 단일 규격(설계 §7-7 확정)
 
 /* ── 각인 — 유호 지시 09-02 「영어로 코퍼레이트 synk 이렇게 느낌있게」 ──────────────
- * 옛 판 = 「이 노래는 SYNK가 만들었습니다」. 뜻(자체 제작)은 지키고 말투만 갈았다:
- *   워드마크 `synk` + 가는 선 + 넓게 벌린 대문자 `ORIGINAL SOUND`.
+ * 2026-09-19: 제작 홍보 문장 대신 워드마크와 짧은 RADIO 표기를 쓴다.
  * 🔑 자리를 가운데에서 **왼쪽 아래 구석**으로 옮겼다 — 무대가 생기자 가운데는 주인공 자리다.
  *   구석 각인은 방송 채널 버그(bug)의 문법이라 「코퍼레이트」에 더 맞고, 화면도 안 막는다. */
-const 각인 = 'ORIGINAL SOUND';
+const 각인 = 'RADIO';
 /* 각인 로고 = 09-10 승인 Paper 사진형. SYNK는 무실땀 펠트이며 사업명·기호의 스티치는 별도다.
    파일이 없으면 현행 중립색 벡터를 임시 표시하고 경고한다. */
 /* 🔴 «각인용 작은 판»을 쓴다 — 오려 낸 원본(2804px · 7.6MB)을 data URI 로 통째로 실었더니
@@ -261,76 +260,8 @@ function 지면(키, 마스코트만 = false, 덮개만 = false) {
  * ⇒ 큰 줄은 110px(줄면 ≈31px) · 실린 글자 수를 아낀다.
  * ⚠ 몽골어는 안 싣는다 — 원어민 감수 전이다(설계 규칙 그대로). 한국어가 곧 상품이라 손해가 적다.
  */
-const 썸네일 = {
-  무대: 'chuseok',          // 2026-09-09 선별에서 보존한 보름달 한옥 마당
-  가이드: '몽글', 표정: '눈웃음',
-  /* 🆕 09-08 이름 교체 (유호 지시 「한국어 라디오가 아니라 다른 트렌디한 이름 · 니 제안을 따를게」).
-   *   옛 이름 「24시간 한국어 라디오」의 약점 셋 — ①한국어를 아직 못 읽는 몽골 학생이 제목을
-   *   못 읽는다 ②사람들이 실제로 검색하는 낱말(lofi)이 없다 ③장르가 안 보인다.
-   *   `K-LOFI 24` 가 셋을 다 뒤집는다: lofi 는 전 세계가 검색하는 낱말 · K- 가 「한국어」를
-   *   로마자로 나른다 · 24 는 안 꺼진다는 뜻이고 내부 이름 「라디오24」와도 이어진다. */
-  /* 🆕 09-08 두 번째 교체 (유호 지시 「공부에 한정하지마. 카페에서 틀어도 될수있게」) —
-   *   「KOREAN STUDY RADIO」·「공부할 때 켜 두세요」를 걷었다. 둘 다 «듣는 조건»을 달아
-   *   그 밖의 사람을 잘라 냈다. 이름 K-LOFI 24 는 산다 — K-lofi 는 장르 이름이지 조건이 아니다. */
-  작은줄: '24/7 CHILL RADIO',
-  큰줄: 'K-LOFI 24',
-  받침줄: '언제나 곁에 두는 노래',
-};
-
 function 썸네일지면() {
-  const t = 썸네일;
-  const a = 장르들[t.무대];
-  const 액 = 액자[t.가이드] || 액자.몽글;
-  /* 배경(410)보다 크게 — 썸네일은 «누구인지»가 먼저 보여야 한다. */
-  const 폭 = Math.round(520 * 액.배율);
-  const 발여백 = Math.round(폭 * 액.아래여백 * 0.9);
-  const 무대 = 무대판(t.무대);
-
-  return `<!doctype html><meta charset="utf-8">
-<style>
-  html,body{margin:0;padding:0;background:${a.바탕};}
-  .판{width:${W}px;height:${H}px;position:relative;overflow:hidden;background:${a.바탕};
-    font-family:'Inter Tight','SUIT Variable',system-ui,'Malgun Gothic',sans-serif;}
-  .무대{position:absolute;inset:0;z-index:0;
-    background:${무대 ? `url(${무대}) no-repeat` : a.바탕};
-    background-size:118% auto;background-position:64% 42%;}
-  .천{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block;}
-  /* 글자 자리를 만드는 그늘 — 왼쪽에서 뻗는다. 배경과 같은 이유로 radial 이다(모서리 이음매 방지). */
-  .막{position:absolute;inset:0;z-index:1;pointer-events:none;
-    background:radial-gradient(ellipse 86% 128% at 2% 50%, rgba(58,26,16,0.80) 0%, rgba(58,26,16,0.52) 38%, transparent 74%);}
-  /* 주인공 — 오른쪽에 앉힌다(글자가 왼쪽이라). 발이 모래에 닿는 선은 배경과 같은 자 */
-  .접지{position:absolute;left:73%;top:88.5%;transform:translate(-50%,-50%);z-index:2;
-    width:${Math.round(폭 * 0.86)}px;height:${Math.round(폭 * 0.14)}px;
-    background:radial-gradient(ellipse at 50% 50%, rgba(122,72,52,0.36) 0%, transparent 70%);filter:blur(24px);}
-  .얼굴{position:absolute;left:73%;top:88.5%;transform:translate(-50%,calc(-100% + ${발여백}px));
-    z-index:3;width:${폭}px;filter:drop-shadow(rgba(255,206,163,0.42) 0 0 22px) drop-shadow(0 18px 24px rgba(120,64,44,0.38));}
-  .얼굴 img{width:100%;height:auto;display:block;}
-  .말{position:absolute;left:74px;top:50%;transform:translateY(-50%);z-index:4;}
-  .작은{margin:0 0 10px;font-size:34px;font-weight:700;letter-spacing:.30em;text-transform:uppercase;
-    color:${색['Coral Soft']};text-shadow:0 2px 10px rgba(0,0,0,.5);}
-  /* 🔴 로마자 이름이 되면서 자를 갈았다 — 한글용 자간(-.035em)은 로마자에서 글자가 붙어 답답하다. */
-  .큰{margin:0;font-size:124px;line-height:1.02;font-weight:900;letter-spacing:-.015em;
-    color:${색['Paper']};text-shadow:0 4px 22px rgba(38,14,8,.62);}
-  .받침{margin:22px 0 0;font-size:31px;font-weight:600;letter-spacing:-.01em;
-    color:rgba(251,247,240,.90);text-shadow:0 2px 10px rgba(0,0,0,.55);}
-  .선{width:96px;height:2px;margin:26px 0 0;background:${색['Coral']};}
-  .로고{position:absolute;left:74px;bottom:52px;width:112px;z-index:4;
-    filter:drop-shadow(0 2px 8px rgba(0,0,0,.55));}
-  .로고 svg,.로고 img{width:100%;height:auto;display:block;}
-</style>
-<div class="판">
-  ${무대 ? '<div class="무대"></div>' : 양모천svg({ ...a.천, w: W, h: H })}
-  <div class="막"></div>
-  <div class="접지"></div>
-  <div class="얼굴">${가이드img(t.가이드, t.표정)}</div>
-  <div class="말">
-    <p class="작은">${t.작은줄}</p>
-    <p class="큰">${t.큰줄}</p>
-    <p class="받침">${t.받침줄}</p>
-    <div class="선"></div>
-  </div>
-  <div class="로고">${워드마크({ 판: '다크', 표현: '펠트', 색갈래: '단색' })}</div>
-</div>`;
+  return require('./라디오썸네일지면.cjs')();
 }
 
 function 크롬() {
@@ -375,7 +306,7 @@ function main() {
     const r = 굽기('썸네일', 썸네일지면(), 방);
     const MB = r.바이트 / 1024 / 1024;
     console.log(`✅ 썸네일 · ${W}×${H} · ${MB.toFixed(2)}MB ${MB < 2 ? '(유튜브 상한 2MB 안)' : '🔴 2MB 초과 — 유튜브가 거절한다'}`);
-    console.log(`   무대 ${무대판(썸네일.무대) ? '사진' : '⚠양모천 폴백'} · ${path.relative(ROOT, r.png)}`);
+    console.log(`   세 친구의 차분한 마당 · ${path.relative(ROOT, r.png)}`);
     return;
   }
 

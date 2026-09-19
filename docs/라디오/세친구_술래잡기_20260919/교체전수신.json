@@ -1,0 +1,29 @@
+{
+  "started": "2026-09-19T08:36:41.968Z",
+  "finished": "2026-09-19T08:37:09.953Z",
+  "videoId": "eH0owfx9gCw",
+  "formatId": "232+234",
+  "secondsRequested": 20,
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720
+      },
+      {
+        "codec_name": "aac",
+        "sample_rate": "44100"
+      }
+    ],
+    "format": {
+      "duration": "20.015601",
+      "size": "1879743"
+    }
+  },
+  "silence": [],
+  "captureWarnings": "[aist#1:0/aac @ 0000020845872d80] timestamp discontinuity (stream id=0): -580497, new offset= 580497\r\n",
+  "source": "YouTube public playback, not local preview"
+}

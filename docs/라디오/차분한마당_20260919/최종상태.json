@@ -1,0 +1,40 @@
+{
+  "at": "2026-09-19T09:18:07.031Z",
+  "broadcast": {
+    "videoId": "eH0owfx9gCw",
+    "title": "SYNK Radio | 음악은 켜 두고 · lofi & chill",
+    "privacyStatus": "public"
+  },
+  "stream": {
+    "status": "active",
+    "health": "good"
+  },
+  "service": {
+    "MainPID": "476116",
+    "NRestarts": "0",
+    "ActiveState": "active",
+    "SubState": "running",
+    "UnitFileState": "enabled"
+  },
+  "radioStream": {
+    "MainPID": "0",
+    "NRestarts": "0",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "UnitFileState": "disabled"
+  },
+  "ffmpeg": "476300 SLl        01:51 22.0  3.6 ffmpeg",
+  "opened": [
+    {
+      "pid": "476300",
+      "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+    },
+    {
+      "pid": "476300",
+      "file": "/opt/synk-radio/무대차례/calm-courtyard-20260919-94a62941c16d.mp4"
+    }
+  ],
+  "recentProgress": [
+    "[겹쳐송출 09:17:13] 층 239장 떴다(초당 4.0) · 내보낸 것 237(초당 4.0/4) · 실패 0 · 불린 박자 초당 4.0/4 · 거른 박자 0 · 실시간대비 0.989x · 버린장 0 · 겹친장 0 · 방송시각 00:00:53.244000"
+  ]
+}

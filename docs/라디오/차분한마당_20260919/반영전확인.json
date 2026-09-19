@@ -1,0 +1,91 @@
+{
+  "at": "2026-09-19T09:15:39.652Z",
+  "mode": "--check",
+  "applied": false,
+  "before": {
+    "service": {
+      "MainPID": "474511",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "opened": [
+      {
+        "pid": "474788",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "474788",
+        "file": "/opt/synk-radio/무대차례/three-friends-20260919-ad217cb20f67.mp4"
+      }
+    ]
+  },
+  "after": {
+    "service": {
+      "MainPID": "474511",
+      "NRestarts": "0",
+      "ActiveState": "active",
+      "SubState": "running",
+      "UnitFileState": "enabled"
+    },
+    "radioStream": {
+      "MainPID": "0",
+      "NRestarts": "0",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "UnitFileState": "disabled"
+    },
+    "opened": [
+      {
+        "pid": "474788",
+        "file": "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac"
+      },
+      {
+        "pid": "474788",
+        "file": "/opt/synk-radio/무대차례/three-friends-20260919-ad217cb20f67.mp4"
+      }
+    ]
+  },
+  "asset": "/opt/synk-radio/무대차례/calm-courtyard-20260919-94a62941c16d.mp4",
+  "assetSha256": null,
+  "changes": [
+    {
+      "target": "/opt/synk-radio/지면/bots/오버레이/방송층.html",
+      "sha256": "0942ee0ff453c1a118eedee467f12d0cafa95f90fa7a341dc214f165aaf622bc",
+      "backup": null
+    },
+    {
+      "target": "/opt/synk-radio/지면/bots/오버레이/전광판판정.js",
+      "sha256": "0be50187a88d78271844c74e858f81f5d9774b0d9deb7dd806f20e7f817367d0",
+      "backup": null
+    },
+    {
+      "target": "/opt/synk-radio/지면/bots/오버레이/라디오간판.js",
+      "sha256": "dacb3e79d467d556df72454f36819b5f3b68c1b51f005e1f776ab0b94d182f7f",
+      "backup": null
+    },
+    {
+      "target": "/opt/synk-radio/무대차례/목록.txt",
+      "sha256": "eb95b7cb3f3e2b4a78283f3de95e84db81d47f2daa16790627c3c4faeb96a3fe",
+      "backup": null
+    }
+  ],
+  "protectedUnchanged": [
+    "/opt/synk-radio/지면/bots/오버레이/방송지킴이.js",
+    "/opt/synk-radio/지면/bots/오버레이/마스코트.html",
+    "/opt/synk-radio/지면/bots/오버레이/겹쳐송출.js",
+    "/opt/synk-radio/지면/bots/오버레이/전광판.html",
+    "/opt/synk-radio/소리/playlist.txt",
+    "/opt/synk-radio/소리/synk-radio-blok11-20260909-gapless.flac",
+    "/opt/synk-radio/송출/조율.json",
+    "/opt/synk-radio/무대차례/three-friends-20260919-ad217cb20f67.mp4"
+  ]
+}

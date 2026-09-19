@@ -1,0 +1,22 @@
+{
+  "outsideAllowedChangedPixels": 0,
+  "t0EqualsT60": true,
+  "duration": 60,
+  "blinkTimes": [
+    6.3,
+    18.1,
+    32.8,
+    46.7,
+    57.0
+  ],
+  "lensResponseTimes": [
+    12.9,
+    38.2,
+    52.1
+  ],
+  "cameraMotion": false,
+  "bodyMotion": false,
+  "marinSkinEyelids": false,
+  "kiteCount": 1,
+  "native4K": false
+}

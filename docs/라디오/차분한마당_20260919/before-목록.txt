@@ -1,0 +1,2 @@
+ffconcat version 1.0
+file 'three-friends-20260919-ad217cb20f67.mp4'

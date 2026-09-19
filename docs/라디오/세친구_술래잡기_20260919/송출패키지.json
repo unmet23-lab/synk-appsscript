@@ -1,0 +1,27 @@
+{
+  "file": "세친구_자연루프_송출70초.mp4",
+  "sha256": "ad217cb20f67ecf9be43681449cb406e26b298f362f312b5d65ef696e26a7516",
+  "probe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "12/1",
+        "nb_frames": "840"
+      }
+    ],
+    "format": {
+      "duration": "70.000000",
+      "size": "33312651"
+    }
+  },
+  "cycleSeconds": 3.5,
+  "cycles": 20,
+  "decodePassed": true,
+  "seamMAE": 4.9697113037109375,
+  "maxAdjacentMAE": 10.533768653869629,
+  "adjacentP95": 9.83164119720459
+}

@@ -1,0 +1,31 @@
+{
+  "at": "2026-09-19T09:28:03.722117+00:00",
+  "sourceCommit": "c5c2852",
+  "publicCommit": "7bfc378",
+  "pagesRun": 35434695693,
+  "tests": 79,
+  "files": [
+    {
+      "url": "https://synk.im/pulse/",
+      "sha256": "dd45275e18ddb276b8bb3aa6c5cf40d3b712a119b3d4b093a3829af76d977a07",
+      "matchesPublishedCommit": true
+    },
+    {
+      "url": "https://synk.im/listen/",
+      "sha256": "68b04c29c77deb5522b8708fde0cad365a96dea968540cf97183037aba2e7541",
+      "matchesPublishedCommit": true
+    }
+  ],
+  "scope": "Radio copy only. Existing unrelated site changes preserved.",
+  "browserReview": {
+    "desktop": true,
+    "mobileViewport": [
+      390,
+      844
+    ],
+    "mobileClientWidth": 375,
+    "mobileScrollWidth": 375,
+    "horizontalOverflow": false,
+    "youtubeLink": "https://www.youtube.com/@synkkorean/live"
+  }
+}

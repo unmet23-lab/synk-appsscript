@@ -1,0 +1,83 @@
+{
+  "at": "2026-09-19T09:58:47.599Z",
+  "pass": true,
+  "assetSha256": "7275437ec3c497db3e419eb7fde64a6ff2e8ec94040a0d5ae0a6101af4e4f267",
+  "composition": {
+    "outsideAllowedChangedPixels": 0,
+    "t0EqualsT60": true,
+    "duration": 60,
+    "blinkTimes": [
+      6.3,
+      18.1,
+      32.8,
+      46.7,
+      57
+    ],
+    "lensResponseTimes": [
+      12.9,
+      38.2,
+      52.1
+    ],
+    "cameraMotion": false,
+    "bodyMotion": false,
+    "marinSkinEyelids": false,
+    "kiteCount": 1,
+    "native4K": false
+  },
+  "probes": [
+    {
+      "file": "해질녘_연_눈깜빡임_720p.mp4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "12/1",
+          "nb_frames": "720"
+        }
+      ],
+      "format": {
+        "duration": "60.000000",
+        "size": "1316195"
+      }
+    },
+    {
+      "file": "해질녘_연_눈깜빡임_4K.mp4",
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 3840,
+          "height": 2160,
+          "r_frame_rate": "24/1",
+          "nb_frames": "1440"
+        }
+      ],
+      "format": {
+        "duration": "60.000000",
+        "size": "11713343"
+      }
+    }
+  ],
+  "visualReview": {
+    "still": true,
+    "closedEyeBoundary": true,
+    "marinLensMaterial": true,
+    "kiteTailAndString": true,
+    "thumbnailLocalAndPublic": true,
+    "browserPlayback": true,
+    "browserLoopWrap": true,
+    "reviewedAtSeconds": [
+      0,
+      6.333333,
+      12.9,
+      58,
+      32.18
+    ],
+    "notes": "고정 몸과 배경, 눈 윤곽 내 합성, 작은 연과 연결된 꼬리/연줄. 웹 재생과 반복 후 재생 진행 확인. 시청자의 멀미감 개선 여부는 아직 확인 전."
+  },
+  "radioWasStoppedDuringReview": true
+}
