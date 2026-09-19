@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-14",
+  "updatedAt": "2026-09-19",
   "policy": {
     "defaultReview": "final-review",
     "allowUnreviewedPublicPublishing": false,
@@ -283,6 +283,9 @@
       "brand": "SHIFT",
       "platform": "kakao-channel",
       "handle": "synkshift",
+      "publicUrl": "https://pf.kakao.com/_kvlrX",
+      "publicUrlVerifiedAt": "2026-09-19",
+      "publicUrlEvidence": "관리자 채널 정보의 SYNK SHIFT·검색용 ID synkshift·채널 URL과 공개 채널홈의 이름·소개·공식 사이트 링크를 대조",
       "publisher": "manual-assisted",
       "editorUrl": "https://center-pf.kakao.com/",
       "connection": "official-admin-center",
@@ -302,6 +305,9 @@
       "brand": "SHIFT",
       "platform": "pinterest",
       "handle": "synkshift",
+      "publicUrl": "https://www.pinterest.com/synkshift/",
+      "publicUrlVerifiedAt": "2026-09-19",
+      "publicUrlEvidence": "공개 프로필에서 SYNK SHIFT·사용자 이름 synkshift·synk.im/shift 링크 확인; kr.pinterest.com/synkshift/로 지역 리디렉션",
       "publisher": "direct-after-approval",
       "connection": "needs-standard-api-access",
       "profileStatus": "bio-128-and-cover-1600x900-saved-and-publicly-rechecked-2026-09-14; actual-crop-logo-vision-support-copy-not-clipped-and-public-reload-screenshot-full-copy-confirmed; cover-sha256-89658dfc4d5fed95e375702432cbe70b603c8ade95bbdcf8401a7d4cd2b27e95; file-access-block-resolved; no-pins-published"
