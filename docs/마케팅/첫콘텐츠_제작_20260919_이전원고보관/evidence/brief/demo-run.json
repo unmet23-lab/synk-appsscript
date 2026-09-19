@@ -1,0 +1,26 @@
+{
+  "createdAt": "2026-09-19T13:19:20.524Z",
+  "purpose": "Explicitly synthetic PDF clipping demonstration",
+  "artifacts": [
+    {
+      "name": "before",
+      "fixed": false,
+      "fontLoaded": {
+        "SUIT": true,
+        "Inter": true
+      },
+      "completeSentenceExtracted": false,
+      "pdfSha256": "874835e470d0444712bc27b344ebc1487e43d82fdf827eab06ea8a57412e7937"
+    },
+    {
+      "name": "after",
+      "fixed": true,
+      "fontLoaded": {
+        "SUIT": true,
+        "Inter": true
+      },
+      "completeSentenceExtracted": true,
+      "pdfSha256": "6dd946d211c7e76ecef6b6f89bee861af62c9498da29492c3644bf888d93ae9f"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "S5",
+  "channels": [
+    "Naver · synkshift"
+  ],
+  "attachments": [
+    {
+      "id": "table-before",
+      "file": "../../evidence/brief/table-before.png",
+      "alt": "PDF 줄바꿈 수정 전 · 의도한 재현 예시"
+    },
+    {
+      "id": "table-after",
+      "file": "../../evidence/brief/table-after.png",
+      "alt": "줄바꿈을 고친 실제 PDF 렌더"
+    },
+    {
+      "id": "demo-before",
+      "file": "../../evidence/brief/demo-before.png",
+      "alt": "PDF 줄바꿈 수정 전 · 의도한 재현 예시"
+    },
+    {
+      "id": "demo-after",
+      "file": "../../evidence/brief/demo-after.png",
+      "alt": "줄바꿈을 고친 실제 PDF 렌더"
+    }
+  ],
+  "video": null,
+  "videoStatus": null
+}

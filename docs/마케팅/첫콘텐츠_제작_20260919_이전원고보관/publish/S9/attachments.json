@@ -1,0 +1,15 @@
+{
+  "id": "S9",
+  "channels": [
+    "Kakao · SYNK SHIFT"
+  ],
+  "attachments": [
+    {
+      "id": "shift-kakao",
+      "file": "../../cards/shift-kakao.png",
+      "alt": "SYNK SHIFT에 문의할 때 현재 업무, 바꾸려는 부분, 필요한 결과와 일정을 알려 달라는 안내. 서비스 준비 중임을 명시."
+    }
+  ],
+  "video": null,
+  "videoStatus": null
+}

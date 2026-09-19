@@ -1,0 +1,40 @@
+{
+  "id": "S7",
+  "channels": [
+    "Behance · yuhobuilds"
+  ],
+  "attachments": [
+    {
+      "id": "shift-project-cover",
+      "file": "../../cards/shift-project-cover.png",
+      "alt": "Felt & Glass 제목과 실제 제작한 검정 펠트 SYNK SHIFT 커버."
+    },
+    {
+      "id": "shift-project-systems",
+      "file": "../../cards/shift-project-systems.png",
+      "alt": "실제 유호 YouTube와 synkbrief YouTube의 중앙 노출영역, LAB Facebook 전체 커버 비교."
+    },
+    {
+      "id": "shift-project-layout",
+      "file": "../../cards/shift-project-layout.png",
+      "alt": "실제 티스토리 PC, 모바일 커버 파일과 프로필 겹침을 고려한 LinkedIn 커버."
+    },
+    {
+      "id": "shift-before-after",
+      "file": "../../cards/shift-before-after.png",
+      "alt": "같은 표정과 구도의 코랄 펠트 몽글 프로필. 왼쪽 크림색 배경을 오른쪽 흰색으로 바꾼 실제 원본 비교."
+    },
+    {
+      "id": "shift-behance-compare",
+      "file": "../../cards/shift-behance-compare.png",
+      "alt": "실제 Behance 업로드 원본 두 장. 첫 배치보다 수정한 배치에서 로고와 제목, 펠트 소품이 가운데에 모여 있다."
+    },
+    {
+      "id": "shift-project-close",
+      "file": "../../cards/shift-project-close.png",
+      "alt": "11개 계정, 12개 커버 파일을 적용한 SYNK 자체 디자인 작업의 정리와 실제 Behance 커버."
+    }
+  ],
+  "video": null,
+  "videoStatus": null
+}

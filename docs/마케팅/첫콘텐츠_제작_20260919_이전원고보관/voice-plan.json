@@ -1,0 +1,37 @@
+{
+  "preference": "콘텐츠 성격에 맞춰 제작자가 선택. 상큼하고 맑은 목소리.",
+  "selectionDelegated": true,
+  "lockedVoiceIds": [],
+  "status": "API 결제 및 연결 확인 전. 실제 후보 청취와 캐릭터 고정은 미완료.",
+  "directions": [
+    {
+      "role": "LAB 학습",
+      "tone": "맑고 편안한 여성 톤. 따라 말할 수 있는 또렷한 발음과 여유."
+    },
+    {
+      "role": "synkbrief",
+      "tone": "밝고 명료한 설명형 톤. LAB과 같은 화자가 적합하면 재사용하고 속도·감정만 조절."
+    },
+    {
+      "role": "유호 작업 기록",
+      "tone": "젊고 맑은 남성 톤. 실제 유호의 녹음이나 복제 음성으로 표시하지 않는다."
+    }
+  ],
+  "plan": {
+    "name": "Typecast API Lite",
+    "usdMonthly": 15,
+    "includedCharacters": 200000,
+    "overage": "10만 크레딧당 $9 자동 결제",
+    "officialUrl": "https://typecast.ai/kr/pricing/api/",
+    "studioSeparate": true,
+    "verifiedOn": "2026-09-19"
+  },
+  "today": {
+    "textAndImageEditions": 11,
+    "videoEditions": 1,
+    "voiceNeededNow": "S4",
+    "narrationFile": "copy/S4-narration.txt",
+    "audioGenerated": false,
+    "bgmGenerated": false
+  }
+}

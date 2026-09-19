@@ -1,0 +1,353 @@
+{
+  "date": "2026-09-19",
+  "editionCount": 12,
+  "destinationCount": 15,
+  "uniqueCardPngCount": 15,
+  "publicPostsCreated": 0,
+  "commitCreated": false,
+  "voice": {
+    "preference": "콘텐츠 성격에 맞춰 제작자가 선택. 상큼하고 맑은 목소리.",
+    "selectionDelegated": true,
+    "lockedVoiceIds": [],
+    "status": "API 결제 및 연결 확인 전. 실제 후보 청취와 캐릭터 고정은 미완료.",
+    "directions": [
+      {
+        "role": "LAB 학습",
+        "tone": "맑고 편안한 여성 톤. 따라 말할 수 있는 또렷한 발음과 여유."
+      },
+      {
+        "role": "synkbrief",
+        "tone": "밝고 명료한 설명형 톤. LAB과 같은 화자가 적합하면 재사용하고 속도·감정만 조절."
+      },
+      {
+        "role": "유호 작업 기록",
+        "tone": "젊고 맑은 남성 톤. 실제 유호의 녹음이나 복제 음성으로 표시하지 않는다."
+      }
+    ],
+    "plan": {
+      "name": "Typecast API Lite",
+      "usdMonthly": 15,
+      "includedCharacters": 200000,
+      "overage": "10만 크레딧당 $9 자동 결제",
+      "officialUrl": "https://typecast.ai/kr/pricing/api/",
+      "studioSeparate": true,
+      "verifiedOn": "2026-09-19"
+    },
+    "today": {
+      "textAndImageEditions": 11,
+      "videoEditions": 1,
+      "voiceNeededNow": "S4",
+      "narrationFile": "copy/S4-narration.txt",
+      "audioGenerated": false,
+      "bgmGenerated": false
+    }
+  },
+  "items": [
+    {
+      "id": "L2",
+      "name": "LAB Facebook",
+      "title": "",
+      "role": "학습자·보호자에게 연습 방식 소개",
+      "channels": [
+        "Facebook · synkworld"
+      ],
+      "attachments": [
+        {
+          "id": "lab-01",
+          "file": "cards/lab-01.png",
+          "alt": "SYNK LAB-ийн дасгалын дараалал: нөхцөлөө ойлгох, өөрөө хэлж үзэх, тусламж аваад дахин оролдох. Доор нь кафены лангууны зураг байна."
+        },
+        {
+          "id": "lab-02",
+          "file": "cards/lab-02.png",
+          "alt": "Кафены лангууны өмнө үйлчлүүлэгчийн дүрд орсон шүрэн ягаан эсгий дүр байна. Ажилтан зурагт харагдахгүй. Та ажилтны хэлснийг сайн сонсоогүй гэж төсөөлөөд, дахин хэлж өгөхийг солонгосоор хүсээрэй. Жишээ дараагийн карт дээр байна."
+        },
+        {
+          "id": "lab-03",
+          "file": "cards/lab-03.png",
+          "alt": "Дахин хэлж өгөхийг хүсэх жишээ: 죄송한데, 다시 한번 말씀해 주세요. Удаан ярихыг хүсэх жишээ: 조금 천천히 말씀해 주세요. Монгол орчуулгатай. Дараа нь жишээг харахгүйгээр дахин хэлээрэй."
+        },
+        {
+          "id": "lab-04",
+          "file": "cards/lab-04.png",
+          "alt": "Кафены лангууны өмнө шүрэн ягаан эсгий дүр байна. Ажилтан зурагт харагдахгүй. Ажилтан таны өмнө байна гэж төсөөлөөд, жишээг харахгүйгээр дахин хэлж өгөхийг хүсээрэй. Гацвал өмнөх картаас тусламж авч болно."
+        },
+        {
+          "id": "lab-05",
+          "file": "cards/lab-05.png",
+          "alt": "Дасгалын картаа хадгалаад дараа нь дахин хэлээрэй. Дараагийн материал авах Telegram суваг: @synkmn. SYNK-ийн сайт: synk.im."
+        }
+      ],
+      "status": "이미지·원고 제작 · 몽골어 원어민 검수 미완료"
+    },
+    {
+      "id": "L3",
+      "name": "LAB Telegram",
+      "title": "",
+      "role": "바로 말해 보는 학습 자료",
+      "channels": [
+        "Telegram · @synkmn"
+      ],
+      "attachments": [
+        {
+          "id": "lab-02",
+          "file": "cards/lab-02.png",
+          "alt": "Кафены лангууны өмнө үйлчлүүлэгчийн дүрд орсон шүрэн ягаан эсгий дүр байна. Ажилтан зурагт харагдахгүй. Та ажилтны хэлснийг сайн сонсоогүй гэж төсөөлөөд, дахин хэлж өгөхийг солонгосоор хүсээрэй. Жишээ дараагийн карт дээр байна."
+        },
+        {
+          "id": "lab-03",
+          "file": "cards/lab-03.png",
+          "alt": "Дахин хэлж өгөхийг хүсэх жишээ: 죄송한데, 다시 한번 말씀해 주세요. Удаан ярихыг хүсэх жишээ: 조금 천천히 말씀해 주세요. Монгол орчуулгатай. Дараа нь жишээг харахгүйгээр дахин хэлээрэй."
+        }
+      ],
+      "status": "이미지·원고 제작 · 몽골어 원어민 검수 미완료"
+    },
+    {
+      "id": "S2",
+      "name": "유호 짧은 작업 기록",
+      "title": "",
+      "role": "작은 문제와 수정의 이유",
+      "channels": [
+        "Threads · @yuhobuilds",
+        "X · @yuhobuilds"
+      ],
+      "attachments": [
+        {
+          "id": "shift-before-after",
+          "file": "cards/shift-before-after.png",
+          "alt": "같은 표정과 구도의 코랄 펠트 몽글 프로필. 왼쪽 크림색 배경을 오른쪽 흰색으로 바꾼 실제 원본 비교."
+        }
+      ],
+      "status": "이미지·원고 제작"
+    },
+    {
+      "id": "S3",
+      "name": "개인 LinkedIn",
+      "title": "",
+      "role": "유호의 역할과 실제 작업·협업 범위",
+      "channels": [
+        "LinkedIn · 양유호"
+      ],
+      "attachments": [
+        {
+          "id": "shift-story-cover",
+          "file": "cards/shift-story-cover.png",
+          "alt": "만든 이미지를 실제 화면에 맞추는 일이라는 제목과 실제 제작한 SYNK SHIFT 커버."
+        },
+        {
+          "id": "shift-before-after",
+          "file": "cards/shift-before-after.png",
+          "alt": "같은 표정과 구도의 코랄 펠트 몽글 프로필. 왼쪽 크림색 배경을 오른쪽 흰색으로 바꾼 실제 원본 비교."
+        },
+        {
+          "id": "shift-behance-compare",
+          "file": "cards/shift-behance-compare.png",
+          "alt": "실제 Behance 업로드 원본 두 장. 첫 배치보다 수정한 배치에서 로고와 제목, 펠트 소품이 가운데에 모여 있다."
+        }
+      ],
+      "status": "이미지·원고 제작"
+    },
+    {
+      "id": "S4",
+      "name": "synkbrief",
+      "title": "AI가 만든 PDF, 보내기 전에 이것부터",
+      "role": "직접 해 본 AI·GitHub 도구 활용",
+      "channels": [
+        "YouTube · @synkbrief",
+        "Instagram · @synkbrief",
+        "TikTok · @synkbrief"
+      ],
+      "attachments": [],
+      "status": "무음 편집본 · 음성 합성 대기"
+    },
+    {
+      "id": "S5",
+      "name": "네이버 블로그",
+      "title": "AI가 만든 PDF, 보내기 전에 확인하는 법",
+      "role": "PDF 저장·검수·수정 따라 하기",
+      "channels": [
+        "Naver · synkshift"
+      ],
+      "attachments": [
+        {
+          "id": "table-before",
+          "file": "evidence/brief/table-before.png",
+          "alt": "PDF 줄바꿈 수정 전 · 의도한 재현 예시"
+        },
+        {
+          "id": "table-after",
+          "file": "evidence/brief/table-after.png",
+          "alt": "줄바꿈을 고친 실제 PDF 렌더"
+        },
+        {
+          "id": "demo-before",
+          "file": "evidence/brief/demo-before.png",
+          "alt": "PDF 줄바꿈 수정 전 · 의도한 재현 예시"
+        },
+        {
+          "id": "demo-after",
+          "file": "evidence/brief/demo-after.png",
+          "alt": "줄바꿈을 고친 실제 PDF 렌더"
+        }
+      ],
+      "status": "이미지·원고 제작"
+    },
+    {
+      "id": "S6",
+      "name": "Tistory",
+      "title": "SYNK SNS 디자인을 만들고, 실제 페이지에서 다시 고친 것들",
+      "role": "SYNK를 만들며 내린 판단과 수정 기록",
+      "channels": [
+        "Tistory · yuhobuilds"
+      ],
+      "attachments": [
+        {
+          "id": "shift-story-cover",
+          "file": "cards/shift-story-cover.png",
+          "alt": "만든 이미지를 실제 화면에 맞추는 일이라는 제목과 실제 제작한 SYNK SHIFT 커버."
+        },
+        {
+          "id": "shift-before-after",
+          "file": "cards/shift-before-after.png",
+          "alt": "같은 표정과 구도의 코랄 펠트 몽글 프로필. 왼쪽 크림색 배경을 오른쪽 흰색으로 바꾼 실제 원본 비교."
+        },
+        {
+          "id": "shift-behance-compare",
+          "file": "cards/shift-behance-compare.png",
+          "alt": "실제 Behance 업로드 원본 두 장. 첫 배치보다 수정한 배치에서 로고와 제목, 펠트 소품이 가운데에 모여 있다."
+        }
+      ],
+      "status": "이미지·원고 제작"
+    },
+    {
+      "id": "S7",
+      "name": "Behance",
+      "title": "SYNK Social Covers — Felt & Glass",
+      "role": "실제 디자인의 목표·구성·결과",
+      "channels": [
+        "Behance · yuhobuilds"
+      ],
+      "attachments": [
+        {
+          "id": "shift-project-cover",
+          "file": "cards/shift-project-cover.png",
+          "alt": "Felt & Glass 제목과 실제 제작한 검정 펠트 SYNK SHIFT 커버."
+        },
+        {
+          "id": "shift-project-systems",
+          "file": "cards/shift-project-systems.png",
+          "alt": "실제 유호 YouTube와 synkbrief YouTube의 중앙 노출영역, LAB Facebook 전체 커버 비교."
+        },
+        {
+          "id": "shift-project-layout",
+          "file": "cards/shift-project-layout.png",
+          "alt": "실제 티스토리 PC, 모바일 커버 파일과 프로필 겹침을 고려한 LinkedIn 커버."
+        },
+        {
+          "id": "shift-before-after",
+          "file": "cards/shift-before-after.png",
+          "alt": "같은 표정과 구도의 코랄 펠트 몽글 프로필. 왼쪽 크림색 배경을 오른쪽 흰색으로 바꾼 실제 원본 비교."
+        },
+        {
+          "id": "shift-behance-compare",
+          "file": "cards/shift-behance-compare.png",
+          "alt": "실제 Behance 업로드 원본 두 장. 첫 배치보다 수정한 배치에서 로고와 제목, 펠트 소품이 가운데에 모여 있다."
+        },
+        {
+          "id": "shift-project-close",
+          "file": "cards/shift-project-close.png",
+          "alt": "11개 계정, 12개 커버 파일을 적용한 SYNK 자체 디자인 작업의 정리와 실제 Behance 커버."
+        }
+      ],
+      "status": "이미지·원고 제작"
+    },
+    {
+      "id": "S8",
+      "name": "Pinterest",
+      "title": "펠트와 투명 유리로 만든 SYNK SNS 커버 디자인",
+      "role": "디자인을 발견하고 저장하는 대표 핀",
+      "channels": [
+        "Pinterest · synkshift"
+      ],
+      "attachments": [
+        {
+          "id": "shift-pinterest-pin",
+          "file": "cards/shift-pinterest-pin.png",
+          "alt": "검정 바탕에 Felt & Glass 제목, 승인된 유리 SHIFT 로고와 펠트 소품을 사용한 실제 SNS 커버."
+        }
+      ],
+      "status": "이미지·원고 제작"
+    },
+    {
+      "id": "S9",
+      "name": "카카오 채널",
+      "title": "우리 업무에 AI를 어떻게 쓸지, 함께 이야기해요",
+      "role": "문의할 수 있는 범위와 필요한 정보",
+      "channels": [
+        "Kakao · SYNK SHIFT"
+      ],
+      "attachments": [
+        {
+          "id": "shift-kakao",
+          "file": "cards/shift-kakao.png",
+          "alt": "SYNK SHIFT에 문의할 때 현재 업무, 바꾸려는 부분, 필요한 결과와 일정을 알려 달라는 안내. 서비스 준비 중임을 명시."
+        }
+      ],
+      "status": "이미지·원고 제작"
+    },
+    {
+      "id": "C1",
+      "name": "SYNK 회사 LinkedIn",
+      "title": "",
+      "role": "회사의 가치·네 분야·현재 제작물",
+      "channels": [
+        "LinkedIn · SYNK"
+      ],
+      "attachments": [
+        {
+          "id": "synk-company",
+          "file": "cards/synk-company.png",
+          "alt": "SYNK의 네 분야 LAB 한국어 학습, SHIFT AI 활용과 제작, PULSE 음악 영상 캐릭터, PATH 한국 유학 진로 준비 소개."
+        },
+        {
+          "id": "lab-02",
+          "file": "cards/lab-02.png",
+          "alt": "Кафены лангууны өмнө үйлчлүүлэгчийн дүрд орсон шүрэн ягаан эсгий дүр байна. Ажилтан зурагт харагдахгүй. Та ажилтны хэлснийг сайн сонсоогүй гэж төсөөлөөд, дахин хэлж өгөхийг солонгосоор хүсээрэй. Жишээ дараагийн карт дээр байна."
+        },
+        {
+          "id": "shift-project-cover",
+          "file": "cards/shift-project-cover.png",
+          "alt": "Felt & Glass 제목과 실제 제작한 검정 펠트 SYNK SHIFT 커버."
+        }
+      ],
+      "status": "이미지·원고 제작 · 몽골어 원어민 검수 미완료"
+    },
+    {
+      "id": "C2",
+      "name": "Substack",
+      "title": "한국어 한 문장, 그리고 하나의 디자인 — SYNK의 첫 편지",
+      "role": "LAB 연습과 실제 제작 이야기를 묶는 편지",
+      "channels": [
+        "Substack · synklab"
+      ],
+      "attachments": [
+        {
+          "id": "lab-02",
+          "file": "cards/lab-02.png",
+          "alt": "Кафены лангууны өмнө үйлчлүүлэгчийн дүрд орсон шүрэн ягаан эсгий дүр байна. Ажилтан зурагт харагдахгүй. Та ажилтны хэлснийг сайн сонсоогүй гэж төсөөлөөд, дахин хэлж өгөхийг солонгосоор хүсээрэй. Жишээ дараагийн карт дээр байна."
+        },
+        {
+          "id": "lab-03",
+          "file": "cards/lab-03.png",
+          "alt": "Дахин хэлж өгөхийг хүсэх жишээ: 죄송한데, 다시 한번 말씀해 주세요. Удаан ярихыг хүсэх жишээ: 조금 천천히 말씀해 주세요. Монгол орчуулгатай. Дараа нь жишээг харахгүйгээр дахин хэлээрэй."
+        },
+        {
+          "id": "shift-before-after",
+          "file": "cards/shift-before-after.png",
+          "alt": "같은 표정과 구도의 코랄 펠트 몽글 프로필. 왼쪽 크림색 배경을 오른쪽 흰색으로 바꾼 실제 원본 비교."
+        }
+      ],
+      "status": "이미지·원고 제작 · 몽골어 원어민 검수 미완료"
+    }
+  ]
+}

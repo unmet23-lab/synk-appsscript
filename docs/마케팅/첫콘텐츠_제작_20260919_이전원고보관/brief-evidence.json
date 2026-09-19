@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "verified_at": "2026-09-19T13:23:56.882058+00:00",
+  "content_ids": [
+    "S4",
+    "S5"
+  ],
+  "subject": "Playwright HTML-to-PDF export followed by visual inspection of actual PDF page rasters",
+  "tool": {
+    "name": "Playwright",
+    "repository": "https://github.com/microsoft/playwright",
+    "executed_version": "1.62.1",
+    "license": "Apache-2.0",
+    "license_source": "https://github.com/microsoft/playwright/blob/main/LICENSE"
+  },
+  "supporting_tools": [
+    "Installed Google Chrome 153 PDF export",
+    "Poppler pdftoppm 26.07.0 PDF rasterization",
+    "pypdf text extraction"
+  ],
+  "sources": [
+    {
+      "url": "https://playwright.dev/docs/api/class-page#page-pdf",
+      "supports": "PDF export and print-media behavior"
+    },
+    {
+      "url": "https://playwright.dev/docs/library",
+      "supports": "Library and browser setup"
+    },
+    {
+      "url": "https://github.com/microsoft/playwright",
+      "supports": "Official public repository"
+    },
+    {
+      "url": "https://github.com/microsoft/playwright/blob/main/LICENSE",
+      "supports": "Apache-2.0 license"
+    },
+    {
+      "url": "https://github.com/openai/skills",
+      "supports": "Original proposed repository is deprecated; not recommended for a new install in this content"
+    }
+  ],
+  "synthetic_example": true,
+  "intentional_error": "Before HTML forces a long table cell to nowrap + overflow:hidden, deliberately reproducing text clipping.",
+  "observed_result": "Before PDF visibly clips the 02 row. After enables wrapping and displays the full sentence. Final footer and body do not overlap.",
+  "fix": "white-space:normal; word-break:keep-all; overflow-wrap:anywhere; naturally sized rows; final footer whitespace verified.",
+  "visual_review": {
+    "before_full_page": true,
+    "after_full_page": true,
+    "both_table_crops": true,
+    "final_after_no_unintended_clipping": true
+  },
+  "quality_boundary": "Synthetic illustration; no real customer data, no AI failure-rate claim, no timing/engagement claim, no automatic quality guarantee.",
+  "voice_status": "Not generated in this task; root will choose a fresh/clear Typecast voice after account access is ready.",
+  "publication_status": "not_published",
+  "run": {
+    "createdAt": "2026-09-19T13:19:20.524Z",
+    "purpose": "Explicitly synthetic PDF clipping demonstration",
+    "artifacts": [
+      {
+        "name": "before",
+        "fixed": false,
+        "fontLoaded": {
+          "SUIT": true,
+          "Inter": true
+        },
+        "completeSentenceExtracted": false,
+        "pdfSha256": "874835e470d0444712bc27b344ebc1487e43d82fdf827eab06ea8a57412e7937"
+      },
+      {
+        "name": "after",
+        "fixed": true,
+        "fontLoaded": {
+          "SUIT": true,
+          "Inter": true
+        },
+        "completeSentenceExtracted": true,
+        "pdfSha256": "6dd946d211c7e76ecef6b6f89bee861af62c9498da29492c3644bf888d93ae9f"
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "evidence/brief/build-demo.cjs",
+      "bytes": 6370,
+      "sha256": "dad4230e304cf1bccdeb361f8d5b188b0d262126945ccc12ffe7ae648d5cacd7"
+    },
+    {
+      "path": "evidence/brief/demo-after.html",
+      "bytes": 3704,
+      "sha256": "fe248a6e21dd7476f9992836dfc6864da32800e0598905c7494ce6010efe4a7a"
+    },
+    {
+      "path": "evidence/brief/demo-after.pdf",
+      "bytes": 234779,
+      "sha256": "6dd946d211c7e76ecef6b6f89bee861af62c9498da29492c3644bf888d93ae9f",
+      "pages": 1
+    },
+    {
+      "path": "evidence/brief/demo-after.png",
+      "bytes": 97952,
+      "sha256": "173978cae9abeb6790b13978ddaa2f0cb8e81bc50c65b5212811ca1467c1e86a",
+      "pixels": [
+        1240,
+        1754
+      ]
+    },
+    {
+      "path": "evidence/brief/demo-after.txt",
+      "bytes": 1131,
+      "sha256": "390f211c247ce465a563c40d6dd9c3d7b9bcb5df24e4097c1a59682b28b23af8"
+    },
+    {
+      "path": "evidence/brief/demo-before.html",
+      "bytes": 3684,
+      "sha256": "460c08febb9056e6dd6850bdff92979d48910a3792c5ffffff64a60d2bd414f8"
+    },
+    {
+      "path": "evidence/brief/demo-before.pdf",
+      "bytes": 236498,
+      "sha256": "874835e470d0444712bc27b344ebc1487e43d82fdf827eab06ea8a57412e7937",
+      "pages": 1
+    },
+    {
+      "path": "evidence/brief/demo-before.png",
+      "bytes": 96566,
+      "sha256": "66cc6d178bbc9539d47213968abf6fa6e664b15fc19b06b77894d055bc90a1d0",
+      "pixels": [
+        1240,
+        1754
+      ]
+    },
+    {
+      "path": "evidence/brief/demo-before.txt",
+      "bytes": 1119,
+      "sha256": "84467394bc824493ee8a0d81c78bc872c4f9bcdfdc8602e6762262ab030180f0"
+    },
+    {
+      "path": "evidence/brief/demo-run.json",
+      "bytes": 651,
+      "sha256": "4d702861f02d3f3554d63d15416042ce1f5a272a86157f002e317ef6d8791891"
+    },
+    {
+      "path": "evidence/brief/table-after.png",
+      "bytes": 31826,
+      "sha256": "59926921834112ffdc9783f90241f1b8177e74b0847d2fb1d9eb14c98f650645",
+      "pixels": [
+        1062,
+        610
+      ]
+    },
+    {
+      "path": "evidence/brief/table-before.png",
+      "bytes": 29804,
+      "sha256": "76b9e12db511d6228a5486bb4922c4e7919332d5be30c5d0d6e49ca433f7add0",
+      "pixels": [
+        1062,
+        610
+      ]
+    }
+  ]
+}

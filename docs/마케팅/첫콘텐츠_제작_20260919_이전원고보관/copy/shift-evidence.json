@@ -1,0 +1,116 @@
+{
+  "created_on": "2026-09-19",
+  "repo_root": "C:/Users/q1212/Documents/SYNK-appsscript",
+  "status": "copy-written-not-published",
+  "owned_outputs": ["S2.md", "S3.md", "S6.md", "S7.md", "S8.md", "S9.md", "shift-evidence.json"],
+  "topic": "SYNK SNS의 펠트·유리 디자인을 실제 페이지에 적용하면서 바탕과 크롭을 고친 과정",
+  "claim_boundary": "프로필·커버의 기존 적용 기록과 이번 게시물 제작·발행은 별개다. 새 게시물을 발행하지 않았으며 고객 성과·조회수·작업 시간 절감·서비스 출시를 주장하지 않는다.",
+  "sources": {
+    "current_plan": "docs/마케팅/첫게시물_타깃과_재사용_검토_20260919.md",
+    "detailed_plan": "docs/마케팅/출연없는_글카드프로젝트_10종_상세안_20260919.md",
+    "public_ledger": "docs/마케팅/프로필최신화_20260919/반영기록_20260919.md",
+    "cover_build_record": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/제작기록.md",
+    "cover_manifest": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/명세.json",
+    "cover_generator": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/만들기.cjs",
+    "vision": "docs/비전_정본.md",
+    "service_scope": "docs/마케팅_정본.md",
+    "design": "DESIGN.md"
+  },
+  "claims": {
+    "profile_white": {
+      "problem": "기존 몽글 프로필의 크림색 바탕을 흰 페이지와 맞추기로 했다.",
+      "correction": "기존 투명 몽글_눈웃음 원본과 기존 배치를 이용해 바탕만 #FFFFFF로 재출력했다. 이 수정에는 새 이미지 생성을 쓰지 않았다.",
+      "result": "같은 구도와 캐릭터를 유지한 수정 전후 1080×1080 파일이 있다. 공개 반영 기록에 Facebook, LAB YouTube·Instagram·Telegram, Substack publication 로고·작성자 사진의 저장 및 공개 확인이 있다.",
+      "ledger_lines": [134, 140, 144, 146, 148, 183, 184, 185, 186, 187],
+      "visual_inspection": "before와 white 파일을 도구로 직접 열어 표정·구도·바탕 차이 확인",
+      "before": "docs/마케팅/프로필최신화_20260919/배경_순백_20260919/synklab-profile-before.png",
+      "after": "docs/마케팅/프로필최신화_20260919/배경_순백_20260919/synklab-profile-white.png"
+    },
+    "naver_white": {
+      "problem": "네이버 PC 블로그의 바탕에 기존 크림색이 남아 있었다.",
+      "correction": "스킨 배경색을 #FBF7F0에서 #FFFFFF로 변경했다. 커버 게시 이미지 URL과 기존 배치는 유지했다.",
+      "result": "독립 공개 PC 탭에서 rgb(255,255,255)와 배경 이미지 none 확인 기록. 모바일 독립 화면 검증과는 구분한다.",
+      "ledger_lines": [128, 130, 197, 199],
+      "before_screenshot_available": false,
+      "illustration_rule": "네이버 실제 전후 캡처를 확보한 것으로 쓰지 않는다. 프로필 이미지 전후와 혼동하지 않는다."
+    },
+    "behance_crop": {
+      "problem": "3200×410 원본의 첫 업로드 미리보기에서 오른쪽 소품이 잘렸고 상단 메뉴가 이미지 윗부분을 덮었다.",
+      "correction": "첫 업로드를 취소한 뒤 기존 자산·문구를 중앙 창에 모으고 최종 묶음을 40px 내려 실제 노출 영역에 맞췄다.",
+      "result": "재업로드 후 공개 새로고침에서 로고·문구·소품 전체 표시를 확인한 기록이 있다. 다른 11개 PNG는 이전 SHA-256과 같다고 기록돼 있다.",
+      "ledger_lines": [109],
+      "build_record_section": "Behance 실제 공개 크롭 보정 — 2026-09-19",
+      "visual_inspection": "보정 전과 현재 PNG를 직접 열어 중앙 집중 배치 변경 확인",
+      "before": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/이전_Behance_공개크롭보정전/shift-behance.png",
+      "after": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/shift-behance.png",
+      "illustration_rule": "두 비교 이미지는 업로드용 원본이지 실제 플랫폼 캡처가 아니다. 가짜 UI를 덧씌우거나 공개 캡처라고 라벨링하지 않는다."
+    },
+    "cover_system": {
+      "scope": "커버가 있는 11개 계정과 Tistory 모바일 1종, 합계12파일",
+      "method": "승인된 펠트 장면·기존 자산과 ImageGen의 유리 로고 응용, 정확한 글자와 플랫폼별 배치를 위한 SVG 합성",
+      "materials": "사진형 펠트·실과 유리 표현이다. 실물 공예품을 직접 제작·촬영했다는 근거는 없다.",
+      "fonts": ["SUIT", "Inter Tight"],
+      "result": "11계정 12파일의 커버 공개 반영 기록이 있다. 이는 새 게시물 12개나 모든 기기 검증 완료를 뜻하지 않는다.",
+      "ledger_lines": [102, 104, 105, 106, 109],
+      "preferred_hero": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/shift-pinterest.png",
+      "other_viewed_assets": [
+        "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/shift-tistory-mobile.png",
+        "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/synkbrief-youtube.display.png"
+      ]
+    },
+    "mobile_check": {
+      "verified_in_ledger": "Tistory 실제 390×844 뷰포트에서 현행 모바일 커버·흰 배경·본문·하단 확인",
+      "unverified": "Naver 모바일 독립 커버 화면은 이전 접근 제약으로 미확인. 사용자 직접 후속 예정 기록과 구분",
+      "ledger_lines": [196, 197, 199, 246]
+    },
+    "service_status": {
+      "source": "docs/마케팅_정본.md",
+      "current_scope": "기업·기관 AI 강의·실습·컨설팅과 기업 브랜딩 준비. 실제 회사 제작 과정과 방법 공개",
+      "used_as": "S3와 S9의 준비 범위 및 협업 대화 안내",
+      "not_claimed": ["유료 정규 서비스 출시", "외부 고객 납품", "교육 운영 실적", "확정 가격", "납기", "시간 절감", "기관 제휴"]
+    }
+  },
+  "verified_file_hashes": [
+    {
+      "path": "docs/마케팅/프로필최신화_20260919/배경_순백_20260919/synklab-profile-before.png",
+      "bytes": 1641816,
+      "sha256": "5367016e3b9566246bea4b6db6f30f591cf7753312238692a0b3e0d5481fb6fe"
+    },
+    {
+      "path": "docs/마케팅/프로필최신화_20260919/배경_순백_20260919/synklab-profile-white.png",
+      "bytes": 1650085,
+      "sha256": "aae84ac255e1e9daf61a594f5cc9ef4544797fb38aae22e67396a444b527e711"
+    },
+    {
+      "path": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/이전_Behance_공개크롭보정전/shift-behance.png",
+      "bytes": 1211585,
+      "sha256": "ad5e51e106618f23d53cfc6c2f28cf2fa8d0c3d4c636e7390f35a02327c42042"
+    },
+    {
+      "path": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/shift-behance.png",
+      "bytes": 1015237,
+      "sha256": "b5a08f7a5035b90fa1749ecc5a85f652960248d4f5c03f103bc57beb066bbce2"
+    },
+    {
+      "path": "docs/마케팅/프로필최신화_20260919/커버_펠트글래스_v4/shift-pinterest.png",
+      "bytes": 1860025,
+      "sha256": "22cccbbeb840d9180db9b6e988791bd949d801b1609524b2ea3e62e1f3529075"
+    }
+  ],
+  "public_links_checked_now": [
+    {"url": "https://synk.im/", "http_status": 200, "title": "SYNK — 한국어 교육, AI 비즈니스, 음악과 이야기.", "method": "public HTTP GET", "meaning": "회사소개홈이며새제작기의개별주소가아님"},
+    {"url": "https://yuhobuilds.tistory.com/", "http_status": 200, "title": "유호 · AI와 회사 만들기 | SYNK SHIFT", "method": "public HTTP GET", "meaning": "블로그홈존재확인,이번새글의공개주소는없음"},
+    {"url": "https://pf.kakao.com/_kvlrX", "http_status": 200, "title": "카카오톡채널 - SYNK SHIFT", "method": "public HTTP GET", "meaning": "기존채널주소확인,신규문의폼없음"}
+  ],
+  "publication_links_pending": [
+    {"item": "S6", "reason": "Tistory 개별 게시물 미발행"},
+    {"item": "S7", "reason": "Behance 프로젝트 미발행"},
+    {"item": "S8", "current_valid_fallback": "https://synk.im/", "rule": "회사소개로표현한다.전체프로젝트문구는S6또는S7실제영구주소가생긴뒤만추가한다."}
+  ],
+  "copy_checks": {
+    "S2_shared_body_codepoints": 129,
+    "S2_conservative_weighted_length": 215,
+    "S2_check_note": "한글을2로세는보수적자체계산이며공식플랫폼검증기는아님.원고본문에링크없음.",
+    "asset_reuse": "S2의몽글전후카드를S3/S6/S7에, S3의Behance전후카드를S6/S7에, S7표지를S8에재사용"
+  }
+}

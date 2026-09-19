@@ -1,0 +1,25 @@
+{
+  "id": "C1",
+  "channels": [
+    "LinkedIn · SYNK"
+  ],
+  "attachments": [
+    {
+      "id": "synk-company",
+      "file": "../../cards/synk-company.png",
+      "alt": "SYNK의 네 분야 LAB 한국어 학습, SHIFT AI 활용과 제작, PULSE 음악 영상 캐릭터, PATH 한국 유학 진로 준비 소개."
+    },
+    {
+      "id": "lab-02",
+      "file": "../../cards/lab-02.png",
+      "alt": "Кафены лангууны өмнө үйлчлүүлэгчийн дүрд орсон шүрэн ягаан эсгий дүр байна. Ажилтан зурагт харагдахгүй. Та ажилтны хэлснийг сайн сонсоогүй гэж төсөөлөөд, дахин хэлж өгөхийг солонгосоор хүсээрэй. Жишээ дараагийн карт дээр байна."
+    },
+    {
+      "id": "shift-project-cover",
+      "file": "../../cards/shift-project-cover.png",
+      "alt": "Felt & Glass 제목과 실제 제작한 검정 펠트 SYNK SHIFT 커버."
+    }
+  ],
+  "video": null,
+  "videoStatus": null
+}

@@ -1,0 +1,15 @@
+{
+  "ended": true,
+  "currentTime": 45.5,
+  "duration": 45.5,
+  "width": 1080,
+  "height": 1920,
+  "error": null,
+  "playbackRate": 1,
+  "elapsedSeconds": 45.64729999999982,
+  "presentedFrames": 1078,
+  "quality": {
+    "totalVideoFrames": 1092,
+    "droppedVideoFrames": 4
+  }
+}

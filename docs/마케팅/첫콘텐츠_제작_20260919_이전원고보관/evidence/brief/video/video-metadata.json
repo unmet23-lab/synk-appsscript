@@ -1,0 +1,101 @@
+{
+  "status": "silent_review_edit_not_final_audio",
+  "createdAt": "2026-09-19T13:30:25.987Z",
+  "width": 1080,
+  "height": 1920,
+  "fps": 24,
+  "duration": 45.5,
+  "scenes": [
+    {
+      "id": "01",
+      "duration": 5
+    },
+    {
+      "id": "02",
+      "duration": 7
+    },
+    {
+      "id": "03",
+      "duration": 8
+    },
+    {
+      "id": "04",
+      "duration": 8
+    },
+    {
+      "id": "05",
+      "duration": 8
+    },
+    {
+      "id": "06",
+      "duration": 11
+    }
+  ],
+  "transitionSeconds": 0.3,
+  "finalPromptVisibleSeconds": 10.7,
+  "logoSource": "docs/홍보물/마케팅실행_20260909/브랜드킷/배치용/SYNK-Ink.png",
+  "logoSha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc",
+  "fonts": [
+    "SUIT Variable",
+    "Inter Tight"
+  ],
+  "audioStreams": 0,
+  "videoProbe": [
+    {
+      "width": 1080,
+      "height": 1920,
+      "duration": "45.500000",
+      "avg_frame_rate": "24/1",
+      "nb_frames": "1092",
+      "codec_name": "h264"
+    }
+  ],
+  "bytes": 971279,
+  "sha256": "63c0a49fbc8c6e608e90aac1f15add545c4c0fe2d0994325fc455f9ecfdd522c",
+  "encodedFrameTimes": [
+    1,
+    8,
+    15,
+    23,
+    31,
+    40
+  ],
+  "qa": [
+    {
+      "scene": "01",
+      "fontStatus": "loaded",
+      "brokenImages": [],
+      "outsideText": []
+    },
+    {
+      "scene": "02",
+      "fontStatus": "loaded",
+      "brokenImages": [],
+      "outsideText": []
+    },
+    {
+      "scene": "03",
+      "fontStatus": "loaded",
+      "brokenImages": [],
+      "outsideText": []
+    },
+    {
+      "scene": "04",
+      "fontStatus": "loaded",
+      "brokenImages": [],
+      "outsideText": []
+    },
+    {
+      "scene": "05",
+      "fontStatus": "loaded",
+      "brokenImages": [],
+      "outsideText": []
+    },
+    {
+      "scene": "06",
+      "fontStatus": "loaded",
+      "brokenImages": [],
+      "outsideText": []
+    }
+  ]
+}

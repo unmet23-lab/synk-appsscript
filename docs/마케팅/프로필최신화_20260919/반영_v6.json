@@ -1,0 +1,120 @@
+{
+  "copyRevision": "2026-09-19-natural-profile-v6",
+  "coverRevision": "2026-09-19-felt-glass-v4",
+  "authorization": "User rejected awkward TikTok introduction and requested all 23 account copy rechecked, rewritten and applied on 2026-09-19.",
+  "scope": "Existing 23 accounts only. Approved covers/avatars, handles, posts and global brand kit preserved. Awkward Yuho TikTok display name also targeted; handle unchanged.",
+  "previousPublicationLedger": "반영_v5.json",
+  "coverEvidence": "All 11 account covers and Tistory mobile were publicly verified in v5. No cover pixels modified in v6.",
+  "accounts": {
+    "lab-youtube": {
+      "bio": "saved",
+      "evidence": "Studio @synkkorean v6 published with '모든 변경사항이 저장되었습니다.' Public About dialog subsequently verified for all paragraphs and links."
+    },
+    "lab-instagram": {
+      "bio": "saved",
+      "evidence": "@synk.mn v6 87/150 submitted; exact full value confirmed after editor reload."
+    },
+    "lab-tiktok": {
+      "bio": "saved",
+      "evidence": "2026-09-19 GPT Chrome: official Google login followed by owner @synk.mn confirmation. Profile Edit accepted v6 at 51/80 characters. Save closed the editor; public profile reload retained the complete Mongolian/Korean introduction. Existing name, avatar and three videos preserved."
+    },
+    "lab-facebook": {
+      "bio": "saved",
+      "evidence": "synkworld owner About editor v6 saved; full Mongolian/Korean text confirmed after profile reload."
+    },
+    "lab-telegram": {
+      "bio": "saved",
+      "evidence": "Channel @synkmn Edit Description v6 saved; Channel Info displays full exact text with retained link."
+    },
+    "yuhobuilds-youtube": {
+      "bio": "saved",
+      "evidence": "@yuhobuilds v6 description saved in Studio; complete public About dialog subsequently verified with all paragraphs and existing three links."
+    },
+    "yuhobuilds-instagram": {
+      "bio": "saved",
+      "evidence": "2026-09-19 22:05 KST: user completed the requested mobile-app bio save. GPT Chrome then freshly opened public @yuhobuilds and verified the complete exact v6 introduction, with name, portrait, synk.im link and Threads link retained. Earlier web submissions reverted and returned a contact-validation error; this was not evidence of an unverified phone. User's removal of the separate disabled Meta account is not established as the cause of success. No contact or authentication settings changed by the agent."
+    },
+    "yuhobuilds-tiktok": {
+      "bio": "saved",
+      "displayName": "saved",
+      "evidence": "User reported app update; 2026-09-19 GPT Chrome independently verified public @yuhobuilds name 유호 · AI와 회사 만들기 and full exact v6 bio. Both signed-in and signed-out public views matched. No additional name or avatar changes made."
+    },
+    "yuhobuilds-threads": {
+      "bio": "saved",
+      "evidence": "Bio Done and profile Done both clicked. Exact v6 introduction confirmed on public profile after reload."
+    },
+    "yuho-linkedin-primary": {
+      "bio": "saved",
+      "headline": "saved",
+      "evidence": "Operating profile /in/유호-양-5800b8433/ headline saved with '소개 저장됨'; header exact after reload. About v6 saved with explicit success confirmation and then reopened; full 312-character text and all four paragraphs exact."
+    },
+    "yuhobuilds-telegram": {
+      "bio": "saved",
+      "evidence": "@yuhobuilds personal Bio v6 saved and full text confirmed in Settings. Telegram collapses line breaks, so source and saved copy use | before website."
+    },
+    "yuhobuilds-x": {
+      "bio": "saved",
+      "evidence": "v6 saved in profile editor and exact full introduction confirmed on public profile after reload."
+    },
+    "yuhobuilds-behance": {
+      "bio": "saved",
+      "evidence": "2026-09-19 22:02 KST follow-up: a fresh owner editor accepted the exact v6 description through actual UI typing and Tab. Returned to the public profile, then reloaded it; complete v6 text remained. Existing cover, project, account identity and other profile fields preserved. Earlier failed autosave attempts remain historical, not the current state."
+    },
+    "yuhobuilds-naver-clip": {
+      "bio": "needs-owner-editor",
+      "nextAction": "2026-09-19 user decision: defer this bio update until content is uploaded to the existing @yuhobuilds Clip account. Do not request owner-editor access again now; this remains unsaved, not completed.",
+      "evidence": "2026-09-19 22:03 KST recheck: public @yuhobuilds still shows the old copy with Follow/Chat, and the current login reaches a create-profile page instead of an owner editor. No new profile created. Asked user to check the existing @yuhobuilds profile in the mobile Clip app; owner account/editor still required."
+    },
+    "synkbrief-youtube": {
+      "bio": "saved",
+      "evidence": "@synkbrief Studio v6 published with '모든 변경사항이 저장되었습니다'. Full public About dialog subsequently verified with all three paragraphs and retained three links."
+    },
+    "synkbrief-instagram": {
+      "bio": "saved",
+      "evidence": "@synkbrief v6 70/150 submitted; exact full introduction confirmed after editor reload."
+    },
+    "synkbrief-tiktok": {
+      "bio": "saved",
+      "evidence": "2026-09-19 21:10 KST follow-up: user completed Google login; owner profile link @synkbrief and Edit Profile verified. Initial fill/save toast did not persist, so repeated through actual UI typing and Tab at 65/80. Save displayed 프로필이 업데이트되었습니다 and new public heading. Public reload retained exact v6 text. Name, handle, avatar and posts preserved."
+    },
+    "synk-linkedin-company": {
+      "bio": "saved",
+      "tagline": "saved",
+      "evidence": "Company 143833958 v6 overview and tagline saved; both exact values confirmed after reload. Declined optional update post. Overview required clipboard paste after initial fill reverted."
+    },
+    "synklab-substack": {
+      "bio": "saved",
+      "about": "saved",
+      "authorBio": "saved",
+      "evidence": "Short description saved and exact after settings reload. About v6 all paragraphs/links verified publicly. Author Bio inline Save then Done; full exact bio verified on public @synklab after reload."
+    },
+    "shift-naverblog": {
+      "bio": "saved",
+      "evidence": "Admin save displayed '성공적으로 반영되었습니다'; full v6 description exactly confirmed on public blog."
+    },
+    "shift-kakao": {
+      "bio": "saved",
+      "savedBio": "기업·기관 AI 교육·컨설팅·브랜딩",
+      "copyDecision": "User edited the bio directly and instructed 일단 이렇게 진행해. This shorter text supersedes the prepared 46-character version for this account only.",
+      "evidence": "2026-09-19 22:07 KST: after the user's direct update, GPT Chrome freshly opened https://pf.kakao.com/_kvlrX and verified 기업·기관 AI 교육·컨설팅·브랜딩 publicly. Channel identity, profile image, website/Tistory/Instagram/YouTube links and channel cards retained. Earlier web keyword-validation failures are historical. No validation bypass or other channel-settings changes performed."
+    },
+    "shift-tistory": {
+      "bio": "saved",
+      "evidence": "Description saved and complete v6 text verified on public yuhobuilds.tistory.com."
+    },
+    "shift-pinterest": {
+      "bio": "saved",
+      "evidence": "v6 About saved and full exact introduction confirmed on public synkshift profile."
+    }
+  },
+  "summary": {
+    "targetAccounts": 23,
+    "biosSaved": 22,
+    "coverAccountsVerified": 11,
+    "coverAccountsTarget": 11,
+    "tistoryMobileVerified": true,
+    "newAvatarPublished": 1
+  },
+  "status": "partially-published-remaining-1-needs-clip-owner-editor",
+  "countingNote": "v5 saved bios are history, not v6 completion. Each v6 field must persist after a save/reload or authoritative saved-state check. User-visible translation and saved original are distinguished."
+}
