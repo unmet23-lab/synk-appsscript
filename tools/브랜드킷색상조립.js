@@ -38,11 +38,11 @@ const 로고정본 = require(path.join(루트, 'tools', 'lib', '로고정본.js'
 const 토큰 = JSON.parse(fs.readFileSync(path.join(루트, 'docs', '디자인_토큰.json'), 'utf8'));
 
 const 킷 = 토큰['색']['킷'];
-const 현행 = 킷.filter((c) => !String(c['직책'] || '').trimStart().startsWith('⏳'));
+const 현행 = 킷.filter((c) => c['공유팔레트'] !== false && !String(c['직책'] || '').trimStart().startsWith('⏳'));
 const 이름값 = Object.fromEntries(킷.map((c) => [c['이름'], c['hex']]));
-const 잉크 = 이름값['Ink'], 종이 = 이름값['Paper'];
+const 잉크 = 이름값['Black'], 종이 = 이름값['Paper'];
 
-/* ── 스와치 라벨 색 — 순백·순검정 금지라 킷의 Ink/Paper 둘 중 «대비 큰 쪽»만 고른다
+/* ── 스와치 라벨 색 — 킷의 Ink/Paper 둘 중 «대비 큰 쪽»만 고른다
    (브랜드킷조립.py 글자색()과 같은 판정 — 밝기 문턱은 코랄 면에서 틀린 전력이 있다). ── */
 function 럼(hex) {
   const h = hex.replace('#', '');
@@ -88,20 +88,14 @@ function 칩들(색들) {
 const 팔 = (이름) => 현행.filter((c) => c['팔레트'] === 이름);
 const 코랄 = 팔('01 Core').filter((c) => c['이름'] !== 'Coral Wash');
 const 워시 = 팔('01 Core').filter((c) => c['이름'] === 'Coral Wash');
-const 바탕들 = 팔('02 Ground').filter((c) => ['Paper', 'Ink', 'Ink Deep', 'Stitch'].includes(c['이름']));
-const 양모 = 팔('02 Ground').filter((c) => !['Paper', 'Ink', 'Ink Deep', 'Stitch'].includes(c['이름']));
+const 바탕들 = 팔('02 Ground');
 const 실들 = 팔('03 Threads');
 const KC = 팔('05 K-Culture');
 
 /* 2027 실 4꾸러미 — 가족은 이름 접두로 가른다(토큰 순서 보존). 역할 문구 = DESIGN.md §2 표. */
-const 실가족 = [
-  { 접두: 'Lapis', 한글: '청금석', 역할: '길잡이 — 안내·힌트·링크 (2027 올해의 색)' },
-  { 접두: 'Meadow', 한글: '메도우', 역할: '자람 — 정답·성장' },
-  { 접두: 'Butter', 한글: '버터', 역할: '기쁨 — 별·보상' },
-  { 접두: 'Pop', 한글: '팝', 역할: '특별함 — 기념·희귀' },
-];
+const 실가족 = 토큰.색.스티치.계열.map((f) => ({ 접두: f.기본, 한글: f.이름, 역할: '밝음 · 기본 · 그늘 — 스티치·자수에 함께 사용' }));
 
-const 총수 = 현행.length;
+const 총수 = 코랄.length + 워시.length + 바탕들.length + 실들.length + KC.length;
 
 const 실절 = 실가족.map((f) => `<div class="실꾸러미">
     <h3>${f.한글} <span class="흐린">${esc(f.역할)}</span></h3>
@@ -122,7 +116,12 @@ const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 /*@FONTS@*/
 ${loom.css({ 지면: '인쇄' })}
 /* ── 이 지면 몫 — 스와치 레이아웃만. 간격은 전부 율 이름, 색은 전부 토큰 값이다. ── */
-:root{ --font:'SYNK Bracket','Inter Tight','SUIT',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
+:root{ --ink:${잉크}; --font:'SYNK Bracket','Inter Tight','SUIT',system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; }
+/* 색상표는 화면에서도 실제 기본 바탕인 Paper 위에서 비교한다. */
+html{background:var(--paper);color-scheme:light;}
+body{background:var(--paper);color:var(--ink);}
+p,h2,h3,b,strong,code{color:var(--ink);}
+.흐린{color:var(--deepwool);}
 .글{max-width:920px;margin:0 auto;padding:var(--켜) var(--단) var(--장);}
 .표지머리{padding:var(--켜) 0 var(--단);}
 .표지머리 svg{width:172px;display:block;}
@@ -163,14 +162,14 @@ footer{margin-top:var(--장);font-size:.74rem;}
   <!-- 로고 = 실행 정본(tools/lib/로고정본.js · 09-10 중립색·무실땀) — 작은 인쇄 자리의 라이트 민판 -->
   ${로고정본.워드마크({ 판: '라이트', 표현: '민', 슬래시: true })}
   <h1>SYNK 브랜드 킷 — 색</h1>
-  <p class="메타 흐린">2027 킷 「내일 꾸러미」 · 현행 ${총수}색 · 값 원천 = 디자인_토큰.json · ${오늘}</p>
+  <p class="메타 흐린">2027 킷 「내일 꾸러미」 · 표시 ${총수}색 · 값 원천 = 디자인_토큰.json · ${오늘}</p>
 </header>
 
 <section class="원리">
 <h2>두 원리</h2>
 <ul>
   <li><b>색이 아니라 램프다</b> — 유채색은 전부 3단(보풀 빛 Soft · 몸통 · 그늘 Deep).
-      몸통은 «면»의 색이고, 글자는 그 실의 Deep 이나 Ink 가 진다.</li>
+      몸통은 «면»의 색이고, 글자는 그 실의 Deep 또는 대비를 확인한 Black·Paper를 쓴다.</li>
   <li><b>실은 부품, 램프가 정본</b> — 2027 실(청금석·메도우·버터·팝)은 유행이 지나면
       그 실만 뽑아 갈아끼운다. 구조는 남는다.</li>
 </ul>
@@ -184,15 +183,16 @@ ${칩들(워시)}
 </section>
 
 <section>
-<h2>바탕 — 양모 종이와 따뜻한 먹</h2>
-<p>순백·순검정은 쓰지 않는다 — 라이트의 하한이 Paper·Ink 다. 다크(앱)는 낮의 글자가 밤의 면이 되는 «양모 밤» 한 벌.</p>
+<h2>바탕 — 검정과 흰색</h2>
+<p>기본 바탕은 흰색 Paper와 검정 Black 두 가지다. 밝은 바탕에는 검정 글자, 어두운 바탕에는 흰 글자를 쓴다. 색은 펠트·스티치·자수에서 드러낸다.</p>
 ${칩들(바탕들)}
-${램프(양모)}
+
 </section>
 
 <section>
-<h2>2027 실 — 4꾸러미 × 3단</h2>
-<p>실마다 보풀 빛(Soft) · 몸통 · 그늘(Deep)의 3단. 한 화면의 유채 실은 <b>주연 1 + 조연 1</b>, 둘까지만 선다.</p>
+<h2>스티치·자수용 실 — 2027 팔레트</h2>
+<p>청금석·메도우·버터·팝 네 계열의 <b>밝음·기본·그늘, 총 12색</b>에서 실을 고른다. 한 오브젝트에 여러 색 실을 조합할 수 있다. 코랄도 기존 브랜드 용도에 함께 쓴다.</p>
+<p>기존 복숭아색 Stitch는 몽글 원본의 실색이다. 새 스티치를 그 색 하나로 제한하지 않는다. 이 표는 색 선택 기준이며 완성된 실땀 이미지 목록은 아니다.</p>
 ${실절}
 </section>
 
@@ -205,10 +205,10 @@ ${칩들(KC)}
 <section>
 <h2>철칙 넷</h2>
 <ul>
-  <li><b>순백·순검정 금지</b> — 라이트 하한 = Paper <code>#FBF7F0</code> · Ink <code>#2B2320</code>.</li>
+  <li><b>기본 바탕은 두 색</b> — Paper <code>${종이}</code> · Black <code>${잉크}</code>.</li>
   <li><b>라이트 배경에 몸통색 글자 금지</b> — Coral·Meadow 는 면이고, 글자는 그 실의 Deep 이 진다.</li>
-  <li><b>몸통 면 위 글자는 실마다 정해져 있다</b> — 코랄·버터 = Ink · 청금석 = Paper · 팝 = Ink(큰 글자).</li>
-  <li><b>주연 1실 + 조연 1실</b> — 한 화면의 유채 실은 둘까지, 나머지 실은 그 화면에서 쉰다.</li>
+  <li><b>글자는 실제 바탕과 대비를 확인한다</b> — Black·Paper 또는 해당 실의 Deep을 쓴다.</li>
+  <li><b>스티치는 여러 색을 조합할 수 있다</b> — 한 색을 전체에 강제하지 않고 섬유·굵기·빛·실땀 간격을 일관되게 맞춘다.</li>
 </ul>
 </section>
 
@@ -258,7 +258,7 @@ function main() {
   const 출력pdf = path.join(루트, 'docs', '브랜드킷_색상.pdf');
   fs.copyFileSync(임베드html, 출력html);
   fs.copyFileSync(임베드pdf, 출력pdf);
-  console.log(`■ 조립  docs/브랜드킷_색상.html + .pdf  (현행 ${총수}색 = 코랄 ${코랄.length + 워시.length} + 바탕 ${바탕들.length + 양모.length} + 실 ${실들.length} + KC ${KC.length} · ${오늘})`);
+  console.log(`■ 조립  docs/브랜드킷_색상.html + .pdf  (표시 ${총수}색 = 코랄 ${코랄.length + 워시.length} + 바탕 ${바탕들.length} + 실 ${실들.length} + KC ${KC.length} · ${오늘})`);
 }
 
 if (require.main === module) main();

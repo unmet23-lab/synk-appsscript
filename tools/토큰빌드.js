@@ -38,12 +38,18 @@ function hexOf(이름, 자리) {
 function build() {
   const L = [];
   L.push('/* 자동 생성 — 손으로 고치지 말 것. 원천 = docs/디자인_토큰.json · 빌드 = node tools/토큰빌드.js */');
-  L.push('/* 조항(코랄 글자 금지·순백 금지 등)의 정본 = DESIGN.md·디자인_컨셉_정본_v1.md — 변수는 값만 나른다. */');
+  L.push('/* 색의 용도와 배경 기준의 정본 = DESIGN.md·디자인_컨셉_정본_v1.md — 변수는 값만 나른다. */');
   /* 낫표 교정은 «본문스택보다 먼저» 서야 한다 — @font-face 가 없으면 스택 맨 앞 가족이 그냥 건너뛰어진다. */
   L.push('/* 낫표 「 」 교정 — 까닭은 docs/디자인_토큰.json 「서체.낫표교정_까닭」이 쥔다(유호 확정 08-31). */');
   L.push(토큰.서체.낫표교정);
   L.push(':root{');
   for (const c of 토큰.색.킷) L.push(`  --synk-${slug(c.이름)}:${c.hex}; /* ${c.직책} */`);
+  L.push('  /* 스티치·자수 선택색 — 2027 실 4계열의 밝음·기본·그늘 */');
+  for (const 실 of 토큰.색.스티치.계열) {
+    for (const [단계, 접미] of [['기본', ''], ['밝음', '-soft'], ['그늘', '-deep']]) {
+      L.push(`  --synk-stitch-${slug(실.기본)}${접미}:${hexOf(실[단계], `스티치.${실.기본}.${단계}`)};`);
+    }
+  }
   const 라 = 토큰.색.시맨틱.라이트;
   L.push('  /* 시맨틱(라이트 기본) */');
   for (const [k, v] of 값칸(라)) L.push(`  --synk-${slug(k)}:${hexOf(v, `라이트.${k}`)}; /* = ${v} */`);
