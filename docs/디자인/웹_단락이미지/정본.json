@@ -373,6 +373,21 @@
           "sha256": "0fc54581804f5174e49a5308db888d7f4baa718bec02d45198ac465a493eecaa"
         }
       ]
+    },
+    {
+      "key": "pathPortfolio",
+      "file": "docs/디자인/웹_단락이미지/20260919/path-portfolio-showcase.png",
+      "sha256": "a875b3d837fe2fc43ded66ff4609db67a3cdc12572fa1a0400ede6dc7a089ad5",
+      "width": 1536,
+      "height": 1024,
+      "alt": "학업 계획과 글, 발표, 프로젝트 결과물을 펼쳐 놓은 초록색 펠트 포트폴리오",
+      "usage": {
+        "story": "path-why",
+        "placement": "introduction"
+      },
+      "webFile": "path-portfolio-showcase-20260919.webp",
+      "prompt": "Use case: stylized-concept.\nAsset type: premium editorial photograph of a handmade felt portfolio for the SYNK PATH website, landscape 3:2.\nCreate one new exceptionally beautiful tactile illustration communicating a student's collected learning and real project work. A large open forest-green felt portfolio folio is the unmistakable central subject, presented in elevated three-quarter view with its two white pages spread diagonally toward the viewer. It has thick softly rounded green felt covers, fine ivory edge stitching, a clearly built spine and white layered pages. Across the open spread, three neatly mounted fabric work samples: on the left a white writing page with a few short charcoal embroidered lines and a small green corner tab; on the right a large stitched presentation sheet with a simple muted sage diagram of three bars and a small elegant landscape project collage below it. These are visual miniature samples, no readable letters or numbers. Behind the right side, two white tabbed work sheets sit slightly higher inside the folio pocket, with restrained sage stitched accents. One slim forest-green felt pencil rests diagonally on the white ground at the front. Cohesive, physically plausible construction; pages lie against their supports, no floating cards.\nSeamless PURE WHITE #FFFFFF studio background and ground. Palette muted forest green and sage, ivory object details, white pages, subtle charcoal stitches. NO beige wash on the background. Dense short wool fibres, carefully finished little embroidery stitches, rounded layered textile thickness, beautiful sunlit edges and believable soft contact shadows. Daylight from upper left. Calm high-end product photography, generous sculptural depth, precise tactile detail visible at 500px display width. A compact unified composition occupying about 82% of a 3:2 canvas, complete objects inside the frame with 7% white margins, no huge blank area inside the picture.\nThe portfolio and its contents are the only major subject. This must look unlike a study planner, an accordion folder, a stack of closed books or a campus model. No school buildings, no VR headset, no compass, no laptop, no mascots, no people, no hands, no certificates, no awards, no official seals, no logos, no watermark, no UI, no infographic arrows. Do not place any text on or around the image. This is an illustrative felt model of a portfolio, not an actual student's record or evidence of admissions outcomes.",
+      "generationOriginal": "C:/Users/q1212/.codex/generated_images/01a0b07f-efb9-7001-9c7e-4c56fac442f5/exec-5537e43d-2b33-4df4-89a7-b43cc51bb037.png"
     }
   ]
 }
