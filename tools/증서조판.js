@@ -82,12 +82,11 @@ function 조사채우기(글, josa) {
  * 🔑 목록의 정본은 `tools/발표물린트.js` 한 곳이다 — 여기 베끼면 두 벌이 되고,
  *   한쪽만 늘어난 날 다른 쪽이 조용히 통과시킨다. 산출물엔 표식을 박아 두므로
  *   `node tools/발표물린트.js <산출물>` 로도 같은 자를 댈 수 있다.
- * ⚠ 낱말 하나로 못 잡는 것 둘은 어느 쪽에도 안 넣는다 — 「항목을 개수순·난도순으로 정렬」과
- *   「다른 학생보다」의 뜻만 남은 문장. 그 둘은 사람 눈이 본다(자가 못 재는 것을 잰다고 하지 않는다). */
-const { STUDENT_BANNED, STUDENT_PRINT_MARK } = require('./발표물린트.js');
+ * 정규식은 수치와 명확한 비교 표현을 확인한다. 항목 정렬과 문맥상 비교 여부는 사람이 확인한다. */
+const { STUDENT_BANNED, STUDENT_PRINT_MARK, studentPrintViolations } = require('./발표물린트.js');
 const 금칙 = STUDENT_BANNED.map(([낱말, 왜]) => ({ 낱말, 왜 }));
 
-/** 산출물 HTML 에서 금칙을 센다 — 주석·스크립트가 아니라 «학생이 읽는 글자»만 본다. */
+/** 산출물 HTML의 표시 내용에서 학생 결과물 계약을 확인한다. */
 function 금칙검사(html) {
   const 글자 = html
     .replace(/<style[\s\S]*?<\/style>/g, ' ')
@@ -95,7 +94,7 @@ function 금칙검사(html) {
     .replace(/<svg[\s\S]*?<\/svg>/g, ' ')
     .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<[^>]+>/g, ' ');
-  return 금칙.filter((g) => 글자.includes(g.낱말));
+  return studentPrintViolations(글자).map(([낱말, 왜]) => ({ 낱말, 왜 }));
 }
 
 /* ── 채움 사다리 (설계 §5-b-2) ────────────────────────────────────────────────
@@ -579,11 +578,11 @@ function main() {
 
   if (argv.includes('--금칙')) {
     const 걸린 = 금칙검사(html);
-    console.log(`[금칙 검사] 설계 §9-b 인쇄 금지 계약 — 검사 낱말 ${금칙.length}개`);
+    console.log(`[금칙 검사] 설계 §9-b 인쇄 금지 계약 — 결과 표시·비교 패턴 ${금칙.length}개`);
     걸린.forEach((g) => console.log(`  🔴 「${g.낱말}」 — ${g.왜}`));
     console.log(걸린.length
       ? `\n  🔴 판정: ${걸린.length}개가 종이에 있다. 이 증서는 발주하면 안 된다.`
-      : '\n  ✅ 판정: 검사 낱말 0개. ⚠ 낱말로 못 재는 둘(개수순 정렬 · 「다른 학생보다」의 뜻만 남은 문장)은 사람 눈이 본다.');
+      : '\n  ✅ 판정: 해당 패턴 0개. 항목 정렬과 문맥상 비교 여부는 별도 확인이 필요하다.');
     process.exitCode = 걸린.length ? 1 : 0;
     return;
   }

@@ -139,6 +139,34 @@ test('Ⓓ 인쇄 금지 계약 0건 — 그리고 표식이 있어 발표물린�
   assert.ok(html.includes('data-synk-print="학생"'), '학생 인쇄물 표식이 없다 — 린트가 이 책을 분모 밖으로 본다');
 });
 
+test('학생 인쇄물의 일반 어휘는 허용하고 실제 수치·비교는 세 조판 경로에서 확인한다', () => {
+  const 린트 = require('../tools/발표물린트.js');
+  const 상담 = require('../tools/상담결과조판.js');
+  const 평문 = '다른 학생과 친구가 됐어요. 점수보다 경험을 이야기해요. 준비가 부족했고 실패도 했어요.';
+  const 비교문 = '점수: 80점. 정답률: 90%. 다른 학생보다 잘했어요. 상위 10%. 승급 미달.';
+  assert.deepEqual(린트.studentPrintViolations(평문), []);
+  assert.deepEqual(증서.금칙검사(`<p>${평문}</p>`), []);
+  assert.deepEqual(상담.금칙검사({ 말한목표: 평문 }), []);
+
+  const 예상 = 린트.studentPrintViolations(비교문).map(([낱말, 왜]) => ({ 낱말, 왜 }));
+  assert.equal(예상.length, 5, '점수·정답률·학생 비교·상위 비율·승급 결과를 각각 확인해야 한다');
+  assert.deepEqual(증서.금칙검사(`<p>${비교문}</p>`), 예상);
+  assert.deepEqual(상담.금칙검사({ 말한목표: 비교문 }), 예상);
+
+  const 폴더 = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'synk-print-'));
+  const 파일 = path.join(폴더, '학생.html');
+  try {
+    fs.writeFileSync(파일, `<body data-synk-print="학생"><p>${비교문}</p></body>`);
+    assert.ok(린트.lint(파일).bad.some((m) => m.startsWith('학생 인쇄물 금칙')));
+    fs.writeFileSync(파일, `<body data-synk-print="학생"><p>${평문}</p></body>`);
+    assert.equal(린트.lint(파일).bad.some((m) => m.startsWith('학생 인쇄물 금칙')), false);
+    fs.writeFileSync(파일, `<body><p>${비교문}</p></body>`);
+    assert.equal(린트.lint(파일).bad.some((m) => m.startsWith('학생 인쇄물 금칙')), false);
+  } finally {
+    fs.rmSync(폴더, { recursive: true, force: true });
+  }
+});
+
 test('Ⓓ 도장 쪽은 «개수»를 적지 않는다 — 세면 그게 비교가 된다', () => {
   const { html } = 굽기('평시', 6);
   const i = html.indexOf('함께한 날들');

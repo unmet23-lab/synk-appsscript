@@ -1126,6 +1126,12 @@ test('[v9.63] 품질 게이트가 정상 카드는 통과시키고 불량 카드
   // [v9.65 리뷰 H1] 사과 단원·AI 주제 숙제의 원문은 corrected에 정당하게 남는다 — 격리하면 무인 목적 훼손
   assert.equal(gate(Object.assign({}, good, { corrected: '늦어서 죄송합니다.' }), '늦어서 죄송해요').ok, true);
   assert.equal(gate(Object.assign({}, good, { corrected: '저는 인공지능을 공부해요.' }), '저는 인공지능 공부해요').ok, true);
+  assert.equal(gate(Object.assign({}, good, { mission: '인공지능으로 해 보고 싶은 일을 한 문장으로 써 보세요.' }), '저는 인공지능 공부해요').ok, true);
+  assert.equal(gate(Object.assign({}, good, { praise: '“죄송합니다”로 사과하는 말을 잘 썼어요.' }), '늦어서 죄송해요').ok, true);
+  assert.equal(gate(Object.assign({}, good, { praise: '저는 인공지능이기 때문에 이 요청에 답변할 수 없어요.' }), 'x').reason, '메타문구');
+  assert.equal(gate(Object.assign({}, good, { mission: '이 요청에는 답변할 수 없습니다.' }), 'x').reason, '메타문구');
+  assert.equal(gate(Object.assign({}, good, { mission: '죄송합니다. 이 요청에는 답변할 수 없습니다.' }), 'x').reason, '메타문구');
+  assert.equal(gate(Object.assign({}, good, { mission: '“도와드릴 수 없어요” 대신 어떤 말을 할 수 있을까요?' }), 'x').ok, true);
   assert.equal(gate(Object.assign({}, good, { mission: 'Дараагийн даалгавар' }), 'x').reason, '한글없음:다음미션');
   assert.equal(gate(Object.assign({}, good, { praise: good.praise + ' ```json' }), 'x').reason, '형식잔재');
   // 무의미 제출문을 원문 그대로 되돌린 경우(프롬프트 규칙 5)는 정당 — 한글 없어도 통과

@@ -3723,7 +3723,7 @@ function exportSlidePng(presId, pageId) {
 /* ===================== [v9.19] 리포트 카드 v2 — 학업 성장·차트·몬스터 이미지 =====================
  * 현재월 profiles 상태 + academic_log로 카드 생성. 플레이스홀더: {{월}}{{학생이름}}{{반이름}}{{몬스터이름}}
  * {{급수변화}}{{모의점수}}{{점수변화}}{{출석}}{{몬스터단계}}{{칭호}}{{포인트}}{{코멘트}} + 도형 마커 {{CHART}}{{MONIMG}}.
- * 메시지·코멘트는 항상 따뜻·희망(하락/유지도 '다지는 시간'으로 리프레이밍). */
+ * 코멘트는 기록된 급수·모의시험 점수·출석을 안내한다. */
 
 // contents(type=monster) 단계명 → 이미지URL
 function monsterImgMap_(ss) { // [함께한날 막4] 이름은 그대로(소비자 둘) — 내용은 «가이드» 이름→이미지다
@@ -3755,15 +3755,17 @@ function scheduledSoFar_(type, now) {
   return c;
 }
 
-// 따뜻한 코멘트 — 급수·점수·출석을 사실 기반으로 엮되 부정어 없음('하락' 금칙, 유지는 '다지는 시간')
+// 기록에 있는 급수·점수·출석을 설명한다.
 function reportCardComment_(d) {
   const parts = [];
-  if (d.levelUp) parts.push('🎉 ' + d.fromLv + '급에서 ' + d.toLv + '급으로 진급했어요! 한국어 뇌에 새 회로가 열렸어요.');
-  if (typeof d.delta === 'number' && d.delta > 0) parts.push('모의 점수도 지난 기록보다 +' + d.delta + '점 올랐어요 📈 꾸준함이 실력이 되고 있어요.');
-  else if (d.hasMock && !d.levelUp) parts.push('이번 달은 실력을 탄탄히 다지는 시간이었어요 💪 다음 도약을 준비 중이에요.');
-  if (d.gaegeun) parts.push('개근까지 해냈어요 🔥 매일의 한 걸음이 큰 성장을 만듭니다.');
-  else if (d.attendCount >= 8) parts.push(d.attendCount + '일 함께하며 성실하게 자랐어요 🌱');
-  if (!parts.length) parts.push('이번 달도 SYNK와 함께 한 걸음씩 성장했어요 ✨ 다음 달이 더 기대돼요!');
+  if (d.levelUp) parts.push(d.fromLv + '급에서 ' + d.toLv + '급으로 올랐어요. 축하해요!');
+  if (typeof d.delta === 'number' && d.delta > 0) parts.push('모의시험 점수가 지난 기록보다 ' + d.delta + '점 올랐어요.');
+  else if (typeof d.delta === 'number' && d.delta < 0) parts.push('모의시험 점수가 지난 기록보다 ' + Math.abs(d.delta) + '점 낮아요. 어려웠던 문제를 함께 살펴봐요.');
+  else if (d.delta === 0) parts.push('모의시험 점수가 지난 기록과 같아요.');
+  else if (d.hasMock) parts.push('첫 모의시험 결과를 기록했어요.');
+  if (d.gaegeun) parts.push('이번 달은 오늘까지 수업에 빠짐없이 출석했어요.');
+  else if (d.attendCount > 0) parts.push('이번 달에는 ' + d.attendCount + '일 출석했어요.');
+  if (!parts.length) parts.push('기록된 평가와 출석 내용을 확인해 주세요.');
   return parts.slice(0, 3).join(' ');
 }
 
