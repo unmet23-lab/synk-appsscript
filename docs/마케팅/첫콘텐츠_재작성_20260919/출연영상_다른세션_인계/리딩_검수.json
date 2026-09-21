@@ -1,0 +1,146 @@
+{
+  "status": "passed",
+  "checkedOn": "2026-09-19T16:14:30.143Z",
+  "scriptErrors": [],
+  "brokenLinks": [],
+  "checks": [
+    {
+      "width": 1280,
+      "states": [
+        {
+          "tag": "L1-A · 카페 상황 · 먼저 말해 보기",
+          "text": "카페에서 주문하는데, 직원의 말을 잘 못 들었어요.\n\n다시 말해 달라고 어떻게 부탁할까요?\n\n먼저 한국어로 말해 보세요.",
+          "overflow": false,
+          "prevDisabled": true,
+          "nextDisabled": false
+        },
+        {
+          "tag": "L1-B · 예문 · 따라 말하기",
+          "text": "이렇게 말할 수 있어요.\n\n“죄송한데, 다시 한번 말씀해 주세요.”\n\n이제 한 번 따라 말해 보세요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": false
+        },
+        {
+          "tag": "L1-C · 가게에서 다시 말해 보기",
+          "text": "이번에는 가게에서 물건을 사고 있어요.\n\n직원의 말을 잘 못 들었어요.\n\n이번엔 예문을 보지 않고 부탁해 보세요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": false
+        },
+        {
+          "tag": "L1-D · 수업 마무리",
+          "text": "다른 표현으로 말해도 괜찮아요.\n\n막혔다면 앞의 예문을 보고 다시 해보세요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": true
+        },
+        {
+          "tag": "S1-A · 유호 소개",
+          "text": "안녕하세요. AI로 SYNK라는 회사를 만들고 있는 유호입니다.\n\n홈페이지와 학습 자료, 콘텐츠를 만들면서 직접 해본 일들을 여기에 남겨보려고 해요.",
+          "overflow": false,
+          "prevDisabled": true,
+          "nextDisabled": false
+        },
+        {
+          "tag": "S1-B · 문제와 수정",
+          "text": "이번에 SNS 커버를 만들었는데, Behance 업로드 미리보기에서 오른쪽 소품이 잘리더라고요.\n\n그림은 그대로 두고, 로고와 글자, 소품을 조금 줄여 가운데로 모았어요.\n\n위치도 아래로 조금 옮겼습니다. 다시 올린 뒤 실제 프로필에서도 확인했고요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": false
+        },
+        {
+          "tag": "S1-C · 시청자가 확인할 세 가지",
+          "text": "커버를 올릴 때는 세 가지만 확인해 보세요.\n\n글자가 잘리지 않는지, 프로필 사진이나 메뉴에 가리지 않는지, 작게 봐도 읽히는지요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": false
+        },
+        {
+          "tag": "S1-D · 제작 기록 마무리",
+          "text": "앞으로도 완성된 결과와 함께, 어디서 막혔고 어떻게 고쳤는지 보여드릴게요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": true
+        }
+      ],
+      "keyboard": "L1-B · 예문 · 따라 말하기",
+      "maxSize": {
+        "overflow": false,
+        "fontSize": "64px"
+      },
+      "fontLoaded": true,
+      "brokenImages": []
+    },
+    {
+      "width": 390,
+      "states": [
+        {
+          "tag": "L1-A · 카페 상황 · 먼저 말해 보기",
+          "text": "카페에서 주문하는데, 직원의 말을 잘 못 들었어요.\n\n다시 말해 달라고 어떻게 부탁할까요?\n\n먼저 한국어로 말해 보세요.",
+          "overflow": false,
+          "prevDisabled": true,
+          "nextDisabled": false
+        },
+        {
+          "tag": "L1-B · 예문 · 따라 말하기",
+          "text": "이렇게 말할 수 있어요.\n\n“죄송한데, 다시 한번 말씀해 주세요.”\n\n이제 한 번 따라 말해 보세요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": false
+        },
+        {
+          "tag": "L1-C · 가게에서 다시 말해 보기",
+          "text": "이번에는 가게에서 물건을 사고 있어요.\n\n직원의 말을 잘 못 들었어요.\n\n이번엔 예문을 보지 않고 부탁해 보세요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": false
+        },
+        {
+          "tag": "L1-D · 수업 마무리",
+          "text": "다른 표현으로 말해도 괜찮아요.\n\n막혔다면 앞의 예문을 보고 다시 해보세요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": true
+        },
+        {
+          "tag": "S1-A · 유호 소개",
+          "text": "안녕하세요. AI로 SYNK라는 회사를 만들고 있는 유호입니다.\n\n홈페이지와 학습 자료, 콘텐츠를 만들면서 직접 해본 일들을 여기에 남겨보려고 해요.",
+          "overflow": false,
+          "prevDisabled": true,
+          "nextDisabled": false
+        },
+        {
+          "tag": "S1-B · 문제와 수정",
+          "text": "이번에 SNS 커버를 만들었는데, Behance 업로드 미리보기에서 오른쪽 소품이 잘리더라고요.\n\n그림은 그대로 두고, 로고와 글자, 소품을 조금 줄여 가운데로 모았어요.\n\n위치도 아래로 조금 옮겼습니다. 다시 올린 뒤 실제 프로필에서도 확인했고요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": false
+        },
+        {
+          "tag": "S1-C · 시청자가 확인할 세 가지",
+          "text": "커버를 올릴 때는 세 가지만 확인해 보세요.\n\n글자가 잘리지 않는지, 프로필 사진이나 메뉴에 가리지 않는지, 작게 봐도 읽히는지요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": false
+        },
+        {
+          "tag": "S1-D · 제작 기록 마무리",
+          "text": "앞으로도 완성된 결과와 함께, 어디서 막혔고 어떻게 고쳤는지 보여드릴게요.",
+          "overflow": false,
+          "prevDisabled": false,
+          "nextDisabled": true
+        }
+      ],
+      "keyboard": "L1-B · 예문 · 따라 말하기",
+      "maxSize": {
+        "overflow": false,
+        "fontSize": "46.72px"
+      },
+      "fontLoaded": true,
+      "brokenImages": []
+    }
+  ],
+  "actualFootageReviewed": false,
+  "videoOrAudioProduced": false
+}
