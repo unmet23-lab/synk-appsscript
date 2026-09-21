@@ -609,7 +609,7 @@ test('회차 1 이면 줄을 안 낸다 — 비교 대상이 없는 자리에 �
   assert.strictEqual(cr.회차별줄(null), '');
 });
 
-test('입력이 덜 적힌 방으로 검수 자식을 띄우면 **이름 붙은 실패**로 남는다 — 조용히 죽으면 「가끔 안 빨라짐」이 전부다', () => {
+test('은퇴한 회차 실행은 입력 검사 전에 종료하고 실패 마커를 쓰지 않는다', () => {
   const d = 새방();
   const 런 = 런모듈();
   const 방 = 런.방({ 종류: '커밋', 값: 'zzz', 모델: 'm', 효력: 'x', 버그만: false, 총회차: 1 });
@@ -619,9 +619,9 @@ test('입력이 덜 적힌 방으로 검수 자식을 띄우면 **이름 붙은 
     out = execFileSync(process.execPath, [path.join(ROOT, 'tools', 'codex-review.js'), '--회차실행', 방, '1', '검수'],
       { encoding: 'utf8', env: { ...process.env, SYNK_REVIEW_CKPT: path.join(d, 'ckpt') } });
   } catch (e) { 코드 = e.status; out = String(e.stdout || '') + String(e.stderr || ''); }
-  assert.strictEqual(코드, 2, '대상 없는 방인데 자식이 성공으로 끝났다');
-  assert.match(out, /검수 대상이 방에 없다/, '실패 이유가 이름 없이 죽었다 — codex 안쪽 TypeError 로 묻힌다');
-  assert.ok(런.조각읽기(방, '실패-검수', 1), '실패 마커가 안 남았다 — 부모 폴링이 상한까지 헛돌고 그 시간은 사람이 기다린 시간이다');
+  assert.strictEqual(코드, 2, '은퇴한 실행이 성공으로 표시됐다');
+  assert.match(out, /은퇴/, '실행하지 않았다는 이유를 안내해야 한다');
+  assert.strictEqual(런.조각읽기(방, '실패-검수', 1), null, '실행하지 않은 회차의 기록을 만들면 안 된다');
 });
 
 // ───────────────────────────────────────────────── ⑩ 손자가 부모의 「완주」를 훔치지 않는다 (F352)

@@ -50,104 +50,28 @@ function 실행(인자들, { 조용히 = false } = {}) {
 }
 
 const 인자 = process.argv.slice(2);
+const 자리인자 = 인자.filter((a) => !a.startsWith('--'));
+const 컴포지션 = 자리인자[0];
+
+// 폐기된 원고는 자산 생성·검사·렌더를 시작하기 전에 거절한다.
+if (인자.includes('--전량') || /^(clip|count)-/i.test(컴포지션 || '') ||
+    인자.includes('--준비끝') || 인자.includes('--가이드')) {
+  console.error('옛 리드크루·카운트다운과 --전량 경로는 폐기되었습니다. 새 콘텐츠의 원문과 entry를 사용하세요(영상/README.md).');
+  console.error('자산 생성·콘텐츠 검사·렌더는 실행하지 않았습니다.');
+  process.exit(2);
+}
+if (인자.some((a) => a.startsWith('--') && !['--목록', '--검사건너뜀'].includes(a))) {
+  console.error('지원하지 않는 옵션입니다. 영상/README.md의 현재 실행 경로를 확인하세요.');
+  process.exit(2);
+}
 
 if (인자.includes('--목록')) {
   const { 종료 } = 실행(['compositions', 'src/index.ts']);
   process.exit(종료 === 0 ? 0 : 1);
 }
 
-/* ── `--전량` — 대본이 세운 편을 «전부» 굽는다 ────────────────────────────
-   45편이면 45번 손으로 치던 자리다. 한 편이 실패해도 멈추지 않고 끝까지 굽고 마지막에 센다 —
-   중간에 죽으면 「몇 편이 됐나」를 아무도 모르고, 그 침묵이 성공처럼 읽힌다. */
-if (인자.includes('--전량')) {
-  /* ── 준비를 «여기서 한 번만» 한다 ─────────────────────────────────────────
-     🔴 09-07 실측으로 드러난 낭비 — 준비 세 단계는 편마다 도는데 셋 중 하나가 아주 느리다:
-        대본읽기 0.2초 · 발행검사 0.3초 · **자산모으기 98.7초**(안에서 `컷맞추기` 가 마스코트
-        눈 43장을 매번 다시 맞춘다). 편당 렌더가 78초니까 준비가 렌더보다 오래 걸린 셈이고,
-        90편이면 그것만 2.5시간이다. 준비의 결과는 편과 무관하게 같으므로 한 번이면 된다.
-     🔑 그래도 «건너뛴다»가 아니라 «앞으로 옮긴다»다 — 셋 다 여전히 굽기 전에 반드시 돈다.
-        낱개로 부를 때는 예전 그대로 편마다 돈다(사람이 「다시 읽기」를 기억할 필요가 없게).
-     ⚠ 그래서 자식에게 `--준비끝` 을 넘긴다. 이 플래그는 **이 부모만** 넘긴다 —
-        손으로 쓰라고 만든 문이 아니다(우회로가 정상 통로가 되는 자리 · CLAUDE.md 가드 맹점③). */
-  for (const [이름, 막힘말] of [
-    ['대본읽기', '🔴 대본 검사가 막았다 — 한 편도 굽지 않는다.'],
-    ['자산모으기', '🔴 자산이 모자라 한 편도 굽지 않는다.'],
-    ['발행검사', '🔴 발행검사가 막았다 — 한 편도 굽지 않는다(위 목록을 고치고 다시).'],
-  ]) {
-    if (이름 === '발행검사' && 인자.includes('--검사건너뜀')) {
-      console.warn('⚠ 발행검사를 «건너뛴다»(--검사건너뜀) — 이 영상들은 기계가 안 본 판이다.');
-      continue;
-    }
-    const r = spawnSync(process.execPath, [path.join(방, `${이름}.js`)], { encoding: 'utf8', shell: false });
-    process.stdout.write(r.stdout || '');
-    if (r.status !== 0) {
-      process.stderr.write(r.stderr || '');
-      console.error(r.status === 2 && 이름 === '발행검사'
-        ? '🔴 발행검사가 스스로 죽었다 — 「못 쟀다」는 「괜찮다」가 아니라서 굽지 않는다.'
-        : 막힘말);
-      process.exit(1);
-    }
-  }
-  /* 🔴 통로가 둘이면 한쪽이 조용히 뒤처진다 — 리드크루 클립과 카운트다운을 «같이» 센다.
-     여기서 카운트다운을 빼면 「전량 구웠다」가 참인 채로 카운트다운만 옛 판이 된다. */
-  const 목록읽기 = (f) => {
-    const p = path.join(방, 'src', '클립', '생성', f);
-    if (!fs.existsSync(p)) return [];
-    const m = fs.readFileSync(p, 'utf8').match(/= (\[[\s\S]*\]);/);
-    return m ? JSON.parse(m[1]) : [];
-  };
-  /* 🔑 표지 id 는 두 지면 다 «클립 id + -cover» 다(08-27 통일 — Root.tsx 참조). */
-  const 전부 = [
-    ...목록읽기('대본클립들.ts'),
-    ...목록읽기('카운트다운들.ts'),
-  ].map((c) => ({ ...c, 표지: `${c.id}-cover` }));
-
-  /* 🔴 가이드 갈래 — 한 대본이 가이드마다 한 벌씩 나므로 `--전량` 이 통째로 두 배가 됐다(08-27).
-   *   그대로 두면 「전량」이 조용히 90편을 뜻하게 된다. 그래서 **기본은 한 가이드만** 굽고,
-   *   다른 가이드는 이름으로 부른다: `node 영상/굽기.js --전량 --가이드 까몽`.
-   *   ⚠ 가이드가 없는 클립(카운트다운은 제 가이드를 들고 있다)은 언제나 낀다 — 빼면
-   *     「전량 구웠다」가 참인 채로 카운트다운만 옛 판이 된다(이 파일이 이미 겪은 사고다). */
-  const g = 인자.indexOf('--가이드');
-  const 고른가이드 = g === -1 ? null : 인자[g + 1];
-  const 목록 = 고른가이드
-    ? 전부.filter((c) => c.가이드 === 고른가이드)
-    : 전부.filter((c) => !c.가이드 || c.가이드 === '몽글');
-  if (고른가이드 && 목록.length === 0) {
-    const 있는것 = [...new Set(전부.map((c) => c.가이드).filter(Boolean))];
-    console.error(`가이드 「${고른가이드}」로 선 편이 없다. 있는 것: ${있는것.join(', ')}`);
-    process.exit(1);
-  }
-  console.log(`가이드 = ${고른가이드 || '몽글(기본)'} · ${목록.length}편 (전체 ${전부.length}편 중)`);
-  const 실패 = [];
-  for (const [i, c] of 목록.entries()) {
-    console.log(`\n── [${i + 1}/${목록.length}] ${c.id} — ${c.제목}`);
-    const r = spawnSync(process.execPath, [__filename, c.id, '--준비끝'], { encoding: 'utf8', shell: false, stdio: 'inherit' });
-    if (r.status !== 0) 실패.push(c.id);
-  }
-  /* 표지도 같이 — 릴에 «직접 지정»하는 썸네일이라 없으면 플랫폼이 첫 프레임(거의 빈 화면)을 쓴다.
-     정지화라 편당 몇 초다. 여기서 안 구우면 「영상은 열 편인데 표지는 한 편」이 조용히 선다. */
-  for (const c of 목록) {
-    const r = spawnSync('npx', ['remotion', 'still', 'src/index.ts', c.표지, `out/${c.표지}.png`], {
-      cwd: 방, encoding: 'utf8', shell: true, maxBuffer: 64 * 1024 * 1024,
-    });
-    if (r.status !== 0 || !fs.existsSync(path.join(산출방, `${c.표지}.png`))) 실패.push(c.표지);
-  }
-  console.log(
-    `\n전량 굽기 끝 — 영상 ${목록.length} + 표지 ${목록.length} = ${목록.length * 2}개 중 ` +
-      `성공 ${목록.length * 2 - 실패.length} · 실패 ${실패.length}${실패.length ? ' (' + 실패.join(' ') + ')' : ''}`,
-  );
-  process.exit(실패.length ? 1 : 0);
-}
-
-/* 🔴 자리 인자는 «--로 시작하지 않는 것»만 센다. 전엔 `인자[0]`·`인자[1]` 을 그대로 썼는데,
-   그러면 `굽기.js clip-01-1 --준비끝` 의 `--준비끝` 이 **출력 파일 이름**으로 읽혀
-   `out/--준비끝` 을 굽는다(09-07 에 `--준비끝` 을 더하며 잡은 자리). 플래그가 늘 때마다
-   같은 병이 나므로 자리 인자를 여기서 한 번 걸러 낸다. */
-const 자리인자 = 인자.filter((a) => !a.startsWith('--'));
-const 컴포지션 = 자리인자[0];
 if (!컴포지션) {
   console.error('쓰기: node 영상/굽기.js <컴포지션id> [출력파일명]');
-  console.error('       node 영상/굽기.js --전량      — 대본이 세운 편 전부');
   console.error('  ⚠ 컴포지션 id 는 한글을 못 쓴다(Remotion 규약) — `node 영상/굽기.js --목록` 으로 본다.');
   process.exit(2);
 }
@@ -160,67 +84,46 @@ const 표지다 = 컴포지션.endsWith('-cover');
 const 출력 = 자리인자[1] || `${컴포지션}.${표지다 ? 'png' : 'mp4'}`;
 const 출력경로 = path.join(산출방, 출력);
 
-/* 🔑 `--준비끝` — 준비 세 단계(⓪ ① ①-b)를 **부모가 이미 한 번 돌렸다**는 표시다.
-   `--전량` 이 자식을 부를 때만 넘긴다. 손으로 쓰는 문이 아니다 — 낱개로 부르면 아래 셋이 다 돈다.
-   왜 있나: 준비의 결과는 편과 무관하게 같은데 자산모으기가 98.7초다(09-07 실측 · `컷맞추기` 가
-   마스코트 눈 43장을 매번 다시 맞춘다). 90편이면 그 되풀이만 2.5시간이라 렌더보다 비싸다. */
-const 준비끝 = 인자.includes('--준비끝');
-
-/* ── ⓪ 대본을 «먼저» 다시 읽는다 ─────────────────────────────────────────
-   `src/클립/생성/` 은 산출물이라 대본 md 를 고치면 낡는다. 사람이 「다시 읽기」를 기억할 필요가
-   없게 굽기가 매번 부른다(저장소 상습 함정: 「정본은 고쳤는데 산출물을 안 구웠다」).
-   자막 글 검사(이모지 수·키릴/한글 섞임·소리 배치)도 여기서 같이 돈다 — 실패면 굽지 않는다. */
-const 읽기 = 준비끝 ? { status: 0 } : spawnSync(process.execPath, [path.join(방, '대본읽기.js')], {
-  encoding: 'utf8',
-  shell: false,
+/* 호환용 생성물만 비운다. 옛 원고를 읽거나 콘텐츠를 검증하지 않는다. */
+const 빈목록 = spawnSync(process.execPath, [path.join(방, '대본읽기.js'), '--빈목록'], {
+  encoding: 'utf8', shell: false,
 });
-process.stdout.write(읽기.stdout || '');
-if (읽기.status !== 0) {
-  process.stderr.write(읽기.stderr || '');
-  console.error('🔴 대본 검사가 막았다 — 굽기를 시작하지 않는다.');
+process.stdout.write(빈목록.stdout || '');
+if (빈목록.status !== 0) {
+  process.stderr.write(빈목록.stderr || '');
+  console.error('호환용 빈 목록을 준비하지 못해 렌더를 시작하지 않습니다.');
   process.exit(1);
 }
 
-/* ── ① 자산을 «먼저» 다시 모은다 ─────────────────────────────────────────
-   public/ 은 사본이라 정본을 고치면 낡는다. 굽기 직전에 항상 새로 맞춘다. */
-const 모으기 = 준비끝 ? { status: 0 } : spawnSync(process.execPath, [path.join(방, '자산모으기.js')], {
-  encoding: 'utf8',
-  shell: false,
+/* 공용 소리표는 대본과 독립적으로 유지한다. */
+try {
+  require('./소리어휘.js').소리표쓰기();
+} catch (e) {
+  console.error(`소리표를 준비하지 못해 렌더를 시작하지 않습니다: ${e.message}`);
+  process.exit(1);
+}
+
+/* 기존 기본 컴포지션에 필요한 공용 자산과 검사는 유지한다. */
+const 모으기 = spawnSync(process.execPath, [path.join(방, '자산모으기.js')], {
+  encoding: 'utf8', shell: false,
 });
 process.stdout.write(모으기.stdout || '');
 if (모으기.status !== 0) {
   process.stderr.write(모으기.stderr || '');
-  console.error('🔴 자산이 모자라 굽기를 시작하지 않는다.');
+  console.error('자산이 모자라 렌더를 시작하지 않습니다.');
   process.exit(1);
 }
 
-/* ── ①-b 발행검사를 «굽기 전»에 건다 ─────────────────────────────────────
-   (2026-09-03 · codex P1 `c18804c47688` 채택 수리)
-   왜 여기인가 — 앞판에서 발행검사는 «따로 부르는 명령»이었을 뿐, 굽기는 대본읽기·자산모으기를
-   지나면 곧장 렌더로 들어갔다. 그래서 위반이 있는 채로 구워도 아무도 못 막았고, 실제로 09-03 에
-   위반 563건이 쌓인 채 통로가 열려 있었다. 「부르면 도는 검사」와 「반드시 지나는 관문」은 다르다.
-   🔑 자산모으기 «뒤»에 둔다 — 이 검사는 생성물(대본클립들·소리표)과 자산(폰트벌)을 함께 보므로,
-      자산이 낡은 채로 재면 없는 폰트를 없다고 옳게 말해도 그건 굽기가 고칠 수 있는 상태다.
-   🔑 fail-closed — 검사기 «자체»가 죽어도(종료 2) 굽지 않는다. 「못 쟀다」는 「괜찮다」가 아니다.
-   ⚠ 급할 때 넘기는 문 = `--검사건너뜀`. 남겨 둔 까닭은 막힌 사람이 우회로를 스스로 만들면
-      그 우회가 정상 통로가 되기 때문이다(CLAUDE.md 가드 맹점③). 쓰면 화면에 크게 남는다. */
-if (준비끝) {
-  /* 부모(`--전량`)가 이 셋을 이미 한 번 지났다. 관문을 없앤 게 아니라 앞으로 옮긴 것이다. */
-} else if (인자.includes('--검사건너뜀')) {
-  console.warn('⚠ 발행검사를 «건너뛴다»(--검사건너뜀) — 이 영상은 기계가 안 본 판이다.');
+if (인자.includes('--검사건너뜀')) {
+  console.warn('발행검사를 건너뜁니다(--검사건너뜀). 이 영상은 해당 검사를 통과한 결과가 아닙니다.');
 } else {
   const 검사 = spawnSync(process.execPath, [path.join(방, '발행검사.js')], {
-    encoding: 'utf8',
-    shell: false,
+    encoding: 'utf8', shell: false,
   });
   process.stdout.write(검사.stdout || '');
   if (검사.status !== 0) {
     process.stderr.write(검사.stderr || '');
-    console.error(
-      검사.status === 2
-        ? '🔴 발행검사가 스스로 죽었다 — 「못 쟀다」이지 「괜찮다」가 아니라서 굽지 않는다.'
-        : '🔴 발행검사가 막았다 — 굽기를 시작하지 않는다(위 목록을 고치고 다시).',
-    );
+    console.error('발행검사를 통과하지 못해 렌더를 시작하지 않습니다.');
     process.exit(1);
   }
 }

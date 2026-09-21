@@ -87,34 +87,8 @@ const 묶음들 = Object.freeze([
       '§4': ['Угсарсны дараа зөв сонсогдож байна уу', 'does it still read well once assembled'],
     },
   },
-  {
-    코드: 'N',
-    이름: '릴 대본 화면 자막',
-    이름mn: 'Богино видеоны дэлгэцийн хадмал',
-    파일: 'docs/릴대본_몽골어_검수표.md',
-    /* 🔑 277 = 284 빈 칸에서 **같은 문장을 묶은** 수다(따라하기·짧게에 겹치는 말이 일곱).
-     *   묶는 까닭이 값보다 크다 — 안 묶으면 같은 한국어가 두 화면에서 **다른 몽골어**로 설 수 있다.
-     *   🆕 08-28 에 228 → 273 → 277 로 늘었고, 09-08 에 **267 로 줄었다**(01편·09편 훅에 몽골어가 채워져 대상에서 빠졌다):
-     *     ① 리드크루 45화 **훅**에 자리가 열려 45줄(그전엔 첫 2.5초가 한국어로만 떴다)
-     *     ② **카운트다운 2벌**의 훅 2 + 마무리 2 = 4줄. 순위표는 이미 채워져 있어 주문 대상이 아니다.
-     *   ⚠ 이 수는 `tools/릴검수표.js` 가 대본에서 세어 낸다. 대본이 바뀌면 그 도구를 다시 돌리고
-     *     여기 선언도 같이 고친다 — 어긋나면 이 도구가 종료코드 2 로 세운다(그게 이 선언의 일이다). */
-    선언: 267,
-    /* 급한 순서로는 뒤다(보내는 단위가 아니다 — 위 머리말). A·L·M 은 「없으면 학생이 막히는」
-       것들이고, 릴 자막은 **막지 않는다** — 발행 통로가 아직 안 이어져 있고 첫 편은 내부 시연본이다. */
-    회차: 2,
-    비고mn: 'Энэ багцад AI ноорог АЛГА — та солонгос эхээс шууд бичнэ. §3 «буруу» хэсэг нь ЗОРИУД буруу солонгос хэл — утгыг нь буулгана, ЗАСАХГҮЙ.',
-    비고en: 'This bundle has NO AI draft — you write directly from the Korean. §3 "wrong" lines are DELIBERATELY off Korean — carry the meaning, do NOT correct them.',
-    섹션뜻: {
-      '§1': ['Видеоны эхний 2.5 секунд — анхаарал татах мөр. Тайлбарлах биш, СОНИРХОЛ ТАТАХ (үгчлэн бус, харахыг хүсэхээр)', 'the first 2.5 seconds — the line that stops the scroll. Not an explanation: make them WANT to watch (not literal)'],
-      '§2': ['Асуудал үүсэж буй хэсэг — тайван өгүүлэх өнгө', 'the scene where the problem happens — plain narration'],
-      '§3': ['🔴 ЗОРИУД буруу солонгос хэл — утгыг буулгана, ЗАСАХГҮЙ (дэлгэцэд саарал зураастай гарна)', '🔴 DELIBERATELY wrong Korean — carry the meaning, do NOT correct it (shown struck through in grey)'],
-      '§4': ['Тэр үгнээс үүдсэн үр дүн — богино, тайван', 'what that phrase caused — short and plain'],
-      '§5': ['Яаралтай үед хэрэглэх богино хувилбар', 'the shorter form used when in a hurry'],
-      '§6': ['Дуугаар давтахыг урих — тушаал биш, урилга', 'inviting them to repeat aloud — an invitation, not an order'],
-      '§7': ['Сэтгэгдэл бичихийг урих асуулт — хөнгөн, найрсаг', 'a question inviting comments — light and friendly'],
-    },
-  },
+  // 옛 리드크루·카운트다운 N 묶음은 2026-09-22 폐기했다.
+
   {
     코드: 'O',
     이름: '가이드 셋의 목소리',

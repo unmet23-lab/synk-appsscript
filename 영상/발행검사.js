@@ -387,7 +387,7 @@ function main() {
   const 못읽음 = [];
   const 클립들 = 목록읽기('대본클립들.ts');
   const 카운트들 = 목록읽기('카운트다운들.ts');
-  if (!클립들 || !카운트들) 못읽음.push('src/클립/생성/ 이 없다 — 먼저 node 영상/대본읽기.js');
+  if (!클립들 || !카운트들) 못읽음.push('호환용 빈 목록이 없습니다. node 영상/대본읽기.js --빈목록으로 준비하세요. 옛 대본을 복원하는 작업이 아닙니다.');
   let 토큰 = null;
   try { 토큰 = JSON.parse(fs.readFileSync(토큰경로, 'utf8')); } catch (e) { 못읽음.push(`docs/디자인_토큰.json 을 못 읽었다: ${e.message}`); }
   let 폰트벌 = null;
@@ -457,6 +457,7 @@ function main() {
     for (const v of 위반전량) console.error('   · ' + v);
     return 1;
   }
+  if (!클립들.length && !카운트들.length) console.log('옛 대본 목록은 비어 있습니다. 위 결과는 남은 공용 소스·자산 검사이며 새 콘텐츠의 검증 결과가 아닙니다.');
   console.log('✅ 발행검사 통과 — 기계가 볼 수 있는 것만 통과했다. 두부·서체·구도는 여전히 프레임뽑기로 눈이 본다.');
   return 0;
 }

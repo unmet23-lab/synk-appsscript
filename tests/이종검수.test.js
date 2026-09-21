@@ -679,6 +679,48 @@ for (const args of [[], ['--제안'], ['--심문', '없는문서.md'], ['--던�
   });
 }
 
+test('은퇴한 검수 CLI는 상속된 런 ID가 있어도 Git·파일·입력에 접근하지 않는다', () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-retired-review-'));
+  const preload = path.join(temp, 'observe.cjs');
+  const observed = path.join(temp, 'observed.json');
+  fs.writeFileSync(preload, `
+    const fs = require('node:fs');
+    const write = fs.writeFileSync.bind(fs);
+    const read = fs.readFileSync.bind(fs);
+    const calls = [];
+    const fail = (name) => { calls.push(name); throw new Error('retired CLI performed I/O'); };
+    for (const name of ['existsSync', 'statSync', 'readdirSync', 'readlinkSync', 'mkdirSync',
+      'writeFileSync', 'appendFileSync', 'unlinkSync', 'openSync', 'renameSync']) {
+      fs[name] = () => fail('fs.' + name);
+    }
+    fs.readFileSync = (file, ...args) => typeof file === 'string' && file.endsWith('.js')
+      ? read(file, ...args) : fail('fs.readFileSync');
+    const cp = require('node:child_process');
+    for (const name of ['exec', 'execSync', 'execFile', 'execFileSync', 'spawn', 'spawnSync', 'fork']) {
+      cp[name] = () => fail('child_process.' + name);
+    }
+    process.stdin.resume = () => fail('stdin.resume');
+    process.on('exit', () => write(${JSON.stringify(observed)}, JSON.stringify(calls)));
+  `);
+  try {
+    for (const args of [[], ['--던지기'], ['--제안'], ['--심문', '없는문서.md'],
+      ['--회차실행', '없는방', '1'], ['--미처분', '--던지기'], ['--help']]) {
+      const result = spawnSync(process.execPath, ['--require', preload,
+        path.join(ROOT, 'tools/codex-review.js'), ...args], {
+        cwd: ROOT, input: '', encoding: 'utf8', windowsHide: true, timeout: 5000,
+        env: { ...process.env, SYNK_REVIEW_RUN_ID: 'retired-test-run', SYNK_REVIEW_CHILD: '',
+          SYNK_REVIEW_RUNS: path.join(temp, 'runs') },
+      });
+      assert.strictEqual(result.status, args.includes('--help') ? 0 : 2, result.stderr);
+      assert.match(result.stdout + result.stderr, /은퇴/);
+      if (!args.includes('--help')) assert.strictEqual(result.stdout, '');
+      assert.deepStrictEqual(JSON.parse(fs.readFileSync(observed, 'utf8')), [], JSON.stringify(args));
+    }
+  } finally {
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
+});
+
 /* 화이트리스트는 손으로 적은 목록이라 **새 플래그가 붙으면 조용히 거절당한다**(반대 방향 사고).
  * 그래서 목록을 소스에서 파생시켜 대조한다 — 판정을 두 곳에 적으면 갈라지고, 갈라지는 쪽은 늘 얕다. */
 test('🔑 코드가 실제로 읽는 플래그가 전부 화이트리스트에 있다 (새 플래그를 붙이면 여기서 잡힌다)', () => {
