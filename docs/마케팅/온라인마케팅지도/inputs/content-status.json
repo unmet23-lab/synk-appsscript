@@ -1,0 +1,1102 @@
+{
+  "schemaVersion": 1,
+  "asOf": "2026-09-20",
+  "purpose": "온라인 마케팅 지도용 콘텐츠 진행상태와 LAB 국가별 채널 계획 입력",
+  "evidencePolicy": {
+    "currentUserDecisionTakesPrecedence": true,
+    "unknownMeans": "읽지 않았거나 현재 상태를 직접 확인하지 못한 항목. 0·미개설·승인·완료를 뜻하지 않음.",
+    "publicationStatusScope": "해당 새 콘텐츠의 로컬 기록상 상태이며 채널 전체 게시물 유무나 실시간 공개 상태가 아님.",
+    "approvalRule": "옛 파일의 완료·검수 표시, 해시 일치, 조판 성공을 사용자 승인으로 승격하지 않음.",
+    "countryRule": "이전 대화의 국가별 2플랫폼 계획. 수요 순위·현재 인기 순위·계정 실제 존재·접근 가능성을 뜻하지 않음.",
+    "localConditionsRule": "특히 국가별 청소년 SNS 제한은 현재 조건을 다시 확인해야 하며 독립 학습 앱 가입 제한으로 자동 적용하지 않음.",
+    "metrics": "전망·수요·도달·성과 수치를 추정하거나 생성하지 않음."
+  },
+  "currentUserDecisions": [
+    {
+      "id": "face-videos-other-session",
+      "source": "current-user-direction-relayed-by-parent",
+      "decision": "실제 얼굴 출연 L1·S1 두 편은 다른 세션 담당. 현재 작업이 제작·게시를 이어받지 않음."
+    },
+    {
+      "id": "l2-korean-first",
+      "source": "current-user-direction-relayed-by-parent",
+      "decision": "L2를 한 편씩 한국어부터 확인한다. 몽골어 v2 파일 존재가 이 결정의 완료를 뜻하지 않음."
+    },
+    {
+      "id": "lab-23-country-translation-plan",
+      "source": "current-user-direction-relayed-by-parent",
+      "decision": "한국어 기준 콘텐츠의 23개국 번역·현지화는 계획이며 번역 완료·국가별 최종 언어 확정 아님."
+    },
+    {
+      "id": "l2-approval-not-established",
+      "source": "current-user-direction-relayed-by-parent",
+      "decision": "첫 기존 카드에 사용자 불만이 있었고 새 구성 승인은 확인되지 않음. 재검토가 필요한 상태로 표시."
+    }
+  ],
+  "planCounts": {
+    "contentConcepts": 14,
+    "facelessContentConcepts": 12,
+    "faceVideoConceptsOtherSession": 2,
+    "countries": 23,
+    "plannedCountryPlatformSlots": 46,
+    "existingMongoliaRecordSlots": 2,
+    "newCountryCandidates": 22,
+    "newChannelSlotsPlanned": 44
+  },
+  "planCountNote": "산술적인 계획 행·슬롯 수다. 실제 신규 생성 계정 수·운영 완료 수·성과 수치가 아님.",
+  "contents": [
+    {
+      "id": "L1",
+      "brand": "LAB",
+      "title": "카페에서 잘 못 들었을 때",
+      "format": "실제 유호 출연 학습 영상",
+      "scriptStatus": "촬영 준비 개정 원고 존재 · 몽골어 자막 감수 대기",
+      "productionStatus": "원고·리딩·화면 자산 준비 / 기록상 촬영본 미확인·완성 영상 없음",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "다른 세션에서 실제 촬영본과 낭독을 확인하고 편집·자막 검토",
+      "scopeOwner": "다른 세션 · 출연 영상",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/L1_LAB_촬영원고.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/README.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/제작준비.json"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "L2",
+      "brand": "LAB",
+      "title": "못 알아들었는데, 일단 “네” 해버린 순간",
+      "format": "얼굴 없는 학습 카드 5장과 게시문",
+      "scriptStatus": "기존 원고 및 몽골어 v2 초안 존재 · 새 한국어 구성 승인 미확인",
+      "productionStatus": "v2 카드 PNG 5장·미리보기 존재, 검수 기록과 해시 일치 / 사용자 만족·승인과 별개",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "현재 사용자 결정대로 L2 한 편의 한국어 구성부터 확인한다. 승인된 것으로 가정해 번역·게시하지 않는다.",
+      "scopeOwner": "현재 작업 · L2 한 편 우선",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/L2.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md",
+        "docs/마케팅/L2_카드제작_20260920/copy-v2.json",
+        "docs/마케팅/L2_카드제작_20260920/index.html",
+        "docs/마케팅/L2_카드제작_20260920/verification.json"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님.",
+      "currentDecisionNotes": [
+        "기존 첫 카드에 대한 사용자 불만을 현재 사용자 결정으로 반영한다. 어느 시각 요소가 승인됐는지는 추측하지 않는다.",
+        "새 v2 파일은 존재하지만 새 구성에 대한 사용자 승인은 확인되지 않았다.",
+        "한 편씩 한국어를 먼저 확인한 다음 23개국 번역·플랫폼별 적용을 검토한다. 기존 몽골어 제작본을 승인된 한국어 기준본으로 취급하지 않는다."
+      ],
+      "localVerification": {
+        "revision": "L2-v2-teen-beginner-20260920",
+        "recordedStatus": "local-render-not-published",
+        "pngCount": 5,
+        "width": 1080,
+        "height": 1350,
+        "pngHashesMatchRecord": true,
+        "copyHashMatchesRecord": true,
+        "renderRerunThisAudit": false,
+        "visualApproval": "unknown",
+        "nativeMongolianReview": "pending",
+        "actualLearningEffect": "unknown",
+        "recordedPreviewWidths": [
+          1440,
+          390,
+          320
+        ]
+      }
+    },
+    {
+      "id": "L3",
+      "brand": "LAB",
+      "title": "두 카드로 스스로 말해 보는 순서",
+      "format": "Telegram 학습 안내 글과 카드 2장",
+      "scriptStatus": "몽골어·한국어 검토 초안 존재 · 원어민 감수 대기",
+      "productionStatus": "새 카드 연결·제작 마감 미완료(기록 기준), L2 v2 변경 미반영",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "L2 한국어 구성 확인 뒤 공유 카드와 표현의 일치 여부 검토",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/L3.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "S1",
+      "brand": "SHIFT",
+      "title": "SYNK를 만드는 유호",
+      "format": "실제 유호 출연 제작 기록 영상",
+      "scriptStatus": "촬영 준비 개정 원고 존재 · 최종 영상 승인 미확인",
+      "productionStatus": "원고·리딩·화면 자산 준비 / 기록상 촬영본 미확인·완성 영상 없음",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "다른 세션에서 실제 촬영본과 비교 화면을 확인하고 편집",
+      "scopeOwner": "다른 세션 · 출연 영상",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/S1_유호_촬영원고.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/README.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/출연영상_다른세션_인계/제작준비.json"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "S2",
+      "brand": "SHIFT",
+      "title": "커버를 확인하는 세 항목",
+      "format": "Threads·X 공통 짧은 글과 전후 이미지",
+      "scriptStatus": "2차 편집 초안 존재 · 최종 승인 미확인",
+      "productionStatus": "현행 원고용 전후 비교 카드 재제작·게시 화면 검토 미완료(기록 기준)",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "원고 확인 뒤 실제 업로드 원본 전후 이미지에 새 문구 반영; 플랫폼 글자 수 확인",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/S2.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "S3",
+      "brand": "SHIFT",
+      "title": "SYNK를 만들며 맡은 일과 디자인 판단",
+      "format": "개인 LinkedIn 글과 사례 이미지",
+      "scriptStatus": "2차 재작성 초안 존재 · 최종 승인 미확인",
+      "productionStatus": "현행 원고용 사례 이미지 편집·플랫폼 조판 완료 근거 미확인",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "원고와 사실 근거 대조 후 현행 LinkedIn 운영 프로필에서 게시 형태 검토",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/S3.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "S4",
+      "brand": "SHIFT",
+      "title": "PDF 보내기 전, 표에서 이 부분을 확인하세요",
+      "format": "synkbrief YouTube·Instagram·TikTok 공통 무출연 영상",
+      "scriptStatus": "수정 내레이션·화면 구성 존재 · 최종 승인 미확인",
+      "productionStatus": "새 음성·영상·동일 항목 비교 이미지 미제작(기록 기준)",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "온전한 동일 PDF 행의 전후 이미지를 확보하고 새 음성·영상 제작; 옛 table-after.png 사용 금지",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/S4.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "S5",
+      "brand": "SHIFT",
+      "title": "PDF 표의 문장이 잘릴 때: 확인 순서와 AI 수정 요청문",
+      "format": "네이버 블로그 상세 글과 비교 이미지",
+      "scriptStatus": "2차 편집 초안 존재 · 최종 승인 미확인",
+      "productionStatus": "현행 원고용 비교 이미지·조판 검토 미완료(기록 기준)",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "S4와 같은 온전한 전후 자료 확보 후 새 글 조판; 게시 때 모바일 배경 후속 확인",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/S5.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "S6",
+      "brand": "SHIFT",
+      "title": "SNS 커버를 올리고 나서 다시 고친 세 가지",
+      "format": "Tistory 제작 과정 글과 원본 비교",
+      "scriptStatus": "2차 편집 초안 존재 · 최종 승인 미확인",
+      "productionStatus": "현행 원고용 이미지 배치·최종 게시 형태 미확인",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "바탕·잘림·문구 수정 사례의 실제 원본과 기록을 연결해 조판 검토",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/S6.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "S7",
+      "brand": "SHIFT",
+      "title": "SYNK — Felt & Glass Social Design",
+      "format": "Behance 디자인 프로젝트",
+      "scriptStatus": "2차 편집 초안 존재 · 최종 승인 미확인",
+      "productionStatus": "새 프로젝트 이미지 조판 미완료(기록 기준)",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "승인 디자인 원본과 새 원고로 프로젝트 조판; 공개 프로젝트 URL은 실제 발행 뒤 기록",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/S7.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "S8",
+      "brand": "SHIFT",
+      "title": "펠트·자수·유리로 만든 SYNK SNS 커버",
+      "format": "Pinterest 대표 이미지와 핀 설명",
+      "scriptStatus": "2차 편집 초안 존재 · 최종 승인 미확인",
+      "productionStatus": "새 대표 이미지 문구 조판·실제 상세 프로젝트 URL 미확인",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "S7 실제 공개 URL 확보 뒤 연결; 현재 없는 프로젝트 링크 생성 금지",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/S8.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "S9",
+      "brand": "SHIFT",
+      "title": "AI 교육이나 브랜딩을 고민 중이라면",
+      "format": "카카오 채널 공개 소식 글과 문의 안내 카드",
+      "scriptStatus": "2차 편집 초안 존재 · 최종 승인 미확인",
+      "productionStatus": "새 안내 카드·공개 소식 게시 형태 검토 미완료(기록 기준)",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "새 카드와 공개 소식 형태 검토; 친구 대상 메시지 발송과 구분",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/S9.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "C1",
+      "brand": "SYNK",
+      "title": "현재 작업과 준비 중인 사업 소개",
+      "format": "회사 LinkedIn 소개 글과 실물 사례",
+      "scriptStatus": "2차 편집 초안 존재 · 최종 승인 미확인",
+      "productionStatus": "현행 원고용 첨부·최종 조판 검토 미완료(기록 기준)",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "확인된 실물 사례만 첨부하고 실제 작업·준비 중 사업 구분 유지",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/C1.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    },
+    {
+      "id": "C2",
+      "brand": "SYNK",
+      "title": "첫 편지: 오늘 말해 볼 한국어, 보내기 전에 확인할 PDF",
+      "format": "Substack LAB·SHIFT 공통 편지",
+      "scriptStatus": "2차 편집 초안 존재 · LAB 몽골어 원어민 감수 대기",
+      "productionStatus": "새 학습 카드·PDF 비교 이미지 연결·웹 조판 미완료(기록 기준), L2 v2 미반영",
+      "publishStatus": "기록상 미게시 · 이번 작업에서 실시간 공개 상태는 확인하지 않음",
+      "nextAction": "L2 구성과 PDF 비교 자료 확인 뒤 편집; 웹 게시와 이메일·앱 발송을 별도 확인",
+      "scopeOwner": "현재 작업 · 얼굴 없는 콘텐츠 후속",
+      "sourcePaths": [
+        "docs/마케팅/첫콘텐츠_재작성_20260919/copy/C2.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/원고별_검수와_구성.md",
+        "docs/마케팅/첫콘텐츠_재작성_20260919/README.md"
+      ],
+      "approvalStatus": "unknown",
+      "currentExternalStatus": "unknown",
+      "statusBasis": "읽은 로컬 원고·제작 기록과 현재 사용자 결정의 대조. 원고 편집 검수는 사용자 승인·원어민 감수·게시 검증이 아님."
+    }
+  ],
+  "countries": [
+    {
+      "code": "VN",
+      "name": "베트남",
+      "brand": "LAB",
+      "platforms": [
+        "TikTok",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "CN",
+      "name": "중국",
+      "brand": "LAB",
+      "platforms": [
+        "Douyin",
+        "Xiaohongshu"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "Douyin",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "Xiaohongshu",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "JP",
+      "name": "일본",
+      "brand": "LAB",
+      "platforms": [
+        "YouTube",
+        "Instagram"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "UZ",
+      "name": "우즈베키스탄",
+      "brand": "LAB",
+      "platforms": [
+        "Instagram",
+        "Telegram"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "Telegram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "MN",
+      "name": "몽골",
+      "brand": "LAB",
+      "platforms": [
+        "Instagram",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 기존 두 채널 기록 연결",
+      "accountStatus": "기존 기록 있음 · 현재 접속·소유·게시 상태 재확인 필요",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/채널성과.md"
+      ],
+      "channelSlots": [
+        {
+          "platform": "Instagram",
+          "status": "existing-record-recheck-required",
+          "accountId": "lab-instagram",
+          "handle": "@synk.mn",
+          "url": "https://www.instagram.com/synk.mn/"
+        },
+        {
+          "platform": "YouTube",
+          "status": "existing-record-recheck-required",
+          "accountId": "lab-youtube",
+          "handle": "@synkkorean",
+          "url": "https://www.youtube.com/@synkkorean"
+        }
+      ]
+    },
+    {
+      "code": "TW",
+      "name": "대만",
+      "brand": "LAB",
+      "platforms": [
+        "Instagram",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "MM",
+      "name": "미얀마",
+      "brand": "LAB",
+      "platforms": [
+        "TikTok",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "TH",
+      "name": "태국",
+      "brand": "LAB",
+      "platforms": [
+        "TikTok",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "ID",
+      "name": "인도네시아",
+      "brand": "LAB",
+      "platforms": [
+        "TikTok",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "RU",
+      "name": "러시아",
+      "brand": "LAB",
+      "platforms": [
+        "VK",
+        "RUTUBE"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "VK",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "RUTUBE",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "IN",
+      "name": "인도",
+      "brand": "LAB",
+      "platforms": [
+        "YouTube",
+        "Instagram"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "KZ",
+      "name": "카자흐스탄",
+      "brand": "LAB",
+      "platforms": [
+        "Instagram",
+        "TikTok"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "NP",
+      "name": "네팔",
+      "brand": "LAB",
+      "platforms": [
+        "Facebook",
+        "TikTok"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "Facebook",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "KG",
+      "name": "키르기스스탄",
+      "brand": "LAB",
+      "platforms": [
+        "Instagram",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "KH",
+      "name": "캄보디아",
+      "brand": "LAB",
+      "platforms": [
+        "TikTok",
+        "Facebook"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "Facebook",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "US",
+      "name": "미국",
+      "brand": "LAB",
+      "platforms": [
+        "YouTube",
+        "TikTok"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "PH",
+      "name": "필리핀",
+      "brand": "LAB",
+      "platforms": [
+        "TikTok",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "LK",
+      "name": "스리랑카",
+      "brand": "LAB",
+      "platforms": [
+        "YouTube",
+        "Facebook"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "Facebook",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "AU",
+      "name": "호주",
+      "brand": "LAB",
+      "platforms": [
+        "YouTube",
+        "TikTok"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "PY",
+      "name": "파라과이",
+      "brand": "LAB",
+      "platforms": [
+        "Instagram",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "NZ",
+      "name": "뉴질랜드",
+      "brand": "LAB",
+      "platforms": [
+        "YouTube",
+        "Instagram"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "MY",
+      "name": "말레이시아",
+      "brand": "LAB",
+      "platforms": [
+        "TikTok",
+        "YouTube"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "TikTok",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    },
+    {
+      "code": "CA",
+      "name": "캐나다",
+      "brand": "LAB",
+      "platforms": [
+        "YouTube",
+        "Instagram"
+      ],
+      "audience": "거주국 기준 15~19세 한국어 초보 학습자·배우고 싶은 학생",
+      "planStatus": "이전 대화 계획 · 신규 2슬롯 후보",
+      "accountStatus": "unknown",
+      "localConditionsStatus": "현지 접속·연령 제한·언어·계정 생성 및 운영 조건 재확인 필요",
+      "demandRank": null,
+      "sourceType": "previous-conversation-plan",
+      "sourcePaths": [],
+      "channelSlots": [
+        {
+          "platform": "YouTube",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        },
+        {
+          "platform": "Instagram",
+          "status": "planned-not-created-or-verified",
+          "accountId": null,
+          "handle": null,
+          "url": null
+        }
+      ]
+    }
+  ],
+  "audit": {
+    "scope": "지정 문서 및 직접 관련 원고·제작 준비·기존 LAB 채널 기록의 읽기 전용 확인, 이 입력 파일만 작성",
+    "modifiedPaths": [
+      "docs/마케팅/온라인마케팅지도/inputs/content-status.json"
+    ],
+    "accountsCreated": 0,
+    "accountsChanged": 0,
+    "postsPublished": 0,
+    "externalStateRechecked": false,
+    "remainingUnknowns": [
+      "새 한국어 L2 구성 사용자 승인",
+      "L1/S1 다른 세션의 후속 촬영·편집·게시 상태",
+      "23개국 계획 슬롯의 실제 계정 존재 및 현재 현지 접속·미성년자 조건",
+      "원어민 감수와 실제 학습 효과"
+    ],
+    "note": "L2 index.html의 본문은 읽었으며 인라인 폰트의 base64 바이너리만 출력에서 제외했다. 이번 조사에서 이미지를 새로 렌더하거나 시각적 완성도를 승인하지 않았다."
+  }
+}

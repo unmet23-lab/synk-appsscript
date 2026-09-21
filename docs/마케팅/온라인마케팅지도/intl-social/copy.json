@@ -1,0 +1,254 @@
+{
+  "revision": "2026-09-20-lab-international-social-v2-reviewed",
+  "lastAppliedUpdate": {"date":"2026-09-21","channelId":"lab-ru-rutube","scope":"bioLong 끝에 LAB 홈페이지 링크 추가; 다른 27개 원고 불변"},
+  "status": "copy-prepared-not-publication-evidence",
+  "scope": "account-setup-proposal.json의 YouTube 제외 신규 28개 SNS. 기존 몽골 계정과 YouTube는 수정하지 않음.",
+  "source": "../account-setup-proposal.json",
+  "audience": "한국어를 처음 배우는 10대 후반 중심. 연령 제한이나 가입 자격을 안내하는 문구가 아님.",
+  "website": "https://synk.im/",
+  "languageReview": "AI 작성·자체 검수 초안. 원어민 감수 미실시. 현지 문화·구어체 적합성의 최종 검증을 주장하지 않음.",
+  "secondReview": {
+    "date":"2026-09-20",
+    "scope":"28개 짧은 소개·긴 소개 전부 재검토",
+    "changes":"14개 원고 항목에서 직역·어순·불필요한 언어 전환 등을 다듬음. 인도·필리핀·캐나다의 복수 언어 메타데이터를 locale와 additionalLocales로 구분.",
+    "invariants":"28개 계정명·핸들 후보 유지. 반영 중인 네팔 Facebook 짧은 소개 유지. 원어민 감수 미실시 상태 유지.",
+    "checks":"28개 대상·중복·글자 예산 통과. 예상하지 않은 문자 체계 혼입, 대체 문자, 방향 제어 문자 없음. 기관 인증·출시 완료·유료 서비스·보장 성과를 약속하는 문구 없음."
+  },
+  "usage": "bioShort를 기본 소개 입력란에 사용. bioLong은 별도 긴 소개란이 있을 때만 사용하며 실제 UI의 길이·정책을 확인한다. 핸들은 제안일 뿐 사용 가능성·허용 문자·확보 여부 미확인. 계정 생성·저장·공개 확인은 별도 실행 기록이 필요하다.",
+  "internalCharacterBudgets": {
+    "note": "내부 제작 예산이다. 플랫폼의 현재 공식 제한을 확정하는 수치가 아니다. Unicode code point 및 UTF-16 길이를 모두 검사한다.",
+    "bioShort": {"TikTok":80,"Instagram":150,"Facebook":100,"Telegram":255,"Douyin":80,"Xiaohongshu":100,"VK":150,"RUTUBE":150},
+    "bioLong": 1000
+  },
+  "channels": [
+    {
+      "id":"lab-vn-tiktok", "country":"베트남", "countryCode":"VN", "platform":"TikTok", "locale":"vi",
+      "proposedDisplayName":"SYNK LAB Vietnam", "proposedHandle":"synklab.vn",
+      "bioShort":"Học tiếng Hàn thật vui. Học xong, thử nói ngay!",
+      "bioLong":"Nơi học tiếng Hàn thật vui.\nMới bắt đầu? Cùng học Hangul và những câu dùng hằng ngày, từ chào hỏi đến gọi đồ uống. Học một câu, thử nói ngay!\nVideo ngắn và câu đố đầu tiên đang được chuẩn bị.",
+      "KoreanMeaning":{"bioShort":"재밌게 배우는 한국어. 배운 뒤 바로 말해 봐요!","bioLong":"한국어가 재밌어지는 곳. 처음이라면 한글과 인사·음료 주문 같은 일상 표현부터 함께 배워요. 한 문장을 배워 바로 말해 봐요. 첫 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-cn-douyin", "country":"중국", "countryCode":"CN", "platform":"Douyin", "locale":"zh-Hans",
+      "proposedDisplayName":"SYNK LAB China", "proposedHandle":"synklab.cn",
+      "bioShort":"让韩语变有趣。零基础也能一起练，学一句，试着说一句！",
+      "bioLong":"让韩语变有趣的地方。\n刚开始学韩语？从韩文字母和日常表达开始，试着打个招呼、点杯饮料。学一句，就试着说一句。\n正在准备适合初学者的短视频和小测验。",
+      "KoreanMeaning":{"bioShort":"한국어를 더 재밌게. 처음이어도 함께 연습해요. 한 문장을 배우고 말해 봐요!","bioLong":"한국어가 재밌어지는 곳. 처음이라면 한글과 일상 표현부터 시작해요. 인사나 음료 주문을 연습하고 배운 한 문장을 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-cn-xiaohongshu", "country":"중국", "countryCode":"CN", "platform":"Xiaohongshu", "locale":"zh-Hans",
+      "proposedDisplayName":"SYNK LAB China", "proposedHandle":"synklab.cn",
+      "profilePreparationRevision":"2026-09-21-rednote-profile-preparation-v1",
+      "profilePreparationFile":"rednote-profile/profile.json",
+      "bioShort":"从韩文字母到日常表达，一起学韩语。\n学一句，就试着用一句。",
+      "bioLong":"想学韩语，但不知道从哪开始？先学会读韩文字母，再试着用韩语打招呼、点饮料。\n这里是 SYNK LAB China，让韩语变有趣的地方。\n适合初学者的图文卡片和小测验正在准备中。学一点，就试着用一点。",
+      "KoreanMeaning":{"bioShort":"한글부터 일상 표현까지, 함께 한국어를 배워요. 한 문장을 배우고 직접 써 봐요.","bioLong":"어디서부터 시작할지 모르겠다면 한글 읽기부터 시작하고 인사·음료 주문에 써 봐요. 초보자용 카드와 퀴즈를 준비 중이에요. 조금 배우고 조금씩 써 봐요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-jp-instagram", "country":"일본", "countryCode":"JP", "platform":"Instagram", "locale":"ja",
+      "proposedDisplayName":"SYNK LAB Japan", "proposedHandle":"synklab.jp",
+      "bioShort":"韓国語が楽しくなる場所。\nハングルから、すぐ使えるひと言まで。\n初めてでも、一緒に声に出してみよう。",
+      "bioLong":"学んですぐ使える韓国語。\nあいさつ、カフェでの注文、好きな動画へのコメント。覚えたひと言を、身近な場面で使ってみよう。\nハングルの読み方や日常表現を紹介する、初めての人向けの短い動画とクイズを準備中です。",
+      "KoreanMeaning":{"bioShort":"한국어가 재밌어지는 곳. 한글부터 바로 쓸 수 있는 한마디까지. 처음이어도 함께 소리 내어 말해 봐요.","bioLong":"배워서 바로 쓰는 한국어. 인사·카페 주문·좋아하는 영상 댓글에 배운 한마디를 써 봐요. 한글과 일상 표현을 다루는 초보자용 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-uz-instagram", "country":"우즈베키스탄", "countryCode":"UZ", "platform":"Instagram", "locale":"uz-Latn",
+      "proposedDisplayName":"SYNK LAB Uzbekistan", "proposedHandle":"synklab.uz",
+      "bioShort":"Koreys tilini zavq bilan o‘rganamiz!\nHangul va kundalik iboralar.\nO‘rganganingni darrov aytib ko‘r.",
+      "bioLong":"Koreys tilini birga, zavq bilan o‘rganamiz!\nEndi boshlayapsanmi? Hanguldan boshlaymiz, keyin salomlashish va kafeda ichimlik buyurtma qilishni mashq qilamiz. Bitta iborani o‘rganib, darrov aytib ko‘r.\nYangi boshlovchilar uchun qisqa videolar va kichik testlar tayyorlanmoqda.",
+      "KoreanMeaning":{"bioShort":"한국어를 즐겁게 배워요! 한글과 일상 표현. 배운 것을 바로 말해 봐요.","bioLong":"한국어를 함께 즐겁게 배워요. 처음이라면 한글부터 시작해 인사와 카페 주문을 연습해요. 한 표현을 배워 바로 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-uz-telegram", "country":"우즈베키스탄", "countryCode":"UZ", "platform":"Telegram", "locale":"uz-Latn",
+      "proposedDisplayName":"SYNK LAB Uzbekistan", "proposedHandle":"synklab_uz",
+      "bioShort":"Koreys tilini zavq bilan o‘rganamiz! Hangul, kundalik iboralar va kichik testlar. Yangi boshlovchilar uchun materiallar tayyorlanmoqda. Bitta iborani o‘rganib, darrov aytib ko‘r.",
+      "bioLong":"Koreys tilini birga, zavq bilan o‘rganamiz!\nHangulni o‘qishdan boshlab, salomlashish va kafeda buyurtma qilish kabi kundalik vaziyatlarda mashq qilamiz. O‘rgangan iborangni ovoz chiqarib aytib ko‘r.\nYangi boshlovchilar uchun qisqa izohlar, kartochkalar va kichik testlar tayyorlanmoqda.",
+      "KoreanMeaning":{"bioShort":"한국어를 즐겁게 배워요! 한글·일상 표현·짧은 퀴즈. 초보자용 자료를 준비 중이에요. 한 표현을 배워 바로 말해 봐요.","bioLong":"한국어를 함께 즐겁게 배워요. 한글 읽기부터 인사·카페 주문 같은 일상 상황까지 연습해요. 배운 표현을 소리 내어 말해 봐요. 초보자용 짧은 설명·카드·퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-tw-instagram", "country":"대만", "countryCode":"TW", "platform":"Instagram", "locale":"zh-Hant-TW",
+      "proposedDisplayName":"SYNK LAB Taiwan", "proposedHandle":"synklab.tw",
+      "bioShort":"讓韓語變有趣的地方。\n從韓文字母到日常會話，學一句，就試著用一句。\n第一次學韓語也歡迎！",
+      "bioLong":"學了就能用的韓語。\n打招呼、在咖啡店點飲料，或在喜歡的影片下留言。一起把剛學的那句韓語，用在生活裡吧！\n正在準備給初學者的短影片、圖文卡片和小測驗，從韓文字母慢慢開始。",
+      "KoreanMeaning":{"bioShort":"한국어가 재밌어지는 곳. 한글부터 일상 회화까지, 한 문장을 배우고 써 봐요. 처음 배우는 사람도 환영해요!","bioLong":"배워서 바로 쓰는 한국어. 인사·카페 주문·좋아하는 영상 댓글에 방금 배운 표현을 써 봐요. 한글부터 시작하는 초보자용 짧은 영상·카드·퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-mm-tiktok", "country":"미얀마", "countryCode":"MM", "platform":"TikTok", "locale":"my",
+      "proposedDisplayName":"SYNK LAB Myanmar", "proposedHandle":"synklab.mm",
+      "bioShort":"ကိုရီးယားစာ ပျော်ပျော်သင်မယ်။ သင်ပြီးတာနဲ့ ပြောကြည့်မယ်။",
+      "bioLong":"ကိုရီးယားစာကို ပျော်ပျော်သင်မယ်။\nအခုမှ စလေ့လာမှာလား။ ဟန်ဂူးလ်ဖတ်တာကနေ နှုတ်ဆက်တာ၊ ကော်ဖီဆိုင်မှာ အချိုရည်မှာတာအထိ လေ့ကျင့်ကြမယ်။ သင်ထားတဲ့စကားလေးကို အသံထွက်ပြောကြည့်ပါ။\nစလေ့လာသူတွေအတွက် ဗီဒီယိုတိုတွေနဲ့ မေးခွန်းလေးတွေကို ပြင်ဆင်နေပါတယ်။",
+      "KoreanMeaning":{"bioShort":"한국어를 재밌게 배워요. 배우면 바로 말해 봐요.","bioLong":"한국어를 즐겁게 배워요. 처음이라면 한글 읽기부터 인사·카페 주문까지 연습해요. 배운 표현을 소리 내어 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-th-tiktok", "country":"태국", "countryCode":"TH", "platform":"TikTok", "locale":"th",
+      "proposedDisplayName":"SYNK LAB Thailand", "proposedHandle":"synklab.th",
+      "bioShort":"เรียนเกาหลีให้สนุก เรียนแล้วลองพูดได้เลย!",
+      "bioLong":"ที่ที่เรียนเกาหลีได้สนุกขึ้น\nเพิ่งเริ่มเรียนก็มาได้! เริ่มจากฮันกึล แล้วลองทักทายหรือสั่งเครื่องดื่มเป็นภาษาเกาหลี เรียนทีละประโยค แล้วลองพูดออกเสียง\nกำลังเตรียมคลิปสั้นและคำถามสนุก ๆ สำหรับมือใหม่",
+      "KoreanMeaning":{"bioShort":"한국어를 재밌게 배우고 바로 말해 봐요!","bioLong":"한국어가 재밌어지는 곳. 처음 배우는 사람도 환영해요. 한글부터 시작해 인사·음료 주문을 연습해요. 한 문장씩 배우고 소리 내어 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-id-tiktok", "country":"인도네시아", "countryCode":"ID", "platform":"TikTok", "locale":"id",
+      "proposedDisplayName":"SYNK LAB Indonesia", "proposedHandle":"synklab.id",
+      "bioShort":"Belajar Korea jadi seru. Baru belajar? Yuk, langsung coba ngomong!",
+      "bioLong":"Tempat belajar bahasa Korea yang seru.\nBaru mulai? Kita belajar Hangul, menyapa teman, dan pesan minuman di kafe. Pelajari satu kalimat, lalu coba ucapkan!\nVideo pendek dan kuis untuk pemula sedang disiapkan.",
+      "KoreanMeaning":{"bioShort":"한국어 배우기가 재밌어져요. 처음 배우나요? 함께 바로 말해 봐요!","bioLong":"한국어를 재밌게 배우는 곳. 한글·인사·카페 주문부터 시작해요. 한 문장을 배워 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-ru-vk", "country":"러시아", "countryCode":"RU", "platform":"VK", "locale":"ru",
+      "proposedDisplayName":"SYNK LAB Russia | Корейский с нуля", "proposedHandle":"synklab.ru",
+      "bioShort":"Корейский с нуля: учись и сразу пробуй говорить. Первые видео и карточки готовим.",
+      "bioLong":"SYNK LAB — место, где интересно учить корейский. Готовим первые короткие видео, карточки и мини-тесты для тех, кто только начинает учить корейский. Начнём с хангыля и фраз на каждый день: поздороваться, заказать напиток в кафе, написать комментарий. Выучи фразу и сразу попробуй её использовать!",
+      "KoreanMeaning":{"bioShort":"처음부터 배우는 한국어. 배우고 바로 말해 봐요. 첫 영상과 카드를 준비 중이에요.","bioLong":"한국어가 재밌어지는 곳. 처음 배우는 사람을 위한 첫 짧은 영상·카드·작은 퀴즈를 준비 중이에요. 한글과 인사·카페 주문·댓글 같은 일상 표현부터 시작해요. 한 표현을 배우고 바로 써 봐요!"},
+      "copyRevision":"2026-09-21-vk-user-upload-ready",
+      "preparationSource":"vk-profile/profile.json",
+      "displayNameScope":"브랜드 채널용 준비 이름. 현재 Yuho Yang 개인 프로필 이름/성 칸과 혼동하지 않으며 실제 편집 칸과 변경 허용 여부 미확인.",
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-ru-rutube", "country":"러시아", "countryCode":"RU", "platform":"RUTUBE", "locale":"ru",
+      "proposedDisplayName":"SYNK LAB Russia", "proposedHandle":"synklab.ru",
+      "bioShort":"Здесь интересно учить корейский. Начинаем с хангыля и фраз на каждый день. Выучи фразу и сразу попробуй её сказать!",
+      "bioLong":"Хочешь начать учить корейский? Начнём с хангыля, а потом попробуем поздороваться и заказать напиток в кафе.\nSYNK LAB Russia — место, где интересно учить корейский. Разбираем новые фразы и пробуем говорить.\nПервые короткие видео и вопросы для начинающих уже готовим.\n\nSYNK LAB: https://synk.im/lab/",
+      "KoreanMeaning":{"bioShort":"한국어 배우기가 재밌어지는 곳. 한글과 일상 표현부터 시작해요. 배운 표현을 바로 말해 봐요!","bioLong":"한국어를 시작하고 싶다면 한글부터 시작해 인사·카페 주문을 해 봐요. 새 표현을 배우고 말해 보는 곳이에요. 초보자용 첫 짧은 영상과 문제를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-in-instagram", "country":"인도", "countryCode":"IN", "platform":"Instagram", "locale":"hi", "additionalLocales":["en-IN"],
+      "proposedDisplayName":"SYNK LAB India", "proposedHandle":"synklab.in",
+      "bioShort":"कोरियन सीखना अब मज़ेदार।\nसीखो, फिर बोलकर देखो!\nHangul + everyday Korean for beginners.",
+      "bioLong":"सीखो और तुरंत बोलकर देखो!\nकोरियन में हैलो कहना या कैफ़े में ड्रिंक ऑर्डर करना है? हंगुल और रोज़ काम आने वाले वाक्यों से शुरू करते हैं।\nनए सीखने वालों के लिए छोटे वीडियो और क्विज़ तैयार हो रहे हैं।\nNew to Korean? Start with Hangul and everyday phrases. Short videos and quick quizzes are in preparation.",
+      "KoreanMeaning":{"bioShort":"한국어 배우기가 재밌어져요. 배우고 말해 봐요! 초보자를 위한 한글과 일상 한국어.","bioLong":"배우고 바로 말해 봐요. 인사나 카페 주문을 하고 싶다면 한글과 일상 표현부터 시작해요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요. 같은 내용을 쉬운 영어로도 안내해요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-kz-instagram", "country":"카자흐스탄", "countryCode":"KZ", "platform":"Instagram", "locale":"kk",
+      "proposedDisplayName":"SYNK LAB Kazakhstan", "proposedHandle":"synklab.kz",
+      "bioShort":"Корей тілін қызығып үйренейік!\nХангыль мен күнделікті сөз тіркестері.\nҮйренгеніңді бірден айтып көр.",
+      "bioLong":"Корей тілін бірге үйренейік!\nЕнді бастадың ба? Хангыль оқудан бастаймыз, сосын амандасып, кафеде сусынға тапсырыс беріп көреміз. Бір сөйлем үйреніп, бірден айтып көр.\nЖаңадан үйренушілерге арналған қысқа видеолар мен шағын тесттерді дайындап жатырмыз.",
+      "KoreanMeaning":{"bioShort":"한국어를 재밌게 배워요! 한글과 일상 표현. 배운 것을 바로 말해 봐요.","bioLong":"한국어를 함께 배워요. 처음이라면 한글 읽기부터 시작해 인사·카페 주문을 해 봐요. 한 문장을 배워 바로 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-kz-tiktok", "country":"카자흐스탄", "countryCode":"KZ", "platform":"TikTok", "locale":"kk",
+      "proposedDisplayName":"SYNK LAB Kazakhstan", "proposedHandle":"synklab.kz",
+      "bioShort":"Корей тілін қызығып үйренейік! Үйренгеніңді бірден айтып көр.",
+      "bioLong":"Корей тілін бірге үйренейік!\nХангыль, амандасу, кафеде тапсырыс беру — бәрін қарапайымнан бастаймыз. Бір сөйлем үйреніп, бірден айтып көр.\nЖаңадан үйренушілерге арналған қысқа видеолар мен шағын тесттерді дайындап жатырмыз.",
+      "KoreanMeaning":{"bioShort":"한국어를 재밌게 배워요! 배운 것을 바로 말해 봐요.","bioLong":"한국어를 함께 배워요. 한글·인사·카페 주문처럼 쉬운 것부터 시작해요. 한 문장을 배워 바로 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-np-facebook", "country":"네팔", "countryCode":"NP", "platform":"Facebook", "locale":"ne",
+      "proposedDisplayName":"SYNK LAB Nepal", "proposedHandle":"synklab.np",
+      "bioShort":"कोरियन सिकौँ, रमाइलो गर्दै। सिकेका शब्द आजै बोलौँ!",
+      "bioLong":"कोरियन सिक्न रमाइलो हुने ठाउँ।\nभर्खर सुरु गर्दै हुनुहुन्छ? हाङ्गुल पढ्न, अभिवादन गर्न र क्याफेमा पेय अर्डर गर्न सिकौँ। एउटा वाक्य सिकेर तुरुन्तै बोलेर हेरौँ!\nसुरुबाट सिक्नेहरूका लागि छोटा भिडियो र रमाइला प्रश्नहरू तयार गर्दै छौँ।",
+      "KoreanMeaning":{"bioShort":"한국어를 즐겁게 배워요. 배운 말을 오늘 바로 해 봐요!","bioLong":"한국어 배우기가 재밌어지는 곳. 처음이라면 한글 읽기·인사·카페 주문부터 배워요. 한 문장을 배워 바로 말해 봐요. 입문자를 위한 짧은 영상과 재밌는 문제를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-np-tiktok", "country":"네팔", "countryCode":"NP", "platform":"TikTok", "locale":"ne",
+      "proposedDisplayName":"SYNK LAB Nepal", "proposedHandle":"synklab.np",
+      "bioShort":"कोरियन सिकौँ, रमाइलो गर्दै। सिकेका शब्द आजै बोलौँ!",
+      "bioLong":"कोरियन सिक्न रमाइलो हुने ठाउँ।\nहाङ्गुलबाट सुरु गरेर कोरियनमा अभिवादन र क्याफेमा अर्डर गर्न सिकौँ। सिकेको वाक्य ठूलो स्वरमा बोलेर हेरौँ।\nनयाँ सिक्नेहरूका लागि छोटा भिडियो र प्रश्नहरू तयार गर्दै छौँ।",
+      "KoreanMeaning":{"bioShort":"한국어를 즐겁게 배워요. 배운 말을 오늘 바로 해 봐요!","bioLong":"한국어 배우기가 재밌어지는 곳. 한글부터 시작해 인사·카페 주문을 배워요. 배운 문장을 소리 내어 말해 봐요. 초보자용 짧은 영상과 문제를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-kg-instagram", "country":"키르기스스탄", "countryCode":"KG", "platform":"Instagram", "locale":"ky",
+      "proposedDisplayName":"SYNK LAB Kyrgyzstan", "proposedHandle":"synklab.kg",
+      "bioShort":"Корей тилин кызыктуу үйрөнөбүз!\nХангыль жана күнүмдүк сөздөр.\nҮйрөнгөнүңдү дароо айтып көр.",
+      "bioLong":"Корей тилин чогуу үйрөнөлү!\nЖаңы баштадыңбы? Хангылды окуп, саламдашып, кафеде суусундукка буйрутма берип көрөлү. Бир сүйлөм үйрөнүп, аны дароо үн чыгарып айт.\nЖаңы үйрөнүп жаткандар үчүн кыска видеолорду жана кызыктуу суроолорду даярдап жатабыз.",
+      "KoreanMeaning":{"bioShort":"한국어를 재밌게 배워요! 한글과 일상에서 쓰는 말. 배운 것을 바로 말해 봐요.","bioLong":"한국어를 함께 배워요. 처음이라면 한글·인사·카페 주문부터 해 봐요. 한 문장을 배워 바로 소리 내어 말해 봐요. 초보자용 짧은 영상과 재밌는 문제를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-kh-tiktok", "country":"캄보디아", "countryCode":"KH", "platform":"TikTok", "locale":"km",
+      "proposedDisplayName":"SYNK LAB Cambodia", "proposedHandle":"synklab.kh",
+      "bioShort":"រៀនភាសាកូរ៉េឱ្យសប្បាយ! រៀនហើយ សាកនិយាយភ្លាម។",
+      "bioLong":"កន្លែងរៀនភាសាកូរ៉េឱ្យសប្បាយ។\nទើបចាប់ផ្តើមរៀនមែនទេ? យើងចាប់ផ្តើមពីអក្សរកូរ៉េ រួចហាត់សួរសុខទុក្ខ និងកុម្ម៉ង់ភេសជ្ជៈ។ រៀនប្រយោគមួយ ហើយសាកនិយាយភ្លាម!\nយើងកំពុងរៀបចំវីដេអូខ្លី និងសំណួរខ្លីៗសម្រាប់អ្នកទើបចាប់ផ្តើម។",
+      "KoreanMeaning":{"bioShort":"한국어를 재밌게 배워요! 배우고 바로 말해 봐요.","bioLong":"한국어를 재밌게 배우는 곳. 처음이라면 한글부터 시작해 인사·음료 주문을 연습해요. 한 문장을 배우고 바로 말해 봐요. 초보자용 짧은 영상과 문제를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-kh-facebook", "country":"캄보디아", "countryCode":"KH", "platform":"Facebook", "locale":"km",
+      "proposedDisplayName":"SYNK LAB Cambodia", "proposedHandle":"synklab.kh",
+      "bioShort":"រៀនភាសាកូរ៉េឱ្យសប្បាយ! រៀនហើយ សាកនិយាយភ្លាម។",
+      "bioLong":"កន្លែងរៀនភាសាកូរ៉េឱ្យសប្បាយ។\nទើបចាប់ផ្តើមរៀនមែនទេ? ចាប់ផ្តើមពីអក្សរកូរ៉េ រួចហាត់សួរសុខទុក្ខ និងកុម្ម៉ង់ភេសជ្ជៈ។ រៀនប្រយោគមួយ ហើយសាកនិយាយភ្លាម!\nយើងកំពុងរៀបចំវីដេអូខ្លី កាតរូបភាព និងសំណួរខ្លីៗសម្រាប់អ្នកទើបចាប់ផ្តើម។",
+      "KoreanMeaning":{"bioShort":"한국어를 재밌게 배워요! 배우고 바로 말해 봐요.","bioLong":"한국어를 재밌게 배우는 곳. 처음이라면 한글부터 시작해 인사·음료 주문을 연습해요. 한 문장을 배우고 바로 말해 봐요. 초보자용 짧은 영상·카드·문제를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-us-tiktok", "country":"미국", "countryCode":"US", "platform":"TikTok", "locale":"en-US",
+      "proposedDisplayName":"SYNK LAB USA", "proposedHandle":"synklab.us",
+      "bioShort":"Where Korean gets fun. Learn a phrase, then try it out!",
+      "bioLong":"New to Korean? You're in the right place.\nStart with Hangul, say hello, or order a drink. Learn a phrase, then try saying it out loud.\nWe're preparing short videos and quick quizzes for beginners. Korean you can use right away, one phrase at a time.",
+      "KoreanMeaning":{"bioShort":"한국어가 재밌어지는 곳. 한 표현을 배우고 써 봐요!","bioLong":"처음 배우는 사람을 위한 곳이에요. 한글·인사·음료 주문부터 시작하고 배운 표현을 소리 내어 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요. 한 표현씩 배워 바로 써 봐요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-ph-tiktok", "country":"필리핀", "countryCode":"PH", "platform":"TikTok", "locale":"fil", "additionalLocales":["en-PH"],
+      "proposedDisplayName":"SYNK LAB Philippines", "proposedHandle":"synklab.ph",
+      "bioShort":"Mas masaya ang Korean dito. Matuto, tapos subukang gamitin!",
+      "bioLong":"Korean na matututuhan mo at magagamit agad!\nBeginner ka? Simulan natin sa Hangul, pagbati, at pag-order ng drink. Subukang sabihin nang malakas ang bagong natutuhan.\nInihahanda namin ang short videos at quizzes para sa beginners.",
+      "KoreanMeaning":{"bioShort":"한국어가 더 재밌어지는 곳. 배우고 나서 써 봐요!","bioLong":"배워서 바로 쓰는 한국어. 처음이라면 한글·인사·음료 주문부터 시작해요. 새로 배운 것을 소리 내어 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-lk-facebook", "country":"스리랑카", "countryCode":"LK", "platform":"Facebook", "locale":"si",
+      "proposedDisplayName":"SYNK LAB Sri Lanka", "proposedHandle":"synklab.lk",
+      "bioShort":"සතුටින් කොරියානු ඉගෙන ගමු. ඉගෙන ගත් වචන අදම කියලා බලමු!",
+      "bioLong":"කොරියානු සතුටින් ඉගෙන ගන්න තැනක්.\nඅලුතින් පටන් ගන්නවාද? හංගුල් කියවීමෙන් පටන් අරගෙන, ආයුබෝවන් කියන්නත් කැෆේ එකක බීමක් ඇණවුම් කරන්නත් පුරුදු වෙමු. එක වාක්‍යයක් ඉගෙනගෙන හඬ නඟා කියලා බලන්න.\nආරම්භකයන් සඳහා කෙටි වීඩියෝ සහ ප්‍රශ්න සූදානම් කරමින් ඉන්නවා.",
+      "KoreanMeaning":{"bioShort":"한국어를 즐겁게 배워요. 배운 말을 오늘 바로 해 봐요!","bioLong":"한국어를 즐겁게 배우는 곳. 한글 읽기부터 시작해 인사·카페 주문을 연습해요. 한 문장을 배워 소리 내어 말해 봐요. 초보자용 짧은 영상과 문제를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-au-tiktok", "country":"호주", "countryCode":"AU", "platform":"TikTok", "locale":"en-AU",
+      "proposedDisplayName":"SYNK LAB Australia", "proposedHandle":"synklab.au",
+      "bioShort":"Where Korean gets fun. Learn a phrase, then give it a go!",
+      "bioLong":"New to Korean? Start here.\nTry Hangul, say hello, or order a drink. Learn one phrase, then try saying it out loud.\nWe're preparing short videos and quick quizzes for beginners. Korean you can use straight away, at your own pace.",
+      "KoreanMeaning":{"bioShort":"한국어가 재밌어지는 곳. 한 표현을 배우고 해 봐요!","bioLong":"처음 배우는 사람을 위한 곳이에요. 한글·인사·음료 주문을 연습하고 한 표현씩 소리 내어 말해 봐요. 초보자용 짧은 영상과 퀴즈를 준비 중이에요. 자기 속도로 배우고 바로 써 봐요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-py-instagram", "country":"파라과이", "countryCode":"PY", "platform":"Instagram", "locale":"es-PY",
+      "proposedDisplayName":"SYNK LAB Paraguay", "proposedHandle":"synklab.py",
+      "bioShort":"Acá el coreano se vuelve divertido.\nHangul y frases para empezar.\nAprendé una frase y probá usarla hoy.",
+      "bioLong":"Coreano que aprendés y usás enseguida.\n¿Recién empezás? Vamos con hangul, saludos y frases para pedir algo en una cafetería. Aprendé una frase y decila en voz alta.\nEstamos preparando videos cortos, tarjetas y preguntas para practicar desde cero.",
+      "KoreanMeaning":{"bioShort":"한국어가 재밌어지는 곳. 입문자를 위한 한글과 표현. 한 문장을 배워 오늘 써 봐요.","bioLong":"배워서 바로 쓰는 한국어. 처음이라면 한글·인사·카페 주문부터 시작해요. 한 문장을 배워 소리 내어 말해 봐요. 초보자용 짧은 영상·카드·문제를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-nz-instagram", "country":"뉴질랜드", "countryCode":"NZ", "platform":"Instagram", "locale":"en-NZ",
+      "proposedDisplayName":"SYNK LAB New Zealand", "proposedHandle":"synklab.nz",
+      "bioShort":"Where Korean gets fun.\nHangul + everyday phrases for beginners.\nLearn a phrase, then give it a go!",
+      "bioLong":"Korean you can use straight away.\nStart with Hangul, say hello, or order a drink. Try your new phrase out loud, then make it your own.\nWe're preparing short videos, cards and quick quizzes for beginners. No rush—go at your own pace.",
+      "KoreanMeaning":{"bioShort":"한국어가 재밌어지는 곳. 초보자를 위한 한글과 일상 표현. 한 표현을 배우고 해 봐요!","bioLong":"배워서 바로 쓰는 한국어. 한글·인사·음료 주문부터 시작하고 새 표현을 소리 내어 말한 뒤 자기 말로 바꿔 봐요. 초보자용 짧은 영상·카드·퀴즈를 준비 중이에요. 자기 속도로 배워요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-my-tiktok", "country":"말레이시아", "countryCode":"MY", "platform":"TikTok", "locale":"ms",
+      "proposedDisplayName":"SYNK LAB Malaysia", "proposedHandle":"synklab.my",
+      "bioShort":"Belajar Korea jadi seronok. Belajar satu ayat, terus cuba guna!",
+      "bioLong":"Jom belajar bahasa Korea dengan cara yang menyeronokkan!\nBaru nak mula? Kenali huruf Hangul, belajar sapaan dan cuba pesan minuman di kafe. Cuba sebut ayat yang baru dipelajari.\nVideo pendek dan kuiz ringkas sedang disiapkan untuk anda yang baru mula belajar.",
+      "KoreanMeaning":{"bioShort":"한국어 배우기가 재밌어져요. 한 문장을 배우고 바로 써 봐요!","bioLong":"한국어를 즐겁게 배워요! 처음이라면 한글·인사·카페 주문부터 시작해요. 새로 배운 문장을 말해 봐요. 막 배우기 시작한 사람을 위한 짧은 영상과 퀴즈를 준비 중이에요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    },
+    {
+      "id":"lab-ca-instagram", "country":"캐나다", "countryCode":"CA", "platform":"Instagram", "locale":"en-CA", "additionalLocales":["fr-CA"],
+      "proposedDisplayName":"SYNK LAB Canada", "proposedHandle":"synklab.ca",
+      "bioShort":"Where Korean gets fun.\nHangul + everyday phrases for beginners.\nDu coréen pour débuter en s'amusant.",
+      "bioLong":"Korean you can use right away.\nNew to Korean? Start with Hangul, greetings and phrases for ordering a drink. Learn one, then say it out loud. Short videos, cards and quick quizzes are in preparation.\n\nDu coréen à apprendre et à utiliser tout de suite.\nTu débutes? Commence par le hangeul et des phrases du quotidien. Apprends une phrase, puis essaie de la dire! Nos premières vidéos et nos premiers quiz sont en préparation.",
+      "KoreanMeaning":{"bioShort":"한국어가 재밌어지는 곳. 초보자를 위한 한글과 일상 표현. 즐겁게 시작하는 한국어. 영어·프랑스어 병기.","bioLong":"배워서 바로 쓰는 한국어. 한글·인사·음료 주문부터 시작하고 배운 문장을 소리 내어 말해 봐요. 첫 영상·카드·퀴즈를 준비 중이에요. 영어와 프랑스어로 안내해요."},
+      "localReviewStatus":"ai-self-reviewed-native-review-pending"
+    }
+  ]
+}

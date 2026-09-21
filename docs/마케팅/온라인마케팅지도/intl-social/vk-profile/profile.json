@@ -1,0 +1,80 @@
+{
+  "id": "lab-ru-vk",
+  "preparedAt": "2026-09-21",
+  "status": "prepared-for-user-upload-not-applied",
+  "profileUrlUserContext": "https://vk.ru/id1129937278",
+  "observedAccountType": "personal-profile",
+  "observedDisplayName": "Yuho Yang",
+  "proposedBrandDisplayName": "SYNK LAB Russia | Корейский с нуля",
+  "brandNameFieldCaveat": "브랜드 채널용 준비 이름. 실제 편집 칸 미확인. 개인 이름/성 칸에 브랜드명을 임의로 나눠 넣도록 안내하지 않는다.",
+  "copy": {
+    "displayName": "SYNK LAB Russia | Корейский с нуля",
+    "bioShort": "Корейский с нуля: учись и сразу пробуй говорить. Первые видео и карточки готовим.",
+    "bioLong": "SYNK LAB — место, где интересно учить корейский. Готовим первые короткие видео, карточки и мини-тесты для тех, кто только начинает учить корейский. Начнём с хангыля и фраз на каждый день: поздороваться, заказать напиток в кафе, написать комментарий. Выучи фразу и сразу попробуй её использовать!",
+    "website": "https://synk.im/lab/",
+    "handleCandidate": "synklab.ru",
+    "handleAvailabilityVerified": false,
+    "coverHeadline": [
+      "Здесь интересно",
+      "учить корейский"
+    ],
+    "coverDescriptor": "Хангыль и фразы на каждый день"
+  },
+  "characterCounts": {
+    "displayName": 34,
+    "bioShort": 81,
+    "bioLong": 295
+  },
+  "review": {
+    "method": "root-and-independent-AI-copy-review",
+    "nativeReview": false,
+    "platformFieldLimitsVerified": false
+  },
+  "assets": [
+    {
+      "file": "profile-kkamong-v4.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 2215566,
+      "sha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
+      "source": "../../jp-vn-profile/kkamong-profile-v4-open-eyes.png",
+      "method": "unchanged-binary-copy",
+      "sourcePreserved": true
+    },
+    {
+      "file": "cover-ru-v1.png",
+      "width": 2172,
+      "height": 724,
+      "ratio": "3:1",
+      "bytes": 1391928,
+      "sha256": "30d790ad75022b336fa2ec7674752c344ddbb1c3dfcc81e51621532b8e060b62",
+      "method": "built-in-image_gen",
+      "modelVersionVerified": false,
+      "prompt": "cover-prompt.md",
+      "generatedOriginal": "C:/Users/q1212/.codex/generated_images/01a0b650-38f0-7bd3-af82-1a55c3c7b0e3/exec-d873f158-3f97-4859-9054-7ef7f41f218f.png",
+      "requestedCanvas": [
+        3072,
+        1024
+      ],
+      "actualCanvas": [
+        2172,
+        724
+      ],
+      "cyrillicVisuallyChecked": true,
+      "exactFontEmbeddingVerified": false,
+      "logoIsGenerativeReferenceDerivative": true,
+      "officialVKDimensionsVerified": false,
+      "liveCropVerified": false
+    }
+  ],
+  "publication": {
+    "userWillUpload": true,
+    "nameApplied": false,
+    "bioApplied": false,
+    "avatarApplied": false,
+    "coverApplied": false,
+    "brandCommunityCreated": false,
+    "directBrowserVerification": false
+  },
+  "guidance": "소개와_등록안내.md"
+}

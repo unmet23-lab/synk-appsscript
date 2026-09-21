@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-09-19T20:36:42.152Z",
+  "asOf": "2026-09-20",
+  "counts": {
+    "operating": 23,
+    "mongolia": 5,
+    "plannedCountries": 23,
+    "prioritySlots": 46,
+    "newSlots": 44,
+    "channelRows": 70,
+    "contents": 14,
+    "identities": 6
+  },
+  "files": [
+    {
+      "file": "inputs/plan.json",
+      "sha256": "b16a1fabafef11bdb250e7ebfde23eceed5f71c52ee7984cb74df66a260e9a0d"
+    },
+    {
+      "file": "inputs/existing-accounts.json",
+      "sha256": "c11876ba9b5a20a174e35bfa10a85eecfa51f3df6cae551493fcc9fc0837bf01"
+    },
+    {
+      "file": "inputs/content-status.json",
+      "sha256": "4219854ed73ce4a47d354c446966c720249725b6ff79dce340f89c7155723bd3"
+    }
+  ]
+}

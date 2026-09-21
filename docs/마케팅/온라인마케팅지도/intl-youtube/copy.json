@@ -1,0 +1,103 @@
+{
+  "revision": "2026-09-20-lab-international-youtube-v1",
+  "profileImage": "../jp-vn-profile/kkamong-profile-v4-open-eyes.png",
+  "profileRevision": "2026-09-20-kkamong-open-eyes-v4",
+  "coverKorean": "한국어가 재밌어지는 곳",
+  "messagePlacement": {"name":"재밌는 한국어", "cover":"한국어가 재밌어지는 곳", "descriptionLead":"배워서 바로 쓰는 한국어"},
+  "languageReview": "현지어 초안 작성 및 AI 자체 검수. 원어민 검수는 미실시. 실제 개설·게시 근거는 publication.json에 별도 기록.",
+  "websiteLabel": "SYNK LAB",
+  "website": "https://synk.im/",
+  "channels": [
+    {
+      "id":"lab-tw-youtube", "countryCode":"TW", "countryLabel":"TAIWAN", "locale":"zh-Hant", "handle":"synklabtaiwan",
+      "name":"SYNK LAB Taiwan | 快樂學韓語",
+      "headline":"讓韓語變有趣的地方", "sub":"韓文字母・日常會話・TOPIK",
+      "description":"學了就能用的韓語。\n\n打招呼、在咖啡店點飲料，或在喜歡的影片下留言。一起把剛學會的那句韓語，用在生活裡吧！\n\nSYNK LAB Taiwan 是給韓語初學者的頻道。\n從韓文字母、日常實用表達到 TOPIK 基礎，用短影片和小測驗陪你慢慢學。\n\n試著念出來、選個答案，再換成自己的句子。不用急，照自己的步調就好。\n想知道哪句話的韓語怎麼說？歡迎在影片下留言！\n\n第一支韓語教學影片準備中，敬請期待。\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-mm-youtube", "countryCode":"MM", "countryLabel":"MYANMAR", "locale":"my", "handle":"synklabmyanmar",
+      "name":"SYNK LAB Myanmar | ကိုရီးယားစာ ပျော်ပျော်သင်မယ်",
+      "headline":"ကိုရီးယားစာကို ပျော်ပျော်သင်မယ်", "sub":"ဟန်ဂူးလ် · နေ့စဉ်စကားပြော · TOPIK",
+      "description":"သင်ပြီးတာနဲ့ လက်တွေ့သုံးလို့ရတဲ့ ကိုရီးယားစကား။\n\nနှုတ်ဆက်တာ၊ ကော်ဖီဆိုင်မှာ အချိုရည်မှာတာ၊ ကြိုက်တဲ့ဗီဒီယိုအောက်မှာ မှတ်ချက်ရေးတာ—သင်ထားတဲ့စကားလေးတွေကို နေ့စဉ်ဘဝမှာ စမ်းသုံးကြည့်ရအောင်။\n\nSYNK LAB Myanmar က ကိုရီးယားစာ စလေ့လာမယ့်သူတွေအတွက်ပါ။\nဟန်ဂူးလ်ဖတ်နည်း၊ နေ့စဉ်သုံးစကားနဲ့ TOPIK အခြေခံတွေကို ဗီဒီယိုတိုတွေနဲ့ မေးခွန်းလေးတွေကနေ လေ့လာကြမယ်။\n\nအသံထွက်ဖတ်ကြည့်၊ အဖြေရွေးကြည့်၊ ကိုယ့်စကားလေးနဲ့ ပြောကြည့်ပါ။ ကိုယ့်အရှိန်နဲ့ တစ်ဆင့်ချင်း သင်ယူလို့ရပါတယ်။\nကိုရီးယားလို ဘာပြောတတ်ချင်လဲ။ ဗီဒီယိုအောက်မှာ မှတ်ချက်ရေးပေးနော်။\n\nပထမဆုံး သင်ခန်းစာဗီဒီယိုကို ပြင်ဆင်နေပါတယ်။\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-th-youtube", "countryCode":"TH", "countryLabel":"THAILAND", "locale":"th", "handle":"synklabthailand",
+      "name":"SYNK LAB Thailand | เรียนเกาหลีสนุก ๆ",
+      "headline":"ที่ที่เรียนเกาหลีได้สนุกขึ้น", "sub":"ฮันกึล · บทสนทนา · TOPIK",
+      "description":"เรียนเกาหลีแล้วเอาไปใช้ได้เลย\n\nทักทาย สั่งเครื่องดื่มในคาเฟ่ หรือคอมเมนต์ใต้คลิปที่ชอบ ลองเอาประโยคที่เพิ่งเรียนไปใช้กัน!\n\nSYNK LAB Thailand เป็นช่องสำหรับคนเริ่มเรียนภาษาเกาหลี\nมาเรียนอ่านฮันกึล ฝึกประโยคที่ใช้ในชีวิตประจำวัน และปูพื้นฐาน TOPIK ผ่านคลิปสั้นกับคำถามสนุก ๆ\n\nลองอ่านออกเสียง เลือกคำตอบ แล้วแต่งประโยคของตัวเอง ไม่ต้องรีบ ค่อย ๆ เรียนในจังหวะที่สบายใจ\nอยากพูดประโยคไหนเป็นภาษาเกาหลี? คอมเมนต์ไว้ใต้คลิปได้เลย\n\nกำลังเตรียมคลิปเรียนเกาหลีคลิปแรก แล้วเจอกันนะ!\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-id-youtube", "countryCode":"ID", "countryLabel":"INDONESIA", "locale":"id", "handle":"synklabindonesia",
+      "name":"SYNK LAB Indonesia | Serunya Bahasa Korea",
+      "headline":"Belajar Korea jadi seru", "sub":"Hangul · Percakapan · TOPIK",
+      "description":"Belajar bahasa Korea, langsung coba pakai!\n\nMenyapa teman, pesan minuman di kafe, atau komentar di video favorit. Yuk, pakai kalimat yang baru kamu pelajari dalam situasi sehari-hari.\n\nSYNK LAB Indonesia buat kamu yang baru mulai belajar bahasa Korea.\nKita akan belajar membaca Hangul, ungkapan sehari-hari, dan dasar TOPIK lewat video pendek dan kuis.\n\nCoba ucapkan, pilih jawabannya, lalu buat kalimatmu sendiri. Pelan-pelan saja, sesuai ritmemu.\nPenasaran cara bilang sesuatu dalam bahasa Korea? Tulis di komentar video, ya!\n\nVideo pelajaran pertama sedang disiapkan. Sampai ketemu!\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-in-youtube", "countryCode":"IN", "countryLabel":"INDIA", "locale":"hi", "handle":"synklabindia",
+      "name":"SYNK LAB India | मज़ेदार कोरियन",
+      "headline":"कोरियन सीखना अब मज़ेदार", "sub":"हंगुल · रोज़ की बातचीत · TOPIK",
+      "description":"कोरियन सीखो और तुरंत इस्तेमाल करके देखो!\n\nकिसी को हैलो कहना, कैफ़े में ड्रिंक ऑर्डर करना या पसंदीदा वीडियो पर कमेंट करना—नई सीखी हुई बात को रोज़मर्रा में आज़माते हैं।\n\nSYNK LAB India कोरियन सीखना शुरू करने वालों के लिए है।\nछोटे वीडियो और क्विज़ के साथ हंगुल पढ़ना, रोज़ काम आने वाले वाक्य और TOPIK की बुनियादी बातें सीखेंगे।\n\nबोलकर देखो, जवाब चुनो और अपना वाक्य बनाओ। जल्दी नहीं है, अपनी रफ़्तार से सीखो।\nकोरियन में क्या कहना सीखना है? वीडियो के कमेंट में बताओ!\n\nपहला लर्निंग वीडियो तैयार हो रहा है।\nBeginner Korean in Hindi and English: Hangul, everyday phrases and TOPIK basics. First lesson coming soon.\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-kg-youtube", "countryCode":"KG", "countryLabel":"KYRGYZSTAN", "locale":"ky", "handle":"synklabkyrgyzstan",
+      "name":"SYNK LAB Kyrgyzstan | Кызыктуу корей тили",
+      "headline":"Корей тилин кызыктуу үйрөнөбүз", "sub":"Хангыль · Күнүмдүк баарлашуу · TOPIK",
+      "description":"Үйрөнүп, дароо колдончу корей тили.\n\nСаламдашуу, кафеде суусундукка буйрутма берүү же жактырган видеого пикир жазуу. Жаңы үйрөнгөн сөздөрдү күнүмдүк турмушта колдонуп көрөлү!\n\nSYNK LAB Kyrgyzstan — корей тилин жаңыдан үйрөнүп баштагандар үчүн канал.\nХангылды окууну, күнүмдүк сөз айкаштарын жана TOPIK негиздерин кыска видеолор, кызыктуу суроолор менен үйрөнөбүз.\n\nҮн чыгарып окуп, жооп тандап, өзүңдүн сүйлөмүңдү түзүп көр. Шашпай, өзүңө ыңгайлуу темпте үйрөн.\nКайсы сөздү корейче айткың келет? Видеонун алдына жазып калтыр!\n\nАлгачкы сабак видеосун даярдап жатабыз.\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-us-youtube", "countryCode":"US", "countryLabel":"UNITED STATES", "locale":"en", "handle":"synklabusa",
+      "name":"SYNK LAB USA | Korean Made Fun",
+      "headline":"Where Korean gets fun", "sub":"Hangul · Everyday Korean · TOPIK",
+      "description":"Learn Korean you can use right away.\n\nSay hello, order a drink, or leave a comment on a video you love. Let's try that new phrase in a real-life situation.\n\nSYNK LAB USA is for anyone getting started with Korean.\nLearn to read Hangul, try everyday expressions, and explore TOPIK basics through short videos and quick quizzes.\n\nSay it out loud, pick an answer, then make it your own. No rush—learn at your own pace.\nWhat would you like to say in Korean? Tell us in the video comments!\n\nOur first Korean lesson is on the way.\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-ph-youtube", "countryCode":"PH", "countryLabel":"PHILIPPINES", "locale":"fil", "handle":"synklabphilippines",
+      "name":"SYNK LAB Philippines | Korean Made Fun",
+      "headline":"Mas masaya ang Korean dito", "sub":"Hangul · Everyday Korean · TOPIK",
+      "description":"Korean na matututuhan mo at magagamit agad!\n\nBumati, umorder ng drink sa café, o mag-comment sa paborito mong video. Subukan nating gamitin ang bagong natutuhang phrase sa totoong buhay.\n\nSYNK LAB Philippines is for beginners in Korean.\nSama-sama tayong magbasa ng Hangul, mag-practice ng everyday expressions, at aralin ang TOPIK basics sa short videos at quizzes.\n\nSabihin nang malakas, pumili ng sagot, at gumawa ng sarili mong sentence. Dahan-dahan lang, sa sarili mong pace.\nAno ang gusto mong masabi sa Korean? I-comment sa mga video natin!\n\nInihahanda na ang unang Korean lesson. See you soon!\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-lk-youtube", "countryCode":"LK", "countryLabel":"SRI LANKA", "locale":"si", "handle":"synklabsrilanka",
+      "name":"SYNK LAB Sri Lanka | සතුටින් කොරියානු ඉගෙන ගමු",
+      "headline":"කොරියානු සතුටින් ඉගෙන ගමු", "sub":"හංගුල් · එදිනෙදා කතාබහ · TOPIK",
+      "description":"ඉගෙන ගත් ගමන් භාවිත කරන්න පුළුවන් කොරියානු!\n\nආයුබෝවන් කියන්න, කැෆේ එකක බීමක් ඇණවුම් කරන්න, කැමති වීඩියෝවකට අදහසක් ලියන්න. අලුතින් ඉගෙන ගත් වචන එදිනෙදා ජීවිතයේදී භාවිත කරලා බලමු.\n\nSYNK LAB Sri Lanka කොරියානු ඉගෙන ගන්න පටන් ගන්න අය සඳහායි.\nකෙටි වීඩියෝ සහ ප්‍රශ්න හරහා හංගුල් කියවීම, එදිනෙදා වාක්‍ය සහ TOPIK මූලික දේවල් ඉගෙන ගමු.\n\nහඬ නඟා කියවන්න, පිළිතුරක් තෝරන්න, ඔබේම වාක්‍යයක් හදන්න. ඔබට පහසු වේගයෙන් ඉගෙන ගන්න.\nකොරියානු භාෂාවෙන් කියන්න කැමති මොනවාද? වීඩියෝව යටින් ලියන්න!\n\nපළමු පාඩම් වීඩියෝව සූදානම් කරමින් පවතිනවා.\nகொரிய மொழியை ஆரம்பத்திலிருந்து கற்கலாம்: ஹங்குல், அன்றாட உரையாடல், TOPIK அடிப்படைகள்.\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-au-youtube", "countryCode":"AU", "countryLabel":"AUSTRALIA", "locale":"en", "handle":"synklabaustralia",
+      "name":"SYNK LAB Australia | Korean Made Fun",
+      "headline":"Where Korean gets fun", "sub":"Hangul · Everyday Korean · TOPIK",
+      "description":"Learn Korean you can use straight away.\n\nSay hello, order a drink, or leave a comment on a video you love. Let's try that new phrase in an everyday situation.\n\nSYNK LAB Australia is for anyone getting started with Korean.\nLearn to read Hangul, try everyday expressions, and explore TOPIK basics through short videos and quick quizzes.\n\nSay it out loud, pick an answer, then make it your own. No rush—learn at your own pace.\nWhat would you like to say in Korean? Tell us in the video comments!\n\nOur first Korean lesson is on the way.\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-py-youtube", "countryCode":"PY", "countryLabel":"PARAGUAY", "locale":"es", "handle":"synklabparaguay",
+      "name":"SYNK LAB Paraguay | Coreano divertido",
+      "headline":"Acá el coreano se vuelve divertido", "sub":"Hangul · Conversación · TOPIK",
+      "description":"Coreano que aprendés y usás al toque.\n\nSaludar, pedir algo en una cafetería o comentar un video que te gusta. ¡Probemos esa frase nueva en una situación cotidiana!\n\nSYNK LAB Paraguay es para quienes empiezan a aprender coreano.\nVamos a leer hangul, practicar expresiones de todos los días y conocer las bases del TOPIK con videos cortos y pequeñas preguntas.\n\nDecilo en voz alta, elegí una respuesta y armá tu propia frase. Sin apuro, a tu ritmo.\n¿Qué te gustaría decir en coreano? ¡Contanos en los comentarios de los videos!\n\nEstamos preparando la primera lección. ¡Nos vemos pronto!\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-nz-youtube", "countryCode":"NZ", "countryLabel":"NEW ZEALAND", "locale":"en", "handle":"synklabnewzealand",
+      "name":"SYNK LAB New Zealand | Korean Made Fun",
+      "headline":"Where Korean gets fun", "sub":"Hangul · Everyday Korean · TOPIK",
+      "description":"Learn Korean you can use straight away.\n\nSay hello, order a drink, or leave a comment on a video you love. Let's try that new phrase in an everyday situation.\n\nSYNK LAB New Zealand is for anyone getting started with Korean.\nLearn to read Hangul, try everyday expressions, and explore TOPIK basics through short videos and quick quizzes.\n\nSay it out loud, pick an answer, then make it your own. No rush—learn at your own pace.\nWhat would you like to say in Korean? Tell us in the video comments!\n\nOur first Korean lesson is on the way.\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-my-youtube", "countryCode":"MY", "countryLabel":"MALAYSIA", "locale":"ms", "handle":"synklabmalaysia",
+      "name":"SYNK LAB Malaysia | Seronok Belajar Korea",
+      "headline":"Belajar Korea jadi seronok", "sub":"Hangul · Perbualan · TOPIK",
+      "description":"Belajar bahasa Korea, terus cuba guna!\n\nBeri salam, pesan minuman di kafe, atau tinggalkan komen pada video kegemaran. Jom gunakan ayat yang baru dipelajari dalam situasi harian.\n\nSYNK LAB Malaysia untuk anda yang baru mula belajar bahasa Korea.\nKita belajar membaca Hangul, ungkapan harian dan asas TOPIK melalui video pendek serta kuiz ringkas.\n\nCuba sebut dengan kuat, pilih jawapan, kemudian bina ayat sendiri. Tak perlu tergesa-gesa—belajar ikut rentak anda.\nNak tahu cara sebut sesuatu dalam bahasa Korea? Tulis dalam komen video nanti!\n\nVideo pelajaran pertama sedang disiapkan. Jumpa nanti!\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-ca-youtube", "countryCode":"CA", "countryLabel":"CANADA", "locale":"en", "handle":"synklabcanada",
+      "name":"SYNK LAB Canada | Korean Made Fun",
+      "headline":"Where Korean gets fun", "sub":"Hangul · Everyday Korean · TOPIK",
+      "description":"Learn Korean you can use right away.\n\nSay hello, order a drink, or comment on a video you love. Try that new phrase in an everyday situation!\n\nSYNK LAB Canada is for beginners. Learn Hangul, everyday expressions and TOPIK basics through short videos and quick quizzes.\nSay it out loud, pick an answer, and make it your own—at your own pace.\nWhat would you like to say in Korean? Tell us in the video comments.\n\nDu coréen à apprendre et à utiliser tout de suite!\nTu débutes? Découvre le hangeul, des expressions du quotidien et les bases du TOPIK avec de courtes vidéos et des quiz. À ton rythme, sans pression.\n\nOur first lesson is on the way. Notre première leçon arrive bientôt.\nSYNK LAB · https://synk.im/"
+    },
+    {
+      "id":"lab-youtube", "countryCode":"MN", "countryLabel":"MONGOLIA", "locale":"mn", "handle":"synkkorean", "existing":true,
+      "channelId":"UCmZplYKuNHLPng4iL2AbLLg",
+      "name":"SYNK LAB Mongolia | Хөгжилтэй солонгос хэл",
+      "headline":"Солонгос хэлийг хөгжилтэй суръя", "sub":"Хангыль · Өдөр тутмын яриа · TOPIK",
+      "description":"Сураад шууд хэрэглэж болох солонгос хэл.\n\nМэндлэх, кафед уух зүйл захиалах, дуртай бичлэгтээ сэтгэгдэл үлдээх. Шинээр сурсан үгээ өдөр тутамдаа хэрэглээд үзье!\n\nSYNK LAB Mongolia нь солонгос хэлийг анхлан суралцагчдад зориулсан суваг.\nХангыль унших, өдөр тутмын хэллэг, TOPIK-ийн суурь мэдлэгийг богино бичлэг, жижиг асуулт хариултаар сурна.\n\nЧангаар хэлж, хариултаа сонгоод, өөрийн өгүүлбэрийг зохиогоод үзээрэй. Яарах хэрэггүй, өөрийн хэмнэлээр суръя.\nСолонгосоор юу хэлж сурмаар байна? Бичлэгийн доор сэтгэгдэл үлдээгээрэй!\n\nАнхны хичээлийн бичлэгээ бэлтгэж байна. Суралцахдаа сонсох K-LOFI хөгжмийг мөн хуваалцана.\nSYNK LAB · https://synk.im/"
+    }
+  ]
+}

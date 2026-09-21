@@ -1,0 +1,1071 @@
+{
+  "revision": "2026-09-19-felt-glass-v4",
+  "createdAt": "2026-09-19T07:58:44.935Z",
+  "status": "local-complete-not-uploaded",
+  "globalBrandCanonChanged": false,
+  "method": "Approved ImageGen felt scenes; generated light glass logo applications; approved dark glass badge; native SVG typography and platform framing",
+  "outputs": [
+    {
+      "id": "yuhobuilds-youtube",
+      "role": "유호의 회사 제작 과정",
+      "w": 2560,
+      "h": 1440,
+      "background": "black-felt",
+      "file": "yuhobuilds-youtube.png",
+      "sha256": "b0926712cf24fdf1ab560c1196a710c83312088d0e36eb8c21b8fcb9ba2cd8f7",
+      "bytes": 2848231,
+      "text": [
+        {
+          "text": "유호 · YUHO BUILDS",
+          "x": 872,
+          "y": 581.5830000000001,
+          "w": 336.30234375,
+          "h": 34.68,
+          "size": 40,
+          "kind": "label",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        },
+        {
+          "text": "AI로 회사를",
+          "x": 580,
+          "y": 670.3268997214485,
+          "w": 337.2846640625,
+          "h": 69.3,
+          "size": 77,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "만드는 과정",
+          "x": 580,
+          "y": 755.6268997214485,
+          "w": 325.34184374999995,
+          "h": 69.45400000000001,
+          "size": 77,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "직접 만든 결과와 시행착오까지.",
+          "x": 580,
+          "y": 853.0808997214485,
+          "w": 474.5256250000001,
+          "h": 35.4,
+          "size": 40,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "glassBadge",
+          "brand": "SHIFT-dark",
+          "x": 572,
+          "y": 551.5191002785516,
+          "w": 268,
+          "h": 94.80779944289694,
+          "source": "assets\\shift-glass-dark-approved.png"
+        },
+        {
+          "kind": "feltScene",
+          "x": 1435,
+          "y": 560,
+          "w": 555,
+          "h": 320,
+          "glass": false,
+          "source": "shift-master-gpt-source.png",
+          "crop": [
+            655,
+            195,
+            642,
+            320
+          ]
+        }
+      ],
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "contentCenterY": 720,
+      "targetCenterY": 720,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    },
+    {
+      "id": "synkbrief-youtube",
+      "role": "회사에서 바로 이해할 수 있는 AI 활용 설명",
+      "w": 2560,
+      "h": 1440,
+      "background": "pure-white",
+      "file": "synkbrief-youtube.png",
+      "sha256": "43733e3ccf0d39d2907698df65006dcc840848e3ae3237124e028017ceea8132",
+      "bytes": 416497,
+      "text": [
+        {
+          "text": "SYNK 브리핑",
+          "x": 856,
+          "y": 581.026,
+          "w": 205.5059375,
+          "h": 35.32,
+          "size": 40,
+          "kind": "label",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        },
+        {
+          "text": "회사에서 AI를",
+          "x": 580,
+          "y": 663.0343146067415,
+          "w": 399.44862890625006,
+          "h": 69.531,
+          "size": 77,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "쓰는 방법",
+          "x": 580,
+          "y": 748.5653146067416,
+          "w": 263.43384375,
+          "h": 69.377,
+          "size": 77,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "소개서 · 홍보글 · 영상 · 업무 자동화",
+          "x": 580,
+          "y": 845.9423146067415,
+          "w": 527.9956250000001,
+          "h": 35.72,
+          "size": 40,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "glassBadge",
+          "brand": "SHIFT",
+          "x": 572,
+          "y": 558.3376853932584,
+          "w": 252,
+          "h": 80.69662921348315,
+          "source": "assets\\shift-glass-white.png"
+        },
+        {
+          "kind": "feltScene",
+          "x": 1440,
+          "y": 585,
+          "w": 550,
+          "h": 270,
+          "glass": true,
+          "source": "synkbrief-master-gpt-source.png",
+          "crop": [
+            35,
+            230,
+            1600,
+            415
+          ]
+        }
+      ],
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "contentCenterY": 720,
+      "targetCenterY": 720,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    },
+    {
+      "id": "lab-youtube",
+      "role": "몽골어권 한국어 학습 자료와 K-LOFI",
+      "w": 2560,
+      "h": 1440,
+      "background": "pure-white",
+      "file": "lab-youtube.png",
+      "sha256": "e481d6306c33b1d3c7279be3dc4812e9bdbf9ead2355bb0d6b1fa1bc6e498928",
+      "bytes": 472814,
+      "text": [
+        {
+          "text": "Солонгос хэл · TOPIK",
+          "x": 580,
+          "y": 685.6903444522472,
+          "w": 550.2851953124999,
+          "h": 45.122187499999995,
+          "size": 58,
+          "kind": "head",
+          "fonts": [
+            "latin700"
+          ]
+        },
+        {
+          "text": "한국어 회화 · TOPIK 준비",
+          "x": 580,
+          "y": 749.8125319522472,
+          "w": 486.531296875,
+          "h": 46.955999999999996,
+          "size": 52,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "학습 자료 · K-LOFI 음악",
+          "x": 580,
+          "y": 826.7685319522473,
+          "w": 362.91656249999994,
+          "h": 35.44,
+          "size": 40,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "glassBadge",
+          "brand": "LAB",
+          "x": 572,
+          "y": 577.7914680477528,
+          "w": 262,
+          "h": 83.89887640449439,
+          "source": "assets\\lab-glass-white.png"
+        },
+        {
+          "kind": "feltScene",
+          "x": 1475,
+          "y": 572,
+          "w": 510,
+          "h": 296,
+          "glass": true,
+          "source": "lab-master-gpt-source.png",
+          "crop": [
+            15,
+            245,
+            960,
+            420
+          ]
+        }
+      ],
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "contentCenterY": 720,
+      "targetCenterY": 720,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": "몽골어 AI 검토; 원어민 감수 미완료"
+    },
+    {
+      "id": "yuhobuilds-x",
+      "role": "짧은 제작 기록과 판단 공유",
+      "w": 1500,
+      "h": 500,
+      "background": "black-felt",
+      "file": "yuhobuilds-x.png",
+      "sha256": "86db8079bf4012feceb2a2b3508cedcac46b50fac7e8750dd2a72b194b21f9b1",
+      "bytes": 781946,
+      "text": [
+        {
+          "text": "유호",
+          "x": 677,
+          "y": 126.81250000000001,
+          "w": 66.04,
+          "h": 34.68,
+          "size": 40,
+          "kind": "label",
+          "fonts": [
+            "ko500"
+          ]
+        },
+        {
+          "text": "AI로 회사를",
+          "x": 440,
+          "y": 205.82798746518108,
+          "w": 262.81921875,
+          "h": 54,
+          "size": 60,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "만드는 중입니다.",
+          "x": 440,
+          "y": 275.8279874651811,
+          "w": 370.77000000000004,
+          "h": 54.18,
+          "size": 60,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "작업 기록 · 도구 선택 · 시행착오",
+          "x": 440,
+          "y": 359.0079874651811,
+          "w": 463.76728125,
+          "h": 34.515,
+          "size": 39,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "glassBadge",
+          "brand": "SHIFT-dark",
+          "x": 432,
+          "y": 106.47701253481895,
+          "w": 213,
+          "h": 75.35097493036211,
+          "source": "assets\\shift-glass-dark-approved.png"
+        },
+        {
+          "kind": "feltScene",
+          "x": 1100,
+          "y": 115,
+          "w": 310,
+          "h": 270,
+          "glass": false,
+          "source": "shift-master-gpt-source.png",
+          "crop": [
+            1600,
+            200,
+            410,
+            330
+          ]
+        }
+      ],
+      "safe": {
+        "x": 405,
+        "y": 24,
+        "w": 1030,
+        "h": 452
+      },
+      "contentCenterY": 250,
+      "targetCenterY": 250,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    },
+    {
+      "id": "yuho-linkedin-primary",
+      "role": "기업·기관 협업과 대표 전문 분야",
+      "w": 1584,
+      "h": 396,
+      "background": "black-felt",
+      "file": "yuho-linkedin-primary.png",
+      "sha256": "1ba3efa739a574f558d62910106d3d565a8e7384b64b27cc6cea1a4db43f55e5",
+      "bytes": 701169,
+      "text": [
+        {
+          "text": "유호 · Founder",
+          "x": 706,
+          "y": 70.78199999999998,
+          "w": 234.69765624999997,
+          "h": 34.68,
+          "size": 40,
+          "kind": "label",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        },
+        {
+          "text": "기업·기관",
+          "x": 450,
+          "y": 153.15821169916433,
+          "w": 215.50124999999997,
+          "h": 54,
+          "size": 60,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "AI 교육·컨설팅",
+          "x": 450,
+          "y": 221.15821169916433,
+          "w": 411.61659375,
+          "h": 68.476,
+          "size": 76,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "AI 실무 교육 · 컨설팅 · 기업 브랜딩",
+          "x": 450,
+          "y": 313.6342116991643,
+          "w": 515.85984375,
+          "h": 35.28,
+          "size": 40,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "glassBadge",
+          "brand": "SHIFT-dark",
+          "x": 442,
+          "y": 47.085788300835645,
+          "w": 232,
+          "h": 82.07242339832868,
+          "source": "assets\\shift-glass-dark-approved.png"
+        },
+        {
+          "kind": "feltScene",
+          "x": 1240,
+          "y": 58,
+          "w": 250,
+          "h": 280,
+          "glass": false,
+          "source": "shift-master-gpt-source.png",
+          "crop": [
+            1300,
+            180,
+            285,
+            330
+          ]
+        }
+      ],
+      "safe": {
+        "x": 420,
+        "y": 16,
+        "w": 1100,
+        "h": 364
+      },
+      "contentCenterY": 198,
+      "targetCenterY": 198,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    },
+    {
+      "id": "synk-linkedin-company",
+      "role": "SYNK 전체 사업 소개",
+      "w": 1512,
+      "h": 256,
+      "background": "black-felt",
+      "file": "synk-linkedin-company.png",
+      "sha256": "d2f34390dcebffb5cf940727d9c6ad228b6fcb6878c16918cd7ae22a7148a884",
+      "bytes": 398933,
+      "text": [
+        {
+          "text": "교육과 콘텐츠를",
+          "x": 340,
+          "y": 45.943,
+          "w": 292.93271874999994,
+          "h": 44.149,
+          "size": 49,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "만드는 SYNK",
+          "x": 340,
+          "y": 104.092,
+          "w": 252.86507421874998,
+          "h": 43.365,
+          "size": 49,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "한국어 · AI 활용 · 유학 준비",
+          "x": 340,
+          "y": 174.457,
+          "w": 403.62984375,
+          "h": 35.6,
+          "size": 40,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        },
+        {
+          "text": "synk.im",
+          "x": 1102.887587890625,
+          "y": 183,
+          "w": 99.22482421875,
+          "h": 29.775706571691178,
+          "size": 31,
+          "kind": "sub",
+          "fonts": [
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "feltScene",
+          "x": 975,
+          "y": 51,
+          "w": 355,
+          "h": 106,
+          "glass": true,
+          "source": "synk-company-safe-gpt-source.png",
+          "crop": [
+            580,
+            250,
+            1330,
+            190
+          ]
+        }
+      ],
+      "safe": {
+        "x": 320,
+        "y": 16,
+        "w": 1030,
+        "h": 224
+      },
+      "contentCenterY": 128,
+      "targetCenterY": 128,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    },
+    {
+      "id": "shift-tistory",
+      "role": "제작 과정과 수정 이유를 자세히 읽는 작업 기록",
+      "w": 2400,
+      "h": 900,
+      "background": "pure-white",
+      "file": "shift-tistory.png",
+      "sha256": "421971afe59870c544875ba0dece270c08c46788ebfe0943a82d159b6cb01ff3",
+      "bytes": 972986,
+      "text": [
+        {
+          "text": "AI로 회사를",
+          "x": 130,
+          "y": 275.344193359375,
+          "w": 538.7793984375,
+          "h": 110.7,
+          "size": 123,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "만드는 과정",
+          "x": 130,
+          "y": 410.044193359375,
+          "w": 519.70190625,
+          "h": 110.946,
+          "size": 123,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "무엇을 만들었고, 왜 고쳤는지 기록합니다.",
+          "x": 130,
+          "y": 575.990193359375,
+          "w": 771.54041015625,
+          "h": 48.66561328125,
+          "size": 49,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "feltScene",
+          "x": 1420,
+          "y": 215,
+          "w": 850,
+          "h": 470,
+          "glass": true,
+          "source": "shift-master-gpt-source.png",
+          "crop": [
+            645,
+            170,
+            665,
+            360
+          ]
+        }
+      ],
+      "safe": {
+        "x": 0,
+        "y": 0,
+        "w": 2400,
+        "h": 900
+      },
+      "contentCenterY": 450.00000000000006,
+      "targetCenterY": 450,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": true,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    },
+    {
+      "id": "shift-naverblog",
+      "role": "검색으로 찾아오는 구체적인 AI 활용 기록",
+      "w": 966,
+      "h": 360,
+      "background": "pure-white",
+      "file": "shift-naverblog.png",
+      "sha256": "eb82196b9e4533e0ef0a2ed59d2441cc33b38912dca22a024fa5aa6bab238bc9",
+      "bytes": 190645,
+      "text": [
+        {
+          "text": "직접 만들며 배우는",
+          "x": 46,
+          "y": 143.25063483146067,
+          "w": 334.53299999999996,
+          "h": 43.344,
+          "size": 48,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "AI 활용",
+          "x": 46,
+          "y": 202.59463483146067,
+          "w": 149.0676171875,
+          "h": 49.995000000000005,
+          "size": 55,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "홈페이지 · 콘텐츠 · 교육 자료 · 자동화",
+          "x": 46,
+          "y": 280.58963483146067,
+          "w": 365.40115625000004,
+          "h": 23.243999999999996,
+          "size": 26,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "glassBadge",
+          "brand": "SHIFT",
+          "x": 38,
+          "y": 56.166365168539315,
+          "w": 197,
+          "h": 63.08426966292135,
+          "source": "assets\\shift-glass-white.png"
+        },
+        {
+          "kind": "feltScene",
+          "x": 602,
+          "y": 82,
+          "w": 317,
+          "h": 196,
+          "glass": true,
+          "source": "shift-master-gpt-source.png",
+          "crop": [
+            650,
+            190,
+            650,
+            340
+          ]
+        }
+      ],
+      "safe": {
+        "x": 0,
+        "y": 0,
+        "w": 966,
+        "h": 360
+      },
+      "contentCenterY": 180,
+      "targetCenterY": 180,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    },
+    {
+      "id": "shift-behance",
+      "role": "디자인 포트폴리오",
+      "w": 3200,
+      "h": 410,
+      "background": "black-felt",
+      "file": "shift-behance.png",
+      "sha256": "ad5e51e106618f23d53cfc6c2f28cf2fa8d0c3d4c636e7390f35a02327c42042",
+      "bytes": 1211585,
+      "text": [
+        {
+          "text": "BRAND, WEB & CONTENT",
+          "x": 680,
+          "y": 165.10447903246865,
+          "w": 1213.2505859375,
+          "h": 102.4267578125,
+          "size": 110,
+          "kind": "head",
+          "fonts": [
+            "latin700"
+          ]
+        },
+        {
+          "text": "디자인 포트폴리오",
+          "x": 680,
+          "y": 295.53123684496865,
+          "w": 512.2025625000001,
+          "h": 65.342,
+          "size": 74,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "glassBadge",
+          "brand": "SHIFT-dark",
+          "x": 672,
+          "y": 49.12676315503134,
+          "w": 260,
+          "h": 91.97771587743732,
+          "source": "assets\\shift-glass-dark-approved.png"
+        },
+        {
+          "kind": "feltScene",
+          "x": 2470,
+          "y": 70,
+          "w": 590,
+          "h": 270,
+          "glass": false,
+          "source": "shift-master-gpt-source.png",
+          "crop": [
+            655,
+            195,
+            642,
+            320
+          ]
+        }
+      ],
+      "safe": {
+        "x": 640,
+        "y": 16,
+        "w": 2480,
+        "h": 378
+      },
+      "contentCenterY": 205,
+      "targetCenterY": 205,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    },
+    {
+      "id": "shift-pinterest",
+      "role": "디자인 결과물과 제작 과정 모음",
+      "w": 1600,
+      "h": 900,
+      "background": "black-felt",
+      "file": "shift-pinterest.png",
+      "sha256": "22cccbbeb840d9180db9b6e988791bd949d801b1609524b2ea3e62e1f3529075",
+      "bytes": 1860025,
+      "text": [
+        {
+          "text": "AI와 함께 만든",
+          "x": 106.6005859375,
+          "y": 208.678,
+          "w": 440.63020312500004,
+          "h": 74.37400000000001,
+          "size": 82,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "브랜드·웹·콘텐츠",
+          "x": 108.79,
+          "y": 309.205,
+          "w": 590.3988750000001,
+          "h": 82.863,
+          "size": 93,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "디자인 결과물과 제작 과정",
+          "x": 114.94800000000001,
+          "y": 427.19,
+          "w": 412.43868750000007,
+          "h": 37.044000000000004,
+          "size": 42,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "glassBadge",
+          "brand": "SHIFT-dark",
+          "x": 79.43,
+          "y": 60.1,
+          "w": 343.54,
+          "h": 121.53,
+          "source": "assets\\shift-glass-dark-approved.png"
+        },
+        {
+          "kind": "feltScene",
+          "x": 105,
+          "y": 522,
+          "w": 1390,
+          "h": 325,
+          "glass": false,
+          "source": "shift-centered-gpt-source.png",
+          "crop": [
+            160,
+            300,
+            1355,
+            310
+          ]
+        }
+      ],
+      "safe": {
+        "x": 0,
+        "y": 0,
+        "w": 1600,
+        "h": 900
+      },
+      "contentCenterY": 445,
+      "targetCenterY": 450,
+      "centerNote": "Approved entire composition translated +40px; visual contour estimate center 445px.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    },
+    {
+      "id": "lab-facebook",
+      "role": "학습자·보호자를 위한 한국어 및 유학 생활 준비 안내",
+      "w": 1640,
+      "h": 924,
+      "background": "pure-white",
+      "file": "lab-facebook.png",
+      "sha256": "3cb45e1b7f8cbaaf3b15942678fad2d1b5719f5253c0c1d953646cf09742c184",
+      "bytes": 659820,
+      "text": [
+        {
+          "text": "Солонгос хэл · Солонгост суралцах",
+          "x": 220,
+          "y": 321.91751637113765,
+          "w": 1010.5103906249996,
+          "h": 60.7050234375,
+          "size": 62,
+          "kind": "head",
+          "fonts": [
+            "latin700"
+          ]
+        },
+        {
+          "text": "한국어 수업과 유학 준비 안내",
+          "x": 220,
+          "y": 404.62253980863767,
+          "w": 492.68812500000007,
+          "h": 39.91499999999999,
+          "size": 45,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "glassBadge",
+          "brand": "LAB",
+          "x": 212,
+          "y": 219.46246019136237,
+          "w": 245,
+          "h": 78.45505617977528,
+          "source": "assets\\lab-glass-white.png"
+        },
+        {
+          "kind": "feltScene",
+          "x": 220,
+          "y": 484.5375398086377,
+          "w": 1200,
+          "h": 218,
+          "glass": true,
+          "source": "lab-master-gpt-source.png",
+          "crop": [
+            15,
+            245,
+            1635,
+            420
+          ]
+        }
+      ],
+      "safe": {
+        "x": 180,
+        "y": 160,
+        "w": 1280,
+        "h": 600
+      },
+      "contentCenterY": 461,
+      "targetCenterY": 461,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": false,
+      "liveStatus": "not-uploaded",
+      "languageReview": "몽골어 AI 검토; 원어민 감수 미완료"
+    },
+    {
+      "id": "shift-tistory-mobile",
+      "role": "Tistory 모바일 · 작업 기록",
+      "w": 390,
+      "h": 300,
+      "background": "pure-white",
+      "file": "shift-tistory-mobile.png",
+      "sha256": "6ed69ce292f39c21b4c56f447b99336d11c143c6649b89bfb687f3a5c3db99ef",
+      "bytes": 90215,
+      "text": [
+        {
+          "text": "AI로 회사를 만드는 과정",
+          "x": 24,
+          "y": 48.91759375000001,
+          "w": 237.8634609375,
+          "h": 24.354,
+          "size": 27,
+          "kind": "head",
+          "fonts": [
+            "ko800",
+            "latin700"
+          ]
+        },
+        {
+          "text": "무엇을 만들었고, 왜 고쳤는지.",
+          "x": 24,
+          "y": 93.27159375000001,
+          "w": 180.36906249999998,
+          "h": 15.8108125,
+          "size": 16,
+          "kind": "sub",
+          "fonts": [
+            "ko500",
+            "latin500"
+          ]
+        }
+      ],
+      "assets": [
+        {
+          "kind": "feltScene",
+          "x": 24,
+          "y": 143.08240625000002,
+          "w": 342,
+          "h": 108,
+          "glass": true,
+          "source": "shift-master-gpt-source.png",
+          "crop": [
+            560,
+            180,
+            1450,
+            370
+          ]
+        }
+      ],
+      "safe": {
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 300
+      },
+      "contentCenterY": 150,
+      "targetCenterY": 150,
+      "centerNote": "Visible glyph bounds and glass row boxes vertically centered, not text baselines.",
+      "noRepeatedLogo": true,
+      "liveStatus": "not-uploaded",
+      "languageReview": null
+    }
+  ]
+}

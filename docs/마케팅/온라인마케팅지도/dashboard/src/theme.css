@@ -1,0 +1,49 @@
+:root {
+  color-scheme: light;
+  --adaptive-theme: 0;
+  --font-sans-default: -apple-system-body, ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-sans: var(--vscode-font-family, var(--font-sans-default));
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --muted: #f5f6f8;
+  --control: #ffffff;
+  --control-hover: #edf2f7;
+  --interaction-hover: var(--muted);
+  --interaction-active: var(--control-hover);
+  --text: #1a1c1f;
+  --secondary: #626976;
+  --border: #e6e8ec;
+  --border-strong: #ced3da;
+  --accent: #0866b9;
+  --positive: #138242;
+  --negative: #c62d36;
+  --chart-1: #0878d2;
+  --chart-2: #8650d6;
+  --chart-3: #149353;
+  --chart-4: #d45e21;
+  --chart-5: #cc4c8a;
+  --chart-6: #a98500;
+  --chart-7: #ce4140;
+  --chart-8: #777d86;
+  --data-app-chrome-background: var(--background);
+  --data-app-chrome-text: var(--text);
+  --chart-neutral-fill: color-mix(in srgb, var(--text) 3%, var(--surface));
+  --ranked-list-fill: color-mix(in srgb, var(--chart-1) 16%, var(--surface));
+  --ranked-list-fill-hover: color-mix(in srgb, var(--chart-1) 24%, var(--surface));
+  --movement-positive: color-mix(in srgb, var(--positive) 75%, var(--text));
+  --movement-negative: color-mix(in srgb, var(--negative) 75%, var(--text));
+  --movement-total: var(--secondary);
+  --card-radius: 16px;
+  --data-card-radius: 20px;
+  --data-card-background: var(--background);
+  --control-radius: 12px;
+  --mark-radius: 8;
+  --card-shadow: 0 4px 12px rgb(0 0 0 / 1%);
+  --shadow: 0 8px 16px -4px rgb(0 0 0 / 12%);
+}
+
+:root:not([data-app-theme]),
+:root:is([data-app-theme="original"], [data-app-theme="codex-classic"]) {
+  --dashboard-background: var(--background);
+}

@@ -1,0 +1,902 @@
+{
+  "revision": "2026-09-20-lab-international-youtube-v1",
+  "createdAt": "2026-09-19T23:26:47.766Z",
+  "sourceSvg": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\프로필최신화_20260919\\커버_펠트글래스_v4\\lab-youtube.svg",
+  "sourceSha256": "ff286fccadbad7dd5308d745f1b202f89c4b21e41cd8a8b26da5cb7405210e49",
+  "profileSource": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\온라인마케팅지도\\jp-vn-profile\\kkamong-profile-v4-open-eyes.png",
+  "profileRevision": "2026-09-20-kkamong-open-eyes-v4",
+  "profileSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
+  "fontNote": "Brand Inter Tight and SUIT; installed JhengHei, Myanmar Text, Leelawadee UI and Nirmala UI only for unsupported scripts. HarfBuzz shaping; explicit outlined glyphs, no export-time fallback. Canon fonts unchanged.",
+  "outputs": [
+    {
+      "id": "lab-tw-youtube",
+      "file": "lab-tw-youtube.png",
+      "sha256": "ba035f3cc7e117ab22cb8efc63c7ba888107aac6d44e589f04334f15268c8bc1",
+      "bytes": 486707,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "TAIWAN",
+          "x": 878,
+          "y": 600.23359375,
+          "w": 123.70937500000001,
+          "h": 23.28125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "讓韓語變有趣的地方",
+          "x": 580,
+          "y": 677.8236569522471,
+          "w": 661.486484375,
+          "h": 68.021484375,
+          "fonts": [
+            "msjhbd.ttc#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 762.8451413272471,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "韓文字母・日常會話・TOPIK",
+          "x": 580,
+          "y": 837.9951413272471,
+          "w": 446.33601562499985,
+          "h": 32.080078125,
+          "fonts": [
+            "InterTight-Medium.ttf#0",
+            "msjh.ttc#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-mm-youtube",
+      "file": "lab-mm-youtube.png",
+      "sha256": "92e7edf766a9a74a2f719ee543fe1fe3054af947fa432a2102f0962899d8591a",
+      "bytes": 491464,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "MYANMAR",
+          "x": 878,
+          "y": 577.3038505114298,
+          "w": 166.55125,
+          "h": 23.28125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "ကိုရီးယားစာကို ပျော်ပျော်သင်မယ်",
+          "x": 580,
+          "y": 654.893913713677,
+          "w": 830,
+          "h": 91.57433022714036,
+          "fonts": [
+            "mmrtextb.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 763.4682439408173,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "ဟန်ဂူးလ် · နေ့စဉ်စကားပြော · TOPIK",
+          "x": 580,
+          "y": 838.6182439408173,
+          "w": 517.3298437499999,
+          "h": 54.38671875,
+          "fonts": [
+            "InterTight-Medium.ttf#0",
+            "mmrtext.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-th-youtube",
+      "file": "lab-th-youtube.png",
+      "sha256": "9b9736fbc0ba79949e180e8702083212335c3ec4a8c458e8312c0f9335c5ec4e",
+      "bytes": 486670,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "THAILAND",
+          "x": 878,
+          "y": 592.676953125,
+          "w": 164.94,
+          "h": 23.28125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "ที่ที่เรียนเกาหลีได้สนุกขึ้น",
+          "x": 580,
+          "y": 670.2670163272471,
+          "w": 813.95703125,
+          "h": 88.3203125,
+          "fonts": [
+            "LeelaUIb.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 775.5873288272471,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "ฮันกึล · บทสนทนา · TOPIK",
+          "x": 580,
+          "y": 850.7373288272471,
+          "w": 367.7224218749999,
+          "h": 26.89453125,
+          "fonts": [
+            "InterTight-Medium.ttf#0",
+            "LeelawUI.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-id-youtube",
+      "file": "lab-id-youtube.png",
+      "sha256": "cf30bb19ea6da1177a1f112ba8bb2a166f53a787786a2b01e41da3d5ac9e62fa",
+      "bytes": 483243,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "INDONESIA",
+          "x": 878,
+          "y": 595.8234375,
+          "w": 176.23499999999999,
+          "h": 23.96875,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Belajar Korea jadi seru",
+          "x": 580,
+          "y": 673.7572507022471,
+          "w": 726.7455468750002,
+          "h": 73.921875,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 764.6791257022471,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Hangul · Percakapan · TOPIK",
+          "x": 580,
+          "y": 839.8291257022471,
+          "w": 428.92453124999975,
+          "h": 34.3125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-in-youtube",
+      "file": "lab-in-youtube.png",
+      "sha256": "7462be52f084423ff9db38396f19bc38848b6dd9f060bbc4141bd49cfd0b9b0c",
+      "bytes": 480451,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "INDIA",
+          "x": 878,
+          "y": 585.9747525778771,
+          "w": 85.570625,
+          "h": 23.28125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "कोरियन सीखना अब मज़ेदार",
+          "x": 580,
+          "y": 663.5648157801243,
+          "w": 830,
+          "h": 82.35361984424576,
+          "fonts": [
+            "Nirmala.ttc#1"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 762.91843562437,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "हंगुल · रोज़ की बातचीत · TOPIK",
+          "x": 580,
+          "y": 838.06843562437,
+          "w": 441.6911718749999,
+          "h": 46.265625,
+          "fonts": [
+            "InterTight-Medium.ttf#0",
+            "Nirmala.ttc#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-kg-youtube",
+      "file": "lab-kg-youtube.png",
+      "sha256": "aab88fd7752adca534c36cbcb7687b9c2fbc7a6f8be5eb532f7236cdcb89bc84",
+      "bytes": 483340,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "KYRGYZSTAN",
+          "x": 878,
+          "y": 607.2011782656361,
+          "w": 214.34250000000003,
+          "h": 23.96875,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Корей тилин кызыктуу үйрөнөбүз",
+          "x": 580,
+          "y": 685.1349914678833,
+          "w": 830,
+          "h": 51.18190357902191,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 753.3168950469052,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Хангыль · Күнүмдүк баарлашуу · TOPIK",
+          "x": 580,
+          "y": 828.4668950469052,
+          "w": 615.8742187499995,
+          "h": 34.296989889705884,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-us-youtube",
+      "file": "lab-us-youtube.png",
+      "sha256": "e38b3b8fd18e1b0b82d7f04a94111cdfb855a6accdd4c1141481ff036c3d5680",
+      "bytes": 484226,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "UNITED STATES",
+          "x": 878,
+          "y": 595.637890625,
+          "w": 249.41500000000008,
+          "h": 23.96875,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Where Korean gets fun",
+          "x": 580,
+          "y": 673.5717038272471,
+          "w": 764.1117187500001,
+          "h": 74.29296875,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 764.8646725772471,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Hangul · Everyday Korean · TOPIK",
+          "x": 580,
+          "y": 840.0146725772471,
+          "w": 503.8987499999996,
+          "h": 34.3125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-ph-youtube",
+      "file": "lab-ph-youtube.png",
+      "sha256": "bc615bfa266bd1909393d07b634b5351eb317fffdd59b651823e6c3bf36fbfe3",
+      "bytes": 483726,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "PHILIPPINES",
+          "x": 878,
+          "y": 600.197321950222,
+          "w": 194.27812500000005,
+          "h": 23.96875,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Mas masaya ang Korean dito",
+          "x": 580,
+          "y": 678.1311351524691,
+          "w": 830,
+          "h": 65.17410609955594,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 760.3052412520251,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Hangul · Everyday Korean · TOPIK",
+          "x": 580,
+          "y": 835.4552412520251,
+          "w": 503.8987499999996,
+          "h": 34.3125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-lk-youtube",
+      "file": "lab-lk-youtube.png",
+      "sha256": "7c1bf7764e5a7404e7d93bb136fa47a8c7dcced9e729017d54bfda4eb958cf0c",
+      "bytes": 492274,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "SRI LANKA",
+          "x": 878,
+          "y": 596.8923288189012,
+          "w": 169.64125,
+          "h": 23.96875,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "කොරියානු සතුටින් ඉගෙන ගමු",
+          "x": 580,
+          "y": 674.8261420211484,
+          "w": 830,
+          "h": 65.10440486219761,
+          "fonts": [
+            "Nirmala.ttc#1"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 756.930546883346,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "හංගුල් · එදිනෙදා කතාබහ · TOPIK",
+          "x": 580,
+          "y": 832.080546883346,
+          "w": 569.3435156249999,
+          "h": 40.9921875,
+          "fonts": [
+            "InterTight-Medium.ttf#0",
+            "Nirmala.ttc#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-au-youtube",
+      "file": "lab-au-youtube.png",
+      "sha256": "7ea6e38602e959de2aca9c70f334696badeed3d835a2f3d0e17a621893211207",
+      "bytes": 483899,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "AUSTRALIA",
+          "x": 878,
+          "y": 595.637890625,
+          "w": 182.43812499999999,
+          "h": 23.96875,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Where Korean gets fun",
+          "x": 580,
+          "y": 673.5717038272471,
+          "w": 764.1117187500001,
+          "h": 74.29296875,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 764.8646725772471,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Hangul · Everyday Korean · TOPIK",
+          "x": 580,
+          "y": 840.0146725772471,
+          "w": 503.8987499999996,
+          "h": 34.3125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-py-youtube",
+      "file": "lab-py-youtube.png",
+      "sha256": "42ab976ec08cceec993d47d3e0b9160bd92809e6ee1bfe1857643db7758e37f2",
+      "bytes": 482427,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "PARAGUAY",
+          "x": 878,
+          "y": 610.7719445787027,
+          "w": 172.47125,
+          "h": 23.96875,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Acá el coreano se vuelve divertido",
+          "x": 580,
+          "y": 688.7057577809499,
+          "w": 830,
+          "h": 43.33931396759463,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 749.0450717485445,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Hangul · Conversación · TOPIK",
+          "x": 580,
+          "y": 824.1950717485445,
+          "w": 457.7189062499997,
+          "h": 34.998046875,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-nz-youtube",
+      "file": "lab-nz-youtube.png",
+      "sha256": "1dc660c738c8d0c86684b1d459b882f31e9536a07bcf5a9ed35328920e86a616",
+      "bytes": 484347,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "NEW ZEALAND",
+          "x": 878,
+          "y": 595.981640625,
+          "w": 235.20000000000005,
+          "h": 23.28125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Where Korean gets fun",
+          "x": 580,
+          "y": 673.5717038272471,
+          "w": 764.1117187500001,
+          "h": 74.29296875,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 764.8646725772471,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Hangul · Everyday Korean · TOPIK",
+          "x": 580,
+          "y": 840.0146725772471,
+          "w": 503.8987499999996,
+          "h": 34.3125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-my-youtube",
+      "file": "lab-my-youtube.png",
+      "sha256": "8d2b2838e377e0a01f605caf6ed7f6dfd3be1998691d8e3b663f0cf9582991e9",
+      "bytes": 484785,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "MALAYSIA",
+          "x": 878,
+          "y": 596.8963784729758,
+          "w": 164.580625,
+          "h": 23.96875,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Belajar Korea jadi seronok",
+          "x": 580,
+          "y": 674.830191675223,
+          "w": 830,
+          "h": 71.77599305404817,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 763.6061847292711,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Hangul · Perbualan · TOPIK",
+          "x": 580,
+          "y": 838.7561847292711,
+          "w": 401.1503906249998,
+          "h": 34.3125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-ca-youtube",
+      "file": "lab-ca-youtube.png",
+      "sha256": "dd2d8b4cdb81a96c747ffe54df79bbc0e5e95ee45b9181980e14ca493e65fb4f",
+      "bytes": 483844,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "CANADA",
+          "x": 878,
+          "y": 595.669140625,
+          "w": 136.70937500000002,
+          "h": 23.90625,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Where Korean gets fun",
+          "x": 580,
+          "y": 673.5717038272471,
+          "w": 764.1117187500001,
+          "h": 74.29296875,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 764.8646725772471,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Hangul · Everyday Korean · TOPIK",
+          "x": 580,
+          "y": 840.0146725772471,
+          "w": 503.8987499999996,
+          "h": 34.3125,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    },
+    {
+      "id": "lab-youtube",
+      "file": "lab-youtube.png",
+      "sha256": "2f35e666e7d8cb27d739a149dc71ed3cbf6f9d4aa6fbccefef6fdfca32ed320c",
+      "bytes": 481336,
+      "safe": {
+        "x": 508,
+        "y": 509,
+        "w": 1544,
+        "h": 422
+      },
+      "visibleCenterY": 720,
+      "text": [
+        {
+          "text": "MONGOLIA",
+          "x": 878,
+          "y": 607.7284725170782,
+          "w": 175.59625000000003,
+          "h": 23.90625,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Солонгос хэлийг хөгжилтэй суръя",
+          "x": 580,
+          "y": 685.6310357193254,
+          "w": 830,
+          "h": 50.59411195113775,
+          "fonts": [
+            "InterTight-Bold.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "한국어가 재밌어지는 곳",
+          "x": 580,
+          "y": 753.2251476704631,
+          "w": 445.9,
+          "h": 45.150000000000006,
+          "fonts": [
+            "SUIT-ExtraBold.otf#0"
+          ],
+          "shaper": "HarfBuzz"
+        },
+        {
+          "text": "Хангыль · Өдөр тутмын яриа · TOPIK",
+          "x": 580,
+          "y": 828.3751476704631,
+          "w": 576.7614843749996,
+          "h": 33.892693014705884,
+          "fonts": [
+            "InterTight-Medium.ttf#0"
+          ],
+          "shaper": "HarfBuzz"
+        }
+      ]
+    }
+  ]
+}

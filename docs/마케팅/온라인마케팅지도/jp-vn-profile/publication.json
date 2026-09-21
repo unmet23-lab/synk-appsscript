@@ -1,0 +1,50 @@
+{
+  "verifiedAt": "2026-09-20T07:55:00+09:00",
+  "latestScope": "같은 얼굴 확대 구도·각도에서 두 눈을 뜬 까몽 v4 프로필만 양쪽 교체. 소개 전문 확인 시점은 07:21이며 원고·커버는 이번에 수정하지 않음.",
+  "scope": "Japan and Vietnam YouTube profiles only",
+  "copy": "copy.json",
+  "copyRevision": "2026-09-20-jp-vn-fun-and-use-v2",
+  "assets": "manifest.json",
+  "profileImage": "kkamong-profile-v4-open-eyes.png",
+  "profileRevision": "2026-09-20-kkamong-open-eyes-v4",
+  "profileSha256": "a72b86bb2ad8d492d97b1bee00c4ebf2832ee50d5c88233bdcd1749e2f32f66b",
+  "imageGeneration": "내장 image_gen. 얼굴 확대 v3의 감긴 눈을 뜬 눈으로 변경한 v4. 사용자 적용 요청으로 두 채널 모두 같은 v4 업로드·게시·독립 공개 탭 새로고침 후 사진 확인. 마린 후보는 미적용. 정본·앱 표정 세트 불변. 생성 프롬프트는 kkamong-open-eyes-prompt.md.",
+  "fullDescriptionVerifiedAt": "2026-09-20T07:21:00+09:00",
+  "languageReview": "AI 작성·자체 검수. 원어민 감수는 하지 않음.",
+  "channels": [
+    {
+      "id": "lab-jp-youtube",
+      "channelId": "UCXpX-UiwswwUqoQkRVdJyow",
+      "url": "https://www.youtube.com/@synklabjapan",
+      "displayName": "SYNK LAB Japan | 楽しい韓国語",
+      "studioSaveConfirmed": true,
+      "publicReloadVerified": true,
+      "coverHeadline": "韓国語が楽しくなる場所",
+      "descriptionLead": "学んですぐ使える韓国語。",
+      "publicNameAndFullDescriptionVerified": true,
+      "publicBannerAndProfileVisuallyVerified": true,
+      "publicWebsiteVerified": "https://synk.im/",
+      "preserved": "기존 영상·구독자 24명·핸들·소유권·연락처 유지. 홈에 예전 자기소개 영상이 노출되는 것도 보존함.",
+      "watermark": "기존 미설정 유지"
+    },
+    {
+      "id": "lab-vn-youtube",
+      "channelId": "UC7NbBUofc_ZK5qCSjzbUzGQ",
+      "url": "https://www.youtube.com/@synklabvietnam",
+      "displayName": "SYNK LAB Vietnam | Tiếng Hàn thật vui",
+      "studioSaveConfirmed": true,
+      "publicReloadVerified": true,
+      "coverHeadline": "Nơi học tiếng Hàn thật vui",
+      "descriptionLead": "Học tiếng Hàn, dùng ngay!",
+      "publicNameAndFullDescriptionVerified": true,
+      "publicBannerAndProfileVisuallyVerified": true,
+      "publicWebsiteVerified": "https://synk.im/",
+      "preserved": "기존 영상·핸들·소유권·연락처 유지. 개인 Instagram 링크는 SYNK 홈페이지로 교체함.",
+      "watermark": "이전 마감에서 저장한 순백 몽글·동영상 끝 표시 유지. 이번 까몽 변경은 채널 프로필만. 실제 동영상 재생 노출은 미검증.",
+      "bannerRetryHistory": "v1 첫 저장 후 배너 누락을 단독 재업로드로 해결함. 이번 v2 커버·소개를 먼저 저장한 뒤 까몽 프로필을 별도 저장, 모두 공개 확인."
+    }
+  ],
+  "visualChecks": "현재 프로필 v4: 1254×1254, 2215566바이트. 양쪽 Studio 원형 크롭 및 공개 채널 사진에서 두 눈을 뜬 얼굴 확대 구도 확인. 일본 첫 새로고침은 이전 윙크 사진이었으나 이후 공개 페이지 갱신으로 v4 확인. 원본과 생성 결과의 각도·구도·털 인상을 시각 대조했으며 눈 밖 픽셀 동일성은 보증하지 않음. 07:21의 커버·소개 검수는 유지: 승인 LAB v4 SVG 펠트·글래스 재사용, 커버 2560×1440 각 6MB 미만, 1544×422 중앙 안전 영역, 글자 중심 y=720, 390px 로컬 크롭·공개 데스크톱 확인, 공개 소개 전문과 원고 공백 정규화 대조. 실제 휴대폰 앱 미검증.",
+  "excluded": "나머지 YouTube 14개 생성·다른 SNS·보안·권한·연락처 변경·영상 게시·삭제·홈페이지 배포 없음.",
+  "latestDecision": "같은 각도에서 윙크하지 않는 버전을 만들어 적용해 달라는 요청. 두 눈을 뜬 까몽 v4를 일본·베트남 공통 적용. 이름·핸들·커버·소개 유지."
+}

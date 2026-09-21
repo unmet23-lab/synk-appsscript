@@ -1,0 +1,19 @@
+/* Appended through the Tistory CSS editor on 2026-09-19.
+   Original 109423-character CSS preserved byte-for-byte before this block;
+   only newline normalization was used for comparison.
+   Remove this appended block to restore the earlier cover rules. */
+.header .area-promotion {
+  height: 37.5vw;
+  min-height: 0;
+  background-color: #fff;
+  background-image: url("https://tistory1.daumcdn.net/tistory/9014836/skin/images/shift-tistory.png") !important;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+@media screen and (max-width: 600px) {
+  .header .area-promotion {
+    height: calc(100vw * 300 / 390);
+    background-image: url("https://tistory1.daumcdn.net/tistory/9014836/skin/images/shift-tistory-mobile.png") !important;
+  }
+}

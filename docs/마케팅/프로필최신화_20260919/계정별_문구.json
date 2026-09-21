@@ -1,0 +1,232 @@
+{
+  "updatedAt": "2026-09-19",
+  "copyRevision": "2026-09-19-natural-profile-v6",
+  "publicationLedger": "반영_v6.json",
+  "coverRevision": "2026-09-19-felt-glass-v4",
+  "coverRevisionStatus": "v4 all 11 cover accounts publicly verified in 반영_v5.json; approved covers unchanged in v6",
+  "status": "user-authorized-full-copy-recheck-and-publish; v6 field evidence is in 반영_v6.json; v5 publication history is preserved separately",
+  "basis": [
+    "docs/마케팅_정본.md",
+    "docs/비전_정본.md",
+    "docs/마케팅/채널과_발행.md",
+    "docs/마케팅/sns-계정.json"
+  ],
+  "rules": [
+    "SHIFT에서 유학·취업 연계를 제거하고 PATH로 분리한다.",
+    "PATH는 독립 SNS를 만들지 않고 synk.im/path/로 안내한다.",
+    "기존 핸들·인물 사진·마스코트는 유지한다. 후속 요청에 따라 누런 바탕의 로고 프로필만 흰색 또는 승인 글래스로 바꾸고, 흰 바탕 단독 로고에는 스티치와 펠트 잔털을 살린다. 글로벌 브랜드키트는 바꾸지 않는다.",
+    "철학 문서의 문체를 따라 쓰지 않고, 계정의 실제 독자에게 자연스럽고 구체적으로 설명한다.",
+    "LAB의 몽골어권 대상과 한국어 병기 방향을 유지한다. 이번 원고는 AI 검토본이며 원어민 감수 완료로 표시하지 않는다."
+  ],
+  "accounts": [
+    {
+      "id": "lab-youtube",
+      "platform": "YouTube",
+      "handle": "@synkkorean",
+      "bio": "Солонгос хэл · TOPIK · Солонгос дахь амьдрал\n\n몽골어 설명과 함께 한국어 회화와 TOPIK을 공부하는 채널입니다. 일상 대화부터 학교와 직장에서 쓰는 표현까지, 듣고 따라 말하며 연습해 보세요.\n\nSYNK LAB의 수업·교재·학습 앱 소식과 한국어 공부에 도움이 되는 자료를 소개합니다. 공부하거나 쉴 때 들을 수 있는 SYNK Radio의 K-LOFI 음악도 함께 전합니다.",
+      "website": "https://synk.im/lab/",
+      "cover": "커버_펠트글래스_v4/lab-youtube.png",
+      "languageReview": "human-native-review-incomplete"
+    },
+    {
+      "id": "lab-instagram",
+      "platform": "Instagram",
+      "handle": "@synk.mn",
+      "bio": "Солонгос хэл · TOPIK · Солонгос дахь амьдрал\n몽골어 설명으로 배우는 한국어\n일상 회화·TOPIK·한국 생활에 필요한 표현",
+      "website": "https://synk.im/lab/",
+      "cover": null,
+      "languageReview": "human-native-review-incomplete"
+    },
+    {
+      "id": "lab-tiktok",
+      "platform": "TikTok",
+      "handle": "@synk.mn",
+      "bio": "Солонгос хэл · TOPIK\n몽골어 설명과 함께, 짧은 영상으로 배우는 한국어 회화",
+      "bioLimit": 80,
+      "website": "https://synk.im/lab/",
+      "cover": null,
+      "languageReview": "human-native-review-incomplete"
+    },
+    {
+      "id": "lab-facebook",
+      "platform": "Facebook",
+      "handle": "facebook.com/synkworld",
+      "bio": "Солонгос хэл · TOPIK · Солонгост суралцах\nSYNK LAB의 한국어 수업 안내와 학습 자료, 한국 유학 준비 소식을 전합니다.",
+      "website": "https://synk.im/lab/",
+      "cover": "커버_펠트글래스_v4/lab-facebook.png",
+      "languageReview": "human-native-review-incomplete"
+    },
+    {
+      "id": "lab-telegram",
+      "platform": "Telegram",
+      "handle": "@synkmn",
+      "bio": "Солонгос хэл · TOPIK · Солонгост суралцах\nSYNK LAB의 수업 공지와 한국어 학습 자료를 전합니다. 몽골어 설명이 있는 회화·TOPIK 자료와 새 교재·학습 앱 소식을 받아보세요.\nsynk.im/lab/",
+      "bioLimit": 255,
+      "website": "https://synk.im/lab/",
+      "cover": null,
+      "languageReview": "human-native-review-incomplete"
+    },
+    {
+      "id": "yuhobuilds-youtube",
+      "platform": "YouTube",
+      "handle": "@yuhobuilds",
+      "bio": "AI를 활용해 SYNK를 운영하는 유호입니다.\n\n홈페이지와 콘텐츠를 만들고, 교육 자료를 제작하고, 반복되는 업무를 자동화합니다. 이 채널에서는 실제 작업 화면과 완성한 결과를 함께 보여드립니다. 어떤 도구를 썼는지, 작업 중 생긴 문제를 어떻게 해결했는지도 설명합니다.\n\nAI를 내 일에 활용해 보고 싶은 분들께 도움이 되었으면 합니다.\n기업·기관을 위한 AI 교육·컨설팅과 브랜딩은 SYNK SHIFT에서 준비하고 있습니다.",
+      "website": "https://synk.im/shift/",
+      "cover": "커버_펠트글래스_v4/yuhobuilds-youtube.png"
+    },
+    {
+      "id": "yuhobuilds-instagram",
+      "platform": "Instagram",
+      "handle": "@yuhobuilds",
+      "bio": "AI로 홈페이지·콘텐츠를 만들고 업무를 자동화합니다.\nSYNK를 운영하며 써 본 도구와 작업 과정을 공유해요.",
+      "website": "https://synk.im/shift/",
+      "cover": null
+    },
+    {
+      "id": "yuhobuilds-tiktok",
+      "platform": "TikTok",
+      "handle": "@yuhobuilds",
+      "displayName": "유호 · AI와 회사 만들기",
+      "bio": "AI로 홈페이지와 콘텐츠를 만들고, 업무를 자동화합니다. SYNK를 운영하며 써 본 도구와 작업 과정을 공유해요.",
+      "bioLimit": 80,
+      "website": "https://synk.im/shift/",
+      "cover": null
+    },
+    {
+      "id": "yuhobuilds-threads",
+      "platform": "Threads",
+      "handle": "@yuhobuilds",
+      "bio": "SYNK를 운영하며 AI로 웹사이트와 콘텐츠를 만들고 있어요. 써 본 도구, 해결이 안 되는 문제, 일하다 떠오른 생각을 나눕니다.",
+      "website": "https://synk.im/shift/",
+      "cover": null
+    },
+    {
+      "id": "yuho-linkedin-primary",
+      "platform": "LinkedIn",
+      "handle": "양유호",
+      "headline": "SYNK Founder | AI 기반 웹·콘텐츠 제작 및 업무 자동화 | 기업·기관 AI 교육·컨설팅 준비 중",
+      "bio": "SYNK를 운영하는 양유호입니다. AI를 활용해 웹사이트와 콘텐츠, 교육 자료를 제작하고 반복 업무를 자동화합니다.\n\n이곳에서는 실제 작업 사례와 사용한 도구, 적용하면서 알게 된 점을 공유합니다. AI를 업무에 도입하거나 교육·제작 프로젝트를 함께할 분들과 교류하고 싶습니다.\n\nSYNK SHIFT에서는 기업·기관의 업무에 맞춘 AI 교육·컨설팅과 브랜딩을 준비하고 있습니다.\n\nSYNK는 한국어 교육과 학습 앱을 만드는 LAB, 음악·영상·캐릭터 콘텐츠를 만드는 PULSE도 운영합니다. 외국인의 한국 유학과 취업 준비를 돕는 PATH 서비스는 준비 중입니다.",
+      "website": "https://synk.im/shift/",
+      "cover": "커버_펠트글래스_v4/yuho-linkedin-primary.png"
+    },
+    {
+      "id": "yuhobuilds-telegram",
+      "platform": "Telegram",
+      "handle": "@yuhobuilds",
+      "bio": "유호 | SYNK · AI 교육·컨설팅·브랜딩 협업 문의 | synk.im/shift/",
+      "bioLimit": 70,
+      "website": "https://synk.im/shift/",
+      "cover": null
+    },
+    {
+      "id": "yuhobuilds-x",
+      "platform": "X",
+      "handle": "@yuhobuilds",
+      "bio": "AI를 활용해 SYNK를 운영하는 유호입니다. 웹사이트와 콘텐츠를 만들고 업무를 자동화합니다. 써 본 도구와 작업하면서 알게 된 것을 공유합니다.",
+      "bioLimit": 160,
+      "website": "https://synk.im/shift/",
+      "cover": "커버_펠트글래스_v4/yuhobuilds-x.png"
+    },
+    {
+      "id": "yuhobuilds-behance",
+      "platform": "Behance",
+      "handle": "yuhobuilds",
+      "bio": "SYNK SHIFT의 브랜드·웹·콘텐츠 디자인 포트폴리오입니다. AI를 활용해 제작한 결과물과 작업 과정을 소개합니다.",
+      "bioLimit": 160,
+      "website": "https://synk.im/shift/",
+      "cover": "커버_펠트글래스_v4/shift-behance.png"
+    },
+    {
+      "id": "yuhobuilds-naver-clip",
+      "platform": "Naver Clip",
+      "handle": "@yuhobuilds",
+      "bio": "AI로 웹사이트와 콘텐츠를 만들고 업무를 자동화합니다. 직접 써 본 도구와 활용 방법을 짧은 영상으로 소개해요.",
+      "website": "https://synk.im/shift/",
+      "cover": null
+    },
+    {
+      "id": "synkbrief-youtube",
+      "platform": "YouTube",
+      "handle": "@synkbrief",
+      "bio": "회사에서 AI를 활용하는 방법을 실제 작업 예시로 설명합니다.\n\n소개서와 보고서 작성, 홍보글·이미지·영상 제작, 반복 업무 자동화까지 다룹니다. 도구 선택부터 작업 순서, 결과 확인까지 따라 해 볼 수 있도록 정리합니다.\n\nSYNK SHIFT의 AI 활용 채널입니다. 기업·기관을 위한 AI 교육·컨설팅과 브랜딩도 준비하고 있습니다.",
+      "website": "https://synk.im/shift/",
+      "cover": "커버_펠트글래스_v4/synkbrief-youtube.png"
+    },
+    {
+      "id": "synkbrief-instagram",
+      "platform": "Instagram",
+      "handle": "@synkbrief",
+      "bio": "회사에서 AI를 활용하는 방법\n문서 작성·콘텐츠 제작·반복 업무 자동화\n실제 작업 예시로 쉽게 설명합니다.\nSYNK SHIFT",
+      "website": "https://synk.im/shift/",
+      "cover": null
+    },
+    {
+      "id": "synkbrief-tiktok",
+      "platform": "TikTok",
+      "handle": "@synkbrief",
+      "bio": "문서 작성·콘텐츠 제작·반복 업무 자동화. 회사에서 AI를 쓰는 방법을 짧은 영상으로 설명합니다. SYNK SHIFT",
+      "bioLimit": 80,
+      "website": "https://synk.im/shift/",
+      "cover": null
+    },
+    {
+      "id": "synk-linkedin-company",
+      "platform": "LinkedIn Company",
+      "handle": "SYNK",
+      "tagline": "한국어 교육·학습 도구, AI 활용 서비스, 음악·영상 콘텐츠 | SYNK",
+      "bio": "SYNK는 한국어 교육과 학습 도구, AI를 활용한 웹·콘텐츠, 음악과 영상을 만듭니다.\n\nLAB — 한국어 수업·교재·학습 게임과 앱을 만듭니다. 학습자의 수준과 목표에 맞는 연습을 돕습니다.\n\nSHIFT — AI로 웹사이트와 콘텐츠를 제작하고 업무를 자동화합니다. 기업·기관을 위한 AI 교육·컨설팅과 브랜딩 서비스를 준비하고 있습니다.\n\nPULSE — 음악·영상·캐릭터 콘텐츠를 제작합니다. SYNK Radio에서 일하거나 쉴 때 들을 수 있는 음악을 전합니다.\n\nPATH — 외국인의 한국 유학과 취업 준비를 돕는 서비스를 준비하고 있습니다. 학교 선택과 한국어 학습, 생활 적응과 졸업 후 진로를 함께 다룰 예정입니다.\n\n브랜드별 소개와 현재 진행 중인 작업은 synk.im에서 확인할 수 있습니다.",
+      "website": "https://synk.im/",
+      "cover": "커버_펠트글래스_v4/synk-linkedin-company.png"
+    },
+    {
+      "id": "synklab-substack",
+      "platform": "Substack",
+      "handle": "synklab.substack.com",
+      "bio": "한국어 학습 자료와 AI 활용 사례를 전하는 SYNK 뉴스레터입니다. LAB의 수업·교재 소식과 유호의 웹·콘텐츠 제작, 업무 자동화 경험을 소개합니다.",
+      "authorBio": "SYNK를 운영하는 유호입니다. 한국어 학습 자료를 만들고, AI를 활용해 웹사이트와 콘텐츠를 제작하며 배운 점을 공유합니다.",
+      "aboutSource": "Substack_About_최종.md",
+      "additionalFieldNote": "Publication description·작성자 소개·About 세 곳을 각각 v6로 대조한다. v5 저장 이력과 v6 반영 여부는 별도로 기록한다. 글 발행·메일 발송·구독 설정은 변경하지 않는다.",
+      "website": "https://synk.im/",
+      "cover": null
+    },
+    {
+      "id": "shift-naverblog",
+      "platform": "Naver Blog",
+      "handle": "synkshift",
+      "bio": "SYNK를 운영하는 유호의 AI 활용 블로그입니다. 홈페이지·콘텐츠·교육 자료를 만들고 업무를 자동화하는 방법을 소개합니다. 사용한 도구와 설정, 작업 순서를 따라 해 볼 수 있도록 자세히 설명합니다.",
+      "website": "https://synk.im/shift/",
+      "cover": "커버_펠트글래스_v4/shift-naverblog.png"
+    },
+    {
+      "id": "shift-kakao",
+      "platform": "Kakao Channel",
+      "handle": "synkshift",
+      "bio": "기업·기관 AI 교육·컨설팅·브랜딩",
+      "copyNote": "2026-09-19 22:07 KST 사용자 직접 저장·유지 요청. 공개 프로필 대조 확인. 이전 46자 원고 대신 이 문구를 사용한다.",
+      "bioLimit": 55,
+      "website": "https://synk.im/shift/",
+      "cover": null
+    },
+    {
+      "id": "shift-tistory",
+      "platform": "Tistory",
+      "handle": "yuhobuilds.tistory.com",
+      "bio": "SYNK를 운영하는 유호의 작업 블로그입니다. AI로 홈페이지·콘텐츠·교육 자료를 제작하고 업무를 자동화하며 알게 된 점을 정리합니다. 사용한 도구와 제작 과정, 문제가 생겼을 때 해결한 방법을 공유합니다.",
+      "website": "https://synk.im/shift/",
+      "cover": "커버_펠트글래스_v4/shift-tistory.png",
+      "mobileCover": "커버_펠트글래스_v4/shift-tistory-mobile.png",
+      "skinSloganTitle": "",
+      "skinSloganDescription": "",
+      "additionalFieldNote": "펠트·유리 커버 v4의 PC·390px 모바일은 공개 확인한 상태로 유지한다. 이번에는 소개만 v6로 변경한다. v5 게시 이력은 반영_v5.json에 보존한다."
+    },
+    {
+      "id": "shift-pinterest",
+      "platform": "Pinterest",
+      "handle": "synkshift",
+      "bio": "SYNK SHIFT의 브랜드·웹·콘텐츠 디자인을 모았습니다. 펠트와 자수, 투명한 유리를 활용한 디자인과 제작 과정을 소개합니다.",
+      "bioLimit": 160,
+      "website": "https://synk.im/shift/",
+      "cover": "커버_펠트글래스_v4/shift-pinterest.png"
+    }
+  ]
+}

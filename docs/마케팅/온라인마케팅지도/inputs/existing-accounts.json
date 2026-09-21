@@ -1,0 +1,958 @@
+{
+  "metadata": {
+    "schemaVersion": 1,
+    "normalizedOn": "2026-09-20",
+    "sourceEvidenceThrough": "2026-09-19T22:07:00+09:00",
+    "evidenceMode": "local-source-reconciliation",
+    "liveLoginVerified": false,
+    "scope": "지정된 로컬 계정 정본·목록·반영 원장과 현재 사용자 범위 결정을 정규화한 입력 데이터다. 이번 작업에서 실시간 로그인·API·공개 화면·발행 성과를 확인하지 않았다.",
+    "grain": "accounts의 한 행은 실제 관리 계정/채널, 소유 미확인 준비 자리, 운영 제외 계정 또는 별도 웹 도착지 하나다. 공유·재사용 관계는 같은 id에 연결하며 새 계정 행으로 복제하지 않는다.",
+    "counts": {
+      "registeredAccountEntries": 26,
+      "operatingAccountsAndChannels": 23,
+      "publicPublishingTargets": 22,
+      "personalContactProfiles": 1,
+      "plannedOrDeferredAccountEntries": 2,
+      "excludedExistingAccounts": 1,
+      "webDestinations": 6,
+      "totalRows": 32,
+      "latestProfileSaved": 22,
+      "latestProfileTarget": 23,
+      "latestProfileDeferred": 1,
+      "approvedCoverAccounts": 11,
+      "additionalTistoryMobileVariant": 1
+    },
+    "countingRules": [
+      "운영 대상이라는 분류는 정기 발행·자동 게시 연결·현재 로그인 또는 신규 출시 완료를 뜻하지 않는다.",
+      "publishable은 기존 역할상 공개 콘텐츠 발행 대상인지의 구분일 뿐 게시 승인·자동화 가능 여부가 아니다. 개인 Telegram 연락 프로필과 준비·제외·웹 행은 false다.",
+      "country는 주대상이다. 현재 사용자 확인에 따라 기존 LAB 다섯 계정만 몽골로 보존했다. 다른 계정의 국가와 향후 23개국 슬롯은 배정하지 않았다.",
+      "준비 두 항목의 handle/publicUrl은 null이다. 목표 핸들은 역할·다음 행동에만 기록하며 소유·예약·개설 완료로 표시하지 않는다.",
+      "웹 여섯 곳은 공식 브랜드 경로 다섯 개와 라디오 감상 경로 하나이며 SNS 계정 수에 합산하지 않는다.",
+      "Substack 발행 공간과 작성자 프로필은 한 행이다. PULSE의 YouTube 라이브도 lab-youtube 한 행을 공유한다.",
+      "커버 열의 not-in-cover-refresh-scope는 승인 커버 11계정 작업 범위 밖이라는 뜻이다. 해당 플랫폼에 커버 기능이 없다는 미확인 주장을 뜻하지 않는다.",
+      "null 로그인 구분명은 로컬 근거에서 확인하지 못했다는 뜻이다. 계정이 없거나 로그인이 불가능하다는 뜻이 아니다.",
+      "lastEvidenceAt은 행의 마지막 근거 기록 시점이며 현재 접속 시점이 아니다. 원문에 시간이 없으면 날짜만 보존했다."
+    ],
+    "fieldDefinitions": {
+      "brand": "회사의 브랜드 탐색 분류. 유호 제작·개인 채널은 SYNK로 두며 operatingScope=YUHO로 별도 탐색한다.",
+      "sharedBrands": "채널을 별도 개설한 수가 아니라 공유 운영 또는 원문상 다룰 수 있는 브랜드 역할이다. 모든 공유 브랜드의 콘텐츠 발행 완료를 뜻하지 않는다.",
+      "operatingScope": "LAB, YUHO, SHIFT_INFORMATION, CORPORATE, SHARED, WEB_DESTINATION 중 기존 역할 기준 구분이다.",
+      "profileStatus": "최신 소개 v6 저장·확인 범위를 보존한다. public/editor/settings/profile의 확인 범위와 사용자 지정 짧은 카카오 소개를 구분한다.",
+      "coverStatus": "v4 승인 커버의 게시 확인과 네이버 모바일 확인 보류를 별도로 보존한다."
+    },
+    "sourcePrecedence": [
+      "계정 존재·운영 제외·로그인 구분: sns-계정.json과 SNS_계정_전체목록_20260919.md",
+      "현재 소개·카카오 사용자 수정·Clip 보류: 반영_v6.json 및 실행상태.json.currentPublicationV6",
+      "승인 커버 계정별 게시 확인: 반영_v6.json의 유지 지시와 연결된 반영_v5.json",
+      "브랜드 공유 역할: 채널과_발행.md 및 전체 목록; LAB 몽골 보존은 2026-09-20 사용자 확인, 유호 트랙은 원문 역할에 따른 지도 탐색 분류"
+    ],
+    "reconciliations": [
+      {
+        "topic": "소개 완료 수의 시점 충돌",
+        "olderSource": "docs/마케팅/채널과_발행.md",
+        "olderClaim": "v6 16/23 저장",
+        "controllingSources": [
+          "docs/마케팅/sns-계정.json",
+          "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+          "docs/마케팅/프로필최신화_20260919/실행상태.json"
+        ],
+        "currentClaim": "v6 22/23 저장, Clip 1개 사용자 후속 보류",
+        "treatment": "원본 파일을 수정하지 않고 최신 세부 반영 원장을 사용했다."
+      },
+      {
+        "topic": "실행상태.json 내부 역사 기록",
+        "olderClaim": "scope/accounts/approvedFinalUpload 및 coverFinishV4에는 이전 실패·부분 반영·uploaded=0 등이 남아 있다.",
+        "currentClaim": "currentPublicationV6와 반영_v6.json을 소개의 현재 상태로 사용하며, v4 커버 11개는 반영_v5.json의 공개 확인 후 유지 상태다.",
+        "treatment": "과거 실패·제작 상태를 현재 미완료 또는 현재 성공으로 다시 합산하지 않았다."
+      },
+      {
+        "topic": "Substack 브랜드",
+        "olderSource": "docs/마케팅/sns-계정.json",
+        "olderClaim": "brand=SHIFT",
+        "currentClaim": "공통 뉴스레터 SYNK / sharedBrands LAB·SHIFT",
+        "treatment": "현재 채널 역할을 따라 정규화하되 기존 synklab-substack id는 유지했다."
+      },
+      {
+        "topic": "유호 채널 브랜드",
+        "olderSource": "docs/마케팅/sns-계정.json",
+        "olderClaim": "대부분 brand=SHIFT",
+        "currentClaim": "SYNK를 만드는 유호의 별도 YUHO 트랙. 현재 SHIFT 중심 작업도 LAB·PULSE·PATH 제작 경험을 다룰 수 있다.",
+        "treatment": "원문에 적힌 유호의 회사 제작 역할을 지도에서 찾기 쉽게 brand=SYNK와 operatingScope=YUHO로 정규화했다. 이 탐색 분류 자체가 사용자의 별도 조직 개편 승인을 뜻하지 않으며 실제 채널명·핸들·소유권은 바꾸지 않았다."
+      }
+    ],
+    "sharedChannels": [
+      {
+        "accountId": "lab-youtube",
+        "primaryBrand": "LAB",
+        "sharedBrands": [
+          "PULSE"
+        ],
+        "publicUrl": "https://www.youtube.com/@synkkorean/live",
+        "note": "몽골 한국어 학습 기반을 보존하면서 PULSE SYNK Radio가 같은 계정을 공유한다."
+      },
+      {
+        "accountId": "synklab-substack",
+        "primaryBrand": "SYNK",
+        "sharedBrands": [
+          "LAB",
+          "SHIFT"
+        ],
+        "alternatePublicUrl": "https://substack.com/@synklab",
+        "note": "작성자 프로필은 같은 계정의 추가 공개 주소이며 별도 계정으로 세지 않는다."
+      }
+    ],
+    "reusePolicy": "신규 국가·플랫폼 계획이 기존 계정을 재사용한다면 existingAccountId로 연결해야 한다. 이 파일은 재사용 슬롯을 신규 보유 계정으로 추가하거나 임의 국가·핸들·로그인 계정을 배정하지 않는다.",
+    "sourcePaths": [
+      "docs/마케팅/sns-계정.json",
+      "docs/마케팅/SNS_계정_전체목록_20260919.md",
+      "docs/마케팅/채널과_발행.md",
+      "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+      "docs/마케팅/프로필최신화_20260919/실행상태.json",
+      "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+    ]
+  },
+  "accounts": [
+    {
+      "id": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "handle": "@synkkorean",
+      "publicUrl": "https://www.youtube.com/@synkkorean",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "LAB 몽골 학습 계정과 PULSE 라디오 공유를 함께 보존한다. 신규 국가 슬롯이 필요해도 기존 채널의 이전·개명·중복 개설로 처리하지 않는다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": "몽골",
+      "channelRole": "한국어 학습 영상·Shorts. 같은 계정의 SYNK Radio 라이브를 PULSE가 공유",
+      "operatingScope": "LAB",
+      "publishable": true,
+      "sharedBrands": [
+        "PULSE"
+      ]
+    },
+    {
+      "id": "lab-instagram",
+      "brand": "LAB",
+      "platform": "instagram",
+      "handle": "@synk.mn",
+      "publicUrl": "https://www.instagram.com/synk.mn/",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-editor-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": "몽골",
+      "channelRole": "몽골어권 한국어 학습 릴스·카드·수업 소식",
+      "operatingScope": "LAB",
+      "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "lab-tiktok",
+      "brand": "LAB",
+      "platform": "tiktok",
+      "handle": "@synk.mn",
+      "publicUrl": "https://www.tiktok.com/@synk.mn",
+      "loginAlias": "77yuhbs",
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": "몽골",
+      "channelRole": "짧은 한국어 학습 영상",
+      "operatingScope": "LAB",
+      "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "lab-facebook",
+      "brand": "LAB",
+      "platform": "facebook",
+      "handle": "synkworld",
+      "publicUrl": "https://www.facebook.com/synkworld",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": "몽골",
+      "channelRole": "학습 자료·수업·과정 안내. 성인·보호자도 포함",
+      "operatingScope": "LAB",
+      "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "lab-telegram",
+      "brand": "LAB",
+      "platform": "telegram",
+      "handle": "@synkmn",
+      "publicUrl": "https://t.me/synkmn",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-settings-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": "몽골",
+      "channelRole": "LAB 자료·수업·교재·학습 앱 소식 채널",
+      "operatingScope": "LAB",
+      "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "yuhobuilds-youtube",
+      "brand": "SYNK",
+      "platform": "youtube",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://www.youtube.com/@yuhobuilds",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": null,
+      "channelRole": "SYNK를 만드는 유호의 실제 회사 제작 과정·본편 영상",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ]
+    },
+    {
+      "id": "yuhobuilds-instagram",
+      "brand": "SYNK",
+      "platform": "instagram",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://www.instagram.com/yuhobuilds/",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19T22:05:00+09:00",
+      "nextAction": "사용자 앱 저장 후 확인된 v6 소개를 보존한다. 사용자가 제외한 별도 Meta 계정을 다시 연결하지 않는다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": null,
+      "channelRole": "유호의 제작 과정과 결과를 보여 주는 릴스·이미지",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ]
+    },
+    {
+      "id": "yuhobuilds-tiktok",
+      "brand": "SYNK",
+      "platform": "tiktok",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://www.tiktok.com/@yuhobuilds",
+      "loginAlias": "unmet23",
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": null,
+      "channelRole": "유호의 제작 과정과 결과를 보여 주는 짧은 영상",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ]
+    },
+    {
+      "id": "yuhobuilds-threads",
+      "brand": "SYNK",
+      "platform": "threads",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://www.threads.com/@yuhobuilds",
+      "loginAlias": "Instagram @yuhobuilds",
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": null,
+      "channelRole": "작업 중 생각·시도·질문과 대화",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ]
+    },
+    {
+      "id": "yuho-linkedin-primary",
+      "brand": "SYNK",
+      "platform": "linkedin",
+      "handle": "양유호",
+      "publicUrl": "https://www.linkedin.com/in/유호-양-5800b8433/",
+      "loginAlias": "unmet25",
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-profile-verified",
+      "coverStatus": "v4-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": null,
+      "channelRole": "유호의 개인 경력·제작 경험·기관·기업 협업. 최종 운영 개인 프로필",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ]
+    },
+    {
+      "id": "yuhobuilds-x",
+      "brand": "SYNK",
+      "platform": "x",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://x.com/yuhobuilds",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": null,
+      "channelRole": "유호의 짧은 작업 기록과 결과 공유",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ]
+    },
+    {
+      "id": "yuhobuilds-behance",
+      "brand": "SYNK",
+      "platform": "behance",
+      "handle": "yuhobuilds",
+      "publicUrl": "https://www.behance.net/yuhobuilds",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19T22:02:00+09:00",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": null,
+      "channelRole": "유호의 완성 디자인·브랜딩 포트폴리오. 현재 SHIFT 작업 중심",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "SHIFT"
+      ]
+    },
+    {
+      "id": "yuhobuilds-naver-clip",
+      "brand": "SYNK",
+      "platform": "naver-clip",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://clip.naver.com/@yuhobuilds",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-unsaved-deferred-by-user",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "사용자 결정에 따라 기존 @yuhobuilds 계정에 콘텐츠를 업로드할 때 소개를 수정한다. 지금 소유 편집 접근을 재요청하거나 새 프로필을 만들지 않는다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": null,
+      "channelRole": "네이버 내 유호의 짧은 제작 영상",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ]
+    },
+    {
+      "id": "yuhobuilds-telegram",
+      "brand": "SYNK",
+      "platform": "telegram",
+      "handle": "@yuhobuilds",
+      "publicUrl": "https://t.me/yuhobuilds",
+      "loginAlias": null,
+      "accountStatus": "operating-contact",
+      "profileStatus": "v6-saved-settings-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "개인 연락 프로필로 보존한다. 공개 게시 채널이나 Telegram 방송 채널로 중복 계산하지 않는다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": null,
+      "channelRole": "유호·SHIFT 협업 연락용 개인 프로필. 공개 발행 채널 아님",
+      "operatingScope": "YUHO",
+      "publishable": false,
+      "sharedBrands": [
+        "SHIFT"
+      ]
+    },
+    {
+      "id": "synkbrief-youtube",
+      "brand": "SHIFT",
+      "platform": "youtube",
+      "handle": "@synkbrief",
+      "publicUrl": "https://www.youtube.com/@synkbrief",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": null,
+      "channelRole": "최신 AI 소식·GitHub 스킬·도구 추천·실무 활용 영상",
+      "operatingScope": "SHIFT_INFORMATION",
+      "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "synkbrief-instagram",
+      "brand": "SHIFT",
+      "platform": "instagram",
+      "handle": "@synkbrief",
+      "publicUrl": "https://www.instagram.com/synkbrief/",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-editor-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": null,
+      "channelRole": "AI 소식·스킬·도구 추천과 활용법 릴스·카드",
+      "operatingScope": "SHIFT_INFORMATION",
+      "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "synkbrief-tiktok",
+      "brand": "SHIFT",
+      "platform": "tiktok",
+      "handle": "@synkbrief",
+      "publicUrl": "https://www.tiktok.com/@synkbrief",
+      "loginAlias": "unmet25",
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19T21:10:00+09:00",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": null,
+      "channelRole": "AI 소식·스킬·도구 추천과 활용법의 짧은 영상",
+      "operatingScope": "SHIFT_INFORMATION",
+      "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "shift-naverblog",
+      "brand": "SYNK",
+      "platform": "naver-blog",
+      "handle": "synkshift",
+      "publicUrl": "https://blog.naver.com/synkshift",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-desktop-public-verified-mobile-check-deferred",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "PC 커버와 저장된 소개는 보존한다. 모바일 독립 배경은 사용자가 결정한 대로 이 블로그에 콘텐츠를 업로드할 때 수정·확인한다. 지금 조치를 재요청하지 않는다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": null,
+      "channelRole": "유호의 검색형 제작 기록·AI 활용 설명. 기존 SHIFT 레지스트리 ID 보존",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "SHIFT"
+      ]
+    },
+    {
+      "id": "shift-tistory",
+      "brand": "SYNK",
+      "platform": "tistory",
+      "handle": "yuhobuilds.tistory.com",
+      "publicUrl": "https://yuhobuilds.tistory.com/",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-desktop-mobile-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": null,
+      "channelRole": "유호의 제작 과정·방법·실제 적용기. 기존 SHIFT 레지스트리 ID 보존",
+      "operatingScope": "YUHO",
+      "publishable": true,
+      "sharedBrands": [
+        "SHIFT"
+      ]
+    },
+    {
+      "id": "shift-pinterest",
+      "brand": "SHIFT",
+      "platform": "pinterest",
+      "handle": "synkshift",
+      "publicUrl": "https://www.pinterest.com/synkshift/",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": null,
+      "channelRole": "브랜드·웹·콘텐츠 디자인 발견과 포트폴리오 유입",
+      "operatingScope": "SHIFT_INFORMATION",
+      "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "shift-kakao",
+      "brand": "SHIFT",
+      "platform": "kakao-channel",
+      "handle": "synkshift",
+      "publicUrl": "https://pf.kakao.com/_kvlrX",
+      "loginAlias": null,
+      "accountStatus": "operating",
+      "profileStatus": "v6-user-short-copy-public-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19T22:07:00+09:00",
+      "nextAction": "사용자가 직접 저장한 '기업·기관 AI 교육·컨설팅·브랜딩'을 현재 소개로 보존한다. 준비했던 긴 원고로 되돌리지 않는다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": null,
+      "channelRole": "기업·기관 AI 교육·컨설팅·브랜딩 안내 및 문의",
+      "operatingScope": "SHIFT_INFORMATION",
+      "publishable": true,
+      "sharedBrands": []
+    },
+    {
+      "id": "synk-linkedin-company",
+      "brand": "SYNK",
+      "platform": "linkedin",
+      "handle": "synk-im",
+      "publicUrl": "https://www.linkedin.com/company/synk-im/",
+      "loginAlias": "unmet25",
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "v4-public-verified-preserved",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "현재 프로필·커버를 보존한다. 실제 게시 요청이 있을 때 소유 계정과 해당 공개 채널을 다시 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json",
+        "docs/마케팅/프로필최신화_20260919/반영_v5.json"
+      ],
+      "country": null,
+      "channelRole": "SYNK 회사 소개·완성물·대외 협업. 회사 ID 143833958",
+      "operatingScope": "CORPORATE",
+      "publishable": true,
+      "sharedBrands": [
+        "LAB",
+        "SHIFT",
+        "PULSE",
+        "PATH"
+      ]
+    },
+    {
+      "id": "synklab-substack",
+      "brand": "SYNK",
+      "platform": "substack",
+      "handle": "synklab.substack.com",
+      "publicUrl": "https://synklab.substack.com/",
+      "loginAlias": "unmet23",
+      "accountStatus": "operating",
+      "profileStatus": "v6-saved-public-verified",
+      "coverStatus": "not-in-cover-refresh-scope",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "LAB·SHIFT 공통 뉴스레터와 작성자 프로필을 한 계정으로 유지한다. 실제 발행 요청 전 해당 발행 공간을 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md",
+        "docs/마케팅/프로필최신화_20260919/반영_v6.json",
+        "docs/마케팅/프로필최신화_20260919/실행상태.json"
+      ],
+      "country": null,
+      "channelRole": "공통 뉴스레터. 발행 공간과 작성자 @synklab을 한 계정으로 계산",
+      "operatingScope": "SHARED",
+      "publishable": true,
+      "sharedBrands": [
+        "LAB",
+        "SHIFT"
+      ]
+    },
+    {
+      "id": "synk-instagram",
+      "brand": "SYNK",
+      "platform": "instagram",
+      "handle": null,
+      "publicUrl": null,
+      "loginAlias": null,
+      "accountStatus": "planned-unconfirmed",
+      "profileStatus": "not-applicable-unconfirmed-account",
+      "coverStatus": "not-applicable-unconfirmed-account",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "사용자가 목표 @synk.hq 준비를 알릴 때까지 기다린다. 이후 실제 소유 계정과 핸들을 확인한다. 현재 확보 완료로 세거나 자동 개설하지 않는다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "country": null,
+      "channelRole": "SYNK 본체 Instagram 준비 자리. 목표 @synk.hq 소유·개설·확보 미확인",
+      "operatingScope": "CORPORATE",
+      "publishable": false,
+      "sharedBrands": []
+    },
+    {
+      "id": "synkbrief-threads",
+      "brand": "SHIFT",
+      "platform": "threads",
+      "handle": null,
+      "publicUrl": null,
+      "loginAlias": null,
+      "accountStatus": "creation-deferred",
+      "profileStatus": "not-applicable-uncreated-account",
+      "coverStatus": "not-applicable-uncreated-account",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "기존 @yuhobuilds Threads와 다른 독립 대화·연재 역할이 생길 때만 개설을 재검토한다. 현재 개설하지 않는다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "country": null,
+      "channelRole": "SHIFT 정보 Threads 준비 자리. 목표 @synkbrief 개설 보류",
+      "operatingScope": "SHIFT_INFORMATION",
+      "publishable": false,
+      "sharedBrands": []
+    },
+    {
+      "id": "yuhobuilds-linkedin",
+      "brand": "SYNK",
+      "platform": "linkedin",
+      "handle": "yuhobuilds",
+      "publicUrl": "https://www.linkedin.com/in/yuhobuilds/",
+      "loginAlias": "unmet23",
+      "accountStatus": "excluded-existing",
+      "profileStatus": "excluded-closure-not-performed",
+      "coverStatus": "excluded-not-rechecked",
+      "lastEvidenceAt": "2026-09-14",
+      "nextAction": "운영에서 제외한다. 사용자 새 요청 없이 폐쇄·병합·비밀번호 생성·이전을 재개하지 않는다. LinkedIn은 unmet25 개인 프로필과 회사 페이지만 사용한다.",
+      "sourcePaths": [
+        "docs/마케팅/sns-계정.json",
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "country": null,
+      "channelRole": "기존 중복 LinkedIn 개인 프로필. 운영 제외이며 삭제 완료가 아님",
+      "operatingScope": "YUHO",
+      "publishable": false,
+      "sharedBrands": []
+    },
+    {
+      "id": "web-synk",
+      "brand": "SYNK",
+      "platform": "website",
+      "handle": null,
+      "publicUrl": "https://synk.im/",
+      "loginAlias": null,
+      "accountStatus": "web-destination",
+      "profileStatus": "not-applicable-website",
+      "coverStatus": "not-applicable-website",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "공식 도착지로 연결한다. SNS 계정이나 개설 완료 슬롯으로 계산하지 않는다. 실제 사용 시 공개 페이지 상태를 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "country": null,
+      "channelRole": "공식 회사 홈페이지",
+      "operatingScope": "WEB_DESTINATION",
+      "publishable": false,
+      "sharedBrands": []
+    },
+    {
+      "id": "web-lab",
+      "brand": "LAB",
+      "platform": "website",
+      "handle": null,
+      "publicUrl": "https://synk.im/lab/",
+      "loginAlias": null,
+      "accountStatus": "web-destination",
+      "profileStatus": "not-applicable-website",
+      "coverStatus": "not-applicable-website",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "공식 도착지로 연결한다. SNS 계정이나 개설 완료 슬롯으로 계산하지 않는다. 실제 사용 시 공개 페이지 상태를 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "country": null,
+      "channelRole": "LAB 공식 도착지",
+      "operatingScope": "WEB_DESTINATION",
+      "publishable": false,
+      "sharedBrands": []
+    },
+    {
+      "id": "web-shift",
+      "brand": "SHIFT",
+      "platform": "website",
+      "handle": null,
+      "publicUrl": "https://synk.im/shift/",
+      "loginAlias": null,
+      "accountStatus": "web-destination",
+      "profileStatus": "not-applicable-website",
+      "coverStatus": "not-applicable-website",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "공식 도착지로 연결한다. SNS 계정이나 개설 완료 슬롯으로 계산하지 않는다. 실제 사용 시 공개 페이지 상태를 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "country": null,
+      "channelRole": "SHIFT 공식 도착지",
+      "operatingScope": "WEB_DESTINATION",
+      "publishable": false,
+      "sharedBrands": []
+    },
+    {
+      "id": "web-pulse",
+      "brand": "PULSE",
+      "platform": "website",
+      "handle": null,
+      "publicUrl": "https://synk.im/pulse/",
+      "loginAlias": null,
+      "accountStatus": "web-destination",
+      "profileStatus": "not-applicable-website",
+      "coverStatus": "not-applicable-website",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "공식 도착지로 연결한다. SNS 계정이나 개설 완료 슬롯으로 계산하지 않는다. 실제 사용 시 공개 페이지 상태를 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "country": null,
+      "channelRole": "PULSE 공식 브랜드 페이지",
+      "operatingScope": "WEB_DESTINATION",
+      "publishable": false,
+      "sharedBrands": []
+    },
+    {
+      "id": "web-path",
+      "brand": "PATH",
+      "platform": "website",
+      "handle": null,
+      "publicUrl": "https://synk.im/path/",
+      "loginAlias": null,
+      "accountStatus": "web-destination",
+      "profileStatus": "not-applicable-website",
+      "coverStatus": "not-applicable-website",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "독립 SNS를 만들지 않고 기존 PATH 웹 도착지를 사용한다. 실제 변경 요청 시 공개 페이지를 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "country": null,
+      "channelRole": "PATH 공식 도착지. 독립 SNS 미개설 결정 유지",
+      "operatingScope": "WEB_DESTINATION",
+      "publishable": false,
+      "sharedBrands": []
+    },
+    {
+      "id": "web-pulse-listen",
+      "brand": "PULSE",
+      "platform": "website",
+      "handle": null,
+      "publicUrl": "https://synk.im/listen/",
+      "loginAlias": null,
+      "accountStatus": "web-destination",
+      "profileStatus": "not-applicable-website",
+      "coverStatus": "not-applicable-website",
+      "lastEvidenceAt": "2026-09-19",
+      "nextAction": "공식 도착지로 연결한다. SNS 계정이나 개설 완료 슬롯으로 계산하지 않는다. 실제 사용 시 공개 페이지 상태를 확인한다.",
+      "sourcePaths": [
+        "docs/마케팅/SNS_계정_전체목록_20260919.md",
+        "docs/마케팅/채널과_발행.md"
+      ],
+      "country": null,
+      "channelRole": "SYNK Radio 감상 도착지. LAB YouTube 공유 라이브와 구분",
+      "operatingScope": "WEB_DESTINATION",
+      "publishable": false,
+      "sharedBrands": [
+        "LAB"
+      ]
+    }
+  ]
+}
