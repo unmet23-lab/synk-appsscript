@@ -151,7 +151,7 @@ test('global scoped hooks stay silent in unrelated non-Git directories', async (
 });
 
 for (const hookEvent of ['SessionStart', 'UserPromptSubmit']) {
-  test(hookEvent + ': additionalContext only; no prompt, path, contents, branch or subject leaks', () => {
+  test(hookEvent + ': retired invocation adds no context even in an existing workspace', () => {
     const result = cli(['--hook', '--repo', repo], JSON.stringify({
       cwd: ahead, hook_event_name: hookEvent, prompt: SECRET,
       transcript_path: path.join(temporary, SECRET), session_id: SECRET,
@@ -159,11 +159,7 @@ for (const hookEvent of ['SessionStart', 'UserPromptSubmit']) {
     }));
     assert.equal(result.status, 0);
     assert.equal(result.stderr, '');
-    const payload = JSON.parse(result.stdout);
-    assert.deepEqual(Object.keys(payload), ['hookSpecificOutput']);
-    assert.deepEqual(Object.keys(payload.hookSpecificOutput), ['hookEventName', 'additionalContext']);
-    assert.equal(payload.hookSpecificOutput.hookEventName, hookEvent);
-    assert.match(payload.hookSpecificOutput.additionalContext, /최신 상태 관찰/);
+    assert.equal(result.stdout, '');
     assert.ok(!result.stdout.includes(SECRET));
     assert.ok(!result.stdout.includes(temporary));
     assert.ok(!result.stdout.includes('continue'));
@@ -182,6 +178,26 @@ test('manual JSON is safe metadata only and manual text is short', () => {
   assert.ok(!plain.stdout.includes(SECRET));
 });
 
+test('retired hook commands never read stdin or start a repository scan', () => {
+  const preload = path.join(temporary, 'forbid-hook-observation.cjs');
+  fs.writeFileSync(preload, `
+    const fail = () => { throw new Error('retired hook performed I/O'); };
+    require('node:child_process').execFile = fail;
+    require('node:fs/promises').realpath = fail;
+    process.stdin.resume = fail;
+  `);
+  for (const flag of ['--hook', '--antigravity-hook']) {
+    const result = spawnSync(process.execPath, ['--require', preload, SCRIPT, flag, '--repo', repo], {
+      cwd: repo, input: JSON.stringify({ cwd: repo, hook_event_name: 'UserPromptSubmit',
+        workspacePaths: [repo], invocationNum: 0 }),
+      encoding: 'utf8', windowsHide: true, timeout: 5000,
+    });
+    assert.equal(result.status, 0);
+    assert.equal(result.stdout, '');
+    assert.equal(result.stderr, '');
+  }
+});
+
 test('invalid stdin, unavailable cwd and invalid options do not block or disclose errors', () => {
   for (const [args, input] of [
     [['--hook', '--repo', repo], '{' + SECRET],
@@ -191,7 +207,8 @@ test('invalid stdin, unavailable cwd and invalid options do not block or disclos
   ]) {
     const result = cli(args, input);
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /최신 확인 불가/);
+    if (args.includes('--hook')) assert.equal(result.stdout, '');
+    else assert.match(result.stdout, /최신 확인 불가/);
     assert.equal(result.stderr, '');
     assert.ok(!result.stdout.includes(SECRET));
   }
@@ -267,7 +284,7 @@ test('manual timeout CLI accepts only one bounded integer and preserves repeated
   assert.equal(parseArgs([]).timeoutMs, undefined);
 });
 
-test('both automatic CLI modes reject timeout overrides in either argument order without disclosing input', () => {
+test('retired CLI modes stay silent even with legacy invalid timeout combinations', () => {
   for (const hook of ['--hook', '--antigravity-hook']) {
     for (const timeout of ['1', '30000']) {
       for (const args of [[hook, '--timeout-ms', timeout], ['--timeout-ms', timeout, hook]]) {
@@ -277,7 +294,7 @@ test('both automatic CLI modes reject timeout overrides in either argument order
         }));
         assert.equal(result.status, 0);
         assert.equal(result.stderr, '');
-        assert.match(result.stdout, /최신 확인 불가/);
+        assert.equal(result.stdout, '');
         assert.ok(!result.stdout.includes(SECRET));
         assert.ok(!result.stdout.includes('HEAD'));
       }
@@ -371,18 +388,14 @@ test('default-ref batching does not accept a non-commit object as the baseline',
   assert.equal(report.status, 'unavailable');
 });
 
-test('Antigravity first invocation finds the first matching workspace and injects ephemeral metadata only', () => {
+test('retired Antigravity first invocation injects nothing', () => {
   const result = cli(['--antigravity-hook', '--repo', repo], JSON.stringify({
     workspacePaths: [foreign, old], invocationNum: 0, transcriptPath: SECRET,
     conversationId: SECRET, artifactDirectoryPath: SECRET, modelName: SECRET,
   }));
   assert.equal(result.status, 0);
   assert.equal(result.stderr, '');
-  const payload = JSON.parse(result.stdout);
-  assert.deepEqual(Object.keys(payload), ['injectSteps']);
-  assert.equal(payload.injectSteps.length, 1);
-  assert.deepEqual(Object.keys(payload.injectSteps[0]), ['ephemeralMessage']);
-  assert.match(payload.injectSteps[0].ephemeralMessage, /뒤처짐 1/);
+  assert.equal(result.stdout, '');
   assert.ok(!result.stdout.includes(SECRET));
   assert.ok(!result.stdout.includes('userMessage'));
 });
@@ -406,12 +419,11 @@ test('Antigravity later invocations, empty workspaces and unrelated repositories
   }
 });
 
-test('Antigravity malformed input is non-blocking JSON and ignores secret fields', () => {
+test('retired Antigravity malformed input is silent', () => {
   const result = cli(['--antigravity-hook', '--repo', repo], '{' + SECRET);
   assert.equal(result.status, 0);
   assert.equal(result.stderr, '');
-  const payload = JSON.parse(result.stdout);
-  assert.match(payload.injectSteps[0].ephemeralMessage, /최신 확인 불가/);
+  assert.equal(result.stdout, '');
   assert.ok(!result.stdout.includes(SECRET));
 });
 
@@ -458,7 +470,7 @@ test('repeated --repo preserves one-repository compatibility and selects only ma
   ]) {
     const result = cli([flag, '--repo', repo, '--repo', second], JSON.stringify(input));
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /configured-repo-2/);
+    assert.equal(result.stdout, '');
     assert.ok(!result.stdout.includes(second));
   }
 });

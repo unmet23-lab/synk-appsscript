@@ -40,7 +40,9 @@ const 머리 = '| 스킬 | 원본이 있는 곳 | 우리 판 | 우리가 고친 
 
 test('🔴 정본 표를 읽으면 저장소가 실제로 쥔 스킬이 나온다 — 분모가 «실물»과 같다', () => {
   const { 항목, 못읽은줄 } = 점검.표읽기();
-  assert.ok(항목.length >= 9, `표에서 ${항목.length}벌만 읽혔다 — 밖에서 들여온 스킬은 아홉이다`);
+  // 현재 출처 표의 관리 대상. 공식 플러그인 캐시와 SYNK 자작 스킬은 이 표에 섞지 않는다.
+  const 대상 = ['last30days', 'remotion-markup', 'remotion-captions', 'remotion-create', 'remotion-render', 'remotion-studio'];
+  assert.deepEqual(항목.map(x => x.이름).sort(), 대상.sort(), '출처 표의 실제 관리 대상이 빠지거나 중복되었다');
   assert.deepEqual(못읽은줄, [], `꼴이 깨진 줄이 있다: ${(못읽은줄 || []).join(' · ')}`);
 
   /* 표가 «낡는» 것을 여기서 막는다 — 적혀 있는 스킬이 실제로 폴더로 서 있어야 한다.

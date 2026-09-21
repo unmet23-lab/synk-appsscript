@@ -25,7 +25,7 @@ description: SYNK Apps Script 변경을 사용자가 라이브 반영까지 요�
    - 루트 Apps Script `.js`에 `node --check`를 실행하고 `appsscript.json`을 JSON으로 파싱한다.
    - `node tools/test-ci.js`와 `node tools/deploy-security-check.js`를 실행한다. 전체 저장소의 기존 실패와 이번 변경 때문에 생긴 실패를 나눠 보고, 이번 변경의 관련 실패나 P0·P1은 해결 전 배포하지 않는다.
    - `node tools/보안검토과녁.js`로 미커밋과 미배포 범위를 확인한다. 데이터·인증·익명 웹앱·소급 불가 변경은 현재 사용 가능한 공식/네이티브 검토 통로로 판단 검토까지 한다. 실행하지 못한 검토를 통과로 쓰지 않는다.
-   - Apps Script 배포 파일을 바꿨다면 필요에 따라 `node tools/codex-review.js`로 독립 검수를 실행한다. 종료 1(P0·P1)과 2(확인 불가)를 성공으로 읽지 않는다. 사용자에게 별도 수동 리뷰 명령을 기본 단계로 떠넘기지 않는다.
+   - Apps Script 배포 파일의 추가 검토가 필요하면 현재 공식 앱의 검토·에이전트 기능 또는 공식 CLI를 쓴다. 자체 `codex-review.js`의 신규 AI 실행은 은퇴했으며 옛 검수 도장은 현재 변경의 검증을 대신하지 않는다. 사용자에게 별도 수동 리뷰 명령을 기본 단계로 떠넘기지 않는다.
 
 3. **이력과 GitHub**
    - 버전 대상 파일에 `[vNEXT]`가 있으면 `node tools/bump-version.js --desc "한 줄 요약" --종류 <수리|보강|신설>`로 채번하고 `node tools/bump-version.js --check`로 대조한다.

@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 'use strict';
 
-// Read-only observations, not a synchronizer or a permission/decision hook.
-// Hook: node <canonical checkout>/tools/session-freshness.js --hook --repo <canonical checkout>
-// Antigravity PreInvocation: replace --hook with --antigravity-hook (invocationNum 0 only).
-// Repeat --repo for separately authorized repositories. Manual --files <relative file> is repeatable.
-// Manual checks may opt into --timeout-ms 1..30000; automatic hooks always retain the 1700ms cap.
+// Manual read-only observations, not a synchronizer or an automatic lifecycle hook.
+// Repeat --repo for separately authorized repositories; --files <relative file> is repeatable.
+// Manual checks may opt into --timeout-ms 1..30000.
+// Retired hook invocations exit silently, including calls retained by an already-open session.
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -481,27 +480,17 @@ async function collectAntigravity(input, { repo, timeoutMs = BUDGET_MS, run } = 
 }
 
 async function main() {
-  let options = { antigravityHook: process.argv.includes('--antigravity-hook') };
-  let hookEvent;
+  // Registrations were removed on 2026-09-21. A running host may still invoke
+  // its previous command; do not read stdin, scan Git, or inject more context.
+  if (process.argv.includes('--hook') || process.argv.includes('--antigravity-hook')) return;
+  let options = {};
   let report;
   try {
     options = parseArgs(process.argv.slice(2));
-    let cwd = process.cwd();
-    if (options.antigravityHook) {
-      const input = await readHookInput(process.stdin, true);
-      report = await collectAntigravity(input, { repo: options.repo });
-    } else if (options.hook) {
-      const input = await readHookInput(process.stdin);
-      hookEvent = input.hookEvent;
-      if (typeof hookEvent !== 'string') throw new Error('invalid-event');
-      if (!EVENTS.has(hookEvent)) return;
-      if (!localPath(input.cwd)) throw new Error('invalid-cwd');
-      cwd = input.cwd;
-    }
-    if (!report) report = await collect({ cwd, repo: options.repo, files: options.files,
-      timeoutMs: options.timeoutMs, manual: !options.hook && !options.antigravityHook });
+    report = await collect({ cwd: process.cwd(), repo: options.repo, files: options.files,
+      timeoutMs: options.timeoutMs, manual: true });
   } catch { report = { status: 'unavailable', observedAt: new Date().toISOString(), scopeVerified: false }; }
-  const text = output(report, { hookEvent, antigravityHook: options.antigravityHook, json: options.json });
+  const text = output(report, { json: options.json });
   if (text) process.stdout.write(text + '\n');
 }
 

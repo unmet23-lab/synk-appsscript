@@ -113,5 +113,21 @@
     const n = (session.lines().find(line => line.key === `trait:${key}`)?.n || 0) + 1;
     return session.observe({ kind: 'trait', key, strength: Math.min(1, n / 4), n, assisted: null });
   }
-  return { modesFor, leversFor, letterFocus, guidance, aboutYou, notice };
+  // G4 applies support only after submission. The questions, answers, order and
+  // scoring are not personalization levers; only how much review is open is.
+  function documentReview(plan, count, revealed = 1, opened = false) {
+    if (!Number.isInteger(count) || count < 0 || !Number.isInteger(revealed) || revealed < 1) throw new TypeError('Invalid review window');
+    const support = plan?.support || 'choose';
+    const visible = support === 'independent' && !opened ? 0 : support === 'step' ? Math.min(count, revealed) : count;
+    return { visible, remaining: count - visible };
+  }
+  function documentGuidance(plan) {
+    const support = plan?.support || 'choose';
+    return {
+      title: support === 'step' ? '한 문장씩 되돌아보기' : support === 'independent' ? '필요할 때 해설 열기' : '쓴 답과 해설 함께 살펴보기',
+      description: support === 'step' ? '해설을 하나씩 열어 볼 수 있어요. 원하면 모두 펼칠 수도 있어요.' : support === 'independent' ? '바꿔 쓴 문장부터 읽어 보고, 준비되면 빈칸 해설을 열어 보세요.' : '빈칸에 쓴 답과 해설을 함께 보며 다시 써 볼 문장을 골라요.',
+      reason: '도움 방식은 되돌아보기의 펼침만 바꿔요. 문제와 답은 그대로예요.',
+    };
+  }
+  return { modesFor, leversFor, letterFocus, guidance, aboutYou, notice, documentReview, documentGuidance };
 });

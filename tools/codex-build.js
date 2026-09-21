@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 'use strict';
+/* 2026-09-21: 자체 AI 실행 CLI는 은퇴했다. 새 구현·재개·작업 분담은 공식 앱/CLI에서 한다.
+ * 아래 옛 실행 구현과 export는 기존 검증·기록 소비자의 호환을 위해 보존한다.
+ * CLI는 로컬 기록·형식 조회만 지원하며 실행을 다시 여는 옵션은 없다. */
 /* codex-build — GPT(코덱스) «기술 실행자» 레인 (2026-09-04 · 유호 확정 「기술실행자 역할도 추가하고싶어 …
  * 이 모든걸 자동으로 흘러가게 시스템화 하고싶어」).
  *
@@ -624,7 +627,7 @@ function 공통지침대조() {
   let 사본 = null;
   try { 사본 = fs.readFileSync(공통지침경로, 'utf8').replace(/\r\n/g, '\n').trim(); } catch (_) { /* 없다 */ }
   if (사본 === 정본) { console.log(`✅ ${공통지침경로} 가 정본(docs/GPT_정본.md §6)과 같다.`); return 0; }
-  console.log(`🔴 ${공통지침경로} 가 정본과 다르다${사본 == null ? '(파일 없음)' : ''} — 정본을 그 자리에 다시 쓴다: node tools/codex-build.js --공통지침설치`);
+  console.log(`🔴 ${공통지침경로} 가 정본과 다르다${사본 == null ? '(파일 없음)' : ''} — 현재 공통 원문과 차이를 확인한다. 옛 자동 설치 명령은 은퇴했다.`);
   return 1;
 }
 function 공통지침설치() {
@@ -638,16 +641,21 @@ function 공통지침설치() {
 /* ── 본체 ─────────────────────────────────────────────────────────────────── */
 const 사용법 = [
   '사용:',
-  '  node tools/codex-build.js --발주 <발주서.md> [--저장소 <경로>] [--실행 luna|sol] [--효력 max] [--라운드 2] [--timeout 초]',
-  '                            [--버그만] [--발주검토안함] [--검수안함] [--던지기] [--마른손] [--한도무시]',
-  '  node tools/codex-build.js --런목록 · --공통지침대조 · --공통지침설치',
-  '  발주서 규격 = docs/발주서_틀.md · 종료코드 0 완주 / 1 처리할 것 남음 / 2 확인 불가',
+  '  자체 AI 실행은 은퇴했다. 새 작업은 공식 Codex/Claude 앱 또는 CLI에서 진행한다.',
+  '  node tools/codex-build.js --발주 <발주서.md> --마른손       기존 발주서 형식 조회',
+  '  node tools/codex-build.js --런목록 · --공통지침대조         로컬 기록/파일 대조',
+  '  --프롬프트확인·--던지기·--공통지침설치 및 신규 AI 실행은 은퇴했다. 종료 2는 실행하지 않았다는 뜻이다.',
 ].join('\n');
 
 function main(argv) {
   if (argv.includes('--help') || argv.includes('-h')) { console.log(사용법); return 0; }
   const 오류 = 인자게이트('codex-build', argv, [...아는플래그, '--공통지침설치']);
   if (오류) { console.error(오류); return 2; }
+  if (argv.includes('--던지기') || argv.includes('--공통지침설치') || argv.includes('--프롬프트확인') ||
+      !['--런목록', '--공통지침대조', '--마른손'].some((f) => argv.includes(f))) {
+    console.error(사용법);
+    return 2;
+  }
   /* 한도 우회는 env 로 심는다 — 여기서 한 번이면 던지기 자식·검수 자식까지 spawn env 로 흐른다
    * (`런.자식환경`). 성공 1회가 마커를 지우므로 오탐은 확인 강행 한 번으로 스스로 낫는다. */
   if (argv.includes(한도무시플래그)) process.env[런.한도무시키] = '1';
@@ -673,6 +681,14 @@ function main(argv) {
     console.error(`🔴 발주서 형식 오류 ${검사.오류들.length}건 — 코덱스를 안 태웠다(규격 = docs/발주서_틀.md):`);
     검사.오류들.forEach((e) => console.error('   · ' + e));
     return 2;
+  }
+  if (마른손 && !프롬프트확인) {
+    console.log(`발주: ${검사.제목}`);
+    console.log(`범위 ${검사.허용경로들.length}개: ${검사.허용경로들.join(' · ')}`);
+    console.log(`시험 ${검사.시험명령들.length}개: ${검사.시험명령들.join(' · ')}`);
+    console.log(`수용 기준 ${검사.수용기준들.length}개`);
+    console.log('(--마른손: 형식 조회만 했다. 모델 선택·워크트리 생성·AI 실행은 하지 않는다.)');
+    return 0;
   }
   if (argv.includes('--던지기')) return 던지기(argv, 발주경로);
 
