@@ -205,9 +205,9 @@ function synkbrief운영설치() {
     const log = ss.insertSheet(SYNKBRIEF_LOG_SHEET);
     log.appendRow(['시각', '캠페인ID', '처리 결과', 'HTTP 상태']); log.setFrozenRows(1); log.setColumnWidths(1, 4, 190);
   }
-  // 기존 onOpen과 morningJobs에 연결한다. 별도 트리거를 중복 생성하지 않는다.
-  synkbrief관리메뉴();
-  console.log('synkbrief 관리표·메뉴·매일 인증 점검 설치 완료. 발송 상태는 자동으로 바꾸지 않았습니다.');
+  // 편집기에서 설치해도 getUi 오류가 나지 않도록 메뉴는 시트를 열 때 onOpen이 만든다.
+  // 기존 morningJobs를 사용하므로 별도 트리거를 중복 생성하지 않는다.
+  console.log('synkbrief 관리표 설치 완료. 시트를 새로고침하면 운영 메뉴가 나타납니다. 발송 상태는 자동으로 바꾸지 않았습니다.');
 }
 
 function synkbrief등록표열기() {

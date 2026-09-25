@@ -69,3 +69,12 @@ test('게시 전 초안은 발송 자료로 등록하지 않는다',()=>{
   const f=registryFixture([['draft','초안','','synk','https://synk.im/brief/meeting/','자료',false,'']],[]);
   f.context.synkbrief등록적용();assert.equal(f.values.get('SYNKBRIEF_CAMPAIGN_INDEX'),'[]');assert.equal(f.calls.length,0);
 });
+
+test('편집기 재설치는 화면 UI 없이 완료하고 기존 운영 설정을 보존한다',()=>{
+  const f=fixture();
+  f.context.SpreadsheetApp={getActiveSpreadsheet:()=>({getId:()=> 'admin-sheet',getSheetByName:()=>({})}),getUi:()=>{throw Error('Cannot call SpreadsheetApp.getUi() from this context.');}};
+  assert.doesNotThrow(()=>f.context.synkbrief운영설치());
+  assert.equal(f.values.get('SYNKBRIEF_ADMIN_SHEET_ID'),'admin-sheet');
+  assert.equal(f.values.get('SYNKBRIEF_DM_ENABLED'),'1');
+  assert.equal(f.values.get('SYNKBRIEF_CAMPAIGN_INDEX'),'["meeting"]');
+});
