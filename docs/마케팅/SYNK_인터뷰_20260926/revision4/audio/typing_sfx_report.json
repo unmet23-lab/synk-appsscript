@@ -1,0 +1,425 @@
+{
+  "purpose": "Four quiet 1.4-second keyboard typing clusters for question cards.",
+  "provenance": "Original deterministic NumPy/SciPy synthesis; no external audio or learned generator used.",
+  "local_asset_search": "Project audio contains only interview/music assets; no usable keyboard/typing audio was found by filename search within the project.",
+  "timbre_design": "Soft band-limited contact noise with damped plastic taps; narrow stereo, small timing/strength variation, no bell or return flourish.",
+  "source_gain_guidance": "Start with unity gain on a black question card; source peaks are intentionally -24dBFS. Adjust by fixed gain after the dialogue/music arrangement is known.",
+  "timing_guidance": "Each asset is exactly 84 frames at 60fps. First contact is approximately 0.09s into the asset; align the asset start with the beginning of text typing.",
+  "dialogue_or_music_modified": false,
+  "whole_mix_created": false,
+  "limits": "Objective measurements verify format, peaks, silence at edges, and reproducibility; no listening-based realism claim is made.",
+  "assets": [
+    {
+      "file": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\typing_soft_01.wav",
+      "seed": 26092601,
+      "duration_seconds": 1.4,
+      "samples": 67200,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "PCM signed 24-bit little-endian",
+      "bytes": 403244,
+      "sha256": "396a395347d8de2ceb4a0490647a17f40e182f83cf59612e653d3d9c8d9b345e",
+      "peak_dbfs": -24.0,
+      "rms_dbfs": -50.56041954991084,
+      "loudness": {
+        "input_i": -45.03,
+        "input_tp": -23.94,
+        "input_lra": 0.0
+      },
+      "stereo_correlation": 0.9949846747889954,
+      "initial_10ms_all_zero": true,
+      "final_10ms_all_zero": true,
+      "clipped_samples": 0,
+      "deterministic_replay_equal": true,
+      "synthesis_static_gain": 0.11232077878235405,
+      "keystrokes": [
+        {
+          "key": 1,
+          "onset_sample": 4993,
+          "onset_seconds": 0.10402083333333334,
+          "relative_strength": 0.7861040991608599,
+          "pan": 0.08970775266965006
+        },
+        {
+          "key": 2,
+          "onset_sample": 8875,
+          "onset_seconds": 0.18489583333333334,
+          "relative_strength": 0.8488190118133995,
+          "pan": -0.009952215637741596
+        },
+        {
+          "key": 3,
+          "onset_sample": 14667,
+          "onset_seconds": 0.3055625,
+          "relative_strength": 0.8821643882701143,
+          "pan": 0.04563844786064272
+        },
+        {
+          "key": 4,
+          "onset_sample": 19283,
+          "onset_seconds": 0.4017291666666667,
+          "relative_strength": 0.7948511251607998,
+          "pan": 0.030971651891532698
+        },
+        {
+          "key": 5,
+          "onset_sample": 22775,
+          "onset_seconds": 0.4744791666666667,
+          "relative_strength": 0.9880449791719766,
+          "pan": -0.02378963900788933
+        },
+        {
+          "key": 6,
+          "onset_sample": 30071,
+          "onset_seconds": 0.6264791666666667,
+          "relative_strength": 0.8452888659732369,
+          "pan": 0.018199476616304805
+        },
+        {
+          "key": 7,
+          "onset_sample": 35410,
+          "onset_seconds": 0.7377083333333333,
+          "relative_strength": 1.0185888104512797,
+          "pan": -0.07276112967593987
+        },
+        {
+          "key": 8,
+          "onset_sample": 39446,
+          "onset_seconds": 0.8217916666666667,
+          "relative_strength": 1.0799346912875027,
+          "pan": 0.09366309280500029
+        },
+        {
+          "key": 9,
+          "onset_sample": 47570,
+          "onset_seconds": 0.9910416666666667,
+          "relative_strength": 0.8107824116054961,
+          "pan": -0.07895429281477778
+        },
+        {
+          "key": 10,
+          "onset_sample": 52249,
+          "onset_seconds": 1.0885208333333334,
+          "relative_strength": 0.9381914040427091,
+          "pan": -0.0902563133473827
+        },
+        {
+          "key": 11,
+          "onset_sample": 59039,
+          "onset_seconds": 1.2299791666666666,
+          "relative_strength": 0.9538964947097023,
+          "pan": 0.04141143649996712
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\typing_soft_02.wav",
+      "seed": 26092602,
+      "duration_seconds": 1.4,
+      "samples": 67200,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "PCM signed 24-bit little-endian",
+      "bytes": 403244,
+      "sha256": "16391fc2cbbcfd69987cf91accef4a8898939433674790b208864c06f022aa5b",
+      "peak_dbfs": -24.0,
+      "rms_dbfs": -50.50689136907474,
+      "loudness": {
+        "input_i": -45.21,
+        "input_tp": -23.99,
+        "input_lra": 0.0
+      },
+      "stereo_correlation": 0.9968672573715572,
+      "initial_10ms_all_zero": true,
+      "final_10ms_all_zero": true,
+      "clipped_samples": 0,
+      "deterministic_replay_equal": true,
+      "synthesis_static_gain": 0.12552274808107172,
+      "keystrokes": [
+        {
+          "key": 1,
+          "onset_sample": 4231,
+          "onset_seconds": 0.08814583333333334,
+          "relative_strength": 0.7914990601147345,
+          "pan": -0.07313438152232753
+        },
+        {
+          "key": 2,
+          "onset_sample": 8513,
+          "onset_seconds": 0.17735416666666667,
+          "relative_strength": 0.9283754569593179,
+          "pan": 0.00037430608568933543
+        },
+        {
+          "key": 3,
+          "onset_sample": 14541,
+          "onset_seconds": 0.3029375,
+          "relative_strength": 0.8682073933698967,
+          "pan": -0.08434948374754632
+        },
+        {
+          "key": 4,
+          "onset_sample": 19335,
+          "onset_seconds": 0.4028125,
+          "relative_strength": 0.8294590855436618,
+          "pan": -0.04939754741604632
+        },
+        {
+          "key": 5,
+          "onset_sample": 22575,
+          "onset_seconds": 0.4703125,
+          "relative_strength": 0.9391935906404402,
+          "pan": 0.014169731991110074
+        },
+        {
+          "key": 6,
+          "onset_sample": 30249,
+          "onset_seconds": 0.6301875,
+          "relative_strength": 0.7913404998083013,
+          "pan": -0.06356943051380289
+        },
+        {
+          "key": 7,
+          "onset_sample": 35048,
+          "onset_seconds": 0.7301666666666666,
+          "relative_strength": 0.8880510983552125,
+          "pan": -0.0009666219662322756
+        },
+        {
+          "key": 8,
+          "onset_sample": 39226,
+          "onset_seconds": 0.8172083333333333,
+          "relative_strength": 0.7932634023523043,
+          "pan": -0.09743050742977265
+        },
+        {
+          "key": 9,
+          "onset_sample": 47110,
+          "onset_seconds": 0.9814583333333333,
+          "relative_strength": 0.8023156080058832,
+          "pan": -0.058135701057441924
+        },
+        {
+          "key": 10,
+          "onset_sample": 52560,
+          "onset_seconds": 1.095,
+          "relative_strength": 0.83464780644488,
+          "pan": -0.00612844318113015
+        },
+        {
+          "key": 11,
+          "onset_sample": 58921,
+          "onset_seconds": 1.2275208333333334,
+          "relative_strength": 0.9651655072663021,
+          "pan": 0.06730608582995229
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\typing_soft_03.wav",
+      "seed": 26092603,
+      "duration_seconds": 1.4,
+      "samples": 67200,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "PCM signed 24-bit little-endian",
+      "bytes": 403244,
+      "sha256": "aa2bf18665045dd8ff9f220904135d833b403d6b64a735c154d04252d74d2c55",
+      "peak_dbfs": -24.0,
+      "rms_dbfs": -48.71093474542836,
+      "loudness": {
+        "input_i": -43.47,
+        "input_tp": -24.0,
+        "input_lra": 0.0
+      },
+      "stereo_correlation": 0.9966430738671426,
+      "initial_10ms_all_zero": true,
+      "final_10ms_all_zero": true,
+      "clipped_samples": 0,
+      "deterministic_replay_equal": true,
+      "synthesis_static_gain": 0.13919694714212405,
+      "keystrokes": [
+        {
+          "key": 1,
+          "onset_sample": 4568,
+          "onset_seconds": 0.09516666666666666,
+          "relative_strength": 0.9956185746309443,
+          "pan": 0.0815944341250334
+        },
+        {
+          "key": 2,
+          "onset_sample": 8496,
+          "onset_seconds": 0.177,
+          "relative_strength": 1.0717287120141261,
+          "pan": -0.05017233540232333
+        },
+        {
+          "key": 3,
+          "onset_sample": 14283,
+          "onset_seconds": 0.2975625,
+          "relative_strength": 0.8947174116500269,
+          "pan": -0.015854894368816708
+        },
+        {
+          "key": 4,
+          "onset_sample": 18852,
+          "onset_seconds": 0.39275,
+          "relative_strength": 0.9985645861081185,
+          "pan": 0.01251528327533355
+        },
+        {
+          "key": 5,
+          "onset_sample": 22719,
+          "onset_seconds": 0.4733125,
+          "relative_strength": 0.8516897991365024,
+          "pan": -0.04837103325493326
+        },
+        {
+          "key": 6,
+          "onset_sample": 29985,
+          "onset_seconds": 0.6246875,
+          "relative_strength": 0.8722247315284348,
+          "pan": -0.03655281703178381
+        },
+        {
+          "key": 7,
+          "onset_sample": 35560,
+          "onset_seconds": 0.7408333333333333,
+          "relative_strength": 0.9695391640377388,
+          "pan": -0.046466711796200814
+        },
+        {
+          "key": 8,
+          "onset_sample": 39213,
+          "onset_seconds": 0.8169375,
+          "relative_strength": 0.8322495560325909,
+          "pan": 0.09246567369920469
+        },
+        {
+          "key": 9,
+          "onset_sample": 47585,
+          "onset_seconds": 0.9913541666666666,
+          "relative_strength": 0.8673576934275857,
+          "pan": -0.06802294175609547
+        },
+        {
+          "key": 10,
+          "onset_sample": 52443,
+          "onset_seconds": 1.0925625,
+          "relative_strength": 0.7608293309241974,
+          "pan": -0.01894926822547585
+        },
+        {
+          "key": 11,
+          "onset_sample": 58322,
+          "onset_seconds": 1.2150416666666666,
+          "relative_strength": 0.9469825114480032,
+          "pan": 0.060196830816062835
+        }
+      ]
+    },
+    {
+      "file": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\typing_soft_04.wav",
+      "seed": 26092604,
+      "duration_seconds": 1.4,
+      "samples": 67200,
+      "sample_rate": 48000,
+      "channels": 2,
+      "codec": "PCM signed 24-bit little-endian",
+      "bytes": 403244,
+      "sha256": "15ee85cb20b8fb577de6ec54cb9cd9ee215ee26c8ecf797d8cbce22a667e71fd",
+      "peak_dbfs": -24.0,
+      "rms_dbfs": -49.90037756549646,
+      "loudness": {
+        "input_i": -44.49,
+        "input_tp": -23.87,
+        "input_lra": 0.0
+      },
+      "stereo_correlation": 0.9971312389711203,
+      "initial_10ms_all_zero": true,
+      "final_10ms_all_zero": true,
+      "clipped_samples": 0,
+      "deterministic_replay_equal": true,
+      "synthesis_static_gain": 0.11180483217078221,
+      "keystrokes": [
+        {
+          "key": 1,
+          "onset_sample": 4876,
+          "onset_seconds": 0.10158333333333333,
+          "relative_strength": 0.9135359763643387,
+          "pan": -0.00820126612650654
+        },
+        {
+          "key": 2,
+          "onset_sample": 8831,
+          "onset_seconds": 0.18397916666666667,
+          "relative_strength": 0.9423302171477247,
+          "pan": 0.006777558777955869
+        },
+        {
+          "key": 3,
+          "onset_sample": 14290,
+          "onset_seconds": 0.29770833333333335,
+          "relative_strength": 0.9644949328250648,
+          "pan": 0.008984458536842446
+        },
+        {
+          "key": 4,
+          "onset_sample": 19339,
+          "onset_seconds": 0.40289583333333334,
+          "relative_strength": 0.9342804822642687,
+          "pan": 0.08779846822177231
+        },
+        {
+          "key": 5,
+          "onset_sample": 23102,
+          "onset_seconds": 0.4812916666666667,
+          "relative_strength": 0.9929989995472189,
+          "pan": 0.04757722351324073
+        },
+        {
+          "key": 6,
+          "onset_sample": 30074,
+          "onset_seconds": 0.6265416666666667,
+          "relative_strength": 1.0678491668619676,
+          "pan": 0.0952872124031224
+        },
+        {
+          "key": 7,
+          "onset_sample": 34927,
+          "onset_seconds": 0.7276458333333333,
+          "relative_strength": 0.8814281103613542,
+          "pan": 0.04025660506806611
+        },
+        {
+          "key": 8,
+          "onset_sample": 39673,
+          "onset_seconds": 0.8265208333333334,
+          "relative_strength": 0.8487330611427244,
+          "pan": -0.06294949450398216
+        },
+        {
+          "key": 9,
+          "onset_sample": 47213,
+          "onset_seconds": 0.9836041666666666,
+          "relative_strength": 1.0291058010697258,
+          "pan": -0.024669603294736414
+        },
+        {
+          "key": 10,
+          "onset_sample": 52064,
+          "onset_seconds": 1.0846666666666667,
+          "relative_strength": 0.9275530742286077,
+          "pan": 0.03586172338634977
+        },
+        {
+          "key": 11,
+          "onset_sample": 59270,
+          "onset_seconds": 1.2347916666666667,
+          "relative_strength": 0.8321946771369708,
+          "pan": -0.07803139335998995
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,271 @@
+{
+  "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision3\\audio\\dialogue_stem.wav",
+  "source_sha256": "43992e5360d88ccb1cf2a4d34112e6e5c4ba3e082fd733099c88abdc340491ca",
+  "edit_plan": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\edit_plan.json",
+  "edit_plan_sha256": "671875ff7f45010626c3a2ef4eb5f457a5630fe5def76a93f3370aafb5bc13b6",
+  "typing_events": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_typing_events.json",
+  "typing_events_sha256": "4089b004c954c489701d4f2f6add366a66c8ff72f3726012d462630b5e9b8079",
+  "music_source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\audio\\music\\Suno_Bright_Perspective_c69c5358.mp3",
+  "music_sha256": "3bf1513a11d00f8f42799dc52264ced602aa7cacfd0fc433dd0c396ee1c17987",
+  "samples": 11648000,
+  "duration": 242.66666666666666,
+  "duration_frames": 14560,
+  "fps": 60,
+  "sample_rate": 48000,
+  "channels": 2,
+  "dialogue_operations": [
+    "unity-gain rearrangement of approved v3 PCM",
+    "8 ms fade only on newly trimmed edges"
+  ],
+  "dialogue_static_gain_db": 0.0,
+  "shared_master_trim_db": 0.0,
+  "music_headroom_trim_db": 0.0,
+  "dialogue_measure": {
+    "input_i": -16.97,
+    "input_tp": -1.53,
+    "input_lra": 5.3,
+    "input_thresh": -27.01
+  },
+  "music_measure": {
+    "input_i": -32.63,
+    "input_tp": -19.04,
+    "input_lra": 1.9,
+    "input_thresh": -42.64
+  },
+  "sfx_measure": {
+    "input_i": -44.74,
+    "input_tp": -23.88,
+    "input_lra": 6.6,
+    "input_thresh": -54.81
+  },
+  "mix_measure": {
+    "input_i": -16.85,
+    "input_tp": -1.29,
+    "input_lra": 5.4,
+    "input_thresh": -27.11
+  },
+  "music_before": {
+    "input_i": -16.49,
+    "input_tp": -3.03,
+    "input_lra": 1.6,
+    "input_thresh": -26.49
+  },
+  "premix_measure": {
+    "input_i": -16.85,
+    "input_tp": -1.29,
+    "input_lra": 5.4,
+    "input_thresh": -27.11
+  },
+  "music_filter": "highpass=f=55:p=2,equalizer=f=1700:t=o:w=2:g=-4",
+  "music_normalization_gain_db": -16.01,
+  "music_baseline_target_lufs": -32.5,
+  "music_repeated": false,
+  "music_source_offset_seconds": 0,
+  "question_music_db_relative_to_speech_baseline": -3,
+  "typing_extra_music_duck_db": -2,
+  "phrase_gap_boost_db": 3.5,
+  "ending_lift_db": 1.5,
+  "ending_fade_seconds": 1.5,
+  "dialogue_denoiser": false,
+  "dialogue_agc": false,
+  "dialogue_compression": false,
+  "final_limiter": false,
+  "sfx_provenance": "Deterministic local tap synthesis synchronized to exact visible character frames; no external recording.",
+  "sfx_card_peak_dbfs": -24,
+  "sfx_event_count": 62,
+  "stem_relationship": "Sum dialogue_stem, music_stem and sfx_stem at unity gain.",
+  "cut_ranges": [
+    {
+      "id": "02_intro",
+      "prior_start_sample": 446400,
+      "output_start_sample": 0,
+      "samples": 264000,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "03_student",
+      "prior_start_sample": 710400,
+      "output_start_sample": 432000,
+      "samples": 277600,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "04_care",
+      "prior_start_sample": 988000,
+      "output_start_sample": 709600,
+      "samples": 416000,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "05_personal",
+      "prior_start_sample": 1404000,
+      "output_start_sample": 1125600,
+      "samples": 344000,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "new_personal_design",
+      "prior_start_sample": 7411200,
+      "output_start_sample": 1469600,
+      "samples": 792000,
+      "new_head_fade_samples": 384,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "new_level4_reason",
+      "prior_start_sample": 9105600,
+      "output_start_sample": 2429600,
+      "samples": 1059200,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 384,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "new_accountability",
+      "prior_start_sample": 8203200,
+      "output_start_sample": 3488800,
+      "samples": 902400,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "new_analogue",
+      "prior_start_sample": 1748000,
+      "output_start_sample": 4559200,
+      "samples": 890400,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "01_hook",
+      "prior_start_sample": 0,
+      "output_start_sample": 5449600,
+      "samples": 446400,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "06_human",
+      "prior_start_sample": 2638400,
+      "output_start_sample": 5896000,
+      "samples": 318400,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "07_critical",
+      "prior_start_sample": 2956800,
+      "output_start_sample": 6214400,
+      "samples": 807200,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "10_philosophy",
+      "prior_start_sample": 4644000,
+      "output_start_sample": 7021600,
+      "samples": 672000,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "11_experience",
+      "prior_start_sample": 5316000,
+      "output_start_sample": 7693600,
+      "samples": 1037600,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "12_growth",
+      "prior_start_sample": 6353600,
+      "output_start_sample": 8731200,
+      "samples": 528800,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "13_education",
+      "prior_start_sample": 6882400,
+      "output_start_sample": 9260000,
+      "samples": 420800,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "14_leader",
+      "prior_start_sample": 10327200,
+      "output_start_sample": 9680800,
+      "samples": 315200,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "15_time",
+      "prior_start_sample": 10642400,
+      "output_start_sample": 10164000,
+      "samples": 704800,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "16_invitation",
+      "prior_start_sample": 11347200,
+      "output_start_sample": 10868800,
+      "samples": 481600,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    },
+    {
+      "id": "17_outro",
+      "prior_start_sample": 11828800,
+      "output_start_sample": 11350400,
+      "samples": 297600,
+      "new_head_fade_samples": 0,
+      "new_tail_fade_samples": 0,
+      "gain_relative_to_v3": 1.0
+    }
+  ],
+  "clipped_samples": 0,
+  "sample_peak": 0.8610334992408752,
+  "files": {
+    "dialogue_stem.wav": {
+      "bytes": 69888102,
+      "sha256": "25b4e7beb2d5e37bbbce0b2ff53627f6bd5058551296d955a21d132e9444c905"
+    },
+    "music_stem.wav": {
+      "bytes": 69888102,
+      "sha256": "4de25985934f4f45ca13ab79cb7d305282ed769086f947df3359f5d9069529be"
+    },
+    "sfx_stem.wav": {
+      "bytes": 69888102,
+      "sha256": "3dfeb17bdd8805a4f7c94cf27d206a4abe7e8ba72287a7c9d289df49fcf9b776"
+    },
+    "final_mix.wav": {
+      "bytes": 69888102,
+      "sha256": "61caa47f9c0cf9c000d78195f26ccbbc677a15dc1655889aae5d335a29bffafa"
+    }
+  },
+  "subjective_validation_limit": "Objective checks do not replace listening or certify perceived naturalness."
+}

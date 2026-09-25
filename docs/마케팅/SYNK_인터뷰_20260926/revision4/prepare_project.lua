@@ -1,0 +1,8 @@
+local r=resolve or Resolve()
+local pm=r:GetProjectManager()
+local p=assert(pm:GetCurrentProject())
+assert(not p:IsRenderingInProgress())
+assert(pm:SaveProject())
+assert(pm:ImportProject([[C:/Users/q1212/OneDrive/Desktop/SYNK_인터뷰_확장본_v3/SYNK_인터뷰_확장프로젝트_v3.drp]],'SYNK_Premium_4K60_Structured_v4_20260926'))
+local n=assert(pm:LoadProject('SYNK_Premium_4K60_Structured_v4_20260926'))
+print('STRUCTURED_PROJECT_READY',n:GetName(),n:GetTimelineCount())

@@ -1,0 +1,128 @@
+{
+  "passed": true,
+  "samples": 11648000,
+  "duration_frames": 14560,
+  "sample_rate": 48000,
+  "channels": 2,
+  "sample_width_bytes": 3,
+  "prior_v3_voice_comparisons": [
+    {
+      "id": "02_intro",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "03_student",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "04_care",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "05_personal",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "new_personal_design",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 1.1871452443301678e-07
+    },
+    {
+      "id": "new_level4_reason",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 1.1874362826347351e-07
+    },
+    {
+      "id": "new_accountability",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "new_analogue",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "01_hook",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "06_human",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "07_critical",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "10_philosophy",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "11_experience",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "12_growth",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "13_education",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "14_leader",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "15_time",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "16_invitation",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    },
+    {
+      "id": "17_outro",
+      "interior_max_abs_error": 0.0,
+      "max_abs_error_against_documented_fades": 0.0
+    }
+  ],
+  "stem_sum_max_abs_error": 1.1920928955078125e-07,
+  "one_pcm24_lsb": 1.1920928955078125e-07,
+  "question_voice_silence": [
+    {
+      "id": "Q1",
+      "dialogue_peak": 0.0
+    },
+    {
+      "id": "Q2",
+      "dialogue_peak": 0.0
+    },
+    {
+      "id": "Q3",
+      "dialogue_peak": 0.0
+    },
+    {
+      "id": "Q4",
+      "dialogue_peak": 0.0
+    }
+  ],
+  "sfx_outside_question_peak": 0.0,
+  "typing_frames_are_exact_sample_multiples_of_800": true,
+  "limits": "Numerical preservation and exact timing do not certify subjective sound quality."
+}

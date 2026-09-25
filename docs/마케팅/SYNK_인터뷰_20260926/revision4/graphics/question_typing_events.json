@@ -1,0 +1,1216 @@
+{
+  "version": 1,
+  "scope": "질문 카드 로컬 시간. 이 파일에는 사운드가 없으며 keystrokes를 오디오 제작에 사용한다.",
+  "main_font": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\fonts\\SUIT-SemiBold.otf",
+  "label_font": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\fonts\\SUIT-Medium.otf",
+  "main_size_px_at_4K": 128,
+  "label_size_px_at_4K": 60,
+  "background": "opaque black RGB 0,0,0",
+  "text_color": "neutral off-white RGB 238,238,238",
+  "label_color": "RGB 174,174,174",
+  "typing_start_frame": 12,
+  "typing_last_unit_frame": 90,
+  "typing_last_unit_full_opacity_frame": 90,
+  "fade_out_start_frame": 198,
+  "last_frame_black": 209,
+  "cards": [
+    {
+      "id": "question_01",
+      "question": "왜 이 시스템을 만들기 시작했나요?",
+      "lines": [
+        "왜 이 시스템을",
+        "만들기 시작했나요?"
+      ],
+      "output": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_01_4K60.mov",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "frames": 210,
+      "duration_seconds": 3.5,
+      "text_block_x": 1422,
+      "text_block_max_width": 996.0,
+      "main_first_line_y": 963,
+      "main_line_height": 192,
+      "label_x": 1422,
+      "label_y": 850,
+      "typing_units": [
+        {
+          "char": "왜",
+          "line": 0,
+          "x": 1422.0,
+          "y": 963,
+          "visible": true,
+          "frame": 12,
+          "time_seconds": 0.2
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 1534.0,
+          "y": 963,
+          "visible": false,
+          "frame": 17,
+          "time_seconds": 0.2833333333333333
+        },
+        {
+          "char": "이",
+          "line": 0,
+          "x": 1563.0,
+          "y": 963,
+          "visible": true,
+          "frame": 19,
+          "time_seconds": 0.31666666666666665
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 1675.0,
+          "y": 963,
+          "visible": false,
+          "frame": 24,
+          "time_seconds": 0.4
+        },
+        {
+          "char": "시",
+          "line": 0,
+          "x": 1704.0,
+          "y": 963,
+          "visible": true,
+          "frame": 26,
+          "time_seconds": 0.43333333333333335
+        },
+        {
+          "char": "스",
+          "line": 0,
+          "x": 1816.0,
+          "y": 963,
+          "visible": true,
+          "frame": 31,
+          "time_seconds": 0.5166666666666667
+        },
+        {
+          "char": "템",
+          "line": 0,
+          "x": 1928.0,
+          "y": 963,
+          "visible": true,
+          "frame": 36,
+          "time_seconds": 0.6
+        },
+        {
+          "char": "을",
+          "line": 0,
+          "x": 2040.0,
+          "y": 963,
+          "visible": true,
+          "frame": 41,
+          "time_seconds": 0.6833333333333333
+        },
+        {
+          "char": "\n",
+          "line": 0,
+          "visible": false,
+          "frame": 46,
+          "time_seconds": 0.7666666666666667
+        },
+        {
+          "char": "만",
+          "line": 1,
+          "x": 1422.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 48,
+          "time_seconds": 0.8
+        },
+        {
+          "char": "들",
+          "line": 1,
+          "x": 1534.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 53,
+          "time_seconds": 0.8833333333333333
+        },
+        {
+          "char": "기",
+          "line": 1,
+          "x": 1646.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 58,
+          "time_seconds": 0.9666666666666667
+        },
+        {
+          "char": " ",
+          "line": 1,
+          "x": 1758.0,
+          "y": 1155,
+          "visible": false,
+          "frame": 63,
+          "time_seconds": 1.05
+        },
+        {
+          "char": "시",
+          "line": 1,
+          "x": 1787.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 65,
+          "time_seconds": 1.0833333333333333
+        },
+        {
+          "char": "작",
+          "line": 1,
+          "x": 1899.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 70,
+          "time_seconds": 1.1666666666666667
+        },
+        {
+          "char": "했",
+          "line": 1,
+          "x": 2011.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 75,
+          "time_seconds": 1.25
+        },
+        {
+          "char": "나",
+          "line": 1,
+          "x": 2123.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 80,
+          "time_seconds": 1.3333333333333333
+        },
+        {
+          "char": "요",
+          "line": 1,
+          "x": 2235.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 85,
+          "time_seconds": 1.4166666666666667
+        },
+        {
+          "char": "?",
+          "line": 1,
+          "x": 2347.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 90,
+          "time_seconds": 1.5
+        }
+      ],
+      "keystrokes": [
+        {
+          "index": 1,
+          "frame": 12,
+          "time_seconds": 0.2,
+          "revealed_unit": "왜"
+        },
+        {
+          "index": 2,
+          "frame": 19,
+          "time_seconds": 0.31666666666666665,
+          "revealed_unit": "이"
+        },
+        {
+          "index": 3,
+          "frame": 26,
+          "time_seconds": 0.43333333333333335,
+          "revealed_unit": "시"
+        },
+        {
+          "index": 4,
+          "frame": 31,
+          "time_seconds": 0.5166666666666667,
+          "revealed_unit": "스"
+        },
+        {
+          "index": 5,
+          "frame": 36,
+          "time_seconds": 0.6,
+          "revealed_unit": "템"
+        },
+        {
+          "index": 6,
+          "frame": 41,
+          "time_seconds": 0.6833333333333333,
+          "revealed_unit": "을"
+        },
+        {
+          "index": 7,
+          "frame": 48,
+          "time_seconds": 0.8,
+          "revealed_unit": "만"
+        },
+        {
+          "index": 8,
+          "frame": 53,
+          "time_seconds": 0.8833333333333333,
+          "revealed_unit": "들"
+        },
+        {
+          "index": 9,
+          "frame": 58,
+          "time_seconds": 0.9666666666666667,
+          "revealed_unit": "기"
+        },
+        {
+          "index": 10,
+          "frame": 65,
+          "time_seconds": 1.0833333333333333,
+          "revealed_unit": "시"
+        },
+        {
+          "index": 11,
+          "frame": 70,
+          "time_seconds": 1.1666666666666667,
+          "revealed_unit": "작"
+        },
+        {
+          "index": 12,
+          "frame": 75,
+          "time_seconds": 1.25,
+          "revealed_unit": "했"
+        },
+        {
+          "index": 13,
+          "frame": 80,
+          "time_seconds": 1.3333333333333333,
+          "revealed_unit": "나"
+        },
+        {
+          "index": 14,
+          "frame": 85,
+          "time_seconds": 1.4166666666666667,
+          "revealed_unit": "요"
+        },
+        {
+          "index": 15,
+          "frame": 90,
+          "time_seconds": 1.5,
+          "revealed_unit": "?"
+        }
+      ]
+    },
+    {
+      "id": "question_02",
+      "question": "왜 TOPIK 4급이 중요한가요?",
+      "lines": [
+        "왜 TOPIK 4급이",
+        "중요한가요?"
+      ],
+      "output": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_02_4K60.mov",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "frames": 210,
+      "duration_seconds": 3.5,
+      "text_block_x": 1483,
+      "text_block_max_width": 874.0,
+      "main_first_line_y": 963,
+      "main_line_height": 192,
+      "label_x": 1483,
+      "label_y": 850,
+      "typing_units": [
+        {
+          "char": "왜",
+          "line": 0,
+          "x": 1483.0,
+          "y": 963,
+          "visible": true,
+          "frame": 12,
+          "time_seconds": 0.2
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 1595.0,
+          "y": 963,
+          "visible": false,
+          "frame": 18,
+          "time_seconds": 0.3
+        },
+        {
+          "char": "T",
+          "line": 0,
+          "x": 1624.0,
+          "y": 963,
+          "visible": true,
+          "frame": 21,
+          "time_seconds": 0.35
+        },
+        {
+          "char": "O",
+          "line": 0,
+          "x": 1706.0,
+          "y": 963,
+          "visible": true,
+          "frame": 24,
+          "time_seconds": 0.4
+        },
+        {
+          "char": "P",
+          "line": 0,
+          "x": 1819.0,
+          "y": 963,
+          "visible": true,
+          "frame": 28,
+          "time_seconds": 0.4666666666666667
+        },
+        {
+          "char": "I",
+          "line": 0,
+          "x": 1902.0,
+          "y": 963,
+          "visible": true,
+          "frame": 32,
+          "time_seconds": 0.5333333333333333
+        },
+        {
+          "char": "K",
+          "line": 0,
+          "x": 1936.0,
+          "y": 963,
+          "visible": true,
+          "frame": 36,
+          "time_seconds": 0.6
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 2025.0,
+          "y": 963,
+          "visible": false,
+          "frame": 40,
+          "time_seconds": 0.6666666666666666
+        },
+        {
+          "char": "4",
+          "line": 0,
+          "x": 2054.0,
+          "y": 963,
+          "visible": true,
+          "frame": 42,
+          "time_seconds": 0.7
+        },
+        {
+          "char": "급",
+          "line": 0,
+          "x": 2133.0,
+          "y": 963,
+          "visible": true,
+          "frame": 46,
+          "time_seconds": 0.7666666666666667
+        },
+        {
+          "char": "이",
+          "line": 0,
+          "x": 2245.0,
+          "y": 963,
+          "visible": true,
+          "frame": 52,
+          "time_seconds": 0.8666666666666667
+        },
+        {
+          "char": "\n",
+          "line": 0,
+          "visible": false,
+          "frame": 58,
+          "time_seconds": 0.9666666666666667
+        },
+        {
+          "char": "중",
+          "line": 1,
+          "x": 1483.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 61,
+          "time_seconds": 1.0166666666666666
+        },
+        {
+          "char": "요",
+          "line": 1,
+          "x": 1595.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 66,
+          "time_seconds": 1.1
+        },
+        {
+          "char": "한",
+          "line": 1,
+          "x": 1707.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 72,
+          "time_seconds": 1.2
+        },
+        {
+          "char": "가",
+          "line": 1,
+          "x": 1819.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 78,
+          "time_seconds": 1.3
+        },
+        {
+          "char": "요",
+          "line": 1,
+          "x": 1931.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 84,
+          "time_seconds": 1.4
+        },
+        {
+          "char": "?",
+          "line": 1,
+          "x": 2043.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 90,
+          "time_seconds": 1.5
+        }
+      ],
+      "keystrokes": [
+        {
+          "index": 1,
+          "frame": 12,
+          "time_seconds": 0.2,
+          "revealed_unit": "왜"
+        },
+        {
+          "index": 2,
+          "frame": 21,
+          "time_seconds": 0.35,
+          "revealed_unit": "T"
+        },
+        {
+          "index": 3,
+          "frame": 24,
+          "time_seconds": 0.4,
+          "revealed_unit": "O"
+        },
+        {
+          "index": 4,
+          "frame": 28,
+          "time_seconds": 0.4666666666666667,
+          "revealed_unit": "P"
+        },
+        {
+          "index": 5,
+          "frame": 32,
+          "time_seconds": 0.5333333333333333,
+          "revealed_unit": "I"
+        },
+        {
+          "index": 6,
+          "frame": 36,
+          "time_seconds": 0.6,
+          "revealed_unit": "K"
+        },
+        {
+          "index": 7,
+          "frame": 42,
+          "time_seconds": 0.7,
+          "revealed_unit": "4"
+        },
+        {
+          "index": 8,
+          "frame": 46,
+          "time_seconds": 0.7666666666666667,
+          "revealed_unit": "급"
+        },
+        {
+          "index": 9,
+          "frame": 52,
+          "time_seconds": 0.8666666666666667,
+          "revealed_unit": "이"
+        },
+        {
+          "index": 10,
+          "frame": 61,
+          "time_seconds": 1.0166666666666666,
+          "revealed_unit": "중"
+        },
+        {
+          "index": 11,
+          "frame": 66,
+          "time_seconds": 1.1,
+          "revealed_unit": "요"
+        },
+        {
+          "index": 12,
+          "frame": 72,
+          "time_seconds": 1.2,
+          "revealed_unit": "한"
+        },
+        {
+          "index": 13,
+          "frame": 78,
+          "time_seconds": 1.3,
+          "revealed_unit": "가"
+        },
+        {
+          "index": 14,
+          "frame": 84,
+          "time_seconds": 1.4,
+          "revealed_unit": "요"
+        },
+        {
+          "index": 15,
+          "frame": 90,
+          "time_seconds": 1.5,
+          "revealed_unit": "?"
+        }
+      ]
+    },
+    {
+      "id": "question_03",
+      "question": "AI 시대, 어떤 교육 철학이 필요한가요?",
+      "lines": [
+        "AI 시대, 어떤 교육 철학이",
+        "필요한가요?"
+      ],
+      "output": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_03_4K60.mov",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "frames": 210,
+      "duration_seconds": 3.5,
+      "text_block_x": 1272,
+      "text_block_max_width": 1297.0,
+      "main_first_line_y": 963,
+      "main_line_height": 192,
+      "label_x": 1272,
+      "label_y": 850,
+      "typing_units": [
+        {
+          "char": "A",
+          "line": 0,
+          "x": 1272.0,
+          "y": 963,
+          "visible": true,
+          "frame": 12,
+          "time_seconds": 0.2
+        },
+        {
+          "char": "I",
+          "line": 0,
+          "x": 1374.0,
+          "y": 963,
+          "visible": true,
+          "frame": 15,
+          "time_seconds": 0.25
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 1408.0,
+          "y": 963,
+          "visible": false,
+          "frame": 18,
+          "time_seconds": 0.3
+        },
+        {
+          "char": "시",
+          "line": 0,
+          "x": 1437.0,
+          "y": 963,
+          "visible": true,
+          "frame": 20,
+          "time_seconds": 0.3333333333333333
+        },
+        {
+          "char": "대",
+          "line": 0,
+          "x": 1549.0,
+          "y": 963,
+          "visible": true,
+          "frame": 24,
+          "time_seconds": 0.4
+        },
+        {
+          "char": ",",
+          "line": 0,
+          "x": 1661.0,
+          "y": 963,
+          "visible": true,
+          "frame": 28,
+          "time_seconds": 0.4666666666666667
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 1698.0,
+          "y": 963,
+          "visible": false,
+          "frame": 31,
+          "time_seconds": 0.5166666666666667
+        },
+        {
+          "char": "어",
+          "line": 0,
+          "x": 1727.0,
+          "y": 963,
+          "visible": true,
+          "frame": 33,
+          "time_seconds": 0.55
+        },
+        {
+          "char": "떤",
+          "line": 0,
+          "x": 1839.0,
+          "y": 963,
+          "visible": true,
+          "frame": 37,
+          "time_seconds": 0.6166666666666667
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 1951.0,
+          "y": 963,
+          "visible": false,
+          "frame": 41,
+          "time_seconds": 0.6833333333333333
+        },
+        {
+          "char": "교",
+          "line": 0,
+          "x": 1980.0,
+          "y": 963,
+          "visible": true,
+          "frame": 43,
+          "time_seconds": 0.7166666666666667
+        },
+        {
+          "char": "육",
+          "line": 0,
+          "x": 2092.0,
+          "y": 963,
+          "visible": true,
+          "frame": 48,
+          "time_seconds": 0.8
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 2204.0,
+          "y": 963,
+          "visible": false,
+          "frame": 52,
+          "time_seconds": 0.8666666666666667
+        },
+        {
+          "char": "철",
+          "line": 0,
+          "x": 2233.0,
+          "y": 963,
+          "visible": true,
+          "frame": 54,
+          "time_seconds": 0.9
+        },
+        {
+          "char": "학",
+          "line": 0,
+          "x": 2345.0,
+          "y": 963,
+          "visible": true,
+          "frame": 58,
+          "time_seconds": 0.9666666666666667
+        },
+        {
+          "char": "이",
+          "line": 0,
+          "x": 2457.0,
+          "y": 963,
+          "visible": true,
+          "frame": 62,
+          "time_seconds": 1.0333333333333334
+        },
+        {
+          "char": "\n",
+          "line": 0,
+          "visible": false,
+          "frame": 67,
+          "time_seconds": 1.1166666666666667
+        },
+        {
+          "char": "필",
+          "line": 1,
+          "x": 1272.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 69,
+          "time_seconds": 1.15
+        },
+        {
+          "char": "요",
+          "line": 1,
+          "x": 1384.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 73,
+          "time_seconds": 1.2166666666666666
+        },
+        {
+          "char": "한",
+          "line": 1,
+          "x": 1496.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 77,
+          "time_seconds": 1.2833333333333334
+        },
+        {
+          "char": "가",
+          "line": 1,
+          "x": 1608.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 81,
+          "time_seconds": 1.35
+        },
+        {
+          "char": "요",
+          "line": 1,
+          "x": 1720.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 86,
+          "time_seconds": 1.4333333333333333
+        },
+        {
+          "char": "?",
+          "line": 1,
+          "x": 1832.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 90,
+          "time_seconds": 1.5
+        }
+      ],
+      "keystrokes": [
+        {
+          "index": 1,
+          "frame": 12,
+          "time_seconds": 0.2,
+          "revealed_unit": "A"
+        },
+        {
+          "index": 2,
+          "frame": 15,
+          "time_seconds": 0.25,
+          "revealed_unit": "I"
+        },
+        {
+          "index": 3,
+          "frame": 20,
+          "time_seconds": 0.3333333333333333,
+          "revealed_unit": "시"
+        },
+        {
+          "index": 4,
+          "frame": 24,
+          "time_seconds": 0.4,
+          "revealed_unit": "대"
+        },
+        {
+          "index": 5,
+          "frame": 33,
+          "time_seconds": 0.55,
+          "revealed_unit": "어"
+        },
+        {
+          "index": 6,
+          "frame": 37,
+          "time_seconds": 0.6166666666666667,
+          "revealed_unit": "떤"
+        },
+        {
+          "index": 7,
+          "frame": 43,
+          "time_seconds": 0.7166666666666667,
+          "revealed_unit": "교"
+        },
+        {
+          "index": 8,
+          "frame": 48,
+          "time_seconds": 0.8,
+          "revealed_unit": "육"
+        },
+        {
+          "index": 9,
+          "frame": 54,
+          "time_seconds": 0.9,
+          "revealed_unit": "철"
+        },
+        {
+          "index": 10,
+          "frame": 58,
+          "time_seconds": 0.9666666666666667,
+          "revealed_unit": "학"
+        },
+        {
+          "index": 11,
+          "frame": 62,
+          "time_seconds": 1.0333333333333334,
+          "revealed_unit": "이"
+        },
+        {
+          "index": 12,
+          "frame": 69,
+          "time_seconds": 1.15,
+          "revealed_unit": "필"
+        },
+        {
+          "index": 13,
+          "frame": 77,
+          "time_seconds": 1.2833333333333334,
+          "revealed_unit": "한"
+        },
+        {
+          "index": 14,
+          "frame": 81,
+          "time_seconds": 1.35,
+          "revealed_unit": "가"
+        },
+        {
+          "index": 15,
+          "frame": 86,
+          "time_seconds": 1.4333333333333333,
+          "revealed_unit": "요"
+        },
+        {
+          "index": 16,
+          "frame": 90,
+          "time_seconds": 1.5,
+          "revealed_unit": "?"
+        }
+      ]
+    },
+    {
+      "id": "question_04",
+      "question": "기술이 만든 시간을 어떻게 쓰고 싶나요?",
+      "lines": [
+        "기술이 만든 시간을",
+        "어떻게 쓰고 싶나요?"
+      ],
+      "output": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_04_4K60.mov",
+      "width": 3840,
+      "height": 2160,
+      "fps": 60,
+      "frames": 210,
+      "duration_seconds": 3.5,
+      "text_block_x": 1408,
+      "text_block_max_width": 1025.0,
+      "main_first_line_y": 963,
+      "main_line_height": 192,
+      "label_x": 1408,
+      "label_y": 850,
+      "typing_units": [
+        {
+          "char": "기",
+          "line": 0,
+          "x": 1408.0,
+          "y": 963,
+          "visible": true,
+          "frame": 12,
+          "time_seconds": 0.2
+        },
+        {
+          "char": "술",
+          "line": 0,
+          "x": 1520.0,
+          "y": 963,
+          "visible": true,
+          "frame": 16,
+          "time_seconds": 0.26666666666666666
+        },
+        {
+          "char": "이",
+          "line": 0,
+          "x": 1632.0,
+          "y": 963,
+          "visible": true,
+          "frame": 21,
+          "time_seconds": 0.35
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 1744.0,
+          "y": 963,
+          "visible": false,
+          "frame": 25,
+          "time_seconds": 0.4166666666666667
+        },
+        {
+          "char": "만",
+          "line": 0,
+          "x": 1773.0,
+          "y": 963,
+          "visible": true,
+          "frame": 27,
+          "time_seconds": 0.45
+        },
+        {
+          "char": "든",
+          "line": 0,
+          "x": 1885.0,
+          "y": 963,
+          "visible": true,
+          "frame": 31,
+          "time_seconds": 0.5166666666666667
+        },
+        {
+          "char": " ",
+          "line": 0,
+          "x": 1997.0,
+          "y": 963,
+          "visible": false,
+          "frame": 35,
+          "time_seconds": 0.5833333333333334
+        },
+        {
+          "char": "시",
+          "line": 0,
+          "x": 2026.0,
+          "y": 963,
+          "visible": true,
+          "frame": 37,
+          "time_seconds": 0.6166666666666667
+        },
+        {
+          "char": "간",
+          "line": 0,
+          "x": 2138.0,
+          "y": 963,
+          "visible": true,
+          "frame": 41,
+          "time_seconds": 0.6833333333333333
+        },
+        {
+          "char": "을",
+          "line": 0,
+          "x": 2250.0,
+          "y": 963,
+          "visible": true,
+          "frame": 46,
+          "time_seconds": 0.7666666666666667
+        },
+        {
+          "char": "\n",
+          "line": 0,
+          "visible": false,
+          "frame": 50,
+          "time_seconds": 0.8333333333333334
+        },
+        {
+          "char": "어",
+          "line": 1,
+          "x": 1408.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 52,
+          "time_seconds": 0.8666666666666667
+        },
+        {
+          "char": "떻",
+          "line": 1,
+          "x": 1520.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 56,
+          "time_seconds": 0.9333333333333333
+        },
+        {
+          "char": "게",
+          "line": 1,
+          "x": 1632.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 61,
+          "time_seconds": 1.0166666666666666
+        },
+        {
+          "char": " ",
+          "line": 1,
+          "x": 1744.0,
+          "y": 1155,
+          "visible": false,
+          "frame": 65,
+          "time_seconds": 1.0833333333333333
+        },
+        {
+          "char": "쓰",
+          "line": 1,
+          "x": 1773.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 67,
+          "time_seconds": 1.1166666666666667
+        },
+        {
+          "char": "고",
+          "line": 1,
+          "x": 1885.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 71,
+          "time_seconds": 1.1833333333333333
+        },
+        {
+          "char": " ",
+          "line": 1,
+          "x": 1997.0,
+          "y": 1155,
+          "visible": false,
+          "frame": 75,
+          "time_seconds": 1.25
+        },
+        {
+          "char": "싶",
+          "line": 1,
+          "x": 2026.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 77,
+          "time_seconds": 1.2833333333333334
+        },
+        {
+          "char": "나",
+          "line": 1,
+          "x": 2138.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 81,
+          "time_seconds": 1.35
+        },
+        {
+          "char": "요",
+          "line": 1,
+          "x": 2250.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 86,
+          "time_seconds": 1.4333333333333333
+        },
+        {
+          "char": "?",
+          "line": 1,
+          "x": 2362.0,
+          "y": 1155,
+          "visible": true,
+          "frame": 90,
+          "time_seconds": 1.5
+        }
+      ],
+      "keystrokes": [
+        {
+          "index": 1,
+          "frame": 12,
+          "time_seconds": 0.2,
+          "revealed_unit": "기"
+        },
+        {
+          "index": 2,
+          "frame": 16,
+          "time_seconds": 0.26666666666666666,
+          "revealed_unit": "술"
+        },
+        {
+          "index": 3,
+          "frame": 21,
+          "time_seconds": 0.35,
+          "revealed_unit": "이"
+        },
+        {
+          "index": 4,
+          "frame": 27,
+          "time_seconds": 0.45,
+          "revealed_unit": "만"
+        },
+        {
+          "index": 5,
+          "frame": 31,
+          "time_seconds": 0.5166666666666667,
+          "revealed_unit": "든"
+        },
+        {
+          "index": 6,
+          "frame": 37,
+          "time_seconds": 0.6166666666666667,
+          "revealed_unit": "시"
+        },
+        {
+          "index": 7,
+          "frame": 41,
+          "time_seconds": 0.6833333333333333,
+          "revealed_unit": "간"
+        },
+        {
+          "index": 8,
+          "frame": 46,
+          "time_seconds": 0.7666666666666667,
+          "revealed_unit": "을"
+        },
+        {
+          "index": 9,
+          "frame": 56,
+          "time_seconds": 0.9333333333333333,
+          "revealed_unit": "떻"
+        },
+        {
+          "index": 10,
+          "frame": 61,
+          "time_seconds": 1.0166666666666666,
+          "revealed_unit": "게"
+        },
+        {
+          "index": 11,
+          "frame": 67,
+          "time_seconds": 1.1166666666666667,
+          "revealed_unit": "쓰"
+        },
+        {
+          "index": 12,
+          "frame": 71,
+          "time_seconds": 1.1833333333333333,
+          "revealed_unit": "고"
+        },
+        {
+          "index": 13,
+          "frame": 77,
+          "time_seconds": 1.2833333333333334,
+          "revealed_unit": "싶"
+        },
+        {
+          "index": 14,
+          "frame": 81,
+          "time_seconds": 1.35,
+          "revealed_unit": "나"
+        },
+        {
+          "index": 15,
+          "frame": 86,
+          "time_seconds": 1.4333333333333333,
+          "revealed_unit": "요"
+        },
+        {
+          "index": 16,
+          "frame": 90,
+          "time_seconds": 1.5,
+          "revealed_unit": "?"
+        }
+      ]
+    }
+  ]
+}

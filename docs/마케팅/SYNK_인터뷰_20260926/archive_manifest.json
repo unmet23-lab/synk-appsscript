@@ -1,0 +1,259 @@
+{
+  "records": [
+    {
+      "path": "revision4/build_native.lua",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\build_native.lua",
+      "bytes": 15020,
+      "sha256": "c831275516cd4dbc788c6c1cf0a03d23872072250be6a33d7de40f0c4f438fac"
+    },
+    {
+      "path": "revision4/build_native_script.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\build_native_script.py",
+      "bytes": 7762,
+      "sha256": "099be57869cce0232d0cdc6b026908c201554c840503fa2e24b467808966def6"
+    },
+    {
+      "path": "revision4/build_plan.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\build_plan.py",
+      "bytes": 5055,
+      "sha256": "dd42fc5dc75012978814b6a2521d187b057d8670098b1a23a4fcab9807d51f10"
+    },
+    {
+      "path": "revision4/delivery_common_v4.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\delivery_common_v4.py",
+      "bytes": 9939,
+      "sha256": "e0591da7dfa8db54af4485b3728684ce7f4a75f692ada7b4028ba6ef68ebed9c"
+    },
+    {
+      "path": "revision4/delivery_v4_validation.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\delivery_v4_validation.json",
+      "bytes": 8867,
+      "sha256": "4aa5868997c887aec9aa76fd7f1afa6688b6080d30a34c9f0bc2c8b00f3f5920"
+    },
+    {
+      "path": "revision4/edit_plan.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\edit_plan.json",
+      "bytes": 11823,
+      "sha256": "671875ff7f45010626c3a2ef4eb5f457a5630fe5def76a93f3370aafb5bc13b6"
+    },
+    {
+      "path": "revision4/export_structured.lua",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\export_structured.lua",
+      "bytes": 710,
+      "sha256": "3d6ac916cc87f78ae9d81dfe536fde87af6a25a52f7c223831108178cfc26287"
+    },
+    {
+      "path": "revision4/final_validation.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\final_validation.json",
+      "bytes": 158625,
+      "sha256": "a78d3dd3db6d56065fc006aee43f26674adea426f5b610070ca0c7865b37a664"
+    },
+    {
+      "path": "revision4/native_stills.lua",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\native_stills.lua",
+      "bytes": 774,
+      "sha256": "d9d46dcbde185485bcaca614cd58d65d5f7cc1304e04e594f95c5c8ffb6a7af6"
+    },
+    {
+      "path": "revision4/overlay_plan.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\overlay_plan.json",
+      "bytes": 4408,
+      "sha256": "eb43dd7e47ed89ad36a13f88a7f3ba0afcce91e88789ff920555e9e8d96246ef"
+    },
+    {
+      "path": "revision4/package_delivery.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\package_delivery.py",
+      "bytes": 12937,
+      "sha256": "0af0cf0478468a054786ef3283c9e362bf5db44110ab4447a708438222aeb136"
+    },
+    {
+      "path": "revision4/picture_plan.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\picture_plan.json",
+      "bytes": 10009,
+      "sha256": "f75de7a8e2b3da2ff13eaadc468a9abec64fcef42427e8639f007ad83289dd3f"
+    },
+    {
+      "path": "revision4/prepare_project.lua",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\prepare_project.lua",
+      "bytes": 486,
+      "sha256": "d483e3296b653eac7a6afd605a5cce2940c725cc52404915803db783683cb162"
+    },
+    {
+      "path": "revision4/preview_v4_validation.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\preview_v4_validation.json",
+      "bytes": 5773,
+      "sha256": "53ddcc3b9a974688a3a2e8eed7c91fdddc2d559f48d39a07ddf62dc4e28f6dd5"
+    },
+    {
+      "path": "revision4/render_structured.lua",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\render_structured.lua",
+      "bytes": 1448,
+      "sha256": "2347163597fd9922145ed6c494ad5eb9552ee92023cabd8e79e5024d38c41ca4"
+    },
+    {
+      "path": "revision4/validate_audio.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validate_audio.py",
+      "bytes": 10370,
+      "sha256": "98194c39c4e100ffc8e59156c83824f15dc346d5d3c138963bdbc8e896133be4"
+    },
+    {
+      "path": "revision4/validate_final.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validate_final.py",
+      "bytes": 11653,
+      "sha256": "5100539dc4699353636ab1755c2f82a83c92c96adefb3ff6509f8e2d5bfb56c1"
+    },
+    {
+      "path": "revision4/visual_editorial_review.md",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\visual_editorial_review.md",
+      "bytes": 1667,
+      "sha256": "1f4388980394b1970580d8f6888993d1e73bc6dc69f83f4ef975b9a532d63382"
+    },
+    {
+      "path": "revision4/검증_실행안내.md",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\검증_실행안내.md",
+      "bytes": 3237,
+      "sha256": "d8fb2f49278ccc56658201197717c1b639a0feb97cba0f0161a657eb3c5ca175"
+    },
+    {
+      "path": "revision4/audio/check_reason_end.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\check_reason_end.py",
+      "bytes": 3318,
+      "sha256": "e5a9491cb3af11c4ea7eeb5b7b9f8a1e20ab48d586510663fec75dabf0bb037a"
+    },
+    {
+      "path": "revision4/audio/make_typing_sfx.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\make_typing_sfx.py",
+      "bytes": 6693,
+      "sha256": "22937c4c542c7879843a4a0630902bd7ce72d8382abffa2dd539ffd4a1191846"
+    },
+    {
+      "path": "revision4/audio/mix_report.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\mix_report.json",
+      "bytes": 8309,
+      "sha256": "5ab53c6a6fb2cca298edcd48bdb79f3014caecaae280b94699771c2f052cf14c"
+    },
+    {
+      "path": "revision4/audio/mix_structured.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\mix_structured.py",
+      "bytes": 13944,
+      "sha256": "2bb82ae4ae54d12311f256fa5531a0172caa59144e7e9c064e6cabc695b67326"
+    },
+    {
+      "path": "revision4/audio/mix_validation.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\mix_validation.json",
+      "bytes": 3348,
+      "sha256": "4c1771aa884e8ef952236c0f9a81cfce60d7ba96903d3f097943b1e5939a5b74"
+    },
+    {
+      "path": "revision4/audio/reason_end_analysis.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\reason_end_analysis.json",
+      "bytes": 27033,
+      "sha256": "3bf2e9a35bf2cc81daf3de1636b237fdbeb9894759821a9663bfdcb3cb454b28"
+    },
+    {
+      "path": "revision4/audio/sfx_timeline_schedule.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\sfx_timeline_schedule.json",
+      "bytes": 10059,
+      "sha256": "7460f8d42444db831d6583b931df7548105cd8b6ee094b756668c50ba76ddcf1"
+    },
+    {
+      "path": "revision4/audio/typing_sfx_report.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\typing_sfx_report.json",
+      "bytes": 14056,
+      "sha256": "6d40a8a6149aac3b8bd7527ee1dc2fd94107532c6df6cfd2aaae674853d0e2bb"
+    },
+    {
+      "path": "revision4/audio/why_boundary.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\why_boundary.json",
+      "bytes": 1118,
+      "sha256": "0808fb1a987410f66f3b9b44ad71a4d5824860f908e2b183fd600ea921915da1"
+    },
+    {
+      "path": "revision4/audio/why_boundary_cut_asr.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\why_boundary_cut_asr.json",
+      "bytes": 1408,
+      "sha256": "9163f586c6403005bff572de8f560ab18749c9625cbd4636f861a7a8631b6edd"
+    },
+    {
+      "path": "revision4/graphics/build_question_cards.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\build_question_cards.py",
+      "bytes": 7016,
+      "sha256": "1150949ea07cd8b4c236a807d5e516282ea3ea5ae661ddcbcf48014d90b98829"
+    },
+    {
+      "path": "revision4/graphics/captions.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\captions.json",
+      "bytes": 18111,
+      "sha256": "37ced150ee9093321738a11613a869b23fd4665b3e75c2dfb184c03110f3b25d"
+    },
+    {
+      "path": "revision4/graphics/QUESTION_CARDS_HANDOFF.md",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\QUESTION_CARDS_HANDOFF.md",
+      "bytes": 3091,
+      "sha256": "d8c51692c0d0637070bd48a628477277991470fd98adc1a0dd2664dc28efdfbe"
+    },
+    {
+      "path": "revision4/graphics/question_cards_head_tail_validation.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_cards_head_tail_validation.json",
+      "bytes": 1083,
+      "sha256": "6f77aec8a0fe1cd7a84bc3780e3545a6568b71639216a8a64ca77260d25e5d1e"
+    },
+    {
+      "path": "revision4/graphics/question_cards_pixel_validation.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_cards_pixel_validation.json",
+      "bytes": 2555,
+      "sha256": "cdbe4a69487889420534bc83597d3182bc00dc858bb121176d45072272673dfc"
+    },
+    {
+      "path": "revision4/graphics/question_cards_validation.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_cards_validation.json",
+      "bytes": 1443,
+      "sha256": "075233e7f42c506be81b1403b0a453351e9f7b6f6c8697cc1a7e7113941ad6ed"
+    },
+    {
+      "path": "revision4/graphics/question_typing_events.json",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_typing_events.json",
+      "bytes": 29339,
+      "sha256": "4089b004c954c489701d4f2f6add366a66c8ff72f3726012d462630b5e9b8079"
+    },
+    {
+      "path": "revision4/graphics/SYNK_Structured_ko.srt",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\SYNK_Structured_ko.srt",
+      "bytes": 6054,
+      "sha256": "6ffa28d9c08134826675dbeb1a29d0a57020802bc1ec68e56649b082fe111587"
+    },
+    {
+      "path": "revision4/graphics/verify_question_cards.py",
+      "source": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\verify_question_cards.py",
+      "bytes": 2085,
+      "sha256": "db1c1c3bc6435a7833c0de735e18d7749921017e984a635428fbb5e8eab5d377"
+    },
+    {
+      "path": "delivery/SYNK_인터뷰_구성개선_프로젝트_v4.drp",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_인터뷰_구성개선_v4\\SYNK_인터뷰_구성개선_프로젝트_v4.drp",
+      "bytes": 429036,
+      "sha256": "1431e6cafd0b37bb81add387d0d348d51dce5a275ecd58f225cf517e15dec01c"
+    },
+    {
+      "path": "delivery/SYNK_인터뷰_구성개선_타임라인_v4.drt",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_인터뷰_구성개선_v4\\SYNK_인터뷰_구성개선_타임라인_v4.drt",
+      "bytes": 70693,
+      "sha256": "fe07e83e5a3a34b67a63c535928455ad01d1c420a623bdbef4c758d4160e836a"
+    },
+    {
+      "path": "delivery/SYNK_인터뷰_구성개선_한국어_v4.srt",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_인터뷰_구성개선_v4\\SYNK_인터뷰_구성개선_한국어_v4.srt",
+      "bytes": 6054,
+      "sha256": "6ffa28d9c08134826675dbeb1a29d0a57020802bc1ec68e56649b082fe111587"
+    },
+    {
+      "path": "delivery/읽어주세요_v4.md",
+      "source": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_인터뷰_구성개선_v4\\읽어주세요_v4.md",
+      "bytes": 2439,
+      "sha256": "ded1650f3e4b4bf7f4bbd13d53910d9a98576ffadd5c3184e10d4c917f3f1f15"
+    }
+  ],
+  "media_in_git": false,
+  "source_workspace": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925",
+  "delivery_folder": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_인터뷰_구성개선_v4"
+}

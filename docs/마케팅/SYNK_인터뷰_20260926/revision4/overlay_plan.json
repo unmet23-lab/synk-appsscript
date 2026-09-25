@@ -1,0 +1,135 @@
+[
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 558,
+    "last": 888,
+    "record": 0,
+    "cut_id": "02_intro"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 888,
+    "last": 1235,
+    "record": 540,
+    "cut_id": "03_student"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 1235,
+    "last": 1755,
+    "record": 887,
+    "cut_id": "04_care"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 1755,
+    "last": 2185,
+    "record": 1407,
+    "cut_id": "05_personal"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision3\\graphics\\SYNK_v3_Additional_Captions_4K60_alpha.mov",
+    "first": 1248,
+    "last": 2238,
+    "record": 1837,
+    "cut_id": "new_personal_design"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision3\\graphics\\SYNK_v3_Additional_Captions_4K60_alpha.mov",
+    "first": 3366,
+    "last": 4690,
+    "record": 3037,
+    "cut_id": "new_level4_reason"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision3\\graphics\\SYNK_v3_Additional_Captions_4K60_alpha.mov",
+    "first": 2238,
+    "last": 3366,
+    "record": 4361,
+    "cut_id": "new_accountability"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision3\\graphics\\SYNK_v3_Additional_Captions_4K60_alpha.mov",
+    "first": 0,
+    "last": 1113,
+    "record": 5699,
+    "cut_id": "new_analogue"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 0,
+    "last": 558,
+    "record": 6812,
+    "cut_id": "01_hook"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 2185,
+    "last": 2583,
+    "record": 7370,
+    "cut_id": "06_human"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 2583,
+    "last": 3592,
+    "record": 7768,
+    "cut_id": "07_critical"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 4692,
+    "last": 5532,
+    "record": 8777,
+    "cut_id": "10_philosophy"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 5532,
+    "last": 6829,
+    "record": 9617,
+    "cut_id": "11_experience"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 6829,
+    "last": 7490,
+    "record": 10914,
+    "cut_id": "12_growth"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 7490,
+    "last": 8016,
+    "record": 11575,
+    "cut_id": "13_education"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 8016,
+    "last": 8410,
+    "record": 12101,
+    "cut_id": "14_leader"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 8410,
+    "last": 9291,
+    "record": 12705,
+    "cut_id": "15_time"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 9291,
+    "last": 9893,
+    "record": 13586,
+    "cut_id": "16_invitation"
+  },
+  {
+    "media": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\graphics\\SYNK_Premium_Captions_Titles_4K60_alpha.mov",
+    "first": 9893,
+    "last": 10265,
+    "record": 14188,
+    "cut_id": "17_outro"
+  }
+]

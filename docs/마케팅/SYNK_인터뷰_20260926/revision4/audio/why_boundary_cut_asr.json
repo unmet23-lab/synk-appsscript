@@ -1,0 +1,53 @@
+{
+  "source_start": 752.95,
+  "source_end": 757.2166666666667,
+  "model": "medium-int8-cached",
+  "vad": false,
+  "segments": [
+    {
+      "start": 752.95,
+      "end": 756.69,
+      "text": " 취업을 위해서 온 학생들이 생각보다 많거든요.",
+      "words": [
+        {
+          "start": 752.95,
+          "end": 753.63,
+          "text": " 취업을",
+          "probability": 0.7521106501420339
+        },
+        {
+          "start": 753.63,
+          "end": 754.11,
+          "text": " 위해서",
+          "probability": 0.8834399580955505
+        },
+        {
+          "start": 754.11,
+          "end": 754.33,
+          "text": " 온",
+          "probability": 0.9062041640281677
+        },
+        {
+          "start": 754.33,
+          "end": 755.21,
+          "text": " 학생들이",
+          "probability": 0.970366636912028
+        },
+        {
+          "start": 755.21,
+          "end": 756.0300000000001,
+          "text": " 생각보다",
+          "probability": 0.8459568321704865
+        },
+        {
+          "start": 756.0300000000001,
+          "end": 756.69,
+          "text": " 많거든요.",
+          "probability": 0.9787382781505585
+        }
+      ]
+    }
+  ],
+  "elapsed_seconds": 9.479074478149414,
+  "limits": "ASR result does not establish subjective naturalness or prove phoneme-level integrity."
+}

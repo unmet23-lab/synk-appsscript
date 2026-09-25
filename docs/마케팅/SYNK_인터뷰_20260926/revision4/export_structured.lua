@@ -1,0 +1,8 @@
+local r=resolve or Resolve()
+local pm=r:GetProjectManager();local p=assert(pm:GetCurrentProject())
+assert(p:GetName()=='SYNK_Premium_4K60_Structured_v4_20260926');assert(not p:IsRenderingInProgress())
+local t=assert(p:GetCurrentTimeline());assert(t:GetName()=='01_FINAL_4K60_v4' and t:GetEndFrame()==14560)
+assert(pm:SaveProject())
+assert(pm:ExportProject(p:GetName(),[[C:/Users/q1212/OneDrive/Desktop/SYNK_인터뷰_구성개선_v4/SYNK_인터뷰_구성개선_프로젝트_v4.drp]],true))
+assert(t:Export([[C:/Users/q1212/OneDrive/Desktop/SYNK_인터뷰_구성개선_v4/SYNK_인터뷰_구성개선_타임라인_v4.drt]],r.EXPORT_DRT))
+print('STRUCTURED_EXPORTED',t:GetEndFrame(),p:GetTimelineCount())

@@ -1,0 +1,6228 @@
+{
+  "output": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_인터뷰_구성개선_v4\\SYNK_인터뷰_구성개선_4K60_v4.mp4",
+  "bytes": 823336613,
+  "sha256": "116e09dae60b08a473d6e46d5c1dc15247d83dd4f675cc841cd24c5db5b2eb05",
+  "passed": true,
+  "full_decode": "pass",
+  "expected_frames": 14560,
+  "decoded_frames": 14560,
+  "duration_seconds": 242.66666666666666,
+  "video": {
+    "index": 0,
+    "codec_name": "hevc",
+    "codec_long_name": "H.265 / HEVC (High Efficiency Video Coding)",
+    "profile": "Main 10",
+    "codec_type": "video",
+    "codec_tag_string": "hvc1",
+    "codec_tag": "0x31637668",
+    "width": 3840,
+    "height": 2160,
+    "coded_width": 3840,
+    "coded_height": 2160,
+    "has_b_frames": 0,
+    "sample_aspect_ratio": "1:1",
+    "display_aspect_ratio": "16:9",
+    "pix_fmt": "yuv420p10le",
+    "level": 153,
+    "color_range": "tv",
+    "color_space": "bt709",
+    "color_primaries": "bt709",
+    "chroma_location": "left",
+    "field_order": "progressive",
+    "view_ids_available": "",
+    "view_pos_available": "",
+    "id": "0x1",
+    "r_frame_rate": "60/1",
+    "avg_frame_rate": "60/1",
+    "time_base": "1/15360",
+    "start_pts": 0,
+    "start_time": "0.000000",
+    "duration_ts": 3727360,
+    "duration": "242.666667",
+    "bit_rate": "26819158",
+    "nb_frames": "14560",
+    "extradata_size": 127,
+    "disposition": {
+      "default": 1,
+      "dub": 0,
+      "original": 0,
+      "comment": 0,
+      "lyrics": 0,
+      "karaoke": 0,
+      "forced": 0,
+      "hearing_impaired": 0,
+      "visual_impaired": 0,
+      "clean_effects": 0,
+      "attached_pic": 0,
+      "timed_thumbnails": 0,
+      "non_diegetic": 0,
+      "captions": 0,
+      "descriptions": 0,
+      "metadata": 0,
+      "dependent": 0,
+      "still_image": 0,
+      "multilayer": 0
+    },
+    "tags": {
+      "creation_time": "2026-09-25T17:50:25.000000Z",
+      "language": "und",
+      "handler_name": "VideoHandler",
+      "encoder": "H.265 10-bit",
+      "timecode": "00:00:00:00"
+    }
+  },
+  "audio": {
+    "index": 1,
+    "codec_name": "aac",
+    "codec_long_name": "AAC (Advanced Audio Coding)",
+    "profile": "LC",
+    "codec_type": "audio",
+    "codec_tag_string": "mp4a",
+    "codec_tag": "0x6134706d",
+    "mime_codec_string": "mp4a.40.2",
+    "sample_fmt": "fltp",
+    "sample_rate": "48000",
+    "channels": 2,
+    "channel_layout": "stereo",
+    "bits_per_sample": 0,
+    "initial_padding": 0,
+    "id": "0x2",
+    "r_frame_rate": "0/0",
+    "avg_frame_rate": "0/0",
+    "time_base": "1/48000",
+    "start_pts": 0,
+    "start_time": "0.000000",
+    "duration_ts": 11648000,
+    "duration": "242.666667",
+    "bit_rate": "320010",
+    "nb_frames": "11375",
+    "extradata_size": 2,
+    "disposition": {
+      "default": 1,
+      "dub": 0,
+      "original": 0,
+      "comment": 0,
+      "lyrics": 0,
+      "karaoke": 0,
+      "forced": 0,
+      "hearing_impaired": 0,
+      "visual_impaired": 0,
+      "clean_effects": 0,
+      "attached_pic": 0,
+      "timed_thumbnails": 0,
+      "non_diegetic": 0,
+      "captions": 0,
+      "descriptions": 0,
+      "metadata": 0,
+      "dependent": 0,
+      "still_image": 0,
+      "multilayer": 0
+    },
+    "tags": {
+      "creation_time": "2026-09-25T17:50:25.000000Z",
+      "language": "und",
+      "handler_name": "SoundHandler"
+    }
+  },
+  "plan_sha256": "671875ff7f45010626c3a2ef4eb5f457a5630fe5def76a93f3370aafb5bc13b6",
+  "picture_plan_sha256": "f75de7a8e2b3da2ff13eaadc468a9abec64fcef42427e8639f007ad83289dd3f",
+  "overlay_plan_sha256": "eb43dd7e47ed89ad36a13f88a7f3ba0afcce91e88789ff920555e9e8d96246ef",
+  "subtitle_sha256": "6ffa28d9c08134826675dbeb1a29d0a57020802bc1ec68e56649b082fe111587",
+  "mix_report_sha256": "5ab53c6a6fb2cca298edcd48bdb79f3014caecaae280b94699771c2f052cf14c",
+  "subtitle_cues": 69,
+  "inputs_unchanged_during_validation": true,
+  "allowed_black_intervals_frames": [
+    [
+      330,
+      540
+    ],
+    [
+      2827,
+      3037
+    ],
+    [
+      5489,
+      5699
+    ],
+    [
+      12495,
+      12705
+    ]
+  ],
+  "black_intervals": [
+    {
+      "start": 5.5,
+      "end": 9.0,
+      "duration": 3.5
+    },
+    {
+      "start": 47.116667,
+      "end": 50.616667,
+      "duration": 3.5
+    },
+    {
+      "start": 91.483333,
+      "end": 94.983333,
+      "duration": 3.5
+    },
+    {
+      "start": 208.25,
+      "end": 211.75,
+      "duration": 3.5
+    }
+  ],
+  "unexpected_black_intervals": [],
+  "picture_roi_black_frames": [
+    {
+      "frame": 330,
+      "seconds": 5.5,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 331,
+      "seconds": 5.516666666666667,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 332,
+      "seconds": 5.533333333333333,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 333,
+      "seconds": 5.55,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 334,
+      "seconds": 5.566666666666666,
+      "roi_black_ratio": 0.9998125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 335,
+      "seconds": 5.583333333333333,
+      "roi_black_ratio": 0.9997916666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 336,
+      "seconds": 5.6,
+      "roi_black_ratio": 0.9997916666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 337,
+      "seconds": 5.616666666666666,
+      "roi_black_ratio": 0.9997916666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 338,
+      "seconds": 5.633333333333334,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 339,
+      "seconds": 5.65,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 340,
+      "seconds": 5.666666666666667,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 341,
+      "seconds": 5.683333333333334,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 342,
+      "seconds": 5.7,
+      "roi_black_ratio": 0.9989583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 343,
+      "seconds": 5.716666666666667,
+      "roi_black_ratio": 0.9989583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 344,
+      "seconds": 5.733333333333333,
+      "roi_black_ratio": 0.9989583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 345,
+      "seconds": 5.75,
+      "roi_black_ratio": 0.9989583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 346,
+      "seconds": 5.766666666666667,
+      "roi_black_ratio": 0.9989583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 347,
+      "seconds": 5.783333333333333,
+      "roi_black_ratio": 0.9989583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 348,
+      "seconds": 5.8,
+      "roi_black_ratio": 0.9989583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 349,
+      "seconds": 5.816666666666666,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 350,
+      "seconds": 5.833333333333333,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 351,
+      "seconds": 5.85,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 352,
+      "seconds": 5.866666666666666,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 353,
+      "seconds": 5.883333333333334,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 354,
+      "seconds": 5.9,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 355,
+      "seconds": 5.916666666666667,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 356,
+      "seconds": 5.933333333333334,
+      "roi_black_ratio": 0.9979791666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 357,
+      "seconds": 5.95,
+      "roi_black_ratio": 0.9979583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 358,
+      "seconds": 5.966666666666667,
+      "roi_black_ratio": 0.9979583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 359,
+      "seconds": 5.983333333333333,
+      "roi_black_ratio": 0.9979583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 360,
+      "seconds": 6.0,
+      "roi_black_ratio": 0.9979583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 361,
+      "seconds": 6.016666666666667,
+      "roi_black_ratio": 0.9976875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 362,
+      "seconds": 6.033333333333333,
+      "roi_black_ratio": 0.9973541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 363,
+      "seconds": 6.05,
+      "roi_black_ratio": 0.9973541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 364,
+      "seconds": 6.066666666666666,
+      "roi_black_ratio": 0.9973541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 365,
+      "seconds": 6.083333333333333,
+      "roi_black_ratio": 0.9973541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 366,
+      "seconds": 6.1,
+      "roi_black_ratio": 0.9964375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 367,
+      "seconds": 6.116666666666666,
+      "roi_black_ratio": 0.9964375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 368,
+      "seconds": 6.133333333333334,
+      "roi_black_ratio": 0.9964375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 369,
+      "seconds": 6.15,
+      "roi_black_ratio": 0.9964375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 370,
+      "seconds": 6.166666666666667,
+      "roi_black_ratio": 0.9964791666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 371,
+      "seconds": 6.183333333333334,
+      "roi_black_ratio": 0.9955208333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 372,
+      "seconds": 6.2,
+      "roi_black_ratio": 0.9955,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 373,
+      "seconds": 6.216666666666667,
+      "roi_black_ratio": 0.9955,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 374,
+      "seconds": 6.233333333333333,
+      "roi_black_ratio": 0.9955,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 375,
+      "seconds": 6.25,
+      "roi_black_ratio": 0.9955,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 376,
+      "seconds": 6.266666666666667,
+      "roi_black_ratio": 0.9955,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 377,
+      "seconds": 6.283333333333333,
+      "roi_black_ratio": 0.9955,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 378,
+      "seconds": 6.3,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 379,
+      "seconds": 6.316666666666666,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 380,
+      "seconds": 6.333333333333333,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 381,
+      "seconds": 6.35,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 382,
+      "seconds": 6.366666666666666,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 383,
+      "seconds": 6.383333333333334,
+      "roi_black_ratio": 0.994,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 384,
+      "seconds": 6.4,
+      "roi_black_ratio": 0.9938958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 385,
+      "seconds": 6.416666666666667,
+      "roi_black_ratio": 0.9938958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 386,
+      "seconds": 6.433333333333334,
+      "roi_black_ratio": 0.9938958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 387,
+      "seconds": 6.45,
+      "roi_black_ratio": 0.9939375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 388,
+      "seconds": 6.466666666666667,
+      "roi_black_ratio": 0.99325,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 389,
+      "seconds": 6.483333333333333,
+      "roi_black_ratio": 0.99325,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 390,
+      "seconds": 6.5,
+      "roi_black_ratio": 0.99325,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 391,
+      "seconds": 6.516666666666667,
+      "roi_black_ratio": 0.99325,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 392,
+      "seconds": 6.533333333333333,
+      "roi_black_ratio": 0.99325,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 393,
+      "seconds": 6.55,
+      "roi_black_ratio": 0.99325,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 394,
+      "seconds": 6.566666666666666,
+      "roi_black_ratio": 0.99325,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 395,
+      "seconds": 6.583333333333333,
+      "roi_black_ratio": 0.9927708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 396,
+      "seconds": 6.6,
+      "roi_black_ratio": 0.9927708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 397,
+      "seconds": 6.616666666666666,
+      "roi_black_ratio": 0.9927708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 398,
+      "seconds": 6.633333333333334,
+      "roi_black_ratio": 0.9927708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 399,
+      "seconds": 6.65,
+      "roi_black_ratio": 0.9927708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 400,
+      "seconds": 6.666666666666667,
+      "roi_black_ratio": 0.992125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 401,
+      "seconds": 6.683333333333334,
+      "roi_black_ratio": 0.992125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 402,
+      "seconds": 6.7,
+      "roi_black_ratio": 0.992125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 403,
+      "seconds": 6.716666666666667,
+      "roi_black_ratio": 0.992125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 404,
+      "seconds": 6.733333333333333,
+      "roi_black_ratio": 0.992125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 405,
+      "seconds": 6.75,
+      "roi_black_ratio": 0.9912916666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 406,
+      "seconds": 6.766666666666667,
+      "roi_black_ratio": 0.9912916666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 407,
+      "seconds": 6.783333333333333,
+      "roi_black_ratio": 0.9912916666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 408,
+      "seconds": 6.8,
+      "roi_black_ratio": 0.9912916666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 409,
+      "seconds": 6.816666666666666,
+      "roi_black_ratio": 0.9912916666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 410,
+      "seconds": 6.833333333333333,
+      "roi_black_ratio": 0.9906458333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 411,
+      "seconds": 6.85,
+      "roi_black_ratio": 0.9906458333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 412,
+      "seconds": 6.866666666666666,
+      "roi_black_ratio": 0.9906458333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 413,
+      "seconds": 6.883333333333334,
+      "roi_black_ratio": 0.9906458333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 414,
+      "seconds": 6.9,
+      "roi_black_ratio": 0.9906458333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 415,
+      "seconds": 6.916666666666667,
+      "roi_black_ratio": 0.9900416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 416,
+      "seconds": 6.933333333333334,
+      "roi_black_ratio": 0.9899375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 417,
+      "seconds": 6.95,
+      "roi_black_ratio": 0.9899375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 418,
+      "seconds": 6.966666666666667,
+      "roi_black_ratio": 0.9899375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 419,
+      "seconds": 6.983333333333333,
+      "roi_black_ratio": 0.9899375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 420,
+      "seconds": 7.0,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 421,
+      "seconds": 7.016666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 422,
+      "seconds": 7.033333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 423,
+      "seconds": 7.05,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 424,
+      "seconds": 7.066666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 425,
+      "seconds": 7.083333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 426,
+      "seconds": 7.1,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 427,
+      "seconds": 7.116666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 428,
+      "seconds": 7.133333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 429,
+      "seconds": 7.15,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 430,
+      "seconds": 7.166666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 431,
+      "seconds": 7.183333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 432,
+      "seconds": 7.2,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 433,
+      "seconds": 7.216666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 434,
+      "seconds": 7.233333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 435,
+      "seconds": 7.25,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 436,
+      "seconds": 7.266666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 437,
+      "seconds": 7.283333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 438,
+      "seconds": 7.3,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 439,
+      "seconds": 7.316666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 440,
+      "seconds": 7.333333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 441,
+      "seconds": 7.35,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 442,
+      "seconds": 7.366666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 443,
+      "seconds": 7.383333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 444,
+      "seconds": 7.4,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 445,
+      "seconds": 7.416666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 446,
+      "seconds": 7.433333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 447,
+      "seconds": 7.45,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 448,
+      "seconds": 7.466666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 449,
+      "seconds": 7.483333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 450,
+      "seconds": 7.5,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 451,
+      "seconds": 7.516666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 452,
+      "seconds": 7.533333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 453,
+      "seconds": 7.55,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 454,
+      "seconds": 7.566666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 455,
+      "seconds": 7.583333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 456,
+      "seconds": 7.6,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 457,
+      "seconds": 7.616666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 458,
+      "seconds": 7.633333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 459,
+      "seconds": 7.65,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 460,
+      "seconds": 7.666666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 461,
+      "seconds": 7.683333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 462,
+      "seconds": 7.7,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 463,
+      "seconds": 7.716666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 464,
+      "seconds": 7.733333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 465,
+      "seconds": 7.75,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 466,
+      "seconds": 7.766666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 467,
+      "seconds": 7.783333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 468,
+      "seconds": 7.8,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 469,
+      "seconds": 7.816666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 470,
+      "seconds": 7.833333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 471,
+      "seconds": 7.85,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 472,
+      "seconds": 7.866666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 473,
+      "seconds": 7.883333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 474,
+      "seconds": 7.9,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 475,
+      "seconds": 7.916666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 476,
+      "seconds": 7.933333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 477,
+      "seconds": 7.95,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 478,
+      "seconds": 7.966666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 479,
+      "seconds": 7.983333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 480,
+      "seconds": 8.0,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 481,
+      "seconds": 8.016666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 482,
+      "seconds": 8.033333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 483,
+      "seconds": 8.05,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 484,
+      "seconds": 8.066666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 485,
+      "seconds": 8.083333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 486,
+      "seconds": 8.1,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 487,
+      "seconds": 8.116666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 488,
+      "seconds": 8.133333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 489,
+      "seconds": 8.15,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 490,
+      "seconds": 8.166666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 491,
+      "seconds": 8.183333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 492,
+      "seconds": 8.2,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 493,
+      "seconds": 8.216666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 494,
+      "seconds": 8.233333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 495,
+      "seconds": 8.25,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 496,
+      "seconds": 8.266666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 497,
+      "seconds": 8.283333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 498,
+      "seconds": 8.3,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 499,
+      "seconds": 8.316666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 500,
+      "seconds": 8.333333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 501,
+      "seconds": 8.35,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 502,
+      "seconds": 8.366666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 503,
+      "seconds": 8.383333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 504,
+      "seconds": 8.4,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 505,
+      "seconds": 8.416666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 506,
+      "seconds": 8.433333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 507,
+      "seconds": 8.45,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 508,
+      "seconds": 8.466666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 509,
+      "seconds": 8.483333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 510,
+      "seconds": 8.5,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 511,
+      "seconds": 8.516666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 512,
+      "seconds": 8.533333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 513,
+      "seconds": 8.55,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 514,
+      "seconds": 8.566666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 515,
+      "seconds": 8.583333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 516,
+      "seconds": 8.6,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 517,
+      "seconds": 8.616666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 518,
+      "seconds": 8.633333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 519,
+      "seconds": 8.65,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 520,
+      "seconds": 8.666666666666666,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 521,
+      "seconds": 8.683333333333334,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 522,
+      "seconds": 8.7,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 523,
+      "seconds": 8.716666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 524,
+      "seconds": 8.733333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 525,
+      "seconds": 8.75,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 526,
+      "seconds": 8.766666666666667,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 527,
+      "seconds": 8.783333333333333,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 528,
+      "seconds": 8.8,
+      "roi_black_ratio": 0.9897291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 529,
+      "seconds": 8.816666666666666,
+      "roi_black_ratio": 0.9898125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 530,
+      "seconds": 8.833333333333334,
+      "roi_black_ratio": 0.989875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 531,
+      "seconds": 8.85,
+      "roi_black_ratio": 0.9899375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 532,
+      "seconds": 8.866666666666667,
+      "roi_black_ratio": 0.99,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 533,
+      "seconds": 8.883333333333333,
+      "roi_black_ratio": 0.9902083333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 534,
+      "seconds": 8.9,
+      "roi_black_ratio": 0.9902291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 535,
+      "seconds": 8.916666666666666,
+      "roi_black_ratio": 0.9903125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 536,
+      "seconds": 8.933333333333334,
+      "roi_black_ratio": 0.9903958333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 537,
+      "seconds": 8.95,
+      "roi_black_ratio": 0.9904791666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 538,
+      "seconds": 8.966666666666667,
+      "roi_black_ratio": 0.991375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 539,
+      "seconds": 8.983333333333333,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2827,
+      "seconds": 47.11666666666667,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2828,
+      "seconds": 47.13333333333333,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2829,
+      "seconds": 47.15,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2830,
+      "seconds": 47.166666666666664,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2831,
+      "seconds": 47.18333333333333,
+      "roi_black_ratio": 0.9998125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2832,
+      "seconds": 47.2,
+      "roi_black_ratio": 0.9998125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2833,
+      "seconds": 47.21666666666667,
+      "roi_black_ratio": 0.9998125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2834,
+      "seconds": 47.233333333333334,
+      "roi_black_ratio": 0.9998125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2835,
+      "seconds": 47.25,
+      "roi_black_ratio": 0.9998125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2836,
+      "seconds": 47.266666666666666,
+      "roi_black_ratio": 0.9998125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2837,
+      "seconds": 47.28333333333333,
+      "roi_black_ratio": 0.9998125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2838,
+      "seconds": 47.3,
+      "roi_black_ratio": 0.9998125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2839,
+      "seconds": 47.31666666666667,
+      "roi_black_ratio": 0.999,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2840,
+      "seconds": 47.333333333333336,
+      "roi_black_ratio": 0.999,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2841,
+      "seconds": 47.35,
+      "roi_black_ratio": 0.999,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2842,
+      "seconds": 47.36666666666667,
+      "roi_black_ratio": 0.999,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2843,
+      "seconds": 47.38333333333333,
+      "roi_black_ratio": 0.999,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2844,
+      "seconds": 47.4,
+      "roi_black_ratio": 0.999,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2845,
+      "seconds": 47.416666666666664,
+      "roi_black_ratio": 0.999,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2846,
+      "seconds": 47.43333333333333,
+      "roi_black_ratio": 0.999,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2847,
+      "seconds": 47.45,
+      "roi_black_ratio": 0.999,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2848,
+      "seconds": 47.46666666666667,
+      "roi_black_ratio": 0.9985833333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2849,
+      "seconds": 47.483333333333334,
+      "roi_black_ratio": 0.9985833333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2850,
+      "seconds": 47.5,
+      "roi_black_ratio": 0.9985833333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2851,
+      "seconds": 47.516666666666666,
+      "roi_black_ratio": 0.9981041666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2852,
+      "seconds": 47.53333333333333,
+      "roi_black_ratio": 0.9980833333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2853,
+      "seconds": 47.55,
+      "roi_black_ratio": 0.9980833333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2854,
+      "seconds": 47.56666666666667,
+      "roi_black_ratio": 0.9980833333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2855,
+      "seconds": 47.583333333333336,
+      "roi_black_ratio": 0.9976875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2856,
+      "seconds": 47.6,
+      "roi_black_ratio": 0.9976875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2857,
+      "seconds": 47.61666666666667,
+      "roi_black_ratio": 0.9976875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2858,
+      "seconds": 47.63333333333333,
+      "roi_black_ratio": 0.9976875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2859,
+      "seconds": 47.65,
+      "roi_black_ratio": 0.9973541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2860,
+      "seconds": 47.666666666666664,
+      "roi_black_ratio": 0.9973541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2861,
+      "seconds": 47.68333333333333,
+      "roi_black_ratio": 0.9973541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2862,
+      "seconds": 47.7,
+      "roi_black_ratio": 0.9973541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2863,
+      "seconds": 47.71666666666667,
+      "roi_black_ratio": 0.9968958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2864,
+      "seconds": 47.733333333333334,
+      "roi_black_ratio": 0.9968958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2865,
+      "seconds": 47.75,
+      "roi_black_ratio": 0.9968958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2866,
+      "seconds": 47.766666666666666,
+      "roi_black_ratio": 0.9968958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2867,
+      "seconds": 47.78333333333333,
+      "roi_black_ratio": 0.9968958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2868,
+      "seconds": 47.8,
+      "roi_black_ratio": 0.9968958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2869,
+      "seconds": 47.81666666666667,
+      "roi_black_ratio": 0.9965416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2870,
+      "seconds": 47.833333333333336,
+      "roi_black_ratio": 0.9965416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2871,
+      "seconds": 47.85,
+      "roi_black_ratio": 0.9965416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2872,
+      "seconds": 47.86666666666667,
+      "roi_black_ratio": 0.9965416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2873,
+      "seconds": 47.88333333333333,
+      "roi_black_ratio": 0.9957291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2874,
+      "seconds": 47.9,
+      "roi_black_ratio": 0.9957291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2875,
+      "seconds": 47.916666666666664,
+      "roi_black_ratio": 0.9957291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2876,
+      "seconds": 47.93333333333333,
+      "roi_black_ratio": 0.9957291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2877,
+      "seconds": 47.95,
+      "roi_black_ratio": 0.9957291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2878,
+      "seconds": 47.96666666666667,
+      "roi_black_ratio": 0.9957291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2879,
+      "seconds": 47.983333333333334,
+      "roi_black_ratio": 0.995125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2880,
+      "seconds": 48.0,
+      "roi_black_ratio": 0.995125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2881,
+      "seconds": 48.016666666666666,
+      "roi_black_ratio": 0.995125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2882,
+      "seconds": 48.03333333333333,
+      "roi_black_ratio": 0.995125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2883,
+      "seconds": 48.05,
+      "roi_black_ratio": 0.995125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2884,
+      "seconds": 48.06666666666667,
+      "roi_black_ratio": 0.995125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2885,
+      "seconds": 48.083333333333336,
+      "roi_black_ratio": 0.995125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2886,
+      "seconds": 48.1,
+      "roi_black_ratio": 0.995125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2887,
+      "seconds": 48.11666666666667,
+      "roi_black_ratio": 0.995125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2888,
+      "seconds": 48.13333333333333,
+      "roi_black_ratio": 0.994375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2889,
+      "seconds": 48.15,
+      "roi_black_ratio": 0.994375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2890,
+      "seconds": 48.166666666666664,
+      "roi_black_ratio": 0.994375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2891,
+      "seconds": 48.18333333333333,
+      "roi_black_ratio": 0.994375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2892,
+      "seconds": 48.2,
+      "roi_black_ratio": 0.994375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2893,
+      "seconds": 48.21666666666667,
+      "roi_black_ratio": 0.9936875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2894,
+      "seconds": 48.233333333333334,
+      "roi_black_ratio": 0.9936875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2895,
+      "seconds": 48.25,
+      "roi_black_ratio": 0.9936875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2896,
+      "seconds": 48.266666666666666,
+      "roi_black_ratio": 0.9936875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2897,
+      "seconds": 48.28333333333333,
+      "roi_black_ratio": 0.9936875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2898,
+      "seconds": 48.3,
+      "roi_black_ratio": 0.9936875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2899,
+      "seconds": 48.31666666666667,
+      "roi_black_ratio": 0.993,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2900,
+      "seconds": 48.333333333333336,
+      "roi_black_ratio": 0.9929791666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2901,
+      "seconds": 48.35,
+      "roi_black_ratio": 0.9929791666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2902,
+      "seconds": 48.36666666666667,
+      "roi_black_ratio": 0.9929791666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2903,
+      "seconds": 48.38333333333333,
+      "roi_black_ratio": 0.9929791666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2904,
+      "seconds": 48.4,
+      "roi_black_ratio": 0.9929791666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2905,
+      "seconds": 48.416666666666664,
+      "roi_black_ratio": 0.9924375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2906,
+      "seconds": 48.43333333333333,
+      "roi_black_ratio": 0.9924375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2907,
+      "seconds": 48.45,
+      "roi_black_ratio": 0.9924375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2908,
+      "seconds": 48.46666666666667,
+      "roi_black_ratio": 0.9924375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2909,
+      "seconds": 48.483333333333334,
+      "roi_black_ratio": 0.9924375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2910,
+      "seconds": 48.5,
+      "roi_black_ratio": 0.9924375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2911,
+      "seconds": 48.516666666666666,
+      "roi_black_ratio": 0.9917708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2912,
+      "seconds": 48.53333333333333,
+      "roi_black_ratio": 0.99175,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2913,
+      "seconds": 48.55,
+      "roi_black_ratio": 0.99175,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2914,
+      "seconds": 48.56666666666667,
+      "roi_black_ratio": 0.99175,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2915,
+      "seconds": 48.583333333333336,
+      "roi_black_ratio": 0.99175,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2916,
+      "seconds": 48.6,
+      "roi_black_ratio": 0.99175,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2917,
+      "seconds": 48.61666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2918,
+      "seconds": 48.63333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2919,
+      "seconds": 48.65,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2920,
+      "seconds": 48.666666666666664,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2921,
+      "seconds": 48.68333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2922,
+      "seconds": 48.7,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2923,
+      "seconds": 48.71666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2924,
+      "seconds": 48.733333333333334,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2925,
+      "seconds": 48.75,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2926,
+      "seconds": 48.766666666666666,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2927,
+      "seconds": 48.78333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2928,
+      "seconds": 48.8,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2929,
+      "seconds": 48.81666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2930,
+      "seconds": 48.833333333333336,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2931,
+      "seconds": 48.85,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2932,
+      "seconds": 48.86666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2933,
+      "seconds": 48.88333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2934,
+      "seconds": 48.9,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2935,
+      "seconds": 48.916666666666664,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2936,
+      "seconds": 48.93333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2937,
+      "seconds": 48.95,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2938,
+      "seconds": 48.96666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2939,
+      "seconds": 48.983333333333334,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2940,
+      "seconds": 49.0,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2941,
+      "seconds": 49.016666666666666,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2942,
+      "seconds": 49.03333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2943,
+      "seconds": 49.05,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2944,
+      "seconds": 49.06666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2945,
+      "seconds": 49.083333333333336,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2946,
+      "seconds": 49.1,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2947,
+      "seconds": 49.11666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2948,
+      "seconds": 49.13333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2949,
+      "seconds": 49.15,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2950,
+      "seconds": 49.166666666666664,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2951,
+      "seconds": 49.18333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2952,
+      "seconds": 49.2,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2953,
+      "seconds": 49.21666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2954,
+      "seconds": 49.233333333333334,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2955,
+      "seconds": 49.25,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2956,
+      "seconds": 49.266666666666666,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2957,
+      "seconds": 49.28333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2958,
+      "seconds": 49.3,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2959,
+      "seconds": 49.31666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2960,
+      "seconds": 49.333333333333336,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2961,
+      "seconds": 49.35,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2962,
+      "seconds": 49.36666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2963,
+      "seconds": 49.38333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2964,
+      "seconds": 49.4,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2965,
+      "seconds": 49.416666666666664,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2966,
+      "seconds": 49.43333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2967,
+      "seconds": 49.45,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2968,
+      "seconds": 49.46666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2969,
+      "seconds": 49.483333333333334,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2970,
+      "seconds": 49.5,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2971,
+      "seconds": 49.516666666666666,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2972,
+      "seconds": 49.53333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2973,
+      "seconds": 49.55,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2974,
+      "seconds": 49.56666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2975,
+      "seconds": 49.583333333333336,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2976,
+      "seconds": 49.6,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2977,
+      "seconds": 49.61666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2978,
+      "seconds": 49.63333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2979,
+      "seconds": 49.65,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2980,
+      "seconds": 49.666666666666664,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2981,
+      "seconds": 49.68333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2982,
+      "seconds": 49.7,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2983,
+      "seconds": 49.71666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2984,
+      "seconds": 49.733333333333334,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2985,
+      "seconds": 49.75,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2986,
+      "seconds": 49.766666666666666,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2987,
+      "seconds": 49.78333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2988,
+      "seconds": 49.8,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2989,
+      "seconds": 49.81666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2990,
+      "seconds": 49.833333333333336,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2991,
+      "seconds": 49.85,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2992,
+      "seconds": 49.86666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2993,
+      "seconds": 49.88333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2994,
+      "seconds": 49.9,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2995,
+      "seconds": 49.916666666666664,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2996,
+      "seconds": 49.93333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2997,
+      "seconds": 49.95,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2998,
+      "seconds": 49.96666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 2999,
+      "seconds": 49.983333333333334,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3000,
+      "seconds": 50.0,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3001,
+      "seconds": 50.016666666666666,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3002,
+      "seconds": 50.03333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3003,
+      "seconds": 50.05,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3004,
+      "seconds": 50.06666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3005,
+      "seconds": 50.083333333333336,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3006,
+      "seconds": 50.1,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3007,
+      "seconds": 50.11666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3008,
+      "seconds": 50.13333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3009,
+      "seconds": 50.15,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3010,
+      "seconds": 50.166666666666664,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3011,
+      "seconds": 50.18333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3012,
+      "seconds": 50.2,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3013,
+      "seconds": 50.21666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3014,
+      "seconds": 50.233333333333334,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3015,
+      "seconds": 50.25,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3016,
+      "seconds": 50.266666666666666,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3017,
+      "seconds": 50.28333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3018,
+      "seconds": 50.3,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3019,
+      "seconds": 50.31666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3020,
+      "seconds": 50.333333333333336,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3021,
+      "seconds": 50.35,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3022,
+      "seconds": 50.36666666666667,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3023,
+      "seconds": 50.38333333333333,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3024,
+      "seconds": 50.4,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3025,
+      "seconds": 50.416666666666664,
+      "roi_black_ratio": 0.9914166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3026,
+      "seconds": 50.43333333333333,
+      "roi_black_ratio": 0.9914375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3027,
+      "seconds": 50.45,
+      "roi_black_ratio": 0.9914375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3028,
+      "seconds": 50.46666666666667,
+      "roi_black_ratio": 0.9914583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3029,
+      "seconds": 50.483333333333334,
+      "roi_black_ratio": 0.9914791666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3030,
+      "seconds": 50.5,
+      "roi_black_ratio": 0.9914583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3031,
+      "seconds": 50.516666666666666,
+      "roi_black_ratio": 0.9915625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3032,
+      "seconds": 50.53333333333333,
+      "roi_black_ratio": 0.9916041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3033,
+      "seconds": 50.55,
+      "roi_black_ratio": 0.9918541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3034,
+      "seconds": 50.56666666666667,
+      "roi_black_ratio": 0.9921041666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3035,
+      "seconds": 50.583333333333336,
+      "roi_black_ratio": 0.9932916666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 3036,
+      "seconds": 50.6,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5489,
+      "seconds": 91.48333333333333,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5490,
+      "seconds": 91.5,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5491,
+      "seconds": 91.51666666666667,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5492,
+      "seconds": 91.53333333333333,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5493,
+      "seconds": 91.55,
+      "roi_black_ratio": 0.999875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5494,
+      "seconds": 91.56666666666666,
+      "roi_black_ratio": 0.9998541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5495,
+      "seconds": 91.58333333333333,
+      "roi_black_ratio": 0.9998541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5496,
+      "seconds": 91.6,
+      "roi_black_ratio": 0.9998541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5497,
+      "seconds": 91.61666666666666,
+      "roi_black_ratio": 0.9998541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5498,
+      "seconds": 91.63333333333334,
+      "roi_black_ratio": 0.9998541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5499,
+      "seconds": 91.65,
+      "roi_black_ratio": 0.9998541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5500,
+      "seconds": 91.66666666666667,
+      "roi_black_ratio": 0.9998541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5501,
+      "seconds": 91.68333333333334,
+      "roi_black_ratio": 0.9994375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5502,
+      "seconds": 91.7,
+      "roi_black_ratio": 0.9993958333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5503,
+      "seconds": 91.71666666666667,
+      "roi_black_ratio": 0.9993958333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5504,
+      "seconds": 91.73333333333333,
+      "roi_black_ratio": 0.9992291666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5505,
+      "seconds": 91.75,
+      "roi_black_ratio": 0.9992291666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5506,
+      "seconds": 91.76666666666667,
+      "roi_black_ratio": 0.9992291666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5507,
+      "seconds": 91.78333333333333,
+      "roi_black_ratio": 0.9992291666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5508,
+      "seconds": 91.8,
+      "roi_black_ratio": 0.9992291666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5509,
+      "seconds": 91.81666666666666,
+      "roi_black_ratio": 0.99875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5510,
+      "seconds": 91.83333333333333,
+      "roi_black_ratio": 0.99875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5511,
+      "seconds": 91.85,
+      "roi_black_ratio": 0.99875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5512,
+      "seconds": 91.86666666666666,
+      "roi_black_ratio": 0.99875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5513,
+      "seconds": 91.88333333333334,
+      "roi_black_ratio": 0.9980833333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5514,
+      "seconds": 91.9,
+      "roi_black_ratio": 0.9980833333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5515,
+      "seconds": 91.91666666666667,
+      "roi_black_ratio": 0.9980833333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5516,
+      "seconds": 91.93333333333334,
+      "roi_black_ratio": 0.9980833333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5517,
+      "seconds": 91.95,
+      "roi_black_ratio": 0.9980416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5518,
+      "seconds": 91.96666666666667,
+      "roi_black_ratio": 0.9980416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5519,
+      "seconds": 91.98333333333333,
+      "roi_black_ratio": 0.9980416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5520,
+      "seconds": 92.0,
+      "roi_black_ratio": 0.9980416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5521,
+      "seconds": 92.01666666666667,
+      "roi_black_ratio": 0.9980416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5522,
+      "seconds": 92.03333333333333,
+      "roi_black_ratio": 0.9974166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5523,
+      "seconds": 92.05,
+      "roi_black_ratio": 0.9974166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5524,
+      "seconds": 92.06666666666666,
+      "roi_black_ratio": 0.9974166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5525,
+      "seconds": 92.08333333333333,
+      "roi_black_ratio": 0.9974166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5526,
+      "seconds": 92.1,
+      "roi_black_ratio": 0.9966666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5527,
+      "seconds": 92.11666666666666,
+      "roi_black_ratio": 0.9966666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5528,
+      "seconds": 92.13333333333334,
+      "roi_black_ratio": 0.9966666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5529,
+      "seconds": 92.15,
+      "roi_black_ratio": 0.9966666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5530,
+      "seconds": 92.16666666666667,
+      "roi_black_ratio": 0.9966666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5531,
+      "seconds": 92.18333333333334,
+      "roi_black_ratio": 0.9966666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5532,
+      "seconds": 92.2,
+      "roi_black_ratio": 0.996125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5533,
+      "seconds": 92.21666666666667,
+      "roi_black_ratio": 0.996125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5534,
+      "seconds": 92.23333333333333,
+      "roi_black_ratio": 0.996125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5535,
+      "seconds": 92.25,
+      "roi_black_ratio": 0.996125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5536,
+      "seconds": 92.26666666666667,
+      "roi_black_ratio": 0.996125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5537,
+      "seconds": 92.28333333333333,
+      "roi_black_ratio": 0.9954583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5538,
+      "seconds": 92.3,
+      "roi_black_ratio": 0.9954583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5539,
+      "seconds": 92.31666666666666,
+      "roi_black_ratio": 0.9954583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5540,
+      "seconds": 92.33333333333333,
+      "roi_black_ratio": 0.9954583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5541,
+      "seconds": 92.35,
+      "roi_black_ratio": 0.9954583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5542,
+      "seconds": 92.36666666666666,
+      "roi_black_ratio": 0.9954583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5543,
+      "seconds": 92.38333333333334,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5544,
+      "seconds": 92.4,
+      "roi_black_ratio": 0.9945833333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5545,
+      "seconds": 92.41666666666667,
+      "roi_black_ratio": 0.9945833333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5546,
+      "seconds": 92.43333333333334,
+      "roi_black_ratio": 0.9945833333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5547,
+      "seconds": 92.45,
+      "roi_black_ratio": 0.9938958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5548,
+      "seconds": 92.46666666666667,
+      "roi_black_ratio": 0.9938958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5549,
+      "seconds": 92.48333333333333,
+      "roi_black_ratio": 0.9938958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5550,
+      "seconds": 92.5,
+      "roi_black_ratio": 0.9938958333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5551,
+      "seconds": 92.51666666666667,
+      "roi_black_ratio": 0.9933541666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5552,
+      "seconds": 92.53333333333333,
+      "roi_black_ratio": 0.9933333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5553,
+      "seconds": 92.55,
+      "roi_black_ratio": 0.9933333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5554,
+      "seconds": 92.56666666666666,
+      "roi_black_ratio": 0.9933333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5555,
+      "seconds": 92.58333333333333,
+      "roi_black_ratio": 0.9933333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5556,
+      "seconds": 92.6,
+      "roi_black_ratio": 0.9933333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5557,
+      "seconds": 92.61666666666666,
+      "roi_black_ratio": 0.9933333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5558,
+      "seconds": 92.63333333333334,
+      "roi_black_ratio": 0.9923125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5559,
+      "seconds": 92.65,
+      "roi_black_ratio": 0.9923125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5560,
+      "seconds": 92.66666666666667,
+      "roi_black_ratio": 0.9923125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5561,
+      "seconds": 92.68333333333334,
+      "roi_black_ratio": 0.9923125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5562,
+      "seconds": 92.7,
+      "roi_black_ratio": 0.991625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5563,
+      "seconds": 92.71666666666667,
+      "roi_black_ratio": 0.991625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5564,
+      "seconds": 92.73333333333333,
+      "roi_black_ratio": 0.991625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5565,
+      "seconds": 92.75,
+      "roi_black_ratio": 0.991625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5566,
+      "seconds": 92.76666666666667,
+      "roi_black_ratio": 0.9909375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5567,
+      "seconds": 92.78333333333333,
+      "roi_black_ratio": 0.9909375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5568,
+      "seconds": 92.8,
+      "roi_black_ratio": 0.9909375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5569,
+      "seconds": 92.81666666666666,
+      "roi_black_ratio": 0.9909375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5570,
+      "seconds": 92.83333333333333,
+      "roi_black_ratio": 0.9905,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5571,
+      "seconds": 92.85,
+      "roi_black_ratio": 0.9905,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5572,
+      "seconds": 92.86666666666666,
+      "roi_black_ratio": 0.9905,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5573,
+      "seconds": 92.88333333333334,
+      "roi_black_ratio": 0.9905,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5574,
+      "seconds": 92.9,
+      "roi_black_ratio": 0.9905,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5575,
+      "seconds": 92.91666666666667,
+      "roi_black_ratio": 0.9898541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5576,
+      "seconds": 92.93333333333334,
+      "roi_black_ratio": 0.9898541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5577,
+      "seconds": 92.95,
+      "roi_black_ratio": 0.9898541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5578,
+      "seconds": 92.96666666666667,
+      "roi_black_ratio": 0.9898541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5579,
+      "seconds": 92.98333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5580,
+      "seconds": 93.0,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5581,
+      "seconds": 93.01666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5582,
+      "seconds": 93.03333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5583,
+      "seconds": 93.05,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5584,
+      "seconds": 93.06666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5585,
+      "seconds": 93.08333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5586,
+      "seconds": 93.1,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5587,
+      "seconds": 93.11666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5588,
+      "seconds": 93.13333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5589,
+      "seconds": 93.15,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5590,
+      "seconds": 93.16666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5591,
+      "seconds": 93.18333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5592,
+      "seconds": 93.2,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5593,
+      "seconds": 93.21666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5594,
+      "seconds": 93.23333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5595,
+      "seconds": 93.25,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5596,
+      "seconds": 93.26666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5597,
+      "seconds": 93.28333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5598,
+      "seconds": 93.3,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5599,
+      "seconds": 93.31666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5600,
+      "seconds": 93.33333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5601,
+      "seconds": 93.35,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5602,
+      "seconds": 93.36666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5603,
+      "seconds": 93.38333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5604,
+      "seconds": 93.4,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5605,
+      "seconds": 93.41666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5606,
+      "seconds": 93.43333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5607,
+      "seconds": 93.45,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5608,
+      "seconds": 93.46666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5609,
+      "seconds": 93.48333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5610,
+      "seconds": 93.5,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5611,
+      "seconds": 93.51666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5612,
+      "seconds": 93.53333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5613,
+      "seconds": 93.55,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5614,
+      "seconds": 93.56666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5615,
+      "seconds": 93.58333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5616,
+      "seconds": 93.6,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5617,
+      "seconds": 93.61666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5618,
+      "seconds": 93.63333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5619,
+      "seconds": 93.65,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5620,
+      "seconds": 93.66666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5621,
+      "seconds": 93.68333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5622,
+      "seconds": 93.7,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5623,
+      "seconds": 93.71666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5624,
+      "seconds": 93.73333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5625,
+      "seconds": 93.75,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5626,
+      "seconds": 93.76666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5627,
+      "seconds": 93.78333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5628,
+      "seconds": 93.8,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5629,
+      "seconds": 93.81666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5630,
+      "seconds": 93.83333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5631,
+      "seconds": 93.85,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5632,
+      "seconds": 93.86666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5633,
+      "seconds": 93.88333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5634,
+      "seconds": 93.9,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5635,
+      "seconds": 93.91666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5636,
+      "seconds": 93.93333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5637,
+      "seconds": 93.95,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5638,
+      "seconds": 93.96666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5639,
+      "seconds": 93.98333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5640,
+      "seconds": 94.0,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5641,
+      "seconds": 94.01666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5642,
+      "seconds": 94.03333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5643,
+      "seconds": 94.05,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5644,
+      "seconds": 94.06666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5645,
+      "seconds": 94.08333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5646,
+      "seconds": 94.1,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5647,
+      "seconds": 94.11666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5648,
+      "seconds": 94.13333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5649,
+      "seconds": 94.15,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5650,
+      "seconds": 94.16666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5651,
+      "seconds": 94.18333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5652,
+      "seconds": 94.2,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5653,
+      "seconds": 94.21666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5654,
+      "seconds": 94.23333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5655,
+      "seconds": 94.25,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5656,
+      "seconds": 94.26666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5657,
+      "seconds": 94.28333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5658,
+      "seconds": 94.3,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5659,
+      "seconds": 94.31666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5660,
+      "seconds": 94.33333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5661,
+      "seconds": 94.35,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5662,
+      "seconds": 94.36666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5663,
+      "seconds": 94.38333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5664,
+      "seconds": 94.4,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5665,
+      "seconds": 94.41666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5666,
+      "seconds": 94.43333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5667,
+      "seconds": 94.45,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5668,
+      "seconds": 94.46666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5669,
+      "seconds": 94.48333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5670,
+      "seconds": 94.5,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5671,
+      "seconds": 94.51666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5672,
+      "seconds": 94.53333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5673,
+      "seconds": 94.55,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5674,
+      "seconds": 94.56666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5675,
+      "seconds": 94.58333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5676,
+      "seconds": 94.6,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5677,
+      "seconds": 94.61666666666666,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5678,
+      "seconds": 94.63333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5679,
+      "seconds": 94.65,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5680,
+      "seconds": 94.66666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5681,
+      "seconds": 94.68333333333334,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5682,
+      "seconds": 94.7,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5683,
+      "seconds": 94.71666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5684,
+      "seconds": 94.73333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5685,
+      "seconds": 94.75,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5686,
+      "seconds": 94.76666666666667,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5687,
+      "seconds": 94.78333333333333,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5688,
+      "seconds": 94.8,
+      "roi_black_ratio": 0.9895625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5689,
+      "seconds": 94.81666666666666,
+      "roi_black_ratio": 0.9895833333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5690,
+      "seconds": 94.83333333333333,
+      "roi_black_ratio": 0.989625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5691,
+      "seconds": 94.85,
+      "roi_black_ratio": 0.9896458333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5692,
+      "seconds": 94.86666666666666,
+      "roi_black_ratio": 0.98975,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5693,
+      "seconds": 94.88333333333334,
+      "roi_black_ratio": 0.9897916666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5694,
+      "seconds": 94.9,
+      "roi_black_ratio": 0.9898333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5695,
+      "seconds": 94.91666666666667,
+      "roi_black_ratio": 0.9899166666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5696,
+      "seconds": 94.93333333333334,
+      "roi_black_ratio": 0.9901875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5697,
+      "seconds": 94.95,
+      "roi_black_ratio": 0.9913333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 5698,
+      "seconds": 94.96666666666667,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12495,
+      "seconds": 208.25,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12496,
+      "seconds": 208.26666666666668,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12497,
+      "seconds": 208.28333333333333,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12498,
+      "seconds": 208.3,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12499,
+      "seconds": 208.31666666666666,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12500,
+      "seconds": 208.33333333333334,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12501,
+      "seconds": 208.35,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12502,
+      "seconds": 208.36666666666667,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12503,
+      "seconds": 208.38333333333333,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12504,
+      "seconds": 208.4,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12505,
+      "seconds": 208.41666666666666,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12506,
+      "seconds": 208.43333333333334,
+      "roi_black_ratio": 0.9997708333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12507,
+      "seconds": 208.45,
+      "roi_black_ratio": 0.9992916666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12508,
+      "seconds": 208.46666666666667,
+      "roi_black_ratio": 0.9992708333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12509,
+      "seconds": 208.48333333333332,
+      "roi_black_ratio": 0.9992708333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12510,
+      "seconds": 208.5,
+      "roi_black_ratio": 0.9992708333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12511,
+      "seconds": 208.51666666666668,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12512,
+      "seconds": 208.53333333333333,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12513,
+      "seconds": 208.55,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12514,
+      "seconds": 208.56666666666666,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12515,
+      "seconds": 208.58333333333334,
+      "roi_black_ratio": 0.9984166666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12516,
+      "seconds": 208.6,
+      "roi_black_ratio": 0.997875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12517,
+      "seconds": 208.61666666666667,
+      "roi_black_ratio": 0.997875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12518,
+      "seconds": 208.63333333333333,
+      "roi_black_ratio": 0.997875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12519,
+      "seconds": 208.65,
+      "roi_black_ratio": 0.997875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12520,
+      "seconds": 208.66666666666666,
+      "roi_black_ratio": 0.9978541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12521,
+      "seconds": 208.68333333333334,
+      "roi_black_ratio": 0.9978541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12522,
+      "seconds": 208.7,
+      "roi_black_ratio": 0.9972083333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12523,
+      "seconds": 208.71666666666667,
+      "roi_black_ratio": 0.9972083333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12524,
+      "seconds": 208.73333333333332,
+      "roi_black_ratio": 0.9972083333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12525,
+      "seconds": 208.75,
+      "roi_black_ratio": 0.9972291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12526,
+      "seconds": 208.76666666666668,
+      "roi_black_ratio": 0.996625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12527,
+      "seconds": 208.78333333333333,
+      "roi_black_ratio": 0.9966041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12528,
+      "seconds": 208.8,
+      "roi_black_ratio": 0.9966041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12529,
+      "seconds": 208.81666666666666,
+      "roi_black_ratio": 0.9966041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12530,
+      "seconds": 208.83333333333334,
+      "roi_black_ratio": 0.9966041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12531,
+      "seconds": 208.85,
+      "roi_black_ratio": 0.9966041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12532,
+      "seconds": 208.86666666666667,
+      "roi_black_ratio": 0.996125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12533,
+      "seconds": 208.88333333333333,
+      "roi_black_ratio": 0.996125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12534,
+      "seconds": 208.9,
+      "roi_black_ratio": 0.996125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12535,
+      "seconds": 208.91666666666666,
+      "roi_black_ratio": 0.996125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12536,
+      "seconds": 208.93333333333334,
+      "roi_black_ratio": 0.9955625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12537,
+      "seconds": 208.95,
+      "roi_black_ratio": 0.9955625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12538,
+      "seconds": 208.96666666666667,
+      "roi_black_ratio": 0.9955625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12539,
+      "seconds": 208.98333333333332,
+      "roi_black_ratio": 0.9955625,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12540,
+      "seconds": 209.0,
+      "roi_black_ratio": 0.9955416666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12541,
+      "seconds": 209.01666666666668,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12542,
+      "seconds": 209.03333333333333,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12543,
+      "seconds": 209.05,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12544,
+      "seconds": 209.06666666666666,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12545,
+      "seconds": 209.08333333333334,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12546,
+      "seconds": 209.1,
+      "roi_black_ratio": 0.9947083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12547,
+      "seconds": 209.11666666666667,
+      "roi_black_ratio": 0.994125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12548,
+      "seconds": 209.13333333333333,
+      "roi_black_ratio": 0.994125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12549,
+      "seconds": 209.15,
+      "roi_black_ratio": 0.994125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12550,
+      "seconds": 209.16666666666666,
+      "roi_black_ratio": 0.994125,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12551,
+      "seconds": 209.18333333333334,
+      "roi_black_ratio": 0.9932083333333334,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12552,
+      "seconds": 209.2,
+      "roi_black_ratio": 0.9931666666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12553,
+      "seconds": 209.21666666666667,
+      "roi_black_ratio": 0.9931666666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12554,
+      "seconds": 209.23333333333332,
+      "roi_black_ratio": 0.9931666666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12555,
+      "seconds": 209.25,
+      "roi_black_ratio": 0.9931666666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12556,
+      "seconds": 209.26666666666668,
+      "roi_black_ratio": 0.9924791666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12557,
+      "seconds": 209.28333333333333,
+      "roi_black_ratio": 0.9924791666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12558,
+      "seconds": 209.3,
+      "roi_black_ratio": 0.9924791666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12559,
+      "seconds": 209.31666666666666,
+      "roi_black_ratio": 0.9924791666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12560,
+      "seconds": 209.33333333333334,
+      "roi_black_ratio": 0.9924791666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12561,
+      "seconds": 209.35,
+      "roi_black_ratio": 0.9924791666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12562,
+      "seconds": 209.36666666666667,
+      "roi_black_ratio": 0.9918541666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12563,
+      "seconds": 209.38333333333333,
+      "roi_black_ratio": 0.9918333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12564,
+      "seconds": 209.4,
+      "roi_black_ratio": 0.9918333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12565,
+      "seconds": 209.41666666666666,
+      "roi_black_ratio": 0.9918333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12566,
+      "seconds": 209.43333333333334,
+      "roi_black_ratio": 0.9913541666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12567,
+      "seconds": 209.45,
+      "roi_black_ratio": 0.9913541666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12568,
+      "seconds": 209.46666666666667,
+      "roi_black_ratio": 0.9913541666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12569,
+      "seconds": 209.48333333333332,
+      "roi_black_ratio": 0.9913541666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12570,
+      "seconds": 209.5,
+      "roi_black_ratio": 0.9913541666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12571,
+      "seconds": 209.51666666666668,
+      "roi_black_ratio": 0.9913541666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12572,
+      "seconds": 209.53333333333333,
+      "roi_black_ratio": 0.9906666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12573,
+      "seconds": 209.55,
+      "roi_black_ratio": 0.9906666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12574,
+      "seconds": 209.56666666666666,
+      "roi_black_ratio": 0.9906666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12575,
+      "seconds": 209.58333333333334,
+      "roi_black_ratio": 0.9906666666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12576,
+      "seconds": 209.6,
+      "roi_black_ratio": 0.9902291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12577,
+      "seconds": 209.61666666666667,
+      "roi_black_ratio": 0.9902291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12578,
+      "seconds": 209.63333333333333,
+      "roi_black_ratio": 0.9902291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12579,
+      "seconds": 209.65,
+      "roi_black_ratio": 0.9902291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12580,
+      "seconds": 209.66666666666666,
+      "roi_black_ratio": 0.9902291666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12581,
+      "seconds": 209.68333333333334,
+      "roi_black_ratio": 0.9896041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12582,
+      "seconds": 209.7,
+      "roi_black_ratio": 0.9896041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12583,
+      "seconds": 209.71666666666667,
+      "roi_black_ratio": 0.9896041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12584,
+      "seconds": 209.73333333333332,
+      "roi_black_ratio": 0.9896041666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12585,
+      "seconds": 209.75,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12586,
+      "seconds": 209.76666666666668,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12587,
+      "seconds": 209.78333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12588,
+      "seconds": 209.8,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12589,
+      "seconds": 209.81666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12590,
+      "seconds": 209.83333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12591,
+      "seconds": 209.85,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12592,
+      "seconds": 209.86666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12593,
+      "seconds": 209.88333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12594,
+      "seconds": 209.9,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12595,
+      "seconds": 209.91666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12596,
+      "seconds": 209.93333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12597,
+      "seconds": 209.95,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12598,
+      "seconds": 209.96666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12599,
+      "seconds": 209.98333333333332,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12600,
+      "seconds": 210.0,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12601,
+      "seconds": 210.01666666666668,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12602,
+      "seconds": 210.03333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12603,
+      "seconds": 210.05,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12604,
+      "seconds": 210.06666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12605,
+      "seconds": 210.08333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12606,
+      "seconds": 210.1,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12607,
+      "seconds": 210.11666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12608,
+      "seconds": 210.13333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12609,
+      "seconds": 210.15,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12610,
+      "seconds": 210.16666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12611,
+      "seconds": 210.18333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12612,
+      "seconds": 210.2,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12613,
+      "seconds": 210.21666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12614,
+      "seconds": 210.23333333333332,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12615,
+      "seconds": 210.25,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12616,
+      "seconds": 210.26666666666668,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12617,
+      "seconds": 210.28333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12618,
+      "seconds": 210.3,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12619,
+      "seconds": 210.31666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12620,
+      "seconds": 210.33333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12621,
+      "seconds": 210.35,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12622,
+      "seconds": 210.36666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12623,
+      "seconds": 210.38333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12624,
+      "seconds": 210.4,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12625,
+      "seconds": 210.41666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12626,
+      "seconds": 210.43333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12627,
+      "seconds": 210.45,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12628,
+      "seconds": 210.46666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12629,
+      "seconds": 210.48333333333332,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12630,
+      "seconds": 210.5,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12631,
+      "seconds": 210.51666666666668,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12632,
+      "seconds": 210.53333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12633,
+      "seconds": 210.55,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12634,
+      "seconds": 210.56666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12635,
+      "seconds": 210.58333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12636,
+      "seconds": 210.6,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12637,
+      "seconds": 210.61666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12638,
+      "seconds": 210.63333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12639,
+      "seconds": 210.65,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12640,
+      "seconds": 210.66666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12641,
+      "seconds": 210.68333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12642,
+      "seconds": 210.7,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12643,
+      "seconds": 210.71666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12644,
+      "seconds": 210.73333333333332,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12645,
+      "seconds": 210.75,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12646,
+      "seconds": 210.76666666666668,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12647,
+      "seconds": 210.78333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12648,
+      "seconds": 210.8,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12649,
+      "seconds": 210.81666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12650,
+      "seconds": 210.83333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12651,
+      "seconds": 210.85,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12652,
+      "seconds": 210.86666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12653,
+      "seconds": 210.88333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12654,
+      "seconds": 210.9,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12655,
+      "seconds": 210.91666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12656,
+      "seconds": 210.93333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12657,
+      "seconds": 210.95,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12658,
+      "seconds": 210.96666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12659,
+      "seconds": 210.98333333333332,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12660,
+      "seconds": 211.0,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12661,
+      "seconds": 211.01666666666668,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12662,
+      "seconds": 211.03333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12663,
+      "seconds": 211.05,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12664,
+      "seconds": 211.06666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12665,
+      "seconds": 211.08333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12666,
+      "seconds": 211.1,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12667,
+      "seconds": 211.11666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12668,
+      "seconds": 211.13333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12669,
+      "seconds": 211.15,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12670,
+      "seconds": 211.16666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12671,
+      "seconds": 211.18333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12672,
+      "seconds": 211.2,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12673,
+      "seconds": 211.21666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12674,
+      "seconds": 211.23333333333332,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12675,
+      "seconds": 211.25,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12676,
+      "seconds": 211.26666666666668,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12677,
+      "seconds": 211.28333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12678,
+      "seconds": 211.3,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12679,
+      "seconds": 211.31666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12680,
+      "seconds": 211.33333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12681,
+      "seconds": 211.35,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12682,
+      "seconds": 211.36666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12683,
+      "seconds": 211.38333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12684,
+      "seconds": 211.4,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12685,
+      "seconds": 211.41666666666666,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12686,
+      "seconds": 211.43333333333334,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12687,
+      "seconds": 211.45,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12688,
+      "seconds": 211.46666666666667,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12689,
+      "seconds": 211.48333333333332,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12690,
+      "seconds": 211.5,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12691,
+      "seconds": 211.51666666666668,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12692,
+      "seconds": 211.53333333333333,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12693,
+      "seconds": 211.55,
+      "roi_black_ratio": 0.9893333333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12694,
+      "seconds": 211.56666666666666,
+      "roi_black_ratio": 0.9893541666666666,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12695,
+      "seconds": 211.58333333333334,
+      "roi_black_ratio": 0.989375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12696,
+      "seconds": 211.6,
+      "roi_black_ratio": 0.989375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12697,
+      "seconds": 211.61666666666667,
+      "roi_black_ratio": 0.9894166666666667,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12698,
+      "seconds": 211.63333333333333,
+      "roi_black_ratio": 0.9894583333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12699,
+      "seconds": 211.65,
+      "roi_black_ratio": 0.9895,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12700,
+      "seconds": 211.66666666666666,
+      "roi_black_ratio": 0.9897083333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12701,
+      "seconds": 211.68333333333334,
+      "roi_black_ratio": 0.9899375,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12702,
+      "seconds": 211.7,
+      "roi_black_ratio": 0.9901875,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12703,
+      "seconds": 211.71666666666667,
+      "roi_black_ratio": 0.9912708333333333,
+      "allowed_question_card": true
+    },
+    {
+      "frame": 12704,
+      "seconds": 211.73333333333332,
+      "roi_black_ratio": 1.0,
+      "allowed_question_card": true
+    }
+  ],
+  "unexpected_picture_roi_black_frames": [],
+  "preserved_repaired_seams": [
+    {
+      "frame": 887,
+      "prior_frame": 1235,
+      "left_id": "03_student__bridge_pre04",
+      "right_id": "04_care__04_care",
+      "seconds": 14.783333333333333,
+      "mad_255": 0.7511284722222222,
+      "picture_roi_mad_255": 0.7157708333333334,
+      "picture_roi_mean_gray": 68.37072916666666,
+      "picture_roi_black_ratio": 0.0,
+      "passed": true
+    },
+    {
+      "frame": 7768,
+      "prior_frame": 3696,
+      "left_id": "06_human__06_human",
+      "right_id": "07_critical__bridge_post06",
+      "seconds": 129.46666666666667,
+      "mad_255": 0.8110069444444444,
+      "picture_roi_mad_255": 0.7202291666666667,
+      "picture_roi_mean_gray": 62.33685416666667,
+      "picture_roi_black_ratio": 0.0,
+      "passed": true
+    },
+    {
+      "frame": 9617,
+      "prior_frame": 6645,
+      "left_id": "10_philosophy__10_philosophy",
+      "right_id": "11_experience__bridge_post10",
+      "seconds": 160.28333333333333,
+      "mad_255": 0.7700694444444445,
+      "picture_roi_mad_255": 0.6721041666666666,
+      "picture_roi_mean_gray": 60.548375,
+      "picture_roi_black_ratio": 0.0,
+      "passed": true
+    },
+    {
+      "frame": 11575,
+      "prior_frame": 8603,
+      "left_id": "12_growth__bridge_pre13",
+      "right_id": "13_education__13_education",
+      "seconds": 192.91666666666666,
+      "mad_255": 1.6167881944444444,
+      "picture_roi_mad_255": 0.7379791666666666,
+      "picture_roi_mean_gray": 63.70677083333333,
+      "picture_roi_black_ratio": 0.0,
+      "passed": true
+    },
+    {
+      "frame": 13586,
+      "prior_frame": 14184,
+      "left_id": "15_time__bridge_pre16",
+      "right_id": "16_invitation__16_invitation",
+      "seconds": 226.43333333333334,
+      "mad_255": 2.0794444444444444,
+      "picture_roi_mad_255": 1.5692291666666667,
+      "picture_roi_mean_gray": 62.444625,
+      "picture_roi_black_ratio": 0.0,
+      "passed": true
+    },
+    {
+      "frame": 14188,
+      "prior_frame": 14786,
+      "left_id": "16_invitation__bridge_pre17",
+      "right_id": "17_outro__17_outro",
+      "seconds": 236.46666666666667,
+      "mad_255": 0.7522395833333333,
+      "picture_roi_mad_255": 0.6766666666666666,
+      "picture_roi_mean_gray": 63.633520833333336,
+      "picture_roi_black_ratio": 0.0,
+      "passed": true
+    }
+  ],
+  "transition_candidates_outside_question_cards": [
+    {
+      "frame": 540,
+      "seconds": 9.0,
+      "mad_255": 67.93039930555555,
+      "picture_roi_mad_255": 68.94022916666667,
+      "picture_roi_mean_gray": 68.94029166666667,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 858,
+      "seconds": 14.3,
+      "mad_255": 31.45579861111111,
+      "picture_roi_mad_255": 30.250583333333335,
+      "picture_roi_mean_gray": 67.63047916666666,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 1407,
+      "seconds": 23.45,
+      "mad_255": 53.970920138888886,
+      "picture_roi_mad_255": 50.76766666666666,
+      "picture_roi_mean_gray": 63.553333333333335,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 1837,
+      "seconds": 30.616666666666667,
+      "mad_255": 22.033680555555556,
+      "picture_roi_mad_255": 19.501416666666668,
+      "picture_roi_mean_gray": 66.0799375,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 3037,
+      "seconds": 50.61666666666667,
+      "mad_255": 74.72789930555555,
+      "picture_roi_mad_255": 77.66789583333333,
+      "picture_roi_mean_gray": 77.66789583333333,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 3330,
+      "seconds": 55.5,
+      "mad_255": 23.666631944444443,
+      "picture_roi_mad_255": 23.701104166666667,
+      "picture_roi_mean_gray": 81.72427083333334,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 3896,
+      "seconds": 64.93333333333334,
+      "mad_255": 23.1640625,
+      "picture_roi_mad_255": 22.744125,
+      "picture_roi_mean_gray": 78.39552083333334,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 4361,
+      "seconds": 72.68333333333334,
+      "mad_255": 52.236232638888886,
+      "picture_roi_mad_255": 50.6944375,
+      "picture_roi_mean_gray": 64.58466666666666,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 4589,
+      "seconds": 76.48333333333333,
+      "mad_255": 23.013020833333332,
+      "picture_roi_mad_255": 20.379395833333334,
+      "picture_roi_mean_gray": 66.37552083333334,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 5699,
+      "seconds": 94.98333333333333,
+      "mad_255": 76.38973958333334,
+      "picture_roi_mad_255": 79.030625,
+      "picture_roi_mean_gray": 79.03072916666666,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 6812,
+      "seconds": 113.53333333333333,
+      "mad_255": 44.02866319444445,
+      "picture_roi_mad_255": 44.07170833333333,
+      "picture_roi_mean_gray": 61.14375,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 7370,
+      "seconds": 122.83333333333333,
+      "mad_255": 50.881649305555555,
+      "picture_roi_mad_255": 47.80175,
+      "picture_roi_mean_gray": 63.09070833333333,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 7774,
+      "seconds": 129.56666666666666,
+      "mad_255": 50.52225694444444,
+      "picture_roi_mad_255": 47.2915625,
+      "picture_roi_mean_gray": 61.3741875,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 8777,
+      "seconds": 146.28333333333333,
+      "mad_255": 26.117100694444446,
+      "picture_roi_mad_255": 24.987125,
+      "picture_roi_mean_gray": 61.821020833333336,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 9626,
+      "seconds": 160.43333333333334,
+      "mad_255": 30.84546875,
+      "picture_roi_mad_255": 29.447791666666667,
+      "picture_roi_mean_gray": 62.726416666666665,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 9742,
+      "seconds": 162.36666666666667,
+      "mad_255": 12.51923611111111,
+      "picture_roi_mad_255": 10.8004375,
+      "picture_roi_mean_gray": 66.2891875,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 10914,
+      "seconds": 181.9,
+      "mad_255": 33.0821875,
+      "picture_roi_mad_255": 31.524833333333333,
+      "picture_roi_mean_gray": 65.99379166666667,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 11546,
+      "seconds": 192.43333333333334,
+      "mad_255": 30.164913194444445,
+      "picture_roi_mad_255": 29.00325,
+      "picture_roi_mean_gray": 64.06714583333333,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 12101,
+      "seconds": 201.68333333333334,
+      "mad_255": 29.85515625,
+      "picture_roi_mad_255": 28.906395833333335,
+      "picture_roi_mean_gray": 61.897875,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 12705,
+      "seconds": 211.75,
+      "mad_255": 59.67269097222222,
+      "picture_roi_mad_255": 59.684625,
+      "picture_roi_mean_gray": 59.684645833333335,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 13551,
+      "seconds": 225.85,
+      "mad_255": 26.193940972222222,
+      "picture_roi_mad_255": 25.1348125,
+      "picture_roi_mean_gray": 63.310229166666666,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 14059,
+      "seconds": 234.31666666666666,
+      "mad_255": 4.260399305555556,
+      "picture_roi_mad_255": 4.383416666666666,
+      "picture_roi_mean_gray": 64.9564375,
+      "picture_roi_black_ratio": 0.0
+    },
+    {
+      "frame": 14177,
+      "seconds": 236.28333333333333,
+      "mad_255": 38.407152777777775,
+      "picture_roi_mad_255": 37.34045833333333,
+      "picture_roi_mean_gray": 63.783875,
+      "picture_roi_black_ratio": 0.0
+    }
+  ],
+  "short_shot_candidates_under_one_second": [],
+  "audio_validation": {
+    "passed": true,
+    "render": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK_인터뷰_구성개선_v4\\SYNK_인터뷰_구성개선_4K60_v4.mp4",
+    "reference": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\audio\\final_mix.wav",
+    "reference_sha256": "61caa47f9c0cf9c000d78195f26ccbbc677a15dc1655889aae5d335a29bffafa",
+    "audio_metadata": {
+      "index": 1,
+      "codec_name": "aac",
+      "codec_long_name": "AAC (Advanced Audio Coding)",
+      "profile": "LC",
+      "codec_type": "audio",
+      "codec_tag_string": "mp4a",
+      "codec_tag": "0x6134706d",
+      "mime_codec_string": "mp4a.40.2",
+      "sample_fmt": "fltp",
+      "sample_rate": "48000",
+      "channels": 2,
+      "channel_layout": "stereo",
+      "bits_per_sample": 0,
+      "initial_padding": 0,
+      "id": "0x2",
+      "r_frame_rate": "0/0",
+      "avg_frame_rate": "0/0",
+      "time_base": "1/48000",
+      "start_pts": 0,
+      "start_time": "0.000000",
+      "duration_ts": 11648000,
+      "duration": "242.666667",
+      "bit_rate": "320010",
+      "nb_frames": "11375",
+      "extradata_size": 2,
+      "disposition": {
+        "default": 1,
+        "dub": 0,
+        "original": 0,
+        "comment": 0,
+        "lyrics": 0,
+        "karaoke": 0,
+        "forced": 0,
+        "hearing_impaired": 0,
+        "visual_impaired": 0,
+        "clean_effects": 0,
+        "attached_pic": 0,
+        "timed_thumbnails": 0,
+        "non_diegetic": 0,
+        "captions": 0,
+        "descriptions": 0,
+        "metadata": 0,
+        "dependent": 0,
+        "still_image": 0,
+        "multilayer": 0
+      },
+      "tags": {
+        "creation_time": "2026-09-25T17:50:25.000000Z",
+        "language": "und",
+        "handler_name": "SoundHandler"
+      }
+    },
+    "aac_sha256": "SHA256=49ae46927cd8d993b27a940bc8b0565ba6ccb6edc754b31d38b81ce9e6a73d0c",
+    "reference_samples": 11648000,
+    "decoded_samples": 11648000,
+    "compared_samples": 11648000,
+    "padding_samples": 0,
+    "tail_peak_dbfs": null,
+    "alignment_checks": [
+      {
+        "cut_id": "02_intro",
+        "start_sample": 84000,
+        "duration_samples": 96000,
+        "start_seconds": 1.75,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "03_student",
+        "start_sample": 477880,
+        "duration_samples": 96000,
+        "start_seconds": 9.955833333333333,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "04_care",
+        "start_sample": 790080,
+        "duration_samples": 96000,
+        "start_seconds": 16.46,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "05_personal",
+        "start_sample": 1188080,
+        "duration_samples": 96000,
+        "start_seconds": 24.751666666666665,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "new_personal_design",
+        "start_sample": 1991120,
+        "duration_samples": 96000,
+        "start_seconds": 41.48166666666667,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "new_accountability",
+        "start_sample": 3892000,
+        "duration_samples": 96000,
+        "start_seconds": 81.08333333333333,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "new_analogue",
+        "start_sample": 5154520,
+        "duration_samples": 96000,
+        "start_seconds": 107.38583333333334,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "01_hook",
+        "start_sample": 5537680,
+        "duration_samples": 96000,
+        "start_seconds": 115.36833333333334,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "06_human",
+        "start_sample": 6062320,
+        "duration_samples": 96000,
+        "start_seconds": 126.29833333333333,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "07_critical",
+        "start_sample": 6747320,
+        "duration_samples": 96000,
+        "start_seconds": 140.56916666666666,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "10_philosophy",
+        "start_sample": 7309600,
+        "duration_samples": 96000,
+        "start_seconds": 152.28333333333333,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "11_experience",
+        "start_sample": 8164400,
+        "duration_samples": 96000,
+        "start_seconds": 170.09166666666667,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "13_education",
+        "start_sample": 9422400,
+        "duration_samples": 96000,
+        "start_seconds": 196.3,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "14_leader",
+        "start_sample": 9790400,
+        "duration_samples": 96000,
+        "start_seconds": 203.96666666666667,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "15_time",
+        "start_sample": 10620120,
+        "duration_samples": 96000,
+        "start_seconds": 221.2525,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "16_invitation",
+        "start_sample": 10965680,
+        "duration_samples": 96000,
+        "start_seconds": 228.45166666666665,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      },
+      {
+        "cut_id": "17_outro",
+        "start_sample": 11401280,
+        "duration_samples": 96000,
+        "start_seconds": 237.52666666666667,
+        "duration_seconds": 2.0,
+        "lag_samples": 0,
+        "lag_ms": 0.0
+      }
+    ],
+    "median_lag_samples": 0,
+    "least_squares_gain_db": -0.013301375814044034,
+    "rms_difference_db": -0.012347645916488318,
+    "correlation": 0.9998902038157995,
+    "encoding_residual_snr_db": 36.59641364388999,
+    "five_second_gain_min_db": -0.01956848790474955,
+    "five_second_gain_max_db": -0.007026205942625917,
+    "stem_regression": {
+      "dialogue_scale": 0.9984989327482906,
+      "music_scale": 0.9976848429788183,
+      "sfx_scale": 0.9964793809899198
+    },
+    "pcm_unity_sum_max_error_lsb24": 1.0,
+    "preserved_v3_dialogue": {
+      "passed": true,
+      "source_sha256": {
+        "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision3\\audio\\dialogue_stem.wav": "43992e5360d88ccb1cf2a4d34112e6e5c4ba3e082fd733099c88abdc340491ca"
+      },
+      "cuts": [
+        {
+          "cut_id": "02_intro",
+          "prior_first_frame": 558,
+          "prior_last_frame_exclusive": 888,
+          "output_start_frame": 0,
+          "compared_samples_per_channel": 262080,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "03_student",
+          "prior_first_frame": 888,
+          "prior_last_frame_exclusive": 1235,
+          "output_start_frame": 540,
+          "compared_samples_per_channel": 275680,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "04_care",
+          "prior_first_frame": 1235,
+          "prior_last_frame_exclusive": 1755,
+          "output_start_frame": 887,
+          "compared_samples_per_channel": 414080,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "05_personal",
+          "prior_first_frame": 1755,
+          "prior_last_frame_exclusive": 2185,
+          "output_start_frame": 1407,
+          "compared_samples_per_channel": 342080,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "new_personal_design",
+          "prior_first_frame": 9264,
+          "prior_last_frame_exclusive": 10254,
+          "output_start_frame": 1837,
+          "compared_samples_per_channel": 790080,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "new_level4_reason",
+          "prior_first_frame": 11382,
+          "prior_last_frame_exclusive": 12706,
+          "output_start_frame": 3037,
+          "compared_samples_per_channel": 1057280,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "new_accountability",
+          "prior_first_frame": 10254,
+          "prior_last_frame_exclusive": 11382,
+          "output_start_frame": 4361,
+          "compared_samples_per_channel": 900480,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "new_analogue",
+          "prior_first_frame": 2185,
+          "prior_last_frame_exclusive": 3298,
+          "output_start_frame": 5699,
+          "compared_samples_per_channel": 888480,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "01_hook",
+          "prior_first_frame": 0,
+          "prior_last_frame_exclusive": 558,
+          "output_start_frame": 6812,
+          "compared_samples_per_channel": 444480,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "06_human",
+          "prior_first_frame": 3298,
+          "prior_last_frame_exclusive": 3696,
+          "output_start_frame": 7370,
+          "compared_samples_per_channel": 316480,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "07_critical",
+          "prior_first_frame": 3696,
+          "prior_last_frame_exclusive": 4705,
+          "output_start_frame": 7768,
+          "compared_samples_per_channel": 805280,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "10_philosophy",
+          "prior_first_frame": 5805,
+          "prior_last_frame_exclusive": 6645,
+          "output_start_frame": 8777,
+          "compared_samples_per_channel": 670080,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "11_experience",
+          "prior_first_frame": 6645,
+          "prior_last_frame_exclusive": 7942,
+          "output_start_frame": 9617,
+          "compared_samples_per_channel": 1035680,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "12_growth",
+          "prior_first_frame": 7942,
+          "prior_last_frame_exclusive": 8603,
+          "output_start_frame": 10914,
+          "compared_samples_per_channel": 526880,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "13_education",
+          "prior_first_frame": 8603,
+          "prior_last_frame_exclusive": 9129,
+          "output_start_frame": 11575,
+          "compared_samples_per_channel": 418880,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "14_leader",
+          "prior_first_frame": 12909,
+          "prior_last_frame_exclusive": 13303,
+          "output_start_frame": 12101,
+          "compared_samples_per_channel": 313280,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "15_time",
+          "prior_first_frame": 13303,
+          "prior_last_frame_exclusive": 14184,
+          "output_start_frame": 12705,
+          "compared_samples_per_channel": 702880,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "16_invitation",
+          "prior_first_frame": 14184,
+          "prior_last_frame_exclusive": 14786,
+          "output_start_frame": 13586,
+          "compared_samples_per_channel": 479680,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        },
+        {
+          "cut_id": "17_outro",
+          "prior_first_frame": 14786,
+          "prior_last_frame_exclusive": 15158,
+          "output_start_frame": 14188,
+          "compared_samples_per_channel": 295680,
+          "excluded_edge_samples": 960,
+          "max_difference_lsb24": 0.0,
+          "gain_db": 0.0,
+          "passed": true
+        }
+      ],
+      "scope": "All retained speech interiors, excluding 20ms at each edit edge for declared 8ms fades."
+    },
+    "question_dialogue_peak": 0.0,
+    "sfx_outside_questions_peak": 0.0,
+    "channel_matrix": [
+      [
+        0.9969827180802373,
+        0.001677502541652545
+      ],
+      [
+        0.0017102000147104484,
+        0.9970227167768801
+      ]
+    ],
+    "loudness": {
+      "input_i": -16.87,
+      "input_tp": -1.31,
+      "input_lra": 5.4,
+      "input_thresh": -27.12
+    },
+    "sample_peak_dbfs": -1.3209639951448537,
+    "clipped_samples": 0,
+    "nonfinite_samples": 0,
+    "conclusions": {
+      "no_measurable_delay_or_drift": true,
+      "level_preserved_within_0_1db": true,
+      "waveform_correlation_above_0_999": true,
+      "encoding_residual_snr_above_27db": true,
+      "no_voice_or_music_duplication_evidence": true,
+      "typing_sfx_scale_preserved": true,
+      "pcm_master_equals_three_unity_stems": true,
+      "question_cards_contain_no_dialogue": true,
+      "typing_sfx_only_inside_question_cards": true,
+      "approved_v3_dialogue_interior_preserved": true,
+      "loudness_within_0_2lu": true,
+      "true_peak_below_minus1": true,
+      "padding_only_after_programme": true,
+      "finite_and_unclipped": true
+    },
+    "limits": "Seventeen speech-only lag windows and waveform checks do not replace listening."
+  },
+  "exact_frame_stills": [
+    0,
+    1,
+    15,
+    109,
+    268,
+    329,
+    330,
+    331,
+    342,
+    344,
+    345,
+    360,
+    390,
+    420,
+    450,
+    480,
+    525,
+    539,
+    540,
+    541,
+    552,
+    629,
+    800,
+    857,
+    858,
+    859,
+    870,
+    886,
+    887,
+    888,
+    899,
+    977,
+    1162,
+    1334,
+    1406,
+    1407,
+    1408,
+    1419,
+    1530,
+    1740,
+    1836,
+    1837,
+    1838,
+    1849,
+    1896,
+    2050,
+    2265,
+    2431,
+    2594,
+    2764,
+    2826,
+    2827,
+    2828,
+    2839,
+    2841,
+    2842,
+    2857,
+    2887,
+    2917,
+    2947,
+    2977,
+    3022,
+    3036,
+    3037,
+    3038,
+    3049,
+    3189,
+    3329,
+    3330,
+    3331,
+    3342,
+    3456,
+    3694,
+    3863,
+    3895,
+    3896,
+    3897,
+    3908,
+    4019,
+    4238,
+    4355,
+    4356,
+    4357,
+    4360,
+    4361,
+    4362,
+    4368,
+    4373,
+    4474,
+    4588,
+    4589,
+    4590,
+    4601,
+    4664,
+    4854,
+    5037,
+    5149,
+    5337,
+    5488,
+    5489,
+    5490,
+    5501,
+    5503,
+    5504,
+    5519,
+    5549,
+    5579,
+    5609,
+    5639,
+    5684,
+    5698,
+    5699,
+    5700,
+    5711,
+    5823,
+    6003,
+    6234,
+    6505,
+    6710,
+    6811,
+    6812,
+    6813,
+    6824,
+    6958,
+    7250,
+    7369,
+    7370,
+    7371,
+    7382,
+    7492,
+    7691,
+    7767,
+    7768,
+    7769,
+    7773,
+    7774,
+    7775,
+    7780,
+    7786,
+    7874,
+    8054,
+    8186,
+    8356,
+    8502,
+    8680,
+    8776,
+    8777,
+    8778,
+    8789,
+    8877,
+    9077,
+    9249,
+    9471,
+    9616,
+    9617,
+    9618,
+    9625,
+    9626,
+    9627,
+    9629,
+    9638,
+    9692,
+    9878,
+    10041,
+    10229,
+    10449,
+    10722,
+    10913,
+    10914,
+    10915,
+    10926,
+    10973,
+    11151,
+    11440,
+    11545,
+    11546,
+    11547,
+    11558,
+    11574,
+    11575,
+    11576,
+    11587,
+    11660,
+    11840,
+    12019,
+    12100,
+    12101,
+    12102,
+    12113,
+    12297,
+    12494,
+    12495,
+    12496,
+    12507,
+    12509,
+    12510,
+    12525,
+    12555,
+    12585,
+    12615,
+    12645,
+    12690,
+    12704,
+    12705,
+    12706,
+    12717,
+    12770,
+    12927,
+    13155,
+    13430,
+    13550,
+    13551,
+    13552,
+    13563,
+    13585,
+    13586,
+    13587,
+    13598,
+    13744,
+    13967,
+    14127,
+    14176,
+    14177,
+    14178,
+    14187,
+    14188,
+    14189,
+    14200,
+    14285,
+    14422,
+    14512,
+    14544,
+    14558,
+    14559
+  ],
+  "contacts": {
+    "preserved_seams": [
+      "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z\\preserved_seams_01_contact.jpg"
+    ],
+    "cut_boundaries": [
+      "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z\\cut_boundaries_01_contact.jpg",
+      "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z\\cut_boundaries_02_contact.jpg",
+      "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z\\cut_boundaries_03_contact.jpg"
+    ],
+    "question_typing_hold": [
+      "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z\\question_typing_hold_01_contact.jpg"
+    ],
+    "all_captions": [
+      "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z\\all_captions_01_contact.jpg",
+      "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z\\all_captions_02_contact.jpg"
+    ],
+    "interview_ends": [
+      "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z\\interview_ends_01_contact.jpg"
+    ]
+  },
+  "short_candidate_contacts": [],
+  "all_frame_mad_csv": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z\\all_frame_mad.csv",
+  "run_directory": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\validation_runs\\20260925T175638_335682Z",
+  "visual_review": "Exact-frame contacts require visual review. Short-shot candidates are evidence, not automatic edit failures."
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "question_01",
+    "frames": [
+      {
+        "frame": 0,
+        "decoded_max_RGB": 0,
+        "decoded_mean_RGB": 0.0
+      },
+      {
+        "frame": 209,
+        "decoded_max_RGB": 0,
+        "decoded_mean_RGB": 0.0
+      }
+    ]
+  },
+  {
+    "id": "question_02",
+    "frames": [
+      {
+        "frame": 0,
+        "decoded_max_RGB": 0,
+        "decoded_mean_RGB": 0.0
+      },
+      {
+        "frame": 209,
+        "decoded_max_RGB": 0,
+        "decoded_mean_RGB": 0.0
+      }
+    ]
+  },
+  {
+    "id": "question_03",
+    "frames": [
+      {
+        "frame": 0,
+        "decoded_max_RGB": 0,
+        "decoded_mean_RGB": 0.0
+      },
+      {
+        "frame": 209,
+        "decoded_max_RGB": 0,
+        "decoded_mean_RGB": 0.0
+      }
+    ]
+  },
+  {
+    "id": "question_04",
+    "frames": [
+      {
+        "frame": 0,
+        "decoded_max_RGB": 0,
+        "decoded_mean_RGB": 0.0
+      },
+      {
+        "frame": 209,
+        "decoded_max_RGB": 0,
+        "decoded_mean_RGB": 0.0
+      }
+    ]
+  }
+]

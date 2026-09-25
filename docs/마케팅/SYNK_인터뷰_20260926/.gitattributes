@@ -1,0 +1,2 @@
+# Preserve the archived production bytes and recorded SHA-256 values on checkout.
+* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

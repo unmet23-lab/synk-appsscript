@@ -1,0 +1,122 @@
+[
+  {
+    "id": "question_01",
+    "decoded_black_background": [
+      {
+        "frame": 0,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      },
+      {
+        "frame": 120,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      },
+      {
+        "frame": 209,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      }
+    ],
+    "source_first_last_frames_fully_black": true,
+    "final_visible_bounds": [
+      1425,
+      866,
+      2412,
+      1293
+    ],
+    "main_font_size": 128,
+    "label_font_size": 60,
+    "typing_times_fixed": true
+  },
+  {
+    "id": "question_02",
+    "decoded_black_background": [
+      {
+        "frame": 0,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      },
+      {
+        "frame": 120,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      },
+      {
+        "frame": 209,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      }
+    ],
+    "source_first_last_frames_fully_black": true,
+    "final_visible_bounds": [
+      1486,
+      866,
+      2343,
+      1292
+    ],
+    "main_font_size": 128,
+    "label_font_size": 60,
+    "typing_times_fixed": true
+  },
+  {
+    "id": "question_03",
+    "decoded_black_background": [
+      {
+        "frame": 0,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      },
+      {
+        "frame": 120,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      },
+      {
+        "frame": 209,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      }
+    ],
+    "source_first_last_frames_fully_black": true,
+    "final_visible_bounds": [
+      1276,
+      866,
+      2555,
+      1292
+    ],
+    "main_font_size": 128,
+    "label_font_size": 60,
+    "typing_times_fixed": true
+  },
+  {
+    "id": "question_04",
+    "decoded_black_background": [
+      {
+        "frame": 0,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      },
+      {
+        "frame": 120,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      },
+      {
+        "frame": 209,
+        "corner_min_y_10bit": 64,
+        "corner_max_y_10bit": 64
+      }
+    ],
+    "source_first_last_frames_fully_black": true,
+    "final_visible_bounds": [
+      1412,
+      866,
+      2427,
+      1293
+    ],
+    "main_font_size": 128,
+    "label_font_size": 60,
+    "typing_times_fixed": true
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "end_local_frame": 1324,
+  "source_end_frame_exclusive": 45433,
+  "source_end_seconds": 757.2166666666667,
+  "v3_output_end_frame_exclusive": 12706,
+  "v3_output_end_seconds": 211.76666666666668,
+  "picture_handle_frames_after_local_1319": 5,
+  "recommended_audio_end_fade_ms": 8,
+  "decision": "Keep the final sentence through 많거든요, then cut during the low-energy interval before the next phrase.",
+  "evidence": {
+    "full_medium_final_word_end": 757.19,
+    "medium_without_vad_final_word_end": 757.14,
+    "clear_next_phrase_energy_rise_approximately": 757.33,
+    "ten_ms_raw_rms_at_757_20_dbfs": -28.67583558079342,
+    "ten_ms_raw_rms_at_757_21_dbfs": -28.51485060849975,
+    "last_five_ms_rms_dbfs": -27.6858948786482,
+    "last_sample_max_abs": 0.009873628616333008,
+    "spectrogram": "reason_end_756_757.png",
+    "measurements": "reason_end_analysis.json"
+  },
+  "limits": "The choice uses waveform, spectrogram and two medium ASR timing estimates. It does not claim a listening-based phoneme inspection. The small ASR's word boundary was inconsistent and was not used as the cut boundary."
+}

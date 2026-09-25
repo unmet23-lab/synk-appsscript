@@ -1,0 +1,414 @@
+[
+  {
+    "question_id": "Q1",
+    "card_id": "question_01",
+    "seed": 26092601,
+    "peak_dbfs": -24.0,
+    "first_contact_frame": 342,
+    "last_contact_frame": 420,
+    "keystrokes": [
+      {
+        "local_frame": 12,
+        "timeline_frame": 342,
+        "timeline_sample": 273600,
+        "revealed_unit": "왜"
+      },
+      {
+        "local_frame": 19,
+        "timeline_frame": 349,
+        "timeline_sample": 279200,
+        "revealed_unit": "이"
+      },
+      {
+        "local_frame": 26,
+        "timeline_frame": 356,
+        "timeline_sample": 284800,
+        "revealed_unit": "시"
+      },
+      {
+        "local_frame": 31,
+        "timeline_frame": 361,
+        "timeline_sample": 288800,
+        "revealed_unit": "스"
+      },
+      {
+        "local_frame": 36,
+        "timeline_frame": 366,
+        "timeline_sample": 292800,
+        "revealed_unit": "템"
+      },
+      {
+        "local_frame": 41,
+        "timeline_frame": 371,
+        "timeline_sample": 296800,
+        "revealed_unit": "을"
+      },
+      {
+        "local_frame": 48,
+        "timeline_frame": 378,
+        "timeline_sample": 302400,
+        "revealed_unit": "만"
+      },
+      {
+        "local_frame": 53,
+        "timeline_frame": 383,
+        "timeline_sample": 306400,
+        "revealed_unit": "들"
+      },
+      {
+        "local_frame": 58,
+        "timeline_frame": 388,
+        "timeline_sample": 310400,
+        "revealed_unit": "기"
+      },
+      {
+        "local_frame": 65,
+        "timeline_frame": 395,
+        "timeline_sample": 316000,
+        "revealed_unit": "시"
+      },
+      {
+        "local_frame": 70,
+        "timeline_frame": 400,
+        "timeline_sample": 320000,
+        "revealed_unit": "작"
+      },
+      {
+        "local_frame": 75,
+        "timeline_frame": 405,
+        "timeline_sample": 324000,
+        "revealed_unit": "했"
+      },
+      {
+        "local_frame": 80,
+        "timeline_frame": 410,
+        "timeline_sample": 328000,
+        "revealed_unit": "나"
+      },
+      {
+        "local_frame": 85,
+        "timeline_frame": 415,
+        "timeline_sample": 332000,
+        "revealed_unit": "요"
+      },
+      {
+        "local_frame": 90,
+        "timeline_frame": 420,
+        "timeline_sample": 336000,
+        "revealed_unit": "?"
+      }
+    ]
+  },
+  {
+    "question_id": "Q2",
+    "card_id": "question_02",
+    "seed": 26092602,
+    "peak_dbfs": -24.0,
+    "first_contact_frame": 2839,
+    "last_contact_frame": 2917,
+    "keystrokes": [
+      {
+        "local_frame": 12,
+        "timeline_frame": 2839,
+        "timeline_sample": 2271200,
+        "revealed_unit": "왜"
+      },
+      {
+        "local_frame": 21,
+        "timeline_frame": 2848,
+        "timeline_sample": 2278400,
+        "revealed_unit": "T"
+      },
+      {
+        "local_frame": 24,
+        "timeline_frame": 2851,
+        "timeline_sample": 2280800,
+        "revealed_unit": "O"
+      },
+      {
+        "local_frame": 28,
+        "timeline_frame": 2855,
+        "timeline_sample": 2284000,
+        "revealed_unit": "P"
+      },
+      {
+        "local_frame": 32,
+        "timeline_frame": 2859,
+        "timeline_sample": 2287200,
+        "revealed_unit": "I"
+      },
+      {
+        "local_frame": 36,
+        "timeline_frame": 2863,
+        "timeline_sample": 2290400,
+        "revealed_unit": "K"
+      },
+      {
+        "local_frame": 42,
+        "timeline_frame": 2869,
+        "timeline_sample": 2295200,
+        "revealed_unit": "4"
+      },
+      {
+        "local_frame": 46,
+        "timeline_frame": 2873,
+        "timeline_sample": 2298400,
+        "revealed_unit": "급"
+      },
+      {
+        "local_frame": 52,
+        "timeline_frame": 2879,
+        "timeline_sample": 2303200,
+        "revealed_unit": "이"
+      },
+      {
+        "local_frame": 61,
+        "timeline_frame": 2888,
+        "timeline_sample": 2310400,
+        "revealed_unit": "중"
+      },
+      {
+        "local_frame": 66,
+        "timeline_frame": 2893,
+        "timeline_sample": 2314400,
+        "revealed_unit": "요"
+      },
+      {
+        "local_frame": 72,
+        "timeline_frame": 2899,
+        "timeline_sample": 2319200,
+        "revealed_unit": "한"
+      },
+      {
+        "local_frame": 78,
+        "timeline_frame": 2905,
+        "timeline_sample": 2324000,
+        "revealed_unit": "가"
+      },
+      {
+        "local_frame": 84,
+        "timeline_frame": 2911,
+        "timeline_sample": 2328800,
+        "revealed_unit": "요"
+      },
+      {
+        "local_frame": 90,
+        "timeline_frame": 2917,
+        "timeline_sample": 2333600,
+        "revealed_unit": "?"
+      }
+    ]
+  },
+  {
+    "question_id": "Q3",
+    "card_id": "question_03",
+    "seed": 26092603,
+    "peak_dbfs": -24.0,
+    "first_contact_frame": 5501,
+    "last_contact_frame": 5579,
+    "keystrokes": [
+      {
+        "local_frame": 12,
+        "timeline_frame": 5501,
+        "timeline_sample": 4400800,
+        "revealed_unit": "A"
+      },
+      {
+        "local_frame": 15,
+        "timeline_frame": 5504,
+        "timeline_sample": 4403200,
+        "revealed_unit": "I"
+      },
+      {
+        "local_frame": 20,
+        "timeline_frame": 5509,
+        "timeline_sample": 4407200,
+        "revealed_unit": "시"
+      },
+      {
+        "local_frame": 24,
+        "timeline_frame": 5513,
+        "timeline_sample": 4410400,
+        "revealed_unit": "대"
+      },
+      {
+        "local_frame": 33,
+        "timeline_frame": 5522,
+        "timeline_sample": 4417600,
+        "revealed_unit": "어"
+      },
+      {
+        "local_frame": 37,
+        "timeline_frame": 5526,
+        "timeline_sample": 4420800,
+        "revealed_unit": "떤"
+      },
+      {
+        "local_frame": 43,
+        "timeline_frame": 5532,
+        "timeline_sample": 4425600,
+        "revealed_unit": "교"
+      },
+      {
+        "local_frame": 48,
+        "timeline_frame": 5537,
+        "timeline_sample": 4429600,
+        "revealed_unit": "육"
+      },
+      {
+        "local_frame": 54,
+        "timeline_frame": 5543,
+        "timeline_sample": 4434400,
+        "revealed_unit": "철"
+      },
+      {
+        "local_frame": 58,
+        "timeline_frame": 5547,
+        "timeline_sample": 4437600,
+        "revealed_unit": "학"
+      },
+      {
+        "local_frame": 62,
+        "timeline_frame": 5551,
+        "timeline_sample": 4440800,
+        "revealed_unit": "이"
+      },
+      {
+        "local_frame": 69,
+        "timeline_frame": 5558,
+        "timeline_sample": 4446400,
+        "revealed_unit": "필"
+      },
+      {
+        "local_frame": 77,
+        "timeline_frame": 5566,
+        "timeline_sample": 4452800,
+        "revealed_unit": "한"
+      },
+      {
+        "local_frame": 81,
+        "timeline_frame": 5570,
+        "timeline_sample": 4456000,
+        "revealed_unit": "가"
+      },
+      {
+        "local_frame": 86,
+        "timeline_frame": 5575,
+        "timeline_sample": 4460000,
+        "revealed_unit": "요"
+      },
+      {
+        "local_frame": 90,
+        "timeline_frame": 5579,
+        "timeline_sample": 4463200,
+        "revealed_unit": "?"
+      }
+    ]
+  },
+  {
+    "question_id": "Q4",
+    "card_id": "question_04",
+    "seed": 26092604,
+    "peak_dbfs": -24.0,
+    "first_contact_frame": 12507,
+    "last_contact_frame": 12585,
+    "keystrokes": [
+      {
+        "local_frame": 12,
+        "timeline_frame": 12507,
+        "timeline_sample": 10005600,
+        "revealed_unit": "기"
+      },
+      {
+        "local_frame": 16,
+        "timeline_frame": 12511,
+        "timeline_sample": 10008800,
+        "revealed_unit": "술"
+      },
+      {
+        "local_frame": 21,
+        "timeline_frame": 12516,
+        "timeline_sample": 10012800,
+        "revealed_unit": "이"
+      },
+      {
+        "local_frame": 27,
+        "timeline_frame": 12522,
+        "timeline_sample": 10017600,
+        "revealed_unit": "만"
+      },
+      {
+        "local_frame": 31,
+        "timeline_frame": 12526,
+        "timeline_sample": 10020800,
+        "revealed_unit": "든"
+      },
+      {
+        "local_frame": 37,
+        "timeline_frame": 12532,
+        "timeline_sample": 10025600,
+        "revealed_unit": "시"
+      },
+      {
+        "local_frame": 41,
+        "timeline_frame": 12536,
+        "timeline_sample": 10028800,
+        "revealed_unit": "간"
+      },
+      {
+        "local_frame": 46,
+        "timeline_frame": 12541,
+        "timeline_sample": 10032800,
+        "revealed_unit": "을"
+      },
+      {
+        "local_frame": 56,
+        "timeline_frame": 12551,
+        "timeline_sample": 10040800,
+        "revealed_unit": "떻"
+      },
+      {
+        "local_frame": 61,
+        "timeline_frame": 12556,
+        "timeline_sample": 10044800,
+        "revealed_unit": "게"
+      },
+      {
+        "local_frame": 67,
+        "timeline_frame": 12562,
+        "timeline_sample": 10049600,
+        "revealed_unit": "쓰"
+      },
+      {
+        "local_frame": 71,
+        "timeline_frame": 12566,
+        "timeline_sample": 10052800,
+        "revealed_unit": "고"
+      },
+      {
+        "local_frame": 77,
+        "timeline_frame": 12572,
+        "timeline_sample": 10057600,
+        "revealed_unit": "싶"
+      },
+      {
+        "local_frame": 81,
+        "timeline_frame": 12576,
+        "timeline_sample": 10060800,
+        "revealed_unit": "나"
+      },
+      {
+        "local_frame": 86,
+        "timeline_frame": 12581,
+        "timeline_sample": 10064800,
+        "revealed_unit": "요"
+      },
+      {
+        "local_frame": 90,
+        "timeline_frame": 12585,
+        "timeline_sample": 10068000,
+        "revealed_unit": "?"
+      }
+    ]
+  }
+]

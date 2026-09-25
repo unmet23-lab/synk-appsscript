@@ -1,0 +1,50 @@
+[
+  {
+    "id": "question_01",
+    "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_01_4K60.mov",
+    "frames": 210,
+    "duration": 3.5,
+    "codec": "hevc",
+    "profile": "Main 10",
+    "pix_fmt": "yuv420p10le",
+    "file_size": 49505,
+    "full_decode": "pass",
+    "opaque_background": true
+  },
+  {
+    "id": "question_02",
+    "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_02_4K60.mov",
+    "frames": 210,
+    "duration": 3.5,
+    "codec": "hevc",
+    "profile": "Main 10",
+    "pix_fmt": "yuv420p10le",
+    "file_size": 49385,
+    "full_decode": "pass",
+    "opaque_background": true
+  },
+  {
+    "id": "question_03",
+    "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_03_4K60.mov",
+    "frames": 210,
+    "duration": 3.5,
+    "codec": "hevc",
+    "profile": "Main 10",
+    "pix_fmt": "yuv420p10le",
+    "file_size": 53389,
+    "full_decode": "pass",
+    "opaque_background": true
+  },
+  {
+    "id": "question_04",
+    "path": "C:\\Users\\q1212\\Videos\\SYNK_Premium_Interview_20260925\\revision4\\graphics\\question_04_4K60.mov",
+    "frames": 210,
+    "duration": 3.5,
+    "codec": "hevc",
+    "profile": "Main 10",
+    "pix_fmt": "yuv420p10le",
+    "file_size": 53343,
+    "full_decode": "pass",
+    "opaque_background": true
+  }
+]

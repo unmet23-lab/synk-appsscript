@@ -1,0 +1,692 @@
+[
+  {
+    "id": 1,
+    "cut_id": "02_intro",
+    "source_start": 252.2,
+    "source_end": 255.76,
+    "start": 0.03329999999999889,
+    "end": 3.5932999999999993,
+    "text": "안녕하세요. SYNK에서\n교육 시스템을 만들고 있는",
+    "prior_id": 3
+  },
+  {
+    "id": 2,
+    "cut_id": "02_intro",
+    "source_start": 255.76,
+    "source_end": 257.5,
+    "start": 3.5932999999999993,
+    "end": 5.3333,
+    "text": "양유호입니다.",
+    "prior_id": 4
+  },
+  {
+    "id": 3,
+    "cut_id": "03_student",
+    "source_start": 0.0,
+    "source_end": 2.98,
+    "start": 9.0,
+    "end": 11.980000000000002,
+    "text": "학생 한 명 한 명의\n개인적인 성향 파악이",
+    "prior_id": 5
+  },
+  {
+    "id": 4,
+    "cut_id": "03_student",
+    "source_start": 2.98,
+    "source_end": 5.7,
+    "start": 11.980000000000002,
+    "end": 14.7,
+    "text": "제일 중요하다고 생각하고 있고요.",
+    "prior_id": 6
+  },
+  {
+    "id": 5,
+    "cut_id": "04_care",
+    "source_start": 265.72,
+    "source_end": 268.54,
+    "start": 14.869999999999997,
+    "end": 17.689999999999994,
+    "text": "한 명 한 명 다 케어하고 싶고",
+    "prior_id": 7
+  },
+  {
+    "id": 6,
+    "cut_id": "04_care",
+    "source_start": 268.54,
+    "source_end": 271.88,
+    "start": 17.689999999999994,
+    "end": 21.030000000000005,
+    "text": "양질의 무언가를\n전달하고 싶은 마음이 있었는데",
+    "prior_id": 8
+  },
+  {
+    "id": 7,
+    "cut_id": "04_care",
+    "source_start": 271.88,
+    "source_end": 274.28,
+    "start": 21.030000000000005,
+    "end": 23.430000000000003,
+    "text": "물리적인 시간이 부족하더라고요.",
+    "prior_id": 9
+  },
+  {
+    "id": 8,
+    "cut_id": "05_personal",
+    "source_start": 306.72,
+    "source_end": 310.64,
+    "start": 23.536700000000003,
+    "end": 27.4567,
+    "text": "이걸 개인화 시스템으로",
+    "prior_id": 10
+  },
+  {
+    "id": 9,
+    "cut_id": "05_personal",
+    "source_start": 310.64,
+    "source_end": 313.72,
+    "start": 27.4567,
+    "end": 30.536700000000003,
+    "text": "이 한계를 한번 뚫어 보면\n좋지 않을까?",
+    "prior_id": 11
+  },
+  {
+    "cut_id": "new_personal_design",
+    "source_start": 324.9,
+    "source_end": 326.86,
+    "text": "학생 한 명 한 명마다",
+    "start": 30.616666666666667,
+    "end": 32.576666666666675,
+    "id": 10,
+    "prior_id": 48
+  },
+  {
+    "cut_id": "new_personal_design",
+    "source_start": 326.88,
+    "source_end": 330.02,
+    "text": "이 학생의 장점, 이 학생의 단점,",
+    "start": 32.59666666666666,
+    "end": 35.73666666666668,
+    "id": 11,
+    "prior_id": 49
+  },
+  {
+    "cut_id": "new_personal_design",
+    "source_start": 330.04,
+    "source_end": 334.02,
+    "text": "어떤 가치관과 패턴을 갖고 있는지",
+    "start": 35.75666666666666,
+    "end": 39.73666666666668,
+    "id": 12,
+    "prior_id": 50
+  },
+  {
+    "cut_id": "new_personal_design",
+    "source_start": 334.04,
+    "source_end": 335.56,
+    "text": "이런 것들을 파악해서",
+    "start": 39.75666666666666,
+    "end": 41.27666666666667,
+    "id": 13,
+    "prior_id": 51
+  },
+  {
+    "cut_id": "new_personal_design",
+    "source_start": 335.58,
+    "source_end": 339.44,
+    "text": "이 친구들의 입맛에 맞는 정보를 전달하자.",
+    "start": 41.29666666666669,
+    "end": 45.15666666666666,
+    "id": 14,
+    "prior_id": 52
+  },
+  {
+    "cut_id": "new_personal_design",
+    "source_start": 339.5,
+    "source_end": 341.2,
+    "text": "이게 취지고요.",
+    "start": 45.21666666666667,
+    "end": 46.916666666666664,
+    "id": 15,
+    "prior_id": 53
+  },
+  {
+    "cut_id": "new_level4_reason",
+    "source_start": 735.34,
+    "source_end": 740.02,
+    "text": "한국 유학에 필요한 건 최소 3급,\n2급도 가끔 되는 데가 있지만,",
+    "start": 50.80666666666666,
+    "end": 55.48666666666665,
+    "id": 16,
+    "prior_id": 60
+  },
+  {
+    "cut_id": "new_level4_reason",
+    "source_start": 740.04,
+    "source_end": 744.22,
+    "text": "4급이 없으면\n많은 제약이 있거든요.",
+    "start": 55.50666666666666,
+    "end": 59.68666666666668,
+    "id": 17,
+    "prior_id": 61
+  },
+  {
+    "cut_id": "new_level4_reason",
+    "source_start": 744.28,
+    "source_end": 747.92,
+    "text": "예를 들어 취업할 때도 문제가 생기고,",
+    "start": 59.746666666666684,
+    "end": 63.38666666666668,
+    "id": 18,
+    "prior_id": 62
+  },
+  {
+    "cut_id": "new_level4_reason",
+    "source_start": 747.94,
+    "source_end": 749.88,
+    "text": "졸업할 때도 문제가 생기고.",
+    "start": 63.40666666666669,
+    "end": 65.34666666666668,
+    "id": 19,
+    "prior_id": 63
+  },
+  {
+    "cut_id": "new_level4_reason",
+    "source_start": 749.9,
+    "source_end": 753.12,
+    "text": "결국 학생들이 한국에 온 주목적은,",
+    "start": 65.36666666666666,
+    "end": 68.58666666666664,
+    "id": 20,
+    "prior_id": 64
+  },
+  {
+    "cut_id": "new_level4_reason",
+    "source_start": 753.14,
+    "source_end": 757.2,
+    "text": "취업을 위해 온 학생들이\n생각보다 많거든요.",
+    "start": 68.60666666666665,
+    "end": 72.66666666666667,
+    "id": 21,
+    "prior_id": 65
+  },
+  {
+    "cut_id": "new_accountability",
+    "source_start": 363.62,
+    "source_end": 367.16,
+    "text": "결국 학생들에게\n제가 전달하고자 하는 건,",
+    "start": 72.80333333333334,
+    "end": 76.34333333333333,
+    "id": 22,
+    "prior_id": 54
+  },
+  {
+    "cut_id": "new_accountability",
+    "source_start": 367.18,
+    "source_end": 369.92,
+    "text": "흡수가 안 되고, 그냥 재미있기만 하고",
+    "start": 76.36333333333336,
+    "end": 79.10333333333331,
+    "id": 23,
+    "prior_id": 55
+  },
+  {
+    "cut_id": "new_accountability",
+    "source_start": 369.94,
+    "source_end": 373.48,
+    "text": "매끄럽기만 하고,\nTOPIK에 도움이 안 된다면",
+    "start": 79.12333333333332,
+    "end": 82.66333333333333,
+    "id": 24,
+    "prior_id": 56
+  },
+  {
+    "cut_id": "new_accountability",
+    "source_start": 374.02,
+    "source_end": 375.52,
+    "text": "사실 쓰레기니까.",
+    "start": 83.20333333333332,
+    "end": 84.70333333333332,
+    "id": 25,
+    "prior_id": 57
+  },
+  {
+    "cut_id": "new_accountability",
+    "source_start": 375.9,
+    "source_end": 377.38,
+    "text": "그런 걸 만들고 싶지 않고",
+    "start": 85.08333333333333,
+    "end": 86.56333333333332,
+    "id": 26,
+    "prior_id": 58
+  },
+  {
+    "cut_id": "new_accountability",
+    "source_start": 377.4,
+    "source_end": 382.15,
+    "text": "확실하게 4급까지는 보장하고 싶은\n시스템을 만들고 있고요.",
+    "start": 86.58333333333333,
+    "end": 91.33333333333333,
+    "id": 27,
+    "prior_id": 59
+  },
+  {
+    "cut_id": "new_analogue",
+    "source_start": 760.84,
+    "source_end": 764.5,
+    "text": "저는 아날로그 시대의\n따뜻한 감성도 느껴봤고,",
+    "start": 95.22336666666666,
+    "end": 98.88336666666667,
+    "id": 28,
+    "prior_id": 12
+  },
+  {
+    "cut_id": "new_analogue",
+    "source_start": 764.52,
+    "source_end": 766.82,
+    "text": "그리고 스마트폰 시대의 편리함,",
+    "start": 98.90336666666667,
+    "end": 101.20336666666665,
+    "id": 29,
+    "prior_id": 13
+  },
+  {
+    "cut_id": "new_analogue",
+    "source_start": 766.86,
+    "source_end": 772.16,
+    "text": "그리고 새로운 시대,\nAI 시대를 느끼고 있지만,",
+    "start": 101.24336666666665,
+    "end": 106.54336666666664,
+    "id": 30,
+    "prior_id": 14
+  },
+  {
+    "cut_id": "new_analogue",
+    "source_start": 772.24,
+    "source_end": 775.84,
+    "text": "어느 시대 때보다 훨씬 더",
+    "start": 106.62336666666667,
+    "end": 110.22336666666666,
+    "id": 31,
+    "prior_id": 15
+  },
+  {
+    "cut_id": "new_analogue",
+    "source_start": 775.86,
+    "source_end": 779.05,
+    "text": "제가 체감할 수 있는\n환경적인 변화들이 많을 것 같고,",
+    "start": 110.24336666666665,
+    "end": 113.43336666666667,
+    "id": 32,
+    "prior_id": 16
+  },
+  {
+    "id": 33,
+    "cut_id": "01_hook",
+    "source_start": 28.08,
+    "source_end": 32.8,
+    "start": 113.61333333333333,
+    "end": 118.33333333333333,
+    "text": "누구나 압도적인 생산을\n할 수 있는 시대에서",
+    "prior_id": 1
+  },
+  {
+    "id": 34,
+    "cut_id": "01_hook",
+    "source_start": 33.44,
+    "source_end": 37.16,
+    "start": 118.97333333333333,
+    "end": 122.69333333333334,
+    "text": "어떻게 해야 내가 더 가치 있는 것을\n만드냐의 문제거든요.",
+    "prior_id": 2
+  },
+  {
+    "id": 35,
+    "cut_id": "06_human",
+    "source_start": 424.6,
+    "source_end": 428.68,
+    "start": 122.83336666666668,
+    "end": 126.91336666666666,
+    "text": "결국 그걸 조종하고 만드는 건",
+    "prior_id": 17
+  },
+  {
+    "id": 36,
+    "cut_id": "06_human",
+    "source_start": 428.68,
+    "source_end": 431.22,
+    "start": 126.91336666666666,
+    "end": 129.45336666666668,
+    "text": "AI가 아니라 사람이잖아요.",
+    "prior_id": 18
+  },
+  {
+    "id": 37,
+    "cut_id": "07_critical",
+    "source_start": 126.16,
+    "source_end": 129.7,
+    "start": 129.46666666666667,
+    "end": 132.99996666666667,
+    "text": "AI를 사용해서 어떤 걸 만들 때",
+    "prior_id": 19
+  },
+  {
+    "id": 38,
+    "cut_id": "07_critical",
+    "source_start": 130.28,
+    "source_end": 131.58,
+    "start": 133.57996666666668,
+    "end": 134.8799666666667,
+    "text": "진짜 끌려가게 돼요.",
+    "prior_id": 20
+  },
+  {
+    "id": 39,
+    "cut_id": "07_critical",
+    "source_start": 131.58,
+    "source_end": 134.68,
+    "start": 134.8799666666667,
+    "end": 137.97996666666666,
+    "text": "“이건 맞고, 이건 아닌데”",
+    "prior_id": 21
+  },
+  {
+    "id": 40,
+    "cut_id": "07_critical",
+    "source_start": 134.68,
+    "source_end": 137.26,
+    "start": 137.97996666666666,
+    "end": 140.55996666666667,
+    "text": "“너 잘못하고 있어. 다시 해 봐”",
+    "prior_id": 22
+  },
+  {
+    "id": 41,
+    "cut_id": "07_critical",
+    "source_start": 137.4,
+    "source_end": 139.4,
+    "start": 140.69996666666665,
+    "end": 142.69996666666665,
+    "text": "이런 걸 하기가 되게 어렵거든요.",
+    "prior_id": 23
+  },
+  {
+    "id": 42,
+    "cut_id": "07_critical",
+    "source_start": 139.78,
+    "source_end": 142.94,
+    "start": 143.07996666666668,
+    "end": 146.23996666666667,
+    "text": "이런 걸 하려면\n비판적인 사고를 할 줄 알아야 해요.",
+    "prior_id": 24
+  },
+  {
+    "id": 43,
+    "cut_id": "10_philosophy",
+    "source_start": 37.96,
+    "source_end": 41.1,
+    "start": 146.37663333333333,
+    "end": 149.51663333333332,
+    "text": "그러려면 분명한\n자기의 철학이 있어야 되고",
+    "prior_id": 31
+  },
+  {
+    "id": 44,
+    "cut_id": "10_philosophy",
+    "source_start": 41.72,
+    "source_end": 44.02,
+    "start": 150.13663333333335,
+    "end": 152.43663333333333,
+    "text": "자기의 가치관을 알아야 되고",
+    "prior_id": 32
+  },
+  {
+    "id": 45,
+    "cut_id": "10_philosophy",
+    "source_start": 44.32,
+    "source_end": 47.16,
+    "start": 152.73663333333334,
+    "end": 155.57663333333332,
+    "text": "내가 뭘 좋아하고\n뭘 싫어하는지부터 시작해서",
+    "prior_id": 33
+  },
+  {
+    "id": 46,
+    "cut_id": "10_philosophy",
+    "source_start": 47.16,
+    "source_end": 51.72,
+    "start": 155.57663333333332,
+    "end": 160.13663333333335,
+    "text": "어떤 삶을 추구하는지\n생각해야 되고요.",
+    "prior_id": 34
+  },
+  {
+    "id": 47,
+    "cut_id": "11_experience",
+    "source_start": 54.22,
+    "source_end": 56.7,
+    "start": 160.28663333333333,
+    "end": 162.76663333333332,
+    "text": "내 가치관으로, 내 철학으로",
+    "prior_id": 35
+  },
+  {
+    "id": 48,
+    "cut_id": "11_experience",
+    "source_start": 56.7,
+    "source_end": 60.44,
+    "start": 162.76663333333332,
+    "end": 166.50663333333335,
+    "text": "어떤 걸 야심 차게 만들어\n내놓았을 때",
+    "prior_id": 36
+  },
+  {
+    "id": 49,
+    "cut_id": "11_experience",
+    "source_start": 60.44,
+    "source_end": 62.14,
+    "start": 166.50663333333335,
+    "end": 168.20663333333334,
+    "text": "비판도 받아 보고",
+    "prior_id": 37
+  },
+  {
+    "id": 50,
+    "cut_id": "11_experience",
+    "source_start": 62.14,
+    "source_end": 66.7,
+    "start": 168.20663333333334,
+    "end": 172.76663333333332,
+    "text": "“이 친구 거 되게 좋아 보인다.\n잘 만들었다” 했는데",
+    "prior_id": 38
+  },
+  {
+    "id": 51,
+    "cut_id": "11_experience",
+    "source_start": 66.7,
+    "source_end": 69.46,
+    "start": 172.76663333333332,
+    "end": 175.5266333333333,
+    "text": "막상 평가는 되게 나쁘고",
+    "prior_id": 39
+  },
+  {
+    "id": 52,
+    "cut_id": "11_experience",
+    "source_start": 69.46,
+    "source_end": 75.82,
+    "start": 175.5266333333333,
+    "end": 181.88663333333335,
+    "text": "“이 친구 거는 되게 별로네”\n했던 게 엄청 이슈를 받고",
+    "prior_id": 40
+  },
+  {
+    "id": 53,
+    "cut_id": "12_growth",
+    "source_start": 196.1,
+    "source_end": 198.08,
+    "start": 181.90003333333334,
+    "end": 183.88003333333333,
+    "text": "이런 과정들이 쌓이고 쌓이면서",
+    "prior_id": 41
+  },
+  {
+    "id": 54,
+    "cut_id": "12_growth",
+    "source_start": 198.08,
+    "source_end": 202.01,
+    "start": 183.88003333333333,
+    "end": 187.8100333333333,
+    "text": "스스로 느끼고 체감하는 정도가\n많아지면 많아질수록",
+    "prior_id": 42
+  },
+  {
+    "id": 55,
+    "cut_id": "12_growth",
+    "source_start": 202.7,
+    "source_end": 207.04,
+    "start": 188.50003333333333,
+    "end": 192.84003333333337,
+    "text": "다루는 능력은 정말 압도적으로\n높아질 거라고 생각합니다.",
+    "prior_id": 43
+  },
+  {
+    "id": 56,
+    "cut_id": "13_education",
+    "source_start": 117.46,
+    "source_end": 120.18,
+    "start": 192.9766333333333,
+    "end": 195.69663333333332,
+    "text": "이런 자리를 많이 마련해야 되고요.",
+    "prior_id": 44
+  },
+  {
+    "id": 57,
+    "cut_id": "13_education",
+    "source_start": 120.18,
+    "source_end": 123.46,
+    "start": 195.69663333333332,
+    "end": 198.9766333333333,
+    "text": "그 과정을 지금 당장은\n한국어를 공부하면서",
+    "prior_id": 45
+  },
+  {
+    "id": 58,
+    "cut_id": "13_education",
+    "source_start": 123.46,
+    "source_end": 126.14,
+    "start": 198.9766333333333,
+    "end": 201.65663333333336,
+    "text": "만들어 낼 수 있는 게 되게 많더라고요.",
+    "prior_id": 46
+  },
+  {
+    "id": 59,
+    "cut_id": "14_leader",
+    "source_start": 207.74,
+    "source_end": 214.02,
+    "start": 201.80663333333334,
+    "end": 208.08663333333334,
+    "text": "리더가 될 수 있는 학생들을\n만들고자 하는 게 최종 목표입니다.",
+    "prior_id": 67
+  },
+  {
+    "id": 60,
+    "cut_id": "15_time",
+    "source_start": 215.2,
+    "source_end": 217.04,
+    "start": 211.91663333333332,
+    "end": 213.75663333333335,
+    "text": "마지막으로 정리해 보면",
+    "prior_id": 68
+  },
+  {
+    "id": 61,
+    "cut_id": "15_time",
+    "source_start": 217.04,
+    "source_end": 220.42,
+    "start": 213.75663333333335,
+    "end": 217.13663333333335,
+    "text": "기술이 만들어 준 이 시간을",
+    "prior_id": 69
+  },
+  {
+    "id": 62,
+    "cut_id": "15_time",
+    "source_start": 220.42,
+    "source_end": 224.66,
+    "start": 217.13663333333335,
+    "end": 221.3766333333333,
+    "text": "사람은 온전히 느끼고 경험하고",
+    "prior_id": 70
+  },
+  {
+    "id": 63,
+    "cut_id": "15_time",
+    "source_start": 224.66,
+    "source_end": 229.58,
+    "start": 221.3766333333333,
+    "end": 226.29663333333332,
+    "text": "배우고 활동하는 데\n쓰는 게 좋다고 생각합니다.",
+    "prior_id": 71
+  },
+  {
+    "id": 64,
+    "cut_id": "16_invitation",
+    "source_start": 230.16,
+    "source_end": 234.86,
+    "start": 226.7100333333333,
+    "end": 231.4100333333333,
+    "text": "이걸 구현하기 위해\n증명해야 될 게 되게 많죠.",
+    "prior_id": 72
+  },
+  {
+    "id": 65,
+    "cut_id": "16_invitation",
+    "source_start": 235.0,
+    "source_end": 237.48,
+    "start": 231.55003333333335,
+    "end": 234.03003333333334,
+    "text": "이게 될까?",
+    "prior_id": 73
+  },
+  {
+    "id": 66,
+    "cut_id": "16_invitation",
+    "source_start": 237.9,
+    "source_end": 239.9,
+    "start": 234.45003333333335,
+    "end": 236.45003333333335,
+    "text": "저를 지켜봐 주셨으면 좋겠고",
+    "prior_id": 74
+  },
+  {
+    "id": 67,
+    "cut_id": "17_outro",
+    "source_start": 245.2,
+    "source_end": 248.2,
+    "start": 236.58333333333334,
+    "end": 239.58333333333334,
+    "text": "지금까지 SYNK에서\n교육 시스템을 만들고 있는",
+    "prior_id": 75
+  },
+  {
+    "id": 68,
+    "cut_id": "17_outro",
+    "source_start": 248.2,
+    "source_end": 249.76,
+    "start": 239.58333333333334,
+    "end": 241.14333333333332,
+    "text": "양유호였습니다.",
+    "prior_id": 76
+  },
+  {
+    "id": 69,
+    "cut_id": "17_outro",
+    "source_start": 249.76,
+    "source_end": 251.22,
+    "start": 241.14333333333332,
+    "end": 242.6033333333333,
+    "text": "감사합니다.",
+    "prior_id": 77
+  }
+]
