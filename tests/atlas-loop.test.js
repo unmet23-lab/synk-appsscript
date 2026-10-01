@@ -25,6 +25,15 @@ function fixture({ explore = 0, experienceId = 'letter', domain = 'LAB' } = {}) 
   return { session, tick, plan, round, observe, days: d => tick(d * 1440), now: () => new Date(at).toISOString() };
 }
 const pick = (decision, lever) => decision.bundle[lever].option;
+function practiceProof(f, decision, { firstExposure = true, helpLevel = null, repeat = false, conceptIds = ['honorific'], verdict = 'correct', itemKey = 'honorific.new' } = {}) {
+  f.tick();
+  const presented = f.session.practice('presented', { decisionId: decision.id, taskId: 'honorific-task', taskVersion: 'v1', itemKey, conceptIds, firstExposure });
+  if (helpLevel) { f.tick(); f.session.practice('helped', { presentationId: presented.id, helpId: 'help-1', level: helpLevel, contentRef: 'help-content-1' }); }
+  if (repeat) { f.tick(); f.session.practice('attempted', { presentationId: presented.id, attemptNo: 1, verdict: 'incorrect', errorTags: [] }); }
+  f.tick();
+  const attempt = f.session.practice('attempted', { presentationId: presented.id, attemptNo: repeat ? 2 : 1, verdict, errorTags: [] });
+  return { presented, attempt };
+}
 
 test('what was observed changes what is practised; one thin observation does not, until the person confirms it', () => {
   const f = fixture();
@@ -101,17 +110,119 @@ test('a checked result feeds the next choice: independent success lowers that ai
     const f = fixture();
     f.observe('need', 'honorific', 0.9, 8); f.observe('need', 'letter.deadline', 0.8, 8); f.observe('need', 'letter.purpose', 0.5, 8);
     const first = f.round(); assert.equal(pick(first, 'core.focus'), 'tone');
-    if (result) { f.tick(); f.session.outcome(first.id, result); }
+    if (result) {
+      const { attempt } = practiceProof(f, first);
+      f.tick(); f.session.outcome(first.id, { ...result, attemptId: attempt.id, targetLine: 'need:honorific' });
+    }
     assert.equal(pick(f.round(), 'core.focus'), 'clarity', 'the same aim is not served twice in a row unless it is due');
     return { f, third: f.round() };
   };
   assert.equal(pick(run(null).third, 'core.focus'), 'tone', 'with no result the strongest need returns');
-  const success = run({ measure: 'independent', window: 'immediate', value: 0.9 });
+  const success = run({ measure: 'independent', window: 'immediate', value: 0.9, assisted: false });
   assert.equal(pick(success.third, 'core.focus'), 'purpose'); assert.equal(success.third.outcomeBasis, 'performance');
+  assert.ok(success.third.evidence.includes(success.f.session.events().find(e => e.type === 'practice.attempted').id));
   assert.equal(pick(run({ measure: 'independent', window: 'immediate', value: 0.9, assisted: true }).third, 'core.focus'), 'tone', 'help received is not independent ability');
   assert.equal(pick(run({ measure: 'recurrence', window: 'd7', value: null, reason: 'not_due' }).third, 'core.focus'), 'tone', 'no value is not an effect of zero');
   success.f.observe('need', 'honorific', 0.9, 8);
   assert.equal(pick(success.f.plan(), 'core.focus'), 'tone', 'a newer observation overrides the earlier success');
+});
+
+test('outcome numbers do not relax a need without the matching new independent correct attempt', () => {
+  const scenarios = [
+    { name: 'unknown reported help', outcome: { assisted: null } },
+    { name: 'satisfaction is not ability', outcome: { measure: 'satisfaction' } },
+    { name: 'legacy outcome without practice proof', proof: false },
+    { name: 'unknown first exposure', practice: { firstExposure: null } },
+    { name: 'item seen before', practice: { firstExposure: false } },
+    { name: 'hint before answer', practice: { helpLevel: 'cue' } },
+    { name: 'explanation before answer', practice: { helpLevel: 'explanation' } },
+    { name: 'answer already shown', practice: { helpLevel: 'answer' } },
+    { name: 'repeat attempt', practice: { repeat: true } },
+    { name: 'incorrect attempt', practice: { verdict: 'incorrect' } },
+    { name: 'unassessed attempt', practice: { verdict: 'unassessed' } },
+    { name: 'different concept', practice: { conceptIds: ['letter.purpose'] } },
+    { name: 'different target line', outcome: { targetLine: 'due:honorific' } },
+    { name: 'different decision', otherDecision: true },
+    { name: 'excluded attempt', excludeAttempt: true },
+  ];
+  for (const scenario of scenarios) {
+    const f = fixture();
+    f.observe('need', 'honorific', 0.9, 8); f.observe('need', 'letter.deadline', 0.8, 8); f.observe('need', 'letter.purpose', 0.5, 8);
+    const first = f.round();
+    let provenance = {};
+    if (scenario.proof !== false) {
+      const { attempt } = practiceProof(f, scenario.otherDecision ? f.plan() : first, scenario.practice);
+      provenance = { attemptId: attempt.id, targetLine: 'need:honorific' };
+      if (scenario.excludeAttempt) { f.tick(); f.session.exclude(attempt.id); }
+    }
+    f.tick(); f.session.outcome(first.id, { measure: 'independent', window: 'immediate', value: 1, assisted: false, ...provenance, ...scenario.outcome });
+    f.round(); const third = f.round();
+    assert.equal(pick(third, 'core.focus'), 'tone', scenario.name);
+    assert.notEqual(third.outcomeBasis, 'performance', scenario.name);
+  }
+});
+
+test('practice provenance lives in the same session log and rejects raw text, missing parents and outcome proof gaps', () => {
+  const f = fixture(), first = f.plan();
+  assert.throws(() => f.session.practice('presented', { decisionId: 'missing', taskId: 't', taskVersion: 'v1', itemKey: 'i', conceptIds: ['honorific'], firstExposure: true }), /prior parent/);
+  assert.throws(() => f.session.practice('presented', { decisionId: first.id, taskId: 't', taskVersion: 'v1', itemKey: 'i', conceptIds: ['honorific'], firstExposure: true, rawText: 'private' }), /unexpected/);
+  const proof = practiceProof(f, first);
+  assert.equal(f.session.events().filter(e => e.type.startsWith('practice.')).length, 2);
+  const restored = A.createSession({ scope, events: f.session.events(), clock: f.now });
+  assert.deepEqual(restored.events(), f.session.events());
+  assert.throws(() => f.session.outcome(first.id, { measure: 'independent', window: 'immediate', value: 1, assisted: false, attemptId: proof.attempt.id }), /attempt and target/);
+  assert.throws(() => f.session.outcome(first.id, { measure: 'independent', window: 'immediate', value: 1, assisted: false, attemptId: 'missing', targetLine: 'need:honorific' }), /prior attempt/);
+  assert.throws(() => f.session.outcome(first.id, { measure: 'independent', window: 'immediate', value: 1, assisted: false, attemptId: proof.attempt.id, targetLine: 'trait:honorific' }), /attempt and target/);
+});
+
+test('a delayed outcome cannot reuse an old correct attempt to erase a newer need', () => {
+  const f = fixture();
+  f.observe('need', 'honorific', 0.9, 8); f.observe('need', 'letter.deadline', 0.8, 8); f.observe('need', 'letter.purpose', 0.5, 8);
+  const first = f.round(), { attempt } = practiceProof(f, first);
+  f.observe('need', 'honorific', 0.9, 8);
+  f.tick();
+  f.session.outcome(first.id, { measure: 'independent', window: 'immediate', value: 1, assisted: false, attemptId: attempt.id, targetLine: 'need:honorific' });
+  f.round(); const third = f.round();
+  assert.equal(pick(third, 'core.focus'), 'tone');
+  assert.notEqual(third.outcomeBasis, 'performance');
+});
+
+test('a proof survives other reports on the same decision; state hands out copies of the log', () => {
+  const setup = () => {
+    const f = fixture();
+    f.observe('need', 'honorific', 0.9, 8); f.observe('need', 'letter.deadline', 0.8, 8); f.observe('need', 'letter.purpose', 0.5, 8);
+    const first = f.round(), { attempt } = practiceProof(f, first);
+    f.tick(); f.session.outcome(first.id, { measure: 'independent', window: 'immediate', value: 1, assisted: false, attemptId: attempt.id, targetLine: 'need:honorific' });
+    return { f, first, attempt };
+  };
+  for (const later of [
+    ({ first }) => ({ id: first.id, result: { measure: 'independent', window: 'immediate', value: 0.9, assisted: false } }),
+    ({ first, attempt }) => ({ id: first.id, result: { measure: 'independent', window: 'immediate', value: 1, assisted: false, attemptId: attempt.id, targetLine: 'due:honorific' } }),
+  ]) {
+    const s = setup(), next = later(s);
+    s.f.tick(); s.f.session.outcome(next.id, next.result);
+    s.f.round(); const third = s.f.round();
+    assert.equal(third.outcomeBasis, 'performance', 'a later report about something else does not erase the proof');
+    assert.equal(pick(third, 'core.focus'), 'purpose');
+  }
+  const f = fixture(); f.round('helpful');
+  f.session.state().feedback[0].scope.subject = 'someone-else';
+  assert.equal(f.session.state().feedback[0].scope.subject, 'synthetic');
+  assert.equal(f.session.events().find(e => e.type === 'feedback.given').scope.subject, 'synthetic');
+});
+
+test('the browser kernel loads Trail only when practice is used, in either script load order', () => {
+  const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
+  const context = vm.createContext({});
+  vm.runInContext(fs.readFileSync(path.resolve(__dirname, '../atlas/engine.js'), 'utf8'), context);
+  const session = context.SynkAtlas.createSession({ scope, clock: () => '2026-09-18T00:00:00Z' });
+  const decision = session.plan('letter', modesFor('LAB'), { levers: levers() });
+  const fields = { decisionId: decision.id, taskId: 'task', taskVersion: 'v1', itemKey: 'item', conceptIds: ['honorific'], firstExposure: true };
+  assert.throws(() => session.practice('presented', fields), /Trail practice module unavailable/);
+  vm.runInContext(fs.readFileSync(path.resolve(__dirname, '../atlas/trail.js'), 'utf8'), context);
+  assert.equal(session.practice('presented', fields).type, 'practice.presented');
+  context.SynkAtlasTrail = context.SynkTrail; delete context.SynkTrail;
+  assert.equal(session.practice('practice.presented', fields).type, 'practice.presented');
 });
 
 test('content takes turns when nothing is known, and a due review may repeat', () => {
@@ -195,6 +306,7 @@ test('PULSE keeps no personal observations and takes no baseline share', () => {
   const decision = f.plan();
   assert.throws(() => f.session.outcome(decision.id, { measure: 'returned', window: 'd1', value: 1 }), /PULSE/);
   assert.throws(() => f.session.respond('trait:likes.night', 'yes'), /PULSE/);
+  assert.throws(() => f.session.practice('presented', { decisionId: decision.id, taskId: 'task', taskVersion: 'v1', itemKey: 'item', conceptIds: ['honorific'], firstExposure: true }), /PULSE/);
   for (let i = 0; i < 30; i += 1) { const d = fixture({ domain: 'PULSE', explore: 0.5, experienceId: `work-${i}` }).plan(); assert.equal(d.arm, 'adapted'); assert.equal(d.explore, 0); }
 });
 
@@ -271,6 +383,7 @@ test('standalone or connected: without a ready plan an engine keeps its own defa
   ];
   const session = A.createSession({ scope, events: old, clock: () => '2026-09-18T00:00:00Z' });
   const next = session.plan('letter', modesFor('LAB'), { levers: levers() });
-  assert.equal(next.selected.pace, 'deep'); assert.equal(next.round, 1); assert.equal(next.version, 'atlas-2.0.0');
+  assert.equal(next.selected.pace, 'deep'); assert.equal(next.round, 1); assert.equal(next.version, 'atlas-2.1.0');
+  assert.equal(A.validate({ ...old[0], policy: 'atlas-2.0.0' }).policy, 'atlas-2.0.0');
   assert.throws(() => A.validate({ ...old[0], policy: 'atlas-9' }), /decision record/);
 });

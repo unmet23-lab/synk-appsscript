@@ -1,0 +1,39 @@
+{
+  "date_local": "2026-09-30",
+  "timezone": "Asia/Seoul",
+  "surface": "Codex in-app Chromium browser, localhost synthetic fixture",
+  "url": "http://127.0.0.1:5196/",
+  "entry": "SYNK-talk/tools/atlas-preview-entry.js",
+  "actual_product_component": "SYNK-talk/src/서류관문화면.js",
+  "synthetic_only": true,
+  "remote_account_used": false,
+  "production_deployed": false,
+  "real_learner_effect_measured": false,
+  "steps": [
+    {"action":"Start actual G4 result screen with synthetic prior answers","visible_answer_explanations":0,"attempts":4,"help":0,"independent":0,"unknown_assistance":4},
+    {"action":"Click first incorrect item's hint","visible":"Context cue with no target answer form","attempts":4,"help":1,"independent":0,"unknown_assistance":4},
+    {"action":"Request answer and explanation","visible":"에서 and canonical item explanation","attempts":4,"help":2,"independent":0,"unknown_assistance":4},
+    {"action":"Change to independent preference","visible":"Review collapsed; opening it does not automatically expose an answer"},
+    {"action":"Open retry, fill exact Korean response 에서, submit through existing G4 handler","visible":"Original item now says 통과","attempts":5,"help":2,"independent":0,"unknown_assistance":4}
+  ],
+  "other_verified_behavior": [
+    "Step preference displays one item with a cue for the known error and an immediately accessible answer button",
+    "Switching support does not erase already-delivered help",
+    "Skipped item is not labelled incorrect",
+    "Open sentence transformation remains in the existing teacher-review path",
+    "Browser error log empty at the observed final checkpoint"
+  ],
+  "layout": [
+    {"width":390,"height":844,"document_scroll_width":390,"visual_review":"Readable wrapping and controls"},
+    {"width":320,"height":780,"document_scroll_width":320,"buttons_under_44px":0,"visual_review":"Readable wrapping, no horizontal overflow"},
+    {"width":1280,"height":900,"document_scroll_width":1280}
+  ],
+  "evidence": ["화면/mobile-answer.png","화면/mobile-retry.png","화면/mobile-320.png","화면/desktop.png"],
+  "limits": [
+    "This is browser-based synthetic local verification, not real student operation or native Android/iOS verification.",
+    "Automated Korean key typing inserted extra characters; exact textbox fill was used for submission verification. Real-device IME quality is not claimed.",
+    "The local synthetic submission completed; production API acknowledgement, actual account persistence and two-device continuation were not tested.",
+    "No delayed retention, real learning gain, or model-quality improvement was measured.",
+    "A help display event means rendered help, not proof of reading, attention, or comprehension."
+  ]
+}

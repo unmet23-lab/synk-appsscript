@@ -1,0 +1,4423 @@
+{
+  "map_ver": "strata-ko-1-945acefcfa74bfae",
+  "schema_ver": 1,
+  "subject": "ko",
+  "sources": {
+    "grammar_bank": {
+      "path": "SYNK-appsscript/엔진_콘텐츠AI.js",
+      "sha256": "8a0ee27e40f43771fe8d3e432aebfb7954b89e7ce0224abd89d68ea5176207cc",
+      "hash_format": "sha256-utf8-lf"
+    },
+    "skills": {
+      "path": "SYNK-talk/contents/토픽퀴즈문항.js",
+      "sha256": "4bbda5f464611da8b75aaba4eecb9df22d87a9ad15caf1a0fb5e858d1f610f23",
+      "hash_format": "sha256-utf8-lf"
+    },
+    "error_tags": {
+      "path": "SYNK-appsscript/계약/수집_교정_계약.json",
+      "sha256": "b2e9fdc0f4dc7ef7b5b51ad6f79dbbe2546ef88823ec847d323d5bb209121f25",
+      "hash_format": "sha256-utf8-lf"
+    },
+    "tag_links": {
+      "path": "SYNK-talk/lib/태그기술표.js",
+      "sha256": "23fd48c8a96184acc575c46ebe4d387eda6c7fa5447cdbe8a575c96f8271531c",
+      "hash_format": "sha256-utf8-lf"
+    }
+  },
+  "tag_vocabulary": [
+    "조사:주격(이/가·은/는)",
+    "조사:목적격(을/를)",
+    "조사:처소(에·에서)",
+    "조사:여격(에게·한테)",
+    "조사:도구·방향(로/으로)",
+    "조사:접속(와/과·하고)",
+    "조사:기타",
+    "어미:시제",
+    "어미:연결어미",
+    "어미:불규칙활용",
+    "어미:종결",
+    "높임:주체",
+    "높임:상대(존댓말 등급)",
+    "어휘:유의어혼동",
+    "어휘:연어(자연스러운 짝)",
+    "어휘:없는말",
+    "맞춤법:받침",
+    "맞춤법:띄어쓰기",
+    "맞춤법:기타",
+    "어순",
+    "누락:필수성분",
+    "중복:불필요",
+    "화용:공손성"
+  ],
+  "nodes": [
+    {
+      "id": "G201",
+      "kind": "grammar_point",
+      "label_ko": "이/가",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "이/가"
+        ],
+        "explanation": "주격 조사 — 주어 표시",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G201"
+        }
+      ]
+    },
+    {
+      "id": "G202",
+      "kind": "grammar_point",
+      "label_ko": "은/는",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "은/는"
+        ],
+        "explanation": "화제·대조 조사",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G202"
+        }
+      ]
+    },
+    {
+      "id": "G203",
+      "kind": "grammar_point",
+      "label_ko": "을/를",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "을/를"
+        ],
+        "explanation": "목적격 조사",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G203"
+        }
+      ]
+    },
+    {
+      "id": "G204",
+      "kind": "grammar_point",
+      "label_ko": "-이에요/예요",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-이에요/예요"
+        ],
+        "explanation": "명사 서술 (~입니다의 해요체)",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G204"
+        }
+      ]
+    },
+    {
+      "id": "G205",
+      "kind": "grammar_point",
+      "label_ko": "-아/어요",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-아/어요"
+        ],
+        "explanation": "현재 시제 해요체",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G205"
+        }
+      ]
+    },
+    {
+      "id": "G206",
+      "kind": "grammar_point",
+      "label_ko": "에",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "에"
+        ],
+        "explanation": "장소·시간 조사",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G206"
+        }
+      ]
+    },
+    {
+      "id": "G207",
+      "kind": "grammar_point",
+      "label_ko": "에서",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "에서"
+        ],
+        "explanation": "동작이 일어나는 장소",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G207"
+        }
+      ]
+    },
+    {
+      "id": "G208",
+      "kind": "grammar_point",
+      "label_ko": "-았/었어요",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-았/었어요"
+        ],
+        "explanation": "과거 시제",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G208"
+        }
+      ]
+    },
+    {
+      "id": "G209",
+      "kind": "grammar_point",
+      "label_ko": "안 부정",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "안 부정"
+        ],
+        "explanation": "안 + 동사/형용사 부정",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G209"
+        }
+      ]
+    },
+    {
+      "id": "G210",
+      "kind": "grammar_point",
+      "label_ko": "하고/와/과",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "하고/와/과"
+        ],
+        "explanation": "나열·함께",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G210"
+        }
+      ]
+    },
+    {
+      "id": "G211",
+      "kind": "grammar_point",
+      "label_ko": "-(으)세요",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)세요"
+        ],
+        "explanation": "요청·존대 명령",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G211"
+        }
+      ]
+    },
+    {
+      "id": "G212",
+      "kind": "grammar_point",
+      "label_ko": "숫자/시간 표현",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "숫자/시간 표현"
+        ],
+        "explanation": "한자어·고유어 수 읽기",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G212"
+        }
+      ]
+    },
+    {
+      "id": "G301",
+      "kind": "grammar_point",
+      "label_ko": "-고 싶다",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-고 싶다"
+        ],
+        "explanation": "희망·바람",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G301"
+        }
+      ]
+    },
+    {
+      "id": "G302",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ 거예요",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": 2,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄹ 거예요"
+        ],
+        "explanation": "미래·계획",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G302"
+        }
+      ]
+    },
+    {
+      "id": "G303",
+      "kind": "grammar_point",
+      "label_ko": "-(으)러 가다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)러 가다"
+        ],
+        "explanation": "이동의 목적",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G303"
+        }
+      ]
+    },
+    {
+      "id": "G304",
+      "kind": "grammar_point",
+      "label_ko": "-지 않다",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-지 않다"
+        ],
+        "explanation": "긴 부정",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G304"
+        }
+      ]
+    },
+    {
+      "id": "G305",
+      "kind": "grammar_point",
+      "label_ko": "못 부정",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "못 부정"
+        ],
+        "explanation": "능력 밖 부정",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G305"
+        }
+      ]
+    },
+    {
+      "id": "G306",
+      "kind": "grammar_point",
+      "label_ko": "-고",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": 2,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-고"
+        ],
+        "explanation": "동작·상태 나열",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G306"
+        }
+      ]
+    },
+    {
+      "id": "G307",
+      "kind": "grammar_point",
+      "label_ko": "-지만",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": 2,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-지만"
+        ],
+        "explanation": "대조·역접",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G307"
+        }
+      ]
+    },
+    {
+      "id": "G308",
+      "kind": "grammar_point",
+      "label_ko": "-아/어서",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": 2,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-아/어서"
+        ],
+        "explanation": "이유·순차",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G308"
+        }
+      ]
+    },
+    {
+      "id": "G309",
+      "kind": "grammar_point",
+      "label_ko": "(으)로",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "(으)로"
+        ],
+        "explanation": "수단·방향",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G309"
+        }
+      ]
+    },
+    {
+      "id": "G310",
+      "kind": "grammar_point",
+      "label_ko": "에게/한테",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "에게/한테"
+        ],
+        "explanation": "행위의 대상",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G310"
+        }
+      ]
+    },
+    {
+      "id": "G311",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ까요?",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄹ까요?"
+        ],
+        "explanation": "제안·추측 질문",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G311"
+        }
+      ]
+    },
+    {
+      "id": "G312",
+      "kind": "grammar_point",
+      "label_ko": "보다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "보다"
+        ],
+        "explanation": "비교",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G312"
+        }
+      ]
+    },
+    {
+      "id": "G313",
+      "kind": "grammar_point",
+      "label_ko": "-지 못하다",
+      "label_mn": null,
+      "level": {
+        "intro": 1,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-지 못하다"
+        ],
+        "explanation": "긴 부정(능력)",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G313"
+        }
+      ]
+    },
+    {
+      "id": "G401",
+      "kind": "grammar_point",
+      "label_ko": "-(으)면",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)면"
+        ],
+        "explanation": "조건·가정",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G401"
+        }
+      ]
+    },
+    {
+      "id": "G402",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ 수 있다/없다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄹ 수 있다/없다"
+        ],
+        "explanation": "능력·가능성",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G402"
+        }
+      ]
+    },
+    {
+      "id": "G403",
+      "kind": "grammar_point",
+      "label_ko": "-아/어야 하다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-아/어야 하다"
+        ],
+        "explanation": "의무·필요",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G403"
+        }
+      ]
+    },
+    {
+      "id": "G404",
+      "kind": "grammar_point",
+      "label_ko": "-아/어 주세요",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-아/어 주세요"
+        ],
+        "explanation": "요청·부탁",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G404"
+        }
+      ]
+    },
+    {
+      "id": "G405",
+      "kind": "grammar_point",
+      "label_ko": "-(으)려고 하다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)려고 하다"
+        ],
+        "explanation": "의도·계획",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G405"
+        }
+      ]
+    },
+    {
+      "id": "G406",
+      "kind": "grammar_point",
+      "label_ko": "-기 전에/-(으)ㄴ 후에",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-기 전에/-(으)ㄴ 후에"
+        ],
+        "explanation": "시간의 앞뒤",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G406"
+        }
+      ]
+    },
+    {
+      "id": "G407",
+      "kind": "grammar_point",
+      "label_ko": "-는 것",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-는 것"
+        ],
+        "explanation": "동사의 명사화",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G407"
+        }
+      ]
+    },
+    {
+      "id": "G408",
+      "kind": "grammar_point",
+      "label_ko": "-아/어 보다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-아/어 보다"
+        ],
+        "explanation": "시도·경험",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G408"
+        }
+      ]
+    },
+    {
+      "id": "G409",
+      "kind": "grammar_point",
+      "label_ko": "-고 있다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-고 있다"
+        ],
+        "explanation": "진행",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G409"
+        }
+      ]
+    },
+    {
+      "id": "G410",
+      "kind": "grammar_point",
+      "label_ko": "-(으)니까",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)니까"
+        ],
+        "explanation": "이유·발견",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G410"
+        }
+      ]
+    },
+    {
+      "id": "G411",
+      "kind": "grammar_point",
+      "label_ko": "-네요",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-네요"
+        ],
+        "explanation": "감탄·새로 앎",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G411"
+        }
+      ]
+    },
+    {
+      "id": "G412",
+      "kind": "grammar_point",
+      "label_ko": "-지요?",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-지요?"
+        ],
+        "explanation": "확인 질문",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G412"
+        }
+      ]
+    },
+    {
+      "id": "G501",
+      "kind": "grammar_point",
+      "label_ko": "관형형 -(으)ㄴ/는/(으)ㄹ",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "관형형 -(으)ㄴ/는/(으)ㄹ"
+        ],
+        "explanation": "명사 수식",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G501"
+        }
+      ]
+    },
+    {
+      "id": "G502",
+      "kind": "grammar_point",
+      "label_ko": "-(으)면서",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)면서"
+        ],
+        "explanation": "동시 동작",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G502"
+        }
+      ]
+    },
+    {
+      "id": "G503",
+      "kind": "grammar_point",
+      "label_ko": "-기 때문에",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-기 때문에"
+        ],
+        "explanation": "이유 강조",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G503"
+        }
+      ]
+    },
+    {
+      "id": "G504",
+      "kind": "grammar_point",
+      "label_ko": "-게 되다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-게 되다"
+        ],
+        "explanation": "상황 변화",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G504"
+        }
+      ]
+    },
+    {
+      "id": "G505",
+      "kind": "grammar_point",
+      "label_ko": "-아/어도 되다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-아/어도 되다"
+        ],
+        "explanation": "허락",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G505"
+        }
+      ]
+    },
+    {
+      "id": "G506",
+      "kind": "grammar_point",
+      "label_ko": "-(으)면 안 되다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)면 안 되다"
+        ],
+        "explanation": "금지",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G506"
+        }
+      ]
+    },
+    {
+      "id": "G507",
+      "kind": "grammar_point",
+      "label_ko": "-아/어 있다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-아/어 있다"
+        ],
+        "explanation": "상태 지속",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G507"
+        }
+      ]
+    },
+    {
+      "id": "G508",
+      "kind": "grammar_point",
+      "label_ko": "-기로 하다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-기로 하다"
+        ],
+        "explanation": "결심·약속",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G508"
+        }
+      ]
+    },
+    {
+      "id": "G509",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄴ 적이 있다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄴ 적이 있다"
+        ],
+        "explanation": "경험 유무",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G509"
+        }
+      ]
+    },
+    {
+      "id": "G510",
+      "kind": "grammar_point",
+      "label_ko": "-는 게 좋겠다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-는 게 좋겠다"
+        ],
+        "explanation": "권유·조언",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G510"
+        }
+      ]
+    },
+    {
+      "id": "G511",
+      "kind": "grammar_point",
+      "label_ko": "-군요",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-군요"
+        ],
+        "explanation": "깨달음 감탄",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G511"
+        }
+      ]
+    },
+    {
+      "id": "G512",
+      "kind": "grammar_point",
+      "label_ko": "-다고/-냐고/-라고/-자고 하다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": 4,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-다고/-냐고/-라고/-자고 하다"
+        ],
+        "explanation": "간접화법 기초",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G512"
+        }
+      ]
+    },
+    {
+      "id": "G601",
+      "kind": "grammar_point",
+      "label_ko": "-거든요",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-거든요"
+        ],
+        "explanation": "이유 설명(구어)",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G601"
+        }
+      ]
+    },
+    {
+      "id": "G602",
+      "kind": "grammar_point",
+      "label_ko": "-잖아요",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-잖아요"
+        ],
+        "explanation": "상기시키기",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G602"
+        }
+      ]
+    },
+    {
+      "id": "G603",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ 때",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄹ 때"
+        ],
+        "explanation": "시점·때",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G603"
+        }
+      ]
+    },
+    {
+      "id": "G604",
+      "kind": "grammar_point",
+      "label_ko": "-던",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": 5,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-던"
+        ],
+        "explanation": "회상 수식",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G604"
+        }
+      ]
+    },
+    {
+      "id": "G605",
+      "kind": "grammar_point",
+      "label_ko": "-아/어지다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": 5,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-아/어지다"
+        ],
+        "explanation": "변화·피동",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G605"
+        }
+      ]
+    },
+    {
+      "id": "G606",
+      "kind": "grammar_point",
+      "label_ko": "-게 하다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": 5,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-게 하다"
+        ],
+        "explanation": "사동",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G606"
+        }
+      ]
+    },
+    {
+      "id": "G607",
+      "kind": "grammar_point",
+      "label_ko": "-도록",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-도록"
+        ],
+        "explanation": "목적·정도",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G607"
+        }
+      ]
+    },
+    {
+      "id": "G608",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ 것 같다",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄹ 것 같다"
+        ],
+        "explanation": "추측",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G608"
+        }
+      ]
+    },
+    {
+      "id": "G609",
+      "kind": "grammar_point",
+      "label_ko": "-대(요)/-래(요)/-냬(요)",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": 5,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-대(요)/-래(요)/-냬(요)"
+        ],
+        "explanation": "축약 간접화법",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G609"
+        }
+      ]
+    },
+    {
+      "id": "G610",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄴ/는데",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄴ/는데"
+        ],
+        "explanation": "배경 설명",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G610"
+        }
+      ]
+    },
+    {
+      "id": "G611",
+      "kind": "grammar_point",
+      "label_ko": "-다가",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-다가"
+        ],
+        "explanation": "동작 전환",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G611"
+        }
+      ]
+    },
+    {
+      "id": "G612",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ게요/-(으)ㄹ래요",
+      "label_mn": null,
+      "level": {
+        "intro": 2,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄹ게요/-(으)ㄹ래요"
+        ],
+        "explanation": "의지·의향",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G612"
+        }
+      ]
+    },
+    {
+      "id": "G613",
+      "kind": "grammar_point",
+      "label_ko": "-이/히/리/기-",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": 5,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-이/히/리/기-"
+        ],
+        "explanation": "접미사 피동",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G613"
+        }
+      ]
+    },
+    {
+      "id": "G614",
+      "kind": "grammar_point",
+      "label_ko": "-이/히/리/기/우-",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": 5,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-이/히/리/기/우-"
+        ],
+        "explanation": "접미사 사동",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G614"
+        }
+      ]
+    },
+    {
+      "id": "G615",
+      "kind": "grammar_point",
+      "label_ko": "-더라고요",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-더라고요"
+        ],
+        "explanation": "직접 경험 전달",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G615"
+        }
+      ]
+    },
+    {
+      "id": "G616",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ 수밖에 없다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄹ 수밖에 없다"
+        ],
+        "explanation": "유일한 선택",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G616"
+        }
+      ]
+    },
+    {
+      "id": "G617",
+      "kind": "grammar_point",
+      "label_ko": "-치고",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-치고"
+        ],
+        "explanation": "예외 없이·기준 밖 의외",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G617"
+        }
+      ]
+    },
+    {
+      "id": "G701",
+      "kind": "grammar_point",
+      "label_ko": "-자마자",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-자마자"
+        ],
+        "explanation": "직후",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G701"
+        }
+      ]
+    },
+    {
+      "id": "G702",
+      "kind": "grammar_point",
+      "label_ko": "-느라고",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-느라고"
+        ],
+        "explanation": "이유·핑계",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G702"
+        }
+      ]
+    },
+    {
+      "id": "G703",
+      "kind": "grammar_point",
+      "label_ko": "-는 바람에",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-는 바람에"
+        ],
+        "explanation": "뜻밖의 원인",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G703"
+        }
+      ]
+    },
+    {
+      "id": "G704",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ수록",
+      "label_mn": null,
+      "level": {
+        "intro": 5,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄹ수록"
+        ],
+        "explanation": "비례",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G704"
+        }
+      ]
+    },
+    {
+      "id": "G705",
+      "kind": "grammar_point",
+      "label_ko": "-나 보다",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-나 보다"
+        ],
+        "explanation": "추측",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G705"
+        }
+      ]
+    },
+    {
+      "id": "G706",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄹ 뻔하다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄹ 뻔하다"
+        ],
+        "explanation": "아슬아슬",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G706"
+        }
+      ]
+    },
+    {
+      "id": "G707",
+      "kind": "grammar_point",
+      "label_ko": "-기/-게 마련이다",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-기/-게 마련이다"
+        ],
+        "explanation": "당연한 이치",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G707"
+        }
+      ]
+    },
+    {
+      "id": "G708",
+      "kind": "grammar_point",
+      "label_ko": "-는 대신에",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-는 대신에"
+        ],
+        "explanation": "대체",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G708"
+        }
+      ]
+    },
+    {
+      "id": "G709",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄴ 지",
+      "label_mn": null,
+      "level": {
+        "intro": 3,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄴ 지"
+        ],
+        "explanation": "시간 경과",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G709"
+        }
+      ]
+    },
+    {
+      "id": "G710",
+      "kind": "grammar_point",
+      "label_ko": "-을/를 통해",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-을/를 통해"
+        ],
+        "explanation": "수단·경로",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G710"
+        }
+      ]
+    },
+    {
+      "id": "G711",
+      "kind": "grammar_point",
+      "label_ko": "-곤 하다",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-곤 하다"
+        ],
+        "explanation": "습관",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G711"
+        }
+      ]
+    },
+    {
+      "id": "G712",
+      "kind": "grammar_point",
+      "label_ko": "-(으)면서도",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)면서도"
+        ],
+        "explanation": "대조 동시",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G712"
+        }
+      ]
+    },
+    {
+      "id": "G713",
+      "kind": "grammar_point",
+      "label_ko": "-는 반면에",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-는 반면에"
+        ],
+        "explanation": "대조",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G713"
+        }
+      ]
+    },
+    {
+      "id": "G714",
+      "kind": "grammar_point",
+      "label_ko": "-더라도",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-더라도"
+        ],
+        "explanation": "양보 가정",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G714"
+        }
+      ]
+    },
+    {
+      "id": "G715",
+      "kind": "grammar_point",
+      "label_ko": "-음에도 불구하고",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-음에도 불구하고"
+        ],
+        "explanation": "양보(그럼에도)",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G715"
+        }
+      ]
+    },
+    {
+      "id": "G716",
+      "kind": "grammar_point",
+      "label_ko": "-는 셈이다",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-는 셈이다"
+        ],
+        "explanation": "따져 보면 마찬가지",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G716"
+        }
+      ]
+    },
+    {
+      "id": "G717",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㅁ",
+      "label_mn": null,
+      "level": {
+        "intro": 5,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㅁ"
+        ],
+        "explanation": "명사화(문어체)",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G717"
+        }
+      ]
+    },
+    {
+      "id": "G718",
+      "kind": "grammar_point",
+      "label_ko": "-기",
+      "label_mn": null,
+      "level": {
+        "intro": 5,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-기"
+        ],
+        "explanation": "명사화(일반)",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G718"
+        }
+      ]
+    },
+    {
+      "id": "G719",
+      "kind": "grammar_point",
+      "label_ko": "-(으)ㄴ/는 바",
+      "label_mn": null,
+      "level": {
+        "intro": 5,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-(으)ㄴ/는 바"
+        ],
+        "explanation": "문어 명사구",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G719"
+        }
+      ]
+    },
+    {
+      "id": "G720",
+      "kind": "grammar_point",
+      "label_ko": "-느니",
+      "label_mn": null,
+      "level": {
+        "intro": 5,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-느니"
+        ],
+        "explanation": "차라리 쪽을 고름",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G720"
+        }
+      ]
+    },
+    {
+      "id": "G721",
+      "kind": "grammar_point",
+      "label_ko": "-을망정",
+      "label_mn": null,
+      "level": {
+        "intro": 5,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-을망정"
+        ],
+        "explanation": "극단적 양보",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G721"
+        }
+      ]
+    },
+    {
+      "id": "G722",
+      "kind": "grammar_point",
+      "label_ko": "-기에",
+      "label_mn": null,
+      "level": {
+        "intro": 5,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-기에"
+        ],
+        "explanation": "이유(문어)",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G722"
+        }
+      ]
+    },
+    {
+      "id": "G723",
+      "kind": "grammar_point",
+      "label_ko": "-다시피",
+      "label_mn": null,
+      "level": {
+        "intro": 5,
+        "review": null,
+        "basis": "grammar_bank",
+        "evidence_code": "요"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-다시피"
+        ],
+        "explanation": "아는 바와 같이",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G723"
+        }
+      ]
+    },
+    {
+      "id": "G724",
+      "kind": "grammar_point",
+      "label_ko": "-더니",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": 5,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-더니"
+        ],
+        "explanation": "관찰 후 변화",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G724"
+        }
+      ]
+    },
+    {
+      "id": "G725",
+      "kind": "grammar_point",
+      "label_ko": "-았/었더라면",
+      "label_mn": null,
+      "level": {
+        "intro": 4,
+        "review": 5,
+        "basis": "grammar_bank",
+        "evidence_code": "표"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "material": {
+        "target_forms": [
+          "-았/었더라면"
+        ],
+        "explanation": "과거 가정",
+        "status": "draft",
+        "reviewed": false
+      },
+      "source_refs": [
+        {
+          "source": "grammar_bank",
+          "selector": "GRAMMAR_BANK:G725"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-particle-topic",
+      "kind": "skill",
+      "label_ko": "조사 — 은/는·이/가",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-particle-topic"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-topic"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-particle-object",
+      "kind": "skill",
+      "label_ko": "조사 — 을/를",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-particle-object"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-object"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-particle-place",
+      "kind": "skill",
+      "label_ko": "조사 — 에·에서",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-particle-place"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-place"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-particle-range",
+      "kind": "skill",
+      "label_ko": "조사 — 부터·까지·마다",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-particle-range"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-range"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-particle-instrument",
+      "kind": "skill",
+      "label_ko": "조사 — (으)로",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-particle-instrument"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-instrument"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-particle-companion",
+      "kind": "skill",
+      "label_ko": "조사 — 하고·와/과",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-particle-companion"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-companion"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-particle-dative",
+      "kind": "skill",
+      "label_ko": "조사 — 에게·한테·께",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-particle-dative"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-dative"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-particle-focus",
+      "kind": "skill",
+      "label_ko": "조사 — 만·도·밖에",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-particle-focus"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-focus"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-connective-reason",
+      "kind": "skill",
+      "label_ko": "연결어미 — -아/어서·-(으)니까",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 2,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-connective-reason"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-reason"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-connective-contrast",
+      "kind": "skill",
+      "label_ko": "연결어미 — -지만",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-connective-contrast"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-contrast"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-connective-condition",
+      "kind": "skill",
+      "label_ko": "연결어미 — -(으)면",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 2,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-connective-condition"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-condition"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-connective-purpose",
+      "kind": "skill",
+      "label_ko": "연결어미 — -(으)러·-(으)려고",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 2,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-connective-purpose"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-purpose"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-connective-sequence",
+      "kind": "skill",
+      "label_ko": "연결·순서 — -고 나서·전에·후에",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 2,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-connective-sequence"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-sequence"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-tense-past",
+      "kind": "skill",
+      "label_ko": "시제 — 과거(불규칙 포함)",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-tense-past"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-tense-past"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-tense-future",
+      "kind": "skill",
+      "label_ko": "시제 — -(으)ㄹ 거예요",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-tense-future"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-tense-future"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-tense-progressive",
+      "kind": "skill",
+      "label_ko": "시제 — -고 있다",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 2,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-tense-progressive"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-tense-progressive"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-honorific",
+      "kind": "skill",
+      "label_ko": "높임 — -(으)시-·어휘 높임",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-honorific"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-honorific"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-grammar-negation",
+      "kind": "skill",
+      "label_ko": "부정 — 안·못·-지 않다·-지 마세요",
+      "label_mn": null,
+      "domain": "grammar",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-grammar-negation"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-negation"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-expression-ability",
+      "kind": "skill",
+      "label_ko": "표현 — -(으)ㄹ 수 있다/없다",
+      "label_mn": null,
+      "domain": "expression",
+      "level": {
+        "intro": 2,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-expression-ability"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-ability"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-expression-experience",
+      "kind": "skill",
+      "label_ko": "표현 — -아/어 보다·-(으)ㄴ 적",
+      "label_mn": null,
+      "domain": "expression",
+      "level": {
+        "intro": 2,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-expression-experience"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-experience"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-expression-desire",
+      "kind": "skill",
+      "label_ko": "표현 — -고 싶다/싶어 하다",
+      "label_mn": null,
+      "domain": "expression",
+      "level": {
+        "intro": 1,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-expression-desire"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-desire"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-expression-obligation",
+      "kind": "skill",
+      "label_ko": "표현 — -아/어야 하다",
+      "label_mn": null,
+      "domain": "expression",
+      "level": {
+        "intro": 2,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-expression-obligation"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-obligation"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-expression-permission",
+      "kind": "skill",
+      "label_ko": "표현 — -아/어도 되다·-(으)면 안 되다",
+      "label_mn": null,
+      "domain": "expression",
+      "level": {
+        "intro": 2,
+        "basis": "grammar_bank",
+        "coverage": "mapped_grammar_only"
+      },
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-expression-permission"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-permission"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-vocab-verb-collocation",
+      "kind": "skill",
+      "label_ko": "어휘 — 동사 짝(입다·신다·쓰다·켜다)",
+      "label_mn": null,
+      "domain": "vocab",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-vocab-verb-collocation"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-vocab-verb-collocation"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-vocab-antonym",
+      "kind": "skill",
+      "label_ko": "어휘 — 반대말",
+      "label_mn": null,
+      "domain": "vocab",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-vocab-antonym"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-vocab-antonym"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-vocab-place",
+      "kind": "skill",
+      "label_ko": "어휘 — 장소",
+      "label_mn": null,
+      "domain": "vocab",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-vocab-place"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-vocab-place"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-vocab-time",
+      "kind": "skill",
+      "label_ko": "어휘 — 시간·날짜",
+      "label_mn": null,
+      "domain": "vocab",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-vocab-time"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-vocab-time"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-vocab-family",
+      "kind": "skill",
+      "label_ko": "어휘 — 가족·호칭",
+      "label_mn": null,
+      "domain": "vocab",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-vocab-family"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-vocab-family"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-vocab-counter",
+      "kind": "skill",
+      "label_ko": "어휘 — 단위 명사",
+      "label_mn": null,
+      "domain": "vocab",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-vocab-counter"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-vocab-counter"
+        }
+      ]
+    },
+    {
+      "id": "skill-ko-vocab-adverb",
+      "kind": "skill",
+      "label_ko": "어휘 — 부사·호응",
+      "label_mn": null,
+      "domain": "vocab",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "스킬표:skill-ko-vocab-adverb"
+        },
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-vocab-adverb"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "G201",
+      "to": "skill-ko-grammar-particle-topic",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-topic"
+        }
+      ]
+    },
+    {
+      "from": "G202",
+      "to": "skill-ko-grammar-particle-topic",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-topic"
+        }
+      ]
+    },
+    {
+      "from": "G203",
+      "to": "skill-ko-grammar-particle-object",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-object"
+        }
+      ]
+    },
+    {
+      "from": "G206",
+      "to": "skill-ko-grammar-particle-place",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-place"
+        }
+      ]
+    },
+    {
+      "from": "G207",
+      "to": "skill-ko-grammar-particle-place",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-place"
+        }
+      ]
+    },
+    {
+      "from": "G309",
+      "to": "skill-ko-grammar-particle-instrument",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-instrument"
+        }
+      ]
+    },
+    {
+      "from": "G210",
+      "to": "skill-ko-grammar-particle-companion",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-companion"
+        }
+      ]
+    },
+    {
+      "from": "G310",
+      "to": "skill-ko-grammar-particle-dative",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-particle-dative"
+        }
+      ]
+    },
+    {
+      "from": "G308",
+      "to": "skill-ko-grammar-connective-reason",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-reason"
+        }
+      ]
+    },
+    {
+      "from": "G410",
+      "to": "skill-ko-grammar-connective-reason",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-reason"
+        }
+      ]
+    },
+    {
+      "from": "G307",
+      "to": "skill-ko-grammar-connective-contrast",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-contrast"
+        }
+      ]
+    },
+    {
+      "from": "G401",
+      "to": "skill-ko-grammar-connective-condition",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-condition"
+        }
+      ]
+    },
+    {
+      "from": "G303",
+      "to": "skill-ko-grammar-connective-purpose",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-purpose"
+        }
+      ]
+    },
+    {
+      "from": "G405",
+      "to": "skill-ko-grammar-connective-purpose",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-purpose"
+        }
+      ]
+    },
+    {
+      "from": "G406",
+      "to": "skill-ko-grammar-connective-sequence",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-connective-sequence"
+        }
+      ]
+    },
+    {
+      "from": "G208",
+      "to": "skill-ko-grammar-tense-past",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-tense-past"
+        }
+      ]
+    },
+    {
+      "from": "G302",
+      "to": "skill-ko-grammar-tense-future",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-tense-future"
+        }
+      ]
+    },
+    {
+      "from": "G409",
+      "to": "skill-ko-grammar-tense-progressive",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-tense-progressive"
+        }
+      ]
+    },
+    {
+      "from": "G211",
+      "to": "skill-ko-grammar-honorific",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-honorific"
+        }
+      ]
+    },
+    {
+      "from": "G209",
+      "to": "skill-ko-grammar-negation",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-negation"
+        }
+      ]
+    },
+    {
+      "from": "G304",
+      "to": "skill-ko-grammar-negation",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-negation"
+        }
+      ]
+    },
+    {
+      "from": "G305",
+      "to": "skill-ko-grammar-negation",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-grammar-negation"
+        }
+      ]
+    },
+    {
+      "from": "G402",
+      "to": "skill-ko-expression-ability",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-ability"
+        }
+      ]
+    },
+    {
+      "from": "G408",
+      "to": "skill-ko-expression-experience",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-experience"
+        }
+      ]
+    },
+    {
+      "from": "G509",
+      "to": "skill-ko-expression-experience",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-experience"
+        }
+      ]
+    },
+    {
+      "from": "G301",
+      "to": "skill-ko-expression-desire",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-desire"
+        }
+      ]
+    },
+    {
+      "from": "G403",
+      "to": "skill-ko-expression-obligation",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-obligation"
+        }
+      ]
+    },
+    {
+      "from": "G505",
+      "to": "skill-ko-expression-permission",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-permission"
+        }
+      ]
+    },
+    {
+      "from": "G506",
+      "to": "skill-ko-expression-permission",
+      "type": "part_of",
+      "confidence": "authored",
+      "reviewed": false,
+      "source_refs": [
+        {
+          "source": "skills",
+          "selector": "문법대응:skill-ko-expression-permission"
+        }
+      ]
+    }
+  ],
+  "links": {
+    "tags": [
+      {
+        "tag": "조사:주격(이/가·은/는)",
+        "node": "skill-ko-grammar-particle-topic",
+        "fit": "full",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:조사:주격(이/가·은/는)"
+          },
+          {
+            "source": "tag_links",
+            "selector": "표:조사:주격(이/가·은/는)"
+          }
+        ]
+      },
+      {
+        "tag": "조사:목적격(을/를)",
+        "node": "skill-ko-grammar-particle-object",
+        "fit": "full",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:조사:목적격(을/를)"
+          },
+          {
+            "source": "tag_links",
+            "selector": "표:조사:목적격(을/를)"
+          }
+        ]
+      },
+      {
+        "tag": "조사:처소(에·에서)",
+        "node": "skill-ko-grammar-particle-place",
+        "fit": "full",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:조사:처소(에·에서)"
+          },
+          {
+            "source": "tag_links",
+            "selector": "표:조사:처소(에·에서)"
+          }
+        ]
+      },
+      {
+        "tag": "조사:여격(에게·한테)",
+        "node": "skill-ko-grammar-particle-dative",
+        "fit": "full",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:조사:여격(에게·한테)"
+          },
+          {
+            "source": "tag_links",
+            "selector": "표:조사:여격(에게·한테)"
+          }
+        ]
+      },
+      {
+        "tag": "조사:도구·방향(로/으로)",
+        "node": "skill-ko-grammar-particle-instrument",
+        "fit": "full",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:조사:도구·방향(로/으로)"
+          },
+          {
+            "source": "tag_links",
+            "selector": "표:조사:도구·방향(로/으로)"
+          }
+        ]
+      },
+      {
+        "tag": "조사:접속(와/과·하고)",
+        "node": "skill-ko-grammar-particle-companion",
+        "fit": "full",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:조사:접속(와/과·하고)"
+          },
+          {
+            "source": "tag_links",
+            "selector": "표:조사:접속(와/과·하고)"
+          }
+        ]
+      },
+      {
+        "tag": "조사:기타",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:조사:기타"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:조사:기타"
+          }
+        ]
+      },
+      {
+        "tag": "어미:시제",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:어미:시제"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:어미:시제"
+          }
+        ]
+      },
+      {
+        "tag": "어미:연결어미",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:어미:연결어미"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:어미:연결어미"
+          }
+        ]
+      },
+      {
+        "tag": "어미:불규칙활용",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:어미:불규칙활용"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:어미:불규칙활용"
+          }
+        ]
+      },
+      {
+        "tag": "어미:종결",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:어미:종결"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:어미:종결"
+          }
+        ]
+      },
+      {
+        "tag": "높임:주체",
+        "node": "skill-ko-grammar-honorific",
+        "fit": "full",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:높임:주체"
+          },
+          {
+            "source": "tag_links",
+            "selector": "표:높임:주체"
+          }
+        ]
+      },
+      {
+        "tag": "높임:상대(존댓말 등급)",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:높임:상대(존댓말 등급)"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:높임:상대(존댓말 등급)"
+          }
+        ]
+      },
+      {
+        "tag": "어휘:유의어혼동",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:어휘:유의어혼동"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:어휘:유의어혼동"
+          }
+        ]
+      },
+      {
+        "tag": "어휘:연어(자연스러운 짝)",
+        "node": "skill-ko-vocab-verb-collocation",
+        "fit": "full",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:어휘:연어(자연스러운 짝)"
+          },
+          {
+            "source": "tag_links",
+            "selector": "표:어휘:연어(자연스러운 짝)"
+          }
+        ]
+      },
+      {
+        "tag": "어휘:없는말",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:어휘:없는말"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:어휘:없는말"
+          }
+        ]
+      },
+      {
+        "tag": "맞춤법:받침",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:맞춤법:받침"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:맞춤법:받침"
+          }
+        ]
+      },
+      {
+        "tag": "맞춤법:띄어쓰기",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:맞춤법:띄어쓰기"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:맞춤법:띄어쓰기"
+          }
+        ]
+      },
+      {
+        "tag": "맞춤법:기타",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:맞춤법:기타"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:맞춤법:기타"
+          }
+        ]
+      },
+      {
+        "tag": "어순",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:어순"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:어순"
+          }
+        ]
+      },
+      {
+        "tag": "누락:필수성분",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:누락:필수성분"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:누락:필수성분"
+          }
+        ]
+      },
+      {
+        "tag": "중복:불필요",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:중복:불필요"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:중복:불필요"
+          }
+        ]
+      },
+      {
+        "tag": "화용:공손성",
+        "node": null,
+        "fit": "none",
+        "confidence": "authored",
+        "reviewed": false,
+        "source_refs": [
+          {
+            "source": "error_tags",
+            "selector": "오류태그:화용:공손성"
+          },
+          {
+            "source": "tag_links",
+            "selector": "대응없음:화용:공손성"
+          }
+        ]
+      }
+    ]
+  }
+}

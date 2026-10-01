@@ -115,7 +115,7 @@ test('server preference survives a fresh session and changes the actual letter g
   assert.equal(plan.support, 'independent');
   assert.equal(plan.bundle['vellum.checks'].basis, 'declared');
   assert.equal(X.guidance(plan).title, '먼저 쓰고, 필요할 때 점검하기');
-  assert.equal(A.VERSION, 'atlas-2.0.0');
+  assert.equal(A.VERSION, 'atlas-2.1.0');
   assert.equal(restored.state().evidence.support, `memory.${id}`);
 });
 

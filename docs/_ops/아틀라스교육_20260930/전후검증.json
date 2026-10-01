@@ -1,0 +1,407 @@
+{
+  "document_version": 1,
+  "created_at": "2026-09-29T15:40:21.576Z",
+  "evaluator": "independent integration review",
+  "decision": "Local implementation and measurement integrity improved; real learner benefit remains unmeasured.",
+  "evaluation_scope": {
+    "synthetic_only": true,
+    "local_only": true,
+    "real_learner_effect_measured": false,
+    "remote_verified": false,
+    "deployed": false,
+    "interactive_ui_verified_by_this_evaluator": false,
+    "note": "Root is verifying the actual UI separately. This report does not claim that verification."
+  },
+  "baseline": {
+    "captured_at": "2026-09-29T15:21:49.7935573Z",
+    "repository_heads": [
+      {
+        "repository": "appsscript",
+        "branch": "master",
+        "head": "c02e4bc54e704d9bd165e5ed07f5b8a3fbd6766f"
+      },
+      {
+        "repository": "talk",
+        "branch": "master",
+        "head": "09006e31a6b56ab80dcb62f94be2f3530bcdfbbf"
+      }
+    ],
+    "selected_sources_clean_at_capture": true,
+    "whole_worktree_clean": false,
+    "source_manifest": ".tmp/atlas-education-20260930/baseline/manifest.json",
+    "existing_tests": {
+      "appsscript_atlas": 42,
+      "talk_atlas": 41,
+      "talk_education": 136,
+      "total_pass": 219,
+      "total_fail": 0
+    },
+    "help_observation_coverage": "not_instrumented_in_baseline_product",
+    "independent_accuracy": null,
+    "learning_effect": null
+  },
+  "final_tests": [
+    {
+      "group": "Canonical Atlas, Strata, Trail, Temper and independent education suite",
+      "files": 8,
+      "pass": 95,
+      "fail": 0,
+      "skipped": 0,
+      "log": ".tmp/atlas-education-20260930/independent-current-modules.log",
+      "independent_education_tests": 23
+    },
+    {
+      "group": "Talk previous 177 cases plus 4 adapter cases",
+      "files": 18,
+      "pass": 181,
+      "fail": 0,
+      "skipped": 0,
+      "log": ".tmp/atlas-education-20260930/independent-final-talk.log"
+    },
+    {
+      "group": "Independent real G4 adapter audit",
+      "pass": 8,
+      "fail": 0,
+      "log": ".tmp/atlas-education-20260930/document-adapter-current.json"
+    }
+  ],
+  "exact_six_probe_comparison": {
+    "original_engine": "atlas-2.0.0",
+    "current_engine": "atlas-2.1.0",
+    "original_false_independent_uses": 3,
+    "current_false_independent_uses": 0,
+    "cases": [
+      {
+        "name": "assistance-unknown-null",
+        "baseline": {
+          "focus": "purpose",
+          "outcome_basis": "performance",
+          "false_independent_use": true
+        },
+        "current": {
+          "focus": "tone",
+          "outcome_basis": "unobserved",
+          "false_independent_use": false
+        },
+        "interpretation": "False independent-performance use removed."
+      },
+      {
+        "name": "assistance-omitted",
+        "baseline": {
+          "focus": "purpose",
+          "outcome_basis": "performance",
+          "false_independent_use": true
+        },
+        "current": {
+          "focus": "tone",
+          "outcome_basis": "unobserved",
+          "false_independent_use": false
+        },
+        "interpretation": "False independent-performance use removed."
+      },
+      {
+        "name": "assistance-true-negative-control",
+        "baseline": {
+          "focus": "tone",
+          "outcome_basis": "unobserved",
+          "false_independent_use": false
+        },
+        "current": {
+          "focus": "tone",
+          "outcome_basis": "unobserved",
+          "false_independent_use": false
+        },
+        "interpretation": "Negative control remains held."
+      },
+      {
+        "name": "explicit-independent-positive-control",
+        "baseline": {
+          "focus": "purpose",
+          "outcome_basis": "performance",
+          "false_independent_use": false
+        },
+        "current": {
+          "focus": "tone",
+          "outcome_basis": "unobserved",
+          "false_independent_use": false
+        },
+        "interpretation": "Legacy assisted:false without an attempt is now held; the new linked-attempt positive case is tested separately."
+      },
+      {
+        "name": "satisfaction-is-not-ability",
+        "baseline": {
+          "focus": "purpose",
+          "outcome_basis": "performance",
+          "false_independent_use": true
+        },
+        "current": {
+          "focus": "tone",
+          "outcome_basis": "unobserved",
+          "false_independent_use": false
+        },
+        "interpretation": "False independent-performance use removed."
+      },
+      {
+        "name": "no-measured-value-negative-control",
+        "baseline": {
+          "focus": "tone",
+          "outcome_basis": "unobserved",
+          "false_independent_use": false
+        },
+        "current": {
+          "focus": "tone",
+          "outcome_basis": "unobserved",
+          "false_independent_use": false
+        },
+        "interpretation": "Negative control remains held."
+      }
+    ],
+    "note": "The legacy explicit false flag is not sufficient evidence after this change. This is intentional stricter provenance, not loss of the linked positive path."
+  },
+  "positive_proofs": [
+    {
+      "test": "H09 positive linked new-item unassisted success",
+      "before_focus": "place",
+      "after_focus": "other",
+      "outcome_basis": "performance",
+      "proof": "Same decision/scope/concept, first new-item attempt, known no-help coverage, correct verdict, matching target line and timestamps."
+    },
+    {
+      "test": "H09 positive measurement detector",
+      "synthetic_before": {
+        "independent_correct": 0,
+        "evaluated": 1,
+        "accuracy": 0
+      },
+      "synthetic_after": {
+        "independent_correct": 1,
+        "evaluated": 1,
+        "accuracy": 1
+      },
+      "detected_difference": 1,
+      "learning_effect_claim": false,
+      "note": "Artificial paired snapshots verify the detector can report a positive difference; these are not product or student outcome statistics."
+    }
+  ],
+  "baseline_unknown_control": {
+    "status": "no_sample",
+    "original_product_help_log_exists": false,
+    "synthetic_projection": {
+      "before_unknown_assistance": 1,
+      "before_independent_evaluated": 0,
+      "before_accuracy": null,
+      "difference": null
+    },
+    "conclusion": "Do not invent an independent baseline or calculate learning gain from missing instrumentation."
+  },
+  "actual_pack_preservation": {
+    "items": 15,
+    "correct": 16,
+    "incorrect": 45
+  },
+  "unknown_answer_preserved": {
+    "item": "g4t04.b3",
+    "answer": "하고",
+    "verdict": "unassessed",
+    "diagnosis": "not-diagnosed",
+    "error_tags": []
+  },
+  "adverse_scenario_coverage": [
+    {
+      "id": "H01",
+      "status": "automated_pass",
+      "evidence": "Known errors limited to the item axis; step cue is relevant and answer-free."
+    },
+    {
+      "id": "H02",
+      "status": "automated_pass",
+      "evidence": "Synthetic unknowns and actual g4t04.b3 하고 remain unassessed."
+    },
+    {
+      "id": "H03",
+      "status": "automated_pass",
+      "evidence": "Skip followed by answer-assisted retry stays outside independent denominator."
+    },
+    {
+      "id": "H04",
+      "status": "automated_pass",
+      "evidence": "No initial answer in choose/independent; one-action full answer; exclusion and preference change do not erase exposure."
+    },
+    {
+      "id": "H05",
+      "status": "automated_pass",
+      "evidence": "Null/missing assistance, imported history and proofless outcomes stay held."
+    },
+    {
+      "id": "H06",
+      "status": "automated_pass",
+      "evidence": "Satisfaction cannot reduce learning need."
+    },
+    {
+      "id": "H07",
+      "status": "automated_pass",
+      "evidence": "Correct-looking outcome without a linked attempt cannot reduce learning need."
+    },
+    {
+      "id": "H08",
+      "status": "automated_pass",
+      "evidence": "Different concept/decision/scope evidence is rejected or ignored."
+    },
+    {
+      "id": "H09",
+      "status": "automated_pass",
+      "evidence": "Qualified positive evidence changes next choice; Temper detects a positive synthetic difference."
+    },
+    {
+      "id": "H10",
+      "status": "automated_pass",
+      "evidence": "Same-item retry remains repeat; version/answer-explanation metadata changes cannot erase exposure."
+    },
+    {
+      "id": "H11",
+      "status": "automated_pass",
+      "evidence": "Duplicate/conflicting events and transient recording failure do not create false first attempts."
+    },
+    {
+      "id": "H12",
+      "status": "automated_pass",
+      "evidence": "Newer error, denied/expired need and old-attempt late reporting preserve diagnostic revision."
+    },
+    {
+      "id": "H13",
+      "status": "automated_pass",
+      "evidence": "Existing logout/account-isolation automated suites and new cross-scope practice rejection pass.",
+      "limitation": "No actual device account-switch UI was operated by this evaluator."
+    },
+    {
+      "id": "H14",
+      "status": "automated_pass",
+      "evidence": "Strict preference payload tests and practice raw-text rejection pass.",
+      "limitation": "No new server education profile was deployed or remotely verified."
+    },
+    {
+      "id": "H15",
+      "status": "partial_existing_only",
+      "evidence": "Existing outcome-recovery d1/d7/d30 due/no-sample/boundary tests pass.",
+      "limitation": "The new local practice summary does not implement delayed retention measurement; no new d7 learning-effect claim is supported."
+    },
+    {
+      "id": "H16",
+      "status": "automated_pass",
+      "evidence": "Occurrence and ingestion cutoffs exclude future/late evidence from historical reads."
+    },
+    {
+      "id": "H17",
+      "status": "automated_pass",
+      "evidence": "Missing mapping/incomplete material and failed provenance writes stay explicit; prior submission tests pass.",
+      "limitation": "Actual UI recovery is being checked separately by root."
+    },
+    {
+      "id": "H18",
+      "status": "automated_pass",
+      "evidence": "Existing standalone tests and new PULSE personal-practice rejection pass."
+    }
+  ],
+  "contract_change_test_note": "G4 review intentionally changes from automatically showing answers/explanations to requested help. Two old source/render expectations were replaced with no-initial-answer and explicit canonical-answer-access expectations. Current 181 cases pass; the earlier 175/177 transitional run is retained in independent-current-talk.log.",
+  "current_source_hashes": [
+    {
+      "repository": "appsscript",
+      "path": "atlas/engine.js",
+      "sha256": "8169101466d75a42f20b737b25666a48d7d7e81ab0cce3908037e42967e085f1"
+    },
+    {
+      "repository": "appsscript",
+      "path": "atlas/education.js",
+      "sha256": "6c4c7e6daa10ac90556762afb0e3fe862349db652f5f36563bb4eb80a94aa7cb"
+    },
+    {
+      "repository": "appsscript",
+      "path": "atlas/vellum.js",
+      "sha256": "57fd79d5ce2f19101e5af45c6eb0fbd9e5e9223b990c4856967dd17a44144e5c"
+    },
+    {
+      "repository": "appsscript",
+      "path": "atlas/trail.js",
+      "sha256": "b4352c1f6293ba0a0949d849df8430d4ff139f08586698071318500e62b99464"
+    },
+    {
+      "repository": "appsscript",
+      "path": "atlas/temper.js",
+      "sha256": "9e11825f0aa4bfe8c696fea1e186f9b529541083342b487799a66ea416ecc3b2"
+    },
+    {
+      "repository": "appsscript",
+      "path": "atlas/preferences.js",
+      "sha256": "8d223b6c87ba712086d7839766d64e70c14c1fc3446e0f8bf5969654e48c7e5a"
+    },
+    {
+      "repository": "appsscript",
+      "path": "strata/index.js",
+      "sha256": "cd056a0046d163804037761977fc4c0942d02e62d226ab7fe3d24c82dc7f7f7f"
+    },
+    {
+      "repository": "appsscript",
+      "path": "strata/maps/ko.json",
+      "sha256": "077aa28476af16fef7aeec3d2207ef63c3313182f6d049f6d06565bb74ec20bc"
+    },
+    {
+      "repository": "appsscript",
+      "path": "tests/atlas-education.test.js",
+      "sha256": "1e09934e9bdeb55bb645d7997b95f190f00e4258107da08d37fe12b5de5abb90"
+    },
+    {
+      "repository": "talk",
+      "path": "lib/atlas-document.js",
+      "sha256": "88b7750d51ad45385b3add8e1768e98cddf99ea8412780e572f5bc64fa755653"
+    },
+    {
+      "repository": "talk",
+      "path": "src/아틀라스학습도움.js",
+      "sha256": "e0d283c0f3590ee94e472c18ce761b95b2891a52ea9be593063c032c3e338da4"
+    },
+    {
+      "repository": "talk",
+      "path": "src/서류관문화면.js",
+      "sha256": "150e6b0665ee6b48bbf70e3da55594823dfb009e7cae50dc99a046ce8b5dc03d"
+    },
+    {
+      "repository": "talk",
+      "path": "lib/atlas-session.js",
+      "sha256": "700fe037a7224760fa740ac010e018f671a413ed9ba43e4c9e02d50d39b13dfd"
+    },
+    {
+      "repository": "talk",
+      "path": "src/아틀라스게임.js",
+      "sha256": "3ce83aa0be43d748ab5b242fa2e78f478ed57bd1f408b44977d3fd4f68961275"
+    },
+    {
+      "repository": "talk",
+      "path": "tests/서류관문화면.test.js",
+      "sha256": "3343e17559279c90ff88bedf0f79ee1e91f715bde526c938f8ee9b8f734f00ca"
+    }
+  ],
+  "unchanged_selected_product_sources": [
+    {
+      "repository": "talk",
+      "path": "src/교수멘탈화면.js",
+      "unchanged_from_baseline": true
+    },
+    {
+      "repository": "talk",
+      "path": "src/답장화면.js",
+      "unchanged_from_baseline": true
+    },
+    {
+      "repository": "talk",
+      "path": "lib/성과회수.js",
+      "unchanged_from_baseline": true
+    }
+  ],
+  "remaining_limits": [
+    "No actual learner improvement or causal inference.",
+    "No new d1/d7/d30 retention measurement.",
+    "No remote persistence/deployment validation.",
+    "Interactive UI outcome belongs to the root verification report, not this module report.",
+    "Exposure history is limited to the provided local log; missing earlier history remains unknown."
+  ]
+}
