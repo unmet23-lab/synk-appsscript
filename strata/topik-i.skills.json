@@ -1,0 +1,21 @@
+{
+  "version": "topik-i-practice-1",
+  "note": "Authored practice taxonomy. Difficulty 1-3 means language complexity, not TOPIK grade. No calibrated mastery or score conversion.",
+  "skills": [
+    ["ko.listening.word", "listening", "낱말 듣기"],
+    ["ko.listening.detail", "listening", "듣고 세부 정보 찾기"],
+    ["ko.listening.negation", "listening", "듣고 부정·변경 이해하기"],
+    ["ko.listening.sequence", "listening", "듣고 순서 이해하기"],
+    ["ko.listening.reason", "listening", "듣고 이유 이해하기"],
+    ["ko.listening.condition", "listening", "듣고 조건 이해하기"],
+    ["ko.listening.main", "listening", "듣고 핵심 이해하기"],
+    ["ko.reading.vocabulary", "reading", "낱말 뜻 읽기"],
+    ["ko.reading.grammar", "reading", "조사·문형 읽기"],
+    ["ko.reading.detail", "reading", "읽고 세부 정보 찾기"],
+    ["ko.reading.negation", "reading", "읽고 부정·변경 이해하기"],
+    ["ko.reading.sequence", "reading", "읽고 순서 이해하기"],
+    ["ko.reading.reason", "reading", "읽고 이유 이해하기"],
+    ["ko.reading.condition", "reading", "읽고 조건 이해하기"],
+    ["ko.reading.main", "reading", "읽고 핵심 이해하기"]
+  ]
+}

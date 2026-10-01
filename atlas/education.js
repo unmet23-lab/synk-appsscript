@@ -40,7 +40,8 @@ function diagnose({ map, task, assessment }) {
 function createPractice({ session, decision, map, task, assess, firstExposure = null }) {
   const conceptIds = conceptsFor(map, task);
   const presentation = session.practice('presented', { decisionId: decision.id, taskId: task.id,
-    taskVersion: task.version, itemKey: task.itemKey, conceptIds, firstExposure });
+    taskVersion: task.version, itemKey: task.itemKey, conceptIds, firstExposure,
+    ...(task.measure ? { measure: task.measure } : {}) });
   let attempts = 0, broken = false, met = null;
   const shown = new Set();
   // Any failure while recording (an attempt, or help that is already on screen) leaves
@@ -49,11 +50,11 @@ function createPractice({ session, decision, map, task, assess, firstExposure = 
   const guarded = work => { try { return work(); } catch (error) { broken = true; throw error; } };
   return {
     presentation,
-    submit(response, { skipped = false } = {}) {
+    submit(response, { skipped = false, reason = null } = {}) {
       if (broken) throw new Error('Core: practice record incomplete');
       const result = diagnose({ map, task, assessment: skipped ? { verdict: 'skipped', errorTags: [] } : assess(response) });
       const event = guarded(() => session.practice('attempted', { presentationId: presentation.id, attemptNo: attempts + 1,
-        verdict: result.verdict, errorTags: result.errorTags }));
+        verdict: result.verdict, errorTags: result.errorTags, ...(reason ? { reason } : {}) }));
       attempts += 1;
       if (!met) met = { itemKey: task.itemKey, conceptIds, at: event.at, verdict: result.verdict };
       return { ...result, eventId: event.id, attemptNo: attempts };

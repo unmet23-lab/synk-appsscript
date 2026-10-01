@@ -26,13 +26,15 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   const VERSION = 'trail-practice-2';
-  const TYPES = ['practice.presented', 'practice.helped', 'practice.attempted'];
+  const TYPES = ['practice.presented', 'practice.helped', 'practice.attempted', 'practice.delivery'];
   const BASE = ['schema', 'id', 'scope', 'at', 'recordedAt', 'type'];
   const FIELDS = {
     'practice.presented': ['decisionId', 'taskId', 'taskVersion', 'itemKey', 'conceptIds', 'firstExposure'],
     'practice.helped': ['presentationId', 'helpId', 'level', 'contentRef'],
     'practice.attempted': ['presentationId', 'attemptNo', 'verdict', 'errorTags'],
+    'practice.delivery': ['presentationId', 'audio'],
   };
+  const OPTIONAL = { 'practice.presented': ['measure'], 'practice.attempted': ['reason'] };
   const VERDICTS = ['correct', 'incorrect', 'unassessed', 'skipped'];
   const copy = value => JSON.parse(JSON.stringify(value));
   const id = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
@@ -47,16 +49,27 @@
   function validate(event) {
     if (!event || !TYPES.includes(event.type) || event.schema !== 1 || !id(event.id)) throw new TypeError('Trail: invalid practice event');
     const fields = [...BASE, ...FIELDS[event.type]];
-    if (Object.keys(event).some(k => !fields.includes(k)) || fields.some(k => !Object.hasOwn(event, k))) throw new TypeError('Trail: unexpected or missing practice field');
+    if (Object.keys(event).some(k => !fields.includes(k) && !(OPTIONAL[event.type] || []).includes(k)) || fields.some(k => !Object.hasOwn(event, k))) throw new TypeError('Trail: unexpected or missing practice field');
     key(event.scope);
     if (time(event.recordedAt) < time(event.at)) throw new TypeError('Trail: recorded before occurrence');
     if (event.type === TYPES[0]) {
       if (![event.decisionId, event.taskId, event.taskVersion, event.itemKey].every(id)
         || !uniqueList(event.conceptIds, id, 32) || ![true, false, null].includes(event.firstExposure)) throw new TypeError('Trail: invalid presentation');
+      if (event.measure != null) {
+        const m = event.measure, keys = ['skillId', 'modality', 'difficulty', 'familyKey', 'audioRequired', 'confounded'];
+        if (Object.keys(m).some(k => !keys.includes(k) && k !== 'responseFormat') || keys.some(k => !Object.hasOwn(m, k))
+          || !id(m.skillId) || !event.conceptIds.includes(m.skillId) || !id(m.familyKey)
+          || !['listening', 'reading'].includes(m.modality) || ![1, 2, 3].includes(m.difficulty)
+          || (Object.hasOwn(m, 'responseFormat') && !['binary-choice', 'single-choice', 'cup-compose', 'action', 'unknown'].includes(m.responseFormat))
+          || typeof m.audioRequired !== 'boolean' || typeof m.confounded !== 'boolean') throw new TypeError('Trail: invalid measurement contract');
+      }
     } else if (event.type === TYPES[1]) {
       if (![event.presentationId, event.helpId, event.contentRef].every(id) || !['cue', 'explanation', 'answer'].includes(event.level)) throw new TypeError('Trail: invalid help');
+    } else if (event.type === TYPES[3]) {
+      if (!id(event.presentationId) || !['pending', 'completed', 'failed'].includes(event.audio)) throw new TypeError('Trail: invalid audio delivery');
     } else if (!id(event.presentationId) || !Number.isInteger(event.attemptNo) || event.attemptNo < 1
-      || !VERDICTS.includes(event.verdict) || !uniqueList(event.errorTags, tag, 24)) throw new TypeError('Trail: invalid attempt');
+      || !VERDICTS.includes(event.verdict) || !uniqueList(event.errorTags, tag, 24)
+      || (event.reason != null && !['motor', 'audio', 'unanswered', 'demo', 'visual', 'storage'].includes(event.reason))) throw new TypeError('Trail: invalid attempt');
     return event;
   }
   function checkLink(events, event) {
@@ -100,13 +113,19 @@
     // The comparison arm is recorded on the decision; practice only points to it.
     const arms = new Map(visible.filter(e => e.type === 'decision.made').map(e => [e.id, e.arm ?? null]));
     const provenance = new Map(), traces = new Map();
+    // A family can be open in two games before either one is answered. Check
+    // actual help/attempt order across its variants, not only the snapshot at
+    // presentation time. Keep the item key as well for legacy presentations.
+    const traceKeys = p => [`item:${p.itemKey}`, ...(p.measure ? [`family:${p.measure.familyKey}`] : [])];
     visible.forEach((event, index) => {
       if (event.type === TYPES[0]) provenance.set(event.id, event);
       const p = provenance.get(event.presentationId);
       // A visible child without its recorded parent is not usable evidence.
       if ((event.type !== TYPES[1] && event.type !== TYPES[2]) || !p) return;
-      if (!traces.has(p.itemKey)) traces.set(p.itemKey, []);
-      traces.get(p.itemKey).push({ index, at: time(event.at), kind: event.type === TYPES[2] ? 'attempt' : event.level === 'answer' ? 'answer' : 'help' });
+      for (const traceKey of traceKeys(p)) {
+        if (!traces.has(traceKey)) traces.set(traceKey, []);
+        traces.get(traceKey).push({ index, at: time(event.at), kind: event.type === TYPES[2] ? 'attempt' : event.level === 'answer' ? 'answer' : 'help' });
+      }
     });
     const presentations = [], help = [], attempts = [], met = new Map();
     // The first time each item was attempted or its answer shown, excluded or not:
@@ -119,6 +138,7 @@
           eventId: event.id, at: event.at, recordedAt: event.recordedAt,
           decisionId: event.decisionId, taskId: event.taskId, taskVersion: event.taskVersion,
           itemKey: event.itemKey, conceptIds: [...event.conceptIds], firstExposure: event.firstExposure,
+          ...(event.measure ? { measure: { ...copy(event.measure), responseFormat: event.measure.responseFormat || 'unknown' } } : {}),
         });
         return;
       }
@@ -133,9 +153,13 @@
         return;
       }
       const at = time(event.at);
-      const before = traces.get(p.itemKey).filter(t => t.index !== index && (t.index < index || t.at < at));
+      const before = traceKeys(p).flatMap(traceKey => traces.get(traceKey) || []).filter(t => t.index !== index && (t.index < index || t.at < at));
       const assisted = before.some(t => t.kind !== 'attempt') ? true : p.firstExposure === true ? false : null;
       const exposure = before.some(t => t.kind !== 'help') || p.firstExposure === false ? 'repeat' : p.firstExposure === true ? 'new' : 'unknown';
+      // Delivery is an actual observation, never inferred from play() being called.
+      // Later audio completion cannot rehabilitate an answer made before delivery.
+      const audio = visible.slice(0, index).filter(e => e.type === TYPES[3] && e.presentationId === p.id).at(-1)?.audio || 'pending';
+      const usableDelivery = !p.measure || (!p.measure.confounded && (!p.measure.audioRequired || audio === 'completed'));
       // A first attempt made after the answer was shown was met at the reveal, not here.
       meet(p, event.at, omitted ? null : event.verdict);
       if (!reported(p.decisionId)) return;
@@ -145,7 +169,8 @@
         presentationId: p.id, decisionId: p.decisionId, arm: arms.get(p.decisionId) ?? null,
         taskId: p.taskId, taskVersion: p.taskVersion, itemKey: p.itemKey, conceptIds: [...p.conceptIds],
         attemptNo: event.attemptNo, verdict: event.verdict, errorTags: [...event.errorTags], assisted, exposure,
-        independent: assisted === false && exposure === 'new' && ['correct', 'incorrect'].includes(event.verdict),
+        ...(p.measure ? { measure: { ...copy(p.measure), responseFormat: p.measure.responseFormat || 'unknown' }, audio, exclusionReason: event.reason || (p.measure.confounded ? 'visual' : !usableDelivery ? 'audio' : null) } : {}),
+        independent: usableDelivery && assisted === false && exposure === 'new' && ['correct', 'incorrect'].includes(event.verdict),
       });
     });
     return { version: VERSION, scope: copy(scope), asOf, recordedAsOf, decisions: decisions === null ? null : [...decisions],

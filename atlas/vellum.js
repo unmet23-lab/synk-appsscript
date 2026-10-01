@@ -27,4 +27,17 @@ function offerCue({ support = 'choose', elapsedMs = 0, misses = 0, offered = fal
   return elapsedMs >= stuck.afterMs || misses >= stuck.misses;
 }
 
-module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue };
+// These reasons describe observed practice scope, never a person's fixed ability.
+function learningReason({ status, label }) {
+  const reasons = {
+    unseen: `${label}는 아직 기록이 적어요. 짧게 확인해 봐요.`,
+    checking: `${label}를 조금 더 확인해 봐요.`,
+    practice: `최근 놓친 ${label}를 조금 더 연습해 봐요.`,
+    supported: `${label}를 도움과 함께 해냈어요. 이어서 살펴봐요.`,
+    'recent-independent': `${label}를 최근 혼자 해냈어요. 가볍게 이어가요.`,
+    review: `${label}를 다시 살펴볼 때예요.`,
+  };
+  if (!Object.hasOwn(reasons, status) || typeof label !== 'string') throw new TypeError('Vellum: invalid learning reason');
+  return reasons[status];
+}
+module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason };

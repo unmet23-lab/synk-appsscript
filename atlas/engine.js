@@ -9,9 +9,9 @@
   else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (getTrail) {
   'use strict';
-  const VERSION = 'atlas-2.1.0';
+  const VERSION = 'atlas-2.2.0';
   // Decisions recorded by an earlier policy stay readable; a new plan is always stamped with VERSION.
-  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', VERSION];
+  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', VERSION];
   const trail = () => {
     const module = getTrail();
     if (!module || typeof module.validate !== 'function' || typeof module.checkLink !== 'function' || typeof module.summarize !== 'function') throw new Error('Atlas: Trail practice module unavailable');
