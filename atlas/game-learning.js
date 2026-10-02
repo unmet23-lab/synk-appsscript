@@ -160,7 +160,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     const batch = Math.max(1, Math.floor((folding.max - folding.keep) / 2));
     if (!planned || planned.folded.length < batch && events.length < 2 * folding.max) { retryFold = { settled: settledVersion, at: now + 60000 }; return; }
     retryFold = null;
-    ledger = Ledger.fold(ledger, planned.folded, { scope, log: events });
+    ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
     session = newSession(planned.kept);
     for (const e of planned.folded) { if (e.type === 'practice.presented') active.delete(e.id); settled.delete(e.id); }
     settledVersion += 1;
@@ -239,12 +239,15 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   const api = {
     syncPort: Object.freeze({
       scope: storageScope, accountKey,
-      // A synchronised store gives its kept entries: the ones it folded are on the server.
+      // The kept entries. A synchronised store's folded entries are on the server; whether this
+      // history can be sent at all is partial().
       events() {
         refresh(); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' });
-        if (ledger && !folding?.remote) throw Object.assign(new Error('Atlas: a folded history is kept on this device only'), { code: 'HISTORY_FOLDED' });
         return session.events();
       },
+      // True when this store folded entries no server has received (it was not synchronised then):
+      // its history can never be sent whole, so a synchroniser must not send it.
+      partial() { refresh(); return !!ledger?.local; },
       // The sync calls this after a complete pull with every entry id the server has sent:
       // those entries may fold here. Saved quietly (it is not a new learning entry).
       settle(ids) {
@@ -268,7 +271,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       importEvents(incoming) {
         refresh();
         if (!readable) throw Object.assign(new Error('Atlas: local history is unreadable'), { code: 'STORAGE_ERROR' });
-        if (ledger && !folding?.remote) throw Object.assign(new Error('Atlas: a folded history is kept on this device only'), { code: 'HISTORY_FOLDED' });
+        if (ledger?.local) throw Object.assign(new Error('Atlas: a folded history is kept on this device only'), { code: 'HISTORY_FOLDED' });
         if (!Array.isArray(incoming)) throw new TypeError('Atlas: imported events must be an array');
         const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map(event => [event.id, event])), late = [], gone = [], skipped = [];
         for (const event of incoming) {

@@ -5435,7 +5435,7 @@ var SynkLearning = (() => {
       }
       function validate(ledger) {
         const cellOk = (cell) => plain(cell) && Array.isArray(cell.ind) && cell.ind.length <= KEEP && cell.ind.every((r) => Array.isArray(r) && (r.length === 4 || r.length === 5 && typeof r[4] === "string") && typeof r[0] === "string" && Number.isFinite(r[1]) && ["correct", "incorrect"].includes(r[2]) && typeof r[3] === "string") && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES && cell.helped.every((h) => Number.isFinite(h) || Array.isArray(h) && h.length === 2 && typeof h[0] === "string" && Number.isFinite(h[1])) && Number.isInteger(cell.unassessed) && cell.unassessed >= 0;
-        if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0)) throw new TypeError("Ledger: unreadable");
+        if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0 || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff)) || !plain(ledger.keys) || Object.keys(ledger.keys).length > MAX_ENTRIES || Object.values(ledger.keys).some((v) => !Number.isInteger(v) || v < 1 || v > 7) || !Array.isArray(ledger.presented) || ledger.presented.length > MAX_ENTRIES || ledger.presented.some((r) => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some((v) => typeof v !== "string") || !Number.isInteger(r[3]) || r[3] < 1) || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk) || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk) || !(ledger.counts === null || plain(ledger.counts)) || !(ledger.adjusted === void 0 || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0) || !(ledger.local === void 0 || ledger.local === true)) throw new TypeError("Ledger: unreadable");
         return ledger;
       }
       var before = (ledger, traceKey, kinds) => {
@@ -5453,7 +5453,7 @@ var SynkLearning = (() => {
       }
       var cellOf = (ledger, key) => ledger && own(ledger.cells, key) ? ledger.cells[key] : null;
       var contentOf = (ledger, key) => ledger && own(ledger.content, key) ? ledger.content[key] : null;
-      function fold(previous, events, { scope, log = events }) {
+      function fold(previous, events, { scope, log = events, local = false }) {
         const base = previous || empty();
         const ledger = { ...base, keys: { ...base.keys }, cells: { ...base.cells }, content: { ...base.content } };
         if (!events.length) return ledger;
@@ -5499,6 +5499,7 @@ var SynkLearning = (() => {
         ledger.counts = ledger.counts ? Temper.combine(ledger.counts, Temper.measure(summary)) : Temper.measure(summary);
         ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time(e)), -Infinity));
         ledger.folded += events.length;
+        if (local) ledger.local = true;
         return ledger;
       }
       function plan(events, { keep, olderThan, unfinishedBefore = olderThan, open = [] }) {
@@ -5766,7 +5767,7 @@ var SynkLearning = (() => {
       var sameEvent = (a, b) => canonical(a) === canonical(b);
       var failure = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
       var errorCode = (error) => error?.code || error?.error?.code || error?.body?.error?.code || "NETWORK_ERROR";
-      var FATAL = /* @__PURE__ */ new Set(["REVISION_CONFLICT", "LEARNING_DISABLED", "FEATURE_DISABLED", "HISTORY_CAPACITY", "EVENT_CONFLICT", "INVALID_EVENTS", "INVALID_RESPONSE", "STORAGE_ERROR", "UNAUTHORIZED", "AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED", "MEMORY_SESSION_ENDED"]);
+      var FATAL = /* @__PURE__ */ new Set(["REVISION_CONFLICT", "LEARNING_DISABLED", "FEATURE_DISABLED", "HISTORY_CAPACITY", "HISTORY_FOLDED", "EVENT_CONFLICT", "INVALID_EVENTS", "INVALID_RESPONSE", "STORAGE_ERROR", "UNAUTHORIZED", "AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED", "MEMORY_SESSION_ENDED"]);
       function createLearningSync({
         adapter,
         accountKey,
@@ -5839,6 +5840,7 @@ var SynkLearning = (() => {
           block(error?.code ? error : failure("STORAGE_ERROR", "Atlas sync: unreadable outbox; preserved without replacement"));
         }
         const collect = () => {
+          if (typeof port.partial === "function" && port.partial()) throw failure("HISTORY_FOLDED", "Atlas sync: this log summarised entries no server received; it cannot be sent");
           const local = port.events(), localIds = new Set(local.map((event) => event.id));
           if (state.pending.some((eventId) => !localIds.has(eventId))) throw failure("STORAGE_ERROR", "Atlas sync: queued history does not match its account log");
           const folded = new Set(typeof port.dropped === "function" ? port.dropped() : []);
@@ -7123,7 +7125,7 @@ var SynkLearning = (() => {
             return;
           }
           retryFold = null;
-          ledger = Ledger.fold(ledger, planned.folded, { scope, log: events });
+          ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
           session = newSession(planned.kept);
           for (const e of planned.folded) {
             if (e.type === "practice.presented") active.delete(e.id);
@@ -7230,12 +7232,18 @@ var SynkLearning = (() => {
           syncPort: Object.freeze({
             scope: storageScope,
             accountKey,
-            // A synchronised store gives its kept entries: the ones it folded are on the server.
+            // The kept entries. A synchronised store's folded entries are on the server; whether this
+            // history can be sent at all is partial().
             events() {
               refresh();
               if (!readable || !writable) throw Object.assign(new Error("Atlas: local history is not durable"), { code: "STORAGE_ERROR" });
-              if (ledger && !folding?.remote) throw Object.assign(new Error("Atlas: a folded history is kept on this device only"), { code: "HISTORY_FOLDED" });
               return session.events();
+            },
+            // True when this store folded entries no server has received (it was not synchronised then):
+            // its history can never be sent whole, so a synchroniser must not send it.
+            partial() {
+              refresh();
+              return !!ledger?.local;
             },
             // The sync calls this after a complete pull with every entry id the server has sent:
             // those entries may fold here. Saved quietly (it is not a new learning entry).
@@ -7271,7 +7279,7 @@ var SynkLearning = (() => {
             importEvents(incoming) {
               refresh();
               if (!readable) throw Object.assign(new Error("Atlas: local history is unreadable"), { code: "STORAGE_ERROR" });
-              if (ledger && !folding?.remote) throw Object.assign(new Error("Atlas: a folded history is kept on this device only"), { code: "HISTORY_FOLDED" });
+              if (ledger?.local) throw Object.assign(new Error("Atlas: a folded history is kept on this device only"), { code: "HISTORY_FOLDED" });
               if (!Array.isArray(incoming)) throw new TypeError("Atlas: imported events must be an array");
               const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map((event) => [event.id, event])), late = [], gone = [], skipped = [];
               for (const event of incoming) {

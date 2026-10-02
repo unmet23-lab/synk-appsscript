@@ -12,8 +12,10 @@
  * ledger gives what a reading of the whole log would. It holds no response text and no
  * identity. A folded entry can no longer be excluded.
  *
- * A synchronised log folds only entries the server already holds and has sent back, so
- * the server keeps everything. Another device's entries can still arrive late, from before
+ * `local` marks a ledger holding entries no server has received (folded on a store that was
+ * not synchronised); such a history can never be sent to a server, even if sharing is turned
+ * on later. A synchronised log folds only entries the server already holds and has sent back,
+ * so the server keeps everything. Another device's entries can still arrive late, from before
  * the cutoff: they are read with the ledger as earlier history (never as first exposures),
  * folded first answers after them on the same family stop counting (`demote`), and an entry
  * whose item was folded here stays on the server only (`stray`): an exclusion of a folded
@@ -56,7 +58,8 @@ function validate(ledger) {
     || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk)
     || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk)
     || !(ledger.counts === null || plain(ledger.counts))
-    || !(ledger.adjusted === undefined || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0)) throw new TypeError('Ledger: unreadable');
+    || !(ledger.adjusted === undefined || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0)
+    || !(ledger.local === undefined || ledger.local === true)) throw new TypeError('Ledger: unreadable');
   return ledger;
 }
 // Whether `kinds` ('attempt', 'answer', 'help') happened on this trace key in folded entries.
@@ -83,7 +86,7 @@ const contentOf = (ledger, key) => (ledger && own(ledger.content, key) ? ledger.
  * help, delivery, answers, completion, exclusions of them) in log order; `log` is the whole
  * log they are taken from, so whatever came before them there still counts when their
  * answers are read. */
-function fold(previous, events, { scope, log = events }) {
+function fold(previous, events, { scope, log = events, local = false }) {
   // A new object each time (callers compare identity); tables are copied, not deep-cloned,
   // and a cell is copied only when this fold changes it.
   const base = previous || empty();
@@ -132,6 +135,8 @@ function fold(previous, events, { scope, log = events }) {
   ledger.counts = ledger.counts ? Temper.combine(ledger.counts, Temper.measure(summary)) : Temper.measure(summary);
   ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time(e)), -Infinity));
   ledger.folded += events.length;
+  // Once it holds an entry no server received, it always does (the copy above keeps a mark).
+  if (local) ledger.local = true;
   return ledger;
 }
 
