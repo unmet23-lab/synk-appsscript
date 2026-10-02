@@ -59,8 +59,17 @@
       knowledge.get(npcId).set(factId, value);
     };
     const active = factId => facts.get(factId)?.active === true;
-    const derivesFrom = (sourceId, targetId) => sourceId === targetId
-      || (facts.get(sourceId)?.event.causes || []).some(cause => derivesFrom(cause, targetId));
+    const derivesFrom = (sourceId, targetId) => {
+      const stack = [sourceId], visited = new Set();
+      while (stack.length) {
+        const id = stack.pop();
+        if (id === targetId) return true;
+        if (visited.has(id)) continue;
+        visited.add(id);
+        stack.push(...(facts.get(id)?.event.causes || []));
+      }
+      return false;
+    };
     const permitted = (npcId, factId, visited = new Set()) => {
       const grant = knowledge.get(npcId)?.get(factId);
       if (!active(factId) || grant?.allowed !== true || visited.has(factId)) return false;
@@ -91,7 +100,9 @@
           || !(permitted(event.npcId, event.viaId) || (event.viaId === event.factId && facts.get(event.factId).event.knownBy.includes(event.npcId))))) {
           throw new Error('Trail Life: knowledge requires a witnessed source');
         }
-        know(event.npcId, event.factId, { allowed: event.allowed, viaId: event.viaId });
+        // Seeing it directly is the strongest source; a relayed grant cannot replace it.
+        const own = knowledge.get(event.npcId)?.get(event.factId);
+        if (!(event.allowed && own?.allowed === true && own.viaId === null)) know(event.npcId, event.factId, { allowed: event.allowed, viaId: event.viaId });
       } else {
         if (event.sourceIds.some(source => !permitted(event.npcId, source))) throw new Error('Trail Life: delivery requires permitted facts');
         if (deliveries.has(event.deliveryId)) throw new Error('Trail Life: duplicate delivery id');

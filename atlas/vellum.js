@@ -27,17 +27,28 @@ function offerCue({ support = 'choose', elapsedMs = 0, misses = 0, offered = fal
   return elapsedMs >= stuck.afterMs || misses >= stuck.misses;
 }
 
+// Korean particles follow the label's last Hangul syllable: with a final consonant
+// (받침) 은/을, without one 는/를. Labels end in many ways ("낱말 듣기", "반대말").
+function particle(label, withFinal, without) {
+  for (let i = label.length - 1; i >= 0; i -= 1) {
+    const code = label.charCodeAt(i);
+    if (code >= 0xAC00 && code <= 0xD7A3) return (code - 0xAC00) % 28 ? withFinal : without;
+  }
+  return without;
+}
 // These reasons describe observed practice scope, never a person's fixed ability.
 function learningReason({ status, label }) {
+  if (typeof label !== 'string') throw new TypeError('Vellum: invalid learning reason');
+  const topic = `${label}${particle(label, '은', '는')}`, object = `${label}${particle(label, '을', '를')}`;
   const reasons = {
-    unseen: `${label}는 아직 기록이 적어요. 짧게 확인해 봐요.`,
-    checking: `${label}를 조금 더 확인해 봐요.`,
-    practice: `최근 놓친 ${label}를 조금 더 연습해 봐요.`,
-    supported: `${label}를 도움과 함께 해냈어요. 이어서 살펴봐요.`,
-    'recent-independent': `${label}를 최근 혼자 해냈어요. 가볍게 이어가요.`,
-    review: `${label}를 다시 살펴볼 때예요.`,
+    unseen: `${topic} 아직 기록이 적어요. 짧게 확인해 봐요.`,
+    checking: `${object} 조금 더 확인해 봐요.`,
+    practice: `최근 놓친 ${object} 조금 더 연습해 봐요.`,
+    supported: `${object} 도움과 함께 해냈어요. 이어서 살펴봐요.`,
+    'recent-independent': `${object} 최근 혼자 해냈어요. 가볍게 이어가요.`,
+    review: `${object} 다시 살펴볼 때예요.`,
   };
-  if (!Object.hasOwn(reasons, status) || typeof label !== 'string') throw new TypeError('Vellum: invalid learning reason');
+  if (!Object.hasOwn(reasons, status)) throw new TypeError('Vellum: invalid learning reason');
   return reasons[status];
 }
 module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason };

@@ -163,8 +163,14 @@
       support: values.support ?? null, audio: values.audio ?? null };
     const previous = current.state().context;
     for (const [field, value] of Object.entries(settings)) if ((previous[field] ?? null) !== value) current.set(field, value);
-    const eligible = candidates.filter(item => (values.minutes == null || item.minutes <= values.minutes)
+    let eligible = candidates.filter(item => (values.minutes == null || item.minutes <= values.minutes)
       && (!values.experience || !item.experiences || item.experiences.includes(values.experience)));
+    // A help style derived from the declared experience prefers fitting ways of working; it is
+    // never stored as the person's own choice, and it never empties the list.
+    if (values.support == null && presentation.support !== 'choose') {
+      const fitting = eligible.filter(item => !item.supports || item.supports.includes(presentation.support));
+      if (fitting.length) eligible = fitting;
+    }
     const constraints = [];
     if (values.minutes != null) constraints.push('time.limit');
     if (values.experience != null) constraints.push('experience.declared');
@@ -173,6 +179,8 @@
       selected: null, alternatives: [], reasons: ['no.feasible.experience'], evidence: [],
     };
     const reasons = [...new Set([...plan.reasons, ...constraints])];
+    const chosen = plan.selected?.supports;
+    if (chosen && !chosen.includes(presentation.support)) presentation.support = chosen.includes('choose') ? 'choose' : chosen[0];
     const returned = profile.consent ? current.events() : [];
     const basis = plan.outcomeBasis === 'self_report' ? 'self-reported-feedback' : Object.keys(values).length ? 'self-declared' : 'cold-start';
     return { version: VERSION, profile: copy(profile), values, presentation, plan: copy(plan), events: returned, reasons,

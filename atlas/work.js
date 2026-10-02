@@ -64,10 +64,17 @@
     const criteria = normalizeCriteria(input, catalog), labels = catalogEntries(catalog);
     if (!Array.isArray(cards)) fail('확인된 업무카드를 전달해 주세요.');
     const available = new Map(cards.filter(card => card?.shared === true).map(card => [card.id, card]));
+    const ids = list => Array.isArray(list) && list.length <= 12 && list.every(validId);
     const selected = criteria.memberIds.map(id => {
-      const card = available.get(id);
-      if (!card || card.profile?.schemaVersion !== PROFILE_SCHEMA_VERSION || card.profile.participates !== true || typeof card.profile.confirmedAt !== 'string' || !Number.isFinite(Date.parse(card.profile.confirmedAt))) fail('현재 공유된 업무카드만 검토할 수 있습니다.');
-      return card;
+      const card = available.get(id), profile = card?.profile;
+      if (!card || profile?.schemaVersion !== PROFILE_SCHEMA_VERSION || profile.participates !== true || typeof profile.confirmedAt !== 'string' || !Number.isFinite(Date.parse(profile.confirmedAt))) fail('현재 공유된 업무카드만 검토할 수 있습니다.');
+      // A stored card is checked like a new one; a broken value is never read as "available".
+      if (!ids(profile.skills) || !ids(profile.preferredTasks) || !(profile.communication === null || COMMUNICATION.includes(profile.communication))
+        || !(profile.workMode === null || WORK_MODE.includes(profile.workMode))) fail('현재 공유된 업무카드만 검토할 수 있습니다.');
+      hours(profile.availableHours);
+      // Only the reviewed work fields go back: no names, contacts or a handle on the caller's object.
+      return { id: card.id, shared: true, profile: { schemaVersion: profile.schemaVersion, skills: [...profile.skills], preferredTasks: [...profile.preferredTasks],
+        communication: profile.communication, workMode: profile.workMode, availableHours: profile.availableHours, participates: true, confirmedAt: profile.confirmedAt } };
     });
     const coverage = criteria.requiredSkills.map(skill => {
       const memberIds = selected.filter(card => card.profile.skills.includes(skill)).map(card => card.id);

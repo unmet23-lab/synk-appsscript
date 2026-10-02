@@ -203,7 +203,8 @@
       if (event.type !== 'feedback.given' || !completed.has(event.completionId)) continue;
       if (cutoff - ms(event.at) > RECENT) continue;
       const completion = completed.get(event.completionId);
-      if (ms(completion.at) <= ms(event.at)) responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant }));
+      // A changed answer moves to the end, so the list stays in order of the latest response.
+      if (ms(completion.at) <= ms(event.at)) { responses.delete(event.completionId); responses.set(event.completionId, copy({ ...event, experienceId: completion.experienceId, variant: completion.variant })); }
     }
     const decisions = new Map(ordered.filter(e => e.type === 'decision.made' && !excluded.has(e.id)).map(e => [e.id, e]));
     const latestOutcome = new Map();
@@ -295,11 +296,14 @@
     const feedback = adapted ? state.feedback.filter(f => f.experienceId === experienceId) : [];
     const recent = feedback.at(-1);
     const targetPace = c.time === 'short' ? 'short' : recent?.value === 'too_much' ? 'short' : recent?.value === 'want_more' && c.time !== 'short' ? 'deep' : 'standard';
-    // An explicit request for another way must not lose to the old goal weight.
-    // Only an actually feasible alternative may replace the rejected choice.
-    const another = recent?.value === 'not_fit' ? eligible.filter(item => item.id !== recent.variant) : [];
-    const selectable = another.length ? another : eligible;
-    if (recent?.value === 'not_fit') reasons.push(another.length ? 'feedback.alternative' : 'feedback.no_alternative');
+    // An explicit request for another way must not lose to the old goal weight. Every way
+    // whose latest answer was "not for me" stays out while a feasible alternative remains;
+    // if all were refused, at least the one just refused is not offered straight back.
+    const latest = new Map(feedback.map(f => [f.variant, f.value]));
+    const another = recent?.value === 'not_fit' ? eligible.filter(item => latest.get(item.id) !== 'not_fit') : [];
+    const fallback = recent?.value === 'not_fit' && !another.length ? eligible.filter(item => item.id !== recent.variant) : [];
+    const selectable = another.length ? another : fallback.length ? fallback : eligible;
+    if (recent?.value === 'not_fit') reasons.push(another.length || fallback.length ? 'feedback.alternative' : 'feedback.no_alternative');
     const scored = selectable.map(item => {
       const notes = [], proof = [];
       let score = item.pace === targetPace ? 4 : 0;
