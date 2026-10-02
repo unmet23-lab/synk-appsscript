@@ -1,0 +1,803 @@
+{
+  "widths": [
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "rooms": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "office",
+        "consult",
+        "photo",
+        "corridor",
+        "WC-M",
+        "WC-F"
+      ],
+      "roomDimensions": [
+        {
+          "id": "A",
+          "area": "20.0평",
+          "size": "10.00 × 6.60 m",
+          "body": 3794
+        },
+        {
+          "id": "B",
+          "area": "8.3평",
+          "size": "4.15 × 6.60 m",
+          "body": 944
+        },
+        {
+          "id": "C",
+          "area": "8.3평",
+          "size": "4.15 × 6.60 m",
+          "body": 830
+        },
+        {
+          "id": "D",
+          "area": "9.0평",
+          "size": "5.75 × 5.20 m",
+          "body": 872
+        },
+        {
+          "id": "office",
+          "area": "6.3평",
+          "size": "4.00 × 5.20 m",
+          "body": 934
+        },
+        {
+          "id": "consult",
+          "area": "4.1평",
+          "size": "2.60 × 5.20 m",
+          "body": 1384
+        },
+        {
+          "id": "photo",
+          "area": "3.4평",
+          "size": "2.15 × 5.20 m",
+          "body": 1552
+        },
+        {
+          "id": "corridor",
+          "area": "9.0평",
+          "size": "18.60 × 1.60 m",
+          "body": 660
+        },
+        {
+          "id": "WC-M",
+          "area": "1.6평",
+          "size": "2.15 × 2.475 m",
+          "body": 1155
+        },
+        {
+          "id": "WC-F",
+          "area": "1.6평",
+          "size": "2.15 × 2.475 m",
+          "body": 900
+        }
+      ],
+      "fonts": [
+        {
+          "name": "SUIT Variable",
+          "loaded": true
+        },
+        {
+          "name": "Inter Tight",
+          "loaded": true
+        },
+        {
+          "name": "DM Mono",
+          "loaded": true
+        }
+      ],
+      "overflow": [],
+      "brokenImages": [],
+      "textBroken": false,
+      "anchors": []
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "rooms": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "office",
+        "consult",
+        "photo",
+        "corridor",
+        "WC-M",
+        "WC-F"
+      ],
+      "roomDimensions": [
+        {
+          "id": "A",
+          "area": "20.0평",
+          "size": "10.00 × 6.60 m",
+          "body": 3794
+        },
+        {
+          "id": "B",
+          "area": "8.3평",
+          "size": "4.15 × 6.60 m",
+          "body": 944
+        },
+        {
+          "id": "C",
+          "area": "8.3평",
+          "size": "4.15 × 6.60 m",
+          "body": 830
+        },
+        {
+          "id": "D",
+          "area": "9.0평",
+          "size": "5.75 × 5.20 m",
+          "body": 872
+        },
+        {
+          "id": "office",
+          "area": "6.3평",
+          "size": "4.00 × 5.20 m",
+          "body": 934
+        },
+        {
+          "id": "consult",
+          "area": "4.1평",
+          "size": "2.60 × 5.20 m",
+          "body": 1384
+        },
+        {
+          "id": "photo",
+          "area": "3.4평",
+          "size": "2.15 × 5.20 m",
+          "body": 1552
+        },
+        {
+          "id": "corridor",
+          "area": "9.0평",
+          "size": "18.60 × 1.60 m",
+          "body": 660
+        },
+        {
+          "id": "WC-M",
+          "area": "1.6평",
+          "size": "2.15 × 2.475 m",
+          "body": 1155
+        },
+        {
+          "id": "WC-F",
+          "area": "1.6평",
+          "size": "2.15 × 2.475 m",
+          "body": 900
+        }
+      ],
+      "fonts": [
+        {
+          "name": "SUIT Variable",
+          "loaded": true
+        },
+        {
+          "name": "Inter Tight",
+          "loaded": true
+        },
+        {
+          "name": "DM Mono",
+          "loaded": true
+        }
+      ],
+      "overflow": [],
+      "brokenImages": [],
+      "textBroken": false,
+      "anchors": []
+    },
+    {
+      "width": 1280,
+      "scrollWidth": 1280,
+      "rooms": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "office",
+        "consult",
+        "photo",
+        "corridor",
+        "WC-M",
+        "WC-F"
+      ],
+      "roomDimensions": [
+        {
+          "id": "A",
+          "area": "20.0평",
+          "size": "10.00 × 6.60 m",
+          "body": 3794
+        },
+        {
+          "id": "B",
+          "area": "8.3평",
+          "size": "4.15 × 6.60 m",
+          "body": 944
+        },
+        {
+          "id": "C",
+          "area": "8.3평",
+          "size": "4.15 × 6.60 m",
+          "body": 830
+        },
+        {
+          "id": "D",
+          "area": "9.0평",
+          "size": "5.75 × 5.20 m",
+          "body": 872
+        },
+        {
+          "id": "office",
+          "area": "6.3평",
+          "size": "4.00 × 5.20 m",
+          "body": 934
+        },
+        {
+          "id": "consult",
+          "area": "4.1평",
+          "size": "2.60 × 5.20 m",
+          "body": 1384
+        },
+        {
+          "id": "photo",
+          "area": "3.4평",
+          "size": "2.15 × 5.20 m",
+          "body": 1552
+        },
+        {
+          "id": "corridor",
+          "area": "9.0평",
+          "size": "18.60 × 1.60 m",
+          "body": 660
+        },
+        {
+          "id": "WC-M",
+          "area": "1.6평",
+          "size": "2.15 × 2.475 m",
+          "body": 1155
+        },
+        {
+          "id": "WC-F",
+          "area": "1.6평",
+          "size": "2.15 × 2.475 m",
+          "body": 900
+        }
+      ],
+      "fonts": [
+        {
+          "name": "SUIT Variable",
+          "loaded": true
+        },
+        {
+          "name": "Inter Tight",
+          "loaded": true
+        },
+        {
+          "name": "DM Mono",
+          "loaded": true
+        }
+      ],
+      "overflow": [],
+      "brokenImages": [],
+      "textBroken": false,
+      "anchors": []
+    }
+  ],
+  "interactions": [
+    "5 student experience chapters at 320/390/1280; basic/monthly frame states; approved logo hashes",
+    "Operations specification and handover checklist expand/collapse; mobile width",
+    "10 room anchor links",
+    "5 plan switches and image dialogs; Esc close",
+    "Both restroom concept images load and enlarge",
+    "Concept image dialog close button",
+    "Reduced motion"
+  ],
+  "errors": [],
+  "pendingImages": [],
+  "localLinks": [
+    {
+      "href": "../../%ED%8F%AC%ED%86%A0%EB%B6%80%EC%8A%A4_%EC%84%A4%EA%B3%84.md",
+      "exists": true
+    },
+    {
+      "href": "WC-M_%EB%82%A8%EC%9E%90%ED%99%94%EC%9E%A5%EC%8B%A4_20260930.png",
+      "exists": true
+    },
+    {
+      "href": "../%ED%8F%89%EB%A9%B4%EB%8F%84_20260929/SYNK_%EB%82%A8%EB%85%80%ED%99%94%EC%9E%A5%EC%8B%A4_6%EC%95%88.png",
+      "exists": true
+    },
+    {
+      "href": "WC-F_%EC%97%AC%EC%9E%90%ED%99%94%EC%9E%A5%EC%8B%A4_20260930.png",
+      "exists": true
+    },
+    {
+      "href": "../%ED%8F%89%EB%A9%B4%EB%8F%84_20260929/%EA%B3%B5%EA%B0%84%EA%B3%BC_%ED%8E%B8%EC%9D%98%EC%8B%9C%EC%84%A4_%EC%A2%8C%ED%91%9C_6%EC%95%88.json",
+      "exists": true
+    },
+    {
+      "href": "../%EC%9E%85%EC%B2%B4%EA%B0%9C%EB%85%90_20260929/synk-academy-3d-preview.html",
+      "exists": true
+    },
+    {
+      "href": "../%EB%B0%A9%EB%B3%84_%EC%9D%B8%ED%85%8C%EB%A6%AC%EC%96%B4_%EB%94%94%EC%9E%90%EC%9D%B8_20260929.md",
+      "exists": true
+    },
+    {
+      "href": "../%ED%8F%89%EB%A9%B4%EB%8F%84_20260929/%EA%B3%B5%EA%B0%84%EA%B3%BC_%EC%B4%AC%EC%98%81_%ED%86%B5%ED%95%A9%EC%84%A4%EA%B3%84.md",
+      "exists": true
+    },
+    {
+      "href": "README.md",
+      "exists": true
+    },
+    {
+      "href": "../../%EC%A0%95%EB%B3%B8/SYNK%20LAB/About%20Syestem/SYNK_%EB%A6%AC%EB%9D%BC%EC%9D%B4%ED%8C%85_v2/07_SYNK_%EB%A9%94%EC%9D%B8%EB%A3%B8_%EC%9D%B8%ED%85%8C%EB%A6%AC%EC%96%B4.txt",
+      "exists": true
+    },
+    {
+      "href": "%EB%A9%94%EC%9D%B8%EB%A3%B8_%EC%88%98%EC%97%85%EA%B3%BC%EC%B4%AC%EC%98%81_%EB%A7%88%EA%B0%90%EA%B5%90%EC%A0%95_20260930.png",
+      "exists": true
+    }
+  ],
+  "mainRoomUpdate": {
+    "checks": [
+      {
+        "width": 320,
+        "mode": "dance",
+        "image": "A_댄스_전면거울_20260930.png",
+        "layout": {
+          "width": 320,
+          "scrollWidth": 320,
+          "overflow": 0
+        },
+        "dialog": "correct image, caption and original link; closes"
+      },
+      {
+        "width": 320,
+        "mode": "comparison",
+        "image": "메인룸_수업과촬영_마감교정_20260930.png",
+        "layout": {
+          "width": 320,
+          "scrollWidth": 320,
+          "overflow": 0
+        },
+        "dialog": "correct image, caption and original link; closes"
+      },
+      {
+        "width": 390,
+        "mode": "dance",
+        "image": "A_댄스_전면거울_20260930.png",
+        "layout": {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": 0
+        },
+        "dialog": "correct image, caption and original link; closes"
+      },
+      {
+        "width": 390,
+        "mode": "comparison",
+        "image": "메인룸_수업과촬영_마감교정_20260930.png",
+        "layout": {
+          "width": 390,
+          "scrollWidth": 390,
+          "overflow": 0
+        },
+        "dialog": "correct image, caption and original link; closes"
+      },
+      {
+        "width": 1280,
+        "mode": "dance",
+        "image": "A_댄스_전면거울_20260930.png",
+        "layout": {
+          "width": 1280,
+          "scrollWidth": 1280,
+          "overflow": 0
+        },
+        "dialog": "correct image, caption and original link; closes"
+      },
+      {
+        "width": 1280,
+        "mode": "comparison",
+        "image": "메인룸_수업과촬영_마감교정_20260930.png",
+        "layout": {
+          "width": 1280,
+          "scrollWidth": 1280,
+          "overflow": 0
+        },
+        "dialog": "correct image, caption and original link; closes"
+      }
+    ],
+    "verifiedAt": "2026-09-30T15:43:45.618Z",
+    "scope": "A main image and two-mode interaction only"
+  },
+  "studentExperience": {
+    "checkedAt": "2026-09-30T15:43:53.876Z",
+    "chapters": [
+      {
+        "id": "arrival",
+        "width": 320,
+        "text": 595,
+        "overflow": 0
+      },
+      {
+        "id": "signs",
+        "width": 320,
+        "text": 572,
+        "overflow": 0
+      },
+      {
+        "id": "first",
+        "width": 320,
+        "text": 722,
+        "overflow": 0
+      },
+      {
+        "id": "photo",
+        "width": 320,
+        "text": 664,
+        "overflow": 0
+      },
+      {
+        "id": "memory",
+        "width": 320,
+        "text": 595,
+        "overflow": 0
+      },
+      {
+        "id": "arrival",
+        "width": 390,
+        "text": 595,
+        "overflow": 0
+      },
+      {
+        "id": "signs",
+        "width": 390,
+        "text": 572,
+        "overflow": 0
+      },
+      {
+        "id": "first",
+        "width": 390,
+        "text": 722,
+        "overflow": 0
+      },
+      {
+        "id": "photo",
+        "width": 390,
+        "text": 664,
+        "overflow": 0
+      },
+      {
+        "id": "memory",
+        "width": 390,
+        "text": 595,
+        "overflow": 0
+      },
+      {
+        "id": "arrival",
+        "width": 1280,
+        "text": 595,
+        "overflow": 0
+      },
+      {
+        "id": "signs",
+        "width": 1280,
+        "text": 572,
+        "overflow": 0
+      },
+      {
+        "id": "first",
+        "width": 1280,
+        "text": 722,
+        "overflow": 0
+      },
+      {
+        "id": "photo",
+        "width": 1280,
+        "text": 664,
+        "overflow": 0
+      },
+      {
+        "id": "memory",
+        "width": 1280,
+        "text": 595,
+        "overflow": 0
+      }
+    ],
+    "frameStates": [
+      {
+        "width": 320,
+        "mode": "10",
+        "stamp": "2026.10.DD",
+        "name": "함께 시작한 날"
+      },
+      {
+        "width": 320,
+        "mode": "base",
+        "stamp": "YYYY.MM.DD",
+        "name": "함께 남긴 네 장"
+      },
+      {
+        "width": 390,
+        "mode": "10",
+        "stamp": "2026.10.DD",
+        "name": "함께 시작한 날"
+      },
+      {
+        "width": 390,
+        "mode": "base",
+        "stamp": "YYYY.MM.DD",
+        "name": "함께 남긴 네 장"
+      },
+      {
+        "width": 1280,
+        "mode": "10",
+        "stamp": "2026.10.DD",
+        "name": "함께 시작한 날"
+      },
+      {
+        "width": 1280,
+        "mode": "base",
+        "stamp": "YYYY.MM.DD",
+        "name": "함께 남긴 네 장"
+      }
+    ],
+    "assetFiles": [
+      {
+        "file": "배치용/SYNK-Ink.png",
+        "sha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc",
+        "manifestMatch": true
+      },
+      {
+        "file": "배치용/SYNK-LAB-Ink.png",
+        "sha256": "7e014c4e4a121ac0ead8168a8b28fcd5c7f0d1353e751d97233b2ff09904d201",
+        "manifestMatch": true
+      }
+    ]
+  },
+  "documentBytes": 1881871,
+  "status": "passed",
+  "fullCheckDocumentBytes": 1846492,
+  "latestSourceRefresh": {
+    "checkedAt": "2026-09-30T15:47:51.049Z",
+    "scope": "Latest section18 dimensions only, and photo heading/caption finish. Prior full-book checks retained.",
+    "checks": [
+      {
+        "width": 320,
+        "geometry": {
+          "width": 320,
+          "scrollWidth": 320,
+          "rows": 15,
+          "overflow": 0
+        },
+        "number": {
+          "text": "04",
+          "whiteSpace": "nowrap",
+          "width": 16.8125,
+          "height": 22.671875,
+          "lineHeight": "22.68px"
+        }
+      },
+      {
+        "width": 390,
+        "geometry": {
+          "width": 390,
+          "scrollWidth": 390,
+          "rows": 15,
+          "overflow": 0
+        },
+        "number": {
+          "text": "04",
+          "whiteSpace": "nowrap",
+          "width": 16.8125,
+          "height": 22.671875,
+          "lineHeight": "22.68px"
+        }
+      }
+    ],
+    "sourceSHA256": "324ff7001ffc03ae9587247049de9a34840883396906bf6d75599ebc4466b73d"
+  },
+  "latestVerificationScope": "Day-operation chapter, flow controls, blank cards, source sections 21-23, topbar and local links. Design-document checks only; no site or operating-system verification.",
+  "dailyOperations": {
+    "checkedAt": "2026-09-30T16:49:21.152Z",
+    "scope": "Day-operation chapter, flow controls, blank cards, source sections 21-23, topbar and local links. Design-document checks only; no site or operating-system verification.",
+    "views": [
+      {
+        "width": 320,
+        "flow": "student",
+        "scrollWidth": 320,
+        "overflow": 0
+      },
+      {
+        "width": 320,
+        "flow": "staff",
+        "scrollWidth": 320,
+        "overflow": 0
+      },
+      {
+        "width": 390,
+        "flow": "student",
+        "scrollWidth": 390,
+        "overflow": 0
+      },
+      {
+        "width": 390,
+        "flow": "staff",
+        "scrollWidth": 390,
+        "overflow": 0
+      },
+      {
+        "width": 1280,
+        "flow": "student",
+        "scrollWidth": 1280,
+        "overflow": 0
+      },
+      {
+        "width": 1280,
+        "flow": "staff",
+        "scrollWidth": 1280,
+        "overflow": 0
+      }
+    ],
+    "cards": [
+      {
+        "width": 320,
+        "id": "first-visit-notice",
+        "overflow": 0
+      },
+      {
+        "width": 320,
+        "id": "shift-handover-card",
+        "overflow": 0
+      },
+      {
+        "width": 320,
+        "id": "opening-card",
+        "overflow": 0
+      },
+      {
+        "width": 320,
+        "id": "closing-card",
+        "overflow": 0
+      },
+      {
+        "width": 320,
+        "id": "daily-prep",
+        "overflow": 0
+      },
+      {
+        "width": 390,
+        "id": "first-visit-notice",
+        "overflow": 0
+      },
+      {
+        "width": 390,
+        "id": "shift-handover-card",
+        "overflow": 0
+      },
+      {
+        "width": 390,
+        "id": "opening-card",
+        "overflow": 0
+      },
+      {
+        "width": 390,
+        "id": "closing-card",
+        "overflow": 0
+      },
+      {
+        "width": 390,
+        "id": "daily-prep",
+        "overflow": 0
+      },
+      {
+        "width": 1280,
+        "id": "first-visit-notice",
+        "overflow": 0
+      },
+      {
+        "width": 1280,
+        "id": "shift-handover-card",
+        "overflow": 0
+      },
+      {
+        "width": 1280,
+        "id": "opening-card",
+        "overflow": 0
+      },
+      {
+        "width": 1280,
+        "id": "closing-card",
+        "overflow": 0
+      },
+      {
+        "width": 1280,
+        "id": "daily-prep",
+        "overflow": 0
+      }
+    ],
+    "links": [
+      {
+        "href": "../../%ED%8F%AC%ED%86%A0%EB%B6%80%EC%8A%A4_%EC%84%A4%EA%B3%84.md",
+        "exists": true
+      },
+      {
+        "href": "WC-M_%EB%82%A8%EC%9E%90%ED%99%94%EC%9E%A5%EC%8B%A4_20260930.png",
+        "exists": true
+      },
+      {
+        "href": "../%ED%8F%89%EB%A9%B4%EB%8F%84_20260929/SYNK_%EB%82%A8%EB%85%80%ED%99%94%EC%9E%A5%EC%8B%A4_6%EC%95%88.png",
+        "exists": true
+      },
+      {
+        "href": "WC-F_%EC%97%AC%EC%9E%90%ED%99%94%EC%9E%A5%EC%8B%A4_20260930.png",
+        "exists": true
+      },
+      {
+        "href": "../%ED%8F%89%EB%A9%B4%EB%8F%84_20260929/%EA%B3%B5%EA%B0%84%EA%B3%BC_%ED%8E%B8%EC%9D%98%EC%8B%9C%EC%84%A4_%EC%A2%8C%ED%91%9C_6%EC%95%88.json",
+        "exists": true
+      },
+      {
+        "href": "../../%EC%A0%95%EB%B3%B8/SYNK%20LAB/About%20Syestem/SYNK_%EB%A6%AC%EB%9D%BC%EC%9D%B4%ED%8C%85_v2/05_%EC%9A%B4%EC%98%81_%EC%8B%9C%EC%8A%A4%ED%85%9C.txt",
+        "exists": true
+      },
+      {
+        "href": "../../%EC%A0%95%EB%B3%B8/SYNK%20LAB/About%20Syestem/SYNK_%EB%A6%AC%EB%9D%BC%EC%9D%B4%ED%8C%85_v2/04_SYNK_%ED%81%AC%EB%A3%A8_%ED%95%B8%EB%93%9C%EB%B6%81.txt",
+        "exists": true
+      },
+      {
+        "href": "../../%EC%A0%95%EB%B3%B8/SYNK%20LAB/About%20Syestem/SYNK_%EB%A6%AC%EB%9D%BC%EC%9D%B4%ED%8C%85_v2/06_%EB%B9%84%ED%92%88_%EC%B2%B4%ED%81%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8.txt",
+        "exists": true
+      },
+      {
+        "href": "../%EC%9E%85%EC%B2%B4%EA%B0%9C%EB%85%90_20260929/synk-academy-3d-preview.html",
+        "exists": true
+      },
+      {
+        "href": "../%EB%B0%A9%EB%B3%84_%EC%9D%B8%ED%85%8C%EB%A6%AC%EC%96%B4_%EB%94%94%EC%9E%90%EC%9D%B8_20260929.md",
+        "exists": true
+      },
+      {
+        "href": "../%ED%8F%89%EB%A9%B4%EB%8F%84_20260929/%EA%B3%B5%EA%B0%84%EA%B3%BC_%EC%B4%AC%EC%98%81_%ED%86%B5%ED%95%A9%EC%84%A4%EA%B3%84.md",
+        "exists": true
+      },
+      {
+        "href": "README.md",
+        "exists": true
+      },
+      {
+        "href": "../../%EC%A0%95%EB%B3%B8/SYNK%20LAB/About%20Syestem/SYNK_%EB%A6%AC%EB%9D%BC%EC%9D%B4%ED%8C%85_v2/07_SYNK_%EB%A9%94%EC%9D%B8%EB%A3%B8_%EC%9D%B8%ED%85%8C%EB%A6%AC%EC%96%B4.txt",
+        "exists": true
+      }
+    ],
+    "sourceSHA256": "00d56aa4684c5ce7dbea37f360a77ea40b4c45522ed9ef5e63023f6f841f7168",
+    "blankCards": {
+      "opening": 6,
+      "closing": 6,
+      "firstVisitFields": 6,
+      "preparationBundles": 5,
+      "complete": false
+    },
+    "visualReview": {
+      "checkedAt": "2026-09-30T16:50:23.431Z",
+      "method": "Direct inspection of generated screenshot pixels",
+      "images": [
+        "하루운영-390-first-visit-notice.png",
+        "하루운영-390-closing-card.png",
+        "하루운영-1280-staff.png",
+        "하루운영-390-student.png",
+        "하루운영-1280-daily-prep.png",
+        "하루운영-390-opening-card.png"
+      ],
+      "result": "Labels and body text readable; blank fields and unchecked design cards visible; no clipping observed. Not physical print or site verification."
+    }
+  }
+}

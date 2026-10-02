@@ -1,0 +1,391 @@
+{
+  "fragmentBytes": 848448,
+  "screens": [
+    {
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 7,
+      "labels": [
+        {
+          "text": "큰 강의실 A",
+          "fontSize": 12
+        },
+        {
+          "text": "20.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "B 8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "C 8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "D · 8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실 · 8자리",
+          "fontSize": 12
+        },
+        {
+          "text": "8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "상담실",
+          "fontSize": 12
+        },
+        {
+          "text": "3.2평",
+          "fontSize": 12
+        },
+        {
+          "text": "포토부스",
+          "fontSize": 12
+        },
+        {
+          "text": "2.7평",
+          "fontSize": 12
+        },
+        {
+          "text": "각 교실 개인 책상 16개",
+          "fontSize": 12
+        },
+        {
+          "text": "E",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "E",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "E",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "E",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도 · 폭 1.6 m 가정",
+          "fontSize": 12
+        },
+        {
+          "text": "출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "19.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "13.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ]
+    },
+    {
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 7,
+      "labels": [
+        {
+          "text": "A · 20.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "B",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "D",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실",
+          "fontSize": 12
+        },
+        {
+          "text": "8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "상담",
+          "fontSize": 12
+        },
+        {
+          "text": "포토",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도",
+          "fontSize": 12
+        },
+        {
+          "text": "출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "19.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ]
+    },
+    {
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 7,
+      "labels": [
+        {
+          "text": "A · 20.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "B",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "D",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실",
+          "fontSize": 12
+        },
+        {
+          "text": "8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "상담",
+          "fontSize": 12
+        },
+        {
+          "text": "포토",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도",
+          "fontSize": 12
+        },
+        {
+          "text": "출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "19.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ]
+    }
+  ],
+  "interaction": {
+    "selected": "office",
+    "detail": "사무실 · 8.3평 · 6.70 × 4.10 m · 상주 6~8명 · 개인 업무 책상 8자리"
+  },
+  "errors": [],
+  "cameraInteraction": "작은 강의실 D · 8.3평 · 6.70 × 4.10 m · 개인 책상 16개 · TV/전자칠판은 왼쪽 벽 · 카메라 → 강사 상반신 · TV/전자칠판 자료는 직접 캡처",
+  "areas": {
+    "rooms": 195.195,
+    "corridor": 29.76,
+    "wall": 22.045000000000005,
+    "outline": 247
+  },
+  "studentDesks": {
+    "A": 16,
+    "B": 16,
+    "C": 16,
+    "D": 16
+  },
+  "doorFurnitureCheck": "No intersections in the schematic coordinates",
+  "cameras": [
+    {
+      "id": "C-A",
+      "room": "A",
+      "planDistance": 2.1,
+      "mount": "중앙통로 상부 고정 후보"
+    },
+    {
+      "id": "C-B",
+      "room": "B",
+      "planDistance": 2.1,
+      "mount": "중앙통로 상부 고정 후보"
+    },
+    {
+      "id": "C-C",
+      "room": "C",
+      "planDistance": 2.1,
+      "mount": "중앙통로 상부 고정 후보"
+    },
+    {
+      "id": "C-D",
+      "room": "D",
+      "planDistance": 2.1,
+      "mount": "중앙통로 상부 고정 후보"
+    }
+  ],
+  "teachers": [
+    {
+      "room": "A",
+      "x": 5.2,
+      "y": 1.15,
+      "faces": "+y",
+      "role": "설명 기준 위치; 화면 터치 중 얼굴 정면 보장 안 됨"
+    },
+    {
+      "room": "B",
+      "x": 12.425,
+      "y": 1.15,
+      "faces": "+y",
+      "role": "설명 기준 위치; 화면 터치 중 얼굴 정면 보장 안 됨"
+    },
+    {
+      "room": "C",
+      "x": 16.725,
+      "y": 1.15,
+      "faces": "+y",
+      "role": "설명 기준 위치; 화면 터치 중 얼굴 정면 보장 안 됨"
+    },
+    {
+      "room": "D",
+      "x": 1.15,
+      "y": 10.75,
+      "faces": "+x",
+      "role": "설명 기준 위치; 화면 터치 중 얼굴 정면 보장 안 됨"
+    }
+  ],
+  "displayCount": 4,
+  "planSightline": "No furniture footprint crossing; mounting height and real occlusion untested"
+}

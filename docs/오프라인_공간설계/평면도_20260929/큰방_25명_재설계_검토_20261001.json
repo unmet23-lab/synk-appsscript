@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-01",
+  "status": "학생25명 동시 댄스 수용 요구 반영 / 새 면적·배치 제안 / 실측·운영·허가·견적 전",
+  "userRequirement": "너무 인원배치가 안되는데?25명 수용이 되어야하는데말이야.",
+  "countAssumption": "학생25명+강사1명으로 산정.25명이 강사 포함 총인원인지 별도 확정되지 않았으므로 보수적으로26명으로 검토.",
+  "source": "docs/오프라인_공간설계/평면도_20260929/공간과_편의시설_좌표_6안.json",
+  "sourceSha256": "ae5a0a4ecbaefa66e85a9bce379077dcb3eab4de2be878892d36c84b6d3f9bde",
+  "supersedes": "20평 큰방/8~10명 댄스 운영 권고와 그 전제의 전체90평 적정 판단.6안과 이전 예산은 이력 기준으로 남김.",
+  "prior": {
+    "modelOutlineM2": 267.9,
+    "mainRoomM2": 66,
+    "remainingOtherModelAreaM2": 201.89999999999998
+  },
+  "proposal": {
+    "widthM": 11,
+    "depthM": 13.2,
+    "areaM2": 145.2,
+    "pyeong": 43.923,
+    "students": 25,
+    "teachers": 1,
+    "studentRows": 5,
+    "studentColumns": 5,
+    "cellPitchM": 2,
+    "studentZone": {
+      "widthM": 10,
+      "depthM": 10,
+      "areaM2": 100
+    },
+    "teacherFrontDepthM": 2,
+    "rearReservedDepthM": 1.2,
+    "sideAllowanceEachM": 0.5,
+    "externalFurnitureAndDisplayStorageM2Range": [
+      8,
+      10
+    ],
+    "limitation": "2m 격자와 부속 여유는 비교용 설계 가정. 모든 안무의 안전·허가·개폐문·장비/가구 적재를 검증한 평면이 아니다. 출입·설비·실사용에 따라 면적과 치수를 재조정한다."
+  },
+  "cases": [
+    {
+      "mainRoomPyeong": 40,
+      "mainRoomM2": 132.2314,
+      "unchangedOtherModelAreaM2": 201.9,
+      "externalStorageM2Range": [
+        8,
+        10
+      ],
+      "additionalWallsAndCirculationM2Range": [
+        4,
+        8
+      ],
+      "totalModelAreaM2Range": [
+        346.1314,
+        352.1314
+      ],
+      "totalModelPyeongRange": [
+        104.7048,
+        106.5198
+      ]
+    },
+    {
+      "mainRoomPyeong": 45,
+      "mainRoomM2": 148.7603,
+      "unchangedOtherModelAreaM2": 201.9,
+      "externalStorageM2Range": [
+        8,
+        10
+      ],
+      "additionalWallsAndCirculationM2Range": [
+        4,
+        8
+      ],
+      "totalModelAreaM2Range": [
+        362.6603,
+        368.6603
+      ],
+      "totalModelPyeongRange": [
+        109.7048,
+        111.5198
+      ]
+    },
+    {
+      "mainRoomPyeong": 50,
+      "mainRoomM2": 165.2893,
+      "unchangedOtherModelAreaM2": 201.9,
+      "externalStorageM2Range": [
+        8,
+        10
+      ],
+      "additionalWallsAndCirculationM2Range": [
+        4,
+        8
+      ],
+      "totalModelAreaM2Range": [
+        379.1893,
+        385.1893
+      ],
+      "totalModelPyeongRange": [
+        114.7048,
+        116.5198
+      ]
+    }
+  ],
+  "recommendedModelAreaM2": 363.1,
+  "recommendedModelAreaPyeong": 109.8378,
+  "optionalComfortOtherRoomIncrements": {
+    "smallRoomsEach33M2": 14.32,
+    "office26_4M2": 5.6,
+    "managementM2": 2
+  },
+  "occupancyScenarios": [
+    {
+      "name": "A댄스25+B/C/D각16",
+      "students": 73,
+      "officeStaff": 8,
+      "teachersIfDistinct": 4,
+      "totalIfDistinct": 85,
+      "totalIfTeachersIncludedInOffice": 81
+    },
+    {
+      "name": "A댄스25+B/C/D각12검토",
+      "students": 61,
+      "officeStaff": 8,
+      "teachersIfDistinct": 4,
+      "totalIfDistinct": 73,
+      "totalIfTeachersIncludedInOffice": 69
+    }
+  ],
+  "references": [
+    {
+      "title": "Sport England Fitness and Exercise Spaces, 2008, p25",
+      "url": "https://sportengland-production-files.s3.eu-west-2.amazonaws.com/s3fs-public/fitness-and-exercise-spaces.pdf#page=26",
+      "use": "12~15인 연습실9×9m와 전문스튜디오 유형별 면적/높이·별도 보관 요구를 국제 계획 참고로 확인. 우리25명 정원 또는 몽골 법정 기준으로 환산하지 않음."
+    }
+  ],
+  "budgetStatus": "기존267.9㎡·A66㎡의 공사/비품 합계는 새25명 요구를 반영한 견적이 아니다. 면적비례로 총액을 곱하지 않고 바닥/거울/커튼/조명/차음/환기/냉난방/가구/수납별로 재산정 필요.",
+  "modelStatus": "기존6안 전체3D는25명용으로 재구성되지 않음. 새 도식은 큰방 면적 비교와25개 위치 확인용이며 전체 건물CAD가 아님."
+}

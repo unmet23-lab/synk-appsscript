@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-02",
+  "results": [
+    {
+      "width": 736,
+      "mode": "dance",
+      "students": 25,
+      "teacher": 1,
+      "desks": 0,
+      "chairs": 0,
+      "summary": "합친 약44평 · 학생25명 + 강사1명 · 다른 한국어 수업 종료",
+      "overflow": false,
+      "labelsOutside": [],
+      "minLabelPx": 12,
+      "pressed": "dance"
+    },
+    {
+      "width": 736,
+      "mode": "lecture",
+      "students": 0,
+      "teacher": 0,
+      "desks": 32,
+      "chairs": 32,
+      "summary": "A16석 + B16석 · 말소리 차음 확인 후 독립 수업",
+      "overflow": false,
+      "labelsOutside": [],
+      "minLabelPx": 12,
+      "pressed": "lecture"
+    },
+    {
+      "width": 390,
+      "mode": "dance",
+      "students": 25,
+      "teacher": 1,
+      "desks": 0,
+      "chairs": 0,
+      "summary": "합친 약44평 · 학생25명 + 강사1명 · 다른 한국어 수업 종료",
+      "overflow": false,
+      "labelsOutside": [],
+      "minLabelPx": 12,
+      "pressed": "dance"
+    },
+    {
+      "width": 390,
+      "mode": "lecture",
+      "students": 0,
+      "teacher": 0,
+      "desks": 32,
+      "chairs": 32,
+      "summary": "A16석 + B16석 · 말소리 차음 확인 후 독립 수업",
+      "overflow": false,
+      "labelsOutside": [],
+      "minLabelPx": 12,
+      "pressed": "lecture"
+    },
+    {
+      "width": 320,
+      "mode": "dance",
+      "students": 25,
+      "teacher": 1,
+      "desks": 0,
+      "chairs": 0,
+      "summary": "합친 약44평 · 학생25명 + 강사1명 · 다른 한국어 수업 종료",
+      "overflow": false,
+      "labelsOutside": [],
+      "minLabelPx": 12,
+      "pressed": "dance"
+    },
+    {
+      "width": 320,
+      "mode": "lecture",
+      "students": 0,
+      "teacher": 0,
+      "desks": 32,
+      "chairs": 32,
+      "summary": "A16석 + B16석 · 말소리 차음 확인 후 독립 수업",
+      "overflow": false,
+      "labelsOutside": [],
+      "minLabelPx": 12,
+      "pressed": "lecture"
+    }
+  ],
+  "keyboard": true,
+  "stateRestore": true,
+  "darkReducedMotion": true,
+  "sourceHashMatches": true,
+  "errors": [],
+  "scope": "Source arithmetic, labels, responsive display and state interactions only; no actual movement, acoustic, site, construction, legal capacity or cost verification."
+}

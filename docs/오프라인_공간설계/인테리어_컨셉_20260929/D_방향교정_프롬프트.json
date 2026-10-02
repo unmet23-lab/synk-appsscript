@@ -1,0 +1,6 @@
+{
+  "method": "built-in image_gen edit",
+  "input": "exec-e294501f-4e9a-4b26-a4d1-5f3148ba1dca.png",
+  "output": "D_작은강의실.png",
+  "prompt": "Edit this classroom rendering to fix a critical layout mistake: the seats MUST face the digital screen on the LEFT/WEST wall. Keep the screen on the LEFT wall, the white room, grey fabric acoustic panels, pale oak and small yellow stitching. ROTATE ALL desks and ALL chairs so students sitting in any chair would look toward the LEFT wall screen. The chair backs must therefore face toward the RIGHT/EAST side of room; show desks/chairs in side profile relative to this rear-northeast camera. Arrange sixteen clearly separate single-person desks in four rows progressing from screen to opposite wall, each with one chair. A main aisle runs perpendicular from left screen toward right rear. NO desks or chairs should be aligned toward the blank far wall. NO shared tabletops. Replace the ceiling white projector-like object with a small BLACK teaching video camera angled toward the WEST teacher position, no projector. Preserve wall finish, ceiling neutral light, separate white airpurifier and humidifier, and the overall room. If needed change camera slightly to show left screen AND side-facing desks clearly. No people, no writing or logos. Priority is unambiguous desk/chair direction and separate individual desks."
+}

@@ -1,0 +1,959 @@
+{
+  "fragmentBytes": 957330,
+  "geometry": {
+    "areas": {
+      "rooms": 206.82250000000002,
+      "corridors": 36.00000000000001,
+      "wallAndDoorJunctionResidual": 25.07749999999995,
+      "total": 267.9,
+      "pyeong": 81.03975303899072
+    },
+    "studentDesks": {
+      "A": 16,
+      "B": 16,
+      "C": 16,
+      "D": 16
+    },
+    "officeDesks": 8,
+    "appliances": {
+      "AP": 7,
+      "H": 7,
+      "status": "Footprints only; manufacturer service clearance untested"
+    },
+    "vrFootprints": "Inside rooms; no pair overlap; no normal-door swing sector overlap",
+    "consultFootprints": "Inside rooms; no pair overlap; no normal-door swing sector overlap",
+    "vrClearZone": {
+      "room": "consult",
+      "kind": "vr-clear",
+      "x": 10.55,
+      "y": 10,
+      "w": 2,
+      "h": 2,
+      "label": "VR 비움 2 × 2 m",
+      "status": "가구 수납 후 바닥 비움 후보; 기기별 안전 경계나 몸·컨트롤러 움직임 여유 검증 아님"
+    },
+    "overheadShelf": "Above folded table; vertical clearance and installation untested",
+    "operations": {
+      "date": "2026-10-01",
+      "floorFixtures": 14,
+      "newFloorFixturesInSupplement": 0,
+      "serviceZones": "제안 바닥가구·문 회전 사각영역·VR 2×2m와 비충돌",
+      "countertopItems": "상판 포함·같은높이 외곽 비충돌, 물병면과 하부컵수거 높이 분리",
+      "containedItems": {
+        "count": 16,
+        "staffCompartments": 24,
+        "staffUnits": 8,
+        "pens": 8,
+        "result": "기존 부모가구 XY·높이 안에 포함. 내부 소품·예약구획 및 기존 상판물품 간 3D 외곽 비충돌. 직원 무릎 후보 구획 비충돌."
+      },
+      "limitations": "외곽 검증만 수행. 판두께·레일·문·열배출·인체/제품 용량·겨울외투 동시 수용·물통 건조능력·실제 배선/배관·정비 동시사용·차음/공조·법규 적합성은 미검증."
+    },
+    "supplement": {
+      "revision": 2,
+      "inventory": [
+        {
+          "id": "LOAN-PENS",
+          "quantity": 8,
+          "unit": "개"
+        },
+        {
+          "id": "LOST-BOX",
+          "quantity": 1,
+          "unit": "개"
+        },
+        {
+          "id": "LIQUID-BIN",
+          "quantity": 1,
+          "unit": "개"
+        },
+        {
+          "id": "TANK-KIT",
+          "quantity": 1,
+          "unit": "세트"
+        },
+        {
+          "id": "LABELS",
+          "quantity": 1,
+          "unit": "세트"
+        }
+      ],
+      "containedItems": 16,
+      "staffCompartments": 24,
+      "volumeCheck": "Inside parent XY and height; no volume collisions; staff knee reserve unoccupied. Schematic only."
+    },
+    "cameraLines": "Classroom centre lines clear of schematic footprints; no optical or 3D occlusion test",
+    "photo": {
+      "frontArea": 3.2249999999999996,
+      "rearArea": 7.955,
+      "nominalPassage": 0.95,
+      "planCameraDistance": 1.4,
+      "status": "Real equipment and group framing untested"
+    },
+    "restrooms": [
+      {
+        "id": "WC-M",
+        "area": 5.32125,
+        "fixtures": [
+          "toilet",
+          "washbasin"
+        ],
+        "turningCircle": 1.5,
+        "doorClearOpening": 0.95,
+        "slidingTravel": [
+          9.9,
+          10.9
+        ],
+        "status": "Schematic clearance only; accessibility compliance and site conditions unverified"
+      },
+      {
+        "id": "WC-F",
+        "area": 5.32125,
+        "fixtures": [
+          "toilet",
+          "washbasin"
+        ],
+        "turningCircle": 1.5,
+        "doorClearOpening": 0.95,
+        "slidingTravel": [
+          11.7,
+          12.7
+        ],
+        "status": "Schematic clearance only; accessibility compliance and site conditions unverified"
+      }
+    ]
+  },
+  "screens": [
+    {
+      "viewport": 780,
+      "room": "all",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 567.359375
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "A",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 548.0625
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "B",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "C",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "D",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "office",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "consult",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "consult",
+      "mode": "consult",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "photo",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "corridor",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 157.40625
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "restrooms",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 9,
+      "svg": {
+        "width": 748,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "all",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 491.671875
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "A",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 453.84375
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "B",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "C",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "D",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 583.984375
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "office",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "consult",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "consult",
+      "mode": "consult",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "photo",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "corridor",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 142.671875
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "restrooms",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 9,
+      "svg": {
+        "width": 608,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "all",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 306.140625
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "A",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 285.5625
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "B",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 543.453125
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "C",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 543.453125
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "D",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 356.34375
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "office",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 464.265625
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "consult",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "consult",
+      "mode": "consult",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "photo",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 615
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "corridor",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 116.359375
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "restrooms",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 9,
+      "svg": {
+        "width": 358,
+        "height": 512.890625
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "all",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 254.1875
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "A",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 238.453125
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "B",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 435.765625
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "C",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 435.765625
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "D",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 292.609375
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "office",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 375.171875
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "consult",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 510.59375
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "consult",
+      "mode": "consult",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 510.59375
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "photo",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 585.703125
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "corridor",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 109
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "restrooms",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 9,
+      "svg": {
+        "width": 288,
+        "height": 412.375
+      },
+      "minSvgFont": 12,
+      "minBodyFont": 12
+    }
+  ],
+  "interactions": [
+    {
+      "room": "consult",
+      "mode": "vr",
+      "counts": {
+        "vr": 1,
+        "chairs": 0,
+        "rack": 1
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "consult",
+      "counts": {
+        "vr": 0,
+        "chairs": 4,
+        "rack": 0
+      }
+    },
+    {
+      "room": "restrooms",
+      "counts": {
+        "toilets": 2,
+        "basins": 2,
+        "doors": 2,
+        "circles": 2
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "vr",
+      "counts": {
+        "vr": 1,
+        "chairs": 0,
+        "rack": 1
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "consult",
+      "counts": {
+        "vr": 0,
+        "chairs": 4,
+        "rack": 0
+      }
+    },
+    {
+      "room": "restrooms",
+      "counts": {
+        "toilets": 2,
+        "basins": 2,
+        "doors": 2,
+        "circles": 2
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "vr",
+      "counts": {
+        "vr": 1,
+        "chairs": 0,
+        "rack": 1
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "consult",
+      "counts": {
+        "vr": 0,
+        "chairs": 4,
+        "rack": 0
+      }
+    },
+    {
+      "room": "restrooms",
+      "counts": {
+        "toilets": 2,
+        "basins": 2,
+        "doors": 2,
+        "circles": 2
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "vr",
+      "counts": {
+        "vr": 1,
+        "chairs": 0,
+        "rack": 1
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "consult",
+      "counts": {
+        "vr": 0,
+        "chairs": 4,
+        "rack": 0
+      }
+    },
+    {
+      "room": "restrooms",
+      "counts": {
+        "toilets": 2,
+        "basins": 2,
+        "doors": 2,
+        "circles": 2
+      }
+    },
+    {
+      "type": "storage-detail",
+      "room": "A",
+      "width": 608,
+      "scrollWidth": 608,
+      "items": 1,
+      "minFont": 12
+    },
+    {
+      "type": "storage-detail",
+      "room": "office",
+      "width": 608,
+      "scrollWidth": 608,
+      "items": 9,
+      "minFont": 12
+    },
+    {
+      "type": "storage-detail",
+      "room": "consult",
+      "width": 608,
+      "scrollWidth": 608,
+      "items": 5,
+      "minFont": 12
+    },
+    {
+      "type": "storage-detail",
+      "room": "photo",
+      "width": 608,
+      "scrollWidth": 608,
+      "items": 2,
+      "minFont": 12
+    },
+    {
+      "type": "storage-detail",
+      "room": "all",
+      "width": 608,
+      "scrollWidth": 608,
+      "items": 0,
+      "minFont": null
+    },
+    {
+      "type": "storage-detail",
+      "room": "corridor",
+      "width": 608,
+      "scrollWidth": 608,
+      "items": 0,
+      "minFont": null
+    },
+    {
+      "type": "storage-detail",
+      "room": "A",
+      "width": 288,
+      "scrollWidth": 288,
+      "items": 1,
+      "minFont": 12
+    },
+    {
+      "type": "storage-detail",
+      "room": "office",
+      "width": 288,
+      "scrollWidth": 288,
+      "items": 9,
+      "minFont": 12
+    },
+    {
+      "type": "storage-detail",
+      "room": "consult",
+      "width": 288,
+      "scrollWidth": 288,
+      "items": 5,
+      "minFont": 12
+    },
+    {
+      "type": "storage-detail",
+      "room": "photo",
+      "width": 288,
+      "scrollWidth": 288,
+      "items": 2,
+      "minFont": 12
+    },
+    {
+      "type": "storage-detail",
+      "room": "all",
+      "width": 288,
+      "scrollWidth": 288,
+      "items": 0,
+      "minFont": null
+    },
+    {
+      "type": "storage-detail",
+      "room": "corridor",
+      "width": 288,
+      "scrollWidth": 288,
+      "items": 0,
+      "minFont": null
+    },
+    {
+      "room": "A",
+      "mode": "dance",
+      "counts": {
+        "AStudentDesks": 0,
+        "tableCarts": 2,
+        "chairStacks": 4
+      }
+    }
+  ],
+  "errors": []
+}

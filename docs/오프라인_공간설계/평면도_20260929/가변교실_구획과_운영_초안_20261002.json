@@ -1,0 +1,844 @@
+{
+  "date": "2026-10-02",
+  "status": "candidate-not-measured-not-construction-not-approved-capacity",
+  "units": "m",
+  "source": {
+    "file": "공간과_편의시설_좌표_6안.json",
+    "sha256": "ae5a0a4ecbaefa66e85a9bce379077dcb3eab4de2be878892d36c84b6d3f9bde",
+    "revision": 6
+  },
+  "confirmed": [
+    "25 students by application per dance session",
+    "develop A+B operable-partition alternative",
+    "four classrooms when closed if speech separation verified"
+  ],
+  "proposedNotConfirmed": [
+    "no overlapping Korean lessons during initial dance sessions",
+    "manual operable partition with plain finish",
+    "one example after last regular lesson"
+  ],
+  "envelope": {
+    "w": 13.2,
+    "h": 11,
+    "area": 145.2,
+    "pyeong": 43.922999999999995
+  },
+  "roomsClosed": [
+    {
+      "id": "A",
+      "x": 0,
+      "y": 0,
+      "w": 8.4,
+      "h": 11,
+      "area": 92.4
+    },
+    {
+      "id": "B",
+      "x": 8.52,
+      "y": 0,
+      "w": 4.68,
+      "h": 11,
+      "area": 51.48
+    }
+  ],
+  "partition": {
+    "x": 8.4,
+    "y": 0,
+    "w": 0.12,
+    "h": 11,
+    "thicknessAssumed": true,
+    "supportAndPocketUnverified": true,
+    "length": 11,
+    "pocketInsideEnvelope": false,
+    "note": "Panel parking to be designed outside clear dance rectangle; pocket area is not yet added or located."
+  },
+  "dance": {
+    "students": 25,
+    "teacherCount": 1,
+    "teacher": {
+      "x": 1,
+      "y": 5.5
+    },
+    "studentZone": {
+      "x": 2,
+      "y": 0.5,
+      "w": 10,
+      "h": 10
+    },
+    "assumedPitch": 2,
+    "studentPositions": [
+      {
+        "id": 1,
+        "x": 3,
+        "y": 1.5
+      },
+      {
+        "id": 2,
+        "x": 3,
+        "y": 3.5
+      },
+      {
+        "id": 3,
+        "x": 3,
+        "y": 5.5
+      },
+      {
+        "id": 4,
+        "x": 3,
+        "y": 7.5
+      },
+      {
+        "id": 5,
+        "x": 3,
+        "y": 9.5
+      },
+      {
+        "id": 6,
+        "x": 5,
+        "y": 1.5
+      },
+      {
+        "id": 7,
+        "x": 5,
+        "y": 3.5
+      },
+      {
+        "id": 8,
+        "x": 5,
+        "y": 5.5
+      },
+      {
+        "id": 9,
+        "x": 5,
+        "y": 7.5
+      },
+      {
+        "id": 10,
+        "x": 5,
+        "y": 9.5
+      },
+      {
+        "id": 11,
+        "x": 7,
+        "y": 1.5
+      },
+      {
+        "id": 12,
+        "x": 7,
+        "y": 3.5
+      },
+      {
+        "id": 13,
+        "x": 7,
+        "y": 5.5
+      },
+      {
+        "id": 14,
+        "x": 7,
+        "y": 7.5
+      },
+      {
+        "id": 15,
+        "x": 7,
+        "y": 9.5
+      },
+      {
+        "id": 16,
+        "x": 9,
+        "y": 1.5
+      },
+      {
+        "id": 17,
+        "x": 9,
+        "y": 3.5
+      },
+      {
+        "id": 18,
+        "x": 9,
+        "y": 5.5
+      },
+      {
+        "id": 19,
+        "x": 9,
+        "y": 7.5
+      },
+      {
+        "id": 20,
+        "x": 9,
+        "y": 9.5
+      },
+      {
+        "id": 21,
+        "x": 11,
+        "y": 1.5
+      },
+      {
+        "id": 22,
+        "x": 11,
+        "y": 3.5
+      },
+      {
+        "id": 23,
+        "x": 11,
+        "y": 5.5
+      },
+      {
+        "id": 24,
+        "x": 11,
+        "y": 7.5
+      },
+      {
+        "id": 25,
+        "x": 11,
+        "y": 9.5
+      }
+    ],
+    "instructorZone": {
+      "x": 0,
+      "y": 0,
+      "w": 2,
+      "h": 11
+    },
+    "rearCandidate": {
+      "x": 12,
+      "y": 0,
+      "w": 1.2,
+      "h": 11
+    },
+    "note": "2 m pitch and 0.5 m side allowances are comparison assumptions, not choreography or egress approval."
+  },
+  "lecture": {
+    "desks": [
+      {
+        "id": "A-1",
+        "room": "A",
+        "x": 2.3,
+        "y": 1.4,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 2.85,
+          "y": 1.5,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-1",
+        "room": "B",
+        "x": 8.8,
+        "y": 1.8,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 8.9,
+          "y": 2.35,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-2",
+        "room": "A",
+        "x": 2.3,
+        "y": 3.1,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 2.85,
+          "y": 3.2,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-2",
+        "room": "B",
+        "x": 9.55,
+        "y": 1.8,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 9.65,
+          "y": 2.35,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-3",
+        "room": "A",
+        "x": 2.3,
+        "y": 6.4,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 2.85,
+          "y": 6.5,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-3",
+        "room": "B",
+        "x": 11.1,
+        "y": 1.8,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 11.2,
+          "y": 2.35,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-4",
+        "room": "A",
+        "x": 2.3,
+        "y": 8.1,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 2.85,
+          "y": 8.2,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-4",
+        "room": "B",
+        "x": 11.85,
+        "y": 1.8,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 11.95,
+          "y": 2.35,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-5",
+        "room": "A",
+        "x": 3.6999999999999997,
+        "y": 1.4,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 4.25,
+          "y": 1.5,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-5",
+        "room": "B",
+        "x": 8.8,
+        "y": 3.2,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 8.9,
+          "y": 3.75,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-6",
+        "room": "A",
+        "x": 3.6999999999999997,
+        "y": 3.1,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 4.25,
+          "y": 3.2,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-6",
+        "room": "B",
+        "x": 9.55,
+        "y": 3.2,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 9.65,
+          "y": 3.75,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-7",
+        "room": "A",
+        "x": 3.6999999999999997,
+        "y": 6.4,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 4.25,
+          "y": 6.5,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-7",
+        "room": "B",
+        "x": 11.1,
+        "y": 3.2,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 11.2,
+          "y": 3.75,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-8",
+        "room": "A",
+        "x": 3.6999999999999997,
+        "y": 8.1,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 4.25,
+          "y": 8.2,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-8",
+        "room": "B",
+        "x": 11.85,
+        "y": 3.2,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 11.95,
+          "y": 3.75,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-9",
+        "room": "A",
+        "x": 5.1,
+        "y": 1.4,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 5.65,
+          "y": 1.5,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-9",
+        "room": "B",
+        "x": 8.8,
+        "y": 4.6,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 8.9,
+          "y": 5.15,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-10",
+        "room": "A",
+        "x": 5.1,
+        "y": 3.1,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 5.65,
+          "y": 3.2,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-10",
+        "room": "B",
+        "x": 9.55,
+        "y": 4.6,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 9.65,
+          "y": 5.15,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-11",
+        "room": "A",
+        "x": 5.1,
+        "y": 6.4,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 5.65,
+          "y": 6.5,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-11",
+        "room": "B",
+        "x": 11.1,
+        "y": 4.6,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 11.2,
+          "y": 5.15,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-12",
+        "room": "A",
+        "x": 5.1,
+        "y": 8.1,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 5.65,
+          "y": 8.2,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-12",
+        "room": "B",
+        "x": 11.85,
+        "y": 4.6,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 11.95,
+          "y": 5.15,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-13",
+        "room": "A",
+        "x": 6.499999999999999,
+        "y": 1.4,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 7.049999999999999,
+          "y": 1.5,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-13",
+        "room": "B",
+        "x": 8.8,
+        "y": 5.999999999999999,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 8.9,
+          "y": 6.549999999999999,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-14",
+        "room": "A",
+        "x": 6.499999999999999,
+        "y": 3.1,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 7.049999999999999,
+          "y": 3.2,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-14",
+        "room": "B",
+        "x": 9.55,
+        "y": 5.999999999999999,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 9.65,
+          "y": 6.549999999999999,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-15",
+        "room": "A",
+        "x": 6.499999999999999,
+        "y": 6.4,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 7.049999999999999,
+          "y": 6.5,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-15",
+        "room": "B",
+        "x": 11.1,
+        "y": 5.999999999999999,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 11.2,
+          "y": 6.549999999999999,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "A-16",
+        "room": "A",
+        "x": 6.499999999999999,
+        "y": 8.1,
+        "w": 0.45,
+        "h": 0.6,
+        "facing": "west",
+        "chair": {
+          "x": 7.049999999999999,
+          "y": 8.2,
+          "w": 0.4,
+          "h": 0.4
+        }
+      },
+      {
+        "id": "B-16",
+        "room": "B",
+        "x": 11.85,
+        "y": 5.999999999999999,
+        "w": 0.6,
+        "h": 0.45,
+        "facing": "north",
+        "chair": {
+          "x": 11.95,
+          "y": 6.549999999999999,
+          "w": 0.4,
+          "h": 0.4
+        }
+      }
+    ],
+    "seatsA": 16,
+    "seatsB": 16,
+    "totalMovableDesks": 32,
+    "totalMovableChairs": 32,
+    "note": "Chair pullout, teacher movement, aisle and views require real product and occupied-seat tests."
+  },
+  "mirror": {
+    "wall": "west",
+    "length": 11,
+    "curtain": true
+  },
+  "displays": [
+    {
+      "room": "A",
+      "x": 0.3,
+      "y": 5.5,
+      "facing": "east",
+      "kind": "mobile-screen",
+      "stowedExternallyForDance": true
+    },
+    {
+      "room": "B",
+      "x": 10.86,
+      "y": 0.12,
+      "facing": "south",
+      "kind": "wall-screen",
+      "clearancesUnverified": true
+    }
+  ],
+  "doorCandidates": [
+    {
+      "room": "A",
+      "side": "south",
+      "start": 6.7,
+      "width": 1.1
+    },
+    {
+      "room": "B",
+      "side": "south",
+      "start": 10.2,
+      "width": 1.1
+    }
+  ],
+  "cameraCandidates": [
+    {
+      "room": "A",
+      "x": 6.6,
+      "y": 5.5,
+      "facing": "west"
+    },
+    {
+      "room": "B",
+      "x": 10.86,
+      "y": 7.6,
+      "facing": "north"
+    }
+  ],
+  "externalStorage": {
+    "areaRange": [
+      12,
+      16
+    ],
+    "productsAndFitUnverified": true,
+    "content": [
+      "32 folding desks",
+      "32 stacking chairs",
+      "A mobile screen",
+      "access and turning"
+    ],
+    "note": "Does not establish a fit. Panel pocket and coats/equipment may need extra area."
+  },
+  "areaComparison": {
+    "existingOutlineArea": 267.9,
+    "oldA": 66,
+    "oldB": 27.39,
+    "otherIncludingOldSharedWall": 174.51,
+    "oldSharedWallArea": 0.9899999999999999,
+    "combinedEnvelopeArea": 145.2,
+    "externalStorageArea": [
+      12,
+      16
+    ],
+    "additionalWallsCirculationArea": [
+      4,
+      8
+    ],
+    "totalBeforeSharedWallCorrection": [
+      335.71,
+      343.71
+    ],
+    "totalAfterSharedWallCorrection": [
+      334.71999999999997,
+      342.71999999999997
+    ],
+    "pyeongAfterSharedWallCorrection": [
+      101.2528,
+      103.6728
+    ],
+    "reportedApproximateRange": "102-104 pyeong comparison only; actual pocket, outer footprint and site unverified"
+  },
+  "scheduleExample": [
+    {
+      "start": "18:00",
+      "end": "19:30",
+      "phase": "Korean",
+      "rooms": "A/B/C/D",
+      "minutes": 90
+    },
+    {
+      "start": "19:30",
+      "end": "19:50",
+      "phase": "Prepare A+B",
+      "rooms": "A+B; C/D supervised waiting only after release",
+      "minutes": 20
+    },
+    {
+      "start": "19:50",
+      "end": "20:30",
+      "phase": "Dance",
+      "rooms": "A+B; no Korean lessons",
+      "minutes": 40
+    },
+    {
+      "start": "20:30",
+      "end": "21:00",
+      "phase": "Restore and handoff",
+      "rooms": "A+B",
+      "minutes": 30
+    }
+  ],
+  "occupancyScenarios": {
+    "sameStudents": {
+      "regularPeakStudents": 64,
+      "dancersRemain": 25,
+      "depart": 39
+    },
+    "newStudentsOverlap": {
+      "regular": 64,
+      "incomingDance": 25,
+      "students": 89
+    },
+    "staffAndVisitorsExcluded": true
+  },
+  "implementationLimits": [
+    "not a replacement whole-building plan",
+    "partition support/pocket unverified",
+    "no windows/HVAC/egress/toilet fixture adequacy approval",
+    "no sound/impact tests or local quotes",
+    "current 6th concept 3D and budget preserved as history",
+    "no app reservation implementation"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "date": "2026-09-30",
+  "method": "built-in image_gen",
+  "prompts": [
+    {
+      "id": "B",
+      "src": "B_작은강의실.png",
+      "prompt": "Edit this exact classroom image for final architectural concept review. Preserve the composition, room shell, TV, all sixteen individual desks and chairs in four columns and four rows with central aisle, blue thin stitched accents, wood, white walls, floor, lights, rear air purifier and humidifier. Two targeted corrections only: (1) rotate the single ceiling-mounted black teaching camera 180 degrees so its optical lens points AWAY from the viewer toward the TV wall and teacher teaching area. Show its rear housing to us, no round lens facing the viewer. Keep ceiling mount and height. (2) replace the decorative swirling wallpaper-like texture inside grey acoustic panels with clean smooth fine plain-woven light neutral-grey fabric, subtle realistic fibers, no floral/swirling pattern. Retain existing panel boundaries and thin blue seam. Realistic clean adult academy. No extra furniture or text."
+    },
+    {
+      "id": "C",
+      "src": "C_작은강의실.png",
+      "prompt": "Edit this exact classroom image for final architectural concept review. Preserve the composition, room shell, TV, all sixteen individual desks and chairs in four columns and four rows with central aisle, green thin stitched accents, wood, white walls, floor, lights, rear air purifier and humidifier. Targeted corrections: (1) rotate the single ceiling-mounted black teaching camera 180 degrees so its lens points AWAY from the viewer toward the TV wall and teacher teaching area. Show its rear housing to us, no round lens facing the viewer. Keep ceiling mount and height. (2) replace decorative swirling wallpaper-like textures inside grey acoustic panels with clean fine plain-woven light neutral-grey fabric, no floral/swirling pattern. Retain panel boundaries/green seam. (3) replace the three childlike globe/books/plant illustration posters on left rail with three restrained adult Korean culture photographic prints, architecture and everyday street scenes, same aligned sizes, no text. No other changes."
+    },
+    {
+      "id": "D",
+      "src": "D_작은강의실.png",
+      "prompt": "Edit this exact classroom image for final architectural concept review. Preserve the existing room viewpoint, LEFT-wall TV, all desk and chair locations and their existing LEFT-facing teaching orientation, room door on right, lighting, wood, floor, white walls, devices, thin butter-yellow panel seam. Correct the ceiling teaching camera: rotate its camera head to point horizontally LEFT toward the left-wall TV/teacher area, matching the students view direction. We should see a side/rear camera housing, not a lens looking at the viewer or the blank far wall. Keep the mount short and attached to the ceiling. Also replace decorative swirly wallpaper texture inside all grey acoustic panels with realistic smooth fine plain-woven light neutral-grey fabric, no ornamental pattern. Preserve panel boundaries and subtle yellow seam. No extra furniture, people or text."
+    },
+    {
+      "id": "P",
+      "src": "P_포토와커피.png",
+      "prompt": "Edit this exact photobooth-and-coffee room architectural concept. Preserve room geometry, coffee machine and counter in front right, separate partition, unobstructed left aisle, neutral grey roll background at far end, folded coral curtain, wall lighting, printer shelf. Correct the small black camera and its touchscreen mounted on partition: aim camera lens straight into the BACK photo area toward the far grey background (away from us), not sideways toward the left wall. Display must also face a user standing in front of the background: from our front-of-room viewpoint we see BACK housings of camera and touchscreen with concealed cable routing. Rotate wall portrait light panels inward toward person standing before background. Retain camera fixed on partition, no tripod, no floor stand. Simplify the large right-wall grey panel to clean fine plain-woven light-neutral-grey fabric, no decorative swirling pattern. Remove the small plant sitting on top of the white air purifier at rear left so its air outlet remains free. Keep the air purifier itself. Do not change the rest; natural neutral white lighting and polished adult academy interior."
+    },
+    {
+      "id": "V",
+      "src": "V_상담과VR.png",
+      "prompt": "Use case precise-object-edit. Refine this same two-panel architectural concept image of ONE narrow consultation/VR room, preserving both viewpoints, room geometry, door position, floor, lighting, left consultation setup with FOUR folding chairs and table, right stored-table-and-FOUR-folded-chairs setup leaving open floor, purifier and humidifier in both foreground corners. Make finishes consistent and calmer: replace all swirly grey wall fabric with clean subtle fine plain-woven light-grey fabric; replace exposed bright metallic table/chair legs with thin matte charcoal finish, retain physically foldable geometry, compact padded neutral-grey seats. Make the wall equipment cabinet simple clean white with a restrained light-oak door face and a small ventilation zone, same dimensions/location in both panels. In RIGHT VR-ready panel, fully CLOSE the cabinet door, with headset safely inside, no protruding door. Stored folding table and chair rack should be tidy, secured, matching left furniture construction. Keep all required hardware plausible, not ornate. Preserve realistic compact room and neutral white lighting. Do not add mat, rug, room camera, people, furniture, plants or text."
+    },
+    {
+      "id": "H",
+      "src": "H_복도와입구.png",
+      "prompt": "Use case precise-object-edit. Polish this existing academy corridor photo concept to remove clutter and hotel-like repetition while keeping white walls, neutral-grey floor and lower wall finish, same restrained oak doors, ceiling lights, narrow continuous passage with no lobby/furniture. Remove the oversized blank glass plaque near left. Reduce small framed art to just TWO intentional groups of TWO aligned frames along corridor, adult Korean everyday culture photographs, plenty of blank white wall elsewhere, no childlike botanical clip art. Use simple legible black letter/word room identifiers next to doors with one tiny blue/green/yellow/coral fabric tab, not blank grey plaques. Labels only A, B, C on left-side classrooms and D, OFFICE, VR, PHOTO for right-side rooms, no added doors, can be partly hidden in perspective. Reduce excessive repeated distant doorways to a credible seven-room corridor, replace the final end door with plain white end wall. Change the visible orange wall inside front-left opening to neutral white; remove the visible coffee setup there so it reads as a classroom entry, no orange room. No loose entry rug; continuous floor. Keep natural neutral lighting, no beige tint, straight verticals, no luxury embellishment. This is a finishing/material concept, not a precise dimension drawing."
+    },
+    {
+      "id": "A",
+      "src": "메인룸_수업과촬영_컨셉.png",
+      "prompt": "Use case precise-object-edit. Keep this exact two-panel SYNK main classroom / filming room concept unchanged except a small camera cleanup in the LEFT classroom panel. Remove the little black webcam perched on top of the mobile digital display, leaving a clean plain screen top edge. Keep the ONE ceiling-mounted teaching camera in that panel and orient its lens AWAY from viewer toward the display/teacher at the far curtain wall; only rear housing visible to viewer. Preserve the number and position of desks, chairs, screen stand, curtain, lighting, floor and storage. RIGHT filming panel must remain unchanged including exact coral lowercase synk wordmark shape, wall, lighting and all furniture. Do not invent equipment or add text."
+    },
+    {
+      "id": "B",
+      "src": "C:\\Users\\q1212\\.codex\\generated_images\\01a0e247-e6df-7b72-af5d-20238b73ce68\\exec-77f884ab-55f4-4426-ac3d-89e29251a1ba.png",
+      "prompt": "Material replacement edit, VERY IMPORTANT: the existing decorative swirling/worm-like patterned grey panels are wrong. REMOVE their current fabric surface entirely and REPLACE every grey wall-panel face with UNIFORM SOLID very pale grey matte acoustic felt, visually almost flat from this viewing distance, subtle isotropic microfibers only at macro scale. No decorative pattern, no swirls, no loops, no speckles, no pronounced weave, no distressed or embossed texture. Smooth clean contemporary architectural finish, significantly lighter than existing grey. Keep panel outlines, existing narrow colored seam, prints and their placements. Preserve the corrected ceiling camera with its BACK to us pointing to teacher/TV, every desk/chair and central aisle. Absolutely everything else in the referenced image must remain unchanged: composition, geometry, lighting, floor, furniture, TV if present, wood, devices, counts, colors. Treat this as a decisive material swap, not subtle retouching.",
+      "pass": 2
+    },
+    {
+      "id": "C",
+      "src": "C:\\Users\\q1212\\.codex\\generated_images\\01a0e247-e6df-7b72-af5d-20238b73ce68\\exec-328eac94-1200-4aab-80b0-ca49e14698f8.png",
+      "prompt": "Material replacement edit, VERY IMPORTANT: the existing decorative swirling/worm-like patterned grey panels are wrong. REMOVE their current fabric surface entirely and REPLACE every grey wall-panel face with UNIFORM SOLID very pale grey matte acoustic felt, visually almost flat from this viewing distance, subtle isotropic microfibers only at macro scale. No decorative pattern, no swirls, no loops, no speckles, no pronounced weave, no distressed or embossed texture. Smooth clean contemporary architectural finish, significantly lighter than existing grey. Keep panel outlines, existing narrow colored seam, prints and their placements. Preserve the corrected ceiling camera with its BACK to us pointing to teacher/TV, every desk/chair and central aisle. Absolutely everything else in the referenced image must remain unchanged: composition, geometry, lighting, floor, furniture, TV if present, wood, devices, counts, colors. Treat this as a decisive material swap, not subtle retouching.",
+      "pass": 2
+    },
+    {
+      "id": "V",
+      "src": "C:\\Users\\q1212\\.codex\\generated_images\\01a0e247-e6df-7b72-af5d-20238b73ce68\\exec-5f595a15-dc02-4952-83cd-358540b1f058.png",
+      "prompt": "Material replacement edit, VERY IMPORTANT: the existing decorative swirling/worm-like patterned grey panels are wrong. REMOVE their current fabric surface entirely and REPLACE every grey wall-panel face with UNIFORM SOLID very pale grey matte acoustic felt, visually almost flat from this viewing distance, subtle isotropic microfibers only at macro scale. No decorative pattern, no swirls, no loops, no speckles, no pronounced weave, no distressed or embossed texture. Smooth clean contemporary architectural finish, significantly lighter than existing grey. Keep panel outlines, existing narrow colored seam, prints and their placements. Also replace the chair padding fabric with uniform solid medium-grey, no pattern. Preserve black folding frames, closed wood-front cabinet in both panels and clear VR floor.Absolutely everything else in the referenced image must remain unchanged: composition, geometry, lighting, floor, furniture, TV if present, wood, devices, counts, colors. Treat this as a decisive material swap, not subtle retouching.",
+      "pass": 2
+    },
+    {
+      "id": "H",
+      "src": "C:\\Users\\q1212\\.codex\\generated_images\\01a0e247-e6df-7b72-af5d-20238b73ce68\\exec-989cc83c-f958-4a79-ab75-d0872a9cce59.png",
+      "prompt": "Recompose this academy corridor as a close architectural FINISH DETAIL, not a view of the whole building. Use its white walls, light neutral-grey lower wall and floor, pale oak door and black handle as material reference. Show only ONE CLOSED classroom door on the LEFT half of the image, a clean legible black letter B on the adjacent wall immediately to its RIGHT, with a small thin Lapis blue #3D6BC9 textile tab above B. On the RIGHT half show just two carefully aligned narrow oak frames holding adult Korean street/architecture photographs at eye level, then white negative space. A diagonal eye-level view that also reveals part of the uncluttered 1.6m-wide passage in foreground, the opposite plain white wall may appear as a narrow foreground edge. Crop out any other doors and all corridor ends. Do not add other letters, labels, rooms, furnishings, coffee setup, plaque, plants or loose mat. Keep understated neutral-white realistic lighting, grey flat floor, tidy flush joints, straight verticals. Contemporary creative adult academy, not decorative hotel. One door means one B label only; frames have no captions.",
+      "pass": 2
+    }
+  ]
+}

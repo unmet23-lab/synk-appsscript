@@ -1,0 +1,243 @@
+{
+  "date": "2026-10-01",
+  "status": "개념 좌표 재계산 / 운영·실측·허가 판정 전",
+  "source": "docs/오프라인_공간설계/평면도_20260929/공간과_편의시설_좌표_6안.json",
+  "sourceSha256": "ae5a0a4ecbaefa66e85a9bce379077dcb3eab4de2be878892d36c84b6d3f9bde",
+  "conversion": "1평=3.305785㎡",
+  "area": {
+    "modelOutlineM2": 267.9,
+    "modelOutlinePyeong": 81.0398,
+    "roomsM2": 206.8225,
+    "circulationM2": 36,
+    "partitionAndConnectionsResidualM2": 25.0775,
+    "leaseWarning": "모델 전체 내부 외곽이다. 매물 공급/계약면적과 동일하지 않다. 실제 전용 면적·형상·기둥·기존 설비 확인 필요."
+  },
+  "roomMetrics": [
+    {
+      "id": "A",
+      "name": "큰 강의실 A",
+      "areaM2": 66,
+      "pyeong": 19.965,
+      "desks": 16,
+      "chairs": 16,
+      "areaPerStudentAt16M2": 4.125,
+      "areaPerStudentAt12M2": 5.5
+    },
+    {
+      "id": "B",
+      "name": "작은 강의실 B",
+      "areaM2": 27.39,
+      "pyeong": 8.2855,
+      "desks": 16,
+      "chairs": 16,
+      "areaPerStudentAt16M2": 1.7119,
+      "areaPerStudentAt12M2": 2.2825
+    },
+    {
+      "id": "C",
+      "name": "작은 강의실 C",
+      "areaM2": 27.39,
+      "pyeong": 8.2855,
+      "desks": 16,
+      "chairs": 16,
+      "areaPerStudentAt16M2": 1.7119,
+      "areaPerStudentAt12M2": 2.2825
+    },
+    {
+      "id": "D",
+      "name": "작은 강의실 D",
+      "areaM2": 29.9,
+      "pyeong": 9.0448,
+      "desks": 16,
+      "chairs": 16,
+      "areaPerStudentAt16M2": 1.8688,
+      "areaPerStudentAt12M2": 2.4917
+    },
+    {
+      "id": "office",
+      "name": "사무실",
+      "areaM2": 20.8,
+      "pyeong": 6.292,
+      "desks": 8,
+      "chairs": 8
+    },
+    {
+      "id": "consult",
+      "name": "상담실",
+      "areaM2": 13.52,
+      "pyeong": 4.0898
+    },
+    {
+      "id": "photo",
+      "name": "사진·편의실",
+      "areaM2": 11.18,
+      "pyeong": 3.382
+    },
+    {
+      "id": "WC-M",
+      "name": "남자 화장실",
+      "areaM2": 5.32125,
+      "pyeong": 1.6097
+    },
+    {
+      "id": "WC-F",
+      "name": "여자 화장실",
+      "areaM2": 5.32125,
+      "pyeong": 1.6097
+    }
+  ],
+  "seating": [
+    {
+      "id": "B",
+      "deskSizeM": [
+        0.6,
+        0.45
+      ],
+      "rowPitchM": [
+        1.05,
+        1.05,
+        1.05
+      ],
+      "modeledMinChairRearToNextDeskM": 0.1,
+      "meaning": "착석한 몸과 의자 당김을 고려하기 전 기호 외곽 간 거리. 법적 통로 폭 판정이 아님."
+    },
+    {
+      "id": "C",
+      "deskSizeM": [
+        0.6,
+        0.45
+      ],
+      "rowPitchM": [
+        1.05,
+        1.05,
+        1.05
+      ],
+      "modeledMinChairRearToNextDeskM": 0.1,
+      "meaning": "착석한 몸과 의자 당김을 고려하기 전 기호 외곽 간 거리. 법적 통로 폭 판정이 아님."
+    },
+    {
+      "id": "D",
+      "deskSizeM": [
+        0.45,
+        0.6
+      ],
+      "rowPitchM": [
+        1.05,
+        1.05,
+        1.05
+      ],
+      "modeledMinChairRearToNextDeskM": 0.1,
+      "meaning": "착석한 몸과 의자 당김을 고려하기 전 기호 외곽 간 거리. 법적 통로 폭 판정이 아님."
+    }
+  ],
+  "mainDance": {
+    "physicalProjectedObstaclesM2": 8.2784,
+    "geometricResidualFloorM2": 57.7216,
+    "reservedWithStorageApproachM2": 11.4659,
+    "geometricResidualAfterApproachM2": 54.5341,
+    "largestAxisAlignedRectangleWithoutStorageApproach": {
+      "x": 0.8,
+      "y": 0.31,
+      "w": 7.65,
+      "h": 6.31,
+      "area": 48.2715
+    },
+    "largestAxisAlignedRectangleWithStorageApproach": {
+      "x": 0.8,
+      "y": 0.31,
+      "w": 6.8,
+      "h": 6.31,
+      "area": 42.908
+    },
+    "illustrativeSharedRectangleAreaPerPersonM2": [
+      {
+        "students": 8,
+        "teachers": 1,
+        "people": 9,
+        "m2": 4.7676
+      },
+      {
+        "students": 12,
+        "teachers": 1,
+        "people": 13,
+        "m2": 3.3006
+      },
+      {
+        "students": 16,
+        "teachers": 1,
+        "people": 17,
+        "m2": 2.524
+      }
+    ],
+    "limitation": "연속 사각형은 좌표상 시험 구역 후보이며 활동정원·안전여유·가구적재·바닥성능 판정이 아니다. 교사도 이 면적을 쓰며 제조사 이격·동작범위·커튼 묶음폭·출구까지의 경로는 미검증."
+  },
+  "operationsScenarios": [
+    {
+      "name": "현재 4교실 16명",
+      "students": 64,
+      "officeStaff": 8,
+      "additionalTeachersIfDistinct": 4,
+      "totalIfDistinct": 76,
+      "totalIfTeachersIncludedInOffice": 72
+    },
+    {
+      "name": "권고 검토: A이론16+B/C/D12",
+      "students": 52,
+      "officeStaff": 8,
+      "additionalTeachersIfDistinct": 4,
+      "totalIfDistinct": 64,
+      "totalIfTeachersIncludedInOffice": 60
+    },
+    {
+      "name": "권고 검토: A댄스12+B/C/D12",
+      "students": 48,
+      "officeStaff": 8,
+      "additionalTeachersIfDistinct": 4,
+      "totalIfDistinct": 60,
+      "totalIfTeachersIncludedInOffice": 56
+    }
+  ],
+  "comfortExpansionIllustration": {
+    "status": "확장 수요 비교용 가정; 법정 최소나 새 확정 평면/가격 아님",
+    "increments": [
+      {
+        "item": "B/C 각33㎡ 검토",
+        "m2": 11.22
+      },
+      {
+        "item": "D33㎡ 검토",
+        "m2": 3.1
+      },
+      {
+        "item": "A 가구 별도 보관 후보",
+        "m2": 6
+      },
+      {
+        "item": "사무실26.4㎡ 검토",
+        "m2": 5.6
+      },
+      {
+        "item": "독립 관리 자리 후보",
+        "m2": 2
+      }
+    ],
+    "programmedAdditionalM2": 27.92,
+    "additionalWallsAndCirculationM2Range": [
+      4,
+      8
+    ],
+    "modelOutlineM2Range": [
+      299.82,
+      303.82
+    ],
+    "modelOutlinePyeongRange": [
+      90.6956,
+      91.9056
+    ],
+    "optionalSeparateVrAndChangingAdditionalRoomM2Range": [
+      12,
+      16
+    ],
+    "note": "전용 VR/탈의 추가 시 그 면적과 추가 문·벽·통로를 다시 산정. 현재 건물/견적 없음."
+  }
+}

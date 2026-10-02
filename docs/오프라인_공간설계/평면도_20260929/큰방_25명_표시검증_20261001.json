@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-01",
+  "results": [
+    {
+      "width": 736,
+      "studentCount": 25,
+      "teacherCount": 1,
+      "uniqueStudentLabels": 25,
+      "svgTextOutside": [],
+      "overflow": false,
+      "minLabelFontPx": 12
+    },
+    {
+      "width": 390,
+      "studentCount": 25,
+      "teacherCount": 1,
+      "uniqueStudentLabels": 25,
+      "svgTextOutside": [],
+      "overflow": false,
+      "minLabelFontPx": 12
+    },
+    {
+      "width": 320,
+      "studentCount": 25,
+      "teacherCount": 1,
+      "uniqueStudentLabels": 25,
+      "svgTextOutside": [],
+      "overflow": false,
+      "minLabelFontPx": 12
+    }
+  ],
+  "dark320": "rendered",
+  "oldModel25RequirementWarning": "미반영: 큰방25명 댄스 요구 · 창문 · 일반실 급배기 · 전실 향 배치",
+  "sourceHashMatches": true,
+  "errors": [],
+  "scope": "25개 위치·강사1개·수치/모바일 표시 확인. 실제 동작·전체 새 평면·허가/시공·운영 검증 아님."
+}

@@ -1,0 +1,301 @@
+{
+  "fragmentBytes": 845127,
+  "screens": [
+    {
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 8,
+      "labels": [
+        {
+          "text": "16석 예시",
+          "fontSize": 12
+        },
+        {
+          "text": "16석 예시",
+          "fontSize": 12
+        },
+        {
+          "text": "16석 예시",
+          "fontSize": 12
+        },
+        {
+          "text": "큰 강의실 A",
+          "fontSize": 12
+        },
+        {
+          "text": "20.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "작은 강의실 B",
+          "fontSize": 12
+        },
+        {
+          "text": "13.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "작은 강의실 C",
+          "fontSize": 12
+        },
+        {
+          "text": "13.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "작은 강의실 D",
+          "fontSize": 12
+        },
+        {
+          "text": "12.9평",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실",
+          "fontSize": 12
+        },
+        {
+          "text": "9.2평",
+          "fontSize": 12
+        },
+        {
+          "text": "상담실",
+          "fontSize": 12
+        },
+        {
+          "text": "3.5평",
+          "fontSize": 12
+        },
+        {
+          "text": "포토부스",
+          "fontSize": 12
+        },
+        {
+          "text": "2.9평",
+          "fontSize": 12
+        },
+        {
+          "text": "로비·라운지",
+          "fontSize": 12
+        },
+        {
+          "text": "8.4평",
+          "fontSize": 12
+        },
+        {
+          "text": "8자리",
+          "fontSize": 12
+        },
+        {
+          "text": "접수",
+          "fontSize": 12
+        },
+        {
+          "text": "대기",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도 · 유효 폭 2.0 m 가정",
+          "fontSize": 12
+        },
+        {
+          "text": "21.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "16.3 m",
+          "fontSize": 12
+        },
+        {
+          "text": "주출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ]
+    },
+    {
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 8,
+      "labels": [
+        {
+          "text": "A 큰방",
+          "fontSize": 12
+        },
+        {
+          "text": "20.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "B",
+          "fontSize": 12
+        },
+        {
+          "text": "13.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "13.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "D",
+          "fontSize": 12
+        },
+        {
+          "text": "12.9평",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실",
+          "fontSize": 12
+        },
+        {
+          "text": "9.2평",
+          "fontSize": 12
+        },
+        {
+          "text": "상담",
+          "fontSize": 12
+        },
+        {
+          "text": "포토",
+          "fontSize": 12
+        },
+        {
+          "text": "로비",
+          "fontSize": 12
+        },
+        {
+          "text": "8.4평",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도",
+          "fontSize": 12
+        },
+        {
+          "text": "21.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "주출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ]
+    },
+    {
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 8,
+      "labels": [
+        {
+          "text": "A 큰방",
+          "fontSize": 12
+        },
+        {
+          "text": "20.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "B",
+          "fontSize": 12
+        },
+        {
+          "text": "13.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "13.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "D",
+          "fontSize": 12
+        },
+        {
+          "text": "12.9평",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실",
+          "fontSize": 12
+        },
+        {
+          "text": "9.2평",
+          "fontSize": 12
+        },
+        {
+          "text": "상담",
+          "fontSize": 12
+        },
+        {
+          "text": "포토",
+          "fontSize": 12
+        },
+        {
+          "text": "로비",
+          "fontSize": 12
+        },
+        {
+          "text": "8.4평",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도",
+          "fontSize": 12
+        },
+        {
+          "text": "21.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "주출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ]
+    }
+  ],
+  "interaction": {
+    "selected": "office",
+    "detail": "사무실 · 9.2평 (30.5㎡) · 5.00 × 6.10 m · 상주 6~8명 · 책상 8자리 배치"
+  },
+  "errors": [],
+  "areas": {
+    "rooms": 274.625,
+    "corridor": 41.2,
+    "wall": 26.47500000000001,
+    "outline": 342.3
+  }
+}

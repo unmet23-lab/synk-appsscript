@@ -1,0 +1,1465 @@
+{
+  "fragmentBytes": 874135,
+  "geometry": {
+    "areas": {
+      "rooms": 195.195,
+      "corridor": 29.760000000000005,
+      "wallPlanningArea": 22.045,
+      "total": 247
+    },
+    "studentDesks": {
+      "A": 16,
+      "B": 16,
+      "C": 16,
+      "D": 16
+    },
+    "appliances": {
+      "AP": 7,
+      "H": 7,
+      "footprints": "AP0.38×0.38m / H0.30×0.30m assumed; service clearances untested"
+    },
+    "vrFootprints": "Inside rooms; no pair overlap; no door-swing sector overlap in schematic",
+    "consultFootprints": "Inside rooms; no pair overlap; no door-swing sector overlap in schematic",
+    "vrClearZone": {
+      "room": "consult",
+      "kind": "vr-clear",
+      "x": 14.2,
+      "y": 10,
+      "w": 2,
+      "h": 2,
+      "label": "VR 비움 2 × 2 m",
+      "status": "가구 수납 후 바닥 비움 후보; 기기별 안전 경계나 몸·컨트롤러 움직임 여유 검증 아님"
+    },
+    "storage": [
+      {
+        "room": "consult",
+        "kind": "folded-table",
+        "x": 15.12,
+        "y": 8.72,
+        "w": 1.2,
+        "h": 0.18,
+        "label": "접은 테이블",
+        "storedCount": 1,
+        "storageMode": "벽면에 세워 고정",
+        "capacityStatus": "1.20 × 0.18 m 수납 footprint 가정; 접이 구조·높이·전도 방지 미확정"
+      },
+      {
+        "room": "consult",
+        "kind": "chair-rack",
+        "x": 15.55,
+        "y": 9.02,
+        "w": 0.65,
+        "h": 0.65,
+        "label": "접의자 4개 수납",
+        "storedCount": 4,
+        "capacityStatus": "0.65 × 0.65 m 묶음 수납 footprint 가정; 4개 적재 가능 여부와 높이 미확정"
+      }
+    ],
+    "overheadShelf": "Shares plan projection above folded table; vertical clearance/installation height untested",
+    "cameraLines": "Classroom center lines clear of modelled floor items; no3D occlusion or optical test",
+    "photo": {
+      "frontArea": 3.2249999999999996,
+      "rearArea": 5.59,
+      "nominalPassage": 0.95,
+      "planCameraDistance": 1.4,
+      "status": "Camera, printer, clearance and group framing untested"
+    }
+  },
+  "screens": [
+    {
+      "viewport": 780,
+      "room": "all",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 7,
+      "svg": {
+        "width": 748,
+        "height": 528.359375
+      },
+      "labels": [
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "E",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "E",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "E",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "E",
+          "fontSize": 12
+        },
+        {
+          "text": "P",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "A · 큰 강의실",
+          "fontSize": 12
+        },
+        {
+          "text": "20.0평",
+          "fontSize": 12
+        },
+        {
+          "text": "전면 거울·커튼",
+          "fontSize": 12
+        },
+        {
+          "text": "후면 배경 · 코랄 LED",
+          "fontSize": 12
+        },
+        {
+          "text": "B · 8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "C · 8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "D · 8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실 · 8자리",
+          "fontSize": 12
+        },
+        {
+          "text": "8.3평",
+          "fontSize": 12
+        },
+        {
+          "text": "상담실",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 비움",
+          "fontSize": 12
+        },
+        {
+          "text": "2 × 2 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4",
+          "fontSize": 12
+        },
+        {
+          "text": "커피·다과",
+          "fontSize": 12
+        },
+        {
+          "text": "사진",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도 · 1.6 m 가정",
+          "fontSize": 12
+        },
+        {
+          "text": "출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "19.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "13.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "consult",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 7,
+      "svg": {
+        "width": 748,
+        "height": 575
+      },
+      "labels": [
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 보관·충전 (상부)",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 비움 후보",
+          "fontSize": 12
+        },
+        {
+          "text": "2.00 × 2.00 m",
+          "fontSize": 12
+        },
+        {
+          "text": "가구 수납 후",
+          "fontSize": 12
+        },
+        {
+          "text": "접은 테이블",
+          "fontSize": 12
+        },
+        {
+          "text": "의자 4",
+          "fontSize": 12
+        },
+        {
+          "text": "접어 수납",
+          "fontSize": 12
+        },
+        {
+          "text": "기기·콘텐츠별 여유 확인",
+          "fontSize": 12
+        },
+        {
+          "text": "2.60 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "consult",
+      "mode": "consult",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 7,
+      "svg": {
+        "width": 748,
+        "height": 575
+      },
+      "labels": [
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 보관·충전 (상부)",
+          "fontSize": 12
+        },
+        {
+          "text": "상담 4인",
+          "fontSize": 12
+        },
+        {
+          "text": "1.20 × 0.70 m 테이블",
+          "fontSize": 12
+        },
+        {
+          "text": "2.60 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 780,
+      "room": "photo",
+      "mode": "vr",
+      "width": 748,
+      "scrollWidth": 748,
+      "rooms": 7,
+      "svg": {
+        "width": 748,
+        "height": 575
+      },
+      "labels": [
+        {
+          "text": "P",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "커피·다과",
+          "fontSize": 12
+        },
+        {
+          "text": "앞 1.5 m",
+          "fontSize": 12
+        },
+        {
+          "text": "대",
+          "fontSize": 12
+        },
+        {
+          "text": "프린터",
+          "fontSize": 12
+        },
+        {
+          "text": "사진",
+          "fontSize": 12
+        },
+        {
+          "text": "뒤 2.6 m",
+          "fontSize": 12
+        },
+        {
+          "text": "촬영 위치",
+          "fontSize": 12
+        },
+        {
+          "text": "2.15 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "all",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 7,
+      "svg": {
+        "width": 608,
+        "height": 459.25
+      },
+      "labels": [
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "A · 20평",
+          "fontSize": 12
+        },
+        {
+          "text": "B",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "D",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실",
+          "fontSize": 12
+        },
+        {
+          "text": "상담",
+          "fontSize": 12
+        },
+        {
+          "text": "사진·편의",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 2×2",
+          "fontSize": 12
+        },
+        {
+          "text": "커피",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도",
+          "fontSize": 12
+        },
+        {
+          "text": "출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "19.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "consult",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 7,
+      "svg": {
+        "width": 608,
+        "height": 575
+      },
+      "labels": [
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 보관·충전 (상부)",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 비움 후보",
+          "fontSize": 12
+        },
+        {
+          "text": "2.00 × 2.00 m",
+          "fontSize": 12
+        },
+        {
+          "text": "가구 수납 후",
+          "fontSize": 12
+        },
+        {
+          "text": "접은 테이블",
+          "fontSize": 12
+        },
+        {
+          "text": "의자 4",
+          "fontSize": 12
+        },
+        {
+          "text": "접어 수납",
+          "fontSize": 12
+        },
+        {
+          "text": "기기·콘텐츠별 여유 확인",
+          "fontSize": 12
+        },
+        {
+          "text": "2.60 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "consult",
+      "mode": "consult",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 7,
+      "svg": {
+        "width": 608,
+        "height": 575
+      },
+      "labels": [
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 보관·충전 (상부)",
+          "fontSize": 12
+        },
+        {
+          "text": "상담 4인",
+          "fontSize": 12
+        },
+        {
+          "text": "1.20 × 0.70 m 테이블",
+          "fontSize": 12
+        },
+        {
+          "text": "2.60 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 640,
+      "room": "photo",
+      "mode": "vr",
+      "width": 608,
+      "scrollWidth": 608,
+      "rooms": 7,
+      "svg": {
+        "width": 608,
+        "height": 575
+      },
+      "labels": [
+        {
+          "text": "P",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "커피·다과",
+          "fontSize": 12
+        },
+        {
+          "text": "앞 1.5 m",
+          "fontSize": 12
+        },
+        {
+          "text": "대",
+          "fontSize": 12
+        },
+        {
+          "text": "프린터",
+          "fontSize": 12
+        },
+        {
+          "text": "사진",
+          "fontSize": 12
+        },
+        {
+          "text": "뒤 2.6 m",
+          "fontSize": 12
+        },
+        {
+          "text": "촬영 위치",
+          "fontSize": 12
+        },
+        {
+          "text": "2.15 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "all",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 7,
+      "svg": {
+        "width": 358,
+        "height": 288.203125
+      },
+      "labels": [
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "A · 20평",
+          "fontSize": 12
+        },
+        {
+          "text": "B",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "D",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실",
+          "fontSize": 12
+        },
+        {
+          "text": "상담",
+          "fontSize": 12
+        },
+        {
+          "text": "사진",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도",
+          "fontSize": 12
+        },
+        {
+          "text": "출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "19.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "consult",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 7,
+      "svg": {
+        "width": 358,
+        "height": 532
+      },
+      "labels": [
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 보관·충전 (상부)",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 비움 후보",
+          "fontSize": 12
+        },
+        {
+          "text": "2.00 × 2.00 m",
+          "fontSize": 12
+        },
+        {
+          "text": "가구 수납 후",
+          "fontSize": 12
+        },
+        {
+          "text": "접은 테이블",
+          "fontSize": 12
+        },
+        {
+          "text": "의자 4",
+          "fontSize": 12
+        },
+        {
+          "text": "접어 수납",
+          "fontSize": 12
+        },
+        {
+          "text": "기기·콘텐츠별 여유 확인",
+          "fontSize": 12
+        },
+        {
+          "text": "2.60 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "consult",
+      "mode": "consult",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 7,
+      "svg": {
+        "width": 358,
+        "height": 532
+      },
+      "labels": [
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 보관·충전 (상부)",
+          "fontSize": 12
+        },
+        {
+          "text": "상담 4인",
+          "fontSize": 12
+        },
+        {
+          "text": "1.20 × 0.70 m 테이블",
+          "fontSize": 12
+        },
+        {
+          "text": "2.60 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 390,
+      "room": "photo",
+      "mode": "vr",
+      "width": 358,
+      "scrollWidth": 358,
+      "rooms": 7,
+      "svg": {
+        "width": 358,
+        "height": 575
+      },
+      "labels": [
+        {
+          "text": "P",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "커피·다과",
+          "fontSize": 12
+        },
+        {
+          "text": "앞 1.5 m",
+          "fontSize": 12
+        },
+        {
+          "text": "대",
+          "fontSize": 12
+        },
+        {
+          "text": "프린터",
+          "fontSize": 12
+        },
+        {
+          "text": "사진",
+          "fontSize": 12
+        },
+        {
+          "text": "뒤 2.6 m",
+          "fontSize": 12
+        },
+        {
+          "text": "촬영 위치",
+          "fontSize": 12
+        },
+        {
+          "text": "2.15 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "all",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 7,
+      "svg": {
+        "width": 288,
+        "height": 240.3125
+      },
+      "labels": [
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "T",
+          "fontSize": 12
+        },
+        {
+          "text": "A · 20평",
+          "fontSize": 12
+        },
+        {
+          "text": "B",
+          "fontSize": 12
+        },
+        {
+          "text": "C",
+          "fontSize": 12
+        },
+        {
+          "text": "D",
+          "fontSize": 12
+        },
+        {
+          "text": "사무실",
+          "fontSize": 12
+        },
+        {
+          "text": "상담",
+          "fontSize": 12
+        },
+        {
+          "text": "사진",
+          "fontSize": 12
+        },
+        {
+          "text": "중앙 복도",
+          "fontSize": 12
+        },
+        {
+          "text": "출입구",
+          "fontSize": 12
+        },
+        {
+          "text": "19.0 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "5 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "consult",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 7,
+      "svg": {
+        "width": 288,
+        "height": 427
+      },
+      "labels": [
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 보관·충전 (상부)",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 비움 후보",
+          "fontSize": 12
+        },
+        {
+          "text": "2.00 × 2.00 m",
+          "fontSize": 12
+        },
+        {
+          "text": "가구 수납 후",
+          "fontSize": 12
+        },
+        {
+          "text": "접은 테이블",
+          "fontSize": 12
+        },
+        {
+          "text": "의자 4",
+          "fontSize": 12
+        },
+        {
+          "text": "접어 수납",
+          "fontSize": 12
+        },
+        {
+          "text": "기기·콘텐츠별 여유 확인",
+          "fontSize": 12
+        },
+        {
+          "text": "2.60 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "consult",
+      "mode": "consult",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 7,
+      "svg": {
+        "width": 288,
+        "height": 427
+      },
+      "labels": [
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "VR 보관·충전 (상부)",
+          "fontSize": 12
+        },
+        {
+          "text": "상담 4인",
+          "fontSize": 12
+        },
+        {
+          "text": "1.20 × 0.70 m 테이블",
+          "fontSize": 12
+        },
+        {
+          "text": "2.60 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    },
+    {
+      "viewport": 320,
+      "room": "photo",
+      "mode": "vr",
+      "width": 288,
+      "scrollWidth": 288,
+      "rooms": 7,
+      "svg": {
+        "width": 288,
+        "height": 487.34375
+      },
+      "labels": [
+        {
+          "text": "P",
+          "fontSize": 12
+        },
+        {
+          "text": "AP",
+          "fontSize": 12
+        },
+        {
+          "text": "H",
+          "fontSize": 12
+        },
+        {
+          "text": "출입",
+          "fontSize": 12
+        },
+        {
+          "text": "커피·다과",
+          "fontSize": 12
+        },
+        {
+          "text": "앞 1.5 m",
+          "fontSize": 12
+        },
+        {
+          "text": "대",
+          "fontSize": 12
+        },
+        {
+          "text": "프린터",
+          "fontSize": 12
+        },
+        {
+          "text": "사진",
+          "fontSize": 12
+        },
+        {
+          "text": "뒤 2.6 m",
+          "fontSize": 12
+        },
+        {
+          "text": "촬영 위치",
+          "fontSize": 12
+        },
+        {
+          "text": "2.15 m",
+          "fontSize": 12
+        },
+        {
+          "text": "4.10 m",
+          "fontSize": 12
+        },
+        {
+          "text": "0",
+          "fontSize": 12
+        },
+        {
+          "text": "1 m",
+          "fontSize": 12
+        }
+      ],
+      "minBodyFont": 12
+    }
+  ],
+  "interactions": [
+    {
+      "room": "consult",
+      "mode": "vr",
+      "counts": {
+        "vr": 1,
+        "chairs": 0,
+        "rack": 1
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "consult",
+      "counts": {
+        "vr": 0,
+        "chairs": 4,
+        "rack": 0
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "vr",
+      "counts": {
+        "vr": 1,
+        "chairs": 0,
+        "rack": 1
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "consult",
+      "counts": {
+        "vr": 0,
+        "chairs": 4,
+        "rack": 0
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "vr",
+      "counts": {
+        "vr": 1,
+        "chairs": 0,
+        "rack": 1
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "consult",
+      "counts": {
+        "vr": 0,
+        "chairs": 4,
+        "rack": 0
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "vr",
+      "counts": {
+        "vr": 1,
+        "chairs": 0,
+        "rack": 1
+      }
+    },
+    {
+      "room": "consult",
+      "mode": "consult",
+      "counts": {
+        "vr": 0,
+        "chairs": 4,
+        "rack": 0
+      }
+    }
+  ],
+  "errors": []
+}

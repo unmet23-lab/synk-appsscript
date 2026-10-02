@@ -1,0 +1,5851 @@
+{
+  "errors": [],
+  "warnings": [],
+  "failed": [],
+  "screens": [
+    {
+      "width": 780,
+      "filename": "3d-780-all-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 1,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-L",
+        "FE-R",
+        "FE-O"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "DIFFUSER-M",
+        "SOAP-M",
+        "TOWEL-M",
+        "ROLL-M",
+        "BIN-M",
+        "EXHAUST-M",
+        "LIGHT-M",
+        "DIFFUSER-F",
+        "SOAP-F",
+        "TOWEL-F",
+        "ROLL-F",
+        "BIN-F",
+        "EXHAUST-F",
+        "LIGHT-F",
+        "WOMEN-WASTE",
+        "FIRST-AID"
+      ],
+      "room": "all",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "CUP-BIN-P",
+        "PEN-A",
+        "PEN-B",
+        "PEN-C",
+        "PEN-D",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "LIQUID-BIN-P",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 72,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "COAT-B-L",
+        "COAT-B-R",
+        "COAT-C-L",
+        "COAT-C-R",
+        "COAT-D",
+        "CARE-SINK",
+        "CARE-LOCK",
+        "PRINT-O",
+        "UMBRELLA-P",
+        "TEACH-A",
+        "TEACH-B",
+        "TEACH-C",
+        "TEACH-D"
+      ],
+      "operationCountertopItems": [
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "PRINTER-O"
+      ],
+      "operationWallItems": [
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo",
+        "MIC-A",
+        "MIC-B",
+        "MIC-C",
+        "MIC-D"
+      ],
+      "operationFloorZones": [
+        "ENTRY-MAT",
+        "DRINK-SERVICE"
+      ],
+      "operationRenderIds": [
+        "ENTRY-MAT",
+        "DRINK-SERVICE",
+        "COAT-A",
+        "COAT-B-L",
+        "COAT-B-R",
+        "COAT-C-L",
+        "COAT-C-R",
+        "COAT-D",
+        "CARE-SINK",
+        "CARE-LOCK",
+        "PRINT-O",
+        "UMBRELLA-P",
+        "TEACH-A",
+        "TEACH-B",
+        "TEACH-C",
+        "TEACH-D",
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "PRINTER-O",
+        "PEN-A",
+        "PEN-B",
+        "PEN-C",
+        "PEN-D",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "LIQUID-BIN-P",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC",
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo",
+        "MIC-A",
+        "MIC-B",
+        "MIC-C",
+        "MIC-D"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 8,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 9,
+      "desks": 72,
+      "appliances": 14,
+      "consultFurniture": [
+        "folded-table",
+        "chair-rack"
+      ],
+      "sourceRevision": 6,
+      "cameras": 4,
+      "sanitaryFixtures": [
+        "toilet",
+        "washbasin",
+        "toilet",
+        "washbasin"
+      ],
+      "secondaryCorridorVisible": true,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        25.669851878854992,
+        26.328790510463435,
+        28.795662871563618
+      ],
+      "target": [
+        9.5,
+        0.95,
+        7.050000000000001
+      ],
+      "visibleLabels": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "사무실",
+        "상담",
+        "사진·편의",
+        "남 WC",
+        "여 WC",
+        "복도 · 1.6 m",
+        "출입 위치 가정"
+      ],
+      "triangles": 19598,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-A-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.126323985005694,
+        14.454959559437428,
+        15.504366738455934
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "전면 거울 · 커튼 뒤",
+        "후면 다크 배경",
+        "외투·실내화 16칸 목표"
+      ],
+      "triangles": 4586,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-B-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "B",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-B"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-B-L",
+        "COAT-B-R",
+        "TEACH-B"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-B"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-B-L",
+        "COAT-B-R",
+        "TEACH-B",
+        "PEN-B",
+        "MIC-B"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        19.07528,
+        10.6077,
+        12.443479999999997
+      ],
+      "target": [
+        12.425,
+        0.9500000000000001,
+        3.5000000000000004
+      ],
+      "visibleLabels": [
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "외투 8칸 목표",
+        "외투 8칸 목표"
+      ],
+      "triangles": 3152,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-C-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "C",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-C"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-C-L",
+        "COAT-C-R",
+        "TEACH-C"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-C"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-C-L",
+        "COAT-C-R",
+        "TEACH-C",
+        "PEN-C",
+        "MIC-C"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        23.375279999999997,
+        10.6077,
+        12.443480000000001
+      ],
+      "target": [
+        16.725,
+        0.95,
+        3.500000000000001
+      ],
+      "visibleLabels": [
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "외투 8칸 목표",
+        "외투 8칸 목표"
+      ],
+      "triangles": 3140,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-D-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "D",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-D"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-D",
+        "TEACH-D"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-D"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-D",
+        "TEACH-D",
+        "PEN-D",
+        "MIC-D"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        9.593767307112596,
+        10.249398482544528,
+        20.066618102668663
+      ],
+      "target": [
+        3.075,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "외투·실내화 16칸 목표",
+        "마이크 충전"
+      ],
+      "triangles": 3068,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-office-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-O"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "FIRST-AID"
+      ],
+      "room": "office",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 8,
+      "mainStorage": [],
+      "operationFixtures": [
+        "PRINT-O"
+      ],
+      "operationCountertopItems": [
+        "PRINTER-O"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "PRINT-O",
+        "PRINTER-O",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 8,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 8,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        13.899386603589118,
+        9.102765806496041,
+        19.099175087585365
+      ],
+      "target": [
+        8.1,
+        0.9499999999999996,
+        11.3
+      ],
+      "visibleLabels": [
+        "H",
+        "복합기·서류·재고장",
+        "A4 복합기",
+        "구급함"
+      ],
+      "triangles": 2268,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-consult-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 1,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "consult",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "CARE-SINK",
+        "CARE-LOCK"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "CARE-SINK",
+        "CARE-LOCK",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [
+        "folded-table",
+        "chair-rack"
+      ],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        16.870224000000004,
+        8.429160000000001,
+        18.454784
+      ],
+      "target": [
+        11.55,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "VR · 2 × 2 m 비움",
+        "접의자 4개",
+        "접은 테이블 / 상부 선반",
+        "관리장 · 내부 세척"
+      ],
+      "triangles": 484,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-photo-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "photo",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "UMBRELLA-P"
+      ],
+      "operationCountertopItems": [
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [
+        "DRINK-SERVICE"
+      ],
+      "operationRenderIds": [
+        "DRINK-SERVICE",
+        "UMBRELLA-P",
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        19.190600000000003,
+        8.1415,
+        18.1796
+      ],
+      "target": [
+        14.075000000000001,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "미닫이 출입",
+        "AP",
+        "H",
+        "정수·커피·다과",
+        "P",
+        "프린터",
+        "사진 영역"
+      ],
+      "triangles": 800,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-WC-M-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "DIFFUSER-M",
+        "SOAP-M",
+        "TOWEL-M",
+        "ROLL-M",
+        "BIN-M",
+        "EXHAUST-M",
+        "LIGHT-M"
+      ],
+      "room": "WC-M",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 0,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [
+        "toilet",
+        "washbasin"
+      ],
+      "secondaryCorridorVisible": true,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        12.627399999999998,
+        6.51925,
+        4.40925
+      ],
+      "target": [
+        17.049999999999997,
+        0.95,
+        9.9375
+      ],
+      "visibleLabels": [
+        "독립 출입",
+        "양변기",
+        "세면대",
+        "회전 여유 검토 · Ø 1.5 m",
+        "디퓨저"
+      ],
+      "triangles": 748,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-WC-F-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "DIFFUSER-F",
+        "SOAP-F",
+        "TOWEL-F",
+        "ROLL-F",
+        "BIN-F",
+        "EXHAUST-F",
+        "LIGHT-F",
+        "WOMEN-WASTE"
+      ],
+      "room": "WC-F",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 0,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [
+        "toilet",
+        "washbasin"
+      ],
+      "secondaryCorridorVisible": true,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        12.627399999999998,
+        6.51925,
+        18.19075
+      ],
+      "target": [
+        17.049999999999997,
+        0.9500000000000001,
+        12.662500000000001
+      ],
+      "visibleLabels": [
+        "독립 출입",
+        "양변기",
+        "세면대",
+        "회전 여유 검토 · Ø 1.5 m",
+        "디퓨저"
+      ],
+      "triangles": 760,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-corridor-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-L",
+        "FE-R"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "corridor",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo"
+      ],
+      "operationFloorZones": [
+        "ENTRY-MAT"
+      ],
+      "operationRenderIds": [
+        "ENTRY-MAT",
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 0,
+      "desks": 0,
+      "appliances": 0,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        10.4576,
+        14.364,
+        21.635199999999998
+      ],
+      "target": [
+        9.5,
+        0.95,
+        7.750000000000001
+      ],
+      "visibleLabels": [
+        "복도 · 1.6 m",
+        "수업 안내",
+        "지나간 말들"
+      ],
+      "triangles": 940,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-all-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 1,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-L",
+        "FE-R",
+        "FE-O"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "DIFFUSER-M",
+        "SOAP-M",
+        "TOWEL-M",
+        "ROLL-M",
+        "BIN-M",
+        "EXHAUST-M",
+        "LIGHT-M",
+        "DIFFUSER-F",
+        "SOAP-F",
+        "TOWEL-F",
+        "ROLL-F",
+        "BIN-F",
+        "EXHAUST-F",
+        "LIGHT-F",
+        "WOMEN-WASTE",
+        "FIRST-AID"
+      ],
+      "room": "all",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "CUP-BIN-P",
+        "PEN-A",
+        "PEN-B",
+        "PEN-C",
+        "PEN-D",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "LIQUID-BIN-P",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 72,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "COAT-B-L",
+        "COAT-B-R",
+        "COAT-C-L",
+        "COAT-C-R",
+        "COAT-D",
+        "CARE-SINK",
+        "CARE-LOCK",
+        "PRINT-O",
+        "UMBRELLA-P",
+        "TEACH-A",
+        "TEACH-B",
+        "TEACH-C",
+        "TEACH-D"
+      ],
+      "operationCountertopItems": [
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "PRINTER-O"
+      ],
+      "operationWallItems": [
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo",
+        "MIC-A",
+        "MIC-B",
+        "MIC-C",
+        "MIC-D"
+      ],
+      "operationFloorZones": [
+        "ENTRY-MAT",
+        "DRINK-SERVICE"
+      ],
+      "operationRenderIds": [
+        "ENTRY-MAT",
+        "DRINK-SERVICE",
+        "COAT-A",
+        "COAT-B-L",
+        "COAT-B-R",
+        "COAT-C-L",
+        "COAT-C-R",
+        "COAT-D",
+        "CARE-SINK",
+        "CARE-LOCK",
+        "PRINT-O",
+        "UMBRELLA-P",
+        "TEACH-A",
+        "TEACH-B",
+        "TEACH-C",
+        "TEACH-D",
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "PRINTER-O",
+        "PEN-A",
+        "PEN-B",
+        "PEN-C",
+        "PEN-D",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "LIQUID-BIN-P",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC",
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo",
+        "MIC-A",
+        "MIC-B",
+        "MIC-C",
+        "MIC-D"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 8,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 9,
+      "desks": 72,
+      "appliances": 14,
+      "consultFurniture": [
+        "folded-table",
+        "chair-rack"
+      ],
+      "sourceRevision": 6,
+      "cameras": 4,
+      "sanitaryFixtures": [
+        "toilet",
+        "washbasin",
+        "toilet",
+        "washbasin"
+      ],
+      "secondaryCorridorVisible": true,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        27.352399999999992,
+        29.241000000000003,
+        31.058399999999995
+      ],
+      "target": [
+        9.5,
+        0.95,
+        7.050000000000001
+      ],
+      "visibleLabels": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "사무실",
+        "사진·편의",
+        "남 WC",
+        "여 WC"
+      ],
+      "triangles": 18318,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-A-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.97184,
+        16.0056,
+        16.641440000000003
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "전면 거울 · 커튼 뒤",
+        "후면 다크 배경"
+      ],
+      "triangles": 4574,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-B-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "B",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-B"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-B-L",
+        "COAT-B-R",
+        "TEACH-B"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-B"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-B-L",
+        "COAT-B-R",
+        "TEACH-B",
+        "PEN-B",
+        "MIC-B"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        19.265288,
+        11.16592,
+        12.699008
+      ],
+      "target": [
+        12.425,
+        0.9500000000000001,
+        3.5000000000000004
+      ],
+      "visibleLabels": [
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "외투 8칸 목표",
+        "외투 8칸 목표"
+      ],
+      "triangles": 3152,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-C-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "C",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-C"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-C-L",
+        "COAT-C-R",
+        "TEACH-C"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-C"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-C-L",
+        "COAT-C-R",
+        "TEACH-C",
+        "PEN-C",
+        "MIC-C"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        23.565288,
+        11.16592,
+        12.699008000000003
+      ],
+      "target": [
+        16.725,
+        0.95,
+        3.500000000000001
+      ],
+      "visibleLabels": [
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "외투 8칸 목표",
+        "외투 8칸 목표"
+      ],
+      "triangles": 3140,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-D-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "D",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-D"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-D",
+        "TEACH-D"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-D"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-D",
+        "TEACH-D",
+        "PEN-D",
+        "MIC-D"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        9.831654429878139,
+        10.906130609504798,
+        20.386535267767147
+      ],
+      "target": [
+        3.075,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "외투·실내화 16칸 목표"
+      ],
+      "triangles": 3068,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-office-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-O"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "FIRST-AID"
+      ],
+      "room": "office",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 8,
+      "mainStorage": [],
+      "operationFixtures": [
+        "PRINT-O"
+      ],
+      "operationCountertopItems": [
+        "PRINTER-O"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "PRINT-O",
+        "PRINTER-O",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 8,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 8,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.04380474447727,
+        9.612400471049515,
+        19.29339258740047
+      ],
+      "target": [
+        8.1,
+        0.9499999999999996,
+        11.3
+      ],
+      "visibleLabels": [
+        "H",
+        "복합기·서류·재고장",
+        "A4 복합기",
+        "구급함"
+      ],
+      "triangles": 2268,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-consult-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 1,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "consult",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "CARE-SINK",
+        "CARE-LOCK"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "CARE-SINK",
+        "CARE-LOCK",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [
+        "folded-table",
+        "chair-rack"
+      ],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        16.81176,
+        8.6184,
+        18.376160000000002
+      ],
+      "target": [
+        11.55,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "VR · 2 × 2 m 비움",
+        "접의자 4개",
+        "접은 테이블 / 상부 선반"
+      ],
+      "triangles": 484,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-photo-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "photo",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "UMBRELLA-P"
+      ],
+      "operationCountertopItems": [
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [
+        "DRINK-SERVICE"
+      ],
+      "operationRenderIds": [
+        "DRINK-SERVICE",
+        "UMBRELLA-P",
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        19.33676,
+        8.618400000000001,
+        18.376160000000002
+      ],
+      "target": [
+        14.075000000000001,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "정수·커피·다과",
+        "P",
+        "프린터",
+        "사진 영역"
+      ],
+      "triangles": 800,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-WC-M-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "DIFFUSER-M",
+        "SOAP-M",
+        "TOWEL-M",
+        "ROLL-M",
+        "BIN-M",
+        "EXHAUST-M",
+        "LIGHT-M"
+      ],
+      "room": "WC-M",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 0,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [
+        "toilet",
+        "washbasin"
+      ],
+      "secondaryCorridorVisible": true,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        12.501039999999998,
+        6.9498000000000015,
+        4.2513
+      ],
+      "target": [
+        17.049999999999997,
+        0.95,
+        9.9375
+      ],
+      "visibleLabels": [
+        "독립 출입",
+        "양변기",
+        "세면대",
+        "회전 여유 검토 · Ø 1.5 m",
+        "디퓨저"
+      ],
+      "triangles": 748,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-WC-F-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "DIFFUSER-F",
+        "SOAP-F",
+        "TOWEL-F",
+        "ROLL-F",
+        "BIN-F",
+        "EXHAUST-F",
+        "LIGHT-F",
+        "WOMEN-WASTE"
+      ],
+      "room": "WC-F",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 0,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [
+        "toilet",
+        "washbasin"
+      ],
+      "secondaryCorridorVisible": true,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        12.501039999999996,
+        6.9498000000000015,
+        18.3487
+      ],
+      "target": [
+        17.049999999999997,
+        0.9500000000000001,
+        12.662500000000001
+      ],
+      "visibleLabels": [
+        "독립 출입",
+        "양변기",
+        "세면대",
+        "회전 여유 검토 · Ø 1.5 m",
+        "디퓨저"
+      ],
+      "triangles": 760,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-corridor-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-L",
+        "FE-R"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "corridor",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo"
+      ],
+      "operationFloorZones": [
+        "ENTRY-MAT"
+      ],
+      "operationRenderIds": [
+        "ENTRY-MAT",
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 0,
+      "desks": 0,
+      "appliances": 0,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        10.7312,
+        18.468,
+        25.602400000000003
+      ],
+      "target": [
+        9.5,
+        0.95,
+        7.750000000000001
+      ],
+      "visibleLabels": [
+        "복도 · 1.6 m",
+        "수업 안내",
+        "지나간 말들"
+      ],
+      "triangles": 940,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-all-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 1,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-L",
+        "FE-R",
+        "FE-O"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "DIFFUSER-M",
+        "SOAP-M",
+        "TOWEL-M",
+        "ROLL-M",
+        "BIN-M",
+        "EXHAUST-M",
+        "LIGHT-M",
+        "DIFFUSER-F",
+        "SOAP-F",
+        "TOWEL-F",
+        "ROLL-F",
+        "BIN-F",
+        "EXHAUST-F",
+        "LIGHT-F",
+        "WOMEN-WASTE",
+        "FIRST-AID"
+      ],
+      "room": "all",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "CUP-BIN-P",
+        "PEN-A",
+        "PEN-B",
+        "PEN-C",
+        "PEN-D",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "LIQUID-BIN-P",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 72,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "COAT-B-L",
+        "COAT-B-R",
+        "COAT-C-L",
+        "COAT-C-R",
+        "COAT-D",
+        "CARE-SINK",
+        "CARE-LOCK",
+        "PRINT-O",
+        "UMBRELLA-P",
+        "TEACH-A",
+        "TEACH-B",
+        "TEACH-C",
+        "TEACH-D"
+      ],
+      "operationCountertopItems": [
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "PRINTER-O"
+      ],
+      "operationWallItems": [
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo",
+        "MIC-A",
+        "MIC-B",
+        "MIC-C",
+        "MIC-D"
+      ],
+      "operationFloorZones": [
+        "ENTRY-MAT",
+        "DRINK-SERVICE"
+      ],
+      "operationRenderIds": [
+        "ENTRY-MAT",
+        "DRINK-SERVICE",
+        "COAT-A",
+        "COAT-B-L",
+        "COAT-B-R",
+        "COAT-C-L",
+        "COAT-C-R",
+        "COAT-D",
+        "CARE-SINK",
+        "CARE-LOCK",
+        "PRINT-O",
+        "UMBRELLA-P",
+        "TEACH-A",
+        "TEACH-B",
+        "TEACH-C",
+        "TEACH-D",
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "PRINTER-O",
+        "PEN-A",
+        "PEN-B",
+        "PEN-C",
+        "PEN-D",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "LIQUID-BIN-P",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC",
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo",
+        "MIC-A",
+        "MIC-B",
+        "MIC-C",
+        "MIC-D"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 8,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 9,
+      "desks": 72,
+      "appliances": 14,
+      "consultFurniture": [
+        "folded-table",
+        "chair-rack"
+      ],
+      "sourceRevision": 6,
+      "cameras": 4,
+      "sanitaryFixtures": [
+        "toilet",
+        "washbasin",
+        "toilet",
+        "washbasin"
+      ],
+      "secondaryCorridorVisible": true,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        30.628089073090532,
+        34.43203983592148,
+        35.46363702932865
+      ],
+      "target": [
+        9.5,
+        0.95,
+        7.050000000000001
+      ],
+      "visibleLabels": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "사무실",
+        "남 WC"
+      ],
+      "triangles": 18094,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-A-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        16.953735032891462,
+        19.059131254830277,
+        19.30674711319886
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "전면 거울 · 커튼 뒤",
+        "후면 다크 배경"
+      ],
+      "triangles": 4494,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-B-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "B",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-B"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-B-L",
+        "COAT-B-R",
+        "TEACH-B"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-B"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-B-L",
+        "COAT-B-R",
+        "TEACH-B",
+        "PEN-B",
+        "MIC-B"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        20.646500000000003,
+        13.22875,
+        14.5565
+      ],
+      "target": [
+        12.425,
+        0.9500000000000001,
+        3.5000000000000004
+      ],
+      "visibleLabels": [
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "외투 8칸 목표",
+        "외투 8칸 목표"
+      ],
+      "triangles": 3152,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-C-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "C",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-C"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-C-L",
+        "COAT-C-R",
+        "TEACH-C"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-C"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-C-L",
+        "COAT-C-R",
+        "TEACH-C",
+        "PEN-C",
+        "MIC-C"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        24.9465,
+        13.22875,
+        14.556500000000003
+      ],
+      "target": [
+        16.725,
+        0.95,
+        3.500000000000001
+      ],
+      "visibleLabels": [
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "외투 8칸 목표",
+        "외투 8칸 목표"
+      ],
+      "triangles": 3140,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-D-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "D",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-D"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-D",
+        "TEACH-D"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-D"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-D",
+        "TEACH-D",
+        "PEN-D",
+        "MIC-D"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        11.253529020696785,
+        13.001304971823338,
+        22.298711441626715
+      ],
+      "target": [
+        3.075,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "H",
+        "C · 상부 후보",
+        "강사"
+      ],
+      "triangles": 3068,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-office-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-O"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "FIRST-AID"
+      ],
+      "room": "office",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 8,
+      "mainStorage": [],
+      "operationFixtures": [
+        "PRINT-O"
+      ],
+      "operationCountertopItems": [
+        "PRINTER-O"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "PRINT-O",
+        "PRINTER-O",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 8,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 8,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        15.209143954972316,
+        11.310746119988316,
+        20.860572904962773
+      ],
+      "target": [
+        8.1,
+        0.9499999999999996,
+        11.3
+      ],
+      "visibleLabels": [
+        "H",
+        "복합기·서류·재고장",
+        "A4 복합기",
+        "구급함"
+      ],
+      "triangles": 2268,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-consult-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 1,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "consult",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "CARE-SINK",
+        "CARE-LOCK"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "CARE-SINK",
+        "CARE-LOCK",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [
+        "folded-table",
+        "chair-rack"
+      ],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        17.9367618485958,
+        10.25795866017683,
+        19.889093520525392
+      ],
+      "target": [
+        11.55,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "VR · 2 × 2 m 비움",
+        "접의자 4개",
+        "접은 테이블 / 상부 선반"
+      ],
+      "triangles": 484,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-photo-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "photo",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "UMBRELLA-P"
+      ],
+      "operationCountertopItems": [
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [
+        "DRINK-SERVICE"
+      ],
+      "operationRenderIds": [
+        "DRINK-SERVICE",
+        "UMBRELLA-P",
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        20.125439632460782,
+        9.767808352635287,
+        19.436798126412775
+      ],
+      "target": [
+        14.075000000000001,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "P",
+        "프린터",
+        "사진 영역"
+      ],
+      "triangles": 800,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-WC-M-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "DIFFUSER-M",
+        "SOAP-M",
+        "TOWEL-M",
+        "ROLL-M",
+        "BIN-M",
+        "EXHAUST-M",
+        "LIGHT-M"
+      ],
+      "room": "WC-M",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 0,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [
+        "toilet",
+        "washbasin"
+      ],
+      "secondaryCorridorVisible": true,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        11.680330098861008,
+        8.032266160364944,
+        3.225412623576262
+      ],
+      "target": [
+        17.049999999999997,
+        0.95,
+        9.9375
+      ],
+      "visibleLabels": [
+        "독립 출입",
+        "양변기",
+        "세면대",
+        "디퓨저"
+      ],
+      "triangles": 748,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-WC-F-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "DIFFUSER-F",
+        "SOAP-F",
+        "TOWEL-F",
+        "ROLL-F",
+        "BIN-F",
+        "EXHAUST-F",
+        "LIGHT-F",
+        "WOMEN-WASTE"
+      ],
+      "room": "WC-F",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 0,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [
+        "toilet",
+        "washbasin"
+      ],
+      "secondaryCorridorVisible": true,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        11.680330098861011,
+        8.032266160364937,
+        19.374587376423733
+      ],
+      "target": [
+        17.049999999999997,
+        0.9500000000000001,
+        12.662500000000001
+      ],
+      "visibleLabels": [
+        "독립 출입",
+        "양변기",
+        "세면대",
+        "디퓨저"
+      ],
+      "triangles": 760,
+      "overflow": false,
+      "minFont": 12
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-corridor-vr.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-L",
+        "FE-R"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "corridor",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo"
+      ],
+      "operationFloorZones": [
+        "ENTRY-MAT"
+      ],
+      "operationRenderIds": [
+        "ENTRY-MAT",
+        "ENTRY-GUIDE",
+        "PAST-WORDS",
+        "STATUS-A",
+        "STATUS-B",
+        "STATUS-C",
+        "STATUS-D",
+        "STATUS-office",
+        "STATUS-consult",
+        "STATUS-photo"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 0,
+      "desks": 0,
+      "appliances": 0,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        11.021897738914934,
+        22.604162272832866,
+        29.817517214266555
+      ],
+      "target": [
+        9.5,
+        0.95,
+        7.750000000000001
+      ],
+      "visibleLabels": [
+        "복도 · 1.6 m",
+        "수업 안내",
+        "지나간 말들"
+      ],
+      "triangles": 940,
+      "overflow": false,
+      "minFont": 12
+    }
+  ],
+  "states": [
+    {
+      "width": 780,
+      "mode": {
+        "consultTabletVisible": true,
+        "consultTabletCount": 1,
+        "unmodeledItems": [
+          "창문",
+          "일반실 급배기",
+          "전실 향 배치"
+        ],
+        "safetyReview": false,
+        "legalCompliance": "not-verified",
+        "egressPathsVerified": false,
+        "extinguisherIds": [],
+        "detectorCandidateIds": [],
+        "exitCandidates": [],
+        "doorReviewRooms": [],
+        "essentialFixtureIds": [],
+        "room": "consult",
+        "mode": "consult",
+        "mainMode": "lecture",
+        "contents": false,
+        "storedItemIds": [
+          "CARE-LONG-TOOLS",
+          "CARE-CHEMICALS",
+          "CARE-WET-TRAY",
+          "TANK-CLEAN-KIT",
+          "CARE-DRY-STOCK"
+        ],
+        "visibleStoredItemIds": [],
+        "visibleDesks": 0,
+        "mainStorage": [],
+        "operationFixtures": [
+          "CARE-SINK",
+          "CARE-LOCK"
+        ],
+        "operationCountertopItems": [],
+        "operationWallItems": [],
+        "operationFloorZones": [],
+        "operationRenderIds": [
+          "CARE-SINK",
+          "CARE-LOCK",
+          "CARE-LONG-TOOLS",
+          "CARE-CHEMICALS",
+          "CARE-WET-TRAY",
+          "TANK-CLEAN-KIT",
+          "CARE-DRY-STOCK"
+        ],
+        "operationsAmendment": "2026-10-01",
+        "operationsSupplement": 2,
+        "staffStorageDesks": 0,
+        "mirror": null,
+        "rooms": 1,
+        "desks": 0,
+        "appliances": 2,
+        "consultFurniture": [
+          "folding-table",
+          "folding-chair",
+          "folding-chair",
+          "folding-chair",
+          "folding-chair"
+        ],
+        "sourceRevision": 6,
+        "cameras": 0,
+        "sanitaryFixtures": [],
+        "secondaryCorridorVisible": false,
+        "wallPlanHeight": 2.8,
+        "cutWallHeight": 0.96,
+        "webgl": true,
+        "renderer": "WebKit WebGL",
+        "camera": [
+          16.870224000000004,
+          8.429160000000001,
+          18.454784
+        ],
+        "target": [
+          11.55,
+          0.95,
+          11.3
+        ],
+        "visibleLabels": [
+          "AP",
+          "H",
+          "4인 상담 · iPad",
+          "관리장 · 내부 세척"
+        ],
+        "triangles": 772
+      }
+    },
+    {
+      "width": 390,
+      "mode": {
+        "consultTabletVisible": true,
+        "consultTabletCount": 1,
+        "unmodeledItems": [
+          "창문",
+          "일반실 급배기",
+          "전실 향 배치"
+        ],
+        "safetyReview": false,
+        "legalCompliance": "not-verified",
+        "egressPathsVerified": false,
+        "extinguisherIds": [],
+        "detectorCandidateIds": [],
+        "exitCandidates": [],
+        "doorReviewRooms": [],
+        "essentialFixtureIds": [],
+        "room": "consult",
+        "mode": "consult",
+        "mainMode": "lecture",
+        "contents": false,
+        "storedItemIds": [
+          "CARE-LONG-TOOLS",
+          "CARE-CHEMICALS",
+          "CARE-WET-TRAY",
+          "TANK-CLEAN-KIT",
+          "CARE-DRY-STOCK"
+        ],
+        "visibleStoredItemIds": [],
+        "visibleDesks": 0,
+        "mainStorage": [],
+        "operationFixtures": [
+          "CARE-SINK",
+          "CARE-LOCK"
+        ],
+        "operationCountertopItems": [],
+        "operationWallItems": [],
+        "operationFloorZones": [],
+        "operationRenderIds": [
+          "CARE-SINK",
+          "CARE-LOCK",
+          "CARE-LONG-TOOLS",
+          "CARE-CHEMICALS",
+          "CARE-WET-TRAY",
+          "TANK-CLEAN-KIT",
+          "CARE-DRY-STOCK"
+        ],
+        "operationsAmendment": "2026-10-01",
+        "operationsSupplement": 2,
+        "staffStorageDesks": 0,
+        "mirror": null,
+        "rooms": 1,
+        "desks": 0,
+        "appliances": 2,
+        "consultFurniture": [
+          "folding-table",
+          "folding-chair",
+          "folding-chair",
+          "folding-chair",
+          "folding-chair"
+        ],
+        "sourceRevision": 6,
+        "cameras": 0,
+        "sanitaryFixtures": [],
+        "secondaryCorridorVisible": false,
+        "wallPlanHeight": 2.8,
+        "cutWallHeight": 0.96,
+        "webgl": true,
+        "renderer": "WebKit WebGL",
+        "camera": [
+          16.81176,
+          8.6184,
+          18.376160000000002
+        ],
+        "target": [
+          11.55,
+          0.95,
+          11.3
+        ],
+        "visibleLabels": [
+          "AP",
+          "H",
+          "4인 상담 · iPad",
+          "관리장 · 내부 세척"
+        ],
+        "triangles": 772
+      }
+    },
+    {
+      "width": 320,
+      "mode": {
+        "consultTabletVisible": true,
+        "consultTabletCount": 1,
+        "unmodeledItems": [
+          "창문",
+          "일반실 급배기",
+          "전실 향 배치"
+        ],
+        "safetyReview": false,
+        "legalCompliance": "not-verified",
+        "egressPathsVerified": false,
+        "extinguisherIds": [],
+        "detectorCandidateIds": [],
+        "exitCandidates": [],
+        "doorReviewRooms": [],
+        "essentialFixtureIds": [],
+        "room": "consult",
+        "mode": "consult",
+        "mainMode": "lecture",
+        "contents": false,
+        "storedItemIds": [
+          "CARE-LONG-TOOLS",
+          "CARE-CHEMICALS",
+          "CARE-WET-TRAY",
+          "TANK-CLEAN-KIT",
+          "CARE-DRY-STOCK"
+        ],
+        "visibleStoredItemIds": [],
+        "visibleDesks": 0,
+        "mainStorage": [],
+        "operationFixtures": [
+          "CARE-SINK",
+          "CARE-LOCK"
+        ],
+        "operationCountertopItems": [],
+        "operationWallItems": [],
+        "operationFloorZones": [],
+        "operationRenderIds": [
+          "CARE-SINK",
+          "CARE-LOCK",
+          "CARE-LONG-TOOLS",
+          "CARE-CHEMICALS",
+          "CARE-WET-TRAY",
+          "TANK-CLEAN-KIT",
+          "CARE-DRY-STOCK"
+        ],
+        "operationsAmendment": "2026-10-01",
+        "operationsSupplement": 2,
+        "staffStorageDesks": 0,
+        "mirror": null,
+        "rooms": 1,
+        "desks": 0,
+        "appliances": 2,
+        "consultFurniture": [
+          "folding-table",
+          "folding-chair",
+          "folding-chair",
+          "folding-chair",
+          "folding-chair"
+        ],
+        "sourceRevision": 6,
+        "cameras": 0,
+        "sanitaryFixtures": [],
+        "secondaryCorridorVisible": false,
+        "wallPlanHeight": 2.8,
+        "cutWallHeight": 0.96,
+        "webgl": true,
+        "renderer": "WebKit WebGL",
+        "camera": [
+          17.9367618485958,
+          10.25795866017683,
+          19.889093520525392
+        ],
+        "target": [
+          11.55,
+          0.95,
+          11.3
+        ],
+        "visibleLabels": [
+          "AP",
+          "H",
+          "4인 상담 · iPad"
+        ],
+        "triangles": 772
+      }
+    }
+  ],
+  "mainModes": [
+    {
+      "width": 780,
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "dance",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [
+        {
+          "kind": "table-cart",
+          "storedKind": "desk",
+          "count": 8
+        },
+        {
+          "kind": "table-cart",
+          "storedKind": "desk",
+          "count": 8
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        }
+      ],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "open",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.126323985005694,
+        14.454959559437428,
+        15.504366738455934
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "전면 풀월 거울 · 커튼 열림",
+        "후면 다크 배경",
+        "TV 도킹 후보",
+        "책상 16 · 수납 후보",
+        "의자 16 · 수납 후보",
+        "외투·실내화 16칸 목표"
+      ],
+      "triangles": 2170,
+      "overflow": false
+    },
+    {
+      "width": 780,
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.126323985005694,
+        14.454959559437428,
+        15.504366738455934
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "전면 거울 · 커튼 뒤",
+        "후면 다크 배경",
+        "외투·실내화 16칸 목표"
+      ],
+      "triangles": 4586,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "dance",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [
+        {
+          "kind": "table-cart",
+          "storedKind": "desk",
+          "count": 8
+        },
+        {
+          "kind": "table-cart",
+          "storedKind": "desk",
+          "count": 8
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        }
+      ],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "open",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.97184,
+        16.0056,
+        16.641440000000003
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "C · 상부 후보",
+        "전면 풀월 거울 · 커튼 열림",
+        "TV 도킹 후보",
+        "책상 16 · 수납 후보",
+        "의자 16 · 수납 후보"
+      ],
+      "triangles": 2146,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.97184,
+        16.0056,
+        16.641440000000003
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "전면 거울 · 커튼 뒤",
+        "후면 다크 배경"
+      ],
+      "triangles": 4574,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "dance",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 0,
+      "mainStorage": [
+        {
+          "kind": "table-cart",
+          "storedKind": "desk",
+          "count": 8
+        },
+        {
+          "kind": "table-cart",
+          "storedKind": "desk",
+          "count": 8
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "chair-stack",
+          "storedKind": "chair",
+          "count": 4
+        }
+      ],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "open",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        16.953735032891462,
+        19.059131254830277,
+        19.30674711319886
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "C · 상부 후보",
+        "전면 풀월 거울 · 커튼 열림",
+        "TV 도킹 후보",
+        "책상 16 · 수납 후보",
+        "의자 16 · 수납 후보"
+      ],
+      "triangles": 1946,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": false,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.96,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        16.953735032891462,
+        19.059131254830277,
+        19.30674711319886
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "전면 거울 · 커튼 뒤",
+        "후면 다크 배경"
+      ],
+      "triangles": 4494,
+      "overflow": false
+    }
+  ],
+  "storageViews": [
+    {
+      "width": 780,
+      "filename": "3d-780-A-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [
+        "PEN-A"
+      ],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.126323985005694,
+        14.454959559437428,
+        15.504366738455934
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "강사",
+        "전면 거울 · 커튼 뒤",
+        "후면 다크 배경",
+        "펜 2개"
+      ],
+      "triangles": 4646,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시교사 장 위쪽 얕은 서랍 · 대여 펜 2개 · 반납 자리와 수업 전원을 표시장 안쪽 작은 표기: 대여 펜 · 마이크 반납 · 수업 전원",
+      "contentHidden": false
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-office-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-O"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "FIRST-AID"
+      ],
+      "room": "office",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleStoredItemIds": [
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleDesks": 8,
+      "mainStorage": [],
+      "operationFixtures": [
+        "PRINT-O"
+      ],
+      "operationCountertopItems": [
+        "PRINTER-O"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "PRINT-O",
+        "PRINTER-O",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 8,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 8,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        13.899386603589118,
+        9.102765806496041,
+        19.099175087585365
+      ],
+      "target": [
+        8.1,
+        0.9499999999999996,
+        11.3
+      ],
+      "visibleLabels": [
+        "복합기·서류·재고장",
+        "A4 복합기",
+        "분실물",
+        "구급함"
+      ],
+      "triangles": 2388,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시공용 출력장 오른쪽 아래 · 일반 소형 분실물 1상자 · 귀중품은 별도 잠금 서랍직원 8자리: 한쪽 가방 또는 접은 외투·잠금 서랍 / 반대쪽 PC 후보. 초록 무릎·발 영역과 본체 열배출은 실물 검증 전.장 안쪽 작은 표기: 일반 분실물 · 귀중 분실물 · 학생 서류 · 개점 카드 · 마감 카드 · 상시 유지 / 작업 완료 후 종료 / 퇴근 시 종료",
+      "contentHidden": false
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-photo-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "photo",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "visibleStoredItemIds": [
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "UMBRELLA-P"
+      ],
+      "operationCountertopItems": [
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [
+        "DRINK-SERVICE"
+      ],
+      "operationRenderIds": [
+        "DRINK-SERVICE",
+        "UMBRELLA-P",
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        19.190600000000003,
+        8.1415,
+        18.1796
+      ],
+      "target": [
+        14.075000000000001,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "미닫이 출입",
+        "AP",
+        "H",
+        "정수·커피·다과",
+        "P",
+        "사진 영역",
+        "잔음료·빈 컵"
+      ],
+      "triangles": 916,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시하부 컵 수거편의대 하부 · 밀폐 가능한 잔음료통 1개 · 컵통과 분리해 직원이 수거장 안쪽 작은 표기: 남은 음료 · 빈 컵",
+      "contentHidden": false
+    },
+    {
+      "width": 780,
+      "filename": "3d-780-consult-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 1,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "consult",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "visibleStoredItemIds": [
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "CARE-SINK",
+        "CARE-LOCK"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "CARE-SINK",
+        "CARE-LOCK",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [
+        "folded-table",
+        "chair-rack"
+      ],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        16.870224000000004,
+        8.429160000000001,
+        18.454784
+      ],
+      "target": [
+        11.55,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "VR · 2 × 2 m 비움",
+        "접의자 4개",
+        "접은 테이블 / 상부 선반",
+        "관리장 · 내부 세척",
+        "청소약품 잠금 칸",
+        "물통 도구"
+      ],
+      "triangles": 556,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시관리장 오른쪽 위 · 전용 솔·천·접이 받침 1세트 · 7개 물통 동시 건조 아님상담·VR 종료 후 세척·급수 · 급배수 현장 연결 미확정장 안쪽 작은 표기: 물통 전용 · 청소용 · 상담·VR 종료 후",
+      "contentHidden": false
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-A-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [
+        "PEN-A"
+      ],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.97184,
+        16.0056,
+        16.641440000000003
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "전면 거울 · 커튼 뒤",
+        "후면 다크 배경",
+        "펜 2개"
+      ],
+      "triangles": 4634,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시교사 장 위쪽 얕은 서랍 · 대여 펜 2개 · 반납 자리와 수업 전원을 표시장 안쪽 작은 표기: 대여 펜 · 마이크 반납 · 수업 전원",
+      "contentHidden": false
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-office-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-O"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "FIRST-AID"
+      ],
+      "room": "office",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleStoredItemIds": [
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleDesks": 8,
+      "mainStorage": [],
+      "operationFixtures": [
+        "PRINT-O"
+      ],
+      "operationCountertopItems": [
+        "PRINTER-O"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "PRINT-O",
+        "PRINTER-O",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 8,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 8,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        14.04380474447727,
+        9.612400471049515,
+        19.29339258740047
+      ],
+      "target": [
+        8.1,
+        0.9499999999999996,
+        11.3
+      ],
+      "visibleLabels": [
+        "A4 복합기",
+        "분실물",
+        "구급함"
+      ],
+      "triangles": 2388,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시공용 출력장 오른쪽 아래 · 일반 소형 분실물 1상자 · 귀중품은 별도 잠금 서랍직원 8자리: 한쪽 가방 또는 접은 외투·잠금 서랍 / 반대쪽 PC 후보. 초록 무릎·발 영역과 본체 열배출은 실물 검증 전.장 안쪽 작은 표기: 일반 분실물 · 귀중 분실물 · 학생 서류 · 개점 카드 · 마감 카드 · 상시 유지 / 작업 완료 후 종료 / 퇴근 시 종료",
+      "contentHidden": false
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-photo-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "photo",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "visibleStoredItemIds": [
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "UMBRELLA-P"
+      ],
+      "operationCountertopItems": [
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [
+        "DRINK-SERVICE"
+      ],
+      "operationRenderIds": [
+        "DRINK-SERVICE",
+        "UMBRELLA-P",
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        19.33676,
+        8.618400000000001,
+        18.376160000000002
+      ],
+      "target": [
+        14.075000000000001,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "정수·커피·다과",
+        "P",
+        "사진 영역",
+        "잔음료·빈 컵"
+      ],
+      "triangles": 916,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시하부 컵 수거편의대 하부 · 밀폐 가능한 잔음료통 1개 · 컵통과 분리해 직원이 수거장 안쪽 작은 표기: 남은 음료 · 빈 컵",
+      "contentHidden": false
+    },
+    {
+      "width": 390,
+      "filename": "3d-390-consult-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 1,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "consult",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "visibleStoredItemIds": [
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "CARE-SINK",
+        "CARE-LOCK"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "CARE-SINK",
+        "CARE-LOCK",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [
+        "folded-table",
+        "chair-rack"
+      ],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        16.81176,
+        8.6184,
+        18.376160000000002
+      ],
+      "target": [
+        11.55,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "VR · 2 × 2 m 비움",
+        "접의자 4개",
+        "접은 테이블 / 상부 선반",
+        "물통 도구"
+      ],
+      "triangles": 556,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시관리장 오른쪽 위 · 전용 솔·천·접이 받침 1세트 · 7개 물통 동시 건조 아님상담·VR 종료 후 세척·급수 · 급배수 현장 연결 미확정장 안쪽 작은 표기: 물통 전용 · 청소용 · 상담·VR 종료 후",
+      "contentHidden": false
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-A-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "A",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "PEN-A"
+      ],
+      "visibleStoredItemIds": [
+        "PEN-A"
+      ],
+      "visibleDesks": 16,
+      "mainStorage": [],
+      "operationFixtures": [
+        "COAT-A",
+        "TEACH-A"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [
+        "MIC-A"
+      ],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "COAT-A",
+        "TEACH-A",
+        "PEN-A",
+        "MIC-A"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": {
+        "height": 2.4,
+        "width": 9.4,
+        "curtain": "closed",
+        "reflective": true
+      },
+      "rooms": 1,
+      "desks": 16,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 1,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        16.953735032891462,
+        19.059131254830277,
+        19.30674711319886
+      ],
+      "target": [
+        5.2,
+        0.95,
+        3.5
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "C · 상부 후보",
+        "전면 거울 · 커튼 뒤",
+        "후면 다크 배경"
+      ],
+      "triangles": 4554,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시교사 장 위쪽 얕은 서랍 · 대여 펜 2개 · 반납 자리와 수업 전원을 표시장 안쪽 작은 표기: 대여 펜 · 마이크 반납 · 수업 전원",
+      "contentHidden": false
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-office-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [
+        "FE-O"
+      ],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [
+        "FIRST-AID"
+      ],
+      "room": "office",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleStoredItemIds": [
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "visibleDesks": 8,
+      "mainStorage": [],
+      "operationFixtures": [
+        "PRINT-O"
+      ],
+      "operationCountertopItems": [
+        "PRINTER-O"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "PRINT-O",
+        "PRINTER-O",
+        "LOST-BOX-O",
+        "PAPER-O",
+        "STUDENT-FILES-O",
+        "VALUABLES-O",
+        "TONER-O",
+        "SNACK-RESERVE-O",
+        "STAFF-01-BAG",
+        "STAFF-01-VALUABLES",
+        "STAFF-01-PC",
+        "STAFF-02-BAG",
+        "STAFF-02-VALUABLES",
+        "STAFF-02-PC",
+        "STAFF-03-BAG",
+        "STAFF-03-VALUABLES",
+        "STAFF-03-PC",
+        "STAFF-04-BAG",
+        "STAFF-04-VALUABLES",
+        "STAFF-04-PC",
+        "STAFF-05-BAG",
+        "STAFF-05-VALUABLES",
+        "STAFF-05-PC",
+        "STAFF-06-BAG",
+        "STAFF-06-VALUABLES",
+        "STAFF-06-PC",
+        "STAFF-07-BAG",
+        "STAFF-07-VALUABLES",
+        "STAFF-07-PC",
+        "STAFF-08-BAG",
+        "STAFF-08-VALUABLES",
+        "STAFF-08-PC"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 8,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 8,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        15.209143954972316,
+        11.310746119988316,
+        20.860572904962773
+      ],
+      "target": [
+        8.1,
+        0.9499999999999996,
+        11.3
+      ],
+      "visibleLabels": [
+        "A4 복합기",
+        "분실물",
+        "구급함"
+      ],
+      "triangles": 2388,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시공용 출력장 오른쪽 아래 · 일반 소형 분실물 1상자 · 귀중품은 별도 잠금 서랍직원 8자리: 한쪽 가방 또는 접은 외투·잠금 서랍 / 반대쪽 PC 후보. 초록 무릎·발 영역과 본체 열배출은 실물 검증 전.장 안쪽 작은 표기: 일반 분실물 · 귀중 분실물 · 학생 서류 · 개점 카드 · 마감 카드 · 상시 유지 / 작업 완료 후 종료 / 퇴근 시 종료",
+      "contentHidden": false
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-photo-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 0,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "photo",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "visibleStoredItemIds": [
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "UMBRELLA-P"
+      ],
+      "operationCountertopItems": [
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P"
+      ],
+      "operationWallItems": [],
+      "operationFloorZones": [
+        "DRINK-SERVICE"
+      ],
+      "operationRenderIds": [
+        "DRINK-SERVICE",
+        "UMBRELLA-P",
+        "WATER-P",
+        "COFFEE-P",
+        "BOTTLE-P",
+        "CUPS-P",
+        "CUP-BIN-P",
+        "LIQUID-BIN-P"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        20.125439632460782,
+        9.767808352635287,
+        19.436798126412775
+      ],
+      "target": [
+        14.075000000000001,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "AP",
+        "H",
+        "P",
+        "사진 영역",
+        "잔음료·빈 컵"
+      ],
+      "triangles": 916,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시하부 컵 수거편의대 하부 · 밀폐 가능한 잔음료통 1개 · 컵통과 분리해 직원이 수거장 안쪽 작은 표기: 남은 음료 · 빈 컵",
+      "contentHidden": false
+    },
+    {
+      "width": 320,
+      "filename": "3d-320-consult-contents.png",
+      "consultTabletVisible": false,
+      "consultTabletCount": 1,
+      "unmodeledItems": [
+        "창문",
+        "일반실 급배기",
+        "전실 향 배치"
+      ],
+      "safetyReview": false,
+      "legalCompliance": "not-verified",
+      "egressPathsVerified": false,
+      "extinguisherIds": [],
+      "detectorCandidateIds": [],
+      "exitCandidates": [],
+      "doorReviewRooms": [],
+      "essentialFixtureIds": [],
+      "room": "consult",
+      "mode": "vr",
+      "mainMode": "lecture",
+      "contents": true,
+      "storedItemIds": [
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "visibleStoredItemIds": [
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "visibleDesks": 0,
+      "mainStorage": [],
+      "operationFixtures": [
+        "CARE-SINK",
+        "CARE-LOCK"
+      ],
+      "operationCountertopItems": [],
+      "operationWallItems": [],
+      "operationFloorZones": [],
+      "operationRenderIds": [
+        "CARE-SINK",
+        "CARE-LOCK",
+        "CARE-LONG-TOOLS",
+        "CARE-CHEMICALS",
+        "CARE-WET-TRAY",
+        "TANK-CLEAN-KIT",
+        "CARE-DRY-STOCK"
+      ],
+      "operationsAmendment": "2026-10-01",
+      "operationsSupplement": 2,
+      "staffStorageDesks": 0,
+      "mirror": null,
+      "rooms": 1,
+      "desks": 0,
+      "appliances": 2,
+      "consultFurniture": [
+        "folded-table",
+        "chair-rack"
+      ],
+      "sourceRevision": 6,
+      "cameras": 0,
+      "sanitaryFixtures": [],
+      "secondaryCorridorVisible": false,
+      "wallPlanHeight": 2.8,
+      "cutWallHeight": 0.24,
+      "webgl": true,
+      "renderer": "WebKit WebGL",
+      "camera": [
+        17.9367618485958,
+        10.25795866017683,
+        19.889093520525392
+      ],
+      "target": [
+        11.55,
+        0.95,
+        11.3
+      ],
+      "visibleLabels": [
+        "H",
+        "VR · 2 × 2 m 비움",
+        "접의자 4개",
+        "접은 테이블 / 상부 선반",
+        "물통 도구"
+      ],
+      "triangles": 556,
+      "overflow": false,
+      "contentText": "수납 확인용: 벽을 낮추고 장을 반투명으로 표시관리장 오른쪽 위 · 전용 솔·천·접이 받침 1세트 · 7개 물통 동시 건조 아님상담·VR 종료 후 세척·급수 · 급배수 현장 연결 미확정장 안쪽 작은 표기: 물통 전용 · 청소용 · 상담·VR 종료 후",
+      "contentHidden": false
+    }
+  ],
+  "initial": {
+    "consultTabletVisible": false,
+    "consultTabletCount": 0,
+    "unmodeledItems": [
+      "창문",
+      "일반실 급배기",
+      "전실 향 배치"
+    ],
+    "safetyReview": false,
+    "legalCompliance": "not-verified",
+    "egressPathsVerified": false,
+    "extinguisherIds": [],
+    "detectorCandidateIds": [],
+    "exitCandidates": [],
+    "doorReviewRooms": [],
+    "essentialFixtureIds": [],
+    "room": "A",
+    "mode": "vr",
+    "mainMode": "dance",
+    "contents": false,
+    "storedItemIds": [
+      "PEN-A"
+    ],
+    "visibleStoredItemIds": [],
+    "visibleDesks": 0,
+    "mainStorage": [
+      {
+        "kind": "table-cart",
+        "storedKind": "desk",
+        "count": 8
+      },
+      {
+        "kind": "table-cart",
+        "storedKind": "desk",
+        "count": 8
+      },
+      {
+        "kind": "chair-stack",
+        "storedKind": "chair",
+        "count": 4
+      },
+      {
+        "kind": "chair-stack",
+        "storedKind": "chair",
+        "count": 4
+      },
+      {
+        "kind": "chair-stack",
+        "storedKind": "chair",
+        "count": 4
+      },
+      {
+        "kind": "chair-stack",
+        "storedKind": "chair",
+        "count": 4
+      }
+    ],
+    "operationFixtures": [
+      "COAT-A",
+      "TEACH-A"
+    ],
+    "operationCountertopItems": [],
+    "operationWallItems": [
+      "MIC-A"
+    ],
+    "operationFloorZones": [],
+    "operationRenderIds": [
+      "COAT-A",
+      "TEACH-A",
+      "PEN-A",
+      "MIC-A"
+    ],
+    "operationsAmendment": "2026-10-01",
+    "operationsSupplement": 2,
+    "staffStorageDesks": 0,
+    "mirror": {
+      "height": 2.4,
+      "width": 9.4,
+      "curtain": "open",
+      "reflective": true
+    },
+    "rooms": 1,
+    "desks": 16,
+    "appliances": 2,
+    "consultFurniture": [],
+    "sourceRevision": 6,
+    "cameras": 1,
+    "sanitaryFixtures": [],
+    "secondaryCorridorVisible": false,
+    "wallPlanHeight": 2.8,
+    "cutWallHeight": 0.96,
+    "webgl": true,
+    "renderer": "WebKit WebGL",
+    "camera": [
+      14.126323985005694,
+      14.454959559437428,
+      15.504366738455934
+    ],
+    "target": [
+      5.2,
+      0.95,
+      3.5
+    ],
+    "visibleLabels": [
+      "AP",
+      "H",
+      "C · 상부 후보",
+      "전면 풀월 거울 · 커튼 열림",
+      "후면 다크 배경",
+      "TV 도킹 후보",
+      "책상 16 · 수납 후보",
+      "의자 16 · 수납 후보",
+      "외투·실내화 16칸 목표"
+    ],
+    "triangles": 2170
+  },
+  "source": "Revision 6 coordinates with 2026-10-01 operations and arrival/departure supplement, independent WCs and A lecture/dance modes; products and installation illustrative",
+  "threeVersion": "0.180.0",
+  "storageRoomSwitch": true,
+  "orbit": {
+    "before": [
+      30.628089073090532,
+      34.43203983592148,
+      35.46363702932865
+    ],
+    "after": [
+      -13.50484700458028,
+      43.73500533350022,
+      10.922756330745363
+    ],
+    "zoom": [
+      -10.736172020041323,
+      38.58575248445311,
+      10.456663095175713
+    ]
+  },
+  "pixels": {
+    "visible": 344080,
+    "total": 344080,
+    "colorBuckets": 92
+  }
+}

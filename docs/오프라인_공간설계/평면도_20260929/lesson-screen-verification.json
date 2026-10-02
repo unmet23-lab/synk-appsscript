@@ -1,0 +1,637 @@
+{
+  "fragmentBytes": 841128,
+  "screens": [
+    {
+      "mode": "standard",
+      "width": 320,
+      "scrollWidth": 320,
+      "root": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 306
+      },
+      "stage": {
+        "x": 0,
+        "y": 98,
+        "width": 320,
+        "height": 180
+      },
+      "fontLoaded": true,
+      "teacher": {
+        "x": 240,
+        "y": 224,
+        "width": 72,
+        "height": 40.5
+      },
+      "lines": [
+        {
+          "text": "한국어 · 약속하기",
+          "box": {
+            "x": 16,
+            "y": 107,
+            "width": 288,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "text": "같이 갈까요?",
+          "box": {
+            "x": 16,
+            "y": 128.59375,
+            "width": 208,
+            "height": 23.390625
+          },
+          "font": 18,
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "오늘 같이 공부해요.",
+          "box": {
+            "x": 16,
+            "y": 161,
+            "width": 208,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "몇 시에 만날까요?",
+          "box": {
+            "x": 16,
+            "y": 188.296875,
+            "width": 208,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "두 시에 만나요.",
+          "box": {
+            "x": 16,
+            "y": 215.59375,
+            "width": 208,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 208,
+          "clientWidth": 208
+        },
+        {
+          "text": "교재 · 디지털 판서 직접 캡처",
+          "box": {
+            "x": 16,
+            "y": 253,
+            "width": 208,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 208,
+          "clientWidth": 208
+        }
+      ],
+      "state": "자료 전체 · 선생님 우하단 432 × 243"
+    },
+    {
+      "mode": "pronunciation",
+      "width": 320,
+      "scrollWidth": 320,
+      "root": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 306
+      },
+      "stage": {
+        "x": 0,
+        "y": 98,
+        "width": 320,
+        "height": 180
+      },
+      "fontLoaded": true,
+      "teacher": {
+        "x": 13.328125,
+        "y": 134,
+        "width": 186.65625,
+        "height": 105
+      },
+      "lines": [
+        {
+          "text": "한국어 · 발음 연습",
+          "box": {
+            "x": 13.328125,
+            "y": 107,
+            "width": 288,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "text": "선생님 영상 + 발음 예문",
+          "box": {
+            "x": 13.328125,
+            "y": 253,
+            "width": 288,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "text": "가요",
+          "box": {
+            "x": 244.25,
+            "y": 160.796875,
+            "width": 31.46875,
+            "height": 23.390625
+          },
+          "font": 18,
+          "scrollWidth": 31,
+          "clientWidth": 31
+        },
+        {
+          "text": "가—요",
+          "box": {
+            "x": 243.5,
+            "y": 196.1875,
+            "width": 32.984375,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 33,
+          "clientWidth": 33
+        }
+      ],
+      "state": "선생님 1120 × 630 · 발음 예문 오른쪽"
+    },
+    {
+      "mode": "material",
+      "width": 320,
+      "scrollWidth": 320,
+      "root": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 306
+      },
+      "stage": {
+        "x": 0,
+        "y": 98,
+        "width": 320,
+        "height": 180
+      },
+      "fontLoaded": true,
+      "teacher": null,
+      "lines": [
+        {
+          "text": "한국어 · 약속하기",
+          "box": {
+            "x": 16,
+            "y": 107,
+            "width": 288,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "text": "같이 갈까요?",
+          "box": {
+            "x": 16,
+            "y": 128.59375,
+            "width": 288,
+            "height": 23.390625
+          },
+          "font": 18,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "text": "오늘 같이 공부해요.",
+          "box": {
+            "x": 16,
+            "y": 161,
+            "width": 288,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "text": "몇 시에 만날까요?",
+          "box": {
+            "x": 16,
+            "y": 188.296875,
+            "width": 288,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "text": "두 시에 만나요.",
+          "box": {
+            "x": 16,
+            "y": 215.59375,
+            "width": 288,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        },
+        {
+          "text": "교재 · 디지털 판서 직접 캡처",
+          "box": {
+            "x": 16,
+            "y": 253,
+            "width": 288,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 288,
+          "clientWidth": 288
+        }
+      ],
+      "state": "자료 1920 × 1080 · 선생님 영상 숨김"
+    },
+    {
+      "mode": "standard",
+      "width": 736,
+      "scrollWidth": 736,
+      "root": {
+        "x": 0,
+        "y": 0,
+        "width": 736,
+        "height": 540
+      },
+      "stage": {
+        "x": 0,
+        "y": 98,
+        "width": 736,
+        "height": 414
+      },
+      "fontLoaded": true,
+      "teacher": {
+        "x": 552,
+        "y": 387.796875,
+        "width": 165.59375,
+        "height": 93.140625
+      },
+      "lines": [
+        {
+          "text": "한국어 · 약속하기",
+          "box": {
+            "x": 36.796875,
+            "y": 118.6875,
+            "width": 662.390625,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 662,
+          "clientWidth": 662
+        },
+        {
+          "text": "같이 갈까요?",
+          "box": {
+            "x": 36.796875,
+            "y": 168.375,
+            "width": 478.390625,
+            "height": 23.390625
+          },
+          "font": 18,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        {
+          "text": "오늘 같이 공부해요.",
+          "box": {
+            "x": 36.796875,
+            "y": 242.890625,
+            "width": 478.390625,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        {
+          "text": "몇 시에 만날까요?",
+          "box": {
+            "x": 36.796875,
+            "y": 319.328125,
+            "width": 478.390625,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        {
+          "text": "두 시에 만나요.",
+          "box": {
+            "x": 36.796875,
+            "y": 395.765625,
+            "width": 478.390625,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        },
+        {
+          "text": "교재 · 디지털 판서 직접 캡처",
+          "box": {
+            "x": 36.796875,
+            "y": 475.3125,
+            "width": 478.390625,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 478,
+          "clientWidth": 478
+        }
+      ],
+      "state": "자료 전체 · 선생님 우하단 432 × 243"
+    },
+    {
+      "mode": "pronunciation",
+      "width": 736,
+      "scrollWidth": 736,
+      "root": {
+        "x": 0,
+        "y": 0,
+        "width": 736,
+        "height": 540
+      },
+      "stage": {
+        "x": 0,
+        "y": 98,
+        "width": 736,
+        "height": 414
+      },
+      "fontLoaded": true,
+      "teacher": {
+        "x": 30.65625,
+        "y": 180.796875,
+        "width": 429.328125,
+        "height": 241.5
+      },
+      "lines": [
+        {
+          "text": "한국어 · 발음 연습",
+          "box": {
+            "x": 30.65625,
+            "y": 118.6875,
+            "width": 662.390625,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 662,
+          "clientWidth": 662
+        },
+        {
+          "text": "선생님 영상 + 발음 예문",
+          "box": {
+            "x": 30.65625,
+            "y": 475.3125,
+            "width": 662.390625,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 662,
+          "clientWidth": 662
+        },
+        {
+          "text": "가요",
+          "box": {
+            "x": 582.25,
+            "y": 275.84375,
+            "width": 31.46875,
+            "height": 23.390625
+          },
+          "font": 18,
+          "scrollWidth": 31,
+          "clientWidth": 31
+        },
+        {
+          "text": "가—요",
+          "box": {
+            "x": 581.484375,
+            "y": 311.234375,
+            "width": 32.984375,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 33,
+          "clientWidth": 33
+        }
+      ],
+      "state": "선생님 1120 × 630 · 발음 예문 오른쪽"
+    },
+    {
+      "mode": "material",
+      "width": 736,
+      "scrollWidth": 736,
+      "root": {
+        "x": 0,
+        "y": 0,
+        "width": 736,
+        "height": 540
+      },
+      "stage": {
+        "x": 0,
+        "y": 98,
+        "width": 736,
+        "height": 414
+      },
+      "fontLoaded": true,
+      "teacher": null,
+      "lines": [
+        {
+          "text": "한국어 · 약속하기",
+          "box": {
+            "x": 36.796875,
+            "y": 118.6875,
+            "width": 662.390625,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 662,
+          "clientWidth": 662
+        },
+        {
+          "text": "같이 갈까요?",
+          "box": {
+            "x": 36.796875,
+            "y": 168.375,
+            "width": 662.390625,
+            "height": 23.390625
+          },
+          "font": 18,
+          "scrollWidth": 662,
+          "clientWidth": 662
+        },
+        {
+          "text": "오늘 같이 공부해요.",
+          "box": {
+            "x": 36.796875,
+            "y": 242.890625,
+            "width": 662.390625,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 662,
+          "clientWidth": 662
+        },
+        {
+          "text": "몇 시에 만날까요?",
+          "box": {
+            "x": 36.796875,
+            "y": 319.328125,
+            "width": 662.390625,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 662,
+          "clientWidth": 662
+        },
+        {
+          "text": "두 시에 만나요.",
+          "box": {
+            "x": 36.796875,
+            "y": 395.765625,
+            "width": 662.390625,
+            "height": 21
+          },
+          "font": 14,
+          "scrollWidth": 662,
+          "clientWidth": 662
+        },
+        {
+          "text": "교재 · 디지털 판서 직접 캡처",
+          "box": {
+            "x": 36.796875,
+            "y": 475.3125,
+            "width": 662.390625,
+            "height": 16
+          },
+          "font": 12,
+          "scrollWidth": 662,
+          "clientWidth": 662
+        }
+      ],
+      "state": "자료 1920 × 1080 · 선생님 영상 숨김"
+    }
+  ],
+  "errors": [],
+  "coordinates": {
+    "version": 1,
+    "canvas": {
+      "width": 1920,
+      "height": 1080
+    },
+    "coordinateUnit": "px",
+    "origin": "top-left",
+    "modes": {
+      "standard": {
+        "label": "기본 · 자료 크게 + 선생님 작게",
+        "material": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "textSafe": {
+          "x": 96,
+          "y": 54,
+          "width": 1248,
+          "height": 972
+        },
+        "teacherClearance": {
+          "x": 1376,
+          "y": 692,
+          "width": 544,
+          "height": 388
+        },
+        "teacher": {
+          "x": 1440,
+          "y": 756,
+          "width": 432,
+          "height": 243
+        },
+        "cue": null,
+        "state": "자료 전체 · 선생님 우하단 432 × 243",
+        "description": "교재와 디지털 판서를 직접 캡처한 16대9 수업 화면. 본문은 왼쪽, 선생님 영상은 글이 없는 우하단에 배치합니다."
+      },
+      "pronunciation": {
+        "label": "발음 · 선생님 크게",
+        "material": {
+          "x": 1280,
+          "y": 216,
+          "width": 560,
+          "height": 630
+        },
+        "textSafe": {
+          "x": 1280,
+          "y": 216,
+          "width": 560,
+          "height": 630
+        },
+        "teacherClearance": null,
+        "teacher": {
+          "x": 80,
+          "y": 216,
+          "width": 1120,
+          "height": 630
+        },
+        "cue": {
+          "x": 1280,
+          "y": 216,
+          "width": 560,
+          "height": 630
+        },
+        "state": "선생님 1120 × 630 · 발음 예문 오른쪽",
+        "description": "입모양을 볼 수 있도록 선생님 영상을 왼쪽에 크게 배치합니다. 오른쪽에는 가요라는 발음 예문만 표시합니다."
+      },
+      "material": {
+        "label": "자료 집중 · 선생님 숨김",
+        "material": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "textSafe": {
+          "x": 96,
+          "y": 54,
+          "width": 1728,
+          "height": 972
+        },
+        "teacherClearance": null,
+        "teacher": null,
+        "cue": null,
+        "state": "자료 1920 × 1080 · 선생님 영상 숨김",
+        "description": "선생님 영상이 없는 16대9 전체 자료 화면입니다. 교재와 디지털 판서를 화면 전체에서 볼 수 있습니다."
+      }
+    }
+  },
+  "keyboard": {
+    "modeAfterArrowDown": "pronunciation"
+  },
+  "stateRestore": "material"
+}
