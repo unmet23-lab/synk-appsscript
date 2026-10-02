@@ -204,3 +204,24 @@ test('a game passes the settings the person chose; a lock the content set for it
   assert.equal(coach.live(SPEC, { presentation: { support: 'step' }, declared: { mode: 'fixed' } }).settings().mode, 'fixed');
   assert.throws(() => coach.live(SPEC, { presentation: { minutes: 5 } }), /presentation accepts only/);
 });
+
+test('the help style a person chose on this device reaches every game until they change it or reset', () => {
+  const storage = memoryStorage(), clock = clockFrom('2026-10-02T09:00:00.000Z');
+  const hub = learning.createGame({ gameId: 'hub', map, storage, clock });
+  assert.equal(hub.presentation(), null);
+  assert.equal(hub.setPresentation({ support: 'step' }), true);
+  const game = learning.createGame({ gameId: 'order-rush', map, storage, clock });
+  assert.deepEqual(game.presentation(), { support: 'step' });
+  assert.equal(game.live(SPEC).settings().values.hint, 'early', 'remembered on this device and followed without the game passing it');
+  assert.equal(game.live(SPEC, { presentation: null }).settings().values.hint, 'normal', 'a game can play a round without it');
+  assert.equal(game.live(SPEC, { presentation: { support: 'independent' } }).settings().values.hint, 'late');
+  assert.equal(game.live(SPEC, { declared: { knobs: { hint: 1 } } }).settings().values.hint, 'normal', 'the content’s own lock still wins');
+  for (const bad of [{ minutes: 5 }, { support: 'maybe' }, { age: 40 }, {}]) assert.throws(() => hub.setPresentation(bad), /presentation accepts only/);
+  storage.setItem(`${learning.KEY}.device.presentation`, JSON.stringify({ v: 1, presentation: { gender: 'f' }, at: '2026-10-02T09:00:00.000Z' }));
+  assert.equal(game.presentation(), null, 'anything outside the vocabulary is never read back');
+  assert.equal(game.live(SPEC).settings().values.hint, 'normal');
+  hub.setPresentation({ support: 'independent' });
+  game.reset();
+  assert.equal(hub.presentation(), null, 'resetting the log forgets the chosen settings too');
+  assert.equal(game.live(SPEC).settings().values.hint, 'normal');
+});

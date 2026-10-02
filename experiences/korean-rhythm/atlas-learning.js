@@ -6747,8 +6747,9 @@ var SynkLearning = (() => {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       };
       var object = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+      var presentationOf = (value) => object(value) && Object.keys(value).length > 0 && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
       function createFlowPort({ storage, key, clock, epoch = () => null }) {
-        const FLOW = `${key}.flow`, TODAY = `${key}.today`;
+        const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
         const read = (name) => {
           try {
             const raw = storage?.getItem(name);
@@ -6789,6 +6790,16 @@ var SynkLearning = (() => {
             if (condition !== null && !Flow.CONDITIONS.includes(condition)) throw new TypeError("Atlas: invalid condition");
             return write(TODAY, condition === null ? null : { day: localDay(clock()), condition });
           },
+          // Set only by the person's own choice (a hub or settings screen); a value that is not in the
+          // vocabulary is never read back. null forgets it.
+          presentation() {
+            const value = read(PRESENT);
+            return value && value.v === 1 && presentationOf(value.presentation) ? { ...value.presentation } : null;
+          },
+          setPresentation(presentation) {
+            if (presentation !== null && !presentationOf(presentation)) throw new TypeError(`Atlas: presentation accepts only ${Object.keys(Flow.PRESENTATION).join(", ")}`);
+            return write(PRESENT, presentation === null ? null : { v: 1, presentation: { ...presentation }, at: clock() });
+          },
           epoch,
           memories: () => memories(),
           save(contentId, memory, since) {
@@ -6804,12 +6815,14 @@ var SynkLearning = (() => {
           clear() {
             write(FLOW, null);
             write(TODAY, null);
+            write(PRESENT, null);
           }
         });
       }
       function createLive({ coach, port, clock }) {
-        return function live(input, { declared = {}, presentation = null, skillIds = [], arm = "adapted", condition, level = "standard", words = {} } = {}) {
+        return function live(input, { declared = {}, presentation, skillIds = [], arm = "adapted", condition, level = "standard", words = {} } = {}) {
           const spec = Flow.defineContent(input);
+          if (presentation === void 0) presentation = typeof port.presentation === "function" ? port.presentation() : null;
           if (presentation != null) {
             const knobs = { ...Flow.declaredFrom(spec, presentation).knobs, ...declared && declared.knobs };
             if (Object.keys(knobs).length) declared = { ...declared, knobs };
@@ -7413,6 +7426,8 @@ var SynkLearning = (() => {
         } });
         api.today = flowPort.today;
         api.setToday = flowPort.setToday;
+        api.presentation = flowPort.presentation;
+        api.setPresentation = flowPort.setPresentation;
         api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
         return api;
       }

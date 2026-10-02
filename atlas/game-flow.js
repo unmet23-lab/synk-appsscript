@@ -4,15 +4,20 @@
 // the content's knobs. One small memory per content is kept next to the learning log, on this
 // device only: no identity, no answers, no text, not synced. Resetting the log clears it.
 // Today's condition (good / okay / tired / no_time) lasts until the end of the local day.
+// The presentation the person chose (help style, text size, motion, explanation; Flow.PRESENTATION)
+// stays on this device until they change it or reset the log, and every game's live() follows it.
 const Flow = require('./flow');
 const VellumFlow = require('./vellum-flow');
 const localDay = iso => { const d = new Date(iso); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
+// Only the presentation vocabulary, with a value the person can choose (null means not chosen).
+const presentationOf = value => object(value) && Object.keys(value).length > 0
+  && Object.entries(value).every(([key, choice]) => Object.hasOwn(Flow.PRESENTATION, key) && (choice === null || Flow.PRESENTATION[key].includes(choice)));
 
 // `epoch` is the learning log's current epoch: a reset (in this tab or another) starts a new one,
 // and memory written under an older epoch is never read or written back.
 function createFlowPort({ storage, key, clock, epoch = () => null }) {
-  const FLOW = `${key}.flow`, TODAY = `${key}.today`;
+  const FLOW = `${key}.flow`, TODAY = `${key}.today`, PRESENT = `${key}.presentation`;
   const read = name => { try { const raw = storage?.getItem(name); return raw == null || raw === '' ? null : JSON.parse(raw); } catch { return null; } };
   const write = (name, value) => {
     try {
@@ -35,19 +40,28 @@ function createFlowPort({ storage, key, clock, epoch = () => null }) {
       if (condition !== null && !Flow.CONDITIONS.includes(condition)) throw new TypeError('Atlas: invalid condition');
       return write(TODAY, condition === null ? null : { day: localDay(clock()), condition });
     },
+    // Set only by the person's own choice (a hub or settings screen); a value that is not in the
+    // vocabulary is never read back. null forgets it.
+    presentation() { const value = read(PRESENT); return value && value.v === 1 && presentationOf(value.presentation) ? { ...value.presentation } : null; },
+    setPresentation(presentation) {
+      if (presentation !== null && !presentationOf(presentation)) throw new TypeError(`Atlas: presentation accepts only ${Object.keys(Flow.PRESENTATION).join(', ')}`);
+      return write(PRESENT, presentation === null ? null : { v: 1, presentation: { ...presentation }, at: clock() });
+    },
     epoch,
     memories: () => memories(),
     save(contentId, memory, since) { return update(since, all => { all.contents[contentId] = memory; }); },
     decline(contentId, at, since) { return update(since, all => { all.declined[contentId] = at; }); },
-    clear() { write(FLOW, null); write(TODAY, null); },
+    clear() { write(FLOW, null); write(TODAY, null); write(PRESENT, null); },
   });
 }
 
 function createLive({ coach, port, clock }) {
-  return function live(input, { declared = {}, presentation = null, skillIds = [], arm = 'adapted', condition, level = 'standard', words = {} } = {}) {
+  return function live(input, { declared = {}, presentation, skillIds = [], arm = 'adapted', condition, level = 'standard', words = {} } = {}) {
     const spec = Flow.defineContent(input);
     // The settings the person chose (Core personalization) hold help and declared knobs;
-    // a lock this content set for itself (`declared.knobs`) still wins.
+    // a lock this content set for itself (`declared.knobs`) still wins. Without a value from the
+    // game, the presentation remembered on this device applies; null means none for this round.
+    if (presentation === undefined) presentation = typeof port.presentation === 'function' ? port.presentation() : null;
     if (presentation != null) {
       const knobs = { ...Flow.declaredFrom(spec, presentation).knobs, ...(declared && declared.knobs) };
       if (Object.keys(knobs).length) declared = { ...declared, knobs };

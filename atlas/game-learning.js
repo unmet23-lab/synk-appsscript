@@ -369,6 +369,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   flowPort = createFlowPort({ storage, key, clock: monotonicClock, epoch: () => { try { refresh(); } catch { /* the log reports its own error */ } return epoch; } });
   api.today = flowPort.today;
   api.setToday = flowPort.setToday;
+  api.presentation = flowPort.presentation;
+  api.setPresentation = flowPort.setPresentation;
   api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
   return api;
 }
