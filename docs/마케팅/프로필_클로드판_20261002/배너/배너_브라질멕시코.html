@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK LAB 브라질·멕시코 배너 · 2026-10-02</title>
+<!-- ../가입준비_브라질멕시코.py가 지은 파일이다. 고칠 때는 그 스크립트를 고친다. -->
+<link rel="stylesheet" href="../../../디자인/SNS키트/kit.css">
+<style>
+  @font-face{font-family:'LAB JP';font-weight:700 900;src:local('Noto Sans JP Bold'),local('NotoSansJP-Bold'),local('Yu Gothic Bold'),local('YuGothic-Bold')}
+  @font-face{font-family:'LAB TC';font-weight:700 900;src:local('Microsoft JhengHei UI Bold'),local('Microsoft JhengHei Bold'),local('MicrosoftJhengHeiUIBold'),local('MicrosoftJhengHeiBold')}
+  @font-face{font-family:'LAB MY';font-weight:700 900;src:local('Myanmar Text Bold'),local('MyanmarText-Bold')}
+  @font-face{font-family:'LAB TH';font-weight:700 900;src:local('Leelawadee UI Bold'),local('LeelawadeeUI-Bold')}
+  @font-face{font-family:'LAB IN';font-weight:700 900;src:local('Nirmala UI Bold'),local('NirmalaUI-Bold')}
+  body{margin:0;background:#d9dbe0;display:flex;flex-direction:column;gap:40px;padding:40px;align-items:flex-start}
+  .k-slide{font-family:var(--k-sans)}
+  .bg-cream{background:url("../../../디자인/펠트부품/assets/배경/wide-cream.webp") center/max(2560px,100%) auto no-repeat,#fbf7f0;color:#14110f}
+  .abs{position:absolute}
+  .label{margin:0;font:600 var(--ls,30px)/1.1 var(--k-mono);letter-spacing:.08em;color:#ae322a}
+  .title{margin:0;font-weight:900;letter-spacing:-.03em}
+  .title .ln{display:block;white-space:nowrap}
+  .title.script{letter-spacing:0}
+  .sub{margin:0;font-weight:600;line-height:1.25;letter-spacing:-.02em;opacity:.88}
+  .hl-ink{background:linear-gradient(transparent 62%,rgba(255,224,122,.95) 62% 92%,transparent 92%)}
+  .obj{position:absolute;height:auto}
+  .cut{filter:drop-shadow(5px 0 0 #fff) drop-shadow(-5px 0 0 #fff) drop-shadow(0 5px 0 #fff) drop-shadow(0 -5px 0 #fff) drop-shadow(0 18px 20px rgba(0,0,0,.28))}
+</style>
+<script>
+  // 제목 한 줄이 칸보다 길면 넘치지 않을 때까지 글자를 줄인다(줄바꿈으로 세 줄이 되지 않게)
+  document.fonts.ready.then(() => document.querySelectorAll('.fit').forEach((el) => {
+    let fs = parseFloat(getComputedStyle(el).fontSize);
+    const over = () => [...el.querySelectorAll('.ln')].some((l) => l.scrollWidth > el.clientWidth + 1);
+    while (over() && fs > 40) { fs -= 2; el.style.fontSize = fs + 'px'; }
+  }));
+</script>
+</head>
+<body>
+
+<!-- lab-mx-youtube · @synklabmexico · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다 -->
+<section class="k-slide bg-cream k-corners" lang="es" data-fmt="yt-banner" data-name="lab-mx-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px;--corner:220px;--corner-inset:60px">
+  <div class="abs" style="left:560px;top:528px;width:1120px">
+    <p class="label" style="--ls:44px">SYNK LAB · MÉXICO</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln"><span class="hl-ink">Lo que quieres decir</span>,</span><span class="ln">dilo en coreano.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-몽글_눈웃음.webp" alt="" style="width:330px;left:1700px;top:560px">
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-까몽_본체.webp" alt="" style="width:250px;right:150px;bottom:130px">
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-마린_본체.webp" alt="" style="width:230px;left:170px;bottom:150px">
+</section>
+
+<!-- lab-br-youtube · @synklabbrasil · 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다 -->
+<section class="k-slide bg-cream k-corners" lang="pt-BR" data-fmt="yt-banner" data-name="lab-br-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px;--corner:220px;--corner-inset:60px">
+  <div class="abs" style="left:560px;top:528px;width:1120px">
+    <p class="label" style="--ls:44px">SYNK LAB · BRASIL</p>
+    <h1 class="title fit k-latin" style="margin-top:12px;font-size:86px;line-height:1.08"><span class="ln"><span class="hl-ink">O que você quer dizer</span>,</span><span class="ln">em coreano.</span></h1>
+    <p class="sub" lang="ko" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-몽글_눈웃음.webp" alt="" style="width:330px;left:1700px;top:560px">
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-까몽_본체.webp" alt="" style="width:250px;right:150px;bottom:130px">
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-마린_본체.webp" alt="" style="width:230px;left:170px;bottom:150px">
+</section>
+
+</body>
+</html>

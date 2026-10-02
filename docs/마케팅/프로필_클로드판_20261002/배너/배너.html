@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SYNK 계정 배너 · 클로드판 2026-10-02</title>
+<!-- 계정 배너(커버·채널아트) 원고. node tools/SNS키트굽기.js 배너.html --sheet 로 굽는다.
+     바탕은 실제 펠트 결(docs/디자인/펠트부품), 글자는 SUIT, 펠트 물건·마스코트는 SNS 키트 자산.
+     각 판의 --safe-*는 그 플랫폼에서 글자를 둘 수 있는 자리다(유튜브는 모든 기기에서 보이는 가운데 1546×423). -->
+<link rel="stylesheet" href="../../../디자인/SNS키트/kit.css">
+<style>
+  body{margin:0;background:#d9dbe0;display:flex;flex-direction:column;gap:40px;padding:40px;align-items:flex-start}
+  .k-slide{font-family:var(--k-sans)}
+  /* 바탕 결은 반복 무늬가 없는 넓은 판(tools/펠트결_넓히기.py). 2×2 거울 타일(seam-*)은 큰 면에서 마름모 무늬가 보였다 */
+  .bg-black{background:url("../../../디자인/펠트부품/assets/배경/wide-black.webp") center/max(2560px,100%) auto no-repeat,#141210;color:#fff}
+  .bg-lapis{background:linear-gradient(rgba(61,107,201,.30),rgba(61,107,201,.30)),url("../../../디자인/펠트부품/assets/배경/wide-lapis.webp") center/max(2560px,100%) auto no-repeat,#3d6bc9;color:#fff}
+  .bg-cream{background:url("../../../디자인/펠트부품/assets/배경/wide-cream.webp") center/max(2560px,100%) auto no-repeat,#fbf7f0;color:#14110f}
+  .bg-coral{background:linear-gradient(rgba(249,104,89,.30),rgba(249,104,89,.30)),url("../../../디자인/펠트부품/assets/ui/wide-coral.webp") center/max(2560px,100%) auto no-repeat,#f96859;color:#2a120d}
+  .abs{position:absolute}
+  .label{margin:0;font:800 var(--ls,30px)/1.1 var(--k-sans);letter-spacing:-.01em;opacity:.9}
+  .label.mono{font-family:var(--k-mono);font-weight:600;letter-spacing:.08em}
+  .title{margin:0;font-weight:900;letter-spacing:-.045em;line-height:1.08}
+  .title .ln{display:block}
+  .sub{margin:0;font-weight:600;line-height:1.25;letter-spacing:-.02em;opacity:.88}
+  .hl-butter{color:#f5c445}
+  .hl-ink{background:linear-gradient(transparent 62%,rgba(255,224,122,.95) 62% 92%,transparent 92%)}
+  .obj{position:absolute;height:auto;filter:drop-shadow(0 18px 22px rgba(0,0,0,.32))}
+  .cut{filter:drop-shadow(5px 0 0 #fff) drop-shadow(-5px 0 0 #fff) drop-shadow(0 5px 0 #fff) drop-shadow(0 -5px 0 #fff) drop-shadow(0 18px 20px rgba(0,0,0,.28))}
+  .arch{position:absolute;overflow:hidden;border-radius:999px 999px 28px 28px;box-shadow:0 0 0 10px #fbf7f0,0 30px 40px -18px rgba(0,0,0,.7)}
+  .arch img{width:100%;height:100%;object-fit:cover;object-position:50% 18%}
+  .chip{display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#2a120d;background:url("../../../디자인/펠트부품/assets/ui/chip-blush-long.webp") center/100% 100% no-repeat}
+  .chips{display:flex;gap:18px}
+</style>
+</head>
+<body>
+
+<!-- 1 yuhobuilds 유튜브 2560×1440 · 가운데 1546×423(x507~2053, y508~931)이 모든 기기에서 보인다 -->
+<section class="k-slide bg-black k-corners" data-fmt="yt-banner" data-name="yuhobuilds-youtube" data-acc="builds"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px;--corner:220px;--corner-inset:60px">
+  <div class="arch" style="left:560px;top:520px;width:300px;height:400px"><img src="yuho-b.webp" alt="유호"></div>
+  <div class="abs" style="left:930px;top:540px;width:1110px">
+    <p class="label" style="--ls:44px;color:#f5c445;letter-spacing:.04em">유호 · SYNK 대표</p>
+    <h1 class="title" style="margin-top:12px;font-size:90px"><span class="ln">개발 0에서,</span><span class="ln"><span class="hl-butter">AI로 회사를</span> 만드는 중</span></h1>
+    <p class="sub" style="margin-top:16px;font-size:46px">막힌 장면 · 바꾼 방법 · 실제로 쓴 도구</p>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/felt-laptop.webp" alt="" style="width:520px;right:120px;bottom:120px">
+</section>
+
+<!-- 2 synkbrief 유튜브 2560×1440 -->
+<section class="k-slide bg-lapis k-corners" data-fmt="yt-banner" data-name="synkbrief-youtube" data-acc="brief"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px;--corner:220px;--corner-inset:60px">
+  <div class="abs" style="left:560px;top:530px;width:1080px">
+    <p class="label mono" style="--ls:44px">synkbrief · SYNK SHIFT</p>
+    <h1 class="title" style="margin-top:12px;font-size:90px"><span class="ln">AI, 내 일에 맞게</span><span class="ln">골라 드립니다</span></h1>
+    <div class="chips" style="margin-top:16px"><span class="chip" style="width:190px;height:64px;font-size:44px">뉴스</span><span class="chip" style="width:190px;height:64px;font-size:44px">활용</span><span class="chip" style="width:190px;height:64px;font-size:44px">기초</span></div>
+  </div>
+  <img class="obj" src="../../../디자인/펠트부품/assets/배경/note-brief.webp" alt="" style="width:420px;left:1620px;top:520px;transform:rotate(-6deg)">
+  <img class="obj" src="../../../디자인/SNS키트/assets/felt-laptop.webp" alt="" style="width:560px;right:90px;bottom:110px">
+</section>
+
+<!-- 3 LAB 몽골 유튜브 @synkkorean 2560×1440 (몽골어 원어민 검수 전) -->
+<section class="k-slide bg-cream k-corners" data-fmt="yt-banner" data-name="lab-youtube" data-acc="lab"
+  style="--w:2560px;--h:1440px;--safe-t:508px;--safe-b:508px;--safe-l:507px;--safe-r:507px;--corner:220px;--corner-inset:60px">
+  <div class="abs" style="left:560px;top:530px;width:1120px">
+    <p class="label mono" style="--ls:44px;color:#ae322a">SYNK LAB · MONGOLIA</p>
+    <h1 class="title k-latin" style="margin-top:12px;font-size:86px;letter-spacing:-.03em"><span class="ln">Солонгосоор</span><span class="ln"><span class="hl-ink">өөрийн бодлоо</span> хэлье</span></h1>
+    <p class="sub" style="margin-top:16px;font-size:46px">하고 싶은 말, 한국어로</p>
+  </div>
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-몽글_눈웃음.webp" alt="" style="width:330px;left:1700px;top:560px">
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-까몽_본체.webp" alt="" style="width:250px;right:150px;bottom:130px">
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-마린_본체.webp" alt="" style="width:230px;left:170px;bottom:150px">
+</section>
+
+<!-- 4 LAB 페이스북 1640×596 · 휴대폰은 좌우를 잘라 가운데 1061px만 보인다 -->
+<section class="k-slide bg-cream k-corners" data-fmt="fb-cover" data-name="lab-facebook" data-acc="lab"
+  style="--w:1640px;--h:596px;--safe-t:50px;--safe-b:50px;--safe-l:290px;--safe-r:290px;--corner:120px;--corner-inset:26px">
+  <div class="abs" style="left:300px;top:140px;width:760px">
+    <p class="label mono" style="--ls:22px;color:#ae322a">SYNK LAB · ULAANBAATAR</p>
+    <h1 class="title k-latin" style="margin-top:16px;font-size:64px;letter-spacing:-.03em"><span class="ln">Солонгосоор</span><span class="ln"><span class="hl-ink">өөрийн бодлоо</span> хэлье</span></h1>
+    <p class="sub" style="margin-top:16px;font-size:26px">몽골어로 배우는 상황별 한국어 · 수업 소식</p>
+  </div>
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-몽글_눈웃음.webp" alt="" style="width:250px;left:1080px;top:150px">
+  <img class="obj cut" src="../../../디자인/SNS키트/assets/mascot-까몽_본체.webp" alt="" style="width:170px;right:90px;bottom:60px">
+</section>
+
+<!-- 5 유호 링크드인 1584×396 · 왼쪽 아래(x56~360, y212~396)는 프로필 사진 자리 -->
+<section class="k-slide bg-black" data-fmt="li-banner" data-name="yuho-linkedin" data-acc="builds"
+  style="--w:1584px;--h:396px;--safe-t:40px;--safe-b:40px;--safe-l:420px;--safe-r:60px">
+  <div class="abs" style="left:430px;top:92px;width:820px">
+    <p class="label" style="--ls:22px;color:#f5c445;letter-spacing:.06em">SYNK 대표 · 양유호</p>
+    <h1 class="title" style="margin-top:14px;font-size:58px"><span class="ln">개발 0에서, <span class="hl-butter">AI로 회사를</span> 만드는 중</span></h1>
+    <p class="sub" style="margin-top:14px;font-size:24px">한국어 학습 앱 · 홈페이지 · 영상을 AI와 직접 만듭니다</p>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/felt-laptop.webp" alt="" style="width:300px;right:70px;top:60px">
+</section>
+
+<!-- 6 SYNK 회사 링크드인 1512×256 · 가장자리가 잘린다 -->
+<section class="k-slide bg-black" data-fmt="li-company" data-name="synk-linkedin-company" data-acc="synk"
+  style="--w:1512px;--h:256px;--safe-t:28px;--safe-b:28px;--safe-l:120px;--safe-r:120px">
+  <div class="abs" style="left:130px;top:62px;width:720px">
+    <h1 class="title" style="font-size:46px">각자의 목표에 맞는 <span style="color:#c5d6f5">개인화 기술</span></h1>
+    <p class="sub" style="margin-top:14px;font-size:22px;letter-spacing:.06em;font-family:var(--k-mono);opacity:.75">LAB · SHIFT · PULSE · PATH</p>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-lab.webp" alt="" style="width:170px;left:900px;top:46px">
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-shift.webp" alt="" style="width:170px;left:1030px;top:56px">
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-pulse.webp" alt="" style="width:160px;left:1160px;top:44px">
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-path.webp" alt="" style="width:160px;left:1285px;top:60px">
+</section>
+
+<!-- 7 X 1500×500 · 왼쪽 아래는 프로필 사진 자리(글자는 x405~1435) -->
+<section class="k-slide bg-black k-corners" data-fmt="x-header" data-name="yuhobuilds-x" data-acc="builds"
+  style="--w:1500px;--h:500px;--safe-t:60px;--safe-b:60px;--safe-l:405px;--safe-r:65px;--corner:110px;--corner-inset:22px">
+  <div class="abs" style="left:420px;top:120px;width:720px">
+    <p class="label mono" style="--ls:24px;color:#f5c445">@yuhobuilds</p>
+    <h1 class="title" style="margin-top:14px;font-size:60px"><span class="ln">개발 0에서,</span><span class="ln"><span class="hl-butter">AI로 회사를</span> 만드는 중</span></h1>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/felt-laptop.webp" alt="" style="width:300px;right:80px;top:110px">
+</section>
+
+<!-- 8 Behance 3200×410 · 글자 자리 x1050~2570, y110~400 -->
+<section class="k-slide bg-black" data-fmt="be-header" data-name="behance" data-acc="synk"
+  style="--w:3200px;--h:410px;--safe-t:110px;--safe-b:10px;--safe-l:1050px;--safe-r:630px">
+  <div class="abs" style="left:1060px;top:128px;width:900px">
+    <h1 class="title" style="font-size:72px">펠트로 만든 브랜드 세계</h1>
+    <p class="sub" style="margin-top:10px;font-size:44px">SYNK · 브랜드 · 웹 · 영상</p>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-lab.webp" alt="" style="width:210px;left:1980px;top:120px">
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-shift.webp" alt="" style="width:210px;left:2130px;top:136px">
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-pulse.webp" alt="" style="width:200px;left:2290px;top:120px">
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-path.webp" alt="" style="width:200px;left:2420px;top:140px">
+</section>
+
+<!-- 9 SHIFT 핀터레스트 1600×900 -->
+<section class="k-slide bg-lapis k-corners" data-fmt="pin-cover" data-name="shift-pinterest" data-acc="brief"
+  style="--w:1600px;--h:900px;--safe-t:80px;--safe-b:80px;--safe-l:90px;--safe-r:90px;--corner:150px;--corner-inset:36px">
+  <div class="abs" style="left:120px;top:300px;width:760px">
+    <p class="label mono" style="--ls:24px">SYNK SHIFT · DESIGN</p>
+    <h1 class="title" style="margin-top:18px;font-size:84px"><span class="ln">펠트로 만든</span><span class="ln">브랜드 세계</span></h1>
+    <p class="sub" style="margin-top:18px;font-size:30px">홈페이지 · SNS 콘텐츠 · 캐릭터</p>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-lab.webp" alt="" style="width:330px;left:900px;top:170px">
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-shift.webp" alt="" style="width:340px;left:1180px;top:230px">
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-pulse.webp" alt="" style="width:320px;left:950px;top:470px">
+  <img class="obj" src="../../../디자인/SNS키트/assets/hero-path.webp" alt="" style="width:300px;left:1220px;top:500px">
+</section>
+
+<!-- 10 티스토리 PC 2400×900 -->
+<section class="k-slide bg-black k-corners" data-fmt="tistory" data-name="shift-tistory" data-acc="builds"
+  style="--w:2400px;--h:900px;--safe-t:120px;--safe-b:120px;--safe-l:300px;--safe-r:300px;--corner:170px;--corner-inset:44px">
+  <div class="abs" style="left:320px;top:290px;width:1200px">
+    <p class="label" style="--ls:44px;color:#f5c445;letter-spacing:.03em">유호의 작업 노트</p>
+    <h1 class="title" style="margin-top:16px;font-size:100px">AI로 회사를 만들며 <span class="hl-butter">쓴 방법</span></h1>
+    <p class="sub" style="margin-top:18px;font-size:46px">도구 · 설정 · 작업 순서 · 막혔을 때 바꾼 방법</p>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/felt-laptop.webp" alt="" style="width:520px;right:330px;top:200px">
+</section>
+
+<!-- 11 티스토리 모바일 390×300 -->
+<section class="k-slide bg-black" data-fmt="tistory-m" data-name="shift-tistory-mobile" data-acc="builds"
+  style="--w:390px;--h:300px;--safe-t:24px;--safe-b:24px;--safe-l:24px;--safe-r:24px">
+  <div class="abs" style="left:26px;top:88px;width:250px">
+    <h1 class="title" style="font-size:32px"><span class="ln">AI로 회사를</span><span class="ln">만들며 <span class="hl-butter">쓴 방법</span></span></h1>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/felt-laptop.webp" alt="" style="width:120px;right:16px;bottom:30px">
+</section>
+
+<!-- 12 네이버 블로그 966×360 -->
+<section class="k-slide bg-black" data-fmt="naver" data-name="shift-naverblog" data-acc="builds"
+  style="--w:966px;--h:360px;--safe-t:36px;--safe-b:36px;--safe-l:40px;--safe-r:40px">
+  <div class="abs" style="left:56px;top:96px;width:560px">
+    <p class="label" style="--ls:24px;color:#f5c445;letter-spacing:.03em">유호 · AI와 회사 만들기</p>
+    <h1 class="title" style="margin-top:12px;font-size:46px"><span class="ln">AI로 회사를 만들며</span><span class="ln"><span class="hl-butter">쓴 방법</span>을 적습니다</span></h1>
+  </div>
+  <img class="obj" src="../../../디자인/SNS키트/assets/felt-laptop.webp" alt="" style="width:250px;right:56px;top:70px">
+</section>
+
+</body>
+</html>

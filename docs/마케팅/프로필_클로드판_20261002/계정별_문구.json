@@ -1,0 +1,221 @@
+{
+ "revision": "2026-10-02-claude-v1.1",
+ "status": "1차 시안 · 사용자 반응 「훨씬 좋은데?」(10-02) · LAB 캐릭터는 몽글로 통일, 카카오 소개 교체 · 아직 어느 계정에도 반영하지 않음",
+ "request": "2026-10-02 사용자: 「우리 모든 sns계정 (수십개) 전부 소개서랑 프로필사진이나 레이아웃 지금 니 방식으로 전부 교체하고싶어. 지금 gpt 손 탔는데 특히 글이 너무 별로야. … 클로드버전으로 전부 교체해보고싶어.」",
+ "replaces": "docs/마케팅/프로필최신화_20260919/계정별_문구.json (v6, GPT 세션 작성)",
+ "rules": [
+  "첫 줄은 이 계정에서 무엇을 얻는지(구체적인 장면·결과). 「~입니다」 자기소개로 시작하지 않는다.",
+  "사실만 쓴다: 2026-06 번역용 AI 첫 결제, 울란바토르 한국어 학원 부원장, 개발 경험 없음, 직접 만드는 홈페이지·앱·영상. 없는 실적·고객·수강생 수를 쓰지 않는다.",
+  "진행 단계에 맞춘다: SHIFT·PATH는 준비 중으로, PULSE는 하고 있는 일로(2026-10-01 확정). 유학·취업은 PATH의 일이라 LAB·SHIFT 소개에서 뺀다.",
+  "SYNK 한 줄은 「각자의 목표에 맞는 개인화 기술」. 정보 계정은 따라 할 자료(맞춤 틀)를 함께 준다는 점을 쓴다.",
+  "플랫폼 글자 수 안에서 줄을 나눈다. 텔레그램 개인 소개는 줄바꿈 대신 「 | 」.",
+  "몽골어는 원어민 검수 전이다. 검수(tools/몽골어대조.js와 사람 검수)를 지나기 전에는 반영하지 않는다."
+ ],
+ "accounts": [
+  {
+   "id": "yuhobuilds-youtube",
+   "platform": "YouTube",
+   "handle": "@yuhobuilds",
+   "limit": 1000,
+   "name": "유호 · AI와 회사 만들기",
+   "bio": "개발을 하나도 몰랐던 사람이 AI로 회사를 만들고 있습니다.\n\n몽골 울란바토르의 한국어 학원에서 일하던 2026년 6월, 번역하려고 처음 AI를 결제했습니다. 그날부터 홈페이지와 학습 앱, 홍보 영상까지 AI와 함께 직접 만들고 있어요.\n\n이 채널에서는 그 과정을 그대로 보여 드립니다.\n· 막혔던 장면과 그때 바꾼 방법\n· 실제로 쓴 도구와 설정, 따라 할 수 있는 순서\n· 잘된 것뿐 아니라 망친 것까지\n\nAI를 처음 시작하는 분, 혼자 일을 꾸려 가는 분께 쓸모 있는 기록이 되면 좋겠습니다.\n\nSYNK · synk.im",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "yuhobuilds-instagram",
+   "platform": "Instagram",
+   "handle": "@yuhobuilds",
+   "limit": 150,
+   "bio": "개발 0에서 AI로 회사를 만드는 중\n막힌 장면, 바꾼 방법, 실제로 쓴 도구를 보여 드려요\nSYNK 대표 유호",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "yuhobuilds-tiktok",
+   "platform": "TikTok",
+   "handle": "@yuhobuilds",
+   "limit": 80,
+   "name": "유호 · AI와 회사 만들기",
+   "bio": "개발 0에서 AI로 회사 만드는 중. 막힌 장면과 해결법, 쓴 도구를 그대로 보여 드려요.",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "yuhobuilds-threads",
+   "platform": "Threads",
+   "handle": "@yuhobuilds",
+   "limit": 150,
+   "bio": "AI로 회사를 만들며 겪는 일을 적어요. 오늘 막힌 것, 바꿔 본 방법, 써 보니 괜찮았던 도구. 개발은 2026년 6월에 0에서 시작했습니다.",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "yuho-linkedin-primary",
+   "platform": "LinkedIn",
+   "handle": "양유호",
+   "limit": 2600,
+   "headline": "SYNK 대표 | 개발 경험 없이 AI로 교육·콘텐츠 회사를 직접 만들고 있습니다 | 한국어 학습 앱·홈페이지·영상 제작",
+   "bio": "SYNK를 만들고 있는 양유호입니다.\n\n몽골 울란바토르의 한국어 학원에서 부원장으로 일하던 2026년 6월, 번역을 하려고 처음 AI를 결제했습니다. 학생 문의가 늘어 관리가 어려워질 것 같아 출석 앱을 만들어 보려던 것이 시작이었어요. 개발을 배운 적은 없었고, 지금은 AI와 함께 회사의 홈페이지, 한국어 학습 앱과 게임, 홍보 영상과 디자인을 직접 만들고 있습니다.\n\nSYNK는 각자의 목표에 맞는 개인화 기술을 만듭니다.\n· LAB — 한국어를 배우는 사람이 자기 상황으로 연습하고, 다음에 무엇을 하면 되는지 알려 주는 수업과 앱\n· SHIFT — 회사와 기관이 AI를 실제 업무에 쓰도록 돕는 실무 교육·업무 자동화·브랜딩(준비 중)\n· PULSE — 음악·영상·캐릭터 콘텐츠와 자체 IP, 의뢰받는 AI 광고·브랜드필름·AI 모델 영상\n· PATH — 한국 유학과 취업을 준비하는 외국인을 위한 계획(준비 중)\n\n이곳에는 실제로 만든 것과 그 과정에서 내린 판단을 올립니다. 무엇을 시도했고, 어디서 막혔고, 무엇을 바꿨는지요.\n\nAI 도입이나 교육·콘텐츠 제작을 함께 고민할 분과 연결되면 좋겠습니다. synk.im",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "yuhobuilds-telegram",
+   "platform": "Telegram (개인)",
+   "handle": "@yuhobuilds",
+   "limit": 70,
+   "bio": "유호 | SYNK 대표 | AI로 회사 만드는 중 | synk.im",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "yuhobuilds-x",
+   "platform": "X",
+   "handle": "@yuhobuilds",
+   "limit": 160,
+   "bio": "개발 0에서 AI로 회사 SYNK를 만드는 유호. 막힌 장면, 바꾼 방법, 실제로 쓴 도구와 설정을 기록합니다.",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "yuhobuilds-behance",
+   "platform": "Behance",
+   "handle": "yuhobuilds",
+   "limit": 160,
+   "bio": "SYNK가 만든 브랜드·웹·영상 작업을 모았습니다. 펠트로 만든 브랜드 세계부터 홈페이지와 SNS 콘텐츠까지, 완성본과 만든 과정을 함께 올려요.",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "yuhobuilds-naver-clip",
+   "platform": "Naver Clip",
+   "handle": "@yuhobuilds",
+   "bio": "개발 0에서 AI로 회사 만드는 유호. 막힌 장면과 해결법, 실제로 쓴 도구를 짧은 영상으로 보여 드려요.",
+   "note": "옛 소개의 「유학·취업 연계」를 뺀다(PATH의 일).",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "synkbrief-youtube",
+   "platform": "YouTube",
+   "handle": "@synkbrief",
+   "limit": 1000,
+   "name": "SYNK 브리핑",
+   "bio": "AI, 어디서부터 어떻게 쓰면 될지 골라서 알려 드립니다.\n\nsynkbrief 뉴스 — 이번에 무엇이 바뀌었고 내 일에 어떤 영향이 있는지\nsynkbrief 활용 — 귀찮은 일을 쉽게 만드는 도구와 쓰는 법, 전후 차이까지\nsynkbrief 기초 — 처음이라면 가입부터 첫 사용까지 순서대로\n\n따라 할 수 있는 자료(요청문, 체크리스트, 따라 하기 PDF)를 영상과 함께 드립니다.\n\nSYNK SHIFT가 만드는 AI 활용 채널입니다.",
+   "website": "https://synk.im/shift/"
+  },
+  {
+   "id": "synkbrief-instagram",
+   "platform": "Instagram",
+   "handle": "@synkbrief",
+   "limit": 150,
+   "bio": "AI, 내 일에 맞게 골라 드려요\n뉴스 · 활용 · 기초\n따라 할 자료는 프로필 링크에서\nby SYNK SHIFT",
+   "website": "https://synk.im/shift/"
+  },
+  {
+   "id": "synkbrief-tiktok",
+   "platform": "TikTok",
+   "handle": "@synkbrief",
+   "limit": 80,
+   "bio": "AI 소식·활용법·기초를 내 일에 맞게 골라 설명해요. 따라 할 자료는 프로필 링크에서.",
+   "website": "https://synk.im/shift/"
+  },
+  {
+   "id": "shift-naverblog",
+   "platform": "Naver Blog",
+   "handle": "synkshift",
+   "name": "유호 · AI와 회사 만들기",
+   "bio": "AI로 회사를 만들며 쓴 방법을 글로 정리합니다. 실제로 쓴 도구와 설정, 작업 순서, 막혔을 때 바꾼 방법까지 따라 할 수 있게 적어요.",
+   "website": "https://synk.im/shift/"
+  },
+  {
+   "id": "shift-tistory",
+   "platform": "Tistory",
+   "handle": "yuhobuilds.tistory.com",
+   "bio": "유호의 작업 노트. AI로 홈페이지·앱·영상을 만들며 겪은 문제와 해결 과정을, 나중에 다시 찾아볼 수 있게 자세히 남깁니다.",
+   "website": "https://synk.im/shift/"
+  },
+  {
+   "id": "shift-pinterest",
+   "platform": "Pinterest",
+   "handle": "synkshift",
+   "limit": 160,
+   "bio": "SYNK의 펠트 브랜드 세계와 디자인 작업을 모았습니다. 홈페이지, SNS 콘텐츠, 캐릭터의 완성본과 레퍼런스. by SYNK SHIFT",
+   "note": "옛 소개의 「투명한 유리」를 뺀다(SNS 판에는 유리 효과를 쓰지 않는다, 키트 §10).",
+   "website": "https://synk.im/shift/"
+  },
+  {
+   "id": "shift-kakao",
+   "platform": "Kakao 채널",
+   "handle": "synkshift",
+   "limit": 55,
+   "bio": "기업·기관에 맞춘 AI 교육·컨설팅·브랜딩. AI로 회사를 만들며 익힌 방법으로 준비 중이에요.",
+   "note": "2026-10-02 사용자 「카카오 소개도 바꿔줘」로 바꾸기로 했다(지금 문구 「기업·기관 AI 교육·컨설팅·브랜딩」은 09-19 사용자가 직접 쓴 것). 카카오 채널 소개는 금칙어 검사가 있다. 09-19에 v6(46자)와 「AI 업무·문의」를 설명한 대안 둘이 금칙어로 거절됐고, 「SYNK SHIFT입니다. 기업·기관 AI 교육·컨설팅·브랜딩을 준비하고 있어요.」(v5)와 사용자 문구는 저장됐다. 그래서 「업무」「자동화」「문의」「상담」을 쓰지 않았다. 새 문구가 거절되면 fallback(v5에 「맞춤」만 더한 것)을 쓴다.",
+   "website": "https://synk.im/shift/",
+   "fallback": "SYNK SHIFT입니다. 기업·기관 맞춤 AI 교육·컨설팅·브랜딩을 준비하고 있어요."
+  },
+  {
+   "id": "synk-linkedin-company",
+   "platform": "LinkedIn 회사",
+   "handle": "synk-im",
+   "limit": 2000,
+   "tagline": "각자의 목표에 맞는 개인화 기술 — 한국어 학습, AI 실무, 콘텐츠",
+   "bio": "SYNK는 사람마다 다른 목표에 맞춰 배우고, 일하고, 즐길 수 있게 돕는 기술을 만듭니다.\n\nLAB — 한국어를 배우는 사람이 자기 상황으로 연습하고, 다음에 할 일을 알 수 있게 돕는 수업·학습 앱·게임\nSHIFT — 회사와 기관이 AI를 실제 업무에 쓰도록 돕는 실무 교육·업무 자동화·브랜딩(준비 중). 쓰는 방법은 @synkbrief에서 먼저 공개합니다\nPULSE — 음악·영상·캐릭터 콘텐츠와 자체 IP, 의뢰받는 AI 광고·브랜드필름·AI 모델 영상 제작\nPATH — 한국 유학과 취업을 준비하는 외국인을 위한 계획(준비 중)\n\n홈페이지와 학습 앱, 영상과 디자인까지 AI와 함께 직접 만듭니다. 만든 것과 그렇게 정한 이유를 이곳에 남깁니다.\n\nsynk.im",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "synklab-substack",
+   "platform": "Substack",
+   "handle": "synklab",
+   "name": "SYNK · 한국어와 AI",
+   "bio": "SYNK가 만들며 배운 것을 보내 드려요. 한국어 학습 이야기와, AI로 일하는 방법.",
+   "authorBio": "SYNK 대표 유호. 개발 0에서 시작해 AI로 회사를 만들고 있습니다.",
+   "about": "SYNK가 무언가를 만들며 배운 것을 편지로 보내 드립니다.\n\n## 한국어를 배우는 사람에게 · LAB\n자기 상황으로 연습하는 한국어, TOPIK과 한국 생활에 쓰는 표현, 수업과 학습 앱 소식. → synk.im/lab\n\n## AI로 일하고 싶은 사람에게 · SHIFT\n개발 경험 없이 AI로 홈페이지·앱·영상을 만들며 겪은 문제와 해결법, 그대로 따라 할 수 있는 순서. → synk.im/shift\n\n새 글을 이메일로 받고 싶다면 구독해 주세요. 관심 있는 쪽부터 읽어도 괜찮습니다.",
+   "website": "https://synk.im/"
+  },
+  {
+   "id": "lab-youtube",
+   "platform": "YouTube",
+   "handle": "@synkkorean",
+   "limit": 1000,
+   "name": "SYNK LAB Mongolia | Хөгжилтэй солонгос хэл",
+   "bio": "Солонгосоор өөрийн бодлоо хэлж сурцгаая.\n\nӨдөр тутмын нөхцөл байдлаас сонгоод, монгол тайлбартай богино видеогоор давтаж ярина. TOPIK-д бэлдэх, Солонгост амьдрахад хэрэгтэй хэллэгүүд ч бий.\n\nХичээллэх, амрах үедээ сонсох SYNK Radio-гийн K-LOFI хөгжим ч энд байна.\n\n몽골어 설명으로, 내가 고른 상황에서 따라 말하는 한국어 · TOPIK · 한국 생활",
+   "languageReview": "몽골어 원어민 검수 전",
+   "website": "https://synk.im/lab/",
+   "avatar": "프로필/avatar-lab.png (몽글 · 모든 LAB 계정 공통)"
+  },
+  {
+   "id": "lab-instagram",
+   "platform": "Instagram",
+   "handle": "@synk.mn",
+   "limit": 150,
+   "bio": "Солонгосоор өөрийн бодлоо хэлье\nНөхцөл байдлаар давтах солонгос хэл · TOPIK\n몽골어로 배우는 상황별 한국어",
+   "languageReview": "몽골어 원어민 검수 전",
+   "website": "https://synk.im/lab/",
+   "avatar": "프로필/avatar-lab.png (몽글 · 모든 LAB 계정 공통)"
+  },
+  {
+   "id": "lab-tiktok",
+   "platform": "TikTok",
+   "handle": "@synk.mn",
+   "limit": 80,
+   "bio": "Монгол тайлбартай солонгос хэл. Нөхцөл байдлаар давтаж ярь.",
+   "languageReview": "몽골어 원어민 검수 전",
+   "website": "https://synk.im/lab/",
+   "avatar": "프로필/avatar-lab.png (몽글 · 모든 LAB 계정 공통)"
+  },
+  {
+   "id": "lab-facebook",
+   "platform": "Facebook",
+   "handle": "synkworld",
+   "limit": 100,
+   "bio": "Улаанбаатар дахь SYNK LAB — солонгос хэлний хичээл, сургалтын мэдээ, материал.",
+   "note": "옛 소개의 「한국 유학 준비 소식」을 뺀다(PATH의 일). 페이지 이름 바꾸기는 60일 잠금이 있었다.",
+   "languageReview": "몽골어 원어민 검수 전",
+   "website": "https://synk.im/lab/",
+   "avatar": "프로필/avatar-lab.png (몽글 · 모든 LAB 계정 공통)"
+  },
+  {
+   "id": "lab-telegram",
+   "platform": "Telegram 채널",
+   "handle": "@synkmn",
+   "limit": 255,
+   "bio": "SYNK LAB-ийн хичээлийн мэдээ, монгол тайлбартай солонгос хэлний материал, шинэ апп-ын мэдээг эндээс аваарай.\n수업 공지 · 몽골어 설명 학습 자료 · 앱 소식\nsynk.im/lab/",
+   "languageReview": "몽골어 원어민 검수 전",
+   "website": "https://synk.im/lab/",
+   "avatar": "프로필/avatar-lab.png (몽글 · 모든 LAB 계정 공통)"
+  }
+ ]
+}

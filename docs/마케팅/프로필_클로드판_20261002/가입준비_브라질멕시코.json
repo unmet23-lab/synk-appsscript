@@ -1,0 +1,90 @@
+{
+ "revision": "2026-10-02",
+ "note": "계정 만들기는 사용자가 직접 한다",
+ "avatar": "프로필/avatar-lab.png",
+ "website": "https://synk.im/lab/",
+ "strategy": "docs/마케팅/LAB_브라질_멕시코_전략_20261002.md",
+ "languageReview": "AI 작성 · 원어민 확인 전",
+ "accounts": [
+  {
+   "id": "lab-mx-youtube",
+   "platform": "YouTube",
+   "country": "멕시코",
+   "locale": "es",
+   "name": "SYNK LAB México | Coreano divertido",
+   "handles": [
+    "synklabmexico",
+    "synklab.mx",
+    "synklabmx"
+   ],
+   "bio": "Lo que quieres decir, dilo en coreano.\n\nEscenas cortas de todos los días —y esas situaciones muy de K-drama— con las frases que los coreanos usan de verdad, con subtítulos en español. Mira la escena, escucha la frase y luego dila en voz alta, a tu manera.\n\nMongle, Kkamong y Marin, nuestros tres amigos de fieltro, reaccionan contigo.\n\nLos primeros episodios llegan pronto. También estamos creando una app para aprender coreano, y las novedades saldrán primero aquí.\n\nSYNK LAB · https://synk.im/lab/",
+   "length": 499,
+   "limit": 1000,
+   "koreanMeaning": "하고 싶은 말, 한국어로. 짧은 일상 장면과 드라마에 나올 법한 상황 속, 한국 사람이 실제로 쓰는 표현을 스페인어 자막으로 보여 줍니다. 장면을 보고, 표현을 듣고, 내 방식으로 소리 내어 말해 봐요. 펠트 친구 몽글·까몽·마린이 함께 반응해요. 첫 편을 준비하고 있어요. 한국어 학습 앱도 만들고 있고, 소식은 이 채널에서 먼저 전해요.",
+   "banner": {
+    "label": "SYNK LAB · MÉXICO",
+    "title": [
+     "Lo que quieres decir,",
+     "dilo en coreano."
+    ],
+    "hl": "Lo que quieres decir"
+   }
+  },
+  {
+   "id": "lab-mx-tiktok",
+   "platform": "TikTok",
+   "country": "멕시코",
+   "locale": "es",
+   "name": "SYNK LAB México",
+   "handles": [
+    "synklab.mx",
+    "synklab_mx",
+    "synklabmexico"
+   ],
+   "bio": "Lo que quieres decir, dilo en coreano. Escenas tipo K-drama y frases reales.",
+   "length": 76,
+   "limit": 80,
+   "koreanMeaning": "하고 싶은 말, 한국어로 말해. K-드라마 같은 장면과 진짜 쓰는 표현"
+  },
+  {
+   "id": "lab-br-instagram",
+   "platform": "Instagram",
+   "country": "브라질",
+   "locale": "pt-BR",
+   "name": "SYNK LAB Brasil",
+   "handles": [
+    "synklab.br",
+    "synklab_br",
+    "synklabbrasil"
+   ],
+   "bio": "O que você quer dizer, em coreano.\nCenas curtas, situações de dorama e frases reais, com legenda.\n하고 싶은 말, 한국어로",
+   "length": 111,
+   "limit": 150,
+   "koreanMeaning": "하고 싶은 말, 한국어로. 짧은 장면, 드라마 같은 상황, 진짜 쓰는 표현, 자막과 함께"
+  },
+  {
+   "id": "lab-br-youtube",
+   "platform": "YouTube",
+   "country": "브라질",
+   "locale": "pt-BR",
+   "name": "SYNK LAB Brasil | Coreano divertido",
+   "handles": [
+    "synklabbrasil",
+    "synklab.br",
+    "synklabbr"
+   ],
+   "bio": "O que você quer dizer, em coreano.\n\nCenas curtas do dia a dia — e aquelas situações bem de dorama — com as frases que os coreanos usam de verdade, legendadas em português. Veja a cena, escute a frase e depois fale em voz alta, do seu jeito.\n\nMongle, Kkamong e Marin, nossos três amigos de feltro, reagem junto com você.\n\nOs primeiros episódios estão chegando. Também estamos criando um app para aprender coreano, e as novidades saem primeiro aqui.\n\nSYNK LAB · https://synk.im/lab/",
+   "length": 480,
+   "limit": 1000,
+   "koreanMeaning": "하고 싶은 말, 한국어로. 짧은 일상 장면과 드라마에 나올 법한 상황 속, 한국 사람이 실제로 쓰는 표현을 포르투갈어 자막으로 보여 줍니다. 장면을 보고, 표현을 듣고, 내 방식으로 소리 내어 말해 봐요. 펠트 친구 몽글·까몽·마린이 함께 반응해요. 첫 편을 준비하고 있어요. 한국어 학습 앱도 만들고 있고, 소식은 이 채널에서 먼저 전해요.",
+   "banner": {
+    "label": "SYNK LAB · BRASIL",
+    "title": [
+     "O que você quer dizer,",
+     "em coreano."
+    ],
+    "hl": "O que você quer dizer"
+   }
+  }
+ ]
+}
