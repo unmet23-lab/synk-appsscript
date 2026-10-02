@@ -1,0 +1,287 @@
+{
+  "map_ver": "topik-i-practice-1-8923b769ed24",
+  "subject": "ko",
+  "sources": {
+    "practice-taxonomy": {
+      "path": "strata/topik-i.skills.json",
+      "sha256": "8923b769ed247dd6628df276fdd5e8ddf421d863b012f42aa34bce4e324c1513"
+    }
+  },
+  "nodes": [
+    {
+      "id": "ko.listening.word",
+      "kind": "skill",
+      "label_ko": "낱말 듣기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.detail",
+      "kind": "skill",
+      "label_ko": "듣고 세부 정보 찾기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.negation",
+      "kind": "skill",
+      "label_ko": "듣고 부정·변경 이해하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.sequence",
+      "kind": "skill",
+      "label_ko": "듣고 순서 이해하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.reason",
+      "kind": "skill",
+      "label_ko": "듣고 이유 이해하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.condition",
+      "kind": "skill",
+      "label_ko": "듣고 조건 이해하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.listening.main",
+      "kind": "skill",
+      "label_ko": "듣고 핵심 이해하기",
+      "domain": "listening",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.vocabulary",
+      "kind": "skill",
+      "label_ko": "낱말 뜻 읽기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.grammar",
+      "kind": "skill",
+      "label_ko": "조사·문형 읽기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.detail",
+      "kind": "skill",
+      "label_ko": "읽고 세부 정보 찾기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.negation",
+      "kind": "skill",
+      "label_ko": "읽고 부정·변경 이해하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.sequence",
+      "kind": "skill",
+      "label_ko": "읽고 순서 이해하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.reason",
+      "kind": "skill",
+      "label_ko": "읽고 이유 이해하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.condition",
+      "kind": "skill",
+      "label_ko": "읽고 조건 이해하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    },
+    {
+      "id": "ko.reading.main",
+      "kind": "skill",
+      "label_ko": "읽고 핵심 이해하기",
+      "domain": "reading",
+      "level": null,
+      "difficulty": {
+        "authored": null,
+        "measured": null,
+        "n": 0
+      },
+      "source_refs": [
+        {
+          "source": "practice-taxonomy",
+          "selector": "skills"
+        }
+      ]
+    }
+  ],
+  "edges": [],
+  "tag_vocabulary": [],
+  "links": {
+    "tags": []
+  }
+}

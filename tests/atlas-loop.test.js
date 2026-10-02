@@ -383,7 +383,7 @@ test('standalone or connected: without a ready plan an engine keeps its own defa
   ];
   const session = A.createSession({ scope, events: old, clock: () => '2026-09-18T00:00:00Z' });
   const next = session.plan('letter', modesFor('LAB'), { levers: levers() });
-  assert.equal(next.selected.pace, 'deep'); assert.equal(next.round, 1); assert.equal(next.version, 'atlas-2.1.0');
+  assert.equal(next.selected.pace, 'deep'); assert.equal(next.round, 1); assert.equal(next.version, 'atlas-2.3.0');
   assert.equal(A.validate({ ...old[0], policy: 'atlas-2.0.0' }).policy, 'atlas-2.0.0');
   assert.throws(() => A.validate({ ...old[0], policy: 'atlas-9' }), /decision record/);
 });

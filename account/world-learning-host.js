@@ -1,0 +1,34 @@
+'use strict';
+// WORLD owns authentication. Minigames receive guarded learning methods, never tokens.
+function createWorldLearningHost({ accountKey, revision, storage, transport, guard, connected = true, onStatus = () => {} }) {
+  if (!accountKey || !Number.isSafeInteger(revision) || typeof guard !== 'function') throw new TypeError('Verified WORLD account required');
+  let sync, primary, closed = false;
+  const coaches = new Set();
+  const check = () => { guard(); if (closed) throw new Error('WORLD account session ended'); };
+  const shared = { getItem(key) { check(); return storage.getItem(key); }, setItem(key, value) { check(); storage.setItem(key, value); }, removeItem(key) { check(); storage.removeItem(key); } };
+  function createGame(options, factory, createSync) {
+    check();
+    const owned = { storage: shared, learnerKey: 'device', storageScope: 'account', accountKey, historyComplete: false };
+    if (connected && !sync) {
+      primary = factory({ gameId: 'world-account', ...owned });
+      sync = createSync({ adapter: primary, accountKey, revision, storage: shared, transport,
+        onStatus: state => { for (const coach of coaches) coach.syncPort.markComplete(state.complete && state.phase !== 'blocked'); onStatus(state); } });
+      void sync.start();
+    }
+    const coach = factory({ ...options, ...owned }); coaches.add(coach);
+    coach.syncPort.markComplete(sync?.status().complete === true);
+    const unsubscribe = coach.syncPort.subscribe(change => {
+      if (closed || !sync) return;
+      if (change.kind === 'storage-error') sync.invalidate(change.code);
+      else if (change.kind === 'append') void sync.flush();
+    });
+    // Use the same public API the games already consume. No account/config UI per game.
+    return Object.freeze(Object.fromEntries(Object.entries(coach).filter(([name]) => name !== 'syncPort').map(([name, value]) => [name,
+      typeof value === 'function' ? (...args) => { check(); return value(...args); } : value]).concat([
+      ['disconnect', () => { unsubscribe(); coaches.delete(coach); }],
+    ])));
+  }
+  return Object.freeze({ createGame, status: () => sync?.status() || { phase: connected ? 'idle' : 'local', queued: 0 }, retry: () => { check(); return sync?.retry(); },
+    stop() { closed = true; sync?.stop(); coaches.clear(); } });
+}
+module.exports = { createWorldLearningHost };

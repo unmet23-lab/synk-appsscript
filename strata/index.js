@@ -128,7 +128,8 @@ function createMap(input) {
       advisory: result.prerequisites.filter(item => !item.blocking && !mastered.has(item.node.id)).map(item => item.node.id),
     })).slice(0, limit));
   }
-  return Object.freeze({ map_ver: data.map_ver, getNode, forTag, forSkill, prerequisites, candidates });
+  return Object.freeze({ map_ver: data.map_ver, getNode, forTag, forSkill, prerequisites, candidates,
+    allNodes: () => Object.freeze([...nodes.values()]) });
 }
 
 module.exports = { createMap, validateMap };

@@ -1,7 +1,13 @@
-/* SYNK Atlas. Canonical source: SYNK-appsscript/atlas/engine.js.
- * Pure, portable decision core. No network, model calls or implicit tracking.
+/* SYNK Core decisions and the shared session entry point.
+ * Canonical source: SYNK-appsscript/atlas/engine.js.
+ * Atlas names the eight-engine family, not a separate decision engine.
+ * Core owns understand/decide/choice; the session delegates practice provenance
+ * to Trail. Extend each engine at its own source, not all features in this file.
+ * Ownership: docs/엔진8종_상향설계_v3.md#engine-owner-sources.
+ * SynkAtlas, this file path and atlas-* policy IDs remain compatibility names.
+ * Pure and portable. No network, model calls or implicit tracking.
  * Shared machinery does not grant permission to combine subjects or domains.
- * atlas-2: one loop (remember -> decide -> deliver -> check). Engines plug in levers.
+ * atlas-2: Core selects registered levers; their owner engines deliver and check.
  * The shape and the content of an experience adapt; what an assessment means is never a lever.
  */
 (function (root, factory) {
@@ -9,16 +15,17 @@
   else root.SynkAtlas = factory(() => root.SynkAtlasTrail || root.SynkTrail);
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (getTrail) {
   'use strict';
-  const VERSION = 'atlas-2.1.0';
+  const VERSION = 'atlas-2.3.0';
   // Decisions recorded by an earlier policy stay readable; a new plan is always stamped with VERSION.
-  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', VERSION];
+  const POLICIES = ['atlas-1.0.0', 'atlas-2.0.0', 'atlas-2.1.0', 'atlas-2.2.0', VERSION];
   const trail = () => {
     const module = getTrail();
     if (!module || typeof module.validate !== 'function' || typeof module.checkLink !== 'function' || typeof module.summarize !== 'function') throw new Error('Atlas: Trail practice module unavailable');
     return module;
   };
   const isPractice = event => typeof event?.type === 'string' && event.type.startsWith('practice.');
-  const DOMAINS = ['LAB', 'SHIFT', 'PULSE', 'PATH'];
+  // SYNK is the shared product context; brand-domain scopes remain independent.
+  const DOMAINS = ['LAB', 'SHIFT', 'PULSE', 'PATH', 'SYNK'];
   const CONTEXT = {
     goal: ['explore', 'study', 'work', 'clarity', 'expression', 'prepare'],
     time: ['short', 'standard', 'unlimited'],
@@ -199,9 +206,11 @@
     // responses and learned weights so the two arms can be compared later; declared settings always hold.
     const share = view.personal ? explore : 0, arm = random(seed)() < share ? 'baseline' : 'adapted', adapted = arm === 'adapted';
     const ids = new Set();
-    const feasible = item => !(c.audio === 'off' && item.requiresAudio) && !(c.time === 'short' && item.minutes > 5);
+    const feasible = item => !(c.audio === 'off' && item.requiresAudio) && !(c.time === 'short' && item.minutes > 5)
+      && !(c.support && item.supports && !item.supports.includes(c.support));
     const eligible = candidates.filter(item => {
-      if (!validId(item.id) || ids.has(item.id) || !Number.isFinite(item.minutes) || item.minutes <= 0 || !['short', 'standard', 'deep'].includes(item.pace)) throw new TypeError('Atlas: invalid candidate');
+      if (!validId(item.id) || ids.has(item.id) || !Number.isFinite(item.minutes) || item.minutes <= 0 || !['short', 'standard', 'deep'].includes(item.pace)
+        || (item.supports != null && (!Array.isArray(item.supports) || !item.supports.length || item.supports.some(value => !CONTEXT.support.includes(value))))) throw new TypeError('Atlas: invalid candidate');
       ids.add(item.id);
       return feasible(item);
     });
@@ -251,7 +260,12 @@
     const feedback = adapted ? state.feedback.filter(f => f.experienceId === experienceId) : [];
     const recent = feedback.at(-1);
     const targetPace = c.time === 'short' ? 'short' : recent?.value === 'too_much' ? 'short' : recent?.value === 'want_more' && c.time !== 'short' ? 'deep' : 'standard';
-    const scored = eligible.map(item => {
+    // An explicit request for another way must not lose to the old goal weight.
+    // Only an actually feasible alternative may replace the rejected choice.
+    const another = recent?.value === 'not_fit' ? eligible.filter(item => item.id !== recent.variant) : [];
+    const selectable = another.length ? another : eligible;
+    if (recent?.value === 'not_fit') reasons.push(another.length ? 'feedback.alternative' : 'feedback.no_alternative');
+    const scored = selectable.map(item => {
       const notes = [], proof = [];
       let score = item.pace === targetPace ? 4 : 0;
       if (c.goal && item.goals?.includes(c.goal)) score += 3;
@@ -325,6 +339,9 @@
   const choice = (plan, leverId, fallback = null) => (plan && plan.status === 'ready' && plan.bundle?.[leverId]?.option) || fallback;
   function createSession({ scope, events = [], clock = () => new Date().toISOString(), id, explore = 0 } = {}) {
     scopeKey(scope);
+    // The owner is fixed for this session, even if the host reuses and edits its
+    // input object while switching accounts or workspaces.
+    scope = copy(scope);
     // The session owns its log. Appending checks one event and never copies the whole
     // log, so a fast game that records hundreds of items stays cheap; reads return copies.
     let log = [];
