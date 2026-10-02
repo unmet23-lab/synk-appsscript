@@ -5767,7 +5767,26 @@ var SynkLearning = (() => {
       var sameEvent = (a, b) => canonical(a) === canonical(b);
       var failure = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
       var errorCode = (error) => error?.code || error?.error?.code || error?.body?.error?.code || "NETWORK_ERROR";
-      var FATAL = /* @__PURE__ */ new Set(["REVISION_CONFLICT", "LEARNING_DISABLED", "FEATURE_DISABLED", "HISTORY_CAPACITY", "HISTORY_FOLDED", "EVENT_CONFLICT", "INVALID_EVENTS", "INVALID_RESPONSE", "STORAGE_ERROR", "UNAUTHORIZED", "AUTH_REQUIRED", "AUTH_SESSION_MISSING", "SESSION_REVOKED", "MEMORY_SESSION_ENDED"]);
+      var FATAL = /* @__PURE__ */ new Set([
+        "REVISION_CONFLICT",
+        "LEARNING_DISABLED",
+        "FEATURE_DISABLED",
+        "HISTORY_CAPACITY",
+        "HISTORY_FOLDED",
+        "EVENT_CONFLICT",
+        "INVALID_EVENTS",
+        "INVALID_RESPONSE",
+        "STORAGE_ERROR",
+        "UNAUTHORIZED",
+        "AUTH_REQUIRED",
+        "AUTH_SESSION_MISSING",
+        "SESSION_REVOKED",
+        "MEMORY_SESSION_ENDED",
+        "EVENT_RUN_CONFLICT",
+        "EVENT_BEFORE_RUN",
+        "WRONG_RUN_CONTENT",
+        "FORBIDDEN"
+      ]);
       function createLearningSync({
         adapter,
         accountKey,

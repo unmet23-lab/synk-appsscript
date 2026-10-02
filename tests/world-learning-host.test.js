@@ -150,7 +150,7 @@ test('a long run keeps few owner records while the synchronised log folds', asyn
 });
 test('a refusal or a new revision reaches learning-sync as the server sent it', async () => {
   for (const [reply, code, phase] of [[{ ok: true, revision: 2, accepted: [] }, 'REVISION_CONFLICT', 'blocked'],
-    [{ ok: false, revision: 1, error: { code: 'EVENT_RUN_CONFLICT', message: 'run changed' } }, 'EVENT_RUN_CONFLICT', 'offline']]) {
+    [{ ok: false, revision: 1, error: { code: 'EVENT_RUN_CONFLICT', message: 'run changed' } }, 'EVENT_RUN_CONFLICT', 'blocked']]) {
     const { storage } = memory();
     const host = createWorldLearningHost({ accountKey: `reply-${code}`, revision: 1, guard() {}, storage,
       transport: { get: async () => ({ ok: true, revision: 1, cursor: 0, hasMore: false, events: [] }), post: async () => reply } });

@@ -102,6 +102,15 @@ test('revision change, disabled consent and event conflict block retries and pre
   }
 });
 
+test('a refusal of a WORLD run’s entries that sending again cannot fix stops after one try and keeps the outbox', async () => {
+  for (const code of ['EVENT_RUN_CONFLICT', 'EVENT_BEFORE_RUN', 'WRONG_RUN_CONTENT', 'FORBIDDEN']) {
+    const s = server(), c = client(s);await c.sync.start();c.answer();let calls = 0;
+    s.post = async () => { calls++;throw error(code); };await c.sync.flush();
+    assert.equal(c.sync.status().phase, 'blocked');assert.equal(c.sync.status().code, code);assert.equal(calls, 1);assert.ok(c.sync.status().queued > 0);
+    assert.equal((await c.sync.retry()).code, code);assert.equal(calls, 1);c.sync.stop();
+  }
+});
+
 test('reusing an old consent store for a new revision is blocked before any network call', async () => {
   const s = server(), storage = disk(), a = client(s, { storage });await a.sync.start();a.answer();a.sync.stop();
   const before = storage.getItem(`${SYNC_KEY}.account.a`), calls = s.gets.length;
