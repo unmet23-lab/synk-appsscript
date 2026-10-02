@@ -9,6 +9,8 @@ const SETTING_WORDS = { support: { step: '단계별로 도와줘요', choose: '�
 const REASON_WORDS = { culture: '드라마·음악·웹툰', travel: '한국 여행', people: '가족·친구와 이야기', life: '한국 생활', study: '한국에서 공부',
   work: '한국에서 일', career: '지금 하는 일', exam: '시험·자격', hobby: '배우는 즐거움', other: '다른 이유' };
 const element = (tag, text, className) => { const node = document.createElement(tag);if (text != null) node.textContent = text;if (className) node.className = className;return node; };
+// 기기 시각으로 「10월 10일 05:00」(계정 지우기 취소 기한).
+const dueText = value => { const d = new Date(value);if (!value || Number.isNaN(d.getTime())) return '';return `${d.getMonth() + 1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 export function createAccountView({ client, product, guard, notice, logout, preview = false, localConnection = false, onGameRequest = null }) {
   const root = document.getElementById('account'), world = document.getElementById('world-games');let data, host, ended = false, deleteRequestId, gameFrame, gameGeneration=0;
   const closeGame=()=>{gameGeneration++;if(window.SYNKTownHost)delete window.SYNKTownHost;try{host?.closeRun?.();}catch{}if(gameFrame){gameFrame.removeAttribute?.('src');gameFrame.hidden=true;}};
@@ -73,12 +75,14 @@ export function createAccountView({ client, product, guard, notice, logout, prev
     identity.append(list((data.memberships || []).map(m => `${memberLabel(m)}${m.student_code ? ` · ${m.student_code}` : ''}${m.active === false ? ' · 소속 종료' : ''}`), '아직 연결된 소속이 없어요.'));
     identity.append(element('p', `로그인 연결: ${(data.account?.providers || []).join(', ') || '이메일'}`, 'small'));
     const deleting = data.account?.status === 'deletion-requested', canEnable = data.capabilities?.learningSync === true && !deleting;
+    // 계정 지우기 7일 취소 유예: 아직 처리 전인 자기 삭제 요청이 있으면 그 기한까지 이 화면에서 취소할 수 있다.
+    const pendingDeletion = deleting ? (data.dataRequests || []).find(r => r.kind === 'delete' && r.status === 'pending') : null;
     const learning = card('학습 기록 연결');learning.append(element('p', localConnection?'이 개발 연결에서는 기록 동기화와 선생님에게 보여주기를 함께 켜고 끕니다. 기존 비회원 기록은 가져오지 않아요.':'동의하면 연결된 연습 기록을 다른 기기에서도 이어 쓸 수 있어요. 기존 비회원 기록을 계정에 자동으로 옮기지 않아요.', 'small'));
     const toggle = element('label', null, 'toggle'), input = element('input');input.type = 'checkbox';input.checked = data.learning?.enabled === true;
     input.disabled = !input.checked && !canEnable;
     input.onchange = () => { const enabled = input.checked;input.disabled = true;if (!enabled) stopWorld();void action(async () => { if (enabled && !canEnable) throw new Error('현재는 계정 학습 연결을 켤 수 없어요.');await client.setLearning(enabled, data.learning.revision);await load();notice(enabled ? '학습 기록 연결에 동의했어요.' : '학습 기록 연결을 껐어요.'); }).finally(() => { input.checked = data.learning?.enabled === true;input.disabled = !input.checked && !canEnable; }); };
     toggle.append(input, element('span', '계정에 학습 기록 연결'));learning.append(toggle);
-    if (!canEnable) learning.append(element('p', deleting ? '삭제 요청을 받아 학습 연결을 다시 켤 수 없어요. 늦어도 30일 안에 계정과 기록을 지워요.' : '계정 학습 연결은 아직 제공 전이에요. 이 계정의 기기 내 연습은 계속할 수 있어요.', 'small'));
+    if (!canEnable) learning.append(element('p', deleting ? (pendingDeletion ? '삭제 요청을 받아 학습 연결을 켤 수 없어요. 아래에서 요청을 취소하면 다시 켤 수 있어요.' : '삭제 요청을 처리하고 있어 학습 연결을 켤 수 없어요.') : '계정 학습 연결은 아직 제공 전이에요. 이 계정의 기기 내 연습은 계속할 수 있어요.', 'small'));
     const memory = card('아틀라스가 기억하는 나');memory.classList.add('atlas-card');memory.append(element('p', '요약을 불러오고 있어요.', 'small'));void atlas(memory);
     const rights = card('이용 권한');rights.append(list((data.entitlements || []).map(e => `${e.key}${e.product ? ` · ${e.product}` : ''}${e.status ? ` · ${e.status}` : ''}${e.valid_until ? ` · ${new Date(e.valid_until).toLocaleDateString('ko-KR')}까지` : ''}`), '현재 표시할 이용 권한이 없어요.'));
     const sessions = card('연결된 로그인');
@@ -95,9 +99,12 @@ export function createAccountView({ client, product, guard, notice, logout, prev
         if (!result.hasMore) { const blob = new Blob([JSON.stringify({ scope: 'connected-learning-records', account: result.account || data.account, ...(atlasMemory ? { atlasMemory } : {}), until, events, eventMeta: metadata }, null, 2)], { type: 'application/json' });const a = element('a');a.href = URL.createObjectURL(blob);a.download = 'synk-connected-learning.json';a.click();setTimeout(() => URL.revokeObjectURL(a.href), 1000);notice('연결된 연습 기록을 내려받았어요. 다른 과제·AI 기록은 이 파일 범위에 포함되지 않아요.');return; }
       }throw new Error('기록이 많아 한 번에 마치지 못했어요. 잠시 뒤 다시 시도해 주세요.');
     }, 'sb-btn soft'));
-    const deleteButton = button(deleting ? '계정 삭제 요청 접수됨' : '계정 삭제 요청', async () => { const dialog = element('dialog');dialog.append(element('h2', '계정 삭제를 요청할까요?'), element('p', '요청하면 학습 기록 연결을 바로 멈추고, 지체 없이 늦어도 30일 안에 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지워요. 지운 뒤에는 되돌릴 수 없어요.', 'small'));
-      const controls = element('div', null, 'actions');controls.append(button('삭제 요청 보내기', async () => { deleteRequestId ||= crypto.randomUUID();await client.requestDeletion(deleteRequestId);stopWorld();dialog.close();await load();notice('삭제 요청을 받았어요. 학습 기록 연결을 멈췄고, 늦어도 30일 안에 계정과 기록을 지워요.'); }), button('취소', async () => dialog.close()));dialog.append(controls);dialog.addEventListener('close', () => dialog.remove());document.body.append(dialog);dialog.showModal();
-    }, 'plain danger');deleteButton.disabled = deleting;actions.append(deleteButton);root.append(actions);
+    const deleteButton = button(deleting ? '계정 삭제 요청 접수됨' : '계정 삭제 요청', async () => { const dialog = element('dialog');dialog.append(element('h2', '계정 삭제를 요청할까요?'), element('p', '요청하면 학습 기록 연결을 바로 멈춰요. 7일 동안은 이 화면에서 요청을 취소할 수 있고, 그 뒤에 계정과 학습 기록, 맞춤 기억, 로그인 정보를 지워요(늦어도 요청 후 30일 안에). 지운 뒤에는 되돌릴 수 없어요.', 'small'));
+      const controls = element('div', null, 'actions');controls.append(button('삭제 요청 보내기', async () => { deleteRequestId ||= crypto.randomUUID();const result = await client.requestDeletion(deleteRequestId);stopWorld();dialog.close();await load();const due = dueText(result?.request?.due_at);notice(`삭제 요청을 받았어요. 학습 기록 연결을 멈췄고, ${due ? `${due}까지는` : '7일 동안은'} 이 화면에서 취소할 수 있어요.`); }), button('취소', async () => dialog.close()));dialog.append(controls);dialog.addEventListener('close', () => dialog.remove());document.body.append(dialog);dialog.showModal();
+    }, 'plain danger');deleteButton.disabled = deleting;actions.append(deleteButton);
+    if (pendingDeletion) actions.append(button('삭제 요청 취소', async () => { await client.cancelDeletion(pendingDeletion.request_id);deleteRequestId = null;await load();notice('삭제 요청을 취소했어요. 학습 기록 연결은 꺼 둔 채로 두었으니, 다시 쓰려면 위의 스위치를 켜 주세요.'); }, 'sb-btn soft'));
+    if (deleting) root.append(element('p', pendingDeletion ? `삭제 요청을 받았어요. ${dueText(pendingDeletion.due_at) ? `${dueText(pendingDeletion.due_at)}까지는` : '7일 동안은'} 아래에서 취소할 수 있고, 그 뒤에 계정과 기록을 지워요.` : '삭제 요청을 처리하고 있어요. 늦어도 요청 후 30일 안에 계정과 기록을 지워요.', 'small'));
+    root.append(actions);
     }
     games();
   }

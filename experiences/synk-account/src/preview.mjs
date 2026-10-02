@@ -6,7 +6,9 @@ const params = new URL(location.href).searchParams;
 const config = readConfig({ version: 1, supabaseUrl: 'https://preview.invalid', supabasePublishableKey: 'sb_publishable_preview_only', portalUrl: location.href,
   clients: { platform: { clientId: 'preview-platform', redirectUri: new URL('./client.html?product=platform', location.href).href }, world: { clientId: 'preview-world', redirectUri: new URL('./client.html?product=world', location.href).href } } }, location.href);
 const session = { access_token: 'synthetic-not-a-token', user: { id: 'synthetic-user' } };
-let signedIn = params.has('account') || params.has('authorization_id'), enabled = !params.has('disabled'), revision = 1, deleting = params.has('deleting'), authListener;
+let signedIn = params.has('account') || params.has('authorization_id'), enabled = !params.has('disabled'), revision = 1, deleting = params.has('deleting'), deletion = deleting ? { request_id: '00000000-0000-4000-8000-000000000001', requested_at: new Date(Date.now() - 86400000).toISOString() } : null, authListener;
+// 계정 지우기 요청 줄(합성). 기한은 talk 계정 서비스처럼 요청 + 7일.
+const deletionRow = status => deletion && { ...deletion, kind: 'delete', status, completed_at: null, due_at: new Date(Date.parse(deletion.requested_at) + 7 * 86400000).toISOString() };
 const sdk = { auth: {
   getSession: async () => ({ data: { session: signedIn ? session : null } }), getUser: async () => params.has('fail-user') ? { error: new Error('합성 인증 확인 실패') } : ({ data: { user: session.user } }), onAuthStateChange: listener => { authListener = listener;return {}; },
   signInWithPassword: async () => { signedIn = true;authListener?.('SIGNED_IN', session);return { data: { session } }; },
@@ -18,8 +20,9 @@ const sdk = { auth: {
 const accountFactory = () => ({
   load: async () => ({ account: { synk_user_id: 'SYNK-PREVIEW-ONLY', profile: { display_name: '연습생 예시' }, providers: ['email · 합성'], status: deleting ? 'deletion-requested' : 'active' }, learning: { enabled, revision }, capabilities: { learningSync: !params.has('rollout-off') },
     memberships: [{ kind: '학습 그룹 예시', role: 'student', student_code: 'EXAMPLE', active: true }], entitlements: [{ key: '기본 학습 예시', product: 'world', valid_until: null }],
-    sessions: [{ id: 'preview-session', product: 'world', label: '이 브라우저 예시', current: true, revoked: false }] }),
-  setLearning: async value => { enabled = value;revision++; }, revokeSession: async () => ({}), revokeAll: async () => ({ refreshRevoked: false, legacyAccessGuard: false }), requestDeletion: async id => { if (!/^[\da-f-]{36}$/.test(id)) throw new Error('삭제 요청 UUID 없음');deleting = true;enabled = false;revision++;return {}; },
+    sessions: [{ id: 'preview-session', product: 'world', label: '이 브라우저 예시', current: true, revoked: false }], dataRequests: deleting && deletion ? [deletionRow('pending')] : [] }),
+  setLearning: async value => { enabled = value;revision++; }, revokeSession: async () => ({}), revokeAll: async () => ({ refreshRevoked: false, legacyAccessGuard: false }), requestDeletion: async id => { if (!/^[\da-f-]{36}$/.test(id)) throw new Error('삭제 요청 UUID 없음');if (!deleting) deletion = { request_id: id, requested_at: new Date().toISOString() };deleting = true;enabled = false;revision++;return { request: deletionRow('pending') }; },
+  cancelDeletion: async id => { if (!deleting || id !== deletion?.request_id) throw new Error('취소할 삭제 요청이 없어요.');deleting = false;const row = deletionRow('cancelled');deletion = null;return { request: row }; },
   exportPage: async () => ({ events: [], cursor: 0, until: 0, hasMore: false, eventMeta: [] }),
   // A synthetic Atlas summary in the shape synk-account ?view=atlas returns.
   atlasSummary: async () => ({ shared: enabled ? 'practice-and-settings' : 'declared-only', learning: { enabled, revision }, summary: {

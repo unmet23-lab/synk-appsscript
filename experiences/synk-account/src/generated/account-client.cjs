@@ -15,7 +15,9 @@ const messages = {
   INVALID_REASONS: '배우는 이유는 1~3개까지 고를 수 있어요. 다시 골라 주세요.',
   INVALID_EVALUATION: '답을 저장하지 못했어요. 보기에서 다시 골라 주세요.',
   EVALUATION_NOT_ASKED: '학원에 소속된 계정에는 이 질문을 하지 않아요.',
-  ACCOUNT_UNAVAILABLE: '계정 삭제 요청을 처리하는 중이라 저장할 수 없어요.',
+  ACCOUNT_UNAVAILABLE: '계정 삭제를 요청한 상태라 저장할 수 없어요. 요청을 취소하면 다시 쓸 수 있어요.',
+  REQUEST_NOT_FOUND: '취소할 삭제 요청을 찾지 못했어요. 계정을 다시 확인해 주세요.',
+  DELETION_NOT_CANCELLABLE: '삭제를 이미 처리하고 있어서 취소할 수 없어요. hello@synk.im으로 문의해 주세요.',
   MY_INFO_UNAVAILABLE: '내 정보는 아직 준비 중이에요. 연습은 그대로 이용할 수 있어요.',
   MEMORY_UNAVAILABLE: '고른 설정을 계정에 저장하는 기능은 아직 준비 중이에요. 이 기기에는 그대로 남아요.',
   MEMORY_CAPACITY: '계정에 저장할 수 있는 맞춤 기록이 가득 찼어요. 이 기기에는 그대로 남아요.',
@@ -85,6 +87,8 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
     revokeSession: (session_id, options) => action('revoke-session', { session_id }, options),
     revokeAll: () => action('revoke-all-sessions'),
     requestDeletion: request_id => action('delete-request', { request_id }),
+    // 7일 취소 유예 동안(요청이 아직 처리 전일 때) 같은 요청 번호로 취소한다.
+    cancelDeletion: request_id => action('delete-cancel', { request_id }),
     // 「나 > 내 정보」 — 배우는 이유(덧붙이기)와 평가 전용 선택 응답(맞춤의 입력이 아니다).
     saveReasons: (reasons, other = null) => action('learn-reasons', { reasons, other }),
     skipReasons: () => action('learn-reasons-skip'),

@@ -2,7 +2,7 @@
   "version": 1,
   "sdk": "2.117.2",
   "sha256": {
-    "src/generated/account-client.cjs": "b5c0b8c6815593846255d88c28c2946c4d2a995f5ec5a5dcf1224dd2a81573fc",
+    "src/generated/account-client.cjs": "d6e0474afc0bd0d5a3e32070637ebeecdac7c8ef3970bfef3a0885e9013011f3",
     "src/generated/world-learning-host.cjs": "66b07a530f48f346d4aa0c2185af9ae246b7cb04c28509baa4c1df6d8ce79665",
     "assets/SUIT-Variable.woff2": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
     "assets/InterTight-700.woff2": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
@@ -24,11 +24,11 @@
     "assets/InterTight-Regular.ttf": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
     "assets/InterTight-Medium.ttf": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
     "assets/DMMono-Medium.ttf": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
-    "dist/app.js": "197316278110cd7c7d20644a85013c2604f74ee3b077e41535e14e228163da00",
-    "dist/client.js": "0ee83a1465d6f24a2a6eb533c26b34be1c5b2c9a791270217b791bbca1829aed",
-    "dist/preview.js": "97ba4483afa3187a8a197b5558ebb9b2bc7791f44483aff8c5bca1699a64b7be",
+    "dist/app.js": "917cee5ce4e3f9e370946e756e1e00d8461c3943f14715b266909ed17b555ba1",
+    "dist/client.js": "7ebb9527d7f196da7528fd23b7f93b11286cf5b92d7a65573be97f00c795464c",
+    "dist/preview.js": "e39bddb2d2f6bfbdabc238e50c77162bfe72666b5e847f66f48a5e774e928037",
     "dist/platform.js": "5b0a0370f027d3114b52bc4579c08f0118cd3f16a6b953b2a5f439a2abd9258b",
-    "dist/local-world.js": "75d47a749fb1aeb0322c3c976754f5152ed9d56bb7e55efb86ed037d73f10cf3",
+    "dist/local-world.js": "b625f3b3c009efa041535f7c10d26c407708a25f3694a8a93167a6725b380ce9",
     "preview.html": "b79543db61732b3fdcaa8a4f16835e23c38db34307718886e92aba12e15f5b62"
   }
 }
