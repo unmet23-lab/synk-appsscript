@@ -7,17 +7,29 @@ const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 if (args.some(a => a !== '--check')) throw new Error('Usage: node tools/build-game-learning.js [--check]');
 const check = args.includes('--check');
-const taxonomyPath = path.join(root, 'strata/topik-i.skills.json');
-const source = fs.readFileSync(taxonomyPath);
-const taxonomy = JSON.parse(source);
-const sha = crypto.createHash('sha256').update(source).digest('hex');
+// Abilities, grammar and words are separate sources; the map's version covers all three.
+const read = rel => { const bytes = fs.readFileSync(path.join(root, rel)); return { rel, json: JSON.parse(bytes), sha: crypto.createHash('sha256').update(bytes).digest('hex') }; };
+const taxonomy = read('strata/topik-i.skills.json'), grammar = read('strata/topik-i.grammar.json'), words = read('strata/topik-i.words.json');
+const version = crypto.createHash('sha256').update(taxonomy.sha + grammar.sha + words.sha).digest('hex');
 const ref = { source: 'practice-taxonomy', selector: 'skills' };
-const map = { map_ver: `${taxonomy.version}-${sha.slice(0, 12)}`, subject: 'ko',
-  sources: { 'practice-taxonomy': { path: 'strata/topik-i.skills.json', sha256: sha } },
-  nodes: taxonomy.skills.map(([id, domain, label_ko]) => ({ id, kind: 'skill', label_ko, domain, level: null,
-    difficulty: { authored: null, measured: null, n: 0 }, source_refs: [ref] })),
-  edges: [], tag_vocabulary: [], links: { tags: [] } };
-require('../strata').validateMap(map);
+const map = { map_ver: `${taxonomy.json.version}-${version.slice(0, 12)}`, subject: 'ko',
+  sources: { 'practice-taxonomy': { path: taxonomy.rel, sha256: taxonomy.sha }, 'practice-grammar': { path: grammar.rel, sha256: grammar.sha },
+    'practice-words': { path: words.rel, sha256: words.sha } },
+  nodes: [
+    ...taxonomy.json.skills.map(([id, domain, label_ko]) => ({ id, kind: 'skill', label_ko, domain, level: null,
+      difficulty: { authored: null, measured: null, n: 0 }, source_refs: [ref] })),
+    // A grammar step is the grammar bank's order, not a TOPIK grade.
+    ...grammar.json.points.map(([id, label_ko, forms, step]) => ({ id, kind: 'grammar_point', label_ko, forms, level: { intro: step, basis: 'grammar_bank' },
+      source_refs: [{ source: 'practice-grammar', selector: id }] })),
+  ],
+  // Which abilities a grammar point serves: a draft awaiting teacher review.
+  edges: grammar.json.points.flatMap(([id, , , , skills]) => skills.map(to => ({ from: id, to, type: 'part_of', confidence: 'ai_draft', reviewed: false,
+    source_refs: [{ source: 'practice-grammar', selector: id }] }))),
+  tag_vocabulary: [], links: { tags: [] } };
+const { validateMap } = require('../strata');
+validateMap(map);
+// Words are expanded at run time (strata/topik-i.js); the complete map must be valid too.
+validateMap(require('../strata/topik-i').topikMap({ base: map }));
 function output(destination, content) {
   const data = Buffer.from(content), same = fs.existsSync(destination) && fs.readFileSync(destination).equals(data);
   if (check && !same) throw new Error(`Learning source differs: ${path.relative(root, destination)}`);

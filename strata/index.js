@@ -3,7 +3,7 @@
 // Pure curriculum lookup. This module owns no learner memory, I/O, grading or AI calls.
 const CONFIDENCE = ['authored', 'measured', 'ai_draft'];
 // Language kinds plus subject-neutral ones, so a map can describe any content (work, money, health...).
-const KINDS = ['skill', 'grammar_point', 'expression', 'situation', 'letter', 'syllable', 'concept', 'topic', 'task'];
+const KINDS = ['skill', 'grammar_point', 'expression', 'situation', 'letter', 'syllable', 'concept', 'topic', 'task', 'word'];
 const TYPES = ['part_of', 'prerequisite', 'contrasts_with'];
 const copy = value => JSON.parse(JSON.stringify(value));
 const fail = message => { throw new TypeError(`Strata: ${message}`); };

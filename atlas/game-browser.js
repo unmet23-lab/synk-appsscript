@@ -1,6 +1,7 @@
 'use strict';
 const { createMap } = require('../strata');
-const curriculum = require('../strata/maps/topik-i.json');
+// Abilities and grammar from the built map, with the word layer expanded (strata/topik-i.js).
+const curriculum = require('../strata/topik-i').topikMap();
 const learning = require('./game-learning');
 // Moment-level challenge for any content, with or without a curriculum (Core, Temper, Vellum).
 const Flow = require('./flow');

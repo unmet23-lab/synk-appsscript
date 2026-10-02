@@ -116,7 +116,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   function profileOf(observed) {
     const ok = complete && readable && writable, flag = String(ok);
     if (cached?.summary === observed && cached.profiles.has(flag)) return cached.profiles.get(flag);
-    const profile = Learning.summarizeLearning({ summary: observed, map, complete: ok });
+    const profile = { ...Learning.summarizeLearning({ summary: observed, map, complete: ok }),
+      concepts: Learning.summarizeConcepts({ summary: observed, map, complete: ok }) };
     if (cached?.summary === observed) cached.profiles.set(flag, profile);
     return profile;
   }
@@ -201,7 +202,11 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       const decision = session.plan(gameId, [{ id: item.id, minutes: 3, pace: 'standard',
         learning: { policy: Learning.POLICY.version, skillId: item.skillId, difficulty: item.difficulty, responseFormat: measure.responseFormat,
           state: basis.status, evidence: basis.evidence }, ...(context.flow ? { flow: JSON.parse(JSON.stringify(context.flow)) } : {}) }]);
-      const task = { id: item.id, version: map.map_ver, itemKey: item.itemKey, concepts: [item.skillId], tags: [], measure };
+      // Content the item uses (words, grammar) comes after its ability; never another ability.
+      const content = item.conceptIds ?? [];
+      if (!Array.isArray(content) || content.length > 31 || new Set(content).size !== content.length
+        || content.some(id => !identifier(id) || !Learning.CONTENT.includes(map.getNode(id)?.kind))) throw new TypeError('Atlas: invalid measured item');
+      const task = { id: item.id, version: map.map_ver, itemKey: item.itemKey, concepts: [item.skillId, ...content], tags: [], measure };
       const practice = Core.createPractice({ session: practiceSession, decision, map, task,
         assess: result => ({ verdict: result.assessable === false ? 'unassessed' : result.correct == null ? 'skipped' : result.correct ? 'correct' : 'incorrect', errorTags: [] }),
         firstExposure: seen ? false : complete && readable && writable ? true : null });

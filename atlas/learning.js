@@ -45,9 +45,13 @@ function summarizeLearning({ summary, map, complete = true }) {
     independent: skills.reduce((n, s) => n + Object.values(s.levels).reduce((m, l) => m + Object.values(l.formats).reduce((sum, f) => sum + f.n, 0), 0), 0),
     learningEffectClaim: false, grade: null };
 }
+// Missed or due content (a word, a grammar point) lifts a candidate a little; the ability's
+// own state still decides first.
+const CONTENT_LIFT = Object.freeze({ practice: 0.2, review: 0.1, supported: 0.05 });
 function recommend({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [] }) {
   if (!Array.isArray(candidates)) throw new TypeError('Core: candidates must be an array');
   const ids = new Set(), skills = new Map(profile.skills.map(s => [s.id, s]));
+  const content = new Map((profile.concepts || []).map(c => [c.id, c.status]));
   // Index history once. A changed choice/item ID is still the same content when
   // it belongs to a seen family; overlapping keys count one presentation.
   const history = { task: new Map(), item: new Map(), family: new Map() };
@@ -78,7 +82,9 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
     // Explicit authored difficulty is a language-complexity bucket, never a TOPIK band.
     // Sparse evidence starts with simpler candidates, while supported needs can still be revisited.
     const readyForHarder = candidate.difficulty === 1 || candidate.skillIds.every(id => skills.get(id).levels[candidate.difficulty - 1].formats[responseFormat].status === 'recent-independent');
-    const score = focus.priority - (immediate ? .45 : 0) - (previous.size ? .10 : 0) - (!readyForHarder ? .25 * (candidate.difficulty - 1) : 0);
+    if (candidate.conceptIds != null && (!Array.isArray(candidate.conceptIds) || candidate.conceptIds.some(id => typeof id !== 'string'))) throw new TypeError('Core: invalid learning candidate');
+    const lift = Math.max(0, ...(candidate.conceptIds || []).map(id => CONTENT_LIFT[content.get(id)] || 0));
+    const score = focus.priority + lift - (immediate ? .45 : 0) - (previous.size ? .10 : 0) - (!readyForHarder ? .25 * (candidate.difficulty - 1) : 0);
     ranked.push({ candidate, focus, score, count: previous.size });
   }
   ranked.sort((a, b) => b.score - a.score || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
@@ -88,4 +94,30 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
     state: best.focus.status, responseFormat: best.focus.responseFormat, policy: POLICY.version, evidence: best.focus.evidence,
     alternatives: ranked.slice(1).map(r => r.candidate) };
 }
-module.exports = { POLICY, RESPONSE_FORMATS, summarizeLearning, recommend, formatEvidence };
+// Content an item uses (words, grammar), read by the same evidence rules as abilities and
+// kept per response format. Only content with observations is listed: a word never met
+// is not a weakness, and nothing here is a mastery or TOPIK grade.
+const CONTENT = Object.freeze(['word', 'grammar_point']);
+function summarizeConcepts({ summary, map, complete = true }) {
+  const now = Date.parse(summary.asOf), rows = new Map();
+  for (const a of summary.attempts) {
+    if (!a.measure) continue;
+    for (const id of a.conceptIds) {
+      if (id === a.measure.skillId) continue;
+      const node = map.getNode(id);
+      if (!node || !CONTENT.includes(node.kind)) continue;
+      if (!rows.has(id)) rows.set(id, { node, list: [] });
+      rows.get(id).list.push(a);
+    }
+  }
+  return [...rows.values()].map(({ node, list }) => {
+    const formats = {};
+    for (const responseFormat of RESPONSE_FORMATS) {
+      const own = list.filter(a => (a.measure.responseFormat || 'unknown') === responseFormat);
+      if (own.length) formats[responseFormat] = formatEvidence(own, { now, complete, difficulty: null, responseFormat });
+    }
+    const focus = Object.values(formats).sort((a, b) => b.priority - a.priority)[0];
+    return { id: node.id, kind: node.kind, label: node.label_ko, status: focus.status, priority: focus.priority, formats };
+  }).sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id));
+}
+module.exports = { POLICY, RESPONSE_FORMATS, CONTENT, summarizeLearning, summarizeConcepts, recommend, formatEvidence };
