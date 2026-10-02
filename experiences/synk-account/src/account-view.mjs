@@ -12,7 +12,9 @@ const element = (tag, text, className) => { const node = document.createElement(
 export function createAccountView({ client, product, guard, notice, logout, preview = false, localConnection = false, onGameRequest = null }) {
   const root = document.getElementById('account'), world = document.getElementById('world-games');let data, host, ended = false, deleteRequestId, gameFrame, gameGeneration=0;
   const closeGame=()=>{gameGeneration++;if(window.SYNKTownHost)delete window.SYNKTownHost;try{host?.closeRun?.();}catch{}if(gameFrame){gameFrame.removeAttribute?.('src');gameFrame.hidden=true;}};
-  const stopWorld = () => { closeGame();host?.stop();host = null;if (window.SYNKLearningHost) delete window.SYNKLearningHost;world.replaceChildren();world.hidden = true;gameFrame=null; };
+  // Back in front: read what other devices chose (help style, moment memory); going to the background: send what changed here.
+  const visibility = () => { try { if (document.visibilityState === 'hidden') void host?.flush();else void host?.retry(); } catch { /* an ended session has nothing to send */ } };
+  const stopWorld = () => { document.removeEventListener?.('visibilitychange', visibility);closeGame();host?.stop();host = null;if (window.SYNKLearningHost) delete window.SYNKLearningHost;world.replaceChildren();world.hidden = true;gameFrame=null; };
   async function action(fn) { try { guard();await fn();if (!ended) guard(); } catch (error) { if (!ended) notice(error.message, true); } }
   const button = (text, fn, className = 'plain') => { const b = element('button', text, className);b.type = 'button';b.onclick = () => { b.disabled = true;void action(fn).finally(() => { b.disabled = false; }); };return b; };
   const card = title => { const c = element('section', null, 'sb-card');c.append(element('h3', title));return c; };
@@ -31,8 +33,8 @@ export function createAccountView({ client, product, guard, notice, logout, prev
       const storage = scopedStorage(localStorage, accountKey, data.learning.revision, guard);
       // The page's own engine builds the account-wide adapter; a game frame only builds its coach.
       host = createWorldLearningHost({ accountKey, revision: data.learning.revision, storage, connected, engine: window.SynkLearning?.engine,
-        transport: client.learning, guard, onStatus: state => { if (ended) return;status.textContent = state.phase === 'synced' ? '계정 학습 기록을 연결했어요.' : state.phase === 'offline' ? `연결을 기다리는 기록 ${state.queued}개 · 이 기기에 보관해요.` : state.phase === 'blocked' ? '학습 연결을 확인하지 못했어요. 계정 상태를 새로 확인해 주세요.' : '학습 기록을 연결하고 있어요.'; } });
-      window.SYNKLearningHost = host;
+        transport: client.learning, memoryTransport: client.memory, guard, onStatus: state => { if (ended) return;status.textContent = state.phase === 'synced' ? '계정 학습 기록을 연결했어요.' : state.phase === 'offline' ? `연결을 기다리는 기록 ${state.queued}개 · 이 기기에 보관해요.` : state.phase === 'blocked' ? '학습 연결을 확인하지 못했어요. 계정 상태를 새로 확인해 주세요.' : '학습 기록을 연결하고 있어요.'; } });
+      window.SYNKLearningHost = host;document.addEventListener?.('visibilitychange', visibility);
     }
     const links = element('div', null, 'game-links'), frame = element('iframe');gameFrame=frame;frame.hidden = true;frame.title = 'WORLD 학습 게임';frame.allow = 'autoplay; fullscreen';
     for (const [path, label] of [['korean-racing', '한국어 레이싱'], ['korean-runner', '바람길'], ['korean-rhythm', '한국어 리듬'], ['order-rush', '주문 폭주'], ['entry-check', '입장 검사'], ['story-classroom', '선생님이 돌아왔다']]) {

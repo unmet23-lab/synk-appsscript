@@ -239,3 +239,80 @@ test("entries another tab made never join this tab's run", async () => {
   for (const row of remote.rows) assert.equal(row.runId, theirIds.includes(row.event.id) ? null : row.runId);
   tab1.stop(); tab2.stop();
 });
+// The account's Core memory (atlas/memory-sync.js) through the WORLD host.
+const { engine } = require('../atlas/game-browser');
+// synk-learning ?view=memory: per entry, the newer time wins.
+const memoryServer = (respond = null) => {
+  const rows = new Map(), calls = [], key = e => `${e.kind}|${e.key}`, copy = value => JSON.parse(JSON.stringify(value));
+  return { rows, calls, transport: {
+    get: async ({ revision }) => { calls.push('get'); return respond || { ok: true, revision, entries: [...rows.values()].map(copy) }; },
+    post: async ({ revision, entries }) => {
+      calls.push(`post:${entries.length}`);
+      if (respond) return respond;
+      for (const e of entries) { const old = rows.get(key(e)); if (!old || Date.parse(e.at) > Date.parse(old.at)) rows.set(key(e), copy(e)); }
+      return { ok: true, revision, entries: entries.map(e => copy(rows.get(key(e)))) };
+    } } };
+};
+const FLOW = { id: 'world.memory', items: { levels: [1, 2, 3] }, knobs: [{ id: 'patience', kind: 'pace', values: [60, 45, 30], start: 1 }, { id: 'hint', kind: 'support', values: ['early', 'normal', 'late'], start: 1 }] };
+test('the help style and a content’s moment memory chosen in a WORLD game follow the account to another device', async () => {
+  const cloud = memoryServer(), records = server(1);
+  const open = () => createWorldLearningHost({ accountKey: 'memory-account', revision: 1, guard() {}, storage: memory().storage, transport: records.transport,
+    memoryTransport: cloud.transport, engine: { ...engine, createLearningSync: manual } });
+  const laptop = open(), game = laptop.createGame({ gameId: 'order-rush' }, createGame, manual);
+  assert.equal('memoryPort' in game, false); assert.equal('syncPort' in game, false);
+  game.setPresentation({ support: 'step', textSize: 'large' });
+  const live = game.live(FLOW);
+  for (let i = 0; i < 6; i++) live.answer(live.present({ ...item(`memory-${i}`), difficulty: live.settings().level }), { correct: true, assessable: true }, { pressure: 0.3 });
+  const reached = live.end().settings.values;
+  assert.equal((await laptop.flush()).phase, 'synced');
+  assert.deepEqual([...cloud.rows.keys()].sort(), ['flow|world.memory', 'presentation|chosen']);
+  laptop.stop();
+  const phone = open(), other = phone.createGame({ gameId: 'korean-rhythm' }, createGame, manual);
+  assert.equal((await phone.flush()).phase, 'synced');
+  assert.deepEqual(other.presentation(), { support: 'step', textSize: 'large' });
+  const there = other.live(FLOW);
+  assert.equal(there.settings().values.hint, 'early', 'the help style chosen on the laptop holds in another game on the phone');
+  assert.equal(there.settings().values.patience, reached.patience, 'the content starts where the laptop left it');
+  assert.equal(phone.status().memory.queued, 0, 'what came from the server is not sent back');
+  phone.stop();
+});
+test('a game’s change goes up by itself, and coming back to the page reads what another device chose', async () => {
+  const cloud = memoryServer(), records = server(1), settle = () => new Promise(resolve => setTimeout(resolve, 30));
+  // The memory sync waits a moment before sending (3 s in the page); here it does not wait.
+  const quick = { ...engine, createLearningSync: manual, createMemorySync: options => engine.createMemorySync({ ...options, delayMs: 0 }) };
+  const open = () => createWorldLearningHost({ accountKey: 'memory-auto', revision: 1, guard() {}, storage: memory().storage, transport: records.transport, memoryTransport: cloud.transport, engine: quick });
+  const phone = open(), there = phone.createGame({ gameId: 'racing' }, createGame, manual);
+  await settle();
+  const laptop = open(), here = laptop.createGame({ gameId: 'entry-check' }, createGame, manual);
+  await settle(); here.setPresentation({ explanation: 'detailed' }); await settle();
+  assert.deepEqual(cloud.rows.get('presentation|chosen')?.value, { explanation: 'detailed' }, 'sent without a flush');
+  assert.equal(there.presentation(), null, 'the phone has not looked again yet');
+  phone.retry(); await settle();
+  assert.deepEqual(there.presentation(), { explanation: 'detailed' });
+  laptop.stop(); phone.stop();
+});
+test('memory stays on the device without a memory transport, the page engine or sharing', () => {
+  const cloud = memoryServer();
+  const cases = [{ engine }, { memoryTransport: cloud.transport }, { engine, memoryTransport: cloud.transport, connected: false }];
+  for (const options of cases) {
+    const host = createWorldLearningHost({ accountKey: 'memory-off', revision: 1, guard() {}, storage: memory().storage, transport: server(1).transport, ...options });
+    const game = host.createGame({ gameId: 'racing' }, createGame, manual);
+    game.setPresentation({ motion: 'reduced' });
+    assert.equal(host.status().memory, null); assert.equal(host.flush(), undefined);
+    host.stop();
+  }
+  assert.deepEqual(cloud.calls, []);
+});
+test('a memory view the server does not offer yet holds up neither the game nor its learning records', async () => {
+  const cloud = memoryServer({ ok: false, error: { code: 'MEMORY_UNAVAILABLE', message: 'not here yet' } }), records = server(1);
+  const host = createWorldLearningHost({ accountKey: 'memory-refused', revision: 1, guard() {}, storage: memory().storage, transport: records.transport,
+    memoryTransport: cloud.transport, engine: { ...engine, createLearningSync: manual } });
+  const game = host.createGame({ gameId: 'racing' }, createGame, manual);
+  game.setPresentation({ textSize: 'large' });
+  game.answer(game.present(item('memory-refused')), { correct: true, assessable: true });
+  assert.equal((await host.flush()).phase, 'blocked');
+  await host.retry();
+  assert.equal(host.status().phase, 'synced'); assert.ok(records.rows.length > 0, 'learning records still go up');
+  assert.equal(host.status().memory.code, 'MEMORY_UNAVAILABLE'); assert.deepEqual(game.presentation(), { textSize: 'large' });
+  host.stop();
+});
