@@ -18,7 +18,8 @@ const voice=new StoryVoice({audio,onStatus:state=>{$('voice-status').textContent
 }});
 voice.readingOnly=new URLSearchParams(location.search).get('reading')==='1';
 // 입구에서 고른 도움 방식(순간 맞춤 선언 FLOW_VOICE)이 자동 읽기의 처음 값을 정한다. 이 판에서 누른 단추가 언제나 이긴다.
-const chosenVoice=learning.voiceDefault();voice.automatic=chosenVoice;
+// WORLD 읽기 과제는 읽기 확인이라, 단계별 도움을 고르지 않았다면 부탁은 누를 때만 읽어 준다.
+const chosenVoice=learning.voiceDefault({target:!!learning.assignment()});voice.automatic=chosenVoice;
 const portraits={teacher:'teacher.webp',marin:'marin-focus.webp',kkamong:'kkamong-focus.webp',mongle:'mongle-body.webp'};
 const speakerNames={teacher:'선생님',marin:'마린',kkamong:'까몽',mongle:'몽글',narrator:'이야기'};
 let notes=[],saved=null,busy=false,started=false,teacherVisible=false,feedback=null,toastTimer,lastRenderedPhase=null,voiceKey='',voiceHelpSerial=0;

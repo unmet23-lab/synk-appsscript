@@ -12,7 +12,9 @@ const catalog = vm.runInNewContext(block[1]);
 
 async function cells() {
   const found = { racing: new Set(), rhythm: new Set(), order: new Set(), entry: new Set(), story: new Set(), slice: new Set() };
-  const add = (game, m) => found[game].add(`${m.skillId}|${m.difficulty}|${m.responseFormat}`);
+  const metas = { racing: [], rhythm: [], order: [], entry: [], story: [], slice: [] };
+  Object.defineProperty(found, 'metas', { value: metas });
+  const add = (game, m) => { found[game].add(`${m.skillId}|${m.difficulty}|${m.responseFormat}`); metas[game].push(m); };
   const racing = await import(new URL('korean-racing/personalization.js', games));
   const { CAMPAIGN } = await import(new URL('korean-racing/campaign.js', games));
   for (const stage of CAMPAIGN) for (const item of stage.items) add('racing', racing.racingItem(item));
@@ -43,4 +45,37 @@ test('every ability the hub names exists in its game at that difficulty and resp
       assert.ok(found[game].has(cell), `${entry.id}: ${cell} is not among ${game}'s items`);
     }
   }
+});
+
+// Each entry also names the item families its game has in those cells. Once all were presented the game
+// can give no new first try there, so Core puts the entry behind those that still can (learning.js).
+// Through JSON: values made in the vm context have that context's prototypes.
+const families = JSON.parse(JSON.stringify(vm.runInNewContext(`(${source.match(/const families = (\{[\s\S]*?\n\});/)[1]})`)));
+test('each entry names exactly the item families its game has in those cells', async () => {
+  const found = await cells();
+  assert.deepEqual(Object.keys(families).sort(), Array.from(catalog, e => e.id).sort());
+  for (const entry of catalog) {
+    const expected = [...new Set(found.metas[GAME[entry.id]].filter(m => entry.skillIds.includes(m.skillId) && m.difficulty === entry.difficulty
+      && (m.responseFormat || 'unknown') === entry.responseFormat && m.modality === entry.modality).map(m => m.familyKey || m.itemKey))];
+    assert.ok(expected.length, entry.id);
+    assert.deepEqual(families[entry.id], expected, `${entry.id}: families differ from the game's items; rerun the generator or update the list`);
+  }
+});
+
+test('a game spent in that cell goes behind one that can still give a first try', async () => {
+  const { createRequire } = await import('node:module');
+  const require = createRequire(import.meta.url);
+  const { createGame } = require('../../atlas/game-learning.js'), { createMap } = require('../../strata/index.js');
+  const map = createMap(require('../../strata/topik-i.js').topikMap());
+  let t = Date.parse('2026-10-03T09:00:00Z'); const store = new Map();
+  const coach = createGame({ gameId: 'learning-hub', map, storage: { getItem: k => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) }, clock: () => new Date(t += 60000).toISOString() });
+  const entries = catalog.map(entry => ({ ...entry, familyKeys: families[entry.id] }));
+  // Two misses on the story's reading cell: without families the hub would keep sending the person there.
+  const story = await import(new URL('story-classroom/learning.mjs', games)), episode = await import(new URL('story-classroom/story.mjs', games));
+  const missions = [...episode.EPISODE.acts.flatMap(a => a.missions), ...episode.EPISODE.review].map(m => story.missionMetadata(m))
+    .filter(m => families['reading-story-classroom'].includes(m.familyKey || m.itemKey));
+  for (const m of missions) coach.answer(coach.present(m), { correct: false, assessable: true });
+  const spent = coach.recommend(entries, { audioAvailable: true });
+  assert.notEqual(spent.selected.id, 'reading-story-classroom', 'every family of that cell was presented: another entry first');
+  assert.ok(spent.alternatives.some(e => e.id === 'reading-story-classroom'), 'still available when chosen');
 });

@@ -107,14 +107,16 @@ export class StoryLearning {
   }
 
   /** Automatic reading at the start, from the help style chosen at the hub (true = read aloud by
-   * itself). Nothing chosen, no engine or anything unexpected keeps today's default: automatic. */
-  voiceDefault() {
+   * itself). Nothing chosen, no engine or anything unexpected keeps today's default: automatic.
+   * A WORLD reading task (`target`) is a check of reading: its requests are read when asked, unless the
+   * person chose step-by-step help, which always wins. */
+  voiceDefault({ target = false } = {}) {
     try {
       const Flow = this.runtime?.SynkLearning?.Flow, presentation = this.coach?.presentation?.();
-      if (!Flow?.declaredFrom || !presentation) return true;
+      if (!Flow?.declaredFrom || !presentation) return !target;
       const index = Flow.declaredFrom(FLOW_VOICE, presentation).knobs.voice;
-      return index === undefined || FLOW_VOICE.knobs[0].values[index] === '자동';
-    } catch { return true; }
+      return index === undefined ? !target : FLOW_VOICE.knobs[0].values[index] === '자동';
+    } catch { return !target; }
   }
 
   /** A fresh playthrough, never deletion/reset of the shared learning log. */

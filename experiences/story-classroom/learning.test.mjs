@@ -265,3 +265,13 @@ test('the help style chosen at the hub sets automatic reading at the start, thro
   hub.setPresentation({ support: 'independent' });
   assert.equal(createStoryLearning({ runtime: { SynkLearning: Atlas }, storage }).voiceDefault(), false);
 });
+
+test('a WORLD reading task reads requests only when asked, unless step-by-step help was chosen', () => {
+  const runtime = { SynkLearning: { Flow: Atlas.Flow } };
+  const inTask = presentation => createStoryLearning({ runtime, coach: { presentation: () => presentation } }).voiceDefault({ target: true });
+  assert.equal(inTask(null), false, 'a reading check: the person reads first and can press to hear');
+  assert.equal(inTask({ support: 'choose' }), false);
+  assert.equal(inTask({ support: 'independent' }), false);
+  assert.equal(inTask({ support: 'step' }), true, 'the person’s own choice of step-by-step help always wins');
+  assert.equal(createStoryLearning({ runtime: {}, coach: { presentation: () => null } }).voiceDefault({ target: true }), false);
+});
