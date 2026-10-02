@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SYNK Atlas · 순간 맞춤 실험실</title>
+<link rel="stylesheet" href="/learning-hub/assets/scrapbook.css"><link rel="stylesheet" href="/atlas-lab/lab.css">
+<script src="/learning-hub/atlas-learning.js" defer></script><script src="/consult/computer/content.js" defer></script><script src="/consult/computer/rules.js" defer></script><script type="module" src="/atlas-lab/lab.js"></script></head>
+<body class="sb-page"><main>
+<header class="lab-head"><span class="brand">SYNK ATLAS</span><a class="back" href="/learning-hub/">← 맞춤 학습으로</a></header>
+
+<section class="hero" aria-labelledby="hero-title">
+  <img class="sticker" src="/learning-hub/assets/sticker-book.webp" alt="">
+  <p class="eyebrow">순간 맞춤 실험실 · 실제 엔진 코드로 돌려요</p>
+  <h1 id="hero-title">같은 콘텐츠도<br><span class="sb-underline">사람마다 다르게 움직여요.</span></h1>
+  <p class="lead">콘텐츠가 바꿀 수 있는 손잡이(속도·종류·도움)를 쉬운 것부터 어려운 것 순서로 알려 주면, Atlas가 한 번 답할 때마다 손잡이 하나를 한 칸씩 돌려요. 너무 쉬우면 조금 어렵게, 막히면 바로 쉽게.</p>
+  <ul class="rules">
+    <li><strong>나이·성별로 짐작하지 않아요.</strong> 그 사람이 고른 것과 실제로 한 것만 봐요.</li>
+    <li><strong>도움을 받은 정답으로는 어렵게 만들지 않아요.</strong> 도움을 줄이는 건 먼저 묻고 정해요.</li>
+    <li><strong>언제든 끌 수 있어요.</strong> “정해진 속도”를 고르면 처음 구성 그대로예요.</li>
+  </ul>
+</section>
+
+<section class="block" aria-labelledby="people-title">
+  <p class="eyebrow">① 일곱 사람, 한 콘텐츠</p>
+  <h2 id="people-title">정해진 구성은 한 사람에게만 맞아요</h2>
+  <p class="note">가상의 사람 일곱을 같은 콘텐츠에 60번씩 답하게 했어요. 선은 <em class="key adapted">순간 맞춤</em>과 <em class="key fixed">정해진 구성</em>에서 그 사람이 실제로 해낼 수 있는 정도예요. 가운데 띠가 목표(조금 어렵지만 해낼 수 있는 정도)예요.</p>
+  <div class="content-pick" role="group" aria-label="콘텐츠 고르기">
+    <button type="button" data-content="cafe" aria-pressed="true">주문 폭주 · 점심 러시</button>
+    <button type="button" data-content="rhythm" aria-pressed="false">말의 리듬 · 판정 폭</button>
+    <button type="button" data-content="reading" aria-pressed="false">시간 제한 없는 문제</button>
+  </div>
+  <div id="people" class="people" aria-live="polite"></div>
+  <p class="caveat">가상 사람으로 엔진이 의도대로 움직이는지 확인한 결과예요. 실제 사람의 학습 효과나 만족을 보여 주는 숫자가 아니에요.</p>
+</section>
+
+<section class="block" aria-labelledby="try-title">
+  <p class="eyebrow">② 직접 해 보기 · 30초</p>
+  <h2 id="try-title">더 큰 수를 골라 보세요</h2>
+  <p class="note">한국어를 몰라도 되는 아주 단순한 콘텐츠예요. 맞히고 틀리고 늦는 모습에 따라 보기 수·제한 시간·숫자 차이가 바뀌어요. 오른쪽은 엔진이 보는 값이에요(실제 콘텐츠에서는 보이지 않아요).</p>
+  <div class="try">
+    <div class="board">
+      <div class="timer" aria-hidden="true"><span id="timer-fill"></span></div>
+      <div id="tiles" class="tiles" role="group" aria-label="고를 수"></div>
+      <p id="try-line" class="try-line" role="status">시작을 누르면 열 번 답해요.</p>
+      <div class="try-actions"><button id="try-start" type="button" class="slab">시작하기</button>
+        <label class="switch"><input id="try-fixed" type="checkbox"> 정해진 설정으로 해 보기</label></div>
+    </div>
+    <aside class="engine" aria-label="엔진이 보는 값">
+      <p class="eyebrow">엔진이 보는 값</p>
+      <dl id="knobs"></dl>
+      <p class="mini">맞추려는 성공 정도 <strong id="target">—</strong> · 지금 설정에서 예상하는 성공 정도 <strong id="expected">—</strong></p>
+      <ol id="history" class="history"></ol>
+    </aside>
+  </div>
+</section>
+
+<section class="block" aria-labelledby="consult-title">
+  <p class="eyebrow">③ 상담에서는 · 결과를 바꾸는 질문만</p>
+  <h2 id="consult-title">AI 컴퓨터 맞춤 추천에 붙여 봤어요</h2>
+  <p class="note">공개 중인 맞춤 도구의 실제 질문과 계산을 그대로 읽어요. Atlas는 남은 질문마다 “답에 따라 추천이 바뀌는지”를 미리 계산해서, 바뀌는 질문만 먼저 묻고 어떻게 답해도 같은 질문은 건너뛰어요.</p>
+  <div class="consult">
+    <div>
+      <p class="label">하고 싶은 일을 골라 주세요</p>
+      <div id="uses" class="chips" role="group" aria-label="하고 싶은 일"></div>
+      <div id="ask" class="ask"></div>
+    </div>
+    <aside class="result-card">
+      <p class="eyebrow">지금 추천</p>
+      <p id="advice" class="advice">하고 싶은 일을 고르면 추천이 나와요.</p>
+      <p id="advice-sub" class="mini"></p>
+      <p class="label">건너뛴 질문 · 어떻게 답해도 추천이 같아요</p>
+      <ul id="skipped" class="skipped"></ul>
+      <p id="count" class="count"></p>
+    </aside>
+  </div>
+</section>
+
+<section class="block" aria-labelledby="map-title">
+  <p class="eyebrow">④ 어디에 붙어 있나</p>
+  <h2 id="map-title">콘텐츠마다 돌리는 손잡이</h2>
+  <div class="table-wrap"><table class="map">
+    <thead><tr><th>콘텐츠</th><th>사람에 맞춰 바뀌는 것</th><th>쓰는 엔진</th><th>지금</th></tr></thead>
+    <tbody>
+      <tr><td>주문 폭주</td><td>손님 대기·등장 간격·대기 인원, 주문 종류(한 잔→조건→두 잔)</td><td>Core·Temper·Vellum·Trail</td><td><span class="state on">연결</span></td></tr>
+      <tr><td>말의 리듬</td><td>고른 난이도 안에서 판정 폭(0.85~1.35배)</td><td>Core·Temper</td><td><span class="state on">연결</span></td></tr>
+      <tr><td>맞춤 학습 입구</td><td>오늘 컨디션 → 그날 모든 게임의 시작 속도</td><td>Core·Vellum</td><td><span class="state on">연결</span></td></tr>
+      <tr><td>AI 컴퓨터 맞춤 추천</td><td>결과를 바꾸는 질문만 묻기, 나머지 건너뛰기</td><td>Core(묻기)</td><td><span class="state lab">실험실</span></td></tr>
+      <tr><td>한국어 레이싱</td><td>차 속도·문제 간격·보기 수·문항 난도</td><td>Core·Temper·Vellum·Loom</td><td><span class="state plan">선언안</span></td></tr>
+      <tr><td>바람길</td><td>달리는 속도·지시 간격(조작과 언어는 따로)</td><td>Core·Temper</td><td><span class="state plan">선언안</span></td></tr>
+      <tr><td>입장 검사 · 선생님이 돌아왔다</td><td>손님/부탁 수, 규칙 수, 글 길이, 돋보기·글 도움 시점</td><td>Core·Vellum·Strata</td><td><span class="state plan">선언안</span></td></tr>
+      <tr><td>싱크 타운 · 앱 맞춤 읽기</td><td>주민 부탁의 난도·말 빠르기·도움 시점</td><td>Core·Vellum·Trail·Loom·Reed</td><td><span class="state plan">선언안</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="caveat">선언안은 손잡이 목록과 붙이는 자리까지 정한 상태예요. 화면 연결은 각 콘텐츠를 맡은 작업에서 몇 줄로 붙여요.</p>
+</section>
+<footer>SYNK Atlas · 로컬 실험실 · 기록은 이 브라우저에만 잠깐 남고 계정에 저장하지 않아요.</footer>
+</main></body></html>

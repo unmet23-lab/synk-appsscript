@@ -1,0 +1,120 @@
+{
+  "origin": "http://127.0.0.1:4291",
+  "at": "2026-10-02T05:11:09.941Z",
+  "missing": [],
+  "people": {
+    "cafe": [
+      "맞춤 100%",
+      "맞춤 100%",
+      "맞춤 90%",
+      "맞춤 73%",
+      "맞춤 100%",
+      "맞춤 83%",
+      "맞춤 0%"
+    ],
+    "rhythm": [
+      "맞춤 100%",
+      "맞춤 100%",
+      "맞춤 100%",
+      "맞춤 100%",
+      "맞춤 100%",
+      "맞춤 100%",
+      "맞춤 0%"
+    ],
+    "reading": [
+      "맞춤 100%",
+      "맞춤 90%",
+      "맞춤 100%",
+      "맞춤 30%",
+      "맞춤 90%",
+      "맞춤 73%",
+      "맞춤 93%"
+    ]
+  },
+  "tryLine": "열 번 중 3번 설정을 바꿨어요. 다시 하면 처음부터 맞춰요.",
+  "tryRun": {
+    "settings": {
+      "content": "atlas-lab.numbers",
+      "policy": "flow-1",
+      "arm": "adapted",
+      "mode": "auto",
+      "adaptive": true,
+      "values": {
+        "item.difficulty": 1,
+        "choices": 4,
+        "seconds": 4
+      },
+      "indices": {
+        "item.difficulty": 0,
+        "choices": 2,
+        "seconds": 3
+      },
+      "expected": 0.83,
+      "level": 1
+    },
+    "changes": [
+      {
+        "step": 3,
+        "phase": "response",
+        "knob": "choices",
+        "kind": "content",
+        "dimension": "content",
+        "from": 0,
+        "to": 1,
+        "direction": 1,
+        "because": "steady-success",
+        "value": 3
+      },
+      {
+        "step": 6,
+        "phase": "response",
+        "knob": "seconds",
+        "kind": "pace",
+        "dimension": "pace",
+        "from": 2,
+        "to": 3,
+        "direction": 1,
+        "because": "comfortable-success",
+        "value": 4
+      },
+      {
+        "step": 9,
+        "phase": "response",
+        "knob": "choices",
+        "kind": "content",
+        "dimension": "content",
+        "from": 1,
+        "to": 2,
+        "direction": 1,
+        "because": "steady-success",
+        "value": 4
+      }
+    ]
+  },
+  "tryAim": {
+    "target": "75%",
+    "expected": "83%"
+  },
+  "webAsk": "운영체제",
+  "webSkipped": [
+    "지금 컴퓨터 유무",
+    "켜 두는 개수",
+    "예산"
+  ],
+  "aiAsk": "내 컴퓨터에 AI 설치",
+  "aiAnswered": 4,
+  "aiAdvice": "맥 미니 · 램 16GB · SSD 1TB",
+  "aiSkipped": [
+    "지금 컴퓨터 유무",
+    "예산"
+  ],
+  "aiCount": "전체 질문 10개 중 지금까지 4개에 답했고, 남은 6개 가운데 2개는 묻지 않아도 돼요.",
+  "mobileOverflow": {
+    "scroll": false,
+    "zoomed": false
+  },
+  "hubNote": "알겠어요. 오늘은 게임이 더 어려워지지 않고, 힌트를 줄이자는 말도 하지 않아요.",
+  "cafeAfterTired": "오늘은 더 바빠지지 않게 영업해요.",
+  "status": "passed",
+  "pageErrors": []
+}
