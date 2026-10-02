@@ -335,6 +335,15 @@ test('a game beside the account synchroniser folds with it and reads like a full
   assert.equal(s.log.length, full.events().length);
 });
 
+test('syncPort.ids() names the kept entries, in log order, without copying them', () => {
+  const time = timeline(), game = createGame({ gameId: 'ids', map, storage: memory(), clock: time.clock, fold: { max: 30, keep: 20, ageMs: 0 } });
+  for (const step of script(6, 40, T0)) play(game, step, time.set);
+  const ids = game.syncPort.ids();
+  assert.deepEqual(ids, game.syncPort.events().map(e => e.id));
+  assert.ok(ids.length > 0 && ids.length <= 30, 'folded entries are gone');
+  ids.push('changed'); assert.ok(!game.syncPort.ids().includes('changed'), 'each call gives its own list');
+});
+
 test('a history folded without a server is never sent, even once sharing is turned on', async () => {
   // A guest device: the kept entries can still be read; the folded history cannot be sent.
   const time = timeline(), game = createGame({ gameId: 'guest', map, storage: memory(), clock: time.clock, fold: { max: 30, keep: 20, ageMs: 0 } });

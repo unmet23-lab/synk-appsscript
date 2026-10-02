@@ -245,6 +245,12 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
         refresh(); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' });
         return session.events();
       },
+      // The kept entries' ids, without copying the entries: a WORLD host compares them around a
+      // game call to find what the call added (account/world-learning-host.js).
+      ids() {
+        refresh(); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' });
+        return log().map(e => e.id);
+      },
       // True when this store folded entries no server has received (it was not synchronised then):
       // its history can never be sent whole, so a synchroniser must not send it.
       partial() { refresh(); return !!ledger?.local; },
