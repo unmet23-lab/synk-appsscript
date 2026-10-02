@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="mn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>SYNK LAB · 한글날 · 내 이름 한글로 (몽골어)</title>
+    <!-- 원고: ./원고.md (제작 방식 v2 · 트리거 = 달력, 10/9 한글날)
+         실제 화면: assets/media/tool/ — 녹화_도구화면.cjs로 https://synk.im/name/ 을 휴대폰 크기(390×844@3)로 찍은 사진을 그대로 쓴다.
+         변환 결과(홀란·뭉흐·볼드·투브신)는 같은 페이지의 convert()로 확인했다.
+         소리: LAB 음악(lyria3_b, 「아 맞다」와 같은 곡) + 브랜드 사운드킷(획득·성취·알림·몽글) + 사인 틱 둘(E7·C7, 규칙 4). 내레이션 없음. -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="assets/synk-kit/motion.js"></script>
+    <link rel="stylesheet" href="assets/synk-kit/kit.css" />
+    <style>
+      @font-face{font-family:'SUIT Variable';font-weight:100 900;src:url("assets/synk-kit/fonts/SUIT-Variable.woff2") format('woff2')}
+      @font-face{font-family:'Inter Tight';font-weight:400 600;src:url("assets/synk-kit/fonts/InterTight-SemiBold.ttf")}
+      @font-face{font-family:'Inter Tight';font-weight:700 900;src:url("assets/synk-kit/fonts/InterTight-Bold.ttf")}
+      @font-face{font-family:'DM Mono';font-weight:400 700;src:url("assets/synk-kit/fonts/DMMono-Medium.ttf")}
+      html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #0a0a0a; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #fff; font-family: 'SUIT Variable', 'Inter Tight', sans-serif; }
+      .k-scene { position: absolute; inset: 0; overflow: hidden; }
+      .k-scene > .k-slide { position: absolute; inset: 0; }
+      #s2, #s3, #s4, #s5 { opacity: 0; }
+
+      /* 공통 — 9:16 오른쪽 160px(앱 단추 자리)에는 글자를 두지 않는다. 글자는 y 269~1248 안 */
+      .k-in.pin { right: 180px; }
+      .stage { position: absolute; inset: 0; }
+      .mn { font-family: var(--k-latin); }
+      .k-title.mn { letter-spacing: -.035em; }
+      .lbl-mn { font-family: var(--k-latin); font-weight: 700; letter-spacing: .06em; }
+      .ko-sub { margin: 0; font: 700 40px/1.35 var(--k-sans); letter-spacing: -.03em; color: var(--k-muted); }
+      .k-field .ko-sub { color: var(--on-field-2); }
+
+      /* 몽글: 같은 자리에 표정 컷을 겹쳐 두고 컷으로만 바꾼다(흔들기·떠다니기 없음) */
+      .mg { aspect-ratio: 1400 / 1385; }
+      .mg > img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
+      .mg > img.on { opacity: 1; }
+
+      /* 맞히기 공통: 카운트다운 칩 셋 → 정답 줄 */
+      .cd { position: absolute; left: 84px; display: flex; gap: 18px; }
+      .cd .k-chip { font: 700 46px/1 var(--k-mono); padding: 16px 32px; }
+      .ans { position: absolute; left: 84px; display: flex; align-items: center; gap: 26px; opacity: 0; }
+      .ans .nm { font: 800 128px/1 var(--k-latin); letter-spacing: -.03em; }
+      .ans .k-chip { font: 800 50px/1 var(--k-latin); padding: 16px 30px; }
+
+      /* 1 표지(코랄 면) */
+      .s1-in { top: 350px; right: 164px; }
+      #s1-title { width: fit-content; }
+      .s1-ko { position: absolute; left: 84px; top: 556px; margin: 0; font: 900 280px/1 var(--k-sans); letter-spacing: -.05em; color: var(--on-field); width: fit-content; }
+      #s1-q { position: absolute; left: 90px; top: 884px; }
+      #s1-cd { top: 972px; }
+      #s1-ans { top: 964px; }
+      #s1-ans .nm { color: var(--on-field); }
+
+      /* 2 한 번 더(흰 종이) */
+      .s2-ko { position: absolute; left: 84px; right: 180px; top: 640px; margin: 0; text-align: center; font: 900 300px/1 var(--k-sans); letter-spacing: -.05em; }
+      #s2-cd { top: 1010px; left: 0; right: 160px; justify-content: center; }
+      #s2-ans { top: 1000px; left: 0; right: 160px; justify-content: center; }
+
+      /* 3 알고 있었나요(흰 종이) — 모음 넷이 둘로 */
+      .vow { position: absolute; left: 84px; right: 180px; opacity: 0; }
+      .pair { display: flex; align-items: baseline; gap: 30px; }
+      .pair .cy { font: 800 116px/1 var(--k-latin); letter-spacing: 0; }
+      .pair .ar { font: 700 76px/1 var(--k-latin); color: var(--k-muted); }
+      .pair .hg { font: 900 156px/1 var(--k-sans); color: var(--acc); }
+      .vow .ex { margin: 26px 0 0; font: 600 40px/1.3 var(--k-latin); letter-spacing: -.01em; color: var(--k-muted); }
+      .vow .ex b { color: var(--k-ink); font-weight: 800; }
+      #s3-a { top: 600px; }
+      #s3-b { top: 872px; }
+      .note { position: absolute; left: 84px; right: 180px; top: 1112px; }
+      .note .nt { margin: 0 0 8px; font: 800 50px/1.2 var(--k-latin); letter-spacing: -.02em; }
+
+      /* 4 실제 화면(흰 종이) — 휴대폰으로 찍은 synk.im/name 사진을 뷰파인더 안에서 스크롤만 한다 */
+      #s4-vf { position: absolute; left: 112px; top: 548px; width: 760px; box-sizing: border-box; }
+      #s4-vf .k-stamp { left: auto; right: 58px; }
+      #s4-shot { height: 610px; }
+      .pan { position: absolute; left: 0; top: 0; width: 100%; }
+      .pan > img { position: absolute; left: 0; top: 0; width: 100%; height: auto; opacity: 0; }
+      .pan > img.on { opacity: 1; }
+      #s4-pan2 { opacity: 0; }
+
+      /* 5 끝(코랄 면) — 행동 하나: 내 이름 써 보기 */
+      .s5-in { top: 350px; right: 164px; }
+      .s5-url { margin: 22px 0 0; font: 800 92px/1 var(--k-latin); letter-spacing: -.03em; color: var(--on-field); width: fit-content; }
+      #s5-sub { margin-top: 22px; }
+      #s5-card { --s: 296px; --r: -5deg; left: 100px; top: 758px; border-radius: 32px; }
+      .s5-ask { position: absolute; left: 470px; top: 806px; width: 450px; }
+      .s5-ask .k-sub { margin-top: 14px; }
+    </style>
+  </head>
+  <body data-acc="lab">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="21" data-fps="30" data-width="1080" data-height="1920">
+
+      <!-- 소리 -->
+      <audio id="music" src="assets/media/sound/lab_music_lyria3_b.mp3" data-start="0" data-duration="21" data-track-index="10" data-volume="0.85" data-fade-out="1.4"></audio>
+      <audio id="t1a" src="assets/media/sound/tick_e7.wav" data-start="0.674" data-duration="0.08" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="t1b" src="assets/media/sound/tick_e7.wav" data-start="1.22" data-duration="0.08" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="t1c" src="assets/media/sound/tick_e7.wav" data-start="1.766" data-duration="0.08" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="e1" src="assets/media/sound/synk-sound-earn.wav" data-start="2.312" data-duration="0.11" data-track-index="12" data-volume="1.4"></audio>
+      <audio id="t2a" src="assets/media/sound/tick_e7.wav" data-start="3.95" data-duration="0.08" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="t2b" src="assets/media/sound/tick_e7.wav" data-start="4.496" data-duration="0.08" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="t2c" src="assets/media/sound/tick_e7.wav" data-start="5.042" data-duration="0.08" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="e2" src="assets/media/sound/synk-sound-earn.wav" data-start="5.588" data-duration="0.11" data-track-index="12" data-volume="1.4"></audio>
+      <audio id="n3a" src="assets/media/sound/synk-sound-notify.wav" data-start="7.226" data-duration="0.27" data-track-index="12" data-volume="0.9"></audio>
+      <audio id="n3b" src="assets/media/sound/synk-sound-notify.wav" data-start="8.318" data-duration="0.27" data-track-index="12" data-volume="0.9"></audio>
+      <audio id="a3" src="assets/media/sound/synk-sound-achieve.wav" data-start="9.41" data-duration="0.36" data-track-index="12" data-volume="0.9"></audio>
+      <audio id="k1" src="assets/media/sound/key_c7.wav" data-start="12.14" data-duration="0.035" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="k2" src="assets/media/sound/key_c7.wav" data-start="12.413" data-duration="0.035" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="k3" src="assets/media/sound/key_c7.wav" data-start="12.686" data-duration="0.035" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="k4" src="assets/media/sound/key_c7.wav" data-start="12.959" data-duration="0.035" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="k5" src="assets/media/sound/key_c7.wav" data-start="13.232" data-duration="0.035" data-track-index="11" data-volume="1.3"></audio>
+      <audio id="a4" src="assets/media/sound/synk-sound-achieve.wav" data-start="13.30" data-duration="0.36" data-track-index="12" data-volume="0.9"></audio>
+      <audio id="v4" src="assets/media/sound/synk-voice-ppoo.wav" data-start="14.95" data-duration="0.53" data-track-index="13" data-volume="0.85"></audio>
+      <audio id="e5" src="assets/media/sound/synk-sound-earn.wav" data-start="17.054" data-duration="0.11" data-track-index="12" data-volume="1.4"></audio>
+      <audio id="v5" src="assets/media/sound/synk-voice-myang.wav" data-start="17.62" data-duration="0.55" data-track-index="13" data-volume="0.85"></audio>
+
+      <!-- 1 표지(코랄 면): 0초 화면 = 질문과 한글 이름. 3·2·1 → 「Хулан!」 -->
+      <div id="s1" class="k-scene">
+        <section class="k-slide k-field k-corners" data-fmt="cover916" data-name="cover">
+          <div class="k-head"><b>SYNK LAB</b><span>10.9 · 한글날</span></div>
+          <div class="stage" id="s1-stage">
+            <div class="k-in s1-in">
+              <p class="k-label lbl-mn" id="s1-label">СОЛОНГОС ҮСГИЙН ӨДӨР</p>
+              <p class="k-title m mn" id="s1-title" style="margin-top:16px">Энэ ямар <span class="k-mark">нэр</span> вэ?</p>
+            </div>
+            <p class="s1-ko" id="s1-ko">홀란</p>
+            <p class="ko-sub" id="s1-q">이 이름, 누구일까요?</p>
+            <div class="cd" id="s1-cd"><span class="k-chip">3</span><span class="k-chip">2</span><span class="k-chip">1</span></div>
+            <div class="ans" id="s1-ans"><span class="nm">Хулан!</span><span class="k-chip">у → ㅗ</span></div>
+          </div>
+          <div class="k-object diecut mg" id="s1-mg" style="--s:280px;left:640px;top:566px">
+            <img data-face="궁금함" class="on" src="assets/synk-kit/assets/mascot-몽글_궁금함.webp" alt="" />
+            <img data-face="놀람" src="assets/synk-kit/assets/mascot-몽글_놀람.webp" alt="" />
+          </div>
+          <div class="k-foot"><span class="k-logo-tag"><img class="k-logo" src="assets/synk-kit/assets/logo-lab.webp" alt="synk LAB" /></span><span class="k-handle">@synk.mn</span></div>
+        </section>
+      </div>
+
+      <!-- 2 한 번 더(흰 종이): 「뭉흐」 → 「Мөнх!」 -->
+      <div id="s2" class="k-scene">
+        <section class="k-slide k-paper" data-fmt="cover916" data-name="round2">
+          <div class="k-head"><b>SYNK LAB</b><span class="k-count">02 / 05</span></div>
+          <div class="stage" id="s2-stage">
+            <div class="k-in pin">
+              <p class="k-label lbl-mn" id="s2-label">ДАХИАД НЭГ</p>
+              <h2 class="k-title m mn" id="s2-title" style="margin-top:16px">Харин <span class="k-mark">энэ</span>?</h2>
+              <p class="ko-sub" id="s2-sub" style="margin-top:10px">그럼 이건?</p>
+            </div>
+            <p class="s2-ko" id="s2-ko">뭉흐</p>
+            <div class="cd" id="s2-cd"><span class="k-chip">3</span><span class="k-chip">2</span><span class="k-chip">1</span></div>
+            <div class="ans" id="s2-ans"><span class="nm">Мөнх!</span><span class="k-chip acc">ө → ㅜ</span></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 3 알고 있었나요(흰 종이): о·у → ㅗ, ө·ү → ㅜ. 도구 페이지의 설명과 예시 그대로 -->
+      <div id="s3" class="k-scene">
+        <section class="k-slide k-paper" data-fmt="cover916" data-name="why">
+          <div class="k-head"><b>SYNK LAB</b><span class="k-count">03 / 05</span></div>
+          <div class="stage" id="s3-stage">
+            <div class="k-in pin">
+              <p class="k-label lbl-mn" id="s3-label">МЭДЭХ ҮҮ?</p>
+              <h2 class="k-title m mn" id="s3-title" style="margin-top:16px"><span class="ln">Дөрвөн эгшиг</span><span class="ln"><span class="k-mark">хоёр</span> болдог</span></h2>
+            </div>
+            <div class="vow" id="s3-a">
+              <div class="pair"><span class="cy">о · у</span><span class="ar">→</span><span class="hg">ㅗ</span></div>
+              <p class="ex">Болд → <b>볼드</b> · Хулан → <b>홀란</b></p>
+            </div>
+            <div class="vow" id="s3-b">
+              <div class="pair"><span class="cy">ө · ү</span><span class="ar">→</span><span class="hg">ㅜ</span></div>
+              <p class="ex">Мөнх → <b>뭉흐</b> · Түвшин → <b>투브신</b></p>
+            </div>
+            <div class="note" id="s3-note">
+              <p class="nt mn">Монголоор <span class="k-mark">өөр</span>, солонгосоор ижил</p>
+              <p class="ko-sub">몽골어에선 다른 소리, 한글에선 같은 글자</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 4 실제 화면(흰 종이): synk.im/name 에 「Хулан」을 한 글자씩 → 홀란 · 다른 표기 홀랑 → 펠트 이름 카드 -->
+      <div id="s4" class="k-scene">
+        <section class="k-slide k-paper" data-fmt="cover916" data-name="tool">
+          <div class="k-head"><b>SYNK LAB</b><span class="k-count">04 / 05</span></div>
+          <div class="k-in pin">
+            <p class="k-label lbl-mn" id="s4-label">ӨӨРӨӨ ШАЛГААРАЙ</p>
+            <h2 class="k-title s mn" id="s4-title" style="margin-top:14px">Таны нэр <span class="k-mark">солонгосоор</span>?</h2>
+            <p class="ko-sub" id="s4-sub" style="margin-top:8px">내 이름, 한글로 · 실제 화면</p>
+          </div>
+          <figure class="k-viewfinder" id="s4-vf">
+            <span class="k-stamp">synk.im/name</span>
+            <div class="k-shot" id="s4-shot">
+              <div class="pan" id="s4-pan">
+                <img data-k="0" class="on" src="assets/media/tool/01_focus.webp" alt="" />
+                <img data-k="1" src="assets/media/tool/02_type1.webp" alt="" />
+                <img data-k="2" src="assets/media/tool/03_type2.webp" alt="" />
+                <img data-k="3" src="assets/media/tool/04_type3.webp" alt="" />
+                <img data-k="4" src="assets/media/tool/05_type4.webp" alt="" />
+                <img data-k="5" src="assets/media/tool/06_type5.webp" alt="" />
+              </div>
+              <div class="pan" id="s4-pan2"><img class="on" src="assets/media/tool/09_card_scrolled.webp" alt="" /></div>
+            </div>
+          </figure>
+        </section>
+      </div>
+
+      <!-- 5 끝(코랄 면): 행동 하나 — synk.im/name 에서 내 이름 써 보기 · 카드는 실제 결과 -->
+      <div id="s5" class="k-scene">
+        <section class="k-slide k-field k-corners" data-fmt="cover916" data-name="end">
+          <div class="k-head"><b>SYNK LAB</b><span>10.9 · 한글날</span></div>
+          <div class="k-in s5-in">
+            <h2 class="k-title m mn" id="s5-title"><span class="ln">Нэрээ бичээд</span><span class="ln"><span class="k-mark">үзээрэй</span></span></h2>
+            <p class="s5-url" id="s5-url">synk.im/name</p>
+            <p class="k-sub mn" id="s5-sub">Зургаа хадгалаад сторидоо оруулаарай</p>
+          </div>
+          <img class="k-object diecut" id="s5-card" src="assets/media/tool/felt_card_hulan.webp" alt="" />
+          <div class="s5-ask" id="s5-ask">
+            <p class="k-title s mn"><span class="ln">Таны нэр</span><span class="ln">солонгосоор?</span></p>
+            <p class="k-sub mn">Сэтгэгдэлд бичээрэй ↓</p>
+            <p class="ko-sub" style="margin-top:6px">내 한글 이름, 댓글로!</p>
+          </div>
+          <div class="k-foot"><span class="k-logo-tag"><img class="k-logo" src="assets/synk-kit/assets/logo-lab.webp" alt="synk LAB" /></span><span class="k-handle">@synk.mn</span></div>
+        </section>
+      </div>
+
+    </div>
+    <script>
+      const M = window.SynkMotion;
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+      // 몽글 표정 컷: 겹쳐 둔 컷 가운데 하나만 보인다(움직임 없음)
+      const face = (mg, name, t) => $$(mg + ' > img').forEach((im) => tl.set(im, { opacity: im.dataset.face === name ? 1 : 0 }, t));
+      // 3·2·1 칩: 하나씩 눌리며 나타나고, 정답 순간 함께 사라진다
+      const countdown = (sel, times, out) => {
+        $$(sel + ' .k-chip').forEach((c, i) => { tl.set(c, { opacity: 0 }, 0); M.press(tl, c, times[i], { dur: 0.22 }); });
+        tl.to(sel, { opacity: 0, duration: 0.12 }, out);
+      };
+      // 정답 줄: 이름이 쿵 하고 앉고, 이유 칩이 따라 눌린다
+      const reveal = (sel, t) => {
+        tl.set(sel, { opacity: 1 }, t);
+        tl.fromTo(sel + ' .nm', { scale: 1.25, opacity: 0, transformOrigin: '0% 60%' }, { scale: 1, opacity: 1, duration: 0.32, ease: 'back.out(2.2)' }, t);
+        M.press(tl, sel + ' .k-chip', t + 0.2, { dur: 0.28 });
+      };
+      // 실제 화면: 찍은 사진 가운데 하나만 보인다(타자 한 글자 = 사진 한 장)
+      const shot = (k, t) => $$('#s4-pan > img').forEach((im) => tl.set(im, { opacity: Number(im.dataset.k) === k ? 1 : 0 }, t));
+      // 사진 픽셀 → 영상 픽셀: 뷰파인더 안 너비 672 / 사진 너비 1170
+      const S = 672 / 1170;
+
+      // 박자: 음악(약 110BPM) 한 박 = 0.546초. 1.22 + 0.546n 에 정답·행 등장·전환 가운데를 맞춘다
+      // ── 1 표지 (0 ~ 3.22) — 0초 화면 = 질문 + 한글 이름
+      M.stitch(tl, '#s1 .k-slide', 0, { dur: 0.5 });
+      M.slam(tl, '#s1-title', 0);
+      M.slam(tl, '#s1-ko', 0, { from: 1.12 });
+      M.fade(tl, '#s1-label', 0.1);
+      M.sticker(tl, '#s1-mg', 0.2);
+      M.fade(tl, '#s1-q', 0.3, { y: 12 });
+      M.mark(tl, '#s1-title .k-mark', 0.45, { dur: 0.35 });
+      countdown('#s1-cd', [0.674, 1.22, 1.766], 2.28);
+      reveal('#s1-ans', 2.312);
+      face('#s1-mg', '놀람', 2.312);
+      M.punch(tl, '#s1-ko', 2.312, { to: 1.04, rest: 1.0 });
+
+      // 펠트 덮개로 넘김(다 덮는 3.22)
+      M.patch(tl, '#s1', '#s2', 2.86, { root: '#root' });
+
+      // ── 2 한 번 더 (3.22 ~ 6.68)
+      M.fade(tl, '#s2-label', 3.22);
+      M.lines(tl, '#s2-title', 3.25);
+      M.fade(tl, '#s2-sub', 3.35, { y: 10 });
+      tl.fromTo('#s2-ko', { scale: 1.12, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: 'power3.out' }, 3.404);
+      M.mark(tl, '#s2-title .k-mark', 3.6, { dur: 0.3 });
+      countdown('#s2-cd', [3.95, 4.496, 5.042], 5.55);
+      reveal('#s2-ans', 5.588);
+      M.punch(tl, '#s2-ko', 5.588, { to: 1.04, rest: 1.0 });
+
+      // 실땀 와이프(가운데 6.68)
+      M.seam(tl, '#s2', '#s3', 6.37, { root: '#root' });
+
+      // ── 3 알고 있었나요 (6.68 ~ 11.59)
+      M.fade(tl, '#s3-label', 6.62);
+      M.lines(tl, '#s3-title', 6.68);
+      M.mark(tl, '#s3-title .k-mark', 7.0, { dur: 0.35 });
+      tl.fromTo('#s3-a', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.36, ease: 'power3.out' }, 7.226);
+      M.punch(tl, '#s3-a .hg', 7.35, { to: 1.06, rest: 1.0 });
+      tl.fromTo('#s3-b', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.36, ease: 'power3.out' }, 8.318);
+      M.punch(tl, '#s3-b .hg', 8.44, { to: 1.06, rest: 1.0 });
+      M.lines(tl, '#s3-note', 9.41);
+      M.mark(tl, '#s3-note .k-mark', 9.7, { dur: 0.35 });
+      M.punch(tl, '#s3-stage', 9.41, { to: 1.03, rest: 1.0 });
+
+      // 아치 창으로 열기 — 실제 화면(가운데 약 11.59)
+      M.arch(tl, '#s3', '#s4', 11.26);
+
+      // ── 4 실제 화면 (11.59 ~ 16.51)
+      M.fade(tl, '#s4-label', 11.55);
+      M.lines(tl, '#s4-title', 11.6);
+      M.fade(tl, '#s4-sub', 11.75, { y: 10 });
+      tl.set('#s4-pan', { y: -760 * S }, 0);             // 입력칸과 결과 자리
+      M.focus(tl, '#s4-vf', 11.8);
+      M.mark(tl, '#s4-title .k-mark', 12.0, { dur: 0.35 });
+      [12.14, 12.413, 12.686, 12.959, 13.232].forEach((t, i) => shot(i + 1, t));   // Х · Ху · Хул · Хула · Хулан (반 박마다)
+      M.punch(tl, '#s4-shot', 13.3, { to: 1.03, rest: 1.0 });
+      tl.to('#s4-pan', { y: -1420 * S, duration: 0.55, ease: 'power2.inOut' }, 13.778);   // 결과 · 다른 표기(홀랑)까지 스크롤
+      // 펠트 카드로: 아래로 넘어가 카드 화면(실제 스크롤 사진)이 올라온다
+      tl.set('#s4-pan2', { y: -384 * S + 90 }, 0);
+      tl.to('#s4-pan', { y: -1420 * S - 160, opacity: 0, duration: 0.35, ease: 'power2.in' }, 14.8);
+      tl.to('#s4-pan2', { y: -384 * S, opacity: 1, duration: 0.4, ease: 'power3.out' }, 14.87);
+
+      // 종이 밀어 올리기로 끝 장
+      M.paper(tl, '#s4', '#s5', 16.22);
+
+      // ── 5 끝 (16.51 ~ 21.0)
+      M.stitch(tl, '#s5 .k-slide', 16.55);
+      M.lines(tl, '#s5-title', 16.6);
+      M.press(tl, '#s5-url', 17.054, { dur: 0.3 });
+      M.mark(tl, '#s5-title .k-mark', 17.2, { dur: 0.4 });
+      M.fade(tl, '#s5-sub', 17.35, { y: 10 });
+      M.sticker(tl, '#s5-card', 17.6);
+      M.lines(tl, '#s5-ask .k-title', 18.146, { stagger: 0.08 });
+      M.fade(tl, '#s5-ask .k-sub', 18.45, { y: 10 });
+      M.fade(tl, '#s5-ask .ko-sub', 18.6, { y: 10 });
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>
