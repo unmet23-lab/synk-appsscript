@@ -2,7 +2,8 @@
 
 // Pure curriculum lookup. This module owns no learner memory, I/O, grading or AI calls.
 const CONFIDENCE = ['authored', 'measured', 'ai_draft'];
-const KINDS = ['skill', 'grammar_point', 'expression', 'situation', 'letter', 'syllable'];
+// Language kinds plus subject-neutral ones, so a map can describe any content (work, money, health...).
+const KINDS = ['skill', 'grammar_point', 'expression', 'situation', 'letter', 'syllable', 'concept', 'topic', 'task', 'word'];
 const TYPES = ['part_of', 'prerequisite', 'contrasts_with'];
 const copy = value => JSON.parse(JSON.stringify(value));
 const fail = message => { throw new TypeError(`Strata: ${message}`); };
@@ -128,7 +129,8 @@ function createMap(input) {
       advisory: result.prerequisites.filter(item => !item.blocking && !mastered.has(item.node.id)).map(item => item.node.id),
     })).slice(0, limit));
   }
-  return Object.freeze({ map_ver: data.map_ver, getNode, forTag, forSkill, prerequisites, candidates });
+  return Object.freeze({ map_ver: data.map_ver, getNode, forTag, forSkill, prerequisites, candidates,
+    allNodes: () => Object.freeze([...nodes.values()]) });
 }
 
 module.exports = { createMap, validateMap };

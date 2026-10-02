@@ -26,15 +26,19 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   const VERSION = 'trail-practice-2';
-  const TYPES = ['practice.presented', 'practice.helped', 'practice.attempted'];
+  const TYPES = ['practice.presented', 'practice.helped', 'practice.attempted', 'practice.delivery'];
   const BASE = ['schema', 'id', 'scope', 'at', 'recordedAt', 'type'];
   const FIELDS = {
     'practice.presented': ['decisionId', 'taskId', 'taskVersion', 'itemKey', 'conceptIds', 'firstExposure'],
     'practice.helped': ['presentationId', 'helpId', 'level', 'contentRef'],
     'practice.attempted': ['presentationId', 'attemptNo', 'verdict', 'errorTags'],
+    'practice.delivery': ['presentationId', 'audio'],
   };
+  const OPTIONAL = { 'practice.presented': ['measure'], 'practice.attempted': ['reason'] };
   const VERDICTS = ['correct', 'incorrect', 'unassessed', 'skipped'];
   const copy = value => JSON.parse(JSON.stringify(value));
+  const canonical = value => JSON.stringify(value, (_key, entry) => entry && typeof entry === 'object' && !Array.isArray(entry)
+    ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry);
   const id = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
   const time = value => { const n = Date.parse(value); if (typeof value !== 'string' || !Number.isFinite(n)) throw new TypeError('Trail: invalid time'); return n; };
   const key = scope => {
@@ -42,40 +46,100 @@
       || !['LAB', 'SHIFT', 'PATH'].includes(scope.domain) || !id(scope.workspace) || !id(scope.subject)) throw new TypeError('Trail: invalid practice scope');
     return `${scope.domain}/${scope.workspace}/${scope.subject}`;
   };
+  // Entries a session log has admitted: checked once and deep-frozen, so reading the log
+  // again neither re-validates them nor parses their times. Anything else is checked in full.
+  const vouched = new WeakMap();
+  const freeze = value => {
+    if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.freeze(value); for (const k of Object.keys(value)) freeze(value[k]); }
+    return value;
+  };
+  const scopeOf = e => vouched.get(e)?.scope ?? key(e.scope);
+  const atOf = e => vouched.get(e)?.at ?? time(e.at);
+  const recordedOf = e => vouched.get(e)?.recordedAt ?? time(e.recordedAt);
   const uniqueList = (values, valid, max) => Array.isArray(values) && values.length <= max && values.every(valid) && new Set(values).size === values.length;
   const tag = v => typeof v === 'string' && v.trim() === v && v.length > 0 && v.length <= 120 && !/[\r\n]/.test(v);
   function validate(event) {
     if (!event || !TYPES.includes(event.type) || event.schema !== 1 || !id(event.id)) throw new TypeError('Trail: invalid practice event');
     const fields = [...BASE, ...FIELDS[event.type]];
-    if (Object.keys(event).some(k => !fields.includes(k)) || fields.some(k => !Object.hasOwn(event, k))) throw new TypeError('Trail: unexpected or missing practice field');
+    if (Object.keys(event).some(k => !fields.includes(k) && !(OPTIONAL[event.type] || []).includes(k)) || fields.some(k => !Object.hasOwn(event, k))) throw new TypeError('Trail: unexpected or missing practice field');
     key(event.scope);
     if (time(event.recordedAt) < time(event.at)) throw new TypeError('Trail: recorded before occurrence');
     if (event.type === TYPES[0]) {
       if (![event.decisionId, event.taskId, event.taskVersion, event.itemKey].every(id)
         || !uniqueList(event.conceptIds, id, 32) || ![true, false, null].includes(event.firstExposure)) throw new TypeError('Trail: invalid presentation');
+      if (event.measure != null) {
+        const m = event.measure, keys = ['skillId', 'modality', 'difficulty', 'familyKey', 'audioRequired', 'confounded'];
+        if (Object.keys(m).some(k => !keys.includes(k) && k !== 'responseFormat') || keys.some(k => !Object.hasOwn(m, k))
+          || !id(m.skillId) || !event.conceptIds.includes(m.skillId) || !id(m.familyKey)
+          || typeof m.modality !== 'string' || !/^[a-z][a-z0-9_-]{0,40}$/.test(m.modality) || ![1, 2, 3].includes(m.difficulty)
+          || (Object.hasOwn(m, 'responseFormat') && !['binary-choice', 'single-choice', 'cup-compose', 'action', 'unknown'].includes(m.responseFormat))
+          || typeof m.audioRequired !== 'boolean' || typeof m.confounded !== 'boolean') throw new TypeError('Trail: invalid measurement contract');
+      }
     } else if (event.type === TYPES[1]) {
       if (![event.presentationId, event.helpId, event.contentRef].every(id) || !['cue', 'explanation', 'answer'].includes(event.level)) throw new TypeError('Trail: invalid help');
+    } else if (event.type === TYPES[3]) {
+      if (!id(event.presentationId) || !['pending', 'completed', 'failed'].includes(event.audio)) throw new TypeError('Trail: invalid audio delivery');
     } else if (!id(event.presentationId) || !Number.isInteger(event.attemptNo) || event.attemptNo < 1
-      || !VERDICTS.includes(event.verdict) || !uniqueList(event.errorTags, tag, 24)) throw new TypeError('Trail: invalid attempt');
+      || !VERDICTS.includes(event.verdict) || !uniqueList(event.errorTags, tag, 24)
+      || (event.reason != null && !['motor', 'audio', 'unanswered', 'demo', 'visual', 'storage'].includes(event.reason))) throw new TypeError('Trail: invalid attempt');
     return event;
   }
-  function checkLink(events, event) {
-    validate(event);
-    const prior = events.find(e => e.id === event.id);
+  function linked(event, prior, parent, attempts) {
+    if (!vouched.has(event)) validate(event);
     if (prior) {
-      if (JSON.stringify(prior) !== JSON.stringify(event)) throw new Error('Trail: conflicting event id');
+      if (canonical(prior) !== canonical(event)) throw new Error('Trail: conflicting event id');
       return event;
     }
     const presented = event.type === TYPES[0];
-    const parent = events.find(e => e.id === (presented ? event.decisionId : event.presentationId));
-    if (!parent || parent.type !== (presented ? 'decision.made' : TYPES[0]) || key(parent.scope) !== key(event.scope)
-      || time(parent.at) > time(event.at) || time(parent.recordedAt) > time(event.recordedAt)) throw new Error('Trail: practice requires a prior parent in the same scope');
+    if (!parent || parent.type !== (presented ? 'decision.made' : TYPES[0]) || scopeOf(parent) !== scopeOf(event)
+      || atOf(parent) > atOf(event) || recordedOf(parent) > recordedOf(event)) throw new Error('Trail: practice requires a prior parent in the same scope');
     if (event.type === TYPES[2]) {
-      const attempts = events.filter(e => e.type === TYPES[2] && e.presentationId === event.presentationId);
-      if (event.attemptNo !== attempts.length + 1 || attempts.some(e => time(e.at) > time(event.at))) throw new Error('Trail: attempt sequence must be consecutive');
+      if (event.attemptNo !== attempts.count + 1 || attempts.latest > atOf(event)) throw new Error('Trail: attempt sequence must be consecutive');
     }
     return event;
   }
+  // A session that keeps its own index links one new event without scanning the log.
+  const link = (event, parent, attempts) => linked(event, null, parent, attempts);
+  // The session vouches for an entry it has admitted and will never change: practice
+  // events are validated here, other events only need their scope and times.
+  function vouch(event) {
+    if (TYPES.includes(event?.type)) validate(event);
+    else if (!event?.scope || ![event.scope.domain, event.scope.workspace, event.scope.subject].every(v => typeof v === 'string')) throw new TypeError('Trail: invalid log entry');
+    freeze(event);
+    vouched.set(event, { scope: `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`, at: time(event.at), recordedAt: time(event.recordedAt) });
+    return event;
+  }
+  function checkLink(events, event) {
+    const attempts = { count: 0, latest: -Infinity };
+    for (const earlier of events) if (earlier.type === TYPES[2] && earlier.presentationId === event.presentationId) {
+      attempts.count += 1; attempts.latest = Math.max(attempts.latest, time(earlier.at));
+    }
+    return linked(event, events.find(e => e.id === event.id),
+      events.find(e => e.id === (event.type === TYPES[0] ? event.decisionId : event.presentationId)), attempts);
+  }
+  // An attempt's provenance from what came before it. `prior(kinds)` says whether help,
+  // a reveal or an attempt on the same item or family came earlier. Shared by summarize()
+  // and createIndex() so the batch reading and the incremental one cannot drift apart.
+  function judge(event, p, prior, audio) {
+    const assisted = prior(['help', 'answer']) ? true : p.firstExposure === true ? false : null;
+    const exposure = prior(['attempt', 'answer']) || p.firstExposure === false ? 'repeat' : p.firstExposure === true ? 'new' : 'unknown';
+    // Delivery is an actual observation, never inferred from play() being called.
+    // Later audio completion cannot rehabilitate an answer made before delivery.
+    const usableDelivery = !p.measure || (!p.measure.confounded && (!p.measure.audioRequired || audio === 'completed'));
+    const exclusionReason = event.reason || (p.measure?.confounded ? 'visual' : !usableDelivery ? 'audio' : null);
+    return { assisted, exposure, usableDelivery, exclusionReason,
+      independent: !exclusionReason && usableDelivery && assisted === false && exposure === 'new' && ['correct', 'incorrect'].includes(event.verdict) };
+  }
+  const attemptRow = (event, p, arm, audio, j) => ({
+    eventId: event.id, at: event.at, recordedAt: event.recordedAt,
+    presentationId: p.id, decisionId: p.decisionId, arm,
+    taskId: p.taskId, taskVersion: p.taskVersion, itemKey: p.itemKey, conceptIds: [...p.conceptIds],
+    attemptNo: event.attemptNo, verdict: event.verdict, errorTags: [...event.errorTags], assisted: j.assisted, exposure: j.exposure,
+    ...(p.measure ? { measure: { ...p.measure, responseFormat: p.measure.responseFormat || 'unknown' }, audio, exclusionReason: j.exclusionReason }
+      : j.exclusionReason ? { exclusionReason: j.exclusionReason } : {}),
+    independent: j.independent,
+  });
+  const traceKeys = p => [`item:${p.itemKey}`, ...(p.measure ? [`family:${p.measure.familyKey}`] : [])];
   // `decisions` limits what is reported (for example one round); evidence from the whole
   // log still decides what came before. `met` always covers the whole log.
   function summarize(events, { scope, asOf, recordedAsOf = asOf, decisions = null } = {}) {
@@ -83,42 +147,57 @@
     if (!Array.isArray(events)) throw new TypeError('Trail: log must be an array');
     if (decisions !== null && (!Array.isArray(decisions) || !decisions.every(id))) throw new TypeError('Trail: invalid decision filter');
     const reported = decisionId => decisions === null || decisions.includes(decisionId);
-    const all = [], seen = new Map();
+    const all = [], seen = new Map(), attemptOrder = new Map();
     for (const event of events) {
-      if (!event || !event.scope || `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}` !== scopeId) continue;
+      if (!event || !event.scope || (vouched.get(event)?.scope ?? `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`) !== scopeId) continue;
       if (seen.has(event.id)) {
-        if (JSON.stringify(seen.get(event.id)) !== JSON.stringify(event)) throw new Error('Trail: conflicting event id');
+        if (canonical(seen.get(event.id)) !== canonical(event)) throw new Error('Trail: conflicting event id');
         continue;
       }
-      if (TYPES.includes(event.type)) checkLink(all, event);
+      if (TYPES.includes(event.type)) linked(event, null,
+        seen.get(event.type === TYPES[0] ? event.decisionId : event.presentationId),
+        attemptOrder.get(event.presentationId) || { count: 0, latest: -Infinity });
+      if (event.type === TYPES[2]) {
+        const earlier = attemptOrder.get(event.presentationId) || { count: 0, latest: -Infinity };
+        attemptOrder.set(event.presentationId, { count: earlier.count + 1, latest: Math.max(earlier.latest, atOf(event)) });
+      }
       seen.set(event.id, event); all.push(event);
     }
     // The log is in the order things happened in the app; a device clock can step back.
     // Help, a reveal or an attempt earlier in either order counts as prior evidence.
-    const visible = all.filter(e => time(e.at) <= cutoff && time(e.recordedAt) <= recordedCutoff);
+    const visible = all.filter(e => atOf(e) <= cutoff && recordedOf(e) <= recordedCutoff);
     const excluded = new Set(visible.filter(e => e.type === 'record.excluded').map(e => e.targetId));
     // The comparison arm is recorded on the decision; practice only points to it.
     const arms = new Map(visible.filter(e => e.type === 'decision.made').map(e => [e.id, e.arm ?? null]));
     const provenance = new Map(), traces = new Map();
+    // A family can be open in two games before either one is answered. Check
+    // actual help/attempt order across its variants, not only the snapshot at
+    // presentation time. Keep the item key as well for legacy presentations.
     visible.forEach((event, index) => {
       if (event.type === TYPES[0]) provenance.set(event.id, event);
       const p = provenance.get(event.presentationId);
       // A visible child without its recorded parent is not usable evidence.
       if ((event.type !== TYPES[1] && event.type !== TYPES[2]) || !p) return;
-      if (!traces.has(p.itemKey)) traces.set(p.itemKey, []);
-      traces.get(p.itemKey).push({ index, at: time(event.at), kind: event.type === TYPES[2] ? 'attempt' : event.level === 'answer' ? 'answer' : 'help' });
+      for (const traceKey of traceKeys(p)) {
+        if (!traces.has(traceKey)) traces.set(traceKey, new Map());
+        const trace = traces.get(traceKey), kind = event.type === TYPES[2] ? 'attempt' : event.level === 'answer' ? 'answer' : 'help';
+        const earlier = trace.get(kind);
+        trace.set(kind, { index: Math.min(earlier?.index ?? Infinity, index), at: Math.min(earlier?.at ?? Infinity, atOf(event)) });
+      }
     });
-    const presentations = [], help = [], attempts = [], met = new Map();
+    const presentations = [], help = [], attempts = [], met = new Map(), audioByPresentation = new Map();
     // The first time each item was attempted or its answer shown, excluded or not:
     // exclusion removes analytical evidence, never the fact that the item was met.
     const meet = (p, at, verdict) => { if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict }); };
     let excludedAttempts = 0;
     visible.forEach((event, index) => {
+      if (event.type === TYPES[3]) { audioByPresentation.set(event.presentationId, event.audio); return; }
       if (event.type === TYPES[0]) {
         if (reported(event.decisionId) && !excluded.has(event.id) && !excluded.has(event.decisionId)) presentations.push({
           eventId: event.id, at: event.at, recordedAt: event.recordedAt,
           decisionId: event.decisionId, taskId: event.taskId, taskVersion: event.taskVersion,
           itemKey: event.itemKey, conceptIds: [...event.conceptIds], firstExposure: event.firstExposure,
+          ...(event.measure ? { measure: { ...event.measure, responseFormat: event.measure.responseFormat || 'unknown' } } : {}),
         });
         return;
       }
@@ -132,24 +211,71 @@
           presentationId: p.id, helpId: event.helpId, level: event.level, contentRef: event.contentRef });
         return;
       }
-      const at = time(event.at);
-      const before = traces.get(p.itemKey).filter(t => t.index !== index && (t.index < index || t.at < at));
-      const assisted = before.some(t => t.kind !== 'attempt') ? true : p.firstExposure === true ? false : null;
-      const exposure = before.some(t => t.kind !== 'help') || p.firstExposure === false ? 'repeat' : p.firstExposure === true ? 'new' : 'unknown';
+      const at = atOf(event);
+      const prior = kinds => traceKeys(p).some(traceKey => kinds.some(kind => {
+        const first = traces.get(traceKey)?.get(kind);
+        return first && (first.index < index || first.at < at);
+      }));
+      const audio = audioByPresentation.get(p.id) || 'pending', j = judge(event, p, prior, audio);
       // A first attempt made after the answer was shown was met at the reveal, not here.
-      meet(p, event.at, omitted ? null : event.verdict);
+      meet(p, event.at, omitted || j.exclusionReason ? null : event.verdict);
       if (!reported(p.decisionId)) return;
       if (omitted) { excludedAttempts += 1; return; }
-      attempts.push({
-        eventId: event.id, at: event.at, recordedAt: event.recordedAt,
-        presentationId: p.id, decisionId: p.decisionId, arm: arms.get(p.decisionId) ?? null,
-        taskId: p.taskId, taskVersion: p.taskVersion, itemKey: p.itemKey, conceptIds: [...p.conceptIds],
-        attemptNo: event.attemptNo, verdict: event.verdict, errorTags: [...event.errorTags], assisted, exposure,
-        independent: assisted === false && exposure === 'new' && ['correct', 'incorrect'].includes(event.verdict),
-      });
+      attempts.push(attemptRow(event, p, arms.get(p.decisionId) ?? null, audio, j));
     });
     return { version: VERSION, scope: copy(scope), asOf, recordedAsOf, decisions: decisions === null ? null : [...decisions],
       presentations, help, attempts, excludedAttempts, met: [...met.values()], persistence: 'provided-log-only', learningEffectClaim: false };
+  }
+  /* The same provenance as summarize(), kept current one entry at a time, for a session
+   * that appends in time order (a monotonic clock). add() takes each new log entry and,
+   * for an attempt, returns the row summarize() would give it (with `omitted` when an
+   * exclusion covers it). If an entry ever arrives out of time order, earlier answers
+   * could change, so `exact` turns false for good and callers read the whole log again.
+   * met(itemKey, familyKey): was this item or family attempted or revealed already? */
+  function createIndex({ scope }) {
+    const scopeId = key(scope);
+    const presentations = new Map(), audio = new Map(), arms = new Map(), excluded = new Set();
+    const helped = new Set(), seen = new Set(), rows = new Map(), covering = new Map();
+    let lastAt = -Infinity, exact = true;
+    const cover = (target, row) => { if (!covering.has(target)) covering.set(target, []); covering.get(target).push(row); };
+    function add(event) {
+      if (!event || !event.scope || (vouched.get(event)?.scope ?? `${event.scope.domain}/${event.scope.workspace}/${event.scope.subject}`) !== scopeId) return null;
+      // An entry recorded later than the next one's time means the log is not in time order.
+      const at = atOf(event);
+      if (at < lastAt) exact = false;
+      lastAt = Math.max(lastAt, at, recordedOf(event));
+      if (event.type === 'decision.made') { arms.set(event.id, event.arm ?? null); return null; }
+      if (event.type === 'record.excluded') {
+        excluded.add(event.targetId);
+        for (const row of covering.get(event.targetId) || []) row.omitted = true;
+        return null;
+      }
+      if (event.type === TYPES[0]) { presentations.set(event.id, event); return null; }
+      if (event.type === TYPES[3]) { audio.set(event.presentationId, event.audio); return null; }
+      if (event.type !== TYPES[1] && event.type !== TYPES[2]) return null;
+      // A visible child without its recorded parent is not usable evidence.
+      const p = presentations.get(event.presentationId);
+      if (!p) return null;
+      const keys = traceKeys(p);
+      if (event.type === TYPES[1]) {
+        for (const k of keys) { helped.add(`help|${k}`); if (event.level === 'answer') { helped.add(`answer|${k}`); seen.add(k); } }
+        return null;
+      }
+      const prior = kinds => keys.some(k => kinds.some(kind => kind === 'attempt' ? seen.has(`attempt|${k}`) : helped.has(`${kind}|${k}`)));
+      const delivered = audio.get(p.id) || 'pending';
+      const row = attemptRow(event, p, arms.get(p.decisionId) ?? null, delivered, judge(event, p, prior, delivered));
+      row.omitted = excluded.has(event.id) || excluded.has(p.id) || excluded.has(p.decisionId);
+      for (const k of keys) { seen.add(`attempt|${k}`); seen.add(k); }
+      for (const target of [event.id, p.id, p.decisionId]) cover(target, row);
+      rows.set(event.id, row);
+      return row;
+    }
+    return {
+      add,
+      get exact() { return exact; },
+      attempt: eventId => rows.get(eventId) || null,
+      met: (itemKey, familyKey) => seen.has(`item:${itemKey}`) || (familyKey != null && seen.has(`family:${familyKey}`)),
+    };
   }
   // Exactly these four fields: a history must never carry response text or identity.
   const RECORD = ['itemKey', 'conceptIds', 'at', 'verdict'];
@@ -211,5 +337,5 @@
     }
     return facts;
   }
-  return Object.freeze({ VERSION, TYPES, validate, checkLink, summarize, openHistory, remember, growth });
+  return Object.freeze({ VERSION, TYPES, validate, checkLink, link, vouch, summarize, createIndex, openHistory, remember, growth });
 });

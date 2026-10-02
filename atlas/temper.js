@@ -12,7 +12,9 @@
   const VERSION = 'temper-practice-2';
   const TRAIL = 'trail-practice-2';
   const scopeKey = scope => `${scope.domain}/${scope.workspace}/${scope.subject}`;
-  const taskKey = p => JSON.stringify([p.taskId, p.taskVersion, p.itemKey, [...p.conceptIds].sort()]);
+  const taskKey = p => JSON.stringify([p.taskId, p.taskVersion, p.itemKey, [...p.conceptIds].sort(), p.firstExposure,
+    p.measure ? [p.measure.skillId, p.measure.modality, p.measure.difficulty, p.measure.familyKey,
+      p.measure.audioRequired, p.measure.confounded, p.measure.responseFormat || 'unknown'] : null]);
   function summaries(input) {
     const rows = Array.isArray(input) ? input : [input];
     const seen = new Set();
@@ -46,7 +48,9 @@
         if (a.verdict === 'unassessed') result.unassessed += 1;
         if (a.verdict === 'skipped') result.skipped += 1;
         // Re-check provenance rather than trusting a caller's derived flag.
-        if (!(a.independent === true && a.assisted === false && a.exposure === 'new' && ['correct', 'incorrect'].includes(a.verdict))) continue;
+        if (!(a.independent === true && !a.exclusionReason && a.assisted === false && a.exposure === 'new'
+          && ['correct', 'incorrect'].includes(a.verdict)
+          && (!a.measure || (!a.measure.confounded && (!a.measure.audioRequired || a.audio === 'completed'))))) continue;
         const slot = (table, name) => table[name] || (table[name] = bucket());
         const targets = [result.independent, ...a.conceptIds.map(id => slot(result.byConcept, id)), slot(result.byArm, a.arm || 'unrecorded')];
         for (const b of targets) { b.evaluated += 1; b[a.verdict] += 1; }
