@@ -1,0 +1,102 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.875,
+  "words": [
+    {
+      "text": "이름",
+      "start": 0.262,
+      "end": 0.464
+    },
+    {
+      "text": "카드까지",
+      "start": 0.544,
+      "end": 0.968
+    },
+    {
+      "text": "나와요!",
+      "start": 1.129,
+      "end": 1.875
+    }
+  ],
+  "characters": [
+    {
+      "text": "이",
+      "start": 0.262,
+      "end": 0.343
+    },
+    {
+      "text": "름",
+      "start": 0.343,
+      "end": 0.464
+    },
+    {
+      "text": " ",
+      "start": 0.464,
+      "end": 0.544
+    },
+    {
+      "text": "카",
+      "start": 0.544,
+      "end": 0.665
+    },
+    {
+      "text": "드",
+      "start": 0.665,
+      "end": 0.746
+    },
+    {
+      "text": "까",
+      "start": 0.746,
+      "end": 0.887
+    },
+    {
+      "text": "지",
+      "start": 0.887,
+      "end": 0.968
+    },
+    {
+      "text": " ",
+      "start": 0.968,
+      "end": 1.129
+    },
+    {
+      "text": "나",
+      "start": 1.129,
+      "end": 1.19
+    },
+    {
+      "text": "와",
+      "start": 1.19,
+      "end": 1.27
+    },
+    {
+      "text": "요",
+      "start": 1.27,
+      "end": 1.855
+    },
+    {
+      "text": "!",
+      "start": 1.855,
+      "end": 1.875
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "이름 카드까지 나와요!",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.04,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 0.9
+    }
+  },
+  "direction": "놀람과 기쁨.",
+  "voiceName": "서현"
+}

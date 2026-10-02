@@ -1,0 +1,31 @@
+{
+  "tc_69f2e455ea79fd197aa0476f": {
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "voice_name": {
+      "eng": "Seohyeon",
+      "kor": "서현"
+    },
+    "voice_type": "original",
+    "models": [
+      {
+        "version": "ssfm-v30",
+        "emotions": [
+          "angry",
+          "happy",
+          "normal",
+          "sad",
+          "tonedown",
+          "toneup",
+          "whisper"
+        ]
+      }
+    ],
+    "gender": "female",
+    "age": "young_adult",
+    "use_cases": [
+      "Announcer",
+      "Conversational"
+    ],
+    "preview_url": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3"
+  }
+}

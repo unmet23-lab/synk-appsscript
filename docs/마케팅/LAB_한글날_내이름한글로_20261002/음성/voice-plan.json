@@ -1,0 +1,23 @@
+{
+  "project": "LAB 한글날 「이 이름 누구일까요?」 v2 목소리",
+  "model": "ssfm-v30",
+  "note": "2026-10-03 사용자 요청: 「내가 만족해했던 여자 음성, 아니면 감정 넣어 재밌게 표현하는 여자 성우」. LAB 카페 상황극(09-26)에서 「전보다 훨씬 낫다」고 한 Typecast 서현을 쓴다. 화면의 한국어 문장과 같은 말을 해서 듣기 연습이 되게 한다. cue는 첫 말소리가 들려야 하는 영상 시각(초)이고, sync는 그 순간 화면에 나오는 것이다. 파일 앞 무음은 음성/넣기.cjs가 재서 data-start를 정한다.",
+  "voices": {
+    "narrator": {
+      "name": "서현",
+      "id": "tc_69f2e455ea79fd197aa0476f",
+      "direction": "밝고 장난기 있는 퀴즈 진행자. 몽골 학습자가 따라 들을 수 있게 또박또박, 과장된 캐릭터 목소리·피치 변조 없이 미소를 머금은 말투."
+    }
+  },
+  "segments": [
+    { "id": "q1", "role": "narrator", "cue": 0.25, "sync": "#s1-q 「이 이름, 누구일까요?」 0.12", "text": "이 이름, 누구일까요?", "emotion": "happy", "intensity": 0.75, "tempo": 1.05, "direction": "궁금증을 끄는 퀴즈 질문. 끝을 살짝 올린다." },
+    { "id": "ans1", "role": "narrator", "cue": 2.36, "sync": "정답 Хулан! 2.312 · 스티커 「정답!」 2.30", "text": "정답!", "emotion": "happy", "intensity": 1.0, "tempo": 1.0, "direction": "신나는 정답 발표." },
+    { "id": "q2", "role": "narrator", "cue": 3.36, "sync": "#s2-sub 「그럼 이건?」 3.35", "text": "그럼, 이건?", "emotion": "happy", "intensity": 0.85, "tempo": 1.0, "direction": "장난스럽게 다음 문제." },
+    { "id": "ans2", "role": "narrator", "cue": 5.62, "sync": "정답 Мөнх! 5.588 · 스티커 「딩동댕!」 5.56", "text": "딩동댕!", "emotion": "happy", "intensity": 1.0, "tempo": 1.0, "direction": "퀴즈 정답 효과음처럼 리듬감 있게." },
+    { "id": "why", "role": "narrator", "cue": 8.84, "sync": "#s3-note 8.864", "text": "몽골어에선 다른 소리, 한글에선 같은 글자예요!", "smart": true, "previous": "딩동댕!", "next": "내 이름도 한글로 써 볼까요?", "tempo": 1.06, "direction": "새로 알게 된 기쁨. 또박또박." },
+    { "id": "try", "role": "narrator", "cue": 11.88, "sync": "#s4-sub-a 11.75 · 타자 12.14~13.23", "text": "내 이름도 한글로 써 볼까요?", "emotion": "happy", "intensity": 0.8, "tempo": 1.04, "direction": "해 보자는 기대." },
+    { "id": "tada", "role": "narrator", "cue": 13.47, "sync": "스티커 「짜잔!」 13.45", "text": "짜잔!", "emotion": "happy", "intensity": 1.0, "tempo": 1.0, "direction": "결과 공개." },
+    { "id": "card", "role": "narrator", "cue": 14.97, "sync": "#s4-sub-b 14.95 · 카드 화면 14.87", "text": "이름 카드까지 나와요!", "emotion": "happy", "intensity": 0.9, "tempo": 1.04, "direction": "놀람과 기쁨." },
+    { "id": "cta", "role": "narrator", "cue": 18.15, "sync": "#s5-ask 한국어 두 줄 18.1 · 19.6", "text": "여러분 이름은 한글로 뭐예요? 댓글로 알려 주세요!", "emotion": "happy", "intensity": 0.8, "tempo": 1.06, "direction": "다정한 부탁." }
+  ]
+}

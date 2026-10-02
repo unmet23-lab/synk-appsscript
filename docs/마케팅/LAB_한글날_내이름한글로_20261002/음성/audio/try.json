@@ -1,0 +1,132 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.115,
+  "words": [
+    {
+      "text": "내",
+      "start": 0.443,
+      "end": 0.524
+    },
+    {
+      "text": "이름도",
+      "start": 0.584,
+      "end": 0.806
+    },
+    {
+      "text": "한글로",
+      "start": 0.866,
+      "end": 1.148
+    },
+    {
+      "text": "써",
+      "start": 1.209,
+      "end": 1.31
+    },
+    {
+      "text": "볼까요?",
+      "start": 1.37,
+      "end": 2.115
+    }
+  ],
+  "characters": [
+    {
+      "text": "내",
+      "start": 0.443,
+      "end": 0.524
+    },
+    {
+      "text": " ",
+      "start": 0.524,
+      "end": 0.584
+    },
+    {
+      "text": "이",
+      "start": 0.584,
+      "end": 0.625
+    },
+    {
+      "text": "름",
+      "start": 0.625,
+      "end": 0.745
+    },
+    {
+      "text": "도",
+      "start": 0.745,
+      "end": 0.806
+    },
+    {
+      "text": " ",
+      "start": 0.806,
+      "end": 0.866
+    },
+    {
+      "text": "한",
+      "start": 0.866,
+      "end": 1.007
+    },
+    {
+      "text": "글",
+      "start": 1.007,
+      "end": 1.108
+    },
+    {
+      "text": "로",
+      "start": 1.108,
+      "end": 1.148
+    },
+    {
+      "text": " ",
+      "start": 1.148,
+      "end": 1.209
+    },
+    {
+      "text": "써",
+      "start": 1.209,
+      "end": 1.31
+    },
+    {
+      "text": " ",
+      "start": 1.31,
+      "end": 1.37
+    },
+    {
+      "text": "볼",
+      "start": 1.37,
+      "end": 1.451
+    },
+    {
+      "text": "까",
+      "start": 1.451,
+      "end": 1.612
+    },
+    {
+      "text": "요",
+      "start": 1.612,
+      "end": 2.095
+    },
+    {
+      "text": "?",
+      "start": 2.095,
+      "end": 2.115
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "내 이름도 한글로 써 볼까요?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.04,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 0.8
+    }
+  },
+  "direction": "해 보자는 기대.",
+  "voiceName": "서현"
+}

@@ -1,0 +1,47 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 0.9,
+  "words": [
+    {
+      "text": "짜잔!",
+      "start": 0.225,
+      "end": 0.9
+    }
+  ],
+  "characters": [
+    {
+      "text": "짜",
+      "start": 0.225,
+      "end": 0.409
+    },
+    {
+      "text": "잔",
+      "start": 0.409,
+      "end": 0.88
+    },
+    {
+      "text": "!",
+      "start": 0.88,
+      "end": 0.9
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "짜잔!",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 1
+    }
+  },
+  "direction": "결과 공개.",
+  "voiceName": "서현"
+}

@@ -1,0 +1,72 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.6,
+  "words": [
+    {
+      "text": "그럼,",
+      "start": 0.182,
+      "end": 0.547
+    },
+    {
+      "text": "이건?",
+      "start": 1.094,
+      "end": 1.6
+    }
+  ],
+  "characters": [
+    {
+      "text": "그",
+      "start": 0.182,
+      "end": 0.344
+    },
+    {
+      "text": "럼",
+      "start": 0.344,
+      "end": 0.527
+    },
+    {
+      "text": ",",
+      "start": 0.527,
+      "end": 0.547
+    },
+    {
+      "text": " ",
+      "start": 0.547,
+      "end": 1.094
+    },
+    {
+      "text": "이",
+      "start": 1.094,
+      "end": 1.175
+    },
+    {
+      "text": "건",
+      "start": 1.175,
+      "end": 1.58
+    },
+    {
+      "text": "?",
+      "start": 1.58,
+      "end": 1.6
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "그럼, 이건?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 0.85
+    }
+  },
+  "direction": "장난스럽게 다음 문제.",
+  "voiceName": "서현"
+}

@@ -7,7 +7,7 @@ destination: instagram-reels, facebook-reels
 aspect: 1080x1920
 language: mn (+ ko)
 audience: 몽골어권 한국어 학습자(페이스북 synkworld · 인스타 @synk.mn)
-length: 21s
+length: 22s
 ---
 
 ## Intent
@@ -18,7 +18,8 @@ length: 21s
 
 - 화면은 SNS 키트 `lab` 테마와 모션 프리셋. 몽글은 스티커로 붙고 표정은 컷으로만 바꾼다(흔들기·떠다니기 없음).
 - 실제 화면: synk.im/name 을 헤드리스 크롬으로 휴대폰 크기에서 찍은 사진(`녹화_도구화면.cjs`).
-- 소리: 「아 맞다」와 같은 LAB 음악, 브랜드 사운드킷, 사인 틱 둘(규칙 4). 내레이션 없음.
+- 소리: 「아 맞다」와 같은 LAB 음악, 브랜드 사운드킷, 사인 틱 둘(규칙 4).
+- 목소리(v2, 10-03): Typecast 서현이 화면의 한국어 문장을 같은 순간에 말한다(`음성/`). 음악은 carve로 말할 때만 비켜 준다.
 
 ## Notes
 

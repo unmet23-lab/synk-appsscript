@@ -1,0 +1,187 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 2.972,
+  "words": [
+    {
+      "text": "몽골어에선",
+      "start": 0.167,
+      "end": 0.651
+    },
+    {
+      "text": "다른",
+      "start": 0.701,
+      "end": 0.952
+    },
+    {
+      "text": "소리,",
+      "start": 1.002,
+      "end": 1.169
+    },
+    {
+      "text": "한글에선",
+      "start": 1.419,
+      "end": 1.853
+    },
+    {
+      "text": "같은",
+      "start": 1.903,
+      "end": 2.17
+    },
+    {
+      "text": "글자예요!",
+      "start": 2.22,
+      "end": 2.972
+    }
+  ],
+  "characters": [
+    {
+      "text": "몽",
+      "start": 0.167,
+      "end": 0.334
+    },
+    {
+      "text": "골",
+      "start": 0.334,
+      "end": 0.451
+    },
+    {
+      "text": "어",
+      "start": 0.451,
+      "end": 0.518
+    },
+    {
+      "text": "에",
+      "start": 0.518,
+      "end": 0.551
+    },
+    {
+      "text": "선",
+      "start": 0.551,
+      "end": 0.651
+    },
+    {
+      "text": " ",
+      "start": 0.651,
+      "end": 0.701
+    },
+    {
+      "text": "다",
+      "start": 0.701,
+      "end": 0.835
+    },
+    {
+      "text": "른",
+      "start": 0.835,
+      "end": 0.952
+    },
+    {
+      "text": " ",
+      "start": 0.952,
+      "end": 1.002
+    },
+    {
+      "text": "소",
+      "start": 1.002,
+      "end": 1.102
+    },
+    {
+      "text": "리",
+      "start": 1.102,
+      "end": 1.152
+    },
+    {
+      "text": ",",
+      "start": 1.152,
+      "end": 1.169
+    },
+    {
+      "text": " ",
+      "start": 1.169,
+      "end": 1.419
+    },
+    {
+      "text": "한",
+      "start": 1.419,
+      "end": 1.619
+    },
+    {
+      "text": "글",
+      "start": 1.619,
+      "end": 1.736
+    },
+    {
+      "text": "에",
+      "start": 1.736,
+      "end": 1.77
+    },
+    {
+      "text": "선",
+      "start": 1.77,
+      "end": 1.853
+    },
+    {
+      "text": " ",
+      "start": 1.853,
+      "end": 1.903
+    },
+    {
+      "text": "같",
+      "start": 1.903,
+      "end": 2.104
+    },
+    {
+      "text": "은",
+      "start": 2.104,
+      "end": 2.17
+    },
+    {
+      "text": " ",
+      "start": 2.17,
+      "end": 2.22
+    },
+    {
+      "text": "글",
+      "start": 2.22,
+      "end": 2.371
+    },
+    {
+      "text": "자",
+      "start": 2.371,
+      "end": 2.521
+    },
+    {
+      "text": "예",
+      "start": 2.521,
+      "end": 2.588
+    },
+    {
+      "text": "요",
+      "start": 2.588,
+      "end": 2.955
+    },
+    {
+      "text": "!",
+      "start": 2.955,
+      "end": 2.972
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "몽골어에선 다른 소리, 한글에선 같은 글자예요!",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.06,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "smart",
+      "previous_text": "딩동댕!",
+      "next_text": "내 이름도 한글로 써 볼까요?"
+    }
+  },
+  "direction": "새로 알게 된 기쁨. 또박또박.",
+  "voiceName": "서현"
+}

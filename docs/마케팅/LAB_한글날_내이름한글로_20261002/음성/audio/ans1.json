@@ -1,0 +1,47 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1,
+  "words": [
+    {
+      "text": "정답!",
+      "start": 0.265,
+      "end": 1
+    }
+  ],
+  "characters": [
+    {
+      "text": "정",
+      "start": 0.265,
+      "end": 0.612
+    },
+    {
+      "text": "답",
+      "start": 0.612,
+      "end": 0.98
+    },
+    {
+      "text": "!",
+      "start": 0.98,
+      "end": 1
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "정답!",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 1
+    }
+  },
+  "direction": "신나는 정답 발표.",
+  "voiceName": "서현"
+}

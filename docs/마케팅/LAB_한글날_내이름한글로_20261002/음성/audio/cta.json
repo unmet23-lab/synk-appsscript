@@ -1,0 +1,202 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 3.255,
+  "words": [
+    {
+      "text": "여러분",
+      "start": 0.436,
+      "end": 0.738
+    },
+    {
+      "text": "이름은",
+      "start": 0.789,
+      "end": 1.023
+    },
+    {
+      "text": "한글로",
+      "start": 1.074,
+      "end": 1.409
+    },
+    {
+      "text": "뭐예요?",
+      "start": 1.46,
+      "end": 1.762
+    },
+    {
+      "text": "댓글로",
+      "start": 1.946,
+      "end": 2.231
+    },
+    {
+      "text": "알려",
+      "start": 2.282,
+      "end": 2.433
+    },
+    {
+      "text": "주세요!",
+      "start": 2.483,
+      "end": 3.255
+    }
+  ],
+  "characters": [
+    {
+      "text": "여",
+      "start": 0.436,
+      "end": 0.537
+    },
+    {
+      "text": "러",
+      "start": 0.537,
+      "end": 0.621
+    },
+    {
+      "text": "분",
+      "start": 0.621,
+      "end": 0.738
+    },
+    {
+      "text": " ",
+      "start": 0.738,
+      "end": 0.789
+    },
+    {
+      "text": "이",
+      "start": 0.789,
+      "end": 0.839
+    },
+    {
+      "text": "름",
+      "start": 0.839,
+      "end": 0.973
+    },
+    {
+      "text": "은",
+      "start": 0.973,
+      "end": 1.023
+    },
+    {
+      "text": " ",
+      "start": 1.023,
+      "end": 1.074
+    },
+    {
+      "text": "한",
+      "start": 1.074,
+      "end": 1.242
+    },
+    {
+      "text": "글",
+      "start": 1.242,
+      "end": 1.359
+    },
+    {
+      "text": "로",
+      "start": 1.359,
+      "end": 1.409
+    },
+    {
+      "text": " ",
+      "start": 1.409,
+      "end": 1.46
+    },
+    {
+      "text": "뭐",
+      "start": 1.46,
+      "end": 1.627
+    },
+    {
+      "text": "예",
+      "start": 1.627,
+      "end": 1.694
+    },
+    {
+      "text": "요",
+      "start": 1.694,
+      "end": 1.745
+    },
+    {
+      "text": "?",
+      "start": 1.745,
+      "end": 1.762
+    },
+    {
+      "text": " ",
+      "start": 1.762,
+      "end": 1.946
+    },
+    {
+      "text": "댓",
+      "start": 1.946,
+      "end": 2.08
+    },
+    {
+      "text": "글",
+      "start": 2.08,
+      "end": 2.198
+    },
+    {
+      "text": "로",
+      "start": 2.198,
+      "end": 2.231
+    },
+    {
+      "text": " ",
+      "start": 2.231,
+      "end": 2.282
+    },
+    {
+      "text": "알",
+      "start": 2.282,
+      "end": 2.366
+    },
+    {
+      "text": "려",
+      "start": 2.366,
+      "end": 2.433
+    },
+    {
+      "text": " ",
+      "start": 2.433,
+      "end": 2.483
+    },
+    {
+      "text": "주",
+      "start": 2.483,
+      "end": 2.567
+    },
+    {
+      "text": "세",
+      "start": 2.567,
+      "end": 2.701
+    },
+    {
+      "text": "요",
+      "start": 2.701,
+      "end": 3.238
+    },
+    {
+      "text": "!",
+      "start": 3.238,
+      "end": 3.255
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "여러분 이름은 한글로 뭐예요? 댓글로 알려 주세요!",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.06,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 0.8
+    }
+  },
+  "direction": "다정한 부탁.",
+  "voiceName": "서현"
+}

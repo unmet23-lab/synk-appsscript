@@ -1,0 +1,102 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.857,
+  "words": [
+    {
+      "text": "이",
+      "start": 0.303,
+      "end": 0.323
+    },
+    {
+      "text": "이름,",
+      "start": 0.424,
+      "end": 0.666
+    },
+    {
+      "text": "누구일까요?",
+      "start": 0.868,
+      "end": 1.857
+    }
+  ],
+  "characters": [
+    {
+      "text": "이",
+      "start": 0.303,
+      "end": 0.323
+    },
+    {
+      "text": " ",
+      "start": 0.323,
+      "end": 0.424
+    },
+    {
+      "text": "이",
+      "start": 0.424,
+      "end": 0.525
+    },
+    {
+      "text": "름",
+      "start": 0.525,
+      "end": 0.646
+    },
+    {
+      "text": ",",
+      "start": 0.646,
+      "end": 0.666
+    },
+    {
+      "text": " ",
+      "start": 0.666,
+      "end": 0.868
+    },
+    {
+      "text": "누",
+      "start": 0.868,
+      "end": 1.03
+    },
+    {
+      "text": "구",
+      "start": 1.03,
+      "end": 1.151
+    },
+    {
+      "text": "일",
+      "start": 1.151,
+      "end": 1.231
+    },
+    {
+      "text": "까",
+      "start": 1.231,
+      "end": 1.413
+    },
+    {
+      "text": "요",
+      "start": 1.413,
+      "end": 1.837
+    },
+    {
+      "text": "?",
+      "start": 1.837,
+      "end": 1.857
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "이 이름, 누구일까요?",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1.05,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 0.75
+    }
+  },
+  "direction": "궁금증을 끄는 퀴즈 질문. 끝을 살짝 올린다.",
+  "voiceName": "서현"
+}

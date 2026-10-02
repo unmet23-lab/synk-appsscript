@@ -1,0 +1,52 @@
+{
+  "audio_format": "wav",
+  "audio_duration": 1.5,
+  "words": [
+    {
+      "text": "딩동댕!",
+      "start": 0.284,
+      "end": 1.5
+    }
+  ],
+  "characters": [
+    {
+      "text": "딩",
+      "start": 0.284,
+      "end": 0.466
+    },
+    {
+      "text": "동",
+      "start": 0.466,
+      "end": 0.649
+    },
+    {
+      "text": "댕",
+      "start": 0.649,
+      "end": 1.48
+    },
+    {
+      "text": "!",
+      "start": 1.48,
+      "end": 1.5
+    }
+  ],
+  "request": {
+    "seed": 1003,
+    "model": "ssfm-v30",
+    "voice_id": "tc_69f2e455ea79fd197aa0476f",
+    "text": "딩동댕!",
+    "language": "kor",
+    "output": {
+      "audio_format": "wav",
+      "audio_tempo": 1,
+      "target_lufs": -17
+    },
+    "prompt": {
+      "emotion_type": "preset",
+      "emotion_preset": "happy",
+      "emotion_intensity": 1
+    }
+  },
+  "direction": "퀴즈 정답 효과음처럼 리듬감 있게.",
+  "voiceName": "서현"
+}
